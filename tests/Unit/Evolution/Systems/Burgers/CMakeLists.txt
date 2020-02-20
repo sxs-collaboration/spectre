@@ -6,6 +6,7 @@ set(LIBRARY "Test_Burgers")
 set(LIBRARY_SOURCES
   Test_Characteristics.cpp
   Test_Fluxes.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(

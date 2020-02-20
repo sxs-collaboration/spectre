@@ -32,6 +32,7 @@
 #include "PointwiseFunctions/MathFunctions/TensorProduct.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 // IWYU pragma: no_forward_declare MathFunction
 // IWYU pragma: no_forward_declare Tensor
@@ -67,7 +68,6 @@ auto make_affine_map<3>() noexcept {
 template <size_t Dim, typename Frame>
 struct Flux1 : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim, Frame>;
-  static std::string name() noexcept { return "Flux1"; }
   static auto flux(const MathFunctions::TensorProduct<Dim>& f,
                    const tnsr::I<DataVector, Dim, Frame>& x) noexcept {
     auto result = make_with_value<tnsr::I<DataVector, Dim, Frame>>(x, 0.);
@@ -92,7 +92,6 @@ struct Flux1 : db::SimpleTag {
 template <size_t Dim, typename Frame>
 struct Flux2 : db::SimpleTag {
   using type = tnsr::Ij<DataVector, Dim, Frame>;
-  static std::string name() noexcept { return "Flux2"; }
   static auto flux(const MathFunctions::TensorProduct<Dim>& f,
                    const tnsr::I<DataVector, Dim, Frame>& x) noexcept {
     auto result = make_with_value<tnsr::Ij<DataVector, Dim, Frame>>(x, 0.);
@@ -159,10 +158,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   using TensorTag = Flux1<1, Frame::Inertial>;
   using VariablesTag = Tags::Variables<tmpl::list<TensorTag>>;
-  /// [divergence_name]
-  CHECK(Tags::div<TensorTag>::name() == "div(" + TensorTag::name() + ")");
-  CHECK(Tags::div<VariablesTag>::name() == "div(" + VariablesTag::name() + ")");
-  /// [divergence_name]
+  TestHelpers::db::test_prefix_tag<Tags::div<TensorTag>>("div(Flux1)");
+  TestHelpers::db::test_prefix_tag<Tags::div<VariablesTag>>(
+      "div(Variables(Flux1))");
 
   const size_t n0 =
       Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
@@ -202,7 +200,6 @@ namespace {
 template <class MapType>
 struct MapTag : db::SimpleTag {
   using type = MapType;
-  static std::string name() noexcept { return "MapTag"; }
 };
 
 template <size_t Dim, typename Frame = Frame::Inertial>
@@ -216,6 +213,8 @@ void test_divergence_compute_item(
   using flux_tags = two_fluxes<Dim, Frame>;
   using flux_tag = Tags::Variables<flux_tags>;
   using div_tags = db::wrap_tags_in<Tags::div, flux_tags>;
+  TestHelpers::db::test_compute_tag<Tags::DivCompute<flux_tag, inv_jac_tag>>(
+      "div(Variables(div(Flux1),div(Flux2)))");
 
   const size_t num_grid_points = mesh.number_of_grid_points();
   const auto xi = logical_coordinates(mesh);

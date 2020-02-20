@@ -31,7 +31,6 @@ namespace {
 template <int Spin>
 struct TestSpinWeightedScalar : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Spin>>;
-  static std::string name() noexcept { return "TestSpinWeightedScalar"; }
 };
 
 using test_pre_swsh_derivative_dependencies =

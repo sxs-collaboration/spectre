@@ -58,6 +58,7 @@ struct WeylElectricCompute : WeylElectric<SpatialDim, Frame, DataType>,
       gr::Tags::RicciTensor<SpatialDim, Frame, DataType>,
       gr::Tags::ExtrinsicCurvature<SpatialDim, Frame, DataType>,
       gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataType>>;
+  using base = WeylElectric<SpatialDim, Frame, DataType>;
 };
 }  // namespace Tags
 }  // namespace gr

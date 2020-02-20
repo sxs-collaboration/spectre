@@ -6,8 +6,10 @@
 #include <string>
 
 #include "DataStructures/Tensor/IndexType.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/RadiationTransport/M1Grey/Characteristics.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 /// Test tags used in M1Grey code
 SPECTRE_TEST_CASE("Evolution.Systems.RadiationTransport.M1Grey.Tags",
@@ -22,10 +24,36 @@ SPECTRE_TEST_CASE("Evolution.Systems.RadiationTransport.M1Grey.Tags",
   CHECK(neutrinos::get_name(nux) == "HeavyLeptonNeutrinos3");
 
   // (2) Tags for evolved variables
-  CHECK(RadiationTransport::M1Grey::Tags::TildeE<
-            Frame::Inertial, neutrinos::ElectronNeutrinos<1> >::name() ==
-        "TildeE_ElectronNeutrinos1");
-  CHECK(RadiationTransport::M1Grey::Tags::TildeS<
-            Frame::Grid, neutrinos::ElectronAntiNeutrinos<2> >::name() ==
-        "Grid_TildeS_ElectronAntiNeutrinos2");
+  TestHelpers::db::test_simple_tag<RadiationTransport::M1Grey::Tags::TildeE<
+      Frame::Grid, neutrinos::ElectronNeutrinos<1>>>(
+      "Grid_TildeE_ElectronNeutrinos1");
+  TestHelpers::db::test_simple_tag<RadiationTransport::M1Grey::Tags::TildeS<
+      Frame::Grid, neutrinos::ElectronAntiNeutrinos<2>>>(
+      "Grid_TildeS_ElectronAntiNeutrinos2");
+  TestHelpers::db::test_simple_tag<RadiationTransport::M1Grey::Tags::TildeP<
+      Frame::Grid, neutrinos::ElectronAntiNeutrinos<2>>>(
+      "Grid_TildeP_ElectronAntiNeutrinos2");
+  TestHelpers::db::test_simple_tag<
+      RadiationTransport::M1Grey::Tags::TildeSVector<Frame::Grid>>(
+      "Grid_TildeSVector");
+  TestHelpers::db::test_simple_tag<
+      RadiationTransport::M1Grey::Tags::ClosureFactor<
+          neutrinos::ElectronNeutrinos<1>>>("ClosureFactor_ElectronNeutrinos1");
+  TestHelpers::db::test_simple_tag<
+      RadiationTransport::M1Grey::Tags::TildeJ<
+          neutrinos::ElectronNeutrinos<1>>>("TildeJ_ElectronNeutrinos1");
+  TestHelpers::db::test_simple_tag<
+      RadiationTransport::M1Grey::Tags::TildeHNormal<
+          neutrinos::ElectronNeutrinos<1>>>("TildeHNormal_ElectronNeutrinos1");
+  TestHelpers::db::test_simple_tag<
+      RadiationTransport::M1Grey::Tags::TildeHSpatial<
+          Frame::Grid, neutrinos::ElectronNeutrinos<1>>>(
+      "Grid_TildeHSpatial_ElectronNeutrinos1");
+  TestHelpers::db::test_simple_tag<
+      RadiationTransport::M1Grey::Tags::CharacteristicSpeeds>(
+      "CharacteristicSpeeds");
+  TestHelpers::db::test_compute_tag<
+      RadiationTransport::M1Grey::Tags::CharacteristicSpeedsCompute>(
+      "CharacteristicSpeeds");
+
 }

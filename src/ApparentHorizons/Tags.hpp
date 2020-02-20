@@ -24,7 +24,6 @@ class FastFlow;
 namespace ah {
 namespace Tags {
 struct FastFlow : db::SimpleTag {
-  static std::string name() noexcept { return "FastFlow"; }
   using type = ::FastFlow;
 };
 }  // namespace Tags
@@ -37,7 +36,6 @@ namespace StrahlkorperTags {
 /// Tag referring to a `::Strahlkorper`
 template <typename Frame>
 struct Strahlkorper : db::SimpleTag {
-  static std::string name() noexcept { return "Strahlkorper"; }
   using type = ::Strahlkorper<Frame>;
 };
 
@@ -231,7 +229,7 @@ struct EuclideanAreaElement : db::ComputeTag {
 template <typename IntegrandTag, typename Frame>
 struct EuclideanSurfaceIntegral : db::ComputeTag {
   static std::string name() noexcept {
-    return "EuclideanSurfaceIntegral" + IntegrandTag::name();
+    return "EuclideanSurfaceIntegral(" + db::tag_name<IntegrandTag>() + ")";
   }
   static constexpr auto function =
       ::StrahlkorperGr::surface_integral_of_scalar<Frame>;
@@ -248,7 +246,8 @@ struct EuclideanSurfaceIntegral : db::ComputeTag {
 template <typename IntegrandTag, typename Frame>
 struct EuclideanSurfaceIntegralVector : db::ComputeTag {
   static std::string name() noexcept {
-    return "EuclideanSurfaceIntegralVector(" + IntegrandTag::name() + ")";
+    return "EuclideanSurfaceIntegralVector(" + db::tag_name<IntegrandTag>() +
+           ")";
   }
   static constexpr auto function =
       ::StrahlkorperGr::euclidean_surface_integral_of_vector<Frame>;
@@ -290,7 +289,7 @@ struct AreaElement : db::ComputeTag {
 template <typename IntegrandTag, typename Frame>
 struct SurfaceIntegral : db::ComputeTag {
   static std::string name() noexcept {
-    return "SurfaceIntegral" + IntegrandTag::name();
+    return "SurfaceIntegral(" + db::tag_name<IntegrandTag>() + ")";
   }
   static constexpr auto function = surface_integral_of_scalar<Frame>;
   using argument_tags = tmpl::list<AreaElement<Frame>, IntegrandTag,

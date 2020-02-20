@@ -36,13 +36,11 @@
 namespace {
 namespace Tags {
 struct ScalarVar : db::SimpleTag {
-  static std::string name() noexcept { return "Scalar"; }
   using type = Scalar<DataVector>;
 };
 
 template <size_t Dim>
 struct VectorVar : db::SimpleTag {
-  static std::string name() noexcept { return "Vector"; }
   using type = tnsr::I<DataVector, Dim>;
 };
 }  // namespace Tags

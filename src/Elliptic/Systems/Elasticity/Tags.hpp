@@ -40,7 +40,6 @@ namespace Tags {
 template <size_t Dim>
 struct Displacement : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim>;
-  static std::string name() noexcept { return "Displacement"; }
 };
 
 /*!
@@ -50,7 +49,6 @@ struct Displacement : db::SimpleTag {
 template <size_t Dim>
 struct Strain : db::SimpleTag {
   using type = tnsr::ii<DataVector, Dim>;
-  static std::string name() noexcept { return "Strain"; }
 };
 
 /*!
@@ -60,7 +58,6 @@ struct Strain : db::SimpleTag {
 template <size_t Dim>
 struct Stress : db::SimpleTag {
   using type = tnsr::II<DataVector, Dim>;
-  static std::string name() noexcept { return "Stress"; }
 };
 
 }  // namespace Tags

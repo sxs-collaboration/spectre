@@ -13,6 +13,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Elliptic/FirstOrderComputeTags.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace {
 
@@ -80,6 +81,11 @@ void test_first_order_compute_tags() {
       elliptic::Tags::FirstOrderFluxesCompute<system>;
   using first_order_sources_compute_tag =
       elliptic::Tags::FirstOrderSourcesCompute<system>;
+
+  TestHelpers::db::test_compute_tag<first_order_fluxes_compute_tag>(
+      "Flux(Variables(Flux(FieldTag),Flux(AuxiliaryFieldTag)))");
+  TestHelpers::db::test_compute_tag<first_order_sources_compute_tag>(
+      "Source(Variables(Source(FieldTag),Source(AuxiliaryFieldTag)))");
 
   // Construct some field data
   static constexpr size_t num_points = 3;

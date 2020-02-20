@@ -15,6 +15,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 
@@ -134,20 +135,16 @@ void test_magnitude() {
 }
 
 struct Vector : db::SimpleTag {
-  static std::string name() noexcept { return "Vector"; }
   using type = tnsr::I<DataVector, 3, Frame::Grid>;
 };
 template <size_t Dim>
 struct Covector : db::SimpleTag {
-  static std::string name() noexcept { return "Covector"; }
   using type = tnsr::i<DataVector, Dim, Frame::Grid>;
 };
 struct Metric : db::SimpleTag {
-  static std::string name() noexcept { return "Metric"; }
   using type = tnsr::ii<DataVector, 3, Frame::Grid>;
 };
 struct InverseMetric : db::SimpleTag {
-  static std::string name() noexcept { return "InverseMetric"; }
   using type = tnsr::II<DataVector, 3, Frame::Grid>;
 };
 void test_magnitude_tags() {
@@ -173,11 +170,15 @@ void test_magnitude_tags() {
 
   using Tag = Vector;
   /// [magnitude_name]
-  CHECK(Tags::Magnitude<Tag>::name() == "Magnitude(" + Tag::name() + ")");
+  TestHelpers::db::test_prefix_tag<Tags::Magnitude<Tag>>("Magnitude(Vector)");
   /// [magnitude_name]
   /// [normalized_name]
-  CHECK(Tags::Normalized<Tag>::name() == "Normalized(" + Tag::name() + ")");
+  TestHelpers::db::test_prefix_tag<Tags::Normalized<Tag>>("Normalized(Vector)");
   /// [normalized_name]
+  TestHelpers::db::test_compute_tag<Tags::EuclideanMagnitude<Tag>>(
+      "Magnitude(Vector)");
+  TestHelpers::db::test_compute_tag<Tags::NormalizedCompute<Tag>>(
+      "Normalized(Vector)");
 }
 
 void test_general_magnitude_tags() {
@@ -222,6 +223,8 @@ void test_general_magnitude_tags() {
                      Tags::NormalizedCompute<Vector>,
                      Tags::NormalizedCompute<Covector<3>>>>(vector, covector,
                                                             metric, inv_metric);
+  TestHelpers::db::test_compute_tag<
+      Tags::NonEuclideanMagnitude<Vector, Metric>>("Magnitude(Vector)");
 
   CHECK_ITERABLE_APPROX(get(db::get<Tags::Magnitude<Vector>>(box)),
                         (DataVector{npts, sqrt(778.0)}));
@@ -243,7 +246,6 @@ void test_general_magnitude_tags() {
 }
 
 struct MyScalar : db::SimpleTag {
-  static std::string name() noexcept { return "MyScalar"; }
   using type = Scalar<DataVector>;
 };
 void test_root_tags() {
@@ -258,7 +260,7 @@ void test_root_tags() {
 
   using Tag = MyScalar;
   /// [sqrt_name]
-  CHECK(Tags::Sqrt<Tag>::name() == "Sqrt(" + Tag::name() + ")");
+  TestHelpers::db::test_compute_tag<Tags::Sqrt<Tag>>("Sqrt(MyScalar)");
   /// [sqrt_name]
 }
 }  // namespace

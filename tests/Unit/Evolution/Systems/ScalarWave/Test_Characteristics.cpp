@@ -31,6 +31,7 @@
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
@@ -48,6 +49,8 @@ Scalar<DataVector> speed_with_index(
 
 template <size_t Dim>
 void test_characteristic_speeds() noexcept {
+  TestHelpers::db::test_compute_tag<
+      ScalarWave::CharacteristicSpeedsCompute<Dim>>("CharacteristicSpeeds");
   const DataVector used_for_size(5);
   pypp::check_with_random_values<1>(speed_with_index<0, Dim>, "Characteristics",
                                     "char_speed_vpsi", {{{-10.0, 10.0}}},
@@ -115,6 +118,8 @@ typename Tag::type field_with_tag(
 
 template <size_t Dim>
 void test_characteristic_fields() noexcept {
+  TestHelpers::db::test_compute_tag<
+      ScalarWave::CharacteristicFieldsCompute<Dim>>("CharacteristicFields");
   const DataVector used_for_size(5);
   // VPsi
   pypp::check_with_random_values<1>(field_with_tag<ScalarWave::Tags::VPsi, Dim>,
@@ -222,6 +227,9 @@ typename Tag::type evol_field_with_tag(
 
 template <size_t Dim>
 void test_evolved_from_characteristic_fields() noexcept {
+  TestHelpers::db::test_compute_tag<
+      ScalarWave::EvolvedFieldsFromCharacteristicFieldsCompute<Dim>>(
+      "EvolvedFieldsFromCharacteristicFields");
   const DataVector used_for_size(5);
   // Psi
   pypp::check_with_random_values<1>(evol_field_with_tag<ScalarWave::Psi, Dim>,
@@ -328,6 +336,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.Characteristics",
                   "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/ScalarWave/"};
+
+  TestHelpers::db::test_compute_tag<ScalarWave::Tags::ConstraintGamma2Compute>(
+      "ConstraintGamma2");
 
   test_characteristic_speeds<1>();
   test_characteristic_speeds<2>();

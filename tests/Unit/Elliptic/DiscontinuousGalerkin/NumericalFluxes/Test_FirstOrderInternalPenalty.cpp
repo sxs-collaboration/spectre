@@ -53,7 +53,6 @@ struct Fluxes {
 template <size_t Dim>
 struct FluxesComputerTag : db::SimpleTag {
   using type = Fluxes<Dim>;
-  static std::string name() noexcept { return "FluxesComputerTag"; }
 };
 
 template <size_t Dim>

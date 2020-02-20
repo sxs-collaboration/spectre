@@ -65,24 +65,20 @@ constexpr size_t Dim = 2;
 using TemporalId = Tags::TimeStepId;
 
 struct Var : db::SimpleTag {
-  static std::string name() noexcept { return "Var"; }
   using type = Scalar<DataVector>;
 };
 
 struct PrimitiveVar : db::SimpleTag {
-  static std::string name() noexcept { return "PrimitiveVar"; }
   using type = Scalar<DataVector>;
 };
 
 struct OtherData : db::SimpleTag {
-  static std::string name() noexcept { return "OtherData"; }
   using type = Scalar<DataVector>;
 };
 
 class NumericalFlux {
  public:
   struct ExtraData : db::SimpleTag {
-    static std::string name() noexcept { return "ExtraTag"; }
     using type = tnsr::I<DataVector, 1>;
   };
 

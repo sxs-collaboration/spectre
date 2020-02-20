@@ -27,6 +27,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
@@ -250,11 +251,10 @@ void test_variables_construction_and_access() noexcept {
 #endif  // defined(__clang__) && __clang_major__ > 6
   CHECK(filled_variables == another_filled_variables);
 
-  CHECK(
-      Tags::Variables<
-          tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
-                     VariablesTestTags_detail::scalar<VectorType>,
-                     VariablesTestTags_detail::scalar2<VectorType>>>::name() ==
+  TestHelpers::db::test_simple_tag<Tags::Variables<
+      tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
+                 VariablesTestTags_detail::scalar<VectorType>,
+                 VariablesTestTags_detail::scalar2<VectorType>>>>(
       "Variables(tensor name,scalar name,scalar2 name)");
 }
 
@@ -1081,6 +1081,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
     test_variables_from_tagged_tuple<DataVector>();
     // test_variables_from_tagged_tuple<ModalVector>();
   }
+  TestHelpers::db::test_simple_tag<Tags::TempScalar<1>>("TempTensor1");
 }
 }  // namespace
 

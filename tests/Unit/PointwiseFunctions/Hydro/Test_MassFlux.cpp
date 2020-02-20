@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/Hydro/MassFlux.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
@@ -46,8 +47,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.MassFlux",
   test_mass_flux<3, Frame::Grid>(0.0);
 
   // Check compute item works correctly in DataBox
-  CHECK(Tags::MassFluxCompute<DataVector, 2, Frame::Inertial>::name() ==
-        "MassFlux");
+  TestHelpers::db::test_compute_tag<
+      Tags::MassFluxCompute<DataVector, 2, Frame::Inertial>>("MassFlux");
   Scalar<DataVector> rho{{{DataVector{5, 1.0}}}};
   tnsr::I<DataVector, 3> velocity{
       {{DataVector{5, 0.25}, DataVector{5, 0.1}, DataVector{5, 0.35}}}};

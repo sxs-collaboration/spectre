@@ -33,8 +33,6 @@ struct Mesh;
 /// Prefix indicating the divergence of a Tensor or that a Variables
 /// contains divergences of Tensors.
 ///
-/// \snippet LinearOperators/Test_Divergence.cpp divergence_name
-///
 /// \see Tags::DivCompute
 template <typename Tag, typename = std::nullptr_t>
 struct div;
@@ -43,7 +41,9 @@ struct div;
 template <typename Tag>
 struct div<Tag, Requires<tt::is_a_v<Tensor, db::const_item_type<Tag>>>>
     : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept { return "div(" + Tag::name() + ")"; }
+  static std::string name() noexcept {
+    return "div(" + db::tag_name<Tag>() + ")";
+  }
   using tag = Tag;
   using type =
       TensorMetafunctions::remove_first_index<db::const_item_type<Tag>>;
@@ -52,7 +52,9 @@ struct div<Tag, Requires<tt::is_a_v<Tensor, db::const_item_type<Tag>>>>
 template <typename Tag>
 struct div<Tag, Requires<tt::is_a_v<::Variables, db::const_item_type<Tag>>>>
     : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept { return "div(" + Tag::name() + ")"; }
+  static std::string name() noexcept {
+    return "div(" + db::tag_name<Tag>() + ")";
+  }
   using tag = Tag;
   using type = db::const_item_type<Tag>;
 };

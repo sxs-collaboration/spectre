@@ -13,6 +13,7 @@
 #include "ApparentHorizons/Tags.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -20,6 +21,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ApparentHorizons/YlmTestFunctions.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace {
 
@@ -281,6 +283,11 @@ void test_normals() {
   const auto normal_mag = magnitude(normal_one_form, invg);
   CHECK_ITERABLE_APPROX(expected_normal_mag, get(normal_mag));
 }
+
+struct SomeType {};
+struct SomeTag : db::SimpleTag {
+  using type = SomeType;
+};
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
@@ -288,5 +295,46 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   test_average_radius();
   test_radius_and_derivs();
   test_normals();
-  CHECK(ah::Tags::FastFlow::name() == "FastFlow");
+  TestHelpers::db::test_simple_tag<ah::Tags::FastFlow>("FastFlow");
+  TestHelpers::db::test_simple_tag<
+      StrahlkorperTags::Strahlkorper<Frame::Inertial>>("Strahlkorper");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::ThetaPhi<Frame::Inertial>>("ThetaPhi");
+  TestHelpers::db::test_compute_tag<StrahlkorperTags::Rhat<Frame::Inertial>>(
+      "Rhat");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::Jacobian<Frame::Inertial>>("Jacobian");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::InvJacobian<Frame::Inertial>>("InvJacobian");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::InvHessian<Frame::Inertial>>("InvHessian");
+  TestHelpers::db::test_compute_tag<StrahlkorperTags::Radius<Frame::Inertial>>(
+      "Radius");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::CartesianCoords<Frame::Inertial>>("CartesianCoords");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::DxRadius<Frame::Inertial>>("DxRadius");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::D2xRadius<Frame::Inertial>>("D2xRadius");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::LaplacianRadius<Frame::Inertial>>("LaplacianRadius");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::NormalOneForm<Frame::Inertial>>("NormalOneForm");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::Tangents<Frame::Inertial>>("Tangents");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::EuclideanAreaElement<Frame::Inertial>>(
+      "EuclideanAreaElement");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::EuclideanSurfaceIntegral<SomeTag, Frame::Inertial>>(
+      "EuclideanSurfaceIntegral(SomeTag)");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::EuclideanSurfaceIntegralVector<SomeTag,
+                                                       Frame::Inertial>>(
+      "EuclideanSurfaceIntegralVector(SomeTag)");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperGr::Tags::AreaElement<Frame::Inertial>>("AreaElement");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperGr::Tags::SurfaceIntegral<SomeTag, Frame::Inertial>>(
+      "SurfaceIntegral(SomeTag)");
 }

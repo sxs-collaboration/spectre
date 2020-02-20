@@ -15,6 +15,7 @@
 #include "Evolution/ComputeTags.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace {
 
@@ -49,8 +50,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
   const DataVector expected{2., 4., 6., 8.};
   CHECK_ITERABLE_APPROX(get(get<::Tags::Analytic<FieldTag>>(box)), expected);
 
-  CHECK(
-      db::tag_name<evolution::Tags::AnalyticCompute<1, AnalyticSolutionTag,
-                                                    tmpl::list<FieldTag>>>() ==
+  TestHelpers::db::test_compute_tag<evolution::Tags::AnalyticCompute<
+      1, AnalyticSolutionTag, tmpl::list<FieldTag>>>(
       "Analytic(Variables(Analytic(FieldTag)))");
 }

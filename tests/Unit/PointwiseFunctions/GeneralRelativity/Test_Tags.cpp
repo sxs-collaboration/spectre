@@ -5,8 +5,8 @@
 
 #include <string>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace {
 struct ArbitraryFrame;
@@ -15,52 +15,63 @@ struct ArbitraryType;
 
 template <size_t Dim, typename Frame, typename Type>
 void test_simple_tags() {
-  CHECK(db::tag_name<gr::Tags::SpacetimeMetric<Dim, Frame, Type>>() ==
-        "SpacetimeMetric");
-  CHECK(db::tag_name<gr::Tags::InverseSpacetimeMetric<Dim, Frame, Type>>() ==
-        "InverseSpacetimeMetric");
-  CHECK(db::tag_name<gr::Tags::InverseSpatialMetric<Dim, Frame, Type>>() ==
-        "InverseSpatialMetric");
-  CHECK(db::tag_name<gr::Tags::DetSpatialMetric<Type>>() == "DetSpatialMetric");
-  CHECK(db::tag_name<gr::Tags::SqrtDetSpatialMetric<Type>>() ==
-        "SqrtDetSpatialMetric");
-  CHECK(db::tag_name<gr::Tags::Shift<Dim, Frame, Type>>() == "Shift");
-  CHECK(db::tag_name<gr::Tags::Lapse<Type>>() == "Lapse");
-  CHECK(db::tag_name<gr::Tags::DerivSpacetimeMetric<Dim, Frame, Type>>() ==
-        "DerivSpacetimeMetric");
-  CHECK(db::tag_name<
-            gr::Tags::DerivativesOfSpacetimeMetric<Dim, Frame, Type>>() ==
-        "DerivativesOfSpacetimeMetric");
-  CHECK(db::tag_name<
-            gr::Tags::SpacetimeChristoffelFirstKind<Dim, Frame, Type>>() ==
-        "SpacetimeChristoffelFirstKind");
-  CHECK(db::tag_name<
-            gr::Tags::SpacetimeChristoffelSecondKind<Dim, Frame, Type>>() ==
-        "SpacetimeChristoffelSecondKind");
-  CHECK(
-      db::tag_name<gr::Tags::SpatialChristoffelFirstKind<Dim, Frame, Type>>() ==
+  TestHelpers::db::test_simple_tag<gr::Tags::SpacetimeMetric<Dim, Frame, Type>>(
+      "SpacetimeMetric");
+  TestHelpers::db::test_simple_tag<
+      gr::Tags::InverseSpacetimeMetric<Dim, Frame, Type>>(
+      "InverseSpacetimeMetric");
+  TestHelpers::db::test_simple_tag<gr::Tags::SpatialMetric<Dim, Frame, Type>>(
+      "SpatialMetric");
+  TestHelpers::db::test_simple_tag<
+      gr::Tags::InverseSpatialMetric<Dim, Frame, Type>>("InverseSpatialMetric");
+  TestHelpers::db::test_simple_tag<gr::Tags::DetSpatialMetric<Type>>(
+      "DetSpatialMetric");
+  TestHelpers::db::test_simple_tag<gr::Tags::SqrtDetSpatialMetric<Type>>(
+      "SqrtDetSpatialMetric");
+  TestHelpers::db::test_simple_tag<gr::Tags::Shift<Dim, Frame, Type>>("Shift");
+  TestHelpers::db::test_simple_tag<gr::Tags::Lapse<Type>>("Lapse");
+  TestHelpers::db::test_simple_tag<
+      gr::Tags::DerivSpacetimeMetric<Dim, Frame, Type>>("DerivSpacetimeMetric");
+  TestHelpers::db::test_simple_tag<
+      gr::Tags::DerivativesOfSpacetimeMetric<Dim, Frame, Type>>(
+      "DerivativesOfSpacetimeMetric");
+  TestHelpers::db::test_simple_tag<
+      gr::Tags::SpacetimeChristoffelFirstKind<Dim, Frame, Type>>(
+      "SpacetimeChristoffelFirstKind");
+  TestHelpers::db::test_simple_tag<
+      gr::Tags::SpacetimeChristoffelSecondKind<Dim, Frame, Type>>(
+      "SpacetimeChristoffelSecondKind");
+  TestHelpers::db::test_simple_tag<
+      gr::Tags::SpatialChristoffelFirstKind<Dim, Frame, Type>>(
       "SpatialChristoffelFirstKind");
-  CHECK(db::tag_name<
-            gr::Tags::SpatialChristoffelSecondKind<Dim, Frame, Type>>() ==
-        "SpatialChristoffelSecondKind");
-  CHECK(db::tag_name<gr::Tags::SpacetimeNormalOneForm<Dim, Frame, Type>>() ==
-        "SpacetimeNormalOneForm");
-  CHECK(db::tag_name<gr::Tags::SpacetimeNormalVector<Dim, Frame, Type>>() ==
-        "SpacetimeNormalVector");
-  CHECK(db::tag_name<
-            gr::Tags::TraceSpacetimeChristoffelFirstKind<Dim, Frame, Type>>() ==
-        "TraceSpacetimeChristoffelFirstKind");
-  CHECK(db::tag_name<
-            gr::Tags::TraceSpatialChristoffelFirstKind<Dim, Frame, Type>>() ==
-        "TraceSpatialChristoffelFirstKind");
-  CHECK(db::tag_name<
-            gr::Tags::TraceSpatialChristoffelSecondKind<Dim, Frame, Type>>() ==
-        "TraceSpatialChristoffelSecondKind");
-  CHECK(db::tag_name<gr::Tags::ExtrinsicCurvature<Dim, Frame, Type>>() ==
-        "ExtrinsicCurvature");
-  CHECK(db::tag_name<gr::Tags::TraceExtrinsicCurvature<Type>>() ==
-        "TraceExtrinsicCurvature");
-  CHECK(db::tag_name<gr::Tags::EnergyDensity<Type>>() == "EnergyDensity");
+  TestHelpers::db::test_simple_tag<
+      gr::Tags::SpatialChristoffelSecondKind<Dim, Frame, Type>>(
+      "SpatialChristoffelSecondKind");
+  TestHelpers::db::test_simple_tag<
+      gr::Tags::SpacetimeNormalOneForm<Dim, Frame, Type>>(
+      "SpacetimeNormalOneForm");
+  TestHelpers::db::test_simple_tag<
+      gr::Tags::SpacetimeNormalVector<Dim, Frame, Type>>(
+      "SpacetimeNormalVector");
+  TestHelpers::db::test_simple_tag<
+      gr::Tags::TraceSpacetimeChristoffelFirstKind<Dim, Frame, Type>>(
+      "TraceSpacetimeChristoffelFirstKind");
+  TestHelpers::db::test_simple_tag<
+      gr::Tags::TraceSpatialChristoffelFirstKind<Dim, Frame, Type>>(
+      "TraceSpatialChristoffelFirstKind");
+  TestHelpers::db::test_simple_tag<
+      gr::Tags::TraceSpatialChristoffelSecondKind<Dim, Frame, Type>>(
+      "TraceSpatialChristoffelSecondKind");
+  TestHelpers::db::test_simple_tag<
+      gr::Tags::ExtrinsicCurvature<Dim, Frame, Type>>("ExtrinsicCurvature");
+  TestHelpers::db::test_simple_tag<gr::Tags::TraceExtrinsicCurvature<Type>>(
+      "TraceExtrinsicCurvature");
+  TestHelpers::db::test_simple_tag<gr::Tags::RicciTensor<Dim, Frame, Type>>(
+      "RicciTensor");
+  TestHelpers::db::test_simple_tag<gr::Tags::EnergyDensity<Type>>(
+      "EnergyDensity");
+  TestHelpers::db::test_simple_tag<gr::Tags::WeylElectric<Dim, Frame, Type>>(
+      "WeylElectric");
 }
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Tags",

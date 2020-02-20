@@ -30,31 +30,26 @@ namespace NumericalFluxes {
 namespace Tags {
 struct Variable1 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Variable1"; }
 };
 
 template <size_t Dim>
 struct Variable2 : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim>;
-  static std::string name() noexcept { return "Variable2"; }
 };
 
 template <size_t Dim>
 struct Variable3 : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim>;
-  static std::string name() noexcept { return "Variable3"; }
 };
 
 template <size_t Dim>
 struct Variable4 : db::SimpleTag {
   using type = tnsr::Ij<DataVector, Dim>;
-  static std::string name() noexcept { return "Variable4"; }
 };
 
 template <size_t Dim>
 struct CharacteristicSpeeds : db::SimpleTag {
   using type = std::array<DataVector, (Dim + 1) * (Dim + 1)>;
-  static std::string name() noexcept { return "CharacteristicSpeeds"; }
 };
 
 }  // namespace Tags

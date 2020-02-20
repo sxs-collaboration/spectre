@@ -7,14 +7,22 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace {
+struct SomeType {};
+
 struct SomeTag : db::SimpleTag {
   using type = int;
-  static std::string name() noexcept { return "SomeTag"; }
 };
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DG.Tags", "[Unit][NumericalAlgorithms]") {
-  CHECK(db::tag_name<::Tags::Mortars<SomeTag, 3>>() == "Mortars(SomeTag)");
+  TestHelpers::db::test_simple_tag<
+      Tags::SimpleMortarData<SomeType, SomeType, SomeType>>("SimpleMortarData");
+  TestHelpers::db::test_prefix_tag<Tags::Mortars<SomeTag, 3>>(
+      "Mortars(SomeTag)");
+  TestHelpers::db::test_simple_tag<Tags::MortarSize<2>>("MortarSize");
+  TestHelpers::db::test_simple_tag<Tags::NumericalFlux<SomeType>>(
+      "NumericalFlux");
 }

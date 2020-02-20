@@ -19,6 +19,7 @@
 #include <string>
 #include <tuple>
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Variables.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
@@ -443,7 +444,7 @@ struct check_variables_approx<Variables<TagList>> {
                     Approx& appx = approx) {  // NOLINT
     tmpl::for_each<TagList>([&a, &b, &appx](auto x) {
       using Tag = typename decltype(x)::type;
-      INFO(Tag::name());
+      INFO(db::tag_name<Tag>());
       const auto& a_val = extract_value_for_variables_comparison<Tag>(
           a, is_any_spin_weighted<typename Tag::type::type>{});
       const auto& b_val = extract_value_for_variables_comparison<Tag>(

@@ -51,7 +51,6 @@ class er;
 
 namespace {
 struct Var : db::SimpleTag {
-  static std::string name() noexcept { return "Var"; }
   using type = Scalar<DataVector>;
 };
 

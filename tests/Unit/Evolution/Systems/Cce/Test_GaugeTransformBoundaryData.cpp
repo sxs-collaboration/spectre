@@ -275,7 +275,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
       [&forward_transform_box, &inverse_transform_box, &
        interpolation_approx ](auto tag_v) noexcept {
     using tag = typename decltype(tag_v)::type;
-    INFO("computing tag : " << tag::name());
+    INFO("computing tag : " << db::tag_name<tag>());
     db::mutate_apply<GaugeAdjustedBoundaryValue<tag>>(
         make_not_null(&forward_transform_box));
     db::mutate<Tags::BoundaryValue<tag>>(

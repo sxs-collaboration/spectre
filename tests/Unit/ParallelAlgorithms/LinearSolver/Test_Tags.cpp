@@ -29,32 +29,38 @@ using initial_residual_magnitude_tag =
 
 SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
                   "[Unit][ParallelAlgorithms][LinearSolver]") {
-  CHECK(LinearSolver::Tags::Operand<Tag>::name() == "LinearOperand(Tag)");
-  CHECK(LinearSolver::Tags::OperatorAppliedTo<Tag>::name() ==
-        "LinearOperatorAppliedTo(Tag)");
+  TestHelpers::db::test_prefix_tag<LinearSolver::Tags::Operand<Tag>>(
+      "LinearOperand(Tag)");
+  TestHelpers::db::test_prefix_tag<LinearSolver::Tags::OperatorAppliedTo<Tag>>(
+      "LinearOperatorAppliedTo(Tag)");
   TestHelpers::db::test_simple_tag<LinearSolver::Tags::IterationId>(
       "LinearIterationId");
   TestHelpers::db::test_simple_tag<LinearSolver::Tags::HasConverged>(
       "LinearSolverHasConverged");
-  CHECK(LinearSolver::Tags::Residual<Tag>::name() == "LinearResidual(Tag)");
-  CHECK(LinearSolver::Tags::Initial<Tag>::name() == "Initial(Tag)");
-  CHECK(LinearSolver::Tags::MagnitudeSquare<Tag>::name() ==
-        "LinearMagnitudeSquare(Tag)");
-  CHECK(LinearSolver::Tags::Magnitude<Tag>::name() == "LinearMagnitude(Tag)");
-  CHECK(LinearSolver::Tags::Orthogonalization<Tag>::name() ==
-        "LinearOrthogonalization(Tag)");
-  CHECK(LinearSolver::Tags::OrthogonalizationHistory<Tag>::name() ==
-        "LinearOrthogonalizationHistory(Tag)");
-  CHECK(LinearSolver::Tags::KrylovSubspaceBasis<Tag>::name() ==
-        "KrylovSubspaceBasis(Tag)");
+  TestHelpers::db::test_prefix_tag<LinearSolver::Tags::Residual<Tag>>(
+      "LinearResidual(Tag)");
+  TestHelpers::db::test_prefix_tag<LinearSolver::Tags::Initial<Tag>>(
+      "Initial(Tag)");
+  TestHelpers::db::test_prefix_tag<LinearSolver::Tags::MagnitudeSquare<Tag>>(
+      "LinearMagnitudeSquare(Tag)");
+  TestHelpers::db::test_prefix_tag<LinearSolver::Tags::Magnitude<Tag>>(
+      "LinearMagnitude(Tag)");
+  TestHelpers::db::test_prefix_tag<LinearSolver::Tags::Orthogonalization<Tag>>(
+      "LinearOrthogonalization(Tag)");
+  TestHelpers::db::test_prefix_tag<
+      LinearSolver::Tags::OrthogonalizationHistory<Tag>>(
+      "LinearOrthogonalizationHistory(Tag)");
+  TestHelpers::db::test_prefix_tag<
+      LinearSolver::Tags::KrylovSubspaceBasis<Tag>>("KrylovSubspaceBasis(Tag)");
   TestHelpers::db::test_simple_tag<LinearSolver::Tags::ConvergenceCriteria>(
       "ConvergenceCriteria");
   TestHelpers::db::test_simple_tag<LinearSolver::Tags::Verbosity>("Verbosity");
 
   {
     INFO("HasConvergedCompute");
-    CHECK(LinearSolver::Tags::HasConvergedCompute<Tag>::name() ==
-          "LinearSolverHasConverged");
+    TestHelpers::db::test_compute_tag<
+        LinearSolver::Tags::HasConvergedCompute<Tag>>(
+        "LinearSolverHasConverged");
     const auto box = db::create<
         db::AddSimpleTags<LinearSolver::Tags::ConvergenceCriteria,
                           LinearSolver::Tags::IterationId,
@@ -85,12 +91,17 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
 
   {
     INFO("MagnitudeCompute");
-    CHECK(LinearSolver::Tags::MagnitudeCompute<magnitude_square_tag>::name() ==
-          "LinearMagnitude(Tag)");
+    TestHelpers::db::test_compute_tag<
+        LinearSolver::Tags::MagnitudeCompute<magnitude_square_tag>>(
+        "LinearMagnitude(Tag)");
     const auto box =
         db::create<db::AddSimpleTags<magnitude_square_tag>,
                    db::AddComputeTags<LinearSolver::Tags::MagnitudeCompute<
                        magnitude_square_tag>>>(4.);
     CHECK(db::get<magnitude_tag>(box) == approx(2.));
   }
+
+  TestHelpers::db::test_compute_tag<
+      Tags::NextCompute<LinearSolver::Tags::IterationId>>(
+      "Next(LinearIterationId)");
 }

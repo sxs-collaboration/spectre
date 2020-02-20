@@ -29,7 +29,6 @@ struct TemporalId {
 
 struct var_tag : db::SimpleTag {
   using type = int;
-  static std::string name() noexcept { return "var_tag"; }
 };
 
 struct ComputeDuDt {

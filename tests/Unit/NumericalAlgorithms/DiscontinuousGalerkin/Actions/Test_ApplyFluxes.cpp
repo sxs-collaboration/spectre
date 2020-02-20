@@ -54,21 +54,18 @@ class er;
 
 namespace {
 struct TemporalId : db::SimpleTag {
-  static std::string name() noexcept { return "TemporalId"; }
   using type = size_t;
   template <typename Tag>
   using step_prefix = Tags::dt<Tag>;
 };
 
 struct Var : db::SimpleTag {
-  static std::string name() noexcept { return "Var"; }
   using type = Scalar<DataVector>;
 };
 
 class NumericalFlux {
  public:
   struct ExtraData : db::SimpleTag {
-    static std::string name() noexcept { return "ExtraData"; }
     using type = tnsr::I<DataVector, 1>;
   };
 

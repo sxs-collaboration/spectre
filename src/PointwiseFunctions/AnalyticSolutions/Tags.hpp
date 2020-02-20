@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Serialize.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
@@ -48,7 +49,6 @@ struct BoundaryConditionBase : db::BaseTag {};
 /// template parameter
 template <typename SolutionType>
 struct AnalyticSolution : AnalyticSolutionBase, db::SimpleTag {
-  static std::string name() noexcept { return "AnalyticSolution"; }
   using type = SolutionType;
   using option_tags = tmpl::list<::OptionTags::AnalyticSolution<SolutionType>>;
 
@@ -62,7 +62,6 @@ struct AnalyticSolution : AnalyticSolutionBase, db::SimpleTag {
 /// The boundary condition to be applied at all external boundaries.
 template <typename BoundaryConditionType>
 struct BoundaryCondition : BoundaryConditionBase, db::SimpleTag {
-  static std::string name() noexcept { return "BoundaryCondition"; }
   using type = BoundaryConditionType;
   using option_tags =
       tmpl::list<::OptionTags::BoundaryCondition<BoundaryConditionType>>;

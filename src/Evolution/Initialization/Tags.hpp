@@ -16,7 +16,6 @@ namespace Initialization {
 /// \brief %Tags used during initialization of parallel components.
 namespace Tags {
 struct InitialTime : db::SimpleTag {
-  static std::string name() noexcept { return "InitialTime"; }
   using type = double;
   using option_tags = tmpl::list<OptionTags::InitialTime>;
 
@@ -27,7 +26,6 @@ struct InitialTime : db::SimpleTag {
 };
 
 struct InitialTimeDelta : db::SimpleTag {
-  static std::string name() noexcept { return "InitialTimeDelta"; }
   using type = double;
   using option_tags = tmpl::list<OptionTags::InitialTimeStep>;
 
@@ -39,7 +37,6 @@ struct InitialTimeDelta : db::SimpleTag {
 
 template <bool UsingLocalTimeStepping>
 struct InitialSlabSize : db::SimpleTag {
-  static std::string name() noexcept { return "InitialSlabSize"; }
   using type = double;
   using option_tags = tmpl::list<OptionTags::InitialSlabSize>;
 
@@ -51,7 +48,6 @@ struct InitialSlabSize : db::SimpleTag {
 
 template <>
 struct InitialSlabSize<false> : db::SimpleTag {
-  static std::string name() noexcept { return "InitialSlabSize"; }
   using type = double;
   using option_tags = tmpl::list<OptionTags::InitialTimeStep>;
 

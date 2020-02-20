@@ -38,6 +38,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
@@ -52,6 +53,9 @@ void test_one_index_constraint_random(
           const tnsr::i<DataVector, SpatialDim, Frame::Inertial>&)>(
           &ScalarWave::one_index_constraint<SpatialDim>),
       "Constraints", "one_index_constraint", {{{-10.0, 10.0}}}, used_for_size);
+  TestHelpers::db::test_compute_tag<
+      ScalarWave::Tags::OneIndexConstraintCompute<SpatialDim>>(
+      "OneIndexConstraint");
 }
 
 // Test the return-by-value two-index constraint function using random values
@@ -64,6 +68,9 @@ void test_two_index_constraint_random(
           &ScalarWave::two_index_constraint<SpatialDim>),
       "Constraints", "two_index_constraint", {{{-10.0, 10.0}}}, used_for_size,
       1.0e-12);
+  TestHelpers::db::test_compute_tag<
+      ScalarWave::Tags::TwoIndexConstraintCompute<SpatialDim>>(
+      "TwoIndexConstraint");
 }
 
 template <typename Solution>

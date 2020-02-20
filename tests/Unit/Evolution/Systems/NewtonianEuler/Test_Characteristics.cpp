@@ -22,6 +22,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/StdHelpers.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/Pypp.hpp"
@@ -35,6 +36,9 @@ namespace {
 
 template <size_t Dim>
 void test_characteristic_speeds(const DataVector& used_for_size) noexcept {
+  TestHelpers::db::test_compute_tag<
+      NewtonianEuler::Tags::CharacteristicSpeedsCompute<Dim>>(
+      "CharacteristicSpeeds");
   pypp::check_with_random_values<3>(
       static_cast<std::array<DataVector, Dim + 2> (*)(
           const tnsr::I<DataVector, Dim>&, const Scalar<DataVector>&,

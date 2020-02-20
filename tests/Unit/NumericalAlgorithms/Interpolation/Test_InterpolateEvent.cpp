@@ -57,7 +57,6 @@ namespace {
 namespace Tags {
 struct Lapse : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Lapse"; }
 };
 }  // namespace Tags
 

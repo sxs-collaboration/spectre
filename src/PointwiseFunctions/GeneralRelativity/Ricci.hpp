@@ -47,6 +47,7 @@ struct RicciTensorCompute : RicciTensor<SpatialDim, Frame, DataType>,
       const tnsr::Ijj<DataType, SpatialDim, Frame>&,
       const tnsr::iJkk<DataType, SpatialDim, Frame>&) =
       &ricci_tensor<SpatialDim, Frame, IndexType::Spatial, DataType>;
+  using base = RicciTensor<SpatialDim, Frame, DataType>;
 };
 }  // namespace Tags
 } // namespace gr

@@ -23,7 +23,6 @@ namespace Tags {
 template <typename DataType>
 struct ConformalFactor : db::SimpleTag {
   using type = Scalar<DataType>;
-  static std::string name() noexcept { return "ConformalFactor"; }
 };
 
 /*!
@@ -35,7 +34,6 @@ struct ConformalFactor : db::SimpleTag {
 template <size_t Dim, typename Frame, typename DataType>
 struct ConformalFactorGradient : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "ConformalFactorGradient"; }
 };
 
 }  // namespace Tags

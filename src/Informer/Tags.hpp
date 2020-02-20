@@ -25,7 +25,6 @@ namespace Tags {
 /// \ingroup LoggingGroup
 /// \brief Tag for putting `::Verbosity` in a DataBox.
 struct Verbosity : db::SimpleTag {
-  static std::string name() noexcept { return "Verbosity"; }
   using type = ::Verbosity;
   using option_tags = tmpl::list<OptionTags::Verbosity>;
 

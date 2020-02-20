@@ -23,7 +23,6 @@ namespace Tags {
 /// The characteristic speeds
 struct CharacteristicSpeeds : db::SimpleTag {
   using type = std::array<DataVector, 4>;
-  static std::string name() noexcept { return "CharacteristicSpeeds"; }
 };
 
 /// The densitized energy density of neutrinos of a given species

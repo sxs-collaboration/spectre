@@ -49,7 +49,6 @@ class er;
 
 namespace {
 struct ScalarFieldTag : db::SimpleTag {
-  static std::string name() noexcept { return "ScalarFieldTag"; };
   using type = Scalar<DataVector>;
 };
 

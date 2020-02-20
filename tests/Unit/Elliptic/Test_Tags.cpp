@@ -6,12 +6,13 @@
 #include <string>
 
 #include "Elliptic/Tags.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace {
 struct SomeFluxesComputer {};
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Tags", "[Unit][Elliptic]") {
-  CHECK(db::tag_name<elliptic::Tags::FluxesComputer<SomeFluxesComputer>>() ==
-        "SomeFluxesComputer");
+  TestHelpers::db::test_simple_tag<
+      elliptic::Tags::FluxesComputer<SomeFluxesComputer>>("SomeFluxesComputer");
 }

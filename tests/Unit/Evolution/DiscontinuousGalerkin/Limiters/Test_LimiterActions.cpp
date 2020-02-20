@@ -48,12 +48,10 @@
 
 namespace {
 struct TemporalId : db::SimpleTag {
-  static std::string name() noexcept { return "TemporalId"; }
   using type = int;
 };
 
 struct Var : db::SimpleTag {
-  static std::string name() noexcept { return "Var"; }
   using type = Scalar<DataVector>;
 };
 

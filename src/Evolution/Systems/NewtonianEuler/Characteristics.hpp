@@ -118,6 +118,7 @@ namespace Tags {
 
 template <size_t Dim>
 struct CharacteristicSpeedsCompute : CharacteristicSpeeds<Dim>, db::ComputeTag {
+  using base =  CharacteristicSpeeds<Dim>;
   using argument_tags =
       tmpl::list<Velocity<DataVector, Dim>, SoundSpeed<DataVector>,
                  ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;

@@ -26,26 +26,22 @@ namespace Tags {
 struct NumberOfEvents : db::SimpleTag {
   using type =
       std::unordered_map<ArrayComponentId, std::unique_ptr<std::atomic_int>>;
-  static std::string name() noexcept { return "NumberOfEvents"; }
 };
 
 /// All the ids of all the components registered to an observer for doing
 /// reduction observations.
 struct ReductionArrayComponentIds : db::SimpleTag {
   using type = std::unordered_set<ArrayComponentId>;
-  static std::string name() noexcept { return "ReductionArrayComponentIds"; }
 };
 
 /// All the ids of all the components registered to an observer for doing
 /// volume observations.
 struct VolumeArrayComponentIds : db::SimpleTag {
   using type = std::unordered_set<ArrayComponentId>;
-  static std::string name() noexcept { return "VolumeArrayComponentIds"; }
 };
 
 /// Volume tensor data to be written to disk.
 struct TensorData : db::SimpleTag {
-  static std::string name() noexcept { return "TensorData"; }
   using type =
       std::unordered_map<observers::ObservationId,
                          std::unordered_map<observers::ArrayComponentId,
@@ -60,7 +56,6 @@ struct ReductionDataNames;
 /// Reduction data to be written to disk.
 template <class... ReductionDatums>
 struct ReductionData : db::SimpleTag {
-  static std::string name() noexcept { return "ReductionData"; }
   using type = std::unordered_map<observers::ObservationId,
                                   Parallel::ReductionData<ReductionDatums...>>;
   using names_tag = ReductionDataNames<ReductionDatums...>;
@@ -69,7 +64,6 @@ struct ReductionData : db::SimpleTag {
 /// Names of the reduction data to be written to disk.
 template <class... ReductionDatums>
 struct ReductionDataNames : db::SimpleTag {
-  static std::string name() noexcept { return "ReductionDataNames"; }
   using type =
       std::unordered_map<observers::ObservationId, std::vector<std::string>>;
   using data_tag = ReductionData<ReductionDatums...>;
@@ -80,14 +74,12 @@ struct ReductionDataNames : db::SimpleTag {
 /// The key of the map is the `observation_type_hash` of the `ObservationId`.
 /// The set contains all the processing elements it has registered on.
 struct VolumeObserversRegistered : db::SimpleTag {
-  static std::string name() noexcept { return "VolumeObserversRegistered"; }
   using type = std::unordered_map<size_t, std::set<size_t>>;
 };
 
 /// The number of observer components that have contributed data at the
 /// observation ids.
 struct VolumeObserversContributed : db::SimpleTag {
-  static std::string name() noexcept { return "VolumeObserversContributed"; }
   using type = std::unordered_map<observers::ObservationId, size_t>;
 };
 
@@ -101,7 +93,6 @@ struct VolumeObserversContributed : db::SimpleTag {
 /// Observer group will call the local ObserverWriter nodegroup during
 /// a reduction.
 struct ReductionObserversRegistered : db::SimpleTag {
-  static std::string name() noexcept { return "ReductionObserversRegistered"; }
   using type = std::unordered_map<size_t, std::set<size_t>>;
 };
 
@@ -109,16 +100,12 @@ struct ReductionObserversRegistered : db::SimpleTag {
 /// The key of the map is the `observation_type_hash` of the `ObservationId`.
 /// The set contains all the nodes that have been registered.
 struct ReductionObserversRegisteredNodes : db::SimpleTag {
-  static std::string name() noexcept {
-    return "ReductionObserversRegisteredNodes";
-  }
   using type = std::unordered_map<size_t, std::set<size_t>>;
 };
 
 /// The number of observer components that have contributed data at the
 /// observation ids.
 struct ReductionObserversContributed : db::SimpleTag {
-  static std::string name() noexcept { return "ReductionObserversContributed"; }
   using type = std::unordered_map<observers::ObservationId, size_t>;
 };
 
@@ -128,7 +115,6 @@ struct ReductionObserversContributed : db::SimpleTag {
 /// require a thread-safe HDF5 installation. In the future we will need to
 /// experiment with different HDF5 configurations.
 struct H5FileLock : db::SimpleTag {
-  static std::string name() noexcept { return "H5FileLock"; }
   using type = CmiNodeLock;
 };
 }  // namespace Tags
@@ -164,7 +150,6 @@ struct ReductionFileName {
 
 namespace Tags {
 struct VolumeFileName : db::SimpleTag {
-  static std::string name() noexcept { return "VolumeFileName"; }
   using type = std::string;
   using option_tags = tmpl::list<::observers::OptionTags::VolumeFileName>;
 
@@ -176,7 +161,6 @@ struct VolumeFileName : db::SimpleTag {
 };
 
 struct ReductionFileName : db::SimpleTag {
-  static std::string name() noexcept { return "ReductionFileName"; }
   using type = std::string;
   using option_tags = tmpl::list<::observers::OptionTags::ReductionFileName>;
 

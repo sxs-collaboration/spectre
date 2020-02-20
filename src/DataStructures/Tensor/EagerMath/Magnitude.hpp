@@ -77,7 +77,7 @@ namespace Tags {
 template <typename Tag>
 struct Magnitude : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept {
-    return "Magnitude(" + Tag::name() + ")";
+    return "Magnitude(" + db::tag_name<Tag>() + ")";
   }
   using tag = Tag;
   using type = Scalar<DataVector>;
@@ -118,7 +118,7 @@ struct NonEuclideanMagnitude : Magnitude<Tag>, db::ComputeTag {
 template <typename Tag>
 struct Normalized : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept {
-    return "Normalized(" + Tag::name() + ")";
+    return "Normalized(" + db::tag_name<Tag>() + ")";
   }
   using tag = Tag;
   using type = db::const_item_type<Tag>;
@@ -152,7 +152,9 @@ struct NormalizedCompute : Normalized<Tag>, db::ComputeTag {
 /// \snippet Test_Magnitude.cpp sqrt_name
 template <typename Tag>
 struct Sqrt : db::ComputeTag {
-  static std::string name() noexcept { return "Sqrt(" + Tag::name() + ")"; }
+  static std::string name() noexcept {
+    return "Sqrt(" + db::tag_name<Tag>() + ")";
+  }
   static constexpr Scalar<DataVector> (*function)(
       const db::const_item_type<Tag>&) = sqrt_magnitude;
   using argument_tags = tmpl::list<Tag>;

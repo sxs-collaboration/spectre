@@ -20,6 +20,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -176,35 +177,37 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
 
   // Check that compute items work correctly in the DataBox
   // First, check that the names are correct
-  CHECK(gr::Tags::SpacetimeNormalOneFormCompute<3, Frame::Inertial,
-                                                DataVector>::name() ==
-        "SpacetimeNormalOneForm");
-  CHECK(gr::Tags::SpacetimeNormalVectorCompute<3, Frame::Inertial,
-                                               DataVector>::name() ==
-        "SpacetimeNormalVector");
-  CHECK(gr::Tags::SpacetimeMetricCompute<3, Frame::Inertial,
-                                         DataVector>::name() ==
-        "SpacetimeMetric");
-  CHECK(gr::Tags::InverseSpacetimeMetricCompute<3, Frame::Inertial,
-                                                DataVector>::name() ==
-        "InverseSpacetimeMetric");
-  CHECK(
-      gr::Tags::SpatialMetricCompute<3, Frame::Inertial, DataVector>::name() ==
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::SpacetimeNormalOneFormCompute<3, Frame::Inertial, DataVector>>(
+      "SpacetimeNormalOneForm");
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::SpacetimeNormalVectorCompute<3, Frame::Inertial, DataVector>>(
+      "SpacetimeNormalVector");
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::SpacetimeMetricCompute<3, Frame::Inertial, DataVector>>(
+      "SpacetimeMetric");
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::InverseSpacetimeMetricCompute<3, Frame::Inertial, DataVector>>(
+      "InverseSpacetimeMetric");
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::SpatialMetricCompute<3, Frame::Inertial, DataVector>>(
       "SpatialMetric");
-  CHECK(gr::Tags::ShiftCompute<3, Frame::Inertial, DataVector>::name() ==
-        "Shift");
-  CHECK(gr::Tags::LapseCompute<3, Frame::Inertial, DataVector>::name() ==
-        "Lapse");
-  CHECK(gr::Tags::SqrtDetSpatialMetricCompute<3, Frame::Inertial,
-                                              DataVector>::name() ==
-        "SqrtDetSpatialMetric");
-  CHECK(gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Inertial,
-                                                    DataVector>::name() ==
-        "Variables(DetSpatialMetric,InverseSpatialMetric)");
-  CHECK(gr::Tags::DerivativesOfSpacetimeMetricCompute<
-            3, Frame::Inertial>::name() == "DerivativesOfSpacetimeMetric");
-  CHECK(gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>::name() ==
-        "DerivSpacetimeMetric");
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::ShiftCompute<3, Frame::Inertial, DataVector>>("Shift");
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::LapseCompute<3, Frame::Inertial, DataVector>>("Lapse");
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::SqrtDetSpatialMetricCompute<3, Frame::Inertial, DataVector>>(
+      "SqrtDetSpatialMetric");
+  TestHelpers::db::test_compute_tag<gr::Tags::DetAndInverseSpatialMetricCompute<
+      3, Frame::Inertial, DataVector>>(
+      "Variables(DetSpatialMetric,InverseSpatialMetric)");
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::DerivativesOfSpacetimeMetricCompute<3, Frame::Inertial>>(
+      "DerivativesOfSpacetimeMetric");
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>>(
+      "DerivSpacetimeMetric");
 
   // Second, put the compute items into a data box and check that they
   // put the correct results

@@ -30,7 +30,6 @@ struct Name {
 namespace Tags {
 struct Name : db::SimpleTag {
   using type = std::string;
-  static std::string name() noexcept { return "Name"; }
   using option_tags = tmpl::list<OptionTags::Name>;
 
   template <typename Metavariables>

@@ -16,6 +16,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace Parallel {
 namespace Tags {
@@ -78,9 +79,14 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCacheDataBox", "[Unit][Parallel]") {
   CHECK(&Parallel::get<Tags::UniquePtrIntegerList>(cache2) ==
         &db::get<Tags::UniquePtrIntegerList>(box));
 
-  CHECK(Tags::FromConstGlobalCache<Tags::IntegerList>::name() ==
-        "FromConstGlobalCache(IntegerList)");
-  CHECK(Tags::FromConstGlobalCache<Tags::UniquePtrIntegerList>::name() ==
-        "FromConstGlobalCache(UniquePtrIntegerList)");
+  TestHelpers::db::test_base_tag<Tags::ConstGlobalCache>("ConstGlobalCache");
+  TestHelpers::db::test_simple_tag<Tags::ConstGlobalCacheImpl<Metavars>>(
+      "ConstGlobalCache");
+  TestHelpers::db::test_compute_tag<
+      Tags::FromConstGlobalCache<Tags::IntegerList>>(
+      "FromConstGlobalCache(IntegerList)");
+  TestHelpers::db::test_compute_tag<
+      Tags::FromConstGlobalCache<Tags::UniquePtrIntegerList>>(
+      "FromConstGlobalCache(UniquePtrIntegerList)");
 }
 }  // namespace Parallel

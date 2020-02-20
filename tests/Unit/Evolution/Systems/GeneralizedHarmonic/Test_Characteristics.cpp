@@ -33,6 +33,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
@@ -59,6 +60,9 @@ Scalar<DataVector> speed_with_index(
 
 template <size_t Dim, typename Frame>
 void test_characteristic_speeds() noexcept {
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::CharacteristicSpeedsCompute<Dim, Frame>>(
+      "CharacteristicSpeeds");
   const DataVector used_for_size(5);
   pypp::check_with_random_values<1>(speed_with_index<0, Dim, Frame>,
                                     "TestFunctions", "char_speed_upsi",
@@ -162,6 +166,9 @@ typename Tag::type field_with_tag(
 
 template <size_t Dim, typename Frame>
 void test_characteristic_fields() noexcept {
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::CharacteristicFieldsCompute<Dim, Frame>>(
+      "CharacteristicFields");
   const DataVector used_for_size(20);
   // UPsi
   pypp::check_with_random_values<1>(
@@ -343,6 +350,10 @@ typename Tag::type evol_field_with_tag(
 
 template <size_t Dim, typename Frame>
 void test_evolved_from_characteristic_fields() noexcept {
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::EvolvedFieldsFromCharacteristicFieldsCompute<Dim,
+                                                                        Frame>>(
+      "EvolvedFieldsFromCharacteristicFields");
   const DataVector used_for_size(20);
   // Psi
   pypp::check_with_random_values<1>(

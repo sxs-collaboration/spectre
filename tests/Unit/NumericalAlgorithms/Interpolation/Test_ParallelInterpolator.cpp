@@ -71,34 +71,31 @@ namespace {
 // Simple DataBoxItems for test.
 namespace Tags {
 struct TestSolution : db::SimpleTag {
-  static std::string name() noexcept { return "TestSolution"; }
   using type = Scalar<DataVector>;
 };
 struct Square : db::SimpleTag {
-  static std::string name() noexcept { return "Square"; }
   using type = Scalar<DataVector>;
 };
-struct SquareComputeItem : Square, db::ComputeTag {
-  static std::string name() noexcept { return "Square"; }
+struct SquareCompute : Square, db::ComputeTag {
   static Scalar<DataVector> function(const Scalar<DataVector>& x) noexcept {
     auto result = make_with_value<Scalar<DataVector>>(x, 0.0);
     get(result) = square(get(x));
     return result;
   }
   using argument_tags = tmpl::list<TestSolution>;
+  using base = Square;
 };
 struct Negate : db::SimpleTag {
-  static std::string name() noexcept { return "Negate"; }
   using type = Scalar<DataVector>;
 };
-struct NegateComputeItem : Negate, db::ComputeTag {
-  static std::string name() noexcept { return "Negate"; }
+struct NegateCompute : Negate, db::ComputeTag {
   static Scalar<DataVector> function(const Scalar<DataVector>& x) noexcept {
     auto result = make_with_value<Scalar<DataVector>>(x, 0.0);
     get(result) = -get(x);
     return result;
   }
   using argument_tags = tmpl::list<Square>;
+  using base = Negate;
 };
 }  // namespace Tags
 
@@ -214,7 +211,7 @@ struct mock_interpolator {
 
 struct MockMetavariables {
   struct InterpolationTargetA {
-    using compute_items_on_source = tmpl::list<Tags::SquareComputeItem>;
+    using compute_items_on_source = tmpl::list<Tags::SquareCompute>;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
@@ -223,9 +220,9 @@ struct MockMetavariables {
         TestFunction<InterpolationTargetA, Tags::Square>;
   };
   struct InterpolationTargetB {
-    using compute_items_on_source = tmpl::list<Tags::SquareComputeItem>;
+    using compute_items_on_source = tmpl::list<Tags::SquareCompute>;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
-    using compute_items_on_target = tmpl::list<Tags::NegateComputeItem>;
+    using compute_items_on_target = tmpl::list<Tags::NegateCompute>;
     using compute_target_points =
         intrp::Actions::LineSegment<InterpolationTargetB, 3>;
     using post_interpolation_callback =
@@ -234,7 +231,7 @@ struct MockMetavariables {
   struct InterpolationTargetC {
     using compute_items_on_source = tmpl::list<>;
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
-    using compute_items_on_target = tmpl::list<Tags::SquareComputeItem>;
+    using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
     using compute_target_points =
         intrp::Actions::KerrHorizon<InterpolationTargetC, ::Frame::Inertial>;
     using post_interpolation_callback = TestKerrHorizonIntegral;

@@ -15,6 +15,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/PointwiseFunctions/Hydro/TestHelpers.hpp"
 #include "tests/Unit/Pypp/Pypp.hpp"
@@ -103,6 +104,10 @@ void test_with_normal_along_coordinate_axes(
   }
 }
 
+struct SomeEosType {
+  static constexpr size_t thermodynamic_dim = 3;
+};
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Characteristics",
@@ -115,4 +120,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Characteristics",
   // Test with aligned normals to check the code works
   // with vector components being 0.
   test_with_normal_along_coordinate_axes(dv);
+
+  TestHelpers::db::test_compute_tag<
+      grmhd::ValenciaDivClean::Tags::CharacteristicSpeedsCompute<SomeEosType>>(
+      "CharacteristicSpeeds");
 }

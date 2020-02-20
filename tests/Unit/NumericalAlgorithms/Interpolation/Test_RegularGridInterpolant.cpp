@@ -74,7 +74,6 @@ namespace TestTags {
 
 struct ScalarTag : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Scalar"; }
   template <size_t Dim>
   static auto fill_values(const MathFunctions::TensorProduct<Dim>& f,
                           const tnsr::I<DataVector, Dim>& x) noexcept {
@@ -85,7 +84,6 @@ struct ScalarTag : db::SimpleTag {
 template <size_t Dim>
 struct Vector : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim>;
-  static std::string name() noexcept { return "Vector"; }
   static auto fill_values(const MathFunctions::TensorProduct<Dim>& f,
                           const tnsr::I<DataVector, Dim>& x) noexcept {
     auto result = make_with_value<tnsr::I<DataVector, Dim>>(x, 0.);

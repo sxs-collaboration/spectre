@@ -10,6 +10,7 @@
 #include "Options/ParseOptions.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace {
 
@@ -37,6 +38,7 @@ void test_ostream() noexcept {
 SPECTRE_TEST_CASE("Unit.Informer.Verbosity", "[Informer][Unit]") {
   test_construct_from_options();
   test_ostream();
+  TestHelpers::db::test_simple_tag<Tags::Verbosity>("Verbosity");
 }
 
 // [[OutputRegex, Failed to convert "Braggadocious" to Verbosity]]

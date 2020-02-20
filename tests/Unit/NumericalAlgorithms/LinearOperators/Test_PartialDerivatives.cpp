@@ -33,6 +33,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 // IWYU pragma: no_forward_declare Tags::deriv
 // IWYU pragma: no_forward_declare Variables
 
@@ -44,7 +45,6 @@ using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 template <size_t Dim, class Frame = ::Frame::Grid>
 struct Var1 : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim, Frame>;
-  static std::string name() noexcept { return "Var1"; }
   static auto f(const std::array<size_t, Dim>& coeffs,
                 const tnsr::I<DataVector, Dim, Frame>& x) {
     tnsr::i<DataVector, Dim, Frame> result(x.begin()->size(), 0.);
@@ -82,7 +82,6 @@ struct Var1 : db::SimpleTag {
 
 struct Var2 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Var2"; }
   template <size_t Dim, class Frame>
   static auto f(const std::array<size_t, Dim>& coeffs,
                 const tnsr::I<DataVector, Dim, Frame>& x) {
@@ -459,24 +458,23 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
   test_partial_derivatives_3d<two_vars<3>>(mesh_3d);
   test_partial_derivatives_3d<two_vars<3>, one_var<3>>(mesh_3d);
 
-  CHECK(Tags::deriv<Var1<3>, tmpl::size_t<3>, Frame::Grid>::name() ==
-        "deriv(" + Var1<3>::name() + ")");
-  CHECK(Tags::deriv<Tags::Variables<tmpl::list<Var1<3>>>, tmpl::size_t<3>,
-                    Frame::Grid>::name() ==
-        "deriv(" + Tags::Variables<tmpl::list<Var1<3>>>::name() + ")");
-  CHECK(Tags::spacetime_deriv<Var1<3>, tmpl::size_t<3>, Frame::Grid>::name() ==
-        "spacetime_deriv(" + Var1<3>::name() + ")");
-  CHECK(Tags::spacetime_deriv<Tags::Variables<tmpl::list<Var1<3>>>,
-                              tmpl::size_t<3>, Frame::Grid>::name() ==
-        "spacetime_deriv(" + Tags::Variables<tmpl::list<Var1<3>>>::name() +
-            ")");
+  TestHelpers::db::test_prefix_tag<
+      Tags::deriv<Var1<3>, tmpl::size_t<3>, Frame::Grid>>("deriv(Var1)");
+  TestHelpers::db::test_prefix_tag<Tags::deriv<
+      Tags::Variables<tmpl::list<Var1<3>>>, tmpl::size_t<3>, Frame::Grid>>(
+      "deriv(Variables(Var1))");
+  TestHelpers::db::test_prefix_tag<
+      Tags::spacetime_deriv<Var1<3>, tmpl::size_t<3>, Frame::Grid>>(
+      "spacetime_deriv(Var1)");
+  TestHelpers::db::test_prefix_tag<Tags::spacetime_deriv<
+      Tags::Variables<tmpl::list<Var1<3>>>, tmpl::size_t<3>, Frame::Grid>>(
+      "spacetime_deriv(Variables(Var1))");
 }
 
 namespace {
 template <class MapType>
 struct MapTag : db::SimpleTag {
   using type = MapType;
-  static std::string name() noexcept { return "MapTag"; }
 };
 
 template <typename Tag>
@@ -484,7 +482,7 @@ struct SomePrefix : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
   static std::string name() noexcept {
-    return "SomePrefix(" + Tag::name() + ")";
+    return "SomePrefix(" + db::tag_name<Tag>() + ")";
   }
 };
 
@@ -501,6 +499,9 @@ void test_partial_derivatives_compute_item(
   using deriv_prefixed_tag =
       Tags::DerivCompute<prefixed_variables_tag, inv_jac_tag,
                          tmpl::list<SomePrefix<Var1<Dim>>>>;
+
+  TestHelpers::db::test_compute_tag<deriv_tag>(
+      "deriv(Variables(deriv(Var1),deriv(Var2)))");
 
   const std::array<size_t, Dim> array_to_functions{extents_array -
                                                    make_array<Dim>(size_t{1})};

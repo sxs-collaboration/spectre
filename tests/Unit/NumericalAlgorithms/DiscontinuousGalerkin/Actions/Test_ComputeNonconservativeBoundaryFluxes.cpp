@@ -51,17 +51,14 @@
 
 namespace {
 struct Var : db::SimpleTag {
-  static std::string name() noexcept { return "Var"; }
   using type = Scalar<DataVector>;
 };
 
 struct Var2 : db::SimpleTag {
-  static std::string name() noexcept { return "Var2"; }
   using type = tnsr::ii<DataVector, 2>;
 };
 
 struct OtherArg : db::SimpleTag {
-  static std::string name() noexcept { return "OtherArg"; }
   using type = double;
 };
 

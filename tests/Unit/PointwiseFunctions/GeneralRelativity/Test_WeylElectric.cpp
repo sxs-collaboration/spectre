@@ -8,6 +8,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
@@ -36,4 +37,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.WeylElectric",
   GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR;
 
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_weyl_electric, (1, 2, 3));
+
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::WeylElectricCompute<3, Frame::Inertial, DataVector>>(
+      "WeylElectric");
 }

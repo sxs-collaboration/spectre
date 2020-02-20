@@ -45,7 +45,6 @@ struct Mortars : db::PrefixTag, db::SimpleTag {
 /// of the face that it covers.
 template <size_t Dim>
 struct MortarSize : db::SimpleTag {
-  static std::string name() noexcept { return "MortarSize"; }
   using type = std::array<Spectral::MortarSize, Dim>;
 };
 }  // namespace Tags
@@ -82,7 +81,6 @@ namespace Tags {
  */
 template <typename NumericalFluxType>
 struct NumericalFlux : db::SimpleTag {
-  static std::string name() noexcept { return "NumericalFlux"; }
   using type = NumericalFluxType;
   using option_tags =
       tmpl::list<::OptionTags::NumericalFlux<NumericalFluxType>>;

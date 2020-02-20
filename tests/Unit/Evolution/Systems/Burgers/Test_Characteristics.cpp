@@ -11,8 +11,11 @@
 #include "Evolution/Systems/Burgers/Characteristics.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Burgers.Characteristics", "[Unit][Burgers]") {
+  TestHelpers::db::test_compute_tag<Burgers::Tags::CharacteristicSpeedsCompute>(
+      "CharacteristicSpeeds");
   {
     const auto box = db::create<
         db::AddSimpleTags<Burgers::Tags::U, Tags::UnnormalizedFaceNormal<1>>,

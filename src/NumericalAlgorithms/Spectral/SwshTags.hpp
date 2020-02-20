@@ -186,7 +186,6 @@ struct SwshTransform : db::PrefixTag, db::SimpleTag {
 /// resolution.
 struct LMax : db::SimpleTag {
   using type = size_t;
-  static std::string name() noexcept { return "LMax"; }
 };
 
 /// \ingroup SwshGroup
@@ -194,7 +193,6 @@ struct LMax : db::SimpleTag {
 /// representation of radially concentric spherical shells
 struct NumberOfRadialPoints : db::SimpleTag {
   using type = size_t;
-  static std::string name() noexcept { return "NumberOfRadialPoints"; }
 };
 
 /// \ingroup SwshGroup

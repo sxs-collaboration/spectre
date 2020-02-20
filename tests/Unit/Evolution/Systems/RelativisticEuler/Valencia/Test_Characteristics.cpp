@@ -23,6 +23,7 @@
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/PointwiseFunctions/Hydro/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
@@ -43,8 +44,9 @@ void test_compute_item_in_databox(
     const Scalar<DataVector>& spatial_velocity_squared,
     const Scalar<DataVector>& sound_speed_squared,
     const tnsr::i<DataVector, Dim>& normal) noexcept {
-  CHECK(RelativisticEuler::Valencia::Tags::CharacteristicSpeedsCompute<
-            Dim>::name() == "CharacteristicSpeeds");
+  TestHelpers::db::test_compute_tag<
+      RelativisticEuler::Valencia::Tags::CharacteristicSpeedsCompute<Dim>>(
+      "CharacteristicSpeeds");
   const auto box = db::create<
       db::AddSimpleTags<
           gr::Tags::Lapse<>, gr::Tags::Shift<Dim>, gr::Tags::SpatialMetric<Dim>,

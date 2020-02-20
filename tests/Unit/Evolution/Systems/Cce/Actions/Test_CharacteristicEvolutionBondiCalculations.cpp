@@ -296,7 +296,7 @@ SPECTRE_TEST_CASE(
   tmpl::for_each<bondi_calculation_result_tags>(
       [&runner, &boundary_box](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
-        INFO(tag::name());
+        INFO(db::tag_name<tag>());
         const auto& test_lhs =
             ActionTesting::get_databox_tag<component, tag>(runner, 0);
         const auto& test_rhs = db::get<tag>(boundary_box);

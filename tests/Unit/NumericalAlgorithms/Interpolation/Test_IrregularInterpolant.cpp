@@ -76,7 +76,6 @@ namespace TestTags {
 template <size_t Dim>
 struct Vector : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim>;
-  static std::string name() noexcept { return "Vector"; }
   static auto fill_values(const MathFunctions::TensorProduct<Dim>& f,
                           const tnsr::I<DataVector, Dim>& x) noexcept {
     auto result = make_with_value<tnsr::I<DataVector, Dim>>(x, 0.);
@@ -91,7 +90,6 @@ struct Vector : db::SimpleTag {
 template <size_t Dim>
 struct SymmetricTensor : db::SimpleTag {
   using type = tnsr::ii<DataVector, Dim>;
-  static std::string name() noexcept { return "SymmetricTensor"; }
   static auto fill_values(const MathFunctions::TensorProduct<Dim>& f,
                           const tnsr::I<DataVector, Dim>& x) noexcept {
     auto result = make_with_value<tnsr::ii<DataVector, Dim>>(x, 0.);

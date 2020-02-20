@@ -32,6 +32,7 @@ struct LorentzFactorCompute : LorentzFactor<DataType>, db::ComputeTag {
   static constexpr auto function = &lorentz_factor<DataType, Dim, Fr>;
   using argument_tags = tmpl::list<SpatialVelocity<DataType, Dim, Fr>,
                                    SpatialVelocityOneForm<DataType, Dim, Fr>>;
+  using base = LorentzFactor<DataType>;
 };
 }  // namespace Tags
 }  // namespace hydro

@@ -55,6 +55,7 @@ struct SoundSpeedSquaredCompute : SoundSpeedSquared<DataType>, db::ComputeTag {
   using argument_tags =
       tmpl::list<RestMassDensity<DataType>, SpecificInternalEnergy<DataType>,
                  SpecificEnthalpy<DataType>, hydro::Tags::EquationOfStateBase>;
+  using base = SoundSpeedSquared<DataType>;
 };
 }  // namespace Tags
 }  // namespace hydro

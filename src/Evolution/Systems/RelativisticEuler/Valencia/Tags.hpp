@@ -22,19 +22,16 @@ namespace Tags {
 template <size_t Dim>
 struct CharacteristicSpeeds : db::SimpleTag {
   using type = std::array<DataVector, Dim + 2>;
-  static std::string name() noexcept { return "CharacteristicSpeeds"; }
 };
 
 /// The densitized rest-mass density \f${\tilde D}\f$
 struct TildeD : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "TildeD"; }
 };
 
 /// The densitized energy density \f${\tilde \tau}\f$
 struct TildeTau : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "TildeTau"; }
 };
 
 /// The densitized momentum density \f${\tilde S_i}\f$

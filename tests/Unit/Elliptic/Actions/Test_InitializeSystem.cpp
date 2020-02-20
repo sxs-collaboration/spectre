@@ -34,13 +34,11 @@
 namespace {
 
 struct ScalarFieldTag : db::SimpleTag {
-  static std::string name() noexcept { return "ScalarFieldTag"; };
   using type = Scalar<DataVector>;
 };
 
 template <size_t Dim>
 struct AuxiliaryFieldTag : db::SimpleTag {
-  static std::string name() noexcept { return "AuxiliaryFieldTag"; };
   using type = tnsr::i<DataVector, Dim>;
 };
 

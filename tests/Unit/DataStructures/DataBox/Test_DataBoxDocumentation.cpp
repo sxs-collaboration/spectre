@@ -279,23 +279,18 @@ namespace proper{
 /// [proper_databox_tags]
 struct Velocity : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "Velocity"; }
 };
 struct Radius : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "Radius"; }
 };
 struct Density : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "Density"; }
 };
 struct Volume : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "Volume"; }
 };
 struct Mass : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "Mass"; }
 };
 /// [proper_databox_tags]
 
@@ -333,7 +328,6 @@ double acceleration_from_velocity_and_radius(
 
 struct Acceleration : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "Acceleration"; }
 };
 
 struct AccelerationCompute : db::ComputeTag, Acceleration {
@@ -345,7 +339,6 @@ struct AccelerationCompute : db::ComputeTag, Acceleration {
 /// [compute_tags_force_compute]
 struct Force : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "Force"; }
 };
 
 struct ForceCompute : db::ComputeTag, Force {
@@ -361,22 +354,18 @@ struct ForceCompute : db::ComputeTag, Force {
 /// [mutate_tags]
 struct Time : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "Time"; }
 };
 
 struct TimeStep : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "TimeStep"; }
 };
 
 struct EarthGravity : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "EarthGravity"; }
 };
 
 struct FallingSpeed : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "FallingSpeed"; }
 };
 /// [mutate_tags]
 

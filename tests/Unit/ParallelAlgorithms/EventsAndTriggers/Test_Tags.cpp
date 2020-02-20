@@ -14,6 +14,8 @@ struct DummyType {};
 
 SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.EventsAndTriggers.Tags",
                   "[Unit][ParallelAlgorithms]") {
+  TestHelpers::db::test_base_tag<Tags::EventsAndTriggersBase>(
+      "EventsAndTriggersBase");
   TestHelpers::db::test_simple_tag<
       Tags::EventsAndTriggers<DummyType, DummyType>>("EventsAndTriggers");
 }

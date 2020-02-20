@@ -7,14 +7,17 @@
 
 #include "DataStructures/Tensor/IndexType.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/RelativisticEuler/Valencia/Tags.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.RelativisticEuler.Valencia.Tags", "[Unit][Evolution]") {
-  CHECK(RelativisticEuler::Valencia::Tags::CharacteristicSpeeds<3>::name() ==
-        "CharacteristicSpeeds");
-  CHECK(RelativisticEuler::Valencia::Tags::TildeD::name() == "TildeD");
-  CHECK(RelativisticEuler::Valencia::Tags::TildeTau::name() == "TildeTau");
-  CHECK(RelativisticEuler::Valencia::Tags::TildeS<3, Frame::Inertial>::name() ==
-        "TildeS");
-  CHECK(RelativisticEuler::Valencia::Tags::TildeS<3, Frame::Logical>::name() ==
-        "Logical_TildeS");
+  TestHelpers::db::test_simple_tag<
+      RelativisticEuler::Valencia::Tags::CharacteristicSpeeds<3>>(
+      "CharacteristicSpeeds");
+  TestHelpers::db::test_simple_tag<RelativisticEuler::Valencia::Tags::TildeD>(
+      "TildeD");
+  TestHelpers::db::test_simple_tag<RelativisticEuler::Valencia::Tags::TildeTau>(
+      "TildeTau");
+  TestHelpers::db::test_simple_tag<
+      RelativisticEuler::Valencia::Tags::TildeS<3, Frame::Logical>>(
+      "Logical_TildeS");
 }

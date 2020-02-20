@@ -19,6 +19,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
@@ -112,4 +113,13 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ComputeItems",
   const DataVector used_for_size(20);
   // Need only Dim=3 and DataVectors for apparent horizons.
   test_strahlkorper_compute_items<3, Frame::Inertial>(used_for_size);
+  TestHelpers::db::test_compute_tag<
+      ah::Tags::InverseSpatialMetricCompute<3, Frame::Inertial>>(
+      "InverseSpatialMetric");
+  TestHelpers::db::test_compute_tag<
+      ah::Tags::ExtrinsicCurvatureCompute<3, Frame::Inertial>>(
+      "ExtrinsicCurvature");
+  TestHelpers::db::test_compute_tag<
+      ah::Tags::SpatialChristoffelSecondKindCompute<3, Frame::Inertial>>(
+      "SpatialChristoffelSecondKind");
 }

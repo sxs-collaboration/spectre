@@ -16,6 +16,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
@@ -32,10 +33,11 @@ void test_compute_item_in_databox(
     const Scalar<DataType>& mass_density,
     const Scalar<DataType>& specific_internal_energy,
     const EquationOfStateType& equation_of_state) noexcept {
-  CHECK(NewtonianEuler::Tags::SoundSpeedSquaredCompute<DataType>::name() ==
-        "SoundSpeedSquared");
-  CHECK(NewtonianEuler::Tags::SoundSpeedCompute<DataType>::name() ==
-        "SoundSpeed");
+  TestHelpers::db::test_compute_tag<
+      NewtonianEuler::Tags::SoundSpeedSquaredCompute<DataType>>(
+      "SoundSpeedSquared");
+  TestHelpers::db::test_compute_tag<
+      NewtonianEuler::Tags::SoundSpeedCompute<DataType>>("SoundSpeed");
   const auto box = db::create<
       db::AddSimpleTags<NewtonianEuler::Tags::MassDensity<DataType>,
                         NewtonianEuler::Tags::SpecificInternalEnergy<DataType>,
