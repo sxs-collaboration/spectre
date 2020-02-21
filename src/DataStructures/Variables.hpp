@@ -73,11 +73,11 @@ struct Variables : db::SimpleTag {
  * `db::SimpleTag`. In general, they should be DataBoxTags that are not compute
  * items. For example,
  *
- * \snippet Test_Variables.cpp simple_variables_tag
+ * \snippet TestTags.hpp simple_variables_tag
  *
  * Prefix tags can also be stored and their format is:
  *
- * \snippet Test_Variables.cpp prefix_variables_tag
+ * \snippet TestTags.hpp prefix_variables_tag
  *
  * #### Design Decisions
  *

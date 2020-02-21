@@ -13,9 +13,9 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/SliceVariables.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"  // IWYU pragma: keep

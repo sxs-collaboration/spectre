@@ -5,6 +5,7 @@ set(LIBRARY "Test_Tensor")
 
 set(LIBRARY_SOURCES
   Test_Identity.cpp
+  Test_Slice.cpp
   Test_Tensor.cpp
   Test_TensorData.cpp
   )
