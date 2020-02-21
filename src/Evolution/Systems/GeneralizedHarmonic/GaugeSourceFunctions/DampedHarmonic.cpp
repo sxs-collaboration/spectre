@@ -391,7 +391,7 @@ void damped_harmonic_h(
   const auto roll_on_h_init = [&time, &t_start_h_init, &sigma_t_h_init]() {
     auto x = DampedHarmonicGauge_detail::roll_on_function(time, t_start_h_init,
                                                           sigma_t_h_init);
-    if (UNLIKELY(abs(1. - x) > 10. * std::numeric_limits<double>::epsilon())) {
+    if (UNLIKELY(abs(1. - x) > 100. * std::numeric_limits<double>::epsilon())) {
       return x;
     } else {
       return 0.;
@@ -403,7 +403,7 @@ void damped_harmonic_h(
     gauge_h->get(a) = (1. - roll_on_h_init) * gauge_h_init.get(a) +
                       get(h_prefac1) * spacetime_unit_normal_one_form.get(a);
     // In case we want SpEC-style roll-on of gauge
-    if (UNLIKELY(use_spec_style_rollon)) {
+    if (use_spec_style_rollon) {
       gauge_h->get(a) += (roll_on_h_init - 1.) * get(h_prefac1) *
                          spacetime_unit_normal_one_form.get(a);
     }
@@ -411,7 +411,7 @@ void damped_harmonic_h(
       gauge_h->get(a) +=
           get(h_prefac2) * spacetime_metric.get(a, i + 1) * shift.get(i);
       // In case we want SpEC-style roll-on of gauge
-      if (UNLIKELY(use_spec_style_rollon)) {
+      if (use_spec_style_rollon) {
         gauge_h->get(a) += (roll_on_h_init - 1.) * get(h_prefac2) *
                            spacetime_metric.get(a, i + 1) * shift.get(i);
       }
@@ -562,7 +562,7 @@ void spacetime_deriv_damped_harmonic_h(
   const auto roll_on_h_init = [&time, &t_start_h_init, &sigma_t_h_init]() {
     auto x = DampedHarmonicGauge_detail::roll_on_function(time, t_start_h_init,
                                                           sigma_t_h_init);
-    if (UNLIKELY(abs(1. - x) > 10. * std::numeric_limits<double>::epsilon())) {
+    if (UNLIKELY(abs(1. - x) > 100. * std::numeric_limits<double>::epsilon())) {
       return x;
     } else {
       return 0.;
@@ -594,7 +594,7 @@ void spacetime_deriv_damped_harmonic_h(
   const auto d0_roll_on_h_init = [&time, &t_start_h_init, &sigma_t_h_init]() {
     auto x = DampedHarmonicGauge_detail::time_deriv_of_roll_on_function(
         time, t_start_h_init, sigma_t_h_init);
-    if (UNLIKELY(abs(1. - x) > 10. * std::numeric_limits<double>::epsilon())) {
+    if (UNLIKELY(abs(1. - x) > 100. * std::numeric_limits<double>::epsilon())) {
       return x;
     } else {
       return 0.;
@@ -755,14 +755,15 @@ void spacetime_deriv_damped_harmonic_h(
   }
 
   // In case we want SpEC-style roll-on of gauge
-  if (UNLIKELY(use_spec_style_rollon)) {
+  if (use_spec_style_rollon) {
     // Calculate T2 + T3
-    typename db::item_type<Tags::GaugeH<SpatialDim, Frame>> _T2_plus_T3{
+    db::item_type<Tags::GaugeH<SpatialDim, Frame>> T2_plus_T3{
         get_size(get(lapse))};
-    const auto _zero_h_init = make_with_value<
-        typename db::item_type<Tags::GaugeH<SpatialDim, Frame>>>(lapse, 0.);
+    const auto zero_h_init =
+        make_with_value<db::item_type<Tags::GaugeH<SpatialDim, Frame>>>(lapse,
+                                                                        0.);
     GeneralizedHarmonic::damped_harmonic_h(
-        make_not_null(&_T2_plus_T3), _zero_h_init, lapse, shift,
+        make_not_null(&T2_plus_T3), zero_h_init, lapse, shift,
         sqrt_det_spatial_metric, spacetime_metric, time, coords, amp_coef_L1,
         amp_coef_L2, amp_coef_S, exp_L1, exp_L2, exp_S, t_start_h_init,
         sigma_t_h_init, t_start_L1, sigma_t_L1, t_start_L2, sigma_t_L2,
@@ -771,7 +772,7 @@ void spacetime_deriv_damped_harmonic_h(
     //                         + R_H0 (T2_{ab} + T3_{ab})
     // \f]
     for (size_t a = 0; a < SpatialDim + 1; ++a) {
-      d4_gauge_h->get(0, a) += d0_roll_on_h_init * _T2_plus_T3.get(a);
+      d4_gauge_h->get(0, a) += d0_roll_on_h_init * T2_plus_T3.get(a);
       for (size_t b = 0; b < SpatialDim + 1; ++b) {
         d4_gauge_h->get(a, b) +=
             (roll_on_h_init - 1.) * (dT2.get(a, b) + dT3.get(a, b));
