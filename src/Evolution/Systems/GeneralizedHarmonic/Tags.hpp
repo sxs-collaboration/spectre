@@ -114,6 +114,21 @@ struct GaugeHSpatialWeightDecayWidth : db::SimpleTag {
 };
 
 /*!
+ * \brief Enable SpEC-style roll-on of gauge and its derivatives.
+ *
+ * \details This option defaults to false
+ */
+struct UseSpecStyleRollOn : db::SimpleTag {
+  using type = bool;
+  using option_tags = tmpl::list<OptionTags::UseSpecStyleRollOn>;
+
+  template <typename Metavariables>
+  static bool create_from_options(const bool flag) noexcept {
+    return flag;
+  }
+};
+
+/*!
  * \brief Gauge source function for the generalized harmonic system.
  *
  * \details In the generalized / damped harmonic gauge, unlike the simple
@@ -325,6 +340,20 @@ struct GaugeHSpatialDecayWidth {
   static std::string name() noexcept { return "SpatialDecayWidth"; }
   static constexpr OptionString help{
       "Spatial width of weighting factor in evolution gauge"};
+  using group = GaugeGroup;
+};
+
+/*!
+ * \brief Enable SpEC-style roll-on of gauge and its derivatives
+ *
+ * \details This option defaults to false
+ */
+struct UseSpecStyleRollOn {
+  using type = bool;
+  static type default_value() noexcept { return false; }
+  static std::string name() noexcept { return "UseSpecStyleRollOn"; }
+  static constexpr OptionString help{
+      "Enable SpEC-style roll-on of gauge and its derivatives"};
   using group = GaugeGroup;
 };
 }  // namespace OptionTags

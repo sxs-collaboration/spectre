@@ -119,9 +119,10 @@ struct EvolutionMetavars {
       Tags::NumericalFlux<GeneralizedHarmonic::UpwindFlux<volume_dim>>;
 
   using step_choosers_common =
-      tmpl::list<//StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial>,
-                 StepChoosers::Registrars::Constant,
-                 StepChoosers::Registrars::Increase>;
+      tmpl::list<  // StepChoosers::Registrars::Cfl<volume_dim,
+                   // Frame::Inertial>,
+          StepChoosers::Registrars::Constant,
+          StepChoosers::Registrars::Increase>;
   using step_choosers_for_step_only =
       tmpl::list<StepChoosers::Registrars::PreventRapidIncrease>;
   using step_choosers_for_slab_only =
@@ -211,6 +212,7 @@ struct EvolutionMetavars {
       GeneralizedHarmonic::Tags::GaugeHRollOnStartTime,
       GeneralizedHarmonic::Tags::GaugeHRollOnTimeWindow,
       GeneralizedHarmonic::Tags::GaugeHSpatialWeightDecayWidth<frame>,
+      GeneralizedHarmonic::Tags::UseSpecStyleRollOn,
       Tags::EventsAndTriggers<events, triggers>>;
 
   struct ObservationType {};
@@ -300,27 +302,26 @@ struct EvolutionMetavars {
       intrp::InterpolationTarget<EvolutionMetavars, Horizon>,
       DgElementArray<
           EvolutionMetavars,
-          tmpl::list<
-              Parallel::PhaseActions<Phase, Phase::Initialization,
-                                     initialization_actions>,
+          tmpl::list<Parallel::PhaseActions<Phase, Phase::Initialization,
+                                            initialization_actions>,
 
-              Parallel::PhaseActions<
-                  Phase, Phase::InitializeTimeStepperHistory,
-                  SelfStart::self_start_procedure<step_actions>>,
+                     Parallel::PhaseActions<
+                         Phase, Phase::InitializeTimeStepperHistory,
+                         SelfStart::self_start_procedure<step_actions>>,
 
-              Parallel::PhaseActions<
-                  Phase, Phase::Register,
-                  tmpl::flatten<tmpl::list<
+                     Parallel::PhaseActions<
+                         Phase, Phase::Register,
+                         tmpl::flatten<tmpl::list<
                              intrp::Actions::RegisterElementWithInterpolator,
                              observers::Actions::RegisterWithObservers<
                                  observers::RegisterObservers<
                                      Tags::Time, element_observation_type>>,
                              Parallel::Actions::TerminatePhase>>>,
-              Parallel::PhaseActions<
-                  Phase, Phase::Evolve,
-                  tmpl::list<Actions::RunEventsAndTriggers,
-                             Actions::ChangeSlabSize,
-                             step_actions, Actions::AdvanceTime>>>>>;
+                     Parallel::PhaseActions<
+                         Phase, Phase::Evolve,
+                         tmpl::list<Actions::RunEventsAndTriggers,
+                                    Actions::ChangeSlabSize, step_actions,
+                                    Actions::AdvanceTime>>>>>;
 
   static constexpr OptionString help{
       "Evolve a generalized harmonic analytic solution.\n\n"

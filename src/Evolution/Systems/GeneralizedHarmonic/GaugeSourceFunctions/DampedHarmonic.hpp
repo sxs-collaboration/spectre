@@ -143,7 +143,7 @@ struct DampedHarmonicHCompute : Tags::GaugeH<SpatialDim, Frame>,
       ::gr::Tags::SpacetimeMetric<SpatialDim, Frame, DataVector>, ::Tags::Time,
       Tags::GaugeHRollOnStartTime, Tags::GaugeHRollOnTimeWindow,
       ::Tags::Coordinates<SpatialDim, Frame>,
-      Tags::GaugeHSpatialWeightDecayWidth<Frame>>;
+      Tags::GaugeHSpatialWeightDecayWidth<Frame>, Tags::UseSpecStyleRollOn>;
 
   static constexpr db::const_item_type<Tags::GaugeH<SpatialDim, Frame>>
   function(const db::const_item_type<Tags::InitialGaugeH<SpatialDim, Frame>>&
@@ -154,7 +154,7 @@ struct DampedHarmonicHCompute : Tags::GaugeH<SpatialDim, Frame>,
            const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
            const double& time, const double& t_start, const double& sigma_t,
            const tnsr::I<DataVector, SpatialDim, Frame>& coords,
-           const double& sigma_r) noexcept {
+           const double& sigma_r, const bool& use_spec_style_rollon) noexcept {
     db::item_type<Tags::GaugeH<SpatialDim, Frame>> gauge_h{
         get_size(get(lapse))};
     GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame>(
@@ -166,7 +166,7 @@ struct DampedHarmonicHCompute : Tags::GaugeH<SpatialDim, Frame>,
         t_start, sigma_t,  // _L1
         t_start, sigma_t,  // _L2
         t_start, sigma_t,  // _S
-        sigma_r);
+        sigma_r, use_spec_style_rollon);
     return gauge_h;
   }
 };
@@ -301,7 +301,7 @@ struct SpacetimeDerivDampedHarmonicHCompute
       Tags::Pi<SpatialDim, Frame>, Tags::Phi<SpatialDim, Frame>, ::Tags::Time,
       Tags::GaugeHRollOnStartTime, Tags::GaugeHRollOnTimeWindow,
       ::Tags::Coordinates<SpatialDim, Frame>,
-      Tags::GaugeHSpatialWeightDecayWidth<Frame>>;
+      Tags::GaugeHSpatialWeightDecayWidth<Frame>, Tags::UseSpecStyleRollOn>;
 
   static constexpr db::item_type<Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>>
   function(
@@ -319,7 +319,7 @@ struct SpacetimeDerivDampedHarmonicHCompute
       const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, const double& time,
       const double& t_start, const double& sigma_t,
       const tnsr::I<DataVector, SpatialDim, Frame>& coords,
-      const double& sigma_r) noexcept {
+      const double& sigma_r, const bool& use_spec_style_rollon) noexcept {
     db::item_type<Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>> d4_gauge_h{
         get_size(get(lapse))};
     GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h(
@@ -332,7 +332,7 @@ struct SpacetimeDerivDampedHarmonicHCompute
         t_start, sigma_t,  // _L1
         t_start, sigma_t,  // _L2
         t_start, sigma_t,  // _S
-        sigma_r);
+        sigma_r, use_spec_style_rollon);
     return d4_gauge_h;
   }
 };

@@ -23,6 +23,7 @@ struct GaugeHRollOnStartTime;
 struct GaugeHRollOnTimeWindow;
 template <typename Frame>
 struct GaugeHSpatialWeightDecayWidth;
+struct UseSpecStyleRollOn;
 template <size_t Dim, typename Frame = Frame::Inertial>
 struct InitialGaugeH;
 template <size_t Dim, typename Frame = Frame::Inertial>
@@ -70,5 +71,6 @@ struct GaugeHRollOnStart;
 struct GaugeHRollOnWindow;
 template <typename Frame>
 struct GaugeHSpatialDecayWidth;
+struct UseSpecStyleRollOn;
 }  // namespace OptionTags
 }  // namespace GeneralizedHarmonic

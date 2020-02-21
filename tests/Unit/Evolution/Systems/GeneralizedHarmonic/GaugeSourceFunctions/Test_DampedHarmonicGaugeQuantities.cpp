@@ -152,7 +152,8 @@ void test_options() noexcept {
   Options<tmpl::list<
       GeneralizedHarmonic::OptionTags::GaugeHRollOnStart,
       GeneralizedHarmonic::OptionTags::GaugeHRollOnWindow,
-      GeneralizedHarmonic::OptionTags::GaugeHSpatialDecayWidth<Frame>>>
+      GeneralizedHarmonic::OptionTags::GaugeHSpatialDecayWidth<Frame>,
+      GeneralizedHarmonic::OptionTags::UseSpecStyleRollOn>>
       opts("");
   opts.parse(
       "EvolutionSystem:\n"
@@ -160,7 +161,8 @@ void test_options() noexcept {
       "    Gauge:\n"
       "      RollOnStartTime : 0.\n"
       "      RollOnTimeWindow : 100.\n"
-      "      SpatialDecayWidth : 50.\n");
+      "      SpatialDecayWidth : 50.\n"
+      "      UseSpecStyleRollOn : true\n");
   CHECK(
       opts.template get<GeneralizedHarmonic::OptionTags::GaugeHRollOnStart>() ==
       0.);
@@ -170,6 +172,8 @@ void test_options() noexcept {
       opts.template get<
           GeneralizedHarmonic::OptionTags::GaugeHSpatialDecayWidth<Frame>>() ==
       50.);
+  CHECK(opts.template get<
+            GeneralizedHarmonic::OptionTags::UseSpecStyleRollOn>() == true);
 }
 
 template <size_t SpatialDim, typename Frame, typename DataType>
@@ -268,7 +272,7 @@ wrap_DampedHarmonicHCompute(
   return GeneralizedHarmonic::DampedHarmonicHCompute<
       SpatialDim, Frame>::function(gauge_h_init, lapse, shift,
                                    sqrt_det_spatial_metric, spacetime_metric, t,
-                                   t_start, sigma_t, coords, sigma_r);
+                                   t_start, sigma_t, coords, sigma_r, false);
 }
 
 // Compare with Python implementation
@@ -1085,7 +1089,8 @@ wrap_SpacetimeDerivDampedHarmonicHCompute(
                                    spacetime_unit_normal_one_form,
                                    sqrt_det_spatial_metric,
                                    inverse_spatial_metric, spacetime_metric, pi,
-                                   phi, t, t_start, sigma_t, coords, sigma_r);
+                                   phi, t, t_start, sigma_t, coords, sigma_r,
+                                   false);
 }
 // Compare with Python implementation
 template <size_t SpatialDim, typename Frame>
@@ -2956,15 +2961,16 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
           GeneralizedHarmonic::Tags::GaugeHRollOnStartTime,
           GeneralizedHarmonic::Tags::GaugeHRollOnTimeWindow,
           GeneralizedHarmonic::Tags::GaugeHSpatialWeightDecayWidth<
-              Frame::Inertial>>,
+              Frame::Inertial>,
+          GeneralizedHarmonic::Tags::UseSpecStyleRollOn>,
       db::AddComputeTags<
           GeneralizedHarmonic::DampedHarmonicHCompute<3, Frame::Inertial>,
           GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute<
-              3, Frame::Inertial>>>(gauge_h_init, d4_gauge_h_init, lapse, shift,
-                                    spacetime_unit_normal_one_form,
-                                    sqrt_det_spatial_metric,
-                                    inverse_spatial_metric, spacetime_metric,
-                                    pi, phi, t, x, t_start_S, sigma_t_S, r_max);
+              3, Frame::Inertial>>>(
+      gauge_h_init, d4_gauge_h_init, lapse, shift,
+      spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
+      inverse_spatial_metric, spacetime_metric, pi, phi, t, x, t_start_S,
+      sigma_t_S, r_max, false);
 
   // Verify that locally computed H_a matches the same obtained through its
   // ComputeTag from databox
