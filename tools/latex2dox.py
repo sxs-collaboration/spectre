@@ -15,13 +15,11 @@ def parse_file(input_file_name, output_file_name):
     # Replace equations, etc.
     out_string = re.sub("\\\\begin{(align\*?|equation\*?|eqnarray\*?)}",
                         r"\\f{\1}{", tex_string)
-    out_string = re.sub("\\\\end{(align\*?|equation\*?|eqnarray\*?)}",
-                        r"\\f}", out_string)
+    out_string = re.sub("\\\\end{(align\*?|equation\*?|eqnarray\*?)}", r"\\f}",
+                        out_string)
     # Replace section and subsection
-    out_string = re.sub("\\\\section{([^}]+)}",
-                        r"## \1", out_string)
-    out_string = re.sub("\\\\subsection{([^}]+)}",
-                        r"### \1", out_string)
+    out_string = re.sub("\\\\section{([^}]+)}", r"## \1", out_string)
+    out_string = re.sub("\\\\subsection{([^}]+)}", r"### \1", out_string)
     # Get inline math to work
     out_string = re.sub("([^\\\\])\$", r"\1\\f$", out_string)
     # Wrap \ref in math to get references to work
@@ -34,9 +32,9 @@ def parse_file(input_file_name, output_file_name):
         command_string = "%s\\f$%s\\f$\n" % (command_string, newcommand)
 
     # Extract contents inside document
-    is_doc = re.search(re.compile("\\\\begin{document}(.*)\\\\end{document}",
-                                  re.DOTALL),
-                       out_string)
+    is_doc = re.search(
+        re.compile("\\\\begin{document}(.*)\\\\end{document}", re.DOTALL),
+        out_string)
     if is_doc:
         out_string = is_doc.group(1)
 
@@ -55,12 +53,12 @@ def parse_args():
         'tweaking but the goal of this script is to automate the majority'
         ' of the work.',
         formatter_class=ap.ArgumentDefaultsHelpFormatter)
-    parser.add_argument(
-        '--tex-file', required=True, help="The name LaTeX file to process")
-    parser.add_argument(
-        '--output-file',
-        required=True,
-        help="The name of the file to write the output to")
+    parser.add_argument('--tex-file',
+                        required=True,
+                        help="The name LaTeX file to process")
+    parser.add_argument('--output-file',
+                        required=True,
+                        help="The name of the file to write the output to")
     return vars(parser.parse_args())
 
 

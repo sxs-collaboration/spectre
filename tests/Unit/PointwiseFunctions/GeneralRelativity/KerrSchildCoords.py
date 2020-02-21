@@ -17,11 +17,11 @@ def jacobian(coords, bh_mass, bh_dimless_spin):
     a_squared = spin_a**2
     r_squared = r_coord_squared(coords, bh_mass, bh_dimless_spin)
     r = np.sqrt(r_squared)
-    sin_theta = np.sqrt((coords[0]**2 + coords[1]**2) /
-                        (r_squared + a_squared))
+    sin_theta = np.sqrt(
+        (coords[0]**2 + coords[1]**2) / (r_squared + a_squared))
     cos_theta = coords[2] / r
-    inv_denom = 1.0 / np.sqrt((coords[0]**2 + coords[1]**2) *
-                              (r_squared + a_squared))
+    inv_denom = 1.0 / np.sqrt(
+        (coords[0]**2 + coords[1]**2) * (r_squared + a_squared))
     sin_phi = (coords[1] * r - spin_a * coords[0]) * inv_denom
     cos_phi = (coords[0] * r + spin_a * coords[1]) * inv_denom
 

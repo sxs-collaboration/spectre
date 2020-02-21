@@ -4,13 +4,13 @@
 import numpy as np
 import scipy.optimize as opt
 
+
 # Functions for testing SmoothFlow.cpp
 def smooth_flow_rest_mass_density(x, t, mean_velocity, wave_vector, pressure,
                                   adiabatic_index, density_amplitude):
     return (1.0 + (density_amplitude * np.sin(
-        np.dot(
-            np.asarray(wave_vector),
-            np.asarray(x) - np.asarray(mean_velocity) * t))))
+        np.dot(np.asarray(wave_vector),
+               np.asarray(x) - np.asarray(mean_velocity) * t))))
 
 
 def smooth_flow_spatial_velocity(x, t, mean_velocity, wave_vector, pressure,
@@ -21,10 +21,10 @@ def smooth_flow_spatial_velocity(x, t, mean_velocity, wave_vector, pressure,
 def smooth_flow_specific_internal_energy(x, t, mean_velocity, wave_vector,
                                          pressure, adiabatic_index,
                                          density_amplitude):
-    return (
-        pressure / ((adiabatic_index - 1.0) * smooth_flow_rest_mass_density(
-            x, t, mean_velocity, wave_vector, pressure, adiabatic_index,
-            density_amplitude)))
+    return (pressure /
+            ((adiabatic_index - 1.0) * smooth_flow_rest_mass_density(
+                x, t, mean_velocity, wave_vector, pressure, adiabatic_index,
+                density_amplitude)))
 
 
 def smooth_flow_pressure(x, t, mean_velocity, wave_vector, pressure,
@@ -147,7 +147,6 @@ def alfven_divergence_cleaning_field(x, t, wavenumber, pressure,
 
 # End functions for testing AlfvenWave.cpp
 
-
 # Functions for testing BondiMichelMHD.cpp
 
 
@@ -176,9 +175,8 @@ def bondi_michel_bernoulli_constant_squared_minus_one(n_s_c_2, u_c_2, g):
       (n_s_c_2 / (g - 1.0) * (2.0 + n_s_c_2 / (g - 1.0)))
 
 
-def bondi_michel_bernoulli_equation_lhs_squared_minus_one(rho, r, g, k,
-                                                          m_dot_over_four_pi,
-                                                          mass):
+def bondi_michel_bernoulli_equation_lhs_squared_minus_one(
+    rho, r, g, k, m_dot_over_four_pi, mass):
     u = m_dot_over_four_pi / (r**2 * rho)
     g_minus_one = g - 1.0
     #polytropic_index times newtonian_sound_speed_squared:
@@ -188,11 +186,13 @@ def bondi_michel_bernoulli_equation_lhs_squared_minus_one(rho, r, g, k,
     h2 = h2_minus_one + 1.0
     return h2_minus_one + h2 * (-2.0 * mass / r + u**2)
 
+
 def bondi_michel_bernoulli_root_function(rho, r, g, k, m_dot_over_four_pi,
                                          n_s_c_2, u_c_2, mass):
     return bondi_michel_bernoulli_equation_lhs_squared_minus_one(
         rho, r, g, k, m_dot_over_four_pi, mass) \
         - bondi_michel_bernoulli_constant_squared_minus_one(n_s_c_2, u_c_2, g)
+
 
 def bondi_michel_sound_speed_at_infinity_squared(g, c_s_c_2):
     g_minus_one = g - 1.0
@@ -200,8 +200,10 @@ def bondi_michel_sound_speed_at_infinity_squared(g, c_s_c_2):
 
 
 def bondi_michel_rest_mass_density_at_infinity(g, rho_c, c_s_inf_2, c_s_c_2):
-    return rho_c * pow(c_s_inf_2 / (c_s_c_2 * np.sqrt(1.0 + 3.0 * c_s_c_2)),
-                       1.0 / (g - 1.0))
+    return rho_c * pow(c_s_inf_2 /
+                       (c_s_c_2 * np.sqrt(1.0 + 3.0 * c_s_c_2)), 1.0 /
+                       (g - 1.0))
+
 
 def bondi_michel_rest_mass_density_at_horizon(g, rho_c, u_c_2):
     return 0.0625 * rho_c * pow(u_c_2, -1.5)
@@ -217,7 +219,7 @@ def bondi_michel_shift(mass, radius):
 
 def bondi_michel_fluid_four_velocity_u_t(mass, radius, abs_u_r):
     if radius == 2.0 * mass:
-       return abs_u_r + 0.5 / abs_u_r
+        return abs_u_r + 0.5 / abs_u_r
     return (-2.0 * mass * abs_u_r + radius * \
            np.sqrt(abs_u_r**2 + 1.0 - 2.0 * mass / radius)) / \
            (radius - 2.0 * mass)
@@ -235,14 +237,12 @@ def bondi_michel_intermediate_variables(mass, sonic_radius, sonic_density,
         sonic_radius, sonic_density, u_c_2)
     h_inf_2 = bondi_michel_bernoulli_constant_squared_minus_one(
         n_s_c_2, u_c_2, adiabatic_exponent) + 1.0
-    c_s_inf_2 = bondi_michel_sound_speed_at_infinity_squared(adiabatic_exponent,
-                                                             c_s_c_2)
-    rho_inf = bondi_michel_rest_mass_density_at_infinity(adiabatic_exponent,
-                                                         sonic_density,
-                                                         c_s_inf_2, c_s_c_2)
-    rho_horizon = bondi_michel_rest_mass_density_at_horizon(adiabatic_exponent,
-                                                            sonic_density,
-                                                            u_c_2)
+    c_s_inf_2 = bondi_michel_sound_speed_at_infinity_squared(
+        adiabatic_exponent, c_s_c_2)
+    rho_inf = bondi_michel_rest_mass_density_at_infinity(
+        adiabatic_exponent, sonic_density, c_s_inf_2, c_s_c_2)
+    rho_horizon = bondi_michel_rest_mass_density_at_horizon(
+        adiabatic_exponent, sonic_density, u_c_2)
     return {"sonic_fluid_speed_squared": u_c_2, \
             "sonic_sound_speed_squared": c_s_c_2, \
             "sonic_newtonian_sound_speed_squared": n_s_c_2, \
@@ -261,13 +261,13 @@ def bondi_michel_rest_mass_density(x, mass, sonic_radius, sonic_density,
                                                     adiabatic_exponent)
     radius = np.sqrt(x[0]**2 + x[1]**2 + x[2]**2)
     if radius < sonic_radius:
-      upper_bound = variables["mass_accretion_rate_over_four_pi"] * \
-        np.sqrt(2.0 / (mass * radius**3))
-      lower_bound = variables["rest_mass_density_at_infinity"]
+        upper_bound = variables["mass_accretion_rate_over_four_pi"] * \
+          np.sqrt(2.0 / (mass * radius**3))
+        lower_bound = variables["rest_mass_density_at_infinity"]
     if radius >= sonic_radius:
-      upper_bound = sonic_density
-      lower_bound = variables["mass_accretion_rate_over_four_pi"] * \
-        np.sqrt(2.0 / (mass * radius**3))
+        upper_bound = sonic_density
+        lower_bound = variables["mass_accretion_rate_over_four_pi"] * \
+          np.sqrt(2.0 / (mass * radius**3))
     return opt.brentq( \
       bondi_michel_bernoulli_root_function, \
       lower_bound, upper_bound, xtol = 1.e-15, rtol = 1.e-15, args = ( \
@@ -278,6 +278,7 @@ def bondi_michel_rest_mass_density(x, mass, sonic_radius, sonic_density,
         variables["sonic_newtonian_sound_speed_squared"], \
         variables["sonic_fluid_speed_squared"], \
         mass))
+
 
 def bondi_michel_lorentz_factor(x, mass, sonic_radius, sonic_density,
                                 adiabatic_exponent, magnetic_field):
@@ -344,8 +345,9 @@ def bondi_michel_pressure(x, mass, sonic_radius, sonic_density,
         pow(rest_mass_density, adiabatic_exponent)
 
 
-def bondi_michel_divergence_cleaning_field(x, mass, sonic_radius, sonic_density,
-                                           adiabatic_exponent, magnetic_field):
+def bondi_michel_divergence_cleaning_field(x, mass, sonic_radius,
+                                           sonic_density, adiabatic_exponent,
+                                           magnetic_field):
     return 0.0
 
 

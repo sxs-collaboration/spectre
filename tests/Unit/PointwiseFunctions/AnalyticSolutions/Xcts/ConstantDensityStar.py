@@ -21,7 +21,7 @@ def sobolov(r, alpha, radius):
 
 def conformal_factor(x, density, radius):
     alpha = compute_alpha(density, radius)
-    C = (3. / (2. * np.pi * density))**(1./4.)
+    C = (3. / (2. * np.pi * density))**(1. / 4.)
     r = np.linalg.norm(x)
     if r <= radius:
         return C * sobolov(r, alpha, radius)

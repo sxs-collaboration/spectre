@@ -4,8 +4,8 @@
 import numpy as np
 
 
-def displacement(
-        x, length, height, bending_moment, bulk_modulus, shear_modulus):
+def displacement(x, length, height, bending_moment, bulk_modulus,
+                 shear_modulus):
     youngs_modulus = 9. * bulk_modulus * shear_modulus / \
         (3. * bulk_modulus + shear_modulus)
     poisson_ratio = (3. * bulk_modulus - 2. * shear_modulus) / \

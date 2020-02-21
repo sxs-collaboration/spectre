@@ -27,8 +27,9 @@ class TestMatrix(unittest.TestCase):
         M[0, 1] = 2
         M[1, 0] = 3
         M[1, 1] = 4
-        self.assertEqual(str(M),
-        '(            1            2 )\n(            3            4 )\n')
+        self.assertEqual(
+            str(M),
+            '(            1            2 )\n(            3            4 )\n')
 
     def test_bounds_check(self):
         a = Matrix(2, 2)

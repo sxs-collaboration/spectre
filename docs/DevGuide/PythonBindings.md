@@ -131,6 +131,9 @@ Python code that does not use bindings must also be tested. You can register the
 test file using the `spectre_add_python_test` CMake function with the same
 signature as shown above.
 
+Please note that the tests must be formatted according to the `.style.yapf` file
+in the root of the repository.
+
 ## Using The Bindings
 
 See \ref spectre_using_python "Using SpECTRE's Python"

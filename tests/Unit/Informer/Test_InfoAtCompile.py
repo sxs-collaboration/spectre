@@ -11,6 +11,7 @@ class TestInformer(unittest.TestCase):
             str(Info.spectre_minor_version()) + "." + \
             str(Info.spectre_patch_version())
         self.assertEqual(num_ver, Info.spectre_version())
+
     # The unit test path is unpredictable, but the last 12 characters must be
     # '/tests/Unit/'
     def test_unit_test_path(self):

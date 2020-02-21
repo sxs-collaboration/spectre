@@ -62,5 +62,5 @@ def psi_0(dy_bondi_j, dy_dy_dy_bondi_j, boundary_r):
 
 
 def strain(dy_bondi_j, eth_eth_retarded_time, boundary_r):
-    return -2.0 * np.conj(boundary_r * dy_bondi_j) + np.conj(
-        eth_eth_retarded_time)
+    return -2.0 * np.conj(
+        boundary_r * dy_bondi_j) + np.conj(eth_eth_retarded_time)

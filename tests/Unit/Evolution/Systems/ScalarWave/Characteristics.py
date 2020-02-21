@@ -20,6 +20,7 @@ def char_speed_vplus(unit_normal):
 def char_speed_vminus(unit_normal):
     return -1.
 
+
 # End test functions for characteristic speeds
 
 
@@ -46,7 +47,9 @@ def char_field_vminus(gamma2, psi, pi, phi, normal_one_form):
     phi_dot_normal = np.einsum('i,i->', normal_vector, phi)
     return pi - phi_dot_normal - (gamma2 * psi)
 
+
 # End test functions for characteristic fields
+
 
 # Test functions for evolved fields
 def evol_field_psi(gamma2, vpsi, vzero, vplus, vminus, normal_one_form):
@@ -59,5 +62,6 @@ def evol_field_pi(gamma2, vpsi, vzero, vplus, vminus, normal_one_form):
 
 def evol_field_phi(gamma2, vpsi, vzero, vplus, vminus, normal_one_form):
     return 0.5 * (vplus - vminus) * normal_one_form + vzero
+
 
 # End test functions for evolved fields

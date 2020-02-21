@@ -34,10 +34,9 @@ def spatial_velocity(x, inner_radius, outer_radius, inner_density,
 def specific_internal_energy(x, inner_radius, outer_radius, inner_density,
                              outer_density, inner_pressure, outer_pressure,
                              magnetic_field, adiabatic_index):
-    return (1.0 / (adiabatic_index - 1.0) *
-            pressure(x, inner_radius, outer_radius, inner_density,
-                     outer_density, inner_pressure, outer_pressure,
-                     magnetic_field, adiabatic_index) /
+    return (1.0 / (adiabatic_index - 1.0) * pressure(
+        x, inner_radius, outer_radius, inner_density, outer_density,
+        inner_pressure, outer_pressure, magnetic_field, adiabatic_index) /
             rest_mass_density(x, inner_radius, outer_radius, inner_density,
                               outer_density, inner_pressure, outer_pressure,
                               magnetic_field, adiabatic_index))
@@ -58,11 +57,9 @@ def lorentz_factor(x, inner_radius, outer_radius, inner_density, outer_density,
 def specific_enthalpy(x, inner_radius, outer_radius, inner_density,
                       outer_density, inner_pressure, outer_pressure,
                       magnetic_field, adiabatic_index):
-    return (1.0 + adiabatic_index *
-            specific_internal_energy(x, inner_radius, outer_radius,
-                                     inner_density, outer_density,
-                                     inner_pressure, outer_pressure,
-                                     magnetic_field, adiabatic_index))
+    return (1.0 + adiabatic_index * specific_internal_energy(
+        x, inner_radius, outer_radius, inner_density, outer_density,
+        inner_pressure, outer_pressure, magnetic_field, adiabatic_index))
 
 
 def magnetic_field(x, inner_radius, outer_radius, inner_density, outer_density,

@@ -63,9 +63,10 @@ def derivatives_of_spacetime_metric(lapse, dt_lapse, deriv_lapse, shift,
     # Spatial derivatives
     d4_psi[0, :, :] = dt_spacetime_metric(lapse, dt_lapse, shift, dt_shift,
                                           spatial_metric, dt_spatial_metric)
-    d4_psi[1:, :, :] = spatial_deriv_spacetime_metric(
-        lapse, deriv_lapse, shift, deriv_shift, spatial_metric,
-        deriv_spatial_metric)
+    d4_psi[1:, :, :] = spatial_deriv_spacetime_metric(lapse, deriv_lapse,
+                                                      shift, deriv_shift,
+                                                      spatial_metric,
+                                                      deriv_spatial_metric)
     return d4_psi
 
 

@@ -12,8 +12,8 @@ def deriv_of_perturbation_profile(z):
     return np.cos(z)
 
 
-def mass_density(x, t, adiabatic_index, center, mean_velocity,
-                 strength, perturbation_amplitude):
+def mass_density(x, t, adiabatic_index, center, mean_velocity, strength,
+                 perturbation_amplitude):
     x_tilde = x - center - t * np.array(mean_velocity)
     temp = (1.0 - strength * strength * (adiabatic_index - 1.0) *
             np.exp(1.0 - np.dot(x_tilde[:2], x_tilde[:2])) /
@@ -21,8 +21,8 @@ def mass_density(x, t, adiabatic_index, center, mean_velocity,
     return np.power(temp, 1.0 / (adiabatic_index - 1.0))
 
 
-def velocity(x, t, adiabatic_index, center, mean_velocity,
-             strength, perturbation_amplitude):
+def velocity(x, t, adiabatic_index, center, mean_velocity, strength,
+             perturbation_amplitude):
     x_tilde = x - center - t * np.array(mean_velocity)
     temp = (0.5 * strength *
             np.exp(0.5 * (1.0 - np.dot(x_tilde[:2], x_tilde[:2]))) / np.pi)
@@ -36,15 +36,14 @@ def velocity(x, t, adiabatic_index, center, mean_velocity,
 
 def specific_internal_energy(x, t, adiabatic_index, center, mean_velocity,
                              strength, perturbation_amplitude):
-    return (np.power(mass_density(x, t, adiabatic_index, center, mean_velocity,
-                                  strength, perturbation_amplitude),
-                     adiabatic_index - 1.0) / (adiabatic_index - 1.0))
+    return (np.power(
+        mass_density(x, t, adiabatic_index, center, mean_velocity, strength,
+                     perturbation_amplitude), adiabatic_index - 1.0) /
+            (adiabatic_index - 1.0))
 
 
-def pressure(x, t, adiabatic_index, center, mean_velocity,
-             strength, perturbation_amplitude):
-    return np.power(mass_density(x, t, adiabatic_index, center, mean_velocity,
-                                 strength, perturbation_amplitude),
-                    adiabatic_index)
-
-
+def pressure(x, t, adiabatic_index, center, mean_velocity, strength,
+             perturbation_amplitude):
+    return np.power(
+        mass_density(x, t, adiabatic_index, center, mean_velocity, strength,
+                     perturbation_amplitude), adiabatic_index)
