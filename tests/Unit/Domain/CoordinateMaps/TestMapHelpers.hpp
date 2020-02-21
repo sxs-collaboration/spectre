@@ -80,6 +80,7 @@ void check_if_map_is_identity(const Map& map) noexcept {
   CHECK(map.is_identity());
 }
 
+// @{
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief Given a Map `map`, checks that the jacobian gives expected results
@@ -101,6 +102,34 @@ void test_jacobian(const Map& map,
   }
 }
 
+template <typename Map>
+void test_jacobian(
+    const Map& map, const std::array<double, Map::dim>& test_point,
+    const double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) noexcept {
+  const auto compute_map_point =
+      [&map, time,
+       &functions_of_time](const std::array<double, Map::dim>& point) noexcept {
+        return map(point, time, functions_of_time);
+      };
+  // Our default approx value is too stringent for this test
+  Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
+  const double dx = 1e-4;
+  const auto jacobian = map.jacobian(test_point, time, functions_of_time);
+  for (size_t i = 0; i < Map::dim; ++i) {
+    const auto numerical_deriv_i =
+        numerical_derivative(compute_map_point, test_point, i, dx);
+    for (size_t j = 0; j < Map::dim; ++j) {
+      INFO("i: " << i << " j: " << j);
+      CHECK(jacobian.get(j, i) == local_approx(gsl::at(numerical_deriv_i, j)));
+    }
+  }
+}
+// @}
+
+// @{
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief Given a Map `map`, checks that the inverse jacobian and jacobian
@@ -132,6 +161,69 @@ void test_inv_jacobian(
             approx(i == j ? 1. : 0.));
     }
   }
+}
+
+template <typename Map>
+void test_inv_jacobian(
+    const Map& map, const std::array<double, Map::dim>& test_point,
+    const double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) {
+  const auto jacobian = map.jacobian(test_point, time, functions_of_time);
+  const auto inv_jacobian =
+      map.inv_jacobian(test_point, time, functions_of_time);
+
+  const auto expected_identity = [&jacobian, &inv_jacobian]() {
+    std::array<std::array<double, Map::dim>, Map::dim> identity{};
+    for (size_t i = 0; i < Map::dim; ++i) {
+      for (size_t j = 0; j < Map::dim; ++j) {
+        gsl::at(gsl::at(identity, i), j) = 0.;
+        for (size_t k = 0; k < Map::dim; ++k) {
+          gsl::at(gsl::at(identity, i), j) +=
+              jacobian.get(i, k) * inv_jacobian.get(k, j);
+        }
+      }
+    }
+    return identity;
+  }();
+
+  for (size_t i = 0; i < Map::dim; ++i) {
+    for (size_t j = 0; j < Map::dim; ++j) {
+      CHECK(gsl::at(gsl::at(expected_identity, i), j) ==
+            approx(i == j ? 1. : 0.));
+    }
+  }
+}
+// @}
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Given a Map `map`, checks that the frame velocity matches a
+ * sixth-order finite difference approximation.
+ */
+template <typename Map>
+void test_frame_velocity(
+    const Map& map, const std::array<double, Map::dim>& test_point,
+    const double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) {
+  const auto compute_map_point =
+      [&map, &test_point,
+       &functions_of_time](const std::array<double, 1>& time_point) noexcept {
+        return map(test_point, time_point[0], functions_of_time);
+      };
+  // Our default approx value is too stringent for this test
+  Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
+  const double dt = 1e-4;
+
+  const auto frame_velocity =
+      map.frame_velocity(test_point, time, functions_of_time);
+  const auto numerical_frame_velocity = numerical_derivative(
+      compute_map_point, std::array<double, 1>{{time}}, 0, dt);
+  CHECK_ITERABLE_CUSTOM_APPROX(frame_velocity, numerical_frame_velocity,
+                               local_approx);
 }
 
 /*!
