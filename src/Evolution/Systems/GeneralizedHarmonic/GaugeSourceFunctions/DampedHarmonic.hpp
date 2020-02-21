@@ -96,8 +96,8 @@ namespace GeneralizedHarmonic {
  *   - The spatial weight function is specified completely by \f$\{\f$sigma\_r
  * \f$\}\f$.
  *
- * Note on comparison with SpEC:
- *   - To reproduce the gauge roll-on of SpEC, use
+ * \note On comparison with SpEC:
+ *   - To reproduce the gauge roll-on of SpEC, toggle
  *          `use_spec_style_rollon = true`
  *          (here, and when calling spacetime_deriv_damped_harmonic_h())
  *   - This will replace: \f$\mu_X \rightarrow
@@ -124,9 +124,7 @@ void damped_harmonic_h(
     double sigma_t_S,
     // weight function
     double sigma_r,
-    // toggle the switch below to change
-    // H = (1 - R0) H0 + mu1 T1 + mu2 T2 + muS TS, to
-    // H = (1 - R0) H0 + R0 (mu1 T1 + mu2 T2 + muS TS)
+    // toggle the switch below to change to spec-style roll-on
     bool use_spec_style_rollon = false) noexcept;
 
 /*!
@@ -241,8 +239,8 @@ struct DampedHarmonicHCompute : Tags::GaugeH<SpatialDim, Frame>,
  *                  +& A_S \mathrm{log}(\sqrt{g} / N)^{e_S} \partial_a [R_S(t)
  * W(x^i)]. \f}
  *
- * Note on comparison with SpEC:
- *   - To reproduce the gauge roll-on of SpEC, use
+ * \note On comparison with SpEC:
+ *   - To reproduce the gauge roll-on of SpEC, toggle
  *          `use_spec_style_rollon = true`
  *          (here, and when calling damped_harmonic_h())
  *   - This will replace: \f$\mu_X \rightarrow
@@ -278,9 +276,7 @@ void spacetime_deriv_damped_harmonic_h(
     double sigma_t_S,
     // weight function
     double sigma_r,
-    // toggle the switch below to change
-    // H = (1 - R0) H0 + mu1 T1 + mu2 T2 + muS TS, to
-    // H = (1 - R0) H0 + R0 (mu1 T1 + mu2 T2 + muS TS)
+    // toggle the switch below to change to spec-style roll-on
     bool use_spec_style_rollon = false) noexcept;
 
 /*!
