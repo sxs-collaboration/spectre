@@ -23,8 +23,8 @@
 #include "Domain/Element.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/Mesh.hpp"
+#include "Domain/OptionTags.hpp"
 #include "Domain/Side.hpp"
-#include "Options/Options.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
@@ -36,17 +36,6 @@
 /// \cond
 class DataVector;
 /// \endcond
-
-namespace OptionTags {
-/// \ingroup OptionTagsGroup
-/// \ingroup ComputationalDomainGroup
-/// The input file tag for the DomainCreator to use
-template <size_t Dim>
-struct DomainCreator {
-  using type = std::unique_ptr<::DomainCreator<Dim>>;
-  static constexpr OptionString help = {"The domain to create initially"};
-};
-}  // namespace OptionTags
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
