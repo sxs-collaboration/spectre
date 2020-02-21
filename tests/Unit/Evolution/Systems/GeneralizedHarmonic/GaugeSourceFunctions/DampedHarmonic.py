@@ -29,14 +29,18 @@ def spacetime_deriv_weight_function(coords, r_max):
 def roll_on_function(time, t_start, sigma_t):
     if time < t_start:
         return 0.
-    return 1. - np.exp(- ((time - t_start) / sigma_t)**4)
+    x = 1. - np.exp(- ((time - t_start) / sigma_t)**4)
+    if abs(x) > 1.e-14: return x
+    return 0
 
 
 def time_deriv_roll_on_function(time, t_start, sigma_t):
     if time < t_start:
         return 0.
     tnrm = (time - t_start) / sigma_t
-    return np.exp(- tnrm**4) * 4 * tnrm**3 / sigma_t
+    x = np.exp(- tnrm**4) * 4 * tnrm**3 / sigma_t
+    if abs(x) > 1.e-14: return x
+    return 0
 
 
 def log_fac(lapse, sqrt_det_spatial_metric, exponent):
