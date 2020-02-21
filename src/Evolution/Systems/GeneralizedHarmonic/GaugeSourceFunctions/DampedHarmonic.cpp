@@ -391,10 +391,10 @@ void damped_harmonic_h(
   const auto roll_on_h_init = [&time, &t_start_h_init, &sigma_t_h_init]() {
     auto x = DampedHarmonicGauge_detail::roll_on_function(time, t_start_h_init,
                                                           sigma_t_h_init);
-    if (abs(x) < std::numeric_limits<double>::epsilon()) {
-      return 0.;
-    } else {
+    if (UNLIKELY(abs(1. - x) > 10. * std::numeric_limits<double>::epsilon())) {
       return x;
+    } else {
+      return 0.;
     }
   }();
 
@@ -562,10 +562,10 @@ void spacetime_deriv_damped_harmonic_h(
   const auto roll_on_h_init = [&time, &t_start_h_init, &sigma_t_h_init]() {
     auto x = DampedHarmonicGauge_detail::roll_on_function(time, t_start_h_init,
                                                           sigma_t_h_init);
-    if (abs(x) < std::numeric_limits<double>::epsilon()) {
-      return 0.;
-    } else {
+    if (UNLIKELY(abs(1. - x) > 10. * std::numeric_limits<double>::epsilon())) {
       return x;
+    } else {
+      return 0.;
     }
   }();
   const auto roll_on_L1 = DampedHarmonicGauge_detail::roll_on_function(
@@ -594,10 +594,10 @@ void spacetime_deriv_damped_harmonic_h(
   const auto d0_roll_on_h_init = [&time, &t_start_h_init, &sigma_t_h_init]() {
     auto x = DampedHarmonicGauge_detail::time_deriv_of_roll_on_function(
         time, t_start_h_init, sigma_t_h_init);
-    if (abs(x) < std::numeric_limits<double>::epsilon()) {
-      return 0.;
-    } else {
+    if (UNLIKELY(abs(1. - x) > 10. * std::numeric_limits<double>::epsilon())) {
       return x;
+    } else {
+      return 0.;
     }
   }();
   const auto d0_roll_on_L1 =
