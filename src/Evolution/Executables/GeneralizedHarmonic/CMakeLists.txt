@@ -42,3 +42,14 @@ target_link_libraries(
   PRIVATE
   GeneralRelativitySolutions
   )
+
+add_generalized_harmonic_executable(
+  KerrSchildNumericInitialData
+  evolution::NumericInitialData<GeneralizedHarmonic::System<3>>
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>
+)
+target_link_libraries(
+  EvolveKerrSchildNumericInitialData
+  PRIVATE
+  GeneralRelativitySolutions
+  )

@@ -7,6 +7,8 @@
 
 /// \cond
 namespace GeneralizedHarmonic {
+template <size_t Dim>
+struct System;
 namespace Solutions {
 template <typename GrSolution>
 struct WrappedGr;
@@ -17,6 +19,10 @@ namespace Solutions {
 struct KerrSchild;
 }  // namespace Solutions
 }  // namespace gr
+namespace evolution {
+template <typename System>
+struct NumericInitialData;
+}  // namespace evolution
 
 template <typename InitialData, typename BoundaryConditions>
 struct EvolutionMetavars;
