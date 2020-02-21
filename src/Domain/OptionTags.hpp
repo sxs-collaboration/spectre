@@ -13,6 +13,7 @@ template <size_t Dim>
 class DomainCreator;
 /// \endcond
 
+namespace domain {
 namespace OptionTags {
 /// \ingroup OptionTagsGroup
 /// \ingroup ComputationalDomainGroup
@@ -23,3 +24,4 @@ struct DomainCreator {
   static constexpr OptionString help = {"The domain to create initially"};
 };
 }  // namespace OptionTags
+}  // namespace domain

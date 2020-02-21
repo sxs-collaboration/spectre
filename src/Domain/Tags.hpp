@@ -44,7 +44,7 @@ namespace Tags {
 template <size_t VolumeDim>
 struct Domain : db::SimpleTag {
   using type = ::Domain<VolumeDim>;
-  using option_tags = tmpl::list<::OptionTags::DomainCreator<VolumeDim>>;
+  using option_tags = tmpl::list<domain::OptionTags::DomainCreator<VolumeDim>>;
 
   template <typename Metavariables>
   static ::Domain<VolumeDim> create_from_options(
@@ -61,7 +61,7 @@ struct Domain : db::SimpleTag {
 template <size_t Dim>
 struct InitialExtents : db::SimpleTag {
   using type = std::vector<std::array<size_t, Dim>>;
-  using option_tags = tmpl::list<::OptionTags::DomainCreator<Dim>>;
+  using option_tags = tmpl::list<domain::OptionTags::DomainCreator<Dim>>;
 
   template <typename Metavariables>
   static std::vector<std::array<size_t, Dim>> create_from_options(
@@ -77,7 +77,7 @@ struct InitialExtents : db::SimpleTag {
 template <size_t Dim>
 struct InitialRefinementLevels : db::SimpleTag {
   using type = std::vector<std::array<size_t, Dim>>;
-  using option_tags = tmpl::list<::OptionTags::DomainCreator<Dim>>;
+  using option_tags = tmpl::list<domain::OptionTags::DomainCreator<Dim>>;
 
   template <typename Metavariables>
   static std::vector<std::array<size_t, Dim>> create_from_options(
