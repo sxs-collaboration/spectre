@@ -350,7 +350,14 @@ struct RegisterThreadedAction<ParallelComponent, Action> : RegistrationHelper {
 
 namespace detail {
 template <class T>
-struct get_value_type;
+struct get_value_type {
+  using type = T;
+};
+
+template <class T>
+struct get_value_type<std::vector<T>> {
+  using type = T;
+};
 
 template <class Key, class Mapped, class Hash, class KeyEqual, class Allocator>
 struct get_value_type<
