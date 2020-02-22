@@ -131,7 +131,7 @@ namespace Actions {
 ///
 /// Uses:
 /// - DataBox:
-///   - `::Tags::Domain<3>`
+///   - `domain::Tags::Domain<3>`
 ///   - `::ah::Tags::FastFlow`
 ///   - `StrahlkorperTags::CartesianCoords<Frame>`
 ///   - `::Tags::Variables<typename

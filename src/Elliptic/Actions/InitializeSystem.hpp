@@ -9,8 +9,10 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Mesh.hpp"
+#include "Domain/Tags.hpp"
 #include "Elliptic/FirstOrderComputeTags.hpp"
 #include "Elliptic/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
@@ -89,8 +91,9 @@ struct InitializeSystem {
                            linear_operand_tag>;
     using fluxes_tag = db::add_tag_prefix<::Tags::Flux, linear_operand_tag,
                                           tmpl::size_t<Dim>, Frame::Inertial>;
-    using inv_jacobian_tag = ::Tags::InverseJacobianCompute<
-        ::Tags::ElementMap<Dim>, ::Tags::Coordinates<Dim, Frame::Logical>>;
+    using inv_jacobian_tag = domain::Tags::InverseJacobianCompute<
+        domain::Tags::ElementMap<Dim>,
+        domain::Tags::Coordinates<Dim, Frame::Logical>>;
 
     using fluxes_compute_tag = elliptic::Tags::FirstOrderFluxesCompute<system>;
     using sources_compute_tag =
@@ -104,10 +107,10 @@ struct InitializeSystem {
         db::AddComputeTags<fluxes_compute_tag, sources_compute_tag,
                            ::Tags::DivCompute<fluxes_tag, inv_jacobian_tag>>;
 
-    const auto& mesh = db::get<::Tags::Mesh<Dim>>(box);
+    const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
     const size_t num_grid_points = mesh.number_of_grid_points();
     const auto& inertial_coords =
-        get<::Tags::Coordinates<Dim, Frame::Inertial>>(box);
+        get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
     // Set initial data to zero. Non-zero initial data would require us to also
     // compute the linear operator applied to the the initial data.

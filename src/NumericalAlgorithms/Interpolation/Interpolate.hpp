@@ -20,8 +20,14 @@
 class TimeStepId;
 namespace Tags {
 struct TimeStepId;
+}  // namespace Tags
+namespace domain {
+namespace Tags {
 template <size_t VolumeDim>
 struct Mesh;
+}  // namespace Tags
+}  // namespace domain
+namespace Tags {
 template <typename TagsList>
 struct Variables;
 }  // namespace Tags
@@ -71,7 +77,7 @@ class Interpolate<VolumeDim, tmpl::list<Tensors...>, EventRegistrars>
   Interpolate() = default;
 
   using argument_tags =
-      tmpl::list<::Tags::TimeStepId, ::Tags::Mesh<VolumeDim>, Tensors...>;
+      tmpl::list<::Tags::TimeStepId, domain::Tags::Mesh<VolumeDim>, Tensors...>;
 
   template <typename Metavariables, typename ParallelComponent>
   void operator()(const TimeStepId& time_id, const Mesh<VolumeDim>& mesh,

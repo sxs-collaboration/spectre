@@ -162,7 +162,7 @@ struct MockInterpolationTarget {
       Parallel::get_const_global_cache_tags_from_actions<tmpl::list<
           typename InterpolationTargetTag::compute_target_points,
           typename InterpolationTargetTag::post_interpolation_callback>>,
-      tmpl::list<::Tags::Domain<Metavariables::volume_dim>>>>;
+      tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -299,7 +299,7 @@ SPECTRE_TEST_CASE(
       domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
   tuples::TaggedTuple<observers::Tags::ReductionFileName,
                       ::intrp::Tags::KerrHorizon<metavars::SurfaceA>,
-                      ::Tags::Domain<3>,
+                      domain::Tags::Domain<3>,
                       ::intrp::Tags::KerrHorizon<metavars::SurfaceB>,
                       ::intrp::Tags::KerrHorizon<metavars::SurfaceC>>
       tuple_of_opts{h5_file_prefix, kerr_horizon_opts_A,

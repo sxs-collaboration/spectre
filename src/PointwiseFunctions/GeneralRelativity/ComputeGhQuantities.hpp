@@ -29,10 +29,12 @@ namespace gsl {
 template <class T>
 class not_null;
 }  // namespace gsl
+namespace domain {
 namespace Tags {
 template <size_t Dim, typename Frame>
 struct Coordinates;
 }  // namespace Tags
+}  // namespace domain
 class DataVector;
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
@@ -588,7 +590,7 @@ struct TimeDerivShiftCompute
  *        the generalized harmonic spatial derivative variable.
  *
  * \details See `deriv_spatial_metric()`. Can be retrieved using
- * `gr::Tags::SpatialMetric` wrapped in \ref deriv "Tags::deriv".
+ * `gr::Tags::SpatialMetric` wrapped in `::Tags::deriv`.
  */
 template <size_t SpatialDim, typename Frame>
 struct DerivSpatialMetricCompute
@@ -609,7 +611,7 @@ struct DerivSpatialMetricCompute
  * generalized harmonic variables and spacetime unit normal one-form.
  *
  * \details See `spatial_deriv_of_lapse()`. Can be retrieved using
- * `gr::Tags::Lapse` wrapped in \ref deriv "Tags::deriv".
+ * `gr::Tags::Lapse` wrapped in `::Tags::deriv`.
  */
 template <size_t SpatialDim, typename Frame>
 struct DerivLapseCompute : ::Tags::deriv<gr::Tags::Lapse<DataVector>,
@@ -632,7 +634,7 @@ struct DerivLapseCompute : ::Tags::deriv<gr::Tags::Lapse<DataVector>,
  *        generalized harmonic and geometric variables
  *
  * \details See `spatial_deriv_of_shift()`. Can be retrieved using
- * `gr::Tags::Shift` wrapped in \ref deriv "Tags::deriv".
+ * `gr::Tags::Shift` wrapped in `::Tags::deriv`.
  */
 template <size_t SpatialDim, typename Frame>
 struct DerivShiftCompute
@@ -763,7 +765,8 @@ struct TraceExtrinsicCurvatureCompute
  */
 template <size_t SpatialDim, typename Frame>
 struct ConstraintGamma0Compute : ConstraintGamma0, db::ComputeTag {
-  using argument_tags = tmpl::list<::Tags::Coordinates<SpatialDim, Frame>>;
+  using argument_tags =
+      tmpl::list<domain::Tags::Coordinates<SpatialDim, Frame>>;
   static auto function(
       const tnsr::I<DataVector, SpatialDim, Frame>& coords) noexcept {
     const DataVector r_squared = get(dot_product(coords, coords));
@@ -776,7 +779,8 @@ struct ConstraintGamma0Compute : ConstraintGamma0, db::ComputeTag {
 /// \copydoc ConstraintGamma0Compute
 template <size_t SpatialDim, typename Frame>
 struct ConstraintGamma1Compute : ConstraintGamma1, db::ComputeTag {
-  using argument_tags = tmpl::list<::Tags::Coordinates<SpatialDim, Frame>>;
+  using argument_tags =
+      tmpl::list<domain::Tags::Coordinates<SpatialDim, Frame>>;
   static constexpr auto function(
       const tnsr::I<DataVector, SpatialDim, Frame>& coords) noexcept {
     return make_with_value<type>(coords, -1.);
@@ -786,7 +790,8 @@ struct ConstraintGamma1Compute : ConstraintGamma1, db::ComputeTag {
 /// \copydoc ConstraintGamma0Compute
 template <size_t SpatialDim, typename Frame>
 struct ConstraintGamma2Compute : ConstraintGamma2, db::ComputeTag {
-  using argument_tags = tmpl::list<::Tags::Coordinates<SpatialDim, Frame>>;
+  using argument_tags =
+      tmpl::list<domain::Tags::Coordinates<SpatialDim, Frame>>;
   static auto function(
       const tnsr::I<DataVector, SpatialDim, Frame>& coords) noexcept {
     const DataVector r_squared = get(dot_product(coords, coords));

@@ -29,7 +29,7 @@ DirectionMap<VolumeDim, PackagedData> compute_packaged_data(
     const DirectionsTag /*meta*/, const Metavariables /*meta*/) noexcept {
   return interface_apply<
       DirectionsTag,
-      tmpl::flatten<tmpl::list<::Tags::Mesh<VolumeDim - 1>,
+      tmpl::flatten<tmpl::list<domain::Tags::Mesh<VolumeDim - 1>,
                                typename NumericalFlux::argument_tags>>,
       get_volume_tags<NumericalFlux>>(
       [&normal_dot_numerical_flux_computer](
@@ -52,14 +52,15 @@ DirectionMap<VolumeDim, LocalData> compute_local_mortar_data(
     const NumericalFlux& normal_dot_numerical_flux_computer,
     const DirectionsTag /*meta*/, const Metavariables /*meta*/) noexcept {
   using normal_dot_fluxes_tag =
-      Tags::Interface<DirectionsTag,
-                      typename FluxCommTypes::normal_dot_fluxes_tag>;
+      domain::Tags::Interface<DirectionsTag,
+                              typename FluxCommTypes::normal_dot_fluxes_tag>;
 
   const auto& face_meshes =
-      db::get<Tags::Interface<DirectionsTag, Tags::Mesh<VolumeDim - 1>>>(box);
-  const auto& magnitude_of_face_normals = db::get<Tags::Interface<
-      DirectionsTag, Tags::Magnitude<Tags::UnnormalizedFaceNormal<VolumeDim>>>>(
-      box);
+      db::get<domain::Tags::Interface<DirectionsTag,
+                                      domain::Tags::Mesh<VolumeDim - 1>>>(box);
+  const auto& magnitude_of_face_normals = db::get<domain::Tags::Interface<
+      DirectionsTag,
+      Tags::Magnitude<domain::Tags::UnnormalizedFaceNormal<VolumeDim>>>>(box);
   const auto& normal_dot_fluxes = db::get<normal_dot_fluxes_tag>(box);
 
   const auto packaged_data =

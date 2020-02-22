@@ -90,7 +90,7 @@ struct VortexPerturbation {
       Dim == 3,
       tmpl::list<::Tags::AnalyticSolution<
                      NewtonianEuler::Solutions::IsentropicVortex<Dim>>,
-                 ::Tags::Coordinates<3, Frame::Inertial>, ::Tags::Time>,
+                 domain::Tags::Coordinates<3, Frame::Inertial>, ::Tags::Time>,
       tmpl::list<>>;
 
   // Overload required for 2d simulations, where no variable is sourced.

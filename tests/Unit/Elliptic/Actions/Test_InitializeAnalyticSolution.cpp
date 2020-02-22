@@ -54,7 +54,7 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
-              tmpl::list<::Tags::Coordinates<Dim, Frame::Inertial>>>>>,
+              tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>>>>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,

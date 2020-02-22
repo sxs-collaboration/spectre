@@ -42,7 +42,7 @@ void send_points_to_interpolator(
     db::DataBox<DbTags>& box, Parallel::ConstGlobalCache<Metavariables>& cache,
     const tnsr::I<DataVector, VolumeDim, Frame>& target_points,
     const typename Metavariables::temporal_id::type& temporal_id) noexcept {
-  const auto& domain = db::get<::Tags::Domain<VolumeDim>>(box);
+  const auto& domain = db::get<domain::Tags::Domain<VolumeDim>>(box);
   auto coords = block_logical_coordinates(domain, target_points);
 
   db::mutate<

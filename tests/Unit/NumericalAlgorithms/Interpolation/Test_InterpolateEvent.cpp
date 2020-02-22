@@ -162,7 +162,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   std::iota(vars.data(), vars.data() + vars.size(), 1.0);
 
   const auto box = db::create<db::AddSimpleTags<
-      metavars::temporal_id, ::Tags::Mesh<metavars::volume_dim>,
+      metavars::temporal_id, domain::Tags::Mesh<metavars::volume_dim>,
       ::Tags::Variables<typename decltype(vars)::tags_list>>>(
       TimeStepId(true, 0, Slab(0., observation_time).end()), mesh, vars);
 

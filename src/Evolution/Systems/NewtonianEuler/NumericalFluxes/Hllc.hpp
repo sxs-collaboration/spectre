@@ -150,7 +150,7 @@ struct Hllc {
       Tags::MassDensityCons<DataVector>,
       Tags::MomentumDensity<DataVector, Dim, Frame>,
       Tags::EnergyDensity<DataVector>, Tags::Pressure<DataVector>,
-      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame>>,
+      ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>,
       NormalVelocity, FirstSpeedEstimate, SecondSpeedEstimate>;
 
   using argument_tags = tmpl::list<
@@ -161,7 +161,7 @@ struct Hllc {
       Tags::MomentumDensity<DataVector, Dim, Frame>,
       Tags::EnergyDensity<DataVector>, Tags::Velocity<DataVector, Dim, Frame>,
       Tags::Pressure<DataVector>, char_speeds_tag,
-      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame>>>;
+      ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>>;
 
   void package_data(
       gsl::not_null<Variables<package_tags>*> packaged_data,

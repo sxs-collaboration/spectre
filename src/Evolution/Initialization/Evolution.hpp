@@ -195,7 +195,7 @@ struct TimeStepperHistory {
   struct ComputeTags {
     using type = db::AddComputeTags<::Tags::DerivCompute<
         variables_tag,
-        ::Tags::InverseJacobian<dim, Frame::Logical, Frame::Inertial>,
+        domain::Tags::InverseJacobian<dim, Frame::Logical, Frame::Inertial>,
         typename System::gradients_tags>>;
   };
 
@@ -204,14 +204,14 @@ struct TimeStepperHistory {
     using type = db::AddComputeTags<::Tags::DivCompute<
         db::add_tag_prefix<::Tags::Flux, variables_tag, tmpl::size_t<dim>,
                            Frame::Inertial>,
-        ::Tags::InverseJacobian<dim, Frame::Logical, Frame::Inertial>>>;
+        domain::Tags::InverseJacobian<dim, Frame::Logical, Frame::Inertial>>>;
   };
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
             Requires<tmpl::list_contains_v<
                          typename db::DataBox<DbTagsList>::simple_item_tags,
-                         ::Tags::Mesh<dim>> and
+                         domain::Tags::Mesh<dim>> and
 
                      tmpl::list_contains_v<
                          typename db::DataBox<DbTagsList>::simple_item_tags,
@@ -224,7 +224,7 @@ struct TimeStepperHistory {
     using DtVars = typename dt_variables_tag::type;
 
     const size_t num_grid_points =
-        db::get<::Tags::Mesh<dim>>(box).number_of_grid_points();
+        db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
 
     // Will be overwritten before use
     DtVars dt_vars{num_grid_points};
@@ -245,7 +245,7 @@ struct TimeStepperHistory {
             typename ActionList, typename ParallelComponent,
             Requires<not(tmpl::list_contains_v<
                              typename db::DataBox<DbTagsList>::simple_item_tags,
-                             ::Tags::Mesh<dim>> and
+                             domain::Tags::Mesh<dim>> and
 
                          tmpl::list_contains_v<
                              typename db::DataBox<DbTagsList>::simple_item_tags,

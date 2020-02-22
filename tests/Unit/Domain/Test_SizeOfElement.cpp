@@ -91,12 +91,12 @@ SPECTRE_TEST_CASE("Unit.Domain.SizeOfElement", "[Domain][Unit]") {
     const ElementId<2> element_id(
         0, std::array<SegmentId, 2>({{SegmentId(1, 1), SegmentId(2, 0)}}));
     ElementMap<2, Frame::Inertial> element_map(element_id, std::move(map));
-    const auto box =
-        db::create<db::AddSimpleTags<Tags::ElementMap<2, Frame::Inertial>>,
-                   db::AddComputeTags<Tags::SizeOfElement<2>>>(
-            std::move(element_map));
+    const auto box = db::create<
+        db::AddSimpleTags<domain::Tags::ElementMap<2, Frame::Inertial>>,
+        db::AddComputeTags<domain::Tags::SizeOfElement<2>>>(
+        std::move(element_map));
 
-    const auto size_compute_item = db::get<Tags::SizeOfElement<2>>(box);
+    const auto size_compute_item = db::get<domain::Tags::SizeOfElement<2>>(box);
     const auto size_expected = make_array(0.05, 0.425);
     CHECK_ITERABLE_APPROX(size_compute_item, size_expected);
   }

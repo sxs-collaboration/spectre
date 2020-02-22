@@ -157,8 +157,9 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
     }
   };
 
-  using package_argument_tags = tmpl::list<Tags..., ::Tags::Mesh<VolumeDim>,
-                                           ::Tags::SizeOfElement<VolumeDim>>;
+  using package_argument_tags =
+      tmpl::list<Tags..., domain::Tags::Mesh<VolumeDim>,
+                 domain::Tags::SizeOfElement<VolumeDim>>;
 
   /// \brief Package data for sending to neighbor elements
   void package_data(gsl::not_null<PackagedData*> packaged_data,
@@ -170,8 +171,9 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
 
   using limit_tags = tmpl::list<Tags...>;
   using limit_argument_tags =
-      tmpl::list<::Tags::Element<VolumeDim>, ::Tags::Mesh<VolumeDim>,
-                 ::Tags::SizeOfElement<VolumeDim>>;
+      tmpl::list<domain::Tags::Element<VolumeDim>,
+                 domain::Tags::Mesh<VolumeDim>,
+                 domain::Tags::SizeOfElement<VolumeDim>>;
 
   /// \brief Limit the solution on the element
   bool operator()(

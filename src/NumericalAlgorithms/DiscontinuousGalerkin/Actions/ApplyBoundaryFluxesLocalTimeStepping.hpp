@@ -80,9 +80,9 @@ struct ApplyBoundaryFluxesLocalTimeStepping {
         [&cache](
             const gsl::not_null<db::item_type<variables_tag>*> vars,
             const gsl::not_null<db::item_type<mortar_data_tag>*> mortar_data,
-            const db::const_item_type<Tags::Mesh<volume_dim>>& mesh,
-            const db::const_item_type<Tags::Mortars<Tags::Mesh<volume_dim - 1>,
-                                                    volume_dim>>& mortar_meshes,
+            const db::const_item_type<domain::Tags::Mesh<volume_dim>>& mesh,
+            const db::const_item_type<Tags::Mortars<
+                domain::Tags::Mesh<volume_dim - 1>, volume_dim>>& mortar_meshes,
             const db::const_item_type<Tags::Mortars<
                 Tags::MortarSize<volume_dim - 1>, volume_dim>>& mortar_sizes,
             const db::const_item_type<Tags::TimeStep>& time_step,
@@ -129,8 +129,9 @@ struct ApplyBoundaryFluxesLocalTimeStepping {
             }
           }();
         },
-        db::get<Tags::Mesh<volume_dim>>(box),
-        db::get<Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>>(box),
+        db::get<domain::Tags::Mesh<volume_dim>>(box),
+        db::get<Tags::Mortars<domain::Tags::Mesh<volume_dim - 1>, volume_dim>>(
+            box),
         db::get<Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>>(
             box),
         db::get<Tags::TimeStep>(box), db::get<Tags::TimeStepper<>>(box));

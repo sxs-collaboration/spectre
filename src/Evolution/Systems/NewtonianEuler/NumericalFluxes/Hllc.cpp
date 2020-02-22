@@ -50,7 +50,7 @@ void Hllc<Dim, Frame>::package_data(
       momentum_density;
   get<Tags::EnergyDensity<DataVector>>(*packaged_data) = energy_density;
   get<Tags::Pressure<DataVector>>(*packaged_data) = pressure;
-  get<::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame>>>(
+  get<::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>>(
       *packaged_data) = interface_unit_normal;
   get<NormalVelocity>(*packaged_data) =
       dot_product(interface_unit_normal, velocity);

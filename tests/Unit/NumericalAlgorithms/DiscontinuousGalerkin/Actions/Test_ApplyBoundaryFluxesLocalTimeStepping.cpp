@@ -85,12 +85,12 @@ struct Component {
   using array_index = ElementIndex<2>;
   using const_global_cache_tags =
       tmpl::list<Tags::TimeStepper<LtsTimeStepper>, NumericalFluxTag>;
-  using simple_tags =
-      db::AddSimpleTags<Tags::Mesh<2>, Tags::Mortars<Tags::Mesh<1>, 2>,
-                        Tags::Mortars<Tags::MortarSize<1>, 2>, Tags::TimeStep,
-                        System::variables_tag,
-                        typename dg::FluxCommunicationTypes<Metavariables>::
-                            local_time_stepping_mortar_data_tag>;
+  using simple_tags = db::AddSimpleTags<
+      domain::Tags::Mesh<2>, Tags::Mortars<domain::Tags::Mesh<1>, 2>,
+      Tags::Mortars<Tags::MortarSize<1>, 2>, Tags::TimeStep,
+      System::variables_tag,
+      typename dg::FluxCommunicationTypes<
+          Metavariables>::local_time_stepping_mortar_data_tag>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -128,7 +128,7 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesLocalTimeStepping",
   const auto fast_mortar = std::make_pair(Direction<2>::upper_xi(),
                                           ElementId<2>(1, {{{0, 0}, {1, 1}}}));
 
-  typename Tags::Mortars<Tags::Mesh<1>, 2>::type mortar_meshes{
+  typename Tags::Mortars<domain::Tags::Mesh<1>, 2>::type mortar_meshes{
       {slow_mortar, mesh.slice_away(face_dimension)},
       {fast_mortar, mesh.slice_away(face_dimension)}};
   typename Tags::Mortars<Tags::MortarSize<1>, 2>::type mortar_sizes{

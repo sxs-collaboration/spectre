@@ -60,7 +60,7 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using simple_tags =
-      db::AddSimpleTags<::Tags::Mesh<dim>,
+      db::AddSimpleTags<domain::Tags::Mesh<dim>,
                         typename metavariables::system::variables_tag>;
 
   using phase_dependent_action_list = tmpl::list<

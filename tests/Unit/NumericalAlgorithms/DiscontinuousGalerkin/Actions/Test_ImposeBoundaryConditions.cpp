@@ -86,7 +86,7 @@ class NumericalFlux {
 
   using argument_tags =
       tmpl::list<Tags::NormalDotFlux<Var>, OtherData,
-                 Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>;
+                 Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
   void package_data(const gsl::not_null<Variables<package_tags>*> packaged_data,
                     const Scalar<DataVector>& var_flux,
                     const Scalar<DataVector>& other_data,
@@ -154,17 +154,17 @@ struct System {
 
 template <typename Tag>
 using boundary_tag =
-    Tags::Interface<Tags::BoundaryDirectionsInterior<Dim>, Tag>;
+    domain::Tags::Interface<domain::Tags::BoundaryDirectionsInterior<Dim>, Tag>;
 template <typename Tag>
-using boundary_compute_tag =
-    Tags::InterfaceCompute<Tags::BoundaryDirectionsInterior<Dim>, Tag>;
+using boundary_compute_tag = domain::Tags::InterfaceCompute<
+    domain::Tags::BoundaryDirectionsInterior<Dim>, Tag>;
 
 template <typename Tag>
 using external_boundary_tag =
-    Tags::Interface<Tags::BoundaryDirectionsExterior<Dim>, Tag>;
+    domain::Tags::Interface<domain::Tags::BoundaryDirectionsExterior<Dim>, Tag>;
 template <typename Tag>
-using external_boundary_compute_tag =
-    Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<Dim>, Tag>;
+using external_boundary_compute_tag = domain::Tags::InterfaceCompute<
+    domain::Tags::BoundaryDirectionsExterior<Dim>, Tag>;
 
 template <typename FluxCommTypes>
 using mortar_data_tag = typename FluxCommTypes::simple_mortar_data_tag;
@@ -198,30 +198,32 @@ struct component {
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
 
   using simple_tags = db::AddSimpleTags<
-      TemporalId, Tags::Time, Tags::Mesh<Dim>, Tags::Element<Dim>,
-      Tags::ElementMap<Dim>, bdry_normal_dot_fluxes_tag<flux_comm_types>,
-      bdry_other_data_tag, external_bdry_normal_dot_fluxes_tag<flux_comm_types>,
+      TemporalId, Tags::Time, domain::Tags::Mesh<Dim>,
+      domain::Tags::Element<Dim>, domain::Tags::ElementMap<Dim>,
+      bdry_normal_dot_fluxes_tag<flux_comm_types>, bdry_other_data_tag,
+      external_bdry_normal_dot_fluxes_tag<flux_comm_types>,
       external_bdry_other_data_tag, external_bdry_vars_tag,
       mortar_data_tag<flux_comm_types>>;
 
   using compute_tags = db::AddComputeTags<
-      Tags::BoundaryDirectionsInterior<Dim>,
-      boundary_compute_tag<Tags::Direction<Dim>>,
-      boundary_compute_tag<Tags::InterfaceMesh<Dim>>,
-      boundary_compute_tag<Tags::UnnormalizedFaceNormalCompute<Dim>>,
+      domain::Tags::BoundaryDirectionsInterior<Dim>,
+      boundary_compute_tag<domain::Tags::Direction<Dim>>,
+      boundary_compute_tag<domain::Tags::InterfaceMesh<Dim>>,
+      boundary_compute_tag<domain::Tags::UnnormalizedFaceNormalCompute<Dim>>,
       boundary_compute_tag<
-          Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
+          Tags::EuclideanMagnitude<domain::Tags::UnnormalizedFaceNormal<Dim>>>,
       boundary_compute_tag<
-          Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<Dim>>>,
-      Tags::BoundaryDirectionsExterior<Dim>,
-      external_boundary_compute_tag<Tags::Direction<Dim>>,
-      external_boundary_compute_tag<Tags::InterfaceMesh<Dim>>,
-      external_boundary_compute_tag<Tags::BoundaryCoordinates<Dim>>,
-      external_boundary_compute_tag<Tags::UnnormalizedFaceNormalCompute<Dim>>,
+          Tags::NormalizedCompute<domain::Tags::UnnormalizedFaceNormal<Dim>>>,
+      domain::Tags::BoundaryDirectionsExterior<Dim>,
+      external_boundary_compute_tag<domain::Tags::Direction<Dim>>,
+      external_boundary_compute_tag<domain::Tags::InterfaceMesh<Dim>>,
+      external_boundary_compute_tag<domain::Tags::BoundaryCoordinates<Dim>>,
       external_boundary_compute_tag<
-          Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
+          domain::Tags::UnnormalizedFaceNormalCompute<Dim>>,
       external_boundary_compute_tag<
-          Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<Dim>>>>;
+          Tags::EuclideanMagnitude<domain::Tags::UnnormalizedFaceNormal<Dim>>>,
+      external_boundary_compute_tag<
+          Tags::NormalizedCompute<domain::Tags::UnnormalizedFaceNormal<Dim>>>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<

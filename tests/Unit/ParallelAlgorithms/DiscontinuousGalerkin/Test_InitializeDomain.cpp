@@ -37,12 +37,12 @@ struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tags = tmpl::list<::Tags::Domain<Dim>>;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<Dim>>;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             tmpl::list<ActionTesting::InitializeDataBox<
-                                 tmpl::list<::Tags::InitialExtents<Dim>>>>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<
+              tmpl::list<domain::Tags::InitialExtents<Dim>>>>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
@@ -73,11 +73,12 @@ void check_compute_items(
     return ActionTesting::tag_is_retrievable<
         ElementArray<Dim, Metavariables<Dim>>, tag>(runner, element_id);
   };
-  CHECK(tag_is_retrievable(::Tags::Coordinates<Dim, Frame::Logical>{}));
-  CHECK(tag_is_retrievable(::Tags::Coordinates<Dim, Frame::Inertial>{}));
+  CHECK(tag_is_retrievable(domain::Tags::Coordinates<Dim, Frame::Logical>{}));
+  CHECK(tag_is_retrievable(domain::Tags::Coordinates<Dim, Frame::Inertial>{}));
   CHECK(tag_is_retrievable(
-      ::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>{}));
-  CHECK(tag_is_retrievable(::Tags::MinimumGridSpacing<Dim, Frame::Inertial>{}));
+      domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>{}));
+  CHECK(tag_is_retrievable(
+      domain::Tags::MinimumGridSpacing<Dim, Frame::Inertial>{}));
 }
 
 }  // namespace
@@ -112,16 +113,16 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
 
     check_compute_items(runner, element_id);
 
-    CHECK(get_tag(Tags::Mesh<1>{}) ==
+    CHECK(get_tag(domain::Tags::Mesh<1>{}) ==
           Mesh<1>{4, Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto});
-    CHECK(get_tag(Tags::Element<1>{}) ==
+    CHECK(get_tag(domain::Tags::Element<1>{}) ==
           Element<1>{element_id,
                      {{Direction<1>::lower_xi(),
                        {{{ElementId<1>{0, {{SegmentId{2, 0}}}}}}, {}}},
                       {Direction<1>::upper_xi(),
                        {{{ElementId<1>{0, {{SegmentId{2, 2}}}}}}, {}}}}});
-    const auto& element_map = get_tag(Tags::ElementMap<1>{});
+    const auto& element_map = get_tag(domain::Tags::ElementMap<1>{});
     const tnsr::I<DataVector, 1, Frame::Logical> logical_coords_for_element_map{
         {{{-1., -0.5, 0., 0.1, 1.}}}};
     const auto inertial_coords_from_element_map =
@@ -131,16 +132,16 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     CHECK_ITERABLE_APPROX(get<0>(inertial_coords_from_element_map),
                           get<0>(expected_inertial_coords));
     const auto& logical_coords =
-        get_tag(Tags::Coordinates<1, Frame::Logical>{});
+        get_tag(domain::Tags::Coordinates<1, Frame::Logical>{});
     CHECK(get<0>(logical_coords) ==
           Spectral::collocation_points<Spectral::Basis::Legendre,
                                        Spectral::Quadrature::GaussLobatto>(4));
     const auto& inertial_coords =
-        get_tag(Tags::Coordinates<1, Frame::Inertial>{});
+        get_tag(domain::Tags::Coordinates<1, Frame::Inertial>{});
     CHECK(inertial_coords == element_map(logical_coords));
-    CHECK(
-        get_tag(Tags::InverseJacobian<1, Frame::Logical, Frame::Inertial>{}) ==
-        element_map.inv_jacobian(logical_coords));
+    CHECK(get_tag(domain::Tags::InverseJacobian<1, Frame::Logical,
+                                                Frame::Inertial>{}) ==
+          element_map.inv_jacobian(logical_coords));
   }
   {
     INFO("2D");
@@ -176,12 +177,12 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
 
     check_compute_items(runner, element_id);
 
-    CHECK(get_tag(Tags::Mesh<2>{}) ==
+    CHECK(get_tag(domain::Tags::Mesh<2>{}) ==
           Mesh<2>{{{4, 3}},
                   Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto});
     CHECK(
-        get_tag(Tags::Element<2>{}) ==
+        get_tag(domain::Tags::Element<2>{}) ==
         Element<2>{
             element_id,
             {{Direction<2>::lower_xi(),
@@ -189,7 +190,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
              {Direction<2>::upper_xi(),
               {{{ElementId<2>{0, {{SegmentId{2, 2}, SegmentId{0, 0}}}}}},
                {}}}}});
-    const auto& element_map = get_tag(Tags::ElementMap<2>{});
+    const auto& element_map = get_tag(domain::Tags::ElementMap<2>{});
     const tnsr::I<DataVector, 2, Frame::Logical> logical_coords_for_element_map{
         {{{-1., -0.5, 0., 0.1, 1.}, {-1., -0.5, 0., 0.1, 1.}}}};
     const auto inertial_coords_from_element_map =
@@ -201,13 +202,13 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     CHECK_ITERABLE_APPROX(get<1>(inertial_coords_from_element_map),
                           get<1>(expected_inertial_coords));
     const auto& logical_coords =
-        get_tag(Tags::Coordinates<2, Frame::Logical>{});
+        get_tag(domain::Tags::Coordinates<2, Frame::Logical>{});
     const auto& inertial_coords =
-        get_tag(Tags::Coordinates<2, Frame::Inertial>{});
+        get_tag(domain::Tags::Coordinates<2, Frame::Inertial>{});
     CHECK(inertial_coords == element_map(logical_coords));
-    CHECK(
-        get_tag(Tags::InverseJacobian<2, Frame::Logical, Frame::Inertial>{}) ==
-        element_map.inv_jacobian(logical_coords));
+    CHECK(get_tag(domain::Tags::InverseJacobian<2, Frame::Logical,
+                                                Frame::Inertial>{}) ==
+          element_map.inv_jacobian(logical_coords));
   }
   {
     INFO("3D");
@@ -243,12 +244,12 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
 
     check_compute_items(runner, element_id);
 
-    CHECK(get_tag(Tags::Mesh<3>{}) ==
+    CHECK(get_tag(domain::Tags::Mesh<3>{}) ==
           Mesh<3>{{{4, 3, 2}},
                   Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto});
     CHECK(
-        get_tag(Tags::Element<3>{}) ==
+        get_tag(domain::Tags::Element<3>{}) ==
         Element<3>{
             element_id,
             {{Direction<3>::lower_xi(),
@@ -263,7 +264,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
               {{{ElementId<3>{
                    0, {{SegmentId{2, 1}, SegmentId{0, 0}, SegmentId{1, 0}}}}}},
                {}}}}});
-    const auto& element_map = get_tag(Tags::ElementMap<3>{});
+    const auto& element_map = get_tag(domain::Tags::ElementMap<3>{});
     const tnsr::I<DataVector, 3, Frame::Logical> logical_coords_for_element_map{
         {{{-1., -0.5, 0., 0.1, 1.},
           {-1., -0.5, 0., 0.1, 1.},
@@ -281,12 +282,12 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     CHECK_ITERABLE_APPROX(get<2>(inertial_coords_from_element_map),
                           get<2>(expected_inertial_coords));
     const auto& logical_coords =
-        get_tag(Tags::Coordinates<3, Frame::Logical>{});
+        get_tag(domain::Tags::Coordinates<3, Frame::Logical>{});
     const auto& inertial_coords =
-        get_tag(Tags::Coordinates<3, Frame::Inertial>{});
+        get_tag(domain::Tags::Coordinates<3, Frame::Inertial>{});
     CHECK(inertial_coords == element_map(logical_coords));
-    CHECK(
-        get_tag(Tags::InverseJacobian<3, Frame::Logical, Frame::Inertial>{}) ==
-        element_map.inv_jacobian(logical_coords));
+    CHECK(get_tag(domain::Tags::InverseJacobian<3, Frame::Logical,
+                                                Frame::Inertial>{}) ==
+          element_map.inv_jacobian(logical_coords));
   }
 }

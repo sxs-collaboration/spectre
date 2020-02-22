@@ -138,7 +138,7 @@ struct InitializeGauge {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     // compute initial-gauge related quantities
-    const auto& mesh = db::get<::Tags::Mesh<Dim>>(box);
+    const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
     const size_t num_grid_points = mesh.number_of_grid_points();
     const auto& lapse = get<gr::Tags::Lapse<DataVector>>(box);
     const auto& dt_lapse = get<::Tags::dt<gr::Tags::Lapse<DataVector>>>(box);
@@ -180,7 +180,7 @@ struct InitializeGauge {
     get<GeneralizedHarmonic::Tags::InitialGaugeH<Dim, frame>>(
         initial_gauge_h_vars) = initial_gauge_h;
     const auto& inverse_jacobian =
-        db::get<::Tags::InverseJacobian<Dim, Frame::Logical, frame>>(box);
+        db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical, frame>>(box);
     auto d_initial_gauge_source =
         get<::Tags::deriv<GeneralizedHarmonic::Tags::InitialGaugeH<Dim, frame>,
                           tmpl::size_t<Dim>, frame>>(

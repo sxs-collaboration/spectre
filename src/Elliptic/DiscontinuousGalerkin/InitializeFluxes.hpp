@@ -53,11 +53,11 @@ struct InitializeFluxes {
 
   template <typename Directions>
   using face_tags =
-      tmpl::list<::Tags::Slice<Directions, fluxes_tag>,
-                 ::Tags::Slice<Directions, div_fluxes_tag>,
+      tmpl::list<domain::Tags::Slice<Directions, fluxes_tag>,
+                 domain::Tags::Slice<Directions, div_fluxes_tag>,
                  // For the strong first-order DG scheme we also need the
                  // interface normal dotted into the fluxes
-                 ::Tags::InterfaceCompute<
+                 domain::Tags::InterfaceCompute<
                      Directions, ::Tags::NormalDotFluxCompute<
                                      vars_tag, volume_dim, Frame::Inertial>>>;
 
@@ -68,13 +68,14 @@ struct InitializeFluxes {
       // data that is being set there to impose boundary conditions. Then, we
       // compute their normal-dot-fluxes. The flux divergences are sliced from
       // the volume.
-      ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsExterior<volume_dim>,
-                               fluxes_compute_tag>,
-      ::Tags::InterfaceCompute<
-          ::Tags::BoundaryDirectionsExterior<volume_dim>,
+      domain::Tags::InterfaceCompute<
+          domain::Tags::BoundaryDirectionsExterior<volume_dim>,
+          fluxes_compute_tag>,
+      domain::Tags::InterfaceCompute<
+          domain::Tags::BoundaryDirectionsExterior<volume_dim>,
           ::Tags::NormalDotFluxCompute<vars_tag, volume_dim, Frame::Inertial>>,
-      ::Tags::Slice<::Tags::BoundaryDirectionsExterior<volume_dim>,
-                    div_fluxes_tag>>;
+      domain::Tags::Slice<domain::Tags::BoundaryDirectionsExterior<volume_dim>,
+                          div_fluxes_tag>>;
 
  public:
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
@@ -85,10 +86,10 @@ struct InitializeFluxes {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using compute_tags = tmpl::flatten<
-        tmpl::list<face_tags<::Tags::InternalDirections<volume_dim>>,
-                   face_tags<::Tags::BoundaryDirectionsInterior<volume_dim>>,
-                   exterior_tags>>;
+    using compute_tags = tmpl::flatten<tmpl::list<
+        face_tags<domain::Tags::InternalDirections<volume_dim>>,
+        face_tags<domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
+        exterior_tags>>;
     return std::make_tuple(
         ::Initialization::merge_into_databox<InitializeFluxes,
                                              db::AddSimpleTags<>, compute_tags>(

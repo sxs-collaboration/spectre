@@ -499,7 +499,8 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
     }
   };
 
-  using package_argument_tags = tmpl::list<Tags..., ::Tags::Mesh<VolumeDim>>;
+  using package_argument_tags =
+      tmpl::list<Tags..., domain::Tags::Mesh<VolumeDim>>;
 
   /// \brief Package data for sending to neighbor elements.
   void package_data(gsl::not_null<PackagedData*> packaged_data,
@@ -509,8 +510,8 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
       noexcept;
 
   using limit_tags = tmpl::list<Tags...>;
-  using limit_argument_tags =
-      tmpl::list<::Tags::Element<VolumeDim>, ::Tags::Mesh<VolumeDim>>;
+  using limit_argument_tags = tmpl::list<domain::Tags::Element<VolumeDim>,
+                                         domain::Tags::Mesh<VolumeDim>>;
 
   bool operator()(
       const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,

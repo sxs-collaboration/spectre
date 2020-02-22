@@ -20,10 +20,12 @@ namespace Parallel {
 template <typename Metavariables>
 class ConstGlobalCache;
 }  // namespace Parallel
+namespace domain {
 namespace Tags {
 template <size_t Dim, typename Frame>
 struct MinimumGridSpacing;
 }  // namespace Tags
+}  // namespace domain
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
@@ -66,7 +68,7 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
   explicit Cfl(const double safety_factor) noexcept
       : safety_factor_(safety_factor) {}
 
-  using argument_tags = tmpl::list<Tags::MinimumGridSpacing<Dim, Frame>,
+  using argument_tags = tmpl::list<domain::Tags::MinimumGridSpacing<Dim, Frame>,
                                    Tags::DataBox, Tags::TimeStepper<>>;
 
   template <typename Metavariables, typename DbTags>

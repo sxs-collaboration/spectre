@@ -67,11 +67,12 @@ struct component {
   using array_index = ElementIndex<Dim>;
   using const_global_cache_tags = tmpl::list<LimiterTag>;
   using simple_tags =
-      db::AddSimpleTags<TemporalId, Tags::Mesh<Dim>, Tags::Element<Dim>,
-                        Tags::ElementMap<Dim>,
-                        Tags::Coordinates<Dim, Frame::Logical>,
-                        Tags::Coordinates<Dim, Frame::Inertial>, Var>;
-  using compute_tags = db::AddComputeTags<Tags::SizeOfElement<Dim>>;
+      db::AddSimpleTags<TemporalId, domain::Tags::Mesh<Dim>,
+                        domain::Tags::Element<Dim>,
+                        domain::Tags::ElementMap<Dim>,
+                        domain::Tags::Coordinates<Dim, Frame::Logical>,
+                        domain::Tags::Coordinates<Dim, Frame::Inertial>, Var>;
+  using compute_tags = db::AddComputeTags<domain::Tags::SizeOfElement<Dim>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,

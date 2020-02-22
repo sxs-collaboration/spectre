@@ -87,30 +87,32 @@ struct InitializeMortars {
       typename flux_comm_types::simple_mortar_data_tag>;
 
  public:
-  using initialization_tags = tmpl::list<::Tags::InitialExtents<dim>>;
+  using initialization_tags = tmpl::list<domain::Tags::InitialExtents<dim>>;
 
   template <typename DataBox, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
-            Requires<db::tag_is_retrievable_v<::Tags::InitialExtents<dim>,
+            Requires<db::tag_is_retrievable_v<domain::Tags::InitialExtents<dim>,
                                               DataBox>> = nullptr>
   static auto apply(DataBox& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    const auto& element = db::get<::Tags::Element<dim>>(box);
+    const auto& element = db::get<domain::Tags::Element<dim>>(box);
     const auto& next_temporal_id = get<::Tags::Next<temporal_id_tag>>(box);
-    const auto& initial_extents = db::get<::Tags::InitialExtents<dim>>(box);
+    const auto& initial_extents =
+        db::get<domain::Tags::InitialExtents<dim>>(box);
 
     db::item_type<mortar_data_tag> mortar_data{};
     db::item_type<::Tags::Mortars<::Tags::Next<temporal_id_tag>, dim>>
         mortar_next_temporal_ids{};
-    db::item_type<::Tags::Mortars<::Tags::Mesh<dim - 1>, dim>> mortar_meshes{};
+    db::item_type<::Tags::Mortars<domain::Tags::Mesh<dim - 1>, dim>>
+        mortar_meshes{};
     db::item_type<::Tags::Mortars<::Tags::MortarSize<dim - 1>, dim>>
         mortar_sizes{};
     const auto& interface_meshes =
-        db::get<::Tags::Interface<::Tags::InternalDirections<dim>,
-                                  ::Tags::Mesh<dim - 1>>>(box);
+        db::get<domain::Tags::Interface<domain::Tags::InternalDirections<dim>,
+                                        domain::Tags::Mesh<dim - 1>>>(box);
     for (const auto& direction_and_neighbors : element.neighbors()) {
       const auto& direction = direction_and_neighbors.first;
       const auto& neighbors = direction_and_neighbors.second;
@@ -133,9 +135,9 @@ struct InitializeMortars {
     }
 
     if (AddFluxBoundaryConditionMortars) {
-      const auto& boundary_meshes =
-          db::get<::Tags::Interface<::Tags::BoundaryDirectionsInterior<dim>,
-                                    ::Tags::Mesh<dim - 1>>>(box);
+      const auto& boundary_meshes = db::get<
+          domain::Tags::Interface<domain::Tags::BoundaryDirectionsInterior<dim>,
+                                  domain::Tags::Mesh<dim - 1>>>(box);
       for (const auto& direction : element.external_boundaries()) {
         const auto mortar_id =
             std::make_pair(direction, ElementId<dim>::external_boundary_id());
@@ -155,7 +157,7 @@ struct InitializeMortars {
             db::AddSimpleTags<
                 mortar_data_tag,
                 ::Tags::Mortars<::Tags::Next<temporal_id_tag>, dim>,
-                ::Tags::Mortars<::Tags::Mesh<dim - 1>, dim>,
+                ::Tags::Mortars<domain::Tags::Mesh<dim - 1>, dim>,
                 ::Tags::Mortars<::Tags::MortarSize<dim - 1>, dim>>>(
             std::move(box), std::move(mortar_data),
             std::move(mortar_next_temporal_ids), std::move(mortar_meshes),
@@ -164,8 +166,8 @@ struct InitializeMortars {
 
   template <typename DataBox, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
-            Requires<not db::tag_is_retrievable_v<::Tags::InitialExtents<dim>,
-                                                  DataBox>> = nullptr>
+            Requires<not db::tag_is_retrievable_v<
+                domain::Tags::InitialExtents<dim>, DataBox>> = nullptr>
   static std::tuple<DataBox&&> apply(
       DataBox& /*box*/, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,

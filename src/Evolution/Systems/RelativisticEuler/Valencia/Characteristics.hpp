@@ -85,7 +85,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
                  gr::Tags::SpatialMetric<Dim>,
                  hydro::Tags::SpatialVelocity<DataVector, Dim>,
                  hydro::Tags::SoundSpeedSquared<DataVector>,
-                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
+                 ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
 
   using volume_tags = tmpl::list<>;
 

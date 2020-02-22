@@ -22,11 +22,15 @@ class Mesh;
 template <typename TagsList>
 class Variables;
 
+namespace domain {
 namespace Tags {
 template <size_t Dim>
 struct Mesh;
+}  // namespace Tags
+}  // namespace domain
 /// \endcond
 
+namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating the divergence
 ///
@@ -93,6 +97,7 @@ struct DivCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
   static constexpr auto function =
       divergence<typename db::const_item_type<Tag>::tags_list, dim,
                  typename tmpl::back<inv_jac_indices>::Frame>;
-  using argument_tags = tmpl::list<Tag, Tags::Mesh<dim>, InverseJacobianTag>;
+  using argument_tags =
+      tmpl::list<Tag, domain::Tags::Mesh<dim>, InverseJacobianTag>;
 };
 }  // namespace Tags

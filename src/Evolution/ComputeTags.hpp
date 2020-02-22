@@ -25,8 +25,8 @@ struct AnalyticCompute
   using base = db::add_tag_prefix<::Tags::Analytic,
                                   ::Tags::Variables<AnalyticFieldsTagList>>;
   using argument_tags =
-      tmpl::list<AnalyticSolutionTag, ::Tags::Coordinates<Dim, Frame::Inertial>,
-                 ::Tags::Time>;
+      tmpl::list<AnalyticSolutionTag,
+                 domain::Tags::Coordinates<Dim, Frame::Inertial>, ::Tags::Time>;
   static db::const_item_type<base> function(
       const db::const_item_type<AnalyticSolutionTag>&
           analytic_solution_computer,

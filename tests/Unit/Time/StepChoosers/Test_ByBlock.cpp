@@ -47,7 +47,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ByBlock", "[Unit][Time]") {
   for (size_t block = 0; block < 3; ++block) {
     const Element<volume_dim> element(ElementId<volume_dim>(block), {});
     const auto box =
-        db::create<db::AddSimpleTags<Tags::Element<volume_dim>>>(element);
+        db::create<db::AddSimpleTags<domain::Tags::Element<volume_dim>>>(
+            element);
     const double expected = 0.5 * (block + 5);
 
     CHECK(by_block(element, current_step, cache) == expected);

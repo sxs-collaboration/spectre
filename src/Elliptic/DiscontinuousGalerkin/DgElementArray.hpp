@@ -41,10 +41,10 @@ struct DgElementArray {
   using phase_dependent_action_list = PhaseDepActionList;
   using array_index = ElementIndex<volume_dim>;
 
-  using const_global_cache_tags = tmpl::list<::Tags::Domain<volume_dim>>;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<volume_dim>>;
 
   using array_allocation_tags =
-      tmpl::list<::Tags::InitialRefinementLevels<volume_dim>>;
+      tmpl::list<domain::Tags::InitialRefinementLevels<volume_dim>>;
 
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>,
@@ -72,9 +72,11 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
   auto& local_cache = *(global_cache.ckLocalBranch());
   auto& dg_element_array =
       Parallel::get_parallel_component<DgElementArray>(local_cache);
-  const auto& domain = Parallel::get<::Tags::Domain<volume_dim>>(local_cache);
+  const auto& domain =
+      Parallel::get<domain::Tags::Domain<volume_dim>>(local_cache);
   const auto& initial_refinement_levels =
-      get<::Tags::InitialRefinementLevels<volume_dim>>(initialization_items);
+      get<domain::Tags::InitialRefinementLevels<volume_dim>>(
+          initialization_items);
   for (const auto& block : domain.blocks()) {
     const auto initial_ref_levs = initial_refinement_levels[block.id()];
     const std::vector<ElementId<volume_dim>> element_ids =

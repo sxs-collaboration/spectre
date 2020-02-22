@@ -50,16 +50,17 @@ struct ExportCoordinates {
   template <
       typename DbTagsList, typename... InboxTags, typename Metavariables,
       typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<tmpl::list_contains_v<DbTagsList, Tags::Mesh<Dim>>> = nullptr>
+      Requires<tmpl::list_contains_v<DbTagsList, domain::Tags::Mesh<Dim>>> =
+          nullptr>
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const auto& mesh = get<Tags::Mesh<Dim>>(box);
+    const auto& mesh = get<domain::Tags::Mesh<Dim>>(box);
     const auto& inertial_coordinates =
-        db::get<::Tags::Coordinates<Dim, Frame::Inertial>>(box);
+        db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
     const std::string element_name = MakeString{} << ElementId<Dim>(array_index)
                                                   << '/';
     // Collect volume data

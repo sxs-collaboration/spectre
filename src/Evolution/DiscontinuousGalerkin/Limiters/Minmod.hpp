@@ -49,6 +49,7 @@ template <size_t VolumeDim, typename TagsToLimit>
 class Minmod;
 }  // namespace Limiters
 
+namespace domain {
 namespace Tags {
 template <size_t Dim, typename Frame>
 struct Coordinates;
@@ -59,6 +60,7 @@ struct Mesh;
 template <size_t VolumeDim>
 struct SizeOfElement;
 }  // namespace Tags
+}  // namespace domain
 /// \endcond
 
 namespace Limiters {
@@ -229,8 +231,9 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
     }
   };
 
-  using package_argument_tags = tmpl::list<Tags..., ::Tags::Mesh<VolumeDim>,
-                                           ::Tags::SizeOfElement<VolumeDim>>;
+  using package_argument_tags =
+      tmpl::list<Tags..., domain::Tags::Mesh<VolumeDim>,
+                 domain::Tags::SizeOfElement<VolumeDim>>;
 
   /// \brief Package data for sending to neighbor elements.
   ///
@@ -254,9 +257,10 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
 
   using limit_tags = tmpl::list<Tags...>;
   using limit_argument_tags =
-      tmpl::list<::Tags::Element<VolumeDim>, ::Tags::Mesh<VolumeDim>,
-                 ::Tags::Coordinates<VolumeDim, Frame::Logical>,
-                 ::Tags::SizeOfElement<VolumeDim>>;
+      tmpl::list<domain::Tags::Element<VolumeDim>,
+                 domain::Tags::Mesh<VolumeDim>,
+                 domain::Tags::Coordinates<VolumeDim, Frame::Logical>,
+                 domain::Tags::SizeOfElement<VolumeDim>>;
 
   /// \brief Limits the solution on the element.
   ///

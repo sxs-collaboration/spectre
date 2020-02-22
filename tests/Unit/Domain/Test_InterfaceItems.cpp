@@ -40,6 +40,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
+namespace domain {
 namespace {
 template <size_t N>
 struct NoCopy {
@@ -65,7 +66,7 @@ struct Double : db::SimpleTag {
 template <size_t N>
 struct NoCopy : db::SimpleTag {
   static std::string name() noexcept { return "NoCopy"; }
-  using type = ::NoCopy<N>;
+  using type = domain::NoCopy<N>;
 };
 
 template <typename Tag>
@@ -90,8 +91,8 @@ template <size_t VolumeDim>
 struct ComplexComputeItem : db::ComputeTag {
   static std::string name() noexcept { return "ComplexComputeItem"; }
   static constexpr auto function(const int i, const double d,
-                                 const ::NoCopy<1>& /*unused*/,
-                                 const ::NoCopy<2>& /*unused*/) noexcept {
+                                 const domain::NoCopy<1>& /*unused*/,
+                                 const domain::NoCopy<2>& /*unused*/) noexcept {
     return std::make_pair(i, d);
   }
   using argument_tags = tmpl::list<Int, Double, NoCopy<1>, NoCopy<2>>;
@@ -359,15 +360,15 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Subitems", "[Unit][Domain]") {
 
   auto box = db::create<
       db::AddSimpleTags<
-          Tags::Mesh<dim>, Tags::Variables<tmpl::list<Var<2>>>, Var<3>,
-          Tags::Interface<Dirs, Tags::Variables<tmpl::list<Var<0>>>>>,
-      db::AddComputeTags<Dirs, VarPlusFiveCompute<3>,
-                         Tags::InterfaceCompute<Dirs, Tags::Direction<dim>>,
-                         Tags::InterfaceCompute<Dirs, Tags::InterfaceMesh<dim>>,
-                         Tags::InterfaceCompute<Dirs, Compute<1>>,
-                         Tags::Slice<Dirs, Tags::Variables<tmpl::list<Var<2>>>>,
-                         Tags::Slice<Dirs, Var<3>>,
-                         Tags::Slice<Dirs, VarPlusFive<3>>>>(
+          Tags::Mesh<dim>, ::Tags::Variables<tmpl::list<Var<2>>>, Var<3>,
+          Tags::Interface<Dirs, ::Tags::Variables<tmpl::list<Var<0>>>>>,
+      db::AddComputeTags<
+          Dirs, VarPlusFiveCompute<3>,
+          Tags::InterfaceCompute<Dirs, Tags::Direction<dim>>,
+          Tags::InterfaceCompute<Dirs, Tags::InterfaceMesh<dim>>,
+          Tags::InterfaceCompute<Dirs, Compute<1>>,
+          Tags::Slice<Dirs, ::Tags::Variables<tmpl::list<Var<2>>>>,
+          Tags::Slice<Dirs, Var<3>>, Tags::Slice<Dirs, VarPlusFive<3>>>>(
       mesh, volume_var, volume_tensor,
       make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
 
@@ -393,10 +394,10 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Subitems", "[Unit][Domain]") {
 }
 
 namespace {
-using simple_item_tag = Tags::Variables<tmpl::list<Var<0>>>;
+using simple_item_tag = ::Tags::Variables<tmpl::list<Var<0>>>;
 using compute_item_tag = Compute<1>;
 using sliced_compute_item_tag = Compute<2>;
-using sliced_simple_item_tag = Tags::Variables<tmpl::list<Var<3>>>;
+using sliced_simple_item_tag = ::Tags::Variables<tmpl::list<Var<3>>>;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
@@ -518,3 +519,4 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.BaseTags", "[Unit][Domain]") {
   CHECK(get<Tags::Interface<Dirs, SimpleBase>>(box) == interface(4, 5));
   CHECK(get<Tags::Interface<Dirs, ComputeBase>>(box) == interface(5.5, 6.5));
 }
+}  // namespace domain

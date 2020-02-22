@@ -26,6 +26,7 @@ double minimum_grid_spacing(
     const Index<Dim>& extents,
     const tnsr::I<DataVector, Dim, Frame>& coords) noexcept;
 
+namespace domain {
 namespace Tags {
 /// \ingroup ComputationalDomainGroup
 /// \ingroup DataBoxTagsGroup
@@ -41,3 +42,4 @@ struct MinimumGridSpacing : db::ComputeTag {
   using argument_tags = tmpl::list<Mesh<Dim>, Coordinates<Dim, Frame>>;
 };
 }  // namespace Tags
+}  // namespace domain

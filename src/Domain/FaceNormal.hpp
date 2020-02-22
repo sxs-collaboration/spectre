@@ -61,6 +61,7 @@ tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
     const Direction<VolumeDim>& direction) noexcept;
 // @}
 
+namespace domain {
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
@@ -127,3 +128,4 @@ struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
                                    Tags::ElementMap<VolumeDim, Frame>>;
 };
 }  // namespace Tags
+}  // namespace domain

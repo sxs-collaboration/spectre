@@ -37,6 +37,9 @@
 class DataVector;
 /// \endcond
 
+namespace domain {
+/// \ingroup ComputationalDomainGroup
+/// \brief %Tags for the domain.
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
@@ -307,6 +310,7 @@ struct Direction : db::SimpleTag {
 };
 
 }  // namespace Tags
+}  // namespace domain
 
 namespace db {
 namespace detail {
@@ -314,9 +318,9 @@ template <typename TagList, typename DirectionsTag, typename VariablesTag>
 struct InterfaceSubitemsImpl {
   using type = tmpl::transform<
       typename const_item_type<VariablesTag>::tags_list,
-      tmpl::bind<Tags::Interface, tmpl::pin<DirectionsTag>, tmpl::_1>>;
+      tmpl::bind<domain::Tags::Interface, tmpl::pin<DirectionsTag>, tmpl::_1>>;
 
-  using tag = Tags::Interface<DirectionsTag, VariablesTag>;
+  using tag = domain::Tags::Interface<DirectionsTag, VariablesTag>;
 
   template <typename Subtag>
   static void create_item(
@@ -368,9 +372,8 @@ struct InterfaceSubitemsImpl {
 
 template <typename TagList, typename DirectionsTag, typename VariablesTag>
 struct Subitems<
-    TagList, Tags::Interface<DirectionsTag, VariablesTag>,
+    TagList, domain::Tags::Interface<DirectionsTag, VariablesTag>,
     Requires<tt::is_a_v<Variables, item_type<VariablesTag, TagList>>>>
-    : detail::InterfaceSubitemsImpl<TagList, DirectionsTag, VariablesTag> {
-};
+    : detail::InterfaceSubitemsImpl<TagList, DirectionsTag, VariablesTag> {};
 
 }  // namespace db

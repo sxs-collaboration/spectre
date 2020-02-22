@@ -52,7 +52,7 @@ struct mock_interpolation_target {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tags = tmpl::list<::Tags::Domain<3>>;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<3>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,

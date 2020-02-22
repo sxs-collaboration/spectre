@@ -21,13 +21,19 @@ class DataVector;
 template <size_t Dim>
 class Mesh;
 
+namespace domain {
 namespace Tags {
 template <size_t Dim>
 struct Mesh;
+}  // namespace Tags
+}  // namespace domain
+namespace Tags {
 template <class TagList>
 struct Variables;
+}  // namespace Tags
 /// \endcond
 
+namespace Tags {
 /*!
  * \ingroup DataBoxTagsGroup
  * \brief Prefix indicating spatial derivatives
@@ -215,7 +221,7 @@ struct DerivCompute
                           typename db::const_item_type<VariablesTag>::tags_list,
                           Dim, deriv_frame>;
   using argument_tags =
-      tmpl::list<VariablesTag, Tags::Mesh<Dim>, InverseJacobianTag>;
+      tmpl::list<VariablesTag, domain::Tags::Mesh<Dim>, InverseJacobianTag>;
 };
 
 }  // namespace Tags
