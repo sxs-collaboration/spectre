@@ -30,6 +30,7 @@ set(LIBRARY_SOURCES
   Test_Numeric.cpp
   Test_Overloader.cpp
   Test_PrettyType.cpp
+  Test_ProtocolHelpers.cpp
   Test_Rational.cpp
   Test_Registration.cpp
   Test_Requires.cpp
