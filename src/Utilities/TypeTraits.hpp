@@ -953,6 +953,42 @@ using is_callable_t = typename is_callable<T, Args...>::type;
 // @}
 
 // @{
+/*!
+ * \ingroup TypeTraitsGroup
+ * \brief Generate a type trait to check if a class has a type alias with a
+ * particular name, optionally also checking its type.
+ *
+ * To generate the corresponding `_v` metafunction, call
+ * `CREATE_HAS_TYPE_ALIAS` first and then `CREATE_HAS_TYPE_ALIAS_V`.
+ *
+ * \example
+ * \snippet Utilities/Test_TypeTraits.cpp CREATE_HAS_TYPE_ALIAS
+ *
+ * \see `CREATE_IS_CALLABLE`
+ */
+// Use `NoSuchType*****` to represent any `AliasType`, i.e. not checking the
+// alias type at all. If someone has that many pointers to a thing that isn't
+// useful, it's their fault...
+#define CREATE_HAS_TYPE_ALIAS(ALIAS_NAME)                                     \
+  template <typename CheckingType, typename AliasType = NoSuchType*****,      \
+            typename = cpp17::void_t<>>                                       \
+  struct has_##ALIAS_NAME : std::false_type {};                               \
+                                                                              \
+  template <typename CheckingType, typename AliasType>                        \
+  struct has_##ALIAS_NAME<CheckingType, AliasType,                            \
+                          cpp17::void_t<typename CheckingType::ALIAS_NAME>>   \
+      : cpp17::bool_constant<                                                 \
+            cpp17::is_same_v<AliasType, NoSuchType*****> or                   \
+            cpp17::is_same_v<typename CheckingType::ALIAS_NAME, AliasType>> { \
+  };
+// Separate macros to avoid compiler warnings about unused variables
+#define CREATE_HAS_TYPE_ALIAS_V(ALIAS_NAME)                              \
+  template <typename CheckingType, typename AliasType = NoSuchType*****> \
+  static constexpr const bool has_##ALIAS_NAME##_v =                     \
+      has_##ALIAS_NAME<CheckingType, AliasType>::value;
+// @}
+
+// @{
 /// \ingroup TypeTraitsGroup
 /// \brief Check if std::hash and std::equal_to are defined for type T
 ///
@@ -1091,10 +1127,10 @@ struct is_streamable : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 template <typename S, typename T>
 struct is_streamable<
-    S, T, cpp17::void_t<decltype(std::declval<std::add_lvalue_reference_t<S>>()
-                                 << std::declval<T>()),
-                        Requires<not std::is_same<S, T>::value>>>
-    : std::true_type {};
+    S, T,
+    cpp17::void_t<decltype(std::declval<std::add_lvalue_reference_t<S>>()
+                           << std::declval<T>()),
+                  Requires<not std::is_same<S, T>::value>>> : std::true_type {};
 /// \endcond
 /// \see is_streamable
 template <typename S, typename T>
@@ -1195,14 +1231,16 @@ struct has_get_clone : std::false_type {};
 // recognize the two decltype'd specializations as being different
 template <typename T>
 struct has_get_clone<
-    T, cpp17::void_t<decltype(
-           std::declval<std::remove_pointer_t<std::decay_t<T>>>().get_clone())>,
+    T,
+    cpp17::void_t<decltype(
+        std::declval<std::remove_pointer_t<std::decay_t<T>>>().get_clone())>,
     Requires<not tt::is_a_v<std::unique_ptr, std::decay_t<T>> and
              not tt::is_a_v<std::shared_ptr, std::decay_t<T>>>>
     : std::true_type {};
 template <typename T>
-struct has_get_clone<T, cpp17::void_t<Requires<tt::is_a_v<std::unique_ptr, T>>,
-                                      decltype(std::declval<T>()->get_clone())>,
+struct has_get_clone<T,
+                     cpp17::void_t<Requires<tt::is_a_v<std::unique_ptr, T>>,
+                                   decltype(std::declval<T>()->get_clone())>,
                      Requires<tt::is_a_v<std::unique_ptr, std::decay_t<T>> or
                               tt::is_a_v<std::shared_ptr, std::decay_t<T>>>>
     : std::true_type {};
