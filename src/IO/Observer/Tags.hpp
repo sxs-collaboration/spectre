@@ -10,7 +10,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TensorData.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"

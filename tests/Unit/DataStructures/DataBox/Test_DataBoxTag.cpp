@@ -6,6 +6,7 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
@@ -191,56 +192,3 @@ static_assert(
                      tmpl::list<Prefix<Var>, PrefixWithArgs<Var, int, int>>>,
     "failed testing prefix_tag_wraps_specified_tag");
 /// [prefix_tag_wraps_specified_tag]
-
-namespace {
-struct PureBaseTag : db::BaseTag {};
-
-struct UnnamedSimpleTag : PureBaseTag, db::SimpleTag {
-  using type = double;
-};
-
-struct NamedSimpleTag : PureBaseTag, db::SimpleTag {
-  using type = double;
-  static std::string name() noexcept { return "NamedSimpleTag::name"; }
-};
-
-struct NamedComputeTag : UnnamedSimpleTag, db::ComputeTag {
-  using argument_list = tmpl::list<>;
-  static std::string name() noexcept { return "NamedComputeTag::name"; }
-};
-
-struct BasedComputeTag : UnnamedSimpleTag, db::ComputeTag {
-  using base = UnnamedSimpleTag;
-  using argument_list = tmpl::list<>;
-};
-
-struct NamedBasedComputeTag : UnnamedSimpleTag, db::ComputeTag {
-  using base = UnnamedSimpleTag;
-  using argument_list = tmpl::list<>;
-  static std::string name() noexcept { return "NamedBasedComputeTag::name"; }
-};
-
-struct InheritedComputeTag : NamedSimpleTag, db::ComputeTag {
-  using argument_list = tmpl::list<>;
-};
-
-template <typename Tag>
-struct UnnamedPrefix : db::PrefixTag, db::SimpleTag {
-  using tag = Tag;
-};
-}  // namespace
-
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBoxTag",
-                  "[Unit][DataStructures]") {
-  CHECK(db::tag_name<PureBaseTag>() == "PureBaseTag");
-  CHECK(db::tag_name<UnnamedSimpleTag>() == "UnnamedSimpleTag");
-  CHECK(db::tag_name<NamedSimpleTag>() == "NamedSimpleTag::name");
-  CHECK(db::tag_name<NamedComputeTag>() == "NamedComputeTag::name");
-  CHECK(db::tag_name<BasedComputeTag>() == "UnnamedSimpleTag");
-  CHECK(db::tag_name<NamedBasedComputeTag>() == "NamedBasedComputeTag::name");
-  CHECK(db::tag_name<InheritedComputeTag>() == "NamedSimpleTag::name");
-  CHECK(db::tag_name<UnnamedPrefix<UnnamedSimpleTag>>() ==
-        "UnnamedPrefix(UnnamedSimpleTag)");
-  CHECK(db::tag_name<UnnamedPrefix<NamedSimpleTag>>() ==
-        "UnnamedPrefix(NamedSimpleTag::name)");
-}

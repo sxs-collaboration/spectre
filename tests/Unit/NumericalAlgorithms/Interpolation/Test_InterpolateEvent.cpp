@@ -11,6 +11,7 @@
 #include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"

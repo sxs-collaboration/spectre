@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Utilities/PrettyType.hpp"
 
 /// Functionality related to solving elliptic partial differential equations

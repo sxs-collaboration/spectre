@@ -14,7 +14,7 @@
 #include "AlgorithmArray.hpp"
 #include "AlgorithmNodegroup.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Parallel/Algorithm.hpp"  // IWYU pragma: keep
 #include "Parallel/ConstGlobalCache.hpp"

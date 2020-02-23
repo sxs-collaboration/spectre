@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <limits>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Options/Options.hpp"

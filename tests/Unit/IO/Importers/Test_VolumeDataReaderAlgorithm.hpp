@@ -15,6 +15,7 @@
 
 #include "AlgorithmArray.hpp"
 #include "AlgorithmSingleton.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TensorData.hpp"

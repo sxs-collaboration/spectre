@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <string>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Evolution/Systems/NewtonianEuler/Characteristics.hpp"

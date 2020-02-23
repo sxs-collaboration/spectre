@@ -4,6 +4,7 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/Gsl.hpp"

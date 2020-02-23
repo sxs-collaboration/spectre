@@ -5,6 +5,8 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Tag.hpp"
+
 namespace Cce {
 namespace Frame {
 /// The frame for the spherical metric in which the radial coordinate is an

@@ -9,6 +9,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "Utilities/Gsl.hpp"
