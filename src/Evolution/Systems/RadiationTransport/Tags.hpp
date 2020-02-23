@@ -6,6 +6,8 @@
 #include <cstddef>
 #include <string>
 
+#include "Utilities/PrettyType.hpp"
+
 #define MAX_NUMBER_OF_NEUTRINO_ENERGY_BINS 12
 
 /// Namespace for neutrino physics
