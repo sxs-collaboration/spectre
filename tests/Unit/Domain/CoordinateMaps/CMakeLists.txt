@@ -16,6 +16,7 @@ set(LIBRARY_SOURCES
   Test_ProductMaps.cpp
   Test_ProductMapsTimeDep.cpp
   Test_Rotation.cpp
+  Test_RotationTimeDep.cpp
   Test_SpecialMobius.cpp
   Test_TimeDependentHelpers.cpp
   Test_Translation.cpp
