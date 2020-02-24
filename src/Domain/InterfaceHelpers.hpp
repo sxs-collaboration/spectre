@@ -34,7 +34,7 @@ namespace InterfaceHelpers_detail {
 template <typename Tag, typename DirectionsTag, typename VolumeTags>
 struct make_interface_tag_impl {
   using type = tmpl::conditional_t<tmpl::list_contains_v<VolumeTags, Tag>, Tag,
-                                   ::Tags::Interface<DirectionsTag, Tag>>;
+                                   domain::Tags::Interface<DirectionsTag, Tag>>;
 };
 
 // Retrieve the `argument_tags` from the `InterfaceInvokable` and wrap them in

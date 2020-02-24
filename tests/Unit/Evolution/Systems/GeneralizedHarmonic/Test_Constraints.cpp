@@ -830,7 +830,7 @@ void test_constraint_compute_items(
   // Insert into databox
   const auto box = db::create<
       db::AddSimpleTags<
-          ::Tags::Coordinates<3, Frame::Inertial>,
+          domain::Tags::Coordinates<3, Frame::Inertial>,
           gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
           gr::Tags::Lapse<DataVector>,
           gr::Tags::Shift<3, Frame::Inertial, DataVector>,

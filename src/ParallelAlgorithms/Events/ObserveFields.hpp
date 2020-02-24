@@ -101,7 +101,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
                                 tmpl::list<Tensors...>>,
           tmpl::list<>>,
       "All AnalyticSolutionTensors must be listed in Tensors.");
-  using coordinates_tag = ::Tags::Coordinates<VolumeDim, Frame::Inertial>;
+  using coordinates_tag = domain::Tags::Coordinates<VolumeDim, Frame::Inertial>;
 
   template <typename T>
   static std::string component_suffix(const T& tensor,
@@ -163,10 +163,11 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     variables_to_observe_.insert(coordinates_tag::name());
   }
 
-  using argument_tags = tmpl::list<ObservationValueTag, ::Tags::Mesh<VolumeDim>,
-                                   coordinates_tag, AnalyticSolutionTensors...,
-                                   ::Tags::Analytic<AnalyticSolutionTensors>...,
-                                   NonSolutionTensors...>;
+  using argument_tags =
+      tmpl::list<ObservationValueTag, domain::Tags::Mesh<VolumeDim>,
+                 coordinates_tag, AnalyticSolutionTensors...,
+                 ::Tags::Analytic<AnalyticSolutionTensors>...,
+                 NonSolutionTensors...>;
 
   template <typename Metavariables, typename ParallelComponent>
   void operator()(

@@ -25,11 +25,15 @@ struct InitialTime;
 }  // namespace Initialization
 namespace Tags {
 struct AnalyticSolutionOrData;
+}  // namespace Tags
+namespace domain {
+namespace Tags {
 template <size_t Dim, typename Frame>
 struct Coordinates;
 template <size_t VolumeDim>
 struct Mesh;
 }  // namespace Tags
+}  // namespace domain
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
@@ -64,9 +68,9 @@ struct InitializeM1Tags {
     static constexpr size_t dim = system::volume_dim;
     const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
     const size_t num_grid_points =
-        db::get<::Tags::Mesh<dim>>(box).number_of_grid_points();
+        db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
     const auto& inertial_coords =
-        db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
+        db::get<domain::Tags::Coordinates<dim, Frame::Inertial>>(box);
 
     db::mutate<evolved_variables_tag>(make_not_null(&box), [
       &cache, initial_time, &inertial_coords

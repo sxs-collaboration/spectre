@@ -53,9 +53,9 @@ using fluxes_tag = db::add_tag_prefix<::Tags::Flux, vars_tag<Dim>,
 template <size_t Dim>
 using div_fluxes_tag = db::add_tag_prefix<::Tags::div, fluxes_tag<Dim>>;
 template <size_t Dim>
-using inv_jacobian_tag =
-    Tags::InverseJacobianCompute<::Tags::ElementMap<Dim>,
-                                 ::Tags::Coordinates<Dim, Frame::Logical>>;
+using inv_jacobian_tag = domain::Tags::InverseJacobianCompute<
+    domain::Tags::ElementMap<Dim>,
+    domain::Tags::Coordinates<Dim, Frame::Logical>>;
 
 template <size_t Dim>
 struct Fluxes {
@@ -83,13 +83,13 @@ struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tags = tmpl::list<::Tags::Domain<Dim>>;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<Dim>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<
               ActionTesting::InitializeDataBox<
-                  tmpl::list<::Tags::InitialExtents<Dim>, vars_tag<Dim>>>,
+                  tmpl::list<domain::Tags::InitialExtents<Dim>, vars_tag<Dim>>>,
               dg::Actions::InitializeDomain<Dim>,
               Initialization::Actions::AddComputeTags<tmpl::list<
                   elliptic::Tags::FirstOrderFluxesCompute<

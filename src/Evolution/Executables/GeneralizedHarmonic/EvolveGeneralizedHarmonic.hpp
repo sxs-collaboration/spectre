@@ -222,11 +222,11 @@ struct EvolutionMetavars {
 
   using step_actions = tmpl::flatten<tmpl::list<
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
-          Tags::InternalDirections<volume_dim>>,
+          domain::Tags::InternalDirections<volume_dim>>,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
       Actions::ComputeTimeDerivative,
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
-          Tags::BoundaryDirectionsInterior<volume_dim>>,
+          domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       dg::Actions::ApplyFluxes, Actions::RecordTimeStepperData<>,
@@ -262,7 +262,7 @@ struct EvolutionMetavars {
               gr::Tags::Shift<volume_dim, frame, DataVector>,
               gr::Tags::Lapse<DataVector>>,
           dg::Initialization::face_compute_tags<
-              ::Tags::BoundaryCoordinates<volume_dim, frame>,
+              domain::Tags::BoundaryCoordinates<volume_dim, frame>,
               GeneralizedHarmonic::Tags::ConstraintGamma0Compute<volume_dim,
                                                                  frame>,
               GeneralizedHarmonic::Tags::ConstraintGamma1Compute<volume_dim,

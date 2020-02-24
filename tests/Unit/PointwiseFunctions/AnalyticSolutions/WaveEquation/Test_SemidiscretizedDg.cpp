@@ -61,42 +61,44 @@ struct Component {
   using variables_tag = typename metavariables::system::variables_tag;
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
   using normal_dot_fluxes_tag =
-      Tags::Interface<Tags::InternalDirections<1>,
-                      typename flux_comm_types::normal_dot_fluxes_tag>;
+      domain::Tags::Interface<domain::Tags::InternalDirections<1>,
+                              typename flux_comm_types::normal_dot_fluxes_tag>;
   using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
 
   using simple_tags = db::AddSimpleTags<
-      Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::Mesh<1>,
-      Tags::Element<1>, Tags::ElementMap<1>, variables_tag,
+      Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, domain::Tags::Mesh<1>,
+      domain::Tags::Element<1>, domain::Tags::ElementMap<1>, variables_tag,
       db::add_tag_prefix<Tags::dt, variables_tag>, normal_dot_fluxes_tag,
       mortar_data_tag, Tags::Mortars<Tags::Next<Tags::TimeStepId>, 1>,
-      Tags::Mortars<Tags::Mesh<0>, 1>, Tags::Mortars<Tags::MortarSize<0>, 1>>;
+      Tags::Mortars<domain::Tags::Mesh<0>, 1>,
+      Tags::Mortars<Tags::MortarSize<0>, 1>>;
 
-  using inverse_jacobian =
-      Tags::InverseJacobianCompute<Tags::ElementMap<1>,
-                                   Tags::Coordinates<1, Frame::Logical>>;
+  using inverse_jacobian = domain::Tags::InverseJacobianCompute<
+      domain::Tags::ElementMap<1>,
+      domain::Tags::Coordinates<1, Frame::Logical>>;
 
   template <typename Tag>
   using interface_compute_tag =
-      Tags::InterfaceCompute<Tags::InternalDirections<1>, Tag>;
+      domain::Tags::InterfaceCompute<domain::Tags::InternalDirections<1>, Tag>;
 
   using compute_tags = db::AddComputeTags<
-      Tags::LogicalCoordinates<1>,
-      Tags::MappedCoordinates<Tags::ElementMap<1>,
-                              Tags::Coordinates<1, Frame::Logical>>,
+      domain::Tags::LogicalCoordinates<1>,
+      domain::Tags::MappedCoordinates<
+          domain::Tags::ElementMap<1>,
+          domain::Tags::Coordinates<1, Frame::Logical>>,
       inverse_jacobian,
       Tags::DerivCompute<variables_tag, inverse_jacobian,
                          typename metavariables::system::gradients_tags>,
-      Tags::InternalDirections<1>,
-      Tags::Slice<Tags::InternalDirections<1>,
-                  typename metavariables::system::variables_tag>,
-      interface_compute_tag<Tags::Direction<1>>,
-      interface_compute_tag<Tags::InterfaceMesh<1>>,
-      interface_compute_tag<Tags::UnnormalizedFaceNormalCompute<1>>,
+      domain::Tags::InternalDirections<1>,
+      domain::Tags::Slice<domain::Tags::InternalDirections<1>,
+                          typename metavariables::system::variables_tag>,
+      interface_compute_tag<domain::Tags::Direction<1>>,
+      interface_compute_tag<domain::Tags::InterfaceMesh<1>>,
+      interface_compute_tag<domain::Tags::UnnormalizedFaceNormalCompute<1>>,
       interface_compute_tag<
-          Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<1>>>,
+          Tags::EuclideanMagnitude<domain::Tags::UnnormalizedFaceNormal<1>>>,
       interface_compute_tag<
-          Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<1>>>>;
+          Tags::NormalizedCompute<domain::Tags::UnnormalizedFaceNormal<1>>>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -107,7 +109,7 @@ struct Component {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<dg::Actions::ComputeNonconservativeBoundaryFluxes<
-                         Tags::InternalDirections<1>>,
+                         domain::Tags::InternalDirections<1>>,
                      dg::Actions::SendDataForFluxes<Metavariables>,
                      Actions::ComputeTimeDerivative,
                      dg::Actions::ReceiveDataForFluxes<Metavariables>,
@@ -168,7 +170,7 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
         db::item_type<typename component::mortar_data_tag> mortar_history{};
         db::item_type<Tags::Mortars<Tags::Next<Tags::TimeStepId>, 1>>
             mortar_next_temporal_ids{};
-        db::item_type<Tags::Mortars<Tags::Mesh<0>, 1>> mortar_meshes{};
+        db::item_type<Tags::Mortars<domain::Tags::Mesh<0>, 1>> mortar_meshes{};
         db::item_type<Tags::Mortars<Tags::MortarSize<0>, 1>> mortar_sizes{};
         for (const auto& mortar_id : mortars) {
           normal_dot_fluxes[mortar_id.first].initialize(1, 0.0);
@@ -194,12 +196,12 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
             make_not_null(&box),
             [&solution, &time](
                 const gsl::not_null<EvolvedVariables*> vars,
-                const db::const_item_type<
-                    Tags::Coordinates<1, Frame::Inertial>>& coords) noexcept {
+                const db::const_item_type<domain::Tags::Coordinates<
+                    1, Frame::Inertial>>& coords) noexcept {
               vars->assign_subset(solution.variables(
                   coords, time, system::variables_tag::tags_list{}));
             },
-            db::get<Tags::Coordinates<1, Frame::Inertial>>(box));
+            db::get<domain::Tags::Coordinates<1, Frame::Inertial>>(box));
       };
 
   const ElementId<1> self_id(0, {{{4, 1}}});
@@ -223,9 +225,9 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
   }
 
   return {
-      ActionTesting::get_databox_tag<component,
-                                     Tags::Coordinates<1, Frame::Inertial>>(
-          runner, self_id),
+      ActionTesting::get_databox_tag<
+          component, domain::Tags::Coordinates<1, Frame::Inertial>>(runner,
+                                                                    self_id),
       db::const_item_type<system::variables_tag>(
           ActionTesting::get_databox_tag<
               component, db::add_tag_prefix<Tags::dt, system::variables_tag>>(

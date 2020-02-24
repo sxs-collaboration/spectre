@@ -33,7 +33,7 @@ struct mock_component {
   using array_index = size_t;
   using simple_tags = tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                                  hydro::Tags::Pressure<DataVector>,
-                                 ::Tags::Coordinates<3, Frame::Inertial>>;
+                                 domain::Tags::Coordinates<3, Frame::Inertial>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,

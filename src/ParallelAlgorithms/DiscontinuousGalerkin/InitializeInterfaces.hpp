@@ -67,12 +67,13 @@ struct InitExteriorVarsImpl<true, Metavariables> {
     static constexpr size_t dim = system::volume_dim;
     using vars_tag = typename system::variables_tag;
     using exterior_vars_tag =
-        ::Tags::Interface<::Tags::BoundaryDirectionsExterior<dim>, vars_tag>;
+        domain::Tags::Interface<domain::Tags::BoundaryDirectionsExterior<dim>,
+                                vars_tag>;
 
     db::item_type<exterior_vars_tag> exterior_boundary_vars{};
-    const auto& mesh = db::get<::Tags::Mesh<dim>>(box);
+    const auto& mesh = db::get<domain::Tags::Mesh<dim>>(box);
     for (const auto& direction :
-         db::get<::Tags::Element<dim>>(box).external_boundaries()) {
+         db::get<domain::Tags::Element<dim>>(box).external_boundaries()) {
       exterior_boundary_vars[direction] = db::item_type<vars_tag>{
           mesh.slice_away(direction.dimension()).number_of_grid_points()};
     }
@@ -143,56 +144,64 @@ struct InitializeInterfaces {
 
   template <typename TagToSlice, typename Directions>
   struct make_slice_tag {
-    using type = ::Tags::Slice<Directions, TagToSlice>;
+    using type = domain::Tags::Slice<Directions, TagToSlice>;
   };
 
   template <typename ComputeTag, typename Directions>
   struct make_compute_tag {
-    using type = ::Tags::InterfaceCompute<Directions, ComputeTag>;
+    using type = domain::Tags::InterfaceCompute<Directions, ComputeTag>;
   };
 
   template <typename Directions>
   using face_tags = tmpl::flatten<tmpl::list<
-      Directions, ::Tags::InterfaceCompute<Directions, ::Tags::Direction<dim>>,
-      ::Tags::InterfaceCompute<Directions, ::Tags::InterfaceMesh<dim>>,
+      Directions,
+      domain::Tags::InterfaceCompute<Directions, domain::Tags::Direction<dim>>,
+      domain::Tags::InterfaceCompute<Directions,
+                                     domain::Tags::InterfaceMesh<dim>>,
       tmpl::transform<SliceTagsToFace,
                       make_slice_tag<tmpl::_1, tmpl::pin<Directions>>>,
-      ::Tags::InterfaceCompute<Directions,
-                               ::Tags::UnnormalizedFaceNormalCompute<dim>>,
-      ::Tags::InterfaceCompute<Directions,
-                               typename System::template magnitude_tag<
-                                   ::Tags::UnnormalizedFaceNormal<dim>>>,
-      ::Tags::InterfaceCompute<
+      domain::Tags::InterfaceCompute<
+          Directions, domain::Tags::UnnormalizedFaceNormalCompute<dim>>,
+      domain::Tags::InterfaceCompute<
+          Directions, typename System::template magnitude_tag<
+                          domain::Tags::UnnormalizedFaceNormal<dim>>>,
+      domain::Tags::InterfaceCompute<
           Directions,
-          ::Tags::NormalizedCompute<::Tags::UnnormalizedFaceNormal<dim>>>,
+          ::Tags::NormalizedCompute<domain::Tags::UnnormalizedFaceNormal<dim>>>,
       tmpl::transform<FaceComputeTags,
                       make_compute_tag<tmpl::_1, tmpl::pin<Directions>>>>>;
 
   using exterior_face_tags = tmpl::flatten<tmpl::list<
-      ::Tags::BoundaryDirectionsExterior<dim>,
-      ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsExterior<dim>,
-                               ::Tags::Direction<dim>>,
-      ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsExterior<dim>,
-                               ::Tags::InterfaceMesh<dim>>,
+      domain::Tags::BoundaryDirectionsExterior<dim>,
+      domain::Tags::InterfaceCompute<
+          domain::Tags::BoundaryDirectionsExterior<dim>,
+          domain::Tags::Direction<dim>>,
+      domain::Tags::InterfaceCompute<
+          domain::Tags::BoundaryDirectionsExterior<dim>,
+          domain::Tags::InterfaceMesh<dim>>,
       tmpl::transform<
           SliceTagsToExterior,
-          make_slice_tag<tmpl::_1,
-                         tmpl::pin<::Tags::BoundaryDirectionsExterior<dim>>>>,
-      ::Tags::InterfaceCompute<
-          ::Tags::BoundaryDirectionsExterior<dim>,
-          ::Tags::BoundaryCoordinates<dim, Frame::Inertial>>,
-      ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsExterior<dim>,
-                               ::Tags::UnnormalizedFaceNormalCompute<dim>>,
-      ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsExterior<dim>,
-                               typename System::template magnitude_tag<
-                                   ::Tags::UnnormalizedFaceNormal<dim>>>,
-      ::Tags::InterfaceCompute<
-          ::Tags::BoundaryDirectionsExterior<dim>,
-          ::Tags::NormalizedCompute<::Tags::UnnormalizedFaceNormal<dim>>>,
+          make_slice_tag<
+              tmpl::_1,
+              tmpl::pin<domain::Tags::BoundaryDirectionsExterior<dim>>>>,
+      domain::Tags::InterfaceCompute<
+          domain::Tags::BoundaryDirectionsExterior<dim>,
+          domain::Tags::BoundaryCoordinates<dim, Frame::Inertial>>,
+      domain::Tags::InterfaceCompute<
+          domain::Tags::BoundaryDirectionsExterior<dim>,
+          domain::Tags::UnnormalizedFaceNormalCompute<dim>>,
+      domain::Tags::InterfaceCompute<
+          domain::Tags::BoundaryDirectionsExterior<dim>,
+          typename System::template magnitude_tag<
+              domain::Tags::UnnormalizedFaceNormal<dim>>>,
+      domain::Tags::InterfaceCompute<
+          domain::Tags::BoundaryDirectionsExterior<dim>,
+          ::Tags::NormalizedCompute<domain::Tags::UnnormalizedFaceNormal<dim>>>,
       tmpl::transform<
           ExteriorComputeTags,
           make_compute_tag<
-              tmpl::_1, tmpl::pin<::Tags::BoundaryDirectionsExterior<dim>>>>>>;
+              tmpl::_1,
+              tmpl::pin<domain::Tags::BoundaryDirectionsExterior<dim>>>>>>;
 
  public:
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -204,8 +213,8 @@ struct InitializeInterfaces {
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     using compute_tags =
-        tmpl::append<face_tags<::Tags::InternalDirections<dim>>,
-                     face_tags<::Tags::BoundaryDirectionsInterior<dim>>,
+        tmpl::append<face_tags<domain::Tags::InternalDirections<dim>>,
+                     face_tags<domain::Tags::BoundaryDirectionsInterior<dim>>,
                      exterior_face_tags>;
     return std::make_tuple(
         ::Initialization::merge_into_databox<InitializeInterfaces,

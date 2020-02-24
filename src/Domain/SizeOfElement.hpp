@@ -14,10 +14,12 @@
 /// \cond
 template <size_t VolumeDim, typename Frame>
 class ElementMap;
+namespace domain {
 namespace Tags {
 template <size_t Dim, typename Frame>
 struct ElementMap;
 }  // namespace Tags
+}  // namespace domain
 /// \endcond
 
 /*!
@@ -39,6 +41,7 @@ template <size_t VolumeDim>
 std::array<double, VolumeDim> size_of_element(
     const ElementMap<VolumeDim, Frame::Inertial>& element_map) noexcept;
 
+namespace domain {
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
@@ -52,3 +55,4 @@ struct SizeOfElement : db::ComputeTag {
   static constexpr auto function = size_of_element<VolumeDim>;
 };
 }  // namespace Tags
+}  // namespace domain

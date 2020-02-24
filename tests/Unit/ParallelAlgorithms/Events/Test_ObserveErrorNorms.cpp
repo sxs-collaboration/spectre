@@ -220,7 +220,8 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   using metavariables = Metavariables<System>;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
-  using coordinates_tag = Tags::Coordinates<volume_dim, Frame::Inertial>;
+  using coordinates_tag =
+      domain::Tags::Coordinates<volume_dim, Frame::Inertial>;
 
   const typename element_component::array_index array_index(0);
   const size_t num_points = 5;

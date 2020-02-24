@@ -121,7 +121,7 @@ struct CharacteristicSpeedsCompute : CharacteristicSpeeds<Dim>, db::ComputeTag {
   using base =  CharacteristicSpeeds<Dim>;
   using argument_tags =
       tmpl::list<Velocity<DataVector, Dim>, SoundSpeed<DataVector>,
-                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
+                 ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
 
   using return_type = std::array<DataVector, Dim + 2>;
 

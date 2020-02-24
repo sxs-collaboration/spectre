@@ -85,7 +85,7 @@ class NumericalFlux {
   // things.
   using argument_tags =
       tmpl::list<Tags::NormalDotFlux<Var>, OtherData,
-                 Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>;
+                 Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
   void package_data(const gsl::not_null<Variables<package_tags>*> packaged_data,
                     const Scalar<DataVector>& var_flux,
                     const Scalar<DataVector>& other_data,
@@ -118,10 +118,11 @@ struct System {
 };
 
 template <size_t Dim, typename Tag>
-using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
+using interface_tag =
+    domain::Tags::Interface<domain::Tags::InternalDirections<Dim>, Tag>;
 template <size_t Dim, typename Tag>
 using interface_compute_tag =
-    Tags::InterfaceCompute<Tags::InternalDirections<Dim>, Tag>;
+    domain::Tags::InterfaceCompute<domain::Tags::InternalDirections<Dim>, Tag>;
 
 template <typename FluxCommTypes>
 using LocalData = typename FluxCommTypes::LocalData;
@@ -137,7 +138,7 @@ using other_data_tag =
 template <size_t Dim>
 using mortar_next_temporal_ids_tag = Tags::Mortars<Tags::Next<TemporalId>, Dim>;
 template <size_t Dim>
-using mortar_meshes_tag = Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>;
+using mortar_meshes_tag = Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>;
 template <size_t Dim>
 using mortar_sizes_tag = Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>;
 
@@ -147,7 +148,7 @@ struct DataRecorderTag : db::SimpleTag {
   using type = DataRecorder;
 };
 
-struct MortarRecorderTag : Tags::VariablesBoundaryData,
+struct MortarRecorderTag : domain::Tags::VariablesBoundaryData,
                            Tags::Mortars<DataRecorderTag, 2> {};
 
 template <size_t Dim, typename MV>
@@ -159,20 +160,24 @@ struct lts_component {
   using flux_comm_types = dg::FluxCommunicationTypes<MV>;
 
   using simple_tags = db::AddSimpleTags<
-      TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>, Tags::Element<2>,
-      Tags::ElementMap<2>, normal_dot_fluxes_tag<2, flux_comm_types>,
-      other_data_tag<2>, mortar_meshes_tag<2>, mortar_sizes_tag<2>,
-      MortarRecorderTag, mortar_next_temporal_ids_tag<2>>;
+      TemporalId, Tags::Next<TemporalId>, domain::Tags::Mesh<2>,
+      domain::Tags::Element<2>, domain::Tags::ElementMap<2>,
+      normal_dot_fluxes_tag<2, flux_comm_types>, other_data_tag<2>,
+      mortar_meshes_tag<2>, mortar_sizes_tag<2>, MortarRecorderTag,
+      mortar_next_temporal_ids_tag<2>>;
 
   using compute_tags = db::AddComputeTags<
-      Tags::InternalDirections<Dim>,
-      interface_compute_tag<Dim, Tags::Direction<Dim>>,
-      interface_compute_tag<Dim, Tags::InterfaceMesh<Dim>>,
-      interface_compute_tag<Dim, Tags::UnnormalizedFaceNormalCompute<Dim>>,
+      domain::Tags::InternalDirections<Dim>,
+      interface_compute_tag<Dim, domain::Tags::Direction<Dim>>,
+      interface_compute_tag<Dim, domain::Tags::InterfaceMesh<Dim>>,
+      interface_compute_tag<Dim,
+                            domain::Tags::UnnormalizedFaceNormalCompute<Dim>>,
       interface_compute_tag<
-          Dim, Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
+          Dim,
+          Tags::EuclideanMagnitude<domain::Tags::UnnormalizedFaceNormal<Dim>>>,
       interface_compute_tag<
-          Dim, Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<Dim>>>>;
+          Dim,
+          Tags::NormalizedCompute<domain::Tags::UnnormalizedFaceNormal<Dim>>>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename MV::Phase, MV::Phase::Initialization,

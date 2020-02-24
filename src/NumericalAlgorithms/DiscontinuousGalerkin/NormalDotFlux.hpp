@@ -81,7 +81,7 @@ struct NormalDotFluxCompute : db::add_tag_prefix<NormalDotFlux, Tag>,
  private:
   using flux_tag = db::add_tag_prefix<Flux, Tag, tmpl::size_t<VolumeDim>, Fr>;
   using normal_tag =
-      Tags::Normalized<Tags::UnnormalizedFaceNormal<VolumeDim, Fr>>;
+      Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<VolumeDim, Fr>>;
 
  public:
   static auto function(const db::const_item_type<flux_tag>& flux,

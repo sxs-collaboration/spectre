@@ -425,7 +425,8 @@ void UpwindFlux<Dim>::package_data(
       *packaged_data) = inverse_spatial_metric;
   get<Tags::ConstraintGamma1>(*packaged_data) = gamma1;
   get<Tags::ConstraintGamma2>(*packaged_data) = gamma2;
-  get<::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>(
+  get<::Tags::Normalized<
+      domain::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>(
       *packaged_data) = interface_unit_normal;
 }
 

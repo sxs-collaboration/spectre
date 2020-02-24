@@ -108,12 +108,12 @@ struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tags = tmpl::list<::Tags::Domain<Dim>>;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<Dim>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
-                         tmpl::list<::Tags::InitialExtents<Dim>>>,
+                         tmpl::list<domain::Tags::InitialExtents<Dim>>>,
                      dg::Actions::InitializeDomain<Dim>>>,
 
       Parallel::PhaseActions<typename Metavariables::Phase,
@@ -203,7 +203,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
           Scalar<DataVector>{{{{4, 0.}}}});
     // Test the analytic source
     const auto& inertial_coords =
-        get_tag(Tags::Coordinates<1, Frame::Inertial>{});
+        get_tag(domain::Tags::Coordinates<1, Frame::Inertial>{});
     CHECK(get(get_tag(Tags::FixedSource<ScalarFieldTag>{})) ==
           // This check is against the source computed by the
           // analytic solution above
@@ -253,7 +253,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
           Scalar<DataVector>{{{{12, 0.}}}});
     // Test the analytic source
     const auto& inertial_coords =
-        get_tag(Tags::Coordinates<2, Frame::Inertial>{});
+        get_tag(domain::Tags::Coordinates<2, Frame::Inertial>{});
     CHECK(get(get_tag(Tags::FixedSource<ScalarFieldTag>{})) ==
           // This check is against the source computed by the
           // analytic solution above
@@ -307,7 +307,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
           Scalar<DataVector>{{{{24, 0.}}}});
     // Test the analytic source
     const auto& inertial_coords =
-        get_tag(Tags::Coordinates<3, Frame::Inertial>{});
+        get_tag(domain::Tags::Coordinates<3, Frame::Inertial>{});
     CHECK(get(get_tag(Tags::FixedSource<ScalarFieldTag>{})) ==
           // This check is against the source computed by the
           // analytic solution above

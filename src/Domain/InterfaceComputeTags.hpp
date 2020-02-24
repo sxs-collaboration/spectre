@@ -18,6 +18,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
+namespace domain {
 namespace Tags {
 
 namespace Interface_detail {
@@ -239,17 +240,18 @@ struct BoundaryCoordinates : db::ComputeTag,
 };
 
 }  // namespace Tags
+}  // namespace domain
 
 namespace db {
 template <typename TagList, typename DirectionsTag, typename VariablesTag>
 struct Subitems<
-    TagList, Tags::InterfaceCompute<DirectionsTag, VariablesTag>,
+    TagList, domain::Tags::InterfaceCompute<DirectionsTag, VariablesTag>,
     Requires<tt::is_a_v<Variables, const_item_type<VariablesTag, TagList>>>>
     : detail::InterfaceSubitemsImpl<TagList, DirectionsTag, VariablesTag> {};
 
 template <typename TagList, typename DirectionsTag, typename VariablesTag>
 struct Subitems<
-    TagList, Tags::Slice<DirectionsTag, VariablesTag>,
+    TagList, domain::Tags::Slice<DirectionsTag, VariablesTag>,
     Requires<tt::is_a_v<Variables, const_item_type<VariablesTag, TagList>>>>
     : detail::InterfaceSubitemsImpl<TagList, DirectionsTag, VariablesTag> {};
 }  // namespace db

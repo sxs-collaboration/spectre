@@ -286,7 +286,8 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   constexpr size_t volume_dim = System::volume_dim;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
-  using coordinates_tag = Tags::Coordinates<volume_dim, Frame::Inertial>;
+  using coordinates_tag =
+      domain::Tags::Coordinates<volume_dim, Frame::Inertial>;
 
   const ElementId<volume_dim> element_id(2);
   const typename element_component::array_index array_index(element_id);
@@ -322,7 +323,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   ActionTesting::emplace_component<observer_component>(&runner, 0);
 
   const auto box = db::create<db::AddSimpleTags<
-      ObservationTimeTag, Tags::Mesh<volume_dim>,
+      ObservationTimeTag, domain::Tags::Mesh<volume_dim>,
       Tags::Variables<typename decltype(vars)::tags_list>,
       db::add_tag_prefix<Tags::Analytic, Tags::Variables<solution_variables>>>>(
       observation_time, mesh, vars, solutions);

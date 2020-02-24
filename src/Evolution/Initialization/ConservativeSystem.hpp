@@ -28,13 +28,18 @@ namespace Tags {
 struct InitialTime;
 }  // namespace Tags
 }  // namespace Initialization
+
 namespace Tags {
 struct AnalyticSolutionOrData;
+}  // namespace Tags
+namespace domain {
+namespace Tags {
 template <size_t VolumeDim, typename Frame>
 struct Coordinates;
 template <size_t VolumeDim>
 struct Mesh;
 }  // namespace Tags
+}  // namespace domain
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
@@ -83,7 +88,7 @@ struct ConservativeSystem {
     using compute_tags = db::AddComputeTags<>;
 
     const size_t num_grid_points =
-        db::get<::Tags::Mesh<dim>>(box).number_of_grid_points();
+        db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
     typename variables_tag::type vars(num_grid_points);
     typename fluxes_tag::type fluxes(num_grid_points);
     typename sources_tag::type sources(num_grid_points);
@@ -132,10 +137,10 @@ struct ConservativeSystem {
     using PrimitiveVars = typename primitives_tag::type;
 
     const size_t num_grid_points =
-        db::get<::Tags::Mesh<dim>>(box).number_of_grid_points();
+        db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
 
     const auto& inertial_coords =
-        db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
+        db::get<domain::Tags::Coordinates<dim, Frame::Inertial>>(box);
 
     // Set initial data from analytic solution
     const auto& solution_or_data =
@@ -165,7 +170,7 @@ struct ConservativeSystem {
 
     const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
     const auto& inertial_coords =
-        db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
+        db::get<domain::Tags::Coordinates<dim, Frame::Inertial>>(box);
 
     // Set initial data from analytic solution
     using Vars = typename variables_tag::type;

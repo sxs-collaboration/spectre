@@ -69,7 +69,7 @@ struct mock_interpolation_target {
   using const_global_cache_tags = tmpl::flatten<tmpl::append<
       Parallel::get_const_global_cache_tags_from_actions<tmpl::list<
           typename Metavariables::InterpolationTargetA::compute_target_points>>,
-      tmpl::list<::Tags::Domain<Metavariables::volume_dim>>>>;
+      tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -149,7 +149,7 @@ void test_interpolation_target(
   using interp_component = mock_interpolator<metavars>;
 
   tuples::TaggedTuple<InterpolationTargetOptionTag,
-                      ::Tags::Domain<MetaVariables::volume_dim>>
+                      domain::Tags::Domain<MetaVariables::volume_dim>>
       tuple_of_opts{std::move(options),
                     std::move(domain_creator.create_domain())};
   ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};

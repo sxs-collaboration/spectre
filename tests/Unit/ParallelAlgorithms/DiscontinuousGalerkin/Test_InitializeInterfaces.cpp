@@ -63,13 +63,13 @@ struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tags = tmpl::list<::Tags::Domain<Dim>>;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<Dim>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<
               ActionTesting::InitializeDataBox<tmpl::list<
-                  ::Tags::InitialExtents<Dim>, vars_tag, other_vars_tag>>,
+                  domain::Tags::InitialExtents<Dim>, vars_tag, other_vars_tag>>,
               dg::Actions::InitializeDomain<Dim>>>,
 
       Parallel::PhaseActions<
@@ -101,39 +101,42 @@ void check_compute_items(
     return ActionTesting::tag_is_retrievable<
         ElementArray<Dim, Metavariables<Dim>>, tag>(runner, element_id);
   };
-  CHECK(tag_is_retrievable(::Tags::InternalDirections<Dim>{}));
-  CHECK(tag_is_retrievable(::Tags::BoundaryDirectionsInterior<Dim>{}));
-  CHECK(tag_is_retrievable(::Tags::BoundaryDirectionsExterior<Dim>{}));
+  CHECK(tag_is_retrievable(domain::Tags::InternalDirections<Dim>{}));
+  CHECK(tag_is_retrievable(domain::Tags::BoundaryDirectionsInterior<Dim>{}));
+  CHECK(tag_is_retrievable(domain::Tags::BoundaryDirectionsExterior<Dim>{}));
+  CHECK(tag_is_retrievable(domain::Tags::Interface<
+                           domain::Tags::BoundaryDirectionsExterior<Dim>,
+                           domain::Tags::Coordinates<Dim, Frame::Inertial>>{}));
   CHECK(tag_is_retrievable(
-      ::Tags::Interface<::Tags::BoundaryDirectionsExterior<Dim>,
-                        ::Tags::Coordinates<Dim, Frame::Inertial>>{}));
+      domain::Tags::Interface<domain::Tags::InternalDirections<Dim>,
+                              vars_tag>{}));
   CHECK(tag_is_retrievable(
-      ::Tags::Interface<::Tags::InternalDirections<Dim>, vars_tag>{}));
+      domain::Tags::Interface<domain::Tags::BoundaryDirectionsInterior<Dim>,
+                              vars_tag>{}));
   CHECK(tag_is_retrievable(
-      ::Tags::Interface<::Tags::BoundaryDirectionsInterior<Dim>, vars_tag>{}));
+      domain::Tags::Interface<domain::Tags::BoundaryDirectionsExterior<Dim>,
+                              other_vars_tag>{}));
   CHECK(tag_is_retrievable(
-      ::Tags::Interface<::Tags::BoundaryDirectionsExterior<Dim>,
-                        other_vars_tag>{}));
-  CHECK(tag_is_retrievable(::Tags::Interface<::Tags::InternalDirections<Dim>,
-                                             SomeComputeTag<vars_tag>>{}));
+      domain::Tags::Interface<domain::Tags::InternalDirections<Dim>,
+                              SomeComputeTag<vars_tag>>{}));
   CHECK(tag_is_retrievable(
-      ::Tags::Interface<::Tags::BoundaryDirectionsInterior<Dim>,
-                        SomeComputeTag<vars_tag>>{}));
+      domain::Tags::Interface<domain::Tags::BoundaryDirectionsInterior<Dim>,
+                              SomeComputeTag<vars_tag>>{}));
   CHECK(tag_is_retrievable(
-      ::Tags::Interface<::Tags::BoundaryDirectionsExterior<Dim>,
-                        SomeComputeTag<other_vars_tag>>{}));
+      domain::Tags::Interface<domain::Tags::BoundaryDirectionsExterior<Dim>,
+                              SomeComputeTag<other_vars_tag>>{}));
   CHECK(tag_is_retrievable(
-      ::Tags::Interface<
-          ::Tags::InternalDirections<Dim>,
-          ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>{}));
+      domain::Tags::Interface<
+          domain::Tags::InternalDirections<Dim>,
+          ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>{}));
   CHECK(tag_is_retrievable(
-      ::Tags::Interface<
-          ::Tags::BoundaryDirectionsInterior<Dim>,
-          ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>{}));
+      domain::Tags::Interface<
+          domain::Tags::BoundaryDirectionsInterior<Dim>,
+          ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>{}));
   CHECK(tag_is_retrievable(
-      ::Tags::Interface<
-          ::Tags::BoundaryDirectionsExterior<Dim>,
-          ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>{}));
+      domain::Tags::Interface<
+          domain::Tags::BoundaryDirectionsExterior<Dim>,
+          ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>{}));
 }
 
 }  // namespace

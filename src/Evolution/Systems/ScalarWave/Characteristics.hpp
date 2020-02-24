@@ -79,7 +79,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
   using base = Tags::CharacteristicSpeeds<Dim>;
   using type = typename base::type;
   using argument_tags =
-      tmpl::list<::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
+      tmpl::list<::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
 
   static typename Tags::CharacteristicSpeeds<Dim>::type function(
       const tnsr::i<DataVector, Dim, Frame::Inertial>&
@@ -164,7 +164,7 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim>,
   using type = typename base::type;
   using argument_tags =
       tmpl::list<Tags::ConstraintGamma2, Psi, Pi, Phi<Dim>,
-                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
+                 ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
 
   static typename Tags::CharacteristicFields<Dim>::type function(
       const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,
@@ -212,7 +212,7 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
   using argument_tags =
       tmpl::list<Tags::ConstraintGamma2, Tags::VPsi, Tags::VZero<Dim>,
                  Tags::VPlus, Tags::VMinus,
-                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
+                 ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
 
   static typename Tags::EvolvedFieldsFromCharacteristicFields<Dim>::type
   function(const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& v_psi,

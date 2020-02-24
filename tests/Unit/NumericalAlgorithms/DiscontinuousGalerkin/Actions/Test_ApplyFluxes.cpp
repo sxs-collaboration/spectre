@@ -102,8 +102,9 @@ struct component {
   using array_index = ElementIndex<Dim>;
   using const_global_cache_tags = tmpl::list<NumericalFluxTag<Flux>>;
   using simple_tags =
-      db::AddSimpleTags<Tags::Mesh<Dim>, Tags::Coordinates<Dim, Frame::Logical>,
-                        Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
+      db::AddSimpleTags<domain::Tags::Mesh<Dim>,
+                        domain::Tags::Coordinates<Dim, Frame::Logical>,
+                        Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
                         Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>,
                         Tags::dt<Tags::Variables<tmpl::list<Tags::dt<Var>>>>,
                         typename dg::FluxCommunicationTypes<
@@ -138,7 +139,7 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyFluxes",
   using LocalData = typename flux_comm_types::LocalData;
   using PackagedData = typename flux_comm_types::PackagedData;
   using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
-  using mortar_meshes_tag = Tags::Mortars<Tags::Mesh<1>, 2>;
+  using mortar_meshes_tag = Tags::Mortars<domain::Tags::Mesh<1>, 2>;
   using mortar_sizes_tag = Tags::Mortars<Tags::MortarSize<1>, 2>;
 
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
@@ -277,15 +278,14 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyFluxes.p-refinement",
   using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
   using LocalData = typename flux_comm_types::LocalData;
   using PackagedData = typename flux_comm_types::PackagedData;
-  using mortar_meshes_tag = Tags::Mortars<Tags::Mesh<2>, 3>;
+  using mortar_meshes_tag = Tags::Mortars<domain::Tags::Mesh<2>, 3>;
   using mortar_sizes_tag = Tags::Mortars<Tags::MortarSize<2>, 3>;
   using dt_variables_tag =
       db::add_tag_prefix<Tags::dt, typename System<3>::variables_tag>;
 
-  using simple_tags =
-      db::AddSimpleTags<Tags::Mesh<3>, Tags::Coordinates<3, Frame::Logical>,
-                        mortar_meshes_tag, mortar_sizes_tag, dt_variables_tag,
-                        mortar_data_tag>;
+  using simple_tags = db::AddSimpleTags<
+      domain::Tags::Mesh<3>, domain::Tags::Coordinates<3, Frame::Logical>,
+      mortar_meshes_tag, mortar_sizes_tag, dt_variables_tag, mortar_data_tag>;
 
   const ElementId<3> id_0(0);
   const ElementId<3> id_1(1);
@@ -315,14 +315,16 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyFluxes.p-refinement",
   auto& box2 = ActionTesting::get_databox<my_component, simple_tags>(
       make_not_null(&runner), id_1);
 
-  const auto set_boundary_data =
-      [&direction, &id_0 ](const auto local, const auto remote, const auto flux,
-                           const auto magnitude_of_face_normal) noexcept {
-    const auto& volume_mesh = get<Tags::Mesh<3>>(*local);
+  const auto set_boundary_data = [&direction, &id_0](
+                                     const auto local, const auto remote,
+                                     const auto flux,
+                                     const auto
+                                         magnitude_of_face_normal) noexcept {
+    const auto& volume_mesh = get<domain::Tags::Mesh<3>>(*local);
     const auto face_mesh =
-        get<Tags::Mesh<3>>(*local).slice_away(direction.dimension());
+        get<domain::Tags::Mesh<3>>(*local).slice_away(direction.dimension());
     const auto remote_mesh =
-        get<Tags::Mesh<3>>(*remote).slice_away(direction.dimension());
+        get<domain::Tags::Mesh<3>>(*remote).slice_away(direction.dimension());
     const auto mortar_mesh = dg::mortar_mesh(face_mesh, remote_mesh);
     const auto face_coords = logical_coordinates(face_mesh);
     const auto mortar_coords = logical_coordinates(mortar_mesh);
@@ -396,13 +398,13 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyFluxes.p-refinement",
   const double average_dt1 = definite_integral(
       get(get<Tags::dt<Var>>(out_box1)) *
           get(determinant_of_jacobian1(
-              logical_coordinates(get<Tags::Mesh<3>>(out_box1)))),
-      get<Tags::Mesh<3>>(out_box1));
+              logical_coordinates(get<domain::Tags::Mesh<3>>(out_box1)))),
+      get<domain::Tags::Mesh<3>>(out_box1));
   const double average_dt2 = definite_integral(
       get(get<Tags::dt<Var>>(out_box2)) *
           get(determinant_of_jacobian2(
-              logical_coordinates(get<Tags::Mesh<3>>(out_box2)))),
-      get<Tags::Mesh<3>>(out_box2));
+              logical_coordinates(get<domain::Tags::Mesh<3>>(out_box2)))),
+      get<domain::Tags::Mesh<3>>(out_box2));
   CHECK(average_dt1 == approx(-average_dt2));
 }
 
@@ -416,7 +418,7 @@ SPECTRE_TEST_CASE(
   using flux_comm_types = dg::FluxCommunicationTypes<metavariables>;
   using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
   using LocalData = typename flux_comm_types::LocalData;
-  using mortar_meshes_tag = Tags::Mortars<Tags::Mesh<2>, 3>;
+  using mortar_meshes_tag = Tags::Mortars<domain::Tags::Mesh<2>, 3>;
   using mortar_sizes_tag = Tags::Mortars<Tags::MortarSize<2>, 3>;
   using dt_variables_tag =
       db::add_tag_prefix<Tags::dt, typename System<3>::variables_tag>;
@@ -566,7 +568,8 @@ SPECTRE_TEST_CASE(
                                   const auto& det_jacobian) noexcept {
     return definite_integral(
         get(get<Tags::dt<Var>>(box)) *
-            get(det_jacobian(get<Tags::Coordinates<3, Frame::Logical>>(box))),
+            get(det_jacobian(
+                get<domain::Tags::Coordinates<3, Frame::Logical>>(box))),
         mesh);
   };
   const double self_average_dt =

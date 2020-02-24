@@ -139,7 +139,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::MagneticField<DataVector, 3>, gr::Tags::Lapse<>,
                  gr::Tags::Shift<3>, gr::Tags::SpatialMetric<3>,
-                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<3>>,
+                 ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<3>>,
                  hydro::Tags::EquationOfState<EquationOfStateType>>;
 
   using volume_tags =

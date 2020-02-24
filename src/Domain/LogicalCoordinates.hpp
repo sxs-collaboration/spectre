@@ -13,12 +13,14 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace domain {
 namespace Tags {
 template<size_t Dim>
 struct Mesh;
 template <size_t, typename>
 struct Coordinates;  // IWYU pragma: keep
 }  // namespace Tags
+}  // namespace domain
 template <size_t Dim>
 class Mesh;
 class DataVector;
@@ -56,6 +58,7 @@ tnsr::I<DataVector, VolumeDim, Frame::Logical> interface_logical_coordinates(
     const Mesh<VolumeDim - 1>& mesh,
     const Direction<VolumeDim>& direction) noexcept;
 
+namespace domain {
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
@@ -67,3 +70,4 @@ struct LogicalCoordinates : Coordinates<VolumeDim, Frame::Logical>,
   static constexpr auto function = logical_coordinates<VolumeDim>;
 };
 }  // namespace Tags
+}  // namespace domain

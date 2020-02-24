@@ -208,8 +208,8 @@ void test_divergence_compute_item(
     std::array<std::unique_ptr<MathFunction<1>>, Dim> functions) noexcept {
   const auto coordinate_map = make_affine_map<Dim>();
   using map_tag = MapTag<std::decay_t<decltype(coordinate_map)>>;
-  using inv_jac_tag =
-      Tags::InverseJacobianCompute<map_tag, Tags::LogicalCoordinates<Dim>>;
+  using inv_jac_tag = domain::Tags::InverseJacobianCompute<
+      map_tag, domain::Tags::LogicalCoordinates<Dim>>;
   using flux_tags = two_fluxes<Dim, Frame>;
   using flux_tag = Tags::Variables<flux_tags>;
   using div_tags = db::wrap_tags_in<Tags::div, flux_tags>;
@@ -232,11 +232,11 @@ void test_divergence_compute_item(
     get<DivFluxTag>(expected_div_fluxes) = FluxTag::divergence_of_flux(f, x);
   });
 
-  auto box =
-      db::create<db::AddSimpleTags<Tags::Mesh<Dim>, flux_tag, map_tag>,
-                 db::AddComputeTags<Tags::LogicalCoordinates<Dim>, inv_jac_tag,
-                                    Tags::DivCompute<flux_tag, inv_jac_tag>>>(
-          mesh, fluxes, coordinate_map);
+  auto box = db::create<
+      db::AddSimpleTags<domain::Tags::Mesh<Dim>, flux_tag, map_tag>,
+      db::AddComputeTags<domain::Tags::LogicalCoordinates<Dim>, inv_jac_tag,
+                         Tags::DivCompute<flux_tag, inv_jac_tag>>>(
+      mesh, fluxes, coordinate_map);
 
   const auto& div_fluxes =
       db::get<Tags::div<Tags::Variables<div_tags>>>(box);

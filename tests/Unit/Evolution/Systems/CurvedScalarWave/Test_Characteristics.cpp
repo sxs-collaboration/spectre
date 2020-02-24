@@ -164,7 +164,7 @@ void test_characteristics_compute_tags() noexcept {
                                          DataVector>,
           CurvedScalarWave::Psi, CurvedScalarWave::Pi,
           CurvedScalarWave::Phi<SpatialDim>,
-          ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<SpatialDim>>>,
+          ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<SpatialDim>>>,
       db::AddComputeTags<
           CurvedScalarWave::CharacteristicSpeedsCompute<SpatialDim>,
           CurvedScalarWave::CharacteristicFieldsCompute<SpatialDim>>>(
@@ -197,7 +197,7 @@ void test_characteristics_compute_tags() noexcept {
           CurvedScalarWave::Tags::VPsi,
           CurvedScalarWave::Tags::VZero<SpatialDim>,
           CurvedScalarWave::Tags::VPlus, CurvedScalarWave::Tags::VMinus,
-          ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<SpatialDim>>>,
+          ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<SpatialDim>>>,
       db::AddComputeTags<
           CurvedScalarWave::EvolvedFieldsFromCharacteristicFieldsCompute<
               SpatialDim>>>(gamma_2, u_psi, u_zero, u_plus, u_minus, normal);

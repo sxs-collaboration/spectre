@@ -67,7 +67,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<SpatialDim>,
   using argument_tags = tmpl::list<
       Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<SpatialDim, Frame::Inertial, DataVector>,
-      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<SpatialDim>>>;
+      ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<SpatialDim>>>;
 
   static constexpr void function(
       gsl::not_null<return_type*> result, const Scalar<DataVector>& gamma_1,
@@ -164,7 +164,7 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<SpatialDim>,
       Tags::ConstraintGamma2,
       gr::Tags::InverseSpatialMetric<SpatialDim, Frame::Inertial, DataVector>,
       Psi, Pi, Phi<SpatialDim>,
-      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<SpatialDim>>>;
+      ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<SpatialDim>>>;
 
   static constexpr void function(
       gsl::not_null<return_type*> result, const Scalar<DataVector>& gamma_2,
@@ -214,7 +214,7 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
   using argument_tags = tmpl::list<
       Tags::ConstraintGamma2, Tags::VPsi, Tags::VZero<SpatialDim>, Tags::VPlus,
       Tags::VMinus,
-      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<SpatialDim>>>;
+      ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<SpatialDim>>>;
 
   static constexpr void function(
       gsl::not_null<return_type*> result, const Scalar<DataVector>& gamma_2,

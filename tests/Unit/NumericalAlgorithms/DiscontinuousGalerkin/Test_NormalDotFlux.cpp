@@ -184,11 +184,11 @@ void check_compute_item() {
 
   // Doing this through a DataBox would require a full element to be
   // set up.
-  using magnitude_normal_tag =
-      Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim, Frame>>;
+  using magnitude_normal_tag = Tags::EuclideanMagnitude<
+      domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>;
   const auto magnitude_normal = magnitude_normal_tag::function(normal);
   using normalized_normal_tag =
-      Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<Dim, Frame>>;
+      Tags::NormalizedCompute<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>;
   const auto normalized_normal =
       normalized_normal_tag::function(normal, magnitude_normal);
   using compute_n_dot_f =

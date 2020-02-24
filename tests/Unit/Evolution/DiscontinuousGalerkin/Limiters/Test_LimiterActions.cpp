@@ -68,7 +68,7 @@ class DummyLimiterForTest {
     double mean_;
     Mesh<2> mesh_;
   };
-  using package_argument_tags = tmpl::list<Var, Tags::Mesh<2>>;
+  using package_argument_tags = tmpl::list<Var, domain::Tags::Mesh<2>>;
   void package_data(const gsl::not_null<PackagedData*> packaged_data,
                     const Scalar<DataVector>& var, const Mesh<2>& mesh,
                     const OrientationMap<2>& orientation_map) const noexcept {
@@ -77,7 +77,8 @@ class DummyLimiterForTest {
   }
 
   using limit_tags = tmpl::list<Var>;
-  using limit_argument_tags = tmpl::list<Tags::Mesh<2>, Tags::Element<2>>;
+  using limit_argument_tags =
+      tmpl::list<domain::Tags::Mesh<2>, domain::Tags::Element<2>>;
   void operator()(const gsl::not_null<db::item_type<Var>*> var,
                   const Mesh<2>& /*mesh*/, const Element<2>& /*element*/,
                   const std::unordered_map<
@@ -105,9 +106,9 @@ struct component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
   using const_global_cache_tags = tmpl::list<LimiterTag>;
-  using simple_tags =
-      db::AddSimpleTags<TemporalId, Tags::Mesh<Dim>, Tags::Element<Dim>,
-                        Tags::ElementMap<Dim>, Var>;
+  using simple_tags = db::AddSimpleTags<TemporalId, domain::Tags::Mesh<Dim>,
+                                        domain::Tags::Element<Dim>,
+                                        domain::Tags::ElementMap<Dim>, Var>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,

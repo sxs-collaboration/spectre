@@ -67,15 +67,18 @@ struct DiscontinuousGalerkin {
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
 
   template <typename Tag>
-  using interface_tag = ::Tags::Interface<::Tags::InternalDirections<dim>, Tag>;
+  using interface_tag =
+      domain::Tags::Interface<domain::Tags::InternalDirections<dim>, Tag>;
 
   template <typename Tag>
   using interior_boundary_tag =
-      ::Tags::Interface<::Tags::BoundaryDirectionsInterior<dim>, Tag>;
+      domain::Tags::Interface<domain::Tags::BoundaryDirectionsInterior<dim>,
+                              Tag>;
 
   template <typename Tag>
   using external_boundary_tag =
-      ::Tags::Interface<::Tags::BoundaryDirectionsExterior<dim>, Tag>;
+      domain::Tags::Interface<domain::Tags::BoundaryDirectionsExterior<dim>,
+                              Tag>;
 
   template <typename LocalSystem, bool IsInFluxConservativeForm =
                                       LocalSystem::is_in_flux_conservative_form>
@@ -89,16 +92,16 @@ struct DiscontinuousGalerkin {
     template <typename TagsList>
     static auto initialize(db::DataBox<TagsList>&& box) noexcept {
       const auto& internal_directions =
-          db::get<::Tags::InternalDirections<dim>>(box);
+          db::get<domain::Tags::InternalDirections<dim>>(box);
 
       const auto& boundary_directions =
-          db::get<::Tags::BoundaryDirectionsInterior<dim>>(box);
+          db::get<domain::Tags::BoundaryDirectionsInterior<dim>>(box);
 
       typename interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>::
           type normal_dot_fluxes_interface{};
       for (const auto& direction : internal_directions) {
         const auto& interface_num_points =
-            db::get<interface_tag<::Tags::Mesh<dim - 1>>>(box)
+            db::get<interface_tag<domain::Tags::Mesh<dim - 1>>>(box)
                 .at(direction)
                 .number_of_grid_points();
         normal_dot_fluxes_interface[direction].initialize(interface_num_points,
@@ -111,7 +114,7 @@ struct DiscontinuousGalerkin {
           normal_dot_fluxes_boundary_interior{};
       for (const auto& direction : boundary_directions) {
         const auto& boundary_num_points =
-            db::get<interior_boundary_tag<::Tags::Mesh<dim - 1>>>(box)
+            db::get<interior_boundary_tag<domain::Tags::Mesh<dim - 1>>>(box)
                 .at(direction)
                 .number_of_grid_points();
         normal_dot_fluxes_boundary_exterior[direction].initialize(
@@ -134,37 +137,41 @@ struct DiscontinuousGalerkin {
 
     template <typename Tag>
     using interface_compute_tag =
-        ::Tags::InterfaceCompute<::Tags::InternalDirections<dim>, Tag>;
+        domain::Tags::InterfaceCompute<domain::Tags::InternalDirections<dim>,
+                                       Tag>;
 
     template <typename Tag>
-    using boundary_interior_compute_tag =
-        ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsInterior<dim>, Tag>;
+    using boundary_interior_compute_tag = domain::Tags::InterfaceCompute<
+        domain::Tags::BoundaryDirectionsInterior<dim>, Tag>;
 
     template <typename Tag>
-    using boundary_exterior_compute_tag =
-        ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsExterior<dim>, Tag>;
+    using boundary_exterior_compute_tag = domain::Tags::InterfaceCompute<
+        domain::Tags::BoundaryDirectionsExterior<dim>, Tag>;
 
     using char_speed_tag = typename LocalSystem::char_speeds_tag;
 
     using compute_tags = db::AddComputeTags<
-        ::Tags::Slice<::Tags::InternalDirections<dim>,
-                      db::add_tag_prefix<::Tags::Flux,
-                                         typename LocalSystem::variables_tag,
-                                         tmpl::size_t<dim>, Frame::Inertial>>,
+        domain::Tags::Slice<
+            domain::Tags::InternalDirections<dim>,
+            db::add_tag_prefix<::Tags::Flux,
+                               typename LocalSystem::variables_tag,
+                               tmpl::size_t<dim>, Frame::Inertial>>,
         interface_compute_tag<::Tags::NormalDotFluxCompute<
             typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
         interface_compute_tag<char_speed_tag>,
-        ::Tags::Slice<::Tags::BoundaryDirectionsInterior<dim>,
-                      db::add_tag_prefix<::Tags::Flux,
-                                         typename LocalSystem::variables_tag,
-                                         tmpl::size_t<dim>, Frame::Inertial>>,
+        domain::Tags::Slice<
+            domain::Tags::BoundaryDirectionsInterior<dim>,
+            db::add_tag_prefix<::Tags::Flux,
+                               typename LocalSystem::variables_tag,
+                               tmpl::size_t<dim>, Frame::Inertial>>,
         boundary_interior_compute_tag<::Tags::NormalDotFluxCompute<
             typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
         boundary_interior_compute_tag<char_speed_tag>,
-        ::Tags::Slice<::Tags::BoundaryDirectionsExterior<dim>,
-                      db::add_tag_prefix<::Tags::Flux,
-                                         typename LocalSystem::variables_tag,
-                                         tmpl::size_t<dim>, Frame::Inertial>>,
+        domain::Tags::Slice<
+            domain::Tags::BoundaryDirectionsExterior<dim>,
+            db::add_tag_prefix<::Tags::Flux,
+                               typename LocalSystem::variables_tag,
+                               tmpl::size_t<dim>, Frame::Inertial>>,
         boundary_exterior_compute_tag<::Tags::NormalDotFluxCompute<
             typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
         boundary_exterior_compute_tag<char_speed_tag>>;
@@ -178,7 +185,7 @@ struct DiscontinuousGalerkin {
   };
 
   using initialization_tags =
-      tmpl::list<::Tags::InitialExtents<Metavariables::volume_dim>>;
+      tmpl::list<domain::Tags::InitialExtents<Metavariables::volume_dim>>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>

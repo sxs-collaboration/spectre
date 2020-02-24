@@ -132,7 +132,7 @@ struct DampedHarmonicHCompute : Tags::GaugeH<SpatialDim, Frame>,
       ::gr::Tags::SqrtDetSpatialMetric<DataVector>,
       ::gr::Tags::SpacetimeMetric<SpatialDim, Frame, DataVector>, ::Tags::Time,
       Tags::GaugeHRollOnStartTime, Tags::GaugeHRollOnTimeWindow,
-      ::Tags::Coordinates<SpatialDim, Frame>,
+      domain::Tags::Coordinates<SpatialDim, Frame>,
       Tags::GaugeHSpatialWeightDecayWidth<Frame>>;
 
   static constexpr db::const_item_type<Tags::GaugeH<SpatialDim, Frame>>
@@ -280,7 +280,7 @@ struct SpacetimeDerivDampedHarmonicHCompute
       ::gr::Tags::SpacetimeMetric<SpatialDim, Frame, DataVector>,
       Tags::Pi<SpatialDim, Frame>, Tags::Phi<SpatialDim, Frame>, ::Tags::Time,
       Tags::GaugeHRollOnStartTime, Tags::GaugeHRollOnTimeWindow,
-      ::Tags::Coordinates<SpatialDim, Frame>,
+      domain::Tags::Coordinates<SpatialDim, Frame>,
       Tags::GaugeHSpatialWeightDecayWidth<Frame>>;
 
   static constexpr db::item_type<Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>>

@@ -109,7 +109,7 @@ struct Limit {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/) noexcept {
     constexpr size_t volume_dim = Metavariables::system::volume_dim;
-    const auto& element = db::get<::Tags::Element<volume_dim>>(box);
+    const auto& element = db::get<domain::Tags::Element<volume_dim>>(box);
     const auto num_expected = element.neighbors().size();
     // Edge case where we do not receive any data
     if (UNLIKELY(num_expected == 0)) {
@@ -174,7 +174,7 @@ struct SendData {
 
     auto& receiver_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);
-    const auto& element = db::get<::Tags::Element<volume_dim>>(box);
+    const auto& element = db::get<domain::Tags::Element<volume_dim>>(box);
     const auto& temporal_id = db::get<typename Metavariables::temporal_id>(box);
     const auto& limiter = get<typename Metavariables::limiter>(cache);
 

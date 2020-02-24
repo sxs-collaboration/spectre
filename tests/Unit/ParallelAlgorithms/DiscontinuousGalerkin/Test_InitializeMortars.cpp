@@ -53,27 +53,29 @@ struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tags = tmpl::list<::Tags::Domain<Dim>>;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<Dim>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<
               ActionTesting::InitializeDataBox<tmpl::list<
-                  ::Tags::InitialExtents<Dim>, ::Tags::Next<TemporalId>>>,
+                  domain::Tags::InitialExtents<Dim>, ::Tags::Next<TemporalId>>>,
               dg::Actions::InitializeDomain<Dim>,
-              Initialization::Actions::AddComputeTags<tmpl::list<
-                  ::Tags::InternalDirections<Dim>,
-                  ::Tags::BoundaryDirectionsInterior<Dim>,
-                  ::Tags::InterfaceCompute<::Tags::InternalDirections<Dim>,
-                                           ::Tags::Direction<Dim>>,
-                  ::Tags::InterfaceCompute<
-                      ::Tags::BoundaryDirectionsInterior<Dim>,
-                      ::Tags::Direction<Dim>>,
-                  ::Tags::InterfaceCompute<::Tags::InternalDirections<Dim>,
-                                           ::Tags::InterfaceMesh<Dim>>,
-                  ::Tags::InterfaceCompute<
-                      ::Tags::BoundaryDirectionsInterior<Dim>,
-                      ::Tags::InterfaceMesh<Dim>>>>>>,
+              Initialization::Actions::AddComputeTags<
+                  tmpl::list<domain::Tags::InternalDirections<Dim>,
+                             domain::Tags::BoundaryDirectionsInterior<Dim>,
+                             domain::Tags::InterfaceCompute<
+                                 domain::Tags::InternalDirections<Dim>,
+                                 domain::Tags::Direction<Dim>>,
+                             domain::Tags::InterfaceCompute<
+                                 domain::Tags::BoundaryDirectionsInterior<Dim>,
+                                 domain::Tags::Direction<Dim>>,
+                             domain::Tags::InterfaceCompute<
+                                 domain::Tags::InternalDirections<Dim>,
+                                 domain::Tags::InterfaceMesh<Dim>>,
+                             domain::Tags::InterfaceCompute<
+                                 domain::Tags::BoundaryDirectionsInterior<Dim>,
+                                 domain::Tags::InterfaceMesh<Dim>>>>>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
@@ -153,13 +155,14 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeMortars", "[Unit][Actions]") {
     const auto& mortar_next_temporal_ids =
         get_tag(Tags::Mortars<Tags::Next<TemporalId>, 1>{});
     CHECK(mortar_next_temporal_ids.at(interface_mortar_id) == 0);
-    const auto& mortar_meshes = get_tag(Tags::Mortars<Tags::Mesh<0>, 1>{});
+    const auto& mortar_meshes =
+        get_tag(Tags::Mortars<domain::Tags::Mesh<0>, 1>{});
     CHECK(mortar_meshes.at(boundary_mortar_id) == Mesh<0>());
     CHECK(mortar_meshes.at(interface_mortar_id) == Mesh<0>());
     const auto& mortar_sizes = get_tag(Tags::Mortars<Tags::MortarSize<0>, 1>{});
     CHECK(mortar_sizes.at(boundary_mortar_id).empty());
     CHECK(mortar_sizes.at(interface_mortar_id).empty());
-    const auto& mortar_data = get_tag(Tags::VariablesBoundaryData{});
+    const auto& mortar_data = get_tag(domain::Tags::VariablesBoundaryData{});
     // Just make sure this exists, it is not expected to hold any data
     mortar_data.at(boundary_mortar_id);
     mortar_data.at(interface_mortar_id);
@@ -218,7 +221,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeMortars", "[Unit][Actions]") {
         get_tag(Tags::Mortars<Tags::Next<TemporalId>, 2>{});
     CHECK(mortar_next_temporal_ids.at(interface_mortar_id_east) == 0);
     CHECK(mortar_next_temporal_ids.at(interface_mortar_id_south) == 0);
-    const auto& mortar_meshes = get_tag(Tags::Mortars<Tags::Mesh<1>, 2>{});
+    const auto& mortar_meshes =
+        get_tag(Tags::Mortars<domain::Tags::Mesh<1>, 2>{});
     CHECK(mortar_meshes.at(boundary_mortar_id_west) ==
           Mesh<1>(2, Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto));
@@ -238,7 +242,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeMortars", "[Unit][Actions]") {
     CHECK(mortar_sizes.at(boundary_mortar_id_north) == expected_mortar_sizes);
     CHECK(mortar_sizes.at(interface_mortar_id_east) == expected_mortar_sizes);
     CHECK(mortar_sizes.at(interface_mortar_id_south) == expected_mortar_sizes);
-    const auto& mortar_data = get_tag(Tags::VariablesBoundaryData{});
+    const auto& mortar_data = get_tag(domain::Tags::VariablesBoundaryData{});
     // Just make sure this exists, it is not expected to hold any data
     mortar_data.at(boundary_mortar_id_west);
     mortar_data.at(boundary_mortar_id_north);
@@ -301,7 +305,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeMortars", "[Unit][Actions]") {
     CHECK(mortar_next_temporal_ids.at(interface_mortar_id_right) == 0);
     CHECK(mortar_next_temporal_ids.at(interface_mortar_id_front) == 0);
     CHECK(mortar_next_temporal_ids.at(interface_mortar_id_top) == 0);
-    const auto& mortar_meshes = get_tag(Tags::Mortars<Tags::Mesh<2>, 3>{});
+    const auto& mortar_meshes =
+        get_tag(Tags::Mortars<domain::Tags::Mesh<2>, 3>{});
     CHECK(mortar_meshes.at(boundary_mortar_id_left) ==
           Mesh<2>({{3, 4}}, Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto));
@@ -329,7 +334,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeMortars", "[Unit][Actions]") {
     CHECK(mortar_sizes.at(interface_mortar_id_right) == expected_mortar_sizes);
     CHECK(mortar_sizes.at(interface_mortar_id_front) == expected_mortar_sizes);
     CHECK(mortar_sizes.at(interface_mortar_id_top) == expected_mortar_sizes);
-    const auto& mortar_data = get_tag(Tags::VariablesBoundaryData{});
+    const auto& mortar_data = get_tag(domain::Tags::VariablesBoundaryData{});
     // Just make sure this exists, it is not expected to hold any data
     mortar_data.at(boundary_mortar_id_left);
     mortar_data.at(boundary_mortar_id_back);

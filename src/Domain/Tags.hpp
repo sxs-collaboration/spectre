@@ -23,8 +23,8 @@
 #include "Domain/Element.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/Mesh.hpp"
+#include "Domain/OptionTags.hpp"
 #include "Domain/Side.hpp"
-#include "Options/Options.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
@@ -37,17 +37,9 @@
 class DataVector;
 /// \endcond
 
-namespace OptionTags {
-/// \ingroup OptionTagsGroup
+namespace domain {
 /// \ingroup ComputationalDomainGroup
-/// The input file tag for the DomainCreator to use
-template <size_t Dim>
-struct DomainCreator {
-  using type = std::unique_ptr<::DomainCreator<Dim>>;
-  static constexpr OptionString help = {"The domain to create initially"};
-};
-}  // namespace OptionTags
-
+/// \brief %Tags for the domain.
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
@@ -55,7 +47,7 @@ namespace Tags {
 template <size_t VolumeDim>
 struct Domain : db::SimpleTag {
   using type = ::Domain<VolumeDim>;
-  using option_tags = tmpl::list<::OptionTags::DomainCreator<VolumeDim>>;
+  using option_tags = tmpl::list<domain::OptionTags::DomainCreator<VolumeDim>>;
 
   template <typename Metavariables>
   static ::Domain<VolumeDim> create_from_options(
@@ -72,7 +64,7 @@ struct Domain : db::SimpleTag {
 template <size_t Dim>
 struct InitialExtents : db::SimpleTag {
   using type = std::vector<std::array<size_t, Dim>>;
-  using option_tags = tmpl::list<::OptionTags::DomainCreator<Dim>>;
+  using option_tags = tmpl::list<domain::OptionTags::DomainCreator<Dim>>;
 
   template <typename Metavariables>
   static std::vector<std::array<size_t, Dim>> create_from_options(
@@ -88,7 +80,7 @@ struct InitialExtents : db::SimpleTag {
 template <size_t Dim>
 struct InitialRefinementLevels : db::SimpleTag {
   using type = std::vector<std::array<size_t, Dim>>;
-  using option_tags = tmpl::list<::OptionTags::DomainCreator<Dim>>;
+  using option_tags = tmpl::list<domain::OptionTags::DomainCreator<Dim>>;
 
   template <typename Metavariables>
   static std::vector<std::array<size_t, Dim>> create_from_options(
@@ -318,6 +310,7 @@ struct Direction : db::SimpleTag {
 };
 
 }  // namespace Tags
+}  // namespace domain
 
 namespace db {
 namespace detail {
@@ -325,9 +318,9 @@ template <typename TagList, typename DirectionsTag, typename VariablesTag>
 struct InterfaceSubitemsImpl {
   using type = tmpl::transform<
       typename const_item_type<VariablesTag>::tags_list,
-      tmpl::bind<Tags::Interface, tmpl::pin<DirectionsTag>, tmpl::_1>>;
+      tmpl::bind<domain::Tags::Interface, tmpl::pin<DirectionsTag>, tmpl::_1>>;
 
-  using tag = Tags::Interface<DirectionsTag, VariablesTag>;
+  using tag = domain::Tags::Interface<DirectionsTag, VariablesTag>;
 
   template <typename Subtag>
   static void create_item(
@@ -379,9 +372,8 @@ struct InterfaceSubitemsImpl {
 
 template <typename TagList, typename DirectionsTag, typename VariablesTag>
 struct Subitems<
-    TagList, Tags::Interface<DirectionsTag, VariablesTag>,
+    TagList, domain::Tags::Interface<DirectionsTag, VariablesTag>,
     Requires<tt::is_a_v<Variables, item_type<VariablesTag, TagList>>>>
-    : detail::InterfaceSubitemsImpl<TagList, DirectionsTag, VariablesTag> {
-};
+    : detail::InterfaceSubitemsImpl<TagList, DirectionsTag, VariablesTag> {};
 
 }  // namespace db

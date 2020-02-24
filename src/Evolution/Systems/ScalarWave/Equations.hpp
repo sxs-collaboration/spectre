@@ -87,7 +87,7 @@ template <size_t Dim>
 struct ComputeNormalDotFluxes {
   using argument_tags =
       tmpl::list<Pi, Phi<Dim>,
-                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
+                 ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
   static void apply(gsl::not_null<Scalar<DataVector>*> pi_normal_dot_flux,
                     gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
                         phi_normal_dot_flux,
@@ -155,7 +155,7 @@ struct PenaltyFlux {
   using argument_tags =
       tmpl::list<::Tags::NormalDotFlux<Pi>, ::Tags::NormalDotFlux<Phi<Dim>>,
                  Tags::VPlus, Tags::VMinus,
-                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
+                 ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
 
   // pseudo-interface: used internally by Algorithm infrastructure, not
   // user-level code
@@ -247,7 +247,7 @@ struct UpwindFlux {
   // `package_data` to provide the data needed to compute the numerical fluxes.
   using argument_tags =
       tmpl::list<::Tags::NormalDotFlux<Pi>, ::Tags::NormalDotFlux<Phi<Dim>>, Pi,
-                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
+                 ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
 
   // pseudo-interface: used internally by Algorithm infrastructure, not
   // user-level code

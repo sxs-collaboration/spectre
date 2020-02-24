@@ -99,7 +99,7 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
     if (UNLIKELY(filter_helper.disable_for_debugging())) {
       return {std::move(box)};
     }
-    const Mesh<volume_dim> mesh = db::get<::Tags::Mesh<volume_dim>>(box);
+    const Mesh<volume_dim> mesh = db::get<domain::Tags::Mesh<volume_dim>>(box);
     const Matrix empty{};
     auto filter = make_array<volume_dim>(std::cref(empty));
     for (size_t d = 0; d < volume_dim; d++) {

@@ -2952,7 +2952,7 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
           gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
           GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
           GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>, ::Tags::Time,
-          ::Tags::Coordinates<3, Frame::Inertial>,
+          domain::Tags::Coordinates<3, Frame::Inertial>,
           GeneralizedHarmonic::Tags::GaugeHRollOnStartTime,
           GeneralizedHarmonic::Tags::GaugeHRollOnTimeWindow,
           GeneralizedHarmonic::Tags::GaugeHSpatialWeightDecayWidth<

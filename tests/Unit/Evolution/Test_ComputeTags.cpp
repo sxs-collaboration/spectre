@@ -41,12 +41,12 @@ struct AnalyticSolutionTag : db::SimpleTag {
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
   tnsr::I<DataVector, 1, Frame::Inertial> inertial_coords{{{{1., 2., 3., 4.}}}};
   const double current_time = 2.;
-  const auto box =
-      db::create<db::AddSimpleTags<::Tags::Coordinates<1, Frame::Inertial>,
-                                   AnalyticSolutionTag, Tags::Time>,
-                 db::AddComputeTags<evolution::Tags::AnalyticCompute<
-                     1, AnalyticSolutionTag, tmpl::list<FieldTag>>>>(
-          std::move(inertial_coords), AnalyticSolution{}, current_time);
+  const auto box = db::create<
+      db::AddSimpleTags<domain::Tags::Coordinates<1, Frame::Inertial>,
+                        AnalyticSolutionTag, Tags::Time>,
+      db::AddComputeTags<evolution::Tags::AnalyticCompute<
+          1, AnalyticSolutionTag, tmpl::list<FieldTag>>>>(
+      std::move(inertial_coords), AnalyticSolution{}, current_time);
   const DataVector expected{2., 4., 6., 8.};
   CHECK_ITERABLE_APPROX(get(get<::Tags::Analytic<FieldTag>>(box)), expected);
 

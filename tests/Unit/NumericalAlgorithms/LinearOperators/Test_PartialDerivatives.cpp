@@ -490,8 +490,8 @@ void test_partial_derivatives_compute_item(
     const std::array<size_t, Dim> extents_array, const T& map) noexcept {
   using vars_tags = tmpl::list<Var1<Dim>, Var2>;
   using map_tag = MapTag<std::decay_t<decltype(map)>>;
-  using inv_jac_tag =
-      Tags::InverseJacobianCompute<map_tag, Tags::LogicalCoordinates<Dim>>;
+  using inv_jac_tag = domain::Tags::InverseJacobianCompute<
+      map_tag, domain::Tags::LogicalCoordinates<Dim>>;
   using deriv_tag = Tags::DerivCompute<Tags::Variables<vars_tags>, inv_jac_tag>;
   using prefixed_variables_tag =
       db::add_tag_prefix<SomePrefix, Tags::Variables<vars_tags>>;
@@ -527,12 +527,12 @@ void test_partial_derivatives_compute_item(
         get<DerivativeTag>(expected_du) = Tag::df(array_to_functions, x);
       });
 
-  auto box =
-      db::create<db::AddSimpleTags<Tags::Mesh<Dim>, Tags::Variables<vars_tags>,
-                                   prefixed_variables_tag, map_tag>,
-                 db::AddComputeTags<Tags::LogicalCoordinates<Dim>, inv_jac_tag,
-                                    deriv_tag, deriv_prefixed_tag>>(
-          mesh, u, prefixed_vars, map);
+  auto box = db::create<
+      db::AddSimpleTags<domain::Tags::Mesh<Dim>, Tags::Variables<vars_tags>,
+                        prefixed_variables_tag, map_tag>,
+      db::AddComputeTags<domain::Tags::LogicalCoordinates<Dim>, inv_jac_tag,
+                         deriv_tag, deriv_prefixed_tag>>(mesh, u, prefixed_vars,
+                                                         map);
 
   const auto& du = db::get<deriv_tag>(box);
 

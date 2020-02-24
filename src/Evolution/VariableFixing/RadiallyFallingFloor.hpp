@@ -18,10 +18,12 @@ namespace PUP {
 class er;
 }  // namespace PUP
 class DataVector;
+namespace domain {
 namespace Tags {
 template <size_t Dim, typename Frame>
 struct Coordinates;
 }  // namespace Tags
+}  // namespace domain
 namespace hydro {
 namespace Tags {
 template <typename DataType>
@@ -119,7 +121,8 @@ class RadiallyFallingFloor {
 
   using return_tags = tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                                  hydro::Tags::Pressure<DataVector>>;
-  using argument_tags = tmpl::list<::Tags::Coordinates<Dim, Frame::Inertial>>;
+  using argument_tags =
+      tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>>;
 
   void operator()(gsl::not_null<Scalar<DataVector>*> density,
                   gsl::not_null<Scalar<DataVector>*> pressure,

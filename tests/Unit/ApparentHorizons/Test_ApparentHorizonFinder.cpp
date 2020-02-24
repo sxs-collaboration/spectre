@@ -216,7 +216,7 @@ struct MockMetavariables {
   using component_list =
       tmpl::list<mock_interpolation_target<MockMetavariables, AhA>,
                  mock_interpolator<MockMetavariables>>;
-  using const_global_cache_tags = tmpl::list<::Tags::Domain<3>>;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<3>>;
 
   enum class Phase { Initialization, Registration, Testing, Exit };
 };
@@ -252,7 +252,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
       1.9, 2.9, 1, {{grid_points_each_dimension, grid_points_each_dimension}},
       false);
 
-  tuples::TaggedTuple<::Tags::Domain<3>,
+  tuples::TaggedTuple<domain::Tags::Domain<3>,
                       typename ::intrp::Tags::ApparentHorizon<
                           typename metavars::AhA, Frame::Inertial>>
       tuple_of_opts{std::move(domain_creator.create_domain()),

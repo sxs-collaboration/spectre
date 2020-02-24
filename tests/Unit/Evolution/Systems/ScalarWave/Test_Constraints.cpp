@@ -156,8 +156,8 @@ void test_constraints_and_compute_tags_analytic(
   // (2.) Test that compute tags return expected values
   const auto box = db::create<
       db::AddSimpleTags<
-          ::Tags::Coordinates<spatial_dim, Frame::Inertial>, ScalarWave::Psi,
-          ScalarWave::Phi<spatial_dim>, ScalarWave::Pi,
+          domain::Tags::Coordinates<spatial_dim, Frame::Inertial>,
+          ScalarWave::Psi, ScalarWave::Phi<spatial_dim>, ScalarWave::Pi,
           ::Tags::deriv<ScalarWave::Psi, tmpl::size_t<spatial_dim>,
                         Frame::Inertial>,
           ::Tags::deriv<ScalarWave::Phi<spatial_dim>, tmpl::size_t<spatial_dim>,

@@ -194,7 +194,7 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
                  ::Tags::div<::Tags::Flux<AuxiliaryFieldTags, tmpl::size_t<Dim>,
                                           Frame::Inertial>>...,
                  fluxes_computer_tag, FluxesArgs...,
-                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
+                 ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
   using volume_tags = tmpl::list<fluxes_computer_tag>;
 
   // This is the data needed to compute the numerical flux.

@@ -25,11 +25,15 @@ struct InitialTime;
 }  // namespace Initialization
 namespace Tags {
 struct AnalyticSolutionOrData;
+}  // namespace Tags
+namespace domain {
+namespace Tags {
 template <size_t VolumeDim, typename Frame>
 struct Coordinates;
 template <size_t VolumeDim>
 struct Mesh;
 }  // namespace Tags
+}  // namespace domain
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
@@ -70,10 +74,10 @@ struct NonconservativeSystem {
     using Vars = typename variables_tag::type;
 
     const size_t num_grid_points =
-        db::get<::Tags::Mesh<dim>>(box).number_of_grid_points();
+        db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
     const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
     const auto& inertial_coords =
-        db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
+        db::get<domain::Tags::Coordinates<dim, Frame::Inertial>>(box);
 
     // Set initial data from analytic solution
     Vars vars{num_grid_points};

@@ -58,16 +58,18 @@ double get_suggestion(const size_t stepper_order, const double safety_factor,
                       const DataVector& coordinates) noexcept {
   const Parallel::ConstGlobalCache<Metavariables> cache{{}};
   const auto box = db::create<
-      db::AddSimpleTags<CharacteristicSpeed, Tags::Coordinates<dim, frame>,
-                        Tags::Mesh<dim>, Tags::TimeStepper<TimeStepper>>,
-      db::AddComputeTags<Tags::MinimumGridSpacing<dim, frame>>>(
+      db::AddSimpleTags<
+          CharacteristicSpeed, domain::Tags::Coordinates<dim, frame>,
+          domain::Tags::Mesh<dim>, Tags::TimeStepper<TimeStepper>>,
+      db::AddComputeTags<domain::Tags::MinimumGridSpacing<dim, frame>>>(
       characteristic_speed, tnsr::I<DataVector, dim, frame>{{{coordinates}}},
       Mesh<dim>(coordinates.size(), Spectral::Basis::Legendre,
                 Spectral::Quadrature::GaussLobatto),
       db::item_type<Tags::TimeStepper<TimeStepper>>{
           std::make_unique<TimeSteppers::AdamsBashforthN>(stepper_order)});
 
-  const double grid_spacing = get<Tags::MinimumGridSpacing<dim, frame>>(box);
+  const double grid_spacing =
+      get<domain::Tags::MinimumGridSpacing<dim, frame>>(box);
   const auto& time_stepper = get<Tags::TimeStepper<TimeStepper>>(box);
 
   const Cfl cfl{safety_factor};

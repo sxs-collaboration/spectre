@@ -35,7 +35,7 @@ struct mock_component {
       typename Metavariables::neutrino_species>;
   using simple_tags = db::AddSimpleTags<tmpl::flatten<
       tmpl::list<typename Closure::return_tags, typename Closure::argument_tags,
-                 Tags::Coordinates<3, Frame::Inertial>>>>;
+                 domain::Tags::Coordinates<3, Frame::Inertial>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,

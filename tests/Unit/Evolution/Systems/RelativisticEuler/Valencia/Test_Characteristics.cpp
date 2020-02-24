@@ -52,7 +52,7 @@ void test_compute_item_in_databox(
           gr::Tags::Lapse<>, gr::Tags::Shift<Dim>, gr::Tags::SpatialMetric<Dim>,
           hydro::Tags::SpatialVelocity<DataVector, Dim>,
           hydro::Tags::SoundSpeedSquared<DataVector>,
-          ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>,
+          ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>,
       db::AddComputeTags<
           RelativisticEuler::Valencia::Tags::CharacteristicSpeedsCompute<Dim>>>(
       lapse, shift, spatial_metric, spatial_velocity, sound_speed_squared,

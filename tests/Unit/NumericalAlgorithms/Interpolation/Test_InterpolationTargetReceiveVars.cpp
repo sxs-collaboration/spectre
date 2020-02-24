@@ -77,7 +77,7 @@ struct mock_interpolation_target {
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
   using const_global_cache_tags =
-      tmpl::list<::Tags::Domain<Metavariables::volume_dim>>;
+      tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>;
   using simple_tags =
       db::get_items<typename intrp::Actions::InitializeInterpolationTarget<
           Metavariables, InterpolationTargetTag>::return_tag_list>;

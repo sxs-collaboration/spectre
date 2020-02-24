@@ -9,6 +9,7 @@
 #include "Domain/Tags.hpp"
 #include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
+namespace domain {
 namespace {
 template <size_t Dim>
 void test() noexcept {
@@ -42,3 +43,4 @@ SPECTRE_TEST_CASE("Unit.Domain.Tags", "[Unit][Domain]") {
   test<3>();
 }
 }  // namespace
+}  // namespace domain
