@@ -121,19 +121,16 @@ struct Hllc {
   /// Estimate for one of the signal speeds
   struct FirstSpeedEstimate : db::SimpleTag {
     using type = Scalar<DataVector>;
-    static std::string name() noexcept { return "FirstSpeedEstimate"; }
   };
 
   /// Estimate for the other signal speed
   struct SecondSpeedEstimate : db::SimpleTag {
     using type = Scalar<DataVector>;
-    static std::string name() noexcept { return "SecondSpeedEstimate"; }
   };
 
   /// The normal component of the velocity
   struct NormalVelocity : db::SimpleTag {
     using type = Scalar<DataVector>;
-    static std::string name() noexcept { return "NormalVelocity"; }
   };
 
   using options = tmpl::list<>;
