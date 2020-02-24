@@ -18,10 +18,11 @@ FROM ubuntu:18.04
 ARG PARALLEL_MAKE_ARG=-j2
 ARG DEBIAN_FRONTEND=noninteractive
 
-# Add ubuntu test repo for GCC9
+# Add ubuntu test repo for GCC9 and newer versions of git
 RUN apt-get update -y \
     && apt-get install -y software-properties-common \
-    && add-apt-repository ppa:ubuntu-toolchain-r/test
+    && add-apt-repository ppa:ubuntu-toolchain-r/test \
+    && add-apt-repository ppa:git-core/ppa
 
 # Install required packages for SpECTRE
 #
