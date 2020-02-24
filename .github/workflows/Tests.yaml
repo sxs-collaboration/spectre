@@ -335,6 +335,11 @@ jobs:
         working-directory: /work/build
         run: |
           make test-executables
+      - name: Build Benchmark executable
+        if: matrix.build_type == 'Release'
+        working-directory: /work/build
+        run: |
+          make -j2 Benchmark
       - name: Diagnose ccache
         run: |
           ccache -s
