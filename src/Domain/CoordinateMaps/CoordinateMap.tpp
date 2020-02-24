@@ -268,7 +268,7 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
   tuple_transform(
       maps_, [&inv_jac, &mapped_point, time, &functions_of_time](
                  const auto& map, auto index) noexcept {
-        constexpr const size_t count = decltype(index)::value;
+        constexpr size_t count = decltype(index)::value;
         using Map = std::decay_t<decltype(map)>;
 
         tnsr::Ij<T, dim, Frame::NoFrame> noframe_inv_jac{};
@@ -318,7 +318,7 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
   tuple_transform(
       maps_, [&jac, &mapped_point, time, &functions_of_time](
                  const auto& map, auto index) noexcept {
-        constexpr const size_t count = decltype(index)::value;
+        constexpr size_t count = decltype(index)::value;
         using Map = std::decay_t<decltype(map)>;
 
         tnsr::Ij<T, dim, Frame::NoFrame> noframe_jac{};
@@ -349,6 +349,163 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
         }
       });
   return jac;
+}
+
+namespace detail {
+template <typename T, typename Map, size_t Dim,
+          Requires<not domain::is_map_time_dependent_v<Map>> = nullptr>
+std::array<T, Dim> get_frame_velocity(
+    const Map& /*the_map*/, const std::array<T, Dim>& /*point*/,
+    const double /*t*/,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+    /*funcs_of_time*/) noexcept {
+  return std::array<T, Dim>{};
+}
+
+template <typename T, typename Map, size_t Dim,
+          Requires<domain::is_map_time_dependent_v<Map>> = nullptr>
+std::array<T, Dim> get_frame_velocity(
+    const Map& the_map, const std::array<T, Dim>& point, const double t,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        funcs_of_time) noexcept {
+  return the_map.frame_velocity(point, t, funcs_of_time);
+}
+}  // namespace detail
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+template <typename T>
+auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::
+    coords_frame_velocity_jacobians_impl(
+        tnsr::I<T, dim, SourceFrame> source_point, const double time,
+        const std::unordered_map<
+            std::string,
+            std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+            functions_of_time) const noexcept
+    -> std::tuple<tnsr::I<T, dim, TargetFrame>,
+                  InverseJacobian<T, dim, SourceFrame, TargetFrame>,
+                  Jacobian<T, dim, SourceFrame, TargetFrame>,
+                  tnsr::I<T, dim, TargetFrame>> {
+  std::array<T, dim> mapped_point = make_array<T, dim>(std::move(source_point));
+  InverseJacobian<T, dim, SourceFrame, TargetFrame> inv_jac{};
+  Jacobian<T, dim, SourceFrame, TargetFrame> jac{};
+  tnsr::I<T, dim, TargetFrame> frame_velocity{};
+
+  tuple_transform(
+      maps_,
+      [&frame_velocity, &inv_jac, &jac, &mapped_point, time,
+       &functions_of_time](const auto& map, auto index,
+                           const std::tuple<Maps...>& maps) noexcept {
+        constexpr size_t count = decltype(index)::value;
+        using Map = std::decay_t<decltype(map)>;
+
+        tnsr::Ij<T, dim, Frame::NoFrame> noframe_jac{};
+        tnsr::Ij<T, dim, Frame::NoFrame> noframe_inv_jac{};
+
+        if (UNLIKELY(count == 0)) {
+          // Set Jacobian and inverse Jacobian
+          detail::get_inv_jacobian(
+              make_not_null(&noframe_inv_jac), map, mapped_point, time,
+              functions_of_time,
+              domain::is_jacobian_time_dependent_t<Map, T>{});
+          detail::get_jacobian(make_not_null(&noframe_jac), map, mapped_point,
+                               time, functions_of_time,
+                               domain::is_jacobian_time_dependent_t<Map, T>{});
+          for (size_t target = 0; target < dim; ++target) {
+            for (size_t source = 0; source < dim; ++source) {
+              jac.get(target, source) =
+                  std::move(noframe_jac.get(target, source));
+              inv_jac.get(source, target) =
+                  std::move(noframe_inv_jac.get(source, target));
+            }
+          }
+
+          // Set frame velocity
+          if (domain::is_map_time_dependent_v<
+                  std::tuple_element_t<0, std::decay_t<decltype(maps)>>>) {
+            std::array<T, dim> noframe_frame_velocity =
+                detail::get_frame_velocity(map, mapped_point, time,
+                                           functions_of_time);
+            for (size_t i = 0; i < dim; ++i) {
+              frame_velocity.get(i) =
+                  std::move(gsl::at(noframe_frame_velocity, i));
+            }
+          } else {
+            // If the first map is time-independent the velocity is initialized
+            // to zero
+            for (size_t i = 0; i < frame_velocity.size(); ++i) {
+              frame_velocity[i] = make_with_value<T>(get<0, 0>(jac), 0.0);
+            }
+          }
+        } else if (LIKELY(not map.is_identity())) {
+          // WARNING: we have assumed that if the map is the identity the frame
+          // velocity is also zero. That is, we do not optimize for the map
+          // being instantaneously zero.
+
+          detail::get_inv_jacobian(
+              make_not_null(&noframe_inv_jac), map, mapped_point, time,
+              functions_of_time,
+              domain::is_jacobian_time_dependent_t<Map, T>{});
+          detail::get_jacobian(make_not_null(&noframe_jac), map, mapped_point,
+                               time, functions_of_time,
+                               domain::is_jacobian_time_dependent_t<Map, T>{});
+
+          // Perform matrix multiplication for Jacobian and inverse Jacobian
+          detail::multiply_inv_jacobian(make_not_null(&inv_jac),
+                                        noframe_inv_jac);
+          detail::multiply_jacobian(make_not_null(&jac), noframe_jac);
+
+          // Set frame velocity, only if map is time-dependent
+          std::array<T, dim> noframe_frame_velocity{};
+          if (domain::is_map_time_dependent_v<
+                  std::tuple_element_t<count, std::decay_t<decltype(maps)>>>) {
+            noframe_frame_velocity = detail::get_frame_velocity(
+                map, mapped_point, time, functions_of_time);
+            for (size_t target_frame_index = 0; target_frame_index < dim;
+                 ++target_frame_index) {
+              for (size_t source_frame_index = 0; source_frame_index < dim;
+                   ++source_frame_index) {
+                gsl::at(noframe_frame_velocity, target_frame_index) +=
+                    noframe_jac.get(target_frame_index, source_frame_index) *
+                    frame_velocity.get(source_frame_index);
+              }
+            }
+          } else {
+            for (size_t target_frame_index = 0; target_frame_index < dim;
+                 ++target_frame_index) {
+              size_t source_frame_index = 0;
+              gsl::at(noframe_frame_velocity, target_frame_index) =
+                  noframe_jac.get(target_frame_index, source_frame_index) *
+                  frame_velocity.get(source_frame_index);
+              for (source_frame_index = 1; source_frame_index < dim;
+                   ++source_frame_index) {
+                gsl::at(noframe_frame_velocity, target_frame_index) +=
+                    noframe_jac.get(target_frame_index, source_frame_index) *
+                    frame_velocity.get(source_frame_index);
+              }
+            }
+          }
+          for (size_t target_frame_index = 0; target_frame_index < dim;
+               ++target_frame_index) {
+            using std::swap;
+            swap(gsl::at(noframe_frame_velocity, target_frame_index),
+                 frame_velocity.get(target_frame_index));
+          }
+        }
+
+        // Update to the next mapped point
+        CoordinateMap_detail::apply_map(
+            make_not_null(&mapped_point), map, time, functions_of_time,
+            domain::is_map_time_dependent_t<decltype(map)>{});
+      },
+      maps_);
+  return std::tuple<tnsr::I<T, dim, TargetFrame>,
+                    InverseJacobian<T, dim, SourceFrame, TargetFrame>,
+                    Jacobian<T, dim, SourceFrame, TargetFrame>,
+                    tnsr::I<T, dim, TargetFrame>>{
+      tnsr::I<T, dim, TargetFrame>(std::move(mapped_point)), std::move(inv_jac),
+      std::move(jac), std::move(frame_velocity)};
 }
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
