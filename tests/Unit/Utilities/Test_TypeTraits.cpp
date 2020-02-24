@@ -393,7 +393,11 @@ static_assert(not tt::is_callable<BClassInTestTypeTraits>::value,
 namespace  {
 /// [CREATE_IS_CALLABLE_EXAMPLE]
 CREATE_IS_CALLABLE(foo)
+CREATE_IS_CALLABLE_V(foo)
+CREATE_IS_CALLABLE_R_V(foo)
 CREATE_IS_CALLABLE(foobar)
+CREATE_IS_CALLABLE_V(foobar)
+CREATE_IS_CALLABLE_R_V(foobar)
 struct bar {
   size_t foo(int /*unused*/, double /*unused*/) { return size_t{0}; }
 };
@@ -416,7 +420,9 @@ static_assert(not is_foobar_callable_v<bar, int, double>,
 
 /// [CREATE_HAS_EXAMPLE]
 CREATE_HAS_STATIC_MEMBER_VARIABLE(foo)
+CREATE_HAS_STATIC_MEMBER_VARIABLE_V(foo)
 CREATE_HAS_STATIC_MEMBER_VARIABLE(foobar)
+CREATE_HAS_STATIC_MEMBER_VARIABLE_V(foobar)
 struct testing_create_has_static_member_variable {
   static constexpr size_t foo = 1;
 };
@@ -433,6 +439,27 @@ static_assert(
     not has_foobar_v<testing_create_has_static_member_variable, size_t>,
     "Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE");
 /// [CREATE_HAS_EXAMPLE]
+
+/// [CREATE_HAS_TYPE_ALIAS]
+CREATE_HAS_TYPE_ALIAS(foo_alias)
+CREATE_HAS_TYPE_ALIAS_V(foo_alias)
+CREATE_HAS_TYPE_ALIAS(foobar_alias)
+CREATE_HAS_TYPE_ALIAS_V(foobar_alias)
+struct testing_create_has_type_alias {
+  using foo_alias = int;
+};
+
+static_assert(has_foo_alias_v<testing_create_has_type_alias>,
+              "Failed testing CREATE_HAS_TYPE_ALIAS");
+static_assert(has_foo_alias_v<testing_create_has_type_alias, int>,
+              "Failed testing CREATE_HAS_TYPE_ALIAS");
+static_assert(not has_foo_alias_v<testing_create_has_type_alias, double>,
+              "Failed testing CREATE_HAS_TYPE_ALIAS");
+static_assert(not has_foobar_alias_v<testing_create_has_type_alias>,
+              "Failed testing CREATE_HAS_TYPE_ALIAS");
+static_assert(not has_foobar_alias_v<testing_create_has_type_alias, int>,
+              "Failed testing CREATE_HAS_TYPE_ALIAS");
+/// [CREATE_HAS_TYPE_ALIAS]
 }  // namespace
 
 /// [is_hashable_example]

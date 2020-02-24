@@ -1529,6 +1529,7 @@ constexpr const Type& get_item_from_box(const DataBox<TagList>& box,
 
 namespace DataBox_detail {
 CREATE_IS_CALLABLE(apply)
+CREATE_IS_CALLABLE_V(apply)
 
 template <typename TagsList>
 struct Apply;

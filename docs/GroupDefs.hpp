@@ -620,6 +620,13 @@
  */
 
 /*!
+ * \defgroup ProtocolsGroup Protocols
+ * \brief Classes that define metaprogramming interfaces
+ *
+ * See the \ref protocols section of the dev guide for details.
+ */
+
+/*!
  * \defgroup PythonBindingsGroup Python Bindings
  * \brief Classes and functions useful when writing python bindings.
  *

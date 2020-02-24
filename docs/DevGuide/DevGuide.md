@@ -40,6 +40,7 @@ can be found here.
 Designed to give the reader an introduction to SpECTRE's most recurring
 concepts and patterns.
 - \ref databox_foundations "Towards SpECTRE's DataBox"
+- \ref protocols "Protocols: metaprogramming interfaces"
 
 ### Technical Documentation for Fluent Developers
 Assumes a thorough familiarity and fluency in SpECTRE's usage of TMP.

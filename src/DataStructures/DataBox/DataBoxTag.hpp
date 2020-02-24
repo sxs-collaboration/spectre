@@ -476,6 +476,7 @@ using item_type = typename DataBox_detail::item_type_impl<TagList, Tag>::type;
 
 namespace DataBox_detail {
 CREATE_IS_CALLABLE(function)
+CREATE_IS_CALLABLE_V(function)
 
 template <typename Tag, typename TagList, typename TagTypesList>
 struct check_compute_item_is_invokable;

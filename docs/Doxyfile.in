@@ -92,6 +92,7 @@ INPUT += @PROJECT_SOURCE_DIR@/tests/Unit/ActionTesting.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/PointwiseFunctions/AnalyticSolutions/FirstOrderEllipticSolutionsTestHelpers.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/PointwiseFunctions/AnalyticSolutions/GrMhd/VerifyGrMhdSolution.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp \
+         @PROJECT_SOURCE_DIR@/tests/Unit/ProtocolTestHelpers.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/CheckWithRandomValues.hpp  \
          @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/Pypp.hpp  \
          @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/PyppFundamentals.hpp  \
