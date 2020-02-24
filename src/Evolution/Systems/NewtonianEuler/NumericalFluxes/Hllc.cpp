@@ -55,24 +55,26 @@ void Hllc<Dim, Frame>::package_data(
   get<NormalVelocity>(*packaged_data) =
       dot_product(interface_unit_normal, velocity);
 
-  // When packaging interior data, FirstSpeedEstimate and SecondSpeedEstimate
+  // When packaging interior data, LargestIngoingSpeed and LargestOutgoingSpeed
   // will hold the min and max char speeds, respectively. On the other hand,
   // when packaging exterior data, the characteristic speeds will be computed
-  // along *minus* the exterior normal, so FirstSpeedEstimate will hold *minus*
-  // the max speed, while SecondSpeedEstimate will store *minus* the min speed.
-  get<FirstSpeedEstimate>(*packaged_data) = make_with_value<Scalar<DataVector>>(
-      characteristic_speeds[0], std::numeric_limits<double>::signaling_NaN());
-  get<SecondSpeedEstimate>(*packaged_data) =
+  // along *minus* the exterior normal, so LargestIngoingSpeed will hold *minus*
+  // the max speed, while LargestOutgoingSpeed will store *minus* the min speed.
+  get<LargestIngoingSpeed>(*packaged_data) =
+      make_with_value<Scalar<DataVector>>(
+          characteristic_speeds[0],
+          std::numeric_limits<double>::signaling_NaN());
+  get<LargestOutgoingSpeed>(*packaged_data) =
       make_with_value<Scalar<DataVector>>(
           characteristic_speeds[0],
           std::numeric_limits<double>::signaling_NaN());
   for (size_t s = 0; s < characteristic_speeds[0].size(); ++s) {
-    get(get<FirstSpeedEstimate>(*packaged_data))[s] = (*std::min_element(
+    get(get<LargestIngoingSpeed>(*packaged_data))[s] = (*std::min_element(
         characteristic_speeds.begin(), characteristic_speeds.end(),
         [&s](const DataVector& a, const DataVector& b) noexcept {
           return a[s] < b[s];
         }))[s];
-    get(get<SecondSpeedEstimate>(*packaged_data))[s] = (*std::max_element(
+    get(get<LargestOutgoingSpeed>(*packaged_data))[s] = (*std::max_element(
         characteristic_speeds.begin(), characteristic_speeds.end(),
         [&s](const DataVector& a, const DataVector& b) noexcept {
           return a[s] < b[s];
@@ -97,8 +99,8 @@ void Hllc<Dim, Frame>::operator()(
     const Scalar<DataVector>& pressure_int,
     const tnsr::i<DataVector, Dim, Frame>& interface_unit_normal,
     const Scalar<DataVector>& normal_velocity_int,
-    const Scalar<DataVector>& min_signal_speed_int,
-    const Scalar<DataVector>& max_signal_speed_int,
+    const Scalar<DataVector>& largest_ingoing_speed_int,
+    const Scalar<DataVector>& largest_outgoing_speed_int,
     const Scalar<DataVector>& minus_normal_dot_flux_mass_density_ext,
     const tnsr::I<DataVector, Dim, Frame>&
         minus_normal_dot_flux_momentum_density_ext,
@@ -110,33 +112,35 @@ void Hllc<Dim, Frame>::operator()(
     const tnsr::i<DataVector, Dim, Frame>& minus_interface_unit_normal,
     const Scalar<DataVector>& minus_normal_velocity_ext,
     // names are inverted w.r.t interior data. See package_data()
-    const Scalar<DataVector>& minus_max_signal_speed_ext,
-    const Scalar<DataVector>& minus_min_signal_speed_ext) const noexcept {
-  DataVector min_signal_speed = make_with_value<DataVector>(
-      min_signal_speed_int, std::numeric_limits<double>::signaling_NaN());
-  DataVector max_signal_speed = make_with_value<DataVector>(
-      max_signal_speed_int, std::numeric_limits<double>::signaling_NaN());
-  for (size_t s = 0; s < min_signal_speed.size(); ++s) {
-    min_signal_speed[s] = std::min({get(min_signal_speed_int)[s],
-                                    -get(minus_min_signal_speed_ext)[s], 0.0});
-    max_signal_speed[s] = std::max({get(max_signal_speed_int)[s],
-                                    -get(minus_max_signal_speed_ext)[s], 0.0});
+    const Scalar<DataVector>& minus_largest_outgoing_speed_ext,
+    const Scalar<DataVector>& minus_largest_ingoing_speed_ext) const noexcept {
+  DataVector largest_ingoing_speed = make_with_value<DataVector>(
+      largest_ingoing_speed_int, std::numeric_limits<double>::signaling_NaN());
+  DataVector largest_outgoing_speed = make_with_value<DataVector>(
+      largest_outgoing_speed_int, std::numeric_limits<double>::signaling_NaN());
+  for (size_t s = 0; s < largest_ingoing_speed.size(); ++s) {
+    largest_ingoing_speed[s] =
+        std::min({get(largest_ingoing_speed_int)[s],
+                  -get(minus_largest_ingoing_speed_ext)[s], 0.0});
+    largest_outgoing_speed[s] =
+        std::max({get(largest_outgoing_speed_int)[s],
+                  -get(minus_largest_outgoing_speed_ext)[s], 0.0});
   }
   const DataVector signal_speed_star =
       (get(pressure_int) +
        get(normal_dot_flux_mass_density_int) *
-           (get(normal_velocity_int) - min_signal_speed) -
+           (get(normal_velocity_int) - largest_ingoing_speed) -
        get(pressure_ext) -
        get(minus_normal_dot_flux_mass_density_ext) *
-           (get(minus_normal_velocity_ext) + max_signal_speed)) /
+           (get(minus_normal_velocity_ext) + largest_outgoing_speed)) /
       (get(normal_dot_flux_mass_density_int) -
-       min_signal_speed * get(mass_density_int) +
+       largest_ingoing_speed * get(mass_density_int) +
        get(minus_normal_dot_flux_mass_density_ext) +
-       max_signal_speed * get(mass_density_ext));
+       largest_outgoing_speed * get(mass_density_ext));
 
-  for (size_t s = 0; s < min_signal_speed.size(); ++s) {
-    const double s_min = min_signal_speed[s];
-    const double s_max = max_signal_speed[s];
+  for (size_t s = 0; s < largest_ingoing_speed.size(); ++s) {
+    const double s_min = largest_ingoing_speed[s];
+    const double s_max = largest_outgoing_speed[s];
     const double s_star = signal_speed_star[s];
     ASSERT((s_min <= s_star) and (s_star <= s_max),
            "Signal speeds in HLLC Riemann solver not consistent: "

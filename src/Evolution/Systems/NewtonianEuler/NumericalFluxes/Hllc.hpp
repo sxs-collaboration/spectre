@@ -86,7 +86,7 @@ namespace NumericalFluxes {
  * \f}
  *
  * and \f$S_\text{min}\f$ and \f$S_\text{max}\f$ are estimates of the minimum
- * and maximum signal speeds bounding the interior-moving and exterior-moving
+ * and maximum signal speeds bounding the ingoing and outgoing
  * wavespeeds that arise when solving the Riemann problem. One requires
  * \f$S_\text{min} \leq S_* \leq S_\text{max}\f$. As estimates, we use
  *
@@ -119,12 +119,12 @@ struct Hllc {
   using char_speeds_tag = Tags::CharacteristicSpeedsCompute<Dim>;
 
   /// Estimate for one of the signal speeds
-  struct FirstSpeedEstimate : db::SimpleTag {
+  struct LargestIngoingSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
   };
 
   /// Estimate for the other signal speed
-  struct SecondSpeedEstimate : db::SimpleTag {
+  struct LargestOutgoingSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
   };
 
@@ -148,7 +148,7 @@ struct Hllc {
       Tags::MomentumDensity<DataVector, Dim, Frame>,
       Tags::EnergyDensity<DataVector>, Tags::Pressure<DataVector>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>,
-      NormalVelocity, FirstSpeedEstimate, SecondSpeedEstimate>;
+      NormalVelocity, LargestIngoingSpeed, LargestOutgoingSpeed>;
 
   using argument_tags = tmpl::list<
       ::Tags::NormalDotFlux<Tags::MassDensityCons<DataVector>>,
@@ -190,8 +190,8 @@ struct Hllc {
       const Scalar<DataVector>& pressure_int,
       const tnsr::i<DataVector, Dim, Frame>& interface_unit_normal,
       const Scalar<DataVector>& normal_velocity_int,
-      const Scalar<DataVector>& min_signal_speed_int,
-      const Scalar<DataVector>& max_signal_speed_int,
+      const Scalar<DataVector>& largest_ingoing_speed_int,
+      const Scalar<DataVector>& largest_outgoing_speed_int,
       const Scalar<DataVector>& minus_normal_dot_flux_mass_density_ext,
       const tnsr::I<DataVector, Dim, Frame>&
           minus_normal_dot_flux_momentum_density_ext,
@@ -203,8 +203,8 @@ struct Hllc {
       const tnsr::i<DataVector, Dim, Frame>& minus_interface_unit_normal,
       const Scalar<DataVector>& minus_normal_velocity_ext,
       // names are inverted w.r.t interior data. See package_data()
-      const Scalar<DataVector>& minus_max_signal_speed_ext,
-      const Scalar<DataVector>& minus_min_signal_speed_ext) const noexcept;
+      const Scalar<DataVector>& minus_largest_outgoing_speed_ext,
+      const Scalar<DataVector>& minus_largest_ingoing_speed_ext) const noexcept;
 };
 
 }  // namespace NumericalFluxes
