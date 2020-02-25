@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Characteristics.cpp
+  ComputeItems.cpp
   ConservativeFromPrimitive.cpp
   Fluxes.cpp
   PrimitiveFromConservative.cpp
@@ -20,6 +21,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Characteristics.hpp
+  ComputeItems.hpp
   ConservativeFromPrimitive.hpp
   Fluxes.hpp
   PrimitiveFromConservative.hpp

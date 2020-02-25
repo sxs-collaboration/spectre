@@ -99,6 +99,39 @@ struct VPlus : db::SimpleTag {
 };
 // @}
 
+/// The internal energy density.
+template <typename DataType>
+struct InternalEnergyDensity : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/// The kinetic energy density.
+template <typename DataType>
+struct KineticEnergyDensity : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/// The local Mach number of the flow
+template <typename DataType>
+struct MachNumber : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/// The ram pressure of the fluid.
+template <typename DataType, size_t Dim, typename Fr>
+struct RamPressure : db::SimpleTag {
+  using type = tnsr::II<DataType, Dim, Fr>;
+  static std::string name() noexcept {
+    return Frame::prefix<Fr>() + "RamPressure";
+  }
+};
+
+/// The specific kinetic energy.
+template <typename DataType>
+struct SpecificKineticEnergy : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
 /// Base tag for the source term
 struct SourceTermBase : db::BaseTag {};
 
