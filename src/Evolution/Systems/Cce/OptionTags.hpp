@@ -122,6 +122,15 @@ struct ScriInterpolationOrder {
   static size_t default_value() noexcept { return 5; }
   using group = Cce;
 };
+
+struct ScriOutputDensity {
+  using type = size_t;
+  static constexpr OptionString help{
+      "Number of scri output points per timestep."};
+  static size_t default_value() noexcept { return 1; }
+  using group = Cce;
+};
+
 }  // namespace OptionTags
 
 namespace InitializationTags {
@@ -142,38 +151,13 @@ struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
   }
 };
 
-struct LMax : db::SimpleTag {
+struct ScriInterpolationOrder : db::SimpleTag {
   using type = size_t;
-  using option_tags = tmpl::list<OptionTags::LMax>;
-
-  static size_t create_from_options(const size_t l_max) noexcept {
-    return l_max;
-  }
-};
-
-struct NumberOfRadialPoints : db::SimpleTag {
-  using type = size_t;
-  using option_tags = tmpl::list<OptionTags::NumberOfRadialPoints>;
+  using option_tags = tmpl::list<OptionTags::ScriInterpolationOrder>;
 
   static size_t create_from_options(
-      const size_t number_of_radial_points) noexcept {
-    return number_of_radial_points;
-  }
-};
-
-struct StartTime : db::SimpleTag {
-  using type = double;
-  using option_tags =
-      tmpl::list<OptionTags::StartTime, OptionTags::BoundaryDataFilename>;
-
-  static double create_from_options(double start_time,
-                                    const std::string& filename) noexcept {
-    if (start_time == -std::numeric_limits<double>::infinity()) {
-      SpecWorldtubeH5BufferUpdater h5_boundary_updater{filename};
-      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
-      start_time = time_buffer[0];
-    }
-    return start_time;
+      const size_t scri_plus_interpolation_order) noexcept {
+    return scri_plus_interpolation_order;
   }
 };
 
@@ -186,24 +170,37 @@ struct TargetStepSize : db::SimpleTag {
   }
 };
 
-struct EndTime : db::SimpleTag {
-  using type = double;
-  using option_tags =
-      tmpl::list<OptionTags::EndTime, OptionTags::BoundaryDataFilename>;
+struct ScriOutputDensity : db::SimpleTag {
+  using type = size_t;
+  using option_tags = tmpl::list<OptionTags::ScriOutputDensity>;
 
-  static double create_from_options(double end_time,
-                                    const std::string& filename) {
-    if (end_time == std::numeric_limits<double>::infinity()) {
-      SpecWorldtubeH5BufferUpdater h5_boundary_updater{filename};
-      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
-      end_time = time_buffer[time_buffer.size() - 1];
-    }
-    return end_time;
+  static size_t create_from_options(const size_t scri_output_density) noexcept {
+    return scri_output_density;
   }
 };
 }  // namespace InitializationTags
 
 namespace Tags {
+struct LMax : db::SimpleTag, Spectral::Swsh::Tags::LMaxBase {
+  using type = size_t;
+  using option_tags = tmpl::list<OptionTags::LMax>;
+
+  static size_t create_from_options(const size_t l_max) noexcept {
+    return l_max;
+  }
+};
+
+struct NumberOfRadialPoints : db::SimpleTag,
+                              Spectral::Swsh::Tags::NumberOfRadialPointsBase {
+  using type = size_t;
+  using option_tags = tmpl::list<OptionTags::NumberOfRadialPoints>;
+
+  static size_t create_from_options(
+      const size_t number_of_radial_points) noexcept {
+    return number_of_radial_points;
+  }
+};
+
 struct FilterLMax : db::SimpleTag {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::FilterLMax>;
@@ -231,5 +228,38 @@ struct RadialFilterHalfPower : db::SimpleTag {
     return radial_filter_half_power;
   }
 };
+
+struct StartTime : db::SimpleTag {
+  using type = double;
+  using option_tags =
+      tmpl::list<OptionTags::StartTime, OptionTags::BoundaryDataFilename>;
+
+  static double create_from_options(double start_time,
+                                    const std::string& filename) noexcept {
+    if (start_time == -std::numeric_limits<double>::infinity()) {
+      SpecWorldtubeH5BufferUpdater h5_boundary_updater{filename};
+      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
+      start_time = time_buffer[0];
+    }
+    return start_time;
+  }
+};
+
+struct EndTime : db::SimpleTag {
+  using type = double;
+  using option_tags =
+      tmpl::list<OptionTags::EndTime, OptionTags::BoundaryDataFilename>;
+
+  static double create_from_options(double end_time,
+                                    const std::string& filename) {
+    if (end_time == std::numeric_limits<double>::infinity()) {
+      SpecWorldtubeH5BufferUpdater h5_boundary_updater{filename};
+      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
+      end_time = time_buffer[time_buffer.size() - 1];
+    }
+    return end_time;
+  }
+};
+
 }  // namespace Tags
 }  // namespace Cce

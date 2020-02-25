@@ -14,10 +14,12 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/Actions/CharacteristicEvolutionBondiCalculations.hpp"
+#include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionVariables.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeWorldtubeBoundary.hpp"
 #include "Evolution/Systems/Cce/Actions/ReceiveWorldtubeData.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
+#include "Evolution/Systems/Cce/InitializeCce.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
@@ -45,7 +47,8 @@ struct mock_characteristic_evolution {
   using with_these_simple_actions = tmpl::list<>;
 
   using initialize_action_list =
-      tmpl::list<Actions::InitializeCharacteristicEvolution,
+      tmpl::list<Actions::InitializeCharacteristicEvolutionVariables,
+                 Actions::InitializeCharacteristicEvolutionTime,
                  Actions::ReceiveWorldtubeData<Metavariables>,
                  ::Actions::MutateApply<InitializeJ<Tags::BoundaryValue>>,
                  ::Actions::MutateApply<InitializeGauge>,
@@ -97,6 +100,7 @@ struct metavariables {
       Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
                                        Spectral::Swsh::Tags::Eth>>>;
 
+  using scri_values_to_observe = tmpl::list<>;
   using cce_integrand_tags = tmpl::flatten<tmpl::transform<
       bondi_hypersurface_step_tags,
       tmpl::bind<integrand_terms_to_compute_for_bondi_variable, tmpl::_1>>>;
@@ -147,11 +151,6 @@ SPECTRE_TEST_CASE(
   using component = mock_characteristic_evolution<metavariables>;
   const size_t number_of_radial_points = 10;
   const size_t l_max = 8;
-  ActionTesting::MockRuntimeSystem<metavariables> runner{
-      tuples::tagged_tuple_from_typelist<
-          Parallel::get_const_global_cache_tags<metavariables>>{
-          std::make_unique<::TimeSteppers::RungeKutta3>(), l_max,
-          number_of_radial_points}};
 
   // create the test file, because on initialization the manager will need to
   // get basic data out of the file
@@ -175,10 +174,15 @@ SPECTRE_TEST_CASE(
   // to get basic data out of the file
   const double start_time = target_time;
   const double target_step_size = 0.01 * value_dist(gen);
+  const size_t scri_interpolation_order = 3;
+
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
+      {l_max, number_of_radial_points,
+       std::make_unique<::TimeSteppers::RungeKutta3>(), start_time,
+       start_time + target_step_size}};
 
   runner.set_phase(metavariables::Phase::Initialization);
-  ActionTesting::emplace_component<component>(
-      &runner, 0, start_time, start_time + target_step_size, target_step_size);
+  ActionTesting::emplace_component<component>(&runner, 0, target_step_size);
 
   // this should run the initialization
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
@@ -220,7 +224,7 @@ SPECTRE_TEST_CASE(
       ::Tags::Variables<
           typename metavariables::cce_integration_independent_tags>,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>,
-      Spectral::Swsh::Tags::LMax, Spectral::Swsh::Tags::NumberOfRadialPoints>>(
+      Tags::LMax, Tags::NumberOfRadialPoints>>(
       db::item_type<boundary_variables_tag>{number_of_angular_points},
       Variables<pre_swsh_derivative_tag_list>{number_of_radial_points *
                                               number_of_angular_points},
@@ -240,6 +244,7 @@ SPECTRE_TEST_CASE(
       lapse_coefficients, dt_lapse_coefficients, dr_lapse_coefficients,
       extraction_radius, l_max);
 
+  ActionTesting::next_action<component>(make_not_null(&runner), 0);
   ActionTesting::simple_action<component, TestSendToEvolution>(
       make_not_null(&runner), 0,
       ActionTesting::get_databox_tag<component, ::Tags::TimeStepId>(runner, 0),
@@ -248,14 +253,9 @@ SPECTRE_TEST_CASE(
           boundary_box));
 
   // the rest of the initialization routine
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 8; ++i) {
+    ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  }
   runner.set_phase(metavariables::Phase::Evolve);
 
   // this should run the computation actions

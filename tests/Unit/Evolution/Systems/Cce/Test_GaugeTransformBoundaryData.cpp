@@ -7,6 +7,7 @@
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/GaugeTransformBoundaryData.hpp"
 #include "Evolution/Systems/Cce/InitializeCce.hpp"
+#include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/PreSwshDerivatives.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
@@ -54,8 +55,8 @@ void test_gauge_transforms_via_inverse_coordinate_map(
 
   auto forward_transform_box = db::create<db::AddSimpleTags<
       coordinate_variables_tag, spin_weighted_variables_tag,
-      volume_spin_weighted_variables_tag, Spectral::Swsh::Tags::LMax,
-      Spectral::Swsh::Tags::NumberOfRadialPoints,
+      volume_spin_weighted_variables_tag, Tags::LMax,
+      Tags::NumberOfRadialPoints,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>>>(
       db::item_type<coordinate_variables_tag>{number_of_angular_grid_points},
       db::item_type<spin_weighted_variables_tag>{number_of_angular_grid_points},
@@ -139,8 +140,8 @@ void test_gauge_transforms_via_inverse_coordinate_map(
 
   auto inverse_transform_box = db::create<db::AddSimpleTags<
       coordinate_variables_tag, spin_weighted_variables_tag,
-      volume_spin_weighted_variables_tag, Spectral::Swsh::Tags::LMax,
-      Spectral::Swsh::Tags::NumberOfRadialPoints,
+      volume_spin_weighted_variables_tag, Tags::LMax,
+      Tags::NumberOfRadialPoints,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>>>(
       db::item_type<coordinate_variables_tag>{number_of_angular_grid_points},
       db::item_type<spin_weighted_variables_tag>{number_of_angular_grid_points},

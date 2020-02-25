@@ -430,8 +430,8 @@ struct SwshTransform<tmpl::list<TransformTags...>, Representation> {
                 "same spin weight.");
 
   using return_tags = tmpl::list<Tags::SwshTransform<TransformTags>...>;
-  using argument_tags =
-      tmpl::list<TransformTags..., Tags::LMax, Tags::NumberOfRadialPoints>;
+  using argument_tags = tmpl::list<TransformTags..., Tags::LMaxBase,
+                                   Tags::NumberOfRadialPointsBase>;
 
   static void apply(
       const gsl::not_null<
@@ -515,8 +515,9 @@ struct InverseSwshTransform<tmpl::list<TransformTags...>, Representation> {
       "same spin weight.");
 
   using return_tags = tmpl::list<TransformTags...>;
-  using argument_tags = tmpl::list<Tags::SwshTransform<TransformTags>...,
-                                   Tags::LMax, Tags::NumberOfRadialPoints>;
+  using argument_tags =
+      tmpl::list<Tags::SwshTransform<TransformTags>..., Tags::LMaxBase,
+                 Tags::NumberOfRadialPointsBase>;
 
   static void apply(
       const gsl::not_null<db::item_type<TransformTags>*>... collocations,

@@ -182,16 +182,26 @@ struct SwshTransform : db::PrefixTag, db::SimpleTag {
 };
 
 /// \ingroup SwshGroup
+/// \brief Base Tag for the maximum spin-weighted spherical harmonic l; sets
+/// angular resolution.
+struct LMaxBase : db::BaseTag {};
+
+/// \ingroup SwshGroup
 /// \brief Tag for the maximum spin-weighted spherical harmonic l; sets angular
 /// resolution.
-struct LMax : db::SimpleTag {
+struct LMax : db::SimpleTag, LMaxBase {
   using type = size_t;
 };
 
 /// \ingroup SwshGroup
+/// \brief Base Tag for the number of radial grid points in the
+/// three-dimensional representation of radially concentric spherical shells.
+struct NumberOfRadialPointsBase : db::BaseTag {};
+
+/// \ingroup SwshGroup
 /// \brief Tag for the number of radial grid points in the three-dimensional
 /// representation of radially concentric spherical shells
-struct NumberOfRadialPoints : db::SimpleTag {
+struct NumberOfRadialPoints : db::SimpleTag, NumberOfRadialPointsBase {
   using type = size_t;
 };
 

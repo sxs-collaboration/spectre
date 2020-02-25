@@ -31,7 +31,7 @@ namespace Cce {
  * \details Uses:
  * - initialization tag
  * `Cce::InitializationTags::H5WorldtubeBoundaryDataManager`,
- * - const global cache tag `Spectral::Swsh::Tags::LMax`.
+ * - const global cache tag `Cce::Tags::LMax`.
  *
  * Databox changes:
  * - Adds:
@@ -45,7 +45,7 @@ struct InitializeH5WorldtubeBoundary {
   using initialization_tags =
       tmpl::list<InitializationTags::H5WorldtubeBoundaryDataManager>;
 
-  using const_global_cache_tags = tmpl::list<Spectral::Swsh::Tags::LMax>;
+  using const_global_cache_tags = tmpl::list<Tags::LMax>;
 
   template <class Metavariables>
   using h5_boundary_manager_simple_tags = db::AddSimpleTags<
@@ -64,11 +64,11 @@ struct InitializeH5WorldtubeBoundary {
                 nullptr>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    const size_t l_max = Parallel::get<Spectral::Swsh::Tags::LMax>(cache);
+    const size_t l_max = db::get<Tags::LMax>(box);
     Variables<typename Metavariables::cce_boundary_communication_tags>
         boundary_variables{
             Spectral::Swsh::number_of_swsh_collocation_points(l_max)};

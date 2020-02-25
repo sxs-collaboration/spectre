@@ -10,6 +10,9 @@
 #include <utility>
 
 #include "DataStructures/Variables.hpp"
+#include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionScri.hpp"
+#include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionTime.hpp"
+#include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionVariables.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeWorldtubeBoundary.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
@@ -40,7 +43,9 @@ struct mock_characteristic_evolution {
   using with_these_simple_actions = tmpl::list<>;
 
   using initialize_action_list =
-      tmpl::list<Actions::InitializeCharacteristicEvolution,
+      tmpl::list<Actions::InitializeCharacteristicEvolutionVariables,
+                 Actions::InitializeCharacteristicEvolutionTime,
+                 Actions::InitializeCharacteristicEvolutionScri,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
@@ -79,6 +84,7 @@ struct metavariables {
       Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
                                        Spectral::Swsh::Tags::Eth>>>;
 
+  using scri_values_to_observe = tmpl::list<>;
   using cce_integrand_tags = tmpl::flatten<tmpl::transform<
       bondi_hypersurface_step_tags,
       tmpl::bind<integrand_terms_to_compute_for_bondi_variable, tmpl::_1>>>;
@@ -112,11 +118,6 @@ SPECTRE_TEST_CASE(
   using component = mock_characteristic_evolution<metavariables>;
   const size_t number_of_radial_points = 10;
   const size_t l_max = 8;
-  ActionTesting::MockRuntimeSystem<metavariables> runner{
-      tuples::tagged_tuple_from_typelist<
-          Parallel::get_const_global_cache_tags<metavariables>>{
-          std::make_unique<::TimeSteppers::RungeKutta3>(), l_max,
-          number_of_radial_points}};
 
   const std::string filename =
       "InitializeCharacteristicEvolutionTest_CceR0100.h5";
@@ -148,14 +149,19 @@ SPECTRE_TEST_CASE(
   const double start_time = value_dist(gen);
   const double end_time = std::numeric_limits<double>::infinity();
   const double target_step_size = 0.01 * value_dist(gen);
+  const size_t scri_plus_interpolation_order = 3;
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
+      {l_max, number_of_radial_points,
+       std::make_unique<::TimeSteppers::RungeKutta3>(), start_time,
+       Tags::EndTime::create_from_options(end_time, filename)}};
 
   runner.set_phase(metavariables::Phase::Initialization);
-  ActionTesting::emplace_component<component>(
-      &runner, 0, start_time,
-      InitializationTags::EndTime::create_from_options(end_time, filename),
-      target_step_size);
+  ActionTesting::emplace_component<component>(&runner, 0, target_step_size,
+                                              scri_plus_interpolation_order);
 
   // this should run the initialization
+  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  ActionTesting::next_action<component>(make_not_null(&runner), 0);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   runner.set_phase(metavariables::Phase::Evolve);

@@ -29,7 +29,7 @@ namespace Actions {
  *
  * Uses:
  * - DataBox:
- *   - `Spectral::Swsh::Tags::LMax`
+ *   - `Cce::Tags::LMax`
  * - ConstGlobalCache:
  *   - `InitializationTags::FilterLMax`
  *   - `InitializationTags::RadialFilterAlpha`
@@ -53,7 +53,7 @@ struct FilterSwshVolumeQuantity {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    const size_t l_max = db::get<Spectral::Swsh::Tags::LMax>(box);
+    const size_t l_max = db::get<Tags::LMax>(box);
     const size_t l_filter_start = get<Tags::FilterLMax>(box);
     const double radial_filter_alpha = get<Tags::RadialFilterAlpha>(box);
     const size_t radial_filter_half_power =

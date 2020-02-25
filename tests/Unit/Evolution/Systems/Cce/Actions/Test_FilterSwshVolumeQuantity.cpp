@@ -43,7 +43,7 @@ struct mock_characteristic_evolution {
   using with_these_simple_actions = tmpl::list<>;
 
   using simple_tags =
-      db::AddSimpleTags<Spectral::Swsh::Tags::LMax,
+      db::AddSimpleTags<Tags::LMax,
                         ::Tags::Variables<tmpl::list<Tags::BondiJ>>>;
   using compute_tags = db::AddComputeTags<>;
 

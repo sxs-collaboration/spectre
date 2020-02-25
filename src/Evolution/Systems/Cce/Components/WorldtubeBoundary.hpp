@@ -27,7 +27,7 @@ namespace Cce {
  * `Evolve` phase.
  *
  * Uses const global tags:
- * - `Spectral::Swsh::Tags::LMax`
+ * - `Tags::LMax`
  *
  * `Metavariables` must contain:
  * - the `enum` `Phase` with at least `Initialization` and `Evolve` phases.

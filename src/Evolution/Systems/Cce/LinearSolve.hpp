@@ -5,6 +5,7 @@
 
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 
@@ -112,8 +113,7 @@ struct RadialIntegrateBondi {
   using return_tags = tmpl::list<Tag>;
   using argument_tags =
       tmpl::append<integrand_tags, boundary_tags,
-                   tmpl::list<Spectral::Swsh::Tags::LMax,
-                              Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+                   tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>>;
   static void apply(
       gsl::not_null<Scalar<
           SpinWeighted<ComplexDataVector, db::item_type<Tag>::type::spin>>*>
@@ -135,8 +135,7 @@ struct RadialIntegrateBondi<Tags::BondiQ> {
   using return_tags = tmpl::list<Tags::BondiQ>;
   using argument_tags =
       tmpl::append<integrand_tags, boundary_tags, integration_independent_tags,
-                   tmpl::list<Spectral::Swsh::Tags::LMax,
-                              Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+                   tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>>;
   static void apply(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
           integral_result,
@@ -157,8 +156,7 @@ struct RadialIntegrateBondi<Tags::BondiW> {
   using return_tags = tmpl::list<Tags::BondiW>;
   using argument_tags =
       tmpl::append<integrand_tags, boundary_tags, integration_independent_tags,
-                   tmpl::list<Spectral::Swsh::Tags::LMax,
-                              Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+                   tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>>;
   static void apply(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
           integral_result,
@@ -182,8 +180,7 @@ struct RadialIntegrateBondi<Tags::BondiH> {
   using return_tags = tmpl::list<Tags::BondiH>;
   using argument_tags =
       tmpl::append<integrand_tags, boundary_tags, integration_independent_tags,
-                   tmpl::list<Spectral::Swsh::Tags::LMax,
-                              Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+                   tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>>;
   static void apply(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
           integral_result,

@@ -16,6 +16,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/SpecBoundaryData.hpp"
+#include "Evolution/Systems/Cce/Tags.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/Version.hpp"

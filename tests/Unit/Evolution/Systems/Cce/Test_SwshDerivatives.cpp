@@ -17,9 +17,11 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
+#include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/PreSwshDerivatives.hpp"
 #include "Evolution/Systems/Cce/PrecomputeCceDependencies.hpp"
 #include "Evolution/Systems/Cce/SwshDerivatives.hpp"
+#include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
@@ -168,7 +170,7 @@ struct GenerateStartingData {
           exp(-10.0 *
               pow<2>(static_cast<double>(i) /
                      static_cast<double>(number_of_radial_grid_points - 1)));
-      if (i > 3){
+      if (i > 3) {
         get(*radial_polynomials_for_j)[i] = 0.0;
       }
     }
@@ -184,8 +186,7 @@ struct GenerateStartingData {
 };
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.SwshDerivatives",
-                  "[Unit][Cce]") {
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.SwshDerivatives", "[Unit][Cce]") {
   MAKE_GENERATOR(generator);
   const size_t l_max = 10;
   const size_t number_of_radial_grid_points = 7;
@@ -227,10 +228,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.SwshDerivatives",
                                     swsh_derivative_tag_list>>>;
 
   auto expected_box = db::create<db::AddSimpleTags<
-    Spectral::Swsh::Tags::LMax, Spectral::Swsh::Tags::NumberOfRadialPoints,
-      boundary_value_variables_tag, integration_independent_variables_tag,
-      pre_swsh_derivatives_variables_tag, swsh_derivatives_variables_tag,
-      separated_angular_data_variables_tag,
+      Tags::LMax, Tags::NumberOfRadialPoints, boundary_value_variables_tag,
+      integration_independent_variables_tag, pre_swsh_derivatives_variables_tag,
+      swsh_derivatives_variables_tag, separated_angular_data_variables_tag,
       separated_radial_modes_variables_tag>>(
       l_max, number_of_radial_grid_points,
       typename boundary_value_variables_tag::type{
@@ -291,10 +291,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.SwshDerivatives",
       get(db::get<Tags::BoundaryValue<Tags::BondiR>>(expected_box)));
 
   auto computation_box = db::create<db::AddSimpleTags<
-      Spectral::Swsh::Tags::LMax, Spectral::Swsh::Tags::NumberOfRadialPoints,
-      Tags::Integrand<Tags::BondiBeta>, Tags::Integrand<Tags::BondiU>,
-      boundary_value_variables_tag, integration_independent_variables_tag,
-      pre_swsh_derivatives_variables_tag, swsh_derivatives_variables_tag,
+      Tags::LMax, Tags::NumberOfRadialPoints, Tags::Integrand<Tags::BondiBeta>,
+      Tags::Integrand<Tags::BondiU>, boundary_value_variables_tag,
+      integration_independent_variables_tag, pre_swsh_derivatives_variables_tag,
+      swsh_derivatives_variables_tag,
       swsh_derivatives_coefficient_buffer_variables_tag>>(
       l_max, number_of_radial_grid_points,
       db::get<Tags::Dy<Tags::BondiBeta>>(expected_box),

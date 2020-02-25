@@ -11,6 +11,9 @@
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
+/// \cond
+class ComplexDataVector;
+/// \endcond
 namespace {
 struct SomeTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
@@ -68,7 +71,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<Cce::Tags::Psi3>("Psi3");
   TestHelpers::db::test_simple_tag<Cce::Tags::Psi4>("Psi4");
   TestHelpers::db::test_simple_tag<Cce::Tags::Strain>("Strain");
-  TestHelpers::db::test_simple_tag<Cce::Tags::EndTime>("EndTime");
 
   TestHelpers::db::test_prefix_tag<Cce::Tags::Dy<SomeTag>>("Dy(SomeTag)");
   TestHelpers::db::test_prefix_tag<Cce::Tags::Du<SomeTag>>("Du(SomeTag)");

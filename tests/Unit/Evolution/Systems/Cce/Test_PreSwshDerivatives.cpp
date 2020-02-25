@@ -16,7 +16,9 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
+#include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/PreSwshDerivatives.hpp"
+#include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
@@ -142,16 +144,17 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PreSwshDerivatives",
             number_of_radial_grid_points);
       });
 
-  auto computation_box = db::create<db::AddSimpleTags<
-      Spectral::Swsh::Tags::LMax, Tags::Integrand<Tags::BondiBeta>,
-      Tags::Integrand<Tags::BondiU>, pre_swsh_derivatives_variables_tag,
-      swsh_derivatives_variables_tag>>(
-      l_max, db::get<Tags::Dy<Tags::BondiBeta>>(expected_box),
-      db::get<Tags::Dy<Tags::BondiU>>(expected_box),
-      typename pre_swsh_derivatives_variables_tag::type{number_of_grid_points,
-                                                        0.0},
-      typename swsh_derivatives_variables_tag::type{number_of_grid_points,
-                                                    0.0});
+  auto computation_box =
+      db::create<db::AddSimpleTags<Tags::LMax, Tags::Integrand<Tags::BondiBeta>,
+                                   Tags::Integrand<Tags::BondiU>,
+                                   pre_swsh_derivatives_variables_tag,
+                                   swsh_derivatives_variables_tag>>(
+          l_max, db::get<Tags::Dy<Tags::BondiBeta>>(expected_box),
+          db::get<Tags::Dy<Tags::BondiU>>(expected_box),
+          typename pre_swsh_derivatives_variables_tag::type{
+              number_of_grid_points, 0.0},
+          typename swsh_derivatives_variables_tag::type{number_of_grid_points,
+                                                        0.0});
 
   // duplicate the 'input' values to the computation box
   TestHelpers::CopyDataBoxTags<
@@ -180,8 +183,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PreSwshDerivatives",
       ::Tags::Variables<tmpl::list<Spectral::Swsh::Tags::Derivative<
           Tags::BondiBeta, Spectral::Swsh::Tags::Eth>>>;
   auto spare_computation_box =
-      db::create<db::AddSimpleTags<Spectral::Swsh::Tags::LMax,
-                                   pre_swsh_spare_variables_tag,
+      db::create<db::AddSimpleTags<Tags::LMax, pre_swsh_spare_variables_tag,
                                    swsh_derivatives_spare_variables_tag>>(
           l_max,
           typename pre_swsh_spare_variables_tag::type{number_of_grid_points,

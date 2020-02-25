@@ -605,7 +605,7 @@ void apply_swsh_jacobian_helper(
  * Provided a \ref DataBoxGroup with the appropriate tags (including
  * `Cce::all_pre_swsh_derivative_tags`, `Cce::all_swsh_derivative_tags`,
  * `Cce::all_transform_buffer_tags`,  `Cce::pre_computation_tags`, and
- * `Spectral::Swsh::Tags::LMax`), this function will apply all of the necessary
+ * `Cce::Tags::LMax`), this function will apply all of the necessary
  * mutations to update
  * `Cce::single_swsh_derivative_tags_to_compute_for<BondiValueTag>` and
  * `Cce::second_swsh_derivative_tags_to_compute_for<BondiValueTag>` to their

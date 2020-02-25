@@ -126,11 +126,15 @@ struct ScriPlusInterpolationManager {
   interpolate_and_pop_first_time() noexcept;
 
   /// \brief return the number of times in the target times queue
-  size_t number_of_target_times() noexcept { return target_times_.size(); }
+  size_t number_of_target_times() const noexcept {
+    return target_times_.size();
+  }
 
   /// \brief return the number of data points that have been provided to the
   /// interpolation manager
-  size_t number_of_data_points() noexcept { return u_bondi_ranges_.size(); }
+  size_t number_of_data_points() const noexcept {
+    return u_bondi_ranges_.size();
+  }
 
  private:
   void remove_unneeded_early_times() noexcept;
@@ -395,13 +399,13 @@ struct ScriPlusInterpolationManager<
   }
 
   /// \brief return the number of times in the target times queue
-  size_t number_of_target_times() noexcept {
+  size_t number_of_target_times() const noexcept {
     return interpolation_manager_lhs_.number_of_target_times();
   }
 
   /// \brief return the number of data points that have been provided to the
   /// interpolation manager
-  size_t number_of_data_points() noexcept {
+  size_t number_of_data_points() const noexcept {
     return interpolation_manager_lhs_.number_of_data_points();
   }
 
@@ -511,13 +515,13 @@ struct ScriPlusInterpolationManager<VectorTypeToInterpolate, Tags::Du<Tag>> {
   interpolate_and_pop_first_time() noexcept;
 
   /// \brief return the number of times in the target times queue
-  size_t number_of_target_times() noexcept {
+  size_t number_of_target_times() const noexcept {
     return argument_interpolation_manager_.number_of_target_times();
   }
 
   /// \brief return the number of data points that have been provided to the
   /// interpolation manager
-  size_t number_of_data_points() noexcept {
+  size_t number_of_data_points() const noexcept {
     return argument_interpolation_manager_.number_of_data_points();
   }
 

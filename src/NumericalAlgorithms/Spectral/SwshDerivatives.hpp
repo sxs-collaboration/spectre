@@ -173,32 +173,33 @@ struct dispatch_to_transform<
 
 // template 'implementation' for the DataBox mutate-compatible interface to
 // spin-weighted derivative evaluation. This impl version is needed to have easy
-// access to the `DeDuplicatedDifferentiatedFromTagList` as a parameter pack
+// access to the `UniqueDifferentiatedFromTagList` as a parameter pack
 template <typename DerivativeTagList,
-          typename DeDuplicatedDifferentiatedFromTagList,
+          typename UniqueDifferentiatedFromTagList,
           ComplexRepresentation Representation>
 struct AngularDerivativesImpl;
 
 template <typename... DerivativeTags,
-          typename... DeDuplicatedDifferentiatedFromTags,
+          typename... UniqueDifferentiatedFromTags,
           ComplexRepresentation Representation>
 struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
-                              tmpl::list<DeDuplicatedDifferentiatedFromTags...>,
+                              tmpl::list<UniqueDifferentiatedFromTags...>,
                               Representation> {
   using return_tags =
       tmpl::list<DerivativeTags..., Tags::SwshTransform<DerivativeTags>...,
-                 Tags::SwshTransform<DeDuplicatedDifferentiatedFromTags>...>;
-  using argument_tags = tmpl::list<DeDuplicatedDifferentiatedFromTags...,
-                                   Tags::LMax, Tags::NumberOfRadialPoints>;
+                 Tags::SwshTransform<UniqueDifferentiatedFromTags>...>;
+  using argument_tags =
+      tmpl::list<UniqueDifferentiatedFromTags..., Tags::LMaxBase,
+                 Tags::NumberOfRadialPointsBase>;
 
   static void apply(
       const gsl::not_null<db::item_type<DerivativeTags>*>... derivative_scalars,
       const gsl::not_null<db::item_type<Tags::SwshTransform<
           DerivativeTags>>*>... transform_of_derivative_scalars,
       const gsl::not_null<db::item_type<Tags::SwshTransform<
-          DeDuplicatedDifferentiatedFromTags>>*>... transform_of_input_scalars,
-      const db::const_item_type<DeDuplicatedDifferentiatedFromTags>&...
-          input_scalars,
+          UniqueDifferentiatedFromTags>>*>... transform_of_input_scalars,
+      const db::const_item_type<
+          UniqueDifferentiatedFromTags>&... input_scalars,
       const size_t l_max, const size_t number_of_radial_points) noexcept {
     apply_to_vectors(make_not_null(&get(*transform_of_derivative_scalars))...,
                      make_not_null(&get(*transform_of_input_scalars))...,
@@ -223,11 +224,11 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
       const gsl::not_null<typename db::item_type<Tags::SwshTransform<
           DerivativeTags>>::type*>... transform_of_derivatives,
       const gsl::not_null<typename db::item_type<Tags::SwshTransform<
-          DeDuplicatedDifferentiatedFromTags>>::type*>... transform_of_inputs,
+          UniqueDifferentiatedFromTags>>::type*>... transform_of_inputs,
       const gsl::not_null<
           typename db::const_item_type<DerivativeTags>::type*>... derivatives,
       const typename db::const_item_type<
-          DeDuplicatedDifferentiatedFromTags>::type&... inputs,
+          UniqueDifferentiatedFromTags>::type&... inputs,
       const size_t l_max, const size_t number_of_radial_points) noexcept {
     // perform the forward transform on the minimal set of input nodal
     // quantities to obtain all of the requested derivatives
@@ -241,7 +242,7 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
       using transform = typename decltype(transform_v)::type;
       auto input_transforms = std::make_tuple(transform_of_inputs...);
       dispatch_to_transform<transform,
-                            tmpl::list<DeDuplicatedDifferentiatedFromTags...>>::
+                            tmpl::list<UniqueDifferentiatedFromTags...>>::
           apply(make_not_null(&input_transforms),
                 std::forward_as_tuple(inputs...), l_max,
                 number_of_radial_points);
@@ -251,7 +252,7 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
     // `transform_of_derivatives`
     EXPAND_PACK_LEFT_TO_RIGHT(
         dispatch_to_compute_coefficients_of_derivative<
-            DerivativeTags, tmpl::list<DeDuplicatedDifferentiatedFromTags...>>::
+            DerivativeTags, tmpl::list<UniqueDifferentiatedFromTags...>>::
             apply(transform_of_derivatives,
                   std::make_tuple(transform_of_inputs...), l_max,
                   number_of_radial_points));
