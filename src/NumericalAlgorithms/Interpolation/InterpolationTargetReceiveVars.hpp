@@ -173,8 +173,8 @@ void callback_and_cleanup(
         // completed_ids forever, but we probably don't want it to get too
         // large, so we limit its size.  We assume that
         // asynchronous calls to AddTemporalIdsToInterpolationTarget do not span
-        // more than 10 temporal_ids.
-        if (completed_ids->size() > 10) {
+        // more than 1000 temporal_ids.
+        if (completed_ids->size() > 1000) {
           completed_ids->pop_front();
         }
       });
