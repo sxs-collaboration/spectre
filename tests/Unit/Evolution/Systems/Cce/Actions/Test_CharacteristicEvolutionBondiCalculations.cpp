@@ -174,7 +174,6 @@ SPECTRE_TEST_CASE(
   // to get basic data out of the file
   const double start_time = target_time;
   const double target_step_size = 0.01 * value_dist(gen);
-  const size_t scri_interpolation_order = 3;
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       {l_max, number_of_radial_points,
