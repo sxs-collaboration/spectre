@@ -25,6 +25,7 @@ struct TestWithMetavars;
 struct OptionType {
   using type = std::unique_ptr<OptionTest>;
   static constexpr OptionString help = {"The type of OptionTest"};
+  static std::unique_ptr<OptionTest> default_value() noexcept;
 };
 
 class OptionTest {
@@ -77,6 +78,10 @@ class TestWithArg : public OptionTest {
  private:
   std::string arg_;
 };
+
+std::unique_ptr<OptionTest> OptionType::default_value() noexcept {
+  return std::make_unique<Test2>();
+}
 
 struct Vector {
   using type = std::vector<std::unique_ptr<OptionTest>>;
@@ -203,7 +208,8 @@ void test_factory_format() {
   // I don't want to rely on that, so just check that the type is at
   // the end of the line, which should ensure it is not in a template
   // parameter or something.
-  CHECK(opts.help().find("OptionTest\n") != std::string::npos);
+  CHECK(opts.help().find("OptionTest [default=Test2]\n") != std::string::npos);
+  CHECK(opts.help().find("OptionTest [default=Test1]\n") == std::string::npos);
 }
 }  // namespace
 
