@@ -52,9 +52,9 @@ void test_hll_flux_tags() noexcept {
       TestHelpers::NumericalFluxes::Tags::Variable3<Dim>,
       TestHelpers::NumericalFluxes::Tags::Variable4<Dim>,
       typename dg::NumericalFluxes::Hll<
-          TestHelpers::NumericalFluxes::System<Dim>>::MinSignalSpeed,
+          TestHelpers::NumericalFluxes::System<Dim>>::LargestIngoingSpeed,
       typename dg::NumericalFluxes::Hll<
-          TestHelpers::NumericalFluxes::System<Dim>>::MaxSignalSpeed>;
+          TestHelpers::NumericalFluxes::System<Dim>>::LargestOutgoingSpeed>;
 
   static_assert(cpp17::is_same_v<typename hll_flux::package_tags,
                                  expected_type_package_tags>,

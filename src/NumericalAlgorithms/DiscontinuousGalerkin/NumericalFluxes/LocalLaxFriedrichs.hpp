@@ -21,23 +21,24 @@ namespace NumericalFluxes {
  * \ingroup NumericalFluxesGroup
  * \brief Compute the local Lax-Friedrichs numerical flux.
  *
- * Let \f$U\f$ and \f$F^i(U)\f$ be the state vector of the system and its
- * corresponding volume flux, respectively. Let \f$n_i\f$ be the unit normal to
- * the interface. Defining \f$F_n(U) := n_i F^i(U)\f$, and denoting the
- * corresponding projections of the numerical fluxes as \f${F_n}^*(U)\f$, the
- * local Lax-Friedrichs flux for each variable is
+ * Let \f$U\f$ be the state vector of the system and \f$F^i\f$ the corresponding
+ * volume fluxes. Let \f$n_i\f$ be the unit normal to  the interface.
+ * Denoting \f$F := n_i F^i\f$, the local Lax-Friedrichs flux is
  *
  * \f{align*}
- * {F_n}^*(U) = \frac{F_n(U_\text{int}) + F_n(U_\text{ext})}{2} +
- * \frac{\alpha}{2}\left( U_\text{int} - U_\text{ext}\right),
+ * G_\text{LLF} = \frac{F_\text{int} + F_\text{ext}}{2} +
+ * \frac{\alpha}{2}\left(U_\text{int} - U_\text{ext}\right),
  * \f}
  *
- * where "int" and "ext" stand for interior and exterior, respectively,
- * and \f$\alpha\f$ is the maximum eigenvalue of either
- * \f$|\Lambda(U_\text{int}; n_\text{int})|\f$ or
- * \f$|\Lambda(U_\text{ext}; n_\text{ext})|\f$, where
- * \f$\Lambda(U; n)\f$ is the diagonal matrix whose entries are the
- * characteristic speeds of the system.
+ * where "int" and "ext" stand for interior and exterior, respectively,  and
+ *
+ * \f{align*}
+ * \alpha = \text{max}\left(\{|\lambda_\text{int}|\},
+ * \{|\lambda_\text{ext}|\}\right),
+ * \f}
+ *
+ * where \f$\{|\lambda|\}\f$ is the set of all moduli of the
+ * characteristic speeds along a given normal.
  */
 template <typename System>
 struct LocalLaxFriedrichs {
@@ -46,7 +47,7 @@ struct LocalLaxFriedrichs {
   using variables_tag = typename System::variables_tag;
 
  public:
-  // The maximum characteristic speed modulus on one side of the interface.
+  /// The maximum characteristic speed modulus on one side of the interface.
   struct MaxAbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
     static std::string name() noexcept { return "MaxAbsCharSpeed"; }
