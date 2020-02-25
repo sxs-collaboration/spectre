@@ -174,7 +174,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
   const double end_time = std::numeric_limits<double>::quiet_NaN();
   const double target_step_size = 0.01 * value_dist(gen);
   const size_t buffer_size = 5;
-  const size_t scri_plus_interpolation_order = 3;
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       {l_max, number_of_radial_points,
        std::make_unique<::TimeSteppers::RungeKutta3>(), start_time,

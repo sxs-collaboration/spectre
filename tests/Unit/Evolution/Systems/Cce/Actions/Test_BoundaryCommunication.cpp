@@ -193,7 +193,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.BoundaryCommunication",
   // create the test file, because on initialization the manager will need
   // to get basic data out of the file
   const size_t buffer_size = 5;
-  const size_t scri_plus_interpolation_order = 3;
 
   runner.set_phase(test_metavariables::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(&runner, 0,
