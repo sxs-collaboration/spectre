@@ -24,10 +24,23 @@ void test_frustal_cloak_construction(
   test_initial_domain(domain, frustal_cloak.initial_refinement_levels());
   test_physical_separation(frustal_cloak.create_domain().blocks());
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.FrustalCloak.Connectivity",
-                  "[Domain][Unit]") {
+void test_factory() {
+  const auto frustal_cloak =
+      TestHelpers::test_factory_creation<DomainCreator<3>>(
+          "FrustalCloak:\n"
+          "  InitialRefinement: 3\n"
+          "  InitialGridPoints: [2,3]\n"
+          "  UseEquiangularMap: true\n"
+          "  ProjectionFactor: 0.3\n"
+          "  LengthInnerCube: 15.5\n"
+          "  LengthOuterCube: 42.4\n"
+          "  OriginPreimage: [0.2,0.3,-0.1]");
+  test_frustal_cloak_construction(
+      dynamic_cast<const domain::creators::FrustalCloak&>(*frustal_cloak));
+}
+
+void test_connectivity() {
   const size_t refinement = 1;
   const std::array<size_t, 2> grid_points = {{6, 5}};
   const double projective_scale_factor = 0.3;
@@ -45,18 +58,10 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.FrustalCloak.Connectivity",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.FrustalCloak.Factory",
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.Creators.FrustalCloak",
                   "[Domain][Unit]") {
-  const auto frustal_cloak =
-      TestHelpers::test_factory_creation<DomainCreator<3>>(
-          "FrustalCloak:\n"
-          "  InitialRefinement: 3\n"
-          "  InitialGridPoints: [2,3]\n"
-          "  UseEquiangularMap: true\n"
-          "  ProjectionFactor: 0.3\n"
-          "  LengthInnerCube: 15.5\n"
-          "  LengthOuterCube: 42.4\n"
-          "  OriginPreimage: [0.2,0.3,-0.1]");
-  test_frustal_cloak_construction(
-      dynamic_cast<const domain::creators::FrustalCloak&>(*frustal_cloak));
+  test_factory();
+  test_connectivity();
 }
