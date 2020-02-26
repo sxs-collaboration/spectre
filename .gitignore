@@ -29,6 +29,7 @@ compile_commands.json
 *.blg
 *.out
 *.bak
+docs/auto
 
 # Python related files
 *.pyc
