@@ -22,6 +22,9 @@ namespace domain {
 namespace FunctionsOfTime {
 class FunctionOfTime;
 }  // namespace FunctionsOfTime
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+class CoordinateMap;
 }  // namespace domain
 
 namespace Frame {
@@ -44,6 +47,9 @@ class CubicScale final : public TimeDependence<MeshDim> {
   using CubicScaleMap = domain::CoordMapsTimeDependent::CubicScale<MeshDim>;
 
  public:
+  using maps_list =
+      tmpl::list<CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap>>;
+
   static constexpr size_t mesh_dim = MeshDim;
 
   /// \brief The initial time of the functions of time.

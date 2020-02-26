@@ -39,6 +39,7 @@ namespace time_dependence {
 template <size_t MeshDim>
 class None final : public TimeDependence<MeshDim> {
  public:
+  using maps_list = tmpl::list<>;
   using options = tmpl::list<>;
 
   static constexpr OptionString help = {"No time dependence in the in grid."};

@@ -29,6 +29,9 @@ class ProductOf3Maps;
 template <typename Map1, typename Map2>
 class ProductOf2Maps;
 }  // namespace CoordMapsTimeDependent
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+class CoordinateMap;
 }  // namespace domain
 
 namespace Frame {
@@ -57,6 +60,15 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
   using Translation = domain::CoordMapsTimeDependent::Translation;
 
  public:
+  using maps_list = tmpl::list<
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, Translation>,
+      domain::CoordinateMap<
+          Frame::Grid, Frame::Inertial,
+          CoordMapsTimeDependent::ProductOf2Maps<Translation, Translation>>,
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                            CoordMapsTimeDependent::ProductOf3Maps<
+                                Translation, Translation, Translation>>>;
+
   static constexpr size_t mesh_dim = MeshDim;
 
   /// \brief The initial time of the functions of time.

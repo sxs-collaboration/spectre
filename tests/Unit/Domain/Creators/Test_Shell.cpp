@@ -25,6 +25,7 @@
 #include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
