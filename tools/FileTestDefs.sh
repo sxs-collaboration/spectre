@@ -196,6 +196,7 @@ long_lines() {
               'docs/config/MathJax.js' \
               'docs/MainSite/Main.md' \
               'docs/DevGuide/Travis.md' \
+              'docs/Tutorials/ParallelExecutable/Tutorials.md' \
               'tools/Iwyu/boost-all.imp$' && \
         staged_grep '^[^#].\{80,\}' "$1" | long_lines_exclude >/dev/null
 }
