@@ -109,7 +109,8 @@ SPECTRE_TEST_CASE("Unit.RadiationTransport.M1Grey.Actions", "[Unit][M1Grey]") {
        tnsr::I<DataVector, 3, Frame::Inertial>{{{vx, vy, vz}}},
        Scalar<DataVector>{W}, metric, inverse_metric,
        tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}}});
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
 
   runner.next_action<component>(0);
 

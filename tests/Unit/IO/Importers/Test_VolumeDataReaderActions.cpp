@@ -177,7 +177,8 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
   auto& volume_data = h5_file.insert<h5::VolumeData>("/element_data", 0);
   volume_data.write_volume_data(0, 0., all_element_data);
 
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
 
   // Have the importer read the file and pass it to the callback
   runner.algorithms<reader_component>()

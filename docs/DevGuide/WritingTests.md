@@ -218,6 +218,11 @@ supposed to succeed with output that matches the regular expression.
 In this case, the first line of the test should call the macro
 `OUTPUT_TEST();`.
 
+### Testing Actions
+
+The action testing framework is documented as part of the `ActionTesting`
+namespace.
+
 ### Building and Running A Single Test File
 
 In cases where low-level header files are frequently being altered and the

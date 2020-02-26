@@ -147,7 +147,8 @@ void test_exponential_filter_action(const double alpha,
                                           disable_for_debugging));
     ActionTesting::emplace_component_and_initialize<component>(
         &runner, 0, {mesh, initial_vars});
-    runner.set_phase(metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner),
+                             metavariables::Phase::Testing);
 
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
     if (FilterIndividually) {

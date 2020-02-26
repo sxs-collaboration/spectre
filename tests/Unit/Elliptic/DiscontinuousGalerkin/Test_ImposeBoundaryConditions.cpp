@@ -382,7 +382,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.BoundaryConditions",
          std::move(mortar_history), std::move(mortar_next_temporal_ids),
          std::move(mortar_meshes), std::move(mortar_sizes)});
   }
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
 
   using additional_tags = tmpl::append<typename my_component::simple_tags,
                                        typename my_component::compute_tags>;

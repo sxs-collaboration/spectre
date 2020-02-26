@@ -102,7 +102,8 @@ void check(const bool time_runs_forward,
                initial_step_size),
        initial_step_size, db::item_type<history_tag>{}});
 
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
   runner.next_action<component>(0);
   auto& box =
       ActionTesting::get_databox<component, typename component::simple_tags>(

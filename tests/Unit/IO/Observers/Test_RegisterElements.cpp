@@ -47,7 +47,8 @@ void check_observer_registration() {
   for (const auto& id : element_ids) {
     ActionTesting::emplace_component<element_comp>(&runner, id);
   }
-  runner.set_phase(metavariables::Phase::RegisterWithObservers);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::RegisterWithObservers);
 
   CHECK(
       ActionTesting::get_databox_tag<obs_component,
@@ -109,7 +110,8 @@ void check_observer_registration() {
           make_not_null(&runner), 0);
     }
   }
-  runner.set_phase(metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Testing);
 
   // Test registration occurred as expected
   CHECK(

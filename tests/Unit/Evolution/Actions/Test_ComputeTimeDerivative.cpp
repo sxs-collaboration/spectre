@@ -80,7 +80,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTimeDerivative",
   MockRuntimeSystem runner{{}};
   ActionTesting::emplace_component_and_initialize<component<Metavariables>>(
       &runner, self_id, {3, -100});
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
 
   {
     const auto& box =

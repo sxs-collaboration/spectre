@@ -216,7 +216,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
   emplace_neighbor(west_id, Direction<2>::lower_eta(),
                    block_orientation.inverse_map(),
                    test_data.var.at(Direction<2>::lower_xi()));
-  runner.set_phase(metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Testing);
 
   // Call SendDataForLimiter on self, sending data to neighbors
   runner.next_action<my_component>(self_id);
@@ -327,7 +328,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.NoNeighbors",
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, self_id,
       {0, mesh, element, std::move(map), std::move(input_var)});
-  runner.set_phase(metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Testing);
 
   // Call SendDataForLimiter on self. Expect empty inboxes all around.
   runner.next_action<my_component>(self_id);

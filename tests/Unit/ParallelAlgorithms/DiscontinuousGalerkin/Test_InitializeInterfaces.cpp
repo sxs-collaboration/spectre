@@ -166,7 +166,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeInterfaces", "[Unit][Actions]") {
         {domain_creator.initial_extents(), vars, other_vars});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
-    runner.set_phase(metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner),
+                             metavariables::Phase::Testing);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
 
@@ -201,7 +202,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeInterfaces", "[Unit][Actions]") {
         {domain_creator.initial_extents(), vars, other_vars});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
-    runner.set_phase(metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner),
+                             metavariables::Phase::Testing);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
 
@@ -236,7 +238,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeInterfaces", "[Unit][Actions]") {
         {domain_creator.initial_extents(), vars, other_vars});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
-    runner.set_phase(metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner),
+                             metavariables::Phase::Testing);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
 

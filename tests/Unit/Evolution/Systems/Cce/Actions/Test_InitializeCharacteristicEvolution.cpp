@@ -155,7 +155,8 @@ SPECTRE_TEST_CASE(
        std::make_unique<::TimeSteppers::RungeKutta3>(), start_time,
        Tags::EndTime::create_from_options(end_time, filename)}};
 
-  runner.set_phase(metavariables::Phase::Initialization);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(&runner, 0, target_step_size,
                                               scri_plus_interpolation_order);
 
@@ -164,7 +165,8 @@ SPECTRE_TEST_CASE(
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  runner.set_phase(metavariables::Phase::Evolve);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Evolve);
 
   // the tags inserted in the `EvolutionTags` step
   const auto& time_step_id =

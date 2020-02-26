@@ -131,7 +131,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Minmod",
       &runner, self_id,
       {0, mesh, element, std::move(map), std::move(logical_coords),
        std::move(inertial_coords), std::move(var)});
-  runner.set_phase(metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Testing);
 
   // SendData
   runner.next_action<my_component>(self_id);

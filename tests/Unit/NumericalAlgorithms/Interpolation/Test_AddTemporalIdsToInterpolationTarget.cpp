@@ -112,7 +112,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
       {domain_creator.create_domain()}};
   ActionTesting::emplace_component<target_component>(&runner, 0);
   ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
-  runner.set_phase(metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   CHECK(ActionTesting::get_databox_tag<target_component,
                                        ::intrp::Tags::TemporalIds<metavars>>(

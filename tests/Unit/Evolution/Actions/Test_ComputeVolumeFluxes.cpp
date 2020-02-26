@@ -90,7 +90,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeFluxes",
       &runner, self_id,
       {db::item_type<Var1>{{{3.}}}, db::item_type<Var2>{{{7., 12.}}},
        db::item_type<flux_tag>{{{-100.}}}});
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
   runner.next_action<component<Metavariables>>(self_id);
 
   auto& box = ActionTesting::get_databox<component<Metavariables>, simple_tags>(

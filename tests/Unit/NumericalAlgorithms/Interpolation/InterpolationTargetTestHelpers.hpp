@@ -153,12 +153,13 @@ void test_interpolation_target(
       tuple_of_opts{std::move(options),
                     std::move(domain_creator.create_domain())};
   ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
-  runner.set_phase(metavars::Phase::Initialization);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavars::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
   ActionTesting::emplace_component<target_component>(&runner, 0);
   ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
-  runner.set_phase(metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, 0));

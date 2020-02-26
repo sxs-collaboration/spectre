@@ -68,7 +68,8 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
        TimeStepId(time_step.is_positive(), 8, start, 1,
                   start + substep_offsets[1]),
        time_step, start.value()});
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
 
   for (const auto& step_start : {start, start + time_step}) {
     for (size_t substep = 0; substep < 3; ++substep) {
@@ -109,7 +110,8 @@ void check_abn(const Time& start, const TimeDelta& time_step) {
       {TimeStepId(time_step.is_positive(), 8, start),
        TimeStepId(time_step.is_positive(), 8, start + time_step), time_step,
        start.value()});
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
 
   for (const auto& step_start : {start, start + time_step}) {
     const auto& box =

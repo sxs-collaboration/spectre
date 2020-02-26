@@ -82,12 +82,14 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
   using interp_component = mock_interpolator<metavars>;
   using elem_component = mock_element<metavars>;
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
-  runner.set_phase(metavars::Phase::Initialization);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavars::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
   ActionTesting::emplace_component<elem_component>(&runner, 0);
   // There is no next_action on elem_component, so we don't call it here.
-  runner.set_phase(metavars::Phase::Registration);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavars::Phase::Registration);
 
   CHECK(ActionTesting::get_databox_tag<interp_component,
                                        ::intrp::Tags::NumberOfElements>(
@@ -108,7 +110,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
   // Call RegisterElementWithInterpolator from element, check if
   // it gets registered.
   ActionTesting::next_action<elem_component>(make_not_null(&runner), 0);
-  runner.set_phase(metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   runner.invoke_queued_simple_action<interp_component>(0);
 

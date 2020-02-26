@@ -205,7 +205,8 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyFluxes",
       &runner, id,
       {mesh, logical_coordinates(mesh), std::move(mortar_meshes),
        std::move(mortar_sizes), initial_dt, std::move(mortar_data)});
-  runner.set_phase(Metavariables<2, NumericalFlux>::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables<2, NumericalFlux>::Phase::Testing);
 
   runner.next_action<my_component>(id);
 
@@ -308,7 +309,8 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyFluxes.p-refinement",
   };
   emplace_component(id_0, {{3, 4, 5}});
   emplace_component(id_1, {{4, 2, 6}});
-  runner.set_phase(metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Testing);
 
   auto& box1 = ActionTesting::get_databox<my_component, simple_tags>(
       make_not_null(&runner), id_0);
@@ -548,7 +550,8 @@ SPECTRE_TEST_CASE(
                {{0.5, 0.5}}, ElementId<3>{12});
   add_neighbor({{MortarSize::LowerHalf, MortarSize::LowerHalf}}, {{-0.5, -0.5}},
                {{0.5, 0.5}}, ElementId<3>{13});
-  runner.set_phase(metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Testing);
 
   runner.next_action<my_component>(self_id);
 

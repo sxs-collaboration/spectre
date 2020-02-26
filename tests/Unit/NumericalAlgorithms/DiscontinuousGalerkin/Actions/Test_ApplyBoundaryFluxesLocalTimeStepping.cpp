@@ -181,7 +181,8 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesLocalTimeStepping",
       &runner, id,
       {mesh, mortar_meshes, mortar_sizes, time_step, variables,
        std::move(mortar_data)});
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
 
   runner.next_action<Component<Metavariables>>(id);
 

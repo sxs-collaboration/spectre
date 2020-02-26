@@ -104,7 +104,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeSources",
   ActionTesting::emplace_component_and_initialize<component<Metavariables>>(
       &runner, self_id,
       {std::move(vars), var3, db::item_type<source_tag>(2_st)});
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
   runner.next_action<component<Metavariables>>(self_id);
 
   const auto& box =

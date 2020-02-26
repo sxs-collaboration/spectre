@@ -212,7 +212,8 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
                             {Direction<1>::upper_xi(), right_id}});
   emplace_element(left_id, {{Direction<1>::upper_xi(), self_id}});
   emplace_element(right_id, {{Direction<1>::lower_xi(), self_id}});
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
 
   // The neighbors only have to get as far as sending data
   for (size_t i = 0; i < 2; ++i) {

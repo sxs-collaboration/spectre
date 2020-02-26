@@ -348,7 +348,8 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
 
   insert_neighbor(make_not_null(&runner), left_element, 0, 1, 0.0);
   insert_neighbor(make_not_null(&runner), right_element, 0, 1, 0.0);
-  runner.set_phase(metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Testing);
 
   runner.next_action<my_component>(self_id);  // SendDataForFluxes
 

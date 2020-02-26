@@ -173,7 +173,8 @@ auto run_action(
       &runner, element.id(),
       {element, mesh, std::move(element_map), vars, other_arg,
        std::move(n_dot_f_storage)});
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
 
   runner.next_action<my_component>(element.id());
   // std::move call on returned value is intentional.

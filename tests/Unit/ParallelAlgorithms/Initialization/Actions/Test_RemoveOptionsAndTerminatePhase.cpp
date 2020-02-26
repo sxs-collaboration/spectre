@@ -132,7 +132,8 @@ SPECTRE_TEST_CASE(
   const double initial_mass = 2.1;
   ActionTesting::emplace_component<component>(&runner, 0, initial_time,
                                               initial_mass);
-  runner.set_phase(Metavariables::Phase::Initialization);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Initialization);
   CHECK(ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, InitialMass>(runner, 0));
   CHECK(not ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner,

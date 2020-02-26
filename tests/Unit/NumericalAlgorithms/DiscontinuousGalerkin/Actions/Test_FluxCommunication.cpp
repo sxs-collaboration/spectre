@@ -375,7 +375,8 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
                    block_orientation.inverse_map(),
                    data.remote_fluxes.at(Direction<2>::lower_xi()),
                    data.remote_other_data.at(Direction<2>::lower_xi()));
-  runner.set_phase(metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Testing);
 
   runner.next_action<my_component>(self_id);
 
@@ -522,7 +523,8 @@ SPECTRE_TEST_CASE(
        db::item_type<mortar_next_temporal_ids_tag<2>>{},
        db::item_type<mortar_meshes_tag<2>>{},
        db::item_type<mortar_sizes_tag<2>>{}});
-  runner.set_phase(metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Testing);
 
   runner.next_action<my_component>(self_id);
 
@@ -626,7 +628,8 @@ SPECTRE_TEST_CASE(
        db::item_type<mortar_next_temporal_ids_tag<3>>{{mortar_id, 1}},
        db::item_type<mortar_meshes_tag<3>>{{mortar_id, face_mesh}},
        db::item_type<mortar_sizes_tag<3>>{{mortar_id, {{}}}}});
-  runner.set_phase(metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Testing);
 
   runner.next_action<my_component>(self_id);
 
@@ -749,7 +752,8 @@ SPECTRE_TEST_CASE(
          db::item_type<mortar_next_temporal_ids_tag<2>>{{mortar_id, 1}},
          db::item_type<mortar_meshes_tag<2>>{{mortar_id, face_mesh}},
          db::item_type<mortar_sizes_tag<2>>{{mortar_id, {{test.first}}}}});
-    runner.set_phase(metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner),
+                             metavariables::Phase::Testing);
 
     runner.next_action<my_component>(self_id);
 
