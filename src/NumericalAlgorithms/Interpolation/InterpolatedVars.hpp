@@ -9,16 +9,11 @@
 #include <unordered_set>
 #include <vector>
 
-#include "DataStructures/IdPair.hpp" // IWYU pragma: keep
+#include "DataStructures/IdPair.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/BlockId.hpp" // IWYU pragma: keep
-
-/// \cond
-template <size_t VolumeDim>
-class ElementId;
-template <typename TagsList>
-class Variables;
-/// \endcond
+#include "DataStructures/Variables.hpp"
+#include "Domain/BlockId.hpp"
+#include "Domain/ElementId.hpp"
 
 namespace intrp {
 

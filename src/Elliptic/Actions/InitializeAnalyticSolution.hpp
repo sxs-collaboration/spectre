@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/ElementIndex.hpp"
 #include "Domain/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"

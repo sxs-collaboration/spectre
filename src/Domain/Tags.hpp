@@ -15,20 +15,15 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Direction.hpp"
-#include "Domain/Element.hpp"
-#include "Domain/Mesh.hpp"
 #include "Domain/OptionTags.hpp"
-#include "Domain/Side.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 /// \cond
@@ -37,8 +32,12 @@ template <size_t VolumeDim>
 class Domain;
 template <size_t VolumeDim>
 class DomainCreator;
+template <size_t VolumeDim>
+class Element;
 template <size_t VolumeDim, typename Frame>
 class ElementMap;
+template <size_t VolumeDim>
+class Mesh;
 /// \endcond
 
 namespace domain {
