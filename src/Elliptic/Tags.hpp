@@ -31,7 +31,7 @@ struct FluxesComputer : db::SimpleTag {
   }
   using option_tags = tmpl::list<>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static FluxesComputerType create_from_options() {
     return FluxesComputerType{};
   }

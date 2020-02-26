@@ -18,6 +18,7 @@
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/CreateFromOptions.hpp"
 #include "Parallel/Exit.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf.hpp"

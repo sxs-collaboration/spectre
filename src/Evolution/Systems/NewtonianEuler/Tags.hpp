@@ -95,7 +95,7 @@ struct SourceTerm : SourceTermBase, db::SimpleTag {
                           ::OptionTags::AnalyticSolution<InitialDataType>,
                           ::OptionTags::AnalyticData<InitialDataType>>>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static type create_from_options(
       const InitialDataType& initial_data) noexcept {
     return initial_data.source_term();
