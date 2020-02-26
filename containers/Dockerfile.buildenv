@@ -107,7 +107,7 @@ RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.2.tar.gz -O bla
     && git clone https://github.com/edouarda/brigand.git \
     && mv brigand/include/brigand /usr/local/include \
     && rm -rf brigand \
-    && wget https://github.com/catchorg/Catch2/releases/download/v2.2.1/catch.hpp -O catch.hpp \
+    && wget https://github.com/catchorg/Catch2/releases/download/v2.11.1/catch.hpp -O catch.hpp \
     && mv catch.hpp /usr/local/include \
     && wget https://github.com/pybind/pybind11/archive/v2.4.3.tar.gz -O pybind11.tar.gz \
     && tar -xzf pybind11.tar.gz \
