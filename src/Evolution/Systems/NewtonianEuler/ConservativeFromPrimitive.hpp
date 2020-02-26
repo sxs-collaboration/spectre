@@ -44,9 +44,9 @@ namespace NewtonianEuler {
  */
 template <size_t Dim>
 struct ConservativeFromPrimitive {
-  using return_tags = tmpl::list<Tags::MassDensityCons<DataVector>,
-                                 Tags::MomentumDensity<DataVector, Dim>,
-                                 Tags::EnergyDensity<DataVector>>;
+  using return_tags =
+      tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<Dim>,
+                 Tags::EnergyDensity>;
 
   using argument_tags =
       tmpl::list<Tags::MassDensity<DataVector>, Tags::Velocity<DataVector, Dim>,

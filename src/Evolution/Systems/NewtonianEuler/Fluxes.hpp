@@ -53,17 +53,14 @@ namespace NewtonianEuler {
  */
 template <size_t Dim>
 struct ComputeFluxes {
-  using return_tags =
-      tmpl::list<::Tags::Flux<Tags::MassDensityCons<DataVector>,
-                              tmpl::size_t<Dim>, Frame::Inertial>,
-                 ::Tags::Flux<Tags::MomentumDensity<DataVector, Dim>,
-                              tmpl::size_t<Dim>, Frame::Inertial>,
-                 ::Tags::Flux<Tags::EnergyDensity<DataVector>,
-                              tmpl::size_t<Dim>, Frame::Inertial>>;
+  using return_tags = tmpl::list<
+      ::Tags::Flux<Tags::MassDensityCons, tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::Flux<Tags::MomentumDensity<Dim>, tmpl::size_t<Dim>,
+                   Frame::Inertial>,
+      ::Tags::Flux<Tags::EnergyDensity, tmpl::size_t<Dim>, Frame::Inertial>>;
 
   using argument_tags =
-      tmpl::list<Tags::MomentumDensity<DataVector, Dim>,
-                 Tags::EnergyDensity<DataVector>,
+      tmpl::list<Tags::MomentumDensity<Dim>, Tags::EnergyDensity,
                  Tags::Velocity<DataVector, Dim>, Tags::Pressure<DataVector>>;
 
   static void apply(

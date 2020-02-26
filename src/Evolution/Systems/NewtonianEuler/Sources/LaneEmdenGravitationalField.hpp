@@ -78,11 +78,11 @@ struct LaneEmdenGravitationalField {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 
-  using sourced_variables = tmpl::list<Tags::MomentumDensity<DataVector, 3>,
-                                       Tags::EnergyDensity<DataVector>>;
+  using sourced_variables =
+      tmpl::list<Tags::MomentumDensity<3>, Tags::EnergyDensity>;
 
   using argument_tags = tmpl::list<
-      Tags::MassDensityCons<DataVector>, Tags::MomentumDensity<DataVector, 3>,
+      Tags::MassDensityCons, Tags::MomentumDensity<3>,
       ::Tags::AnalyticSolution<NewtonianEuler::Solutions::LaneEmdenStar>,
       ::Tags::Coordinates<3, Frame::Inertial>>;
 

@@ -79,12 +79,11 @@ struct VortexPerturbation {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 
-  using sourced_variables =
-      tmpl::conditional_t<Dim == 3,
-                          tmpl::list<Tags::MassDensityCons<DataVector>,
-                                     Tags::MomentumDensity<DataVector, Dim>,
-                                     Tags::EnergyDensity<DataVector>>,
-                          tmpl::list<>>;
+  using sourced_variables = tmpl::conditional_t<
+      Dim == 3,
+      tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<Dim>,
+                 Tags::EnergyDensity>,
+      tmpl::list<>>;
 
   using argument_tags = tmpl::conditional_t<
       Dim == 3,

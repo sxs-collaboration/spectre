@@ -42,9 +42,9 @@ template <size_t Dim>
 struct SomeSourceType {
   static constexpr size_t volume_dim = Dim;
   using sourced_variables =
-      tmpl::list<NewtonianEuler::Tags::MassDensityCons<DataVector>,
-                 NewtonianEuler::Tags::MomentumDensity<DataVector, Dim>,
-                 NewtonianEuler::Tags::EnergyDensity<DataVector>>;
+      tmpl::list<NewtonianEuler::Tags::MassDensityCons,
+                 NewtonianEuler::Tags::MomentumDensity<Dim>,
+                 NewtonianEuler::Tags::EnergyDensity>;
 
   using argument_tags =
       tmpl::list<FirstArg, SecondArg<Dim>, ThirdArg, FourthArg<Dim>>;
@@ -73,8 +73,8 @@ template <size_t Dim>
 struct SomeOtherSourceType {
   static constexpr size_t volume_dim = Dim;
   using sourced_variables =
-      tmpl::list<NewtonianEuler::Tags::MomentumDensity<DataVector, Dim>,
-                 NewtonianEuler::Tags::EnergyDensity<DataVector>>;
+      tmpl::list<NewtonianEuler::Tags::MomentumDensity<Dim>,
+                 NewtonianEuler::Tags::EnergyDensity>;
 
   using argument_tags =
       tmpl::list<FirstArg, SecondArg<Dim>, ThirdArg, FourthArg<Dim>>;

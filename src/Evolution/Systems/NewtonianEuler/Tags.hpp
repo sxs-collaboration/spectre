@@ -13,6 +13,10 @@
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 
+/// \cond
+class DataVector;
+/// \endcond
+
 namespace NewtonianEuler {
 /// %Tags for the conservative formulation of the Newtonian Euler system
 namespace Tags {
@@ -30,24 +34,22 @@ struct MassDensity : db::SimpleTag {
 };
 
 /// The mass density of the fluid (as a conservative variable).
-template <typename DataType>
 struct MassDensityCons : db::SimpleTag {
-  using type = Scalar<DataType>;
+  using type = Scalar<DataVector>;
 };
 
 /// The momentum density of the fluid.
-template <typename DataType, size_t Dim, typename Fr>
+template <size_t Dim, typename Fr>
 struct MomentumDensity : db::SimpleTag {
-  using type = tnsr::I<DataType, Dim, Fr>;
+  using type = tnsr::I<DataVector, Dim, Fr>;
   static std::string name() noexcept {
     return Frame::prefix<Fr>() + "MomentumDensity";
   }
 };
 
 /// The energy density of the fluid.
-template <typename DataType>
 struct EnergyDensity : db::SimpleTag {
-  using type = Scalar<DataType>;
+  using type = Scalar<DataVector>;
 };
 
 /// The macroscopic or flow velocity of the fluid.
