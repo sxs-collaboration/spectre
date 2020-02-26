@@ -85,7 +85,7 @@ struct NumericalFlux : db::SimpleTag {
   using option_tags =
       tmpl::list<::OptionTags::NumericalFlux<NumericalFluxType>>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static NumericalFluxType create_from_options(
       const NumericalFluxType& numerical_flux) noexcept {
     return numerical_flux;

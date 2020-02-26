@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "Options/ParseOptions.hpp"
+#include "Parallel/CreateFromOptions.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/TMPL.hpp"
@@ -268,7 +269,7 @@ struct Yards {
   using option_tags = tmpl::list<OptionTags::Yards>;
   using type = double;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static double create_from_options(const double yards) noexcept {
     return yards;
   }
@@ -277,7 +278,7 @@ struct Feet {
   using option_tags = tmpl::list<OptionTags::Yards>;
   using type = double;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static double create_from_options(const double yards) noexcept {
     return 3.0 * yards;
   }
@@ -286,7 +287,7 @@ struct Sides {
   using option_tags = tmpl::list<OptionTags::Yards, OptionTags::Dim>;
   using type = std::vector<double>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static std::vector<double> create_from_options(const double yards,
                                                  const size_t dim) noexcept {
     return std::vector<double>(dim, yards);
@@ -296,6 +297,7 @@ struct FullGreeting {
   using option_tags = tmpl::list<OptionTags::Greeting, OptionTags::Name>;
   using type = std::string;
 
+  static constexpr bool pass_metavariables = true;
   template <typename Metavariables, typename... Tags>
   static std::string create_from_options(const std::string& greeting,
                                          const std::string& name) noexcept {

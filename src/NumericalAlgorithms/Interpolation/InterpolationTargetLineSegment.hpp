@@ -108,7 +108,7 @@ struct LineSegment : db::SimpleTag {
   using option_tags =
       tmpl::list<OptionTags::LineSegment<InterpolationTargetTag, VolumeDim>>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& option) noexcept {
     return option;
   }

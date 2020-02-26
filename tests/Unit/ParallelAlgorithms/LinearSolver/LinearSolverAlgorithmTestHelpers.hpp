@@ -62,7 +62,7 @@ struct LinearOperator : db::SimpleTag {
   using type = DenseMatrix<double>;
   using option_tags = tmpl::list<OptionTags::LinearOperator>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static DenseMatrix<double> create_from_options(
       const DenseMatrix<double>& linear_operator) noexcept {
     return linear_operator;
@@ -73,7 +73,7 @@ struct Source : db::SimpleTag {
   using type = DenseVector<double>;
   using option_tags = tmpl::list<OptionTags::Source>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static DenseVector<double> create_from_options(
       const DenseVector<double>& source) noexcept {
     return source;
@@ -84,7 +84,7 @@ struct InitialGuess : db::SimpleTag {
   using type = DenseVector<double>;
   using option_tags = tmpl::list<OptionTags::InitialGuess>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static DenseVector<double> create_from_options(
       const DenseVector<double>& initial_guess) noexcept {
     return initial_guess;
@@ -95,7 +95,7 @@ struct ExpectedResult : db::SimpleTag {
   using type = DenseVector<double>;
   using option_tags = tmpl::list<OptionTags::ExpectedResult>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static DenseVector<double> create_from_options(
       const DenseVector<double>& expected_result) noexcept {
     return expected_result;

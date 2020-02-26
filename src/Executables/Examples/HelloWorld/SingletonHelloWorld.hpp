@@ -32,7 +32,7 @@ struct Name : db::SimpleTag {
   using type = std::string;
   using option_tags = tmpl::list<OptionTags::Name>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static std::string create_from_options(const std::string& name) noexcept {
     return name;
   }

@@ -83,7 +83,7 @@ struct ConstraintDampingParameter : db::SimpleTag {
   using type = double;
   using option_tags = tmpl::list<OptionTags::DampingParameter>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static double create_from_options(
       const double constraint_damping_parameter) noexcept {
     return constraint_damping_parameter;

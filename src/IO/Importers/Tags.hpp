@@ -88,7 +88,7 @@ struct FileName : db::SimpleTag {
   using type = std::string;
   using option_tags = tmpl::list<OptionTags::FileName<ImporterOptionsGroup>>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& file_name) noexcept {
     return file_name;
   }
@@ -107,7 +107,7 @@ struct Subgroup : db::SimpleTag {
   using type = std::string;
   using option_tags = tmpl::list<OptionTags::Subgroup<ImporterOptionsGroup>>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& subgroup) noexcept {
     return subgroup;
   }
@@ -125,7 +125,7 @@ struct ObservationValue : db::SimpleTag {
   using option_tags =
       tmpl::list<OptionTags::ObservationValue<ImporterOptionsGroup>>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& observation_value) noexcept {
     return observation_value;
   }
