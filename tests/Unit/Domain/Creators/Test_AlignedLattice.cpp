@@ -6,11 +6,16 @@
 #include <cstddef>
 #include <memory>
 
+#include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Creators/AlignedLattice.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_include <vector>
 
@@ -25,6 +30,10 @@ void test_aligned_blocks(
     const creators::AlignedLattice<VolumeDim>& aligned_blocks) noexcept {
   const auto domain = aligned_blocks.create_domain();
   test_initial_domain(domain, aligned_blocks.initial_refinement_levels());
+
+  Parallel::register_classes_in_list<
+      typename creators::AlignedLattice<VolumeDim>::maps_list>();
+  test_serialization(domain);
 }
 }  // namespace
 

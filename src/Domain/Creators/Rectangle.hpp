@@ -16,11 +16,29 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace domain {
+namespace CoordinateMaps {
+class Affine;
+template <typename Map1, typename Map2>
+class ProductOf2Maps;
+}  // namespace CoordinateMaps
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+class CoordinateMap;
+}  // namespace domain
+/// \endcond
+
 namespace domain {
 namespace creators {
 /// Create a 2D Domain consisting of a single Block.
 class Rectangle : public DomainCreator<2> {
  public:
+  using maps_list = tmpl::list<domain::CoordinateMap<
+      Frame::Logical, Frame::Inertial,
+      CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                     CoordinateMaps::Affine>>>;
+
   struct LowerBound {
     using type = std::array<double, 2>;
     static constexpr OptionString help = {

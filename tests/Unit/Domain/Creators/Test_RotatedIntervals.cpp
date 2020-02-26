@@ -23,9 +23,11 @@
 #include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace domain {
 namespace {
@@ -58,6 +60,10 @@ void test_rotated_intervals_construction(
                   std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}}},
               CoordinateMaps::Affine{-1., 1., midpoint[0], upper_bound[0]})));
   test_initial_domain(domain, rotated_intervals.initial_refinement_levels());
+
+  Parallel::register_classes_in_list<
+      typename domain::creators::RotatedIntervals::maps_list>();
+  test_serialization(domain);
 }
 
 void test_rotated_intervals() {

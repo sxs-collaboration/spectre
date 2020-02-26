@@ -11,11 +11,14 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 #include "Domain/Block.hpp"                       // IWYU pragma: keep
 #include "Domain/BlockNeighbor.hpp"               // IWYU pragma: keep
+#include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/FrustalCloak.hpp"
 #include "Domain/Domain.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 void test_frustal_cloak_construction(
@@ -23,6 +26,10 @@ void test_frustal_cloak_construction(
   const auto domain = frustal_cloak.create_domain();
   test_initial_domain(domain, frustal_cloak.initial_refinement_levels());
   test_physical_separation(frustal_cloak.create_domain().blocks());
+
+  Parallel::register_classes_in_list<
+      typename domain::creators::FrustalCloak::maps_list>();
+  test_serialization(domain);
 }
 
 void test_factory() {

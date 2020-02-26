@@ -12,6 +12,23 @@
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace domain {
+namespace CoordinateMaps {
+class Affine;
+class Equiangular;
+template <typename Map1, typename Map2>
+class ProductOf2Maps;
+template <typename Map1, typename Map2, typename Map3>
+class ProductOf3Maps;
+class Wedge2D;
+}  // namespace CoordinateMaps
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+class CoordinateMap;
+}  // namespace domain
+/// \endcond
+
 namespace domain {
 namespace creators {
 /// Create a 3D Domain in the shape of a cylinder where the cross-section
@@ -20,6 +37,21 @@ namespace creators {
 /// \image html Cylinder.png "The Cylinder Domain."
 class Cylinder : public DomainCreator<3> {
  public:
+  using maps_list = tmpl::list<
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                            CoordinateMaps::ProductOf3Maps<
+                                CoordinateMaps::Affine, CoordinateMaps::Affine,
+                                CoordinateMaps::Affine>>,
+      domain::CoordinateMap<
+          Frame::Logical, Frame::Inertial,
+          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Equiangular,
+                                         CoordinateMaps::Equiangular,
+                                         CoordinateMaps::Affine>>,
+      domain::CoordinateMap<
+          Frame::Logical, Frame::Inertial,
+          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge2D,
+                                         CoordinateMaps::Affine>>>;
+
   struct InnerRadius {
     using type = double;
     static constexpr OptionString help = {

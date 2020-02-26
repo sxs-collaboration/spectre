@@ -18,6 +18,26 @@
 
 // IWYU pragma: no_include "DataStructures/Tensor/Tensor.hpp" // Not needed
 
+/// \cond
+namespace domain {
+namespace CoordinateMaps {
+class Affine;
+class EquatorialCompression;
+class Equiangular;
+template <size_t VolumeDim>
+class Identity;
+template <typename Map1, typename Map2>
+class ProductOf2Maps;
+template <typename Map1, typename Map2, typename Map3>
+class ProductOf3Maps;
+class Wedge3D;
+}  // namespace CoordinateMaps
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+class CoordinateMap;
+}  // namespace domain
+/// \endcond
+
 namespace domain {
 namespace creators {
 /// Create a 3D Domain in the shape of a sphere consisting of six wedges
@@ -25,6 +45,22 @@ namespace creators {
 /// this Domain, see the documentation for Shell.
 class Sphere : public DomainCreator<3> {
  public:
+  using maps_list = tmpl::list<
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                            CoordinateMaps::ProductOf3Maps<
+                                CoordinateMaps::Affine, CoordinateMaps::Affine,
+                                CoordinateMaps::Affine>>,
+      domain::CoordinateMap<
+          Frame::Logical, Frame::Inertial,
+          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Equiangular,
+                                         CoordinateMaps::Equiangular,
+                                         CoordinateMaps::Equiangular>>,
+      domain::CoordinateMap<
+          Frame::Logical, Frame::Inertial, CoordinateMaps::Wedge3D,
+          CoordinateMaps::EquatorialCompression,
+          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                         CoordinateMaps::Identity<2>>>>;
+
   struct InnerRadius {
     using type = double;
     static constexpr OptionString help = {

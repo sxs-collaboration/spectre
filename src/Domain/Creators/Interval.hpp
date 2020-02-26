@@ -16,11 +16,26 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace domain {
+namespace CoordinateMaps {
+class Affine;
+}  // namespace CoordinateMaps
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+class CoordinateMap;
+}  // namespace domain
+/// \endcond
+
 namespace domain {
 namespace creators {
 /// Create a 1D Domain consisting of a single Block.
 class Interval : public DomainCreator<1> {
  public:
+  using maps_list =
+      tmpl::list<domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                       CoordinateMaps::Affine>>;
+
   struct LowerBound {
     using type = std::array<double, 1>;
     static constexpr OptionString help = {"Sequence of [x] for lower bounds."};

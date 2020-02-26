@@ -16,6 +16,19 @@
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace domain {
+namespace CoordinateMaps {
+class Affine;
+template <size_t VolumeDim>
+class DiscreteRotation;
+}  // namespace CoordinateMaps
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+class CoordinateMap;
+}  // namespace domain
+/// \endcond
+
 namespace domain {
 namespace creators {
 /// Create a 1D Domain consisting of two rotated Blocks.
@@ -24,6 +37,10 @@ namespace creators {
 /// This is useful for testing code that deals with unaligned blocks.
 class RotatedIntervals : public DomainCreator<1> {
  public:
+  using maps_list = tmpl::list<domain::CoordinateMap<
+      Frame::Logical, Frame::Inertial,
+      domain::CoordinateMaps::DiscreteRotation<1>, CoordinateMaps::Affine>>;
+
   struct LowerBound {
     using type = std::array<double, 1>;
     static constexpr OptionString help = {

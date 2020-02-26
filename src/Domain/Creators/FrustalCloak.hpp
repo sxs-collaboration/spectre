@@ -15,12 +15,27 @@
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace domain {
+namespace CoordinateMaps {
+class Frustum;
+}  // namespace CoordinateMaps
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+class CoordinateMap;
+}  // namespace domain
+/// \endcond
+
 namespace domain {
 namespace creators {
 /// Create a 3D cubical domain with two equal-sized abutting excised cubes in
 /// the center. This is done by combining ten frusta.
 class FrustalCloak : public DomainCreator<3> {
  public:
+  using maps_list =
+      tmpl::list<domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                       domain::CoordinateMaps::Frustum>>;
+
   struct InitialRefinement {
     using type = size_t;
     static constexpr OptionString help = {

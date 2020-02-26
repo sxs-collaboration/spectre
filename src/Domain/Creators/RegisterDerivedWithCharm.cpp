@@ -18,80 +18,55 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
+#include "Domain/Creators/AlignedLattice.hpp"
+#include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/Cylinder.hpp"
+#include "Domain/Creators/Disk.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/FrustalCloak.hpp"
+#include "Domain/Creators/Interval.hpp"
+#include "Domain/Creators/Rectangle.hpp"
+#include "Domain/Creators/RotatedBricks.hpp"
+#include "Domain/Creators/RotatedIntervals.hpp"
+#include "Domain/Creators/RotatedRectangles.hpp"
+#include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/Sphere.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace domain {
 namespace creators {
-namespace DomainCreators_detail {
-using Affine = CoordinateMaps::Affine;
-using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-using Equiangular = CoordinateMaps::Equiangular;
-using Equiangular2D = CoordinateMaps::ProductOf2Maps<Equiangular, Equiangular>;
-using Equiangular3D =
-    CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
-using Equiangular3DPrism =
-    CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
-using EquatorialCompression = CoordinateMaps::EquatorialCompression;
-using Wedge2D = CoordinateMaps::Wedge2D;
-using Wedge3D = CoordinateMaps::Wedge3D;
-using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
-using Identity2D = CoordinateMaps::Identity<2>;
-using Translation3D = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>;
+namespace {
+template <typename Creator>
+struct get_maps {
+  using type = typename Creator::maps_list;
+};
+
+template <typename Map>
+struct to_grid_map {
+  using type = void;
+};
+
+template <typename... Maps>
+struct to_grid_map<CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>> {
+  using type = CoordinateMap<Frame::Logical, Frame::Grid, Maps...>;
+};
 
 template <size_t Dim>
-void register_with_charm();
-
-template <>
-void register_with_charm<1>() {
-  PUPable_reg(
-      SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial, Affine>));
-  PUPable_reg(
-      SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
-                               CoordinateMaps::DiscreteRotation<1>, Affine>));
-}
-
-template <>
-void register_with_charm<2>() {
-  PUPable_reg(
-      SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
-  PUPable_reg(
-      SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
-                               CoordinateMaps::DiscreteRotation<2>, Affine2D>));
-  PUPable_reg(SINGLE_ARG(
-      CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular2D>));
-  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
-                                       CoordinateMaps::Identity<2>>));
-  PUPable_reg(
-      SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial, Wedge2D>));
-}
-template <>
-void register_with_charm<3>() {
-  PUPable_reg(
-      SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial, Affine3D>));
-  PUPable_reg(
-      SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
-                               CoordinateMaps::DiscreteRotation<3>, Affine3D>));
-  PUPable_reg(SINGLE_ARG(
-      CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular3D>));
-  PUPable_reg(SINGLE_ARG(
-      CoordinateMap<Frame::Logical, Frame::Inertial, Equiangular3DPrism>));
-  PUPable_reg(SINGLE_ARG(
-      CoordinateMap<Frame::Logical, Frame::Inertial, CoordinateMaps::Frustum>));
-  PUPable_reg(
-      SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial, Wedge3D>));
-  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial, Wedge3D,
-                                       EquatorialCompression>));
-  PUPable_reg(
-      SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial, Wedge3DPrism>));
-  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial, Wedge3D,
-                                       EquatorialCompression, Translation3D>));
-}
-}  // namespace DomainCreators_detail
+using maps_from_creators =
+    tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
+        typename DomainCreator<Dim>::creatable_classes, get_maps<tmpl::_1>>>>;
+}  // namespace
 
 void register_derived_with_charm() {
-  DomainCreators_detail::register_with_charm<1>();
-  DomainCreators_detail::register_with_charm<2>();
-  DomainCreators_detail::register_with_charm<3>();
+  using all_maps = tmpl::remove_duplicates<tmpl::append<
+      maps_from_creators<1>, maps_from_creators<2>, maps_from_creators<3>>>;
+  using maps_to_grid =
+      tmpl::remove<tmpl::transform<all_maps, to_grid_map<tmpl::_1>>, void>;
+  using maps_to_register =
+      tmpl::remove_duplicates<tmpl::append<all_maps, maps_to_grid>>;
+
+  Parallel::register_classes_in_list<maps_to_register>();
 }
 }  // namespace creators
 }  // namespace domain

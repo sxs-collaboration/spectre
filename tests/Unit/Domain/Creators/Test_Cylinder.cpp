@@ -27,9 +27,11 @@
 #include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace domain {
 namespace {
@@ -188,6 +190,9 @@ void test_cylinder_construction(
                            expected_external_boundaries, coord_maps);
 
   test_initial_domain(domain, cylinder.initial_refinement_levels());
+
+  Parallel::register_classes_in_list<typename creators::Cylinder::maps_list>();
+  test_serialization(domain);
 }
 
 void test_cylinder_boundaries_equiangular() {

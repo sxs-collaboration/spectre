@@ -13,6 +13,23 @@
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace domain {
+namespace CoordinateMaps {
+class Affine;
+class EquatorialCompression;
+template <size_t VolumeDim>
+class Identity;
+template <typename Map1, typename Map2>
+class ProductOf2Maps;
+class Wedge3D;
+}  // namespace CoordinateMaps
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+class CoordinateMap;
+}  // namespace domain
+/// \endcond
+
 namespace domain {
 namespace creators {
 /*!
@@ -21,9 +38,14 @@ namespace creators {
  *
  * \image html WedgeOrientations.png "The orientation of each wedge in Shell."
  */
-
 class Shell : public DomainCreator<3> {
  public:
+  using maps_list = tmpl::list<domain::CoordinateMap<
+      Frame::Logical, Frame::Inertial, CoordinateMaps::Wedge3D,
+      CoordinateMaps::EquatorialCompression,
+      CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                     CoordinateMaps::Identity<2>>>>;
+
   struct InnerRadius {
     using type = double;
     static constexpr OptionString help = {"Inner radius of the Shell."};
