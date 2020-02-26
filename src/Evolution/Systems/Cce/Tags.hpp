@@ -4,6 +4,7 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -28,6 +29,28 @@ struct BondiBeta : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
 };
 
+/// Bondi parameter \f$J\f$
+struct BondiJ : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 2>>;
+  static std::string name() noexcept { return "J"; }
+};
+
+}  // namespace Tags
+}  // namespace Cce
+
+namespace Tags {
+/// \cond
+template <>
+struct dt<Cce::Tags::BondiJ> : db::PrefixTag, db::SimpleTag {
+  static std::string name() noexcept { return "H"; }
+  using type = Scalar<::SpinWeighted<ComplexDataVector, 2>>;
+  using tag = Cce::Tags::BondiJ;
+};
+/// \endcond
+}  // namespace Tags
+
+namespace Cce {
+namespace Tags {
 /// \brief Bondi parameter \f$H = \partial_u J\f$.
 /// \note The notation in the literature is not consistent regarding this
 /// quantity, or whether it is denoted by an \f$H\f$ at all. The SpECTRE CCE
@@ -35,16 +58,7 @@ struct BondiBeta : db::SimpleTag {
 /// derivative of \f$J\f$ at fixed compactified radius \f$y\f$ (to be contrasted
 /// with the physical Bondi radius, which is not directly used for numerical
 /// grids).
-struct BondiH : db::SimpleTag {
-  using type = Scalar<SpinWeighted<ComplexDataVector, 2>>;
-  static std::string name() noexcept { return "H"; }
-};
-
-/// Bondi parameter \f$J\f$
-struct BondiJ : db::SimpleTag {
-  using type = Scalar<SpinWeighted<ComplexDataVector, 2>>;
-  static std::string name() noexcept { return "J"; }
-};
+using BondiH = ::Tags::dt<BondiJ>;
 
 /// Bondi parameter \f$\bar{J}\f$
 struct BondiJbar : db::SimpleTag {
