@@ -32,7 +32,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Check commits
         # `CheckCommits.sh` tests against the local `develop` branch, so that's
         # where we fetch the pull-request's base-branch to. Typically, it is
@@ -59,7 +61,9 @@ jobs:
       image: sxscollaboration/spectrebuildenv:latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Check python formatting
         run: |
           cd $GITHUB_WORKSPACE
@@ -85,7 +89,9 @@ jobs:
         build_type: [Debug, Release]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Fetch upstream/develop
         # We only want to check files that have changed in this pull request,
         # so we fetch its base branch and pass it to `clang-tidy-hash`.
@@ -129,7 +135,9 @@ jobs:
       image: sxscollaboration/spectrebuildenv:latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Configure with cmake
         working-directory: /work
         run: >
@@ -183,7 +191,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Download built documentation
         uses: actions/download-artifact@v1
         with:
@@ -259,7 +269,9 @@ jobs:
         CCACHE_COMPILERCHECK: content
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Restore ccache
         uses: actions/cache@v1
         with:
