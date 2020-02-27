@@ -159,8 +159,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.WrappedGr",
                   "[PointwiseFunctions][Unit]") {
   const double amplitude = 0.24;
   const double wavelength = 4.4;
-  test_generalized_harmonic_solution<gr::Solutions::GaugeWave>(amplitude,
-                                                               wavelength);
+  test_generalized_harmonic_solution<gr::Solutions::GaugeWave<1>>(amplitude,
+                                                                  wavelength);
+  test_generalized_harmonic_solution<gr::Solutions::GaugeWave<2>>(amplitude,
+                                                                  wavelength);
+  test_generalized_harmonic_solution<gr::Solutions::GaugeWave<3>>(amplitude,
+                                                                  wavelength);
   test_generalized_harmonic_solution<gr::Solutions::Minkowski<1>>();
   test_generalized_harmonic_solution<gr::Solutions::Minkowski<2>>();
   test_generalized_harmonic_solution<gr::Solutions::Minkowski<3>>();
