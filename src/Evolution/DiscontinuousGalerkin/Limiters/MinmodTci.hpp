@@ -39,7 +39,7 @@ namespace Tci {
 
 // Implements the TVB troubled-cell indicator from Cockburn1999.
 template <size_t VolumeDim>
-bool troubled_cell_indicator(
+bool tvb_minmod_indicator(
     gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
     double tvb_constant, const DataVector& u, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
@@ -60,7 +60,7 @@ bool troubled_cell_indicator(
 // - a variable `means` that is a `TaggedTuple<Tags::Mean<Tags>...>`
 // - a variable `element_size` that is a `std::array<double, VolumeDim>`
 template <size_t VolumeDim, typename PackagedData, typename... Tags>
-bool troubled_cell_indicator(
+bool tvb_minmod_indicator(
     const db::const_item_type<Tags>&... tensors,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
@@ -104,7 +104,7 @@ bool troubled_cell_indicator(
               element, tensor_storage_index, neighbor_data);
 
       const DataVector& u = tensor[tensor_storage_index];
-      const bool component_needs_limiting = troubled_cell_indicator(
+      const bool component_needs_limiting = tvb_minmod_indicator(
           make_not_null(&boundary_buffer), tvb_constant, u, element, mesh,
           element_size, effective_neighbor_means, effective_neighbor_sizes,
           volume_and_slice_indices);

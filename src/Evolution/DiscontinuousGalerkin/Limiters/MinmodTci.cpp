@@ -19,7 +19,7 @@ namespace Limiters {
 namespace Tci {
 
 template <size_t VolumeDim>
-bool troubled_cell_indicator(
+bool tvb_minmod_indicator(
     const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
     const double tvb_constant, const DataVector& u,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
@@ -78,7 +78,7 @@ bool troubled_cell_indicator(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                 \
-  template bool troubled_cell_indicator<DIM(data)>(                          \
+  template bool tvb_minmod_indicator<DIM(data)>(                             \
       const gsl::not_null<std::array<DataVector, DIM(data)>*>, const double, \
       const DataVector&, const Element<DIM(data)>&, const Mesh<DIM(data)>&,  \
       const std::array<double, DIM(data)>&,                                  \

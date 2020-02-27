@@ -64,7 +64,7 @@ bool minmod_limited_slopes(
   // The LambdaPiN limiter calls a simple troubled-cell indicator to avoid
   // limiting solutions that appear smooth:
   if (minmod_type == Limiters::MinmodType::LambdaPiN) {
-    const bool u_needs_limiting = Tci::troubled_cell_indicator(
+    const bool u_needs_limiting = Tci::tvb_minmod_indicator(
         boundary_buffer, tvb_constant, u, element, mesh, element_size,
         effective_neighbor_means, effective_neighbor_sizes,
         volume_and_slice_indices);

@@ -55,7 +55,7 @@ bool wrap_allocations_and_tci(
   const auto& volume_and_slice_indices =
       volume_and_slice_buffer_and_indices.second;
 
-  return Limiters::Tci::troubled_cell_indicator(
+  return Limiters::Tci::tvb_minmod_indicator(
       make_not_null(&boundary_buffer), tvb_constant, u, element, mesh,
       element_size, effective_neighbor_means, effective_neighbor_sizes,
       volume_and_slice_indices);
@@ -310,7 +310,7 @@ void test_tci_with_different_size_neighbor(
 
 // In 1D, test combinations of TVB constant, polynomial order, etc.
 // Check that each combination has the expected TCI behavior.
-void test_minmod_tci_1d() noexcept {
+void test_tvb_minmod_tci_1d() noexcept {
   INFO("Testing MinmodTci in 1D");
   for (const auto num_grid_points : std::array<size_t, 2>{{2, 4}}) {
     test_tci_on_linear_function(num_grid_points);
@@ -324,7 +324,7 @@ void test_minmod_tci_1d() noexcept {
 
 // In 2D, test that the dimension-by-dimension application of the TCI works as
 // expected.
-void test_minmod_tci_2d() noexcept {
+void test_tvb_minmod_tci_2d() noexcept {
   INFO("Testing MinmodTci in 2D");
   const double tvb_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<2>();
@@ -366,7 +366,7 @@ void test_minmod_tci_2d() noexcept {
 
 // In 3D, test that the dimension-by-dimension application of the TCI works as
 // expected.
-void test_minmod_tci_3d() noexcept {
+void test_tvb_minmod_tci_3d() noexcept {
   INFO("Testing MinmodTci in 3D");
   const double tvb_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<3>();
@@ -423,7 +423,7 @@ struct VectorTag : db::SimpleTag {
   static std::string name() noexcept { return "Vector"; }
 };
 
-void test_minmod_tci_several_tensors() noexcept {
+void test_tvb_minmod_tci_several_tensors() noexcept {
   INFO("Testing MinmodTci action on several tensors");
   // Test that TCI returns true if just one component needs limiting, which
   // we do by limiting a scalar and vector in 3D
@@ -503,8 +503,8 @@ void test_minmod_tci_several_tensors() noexcept {
   get<2>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = 3.1;
   get<2>(get<::Tags::Mean<VectorTag<3>>>(upper_zeta_neighbor.means)) = 0.5;
   const bool trigger_base_case =
-      Limiters::Tci::troubled_cell_indicator<3, TestPackagedData, ScalarTag,
-                                             VectorTag<3>>(
+      Limiters::Tci::tvb_minmod_indicator<3, TestPackagedData, ScalarTag,
+                                          VectorTag<3>>(
           local_scalar, local_vector, neighbor_data, tvb_constant, element,
           mesh, element_size);
   CHECK_FALSE(trigger_base_case);
@@ -512,8 +512,8 @@ void test_minmod_tci_several_tensors() noexcept {
   // Case where the scalar triggers limiting
   get(get<::Tags::Mean<ScalarTag>>(upper_xi_neighbor.means)) = 2.0;
   const bool trigger_scalar =
-      Limiters::Tci::troubled_cell_indicator<3, TestPackagedData, ScalarTag,
-                                             VectorTag<3>>(
+      Limiters::Tci::tvb_minmod_indicator<3, TestPackagedData, ScalarTag,
+                                          VectorTag<3>>(
           local_scalar, local_vector, neighbor_data, tvb_constant, element,
           mesh, element_size);
   CHECK(trigger_scalar);
@@ -522,8 +522,8 @@ void test_minmod_tci_several_tensors() noexcept {
   get(get<::Tags::Mean<ScalarTag>>(upper_xi_neighbor.means)) = 3.3;
   get<0>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = -0.1;
   const bool trigger_vector_x =
-      Limiters::Tci::troubled_cell_indicator<3, TestPackagedData, ScalarTag,
-                                             VectorTag<3>>(
+      Limiters::Tci::tvb_minmod_indicator<3, TestPackagedData, ScalarTag,
+                                          VectorTag<3>>(
           local_scalar, local_vector, neighbor_data, tvb_constant, element,
           mesh, element_size);
   CHECK(trigger_vector_x);
@@ -532,8 +532,8 @@ void test_minmod_tci_several_tensors() noexcept {
   get<0>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = -1.8;
   get<1>(get<::Tags::Mean<VectorTag<3>>>(upper_eta_neighbor.means)) = -0.2;
   const bool trigger_vector_y =
-      Limiters::Tci::troubled_cell_indicator<3, TestPackagedData, ScalarTag,
-                                             VectorTag<3>>(
+      Limiters::Tci::tvb_minmod_indicator<3, TestPackagedData, ScalarTag,
+                                          VectorTag<3>>(
           local_scalar, local_vector, neighbor_data, tvb_constant, element,
           mesh, element_size);
   CHECK(trigger_vector_y);
@@ -542,8 +542,8 @@ void test_minmod_tci_several_tensors() noexcept {
   get<1>(get<::Tags::Mean<VectorTag<3>>>(upper_eta_neighbor.means)) = 0.1;
   get<2>(get<::Tags::Mean<VectorTag<3>>>(lower_xi_neighbor.means)) = 1.9;
   const bool trigger_vector_z =
-      Limiters::Tci::troubled_cell_indicator<3, TestPackagedData, ScalarTag,
-                                             VectorTag<3>>(
+      Limiters::Tci::tvb_minmod_indicator<3, TestPackagedData, ScalarTag,
+                                          VectorTag<3>>(
           local_scalar, local_vector, neighbor_data, tvb_constant, element,
           mesh, element_size);
   CHECK(trigger_vector_z);
@@ -552,9 +552,9 @@ void test_minmod_tci_several_tensors() noexcept {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.MinmodTci", "[Limiters][Unit]") {
-  test_minmod_tci_1d();
-  test_minmod_tci_2d();
-  test_minmod_tci_3d();
+  test_tvb_minmod_tci_1d();
+  test_tvb_minmod_tci_2d();
+  test_tvb_minmod_tci_3d();
 
-  test_minmod_tci_several_tensors();
+  test_tvb_minmod_tci_several_tensors();
 }
