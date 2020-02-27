@@ -18,8 +18,9 @@ if("${GOOGLE_BENCHMARK_FOUND}" AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   target_link_libraries(
     ${executable}
     benchmark
-    Domain
     CoordinateMaps
+    Domain
+    Informer
     Spectral
     ${SPECTRE_LIBRARIES}
     )
