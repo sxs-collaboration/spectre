@@ -16,7 +16,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Limiters {
-namespace Minmod_detail {
+namespace Tci {
 
 template <size_t VolumeDim>
 bool troubled_cell_indicator(
@@ -41,7 +41,7 @@ bool troubled_cell_indicator(
     &u_mean, &element, &element_size, &effective_neighbor_means, &
     effective_neighbor_sizes
   ](const size_t dim, const Side& side) noexcept {
-    return effective_difference_to_neighbor(
+    return Minmod_detail::effective_difference_to_neighbor(
         u_mean, element, element_size, effective_neighbor_means,
         effective_neighbor_sizes, dim, side);
   };
@@ -60,12 +60,12 @@ bool troubled_cell_indicator(
     // tvb_corrected_minmod(..., 0.0), rather than
     // tvb_corrected_minmod(..., tvb_scale)
     const bool activated_lower =
-        tvb_corrected_minmod(u_mean - u_lower, diff_lower, diff_upper,
-                             tvb_scale)
+        Minmod_detail::tvb_corrected_minmod(u_mean - u_lower, diff_lower,
+                                            diff_upper, tvb_scale)
             .activated;
     const bool activated_upper =
-        tvb_corrected_minmod(u_upper - u_mean, diff_lower, diff_upper,
-                             tvb_scale)
+        Minmod_detail::tvb_corrected_minmod(u_upper - u_mean, diff_lower,
+                                            diff_upper, tvb_scale)
             .activated;
     if (activated_lower or activated_upper) {
       return true;
@@ -93,5 +93,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef INSTANTIATE
 
-}  // namespace Minmod_detail
+}  // namespace Tci
 }  // namespace Limiters

@@ -35,7 +35,7 @@ struct hash;
 /// \endcond
 
 namespace Limiters {
-namespace Minmod_detail {
+namespace Tci {
 
 // Implements the TVB troubled-cell indicator from Cockburn1999.
 template <size_t VolumeDim>
@@ -83,7 +83,7 @@ bool troubled_cell_indicator(
       volume_and_slice_buffer_and_indices.second;
 
   const auto effective_neighbor_sizes =
-      compute_effective_neighbor_sizes(element, neighbor_data);
+      Minmod_detail::compute_effective_neighbor_sizes(element, neighbor_data);
 
   // Ideally, as soon as one component is found that needs limiting, then we
   // would exit the TCI early with return value `true`. But there is no natural
@@ -100,7 +100,7 @@ bool troubled_cell_indicator(
     for (size_t tensor_storage_index = 0; tensor_storage_index < tensor.size();
          ++tensor_storage_index) {
       const auto effective_neighbor_means =
-          compute_effective_neighbor_means<decltype(tag)>(
+          Minmod_detail::compute_effective_neighbor_means<decltype(tag)>(
               element, tensor_storage_index, neighbor_data);
 
       const DataVector& u = tensor[tensor_storage_index];
@@ -121,5 +121,5 @@ bool troubled_cell_indicator(
   return some_component_needs_limiting;
 }
 
-}  // namespace Minmod_detail
+}  // namespace Tci
 }  // namespace Limiters

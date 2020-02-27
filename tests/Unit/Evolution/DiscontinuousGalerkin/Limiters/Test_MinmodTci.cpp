@@ -55,7 +55,7 @@ bool wrap_allocations_and_tci(
   const auto& volume_and_slice_indices =
       volume_and_slice_buffer_and_indices.second;
 
-  return Limiters::Minmod_detail::troubled_cell_indicator(
+  return Limiters::Tci::troubled_cell_indicator(
       make_not_null(&boundary_buffer), tvb_constant, u, element, mesh,
       element_size, effective_neighbor_means, effective_neighbor_sizes,
       volume_and_slice_indices);
@@ -503,8 +503,8 @@ void test_minmod_tci_several_tensors() noexcept {
   get<2>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = 3.1;
   get<2>(get<::Tags::Mean<VectorTag<3>>>(upper_zeta_neighbor.means)) = 0.5;
   const bool trigger_base_case =
-      Limiters::Minmod_detail::troubled_cell_indicator<3, TestPackagedData,
-                                                       ScalarTag, VectorTag<3>>(
+      Limiters::Tci::troubled_cell_indicator<3, TestPackagedData, ScalarTag,
+                                             VectorTag<3>>(
           local_scalar, local_vector, neighbor_data, tvb_constant, element,
           mesh, element_size);
   CHECK_FALSE(trigger_base_case);
@@ -512,8 +512,8 @@ void test_minmod_tci_several_tensors() noexcept {
   // Case where the scalar triggers limiting
   get(get<::Tags::Mean<ScalarTag>>(upper_xi_neighbor.means)) = 2.0;
   const bool trigger_scalar =
-      Limiters::Minmod_detail::troubled_cell_indicator<3, TestPackagedData,
-                                                       ScalarTag, VectorTag<3>>(
+      Limiters::Tci::troubled_cell_indicator<3, TestPackagedData, ScalarTag,
+                                             VectorTag<3>>(
           local_scalar, local_vector, neighbor_data, tvb_constant, element,
           mesh, element_size);
   CHECK(trigger_scalar);
@@ -522,8 +522,8 @@ void test_minmod_tci_several_tensors() noexcept {
   get(get<::Tags::Mean<ScalarTag>>(upper_xi_neighbor.means)) = 3.3;
   get<0>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = -0.1;
   const bool trigger_vector_x =
-      Limiters::Minmod_detail::troubled_cell_indicator<3, TestPackagedData,
-                                                       ScalarTag, VectorTag<3>>(
+      Limiters::Tci::troubled_cell_indicator<3, TestPackagedData, ScalarTag,
+                                             VectorTag<3>>(
           local_scalar, local_vector, neighbor_data, tvb_constant, element,
           mesh, element_size);
   CHECK(trigger_vector_x);
@@ -532,8 +532,8 @@ void test_minmod_tci_several_tensors() noexcept {
   get<0>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = -1.8;
   get<1>(get<::Tags::Mean<VectorTag<3>>>(upper_eta_neighbor.means)) = -0.2;
   const bool trigger_vector_y =
-      Limiters::Minmod_detail::troubled_cell_indicator<3, TestPackagedData,
-                                                       ScalarTag, VectorTag<3>>(
+      Limiters::Tci::troubled_cell_indicator<3, TestPackagedData, ScalarTag,
+                                             VectorTag<3>>(
           local_scalar, local_vector, neighbor_data, tvb_constant, element,
           mesh, element_size);
   CHECK(trigger_vector_y);
@@ -542,8 +542,8 @@ void test_minmod_tci_several_tensors() noexcept {
   get<1>(get<::Tags::Mean<VectorTag<3>>>(upper_eta_neighbor.means)) = 0.1;
   get<2>(get<::Tags::Mean<VectorTag<3>>>(lower_xi_neighbor.means)) = 1.9;
   const bool trigger_vector_z =
-      Limiters::Minmod_detail::troubled_cell_indicator<3, TestPackagedData,
-                                                       ScalarTag, VectorTag<3>>(
+      Limiters::Tci::troubled_cell_indicator<3, TestPackagedData, ScalarTag,
+                                             VectorTag<3>>(
           local_scalar, local_vector, neighbor_data, tvb_constant, element,
           mesh, element_size);
   CHECK(trigger_vector_z);
