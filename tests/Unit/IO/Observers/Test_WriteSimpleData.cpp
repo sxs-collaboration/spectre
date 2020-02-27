@@ -49,8 +49,6 @@ struct test_metavariables {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.WriteSimpleData", "[Unit][Observers]") {
-  constexpr observers::TypeOfObservation type_of_observation =
-      observers::TypeOfObservation::Volume;
   using obs_writer = helpers::observer_writer_component<test_metavariables>;
 
   tuples::TaggedTuple<observers::Tags::ReductionFileName,
