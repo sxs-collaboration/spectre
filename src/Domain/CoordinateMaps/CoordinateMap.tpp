@@ -509,6 +509,15 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::
 }
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
+template <size_t... Is>
+auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::get_to_grid_frame_impl(
+    std::index_sequence<Is...> /*meta*/) const noexcept
+    -> std::unique_ptr<CoordinateMapBase<SourceFrame, Frame::Grid, dim>> {
+  return std::make_unique<CoordinateMap<SourceFrame, Frame::Grid, Maps...>>(
+      std::get<Is>(maps_)...);
+}
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
 bool operator!=(
     const CoordinateMap<SourceFrame, TargetFrame, Maps...>& lhs,
     const CoordinateMap<SourceFrame, TargetFrame, Maps...>& rhs) noexcept {
