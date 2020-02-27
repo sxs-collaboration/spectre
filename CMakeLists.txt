@@ -119,7 +119,4 @@ add_subdirectory(external)
 add_subdirectory(src)
 add_subdirectory(tests)
 
-# Set up stages for compiling test libraries in subsets.
-include(SetupBuildStageTargets)
-
 include(PrintUsefulCMakeInfo)
