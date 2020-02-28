@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/SettleToConstant.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -53,7 +54,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.SettleToConstant",
                   "[Domain][Unit]") {
   using SettleToConstant = domain::FunctionsOfTime::SettleToConstant;
 
-  PUPable_reg(SettleToConstant);
+  domain::FunctionsOfTime::register_derived_with_charm();
 
   const double match_time = 10.0;
   const double decay_time = 5.0;

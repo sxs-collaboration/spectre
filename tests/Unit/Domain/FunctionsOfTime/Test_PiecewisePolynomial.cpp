@@ -10,6 +10,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -105,8 +106,7 @@ void test_within_roundoff(
 
 SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
                   "[Domain][Unit]") {
-  PUPable_reg(FunctionsOfTime::PiecewisePolynomial<2>);
-  PUPable_reg(FunctionsOfTime::PiecewisePolynomial<3>);
+  FunctionsOfTime::register_derived_with_charm();
 
   {
     INFO("Core test");

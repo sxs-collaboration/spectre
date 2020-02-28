@@ -5,6 +5,7 @@ set(LIBRARY FunctionsOfTime)
 
 set(LIBRARY_SOURCES
   PiecewisePolynomial.cpp
+  RegisterDerivedWithCharm.cpp
   SettleToConstant.cpp
   )
 
@@ -14,4 +15,5 @@ target_link_libraries(
   ${LIBRARY}
   INTERFACE DataStructures
   INTERFACE ErrorHandling
+  INTERFACE Utilities
   )

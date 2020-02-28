@@ -6,31 +6,29 @@
 
 #pragma once
 
+#include <pup.h>
 #include <typeinfo>
 
 #include "Parallel/CharmPupable.hpp"
-#include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Parallel {
-namespace register_derived_classes_with_charm_detail {
-template <typename Type>
-SPECTRE_ALWAYS_INLINE void make_type_pupable() noexcept {
-  // This assumes typeid(Type).name() is different for each registered
-  // type.  If we don't trust that we can add a counter or something.
-  PUPable_reg2(Type, typeid(Type).name())
+/// Register the classes in `ListOfClassesToRegister` with the serialization
+/// framework.
+template <typename ListOfClassesToRegister>
+void register_classes_in_list() noexcept {
+  tmpl::for_each<ListOfClassesToRegister>([](auto class_v) noexcept {
+    using class_to_register = typename decltype(class_v)::type;
+    // We use PUPable_reg2 because this takes as a second argument the name of
+    // the class as a `const char*`, while PUPable_reg converts the argument
+    // verbatim to a string using the `#` preprocessor operator.
+    PUPable_reg2(class_to_register, typeid(class_to_register).name());
+  });
 }
 
-template <typename... Types>
-SPECTRE_ALWAYS_INLINE void make_list_pupable(
-    const tmpl::list<Types...> /*meta*/) noexcept {
-  expand_pack((make_type_pupable<Types>(), 0)...);
-}
-}  // namespace register_derived_classes_with_charm_detail
-
+/// Register derived classes of the `Base` class
 template <typename Base>
-SPECTRE_ALWAYS_INLINE void register_derived_classes_with_charm() noexcept {
-  register_derived_classes_with_charm_detail::make_list_pupable(
-      typename Base::creatable_classes{});
+void register_derived_classes_with_charm() noexcept {
+  register_classes_in_list<typename Base::creatable_classes>();
 }
 }  // namespace Parallel
