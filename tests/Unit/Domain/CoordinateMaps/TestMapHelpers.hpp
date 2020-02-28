@@ -10,9 +10,14 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <functional>
+#include <limits>
+#include <memory>
 #include <numeric>
 #include <random>
+#include <string>
+#include <unordered_map>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -22,6 +27,7 @@
 #include "Domain/CoordinateMaps/TimeDependentHelpers.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
@@ -50,7 +56,11 @@ void check_if_maps_are_equal(
     const domain::CoordinateMapBase<SourceFrame, TargetFrame, VolumeDim>&
         map_one,
     const domain::CoordinateMapBase<SourceFrame, TargetFrame, VolumeDim>&
-        map_two) noexcept {
+        map_two,
+    const double time = std::numeric_limits<double>::quiet_NaN(),
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time = {}) noexcept {
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
 
@@ -60,11 +70,14 @@ void check_if_maps_are_equal(
       source_point.get(d) = real_dis(gen);
     }
     CAPTURE_PRECISE(source_point);
-    CHECK_ITERABLE_APPROX(map_one(source_point), map_two(source_point));
-    CHECK_ITERABLE_APPROX(map_one.jacobian(source_point),
-                          map_two.jacobian(source_point));
-    CHECK_ITERABLE_APPROX(map_one.inv_jacobian(source_point),
-                          map_two.inv_jacobian(source_point));
+    CHECK_ITERABLE_APPROX(map_one(source_point, time, functions_of_time),
+                          map_two(source_point, time, functions_of_time));
+    CHECK_ITERABLE_APPROX(
+        map_one.jacobian(source_point, time, functions_of_time),
+        map_two.jacobian(source_point, time, functions_of_time));
+    CHECK_ITERABLE_APPROX(
+        map_one.inv_jacobian(source_point, time, functions_of_time),
+        map_two.inv_jacobian(source_point, time, functions_of_time));
   }
 }
 

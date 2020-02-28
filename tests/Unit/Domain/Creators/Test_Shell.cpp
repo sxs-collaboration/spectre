@@ -499,8 +499,13 @@ void test_radial_block_layers(const double inner_radius,
       if (element_id.segment_ids()[0] == SegmentId{refinement_level, 0} and
           element_id.segment_ids()[1] == SegmentId{refinement_level, 0}) {
         element_count++;
+        if (block.is_time_dependent()) {
+          ERROR(
+              "Only stationary maps are supported in the Shell domain creator "
+              "test");
+        }
         const auto map = ElementMap<3, Frame::Inertial>{
-            element_id, block.coordinate_map().get_clone()};
+            element_id, block.stationary_map().get_clone()};
         const tnsr::I<double, 3, Frame::Logical> logical_point(
             std::array<double, 3>{{0.0, 0.0, 1.0}});
         CHECK(magnitude(map(logical_point)).get() ==

@@ -124,7 +124,10 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
                 "Solution was not derived from AnalyticSolution");
   // Set up coordinates
   const auto x_logical = logical_coordinates(mesh);
-  const auto x = block.coordinate_map()(x_logical);
+  if (block.is_time_dependent()) {
+    ERROR("The block must be time-independent");
+  }
+  const auto x = block.stationary_map()(x_logical);
 
   // Evaluate analytic solution
   using solution_tags = tmpl::list<
@@ -235,8 +238,11 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
       inv_spatial_metric, pressure, spatial_velocity, lorentz_factor,
       magnetic_field);
 
+  if (block.is_time_dependent()) {
+    ERROR("The block must be time-independent");
+  }
   const auto div_of_fluxes = divergence<flux_tags, 3, Frame::Inertial>(
-      fluxes, mesh, block.coordinate_map().inv_jacobian(x_logical));
+      fluxes, mesh, block.stationary_map().inv_jacobian(x_logical));
 
   const auto& div_flux_tilde_d =
       get<Tags::div<Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeD,

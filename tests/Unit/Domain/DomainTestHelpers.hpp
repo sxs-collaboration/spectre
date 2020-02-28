@@ -6,7 +6,9 @@
 #include <array>
 #include <boost/rational.hpp>
 #include <cstddef>
+#include <limits>
 #include <memory>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -20,6 +22,9 @@ class BlockNeighbor;
 namespace domain {
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
+namespace FunctionsOfTime {
+class FunctionOfTime;
+}  // namespace FunctionsOfTime
 }  // namespace domain
 class DataVector;
 template <size_t VolumeDim>
@@ -33,16 +38,22 @@ class ElementId;
 /// \endcond
 
 // Test that the Blocks in the Domain are constructed correctly.
-template <size_t VolumeDim>
+template <size_t VolumeDim, typename TargetFrameGridOrInertial>
 void test_domain_construction(
     const Domain<VolumeDim>& domain,
     const std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
+    const std::vector<std::unique_ptr<domain::CoordinateMapBase<
+        Frame::Logical, TargetFrameGridOrInertial, VolumeDim>>>& expected_maps,
+    double time = std::numeric_limits<double>::quiet_NaN(),
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time = {},
     const std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>&
-        expected_maps) noexcept;
+        domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>>&
+        expected_grid_to_inertial_maps = {}) noexcept;
 
 // Test that two neighboring Blocks abut each other.
 template <size_t VolumeDim>

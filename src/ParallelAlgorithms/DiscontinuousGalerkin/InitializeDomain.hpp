@@ -96,8 +96,14 @@ struct InitializeDomain {
         initial_extents, element_id);
     Element<Dim> element =
         domain::Initialization::create_initial_element(element_id, my_block);
+    if (my_block.is_time_dependent()) {
+      ERROR(
+          "The version of the InitializeDomain action being used is for "
+          "elliptic systems which do not have any time-dependence but the "
+          "domain creator has set up the domain to have time-dependence.");
+    }
     ElementMap<Dim, Frame::Inertial> element_map{
-        element_id, my_block.coordinate_map().get_clone()};
+        element_id, my_block.stationary_map().get_clone()};
 
     return std::make_tuple(
         ::Initialization::merge_into_databox<InitializeDomain, simple_tags,
