@@ -18,7 +18,6 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementMap.hpp"
@@ -35,6 +34,10 @@
 
 /// \cond
 class DataVector;
+template <size_t VolumeDim>
+class Domain;
+template <size_t VolumeDim>
+class DomainCreator;
 /// \endcond
 
 namespace domain {
@@ -52,9 +55,7 @@ struct Domain : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static ::Domain<VolumeDim> create_from_options(
       const std::unique_ptr<::DomainCreator<VolumeDim>>&
-          domain_creator) noexcept {
-    return domain_creator->create_domain();
-  }
+          domain_creator) noexcept;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -68,9 +69,7 @@ struct InitialExtents : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static std::vector<std::array<size_t, Dim>> create_from_options(
-      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) noexcept {
-    return domain_creator->initial_extents();
-  }
+      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) noexcept;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -84,9 +83,7 @@ struct InitialRefinementLevels : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static std::vector<std::array<size_t, Dim>> create_from_options(
-      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) noexcept {
-    return domain_creator->initial_refinement_levels();
-  }
+      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) noexcept;
 };
 
 /// \ingroup DataBoxTagsGroup

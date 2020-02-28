@@ -33,6 +33,7 @@ set(LIBRARY_SOURCES
   SegmentId.cpp
   Side.cpp
   SizeOfElement.cpp
+  Tags.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
