@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory(BoundarySchemes)
+
 set(LIBRARY "Test_NumericalDiscontinuousGalerkin")
 
 set(LIBRARY_SOURCES
