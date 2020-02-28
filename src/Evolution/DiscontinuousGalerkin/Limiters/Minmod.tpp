@@ -17,7 +17,6 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/SliceIterator.hpp"
 #include "DataStructures/Tags.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Direction.hpp"
@@ -28,7 +27,6 @@
 #include "Domain/OrientationMap.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodTci.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Utilities/Gsl.hpp"
@@ -44,7 +42,7 @@ template <size_t VolumeDim, typename Tag, typename PackagedData>
 bool limit_one_tensor(
     const gsl::not_null<db::item_type<Tag>*> tensor,
     const gsl::not_null<DataVector*> u_lin_buffer,
-    const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
+    const gsl::not_null<BufferWrapper<VolumeDim>*> buffer,
     const Limiters::MinmodType minmod_type, const double tvb_constant,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
@@ -52,10 +50,7 @@ bool limit_one_tensor(
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data,
-    const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
-                               gsl::span<std::pair<size_t, size_t>>>,
-                     VolumeDim>& volume_and_slice_indices) noexcept {
+        neighbor_data) noexcept {
   // True if the mesh is linear-order in every direction
   const bool mesh_is_linear = (mesh.extents() == Index<VolumeDim>(2));
   const bool minmod_type_is_linear =
@@ -85,9 +80,8 @@ bool limit_one_tensor(
     std::array<double, VolumeDim> u_limited_slopes{};
     const bool reduce_slopes = minmod_limited_slopes(
         make_not_null(&u_mean), make_not_null(&u_limited_slopes), u_lin_buffer,
-        boundary_buffer, minmod_type, tvb_constant, u, element, mesh,
-        element_size, effective_neighbor_means, effective_neighbor_sizes,
-        volume_and_slice_indices);
+        buffer, minmod_type, tvb_constant, u, element, mesh, element_size,
+        effective_neighbor_means, effective_neighbor_sizes);
 
     if (reduce_slopes or using_linear_limiter_on_non_linear_mesh) {
       u = u_mean;
@@ -162,31 +156,18 @@ bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
     return false;
   }
 
-  // Optimization: allocate a single buffer to avoid multiple allocations
-  std::unique_ptr<double[], decltype(&free)> contiguous_buffer(nullptr, &free);
-  DataVector u_lin_buffer{};
-  std::array<DataVector, VolumeDim> boundary_buffer{};
-  Minmod_detail::allocate_buffers(make_not_null(&contiguous_buffer),
-                                  make_not_null(&u_lin_buffer),
-                                  make_not_null(&boundary_buffer), mesh);
-
-  // Optimization: precompute the slice indices since this is (surprisingly)
-  // expensive
-  const auto volume_and_slice_buffer_and_indices =
-      volume_and_slice_indices(mesh.extents());
-  const auto& volume_and_slice_indices =
-      volume_and_slice_buffer_and_indices.second;
+  DataVector u_lin_buffer(mesh.number_of_grid_points());
+  Minmod_detail::BufferWrapper<VolumeDim> buffer(mesh);
 
   bool limiter_activated = false;
   const auto wrap_limit_one_tensor = [
     this, &limiter_activated, &element, &mesh, &logical_coords, &element_size,
-    &neighbor_data, &u_lin_buffer, &boundary_buffer, &volume_and_slice_indices
+    &neighbor_data, &u_lin_buffer, &buffer
   ](auto tag, const auto tensor) noexcept {
     limiter_activated =
         Minmod_detail::limit_one_tensor<VolumeDim, decltype(tag)>(
-            tensor, &u_lin_buffer, &boundary_buffer, minmod_type_,
-            tvb_constant_, element, mesh, logical_coords, element_size,
-            neighbor_data, volume_and_slice_indices) or
+            tensor, &u_lin_buffer, &buffer, minmod_type_, tvb_constant_,
+            element, mesh, logical_coords, element_size, neighbor_data) or
         limiter_activated;
     return '0';
   };

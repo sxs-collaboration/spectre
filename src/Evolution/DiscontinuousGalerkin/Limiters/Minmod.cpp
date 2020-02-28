@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <array>
 #include <limits>
-#include <utility>
 
 #include "Domain/Element.hpp"  // IWYU pragma: keep
 #include "Domain/Side.hpp"
@@ -27,16 +26,13 @@ bool minmod_limited_slopes(
     const gsl::not_null<double*> u_mean,
     const gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
     const gsl::not_null<DataVector*> u_lin_buffer,
-    const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
+    const gsl::not_null<BufferWrapper<VolumeDim>*> buffer,
     const Limiters::MinmodType minmod_type, const double tvb_constant,
     const DataVector& u, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes,
-    const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
-                               gsl::span<std::pair<size_t, size_t>>>,
-                     VolumeDim>& volume_and_slice_indices) noexcept {
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
   const double tvb_scale = [&tvb_constant, &element_size ]() noexcept {
     const double max_h =
         *std::max_element(element_size.begin(), element_size.end());
@@ -65,9 +61,8 @@ bool minmod_limited_slopes(
   // limiting solutions that appear smooth:
   if (minmod_type == Limiters::MinmodType::LambdaPiN) {
     const bool u_needs_limiting = Tci::tvb_minmod_indicator(
-        boundary_buffer, tvb_constant, u, element, mesh, element_size,
-        effective_neighbor_means, effective_neighbor_sizes,
-        volume_and_slice_indices);
+        buffer, tvb_constant, u, element, mesh, element_size,
+        effective_neighbor_means, effective_neighbor_sizes);
 
     if (not u_needs_limiting) {
       // Skip the limiting step for this tensor component
@@ -92,14 +87,16 @@ bool minmod_limited_slopes(
 
   linearize(u_lin_buffer, u, mesh);
   for (size_t d = 0; d < VolumeDim; ++d) {
-    const double u_lower =
-        mean_value_on_boundary(&(gsl::at(*boundary_buffer, d)),
-                               gsl::at(volume_and_slice_indices, d).first,
-                               *u_lin_buffer, mesh, d, Side::Lower);
-    const double u_upper =
-        mean_value_on_boundary(&(gsl::at(*boundary_buffer, d)),
-                               gsl::at(volume_and_slice_indices, d).second,
-                               *u_lin_buffer, mesh, d, Side::Upper);
+    auto& boundary_buffer_d = gsl::at(buffer->boundary_buffers, d);
+    const auto& volume_and_slice_indices_d =
+        gsl::at(buffer->volume_and_slice_indices, d);
+
+    const double u_lower = mean_value_on_boundary(
+        &boundary_buffer_d, volume_and_slice_indices_d.first, *u_lin_buffer,
+        mesh, d, Side::Lower);
+    const double u_upper = mean_value_on_boundary(
+        &boundary_buffer_d, volume_and_slice_indices_d.second, *u_lin_buffer,
+        mesh, d, Side::Upper);
 
     // Divide by element's width (2.0 in logical coordinates) to get a slope
     const double local_slope = 0.5 * (u_upper - u_lower);
@@ -132,20 +129,17 @@ bool minmod_limited_slopes(
 // Explicit instantiations
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                            \
-  template bool minmod_limited_slopes<DIM(data)>(                       \
-      const gsl::not_null<double*>,                                     \
-      const gsl::not_null<std::array<double, DIM(data)>*>,              \
-      const gsl::not_null<DataVector*>,                                 \
-      const gsl::not_null<std::array<DataVector, DIM(data)>*>,          \
-      const Limiters::MinmodType, const double, const DataVector&,      \
-      const Element<DIM(data)>&, const Mesh<DIM(data)>&,                \
-      const std::array<double, DIM(data)>&,                             \
-      const DirectionMap<DIM(data), double>&,                           \
-      const DirectionMap<DIM(data), double>&,                           \
-      const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,  \
-                                 gsl::span<std::pair<size_t, size_t>>>, \
-                       DIM(data)>&) noexcept;
+#define INSTANTIATE(_, data)                                       \
+  template bool minmod_limited_slopes<DIM(data)>(                  \
+      const gsl::not_null<double*>,                                \
+      const gsl::not_null<std::array<double, DIM(data)>*>,         \
+      const gsl::not_null<DataVector*>,                            \
+      const gsl::not_null<BufferWrapper<DIM(data)>*>,              \
+      const Limiters::MinmodType, const double, const DataVector&, \
+      const Element<DIM(data)>&, const Mesh<DIM(data)>&,           \
+      const std::array<double, DIM(data)>&,                        \
+      const DirectionMap<DIM(data), double>&,                      \
+      const DirectionMap<DIM(data), double>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

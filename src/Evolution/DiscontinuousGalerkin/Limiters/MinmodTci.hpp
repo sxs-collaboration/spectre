@@ -5,12 +5,10 @@
 
 #include <array>
 #include <cstdlib>
-#include <memory>
 #include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/SliceIterator.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -40,21 +38,15 @@ namespace Tci {
 // Implements the TVB troubled-cell indicator from Cockburn1999.
 template <size_t VolumeDim>
 bool tvb_minmod_indicator(
-    gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
+    gsl::not_null<Minmod_detail::BufferWrapper<VolumeDim>*> buffer,
     double tvb_constant, const DataVector& u, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes,
-    const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
-                               gsl::span<std::pair<size_t, size_t>>>,
-                     VolumeDim>& volume_and_slice_indices) noexcept;
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept;
 
 // Implements the TVB troubled-cell indicator from Cockburn1999 for several
-// tensors.
-//
-// Internally loops over all tensors and tensor components, calling the above
-// function for each case. Returns true if any component needs limiting.
+// tensors. Returns true if any component of any tensor needs limiting.
 //
 // Expects type `PackagedData` to contain, as in Limiters::Minmod:
 // - a variable `means` that is a `TaggedTuple<Tags::Mean<Tags>...>`
@@ -69,19 +61,7 @@ bool tvb_minmod_indicator(
     const double tvb_constant, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size) noexcept {
-  // Optimization: allocate a single buffer to avoid multiple allocations
-  std::unique_ptr<double[], decltype(&free)> contiguous_buffer(nullptr, &free);
-  std::array<DataVector, VolumeDim> boundary_buffer{};
-  Minmod_detail::allocate_buffers(make_not_null(&contiguous_buffer),
-                                  make_not_null(&boundary_buffer), mesh);
-
-  // Optimization: precompute the slice indices since this is (surprisingly)
-  // expensive
-  const auto volume_and_slice_buffer_and_indices =
-      volume_and_slice_indices(mesh.extents());
-  const auto& volume_and_slice_indices =
-      volume_and_slice_buffer_and_indices.second;
-
+  Minmod_detail::BufferWrapper<VolumeDim> buffer(mesh);
   const auto effective_neighbor_sizes =
       Minmod_detail::compute_effective_neighbor_sizes(element, neighbor_data);
 
@@ -105,9 +85,8 @@ bool tvb_minmod_indicator(
 
       const DataVector& u = tensor[tensor_storage_index];
       const bool component_needs_limiting = tvb_minmod_indicator(
-          make_not_null(&boundary_buffer), tvb_constant, u, element, mesh,
-          element_size, effective_neighbor_means, effective_neighbor_sizes,
-          volume_and_slice_indices);
+          make_not_null(&buffer), tvb_constant, u, element, mesh, element_size,
+          effective_neighbor_means, effective_neighbor_sizes);
 
       if (component_needs_limiting) {
         some_component_needs_limiting = true;

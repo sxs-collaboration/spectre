@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <array>
-#include <utility>
 
 #include "Domain/Element.hpp"  // IWYU pragma: keep
 #include "Domain/Side.hpp"
@@ -20,15 +19,12 @@ namespace Tci {
 
 template <size_t VolumeDim>
 bool tvb_minmod_indicator(
-    const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
+    const gsl::not_null<Minmod_detail::BufferWrapper<VolumeDim>*> buffer,
     const double tvb_constant, const DataVector& u,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes,
-    const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
-                               gsl::span<std::pair<size_t, size_t>>>,
-                     VolumeDim>& volume_and_slice_indices) noexcept {
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
   const double tvb_scale = [&tvb_constant, &element_size ]() noexcept {
     const double max_h =
         *std::max_element(element_size.begin(), element_size.end());
@@ -47,12 +43,16 @@ bool tvb_minmod_indicator(
   };
 
   for (size_t d = 0; d < VolumeDim; ++d) {
+    auto& boundary_buffers_d = gsl::at(buffer->boundary_buffers, d);
+    const auto& volume_and_slice_indices_d =
+        gsl::at(buffer->volume_and_slice_indices, d);
+
     const double u_lower = mean_value_on_boundary(
-        &(gsl::at(*boundary_buffer, d)),
-        gsl::at(volume_and_slice_indices, d).first, u, mesh, d, Side::Lower);
+        &boundary_buffers_d, volume_and_slice_indices_d.first, u, mesh, d,
+        Side::Lower);
     const double u_upper = mean_value_on_boundary(
-        &(gsl::at(*boundary_buffer, d)),
-        gsl::at(volume_and_slice_indices, d).second, u, mesh, d, Side::Upper);
+        &boundary_buffers_d, volume_and_slice_indices_d.second, u, mesh, d,
+        Side::Upper);
     const double diff_lower = difference_to_neighbor(d, Side::Lower);
     const double diff_upper = difference_to_neighbor(d, Side::Upper);
 
@@ -77,16 +77,13 @@ bool tvb_minmod_indicator(
 // Explicit instantiations
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template bool tvb_minmod_indicator<DIM(data)>(                             \
-      const gsl::not_null<std::array<DataVector, DIM(data)>*>, const double, \
-      const DataVector&, const Element<DIM(data)>&, const Mesh<DIM(data)>&,  \
-      const std::array<double, DIM(data)>&,                                  \
-      const DirectionMap<DIM(data), double>&,                                \
-      const DirectionMap<DIM(data), double>&,                                \
-      const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,       \
-                                 gsl::span<std::pair<size_t, size_t>>>,      \
-                       DIM(data)>&) noexcept;
+#define INSTANTIATE(_, data)                                         \
+  template bool tvb_minmod_indicator<DIM(data)>(                     \
+      const gsl::not_null<Minmod_detail::BufferWrapper<DIM(data)>*>, \
+      const double, const DataVector&, const Element<DIM(data)>&,    \
+      const Mesh<DIM(data)>&, const std::array<double, DIM(data)>&,  \
+      const DirectionMap<DIM(data), double>&,                        \
+      const DirectionMap<DIM(data), double>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

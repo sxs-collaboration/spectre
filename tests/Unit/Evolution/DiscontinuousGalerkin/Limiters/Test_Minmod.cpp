@@ -18,7 +18,6 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
-#include "DataStructures/SliceIterator.hpp"
 #include "DataStructures/Tags.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Direction.hpp"
@@ -30,6 +29,7 @@
 #include "Domain/Neighbors.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.tpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -194,24 +194,12 @@ bool wrap_minmod_limited_slopes(
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
-  // Allocate the various temporary buffers.
   DataVector u_lin_buffer(mesh.number_of_grid_points());
-  std::array<DataVector, VolumeDim> boundary_buffer{};
-  for (size_t d = 0; d < VolumeDim; ++d) {
-    const size_t num_points = mesh.slice_away(d).number_of_grid_points();
-    gsl::at(boundary_buffer, d) = DataVector(num_points);
-  }
-
-  const auto volume_and_slice_buffer_and_indices =
-      volume_and_slice_indices(mesh.extents());
-  const auto& volume_and_slice_indices =
-      volume_and_slice_buffer_and_indices.second;
-
+  Limiters::Minmod_detail::BufferWrapper<VolumeDim> buffer(mesh);
   return Limiters::Minmod_detail::minmod_limited_slopes(
       u_mean, u_limited_slopes, make_not_null(&u_lin_buffer),
-      make_not_null(&boundary_buffer), minmod_type, tvb_constant, u, element,
-      mesh, element_size, effective_neighbor_means, effective_neighbor_sizes,
-      volume_and_slice_indices);
+      make_not_null(&buffer), minmod_type, tvb_constant, u, element, mesh,
+      element_size, effective_neighbor_means, effective_neighbor_sizes);
 }
 
 auto make_two_neighbors(const double left, const double right) noexcept {

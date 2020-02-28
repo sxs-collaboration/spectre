@@ -44,24 +44,29 @@ struct MinmodResult {
 MinmodResult tvb_corrected_minmod(double a, double b, double c,
                                   double tvb_scale) noexcept;
 
-// Allocate the buffer `boundary_buffer` to the correct sizes expected by
-// `troubled_cell_indicator` for its arguments
+// Holds various optimization-related allocations for the Minmod TCI.
+// There is no pup::er, because these allocations should be short-lived (i.e.,
+// scoped within a single limiter invocation).
 template <size_t VolumeDim>
-void allocate_buffers(
-    gsl::not_null<std::unique_ptr<double[], decltype(&free)>*>
-        contiguous_buffer,
-    gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    const Mesh<VolumeDim>& mesh) noexcept;
+class BufferWrapper {
+ public:
+  BufferWrapper() = delete;
+  explicit BufferWrapper(const Mesh<VolumeDim>& mesh) noexcept;
 
-// Allocate the buffers `u_lin_buffer` and `boundary_buffer` to the correct
-// sizes expected by the Minmod limiter.
-template <size_t VolumeDim>
-void allocate_buffers(
-    gsl::not_null<std::unique_ptr<double[], decltype(&free)>*>
-        contiguous_buffer,
-    gsl::not_null<DataVector*> u_lin_buffer,
-    gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    const Mesh<VolumeDim>& mesh) noexcept;
+ private:
+  std::unique_ptr<double[], decltype(&free)> contiguous_boundary_buffer_;
+  const std::pair<std::unique_ptr<std::pair<size_t, size_t>[], decltype(&free)>,
+                  std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
+                                       gsl::span<std::pair<size_t, size_t>>>,
+                             VolumeDim>>
+      volume_and_slice_buffer_and_indices_ {};
+
+ public:
+  std::array<DataVector, VolumeDim> boundary_buffers{};
+  const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
+                             gsl::span<std::pair<size_t, size_t>>>,
+                   VolumeDim>& volume_and_slice_indices{};
+};
 
 // In each direction, average the size of all different neighbors in that
 // direction. Note that only the component of neighor_size that is normal

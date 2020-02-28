@@ -47,6 +47,11 @@ class er;
 namespace Limiters {
 template <size_t VolumeDim, typename TagsToLimit>
 class Minmod;
+
+namespace Minmod_detail {
+template <size_t VolumeDim>
+class BufferWrapper;
+}  // namespace Minmod_detail
 }  // namespace Limiters
 
 namespace domain {
@@ -78,15 +83,12 @@ bool minmod_limited_slopes(
     gsl::not_null<double*> u_mean,
     gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
     gsl::not_null<DataVector*> u_lin_buffer,
-    gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
+    gsl::not_null<BufferWrapper<VolumeDim>*> buffer,
     Limiters::MinmodType minmod_type, double tvb_constant, const DataVector& u,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes,
-    const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
-                               gsl::span<std::pair<size_t, size_t>>>,
-                     VolumeDim>& volume_and_slice_indices) noexcept;
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept;
 }  // namespace Minmod_detail
 
 /// \ingroup LimitersGroup

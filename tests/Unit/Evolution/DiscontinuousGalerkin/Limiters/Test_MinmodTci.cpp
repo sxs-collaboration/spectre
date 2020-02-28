@@ -15,7 +15,6 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/SliceIterator.hpp"
 #include "DataStructures/Tags.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Direction.hpp"
@@ -24,6 +23,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodTci.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -33,33 +33,6 @@
 #include "tests/Unit/Evolution/DiscontinuousGalerkin/Limiters/TestHelpers.hpp"
 
 namespace {
-
-// Helper function to wrap the allocation of the optimization buffers for the
-// troubled cell indicator function.
-template <size_t VolumeDim>
-bool wrap_allocations_and_tci(
-    const double tvb_constant, const DataVector& u,
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
-    const std::array<double, VolumeDim>& element_size,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
-  // Allocate the various temporary buffers.
-  std::array<DataVector, VolumeDim> boundary_buffer{};
-  for (size_t d = 0; d < VolumeDim; ++d) {
-    const size_t num_points = mesh.slice_away(d).number_of_grid_points();
-    gsl::at(boundary_buffer, d) = DataVector(num_points);
-  }
-
-  const auto volume_and_slice_buffer_and_indices =
-      volume_and_slice_indices(mesh.extents());
-  const auto& volume_and_slice_indices =
-      volume_and_slice_buffer_and_indices.second;
-
-  return Limiters::Tci::tvb_minmod_indicator(
-      make_not_null(&boundary_buffer), tvb_constant, u, element, mesh,
-      element_size, effective_neighbor_means, effective_neighbor_sizes,
-      volume_and_slice_indices);
-}
 
 auto make_two_neighbors(const double left, const double right) noexcept {
   DirectionMap<1, double> result;
@@ -97,10 +70,11 @@ void test_tci_detection(
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
-  const bool troubled_cell_detected = wrap_allocations_and_tci(
-      tvb_constant, input, element, mesh, element_size,
+  Limiters::Minmod_detail::BufferWrapper<VolumeDim> buffer(mesh);
+  const bool detection = Limiters::Tci::tvb_minmod_indicator(
+      make_not_null(&buffer), tvb_constant, input, element, mesh, element_size,
       effective_neighbor_means, effective_neighbor_sizes);
-  CHECK(troubled_cell_detected == expected_detection);
+  CHECK(detection == expected_detection);
 }
 
 void test_tci_on_linear_function(const size_t number_of_grid_points) noexcept {
