@@ -42,7 +42,7 @@ struct AnalyticData : AnalyticDataBase, db::SimpleTag {
   using type = DataType;
   using option_tags = tmpl::list<::OptionTags::AnalyticData<DataType>>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static DataType create_from_options(
       const DataType& analytic_solution) noexcept {
     return deserialize<type>(serialize<type>(analytic_solution).data());

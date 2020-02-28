@@ -63,7 +63,7 @@ struct GaugeHRollOnStartTime : db::SimpleTag {
   using type = double;
   using option_tags = tmpl::list<OptionTags::GaugeHRollOnStart>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static double create_from_options(
       const double gauge_roll_on_start_time) noexcept {
     return gauge_roll_on_start_time;
@@ -82,7 +82,7 @@ struct GaugeHRollOnTimeWindow : db::SimpleTag {
   using type = double;
   using option_tags = tmpl::list<OptionTags::GaugeHRollOnWindow>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static double create_from_options(
       const double gauge_roll_on_window) noexcept {
     return gauge_roll_on_window;
@@ -106,7 +106,7 @@ struct GaugeHSpatialWeightDecayWidth : db::SimpleTag {
   using type = double;
   using option_tags = tmpl::list<OptionTags::GaugeHSpatialDecayWidth<Frame>>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static double create_from_options(
       const double gauge_spatial_decay_width) noexcept {
     return gauge_spatial_decay_width;

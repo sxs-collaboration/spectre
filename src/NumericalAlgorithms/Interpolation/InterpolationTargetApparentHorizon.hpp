@@ -112,7 +112,7 @@ struct ApparentHorizon : db::SimpleTag {
   using option_tags =
       tmpl::list<OptionTags::ApparentHorizon<InterpolationTargetTag, Frame>>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& option) noexcept {
     return option;
   }

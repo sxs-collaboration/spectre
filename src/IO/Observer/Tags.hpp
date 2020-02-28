@@ -153,7 +153,7 @@ struct VolumeFileName : db::SimpleTag {
   using type = std::string;
   using option_tags = tmpl::list<::observers::OptionTags::VolumeFileName>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static std::string create_from_options(
       const std::string& volume_file_name) noexcept {
     return volume_file_name;
@@ -164,7 +164,7 @@ struct ReductionFileName : db::SimpleTag {
   using type = std::string;
   using option_tags = tmpl::list<::observers::OptionTags::ReductionFileName>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static std::string create_from_options(
       const std::string& reduction_file_name) noexcept {
     return reduction_file_name;

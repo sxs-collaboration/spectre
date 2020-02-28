@@ -52,7 +52,7 @@ struct AnalyticSolution : AnalyticSolutionBase, db::SimpleTag {
   using type = SolutionType;
   using option_tags = tmpl::list<::OptionTags::AnalyticSolution<SolutionType>>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static SolutionType create_from_options(
       const SolutionType& analytic_solution) noexcept {
     return deserialize<type>(serialize<type>(analytic_solution).data());
@@ -66,7 +66,7 @@ struct BoundaryCondition : BoundaryConditionBase, db::SimpleTag {
   using option_tags =
       tmpl::list<::OptionTags::BoundaryCondition<BoundaryConditionType>>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static BoundaryConditionType create_from_options(
       const BoundaryConditionType& boundary_condition) noexcept {
     return boundary_condition;

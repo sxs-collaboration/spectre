@@ -41,7 +41,7 @@ struct Limiter : db::SimpleTag {
   using type = LimiterType;
   using option_tags = tmpl::list<::OptionTags::Limiter<LimiterType>>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static LimiterType create_from_options(const LimiterType& limiter) noexcept {
     return limiter;
   }

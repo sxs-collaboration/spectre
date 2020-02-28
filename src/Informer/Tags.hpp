@@ -28,7 +28,7 @@ struct Verbosity : db::SimpleTag {
   using type = ::Verbosity;
   using option_tags = tmpl::list<OptionTags::Verbosity>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static ::Verbosity create_from_options(
       const ::Verbosity& verbosity) noexcept {
     return verbosity;

@@ -5,6 +5,7 @@
 
 #include <string>
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Options/Options.hpp"
 
 namespace OptionTags {
@@ -42,7 +43,7 @@ struct Filter : db::SimpleTag {
   using type = FilterType;
   using option_tags = tmpl::list<::OptionTags::Filter<FilterType>>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static FilterType create_from_options(const FilterType& filter) noexcept {
     return filter;
   }

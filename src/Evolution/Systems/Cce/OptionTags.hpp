@@ -141,6 +141,7 @@ struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
       tmpl::list<OptionTags::LMax, OptionTags::BoundaryDataFilename,
                  OptionTags::H5LookaheadTimes, OptionTags::H5Interpolator>;
 
+  static constexpr bool pass_metavariables = false;
   static WorldtubeDataManager create_from_options(
       const size_t l_max, const std::string& filename,
       const size_t number_of_lookahead_times,
@@ -155,6 +156,7 @@ struct ScriInterpolationOrder : db::SimpleTag {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::ScriInterpolationOrder>;
 
+  static constexpr bool pass_metavariables = false;
   static size_t create_from_options(
       const size_t scri_plus_interpolation_order) noexcept {
     return scri_plus_interpolation_order;
@@ -165,6 +167,7 @@ struct TargetStepSize : db::SimpleTag {
   using type = double;
   using option_tags = tmpl::list<OptionTags::TargetStepSize>;
 
+  static constexpr bool pass_metavariables = false;
   static double create_from_options(const double target_step_size) noexcept {
     return target_step_size;
   }
@@ -174,6 +177,7 @@ struct ScriOutputDensity : db::SimpleTag {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::ScriOutputDensity>;
 
+  static constexpr bool pass_metavariables = false;
   static size_t create_from_options(const size_t scri_output_density) noexcept {
     return scri_output_density;
   }
@@ -185,6 +189,7 @@ struct LMax : db::SimpleTag, Spectral::Swsh::Tags::LMaxBase {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::LMax>;
 
+  static constexpr bool pass_metavariables = false;
   static size_t create_from_options(const size_t l_max) noexcept {
     return l_max;
   }
@@ -195,6 +200,7 @@ struct NumberOfRadialPoints : db::SimpleTag,
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::NumberOfRadialPoints>;
 
+  static constexpr bool pass_metavariables = false;
   static size_t create_from_options(
       const size_t number_of_radial_points) noexcept {
     return number_of_radial_points;
@@ -214,6 +220,7 @@ struct FilterLMax : db::SimpleTag {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::FilterLMax>;
 
+  static constexpr bool pass_metavariables = false;
   static size_t create_from_options(const size_t filter_l_max) noexcept {
     return filter_l_max;
   }
@@ -223,6 +230,7 @@ struct RadialFilterAlpha : db::SimpleTag {
   using type = double;
   using option_tags = tmpl::list<OptionTags::RadialFilterAlpha>;
 
+  static constexpr bool pass_metavariables = false;
   static double create_from_options(const double radial_filter_alpha) noexcept {
     return radial_filter_alpha;
   }
@@ -232,6 +240,7 @@ struct RadialFilterHalfPower : db::SimpleTag {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::RadialFilterHalfPower>;
 
+  static constexpr bool pass_metavariables = false;
   static size_t create_from_options(
       const size_t radial_filter_half_power) noexcept {
     return radial_filter_half_power;
@@ -243,6 +252,7 @@ struct StartTime : db::SimpleTag {
   using option_tags =
       tmpl::list<OptionTags::StartTime, OptionTags::BoundaryDataFilename>;
 
+  static constexpr bool pass_metavariables = false;
   static double create_from_options(double start_time,
                                     const std::string& filename) noexcept {
     if (start_time == -std::numeric_limits<double>::infinity()) {
@@ -259,6 +269,7 @@ struct EndTime : db::SimpleTag {
   using option_tags =
       tmpl::list<OptionTags::EndTime, OptionTags::BoundaryDataFilename>;
 
+  static constexpr bool pass_metavariables = false;
   static double create_from_options(double end_time,
                                     const std::string& filename) {
     if (end_time == std::numeric_limits<double>::infinity()) {
