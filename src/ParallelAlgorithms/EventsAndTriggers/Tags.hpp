@@ -35,6 +35,13 @@ template <typename EventRegistrars, typename TriggerRegistrars>
 struct EventsAndTriggers {
   using type = ::EventsAndTriggers<EventRegistrars, TriggerRegistrars>;
   static constexpr OptionString help = "Events to run at triggers";
+  // When the template arguments to this struct are sufficiently
+  // complicated, pretty_type::short_name() run on this struct returns
+  // something that is neither pretty nor short, and leads to an
+  // OptionParser run-time error saying that an option name is greater
+  // than 21 characters.  Adding the name() function below bypasses
+  // pretty_type::short_name().
+  static std::string name() noexcept { return "EventsAndTriggers"; }
 };
 }  // namespace OptionTags
 
