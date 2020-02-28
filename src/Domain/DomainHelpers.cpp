@@ -22,6 +22,7 @@
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
+#include "Domain/CoordinateMaps/MapInstantiationMacros.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
@@ -1157,6 +1158,38 @@ frustum_coordinate_maps(const double length_inner_cube,
                         const double projective_scale_factor) noexcept;
 // Explicit instantiations
 /// \cond
+using Affine2d =
+    domain::CoordinateMaps::ProductOf2Maps<domain::CoordinateMaps::Affine,
+                                           domain::CoordinateMaps::Affine>;
+using Affine3d =
+    domain::CoordinateMaps::ProductOf3Maps<domain::CoordinateMaps::Affine,
+                                           domain::CoordinateMaps::Affine,
+                                           domain::CoordinateMaps::Affine>;
+using Equiangular3d =
+    domain::CoordinateMaps::ProductOf3Maps<domain::CoordinateMaps::Equiangular,
+                                           domain::CoordinateMaps::Equiangular,
+                                           domain::CoordinateMaps::Equiangular>;
+using AffineIdentity =
+    domain::CoordinateMaps::ProductOf2Maps<domain::CoordinateMaps::Affine,
+                                           domain::CoordinateMaps::Identity<2>>;
+
+template class domain::CoordinateMaps::ProductOf2Maps<
+    domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine>;
+template class domain::CoordinateMaps::ProductOf3Maps<
+    domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine,
+    domain::CoordinateMaps::Affine>;
+template class domain::CoordinateMaps::ProductOf3Maps<
+    domain::CoordinateMaps::Equiangular, domain::CoordinateMaps::Equiangular,
+    domain::CoordinateMaps::Equiangular>;
+template class domain::CoordinateMaps::ProductOf2Maps<
+    domain::CoordinateMaps::Affine, domain::CoordinateMaps::Identity<2>>;
+
+INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d), (Equiangular3d),
+                            (domain::CoordinateMaps::Wedge3D,
+                             domain::CoordinateMaps::EquatorialCompression,
+                             AffineIdentity)),
+                           (Frame::Grid, Frame::Inertial), (double, DataVector))
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
