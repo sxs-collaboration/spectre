@@ -6,11 +6,11 @@
 #include <cstddef>
 #include <string>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
-class DataVector;
 struct SomeSourceType {};
 struct SomeInitialDataType {
   using source_term_type = SomeSourceType;
@@ -21,15 +21,15 @@ template <size_t Dim>
 void test_tags() noexcept {
   TestHelpers::db::test_simple_tag<
       NewtonianEuler::Tags::CharacteristicSpeeds<Dim>>("CharacteristicSpeeds");
-  TestHelpers::db::test_simple_tag<
-      NewtonianEuler::Tags::MassDensityCons<DataVector>>("MassDensityCons");
+  TestHelpers::db::test_simple_tag<NewtonianEuler::Tags::MassDensityCons>(
+      "MassDensityCons");
   TestHelpers::db::test_simple_tag<
       NewtonianEuler::Tags::MassDensity<DataVector>>("MassDensity");
   TestHelpers::db::test_simple_tag<
-      NewtonianEuler::Tags::MomentumDensity<DataVector, Dim, Frame::Grid>>(
+      NewtonianEuler::Tags::MomentumDensity<Dim, Frame::Grid>>(
       "Grid_MomentumDensity");
-  TestHelpers::db::test_simple_tag<
-      NewtonianEuler::Tags::EnergyDensity<DataVector>>("EnergyDensity");
+  TestHelpers::db::test_simple_tag<NewtonianEuler::Tags::EnergyDensity>(
+      "EnergyDensity");
   TestHelpers::db::test_simple_tag<
       NewtonianEuler::Tags::Velocity<DataVector, Dim, Frame::Logical>>(
       "Logical_Velocity");

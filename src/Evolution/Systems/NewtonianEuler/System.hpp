@@ -42,10 +42,8 @@ struct System {
       Tags::MassDensity<DataVector>, Tags::Velocity<DataVector, Dim>,
       Tags::SpecificInternalEnergy<DataVector>, Tags::Pressure<DataVector>>>;
 
-  using variables_tag =
-      ::Tags::Variables<tmpl::list<Tags::MassDensityCons<DataVector>,
-                                   Tags::MomentumDensity<DataVector, Dim>,
-                                   Tags::EnergyDensity<DataVector>>>;
+  using variables_tag = ::Tags::Variables<tmpl::list<
+      Tags::MassDensityCons, Tags::MomentumDensity<Dim>, Tags::EnergyDensity>>;
 
   template <typename Tag>
   using magnitude_tag = ::Tags::EuclideanMagnitude<Tag>;

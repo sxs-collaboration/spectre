@@ -57,9 +57,9 @@ struct PrimitiveFromConservative {
                  Tags::SpecificInternalEnergy<DataVector>,
                  Tags::Pressure<DataVector>>;
 
-  using argument_tags = tmpl::list<
-      Tags::MassDensityCons<DataVector>, Tags::MomentumDensity<DataVector, Dim>,
-      Tags::EnergyDensity<DataVector>, hydro::Tags::EquationOfStateBase>;
+  using argument_tags =
+      tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<Dim>,
+                 Tags::EnergyDensity, hydro::Tags::EquationOfStateBase>;
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> mass_density,

@@ -141,23 +141,21 @@ struct Hllc {
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 
   using package_tags = tmpl::list<
-      ::Tags::NormalDotFlux<Tags::MassDensityCons<DataVector>>,
-      ::Tags::NormalDotFlux<Tags::MomentumDensity<DataVector, Dim, Frame>>,
-      ::Tags::NormalDotFlux<Tags::EnergyDensity<DataVector>>,
-      Tags::MassDensityCons<DataVector>,
-      Tags::MomentumDensity<DataVector, Dim, Frame>,
-      Tags::EnergyDensity<DataVector>, Tags::Pressure<DataVector>,
+      ::Tags::NormalDotFlux<Tags::MassDensityCons>,
+      ::Tags::NormalDotFlux<Tags::MomentumDensity<Dim, Frame>>,
+      ::Tags::NormalDotFlux<Tags::EnergyDensity>, Tags::MassDensityCons,
+      Tags::MomentumDensity<Dim, Frame>, Tags::EnergyDensity,
+      Tags::Pressure<DataVector>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>,
       NormalVelocity, LargestIngoingSpeed, LargestOutgoingSpeed>;
 
   using argument_tags = tmpl::list<
-      ::Tags::NormalDotFlux<Tags::MassDensityCons<DataVector>>,
-      ::Tags::NormalDotFlux<Tags::MomentumDensity<DataVector, Dim, Frame>>,
-      ::Tags::NormalDotFlux<Tags::EnergyDensity<DataVector>>,
-      Tags::MassDensityCons<DataVector>,
-      Tags::MomentumDensity<DataVector, Dim, Frame>,
-      Tags::EnergyDensity<DataVector>, Tags::Velocity<DataVector, Dim, Frame>,
-      Tags::Pressure<DataVector>, char_speeds_tag,
+      ::Tags::NormalDotFlux<Tags::MassDensityCons>,
+      ::Tags::NormalDotFlux<Tags::MomentumDensity<Dim, Frame>>,
+      ::Tags::NormalDotFlux<Tags::EnergyDensity>, Tags::MassDensityCons,
+      Tags::MomentumDensity<Dim, Frame>, Tags::EnergyDensity,
+      Tags::Velocity<DataVector, Dim, Frame>, Tags::Pressure<DataVector>,
+      char_speeds_tag,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>>;
 
   void package_data(

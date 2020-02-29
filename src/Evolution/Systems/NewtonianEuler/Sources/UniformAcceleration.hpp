@@ -66,11 +66,11 @@ struct UniformAcceleration {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& /*p*/) noexcept;  // NOLINT
 
-  using sourced_variables = tmpl::list<Tags::MomentumDensity<DataVector, Dim>,
-                                       Tags::EnergyDensity<DataVector>>;
+  using sourced_variables =
+      tmpl::list<Tags::MomentumDensity<Dim>, Tags::EnergyDensity>;
 
-  using argument_tags = tmpl::list<Tags::MassDensityCons<DataVector>,
-                                   Tags::MomentumDensity<DataVector, Dim>>;
+  using argument_tags =
+      tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<Dim>>;
 
   void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> source_momentum_density,
              gsl::not_null<Scalar<DataVector>*> source_energy_density,

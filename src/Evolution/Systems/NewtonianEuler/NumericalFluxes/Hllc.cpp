@@ -39,16 +39,15 @@ void Hllc<Dim, Frame>::package_data(
     const db::const_item_type<char_speeds_tag>& characteristic_speeds,
     const tnsr::i<DataVector, Dim, Frame>& interface_unit_normal) const
     noexcept {
-  get<::Tags::NormalDotFlux<Tags::MassDensityCons<DataVector>>>(
-      *packaged_data) = normal_dot_flux_mass_density;
-  get<::Tags::NormalDotFlux<Tags::MomentumDensity<DataVector, Dim, Frame>>>(
+  get<::Tags::NormalDotFlux<Tags::MassDensityCons>>(*packaged_data) =
+      normal_dot_flux_mass_density;
+  get<::Tags::NormalDotFlux<Tags::MomentumDensity<Dim, Frame>>>(
       *packaged_data) = normal_dot_flux_momentum_density;
-  get<::Tags::NormalDotFlux<Tags::EnergyDensity<DataVector>>>(*packaged_data) =
+  get<::Tags::NormalDotFlux<Tags::EnergyDensity>>(*packaged_data) =
       normal_dot_flux_energy_density;
-  get<Tags::MassDensityCons<DataVector>>(*packaged_data) = mass_density;
-  get<Tags::MomentumDensity<DataVector, Dim, Frame>>(*packaged_data) =
-      momentum_density;
-  get<Tags::EnergyDensity<DataVector>>(*packaged_data) = energy_density;
+  get<Tags::MassDensityCons>(*packaged_data) = mass_density;
+  get<Tags::MomentumDensity<Dim, Frame>>(*packaged_data) = momentum_density;
+  get<Tags::EnergyDensity>(*packaged_data) = energy_density;
   get<Tags::Pressure<DataVector>>(*packaged_data) = pressure;
   get<::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>>(
       *packaged_data) = interface_unit_normal;
