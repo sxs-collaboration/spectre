@@ -199,6 +199,10 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence",
 namespace {
 template <class MapType>
 struct MapTag : db::SimpleTag {
+  static constexpr size_t dim = MapType::dim;
+  using target_frame = typename MapType::target_frame;
+  using source_frame = typename MapType::source_frame;
+
   using type = MapType;
 };
 

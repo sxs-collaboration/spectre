@@ -15,26 +15,29 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Direction.hpp"
-#include "Domain/Element.hpp"
-#include "Domain/ElementMap.hpp"
-#include "Domain/Mesh.hpp"
 #include "Domain/OptionTags.hpp"
-#include "Domain/Side.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 /// \cond
 class DataVector;
+template <size_t VolumeDim>
+class Domain;
+template <size_t VolumeDim>
+class DomainCreator;
+template <size_t VolumeDim>
+class Element;
+template <size_t VolumeDim, typename Frame>
+class ElementMap;
+template <size_t VolumeDim>
+class Mesh;
 /// \endcond
 
 namespace domain {
@@ -52,9 +55,7 @@ struct Domain : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static ::Domain<VolumeDim> create_from_options(
       const std::unique_ptr<::DomainCreator<VolumeDim>>&
-          domain_creator) noexcept {
-    return domain_creator->create_domain();
-  }
+          domain_creator) noexcept;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -68,9 +69,7 @@ struct InitialExtents : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static std::vector<std::array<size_t, Dim>> create_from_options(
-      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) noexcept {
-    return domain_creator->initial_extents();
-  }
+      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) noexcept;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -84,9 +83,7 @@ struct InitialRefinementLevels : db::SimpleTag {
 
   static constexpr bool pass_metavariables = false;
   static std::vector<std::array<size_t, Dim>> create_from_options(
-      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) noexcept {
-    return domain_creator->initial_refinement_levels();
-  }
+      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) noexcept;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -110,12 +107,16 @@ struct Mesh : db::SimpleTag {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The coordinate map from logical to grid coordinate
-template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
+template <size_t VolumeDim, typename TargetFrame = Frame::Inertial>
 struct ElementMap : db::SimpleTag {
+  static constexpr size_t dim = VolumeDim;
+  using target_frame = TargetFrame;
+  using source_frame = Frame::Logical;
+
   static std::string name() noexcept {
-    return "ElementMap(" + get_output(Frame{}) + ")";
+    return "ElementMap(" + get_output(TargetFrame{}) + ")";
   }
-  using type = ::ElementMap<VolumeDim, Frame>;
+  using type = ::ElementMap<VolumeDim, TargetFrame>;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -135,8 +136,7 @@ struct Coordinates : db::SimpleTag {
 /// frame must be the source frame of `MapTag`
 template <class MapTag, class SourceCoordsTag>
 struct MappedCoordinates
-    : Coordinates<db::const_item_type<MapTag>::dim,
-                  typename db::const_item_type<MapTag>::target_frame>,
+    : Coordinates<MapTag::dim, typename MapTag::target_frame>,
       db::ComputeTag {
   static constexpr auto function(
       const db::const_item_type<MapTag>& element_map,
@@ -168,14 +168,11 @@ struct InverseJacobian : db::SimpleTag {
 /// the map.
 template <typename MapTag, typename SourceCoordsTag>
 struct InverseJacobianCompute
-    : InverseJacobian<db::const_item_type<MapTag>::dim,
-                      typename db::const_item_type<MapTag>::source_frame,
-                      typename db::const_item_type<MapTag>::target_frame>,
+    : InverseJacobian<MapTag::dim, typename MapTag::source_frame,
+                      typename MapTag::target_frame>,
       db::ComputeTag {
-  using base =
-      InverseJacobian<db::const_item_type<MapTag>::dim,
-                      typename db::const_item_type<MapTag>::source_frame,
-                      typename db::const_item_type<MapTag>::target_frame>;
+  using base = InverseJacobian<MapTag::dim, typename MapTag::source_frame,
+                               typename MapTag::target_frame>;
   static constexpr auto function(
       const db::const_item_type<MapTag>& element_map,
       const db::const_item_type<SourceCoordsTag>& source_coords) noexcept {

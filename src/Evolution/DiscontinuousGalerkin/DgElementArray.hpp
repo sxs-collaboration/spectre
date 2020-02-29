@@ -8,10 +8,12 @@
 
 #include "AlgorithmArray.hpp"
 #include "Domain/Block.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Domain/InitialElementIds.hpp"
+#include "Domain/OptionTags.hpp"
 #include "Domain/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"

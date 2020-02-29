@@ -21,6 +21,7 @@
 #include "Domain/ElementIndex.hpp"  // IWYU pragma: keep
 #include "Domain/IndexToSliceAt.hpp"
 #include "Domain/Mesh.hpp"
+#include "Domain/OrientationMap.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
