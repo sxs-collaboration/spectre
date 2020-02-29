@@ -16,12 +16,12 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/CubicScale.hpp"
+#include "Domain/CoordinateMaps/MapInstantiationMacros.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-
 
 namespace domain {
 namespace creators {
@@ -129,4 +129,10 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef GET_DIM
 }  // namespace time_dependence
 }  // namespace creators
+
+INSTANTIATE_MAPS_FUNCTIONS(((CoordMapsTimeDependent::CubicScale<1>),
+                            (CoordMapsTimeDependent::CubicScale<2>),
+                            (CoordMapsTimeDependent::CubicScale<3>)),
+                           (Frame::Grid), (Frame::Inertial),
+                           (double, DataVector))
 }  // namespace domain
