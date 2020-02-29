@@ -16,12 +16,31 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace domain {
+namespace CoordinateMaps {
+class Affine;
+template <typename Map1, typename Map2, typename Map3>
+class ProductOf3Maps;
+}  // namespace CoordinateMaps
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+class CoordinateMap;
+}  // namespace domain
+/// \endcond
+
 namespace domain {
 namespace creators {
 
 /// Create a 3D Domain consisting of a single Block.
 class Brick : public DomainCreator<3> {
  public:
+  using maps_list = tmpl::list<
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                            CoordinateMaps::ProductOf3Maps<
+                                CoordinateMaps::Affine, CoordinateMaps::Affine,
+                                CoordinateMaps::Affine>>>;
+
   struct LowerBound {
     using type = std::array<double, 3>;
     static constexpr OptionString help = {

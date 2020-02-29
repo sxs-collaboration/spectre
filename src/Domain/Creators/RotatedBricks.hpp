@@ -13,6 +13,21 @@
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace domain {
+namespace CoordinateMaps {
+class Affine;
+template <size_t VolumeDim>
+class DiscreteRotation;
+template <typename Map1, typename Map2, typename Map3>
+class ProductOf3Maps;
+}  // namespace CoordinateMaps
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+class CoordinateMap;
+}  // namespace domain
+/// \endcond
+
 namespace domain {
 namespace creators {
 /// Create a 3D Domain consisting of eight rotated Blocks.
@@ -72,6 +87,17 @@ namespace creators {
 /// unaligned blocks.
 class RotatedBricks : public DomainCreator<3> {
  public:
+  using maps_list = tmpl::list<
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                            CoordinateMaps::ProductOf3Maps<
+                                CoordinateMaps::Affine, CoordinateMaps::Affine,
+                                CoordinateMaps::Affine>>,
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                            CoordinateMaps::DiscreteRotation<3>,
+                            CoordinateMaps::ProductOf3Maps<
+                                CoordinateMaps::Affine, CoordinateMaps::Affine,
+                                CoordinateMaps::Affine>>>;
+
   struct LowerBound {
     using type = std::array<double, 3>;
     static constexpr OptionString help = {

@@ -26,6 +26,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Parallel/PupStlCpp11.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
@@ -58,6 +59,9 @@ void test_brick_construction(
                    Affine{-1., 1., lower_bound[2], upper_bound[2]}})));
 
   test_initial_domain(domain, brick.initial_refinement_levels());
+
+  Parallel::register_classes_in_list<typename creators::Brick::maps_list>();
+  test_serialization(domain);
 }
 
 void test_brick() {

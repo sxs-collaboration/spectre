@@ -6,6 +6,7 @@ set(LIBRARY DomainTimeDependence)
 set(LIBRARY_SOURCES
   CubicScale.cpp
   None.cpp
+  RegisterDerivedWithCharm.cpp
   UniformTranslation.cpp
   )
 

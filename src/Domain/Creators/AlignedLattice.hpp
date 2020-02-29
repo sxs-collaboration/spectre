@@ -15,6 +15,21 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace domain {
+namespace CoordinateMaps {
+class Affine;
+template <typename Map1, typename Map2>
+class ProductOf2Maps;
+template <typename Map1, typename Map2, typename Map3>
+class ProductOf3Maps;
+}  // namespace CoordinateMaps
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+class CoordinateMap;
+}  // namespace domain
+/// \endcond
+
 namespace domain {
 namespace creators {
 
@@ -31,6 +46,18 @@ namespace creators {
 template <size_t VolumeDim>
 class AlignedLattice : public DomainCreator<VolumeDim> {
  public:
+  using maps_list = tmpl::list<
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                            CoordinateMaps::Affine>,
+      domain::CoordinateMap<
+          Frame::Logical, Frame::Inertial,
+          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                         CoordinateMaps::Affine>>,
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                            CoordinateMaps::ProductOf3Maps<
+                                CoordinateMaps::Affine, CoordinateMaps::Affine,
+                                CoordinateMaps::Affine>>>;
+
   struct BlockBounds {
     using type = std::array<std::vector<double>, VolumeDim>;
     static constexpr OptionString help = {

@@ -17,7 +17,9 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
@@ -27,9 +29,11 @@
 #include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace domain {
 namespace {
@@ -189,6 +193,10 @@ void test_sphere_construction(
   test_domain_construction(domain, expected_block_neighbors,
                            expected_external_boundaries, coord_maps);
   test_initial_domain(domain, sphere.initial_refinement_levels());
+
+  Parallel::register_classes_in_list<
+      typename domain::creators::Sphere::maps_list>();
+  test_serialization(domain);
 }
 
 void test_sphere_boundaries_equiangular() {

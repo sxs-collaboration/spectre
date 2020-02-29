@@ -24,6 +24,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Parallel/PupStlCpp11.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
@@ -51,6 +52,10 @@ void test_interval_construction(
       make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           CoordinateMaps::Affine{-1., 1., lower_bound[0], upper_bound[0]})));
   test_initial_domain(domain, interval.initial_refinement_levels());
+
+  Parallel::register_classes_in_list<
+      typename domain::creators::Interval::maps_list>();
+  test_serialization(domain);
 }
 
 void test_interval() {
@@ -80,20 +85,6 @@ void test_interval() {
           {{Direction<1>::lower_xi(), {0, aligned_orientation}},
            {Direction<1>::upper_xi(), {0, aligned_orientation}}}},
       std::vector<std::unordered_set<Direction<1>>>{{}});
-
-  // Test serialization of the map
-  creators::register_derived_with_charm();
-
-  const auto base_map =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::Affine{-1., 1., lower_bound[0], upper_bound[0]});
-  const auto base_map_deserialized = serialize_and_deserialize(base_map);
-  using MapType = const CoordinateMap<Frame::Logical, Frame::Inertial,
-                                      CoordinateMaps::Affine>*;
-  REQUIRE(dynamic_cast<MapType>(base_map.get()) != nullptr);
-  const auto coord_map = make_coordinate_map<Frame::Logical, Frame::Inertial>(
-      CoordinateMaps::Affine{-1., 1., lower_bound[0], upper_bound[0]});
-  CHECK(*dynamic_cast<MapType>(base_map.get()) == coord_map);
 }
 
 void test_interval_factory() {

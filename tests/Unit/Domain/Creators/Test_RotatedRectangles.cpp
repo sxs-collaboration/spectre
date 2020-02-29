@@ -24,8 +24,10 @@
 #include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace domain {
 namespace {
@@ -80,6 +82,10 @@ void test_rotated_rectangles_construction(
   test_domain_construction(domain, expected_block_neighbors,
                            expected_external_boundaries, coord_maps);
   test_initial_domain(domain, rotated_rectangles.initial_refinement_levels());
+
+  Parallel::register_classes_in_list<
+      typename domain::creators::RotatedRectangles::maps_list>();
+  test_serialization(domain);
 }
 
 void test_rotated_rectangles() {

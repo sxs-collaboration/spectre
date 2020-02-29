@@ -12,12 +12,39 @@
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace domain {
+namespace CoordinateMaps {
+class Affine;
+class Equiangular;
+template <typename Map1, typename Map2>
+class ProductOf2Maps;
+class Wedge2D;
+}  // namespace CoordinateMaps
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+class CoordinateMap;
+}  // namespace domain
+/// \endcond
+
 namespace domain {
 namespace creators {
 /// Create a 2D Domain in the shape of a disk from a square surrounded by four
 /// wedges.
 class Disk : public DomainCreator<2> {
  public:
+  using maps_list =
+      tmpl::list<domain::CoordinateMap<
+                     Frame::Logical, Frame::Inertial,
+                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                                    CoordinateMaps::Affine>>,
+                 domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                       CoordinateMaps::ProductOf2Maps<
+                                           CoordinateMaps::Equiangular,
+                                           CoordinateMaps::Equiangular>>,
+                 domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                       CoordinateMaps::Wedge2D>>;
+
   struct InnerRadius {
     using type = double;
     static constexpr OptionString help = {

@@ -19,9 +19,13 @@
 #include "Domain/BlockId.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/BlockNeighbor.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/EquatorialCompression.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
@@ -35,6 +39,7 @@
 #include "Domain/InitialElementIds.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/SegmentId.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -42,6 +47,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_forward_declare BlockNeighbor
 
@@ -253,6 +259,10 @@ void test_shell_construction(
   }
 
   test_initial_domain(domain, shell.initial_refinement_levels());
+
+  Parallel::register_classes_in_list<
+      typename domain::creators::Shell::maps_list>();
+  test_serialization(domain);
 }
 
 void test_shell_boundaries() {

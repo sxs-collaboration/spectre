@@ -27,9 +27,11 @@
 #include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace domain {
 namespace {
@@ -126,6 +128,9 @@ void test_disk_construction(
                            expected_external_boundaries, coord_maps);
 
   test_initial_domain(domain, disk.initial_refinement_levels());
+
+  Parallel::register_classes_in_list<typename creators::Disk::maps_list>();
+  test_serialization(domain);
 }
 
 void test_disk_boundaries_equiangular() {
