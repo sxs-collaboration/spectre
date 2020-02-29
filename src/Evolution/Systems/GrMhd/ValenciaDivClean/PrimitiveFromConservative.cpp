@@ -148,11 +148,12 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
             << s << ".\n"
             << std::setprecision(std::numeric_limits<double>::digits10 + 1)
             << "total_energy_density = " << total_energy_density[s] << "\n"
-            << "momentum_density_squared = " << momentum_density_squared[s]
+            << "momentum_density_squared = " << get(momentum_density_squared)[s]
             << "\n"
             << "momentum_density_dot_magnetic_field = "
-            << momentum_density_dot_magnetic_field[s] << "\n"
-            << "magnetic_field_squared = " << magnetic_field_squared[s] << "\n"
+            << get(momentum_density_dot_magnetic_field)[s] << "\n"
+            << "magnetic_field_squared = " << get(magnetic_field_squared)[s]
+            << "\n"
             << "rest_mass_density_times_lorentz_factor = "
             << rest_mass_density_times_lorentz_factor[s] << "\n"
             << "previous_rest_mass_density = " << get(*rest_mass_density)[s]
