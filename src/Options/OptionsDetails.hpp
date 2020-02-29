@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <list>
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -169,10 +170,41 @@ struct print_impl {
 template <typename Tag, typename OptionList>
 struct print_impl<Tag, OptionList,
                   Requires<tmpl::list_contains_v<OptionList, Tag>>> {
-  template <typename LocalTag, Requires<has_default<LocalTag>::value> = nullptr>
+  template <typename LocalTag,
+            Requires<has_default<LocalTag>::value and
+                     not tt::is_a_v<std::unique_ptr, typename LocalTag::type>> =
+                nullptr>
   static std::string print_default() noexcept {
     std::ostringstream ss;
     ss << "default=" << std::boolalpha << LocalTag::default_value();
+    return ss.str();
+  }
+  template <
+      typename LocalTag,
+      Requires<has_default<LocalTag>::value and
+               tt::is_a_v<std::unique_ptr, typename LocalTag::type>> = nullptr>
+  static std::string print_default() noexcept {
+    std::ostringstream ss;
+    using base_class = typename LocalTag::type::element_type;
+    const auto default_value = LocalTag::default_value();
+    bool found_derived = false;
+    tmpl::for_each<typename base_class::creatable_classes>(
+        [&default_value, &found_derived, &ss](auto class_v) noexcept {
+          if (found_derived) {
+            return;
+          }
+
+          using derived = typename decltype(class_v)::type;
+          if (dynamic_cast<const derived*>(default_value.get()) != nullptr) {
+            ss << "default=" << std::boolalpha
+               << pretty_type::short_name<derived>();
+            found_derived = true;
+          }
+        });
+    if (not found_derived) {
+      ss << "default=Unknown derived class of "
+         << pretty_type::short_name<base_class>();
+    }
     return ss.str();
   }
   template <typename LocalTag,

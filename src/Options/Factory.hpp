@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string>
 #include <utility>
+#include <yaml-cpp/yaml.h>
 
 #include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
