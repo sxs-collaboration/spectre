@@ -94,10 +94,39 @@ struct observer_writer_component {
 using l2_error_datum = Parallel::ReductionDatum<double, funcl::Plus<>,
                                                 funcl::Sqrt<funcl::Divides<>>,
                                                 std::index_sequence<1>>;
-using reduction_data = Parallel::ReductionData<
+using reduction_data_from_doubles = Parallel::ReductionData<
     Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
     Parallel::ReductionDatum<size_t, funcl::Plus<>>, l2_error_datum,
     l2_error_datum>;
+
+struct VectorPlus {
+  std::vector<double> operator()(const std::vector<double>& lhs,
+                                 const std::vector<double>& rhs) const
+      noexcept {
+    ASSERT(lhs.size() == rhs.size(),
+           "Vector sizes in `VectorPlus` operator do not match. First argument "
+           "size: "
+               << lhs.size() << ". Second argument size: " << rhs.size()
+               << ".");
+    std::vector<double> result(lhs.size());
+    for (size_t i = 0; i < lhs.size(); ++i) {
+      result[i] = lhs[i] + rhs[i];
+    }
+    return result;
+  }
+};
+
+using reduction_data_from_vector = Parallel::ReductionData<
+    Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
+    Parallel::ReductionDatum<size_t, funcl::Plus<>>,
+    Parallel::ReductionDatum<std::vector<double>, VectorPlus>>;
+
+// Nothing special about the order. We just want doubles and std::vector's.
+using reduction_data_from_ds_and_vs = Parallel::ReductionData<
+    Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
+    Parallel::ReductionDatum<size_t, funcl::Plus<>>, l2_error_datum,
+    Parallel::ReductionDatum<std::vector<double>, VectorPlus>,
+    Parallel::ReductionDatum<std::vector<double>, VectorPlus>, l2_error_datum>;
 
 template <observers::TypeOfObservation TypeOfObservation>
 struct Metavariables {
@@ -107,8 +136,9 @@ struct Metavariables {
                  observer_writer_component<Metavariables>>;
 
   /// [make_reduction_data_tags]
-  using observed_reduction_data_tags =
-      observers::make_reduction_data_tags<tmpl::list<reduction_data>>;
+  using observed_reduction_data_tags = observers::make_reduction_data_tags<
+      tmpl::list<reduction_data_from_doubles, reduction_data_from_vector,
+                 reduction_data_from_ds_and_vs>>;
   /// [make_reduction_data_tags]
 
   enum class Phase { Initialization, RegisterWithObservers, Testing, Exit };
