@@ -6,14 +6,12 @@
 #include <cstddef>
 #include <limits>
 
-#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -350,14 +348,11 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution {
       -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType, bool NeedSpacetime>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>> /*meta*/,
-      const IntermediateVariables<DataType, NeedSpacetime>& vars,
-      size_t index) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
+                 const IntermediateVariables<DataType, NeedSpacetime>& vars,
+                 size_t index) const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType, bool NeedSpacetime>
   auto variables(

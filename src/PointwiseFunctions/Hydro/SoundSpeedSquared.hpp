@@ -7,12 +7,14 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace EquationsOfState {
 template <bool IsRelativistic, size_t ThermodynamicDim>
 class EquationOfState;
+}  // namespace EquationsOfState
 /// \endcond
 
 namespace hydro {

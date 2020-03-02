@@ -10,10 +10,8 @@
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "Utilities/MakeArray.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -130,12 +128,12 @@ class CylindricalBlastWave : public MarkAsAnalyticData {
       default;
   ~CylindricalBlastWave() = default;
 
-  CylindricalBlastWave(
-      InnerRadius::type inner_radius, OuterRadius::type outer_radius,
-      InnerDensity::type inner_density, OuterDensity::type outer_density,
-      InnerPressure::type inner_pressure, OuterPressure::type outer_pressure,
-      MagneticField::type magnetic_field, AdiabaticIndex::type adiabatic_index,
-      const OptionContext& context = {});
+  CylindricalBlastWave(double inner_radius, double outer_radius,
+                       double inner_density, double outer_density,
+                       double inner_pressure, double outer_pressure,
+                       std::array<double, 3> magnetic_field,
+                       double adiabatic_index,
+                       const OptionContext& context = {});
 
   explicit CylindricalBlastWave(CkMigrateMessage* /*unused*/) noexcept {}
 
@@ -161,17 +159,15 @@ class CylindricalBlastWave : public MarkAsAnalyticData {
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
-                 tmpl::list<hydro::Tags::SpatialVelocity<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
+                 tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/)
+      const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3>& x,
-                 tmpl::list<hydro::Tags::MagneticField<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+  auto variables(
+      const tnsr::I<DataType, 3>& x,
+      tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(
@@ -195,9 +191,9 @@ class CylindricalBlastWave : public MarkAsAnalyticData {
 
   /// Retrieve a collection of hydrodynamic variables at position x
   template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
+                                         tmpl::list<Tags...> /*meta*/) const
+      noexcept {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -220,24 +216,17 @@ class CylindricalBlastWave : public MarkAsAnalyticData {
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
 
  private:
-  InnerRadius::type inner_radius_ =
-      std::numeric_limits<double>::signaling_NaN();
-  OuterRadius::type outer_radius_ =
-      std::numeric_limits<double>::signaling_NaN();
-  InnerDensity::type inner_density_ =
-      std::numeric_limits<double>::signaling_NaN();
-  OuterDensity::type outer_density_ =
-      std::numeric_limits<double>::signaling_NaN();
-  InnerPressure::type inner_pressure_ =
-      std::numeric_limits<double>::signaling_NaN();
-  OuterPressure::type outer_pressure_ =
-      std::numeric_limits<double>::signaling_NaN();
-  MagneticField::type magnetic_field_ =
-      std::array<double, 3>{{std::numeric_limits<double>::signaling_NaN(),
-                             std::numeric_limits<double>::signaling_NaN(),
-                             std::numeric_limits<double>::signaling_NaN()}};
-  AdiabaticIndex::type adiabatic_index_ =
-      std::numeric_limits<double>::signaling_NaN();
+  double inner_radius_ = std::numeric_limits<double>::signaling_NaN();
+  double outer_radius_ = std::numeric_limits<double>::signaling_NaN();
+  double inner_density_ = std::numeric_limits<double>::signaling_NaN();
+  double outer_density_ = std::numeric_limits<double>::signaling_NaN();
+  double inner_pressure_ = std::numeric_limits<double>::signaling_NaN();
+  double outer_pressure_ = std::numeric_limits<double>::signaling_NaN();
+  std::array<double, 3> magnetic_field_{
+      {std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN()}};
+  double adiabatic_index_ = std::numeric_limits<double>::signaling_NaN();
   EquationsOfState::IdealFluid<true> equation_of_state_{};
   gr::Solutions::Minkowski<3> background_spacetime_{};
 

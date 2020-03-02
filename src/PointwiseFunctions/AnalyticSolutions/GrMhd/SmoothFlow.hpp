@@ -4,7 +4,6 @@
 #pragma once
 
 #include <array>
-#include <limits>
 #include <pup.h>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -12,9 +11,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/SmoothFlow.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
-#include "Utilities/MakeArray.hpp"            // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -56,9 +53,9 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   SmoothFlow& operator=(SmoothFlow&& /*rhs*/) noexcept = default;
   ~SmoothFlow() = default;
 
-  SmoothFlow(MeanVelocity::type mean_velocity, WaveVector::type wavevector,
-             Pressure::type pressure, AdiabaticIndex::type adiabatic_index,
-             PerturbationSize::type perturbation_size) noexcept;
+  SmoothFlow(std::array<double, 3> mean_velocity,
+             std::array<double, 3> wavevector, double pressure,
+             double adiabatic_index, double perturbation_size) noexcept;
 
   using smooth_flow::equation_of_state;
   using smooth_flow::equation_of_state_type;
@@ -69,11 +66,10 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   // @{
   /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
-                 tmpl::list<hydro::Tags::MagneticField<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+  auto variables(
+      const tnsr::I<DataType, 3>& x, double /*t*/,
+      tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(

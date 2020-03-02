@@ -5,7 +5,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace hydro {

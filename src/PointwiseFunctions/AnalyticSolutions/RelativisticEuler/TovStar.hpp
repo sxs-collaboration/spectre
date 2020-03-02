@@ -8,13 +8,11 @@
 #include <limits>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
