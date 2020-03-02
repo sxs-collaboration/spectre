@@ -54,6 +54,9 @@ double unit_polynomial_integral(const size_t deg) {
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
           typename Function>
 void test_exact_differentiation(const Function& max_poly_deg) {
+  INFO("Test exact differentiation.");
+  CAPTURE(BasisType);
+  CAPTURE(QuadratureType);
   for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
        n <= Spectral::maximum_number_of_points<BasisType>; n++) {
     for (size_t p = 0; p <= max_poly_deg(n); p++) {
@@ -77,30 +80,14 @@ void test_exact_differentiation(const Function& max_poly_deg) {
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExactDifferentiation",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   const auto minus_one = [](const size_t n) noexcept { return n - 1; };
-  SECTION(
-      "Legendre-Gauss differentiation is exact to polynomial order "
-      "num_points - 1") {
-    test_exact_differentiation<Spectral::Basis::Legendre,
-                               Spectral::Quadrature::Gauss>(minus_one);
-  }
-  SECTION(
-      "Legendre-Gauss-Lobatto differentiation is exact to polynomial order "
-      "num_points - 1") {
-    test_exact_differentiation<Spectral::Basis::Legendre,
-                               Spectral::Quadrature::GaussLobatto>(minus_one);
-  }
-  SECTION(
-      "Chebyshev-Gauss differentiation is exact to polynomial order "
-      "num_points - 1") {
-    test_exact_differentiation<Spectral::Basis::Chebyshev,
-                               Spectral::Quadrature::Gauss>(minus_one);
-  }
-  SECTION(
-      "Chebyshev-Gauss-Lobatto differentiation is exact to polynomial order "
-      "num_points - 1") {
-    test_exact_differentiation<Spectral::Basis::Chebyshev,
-                               Spectral::Quadrature::GaussLobatto>(minus_one);
-  }
+  test_exact_differentiation<Spectral::Basis::Legendre,
+                             Spectral::Quadrature::Gauss>(minus_one);
+  test_exact_differentiation<Spectral::Basis::Legendre,
+                             Spectral::Quadrature::GaussLobatto>(minus_one);
+  test_exact_differentiation<Spectral::Basis::Chebyshev,
+                             Spectral::Quadrature::Gauss>(minus_one);
+  test_exact_differentiation<Spectral::Basis::Chebyshev,
+                             Spectral::Quadrature::GaussLobatto>(minus_one);
 }
 
 namespace {
