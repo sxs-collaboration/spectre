@@ -301,6 +301,10 @@ void test_variables_math() noexcept {
   CHECK_VARIABLES_APPROX(expected, vars - vars + vars);  // NOLINT
   expected = TestVariablesType{num_points, value_in_variables};
   CHECK_VARIABLES_APPROX(expected, vars + vars - vars);
+  expected = TestVariablesType{num_points, -value_in_variables};
+  CHECK_VARIABLES_APPROX(expected, -vars);
+  expected = TestVariablesType{num_points, value_in_variables};
+  CHECK_VARIABLES_APPROX(expected, +vars);
 
   // Test math_assignment operators +=, -=, *=, /= with values
   TestVariablesType test_assignment(vars * rand_vals[0]);
@@ -525,6 +529,10 @@ void test_variables_prefix_math() noexcept {
   expected =
       Prefix3VariablesType{number_of_grid_points, 1.0 * value_in_variables};
   CHECK_VARIABLES_APPROX(expected, prefix_vars0 + prefix_vars1 - prefix_vars2);
+  expected = Prefix3VariablesType{number_of_grid_points, -value_in_variables};
+  CHECK_VARIABLES_APPROX(expected, -prefix_vars0);
+  expected = Prefix3VariablesType{number_of_grid_points, value_in_variables};
+  CHECK_VARIABLES_APPROX(expected, +prefix_vars0);
 
   // Test assignment arithmetic operators +=, -=, *=, /= with values
   Prefix0VariablesType test_assignment(prefix_vars0 * 1.0);
