@@ -18,17 +18,24 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/ProductMapsTimeDep.hpp"
+#include "Domain/CoordinateMaps/ProductMapsTimeDep.tpp"
+#include "Domain/CoordinateMaps/Translation.hpp"
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/TimeDependence/None.hpp"
+#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "tests/Unit/Domain/Creators/TestHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -37,6 +44,12 @@ namespace domain {
 namespace {
 using Affine = CoordinateMaps::Affine;
 using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+using Translation = CoordMapsTimeDependent::Translation;
+using Translation3D =
+    CoordMapsTimeDependent::ProductOf3Maps<Translation, Translation,
+                                           Translation>;
+
+template <typename... FuncsOfTime>
 void test_brick_construction(
     const creators::Brick& brick, const std::array<double, 3>& lower_bound,
     const std::array<double, 3>& upper_bound,
@@ -45,7 +58,12 @@ void test_brick_construction(
     const std::vector<DirectionMap<3, BlockNeighbor<3>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<3>>>&
-        expected_external_boundaries) {
+        expected_external_boundaries,
+    const std::tuple<std::pair<std::string, FuncsOfTime>...>&
+        expected_functions_of_time = {},
+    const std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 3>>>&
+        expected_grid_to_inertial_maps = {}) {
   const auto domain = brick.create_domain();
 
   CHECK(brick.initial_extents() == expected_extents);
@@ -53,14 +71,20 @@ void test_brick_construction(
 
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
-      make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_vector(make_coordinate_map_base<
+                  Frame::Logical,
+                  tmpl::conditional_t<sizeof...(FuncsOfTime) == 0,
+                                      Frame::Inertial, Frame::Grid>>(
           Affine3D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
                    Affine{-1., 1., lower_bound[1], upper_bound[1]},
-                   Affine{-1., 1., lower_bound[2], upper_bound[2]}})));
-
+                   Affine{-1., 1., lower_bound[2], upper_bound[2]}})),
+      10.0, brick.functions_of_time(), expected_grid_to_inertial_maps);
   test_initial_domain(domain, brick.initial_refinement_levels());
+  TestHelpers::domain::creators::test_functions_of_time(
+      brick, expected_functions_of_time);
 
-  Parallel::register_classes_in_list<typename creators::Brick::maps_list>();
+  domain::creators::register_derived_with_charm();
+  domain::creators::time_dependence::register_derived_with_charm();
   test_serialization(domain);
 }
 
@@ -204,27 +228,77 @@ void test_brick() {
 }
 
 void test_brick_factory() {
-  INFO("Brick factory");
-  const auto domain_creator =
-      TestHelpers::test_factory_creation<DomainCreator<3>>(
-          "Brick:\n"
-          "  LowerBound: [0,0,0]\n"
-          "  UpperBound: [1,2,3]\n"
-          "  IsPeriodicIn: [True,False,True]\n"
-          "  InitialGridPoints: [3,4,3]\n"
-          "  InitialRefinement: [2,3,2]\n");
-  const auto* brick_creator =
-      dynamic_cast<const creators::Brick*>(domain_creator.get());
-  test_brick_construction(
-      *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
-      {{{2, 3, 2}}},
-      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
-          {{Direction<3>::lower_xi(), {0, {}}},
-           {Direction<3>::upper_xi(), {0, {}}},
-           {Direction<3>::lower_zeta(), {0, {}}},
-           {Direction<3>::upper_zeta(), {0, {}}}}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}});
+  {
+    INFO("Brick factory time independent");
+    const auto domain_creator =
+        TestHelpers::test_factory_creation<DomainCreator<3>>(
+            "Brick:\n"
+            "  LowerBound: [0,0,0]\n"
+            "  UpperBound: [1,2,3]\n"
+            "  IsPeriodicIn: [True,False,True]\n"
+            "  InitialGridPoints: [3,4,3]\n"
+            "  InitialRefinement: [2,3,2]\n");
+    const auto* brick_creator =
+        dynamic_cast<const creators::Brick*>(domain_creator.get());
+    test_brick_construction(
+        *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
+        {{{2, 3, 2}}},
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_xi(), {0, {}}},
+             {Direction<3>::upper_xi(), {0, {}}},
+             {Direction<3>::lower_zeta(), {0, {}}},
+             {Direction<3>::upper_zeta(), {0, {}}}}},
+        std::vector<std::unordered_set<Direction<3>>>{
+            {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}});
+  }
+  {
+    INFO("Brick factory time dependent");
+    const auto domain_creator =
+        TestHelpers::test_factory_creation<DomainCreator<3>>(
+            "Brick:\n"
+            "  LowerBound: [0,0,0]\n"
+            "  UpperBound: [1,2,3]\n"
+            "  IsPeriodicIn: [True,False,True]\n"
+            "  InitialGridPoints: [3,4,3]\n"
+            "  InitialRefinement: [2,3,2]\n"
+            "  TimeDependence:\n"
+            "    UniformTranslation:\n"
+            "      InitialTime: 1.0\n"
+            "      Velocity: [2.3, -0.3, 0.5]\n"
+            "      FunctionOfTimeNames: [TranslationX, TranslationY, "
+            "TranslationZ]");
+    const auto* brick_creator =
+        dynamic_cast<const creators::Brick*>(domain_creator.get());
+    test_brick_construction(
+        *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
+        {{{2, 3, 2}}},
+        std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+            {{Direction<3>::lower_xi(), {0, {}}},
+             {Direction<3>::upper_xi(), {0, {}}},
+             {Direction<3>::lower_zeta(), {0, {}}},
+             {Direction<3>::upper_zeta(), {0, {}}}}},
+        std::vector<std::unordered_set<Direction<3>>>{
+            {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}},
+        std::make_tuple(
+            std::pair<std::string,
+                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
+                "TranslationX",
+                {1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}}},
+            std::pair<std::string,
+                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
+                "TranslationY",
+                {1.0, std::array<DataVector, 3>{{{0.0}, {-0.3}, {0.0}}}}},
+            std::pair<std::string,
+                      domain::FunctionsOfTime::PiecewisePolynomial<2>>{
+                "TranslationZ",
+                {1.0, std::array<DataVector, 3>{{{0.0}, {0.5}, {0.0}}}}}),
+        make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            Translation3D{Translation{"TranslationX"},
+                          Translation{"TranslationY"},
+                          Translation{"TranslationZ"}})
+
+    );
+  }
 }
 }  // namespace
 
