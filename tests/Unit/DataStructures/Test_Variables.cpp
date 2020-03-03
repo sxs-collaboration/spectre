@@ -798,61 +798,79 @@ void test_variables_from_tagged_tuple() noexcept {
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
-  SECTION("Test Variables construction, access, and assignment") {
+  {
+    INFO("Test Variables construction, access, and assignment");
     test_variables_construction_and_access<ComplexDataVector>();
     test_variables_construction_and_access<ComplexModalVector>();
     test_variables_construction_and_access<DataVector>();
     test_variables_construction_and_access<ModalVector>();
   }
-  SECTION("Test Variables move operations") {
+
+  {
+    INFO("Test Variables move operations");
     test_variables_move<ComplexDataVector>();
     test_variables_move<ComplexModalVector>();
     test_variables_move<DataVector>();
     test_variables_move<ModalVector>();
   }
-  SECTION("Test Variables arithmetic operations") {
+
+  {
+    INFO("Test Variables arithmetic operations");
     test_variables_math<DataVector>();
     test_variables_math<ComplexDataVector>();
     // tests for ModalVector and ComplexModalVector omitted due to limited
     // arithmetic operation support for ModalVectors
   }
-  SECTION("Test Prefix Variables move and copy semantics") {
+
+  {
+    INFO("Test Prefix Variables move and copy semantics");
     test_variables_prefix_semantics<ComplexDataVector>();
     test_variables_prefix_semantics<ComplexModalVector>();
     test_variables_prefix_semantics<DataVector>();
     test_variables_prefix_semantics<ModalVector>();
   }
-  SECTION("Test Prefix Variables arithmetic operations") {
+
+  {
+    INFO("Test Prefix Variables arithmetic operations");
     test_variables_prefix_math<ComplexDataVector>();
     test_variables_prefix_math<ComplexModalVector>();
     test_variables_prefix_math<DataVector>();
     test_variables_prefix_math<ModalVector>();
   }
-  SECTION("Test Variables serialization") {
+
+  {
+    INFO("Test Variables serialization");
     test_variables_serialization<ComplexDataVector>();
     test_variables_serialization<ComplexModalVector>();
     test_variables_serialization<DataVector>();
     test_variables_serialization<ModalVector>();
   }
-  SECTION("Test Variables assign subset") {
+
+  {
+    INFO("Test Variables assign subset");
     test_variables_assign_subset<ComplexDataVector>();
     test_variables_assign_subset<ComplexModalVector>();
     test_variables_assign_subset<DataVector>();
     test_variables_assign_subset<ModalVector>();
   }
-  SECTION("Test Variables extract subset") {
+
+  {
+    INFO("Test Variables extract subset");
     test_variables_extract_subset<ComplexDataVector>();
     test_variables_extract_subset<ComplexModalVector>();
     test_variables_extract_subset<DataVector>();
     test_variables_extract_subset<ModalVector>();
   }
-  SECTION("Test variables_from_tagged_tuple") {
+
+  {
+    INFO("Test variables_from_tagged_tuple");
     // The commented functions require a fix to issue #1420.
     // test_variables_from_tagged_tuple<ComplexDataVector>();
     // test_variables_from_tagged_tuple<ComplexModalVector>();
     test_variables_from_tagged_tuple<DataVector>();
     // test_variables_from_tagged_tuple<ModalVector>();
   }
+
   TestHelpers::db::test_simple_tag<Tags::TempScalar<1>>("TempTensor1");
 }
 }  // namespace
