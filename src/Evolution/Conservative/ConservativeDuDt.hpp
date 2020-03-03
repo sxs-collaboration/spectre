@@ -59,6 +59,10 @@ struct ConservativeDuDt {
   static constexpr size_t volume_dim = System::volume_dim;
   using frame = Frame::Inertial;
 
+  template <template <class> class StepPrefix>
+  using return_tags = db::split_tag<
+      db::add_tag_prefix<StepPrefix, typename System::variables_tag>>;
+
   using argument_tags = tmpl::append<
       db::split_tag<db::add_tag_prefix<
           Tags::div,

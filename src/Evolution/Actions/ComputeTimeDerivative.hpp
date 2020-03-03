@@ -48,7 +48,7 @@ namespace Actions {
  *
  * DataBox changes:
  * - Modifies:
- *   - `db::add_tag_prefix<step_prefix, variables_tag>`
+ *   - `TimeDerivativeComputer::return_tags<step_prefix>`
  */
 template <typename TimeDerivativeComputer>
 struct ComputeTimeDerivative {
@@ -62,16 +62,14 @@ struct ComputeTimeDerivative {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
-    using system = typename Metavariables::system;
     // Notes:
     // - dt_variables is not zeroed and the operator cannot assume this.
     // - We retrieve the `step_prefix` from the `Metavariables` (as opposed to
     // hard-coding `Tags::dt`) to retain consistency with other actions that do
     // the same (for instance `dg::Actions::ApplyFluxes` that is not specific to
     // evolution systems)
-    db::mutate_apply<db::split_tag<db::add_tag_prefix<
-                         Metavariables::temporal_id::template step_prefix,
-                         typename system::variables_tag>>,
+    db::mutate_apply<typename TimeDerivativeComputer::template return_tags<
+                         Metavariables::temporal_id::template step_prefix>,
                      typename TimeDerivativeComputer::argument_tags>(
         TimeDerivativeComputer{}, make_not_null(&box));
     return std::forward_as_tuple(std::move(box));

@@ -62,6 +62,9 @@ struct SystemBase {
   using variables_tag = Var;
 
   using ComputeTimeDerivative = struct {
+    template <template <class> class StepPrefix>
+    using return_tags = tmpl::list<db::add_tag_prefix<StepPrefix, Var>>;
+
     using argument_tags =
         tmpl::list<tmpl::conditional_t<has_primitive_and_conservative_vars,
                                        PrimitiveVar, Var>>;
