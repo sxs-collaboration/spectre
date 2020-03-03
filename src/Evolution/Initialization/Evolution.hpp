@@ -201,10 +201,7 @@ struct TimeStepperHistory {
 
   template <typename System>
   struct ComputeTags<System, true> {
-    using type = db::AddComputeTags<::Tags::DivVariablesCompute<
-        db::add_tag_prefix<::Tags::Flux, variables_tag, tmpl::size_t<dim>,
-                           Frame::Inertial>,
-        domain::Tags::InverseJacobian<dim, Frame::Logical, Frame::Inertial>>>;
+    using type = db::AddComputeTags<>;
   };
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
