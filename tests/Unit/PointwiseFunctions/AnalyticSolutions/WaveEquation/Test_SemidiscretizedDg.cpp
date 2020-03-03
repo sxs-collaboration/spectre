@@ -111,7 +111,7 @@ struct Component {
           tmpl::list<dg::Actions::ComputeNonconservativeBoundaryFluxes<
                          domain::Tags::InternalDirections<1>>,
                      dg::Actions::SendDataForFluxes<Metavariables>,
-                     Actions::ComputeTimeDerivative,
+                     Actions::ComputeTimeDerivative<ScalarWave::ComputeDuDt<1>>,
                      dg::Actions::ReceiveDataForFluxes<Metavariables>,
                      dg::Actions::ApplyFluxes>>>;
 };

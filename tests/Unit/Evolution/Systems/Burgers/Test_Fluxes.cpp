@@ -12,6 +12,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
+#include "Evolution/Conservative/ConservativeDuDt.hpp"
 #include "Evolution/Systems/Burgers/Fluxes.hpp"
 #include "Evolution/Systems/Burgers/System.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
@@ -57,7 +58,7 @@ SPECTRE_TEST_CASE("Unit.Burgers.Fluxes", "[Unit][Burgers]") {
   Burgers::Fluxes::apply(&get<flux_tag>(flux), get<Burgers::Tags::U>(vars));
   const auto div_flux = divergence(flux, mesh, identity);
   auto dudt = make_with_value<Scalar<DataVector>>(coords, 0.);
-  Burgers::System::compute_time_derivative::apply(
-      &dudt, get<Tags::div<flux_tag>>(div_flux));
+  ConservativeDuDt<Burgers::System>::apply(&dudt,
+                                           get<Tags::div<flux_tag>>(div_flux));
   CHECK_ITERABLE_APPROX(dudt, dudt_expected);
 }

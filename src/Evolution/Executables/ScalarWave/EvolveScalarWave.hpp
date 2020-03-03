@@ -149,7 +149,7 @@ struct EvolutionMetavars {
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
           domain::Tags::InternalDirections<Dim>>,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
-      Actions::ComputeTimeDerivative,
+      Actions::ComputeTimeDerivative<ScalarWave::ComputeDuDt<Dim>>,
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
           domain::Tags::BoundaryDirectionsInterior<Dim>>,
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,

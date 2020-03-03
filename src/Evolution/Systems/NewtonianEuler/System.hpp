@@ -7,7 +7,6 @@
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/Conservative/ConservativeDuDt.hpp"
 #include "Evolution/Systems/NewtonianEuler/Characteristics.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/NewtonianEuler/Fluxes.hpp"
@@ -59,8 +58,6 @@ struct System {
   using volume_fluxes = ComputeFluxes<Dim>;
 
   using volume_sources = ComputeSources<InitialDataType>;
-
-  using compute_time_derivative = ConservativeDuDt<System>;
 
   using sourced_variables =
       typename InitialDataType::source_term_type::sourced_variables;

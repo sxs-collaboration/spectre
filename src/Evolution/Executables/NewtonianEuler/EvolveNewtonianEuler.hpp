@@ -13,6 +13,7 @@
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"
 #include "Evolution/Actions/ComputeVolumeSources.hpp"
 #include "Evolution/ComputeTags.hpp"
+#include "Evolution/Conservative/ConservativeDuDt.hpp"
 #include "Evolution/Conservative/UpdateConservatives.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"
@@ -176,7 +177,7 @@ struct EvolutionMetavars {
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<has_source_terms, Actions::ComputeVolumeSources,
                           tmpl::list<>>,
-      Actions::ComputeTimeDerivative,
+      Actions::ComputeTimeDerivative<ConservativeDuDt<system>>,
       tmpl::conditional_t<
           evolution::is_analytic_solution_v<initial_data>,
           dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,

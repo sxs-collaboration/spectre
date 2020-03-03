@@ -40,7 +40,6 @@ struct ComputeDuDt {
 
 struct System {
   using variables_tag = var_tag;
-  using compute_time_derivative = ComputeDuDt;
 };
 
 using ElementIndexType = ElementIndex<2>;
@@ -56,9 +55,9 @@ struct component {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing,
-                             tmpl::list<Actions::ComputeTimeDerivative>>>;
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          tmpl::list<Actions::ComputeTimeDerivative<ComputeDuDt>>>>;
 };
 
 struct Metavariables {

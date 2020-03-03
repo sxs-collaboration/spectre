@@ -7,7 +7,6 @@
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/Conservative/ConservativeDuDt.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Characteristics.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Fluxes.hpp"
@@ -65,8 +64,6 @@ struct System {
   using volume_fluxes = ComputeFluxes<Dim>;
 
   using volume_sources = ComputeSources<Dim>;
-
-  using compute_time_derivative = ConservativeDuDt<System>;
 
   // source for TildeD is zero.
   using sourced_variables = tmpl::list<Tags::TildeTau, Tags::TildeS<Dim>>;

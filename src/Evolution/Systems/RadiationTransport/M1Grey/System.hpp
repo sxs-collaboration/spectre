@@ -7,7 +7,6 @@
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/Conservative/ConservativeDuDt.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Characteristics.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Fluxes.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Sources.hpp"
@@ -83,8 +82,6 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
   using volume_fluxes = ComputeFluxes<NeutrinoSpecies...>;
 
   using volume_sources = ComputeSources<NeutrinoSpecies...>;
-
-  using compute_time_derivative = ConservativeDuDt<System>;
 
   using sourced_variables =
       tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
