@@ -65,5 +65,6 @@ spectre_run_cmake() {
           -D MEMORY_ALLOCATOR=SYSTEM \
           -D BUILD_PYTHON_BINDINGS=on \
           -D CMAKE_CXX_LINK_FLAGS=-lstdc++ \
+          "$@" \
           $SPECTRE_HOME
 }

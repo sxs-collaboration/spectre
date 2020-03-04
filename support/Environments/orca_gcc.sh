@@ -59,5 +59,6 @@ spectre_run_cmake() {
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_Fortran_COMPILER=gfortran \
           -D PYTHON_EXECUTABLE=/share/apps/python/2.7.15/bin/python \
+          "$@" \
           $SPECTRE_HOME
 }

@@ -53,5 +53,5 @@ spectre_run_cmake() {
         return 1
     fi
     spectre_load_modules
-    cmake -D CMAKE_BUILD_TYPE=Release $SPECTRE_HOME
+    cmake -D CMAKE_BUILD_TYPE=Release "$@" $SPECTRE_HOME
 }

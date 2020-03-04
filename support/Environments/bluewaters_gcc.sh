@@ -333,5 +333,6 @@ spectre_run_cmake() {
           -D ENABLE_WARNINGS=OFF \
           -D CMAKE_EXE_LINKER_FLAGS="-I$BOOST_ROOT/include" \
           -D USE_PCH=OFF \
+          "$@" \
           $SPECTRE_HOME
 }
