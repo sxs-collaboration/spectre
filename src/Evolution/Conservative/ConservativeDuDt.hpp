@@ -17,6 +17,8 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
+namespace evolution {
+namespace dg {
 /// \ingroup ConservativeGroup
 /// \brief Calculate \f$\partial u/\partial t\f$ for a conservative system.
 ///
@@ -39,9 +41,9 @@ struct ConservativeDuDt {
       domain::Tags::Mesh<volume_dim>,
       domain::Tags::InverseJacobian<volume_dim, Frame::Logical,
                                     Frame::Inertial>,
-      db::add_tag_prefix<Tags::Flux, typename System::variables_tag,
+      db::add_tag_prefix<::Tags::Flux, typename System::variables_tag,
                          tmpl::size_t<volume_dim>, frame>,
-      db::add_tag_prefix<Tags::Source, typename System::variables_tag>>;
+      db::add_tag_prefix<::Tags::Source, typename System::variables_tag>>;
 
   template <template <class> class StepPrefix, typename... VarsTags, size_t Dim>
   static void apply(
@@ -50,12 +52,12 @@ struct ConservativeDuDt {
       const Mesh<Dim> mesh,
       const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
           inverse_jacobian,
-      const Variables<tmpl::list<
-          Tags::Flux<VarsTags, tmpl::size_t<Dim>, Frame::Inertial>...>>& fluxes,
-      const Variables<tmpl::list<Tags::Source<VarsTags>...>>&
+      const Variables<tmpl::list<::Tags::Flux<VarsTags, tmpl::size_t<Dim>,
+                                              Frame::Inertial>...>>& fluxes,
+      const Variables<tmpl::list<::Tags::Source<VarsTags>...>>&
           sources) noexcept {
-    const Variables<tmpl::list<
-        Tags::div<Tags::Flux<VarsTags, tmpl::size_t<Dim>, Frame::Inertial>>...>>
+    const Variables<tmpl::list<::Tags::div<
+        ::Tags::Flux<VarsTags, tmpl::size_t<Dim>, Frame::Inertial>>...>>
         div_fluxes = divergence(fluxes, mesh, inverse_jacobian);
 
     ASSERT(dt_vars->size() == div_fluxes.size(),
@@ -68,7 +70,7 @@ struct ConservativeDuDt {
     tmpl::for_each<typename System::sourced_variables>(
         [&dt_vars, &sources](auto tag_v) noexcept {
           using tag = typename decltype(tag_v)::type;
-          const auto& source = get<Tags::Source<tag>>(sources);
+          const auto& source = get<::Tags::Source<tag>>(sources);
           auto& dt_var = get<StepPrefix<tag>>(*dt_vars);
           ASSERT(source.size() == dt_var.size(),
                  "The source and the time derivative variable must have the "
@@ -80,3 +82,5 @@ struct ConservativeDuDt {
         });
   }
 };
+}  // namespace dg
+}  // namespace evolution

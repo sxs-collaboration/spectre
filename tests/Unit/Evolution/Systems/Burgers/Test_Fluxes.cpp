@@ -60,8 +60,8 @@ SPECTRE_TEST_CASE("Unit.Burgers.Fluxes", "[Unit][Burgers]") {
   Variables<tmpl::list<flux_tag>> flux(num_points);
   Burgers::Fluxes::apply(&get<flux_tag>(flux), get<Burgers::Tags::U>(vars));
   const auto div_flux = divergence(flux, mesh, identity);
-  ConservativeDuDt<Burgers::System>::apply(make_not_null(&dt_vars), mesh,
-                                           identity, flux, sources);
+  evolution::dg::ConservativeDuDt<Burgers::System>::apply(
+      make_not_null(&dt_vars), mesh, identity, flux, sources);
   CHECK_ITERABLE_APPROX(get<Tags::dt<Burgers::Tags::U>>(dt_vars),
                         dudt_expected);
 }

@@ -136,7 +136,8 @@ struct EvolutionMetavars {
   using step_actions = tmpl::flatten<tmpl::list<
       Actions::ComputeVolumeFluxes,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
-      Actions::ComputeTimeDerivative<ConservativeDuDt<Burgers::System>>,
+      Actions::ComputeTimeDerivative<
+          evolution::dg::ConservativeDuDt<Burgers::System>>,
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
