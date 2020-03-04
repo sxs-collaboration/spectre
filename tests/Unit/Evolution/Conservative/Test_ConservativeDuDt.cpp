@@ -20,6 +20,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Evolution/Conservative/ConservativeDuDt.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
@@ -117,60 +118,75 @@ using expected_argument_tags = tmpl::list<
                        typename System<SourcedVariables, Dim>::variables_tag>>;
 
 static_assert(
-    cpp17::is_same_v<
-        evolution::dg::ConservativeDuDt<System<tmpl::list<>, 1>>::argument_tags,
-        expected_argument_tags<tmpl::list<>, 1>>,
+    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
+                         System<tmpl::list<>, 1>,
+                         dg::Formulation::StrongInertial>::argument_tags,
+                     expected_argument_tags<tmpl::list<>, 1>>,
     "Failed testing ConservativeDuDt::argument_tags");
-static_assert(
-    cpp17::is_same_v<
-        evolution::dg::ConservativeDuDt<System<tmpl::list<>, 2>>::argument_tags,
-        expected_argument_tags<tmpl::list<>, 2>>,
-    "Failed testing ConservativeDuDt::argument_tags");
-static_assert(
-    cpp17::is_same_v<
-        evolution::dg::ConservativeDuDt<System<tmpl::list<>, 3>>::argument_tags,
-        expected_argument_tags<tmpl::list<>, 3>>,
-    "Failed testing ConservativeDuDt::argument_tags");
-static_assert(cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                                   System<tmpl::list<Var1>, 1>>::argument_tags,
-                               expected_argument_tags<tmpl::list<Var1>, 1>>,
-              "Failed testing ConservativeDuDt::argument_tags");
-static_assert(cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                                   System<tmpl::list<Var1>, 2>>::argument_tags,
-                               expected_argument_tags<tmpl::list<Var1>, 2>>,
-              "Failed testing ConservativeDuDt::argument_tags");
-static_assert(cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                                   System<tmpl::list<Var1>, 3>>::argument_tags,
-                               expected_argument_tags<tmpl::list<Var1>, 3>>,
-              "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
     cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<Var2<1>>, 1>>::argument_tags,
+                         System<tmpl::list<>, 2>,
+                         dg::Formulation::StrongInertial>::argument_tags,
+                     expected_argument_tags<tmpl::list<>, 2>>,
+    "Failed testing ConservativeDuDt::argument_tags");
+static_assert(
+    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
+                         System<tmpl::list<>, 3>,
+                         dg::Formulation::StrongInertial>::argument_tags,
+                     expected_argument_tags<tmpl::list<>, 3>>,
+    "Failed testing ConservativeDuDt::argument_tags");
+static_assert(
+    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
+                         System<tmpl::list<Var1>, 1>,
+                         dg::Formulation::StrongInertial>::argument_tags,
+                     expected_argument_tags<tmpl::list<Var1>, 1>>,
+    "Failed testing ConservativeDuDt::argument_tags");
+static_assert(
+    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
+                         System<tmpl::list<Var1>, 2>,
+                         dg::Formulation::StrongInertial>::argument_tags,
+                     expected_argument_tags<tmpl::list<Var1>, 2>>,
+    "Failed testing ConservativeDuDt::argument_tags");
+static_assert(
+    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
+                         System<tmpl::list<Var1>, 3>,
+                         dg::Formulation::StrongInertial>::argument_tags,
+                     expected_argument_tags<tmpl::list<Var1>, 3>>,
+    "Failed testing ConservativeDuDt::argument_tags");
+static_assert(
+    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
+                         System<tmpl::list<Var2<1>>, 1>,
+                         dg::Formulation::StrongInertial>::argument_tags,
                      expected_argument_tags<tmpl::list<Var2<1>>, 1>>,
     "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
     cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<Var2<2>>, 2>>::argument_tags,
+                         System<tmpl::list<Var2<2>>, 2>,
+                         dg::Formulation::StrongInertial>::argument_tags,
                      expected_argument_tags<tmpl::list<Var2<2>>, 2>>,
     "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
     cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<Var2<3>>, 3>>::argument_tags,
+                         System<tmpl::list<Var2<3>>, 3>,
+                         dg::Formulation::StrongInertial>::argument_tags,
                      expected_argument_tags<tmpl::list<Var2<3>>, 3>>,
     "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
     cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<Var1, Var2<1>>, 1>>::argument_tags,
+                         System<tmpl::list<Var1, Var2<1>>, 1>,
+                         dg::Formulation::StrongInertial>::argument_tags,
                      expected_argument_tags<tmpl::list<Var1, Var2<1>>, 1>>,
     "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
     cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<Var1, Var2<2>>, 2>>::argument_tags,
+                         System<tmpl::list<Var1, Var2<2>>, 2>,
+                         dg::Formulation::StrongInertial>::argument_tags,
                      expected_argument_tags<tmpl::list<Var1, Var2<2>>, 2>>,
     "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
     cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<Var1, Var2<3>>, 3>>::argument_tags,
+                         System<tmpl::list<Var1, Var2<3>>, 3>,
+                         dg::Formulation::StrongInertial>::argument_tags,
                      expected_argument_tags<tmpl::list<Var1, Var2<3>>, 3>>,
     "Failed testing ConservativeDuDt::argument_tags");
 
@@ -200,7 +216,7 @@ auto make_affine_map<3>() noexcept {
                Affine{-1.0, 1.0, 2.3, 2.8}});
 }
 
-template <size_t Dim>
+template <dg::Formulation DgFormulation, size_t Dim>
 void test(
     const Mesh<Dim>& mesh,
     std::array<std::unique_ptr<MathFunction<1>>, Dim> functions) noexcept {
@@ -235,8 +251,10 @@ void test(
             Functions<FluxTag>::divergence_of_flux(f, inertial_coords);
       });
 
-  evolution::dg::ConservativeDuDt<System<tmpl::list<>, Dim>>::apply(
-      make_not_null(&dt_vars), mesh, inverse_jacobian, fluxes, sources);
+  evolution::dg::ConservativeDuDt<System<tmpl::list<>, Dim>,
+                                  DgFormulation>::apply(make_not_null(&dt_vars),
+                                                        mesh, inverse_jacobian,
+                                                        fluxes, sources);
   CHECK(get(get<Tags::dt<Var1>>(dt_vars)) ==
         -get(get<Tags::div<Flux1>>(expected_div_fluxes)));
   for (size_t i = 0; i < Dim; ++i) {
@@ -247,8 +265,10 @@ void test(
   // Test with Tags::Source<Var1>
   get(get<Tags::Source<Var1>>(sources)) = 0.9 * get<0>(inertial_coords);
 
-  evolution::dg::ConservativeDuDt<System<tmpl::list<Var1>, Dim>>::apply(
-      make_not_null(&dt_vars), mesh, inverse_jacobian, fluxes, sources);
+  evolution::dg::ConservativeDuDt<System<tmpl::list<Var1>, Dim>,
+                                  DgFormulation>::apply(make_not_null(&dt_vars),
+                                                        mesh, inverse_jacobian,
+                                                        fluxes, sources);
   CHECK(get(get<Tags::dt<Var1>>(dt_vars)) ==
         -get(get<Tags::div<Flux1>>(expected_div_fluxes)) +
             get(get<Tags::Source<Var1>>(sources)));
@@ -263,8 +283,10 @@ void test(
         0.9 * (i + 1.0) * inertial_coords.get(i);
   }
 
-  evolution::dg::ConservativeDuDt<System<tmpl::list<Var2<Dim>>, Dim>>::apply(
-      make_not_null(&dt_vars), mesh, inverse_jacobian, fluxes, sources);
+  evolution::dg::ConservativeDuDt<System<tmpl::list<Var2<Dim>>, Dim>,
+                                  DgFormulation>::apply(make_not_null(&dt_vars),
+                                                        mesh, inverse_jacobian,
+                                                        fluxes, sources);
   CHECK(get(get<Tags::dt<Var1>>(dt_vars)) ==
         -get(get<Tags::div<Flux1>>(expected_div_fluxes)));
   for (size_t i = 0; i < Dim; ++i) {
@@ -274,8 +296,10 @@ void test(
   }
 
   // Test with both sources
-  evolution::dg::ConservativeDuDt<System<tmpl::list<Var1, Var2<Dim>>, Dim>>::
-      apply(make_not_null(&dt_vars), mesh, inverse_jacobian, fluxes, sources);
+  evolution::dg::ConservativeDuDt<System<tmpl::list<Var1, Var2<Dim>>, Dim>,
+                                  DgFormulation>::apply(make_not_null(&dt_vars),
+                                                        mesh, inverse_jacobian,
+                                                        fluxes, sources);
   CHECK(get(get<Tags::dt<Var1>>(dt_vars)) ==
         -get(get<Tags::div<Flux1>>(expected_div_fluxes)) +
             get(get<Tags::Source<Var1>>(sources)));
@@ -293,16 +317,19 @@ SPECTRE_TEST_CASE("Unit.Evolution.ConservativeDuDt", "[Unit][Evolution]") {
 
   const Mesh<1> mesh_1d{num_points, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  test(mesh_1d, {{std::make_unique<MathFunctions::PowX>(num_points - 1)}});
+  test<dg::Formulation::StrongInertial>(
+      mesh_1d, {{std::make_unique<MathFunctions::PowX>(num_points - 1)}});
 
   const Mesh<2> mesh_2d{num_points, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  test(mesh_2d, {{std::make_unique<MathFunctions::PowX>(num_points - 1),
-                  std::make_unique<MathFunctions::PowX>(num_points - 1)}});
+  test<dg::Formulation::StrongInertial>(
+      mesh_2d, {{std::make_unique<MathFunctions::PowX>(num_points - 1),
+                 std::make_unique<MathFunctions::PowX>(num_points - 1)}});
 
   const Mesh<3> mesh_3d{num_points, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
-  test(mesh_3d, {{std::make_unique<MathFunctions::PowX>(num_points - 1),
-                  std::make_unique<MathFunctions::PowX>(num_points - 1),
-                  std::make_unique<MathFunctions::PowX>(num_points - 1)}});
+  test<dg::Formulation::StrongInertial>(
+      mesh_3d, {{std::make_unique<MathFunctions::PowX>(num_points - 1),
+                 std::make_unique<MathFunctions::PowX>(num_points - 1),
+                 std::make_unique<MathFunctions::PowX>(num_points - 1)}});
 }
