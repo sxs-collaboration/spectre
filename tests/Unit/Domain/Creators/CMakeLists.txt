@@ -1,6 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory(Python)
 add_subdirectory(TimeDependence)
 
 set(LIBRARY "Test_DomainCreators")
