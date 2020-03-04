@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_BoundaryCommunication.cpp
   Test_CalculateScriInputs.cpp
   Test_CharacteristicEvolutionBondiCalculations.cpp
+  Test_InitializeFirstHypersurface.cpp
   Test_InsertInterpolationScriData.cpp
   Test_FilterSwshVolumeQuantity.cpp
   Test_InitializeCharacteristicEvolution.cpp
