@@ -23,13 +23,13 @@ namespace Minmod_detail {
 
 template <size_t VolumeDim>
 bool minmod_limited_slopes(
-    const gsl::not_null<double*> u_mean,
-    const gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
     const gsl::not_null<DataVector*> u_lin_buffer,
     const gsl::not_null<BufferWrapper<VolumeDim>*> buffer,
+    const gsl::not_null<double*> u_mean,
+    const gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
     const Limiters::MinmodType minmod_type, const double tvb_constant,
-    const DataVector& u, const Element<VolumeDim>& element,
-    const Mesh<VolumeDim>& mesh,
+    const DataVector& u, const Mesh<VolumeDim>& mesh,
+    const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
@@ -131,12 +131,12 @@ bool minmod_limited_slopes(
 
 #define INSTANTIATE(_, data)                                       \
   template bool minmod_limited_slopes<DIM(data)>(                  \
-      const gsl::not_null<double*>,                                \
-      const gsl::not_null<std::array<double, DIM(data)>*>,         \
       const gsl::not_null<DataVector*>,                            \
       const gsl::not_null<BufferWrapper<DIM(data)>*>,              \
+      const gsl::not_null<double*>,                                \
+      const gsl::not_null<std::array<double, DIM(data)>*>,         \
       const Limiters::MinmodType, const double, const DataVector&, \
-      const Element<DIM(data)>&, const Mesh<DIM(data)>&,           \
+      const Mesh<DIM(data)>&, const Element<DIM(data)>&,           \
       const std::array<double, DIM(data)>&,                        \
       const DirectionMap<DIM(data), double>&,                      \
       const DirectionMap<DIM(data), double>&) noexcept;

@@ -40,11 +40,11 @@ namespace Minmod_detail {
 // Implements the minmod limiter for one Tensor<DataVector> at a time.
 template <size_t VolumeDim, typename Tag, typename PackagedData>
 bool limit_one_tensor(
-    const gsl::not_null<db::item_type<Tag>*> tensor,
     const gsl::not_null<DataVector*> u_lin_buffer,
     const gsl::not_null<BufferWrapper<VolumeDim>*> buffer,
+    const gsl::not_null<db::item_type<Tag>*> tensor,
     const Limiters::MinmodType minmod_type, const double tvb_constant,
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<
@@ -79,9 +79,10 @@ bool limit_one_tensor(
     double u_mean;
     std::array<double, VolumeDim> u_limited_slopes{};
     const bool reduce_slopes = minmod_limited_slopes(
-        make_not_null(&u_mean), make_not_null(&u_limited_slopes), u_lin_buffer,
-        buffer, minmod_type, tvb_constant, u, element, mesh, element_size,
-        effective_neighbor_means, effective_neighbor_sizes);
+        u_lin_buffer, buffer, make_not_null(&u_mean),
+        make_not_null(&u_limited_slopes), minmod_type, tvb_constant, u, mesh,
+        element, element_size, effective_neighbor_means,
+        effective_neighbor_sizes);
 
     if (reduce_slopes or using_linear_limiter_on_non_linear_mesh) {
       u = u_mean;
@@ -144,7 +145,7 @@ void Minmod<VolumeDim, tmpl::list<Tags...>>::package_data(
 template <size_t VolumeDim, typename... Tags>
 bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
     const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<
@@ -166,8 +167,8 @@ bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
   ](auto tag, const auto tensor) noexcept {
     limiter_activated =
         Minmod_detail::limit_one_tensor<VolumeDim, decltype(tag)>(
-            tensor, &u_lin_buffer, &buffer, minmod_type_, tvb_constant_,
-            element, mesh, logical_coords, element_size, neighbor_data) or
+            &u_lin_buffer, &buffer, tensor, minmod_type_, tvb_constant_, mesh,
+            element, logical_coords, element_size, neighbor_data) or
         limiter_activated;
     return '0';
   };
