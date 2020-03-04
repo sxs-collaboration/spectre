@@ -8,9 +8,11 @@
 
 #include <array>
 #include <cstddef>
+#include <memory>
 #include <vector>
 
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -70,8 +72,18 @@ class Brick : public DomainCreator<3> {
     static constexpr OptionString help = {
         "Initial number of grid points in [x,y,z]."};
   };
-  using options = tmpl::list<LowerBound, UpperBound, IsPeriodicIn,
-                             InitialRefinement, InitialGridPoints>;
+
+  struct TimeDependence {
+    using type =
+        std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>;
+    static constexpr OptionString help = {
+        "The time dependence of the moving mesh domain."};
+    static type default_value() noexcept;
+  };
+
+  using options =
+      tmpl::list<LowerBound, UpperBound, IsPeriodicIn, InitialRefinement,
+                 InitialGridPoints, TimeDependence>;
 
   static constexpr OptionString help{"Creates a 3D brick."};
 
@@ -80,7 +92,8 @@ class Brick : public DomainCreator<3> {
         typename IsPeriodicIn::type is_periodic_in_xyz,
         typename InitialRefinement::type initial_refinement_level_xyz,
         typename InitialGridPoints::type initial_number_of_grid_points_in_xyz,
-        const OptionContext& context = {}) noexcept;
+        std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+            time_dependence = nullptr) noexcept;
 
   Brick() = default;
   Brick(const Brick&) = delete;
@@ -96,12 +109,18 @@ class Brick : public DomainCreator<3> {
   std::vector<std::array<size_t, 3>> initial_refinement_levels() const
       noexcept override;
 
+  auto functions_of_time() const noexcept -> std::unordered_map<
+      std::string,
+      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
+
  private:
   typename LowerBound::type lower_xyz_{};
   typename UpperBound::type upper_xyz_{};
   typename IsPeriodicIn::type is_periodic_in_xyz_{};
   typename InitialRefinement::type initial_refinement_level_xyz_{};
   typename InitialGridPoints::type initial_number_of_grid_points_in_xyz_{};
+  std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+      time_dependence_;
 };
 }  // namespace creators
 }  // namespace domain

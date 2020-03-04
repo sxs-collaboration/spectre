@@ -28,5 +28,6 @@ target_link_libraries(
   INTERFACE CoordinateMaps
   INTERFACE DataStructures
   INTERFACE Domain
+  INTERFACE DomainTimeDependence
   INTERFACE ErrorHandling
   )
