@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Test_RequestBoundaryData.cpp
   Test_ScriObserveInterpolated.cpp
   Test_TimeManagement.cpp
+  Test_UpdateGauge.cpp
   )
 
 add_test_library(
