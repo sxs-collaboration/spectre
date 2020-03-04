@@ -84,12 +84,15 @@ std::string get_paths() noexcept { return "Not supported in python."; }
 // Destructor will be called in Python, but doesn't need to do anything
 PUP::able::~able() = default;
 
-// gcc suggests to mark these functions `noreturn`, but they are declared in
-// pup.h
-#if defined(__GNUC__) && !defined(__clang__)
+// gcc and clang suggest to mark these functions `noreturn`, but they are
+// declared in pup.h
 #pragma GCC diagnostic push
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
 #endif  // defined(__GNUC__) && !defined(__clang__)
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wmissing-noreturn"
+#endif  // __clang__
 
 void PUP::able::pup(PUP::er& /*p*/) {
   throw std::runtime_error{
@@ -110,8 +113,12 @@ PUP::able* PUP::able::clone() const {
       "Charm++ and is not intended to be called."};
 }
 
-#if defined(__GNUC__) && !defined(__clang__)
+void pup_bytes(pup_er /*p*/, void* /*ptr*/, size_t /*nBytes*/) {
+  throw std::runtime_error{
+      "The function 'pup_bytes' is provided for compatibility with "
+      "Charm++ and is not intended to be called."};
+}
+
 #pragma GCC diagnostic pop
-#endif  // defined(__GNUC__) && !defined(__clang__)
 
 /// \endcond
