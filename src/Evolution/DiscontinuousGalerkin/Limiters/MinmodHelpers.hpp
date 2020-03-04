@@ -113,7 +113,7 @@ DirectionMap<VolumeDim, double> compute_effective_neighbor_sizes(
 // specifying the tensor to work with.
 template <typename Tag, size_t VolumeDim, typename PackagedData>
 DirectionMap<VolumeDim, double> compute_effective_neighbor_means(
-    const Element<VolumeDim>& element, const size_t tensor_storage_index,
+    const size_t tensor_storage_index, const Element<VolumeDim>& element,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
@@ -155,10 +155,10 @@ DirectionMap<VolumeDim, double> compute_effective_neighbor_means(
 template <size_t VolumeDim>
 double effective_difference_to_neighbor(
     double u_mean, const Element<VolumeDim>& element,
-    const std::array<double, VolumeDim>& element_size,
+    const std::array<double, VolumeDim>& element_size, size_t dim,
+    const Side& side,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes, size_t dim,
-    const Side& side) noexcept;
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept;
 
 }  // namespace Minmod_detail
 }  // namespace Limiters

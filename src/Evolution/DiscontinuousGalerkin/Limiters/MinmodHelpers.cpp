@@ -70,10 +70,10 @@ BufferWrapper<VolumeDim>::BufferWrapper(const Mesh<VolumeDim>& mesh) noexcept
 template <size_t VolumeDim>
 double effective_difference_to_neighbor(
     const double u_mean, const Element<VolumeDim>& element,
-    const std::array<double, VolumeDim>& element_size,
+    const std::array<double, VolumeDim>& element_size, const size_t dim,
+    const Side& side,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes,
-    const size_t dim, const Side& side) noexcept {
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
   const auto& externals = element.external_boundaries();
   const auto dir = Direction<VolumeDim>(dim, side);
   const bool has_neighbors = (externals.find(dir) == externals.end());
@@ -96,8 +96,8 @@ double effective_difference_to_neighbor(
   template class Minmod_detail::BufferWrapper<DIM(data)>;                      \
   template double effective_difference_to_neighbor<DIM(data)>(                 \
       double, const Element<DIM(data)>&, const std::array<double, DIM(data)>&, \
-      const DirectionMap<DIM(data), double>&,                                  \
-      const DirectionMap<DIM(data), double>&, size_t, const Side&) noexcept;
+      size_t, const Side&, const DirectionMap<DIM(data), double>&,             \
+      const DirectionMap<DIM(data), double>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

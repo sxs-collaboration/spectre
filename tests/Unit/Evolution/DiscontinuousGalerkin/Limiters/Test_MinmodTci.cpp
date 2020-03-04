@@ -65,14 +65,14 @@ auto make_six_neighbors(const std::array<double, 6>& values) noexcept {
 template <size_t VolumeDim>
 void test_tci_detection(
     const bool expected_detection, const double tvb_constant,
-    const DataVector& input, const Element<VolumeDim>& element,
-    const Mesh<VolumeDim>& mesh,
+    const DataVector& input, const Mesh<VolumeDim>& mesh,
+    const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
   Limiters::Minmod_detail::BufferWrapper<VolumeDim> buffer(mesh);
   const bool detection = Limiters::Tci::tvb_minmod_indicator(
-      make_not_null(&buffer), tvb_constant, input, element, mesh, element_size,
+      make_not_null(&buffer), tvb_constant, input, mesh, element, element_size,
       effective_neighbor_means, effective_neighbor_sizes);
   CHECK(detection == expected_detection);
 }
@@ -92,7 +92,7 @@ void test_tci_on_linear_function(const size_t number_of_grid_points) noexcept {
     const double h = 1.2;
     const double tvb_constant = tvb_scale / square(h);
     const auto element_size = make_array<1>(h);
-    test_tci_detection(expected, tvb_constant, input, element, mesh,
+    test_tci_detection(expected, tvb_constant, input, mesh, element,
                        element_size, make_two_neighbors(left_mean, right_mean),
                        make_two_neighbors(h, h));
   };
@@ -140,7 +140,7 @@ void test_tci_on_quadratic_function(
     const double h = 1.2;
     const double tvb_constant = tvb_scale / square(h);
     const auto element_size = make_array<1>(h);
-    test_tci_detection(expected, tvb_constant, input, element, mesh,
+    test_tci_detection(expected, tvb_constant, input, mesh, element,
                        element_size, make_two_neighbors(left_mean, right_mean),
                        make_two_neighbors(h, h));
   };
@@ -215,7 +215,7 @@ void test_tci_at_boundary(const size_t number_of_grid_points) noexcept {
       TestHelpers::Limiters::make_element<1>({{Direction<1>::lower_xi()}});
   for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
     test_tci_detection(
-        true, tvb_constant, input, element_at_lower_xi_boundary, mesh,
+        true, tvb_constant, input, mesh, element_at_lower_xi_boundary,
         element_size, {{std::make_pair(Direction<1>::upper_xi(), neighbor)}},
         {{std::make_pair(Direction<1>::upper_xi(), element_size[0])}});
   }
@@ -225,7 +225,7 @@ void test_tci_at_boundary(const size_t number_of_grid_points) noexcept {
       TestHelpers::Limiters::make_element<1>({{Direction<1>::upper_xi()}});
   for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
     test_tci_detection(
-        true, tvb_constant, input, element_at_upper_xi_boundary, mesh,
+        true, tvb_constant, input, mesh, element_at_upper_xi_boundary,
         element_size, {{std::make_pair(Direction<1>::lower_xi(), neighbor)}},
         {{std::make_pair(Direction<1>::lower_xi(), element_size[0])}});
   }
@@ -246,8 +246,8 @@ void test_tci_with_different_size_neighbor(
       const bool expected_detection, const DataVector& local_input,
       const double left, const double right, const double left_size,
       const double right_size) noexcept {
-    test_tci_detection(expected_detection, tvb_constant, local_input, element,
-                       mesh, element_size, make_two_neighbors(left, right),
+    test_tci_detection(expected_detection, tvb_constant, local_input, mesh,
+                       element, element_size, make_two_neighbors(left, right),
                        make_two_neighbors(left_size, right_size));
   };
 
@@ -309,8 +309,9 @@ void test_tvb_minmod_tci_2d() noexcept {
   const auto test_tci = [&tvb_constant, &element, &mesh, &element_size ](
       const bool expected_detection, const DataVector& local_input,
       const std::array<double, 4>& neighbor_means) noexcept {
-    test_tci_detection(expected_detection, tvb_constant, local_input, element,
-                       mesh, element_size, make_four_neighbors(neighbor_means),
+    test_tci_detection(expected_detection, tvb_constant, local_input, mesh,
+                       element, element_size,
+                       make_four_neighbors(neighbor_means),
                        make_four_neighbors(make_array<4>(2.0)));
   };
 
@@ -351,8 +352,9 @@ void test_tvb_minmod_tci_3d() noexcept {
   const auto test_tci = [&tvb_constant, &element, &mesh, &element_size ](
       const bool expected_detection, const DataVector& local_input,
       const std::array<double, 6>& neighbor_means) noexcept {
-    test_tci_detection(expected_detection, tvb_constant, local_input, element,
-                       mesh, element_size, make_six_neighbors(neighbor_means),
+    test_tci_detection(expected_detection, tvb_constant, local_input, mesh,
+                       element, element_size,
+                       make_six_neighbors(neighbor_means),
                        make_six_neighbors(make_array<6>(2.0)));
   };
 
@@ -479,8 +481,8 @@ void test_tvb_minmod_tci_several_tensors() noexcept {
   const bool trigger_base_case =
       Limiters::Tci::tvb_minmod_indicator<3, TestPackagedData, ScalarTag,
                                           VectorTag<3>>(
-          local_scalar, local_vector, neighbor_data, tvb_constant, element,
-          mesh, element_size);
+          tvb_constant, local_scalar, local_vector, mesh, element, element_size,
+          neighbor_data);
   CHECK_FALSE(trigger_base_case);
 
   // Case where the scalar triggers limiting
@@ -488,8 +490,8 @@ void test_tvb_minmod_tci_several_tensors() noexcept {
   const bool trigger_scalar =
       Limiters::Tci::tvb_minmod_indicator<3, TestPackagedData, ScalarTag,
                                           VectorTag<3>>(
-          local_scalar, local_vector, neighbor_data, tvb_constant, element,
-          mesh, element_size);
+          tvb_constant, local_scalar, local_vector, mesh, element, element_size,
+          neighbor_data);
   CHECK(trigger_scalar);
 
   // Case where the vector x-component triggers limiting
@@ -498,8 +500,8 @@ void test_tvb_minmod_tci_several_tensors() noexcept {
   const bool trigger_vector_x =
       Limiters::Tci::tvb_minmod_indicator<3, TestPackagedData, ScalarTag,
                                           VectorTag<3>>(
-          local_scalar, local_vector, neighbor_data, tvb_constant, element,
-          mesh, element_size);
+          tvb_constant, local_scalar, local_vector, mesh, element, element_size,
+          neighbor_data);
   CHECK(trigger_vector_x);
 
   // Case where the vector y-component triggers limiting
@@ -508,8 +510,8 @@ void test_tvb_minmod_tci_several_tensors() noexcept {
   const bool trigger_vector_y =
       Limiters::Tci::tvb_minmod_indicator<3, TestPackagedData, ScalarTag,
                                           VectorTag<3>>(
-          local_scalar, local_vector, neighbor_data, tvb_constant, element,
-          mesh, element_size);
+          tvb_constant, local_scalar, local_vector, mesh, element, element_size,
+          neighbor_data);
   CHECK(trigger_vector_y);
 
   // Case where the vector z-component triggers limiting
@@ -518,8 +520,8 @@ void test_tvb_minmod_tci_several_tensors() noexcept {
   const bool trigger_vector_z =
       Limiters::Tci::tvb_minmod_indicator<3, TestPackagedData, ScalarTag,
                                           VectorTag<3>>(
-          local_scalar, local_vector, neighbor_data, tvb_constant, element,
-          mesh, element_size);
+          tvb_constant, local_scalar, local_vector, mesh, element, element_size,
+          neighbor_data);
   CHECK(trigger_vector_z);
 }
 

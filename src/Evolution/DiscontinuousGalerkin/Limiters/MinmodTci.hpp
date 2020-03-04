@@ -39,8 +39,8 @@ namespace Tci {
 template <size_t VolumeDim>
 bool tvb_minmod_indicator(
     gsl::not_null<Minmod_detail::BufferWrapper<VolumeDim>*> buffer,
-    double tvb_constant, const DataVector& u, const Element<VolumeDim>& element,
-    const Mesh<VolumeDim>& mesh,
+    double tvb_constant, const DataVector& u, const Mesh<VolumeDim>& mesh,
+    const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept;
@@ -53,14 +53,13 @@ bool tvb_minmod_indicator(
 // - a variable `element_size` that is a `std::array<double, VolumeDim>`
 template <size_t VolumeDim, typename PackagedData, typename... Tags>
 bool tvb_minmod_indicator(
-    const db::const_item_type<Tags>&... tensors,
+    const double tvb_constant, const db::const_item_type<Tags>&... tensors,
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
+    const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data,
-    const double tvb_constant, const Element<VolumeDim>& element,
-    const Mesh<VolumeDim>& mesh,
-    const std::array<double, VolumeDim>& element_size) noexcept {
+        neighbor_data) noexcept {
   Minmod_detail::BufferWrapper<VolumeDim> buffer(mesh);
   const auto effective_neighbor_sizes =
       Minmod_detail::compute_effective_neighbor_sizes(element, neighbor_data);
@@ -81,11 +80,11 @@ bool tvb_minmod_indicator(
          ++tensor_storage_index) {
       const auto effective_neighbor_means =
           Minmod_detail::compute_effective_neighbor_means<decltype(tag)>(
-              element, tensor_storage_index, neighbor_data);
+              tensor_storage_index, element, neighbor_data);
 
       const DataVector& u = tensor[tensor_storage_index];
       const bool component_needs_limiting = tvb_minmod_indicator(
-          make_not_null(&buffer), tvb_constant, u, element, mesh, element_size,
+          make_not_null(&buffer), tvb_constant, u, mesh, element, element_size,
           effective_neighbor_means, effective_neighbor_sizes);
 
       if (component_needs_limiting) {

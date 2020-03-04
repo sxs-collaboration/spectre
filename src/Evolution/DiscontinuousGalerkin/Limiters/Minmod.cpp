@@ -52,16 +52,16 @@ bool minmod_limited_slopes(
     &u_mean, &element, &element_size, &effective_neighbor_means, &
     effective_neighbor_sizes
   ](const size_t dim, const Side& side) noexcept {
-    return effective_difference_to_neighbor(
-        *u_mean, element, element_size, effective_neighbor_means,
-        effective_neighbor_sizes, dim, side);
+    return effective_difference_to_neighbor(*u_mean, element, element_size, dim,
+                                            side, effective_neighbor_means,
+                                            effective_neighbor_sizes);
   };
 
   // The LambdaPiN limiter calls a simple troubled-cell indicator to avoid
   // limiting solutions that appear smooth:
   if (minmod_type == Limiters::MinmodType::LambdaPiN) {
     const bool u_needs_limiting = Tci::tvb_minmod_indicator(
-        buffer, tvb_constant, u, element, mesh, element_size,
+        buffer, tvb_constant, u, mesh, element, element_size,
         effective_neighbor_means, effective_neighbor_sizes);
 
     if (not u_needs_limiting) {

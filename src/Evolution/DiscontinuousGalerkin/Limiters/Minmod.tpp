@@ -73,7 +73,7 @@ bool limit_one_tensor(
     // all different neighbors in that direction. This produces one effective
     // neighbor per direction.
     const auto effective_neighbor_means =
-        compute_effective_neighbor_means<Tag>(element, i, neighbor_data);
+        compute_effective_neighbor_means<Tag>(i, element, neighbor_data);
 
     DataVector& u = (*tensor)[i];
     double u_mean;

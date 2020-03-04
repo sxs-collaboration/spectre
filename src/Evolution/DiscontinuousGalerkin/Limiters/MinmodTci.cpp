@@ -20,8 +20,8 @@ namespace Tci {
 template <size_t VolumeDim>
 bool tvb_minmod_indicator(
     const gsl::not_null<Minmod_detail::BufferWrapper<VolumeDim>*> buffer,
-    const double tvb_constant, const DataVector& u,
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+    const double tvb_constant, const DataVector& u, const Mesh<VolumeDim>& mesh,
+    const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
@@ -38,8 +38,8 @@ bool tvb_minmod_indicator(
     effective_neighbor_sizes
   ](const size_t dim, const Side& side) noexcept {
     return Minmod_detail::effective_difference_to_neighbor(
-        u_mean, element, element_size, effective_neighbor_means,
-        effective_neighbor_sizes, dim, side);
+        u_mean, element, element_size, dim, side, effective_neighbor_means,
+        effective_neighbor_sizes);
   };
 
   for (size_t d = 0; d < VolumeDim; ++d) {
@@ -77,12 +77,12 @@ bool tvb_minmod_indicator(
 // Explicit instantiations
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                         \
-  template bool tvb_minmod_indicator<DIM(data)>(                     \
-      const gsl::not_null<Minmod_detail::BufferWrapper<DIM(data)>*>, \
-      const double, const DataVector&, const Element<DIM(data)>&,    \
-      const Mesh<DIM(data)>&, const std::array<double, DIM(data)>&,  \
-      const DirectionMap<DIM(data), double>&,                        \
+#define INSTANTIATE(_, data)                                           \
+  template bool tvb_minmod_indicator<DIM(data)>(                       \
+      const gsl::not_null<Minmod_detail::BufferWrapper<DIM(data)>*>,   \
+      const double, const DataVector&, const Mesh<DIM(data)>&,         \
+      const Element<DIM(data)>&, const std::array<double, DIM(data)>&, \
+      const DirectionMap<DIM(data), double>&,                          \
       const DirectionMap<DIM(data), double>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))

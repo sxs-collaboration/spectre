@@ -296,8 +296,8 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
   const double tci_tvb_constant = 0.0;
   const bool cell_is_troubled =
       Tci::tvb_minmod_indicator<VolumeDim, PackagedData, Tags...>(
-          (*tensors)..., neighbor_data, tci_tvb_constant, element, mesh,
-          element_size);
+          tci_tvb_constant, (*tensors)..., mesh, element, element_size,
+          neighbor_data);
 
   if (not cell_is_troubled) {
     // No limiting is needed
