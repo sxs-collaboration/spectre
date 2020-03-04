@@ -107,4 +107,9 @@ void bench_all_gradient(benchmark::State& state) {  // NOLINT
 BENCHMARK(bench_all_gradient);  // NOLINT
 }  // namespace
 
+// Ignore the warning about an extra ';' because some versions of benchmark
+// require it
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
 BENCHMARK_MAIN();
+#pragma GCC diagnostic pop
