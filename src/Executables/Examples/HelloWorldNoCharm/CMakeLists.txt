@@ -13,7 +13,6 @@ target_link_libraries(
   ${EXECUTABLE}
   DataStructures
   Informer
-  ${YAMLCPP_LIBRARIES}
   )
 
 set_target_properties(

@@ -30,4 +30,5 @@ target_link_libraries(
   INTERFACE Domain
   INTERFACE DomainTimeDependence
   INTERFACE ErrorHandling
+  INTERFACE Options
   )
