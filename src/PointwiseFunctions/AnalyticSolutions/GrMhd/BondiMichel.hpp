@@ -6,16 +6,12 @@
 #include <limits>
 #include <pup.h>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
-#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -225,10 +221,8 @@ class BondiMichel : public MarkAsAnalyticSolution {
   BondiMichel& operator=(BondiMichel&& /*rhs*/) noexcept = default;
   ~BondiMichel() = default;
 
-  BondiMichel(Mass::type mass, SonicRadius::type sonic_radius,
-              SonicDensity::type sonic_density,
-              PolytropicExponent::type polytropic_exponent,
-              MagFieldStrength::type mag_field_strength) noexcept;
+  BondiMichel(double mass, double sonic_radius, double sonic_density,
+              double polytropic_exponent, double mag_field_strength) noexcept;
 
   /// Retrieve a collection of  hydro variables at `(x, t)`
   template <typename DataType, typename... Tags>
@@ -301,22 +295,16 @@ class BondiMichel : public MarkAsAnalyticSolution {
       -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<
-          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>> /*meta*/,
-      const IntermediateVars<DataType>& vars) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
+                 const IntermediateVars<DataType>& vars) const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>> /*meta*/,
-      const IntermediateVars<DataType>& vars) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
+                 const IntermediateVars<DataType>& vars) const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(
@@ -373,15 +361,11 @@ class BondiMichel : public MarkAsAnalyticSolution {
         kerr_schild_soln{};
   };
 
-  Mass::type mass_ = std::numeric_limits<double>::signaling_NaN();
-  SonicRadius::type sonic_radius_ =
-      std::numeric_limits<double>::signaling_NaN();
-  SonicDensity::type sonic_density_ =
-      std::numeric_limits<double>::signaling_NaN();
-  PolytropicExponent::type polytropic_exponent_ =
-      std::numeric_limits<double>::signaling_NaN();
-  MagFieldStrength::type mag_field_strength_ =
-      std::numeric_limits<double>::signaling_NaN();
+  double mass_ = std::numeric_limits<double>::signaling_NaN();
+  double sonic_radius_ = std::numeric_limits<double>::signaling_NaN();
+  double sonic_density_ = std::numeric_limits<double>::signaling_NaN();
+  double polytropic_exponent_ = std::numeric_limits<double>::signaling_NaN();
+  double mag_field_strength_ = std::numeric_limits<double>::signaling_NaN();
   double sonic_fluid_speed_squared_ =
       std::numeric_limits<double>::signaling_NaN();
   double sonic_sound_speed_squared_ =

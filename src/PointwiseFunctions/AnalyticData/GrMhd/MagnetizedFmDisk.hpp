@@ -12,7 +12,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
 #include "PointwiseFunctions/GeneralRelativity/KerrSchildCoords.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -178,18 +178,15 @@ class MagnetizedFmDisk
 
  private:
   template <typename DataType, bool NeedSpacetime>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>> /*meta*/,
-      const IntermediateVariables<DataType, NeedSpacetime>& vars,
-      size_t index) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
+                 const IntermediateVariables<DataType, NeedSpacetime>& vars,
+                 size_t index) const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
-  tnsr::I<DataType, 3, Frame::Inertial> unnormalized_magnetic_field(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x) const noexcept;
+  tnsr::I<DataType, 3> unnormalized_magnetic_field(
+      const tnsr::I<DataType, 3>& x) const noexcept;
 
   friend bool operator==(const MagnetizedFmDisk& lhs,
                          const MagnetizedFmDisk& rhs) noexcept;

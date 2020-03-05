@@ -9,11 +9,11 @@
 #include <cmath>
 #include <numeric>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"
 #include "Parallel/PupStlCpp11.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -25,9 +25,8 @@ namespace RadiationTransport {
 namespace M1Grey {
 namespace Solutions {
 
-ConstantM1::ConstantM1(
-    MeanVelocity::type mean_velocity,
-    ComovingEnergyDensity::type comoving_energy_density) noexcept
+ConstantM1::ConstantM1(const std::array<double, 3> mean_velocity,
+                       const double comoving_energy_density) noexcept
     :  // clang-tidy: do not std::move trivial types.
       mean_velocity_(std::move(mean_velocity)),  // NOLINT
       comoving_energy_density_(comoving_energy_density) {}
@@ -67,8 +66,7 @@ ConstantM1::variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
                                mean_velocity_.begin(), 0.));
   const double prefactor = 4. / 3. * comoving_energy_density_ * W_sqr;
   auto result =
-      make_with_value<db::item_type<RadiationTransport::M1Grey::Tags::TildeS<
-          Frame::Inertial, NeutrinoSpecies>>>(x, mean_velocity_[0] * prefactor);
+      make_with_value<tnsr::i<DataVector, 3>>(x, mean_velocity_[0] * prefactor);
   get<1>(result) = mean_velocity_[1] * prefactor;
   get<2>(result) = mean_velocity_[2] * prefactor;
   return {std::move(result)};
@@ -88,14 +86,12 @@ ConstantM1::variables(
 }
 
 tuples::TaggedTuple<
-    hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>
+    hydro::Tags::SpatialVelocity<DataVector, 3>>
 ConstantM1::variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
                       tmpl::list<hydro::Tags::SpatialVelocity<
-                          DataVector, 3, Frame::Inertial>> /*meta*/) const
+                          DataVector, 3>> /*meta*/) const
     noexcept {
-  auto result = make_with_value<db::item_type<
-      hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>>(
-      x, mean_velocity_[0]);
+  auto result = make_with_value<tnsr::I<DataVector, 3>>(x, mean_velocity_[0]);
   get<1>(result) = mean_velocity_[1];
   get<2>(result) = mean_velocity_[2];
   return {std::move(result)};

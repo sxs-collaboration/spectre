@@ -6,10 +6,11 @@
 #include <cmath>
 #include <pup.h>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/Hydro/LorentzFactor.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -22,29 +23,27 @@ OrszagTangVortex::OrszagTangVortex() = default;
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
 OrszagTangVortex::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
     noexcept {
-  return {
-      make_with_value<db::item_type<hydro::Tags::RestMassDensity<DataType>>>(
-          x, 25. / (36. * M_PI))};
+  return {make_with_value<Scalar<DataType>>(x, 25. / (36. * M_PI))};
 }
 
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
 OrszagTangVortex::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const
     noexcept {
-  return {tnsr::I<DataType, 3>{{{-0.5 * sin(2. * M_PI * get<1>(x)),
-                                 0.5 * sin(2. * M_PI * get<0>(x)),
-                                 make_with_value<DataType>(x, 0.)}}}};
+  return {tnsr::I<DataType, 3>{
+      {{-0.5 * sin(2. * M_PI * get<1>(x)), 0.5 * sin(2. * M_PI * get<0>(x)),
+        make_with_value<DataType>(x, 0.)}}}};
 }
 
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 OrszagTangVortex::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
     noexcept {
   using density_tag = hydro::Tags::RestMassDensity<DataType>;
@@ -57,16 +56,15 @@ OrszagTangVortex::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>
 OrszagTangVortex::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const noexcept {
-  return {make_with_value<db::item_type<hydro::Tags::Pressure<DataType>>>(
-      x, 5. / (12. * M_PI))};
+  return {make_with_value<Scalar<DataType>>(x, 5. / (12. * M_PI))};
 }
 
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 OrszagTangVortex::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
     noexcept {
   return {
@@ -78,17 +76,16 @@ OrszagTangVortex::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
 OrszagTangVortex::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
     noexcept {
-  return {make_with_value<
-      db::item_type<hydro::Tags::DivergenceCleaningField<DataType>>>(x, 0.)};
+  return {make_with_value<Scalar<DataType>>(x, 0.)};
 }
 
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>
 OrszagTangVortex::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
   using velocity_tag = hydro::Tags::SpatialVelocity<DataType, 3>;
   const auto velocity =
@@ -99,7 +96,7 @@ OrszagTangVortex::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
 OrszagTangVortex::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
     noexcept {
   using density_tag = hydro::Tags::RestMassDensity<DataType>;
@@ -126,10 +123,10 @@ bool operator!=(const OrszagTangVortex& lhs,
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define TAG(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE_SCALARS(_, data)                         \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>     \
-      OrszagTangVortex::variables(                           \
-          const tnsr::I<DTYPE(data), 3, Frame::Inertial>& x, \
+#define INSTANTIATE_SCALARS(_, data)                     \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>> \
+      OrszagTangVortex::variables(                       \
+          const tnsr::I<DTYPE(data), 3>& x,              \
           tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) const noexcept;
 
 GENERATE_INSTANTIATIONS(
@@ -138,12 +135,11 @@ GENERATE_INSTANTIATIONS(
      hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
      hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
 
-#define INSTANTIATE_VECTORS(_, data)                                         \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>>                  \
-      OrszagTangVortex::variables(                                           \
-          const tnsr::I<DTYPE(data), 3, Frame::Inertial>& x,                 \
-          tmpl::list<TAG(data) < DTYPE(data), 3, Frame::Inertial>> /*meta*/) \
-          const noexcept;
+#define INSTANTIATE_VECTORS(_, data)                        \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>> \
+      OrszagTangVortex::variables(                          \
+          const tnsr::I<DTYPE(data), 3>& x,                 \
+          tmpl::list<TAG(data) < DTYPE(data), 3>> /*meta*/) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
                         (hydro::Tags::SpatialVelocity,

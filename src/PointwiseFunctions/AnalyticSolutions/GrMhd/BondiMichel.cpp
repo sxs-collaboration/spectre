@@ -7,8 +7,12 @@
 #include <cmath>
 #include <cstddef>
 
+#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -17,11 +21,10 @@
 namespace grmhd {
 namespace Solutions {
 
-BondiMichel::BondiMichel(
-    const Mass::type mass, const SonicRadius::type sonic_radius,
-    const SonicDensity::type sonic_density,
-    const PolytropicExponent::type polytropic_exponent,
-    const MagFieldStrength::type mag_field_strength) noexcept
+BondiMichel::BondiMichel(const double mass, const double sonic_radius,
+                         const double sonic_density,
+                         const double polytropic_exponent,
+                         const double mag_field_strength) noexcept
     : mass_(mass),
       sonic_radius_(sonic_radius),
       sonic_density_(sonic_density),
@@ -243,11 +246,11 @@ BondiMichel::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>
+tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
 BondiMichel::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<
-        hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>> /*meta*/,
+        hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
     const IntermediateVars<DataType>& vars) const noexcept {
   auto result = make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
   // Rezzola and Zanotti (2013) Eq. 11.79
@@ -279,11 +282,11 @@ BondiMichel::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>
+tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 BondiMichel::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<
-        hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>> /*meta*/,
+        hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
     const IntermediateVars<DataType>& vars) const noexcept {
   auto result = make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
   const DataType mag_field_strength_factor =
@@ -347,19 +350,15 @@ bool operator!=(const BondiMichel& lhs, const BondiMichel& rhs) noexcept {
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::LorentzFactor<DTYPE(data)>> /*meta*/,           \
       const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const noexcept; \
-  template tuples::TaggedTuple<                                               \
-      hydro::Tags::SpatialVelocity<DTYPE(data), 3, Frame::Inertial>>          \
+  template tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DTYPE(data), 3>>  \
   BondiMichel::variables(                                                     \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
-      tmpl::list<hydro::Tags::SpatialVelocity<DTYPE(data), 3,                 \
-                                              Frame::Inertial>> /*meta*/,     \
+      tmpl::list<hydro::Tags::SpatialVelocity<DTYPE(data), 3>> /*meta*/,      \
       const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const noexcept; \
-  template tuples::TaggedTuple<                                               \
-      hydro::Tags::MagneticField<DTYPE(data), 3, Frame::Inertial>>            \
+  template tuples::TaggedTuple<hydro::Tags::MagneticField<DTYPE(data), 3>>    \
   BondiMichel::variables(                                                     \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
-      tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3,                   \
-                                            Frame::Inertial>> /*meta*/,       \
+      tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3>> /*meta*/,        \
       const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const noexcept; \
   template tuples::TaggedTuple<                                               \
       hydro::Tags::DivergenceCleaningField<DTYPE(data)>>                      \

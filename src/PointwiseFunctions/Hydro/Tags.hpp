@@ -7,9 +7,8 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 
 /// \ingroup EvolutionSystemsGroup
@@ -200,16 +199,4 @@ struct MassFlux : db::SimpleTag {
   }
 };
 }  // namespace Tags
-
-/// The tags for the primitive variables for GRMHD.
-template <typename DataType>
-using grmhd_tags =
-    tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-               hydro::Tags::SpecificInternalEnergy<DataType>,
-               hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
-               hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
-               hydro::Tags::DivergenceCleaningField<DataType>,
-               hydro::Tags::LorentzFactor<DataType>,
-               hydro::Tags::Pressure<DataType>,
-               hydro::Tags::SpecificEnthalpy<DataType>>;
 }  // namespace hydro

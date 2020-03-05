@@ -14,9 +14,7 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -95,27 +93,22 @@ MagnetizedFmDisk::MagnetizedFmDisk(
 
   const auto b_field = unnormalized_magnetic_field(grid);
   const auto unmagnetized_vars = variables(
-      grid,
-      tmpl::list<
-          gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-          hydro::Tags::LorentzFactor<DataVector>,
-          hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>{});
+      grid, tmpl::list<gr::Tags::SpatialMetric<3>,
+                       hydro::Tags::LorentzFactor<DataVector>,
+                       hydro::Tags::SpatialVelocity<DataVector, 3>>{});
   const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(
-          unmagnetized_vars);
+      get<gr::Tags::SpatialMetric<3>>(unmagnetized_vars);
 
-  const tnsr::I<double, 3, Frame::Inertial> x_max{
-      {{max_pressure_radius_, bh_spin_a_, 0.0}}};
+  const tnsr::I<double, 3> x_max{{{max_pressure_radius_, bh_spin_a_, 0.0}}};
 
-  const double b_squared_max =
-      max(get(dot_product(b_field, b_field, spatial_metric)) /
-              square(get(get<hydro::Tags::LorentzFactor<DataVector>>(
-                  unmagnetized_vars))) +
-          square(get(dot_product(
-              b_field,
-              get<hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>(
-                  unmagnetized_vars),
-              spatial_metric))));
+  const double b_squared_max = max(
+      get(dot_product(b_field, b_field, spatial_metric)) /
+          square(get(
+              get<hydro::Tags::LorentzFactor<DataVector>>(unmagnetized_vars))) +
+      square(get(dot_product(
+          b_field,
+          get<hydro::Tags::SpatialVelocity<DataVector, 3>>(unmagnetized_vars),
+          spatial_metric))));
   ASSERT(b_squared_max > 0.0, "Max b squared is zero.");
   b_field_normalization_ =
       sqrt(2.0 *
@@ -134,17 +127,15 @@ void MagnetizedFmDisk::pup(PUP::er& p) noexcept {
 }
 
 template <typename DataType>
-tnsr::I<DataType, 3, Frame::Inertial>
-MagnetizedFmDisk::unnormalized_magnetic_field(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x) const noexcept {
+tnsr::I<DataType, 3> MagnetizedFmDisk::unnormalized_magnetic_field(
+    const tnsr::I<DataType, 3>& x) const noexcept {
   auto magnetic_field =
       make_with_value<tnsr::I<DataType, 3, Frame::NoFrame>>(x, 0.0);
 
   // The maximum pressure (and hence the maximum rest mass density) is located
   // on the ring x^2 + y^2 = r_max^2 + a^2, z = 0.
   // Note that `x` may or may not include points on this ring.
-  const tnsr::I<double, 3, Frame::Inertial> x_max{
-      {{max_pressure_radius_, bh_spin_a_, 0.0}}};
+  const tnsr::I<double, 3> x_max{{{max_pressure_radius_, bh_spin_a_, 0.0}}};
   const double threshold_rest_mass_density =
       threshold_density_ *
       get(get<hydro::Tags::RestMassDensity<double>>(variables(
@@ -224,11 +215,10 @@ MagnetizedFmDisk::unnormalized_magnetic_field(
 }
 
 template <typename DataType, bool NeedSpacetime>
-tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>
+tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 MagnetizedFmDisk::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<
-        hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>> /*meta*/,
+    tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
     const IntermediateVariables<DataType, NeedSpacetime>& /*vars*/,
     const size_t /*index*/) const noexcept {
   auto result = unnormalized_magnetic_field(x);
@@ -257,15 +247,13 @@ bool operator!=(const MagnetizedFmDisk& lhs,
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define NEED_SPACETIME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                            \
-  template tuples::TaggedTuple<                                         \
-      hydro::Tags::MagneticField<DTYPE(data), 3, Frame::Inertial>>      \
-  MagnetizedFmDisk::variables(                                          \
-      const tnsr::I<DTYPE(data), 3>& x,                                 \
-      tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3,             \
-                                            Frame::Inertial>> /*meta*/, \
-      const FishboneMoncriefDisk::IntermediateVariables<                \
-          DTYPE(data), NEED_SPACETIME(data)>& vars,                     \
+#define INSTANTIATE(_, data)                                               \
+  template tuples::TaggedTuple<hydro::Tags::MagneticField<DTYPE(data), 3>> \
+  MagnetizedFmDisk::variables(                                             \
+      const tnsr::I<DTYPE(data), 3>& x,                                    \
+      tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3>> /*meta*/,     \
+      const FishboneMoncriefDisk::IntermediateVariables<                   \
+          DTYPE(data), NEED_SPACETIME(data)>& vars,                        \
       const size_t) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (true, false))

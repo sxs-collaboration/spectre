@@ -10,9 +10,8 @@
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/KerrSchildCoords.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -142,12 +141,11 @@ class BondiHoyleAccretion : public MarkAsAnalyticData {
       default;
   ~BondiHoyleAccretion() = default;
 
-  BondiHoyleAccretion(BhMass::type bh_mass, BhDimlessSpin::type bh_dimless_spin,
-                      RestMassDensity::type rest_mass_density,
-                      FlowSpeed::type flow_speed,
-                      MagFieldStrength::type magnetic_field_strength,
-                      PolytropicConstant::type polytropic_constant,
-                      PolytropicExponent::type polytropic_exponent) noexcept;
+  BondiHoyleAccretion(double bh_mass, double bh_dimless_spin,
+                      double rest_mass_density, double flow_speed,
+                      double magnetic_field_strength,
+                      double polytropic_constant,
+                      double polytropic_exponent) noexcept;
 
   // @{
   /// Retrieve hydro variable at `x`
@@ -171,17 +169,15 @@ class BondiHoyleAccretion : public MarkAsAnalyticData {
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
-                 tmpl::list<hydro::Tags::SpatialVelocity<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
+                 tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/)
+      const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3>& x,
-                 tmpl::list<hydro::Tags::MagneticField<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+  auto variables(
+      const tnsr::I<DataType, 3>& x,
+      tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(
@@ -205,9 +201,9 @@ class BondiHoyleAccretion : public MarkAsAnalyticData {
 
   /// Retrieve a collection of hydro variables at `x`
   template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
+                                         tmpl::list<Tags...> /*meta*/) const
+      noexcept {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -239,26 +235,23 @@ class BondiHoyleAccretion : public MarkAsAnalyticData {
 
   // compute the spatial velocity in spherical Kerr-Schild coordinates
   template <typename DataType>
-  typename hydro::Tags::SpatialVelocity<DataType, 3, Frame::NoFrame>::type
-  spatial_velocity(const DataType& r_squared, const DataType& cos_theta,
-                   const DataType& sin_theta) const noexcept;
+  tnsr::I<DataType, 3, Frame::NoFrame> spatial_velocity(
+      const DataType& r_squared, const DataType& cos_theta,
+      const DataType& sin_theta) const noexcept;
   // compute the magnetic field in spherical Kerr-Schild coordinates
   template <typename DataType>
-  typename hydro::Tags::MagneticField<DataType, 3, Frame::NoFrame>::type
-  magnetic_field(const DataType& r_squared, const DataType& cos_theta,
-                 const DataType& sin_theta) const noexcept;
+  tnsr::I<DataType, 3, Frame::NoFrame> magnetic_field(
+      const DataType& r_squared, const DataType& cos_theta,
+      const DataType& sin_theta) const noexcept;
 
-  BhMass::type bh_mass_ = std::numeric_limits<double>::signaling_NaN();
-  BhDimlessSpin::type bh_spin_a_ = std::numeric_limits<double>::signaling_NaN();
-  RestMassDensity::type rest_mass_density_ =
+  double bh_mass_ = std::numeric_limits<double>::signaling_NaN();
+  double bh_spin_a_ = std::numeric_limits<double>::signaling_NaN();
+  double rest_mass_density_ = std::numeric_limits<double>::signaling_NaN();
+  double flow_speed_ = std::numeric_limits<double>::signaling_NaN();
+  double magnetic_field_strength_ =
       std::numeric_limits<double>::signaling_NaN();
-  FlowSpeed::type flow_speed_ = std::numeric_limits<double>::signaling_NaN();
-  MagFieldStrength::type magnetic_field_strength_ =
-      std::numeric_limits<double>::signaling_NaN();
-  PolytropicConstant::type polytropic_constant_ =
-      std::numeric_limits<double>::signaling_NaN();
-  PolytropicExponent::type polytropic_exponent_ =
-      std::numeric_limits<double>::signaling_NaN();
+  double polytropic_constant_ = std::numeric_limits<double>::signaling_NaN();
+  double polytropic_exponent_ = std::numeric_limits<double>::signaling_NaN();
   EquationsOfState::PolytropicFluid<true> equation_of_state_{};
   gr::Solutions::KerrSchild background_spacetime_{};
   gr::KerrSchildCoords kerr_schild_coords_{};

@@ -7,7 +7,9 @@
 
 #include "DataStructures/DataVector.hpp"                  // IWYU pragma: keep
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -94,22 +96,20 @@ TovStar<RadialSolution>::variables(
 
 template <typename RadialSolution>
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>
+tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
 TovStar<RadialSolution>::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<
-        hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>> /*meta*/,
+    tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
     const RadialVariables<DataType>& /*radial_vars*/) const noexcept {
   return make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
 }
 
 template <typename RadialSolution>
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>
+tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 TovStar<RadialSolution>::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<
-        hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>> /*meta*/,
+    tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
     const RadialVariables<DataType>& /*radial_vars*/) const noexcept {
   return make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
 }
@@ -329,19 +329,15 @@ bool operator!=(const TovStar<RadialSolution>& lhs,
       const tnsr::I<DTYPE(data), 3>& x,                                        \
       tmpl::list<hydro::Tags::LorentzFactor<DTYPE(data)>> /*meta*/,            \
       const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;         \
-  template tuples::TaggedTuple<                                                \
-      hydro::Tags::SpatialVelocity<DTYPE(data), 3, Frame::Inertial>>           \
+  template tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DTYPE(data), 3>>   \
   TovStar<STYPE(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), 3>& x,                                        \
-      tmpl::list<hydro::Tags::SpatialVelocity<DTYPE(data), 3,                  \
-                                              Frame::Inertial>> /*meta*/,      \
+      tmpl::list<hydro::Tags::SpatialVelocity<DTYPE(data), 3>> /*meta*/,       \
       const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;         \
-  template tuples::TaggedTuple<                                                \
-      hydro::Tags::MagneticField<DTYPE(data), 3, Frame::Inertial>>             \
+  template tuples::TaggedTuple<hydro::Tags::MagneticField<DTYPE(data), 3>>     \
   TovStar<STYPE(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), 3>& x,                                        \
-      tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3,                    \
-                                            Frame::Inertial>> /*meta*/,        \
+      tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3>> /*meta*/,         \
       const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;         \
   template tuples::TaggedTuple<                                                \
       hydro::Tags::DivergenceCleaningField<DTYPE(data)>>                       \

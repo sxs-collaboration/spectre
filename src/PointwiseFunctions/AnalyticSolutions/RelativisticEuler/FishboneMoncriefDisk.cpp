@@ -8,15 +8,12 @@
 #include <cstddef>
 #include <pup.h>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -275,16 +272,13 @@ FishboneMoncriefDisk::variables(
 }
 
 template <typename DataType, bool NeedSpacetime>
-tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>
+tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 FishboneMoncriefDisk::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<
-        hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>> /*meta*/,
+    tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/,
     const IntermediateVariables<DataType, NeedSpacetime>& /*vars*/,
     const size_t /*index*/) const noexcept {
-  return {make_with_value<
-      db::item_type<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>>(
-      x, 0.0)};
+  return {make_with_value<tnsr::I<DataType, 3>>(x, 0.0)};
 }
 
 template <typename DataType, bool NeedSpacetime>
@@ -294,8 +288,7 @@ FishboneMoncriefDisk::variables(
     tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/,
     const IntermediateVariables<DataType, NeedSpacetime>& /*vars*/,
     const size_t /*index*/) const noexcept {
-  return {make_with_value<
-      db::item_type<hydro::Tags::DivergenceCleaningField<DataType>>>(x, 0.0)};
+  return {make_with_value<Scalar<DataType>>(x, 0.0)};
 }
 
 template <typename DataType, bool NeedSpacetime, typename Func>
@@ -373,8 +366,7 @@ bool operator!=(const FishboneMoncriefDisk& lhs,
       const FishboneMoncriefDisk::IntermediateVariables<                      \
           DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
       const size_t) const noexcept;                                           \
-  template tuples::TaggedTuple<                                               \
-      hydro::Tags::MagneticField<DTYPE(data), 3, Frame::Inertial>>            \
+  template tuples::TaggedTuple<hydro::Tags::MagneticField<DTYPE(data), 3>>    \
   FishboneMoncriefDisk::variables(                                            \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3,                   \

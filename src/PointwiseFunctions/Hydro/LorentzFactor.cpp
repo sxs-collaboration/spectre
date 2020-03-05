@@ -7,7 +7,6 @@
 
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 
 /// \cond

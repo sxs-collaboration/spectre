@@ -11,9 +11,8 @@
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
-#include "Utilities/MakeArray.hpp"            // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -151,11 +150,10 @@ class AlfvenWave : public MarkAsAnalyticSolution {
   AlfvenWave& operator=(AlfvenWave&& /*rhs*/) noexcept = default;
   ~AlfvenWave() = default;
 
-  AlfvenWave(WaveNumber::type wavenumber, Pressure::type pressure,
-             RestMassDensity::type rest_mass_density,
-             AdiabaticIndex::type adiabatic_index,
-             BackgroundMagneticField::type background_magnetic_field,
-             WaveMagneticField::type wave_magnetic_field) noexcept;
+  AlfvenWave(double wavenumber, double pressure, double rest_mass_density,
+             double adiabatic_index,
+             std::array<double, 3> background_magnetic_field,
+             std::array<double, 3> wave_magnetic_field) noexcept;
 
   // @{
   /// Retrieve hydro variable at `(x, t)`
@@ -179,17 +177,15 @@ class AlfvenWave : public MarkAsAnalyticSolution {
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
-                 tmpl::list<hydro::Tags::SpatialVelocity<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
+                 tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/)
+      const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
-                 tmpl::list<hydro::Tags::MagneticField<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+  auto variables(
+      const tnsr::I<DataType, 3>& x, double /*t*/,
+      tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(
@@ -244,23 +240,22 @@ class AlfvenWave : public MarkAsAnalyticSolution {
   template <typename DataType>
   DataType k_dot_x_minus_vt(const tnsr::I<DataType, 3>& x, double t) const
       noexcept;
-  WaveNumber::type wavenumber_ = std::numeric_limits<double>::signaling_NaN();
-  Pressure::type pressure_ = std::numeric_limits<double>::signaling_NaN();
-  RestMassDensity::type rest_mass_density_ =
-      std::numeric_limits<double>::signaling_NaN();
-  AdiabaticIndex::type adiabatic_index_ =
-      std::numeric_limits<double>::signaling_NaN();
-  BackgroundMagneticField::type background_magnetic_field_{
-      {std::numeric_limits<double>::signaling_NaN()}};
-  WaveMagneticField::type wave_magnetic_field_{
-      {std::numeric_limits<double>::signaling_NaN()}};
+  double wavenumber_ = std::numeric_limits<double>::signaling_NaN();
+  double pressure_ = std::numeric_limits<double>::signaling_NaN();
+  double rest_mass_density_ = std::numeric_limits<double>::signaling_NaN();
+  double adiabatic_index_ = std::numeric_limits<double>::signaling_NaN();
+  std::array<double, 3> background_magnetic_field_{
+      {std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN()}};
+  std::array<double, 3> wave_magnetic_field_{
+      {std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN()}};
   EquationsOfState::IdealFluid<true> equation_of_state_{};
-  tnsr::I<double, 3, Frame::Inertial>
-      initial_unit_vector_along_background_magnetic_field_{};
-  tnsr::I<double, 3, Frame::Inertial>
-      initial_unit_vector_along_wave_magnetic_field_{};
-  tnsr::I<double, 3, Frame::Inertial>
-      initial_unit_vector_along_wave_electric_field_{};
+  tnsr::I<double, 3> initial_unit_vector_along_background_magnetic_field_{};
+  tnsr::I<double, 3> initial_unit_vector_along_wave_magnetic_field_{};
+  tnsr::I<double, 3> initial_unit_vector_along_wave_electric_field_{};
   double magnitude_B0_ = std::numeric_limits<double>::signaling_NaN();
   double magnitude_B1_ = std::numeric_limits<double>::signaling_NaN();
   double magnitude_E_ = std::numeric_limits<double>::signaling_NaN();

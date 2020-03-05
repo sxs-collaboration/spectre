@@ -11,8 +11,8 @@
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -130,11 +130,11 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
       noexcept -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-                 tmpl::list<hydro::Tags::SpatialVelocity<
-                     DataType, Dim, Frame::Inertial>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataType, Dim, Frame::Inertial>>;
+  auto variables(
+      const tnsr::I<DataType, Dim>& x, double /*t*/,
+      tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim>> /*meta*/) const
+      noexcept
+      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, Dim>>;
 
   template <typename DataType>
   auto variables(

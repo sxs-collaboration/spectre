@@ -5,11 +5,9 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Overloader.hpp"
 

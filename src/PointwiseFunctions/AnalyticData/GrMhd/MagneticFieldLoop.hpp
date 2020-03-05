@@ -10,10 +10,8 @@
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/Tags.hpp"
-#include "Utilities/MakeArray.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -160,17 +158,15 @@ class MagneticFieldLoop : public MarkAsAnalyticData {
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
-                 tmpl::list<hydro::Tags::SpatialVelocity<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
+                 tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/)
+      const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3>& x,
-                 tmpl::list<hydro::Tags::MagneticField<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+  auto variables(
+      const tnsr::I<DataType, 3>& x,
+      tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(
@@ -194,9 +190,9 @@ class MagneticFieldLoop : public MarkAsAnalyticData {
 
   /// Retrieve a collection of hydrodynamic variables at position x
   template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
+                                         tmpl::list<Tags...> /*meta*/) const
+      noexcept {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -222,8 +218,10 @@ class MagneticFieldLoop : public MarkAsAnalyticData {
   double pressure_ = std::numeric_limits<double>::signaling_NaN();
   double rest_mass_density_ = std::numeric_limits<double>::signaling_NaN();
   double adiabatic_index_ = std::numeric_limits<double>::signaling_NaN();
-  std::array<double, 3> advection_velocity_ =
-      make_array<3>(std::numeric_limits<double>::signaling_NaN());
+  std::array<double, 3> advection_velocity_{
+      {std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN()}};
   double magnetic_field_magnitude_ =
       std::numeric_limits<double>::signaling_NaN();
   double inner_radius_ = std::numeric_limits<double>::signaling_NaN();

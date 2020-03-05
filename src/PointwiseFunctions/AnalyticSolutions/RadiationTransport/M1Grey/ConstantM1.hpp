@@ -12,8 +12,7 @@
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
-#include "Utilities/MakeArray.hpp"            // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -65,8 +64,8 @@ class ConstantM1 : public MarkAsAnalyticSolution {
   ConstantM1& operator=(ConstantM1&& /*rhs*/) noexcept = default;
   ~ConstantM1() = default;
 
-  ConstantM1(MeanVelocity::type mean_velocity,
-             ComovingEnergyDensity::type comoving_energy_density) noexcept;
+  ConstantM1(std::array<double, 3> mean_velocity,
+             double comoving_energy_density) noexcept;
 
   explicit ConstantM1(CkMigrateMessage* /*unused*/) noexcept {}
 
@@ -94,11 +93,11 @@ class ConstantM1 : public MarkAsAnalyticSolution {
       tmpl::list<hydro::Tags::LorentzFactor<DataVector>> /*meta*/) const
       noexcept -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataVector>>;
 
-  auto variables(const tnsr::I<DataVector, 3>& x, double t,
-                 tmpl::list<hydro::Tags::SpatialVelocity<
-                     DataVector, 3, Frame::Inertial>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>;
+  auto variables(
+      const tnsr::I<DataVector, 3>& x, double t,
+      tmpl::list<hydro::Tags::SpatialVelocity<DataVector, 3>> /*meta*/) const
+      noexcept
+      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataVector, 3>>;
   // @}
 
   /// Retrieve a collection of hydro and/or M1 variables at `(x, t)`
@@ -126,9 +125,11 @@ class ConstantM1 : public MarkAsAnalyticSolution {
  private:
   friend bool operator==(const ConstantM1& lhs, const ConstantM1& rhs) noexcept;
 
-  MeanVelocity::type mean_velocity_ =
-      make_array<3>(std::numeric_limits<double>::signaling_NaN());
-  ComovingEnergyDensity::type comoving_energy_density_ =
+  std::array<double, 3> mean_velocity_{
+      {std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN()}};
+  double comoving_energy_density_ =
       std::numeric_limits<double>::signaling_NaN();
   gr::Solutions::Minkowski<3> background_spacetime_{};
 };

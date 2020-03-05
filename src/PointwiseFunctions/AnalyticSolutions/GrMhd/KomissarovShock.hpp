@@ -11,9 +11,8 @@
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -122,16 +121,14 @@ class KomissarovShock : public MarkAsAnalyticSolution {
   KomissarovShock& operator=(KomissarovShock&& /*rhs*/) noexcept = default;
   ~KomissarovShock() = default;
 
-  KomissarovShock(AdiabaticIndex::type adiabatic_index,
-                  LeftRestMassDensity::type left_rest_mass_density,
-                  RightRestMassDensity::type right_rest_mass_density,
-                  LeftPressure::type left_pressure,
-                  RightPressure::type right_pressure,
-                  LeftSpatialVelocity::type left_spatial_velocity,
-                  RightSpatialVelocity::type right_spatial_velocity,
-                  LeftMagneticField::type left_magnetic_field,
-                  RightMagneticField::type right_magnetic_field,
-                  ShockSpeed::type shock_speed) noexcept;
+  KomissarovShock(double adiabatic_index, double left_rest_mass_density,
+                  double right_rest_mass_density, double left_pressure,
+                  double right_pressure,
+                  std::array<double, 3> left_spatial_velocity,
+                  std::array<double, 3> right_spatial_velocity,
+                  std::array<double, 3> left_magnetic_field,
+                  std::array<double, 3> right_magnetic_field,
+                  double shock_speed) noexcept;
 
   explicit KomissarovShock(CkMigrateMessage* /*unused*/) noexcept {}
 
@@ -157,17 +154,15 @@ class KomissarovShock : public MarkAsAnalyticSolution {
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x, double t,
-                 tmpl::list<hydro::Tags::SpatialVelocity<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
+                 tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/)
+      const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3>& x, double t,
-                 tmpl::list<hydro::Tags::MagneticField<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+  auto variables(
+      const tnsr::I<DataType, 3>& x, double t,
+      tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
 
   template <typename DataType>
   auto variables(
@@ -191,9 +186,10 @@ class KomissarovShock : public MarkAsAnalyticSolution {
 
   /// Retrieve a collection of hydrodynamic variables at position x
   template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x, double t,
-      tmpl::list<Tags...> /*meta*/) const noexcept {
+  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, 3>& x,
+                                         double t,
+                                         tmpl::list<Tags...> /*meta*/) const
+      noexcept {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -218,33 +214,29 @@ class KomissarovShock : public MarkAsAnalyticSolution {
   EquationsOfState::IdealFluid<true> equation_of_state_{};
   gr::Solutions::Minkowski<3> background_spacetime_{};
 
-  AdiabaticIndex::type adiabatic_index_ =
+  double adiabatic_index_ = std::numeric_limits<double>::signaling_NaN();
+  double left_rest_mass_density_ = std::numeric_limits<double>::signaling_NaN();
+  double right_rest_mass_density_ =
       std::numeric_limits<double>::signaling_NaN();
-  LeftRestMassDensity::type left_rest_mass_density_ =
-      std::numeric_limits<double>::signaling_NaN();
-  RightRestMassDensity::type right_rest_mass_density_ =
-      std::numeric_limits<double>::signaling_NaN();
-  LeftPressure::type left_pressure_ =
-      std::numeric_limits<double>::signaling_NaN();
-  RightPressure::type right_pressure_ =
-      std::numeric_limits<double>::signaling_NaN();
-  LeftSpatialVelocity::type left_spatial_velocity_ =
-      std::array<double, 3>{{std::numeric_limits<double>::signaling_NaN(),
-                             std::numeric_limits<double>::signaling_NaN(),
-                             std::numeric_limits<double>::signaling_NaN()}};
-  RightSpatialVelocity::type right_spatial_velocity_ =
-      std::array<double, 3>{{std::numeric_limits<double>::signaling_NaN(),
-                             std::numeric_limits<double>::signaling_NaN(),
-                             std::numeric_limits<double>::signaling_NaN()}};
-  LeftMagneticField::type left_magnetic_field_ =
-      std::array<double, 3>{{std::numeric_limits<double>::signaling_NaN(),
-                             std::numeric_limits<double>::signaling_NaN(),
-                             std::numeric_limits<double>::signaling_NaN()}};
-  RightMagneticField::type right_magnetic_field_ =
-      std::array<double, 3>{{std::numeric_limits<double>::signaling_NaN(),
-                             std::numeric_limits<double>::signaling_NaN(),
-                             std::numeric_limits<double>::signaling_NaN()}};
-  ShockSpeed::type shock_speed_ = std::numeric_limits<double>::signaling_NaN();
+  double left_pressure_ = std::numeric_limits<double>::signaling_NaN();
+  double right_pressure_ = std::numeric_limits<double>::signaling_NaN();
+  std::array<double, 3> left_spatial_velocity_{
+      {std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN()}};
+  std::array<double, 3> right_spatial_velocity_{
+      {std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN()}};
+  std::array<double, 3> left_magnetic_field_{
+      {std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN()}};
+  std::array<double, 3> right_magnetic_field_{
+      {std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN()}};
+  double shock_speed_ = std::numeric_limits<double>::signaling_NaN();
 
   friend bool operator==(const KomissarovShock& lhs,
                          const KomissarovShock& rhs) noexcept;

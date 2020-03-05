@@ -7,7 +7,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
 namespace hydro {
