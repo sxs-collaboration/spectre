@@ -303,7 +303,7 @@ struct test_args {
             typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& /*box*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/, const double& v0,
+                    const ArrayIndex& /*array_index*/, const double v0,
                     std::vector<double>&& v1) noexcept {
     SPECTRE_PARALLEL_REQUIRE(v0 == 4.82937);
     SPECTRE_PARALLEL_REQUIRE(v1 == (std::vector<double>{3.2, -8.4, 7.5}));

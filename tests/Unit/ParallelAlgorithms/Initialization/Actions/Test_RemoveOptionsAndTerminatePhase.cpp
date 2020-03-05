@@ -39,7 +39,7 @@ struct DummyTimeTag : db::SimpleTag {
 template <typename Tag>
 struct TagMultiplyByTwo : db::ComputeTag {
   static std::string name() noexcept { return "MultiplyByTwo"; }
-  static double function(const double& t) noexcept { return t * 2.0; }
+  static double function(const double t) noexcept { return t * 2.0; }
   using argument_tags = tmpl::list<Tag>;
 };
 

@@ -627,7 +627,7 @@ struct MakeWithValueImpl<Tensor<double, Structure...>, double> {
   /// \brief Returns a Tensor whose elements are set equal to `value` (`input`
   /// is ignored).
   static SPECTRE_ALWAYS_INLINE Tensor<double, Structure...> apply(
-      const double& /*input*/, const double value) noexcept {
+      const double /*input*/, const double value) noexcept {
     return Tensor<double, Structure...>(value);
   }
 };

@@ -144,7 +144,7 @@ template <typename MagnitudeSquareTag,
 struct MagnitudeCompute
     : db::add_tag_prefix<Magnitude, db::remove_tag_prefix<MagnitudeSquareTag>>,
       db::ComputeTag {
-  static constexpr double function(const double& magnitude_square) noexcept {
+  static constexpr double function(const double magnitude_square) noexcept {
     return sqrt(magnitude_square);
   }
   using argument_tags = tmpl::list<MagnitudeSquareTag>;
@@ -230,8 +230,8 @@ struct HasConvergedCompute : LinearSolver::Tags::HasConverged, db::ComputeTag {
                  initial_residual_magnitude_tag>;
   static db::const_item_type<LinearSolver::Tags::HasConverged> function(
       const Convergence::Criteria& convergence_criteria,
-      const size_t& iteration_id, const double& residual_magnitude,
-      const double& initial_residual_magnitude) noexcept {
+      const size_t& iteration_id, const double residual_magnitude,
+      const double initial_residual_magnitude) noexcept {
     return Convergence::HasConverged(convergence_criteria, iteration_id,
                                      residual_magnitude,
                                      initial_residual_magnitude);

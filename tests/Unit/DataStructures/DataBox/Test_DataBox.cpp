@@ -40,8 +40,8 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 
 namespace {
-double multiply_by_two(const double& value) { return 2.0 * value; }
-std::string append_word(const std::string& text, const double& value) {
+double multiply_by_two(const double value) { return 2.0 * value; }
+std::string append_word(const std::string& text, const double value) {
   std::stringstream ss;
   ss << value;
   return text + ss.str();
@@ -96,7 +96,7 @@ struct TagTensor : db::ComputeTag {
 /// [compute_item_tag_function]
 struct ComputeLambda0 : db::ComputeTag {
   static std::string name() noexcept { return "ComputeLambda0"; }
-  static constexpr double function(const double& a) { return 3.0 * a; }
+  static constexpr double function(const double a) { return 3.0 * a; }
   using argument_tags = tmpl::list<Tag0>;
 };
 /// [compute_item_tag_function]
@@ -466,7 +466,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate",
       make_not_null(&original_box),
       [](const gsl::not_null<double*> tag0,
          const gsl::not_null<std::vector<double>*> tag1,
-         const double& compute_tag0) {
+         const double compute_tag0) {
         CHECK(6.28 == compute_tag0);
         *tag0 = 10.32;
         (*tag1)[0] = 837.2;
@@ -1484,7 +1484,7 @@ static_assert(
 
 namespace {
 void multiply_by_two_mutate(const gsl::not_null<std::vector<double>*> t,
-                            const double& value) {
+                            const double value) {
   if (t->empty()) {
     t->resize(10);
   }
@@ -1492,7 +1492,7 @@ void multiply_by_two_mutate(const gsl::not_null<std::vector<double>*> t,
     p = 2.0 * value;
   }
 }
-std::vector<double> multiply_by_two_non_mutate(const double& value) {
+std::vector<double> multiply_by_two_non_mutate(const double value) {
   return std::vector<double>(10, 2.0 * value);
 }
 
@@ -1501,7 +1501,7 @@ void mutate_variables(
     const gsl::not_null<Variables<tmpl::list<test_databox_tags::ScalarTag,
                                              test_databox_tags::VectorTag>>*>
         t,
-    const double& value) {
+    const double value) {
   if (t->number_of_grid_points() != 10) {
     *t = Variables<
         tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>(
@@ -1595,7 +1595,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutating_compute_item",
       make_not_null(&original_box),
       [](const gsl::not_null<double*> tag0,
          const gsl::not_null<std::vector<double>*> tag1,
-         const double& compute_tag0) {
+         const double compute_tag0) {
         CHECK(6.28 == compute_tag0);
         *tag0 = 10.32;
         (*tag1)[0] = 837.2;
@@ -2179,7 +2179,7 @@ struct OverloadType : db::ComputeTag {
 
   static constexpr double function(const int& a) noexcept { return 5 * a; }
 
-  static constexpr double function(const double& a) noexcept { return 3.2 * a; }
+  static constexpr double function(const double a) noexcept { return 3.2 * a; }
   using argument_tags = tmpl::list<ArgumentTag>;
 };
 /// [overload_compute_tag_type]
@@ -2189,9 +2189,9 @@ template <typename ArgumentTag0, typename ArgumentTag1 = void>
 struct OverloadNumberOfArgs : db::ComputeTag {
   static std::string name() noexcept { return "OverloadNumberOfArgs"; }
 
-  static constexpr double function(const double& a) noexcept { return 3.2 * a; }
+  static constexpr double function(const double a) noexcept { return 3.2 * a; }
 
-  static constexpr double function(const double& a, const double& b) noexcept {
+  static constexpr double function(const double a, const double b) noexcept {
     return a * b;
   }
 

@@ -216,7 +216,7 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
 
   auto analytic = [](double t) { return sin(t); };
   auto driver = [](double t) { return cos(t); };
-  auto coupling = [=](const double& local, const double& remote) {
+  auto coupling = [=](const double local, const double remote) {
     CHECK(local == unused_local_deriv);
     return remote;
   };

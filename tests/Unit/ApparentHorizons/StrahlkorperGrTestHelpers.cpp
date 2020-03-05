@@ -23,8 +23,7 @@ namespace Schwarzschild {
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ii<DataType, SpatialDim, Frame> spatial_ricci(
-    const tnsr::I<DataType, SpatialDim, Frame>& x,
-    const double& mass) noexcept {
+    const tnsr::I<DataType, SpatialDim, Frame>& x, const double mass) noexcept {
   auto ricci = make_with_value<tnsr::ii<DataType, SpatialDim, Frame>>(x, 0.);
 
   constexpr auto dimensionality = index_dim<0>(ricci);
@@ -72,8 +71,8 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature_sphere(
 namespace Kerr {
 template <typename DataType>
 Scalar<DataType> horizon_ricci_scalar(
-    const Scalar<DataType>& horizon_radius, const double& mass,
-    const double& dimensionless_spin_z) noexcept {
+    const Scalar<DataType>& horizon_radius, const double mass,
+    const double dimensionless_spin_z) noexcept {
   // Compute Kerr spin parameter a
   // This is the magnitude of the dimensionless spin times the mass
   double kerr_spin_a = mass * dimensionless_spin_z;
@@ -98,7 +97,7 @@ template <typename DataType>
 Scalar<DataType> horizon_ricci_scalar(
     const Scalar<DataType>& horizon_radius_with_spin_on_z_axis,
     const YlmSpherepack& ylm_with_spin_on_z_axis, const YlmSpherepack& ylm,
-    const double& mass,
+    const double mass,
     const std::array<double, 3>& dimensionless_spin) noexcept {
   // get the dimensionless spin magnitude and direction
   const double spin_magnitude = magnitude(dimensionless_spin);
@@ -204,7 +203,7 @@ Scalar<DataType> horizon_ricci_scalar(
   template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>     \
   TestHelpers::Schwarzschild::spatial_ricci(                 \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x, \
-      const double& mass) noexcept;                          \
+      const double mass) noexcept;                           \
   template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>     \
   TestHelpers::Minkowski::extrinsic_curvature_sphere(        \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x) noexcept;
@@ -219,9 +218,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (3), (double, DataVector),
 #undef INSTANTIATE
 
 template Scalar<DataVector> TestHelpers::Kerr::horizon_ricci_scalar(
-    const Scalar<DataVector>& horizon_radius, const double& mass,
-    const double& dimensionless_spin_z) noexcept;
+    const Scalar<DataVector>& horizon_radius, const double mass,
+    const double dimensionless_spin_z) noexcept;
 template Scalar<DataVector> TestHelpers::Kerr::horizon_ricci_scalar(
     const Scalar<DataVector>& horizon_radius_with_spin_on_z_axis,
     const YlmSpherepack& ylm_with_spin_on_z_axis, const YlmSpherepack& ylm,
-    const double& mass, const std::array<double, 3>& spin) noexcept;
+    const double mass, const std::array<double, 3>& spin) noexcept;

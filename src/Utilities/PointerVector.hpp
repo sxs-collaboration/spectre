@@ -307,7 +307,7 @@ BLAZE_ALWAYS_INLINE SIMDdouble step_function(const SIMDf64<T>& v) noexcept
 }
 #endif
 
-BLAZE_ALWAYS_INLINE double step_function(const double& v) noexcept {
+BLAZE_ALWAYS_INLINE double step_function(const double v) noexcept {
   return v < 0.0 ? 0.0 : 1.0;
 }
 

@@ -20,10 +20,10 @@
 namespace {
 template <typename DataType>
 Scalar<DataType> compute_piecewise(const tnsr::I<DataType, 3>& x,
-                                   const double& inner_radius,
-                                   const double& outer_radius,
-                                   const double& inner_value,
-                                   const double& outer_value) noexcept {
+                                   const double inner_radius,
+                                   const double outer_radius,
+                                   const double inner_value,
+                                   const double outer_value) noexcept {
   const DataType cylindrical_radius =
       sqrt(square(get<0>(x)) + square(get<1>(x)));
   auto piecewise_scalar = make_with_value<Scalar<DataType>>(x, 0.0);

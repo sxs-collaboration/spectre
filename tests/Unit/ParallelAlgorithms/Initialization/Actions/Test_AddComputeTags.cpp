@@ -25,7 +25,7 @@ struct SquareNumber : db::SimpleTag {
 };
 
 struct SquareNumberCompute : SquareNumber, db::ComputeTag {
-  static double function(const double& some_number) noexcept {
+  static double function(const double some_number) noexcept {
     return square(some_number);
   }
   using argument_tags = tmpl::list<SomeNumber>;

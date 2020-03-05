@@ -51,7 +51,7 @@ std::vector<double> AdamsBashforthN::get_coefficients_impl(
   const size_t order = steps.size();
   ASSERT(order >= 1 and order <= maximum_order, "Bad order" << order);
   if (std::all_of(steps.begin(), steps.end(),
-                  [=](const double& s) { return s == 1.; })) {
+                  [=](const double s) { return s == 1.; })) {
     return constant_coefficients(order);
   }
 

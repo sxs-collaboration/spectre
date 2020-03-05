@@ -147,7 +147,7 @@ tnsr::I<DataType, 3> MagnetizedFmDisk::unnormalized_magnetic_field(
   // A_phi \propto rho - rho_threshold. Normalization comes later.
   const auto mag_potential =
       [ this, &threshold_rest_mass_density, &inner_edge_potential ](
-          const double& r, const double& sin_theta_squared) noexcept {
+          const double r, const double sin_theta_squared) noexcept {
     // enthalpy = exp(Win - W(r,theta)), as in the Fishbone-Moncrief disk
     return get(equation_of_state_.rest_mass_density_from_enthalpy(
                Scalar<double>{
