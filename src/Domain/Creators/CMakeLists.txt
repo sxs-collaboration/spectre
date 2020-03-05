@@ -7,6 +7,7 @@ set(LIBRARY DomainCreators)
 
 set(LIBRARY_SOURCES
   AlignedLattice.cpp
+  BinaryCompactObject.cpp
   Brick.cpp
   Cylinder.cpp
   Disk.cpp

@@ -26,6 +26,9 @@ class FunctionOfTime;
 }  // namespace domain
 template <size_t>
 class Domain;
+namespace Frame {
+struct Grid;
+}  // namespace Frame
 /// \endcond
 
 namespace domain {
@@ -35,6 +38,7 @@ namespace creators {
 /// \cond
 template <size_t VolumeDim>
 class AlignedLattice;
+class BinaryCompactObject;
 class Brick;
 class Cylinder;
 class Disk;
@@ -70,7 +74,8 @@ struct domain_creators<2> {
 template <>
 struct domain_creators<3> {
   using creators =
-      tmpl::list<domain::creators::AlignedLattice<3>, domain::creators::Brick,
+      tmpl::list<domain::creators::AlignedLattice<3>,
+                 domain::creators::BinaryCompactObject, domain::creators::Brick,
                  domain::creators::Cylinder, domain::creators::RotatedBricks,
                  domain::creators::Shell, domain::creators::Sphere,
                  domain::creators::FrustalCloak>;
@@ -111,6 +116,7 @@ class DomainCreator {
 };
 
 #include "Domain/Creators/AlignedLattice.hpp"
+#include "Domain/Creators/BinaryCompactObject.hpp"
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/Cylinder.hpp"
 #include "Domain/Creators/Disk.hpp"
