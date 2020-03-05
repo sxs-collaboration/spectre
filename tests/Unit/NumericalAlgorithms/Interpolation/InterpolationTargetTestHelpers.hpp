@@ -47,8 +47,9 @@ class DataBox;
 }  // namespace db
 namespace intrp {
 namespace Tags {
+template <typename TemporalId>
 struct IndicesOfFilledInterpPoints;
-template <typename Metavariables>
+template <typename TemporalId>
 struct InterpolatedVarsHolders;
 struct NumberOfElements;
 }  // namespace Tags
@@ -143,6 +144,7 @@ void test_interpolation_target(
     typename InterpolationTargetOptionTag::type options,
     const BlockCoordHolder& expected_block_coord_holders) noexcept {
   using metavars = MetaVariables;
+  using temporal_id_type = typename metavars::temporal_id::type;
   using target_component =
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>;
@@ -171,7 +173,8 @@ void test_interpolation_target(
 
   // This should not have changed.
   CHECK(ActionTesting::get_databox_tag<
-            target_component, ::intrp::Tags::IndicesOfFilledInterpPoints>(
+            target_component,
+            ::intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
             runner, 0)
             .empty());
 

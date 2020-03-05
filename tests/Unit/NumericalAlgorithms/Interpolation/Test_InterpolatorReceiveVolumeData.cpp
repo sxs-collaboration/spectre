@@ -77,11 +77,11 @@ class DataBox;
 }  // namespace db
 namespace intrp {
 namespace Tags {
-template <typename Metavariables>
+template <typename TemporalId>
 struct InterpolatedVarsHolders;
-template <typename Metavariables>
+template <typename TemporalId>
 struct TemporalIds;
-template <typename Metavariables>
+template <typename TemporalId>
 struct VolumeVarsInfo;
 }  // namespace Tags
 }  // namespace intrp
@@ -108,9 +108,9 @@ struct SquareComputeItem : Square, db::ComputeTag {
 template <typename InterpolationTargetTag>
 struct MockInterpolationTargetReceiveVars {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex,
+            typename ArrayIndex, typename TemporalId,
             Requires<tmpl::list_contains_v<
-                DbTags, intrp::Tags::TemporalIds<Metavariables>>> = nullptr>
+                DbTags, intrp::Tags::TemporalIds<TemporalId>>> = nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
       Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
@@ -118,7 +118,8 @@ struct MockInterpolationTargetReceiveVars {
       const std::vector<db::item_type<::Tags::Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>>&
           vars_src,
-      const std::vector<std::vector<size_t>>& global_offsets) noexcept {
+      const std::vector<std::vector<size_t>>& global_offsets,
+      const TemporalId& /*temporal_id*/) noexcept {
     size_t number_of_interpolated_points = 0;
     for (size_t i = 0; i < global_offsets.size(); ++i) {
       Scalar<DataVector> expected_vars{global_offsets[i].size()};
@@ -148,13 +149,13 @@ struct MockInterpolationTargetReceiveVars {
     // This is not the usual usage of Tags::TemporalIds; this is done just
     // for the test.
     Slab slab(0.0, 1.0);
-    TimeStepId temporal_id(true, 0, Time(slab, Rational(111, 135)));
-    db::mutate<intrp::Tags::TemporalIds<Metavariables>>(
-        make_not_null(&box), [&temporal_id](
-                                 const gsl::not_null<db::item_type<
-                                     intrp::Tags::TemporalIds<Metavariables>>*>
+    TimeStepId strange_temporal_id(true, 0, Time(slab, Rational(111, 135)));
+    db::mutate<intrp::Tags::TemporalIds<TemporalId>>(
+        make_not_null(&box), [&strange_temporal_id](
+                                 const gsl::not_null<
+                                     std::deque<TemporalId>*>
                                      temporal_ids) noexcept {
-          temporal_ids->push_back(temporal_id);
+          temporal_ids->push_back(strange_temporal_id);
         });
   }
 };
@@ -244,6 +245,7 @@ struct MockMetavariables {
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
                   "[Unit]") {
   using metavars = MockMetavariables;
+  using temporal_id_type = typename metavars::temporal_id::type;
   using target_component =
       mock_interpolation_target<metavars, metavars::InterpolationTargetA>;
   using interp_component = mock_interpolator<metavars>;
@@ -335,8 +337,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
 
   // Should be no temporal_ids in the target box, since we never
   // put any there.
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       intrp::Tags::TemporalIds<metavars>>(
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
             .empty());
 
@@ -353,8 +355,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   // Make sure that MockInterpolationTargetReceiveVars was called,
   // by looking for a funny temporal_id that it inserts for the specific
   // purpose of this test.
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       intrp::Tags::TemporalIds<metavars>>(
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
             .front() ==
         TimeStepId(true, 0, Time(Slab(0.0, 1.0), Rational(111, 135))));

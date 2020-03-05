@@ -19,13 +19,21 @@ struct Metavars {
   static constexpr size_t volume_dim = 3;
   using interpolation_target_tags = tmpl::list<>;
 };
+struct InterpolationTargetTag {
+  using vars_to_interpolate_to_target = tmpl::list<>;
+};
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Interpolation.Tags", "[Unit][NumericalAlgorithms]") {
-  TestHelpers::db::test_simple_tag<intrp::Tags::IndicesOfFilledInterpPoints>(
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::IndicesOfFilledInterpPoints<Metavars>>(
       "IndicesOfFilledInterpPoints");
-  TestHelpers::db::test_simple_tag<intrp::Tags::IndicesOfInvalidInterpPoints>(
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::IndicesOfInvalidInterpPoints<Metavars>>(
       "IndicesOfInvalidInterpPoints");
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::InterpolatedVars<InterpolationTargetTag, Metavars>>(
+      "InterpolatedVars");
   TestHelpers::db::test_simple_tag<intrp::Tags::TemporalIds<Metavars>>(
       "TemporalIds");
   TestHelpers::db::test_simple_tag<intrp::Tags::CompletedTemporalIds<Metavars>>(

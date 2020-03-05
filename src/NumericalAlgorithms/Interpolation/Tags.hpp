@@ -41,8 +41,9 @@ struct InterpolationTargets {
 namespace Tags {
 
 /// Keeps track of which points have been filled with interpolated data.
+template <typename TemporalId>
 struct IndicesOfFilledInterpPoints : db::SimpleTag {
-  using type = std::unordered_set<size_t>;
+  using type = std::unordered_map<TemporalId, std::unordered_set<size_t>>;
 };
 
 /// Keeps track of points that cannot be filled with interpolated data.
@@ -51,22 +52,32 @@ struct IndicesOfFilledInterpPoints : db::SimpleTag {
 /// In most cases the correct action is to throw an error, but in other
 /// cases one might wish to fill these points with a default value or
 /// take some other action.
+template <typename TemporalId>
 struct IndicesOfInvalidInterpPoints : db::SimpleTag {
-  using type = std::unordered_set<size_t>;
+  using type = std::unordered_map<TemporalId, std::unordered_set<size_t>>;
 };
 
 /// `temporal_id`s on which to interpolate.
-template <typename Metavariables>
+template <typename TemporalId>
 struct TemporalIds : db::SimpleTag {
-  using type = std::deque<typename Metavariables::temporal_id::type>;
+  using type = std::deque<TemporalId>;
 };
 
 /// `temporal_id`s that we have already interpolated onto.
 ///  This is used to prevent problems with multiple late calls to
 ///  AddTemporalIdsToInterpolationTarget.
-template <typename Metavariables>
+template <typename TemporalId>
 struct CompletedTemporalIds : db::SimpleTag {
-  using type = std::deque<typename Metavariables::temporal_id::type>;
+  using type = std::deque<TemporalId>;
+};
+
+/// Holds interpolated variables on an InterpolationTarget.
+template <typename InterpolationTargetTag, typename TemporalId>
+struct InterpolatedVars : db::SimpleTag {
+  using type = std::unordered_map<
+      TemporalId,
+      Variables<
+          typename InterpolationTargetTag::vars_to_interpolate_to_target>>;
 };
 
 /// Volume variables at all `temporal_id`s for all local `Element`s.

@@ -26,7 +26,7 @@ class DataBox;
 }  // namespace db
 namespace intrp {
 namespace Tags {
-template <typename Metavariables>
+template <typename TemporalId>
 struct TemporalIds;
 }  // namespace Tags
 }  // namespace intrp
@@ -207,15 +207,15 @@ template <typename InterpolationTargetTag>
 struct WedgeSectionTorus {
   using const_global_cache_tags =
       tmpl::list<Tags::WedgeSectionTorus<InterpolationTargetTag>>;
-  template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex,
-            Requires<tmpl::list_contains_v<
-                DbTags, Tags::TemporalIds<Metavariables>>> = nullptr>
-  static void apply(
-      db::DataBox<DbTags>& box,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/,
-      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
+  template <
+      typename ParallelComponent, typename DbTags, typename Metavariables,
+      typename ArrayIndex, typename TemporalId,
+      Requires<tmpl::list_contains_v<DbTags, Tags::TemporalIds<TemporalId>>> =
+          nullptr>
+  static void apply(db::DataBox<DbTags>& box,
+                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/,
+                    const TemporalId& temporal_id) noexcept {
     const auto& options =
         Parallel::get<Tags::WedgeSectionTorus<InterpolationTargetTag>>(cache);
 

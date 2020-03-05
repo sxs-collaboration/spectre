@@ -85,10 +85,11 @@ auto make_initial_box(
 ///
 /// DataBox changes:
 /// - Adds:
-///   - `Tags::IndicesOfFilledInterpPoints`
-///   - `Tags::IndicesOfInvalidInterpPoints`
-///   - `Tags::TemporalIds<Metavariables>`
-///   - `Tags::CompletedTemporalIds<Metavariables>`
+///   - `Tags::IndicesOfFilledInterpPoints<TemporalId>`
+///   - `Tags::IndicesOfInvalidInterpPoints<TemporalId>`
+///   - `Tags::TemporalIds<TemporalId>`
+///   - `Tags::CompletedTemporalIds<TemporalId>`
+///   - `Tags::InterpolatedVars<InterpolationTargetTag,TemporalId>`
 ///   - `::Tags::Variables<typename
 ///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
 /// - Removes: nothing
@@ -97,10 +98,13 @@ auto make_initial_box(
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename Metavariables, typename InterpolationTargetTag>
 struct InitializeInterpolationTarget {
+  using TemporalId = typename Metavariables::temporal_id::type;
   using return_tag_list_initial = tmpl::list<
-      Tags::IndicesOfFilledInterpPoints, Tags::IndicesOfInvalidInterpPoints,
-      Tags::TemporalIds<Metavariables>,
-      Tags::CompletedTemporalIds<Metavariables>,
+      Tags::IndicesOfFilledInterpPoints<TemporalId>,
+      Tags::IndicesOfInvalidInterpPoints<TemporalId>,
+      Tags::TemporalIds<TemporalId>,
+      Tags::CompletedTemporalIds<TemporalId>,
+      Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>,
       ::Tags::Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>;
   using return_tag_list =
@@ -111,7 +115,8 @@ struct InitializeInterpolationTarget {
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
             Requires<not tmpl::list_contains_v<
-                DbTagsList, Tags::IndicesOfFilledInterpPoints>> = nullptr>
+                DbTagsList, Tags::IndicesOfFilledInterpPoints<TemporalId>>> =
+                nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -122,13 +127,15 @@ struct InitializeInterpolationTarget {
         InterpolationTargetTag>(
         db::create_from<db::RemoveTags<>,
                         db::get_items<return_tag_list_initial>>(
-            std::move(box), db::item_type<Tags::IndicesOfFilledInterpPoints>{},
-            db::item_type<Tags::IndicesOfInvalidInterpPoints>{},
-            db::item_type<Tags::TemporalIds<Metavariables>>{},
-            db::item_type<Tags::CompletedTemporalIds<Metavariables>>{},
-            db::item_type<
-                ::Tags::Variables<typename InterpolationTargetTag::
-                                      vars_to_interpolate_to_target>>{}),
+            std::move(box),
+            std::unordered_map<TemporalId, std::unordered_set<size_t>>{},
+            std::unordered_map<TemporalId, std::unordered_set<size_t>>{},
+            std::deque<TemporalId>{}, std::deque<TemporalId>{},
+            std::unordered_map<TemporalId,
+                               Variables<typename InterpolationTargetTag::
+                                             vars_to_interpolate_to_target>>{},
+            Variables<typename InterpolationTargetTag::
+                          vars_to_interpolate_to_target>{}),
         cache);
     // compute_items_on_target will depend on compute items added in
     // make_initial_box, so compute_items_on_target must be added
@@ -144,7 +151,8 @@ struct InitializeInterpolationTarget {
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
             Requires<tmpl::list_contains_v<
-                DbTagsList, Tags::IndicesOfFilledInterpPoints>> = nullptr>
+                DbTagsList, Tags::IndicesOfFilledInterpPoints<TemporalId>>> =
+                nullptr>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,

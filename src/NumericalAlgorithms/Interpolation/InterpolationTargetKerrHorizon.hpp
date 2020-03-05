@@ -29,7 +29,7 @@ class DataBox;
 }  // namespace db
 namespace intrp {
 namespace Tags {
-template <typename Metavariables>
+template <typename TemporalId>
 struct TemporalIds;
 }  // namespace Tags
 }  // namespace intrp
@@ -174,15 +174,15 @@ struct KerrHorizon {
         db::AddComputeTags<StrahlkorperTags::compute_items_tags<Frame>>>(
         std::move(box), std::move(strahlkorper));
   }
-  template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex,
-            Requires<tmpl::list_contains_v<
-                DbTags, Tags::TemporalIds<Metavariables>>> = nullptr>
-  static void apply(
-      db::DataBox<DbTags>& box,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/,
-      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
+  template <
+      typename ParallelComponent, typename DbTags, typename Metavariables,
+      typename ArrayIndex, typename TemporalId,
+      Requires<tmpl::list_contains_v<DbTags, Tags::TemporalIds<TemporalId>>> =
+          nullptr>
+  static void apply(db::DataBox<DbTags>& box,
+                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/,
+                    const TemporalId& temporal_id) noexcept {
     // In the future, when we add support for multiple Frames,
     // the code that transforms coordinates from the Strahlkorper Frame
     // to Frame::Inertial will go here.  That transformation

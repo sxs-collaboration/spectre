@@ -23,35 +23,31 @@ namespace Actions {
 ///
 /// Uses:
 /// - DataBox:
-///   - `Tags::TemporalIds<Metavariables>`
-///   - `Tags::CompletedTemporalIds<Metavariables>`
+///   - `Tags::TemporalIds<TemporalId>`
+///   - `Tags::CompletedTemporalIds<TemporalId>`
 ///
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies:
-///   - `Tags::TemporalIds<Metavariables>`
+///   - `Tags::TemporalIds<TemporalId>`
 template <typename InterpolationTargetTag>
 struct AddTemporalIdsToInterpolationTarget {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex,
+            typename ArrayIndex, typename TemporalId,
             Requires<tmpl::list_contains_v<
-                DbTags, typename Tags::TemporalIds<Metavariables>>> = nullptr>
+                DbTags, Tags::TemporalIds<TemporalId>>> = nullptr>
   static void apply(db::DataBox<DbTags>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    std::vector<typename Metavariables::temporal_id::type>&&
-                        temporal_ids) noexcept {
+                    std::vector<TemporalId>&& temporal_ids) noexcept {
     const bool begin_interpolation =
-        db::get<Tags::TemporalIds<Metavariables>>(box).empty();
+        db::get<Tags::TemporalIds<TemporalId>>(box).empty();
 
-    db::mutate_apply<tmpl::list<Tags::TemporalIds<Metavariables>>,
-                     tmpl::list<Tags::CompletedTemporalIds<Metavariables>>>(
-        [&temporal_ids](const gsl::not_null<
-                            db::item_type<Tags::TemporalIds<Metavariables>>*>
-                            ids,
-                        const db::const_item_type<Tags::CompletedTemporalIds<
-                            Metavariables>>& completed_ids) noexcept {
+    db::mutate_apply<tmpl::list<Tags::TemporalIds<TemporalId>>,
+                     tmpl::list<Tags::CompletedTemporalIds<TemporalId>>>(
+        [&temporal_ids](const gsl::not_null<std::deque<TemporalId>*> ids,
+                        const std::deque<TemporalId>& completed_ids) noexcept {
           // We allow this Action to be called multiple times with the
           // same temporal_ids (e.g. from each node of a NodeGroup
           // ParallelComponent such as Interpolator). If multiple calls
@@ -80,7 +76,7 @@ struct AddTemporalIdsToInterpolationTarget {
     // interpolate.  If there's an interpolation in progress, then a
     // later interpolation will be started as soon as the earlier one
     // finishes.
-    const auto& ids = db::get<Tags::TemporalIds<Metavariables>>(box);
+    const auto& ids = db::get<Tags::TemporalIds<TemporalId>>(box);
     if (begin_interpolation and not ids.empty()) {
       auto& my_proxy =
           Parallel::get_parallel_component<ParallelComponent>(cache);

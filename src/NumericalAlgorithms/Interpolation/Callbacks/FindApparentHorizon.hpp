@@ -81,17 +81,17 @@ template <typename InterpolationTargetTag>
 struct FindApparentHorizon {
   using observation_types = typename InterpolationTargetTag::
       post_horizon_find_callback::observation_types;
-  template <typename DbTags, typename Metavariables>
+  template <typename DbTags, typename Metavariables, typename TemporalId>
   static bool apply(
       const gsl::not_null<db::DataBox<DbTags>*> box,
       const gsl::not_null<Parallel::ConstGlobalCache<Metavariables>*> cache,
-      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
-
+      const TemporalId& temporal_id) noexcept {
     // Before doing anything else, deal with the possibility that some
     // of the points might be outside of the Domain.
-    const auto num_invalid_pts =
-        db::get<Tags::IndicesOfInvalidInterpPoints>(*box).size();
-    if(num_invalid_pts > 0) {
+    const auto& indices_of_invalid_pts =
+        db::get<Tags::IndicesOfInvalidInterpPoints<TemporalId>>(*box);
+    if (indices_of_invalid_pts.count(temporal_id) > 0 and
+        indices_of_invalid_pts.at(temporal_id).size() > 0) {
       ERROR("FindApparentHorizon: Found points that are not in any block");
     }
 
@@ -169,7 +169,7 @@ struct FindApparentHorizon {
     if (status == FastFlow::Status::SuccessfulIteration) {
       // Do another iteration of the same horizon search.
       const auto& temporal_ids =
-          db::get<intrp::Tags::TemporalIds<Metavariables>>(*box);
+          db::get<intrp::Tags::TemporalIds<TemporalId>>(*box);
       auto& interpolation_target = Parallel::get_parallel_component<
           intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>>(
           *cache);
@@ -200,12 +200,9 @@ struct FindApparentHorizon {
     db::mutate_apply<tmpl::list<::Tags::Variables<vars_tags>>,
                      tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Inertial>,
                                 ::ah::Tags::FastFlow>>(
-        [
-        ](const gsl::not_null<db::item_type<::Tags::Variables<vars_tags>>*>
-              vars,
-          const db::const_item_type<
-              StrahlkorperTags::Strahlkorper<Frame::Inertial>>& strahlkorper,
-          const db::const_item_type<::ah::Tags::FastFlow>& fast_flow) noexcept {
+        [](const gsl::not_null<Variables<vars_tags>*> vars,
+           const Strahlkorper<Frame::Inertial>& strahlkorper,
+           const FastFlow& fast_flow) noexcept {
           const size_t L_mesh = fast_flow.current_l_mesh(strahlkorper);
           const auto prolonged_strahlkorper =
               Strahlkorper<Frame::Inertial>(L_mesh, L_mesh, strahlkorper);

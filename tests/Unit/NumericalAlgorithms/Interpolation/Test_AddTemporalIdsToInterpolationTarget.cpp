@@ -34,8 +34,9 @@
 class DataVector;
 namespace intrp {
 namespace Tags {
+template <typename TemporalId>
 struct IndicesOfFilledInterpPoints;
-template <typename Metavariables>
+template <typename TemporalId>
 struct TemporalIds;
 }  // namespace Tags
 }  // namespace intrp
@@ -64,24 +65,26 @@ struct mock_interpolation_target {
 
 struct MockComputeTargetPoints {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex,
+            typename ArrayIndex, typename TemporalId,
             Requires<tmpl::list_contains_v<
-                DbTags, intrp::Tags::TemporalIds<Metavariables>>> = nullptr>
-  static void apply(
-      db::DataBox<DbTags>& box,
-      Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/,
-      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
+                DbTags, intrp::Tags::TemporalIds<TemporalId>>> = nullptr>
+  static void apply(db::DataBox<DbTags>& box,
+                    Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const TemporalId& temporal_id) noexcept {
     Slab slab(0.0, 1.0);
     CHECK(temporal_id == TimeStepId(true, 0, Time(slab, 0)));
     // Put something in IndicesOfFilledInterpPts so we can check later whether
     // this function was called.  This isn't the usual usage of
     // IndicesOfFilledInterpPoints.
-    db::mutate<::intrp::Tags::IndicesOfFilledInterpPoints>(
+    db::mutate<::intrp::Tags::IndicesOfFilledInterpPoints<TemporalId>>(
         make_not_null(&box),
-        [](const gsl::not_null<
-            db::item_type<::intrp::Tags::IndicesOfFilledInterpPoints>*>
-               indices) noexcept { indices->insert(indices->size() + 1); });
+        [&temporal_id](
+            const gsl::not_null<std::unordered_map<TemporalId,
+                                                   std::unordered_set<size_t>>*>
+                indices) noexcept {
+          (*indices)[temporal_id].insert((*indices)[temporal_id].size() + 1);
+        });
   }
 };
 
@@ -102,6 +105,7 @@ struct MockMetavariables {
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
                   "[Unit]") {
   using metavars = MockMetavariables;
+  using temporal_id_type = typename metavars::temporal_id::type;
   using target_component =
       mock_interpolation_target<metavars, metavars::InterpolationTargetA>;
 
@@ -114,8 +118,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
   ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       ::intrp::Tags::TemporalIds<metavars>>(
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
             .empty());
 
@@ -128,8 +132,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
                        ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
                            metavars::InterpolationTargetA>>(0, temporal_ids);
 
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       ::intrp::Tags::TemporalIds<metavars>>(
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0) ==
         std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
 
@@ -138,8 +142,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
                        ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
                            metavars::InterpolationTargetA>>(0, temporal_ids);
   // ...and check that it indeed did nothing.
-  CHECK(ActionTesting::get_databox_tag<target_component,
-                                       ::intrp::Tags::TemporalIds<metavars>>(
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0) ==
         std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
 
@@ -147,8 +151,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
 
   // Check that MockComputeTargetPoints was called.
   CHECK(ActionTesting::get_databox_tag<
-            target_component, ::intrp::Tags::IndicesOfFilledInterpPoints>(
+            target_component,
+            ::intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
             runner, 0)
+            .at(temporal_ids[0])
             .size() == 1);
 
   // Call again; it should not call MockComputeTargetPoints this time.

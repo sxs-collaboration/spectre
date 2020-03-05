@@ -38,46 +38,51 @@ namespace intrp {
 /// Action (LineSegment, Strahlkorper, etc.) that specifies a
 /// particular set of points.
 template <typename InterpolationTargetTag, typename DbTags,
-          typename Metavariables, size_t VolumeDim, typename Frame>
+          typename Metavariables, typename TemporalId,
+          size_t VolumeDim, typename Frame>
 void send_points_to_interpolator(
     db::DataBox<DbTags>& box, Parallel::ConstGlobalCache<Metavariables>& cache,
     const tnsr::I<DataVector, VolumeDim, Frame>& target_points,
-    const typename Metavariables::temporal_id::type& temporal_id) noexcept {
+    const TemporalId& temporal_id) noexcept {
   const auto& domain = db::get<domain::Tags::Domain<VolumeDim>>(box);
   auto coords = block_logical_coordinates(domain, target_points);
 
-  db::mutate<
-      Tags::IndicesOfFilledInterpPoints, Tags::IndicesOfInvalidInterpPoints,
-      ::Tags::Variables<
-          typename InterpolationTargetTag::vars_to_interpolate_to_target>>(
+  db::mutate<Tags::IndicesOfFilledInterpPoints<TemporalId>,
+             Tags::IndicesOfInvalidInterpPoints<TemporalId>,
+             Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>>(
       make_not_null(&box),
-      [&coords](
-          const gsl::not_null<db::item_type<Tags::IndicesOfFilledInterpPoints>*>
+      [&coords, &temporal_id ](
+          const gsl::not_null<
+              std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
               indices_of_filled,
           const gsl::not_null<
-              db::item_type<Tags::IndicesOfInvalidInterpPoints>*>
+              std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
               indices_of_invalid_points,
-          const gsl::not_null<db::item_type<::Tags::Variables<
-              typename InterpolationTargetTag::vars_to_interpolate_to_target>>*>
-              vars_dest) noexcept {
+          const gsl::not_null<std::unordered_map<
+              TemporalId, Variables<typename InterpolationTargetTag::
+                                        vars_to_interpolate_to_target>>*>
+              vars_dest_all_times) noexcept {
+        // At this point we don't know if vars_dest exists in the map;
+        // if it doesn't then we want to default construct it.
+        auto& vars_dest = (*vars_dest_all_times)[temporal_id];
         // Because we are sending new points to the interpolator,
         // we know that none of these points have been interpolated to,
         // so clear the list.
-        indices_of_filled->clear();
+        indices_of_filled->erase(temporal_id);
 
         // Set the indices of invalid points.
-        indices_of_invalid_points->clear();
+        indices_of_invalid_points->erase(temporal_id);
         for (size_t i = 0; i < coords.size(); ++i) {
           if (not coords[i]) {
-            indices_of_invalid_points->insert(i);
+            (*indices_of_invalid_points)[temporal_id].insert(i);
           }
         }
 
         // We will be filling vars_dest with interpolated data.
         // Here we make sure it is allocated to the correct size.
-        if (vars_dest->number_of_grid_points() != coords.size()) {
-          *vars_dest = db::item_type<::Tags::Variables<
-              typename InterpolationTargetTag::vars_to_interpolate_to_target>>(
+        if (vars_dest.number_of_grid_points() != coords.size()) {
+          vars_dest = Variables<
+              typename InterpolationTargetTag::vars_to_interpolate_to_target>(
               coords.size());
         }
       });
