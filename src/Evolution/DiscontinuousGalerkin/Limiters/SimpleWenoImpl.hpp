@@ -86,7 +86,8 @@ void simple_weno_impl(
   // Sum local and modified neighbor polynomials for the WENO reconstruction
   Weno_detail::reconstruct_from_weighted_sum(
       make_not_null(&component_to_limit), mesh, neighbor_linear_weight,
-      *modified_neighbor_solution_buffer, Weno_detail::DerivativeWeight::Unity);
+      *modified_neighbor_solution_buffer,
+      Weno_detail::DerivativeWeight::PowTwoEll);
 }
 
 // Compute the Simple WENO solution for one tensor

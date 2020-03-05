@@ -187,7 +187,7 @@ void test_simple_weno_work(
     Limiters::Weno_detail::reconstruct_from_weighted_sum(
         make_not_null(&(expected_vector.get(i))), mesh, neighbor_linear_weight,
         expected_neighbor_polynomials,
-        Limiters::Weno_detail::DerivativeWeight::Unity);
+        Limiters::Weno_detail::DerivativeWeight::PowTwoEll);
   }
   CHECK_ITERABLE_CUSTOM_APPROX(expected_vector, vector_to_limit, local_approx);
 }
