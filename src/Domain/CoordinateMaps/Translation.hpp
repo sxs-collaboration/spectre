@@ -45,23 +45,23 @@ class Translation {
       const std::array<T, 1>& source_coords, double time,
       const std::unordered_map<
           std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list)
-      const noexcept;
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const noexcept;
 
   boost::optional<std::array<double, 1>> inverse(
       const std::array<double, 1>& target_coords, double time,
       const std::unordered_map<
           std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list)
-      const noexcept;
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const noexcept;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 1> frame_velocity(
       const std::array<T, 1>& source_coords, double time,
       const std::unordered_map<
           std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list)
-      const noexcept;
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const noexcept;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> inv_jacobian(
