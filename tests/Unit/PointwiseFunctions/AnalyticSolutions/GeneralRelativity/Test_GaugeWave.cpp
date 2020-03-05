@@ -20,6 +20,8 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "tests/Unit/PointwiseFunctions/AnalyticSolutions/GeneralRelativity/VerifyGrSolution.hpp"
+#include "tests/Unit/PointwiseFunctions/AnalyticSolutions/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -204,6 +206,15 @@ void test_gauge_wave(const gr::Solutions::GaugeWave& solution,
        "gauge_wave_d_spatial_metric", "gauge_wave_sqrt_det_spatial_metric",
        "gauge_wave_extrinsic_curvature", "gauge_wave_inverse_spatial_metric"},
       {{{1.0, 20.0}}}, std::make_tuple(amplitude, wavelength), used_for_size);
+
+  TestHelpers::AnalyticSolutions::test_tag_retrieval(
+      solution, x, t, gr::Solutions::GaugeWave::tags<DataType>{});
+}
+
+void test_consistency() noexcept {
+  const gr::Solutions::GaugeWave solution(1.3, 2.4);
+  TestHelpers::VerifyGrSolution::verify_consistency(
+      solution, 1.234, tnsr::I<double, 3>{{{1.2, 2.3, 3.4}}}, 0.01, 1.0e-8);
 }
 
 void test_serialize() noexcept {
@@ -246,6 +257,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.GaugeWave",
       solution, DataVector(5, std::numeric_limits<double>::signaling_NaN()));
   test_gauge_wave<double>(solution,
                           std::numeric_limits<double>::signaling_NaN());
+  test_consistency();
   test_copy_and_move();
   test_serialize();
   test_construct_from_options();
