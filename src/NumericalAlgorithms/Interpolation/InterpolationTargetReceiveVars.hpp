@@ -209,15 +209,17 @@ void callback_and_cleanup(
   Parallel::simple_action<Actions::CleanUpInterpolator<InterpolationTargetTag>>(
       interpolator_proxy, temporal_id);
 
-  // If there are further temporal_ids, begin interpolation for
-  // the next one.
-  const auto& temporal_ids = db::get<Tags::TemporalIds<TemporalId>>(*box);
-  if (not temporal_ids.empty()) {
-    auto& my_proxy = Parallel::get_parallel_component<
-        InterpolationTarget<Metavariables, InterpolationTargetTag>>(*cache);
-    Parallel::simple_action<
-        typename InterpolationTargetTag::compute_target_points>(
-        my_proxy, temporal_ids.front());
+  // If we have a sequential target, and there are further
+  // temporal_ids, begin interpolation for the next one.
+  if (InterpolationTargetTag::compute_target_points::is_sequential::value) {
+    const auto& temporal_ids = db::get<Tags::TemporalIds<TemporalId>>(*box);
+    if (not temporal_ids.empty()) {
+      auto& my_proxy = Parallel::get_parallel_component<
+          InterpolationTarget<Metavariables, InterpolationTargetTag>>(*cache);
+      Parallel::simple_action<
+          typename InterpolationTargetTag::compute_target_points>(
+          my_proxy, temporal_ids.front());
+    }
   }
 }
 

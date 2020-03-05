@@ -162,6 +162,7 @@ struct ApparentHorizon {
       tmpl::append<StrahlkorperTags::items_tags<Frame>,
                    tmpl::list<::ah::Tags::FastFlow, ::Tags::Verbosity>,
                    StrahlkorperTags::compute_items_tags<Frame>>;
+  using is_sequential = std::true_type;
   template <typename DbTags, typename Metavariables>
   static auto initialize(
       db::DataBox<DbTags>&& box,

@@ -63,7 +63,9 @@ struct mock_interpolation_target {
                              Metavariables::Phase::Testing, tmpl::list<>>>;
 };
 
+template <typename IsSequential>
 struct MockComputeTargetPoints {
+  using is_sequential = IsSequential;
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex, typename TemporalId,
             Requires<tmpl::list_contains_v<
@@ -72,8 +74,6 @@ struct MockComputeTargetPoints {
                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const TemporalId& temporal_id) noexcept {
-    Slab slab(0.0, 1.0);
-    CHECK(temporal_id == TimeStepId(true, 0, Time(slab, 0)));
     // Put something in IndicesOfFilledInterpPts so we can check later whether
     // this function was called.  This isn't the usual usage of
     // IndicesOfFilledInterpPoints.
@@ -88,12 +88,13 @@ struct MockComputeTargetPoints {
   }
 };
 
+template <typename IsSequential>
 struct MockMetavariables {
   struct InterpolationTargetA {
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_items_on_target = tmpl::list<>;
-    using compute_target_points = MockComputeTargetPoints;
+    using compute_target_points = MockComputeTargetPoints<IsSequential>;
   };
   using temporal_id = ::Tags::TimeStepId;
 
@@ -102,12 +103,13 @@ struct MockMetavariables {
   enum class Phase { Initialization, Testing, Exit };
 };
 
-SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
-                  "[Unit]") {
-  using metavars = MockMetavariables;
+template <typename IsSequential>
+void test_add_temporal_ids() {
+  using metavars = MockMetavariables<IsSequential>;
   using temporal_id_type = typename metavars::temporal_id::type;
   using target_component =
-      mock_interpolation_target<metavars, metavars::InterpolationTargetA>;
+      mock_interpolation_target<metavars,
+                                typename metavars::InterpolationTargetA>;
 
   const auto domain_creator =
       domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
@@ -128,9 +130,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
       TimeStepId(true, 0, Time(slab, 0)),
       TimeStepId(true, 0, Time(slab, Rational(1, 3)))};
 
-  runner.simple_action<target_component,
-                       ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
-                           metavars::InterpolationTargetA>>(0, temporal_ids);
+  runner.template simple_action<
+      target_component, ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                            typename metavars::InterpolationTargetA>>(
+      0, temporal_ids);
 
   CHECK(ActionTesting::get_databox_tag<
             target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
@@ -138,16 +141,24 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
         std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
 
   // Add the same temporal_ids again, which should do nothing...
-  runner.simple_action<target_component,
-                       ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
-                           metavars::InterpolationTargetA>>(0, temporal_ids);
+  runner.template simple_action<
+      target_component, ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                            typename metavars::InterpolationTargetA>>(
+      0, temporal_ids);
   // ...and check that it indeed did nothing.
   CHECK(ActionTesting::get_databox_tag<
             target_component, ::intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0) ==
         std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
 
-  runner.invoke_queued_simple_action<target_component>(0);
+  if (IsSequential::value) {
+    // Only one simple action should be queued, for the first temporal_id.
+    runner.template invoke_queued_simple_action<target_component>(0);
+  } else {
+    // Two simple actions should be queued, one for each temporal_id.
+    runner.template invoke_queued_simple_action<target_component>(0);
+    runner.template invoke_queued_simple_action<target_component>(0);
+  }
 
   // Check that MockComputeTargetPoints was called.
   CHECK(ActionTesting::get_databox_tag<
@@ -156,16 +167,48 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
             runner, 0)
             .at(temporal_ids[0])
             .size() == 1);
+  if (not IsSequential::value) {
+    // MockComputeTargetPoints should have been called twice
+    CHECK(ActionTesting::get_databox_tag<
+              target_component,
+              ::intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
+              runner, 0)
+              .at(temporal_ids[1])
+              .size() == 1);
+  }
 
-  // Call again; it should not call MockComputeTargetPoints this time.
+  // Call again.
+  // If sequential, it should not call MockComputeTargetPoints this time.
+  // Otherwise it should call MockComputeTargetPoints twice.
   const std::vector<TimeStepId> temporal_ids_2 = {
       TimeStepId(true, 0, Time(slab, Rational(2, 3))),
       TimeStepId(true, 0, Time(slab, Rational(3, 3)))};
-  runner.simple_action<target_component,
-                       ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
-                           metavars::InterpolationTargetA>>(0, temporal_ids_2);
+  runner.template simple_action<
+      target_component, ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                            typename metavars::InterpolationTargetA>>(
+      0, temporal_ids_2);
 
-  // Check that MockComputeTargetPoints was not called.
-  CHECK(runner.is_simple_action_queue_empty<target_component>(0));
+  if (not IsSequential::value) {
+    // For non-sequential, there should be two queued_simple_actions,
+    // each of which will call MockComputeTargetPoints for one of the
+    // new temporal_ids.
+    for (size_t i = 0; i < 2; ++i) {
+      runner.template invoke_queued_simple_action<target_component>(0);
+      CHECK(ActionTesting::get_databox_tag<
+                target_component,
+                ::intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
+                runner, 0)
+                .at(temporal_ids_2[i])
+                .size() == 1);
+    }
+  }
+
+  // Check that there are no queued simple actions.
+  CHECK(runner.template is_simple_action_queue_empty<target_component>(0));
+}
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
+                  "[Unit]") {
+  test_add_temporal_ids<std::true_type>();
+  test_add_temporal_ids<std::false_type>();
 }
 }  // namespace

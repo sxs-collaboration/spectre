@@ -139,6 +139,7 @@ template <typename InterpolationTargetTag, size_t VolumeDim>
 struct LineSegment {
   using const_global_cache_tags =
       tmpl::list<Tags::LineSegment<InterpolationTargetTag, VolumeDim>>;
+  using is_sequential = std::false_type;
   template <
       typename ParallelComponent, typename DbTags, typename Metavariables,
       typename ArrayIndex, typename TemporalId,

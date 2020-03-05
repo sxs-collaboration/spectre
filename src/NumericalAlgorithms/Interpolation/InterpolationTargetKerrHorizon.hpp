@@ -152,6 +152,7 @@ struct KerrHorizon {
   using initialization_tags =
       tmpl::append<StrahlkorperTags::items_tags<Frame>,
                    StrahlkorperTags::compute_items_tags<Frame>>;
+  using is_sequential = std::false_type;
   template <typename DbTags, typename Metavariables>
   static auto initialize(
       db::DataBox<DbTags>&& box,
