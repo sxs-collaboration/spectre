@@ -163,6 +163,18 @@ namespace ThreadedActions {
  */
 struct WriteReductionData {
  private:
+  static void append_to_reduction_data(
+      const gsl::not_null<std::vector<double>*> all_reduction_data,
+      const double t) noexcept {
+    all_reduction_data->push_back(t);
+  }
+
+  static void append_to_reduction_data(
+      const gsl::not_null<std::vector<double>*> all_reduction_data,
+      const std::vector<double>& t) noexcept {
+    all_reduction_data->insert(all_reduction_data->end(), t.begin(), t.end());
+  }
+
   template <typename... Ts, size_t... Is>
   static void write_data(const std::string& subfile_name,
                          std::vector<std::string>&& legend,
@@ -171,8 +183,9 @@ struct WriteReductionData {
                          std::index_sequence<Is...> /*meta*/) noexcept {
     static_assert(sizeof...(Ts) > 0,
                   "Must be reducing at least one piece of data");
-    std::vector<double> data_to_append{
-        static_cast<double>(std::get<Is>(data))...};
+    std::vector<double> data_to_append{};
+    EXPAND_PACK_LEFT_TO_RIGHT(
+        append_to_reduction_data(&data_to_append, std::get<Is>(data)));
 
     h5::H5File<h5::AccessType::ReadWrite> h5file(file_prefix + ".h5", true);
     constexpr size_t version_number = 0;

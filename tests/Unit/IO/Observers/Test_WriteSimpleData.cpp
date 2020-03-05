@@ -41,8 +41,8 @@ struct test_metavariables {
   using component_list =
       tmpl::list<helpers::observer_writer_component<test_metavariables>>;
 
-  using observed_reduction_data_tags =
-      observers::make_reduction_data_tags<tmpl::list<helpers::reduction_data>>;
+  using observed_reduction_data_tags = observers::make_reduction_data_tags<
+      tmpl::list<helpers::reduction_data_from_doubles>>;
 
   enum class Phase { Initialization, Testing, Exit };
 };
