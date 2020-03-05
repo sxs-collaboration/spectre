@@ -91,9 +91,8 @@ function(add_test_library LIBRARY FOLDER LIBRARY_SOURCES LINK_LIBS)
 
   target_link_libraries(
     ${LIBRARY}
-    INTERFACE
+    PRIVATE
     ${LINK_LIBS}
-    INTERFACE
     ${PYTHON_LIBRARIES}
     )
 

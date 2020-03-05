@@ -32,7 +32,7 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/Interpolation/"
   "${LIBRARY_SOURCES}"
-  "Interpolation;MathFunctions"
+  "Interpolation;IO;MathFunctions"
   )
 
 add_dependencies(

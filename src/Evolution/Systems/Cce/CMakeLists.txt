@@ -21,10 +21,14 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE DataStructures
-  INTERFACE ErrorHandling
-  INTERFACE IO
-  INTERFACE LinearOperators
-  INTERFACE LinearSolver
-  INTERFACE Spectral
+  PRIVATE
+  LinearSolver
+  PUBLIC
+  DataStructures
+  Domain
+  ErrorHandling
+  IO
+  LinearOperators
+  Spectral
+  Utilities
   )
