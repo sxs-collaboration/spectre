@@ -19,8 +19,8 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/MakeWithValue.hpp" // IWYU pragma: keep
-#include "Utilities/PointerVector.hpp" // IWYU pragma: keep
+#include "Utilities/MakeWithValue.hpp"  // IWYU pragma: keep
+#include "Utilities/PointerVector.hpp"  // IWYU pragma: keep
 #include "Utilities/PrintHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -242,7 +242,7 @@ class VectorImpl
    */
   void SPECTRE_ALWAYS_INLINE
   destructive_resize(const size_t new_size) noexcept {
-    if(UNLIKELY(size() != new_size)) {
+    if (UNLIKELY(size() != new_size)) {
       if (owning_) {
         owned_data_ = std::unique_ptr<value_type[], decltype(&free)>{
             new_size > 0 ? static_cast<value_type*>(

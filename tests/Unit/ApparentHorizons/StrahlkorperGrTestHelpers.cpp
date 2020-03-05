@@ -90,7 +90,7 @@ Scalar<DataType> horizon_ricci_scalar(
       (3.0 * square(get(horizon_radius)) - 2.0 * square(kerr_r_plus) -
        3.0 * square(kerr_spin_a)));
   get(ricci_scalar) /= cube(-1.0 * square(get(horizon_radius)) +
-                               square(kerr_spin_a) + 2.0 * square(kerr_r_plus));
+                            square(kerr_spin_a) + 2.0 * square(kerr_r_plus));
   return ricci_scalar;
 }
 

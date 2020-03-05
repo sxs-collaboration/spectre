@@ -7,7 +7,7 @@
 #include <ostream>
 #include <pup.h>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -15,7 +15,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "Utilities/Math.hpp" // IWYU pragma: keep
+#include "Utilities/Math.hpp"  // IWYU pragma: keep
 
 namespace {
 template <typename DataType>

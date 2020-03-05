@@ -38,7 +38,6 @@ namespace Solutions {
  */
 class ConstantM1 : public MarkAsAnalyticSolution {
  public:
-
   /// The mean flow velocity.
   struct MeanVelocity {
     using type = std::array<double, 3>;
