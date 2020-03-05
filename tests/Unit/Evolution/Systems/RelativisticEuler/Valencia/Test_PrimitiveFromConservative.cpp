@@ -20,6 +20,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Overloader.hpp"
+#include "tests/Unit/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "tests/Unit/PointwiseFunctions/Hydro/TestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -38,7 +39,7 @@ void test_primitive_from_conservative(
   const auto expected_lorentz_factor =
       TestHelpers::hydro::random_lorentz_factor(generator, used_for_size);
   const auto spatial_metric =
-      TestHelpers::hydro::random_spatial_metric<Dim>(generator, used_for_size);
+      TestHelpers::gr::random_spatial_metric<Dim>(generator, used_for_size);
   const auto expected_spatial_velocity = TestHelpers::hydro::random_velocity(
       generator, expected_lorentz_factor, spatial_metric);
   const auto expected_specific_internal_energy = make_overloader(

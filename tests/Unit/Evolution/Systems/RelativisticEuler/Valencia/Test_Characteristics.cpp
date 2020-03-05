@@ -31,6 +31,7 @@
 #include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
+#include "tests/Unit/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "tests/Unit/PointwiseFunctions/Hydro/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/Pypp.hpp"
@@ -74,11 +75,12 @@ template <size_t Dim>
 void test_characteristic_speeds(const DataVector& used_for_size) noexcept {
   MAKE_GENERATOR(generator);
   namespace helper = TestHelpers::hydro;
+  namespace gr_helper = TestHelpers::gr;
   const auto nn_gen = make_not_null(&generator);
-  const auto lapse = helper::random_lapse(nn_gen, used_for_size);
-  const auto shift = helper::random_shift<Dim>(nn_gen, used_for_size);
+  const auto lapse = gr_helper::random_lapse(nn_gen, used_for_size);
+  const auto shift = gr_helper::random_shift<Dim>(nn_gen, used_for_size);
   const auto spatial_metric =
-      helper::random_spatial_metric<Dim>(nn_gen, used_for_size);
+      gr_helper::random_spatial_metric<Dim>(nn_gen, used_for_size);
   const auto spatial_velocity = helper::random_velocity(
       nn_gen, helper::random_lorentz_factor(nn_gen, used_for_size),
       spatial_metric);
@@ -214,10 +216,11 @@ void test_characteristic_matrices(const double used_for_size) noexcept {
   const auto test_for_given_eos =
       [&used_for_size, &generator ](const auto& equation_of_state) noexcept {
     namespace helper = TestHelpers::hydro;
+    namespace gr_helper = TestHelpers::gr;
     const auto nn_gen = make_not_null(&generator);
 
     const auto spatial_metric =
-        helper::random_spatial_metric<Dim>(nn_gen, used_for_size);
+        gr_helper::random_spatial_metric<Dim>(nn_gen, used_for_size);
     const auto det_and_inv_metric = determinant_and_inverse(spatial_metric);
     const auto lorentz_factor =
         helper::random_lorentz_factor(nn_gen, used_for_size);

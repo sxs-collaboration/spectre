@@ -12,6 +12,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "tests/Unit/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "tests/Unit/PointwiseFunctions/Hydro/TestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -20,7 +21,7 @@ template <size_t Dim, typename DataType>
 void test_spatial_velocity(const gsl::not_null<std::mt19937*> generator,
                            const DataType& used_for_size) noexcept {
   const auto metric =
-      TestHelpers::hydro::random_spatial_metric<Dim>(generator, used_for_size);
+      TestHelpers::gr::random_spatial_metric<Dim>(generator, used_for_size);
   const auto lorentz_factor =
       TestHelpers::hydro::random_lorentz_factor(generator, used_for_size);
   const auto spatial_velocity =

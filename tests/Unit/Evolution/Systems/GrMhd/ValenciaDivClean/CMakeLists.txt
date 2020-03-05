@@ -17,5 +17,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/GrMhd/ValenciaDivClean"
   "${LIBRARY_SOURCES}"
-  "ValenciaDivClean"
+  "Test_GeneralRelativity;Test_Hydro;ValenciaDivClean"
   )
