@@ -34,6 +34,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -147,6 +148,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
                          const OptionContext& context = {})
       : variables_to_observe_(variables_to_observe.begin(),
                               variables_to_observe.end()) {
+    using ::operator<<;
     const std::unordered_set<std::string> valid_tensors{
         db::tag_name<Tensors>()...};
     for (const auto& name : variables_to_observe_) {
