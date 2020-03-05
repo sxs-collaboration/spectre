@@ -395,6 +395,15 @@ class Variables<tmpl::list<Tags...>> {
     return lhs.variable_data_ / rhs;
   }
 
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator-(
+      const Variables& lhs) noexcept {
+    return -lhs.variable_data_;
+  }
+  friend SPECTRE_ALWAYS_INLINE decltype(auto) operator+(
+      const Variables& lhs) noexcept {
+    return lhs.variable_data_;
+  }
+
  private:
   //{@
   /*!
