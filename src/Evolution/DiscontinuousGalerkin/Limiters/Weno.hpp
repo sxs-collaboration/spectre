@@ -323,7 +323,7 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
         const auto& primary_neighbor = neighbor_and_data.first;
         auto& modified_tensor = get<decltype(tag)>(
             modified_neighbor_solutions.at(primary_neighbor));
-        hweno_modified_neighbor_solution<decltype(tag)>(
+        Weno_detail::hweno_modified_neighbor_solution<decltype(tag)>(
             make_not_null(&modified_tensor), *tensor, element, mesh,
             neighbor_data, primary_neighbor);
       }

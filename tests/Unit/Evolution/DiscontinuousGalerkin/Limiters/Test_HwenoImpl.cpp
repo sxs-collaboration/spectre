@@ -49,7 +49,7 @@ struct VectorTag : db::SimpleTag {
 };
 
 void test_secondary_neighbors_to_exclude_from_fit() {
-  INFO("Testing Hweno_detail::secondary_neighbors_to_exclude_from_fit");
+  INFO("Testing Weno_detail::secondary_neighbors_to_exclude_from_fit");
   struct DummyPackage {
     tuples::TaggedTuple<::Tags::Mean<ScalarTag>> means;
   };
@@ -80,7 +80,7 @@ void test_secondary_neighbors_to_exclude_from_fit() {
           expected_excluded_neighbors) noexcept {
     const size_t tensor_index = 0;
     const auto excluded_neighbors_vector =
-        Limiters::Hweno_detail::secondary_neighbors_to_exclude_from_fit<
+        Limiters::Weno_detail::secondary_neighbors_to_exclude_from_fit<
             ScalarTag>(mean, tensor_index, dummy_neighbor_data,
                        primary_neighbor);
     // The elements of `excluded_neighbors_vector` are ordered in an undefined
@@ -165,7 +165,7 @@ void test_hweno_modified_solution_1d() {
   neighbor_data[upper_xi_neighbor].mesh = mesh;
 
   Scalar<DataVector> modified_tensor;
-  Limiters::hweno_modified_neighbor_solution<ScalarTag>(
+  Limiters::Weno_detail::hweno_modified_neighbor_solution<ScalarTag>(
       make_not_null(&modified_tensor), local_tensor, element, mesh,
       neighbor_data, primary_neighbor);
 
@@ -301,7 +301,7 @@ void test_hweno_modified_solution_2d_vector() {
   neighbor_data[upper_eta_neighbor].mesh = mesh;
 
   VectorTag<2>::type modified_tensor;
-  Limiters::hweno_modified_neighbor_solution<VectorTag<2>>(
+  Limiters::Weno_detail::hweno_modified_neighbor_solution<VectorTag<2>>(
       make_not_null(&modified_tensor), local_tensor, element, mesh,
       neighbor_data, primary_neighbor);
 
@@ -470,7 +470,7 @@ void test_hweno_modified_solution_2d_exclude_two_neighbors() {
   neighbor_data[upper_eta_neighbor].mesh = mesh;
 
   ScalarTag::type modified_tensor;
-  Limiters::hweno_modified_neighbor_solution<ScalarTag>(
+  Limiters::Weno_detail::hweno_modified_neighbor_solution<ScalarTag>(
       make_not_null(&modified_tensor), local_tensor, element, mesh,
       neighbor_data, primary_neighbor);
 
@@ -640,7 +640,7 @@ void test_hweno_modified_solution_3d() {
   neighbor_data[primary_neighbor].mesh = mesh;
 
   Scalar<DataVector> modified_tensor;
-  Limiters::hweno_modified_neighbor_solution<ScalarTag>(
+  Limiters::Weno_detail::hweno_modified_neighbor_solution<ScalarTag>(
       make_not_null(&modified_tensor), local_tensor, element, mesh,
       neighbor_data, primary_neighbor);
 
@@ -864,7 +864,7 @@ void test_hweno_modified_solution_2d_boundary() {
   neighbor_data[upper_eta_neighbor].mesh = mesh;
 
   Scalar<DataVector> modified_tensor;
-  Limiters::hweno_modified_neighbor_solution<ScalarTag>(
+  Limiters::Weno_detail::hweno_modified_neighbor_solution<ScalarTag>(
       make_not_null(&modified_tensor), local_tensor, element, mesh,
       neighbor_data, primary_neighbor);
 
@@ -973,7 +973,7 @@ void test_hweno_modified_solution_2d_boundary_single_neighbor() {
   neighbor_data[primary_neighbor].mesh = mesh;
 
   Scalar<DataVector> modified_tensor;
-  Limiters::hweno_modified_neighbor_solution<ScalarTag>(
+  Limiters::Weno_detail::hweno_modified_neighbor_solution<ScalarTag>(
       make_not_null(&modified_tensor), local_tensor, element, mesh,
       neighbor_data, primary_neighbor);
 
@@ -1139,7 +1139,7 @@ void test_hweno_modified_solution_3d_boundary() {
   neighbor_data[primary_neighbor].mesh = mesh;
 
   Scalar<DataVector> modified_tensor;
-  Limiters::hweno_modified_neighbor_solution<ScalarTag>(
+  Limiters::Weno_detail::hweno_modified_neighbor_solution<ScalarTag>(
       make_not_null(&modified_tensor), local_tensor, element, mesh,
       neighbor_data, primary_neighbor);
 

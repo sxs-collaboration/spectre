@@ -38,7 +38,7 @@ class Mesh;
 /// \endcond
 
 namespace Limiters {
-namespace Hweno_detail {
+namespace Weno_detail {
 
 // Caching class that holds various precomputed terms used in the constrained-
 // fit algebra on each element.
@@ -327,9 +327,9 @@ void solve_constrained_fit(
       LIKELY(directions_to_exclude.size() < 2)
           ? cache.retrieve_inverse_a_matrix(primary_direction,
                                             directions_to_exclude)
-          : Hweno_detail::inverse_a_matrix(
-                element, mesh, w, interp_matrices, w_dot_interp_matrices,
-                primary_direction, directions_to_exclude);
+          : inverse_a_matrix(element, mesh, w, interp_matrices,
+                             w_dot_interp_matrices, primary_direction,
+                             directions_to_exclude);
 
   const DataVector b = b_vector<Tag>(mesh, tensor_index, w, interp_matrices,
                                      w_dot_interp_matrices, neighbor_data,
@@ -363,8 +363,6 @@ void solve_constrained_fit(
   *constrained_fit_result =
       inverse_a_times_b + lagrange_multiplier * inverse_a_times_w;
 }
-
-}  // namespace Hweno_detail
 
 template <size_t VolumeDim, typename Package>
 using LimiterNeighborData = std::unordered_map<
@@ -548,14 +546,15 @@ void hweno_modified_neighbor_solution(
        ++tensor_index) {
     const auto& tensor_component = local_tensor[tensor_index];
     const auto neighbors_to_exclude =
-        Hweno_detail::secondary_neighbors_to_exclude_from_fit<Tag>(
+        secondary_neighbors_to_exclude_from_fit<Tag>(
             mean_value(tensor_component, mesh), tensor_index, neighbor_data,
             primary_neighbor);
-    Hweno_detail::solve_constrained_fit<Tag>(
-        make_not_null(&(*modified_tensor)[tensor_index]),
-        local_tensor[tensor_index], tensor_index, element, mesh, neighbor_data,
-        primary_neighbor, neighbors_to_exclude);
+    solve_constrained_fit<Tag>(make_not_null(&(*modified_tensor)[tensor_index]),
+                               local_tensor[tensor_index], tensor_index,
+                               element, mesh, neighbor_data, primary_neighbor,
+                               neighbors_to_exclude);
   }
 }
 
+}  // namespace Weno_detail
 }  // namespace Limiters

@@ -938,11 +938,11 @@ void test_hweno_1d(const std::unordered_set<Direction<1>>&
         Variables<tmpl::list<ScalarTag, VectorTag<1>>>(
             mesh.number_of_grid_points());
     auto& mod_scalar = get<ScalarTag>(neighbor_modified_vars.at(lower_xi));
-    Limiters::hweno_modified_neighbor_solution<ScalarTag>(
+    Limiters::Weno_detail::hweno_modified_neighbor_solution<ScalarTag>(
         make_not_null(&mod_scalar), get<ScalarTag>(local_vars), element, mesh,
         neighbor_data, lower_xi);
     auto& mod_vector = get<VectorTag<1>>(neighbor_modified_vars.at(lower_xi));
-    Limiters::hweno_modified_neighbor_solution<VectorTag<1>>(
+    Limiters::Weno_detail::hweno_modified_neighbor_solution<VectorTag<1>>(
         make_not_null(&mod_vector), get<VectorTag<1>>(local_vars), element,
         mesh, neighbor_data, lower_xi);
   }
@@ -952,11 +952,11 @@ void test_hweno_1d(const std::unordered_set<Direction<1>>&
         Variables<tmpl::list<ScalarTag, VectorTag<1>>>(
             mesh.number_of_grid_points());
     auto& mod_scalar = get<ScalarTag>(neighbor_modified_vars.at(upper_xi));
-    Limiters::hweno_modified_neighbor_solution<ScalarTag>(
+    Limiters::Weno_detail::hweno_modified_neighbor_solution<ScalarTag>(
         make_not_null(&mod_scalar), get<ScalarTag>(local_vars), element, mesh,
         neighbor_data, upper_xi);
     auto& mod_vector = get<VectorTag<1>>(neighbor_modified_vars.at(upper_xi));
-    Limiters::hweno_modified_neighbor_solution<VectorTag<1>>(
+    Limiters::Weno_detail::hweno_modified_neighbor_solution<VectorTag<1>>(
         make_not_null(&mod_vector), get<VectorTag<1>>(local_vars), element,
         mesh, neighbor_data, upper_xi);
   }
