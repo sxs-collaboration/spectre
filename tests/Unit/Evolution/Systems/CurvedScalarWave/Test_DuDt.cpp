@@ -14,11 +14,78 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/Evolution/Systems/CurvedScalarWave/TestHelpers.hpp"
-#include "tests/Unit/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
+Scalar<DataVector> make_lapse(const DataVector& used_for_size) {
+  return Scalar<DataVector>{make_with_value<DataVector>(used_for_size, 3.)};
+}
+
+template <size_t Dim>
+tnsr::I<DataVector, Dim> make_shift(const DataVector& used_for_size) {
+  auto shift = make_with_value<tnsr::I<DataVector, Dim>>(used_for_size, 0.);
+  for (size_t i = 0; i < Dim; ++i) {
+    shift.get(i) = make_with_value<DataVector>(used_for_size, i + 1.);
+  }
+  return shift;
+}
+
+template <size_t Dim>
+tnsr::II<DataVector, Dim> make_inverse_spatial_metric(
+    const DataVector& used_for_size) {
+  auto metric =
+      make_with_value<tnsr::II<DataVector, Dim>>(used_for_size, 0.);
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t j = i; j < Dim; ++j) {
+      metric.get(i, j) =
+          make_with_value<DataVector>(used_for_size, (i + 1.) * (j + 1.));
+    }
+  }
+  return metric;
+}
+
+template <size_t Dim>
+tnsr::i<DataVector, Dim> make_deriv_lapse(const DataVector& used_for_size) {
+  auto deriv_lapse =
+      make_with_value<tnsr::i<DataVector, Dim>>(used_for_size, 0.);
+  for (size_t i = 0; i < Dim; ++i) {
+    deriv_lapse.get(i) =
+        make_with_value<DataVector>(used_for_size, 2.5 * (i + 1.));
+  }
+  return deriv_lapse;
+}
+
+template <size_t Dim>
+tnsr::iJ<DataVector, Dim> make_deriv_shift(const DataVector& used_for_size) {
+  auto deriv_shift =
+      make_with_value<tnsr::iJ<DataVector, Dim>>(used_for_size, 0.);
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t j = 0; j < Dim; ++j) {
+      deriv_shift.get(i, j) =
+          make_with_value<DataVector>(used_for_size, 3. * (j + 1.) - i + 4.);
+    }
+  }
+  return deriv_shift;
+}
+
+template <size_t Dim>
+tnsr::I<DataVector, Dim> make_trace_spatial_christoffel_second_kind(
+    const DataVector& used_for_size) {
+  auto trace_christoffel =
+      make_with_value<tnsr::I<DataVector, Dim>>(used_for_size, 0.);
+  for (size_t i = 0; i < Dim; ++i) {
+    trace_christoffel.get(i) =
+        make_with_value<DataVector>(used_for_size, 3. * i - 2.5);
+  }
+  return trace_christoffel;
+}
+
+Scalar<DataVector> make_trace_extrinsic_curvature(
+    const DataVector& used_for_size) {
+  return Scalar<DataVector>{make_with_value<DataVector>(used_for_size, 5.)};
+}
+
 template <size_t Dim>
 Variables<tmpl::list<CurvedScalarWave::Psi, CurvedScalarWave::Pi,
                      CurvedScalarWave::Phi<Dim>>>
