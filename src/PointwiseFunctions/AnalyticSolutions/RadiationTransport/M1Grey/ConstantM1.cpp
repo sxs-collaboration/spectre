@@ -25,7 +25,7 @@ namespace RadiationTransport {
 namespace M1Grey {
 namespace Solutions {
 
-ConstantM1::ConstantM1(const std::array<double, 3> mean_velocity,
+ConstantM1::ConstantM1(const std::array<double, 3>& mean_velocity,
                        const double comoving_energy_density) noexcept
     :  // clang-tidy: do not std::move trivial types.
       mean_velocity_(std::move(mean_velocity)),  // NOLINT

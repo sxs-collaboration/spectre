@@ -63,7 +63,7 @@ class ConstantM1 : public MarkAsAnalyticSolution {
   ConstantM1& operator=(ConstantM1&& /*rhs*/) noexcept = default;
   ~ConstantM1() = default;
 
-  ConstantM1(std::array<double, 3> mean_velocity,
+  ConstantM1(const std::array<double, 3>& mean_velocity,
              double comoving_energy_density) noexcept;
 
   explicit ConstantM1(CkMigrateMessage* /*unused*/) noexcept {}

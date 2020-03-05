@@ -131,7 +131,7 @@ class CylindricalBlastWave : public MarkAsAnalyticData {
   CylindricalBlastWave(double inner_radius, double outer_radius,
                        double inner_density, double outer_density,
                        double inner_pressure, double outer_pressure,
-                       std::array<double, 3> magnetic_field,
+                       const std::array<double, 3>& magnetic_field,
                        double adiabatic_index,
                        const OptionContext& context = {});
 

@@ -124,10 +124,10 @@ class KomissarovShock : public MarkAsAnalyticSolution {
   KomissarovShock(double adiabatic_index, double left_rest_mass_density,
                   double right_rest_mass_density, double left_pressure,
                   double right_pressure,
-                  std::array<double, 3> left_spatial_velocity,
-                  std::array<double, 3> right_spatial_velocity,
-                  std::array<double, 3> left_magnetic_field,
-                  std::array<double, 3> right_magnetic_field,
+                  const std::array<double, 3>& left_spatial_velocity,
+                  const std::array<double, 3>& right_spatial_velocity,
+                  const std::array<double, 3>& left_magnetic_field,
+                  const std::array<double, 3>& right_magnetic_field,
                   double shock_speed) noexcept;
 
   explicit KomissarovShock(CkMigrateMessage* /*unused*/) noexcept {}
