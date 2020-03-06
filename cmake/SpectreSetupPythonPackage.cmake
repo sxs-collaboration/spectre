@@ -136,11 +136,17 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
   if("${INIT_FILE_CONTENTS}" STREQUAL "")
     set(INIT_FILE_OUTPUT "${SPECTRE_PYTHON_MODULE_IMPORT}\n__all__ = []\n")
   else("${INIT_FILE_CONTENTS}" STREQUAL "")
-    string(REGEX REPLACE
-      "from[^\n]+"
-      "${SPECTRE_PYTHON_MODULE_IMPORT}"
-      INIT_FILE_OUTPUT
-      ${INIT_FILE_CONTENTS})
+    string(FIND ${INIT_FILE_CONTENTS} "from" FOUND_FROM_STATEMENT)
+    if (${FOUND_FROM_STATEMENT} EQUAL -1)
+      set(INIT_FILE_OUTPUT
+        "${SPECTRE_PYTHON_MODULE_IMPORT}\n${INIT_FILE_CONTENTS}")
+    else()
+      string(REGEX REPLACE
+        "from[^\n]+"
+        "${SPECTRE_PYTHON_MODULE_IMPORT}"
+        INIT_FILE_OUTPUT
+        ${INIT_FILE_CONTENTS})
+    endif()
   endif("${INIT_FILE_CONTENTS}" STREQUAL "")
 
   # configure the source files into the build directory and make sure
@@ -185,13 +191,14 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
   foreach(CURRENT_PYTHON_MODULE in ${WRITTEN_PYTHON_ALL_WITHOUT_EXTENSIONS})
     string(FIND "${ARG_PYTHON_FILES}" "${CURRENT_PYTHON_MODULE}.py"
       PYTHON_MODULE_EXISTS)
-    if(${PYTHON_MODULE_EXISTS} EQUAL -1)
+    if(${PYTHON_MODULE_EXISTS} EQUAL -1
+         AND NOT EXISTS "${MODULE_LOCATION}/${CURRENT_PYTHON_MODULE}")
       string(REPLACE "\"${CURRENT_PYTHON_MODULE}\""
         ""
         INIT_FILE_OUTPUT ${INIT_FILE_OUTPUT})
       string(REPLACE ", ," "," INIT_FILE_OUTPUT ${INIT_FILE_OUTPUT})
       file(REMOVE "${MODULE_LOCATION}/${CURRENT_PYTHON_MODULE}.py")
-    endif(${PYTHON_MODULE_EXISTS} EQUAL -1)
+    endif()
   endforeach(CURRENT_PYTHON_MODULE in ${MATCHED})
 
   # Write the __init__.py file for the module
