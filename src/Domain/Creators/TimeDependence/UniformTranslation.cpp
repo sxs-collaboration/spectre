@@ -13,6 +13,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/MapInstantiationMacros.hpp"
 #include "Domain/CoordinateMaps/ProductMapsTimeDep.hpp"
 #include "Domain/CoordinateMaps/ProductMapsTimeDep.tpp"
 #include "Domain/CoordinateMaps/Translation.hpp"
@@ -170,4 +171,20 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 /// \endcond
 }  // namespace time_dependence
 }  // namespace creators
+
+using Translation = CoordMapsTimeDependent::Translation;
+using Translation2d =
+    CoordMapsTimeDependent::ProductOf2Maps<Translation, Translation>;
+using Translation3d =
+    CoordMapsTimeDependent::ProductOf3Maps<Translation, Translation,
+                                           Translation>;
+
+template class CoordMapsTimeDependent::ProductOf2Maps<Translation, Translation>;
+template class CoordMapsTimeDependent::ProductOf3Maps<Translation, Translation,
+                                                      Translation>;
+
+INSTANTIATE_MAPS_FUNCTIONS(((Translation), (Translation2d), (Translation3d)),
+                           (Frame::Grid), (Frame::Inertial),
+                           (double, DataVector))
+
 }  // namespace domain

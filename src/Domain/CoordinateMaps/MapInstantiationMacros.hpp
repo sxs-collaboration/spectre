@@ -33,10 +33,13 @@
   BOOST_PP_REPEAT(BOOST_PP_TUPLE_SIZE(BOOST_PP_TUPLE_ELEM(0, data)), \
                   INSTANTIATE_COORD_MAP_DETAILINSERT_SIZE, _)
 
-#define INSTANTIATE_COORD_MAP_DETAIL_GET_FRAME(data) \
+#define INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data) \
   BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data) BOOST_PP_TUPLE_ELEM(2, data)
+#define INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data) \
+  BOOST_PP_TUPLE_ELEM(2, data)
+
+#define INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data) BOOST_PP_TUPLE_ELEM(3, data)
 
 /*!
  * \ingroup ComputationalDomainGroup
@@ -55,52 +58,55 @@
  *                                             domain::CoordinateMaps::Affine>;
  *
  *  GENERATE_INSTANTIATIONS(INSTANTIATE_MAPS_SIMPLE_FUNCTIONS,
- *                          ((Affine2d), (Affine3d)),
+ *                          ((Affine2d), (Affine3d)), (Frame::Logical),
  *                          (Frame::Grid, Frame::Inertial))
  * \endcode
  *
  * The first tuple passed to `GENERATE_INSTANTIATIONS` has a bunch of tuples in
  * it that is the list of maps being composed. The reason for defining the type
  * aliases `Affine2d` and `Affine3d` is that otherwise the number of maps being
- * composed is calculated incorrectly. The second tuple passed to
- * `GENERATE_INSTANTIATIONS` contains the frames to instantiate for, typically
- * `Frame::Grid` and `Frame::Inertial`.
+ * composed is calculated incorrectly. The second tuple contains the source
+ * frames for the map. The third tuple passed to `GENERATE_INSTANTIATIONS`
+ * contains the target frames to instantiate for, typically `Frame::Grid` and
+ * `Frame::Inertial`.
  *
  * Instantiates:
  * - `get_to_grid_frame_impl`
  * - `inverse_impl`
  * - `class CoordinateMap`
  */
-#define INSTANTIATE_MAPS_SIMPLE_FUNCTIONS(_, data)                         \
-  template std::unique_ptr<domain::CoordinateMapBase<                      \
-      Frame::Logical, Frame::Grid,                                         \
-      INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data)>>                    \
-      domain::CoordinateMap<Frame::Logical,                                \
-                            INSTANTIATE_COORD_MAP_DETAIL_GET_FRAME(data),  \
-                            INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS(data)>:: \
-          get_to_grid_frame_impl(                                          \
-              std::integer_sequence<                                       \
-                  unsigned long,                                           \
-                  INSTANTIATE_COORD_MAP_DETAIL_GET_FILLED_INDEX_SEQUENCE(  \
-                      data)>) const noexcept;                              \
-  template boost::optional<                                                \
-      tnsr::I<double, INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),     \
-              Frame::Logical>>                                             \
-  domain::CoordinateMap<Frame::Logical,                                    \
-                        INSTANTIATE_COORD_MAP_DETAIL_GET_FRAME(data),      \
-                        INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS(data)>::     \
-      inverse_impl(                                                        \
-          tnsr::I<double, INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data), \
-                  INSTANTIATE_COORD_MAP_DETAIL_GET_FRAME(data)>&&,         \
-          double,                                                          \
-          const std::unordered_map<                                        \
-              std::string,                                                 \
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&,  \
-          std::index_sequence<                                             \
-              INSTANTIATE_COORD_MAP_DETAIL_GET_FILLED_INDEX_SEQUENCE(      \
-                  data)> /*meta*/) const noexcept;                         \
-  template class domain::CoordinateMap<                                    \
-      Frame::Logical, INSTANTIATE_COORD_MAP_DETAIL_GET_FRAME(data),        \
+#define INSTANTIATE_MAPS_SIMPLE_FUNCTIONS(_, data)                           \
+  template std::unique_ptr<domain::CoordinateMapBase<                        \
+      INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data), Frame::Grid,      \
+      INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data)>>                      \
+      domain::CoordinateMap<                                                 \
+          INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data),               \
+          INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data),               \
+          INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS(data)>::                     \
+          get_to_grid_frame_impl(                                            \
+              std::integer_sequence<                                         \
+                  unsigned long,                                             \
+                  INSTANTIATE_COORD_MAP_DETAIL_GET_FILLED_INDEX_SEQUENCE(    \
+                      data)>) const noexcept;                                \
+  template boost::optional<                                                  \
+      tnsr::I<double, INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),       \
+              INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data)>>          \
+  domain::CoordinateMap<INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data), \
+                        INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data), \
+                        INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS(data)>::       \
+      inverse_impl(                                                          \
+          tnsr::I<double, INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),   \
+                  INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data)>&&,    \
+          double,                                                            \
+          const std::unordered_map<                                          \
+              std::string,                                                   \
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&,    \
+          std::index_sequence<                                               \
+              INSTANTIATE_COORD_MAP_DETAIL_GET_FILLED_INDEX_SEQUENCE(        \
+                  data)> /*meta*/) const noexcept;                           \
+  template class domain::CoordinateMap<                                      \
+      INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data),                   \
+      INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data),                   \
       INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS(data)>;
 
 /*!
@@ -120,7 +126,7 @@
  *                                             domain::CoordinateMaps::Affine>;
  *
  *  GENERATE_INSTANTIATIONS(INSTANTIATE_MAPS_DATA_TYPE_FUNCTIONS,
- *                          ((Affine2d), (Affine3d)),
+ *                          ((Affine2d), (Affine3d)), (Frame::Logical),
  *                          (Frame::Grid, Frame::Inertial),
  *                          (double, DataVector))
  * \endcode
@@ -128,10 +134,11 @@
  * The first tuple passed to `GENERATE_INSTANTIATIONS` has a bunch of tuples in
  * it that is the list of maps being composed. The reason for defining the type
  * aliases `Affine2d` and `Affine3d` is that otherwise the number of maps being
- * composed is calculated incorrectly. The second tuple passed to
- * `GENERATE_INSTANTIATIONS` contains the frames to instantiate for, typically
- * `Frame::Grid` and `Frame::Inertial`. The last tuple is the data types for
- * which to instantiate the functions, usually `double` and `DataVector`.
+ * composed is calculated incorrectly. The second tuple contains the source
+ * frames for the map. The third tuple passed to  `GENERATE_INSTANTIATIONS`
+ * contains the target frames to instantiate for, typically `Frame::Grid` and
+ * `Frame::Inertial`. The last tuple is the data types for which to instantiate
+ * the functions, usually `double` and `DataVector`.
  *
  * Instantiates:
  * - `call_impl`
@@ -139,82 +146,84 @@
  * - `jacobian_impl`
  * - `coords_frame_velocity_jacobians_impl`
  */
-#define INSTANTIATE_MAPS_DATA_TYPE_FUNCTIONS(_, data)                         \
-  template tnsr::I<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                  \
-                   INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),           \
-                   INSTANTIATE_COORD_MAP_DETAIL_GET_FRAME(data)>              \
-  domain::CoordinateMap<Frame::Logical,                                       \
-                        INSTANTIATE_COORD_MAP_DETAIL_GET_FRAME(data),         \
-                        INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS(data)>::        \
-      call_impl(                                                              \
-          tnsr::I<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                   \
-                  INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),            \
-                  Frame::Logical>&&,                                          \
-          double,                                                             \
-          const std::unordered_map<                                           \
-              std::string,                                                    \
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&,     \
-          std::integer_sequence<                                              \
-              unsigned long,                                                  \
-              INSTANTIATE_COORD_MAP_DETAIL_GET_FILLED_INDEX_SEQUENCE(data)>)  \
-          const;                                                              \
-  template InverseJacobian<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),          \
-                           INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),   \
-                           Frame::Logical,                                    \
-                           INSTANTIATE_COORD_MAP_DETAIL_GET_FRAME(data)>      \
-  domain::CoordinateMap<Frame::Logical,                                       \
-                        INSTANTIATE_COORD_MAP_DETAIL_GET_FRAME(data),         \
-                        INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS(data)>::        \
-      inv_jacobian_impl(                                                      \
-          tnsr::I<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                   \
-                  INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),            \
-                  Frame::Logical>&&,                                          \
-          double,                                                             \
-          const std::unordered_map<                                           \
-              std::string,                                                    \
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&)     \
-          const;                                                              \
-  template Jacobian<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                 \
-                    INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),          \
-                    Frame::Logical,                                           \
-                    INSTANTIATE_COORD_MAP_DETAIL_GET_FRAME(data)>             \
-  domain::CoordinateMap<Frame::Logical,                                       \
-                        INSTANTIATE_COORD_MAP_DETAIL_GET_FRAME(data),         \
-                        INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS(data)>::        \
-      jacobian_impl(                                                          \
-          tnsr::I<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                   \
-                  INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),            \
-                  Frame::Logical>&&,                                          \
-          double,                                                             \
-          const std::unordered_map<                                           \
-              std::string,                                                    \
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&)     \
-          const;                                                              \
-  template std::tuple<                                                        \
-      tnsr::I<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                       \
-              INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),                \
-              INSTANTIATE_COORD_MAP_DETAIL_GET_FRAME(data)>,                  \
-      InverseJacobian<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),               \
-                      INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),        \
-                      Frame::Logical,                                         \
-                      INSTANTIATE_COORD_MAP_DETAIL_GET_FRAME(data)>,          \
-      Jacobian<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                      \
-               INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),               \
-               Frame::Logical, INSTANTIATE_COORD_MAP_DETAIL_GET_FRAME(data)>, \
-      tnsr::I<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                       \
-              INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),                \
-              INSTANTIATE_COORD_MAP_DETAIL_GET_FRAME(data)>>                  \
-  domain::CoordinateMap<Frame::Logical,                                       \
-                        INSTANTIATE_COORD_MAP_DETAIL_GET_FRAME(data),         \
-                        INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS(data)>::        \
-      coords_frame_velocity_jacobians_impl(                                   \
-          tnsr::I<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                   \
-                  INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),            \
-                  Frame::Logical>,                                            \
-          double,                                                             \
-          const std::unordered_map<                                           \
-              std::string,                                                    \
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&)     \
+#define INSTANTIATE_MAPS_DATA_TYPE_FUNCTIONS(_, data)                        \
+  template tnsr::I<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                 \
+                   INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),          \
+                   INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data)>      \
+  domain::CoordinateMap<INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data), \
+                        INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data), \
+                        INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS(data)>::       \
+      call_impl(                                                             \
+          tnsr::I<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                  \
+                  INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),           \
+                  INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data)>&&,    \
+          double,                                                            \
+          const std::unordered_map<                                          \
+              std::string,                                                   \
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&,    \
+          std::integer_sequence<                                             \
+              unsigned long,                                                 \
+              INSTANTIATE_COORD_MAP_DETAIL_GET_FILLED_INDEX_SEQUENCE(data)>) \
+          const;                                                             \
+  template InverseJacobian<                                                  \
+      INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                              \
+      INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),                       \
+      INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data),                   \
+      INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data)>                   \
+  domain::CoordinateMap<INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data), \
+                        INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data), \
+                        INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS(data)>::       \
+      inv_jacobian_impl(                                                     \
+          tnsr::I<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                  \
+                  INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),           \
+                  INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data)>&&,    \
+          double,                                                            \
+          const std::unordered_map<                                          \
+              std::string,                                                   \
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&)    \
+          const;                                                             \
+  template Jacobian<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                \
+                    INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),         \
+                    INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data),     \
+                    INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data)>     \
+  domain::CoordinateMap<INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data), \
+                        INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data), \
+                        INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS(data)>::       \
+      jacobian_impl(                                                         \
+          tnsr::I<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                  \
+                  INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),           \
+                  INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data)>&&,    \
+          double,                                                            \
+          const std::unordered_map<                                          \
+              std::string,                                                   \
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&)    \
+          const;                                                             \
+  template std::tuple<                                                       \
+      tnsr::I<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                      \
+              INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),               \
+              INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data)>,          \
+      InverseJacobian<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),              \
+                      INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),       \
+                      INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data),   \
+                      INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data)>,  \
+      Jacobian<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                     \
+               INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),              \
+               INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data),          \
+               INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data)>,         \
+      tnsr::I<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                      \
+              INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),               \
+              INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data)>>          \
+  domain::CoordinateMap<INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data), \
+                        INSTANTIATE_COORD_MAP_DETAIL_GET_TARGET_FRAME(data), \
+                        INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS(data)>::       \
+      coords_frame_velocity_jacobians_impl(                                  \
+          tnsr::I<INSTANTIATE_COORD_MAP_DETAIL_DTYPE(data),                  \
+                  INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),           \
+                  INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data)>,      \
+          double,                                                            \
+          const std::unordered_map<                                          \
+              std::string,                                                   \
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&)    \
           const;
 
 /*!
@@ -233,7 +242,7 @@
  *                                             domain::CoordinateMaps::Affine,
  *                                             domain::CoordinateMaps::Affine>;
  *
- *  INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d)),
+ *  INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d)), (Frame::Logical),
  *                             (Frame::Grid, Frame::Inertial),
  *                             (double, DataVector))
  * \endcode
@@ -241,9 +250,10 @@
  * The first tuple passed to `GENERATE_INSTANTIATIONS` has a bunch of tuples in
  * it that is the list of maps being composed. The reason for defining the type
  * aliases `Affine2d` and `Affine3d` is that otherwise the number of maps being
- * composed is calculated incorrectly. The second tuple passed to
- * `GENERATE_INSTANTIATIONS` contains the frames to instantiate for, typically
- * `Frame::Grid` and `Frame::Inertial`.
+ * composed is calculated incorrectly. The second tuple contains the source
+ * frames for the map. The third tuple passed to `GENERATE_INSTANTIATIONS`
+ * contains the frames to instantiate for, typically `Frame::Grid` and
+ * `Frame::Inertial`.
  *
  * Instantiates:
  * - `get_to_grid_frame_impl`
@@ -254,8 +264,9 @@
  * - `jacobian_impl`
  * - `coords_frame_velocity_jacobians_impl`
  */
-#define INSTANTIATE_MAPS_FUNCTIONS(MAPS_TUPLE, FRAMES_TUPLE, TYPES_TUPLE)   \
+#define INSTANTIATE_MAPS_FUNCTIONS(MAPS_TUPLE, SOURCE_FRAME,                \
+                                   TARGET_FRAMES_TUPLE, TYPES_TUPLE)        \
   GENERATE_INSTANTIATIONS(INSTANTIATE_MAPS_SIMPLE_FUNCTIONS, MAPS_TUPLE,    \
-                          FRAMES_TUPLE)                                     \
+                          SOURCE_FRAME, TARGET_FRAMES_TUPLE)                \
   GENERATE_INSTANTIATIONS(INSTANTIATE_MAPS_DATA_TYPE_FUNCTIONS, MAPS_TUPLE, \
-                          FRAMES_TUPLE, TYPES_TUPLE)
+                          SOURCE_FRAME, TARGET_FRAMES_TUPLE, TYPES_TUPLE)
