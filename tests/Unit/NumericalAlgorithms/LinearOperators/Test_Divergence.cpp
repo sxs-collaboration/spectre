@@ -218,7 +218,8 @@ void test_divergence_compute_item(
   using flux_tags = two_fluxes<Dim, Frame>;
   using flux_tag = Tags::Variables<flux_tags>;
   using div_tags = db::wrap_tags_in<Tags::div, flux_tags>;
-  TestHelpers::db::test_compute_tag<Tags::DivCompute<flux_tag, inv_jac_tag>>(
+  TestHelpers::db::test_compute_tag<
+      Tags::DivVariablesCompute<flux_tag, inv_jac_tag>>(
       "div(Variables(div(Flux1),div(Flux2)))");
 
   const size_t num_grid_points = mesh.number_of_grid_points();
@@ -240,7 +241,7 @@ void test_divergence_compute_item(
   auto box = db::create<
       db::AddSimpleTags<domain::Tags::Mesh<Dim>, flux_tag, map_tag>,
       db::AddComputeTags<domain::Tags::LogicalCoordinates<Dim>, inv_jac_tag,
-                         Tags::DivCompute<flux_tag, inv_jac_tag>>>(
+                         Tags::DivVariablesCompute<flux_tag, inv_jac_tag>>>(
       mesh, fluxes, coordinate_map);
 
   const auto& div_fluxes =

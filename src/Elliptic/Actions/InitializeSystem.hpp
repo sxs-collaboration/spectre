@@ -103,9 +103,9 @@ struct InitializeSystem {
         db::AddSimpleTags<fields_tag, linear_operator_applied_to_fields_tag,
                           fixed_sources_tag, linear_operand_tag,
                           linear_operator_applied_to_operand_tag>;
-    using compute_tags =
-        db::AddComputeTags<fluxes_compute_tag, sources_compute_tag,
-                           ::Tags::DivCompute<fluxes_tag, inv_jacobian_tag>>;
+    using compute_tags = db::AddComputeTags<
+        fluxes_compute_tag, sources_compute_tag,
+        ::Tags::DivVariablesCompute<fluxes_tag, inv_jacobian_tag>>;
 
     const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
     const size_t num_grid_points = mesh.number_of_grid_points();

@@ -39,7 +39,7 @@ namespace Tags {
 /// Prefix indicating the divergence of a Tensor or that a Variables
 /// contains divergences of Tensors.
 ///
-/// \see Tags::DivCompute
+/// \see Tags::DivVariablesCompute
 template <typename Tag, typename = std::nullptr_t>
 struct div;
 
@@ -86,7 +86,7 @@ namespace Tags {
 ///
 /// This tag inherits from `db::add_prefix_tag<Tags::div, Tag>`.
 template <typename Tag, typename InverseJacobianTag>
-struct DivCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
+struct DivVariablesCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
  private:
   using inv_jac_indices =
       typename db::const_item_type<InverseJacobianTag>::index_list;
