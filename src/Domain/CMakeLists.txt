@@ -5,6 +5,7 @@ add_subdirectory(Amr)
 add_subdirectory(CoordinateMaps)
 add_subdirectory(Creators)
 add_subdirectory(FunctionsOfTime)
+add_subdirectory(Python)
 
 set(LIBRARY Domain)
 
