@@ -961,10 +961,11 @@ void test_hweno_1d(const std::unordered_set<Direction<1>>&
         mesh, neighbor_data, upper_xi);
   }
 
-  test_weno_work<1>(Limiters::WenoType::Hweno,
-                    Limiters::Weno_detail::DerivativeWeight::Unity, element,
-                    mesh, element_size, local_vars, neighbor_data,
-                    neighbor_modified_vars);
+  test_weno_work<1>(
+      Limiters::WenoType::Hweno,
+      Limiters::Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial,
+      element, mesh, element_size, local_vars, neighbor_data,
+      neighbor_modified_vars);
 }
 
 }  // namespace

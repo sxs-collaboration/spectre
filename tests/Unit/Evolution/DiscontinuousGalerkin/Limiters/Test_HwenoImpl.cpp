@@ -949,7 +949,7 @@ void test_hweno_work(
     Limiters::Weno_detail::reconstruct_from_weighted_sum(
         make_not_null(&expected_hweno.get(i)), mesh, neighbor_linear_weight,
         expected_neighbor_polynomials,
-        Limiters::Weno_detail::DerivativeWeight::Unity);
+        Limiters::Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial);
   }
 
   // Check limited fields as expected

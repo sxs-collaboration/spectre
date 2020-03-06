@@ -601,7 +601,7 @@ void hweno_impl(
     Weno_detail::reconstruct_from_weighted_sum(
         make_not_null(&((*tensor)[tensor_index])), mesh, neighbor_linear_weight,
         *modified_neighbor_solution_buffer,
-        Weno_detail::DerivativeWeight::Unity);
+        Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial);
   }
 }
 
