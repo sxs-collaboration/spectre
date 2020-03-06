@@ -202,6 +202,21 @@ const Matrix& differentiation_matrix(size_t num_points) noexcept;
 const Matrix& differentiation_matrix(const Mesh<1>& mesh) noexcept;
 
 /*!
+ * \brief %Matrix used to compute the divergence of the flux in weak form.
+ *
+ * \param num_points The number of collocation points
+ */
+template <Basis BasisType, Quadrature QuadratureType>
+const Matrix& weak_flux_differentiation_matrix(size_t num_points) noexcept;
+
+/*!
+ * \brief %Matrix used to compute the divergence of the flux in weak form.
+ *
+ * \see weak_flux_differentiation_matrix(size_t)
+ */
+const Matrix& weak_flux_differentiation_matrix(const Mesh<1>& mesh) noexcept;
+
+/*!
  * \brief %Matrix used to perform an indefinite integral of a function over the
  * logical grid. The left boundary condition is such that the integral is 0 at
  * \f$\xi=-1\f$

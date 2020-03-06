@@ -54,6 +54,9 @@ double unit_polynomial_integral(const size_t deg) {
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
           typename Function>
 void test_exact_differentiation(const Function& max_poly_deg) {
+  INFO("Test exact differentiation.");
+  CAPTURE(BasisType);
+  CAPTURE(QuadratureType);
   for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
        n <= Spectral::maximum_number_of_points<BasisType>; n++) {
     for (size_t p = 0; p <= max_poly_deg(n); p++) {
@@ -72,35 +75,78 @@ void test_exact_differentiation(const Function& max_poly_deg) {
   }
 }
 
+template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
+void test_weak_differentiation() {
+  static_assert(BasisType == Spectral::Basis::Legendre,
+                "test_weak_differentiation_matrix may not be correct for "
+                "non-Legendre basis functions.");
+  INFO("Test weak differentiation.");
+  CAPTURE(BasisType);
+  CAPTURE(QuadratureType);
+
+  for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
+       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
+    CAPTURE(n);
+    const DataVector& quad_weights =
+        Spectral::quadrature_weights<BasisType, QuadratureType>(n);
+    const Matrix& weak_diff_matrix =
+        Spectral::weak_flux_differentiation_matrix<BasisType, QuadratureType>(
+            n);
+    const Matrix& diff_matrix =
+        Spectral::differentiation_matrix<BasisType, QuadratureType>(n);
+    Matrix expected_weak_diff_matrix(diff_matrix.rows(), diff_matrix.columns());
+
+    for (size_t i = 0; i < n; ++i) {
+      for (size_t l = 0; l < n; ++l) {
+        expected_weak_diff_matrix(i, l) =
+            quad_weights[l] / quad_weights[i] * diff_matrix(l, i);
+      }
+    }
+    for (size_t i = 0; i < n; ++i) {
+      for (size_t l = 0; l < n; ++l) {
+        CAPTURE(i);
+        CAPTURE(l);
+        CHECK(expected_weak_diff_matrix(i, l) ==
+              approx(weak_diff_matrix(i, l)));
+      }
+    }
+
+    if (QuadratureType == Spectral::Quadrature::GaussLobatto) {
+      for (size_t p = 0; p <= n - 1; p++) {
+        const auto& collocation_pts =
+            Spectral::collocation_points<BasisType, QuadratureType>(n);
+        const auto u = unit_polynomial(p, collocation_pts);
+        DataVector numeric_derivative{n};
+        dgemv_('N', n, n, 1., weak_diff_matrix.data(), n, u.data(), 1, 0.0,
+               numeric_derivative.data(), 1);
+        const auto analytic_derivative =
+            unit_polynomial_derivative(p, collocation_pts);
+        for (size_t i = 1; i < n - 1; ++i) {
+          CHECK(numeric_derivative[i] == approx(-analytic_derivative[i]));
+        }
+      }
+    }
+  }
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExactDifferentiation",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   const auto minus_one = [](const size_t n) noexcept { return n - 1; };
-  SECTION(
-      "Legendre-Gauss differentiation is exact to polynomial order "
-      "num_points - 1") {
-    test_exact_differentiation<Spectral::Basis::Legendre,
-                               Spectral::Quadrature::Gauss>(minus_one);
-  }
-  SECTION(
-      "Legendre-Gauss-Lobatto differentiation is exact to polynomial order "
-      "num_points - 1") {
-    test_exact_differentiation<Spectral::Basis::Legendre,
-                               Spectral::Quadrature::GaussLobatto>(minus_one);
-  }
-  SECTION(
-      "Chebyshev-Gauss differentiation is exact to polynomial order "
-      "num_points - 1") {
-    test_exact_differentiation<Spectral::Basis::Chebyshev,
-                               Spectral::Quadrature::Gauss>(minus_one);
-  }
-  SECTION(
-      "Chebyshev-Gauss-Lobatto differentiation is exact to polynomial order "
-      "num_points - 1") {
-    test_exact_differentiation<Spectral::Basis::Chebyshev,
-                               Spectral::Quadrature::GaussLobatto>(minus_one);
-  }
+  test_exact_differentiation<Spectral::Basis::Legendre,
+                             Spectral::Quadrature::Gauss>(minus_one);
+  test_exact_differentiation<Spectral::Basis::Legendre,
+                             Spectral::Quadrature::GaussLobatto>(minus_one);
+  test_exact_differentiation<Spectral::Basis::Chebyshev,
+                             Spectral::Quadrature::Gauss>(minus_one);
+  test_exact_differentiation<Spectral::Basis::Chebyshev,
+                             Spectral::Quadrature::GaussLobatto>(minus_one);
+
+  test_weak_differentiation<Spectral::Basis::Legendre,
+                            Spectral::Quadrature::Gauss>();
+  test_weak_differentiation<Spectral::Basis::Legendre,
+                            Spectral::Quadrature::GaussLobatto>();
 }
 
 namespace {
