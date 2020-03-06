@@ -66,5 +66,14 @@ struct Stress : db::SimpleTag {
   using type = tnsr::II<DataVector, Dim>;
 };
 
+/*!
+ * \brief The energy density \f$U=-\frac{1}{2}S_{ij}T^{ij}\f$ stored in the
+ * deformation of the elastic material.
+ */
+template <size_t Dim>
+struct PotentialEnergyDensity : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
 }  // namespace Tags
 }  // namespace Elasticity
