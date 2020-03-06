@@ -4,6 +4,7 @@
 set(LIBRARY "Test_FirstOrderDgScheme")
 
 set(LIBRARY_SOURCES
+  Test_BoundaryData.cpp
   Test_BoundaryFlux.cpp
   )
 
