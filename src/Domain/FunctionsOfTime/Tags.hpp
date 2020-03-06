@@ -9,11 +9,15 @@
 #include <unordered_map>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/OptionTags.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+template <size_t VolumeDim>
+class DomainCreator;
+/// \endcond
 
 namespace domain {
 namespace Tags {
@@ -24,11 +28,9 @@ struct InitialFunctionsOfTime : db::SimpleTag {
       std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
   using option_tags = tmpl::list<domain::OptionTags::DomainCreator<Dim>>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static type create_from_options(
-      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) noexcept {
-    return domain_creator->functions_of_time();
-  }
+      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) noexcept;
 };
 
 /// The functions of time

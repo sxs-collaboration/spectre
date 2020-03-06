@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   PiecewisePolynomial.cpp
   RegisterDerivedWithCharm.cpp
   SettleToConstant.cpp
+  Tags.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
