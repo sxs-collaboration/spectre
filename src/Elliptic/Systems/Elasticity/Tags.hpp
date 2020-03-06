@@ -7,6 +7,8 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Elliptic/Tags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 
 /// \cond
 class DataVector;
@@ -64,6 +66,31 @@ struct Strain : db::SimpleTag {
 template <size_t Dim>
 struct Stress : db::SimpleTag {
   using type = tnsr::II<DataVector, Dim>;
+};
+
+/*!
+ * \brief The energy density \f$U\f$ stored in the deformation of the
+ * elastic material.
+ */
+template <size_t Dim>
+struct PotentialEnergy : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+template <typename FluxesComputerType, typename SolutionType>
+struct FluxesComputer : elliptic::Tags::FluxesComputer<FluxesComputerType> {
+  using type = FluxesComputerType;
+  static std::string name() noexcept {
+    return pretty_type::short_name<FluxesComputerType>();
+  }
+  using option_tags = tmpl::list<::OptionTags::AnalyticSolution<SolutionType>>;
+
+  static constexpr bool pass_metavariables = false;
+  static FluxesComputerType create_from_options(const SolutionType& solution) {
+    return FluxesComputerType{
+        std::make_unique<typename SolutionType::constitutive_relation_type>(
+            solution.constitutive_relation())};
+  }
 };
 
 }  // namespace Tags
