@@ -15,6 +15,8 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Direction.hpp"

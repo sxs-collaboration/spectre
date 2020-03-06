@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <string>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
 #include "Evolution/Tags.hpp"

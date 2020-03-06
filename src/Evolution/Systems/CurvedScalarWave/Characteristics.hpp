@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"

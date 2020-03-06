@@ -6,7 +6,7 @@
 #include <array>
 #include <cstddef>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"

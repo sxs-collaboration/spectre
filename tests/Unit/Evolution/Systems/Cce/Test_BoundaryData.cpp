@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"

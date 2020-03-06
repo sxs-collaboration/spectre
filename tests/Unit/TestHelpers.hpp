@@ -19,7 +19,7 @@
 #include <string>
 #include <tuple>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/Variables.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"

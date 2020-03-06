@@ -6,8 +6,8 @@
 #include <cstddef>
 #include <string>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 

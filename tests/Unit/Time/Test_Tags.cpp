@@ -5,6 +5,7 @@
 
 #include <string>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Tags.hpp"
 #include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"

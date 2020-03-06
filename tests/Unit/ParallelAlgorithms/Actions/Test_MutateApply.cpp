@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "Utilities/Gsl.hpp"

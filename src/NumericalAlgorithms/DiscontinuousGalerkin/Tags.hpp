@@ -11,6 +11,8 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "Domain/Direction.hpp"  // IWYU pragma: keep
 #include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"

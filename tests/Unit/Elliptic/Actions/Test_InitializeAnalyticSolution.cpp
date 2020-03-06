@@ -7,8 +7,8 @@
 #include <cstddef>
 #include <string>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"

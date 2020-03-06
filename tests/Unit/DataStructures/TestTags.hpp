@@ -4,6 +4,7 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
 namespace VariablesTestTags_detail {

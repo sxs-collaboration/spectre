@@ -6,12 +6,12 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"        // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"

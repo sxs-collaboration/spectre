@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"

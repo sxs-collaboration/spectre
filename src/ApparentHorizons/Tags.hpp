@@ -10,6 +10,8 @@
 #include "ApparentHorizons/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/TagsTypeAliases.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/ForceInline.hpp"

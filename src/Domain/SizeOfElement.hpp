@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <string>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 

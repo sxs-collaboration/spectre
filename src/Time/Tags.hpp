@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Evolution/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Serialize.hpp"

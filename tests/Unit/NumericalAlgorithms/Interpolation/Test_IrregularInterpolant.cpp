@@ -11,7 +11,7 @@
 #include <random>
 #include <string>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"

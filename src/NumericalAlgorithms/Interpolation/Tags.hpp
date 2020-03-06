@@ -11,6 +11,7 @@
 #include <unordered_set>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"

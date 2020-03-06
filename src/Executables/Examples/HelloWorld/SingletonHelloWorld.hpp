@@ -7,6 +7,7 @@
 /// [executable_example_includes]
 #include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"

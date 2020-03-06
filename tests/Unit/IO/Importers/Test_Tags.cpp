@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "IO/Importers/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"

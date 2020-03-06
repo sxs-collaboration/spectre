@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Serialize.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"

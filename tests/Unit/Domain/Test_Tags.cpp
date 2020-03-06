@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "Domain/Tags.hpp"
 #include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 

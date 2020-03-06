@@ -9,6 +9,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/TensorData.hpp"
 #include "ErrorHandling/Error.hpp"

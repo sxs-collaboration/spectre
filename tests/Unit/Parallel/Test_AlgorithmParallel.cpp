@@ -16,7 +16,7 @@
 #include "AlgorithmNodegroup.hpp"
 #include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"

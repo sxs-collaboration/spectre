@@ -8,6 +8,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"

@@ -10,6 +10,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"

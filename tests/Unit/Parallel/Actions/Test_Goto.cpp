@@ -5,6 +5,7 @@
 
 #include <string>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Parallel/Actions/Goto.hpp"  // IWYU pragma: keep
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep

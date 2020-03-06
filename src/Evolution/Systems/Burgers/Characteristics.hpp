@@ -6,7 +6,7 @@
 #include <array>
 #include <string>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Utilities/Gsl.hpp"

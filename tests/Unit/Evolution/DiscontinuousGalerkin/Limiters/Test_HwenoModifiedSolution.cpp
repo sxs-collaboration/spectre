@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
