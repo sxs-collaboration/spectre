@@ -165,8 +165,14 @@ if (USE_PCH)
       ${TARGET_NAME}
       IMPORTED
       )
+    get_target_property(
+      TARGET_TYPE
+      ${TARGET_NAME}
+      TYPE
+      )
     if (NOT "${TARGET_NAME}" MATCHES "^PCH"
-        AND NOT ${TARGET_IS_IMPORTED})
+        AND NOT ${TARGET_IS_IMPORTED}
+        AND NOT ${TARGET_TYPE} STREQUAL INTERFACE_LIBRARY)
       add_dependencies(${TARGET_NAME} pch)
       set_source_files_properties(
         ${ARGN}
