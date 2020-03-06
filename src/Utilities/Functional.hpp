@@ -308,6 +308,24 @@ struct Square : Functional<C::arity> {
   }
 };
 
+/// Function for adding two `std::vector`s of `double` component-wise
+struct VectorPlus {
+  std::vector<double> operator()(const std::vector<double>& lhs,
+                                 const std::vector<double>& rhs) const
+      noexcept {
+    ASSERT(lhs.size() == rhs.size(),
+           "Vector sizes in `funcl::VectorPlus` operator do not match. First "
+           "argument size: "
+               << lhs.size() << ". Second argument size: " << rhs.size()
+               << ".");
+    std::vector<double> result(lhs.size());
+    for (size_t i = 0; i < lhs.size(); ++i) {
+      result[i] = lhs[i] + rhs[i];
+    }
+    return result;
+  }
+};
+
 #undef MAKE_BINARY_FUNCTIONAL
 #undef MAKE_BINARY_INPLACE_OPERATOR
 #undef MAKE_BINARY_OPERATOR
