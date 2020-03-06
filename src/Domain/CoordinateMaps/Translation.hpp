@@ -80,7 +80,7 @@ class Translation {
   friend bool operator==(const Translation& lhs,
                          const Translation& rhs) noexcept;
 
-  std::string f_of_t_name_ = "trans";
+  std::string f_of_t_name_{};
 };
 
 inline bool operator!=(

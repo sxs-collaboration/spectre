@@ -70,9 +70,39 @@ void test_block_time_independent() {
   test_move_semantics(std::move(original_block), block_copy);
 }
 
+using Translation = domain::CoordMapsTimeDependent::Translation;
+template <size_t Dim>
+using TranslationDimD = tmpl::conditional_t<
+    Dim == 2,
+    domain::CoordMapsTimeDependent::ProductOf2Maps<Translation, Translation>,
+    domain::CoordMapsTimeDependent::ProductOf3Maps<Translation, Translation,
+                                                   Translation>>;
+
+template <size_t VolumeDim>
+auto make_translation_map() noexcept;
+
+template <>
+auto make_translation_map<1>() noexcept {
+  return domain::make_coordinate_map<Frame::Grid, Frame::Inertial>(
+      Translation{"Translation"});
+}
+
+template <>
+auto make_translation_map<2>() noexcept {
+  return domain::make_coordinate_map<Frame::Grid, Frame::Inertial>(
+      TranslationDimD<2>{Translation{"Translation"},
+                         Translation{"Translation"}});
+}
+
+template <>
+auto make_translation_map<3>() noexcept {
+  return domain::make_coordinate_map<Frame::Grid, Frame::Inertial>(
+      TranslationDimD<3>{Translation{"Translation"}, Translation{"Translation"},
+                         Translation{"Translation"}});
+}
+
 template <size_t Dim>
 void test_block_time_dependent() {
-  using Translation = domain::CoordMapsTimeDependent::Translation;
   using TranslationDimD = tmpl::conditional_t<
       Dim == 1,
       domain::CoordinateMap<Frame::Grid, Frame::Inertial, Translation>,
@@ -94,7 +124,8 @@ void test_block_time_dependent() {
   PUPable_reg(grid_to_inertial_coordinate_map);
   const logical_to_grid_coordinate_map identity_map{
       CoordinateMaps::Identity<Dim>{}};
-  const grid_to_inertial_coordinate_map translation_map{TranslationDimD{}};
+  const grid_to_inertial_coordinate_map translation_map =
+      make_translation_map<Dim>();
   Block<Dim> original_block(identity_map.get_clone(), 7, {});
   CHECK_FALSE(original_block.is_time_dependent());
   original_block.inject_time_dependent_map(translation_map.get_clone());
@@ -107,7 +138,7 @@ void test_block_time_dependent() {
                        std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
         functions_of_time{};
 
-    functions_of_time["trans"] =
+    functions_of_time["Translation"] =
         std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
             0.0, std::array<DataVector, 3>{{{0.0}, {1.0}, {0.0}}});
 
