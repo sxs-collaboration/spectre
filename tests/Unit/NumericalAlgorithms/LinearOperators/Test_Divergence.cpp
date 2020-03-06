@@ -152,6 +152,11 @@ void test_divergence_impl(
     CHECK(div_fluxes.data()[n] ==                                  // NOLINT
           approx(expected_div_fluxes.data()[n]).epsilon(1.e-11));  // NOLINT
   }
+
+  // Test divergence of a single tensor
+  const auto div_vector =
+      divergence(get<Flux1<Dim, Frame>>(fluxes), mesh, inv_jacobian);
+  CHECK(get<Tags::div<Flux1<Dim, Frame>>>(div_fluxes) == div_vector);
 }
 
 void test_divergence() noexcept {
@@ -218,6 +223,8 @@ void test_divergence_compute_item_impl(
   TestHelpers::db::test_compute_tag<
       Tags::DivVariablesCompute<flux_tag, inv_jac_tag>>(
       "div(Variables(div(Flux1),div(Flux2)))");
+  TestHelpers::db::test_compute_tag<
+      Tags::DivVectorCompute<Flux1<Dim, Frame>, inv_jac_tag>>("div(Flux1)");
 
   const size_t num_grid_points = mesh.number_of_grid_points();
   const auto xi = logical_coordinates(mesh);
@@ -235,11 +242,13 @@ void test_divergence_compute_item_impl(
     get<DivFluxTag>(expected_div_fluxes) = FluxTag::divergence_of_flux(f, x);
   });
 
-  auto box = db::create<
-      db::AddSimpleTags<domain::Tags::Mesh<Dim>, flux_tag, map_tag>,
-      db::AddComputeTags<domain::Tags::LogicalCoordinates<Dim>, inv_jac_tag,
-                         Tags::DivVariablesCompute<flux_tag, inv_jac_tag>>>(
-      mesh, fluxes, coordinate_map);
+  auto box =
+      db::create<db::AddSimpleTags<domain::Tags::Mesh<Dim>, flux_tag, map_tag>,
+                 db::AddComputeTags<
+                     domain::Tags::LogicalCoordinates<Dim>, inv_jac_tag,
+                     Tags::DivVariablesCompute<flux_tag, inv_jac_tag>,
+                     Tags::DivVectorCompute<Flux1<Dim, Frame>, inv_jac_tag>>>(
+          mesh, fluxes, coordinate_map);
 
   const auto& div_fluxes =
       db::get<Tags::div<Tags::Variables<div_tags>>>(box);
@@ -252,6 +261,10 @@ void test_divergence_compute_item_impl(
     CHECK(div_fluxes.data()[n] ==                                  // NOLINT
           approx(expected_div_fluxes.data()[n]).epsilon(1.e-11));  // NOLINT
   }
+
+  const auto& div_flux1 =
+      db::get<Tags::DivVectorCompute<Flux1<Dim, Frame>, inv_jac_tag>>(box);
+  CHECK(get<Tags::div<Flux1<Dim, Frame>>>(div_fluxes) == div_flux1);
 }
 
 void test_divergence_compute() noexcept {
