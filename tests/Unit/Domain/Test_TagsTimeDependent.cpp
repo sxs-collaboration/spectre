@@ -6,7 +6,9 @@
 #include <array>
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
+#include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -27,6 +29,8 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -54,6 +58,8 @@ void test_tags() noexcept {
       "MeshVelocity");
   TestHelpers::db::test_compute_tag<
       domain::Tags::InertialMeshVelocityCompute<Dim>>("MeshVelocity");
+  TestHelpers::db::test_simple_tag<domain::Tags::DivMeshVelocity>(
+      "div(MeshVelocity)");
 }
 
 using TranslationMap = domain::CoordMapsTimeDependent::Translation;

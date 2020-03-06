@@ -12,6 +12,7 @@ set(LIBRARY "Test_Evolution")
 
 set(LIBRARY_SOURCES
   Test_ComputeTags.cpp
+  Test_TagsDomain.cpp
   Test_TypeTraits.cpp
   )
 
@@ -19,5 +20,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution"
   "${LIBRARY_SOURCES}"
-  "Utilities"
+  "Evolution;Utilities"
   )
