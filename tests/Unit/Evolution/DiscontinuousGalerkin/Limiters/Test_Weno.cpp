@@ -875,6 +875,35 @@ void test_simple_weno_3d(const std::unordered_set<Direction<3>>&
                     neighbor_modified_vars, custom_approx);
 }
 
+// Helper for HWENO testing ... simply regroups the HWENO subfunctions in a
+// mildly different way. Does not provide a true test that HWENO is correctly
+// computed, but should be sufficient to test that the WenoType::Hweno has
+// been properly implemented to call the HWENO limiter
+template <typename Tag, size_t VolumeDim, typename PackagedData>
+void hweno_modified_neighbor_solution(
+    const gsl::not_null<db::item_type<Tag>*> modified_tensor,
+    const db::const_item_type<Tag>& local_tensor,
+    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+    const std::unordered_map<
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
+        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+        neighbor_data,
+    const std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>&
+        primary_neighbor) noexcept {
+  for (size_t tensor_index = 0; tensor_index < local_tensor.size();
+       ++tensor_index) {
+    const auto& tensor_component = local_tensor[tensor_index];
+    const auto neighbors_to_exclude =
+        Limiters::Weno_detail::secondary_neighbors_to_exclude_from_fit<Tag>(
+            mean_value(tensor_component, mesh), tensor_index, neighbor_data,
+            primary_neighbor);
+    Limiters::Weno_detail::solve_constrained_fit<Tag>(
+        make_not_null(&(*modified_tensor)[tensor_index]),
+        local_tensor[tensor_index], tensor_index, element, mesh, neighbor_data,
+        primary_neighbor, neighbors_to_exclude);
+  }
+}
+
 void test_hweno_1d(const std::unordered_set<Direction<1>>&
                        directions_of_external_boundaries = {}) noexcept {
   INFO("Test Hermite WENO limiter in 1D");
@@ -938,11 +967,11 @@ void test_hweno_1d(const std::unordered_set<Direction<1>>&
         Variables<tmpl::list<ScalarTag, VectorTag<1>>>(
             mesh.number_of_grid_points());
     auto& mod_scalar = get<ScalarTag>(neighbor_modified_vars.at(lower_xi));
-    Limiters::Weno_detail::hweno_modified_neighbor_solution<ScalarTag>(
+    hweno_modified_neighbor_solution<ScalarTag>(
         make_not_null(&mod_scalar), get<ScalarTag>(local_vars), element, mesh,
         neighbor_data, lower_xi);
     auto& mod_vector = get<VectorTag<1>>(neighbor_modified_vars.at(lower_xi));
-    Limiters::Weno_detail::hweno_modified_neighbor_solution<VectorTag<1>>(
+    hweno_modified_neighbor_solution<VectorTag<1>>(
         make_not_null(&mod_vector), get<VectorTag<1>>(local_vars), element,
         mesh, neighbor_data, lower_xi);
   }
@@ -952,11 +981,11 @@ void test_hweno_1d(const std::unordered_set<Direction<1>>&
         Variables<tmpl::list<ScalarTag, VectorTag<1>>>(
             mesh.number_of_grid_points());
     auto& mod_scalar = get<ScalarTag>(neighbor_modified_vars.at(upper_xi));
-    Limiters::Weno_detail::hweno_modified_neighbor_solution<ScalarTag>(
+    hweno_modified_neighbor_solution<ScalarTag>(
         make_not_null(&mod_scalar), get<ScalarTag>(local_vars), element, mesh,
         neighbor_data, upper_xi);
     auto& mod_vector = get<VectorTag<1>>(neighbor_modified_vars.at(upper_xi));
-    Limiters::Weno_detail::hweno_modified_neighbor_solution<VectorTag<1>>(
+    hweno_modified_neighbor_solution<VectorTag<1>>(
         make_not_null(&mod_vector), get<VectorTag<1>>(local_vars), element,
         mesh, neighbor_data, upper_xi);
   }

@@ -366,15 +366,9 @@ void solve_constrained_fit(
       inverse_a_times_b + lagrange_multiplier * inverse_a_times_w;
 }
 
-template <size_t VolumeDim, typename Package>
-using LimiterNeighborData = std::unordered_map<
-    std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, Package,
-    boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>;
-
 /*!
  * \ingroup LimitersGroup
- * \brief Compute the HWENO modified solution for a particular tensor
- * from a particular neighbor element
+ * \brief Compute the HWENO solution for one tensor
  *
  * The HWENO limiter reconstructs a new solution from the linear combination of
  * the local DG solution and a "modified" solution from each neighbor element.
@@ -528,37 +522,6 @@ using LimiterNeighborData = std::unordered_map<
  * untested for grids where elements are curved, and it should not be expected
  * to work in these cases.
  */
-template <typename Tag, size_t VolumeDim, typename Package>
-void hweno_modified_neighbor_solution(
-    const gsl::not_null<db::item_type<Tag>*> modified_tensor,
-    const db::const_item_type<Tag>& local_tensor,
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
-    const LimiterNeighborData<VolumeDim, Package>& neighbor_data,
-    const std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>&
-        primary_neighbor) noexcept {
-  ASSERT(Weno_detail::check_element_has_one_similar_neighbor_in_direction(
-             element, primary_neighbor.first),
-         "Found some amount of h-refinement; this is not supported");
-  alg::for_each(neighbor_data, [&mesh](const auto& neighbor_and_data) noexcept {
-    ASSERT(neighbor_and_data.second.mesh == mesh,
-           "Found some amount of p-refinement; this is not supported");
-  });
-
-  for (size_t tensor_index = 0; tensor_index < local_tensor.size();
-       ++tensor_index) {
-    const auto& tensor_component = local_tensor[tensor_index];
-    const auto neighbors_to_exclude =
-        secondary_neighbors_to_exclude_from_fit<Tag>(
-            mean_value(tensor_component, mesh), tensor_index, neighbor_data,
-            primary_neighbor);
-    solve_constrained_fit<Tag>(make_not_null(&(*modified_tensor)[tensor_index]),
-                               local_tensor[tensor_index], tensor_index,
-                               element, mesh, neighbor_data, primary_neighbor,
-                               neighbors_to_exclude);
-  }
-}
-
-// Implement the HWENO limiter for one tensor
 template <typename Tag, size_t VolumeDim, typename PackagedData>
 void hweno_impl(
     const gsl::not_null<std::unordered_map<
