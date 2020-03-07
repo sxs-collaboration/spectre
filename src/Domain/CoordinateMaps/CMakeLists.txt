@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
     Frustum.cpp
     Identity.cpp
     Rotation.cpp
+    RotationTimeDep.cpp
     SpecialMobius.cpp
     Translation.cpp
     Wedge2D.cpp
