@@ -66,9 +66,9 @@ void check(const Map& map,
     }
   }
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.CoordMap", "[Unit][Domain]") {
+void test_face_normal_coordinate_map() {
+  INFO("Test coordinate map");
   /// [face_normal_example]
   const Mesh<0> mesh_0d;
   const auto map_1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
@@ -95,7 +95,6 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.CoordMap", "[Unit][Domain]") {
         {{{{0.4, 0., 0.}}, {{0., 0.6, 0.8}}, {{0., -0.8, 0.6}}}});
 }
 
-namespace {
 template <typename TargetFrame>
 void test_face_normal_element_map() {
   const Mesh<0> mesh_0d;
@@ -127,20 +126,14 @@ void test_face_normal_element_map() {
                     CoordinateMaps::Rotation<2>(atan2(4., 3.))))),
         {{{{0.4, 0., 0.}}, {{0., 0.6, 0.8}}, {{0., -0.8, 0.6}}}});
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ElementMap", "[Unit][Domain]") {
-  test_face_normal_element_map<Frame::Inertial>();
-  test_face_normal_element_map<Frame::Grid>();
-}
-
-namespace {
 struct Directions : db::SimpleTag {
   static std::string name() noexcept { return "Directions"; }
   using type = std::unordered_set<Direction<2>>;
 };
-}  // namespace
-SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ComputeItem", "[Unit][Domain]") {
+
+void test_compute_item() {
+  INFO("Testing compute item");
   const auto box = db::create<
       db::AddSimpleTags<Tags::Element<2>, Directions, Tags::Mesh<2>,
                         Tags::ElementMap<2>>,
@@ -238,5 +231,13 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ComputeItem", "[Unit][Domain]") {
         (invert(db::get<Tags::Interface<Tags::BoundaryDirectionsInterior<2>,
                                         Tags::UnnormalizedFaceNormal<2>>>(
             box_with_non_affine_map))));
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.FaceNormal", "[Unit][Domain]") {
+  test_face_normal_coordinate_map();
+  test_face_normal_element_map<Frame::Inertial>();
+  test_face_normal_element_map<Frame::Grid>();
+  test_compute_item();
 }
 }  // namespace domain
