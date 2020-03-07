@@ -108,8 +108,8 @@ class CubicScale {
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list)
-      const noexcept;
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const noexcept;
 
   /// Returns boost::none if the point is outside the range of the map.
   template <typename T>
@@ -117,32 +117,32 @@ class CubicScale {
       const std::array<T, Dim>& target_coords, double time,
       const std::unordered_map<
           std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list)
-      const noexcept;
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const noexcept;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, Dim> frame_velocity(
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list)
-      const noexcept;
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const noexcept;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> inv_jacobian(
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list)
-      const noexcept;
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const noexcept;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> jacobian(
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list)
-      const noexcept;
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const noexcept;
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT

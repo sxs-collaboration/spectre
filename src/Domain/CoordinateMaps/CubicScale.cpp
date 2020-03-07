@@ -51,8 +51,8 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::operator()(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        map_list) const noexcept {
-  const double a_of_t = map_list.at(f_of_t_a_)->func(time)[0][0];
+        functions_of_time) const noexcept {
+  const double a_of_t = functions_of_time.at(f_of_t_a_)->func(time)[0][0];
 
   if (functions_of_time_equal_) {
     // optimization for linear radial scaling
@@ -63,7 +63,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::operator()(
     return result;
   }
 
-  const double b_of_t = map_list.at(f_of_t_b_)->func(time)[0][0];
+  const double b_of_t = functions_of_time.at(f_of_t_b_)->func(time)[0][0];
 
   tt::remove_cvref_wrap_t<T> rho_squared =
       square(dereference_wrapper(source_coords[0]));
@@ -90,11 +90,11 @@ CubicScale<Dim>::inverse(
     const std::array<T, Dim>& target_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        map_list) const noexcept {
+        functions_of_time) const noexcept {
   if (functions_of_time_equal_) {
     // optimization for linear radial scaling
     const double one_over_a_of_t =
-        1.0 / map_list.at(f_of_t_a_)->func(time)[0][0];
+        1.0 / functions_of_time.at(f_of_t_a_)->func(time)[0][0];
 
     // Construct boost::optional to have a default value of an empty array.
     // Doing just result{} would construct a boost::optional that doesn't hold a
@@ -111,8 +111,8 @@ CubicScale<Dim>::inverse(
   // (b-a)/R^2*\rho^3 + a*\rho - r = 0,
   // where a and b are the FunctionsOfTime, R is the outer_boundary, and r is
   // the mapped/target coordinates radius.
-  const double a_of_t = map_list.at(f_of_t_a_)->func(time)[0][0];
-  const double b_of_t = map_list.at(f_of_t_b_)->func(time)[0][0];
+  const double a_of_t = functions_of_time.at(f_of_t_a_)->func(time)[0][0];
+  const double b_of_t = functions_of_time.at(f_of_t_b_)->func(time)[0][0];
 
   // these checks ensure that the function is monotonically increasing
   // and that there is one real root in the domain of \rho, [0,R]
@@ -194,8 +194,9 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::frame_velocity(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        map_list) const noexcept {
-  const double dt_a_of_t = map_list.at(f_of_t_a_)->func_and_deriv(time)[1][0];
+        functions_of_time) const noexcept {
+  const double dt_a_of_t =
+      functions_of_time.at(f_of_t_a_)->func_and_deriv(time)[1][0];
 
   if (functions_of_time_equal_) {
     // optimization for linear radial scaling
@@ -206,7 +207,8 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::frame_velocity(
     return result;
   }
 
-  const double dt_b_of_t = map_list.at(f_of_t_b_)->func_and_deriv(time)[1][0];
+  const double dt_b_of_t =
+      functions_of_time.at(f_of_t_b_)->func_and_deriv(time)[1][0];
 
   tt::remove_cvref_wrap_t<T> rho_squared =
       square(dereference_wrapper(source_coords[0]));
@@ -233,8 +235,8 @@ CubicScale<Dim>::jacobian(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        map_list) const noexcept {
-  const double a_of_t = map_list.at(f_of_t_a_)->func(time)[0][0];
+        functions_of_time) const noexcept {
+  const double a_of_t = functions_of_time.at(f_of_t_a_)->func(time)[0][0];
 
   if (functions_of_time_equal_) {
     // optimization for linear radial scaling
@@ -247,7 +249,7 @@ CubicScale<Dim>::jacobian(
     return jac;
   }
 
-  const double b_of_t = map_list.at(f_of_t_b_)->func(time)[0][0];
+  const double b_of_t = functions_of_time.at(f_of_t_b_)->func(time)[0][0];
 
   tt::remove_cvref_wrap_t<T> rho_squared =
       square(dereference_wrapper(source_coords[0]));
@@ -285,8 +287,8 @@ CubicScale<Dim>::inv_jacobian(
     const std::array<T, Dim>& source_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        map_list) const noexcept {
-  const double a_of_t = map_list.at(f_of_t_a_)->func(time)[0][0];
+        functions_of_time) const noexcept {
+  const double a_of_t = functions_of_time.at(f_of_t_a_)->func(time)[0][0];
 
   if (functions_of_time_equal_) {
     // optimization for linear radial scaling
@@ -300,7 +302,7 @@ CubicScale<Dim>::inv_jacobian(
     return inv_jac;
   }
 
-  const double b_of_t = map_list.at(f_of_t_b_)->func(time)[0][0];
+  const double b_of_t = functions_of_time.at(f_of_t_b_)->func(time)[0][0];
 
   tt::remove_cvref_wrap_t<T> rho_squared =
       square(dereference_wrapper(source_coords[0]));
@@ -366,28 +368,28 @@ bool operator==(const CubicScale<Dim>& lhs,
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                   \
-  template class CubicScale<DIM(data)>;                                        \
-  template boost::optional<                                                    \
-      std::array<tt::remove_cvref_wrap_t<double>, DIM(data)>>                  \
-  CubicScale<DIM(data)>::inverse(                                              \
-      const std::array<double, DIM(data)>& target_coords, const double time,   \
-      const std::unordered_map<                                                \
-          std::string,                                                         \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list) \
-      const noexcept;                                                          \
-  template boost::optional<std::array<                                         \
-      tt::remove_cvref_wrap_t<std::reference_wrapper<const double>>,           \
-      DIM(data)>>                                                              \
-  CubicScale<DIM(data)>::inverse(                                              \
-      const std::array<std::reference_wrapper<const double>, DIM(data)>&       \
-          target_coords,                                                       \
-      const double time,                                                       \
-      const std::unordered_map<                                                \
-          std::string,                                                         \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list) \
-      const noexcept;                                                          \
-  template bool operator==(const CubicScale<DIM(data)>&,                       \
+#define INSTANTIATE(_, data)                                                 \
+  template class CubicScale<DIM(data)>;                                      \
+  template boost::optional<                                                  \
+      std::array<tt::remove_cvref_wrap_t<double>, DIM(data)>>                \
+  CubicScale<DIM(data)>::inverse(                                            \
+      const std::array<double, DIM(data)>& target_coords, const double time, \
+      const std::unordered_map<                                              \
+          std::string,                                                       \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
+          functions_of_time) const noexcept;                                 \
+  template boost::optional<std::array<                                       \
+      tt::remove_cvref_wrap_t<std::reference_wrapper<const double>>,         \
+      DIM(data)>>                                                            \
+  CubicScale<DIM(data)>::inverse(                                            \
+      const std::array<std::reference_wrapper<const double>, DIM(data)>&     \
+          target_coords,                                                     \
+      const double time,                                                     \
+      const std::unordered_map<                                              \
+          std::string,                                                       \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
+          functions_of_time) const noexcept;                                 \
+  template bool operator==(const CubicScale<DIM(data)>&,                     \
                            const CubicScale<DIM(data)>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
@@ -396,41 +398,41 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                   \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>         \
-  CubicScale<DIM(data)>::operator()(                                           \
-      const std::array<DTYPE(data), DIM(data)>& source_coords,                 \
-      const double time,                                                       \
-      const std::unordered_map<                                                \
-          std::string,                                                         \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list) \
-      const noexcept;                                                          \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)>         \
-  CubicScale<DIM(data)>::frame_velocity(                                       \
-      const std::array<DTYPE(data), DIM(data)>& source_coords,                 \
-      const double time,                                                       \
-      const std::unordered_map<                                                \
-          std::string,                                                         \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list) \
-      const noexcept;                                                          \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),           \
-                    Frame::NoFrame>                                            \
-  CubicScale<DIM(data)>::jacobian(                                             \
-      const std::array<DTYPE(data), DIM(data)>& source_coords,                 \
-      const double time,                                                       \
-      const std::unordered_map<                                                \
-          std::string,                                                         \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list) \
-      const noexcept;                                                          \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),           \
-                    Frame::NoFrame>                                            \
-  CubicScale<DIM(data)>::inv_jacobian(                                         \
-      const std::array<DTYPE(data), DIM(data)>& source_coords,                 \
-      const double time,                                                       \
-      const std::unordered_map<                                                \
-          std::string,                                                         \
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list) \
-      const noexcept;
+#define INSTANTIATE(_, data)                                           \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)> \
+  CubicScale<DIM(data)>::operator()(                                   \
+      const std::array<DTYPE(data), DIM(data)>& source_coords,         \
+      const double time,                                               \
+      const std::unordered_map<                                        \
+          std::string,                                                 \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&   \
+          functions_of_time) const noexcept;                           \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data)> \
+  CubicScale<DIM(data)>::frame_velocity(                               \
+      const std::array<DTYPE(data), DIM(data)>& source_coords,         \
+      const double time,                                               \
+      const std::unordered_map<                                        \
+          std::string,                                                 \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&   \
+          functions_of_time) const noexcept;                           \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
+                    Frame::NoFrame>                                    \
+  CubicScale<DIM(data)>::jacobian(                                     \
+      const std::array<DTYPE(data), DIM(data)>& source_coords,         \
+      const double time,                                               \
+      const std::unordered_map<                                        \
+          std::string,                                                 \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&   \
+          functions_of_time) const noexcept;                           \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, DIM(data),   \
+                    Frame::NoFrame>                                    \
+  CubicScale<DIM(data)>::inv_jacobian(                                 \
+      const std::array<DTYPE(data), DIM(data)>& source_coords,         \
+      const double time,                                               \
+      const std::unordered_map<                                        \
+          std::string,                                                 \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&   \
+          functions_of_time) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
                         (double, DataVector,

@@ -1072,10 +1072,10 @@ void test_time_dependent_map() {
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
-  functions_of_time["trans"] =
+  functions_of_time["Translation"] =
       std::make_unique<Polynomial>(initial_time, init_func);
 
-  const CoordMapsTimeDependent::Translation trans_map{};
+  const CoordMapsTimeDependent::Translation trans_map{"Translation"};
 
   // affine(x) = 1.5 * x + 5.5
   domain::CoordinateMaps::Affine affine_map{-1., 1., 4., 7.};
@@ -1194,7 +1194,7 @@ void test_time_dependent_map() {
           serialized_map.jacobian(tnsr_double_logical, final_time,
                                   functions_of_time));
     const auto velocity =
-        functions_of_time.at("trans")->func_and_deriv(final_time)[1];
+        functions_of_time.at("Translation")->func_and_deriv(final_time)[1];
     // The 1.5 factor comes from the Jacobian
     CHECK(std::get<3>(coords_jacs_velocity) ==
           tnsr::I<double, 1, Frame::Inertial>{1.5 *
@@ -1214,7 +1214,7 @@ void test_time_dependent_map() {
           serialized_map.jacobian(tnsr_datavector_logical, final_time,
                                   functions_of_time));
     const auto velocity =
-        functions_of_time.at("trans")->func_and_deriv(final_time)[1];
+        functions_of_time.at("Translation")->func_and_deriv(final_time)[1];
     // The 1.5 factor comes from the Jacobian
     CHECK(std::get<3>(coords_jacs_velocity) ==
           tnsr::I<DataVector, 1, Frame::Inertial>{

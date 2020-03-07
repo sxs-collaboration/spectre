@@ -33,8 +33,8 @@ struct TimeDepMap {
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list)
-      const noexcept;
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const noexcept;
 };
 template <size_t Dim>
 struct TimeIndepMap {
@@ -54,8 +54,8 @@ struct TimeDepJac {
       const std::array<T, Dim>& source_coords, double time,
       const std::unordered_map<
           std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list)
-      const noexcept;
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const noexcept;
 };
 template <size_t Dim>
 struct TimeIndepJac {
