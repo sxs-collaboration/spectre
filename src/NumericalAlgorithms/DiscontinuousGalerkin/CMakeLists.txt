@@ -4,8 +4,9 @@
 set(LIBRARY DiscontinuousGalerkin)
 
 set(LIBRARY_SOURCES
-    MortarHelpers.cpp
-    )
+  Formulation.cpp
+  MortarHelpers.cpp
+  )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
