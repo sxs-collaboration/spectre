@@ -69,5 +69,6 @@ spectre_run_cmake() {
     spectre_load_modules
     cmake -D CHARM_ROOT=$CHARM_ROOT \
           -D CMAKE_BUILD_TYPE=Release \
+          "$@" \
           $SPECTRE_HOME
 }
