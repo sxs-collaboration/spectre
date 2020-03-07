@@ -51,9 +51,11 @@ ResultVectorType outer_product(const LhsVectorType& lhs,
 /// three-dimensional representation. The result would then be uniform in the
 /// slowest-varying direction of the three dimensional grid.
 template <typename VectorType>
-void fill_with_n_copies(const gsl::not_null<VectorType*> result,
-                        const VectorType& to_copy,
-                        const size_t times_to_copy) noexcept {
+void fill_with_n_copies(
+    // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
+    const gsl::not_null<VectorType*> result, const VectorType& to_copy,
+    // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
+    const size_t times_to_copy) noexcept {
   result->destructive_resize(to_copy.size() * times_to_copy);
   for (size_t i = 0; i < times_to_copy; ++i) {
     VectorType view{result->data() + i * to_copy.size(), to_copy.size()};

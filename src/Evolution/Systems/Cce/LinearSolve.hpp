@@ -97,7 +97,7 @@ void transpose_to_reals_then_imags_radial_stripes(
  * spectral matrix multiplications which are available for the other integrals.
  *
  * In each case, the boundary value at the world tube for the integration is
- * retrieved from `Tags::BoundaryValue<Tag>`.
+ * retrieved from `BoundaryPrefix<Tag>`.
  *
  * Additional type aliases `boundary_tags` and `integrand_tags` are provided for
  * template processing of the required input tags necessary for these functions.
@@ -106,9 +106,9 @@ void transpose_to_reals_then_imags_radial_stripes(
  * roles, and have different extents, it is better for tag management to give
  * separated lists for the dependencies.
  */
-template <typename Tag>
+template <template <typename> class BoundaryPrefix, typename Tag>
 struct RadialIntegrateBondi {
-  using boundary_tags = tmpl::list<Tags::BoundaryValue<Tag>>;
+  using boundary_tags = tmpl::list<BoundaryPrefix<Tag>>;
   using integrand_tags = tmpl::list<Tags::Integrand<Tag>>;
 
   using return_tags = tmpl::list<Tag>;
@@ -126,9 +126,9 @@ struct RadialIntegrateBondi {
       size_t l_max, size_t number_of_radial_points) noexcept;
 };
 
-template <>
-struct RadialIntegrateBondi<Tags::BondiQ> {
-  using boundary_tags = tmpl::list<Tags::BoundaryValue<Tags::BondiQ>>;
+template <template <typename> class BoundaryPrefix>
+struct RadialIntegrateBondi<BoundaryPrefix, Tags::BondiQ> {
+  using boundary_tags = tmpl::list<BoundaryPrefix<Tags::BondiQ>>;
   using integrand_tags = tmpl::list<Tags::PoleOfIntegrand<Tags::BondiQ>,
                                     Tags::RegularIntegrand<Tags::BondiQ>>;
   using integration_independent_tags = tmpl::list<Tags::OneMinusY>;
@@ -147,9 +147,9 @@ struct RadialIntegrateBondi<Tags::BondiQ> {
       size_t l_max, size_t number_of_radial_points) noexcept;
 };
 
-template <>
-struct RadialIntegrateBondi<Tags::BondiW> {
-  using boundary_tags = tmpl::list<Tags::BoundaryValue<Tags::BondiW>>;
+template <template <typename> class BoundaryPrefix>
+struct RadialIntegrateBondi<BoundaryPrefix, Tags::BondiW> {
+  using boundary_tags = tmpl::list<BoundaryPrefix<Tags::BondiW>>;
   using integrand_tags = tmpl::list<Tags::PoleOfIntegrand<Tags::BondiW>,
                                     Tags::RegularIntegrand<Tags::BondiW>>;
   using integration_independent_tags = tmpl::list<Tags::OneMinusY>;
@@ -168,9 +168,9 @@ struct RadialIntegrateBondi<Tags::BondiW> {
       size_t l_max, size_t number_of_radial_points) noexcept;
 };
 
-template <>
-struct RadialIntegrateBondi<Tags::BondiH> {
-  using boundary_tags = tmpl::list<Tags::BoundaryValue<Tags::BondiH>>;
+template <template <typename> class BoundaryPrefix>
+struct RadialIntegrateBondi<BoundaryPrefix, Tags::BondiH> {
+  using boundary_tags = tmpl::list<BoundaryPrefix<Tags::BondiH>>;
   using integrand_tags =
       tmpl::list<Tags::PoleOfIntegrand<Tags::BondiH>,
                  Tags::RegularIntegrand<Tags::BondiH>,

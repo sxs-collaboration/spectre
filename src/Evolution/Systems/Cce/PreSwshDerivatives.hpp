@@ -252,7 +252,7 @@ struct PreSwshDerivatives<Tags::Exp2Beta> {
   using integrand_tags = tmpl::list<>;
 
   using return_tags = tmpl::list<Tags::Exp2Beta>;
-  using argument_tags = tmpl::append<tmpl::list<pre_swsh_derivative_tags>>;
+  using argument_tags = pre_swsh_derivative_tags;
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
           exp_2_beta,
@@ -355,6 +355,29 @@ struct PreSwshDerivatives<Tags::Dy<Tags::BondiU>> {
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> dy_u,
       const Scalar<SpinWeighted<ComplexDataVector, 1>>& integrand_u) noexcept {
     *dy_u = integrand_u;
+  }
+};
+
+/// \brief Compute \f$\partial_u J\f$ from \f$H\f$ and the Jacobian factors.
+template <>
+struct PreSwshDerivatives<Tags::Du<Tags::BondiJ>> {
+  using pre_swsh_derivative_tags = tmpl::list<Tags::Dy<Tags::BondiJ>>;
+  using swsh_derivative_tags = tmpl::list<>;
+  using integrand_tags = tmpl::list<Tags::BondiH>;
+  using integration_independent_tags =
+      tmpl::list<Tags::DuRDividedByR, Tags::OneMinusY>;
+
+  using return_tags = tmpl::list<Tags::Du<Tags::BondiJ>>;
+  using argument_tags = tmpl::append<pre_swsh_derivative_tags, integrand_tags,
+                                     integration_independent_tags>;
+  static void apply(
+      const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> du_j,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>& dy_bondi_j,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_h,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& du_r_divided_by_r,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& one_minus_y) noexcept {
+    get(*du_j) = get(bondi_h) -
+                 get(du_r_divided_by_r) * get(one_minus_y) * get(dy_bondi_j);
   }
 };
 

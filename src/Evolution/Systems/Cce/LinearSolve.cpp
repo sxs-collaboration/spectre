@@ -147,8 +147,8 @@ void transpose_to_reals_then_imags_radial_stripes(
 }  // namespace detail
 
 // generic template applies to `Tags::BondiBeta` and `Tags::BondiU`
-template <typename Tag>
-void RadialIntegrateBondi<Tag>::apply(
+template <template <typename> class BoundaryPrefix, typename Tag>
+void RadialIntegrateBondi<BoundaryPrefix, Tag>::apply(
     const gsl::not_null<Scalar<
         SpinWeighted<ComplexDataVector, db::item_type<Tag>::type::spin>>*>
         integral_result,
@@ -172,7 +172,8 @@ void RadialIntegrateBondi<Tag>::apply(
   }
 }
 
-void RadialIntegrateBondi<Tags::BondiQ>::apply(
+template <template <typename> class BoundaryPrefix>
+void RadialIntegrateBondi<BoundaryPrefix, Tags::BondiQ>::apply(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
         integral_result,
     const Scalar<SpinWeighted<ComplexDataVector, 1>>& pole_of_integrand,
@@ -187,7 +188,8 @@ void RadialIntegrateBondi<Tags::BondiQ>::apply(
       number_of_radial_points);
 }
 
-void RadialIntegrateBondi<Tags::BondiW>::apply(
+template <template <typename> class BoundaryPrefix>
+void RadialIntegrateBondi<BoundaryPrefix, Tags::BondiW>::apply(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
         integral_result,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& pole_of_integrand,
@@ -202,7 +204,8 @@ void RadialIntegrateBondi<Tags::BondiW>::apply(
       number_of_radial_points);
 }
 
-void RadialIntegrateBondi<Tags::BondiH>::apply(
+template <template <typename> class BoundaryPrefix>
+void RadialIntegrateBondi<BoundaryPrefix, Tags::BondiH>::apply(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
         integral_result,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& pole_of_integrand,
@@ -317,7 +320,20 @@ void RadialIntegrateBondi<Tags::BondiH>::apply(
                 2 * number_of_angular_points);
 }
 
-template struct RadialIntegrateBondi<Tags::BondiBeta>;
-template struct RadialIntegrateBondi<Tags::BondiU>;
+template struct RadialIntegrateBondi<Tags::BoundaryValue, Tags::BondiBeta>;
+template struct RadialIntegrateBondi<Tags::BoundaryValue, Tags::BondiQ>;
+template struct RadialIntegrateBondi<Tags::BoundaryValue, Tags::BondiU>;
+template struct RadialIntegrateBondi<Tags::BoundaryValue, Tags::BondiW>;
+template struct RadialIntegrateBondi<Tags::BoundaryValue, Tags::BondiH>;
+template struct RadialIntegrateBondi<Tags::EvolutionGaugeBoundaryValue,
+                                     Tags::BondiBeta>;
+template struct RadialIntegrateBondi<Tags::EvolutionGaugeBoundaryValue,
+                                     Tags::BondiQ>;
+template struct RadialIntegrateBondi<Tags::EvolutionGaugeBoundaryValue,
+                                     Tags::BondiU>;
+template struct RadialIntegrateBondi<Tags::EvolutionGaugeBoundaryValue,
+                                     Tags::BondiW>;
+template struct RadialIntegrateBondi<Tags::EvolutionGaugeBoundaryValue,
+                                     Tags::BondiH>;
 
 }  // namespace Cce

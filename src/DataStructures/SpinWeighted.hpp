@@ -99,6 +99,9 @@ struct SpinWeighted<T, Spin, false> {
 
  size_t size() const noexcept { return data_.size(); }
 
+  /// Serialization for Charm++
+  void pup(PUP::er& p) noexcept;  // NOLINT
+
  private:
   T data_;
 };
@@ -202,10 +205,23 @@ struct SpinWeighted<T, Spin, true> {
 
   size_t size() const noexcept { return data_.size(); }
 
+  /// Serialization for Charm++
+  void pup(PUP::er& p) noexcept;  // NOLINT
+
  private:
   T data_;
 };
 // @}
+
+template <typename T, int Spin>
+void SpinWeighted<T, Spin, true>::pup(PUP::er& p) noexcept {
+  p | data_;
+}
+
+template <typename T, int Spin>
+void SpinWeighted<T, Spin, false>::pup(PUP::er& p) noexcept {
+  p | data_;
+}
 
 // @{
 /// \ingroup TypeTraitsGroup

@@ -18,6 +18,7 @@
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/PreSwshDerivatives.hpp"
+#include "Evolution/Systems/Cce/PrecomputeCceDependencies.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
@@ -178,44 +179,69 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PreSwshDerivatives",
 
   // separately test the nonseparable Tags::JbarQMinus2EthBeta
   using pre_swsh_spare_variables_tag = ::Tags::Variables<
-      tmpl::list<Tags::BondiJ, Tags::BondiQ, Tags::JbarQMinus2EthBeta>>;
+      tmpl::list<Tags::BondiJ, Tags::BondiQ, Tags::JbarQMinus2EthBeta,
+                 Tags::DuRDividedByR, Tags::BondiH, Tags::OneMinusY,
+                 Tags::Dy<Tags::BondiJ>, Tags::Du<Tags::BondiJ>>>;
   using swsh_derivatives_spare_variables_tag =
       ::Tags::Variables<tmpl::list<Spectral::Swsh::Tags::Derivative<
           Tags::BondiBeta, Spectral::Swsh::Tags::Eth>>>;
   auto spare_computation_box =
-      db::create<db::AddSimpleTags<Tags::LMax, pre_swsh_spare_variables_tag,
+      db::create<db::AddSimpleTags<Tags::LMax, Tags::NumberOfRadialPoints,
+                                   pre_swsh_spare_variables_tag,
                                    swsh_derivatives_spare_variables_tag>>(
-          l_max,
+          l_max, number_of_radial_grid_points,
           typename pre_swsh_spare_variables_tag::type{number_of_grid_points,
                                                       0.0},
           typename swsh_derivatives_spare_variables_tag::type{
               number_of_grid_points, 0.0});
   UniformCustomDistribution<double> dist(0.1, 1.0);
-  ComplexDataVector generated_j = make_with_random_values<ComplexDataVector>(
-      make_not_null(&generator), make_not_null(&dist), number_of_grid_points);
-  ComplexDataVector generated_q = make_with_random_values<ComplexDataVector>(
-      make_not_null(&generator), make_not_null(&dist), number_of_grid_points);
-  ComplexDataVector generated_eth_beta =
-      make_with_random_values<ComplexDataVector>(make_not_null(&generator),
-                                                 make_not_null(&dist),
-                                                 number_of_grid_points);
-  db::mutate<Tags::BondiJ, Tags::BondiQ,
-             Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
-                                              Spectral::Swsh::Tags::Eth>>(
-      make_not_null(&spare_computation_box),
-      [&generated_j, &generated_q, &generated_eth_beta](
-          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
-          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> q,
-          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
-              eth_beta) {
-        get(*j) = generated_j;
-        get(*q) = generated_q;
-        get(*eth_beta) = generated_eth_beta;
+  tmpl::for_each<tmpl::list<Tags::BondiJ, Tags::BondiQ,
+                            Spectral::Swsh::Tags::Derivative<
+                                Tags::BondiBeta, Spectral::Swsh::Tags::Eth>,
+                            Tags::DuRDividedByR, Tags::BondiH>>(
+      [&spare_computation_box, &generator, &dist ](auto tag_v) noexcept {
+        using tag = typename decltype(tag_v)::type;
+        db::mutate<tag>(
+            make_not_null(&spare_computation_box), [
+              &generator, &dist
+            ](const gsl::not_null<db::item_type<tag>*> to_generate) noexcept {
+              fill_with_random_values(to_generate, make_not_null(&generator),
+                                      make_not_null(&dist));
+            });
       });
+  db::mutate_apply<
+      PrecomputeCceDependencies<Tags::BoundaryValue, Tags::OneMinusY>>(
+      make_not_null(&spare_computation_box));
+
+  const auto& generated_j = get(db::get<Tags::BondiJ>(spare_computation_box));
+  const auto& generated_q = get(db::get<Tags::BondiQ>(spare_computation_box));
+  const auto& generated_eth_beta =
+      get(db::get<Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
+                                                   Spectral::Swsh::Tags::Eth>>(
+          spare_computation_box));
   db::mutate_apply<PreSwshDerivatives<Tags::JbarQMinus2EthBeta>>(
       make_not_null(&spare_computation_box));
   CHECK_ITERABLE_APPROX(
       get(db::get<Tags::JbarQMinus2EthBeta>(spare_computation_box)).data(),
-      conj(generated_j) * (generated_q - 2.0 * generated_eth_beta));
+      conj(generated_j.data()) *
+          (generated_q.data() - 2.0 * generated_eth_beta.data()));
+
+  db::mutate_apply<PreSwshDerivatives<Tags::Dy<Tags::BondiJ>>>(
+      make_not_null(&spare_computation_box));
+  db::mutate_apply<PreSwshDerivatives<Tags::Du<Tags::BondiJ>>>(
+      make_not_null(&spare_computation_box));
+
+  const auto& generated_h = get(db::get<Tags::BondiH>(spare_computation_box));
+  const auto& generated_dy_j =
+      get(db::get<Tags::Dy<Tags::BondiJ>>(spare_computation_box));
+  const auto& generated_du_r_divided_by_r =
+      get(db::get<Tags::DuRDividedByR>(spare_computation_box));
+  const auto& one_minus_y =
+      get(db::get<Tags::OneMinusY>(spare_computation_box));
+  CHECK_ITERABLE_APPROX(
+      get(db::get<Tags::Du<Tags::BondiJ>>(spare_computation_box)).data(),
+      generated_h.data() - one_minus_y.data() *
+                               generated_du_r_divided_by_r.data() *
+                               generated_dy_j.data());
 }
 }  // namespace Cce

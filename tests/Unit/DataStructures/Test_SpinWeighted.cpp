@@ -92,6 +92,10 @@ void test_spinweights() {
   CHECK_ITERABLE_APPROX(exp_spin_weight_0.data(), exp(spin_weight_0.data()));
   CHECK_ITERABLE_APPROX(sqrt_spin_weight_0.data(), sqrt(spin_weight_0.data()));
 
+  const auto serialized_and_deserialized_copy =
+      serialize_and_deserialize(spin_weight_0);
+  CHECK(spin_weight_0 == serialized_and_deserialized_copy);
+
   const auto compatible_spin_weight_0 =
       make_with_random_values<SpinWeighted<CompatibleType, 0>>(
           make_not_null(&gen), make_not_null(&compatible_dist), size);

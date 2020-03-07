@@ -113,9 +113,9 @@ auto create_box_for_bondi_integration(
       number_of_radial_grid_points *
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
-  using integration_tags = tmpl::flatten<
-      tmpl::list<BondiValueTag,
-                 typename RadialIntegrateBondi<BondiValueTag>::integrand_tags>>;
+  using integration_tags = tmpl::flatten<tmpl::list<
+      BondiValueTag, typename RadialIntegrateBondi<
+                         Tags::BoundaryValue, BondiValueTag>::integrand_tags>>;
   using integration_variables_tag = ::Tags::Variables<integration_tags>;
   using integration_modes_variables_tag =
       ::Tags::Variables<db::wrap_tags_in<TestHelpers::RadialPolyCoefficientsFor,
@@ -188,7 +188,8 @@ void test_regular_integration(const gsl::not_null<Generator*> gen,
   make_boundary_data<BondiValueTag>(make_not_null(&box),
                                     make_not_null(&expected), l_max);
 
-  db::mutate_apply<RadialIntegrateBondi<BondiValueTag>>(make_not_null(&box));
+  db::mutate_apply<RadialIntegrateBondi<Tags::BoundaryValue, BondiValueTag>>(
+      make_not_null(&box));
 
   Approx numerical_differentiation_approximation =
       Approx::custom()
@@ -278,7 +279,8 @@ void test_pole_integration(const gsl::not_null<Generator*> gen,
   db::mutate<Tags::OneMinusY>(make_not_null(&box),
                               TestHelpers::volume_one_minus_y, l_max);
 
-  db::mutate_apply<RadialIntegrateBondi<BondiValueTag>>(make_not_null(&box));
+  db::mutate_apply<RadialIntegrateBondi<Tags::BoundaryValue, BondiValueTag>>(
+      make_not_null(&box));
 
   Approx numerical_differentiation_approximation =
       Approx::custom()
@@ -458,7 +460,8 @@ void test_pole_integration_with_linear_operator(
   db::mutate<Tags::OneMinusY>(make_not_null(&box),
                               TestHelpers::volume_one_minus_y, l_max);
 
-  db::mutate_apply<RadialIntegrateBondi<BondiValueTag>>(make_not_null(&box));
+  db::mutate_apply<RadialIntegrateBondi<Tags::BoundaryValue, BondiValueTag>>(
+      make_not_null(&box));
 
   Approx numerical_differentiation_approximation =
       Approx::custom()
@@ -470,8 +473,7 @@ void test_pole_integration_with_linear_operator(
                                numerical_differentiation_approximation);
 }
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearSolve",
-                  "[Unit][Cce]") {
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearSolve", "[Unit][Cce]") {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> sdist{3, 6};
   const size_t l_max = sdist(gen);

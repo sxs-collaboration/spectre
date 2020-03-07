@@ -170,9 +170,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
   TestHelpers::write_test_file(solution, filename, target_time,
                                extraction_radius, frequency, amplitude, l_max);
 
-  const double start_time = value_dist(gen);
-  const double end_time = std::numeric_limits<double>::quiet_NaN();
+  const double start_time = target_time;
   const double target_step_size = 0.01 * value_dist(gen);
+  const double end_time = start_time + 10 * target_step_size;
   const size_t buffer_size = 5;
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       {l_max, number_of_radial_points,
