@@ -24,9 +24,11 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE DataStructures
-  INTERFACE ErrorHandling
-  INTERFACE Utilities
+  PUBLIC
+  DataStructures
+  ErrorHandling
+  Hdf5
+  Utilities
   )
 
 add_subdirectory(H5/Python)

@@ -16,9 +16,9 @@ spectre_python_add_module(
 
 spectre_python_link_libraries(
   ${LIBRARY}
-  PUBLIC IO
-  PUBLIC DataStructures
-  PUBLIC ${HDF5_LIBRARIES}
+  PRIVATE
+  IO
+  DataStructures
   )
 
 spectre_python_add_dependencies(
