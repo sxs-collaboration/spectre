@@ -137,7 +137,7 @@ template <
     typename SliceTagsToExterior = Initialization::slice_tags_to_exterior<>,
     typename FaceComputeTags = Initialization::face_compute_tags<>,
     typename ExteriorComputeTags = Initialization::exterior_compute_tags<>,
-    bool AddExteriorVariables = true>
+    bool AddExteriorVariables = true, bool UseMovingMesh = false>
 struct InitializeInterfaces {
  private:
   static constexpr size_t dim = System::volume_dim;
@@ -151,7 +151,6 @@ struct InitializeInterfaces {
   struct make_compute_tag {
     using type = domain::Tags::InterfaceCompute<Directions, ComputeTag>;
   };
-
   template <typename Directions>
   using face_tags = tmpl::flatten<tmpl::list<
       Directions,
@@ -161,7 +160,11 @@ struct InitializeInterfaces {
       tmpl::transform<SliceTagsToFace,
                       make_slice_tag<tmpl::_1, tmpl::pin<Directions>>>,
       domain::Tags::InterfaceCompute<
-          Directions, domain::Tags::UnnormalizedFaceNormalCompute<dim>>,
+          Directions,
+          tmpl::conditional_t<
+              UseMovingMesh,
+              domain::Tags::UnnormalizedFaceNormalMovingMeshCompute<dim>,
+              domain::Tags::UnnormalizedFaceNormalCompute<dim>>>,
       domain::Tags::InterfaceCompute<
           Directions, typename System::template magnitude_tag<
                           domain::Tags::UnnormalizedFaceNormal<dim>>>,
@@ -186,10 +189,13 @@ struct InitializeInterfaces {
               tmpl::pin<domain::Tags::BoundaryDirectionsExterior<dim>>>>,
       domain::Tags::InterfaceCompute<
           domain::Tags::BoundaryDirectionsExterior<dim>,
-          domain::Tags::BoundaryCoordinates<dim>>,
+          domain::Tags::BoundaryCoordinates<dim, UseMovingMesh>>,
       domain::Tags::InterfaceCompute<
           domain::Tags::BoundaryDirectionsExterior<dim>,
-          domain::Tags::UnnormalizedFaceNormalCompute<dim>>,
+          tmpl::conditional_t<
+              UseMovingMesh,
+              domain::Tags::UnnormalizedFaceNormalMovingMeshCompute<dim>,
+              domain::Tags::UnnormalizedFaceNormalCompute<dim>>>,
       domain::Tags::InterfaceCompute<
           domain::Tags::BoundaryDirectionsExterior<dim>,
           typename System::template magnitude_tag<
