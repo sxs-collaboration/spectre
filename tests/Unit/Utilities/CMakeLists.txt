@@ -44,6 +44,8 @@ set(LIBRARY_SOURCES
   Test_VectorAlgebra.cpp
   )
 
+add_subdirectory(TypeTraits)
+
 add_test_library(
   ${LIBRARY}
   "Utilities"
