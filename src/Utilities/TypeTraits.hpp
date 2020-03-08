@@ -1606,14 +1606,4 @@ struct function_info_impl<Ret (Class::*)(Args...) volatile> {
  */
 template <typename F>
 using function_info = tt_detail::function_info_impl<F>;
-
-/*!
- * \ingroup TypeTraitsGroup
- * \brief Given a type `T` and possibly a `size_t` evaluates to `T`. Useful for
- * turning a `std::index_sequence` into a pack expansion of types.
- *
- * \snippet Utilities/Test_TypeTraits.cpp example_identity_t
- */
-template <typename T, size_t = 0>
-using identity_t = T;
 }  // namespace tt
