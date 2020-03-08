@@ -5,6 +5,7 @@ set(LIBRARY "Test_TypeTraits")
 
 set(LIBRARY_SOURCES
   Test_FunctionInfo.cpp
+  Test_IsComplexOfFundamental.cpp
   )
 
 add_test_library(

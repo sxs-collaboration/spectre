@@ -23,6 +23,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/Tuple.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsComplexOfFundamental.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"

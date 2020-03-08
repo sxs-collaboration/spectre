@@ -9,7 +9,6 @@
 #pragma once
 
 #include <array>
-#include <complex>
 #include <cstddef>
 #include <deque>
 #include <forward_list>
@@ -1469,56 +1468,4 @@ struct remove_cvref_wrap {
 template <typename T>
 using remove_cvref_wrap_t = typename remove_cvref_wrap<T>::type;
 // @}
-
-// @{
-/// \ingroup TypeTraitsGroup
-/// \brief Extracts the fundamental type for a container
-///
-/// \details  Designates a type alias `get_fundamental_type::type`
-///  as `T` when `T` itself is an appropriate fundamental type, and the
-/// contained type of a container which specifies a `value_type`.
-///
-/// `get_fundamental_type_t<T>` is provided as a type alias to
-/// `type` from `get_fundamental_type<T>`
-template <typename T, typename Enable = cpp17::void_t<>>
-struct get_fundamental_type {
-  using type = tmpl::conditional_t<cpp17::is_fundamental_v<T>, T, NoSuchType>;
-};
-/// \cond
-template <typename T>
-struct get_fundamental_type<T, cpp17::void_t<typename T::value_type>> {
-  using type = typename get_fundamental_type<typename T::value_type>::type;
-};
-/// \endcond
-template <typename T>
-using get_fundamental_type_t = typename get_fundamental_type<T>::type;
-// @}
-
-// @{
-/// \ingroup TypeTraitsGroup
-/// \brief Determines if a type `T` is a `std::complex` of a fundamental type,
-/// is a `std::true_type` if so, and otherwise is a `std::false_type`
-///
-/// \snippet Utilities/Test_TypeTraits.cpp is_complex_of_fundamental
-template <typename T, typename = cpp17::bool_constant<true>>
-struct is_complex_of_fundamental : std::false_type {};
-/// \cond
-// this version will only pattern match if `T` is both complex and a fundamental
-// type
-template <typename T>
-struct is_complex_of_fundamental<
-    std::complex<T>, cpp17::bool_constant<cpp17::is_fundamental_v<T>>>
-    : std::true_type {};
-/// \endcond
-// @}
-template <typename T>
-constexpr bool is_complex_of_fundamental_v =
-    is_complex_of_fundamental<T>::value;
-
-/// \ingroup TypeTraitsGroup
-/// \brief Evaluates to `true` if type `T` is a `std::complex` of a fundamental
-/// type or if `T` is a fundamental type.
-template <typename T>
-constexpr bool is_complex_or_fundamental_v =
-    is_complex_of_fundamental_v<T> or cpp17::is_fundamental_v<T>;
 }  // namespace tt

@@ -10,6 +10,7 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/TypeTraits/IsComplexOfFundamental.hpp"
 
 /// \ingroup UtilitiesGroup
 /// \brief Callable struct which retrieves the `t.size()` for operand `t`. This
