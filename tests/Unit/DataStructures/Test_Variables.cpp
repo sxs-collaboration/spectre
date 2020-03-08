@@ -18,6 +18,7 @@
 #include "DataStructures/ModalVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "ErrorHandling/Error.hpp"  // IWYU pragma: keep
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"

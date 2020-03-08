@@ -8,7 +8,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 

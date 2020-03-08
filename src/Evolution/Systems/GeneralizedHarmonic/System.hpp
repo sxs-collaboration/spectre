@@ -4,17 +4,13 @@
 #pragma once
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
-
-namespace Tags {
-template <class>
-class Variables;
-}  // namespace Tags
 /// \endcond
 
 /*!

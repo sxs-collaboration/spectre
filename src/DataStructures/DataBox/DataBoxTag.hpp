@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/NoSuchType.hpp"
@@ -20,13 +21,6 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
-
-/// \cond
-namespace Tags {
-template <typename TagsList>
-struct Variables;
-}  // namespace Tags
-/// \endcond
 
 namespace Tags {
 /*!

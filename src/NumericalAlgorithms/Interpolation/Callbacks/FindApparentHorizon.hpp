@@ -10,6 +10,7 @@
 #include "ApparentHorizons/Tags.hpp"
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Informer/Verbosity.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
