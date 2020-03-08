@@ -25,6 +25,7 @@
 #include "Utilities/StdHelpers.hpp" // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/GetFundamentalType.hpp"
 
 // IWYU pragma: no_include <boost/multi_array.hpp>
 // IWYU pragma: no_include <boost/multi_array/base.hpp>

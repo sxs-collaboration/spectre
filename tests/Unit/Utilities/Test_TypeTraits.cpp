@@ -750,17 +750,3 @@ static_assert(
         int>,
     "Failed testing remove_cvref_wrap");
 /// [remove_cvref_wrap]
-
-/// [get_fundamental_type]
-static_assert(
-    cpp17::is_same_v<
-        typename tt::get_fundamental_type<std::array<double, 2>>::type, double>,
-    "Failed testing get_fundamental_type");
-static_assert(
-    cpp17::is_same_v<
-        typename tt::get_fundamental_type_t<std::vector<std::complex<int>>>,
-        int>,
-    "Failed testing get_fundamental_type");
-static_assert(cpp17::is_same_v<typename tt::get_fundamental_type_t<int>, int>,
-              "Failed testing get_fundamental_type");
-/// [get_fundamental_type]

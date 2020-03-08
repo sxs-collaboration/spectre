@@ -17,6 +17,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/GetFundamentalType.hpp"
 
 namespace TestHelpers_detail {
 /// \cond HIDDEN_SYMBOLS

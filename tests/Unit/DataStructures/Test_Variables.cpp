@@ -27,7 +27,7 @@
 #include "Utilities/MakeString.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/GetFundamentalType.hpp"
 #include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/DataStructures/TestTags.hpp"
 #include "tests/Unit/TestHelpers.hpp"

@@ -21,6 +21,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/GetFundamentalType.hpp"
 
 // IWYU pragma: no_include "DataStructures/DataVector.hpp"
 
