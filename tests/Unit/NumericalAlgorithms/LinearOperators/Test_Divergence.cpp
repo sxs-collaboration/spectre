@@ -122,7 +122,7 @@ template <size_t Dim, typename Frame>
 using two_fluxes = tmpl::list<Flux1<Dim, Frame>, Flux2<Dim, Frame>>;
 
 template <size_t Dim, typename Frame = Frame::Inertial>
-void test_divergence(
+void test_divergence_impl(
     const Mesh<Dim>& mesh,
     std::array<std::unique_ptr<MathFunction<1>>, Dim> functions) noexcept {
   const auto coordinate_map = make_affine_map<Dim>();
@@ -152,11 +152,14 @@ void test_divergence(
     CHECK(div_fluxes.data()[n] ==                                  // NOLINT
           approx(expected_div_fluxes.data()[n]).epsilon(1.e-11));  // NOLINT
   }
-}
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence",
-                  "[NumericalAlgorithms][LinearOperators][Unit]") {
+  // Test divergence of a single tensor
+  const auto div_vector =
+      divergence(get<Flux1<Dim, Frame>>(fluxes), mesh, inv_jacobian);
+  CHECK(get<Tags::div<Flux1<Dim, Frame>>>(div_fluxes) == div_vector);
+}
+
+void test_divergence() noexcept {
   using TensorTag = Flux1<1, Frame::Inertial>;
   using VariablesTag = Tags::Variables<tmpl::list<TensorTag>>;
   TestHelpers::db::test_prefix_tag<Tags::div<TensorTag>>("div(Flux1)");
@@ -180,24 +183,23 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence",
   for (size_t a = 0; a < 5; ++a) {
     std::array<std::unique_ptr<MathFunction<1>>, 1> functions_1d{
         {std::make_unique<MathFunctions::PowX>(a)}};
-    test_divergence(mesh_1d, std::move(functions_1d));
+    test_divergence_impl(mesh_1d, std::move(functions_1d));
     for (size_t b = 0; b < 4; ++b) {
       std::array<std::unique_ptr<MathFunction<1>>, 2> functions_2d{
           {std::make_unique<MathFunctions::PowX>(a),
            std::make_unique<MathFunctions::PowX>(b)}};
-      test_divergence(mesh_2d, std::move(functions_2d));
+      test_divergence_impl(mesh_2d, std::move(functions_2d));
       for (size_t c = 0; c < 3; ++c) {
         std::array<std::unique_ptr<MathFunction<1>>, 3> functions_3d{
             {std::make_unique<MathFunctions::PowX>(a),
              std::make_unique<MathFunctions::PowX>(b),
              std::make_unique<MathFunctions::PowX>(c)}};
-        test_divergence(mesh_3d, std::move(functions_3d));
+        test_divergence_impl(mesh_3d, std::move(functions_3d));
       }
     }
   }
 }
 
-namespace {
 template <class MapType>
 struct MapTag : db::SimpleTag {
   static constexpr size_t dim = MapType::dim;
@@ -208,7 +210,7 @@ struct MapTag : db::SimpleTag {
 };
 
 template <size_t Dim, typename Frame = Frame::Inertial>
-void test_divergence_compute_item(
+void test_divergence_compute_item_impl(
     const Mesh<Dim>& mesh,
     std::array<std::unique_ptr<MathFunction<1>>, Dim> functions) noexcept {
   const auto coordinate_map = make_affine_map<Dim>();
@@ -218,8 +220,11 @@ void test_divergence_compute_item(
   using flux_tags = two_fluxes<Dim, Frame>;
   using flux_tag = Tags::Variables<flux_tags>;
   using div_tags = db::wrap_tags_in<Tags::div, flux_tags>;
-  TestHelpers::db::test_compute_tag<Tags::DivCompute<flux_tag, inv_jac_tag>>(
+  TestHelpers::db::test_compute_tag<
+      Tags::DivVariablesCompute<flux_tag, inv_jac_tag>>(
       "div(Variables(div(Flux1),div(Flux2)))");
+  TestHelpers::db::test_compute_tag<
+      Tags::DivVectorCompute<Flux1<Dim, Frame>, inv_jac_tag>>("div(Flux1)");
 
   const size_t num_grid_points = mesh.number_of_grid_points();
   const auto xi = logical_coordinates(mesh);
@@ -237,11 +242,13 @@ void test_divergence_compute_item(
     get<DivFluxTag>(expected_div_fluxes) = FluxTag::divergence_of_flux(f, x);
   });
 
-  auto box = db::create<
-      db::AddSimpleTags<domain::Tags::Mesh<Dim>, flux_tag, map_tag>,
-      db::AddComputeTags<domain::Tags::LogicalCoordinates<Dim>, inv_jac_tag,
-                         Tags::DivCompute<flux_tag, inv_jac_tag>>>(
-      mesh, fluxes, coordinate_map);
+  auto box =
+      db::create<db::AddSimpleTags<domain::Tags::Mesh<Dim>, flux_tag, map_tag>,
+                 db::AddComputeTags<
+                     domain::Tags::LogicalCoordinates<Dim>, inv_jac_tag,
+                     Tags::DivVariablesCompute<flux_tag, inv_jac_tag>,
+                     Tags::DivVectorCompute<Flux1<Dim, Frame>, inv_jac_tag>>>(
+          mesh, fluxes, coordinate_map);
 
   const auto& div_fluxes =
       db::get<Tags::div<Tags::Variables<div_tags>>>(box);
@@ -254,11 +261,13 @@ void test_divergence_compute_item(
     CHECK(div_fluxes.data()[n] ==                                  // NOLINT
           approx(expected_div_fluxes.data()[n]).epsilon(1.e-11));  // NOLINT
   }
-}
-} // namespace
 
-SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence.ComputeItem",
-                  "[NumericalAlgorithms][LinearOperators][Unit]") {
+  const auto& div_flux1 =
+      db::get<Tags::DivVectorCompute<Flux1<Dim, Frame>, inv_jac_tag>>(box);
+  CHECK(get<Tags::div<Flux1<Dim, Frame>>>(div_fluxes) == div_flux1);
+}
+
+void test_divergence_compute() noexcept {
   const size_t n0 =
       Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
   const size_t n1 =
@@ -276,19 +285,26 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence.ComputeItem",
   for (size_t a = 0; a < 5; ++a) {
     std::array<std::unique_ptr<MathFunction<1>>, 1> functions_1d{
         {std::make_unique<MathFunctions::PowX>(a)}};
-    test_divergence_compute_item(mesh_1d, std::move(functions_1d));
+    test_divergence_compute_item_impl(mesh_1d, std::move(functions_1d));
     for (size_t b = 0; b < 4; ++b) {
       std::array<std::unique_ptr<MathFunction<1>>, 2> functions_2d{
           {std::make_unique<MathFunctions::PowX>(a),
            std::make_unique<MathFunctions::PowX>(b)}};
-      test_divergence_compute_item(mesh_2d, std::move(functions_2d));
+      test_divergence_compute_item_impl(mesh_2d, std::move(functions_2d));
       for (size_t c = 0; c < 3; ++c) {
         std::array<std::unique_ptr<MathFunction<1>>, 3> functions_3d{
             {std::make_unique<MathFunctions::PowX>(a),
              std::make_unique<MathFunctions::PowX>(b),
              std::make_unique<MathFunctions::PowX>(c)}};
-        test_divergence_compute_item(mesh_3d, std::move(functions_3d));
+        test_divergence_compute_item_impl(mesh_3d, std::move(functions_3d));
       }
     }
   }
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence",
+                  "[NumericalAlgorithms][LinearOperators][Unit]") {
+  test_divergence();
+  test_divergence_compute();
 }
