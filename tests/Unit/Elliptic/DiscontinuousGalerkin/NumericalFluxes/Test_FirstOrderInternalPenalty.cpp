@@ -13,6 +13,10 @@
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/Elliptic/DiscontinuousGalerkin/NumericalFluxes/TestHelpers.hpp"
+#include "Helpers/NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/TestHelpers.hpp"
+#include "Helpers/Utilities/ProtocolTestHelpers.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/NumericalFluxHelpers.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "Utilities/MakeString.hpp"
 
 namespace {
@@ -70,27 +74,23 @@ void apply_ip_flux(
       elliptic::dg::NumericalFluxes::FirstOrderInternalPenalty<
           Dim, FluxesComputerTag<Dim>, tmpl::list<ScalarFieldTag>,
           tmpl::list<AuxiliaryFieldTag<Dim>>>;
+  const DataVector& used_for_size = *(face_normal_int.begin());
 
   NumericalFlux numerical_flux{penalty_parameter};
   Fluxes<Dim> fluxes_computer{};
-  using PackagedData = Variables<typename NumericalFlux::package_tags>;
 
-  auto packaged_data_interior = make_with_value<PackagedData>(
-      face_normal_int, std::numeric_limits<double>::signaling_NaN());
-  numerical_flux.package_data(
-      make_not_null(&packaged_data_interior), n_dot_aux_flux_int,
-      div_aux_flux_int, face_normal_int, fluxes_computer, fluxes_argument);
-  auto packaged_data_exterior = make_with_value<PackagedData>(
-      face_normal_int, std::numeric_limits<double>::signaling_NaN());
+  auto packaged_data_interior = TestHelpers::NumericalFluxes::get_packaged_data(
+      numerical_flux, used_for_size, n_dot_aux_flux_int, div_aux_flux_int,
+      face_normal_int, fluxes_computer, fluxes_argument);
   tnsr::i<DataVector, Dim> face_normal_ext{face_normal_int};
   for (size_t d = 0; d < Dim; d++) {
     face_normal_ext.get(d) *= -1.;
   }
-  numerical_flux.package_data(
-      make_not_null(&packaged_data_exterior), n_dot_aux_flux_ext,
-      div_aux_flux_ext, face_normal_ext, fluxes_computer, fluxes_argument);
+  auto packaged_data_exterior = TestHelpers::NumericalFluxes::get_packaged_data(
+      numerical_flux, used_for_size, n_dot_aux_flux_ext, div_aux_flux_ext,
+      face_normal_ext, fluxes_computer, fluxes_argument);
 
-  EllipticNumericalFluxesTestHelpers::apply_numerical_flux(
+  dg::NumericalFluxes::normal_dot_numerical_fluxes(
       numerical_flux, packaged_data_interior, packaged_data_exterior,
       n_dot_num_f_field, n_dot_num_f_aux);
 }
@@ -117,6 +117,13 @@ void apply_ip_dirichlet_flux(
 
 template <size_t Dim>
 void test_equations(const DataVector& used_for_size) {
+  static_assert(test_protocol_conformance<
+                    elliptic::dg::NumericalFluxes::FirstOrderInternalPenalty<
+                        Dim, FluxesComputerTag<Dim>, tmpl::list<ScalarFieldTag>,
+                        tmpl::list<AuxiliaryFieldTag<Dim>>>,
+                    ::dg::protocols::NumericalFlux>,
+                "Failed testing protocol conformance");
+
   pypp::check_with_random_values<1>(
       &apply_ip_flux<Dim>, "FirstOrderInternalPenalty",
       {"normal_dot_numerical_flux_for_field",

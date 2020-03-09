@@ -11,8 +11,10 @@
 #include "Domain/FaceNormal.hpp"
 #include "Evolution/Systems/NewtonianEuler/Characteristics.hpp"
 #include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -116,7 +118,7 @@ namespace NumericalFluxes {
  * literature. Prefer using another numerical flux in more than 1-d.
  */
 template <size_t Dim, typename Frame>
-struct Hllc {
+struct Hllc : tt::ConformsTo<dg::protocols::NumericalFlux> {
   using char_speeds_tag = Tags::CharacteristicSpeedsCompute<Dim>;
 
   /// Estimate for one of the signal speeds
@@ -141,7 +143,11 @@ struct Hllc {
   // clang-tidy: non-const reference
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 
-  using package_tags = tmpl::list<
+  using variables_tags =
+      tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<Dim>,
+                 Tags::EnergyDensity>;
+
+  using package_field_tags = tmpl::list<
       ::Tags::NormalDotFlux<Tags::MassDensityCons>,
       ::Tags::NormalDotFlux<Tags::MomentumDensity<Dim, Frame>>,
       ::Tags::NormalDotFlux<Tags::EnergyDensity>, Tags::MassDensityCons,
@@ -149,6 +155,7 @@ struct Hllc {
       Tags::Pressure<DataVector>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>,
       NormalVelocity, LargestIngoingSpeed, LargestOutgoingSpeed>;
+  using package_extra_tags = tmpl::list<>;
 
   using argument_tags = tmpl::list<
       ::Tags::NormalDotFlux<Tags::MassDensityCons>,
@@ -160,7 +167,18 @@ struct Hllc {
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>>;
 
   void package_data(
-      gsl::not_null<Variables<package_tags>*> packaged_data,
+      gsl::not_null<Scalar<DataVector>*> packaged_n_dot_f_mass_density,
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame>*>
+          packaged_n_dot_f_momentum_density,
+      gsl::not_null<Scalar<DataVector>*> packaged_n_dot_f_energy_density,
+      gsl::not_null<Scalar<DataVector>*> packaged_mass_density,
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame>*> packaged_momentum_density,
+      gsl::not_null<Scalar<DataVector>*> packaged_energy_density,
+      gsl::not_null<Scalar<DataVector>*> packaged_pressure,
+      gsl::not_null<tnsr::i<DataVector, Dim, Frame>*> packaged_face_normal,
+      gsl::not_null<Scalar<DataVector>*> packaged_normal_velocity,
+      gsl::not_null<Scalar<DataVector>*> packaged_largest_ingoing_speed,
+      gsl::not_null<Scalar<DataVector>*> packaged_largest_outgoing_speed,
       const Scalar<DataVector>& normal_dot_flux_mass_density,
       const tnsr::I<DataVector, Dim, Frame>& normal_dot_flux_momentum_density,
       const Scalar<DataVector>& normal_dot_flux_energy_density,

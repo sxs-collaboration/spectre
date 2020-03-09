@@ -20,6 +20,9 @@
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/TestHelpers.hpp"
+#include "Helpers/Utilities/ProtocolTestHelpers.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
@@ -166,18 +169,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.NormalDotFluxes",
 }
 
 namespace {
-template <class... Tags, class FluxType, class... NormalDotNumericalFluxTypes>
-void apply_numerical_flux(
-    const FluxType& flux,
-    const Variables<tmpl::list<Tags...>>& packaged_data_int,
-    const Variables<tmpl::list<Tags...>>& packaged_data_ext,
-    NormalDotNumericalFluxTypes&&... normal_dot_numerical_flux) {
-  flux(std::forward<NormalDotNumericalFluxTypes>(normal_dot_numerical_flux)...,
-       get<Tags>(packaged_data_int)..., get<Tags>(packaged_data_ext)...);
-}
-
 template <size_t Dim>
 void check_upwind_flux(const size_t npts, const double t) {
+  static_assert(test_protocol_conformance<ScalarWave::UpwindFlux<Dim>,
+                                          dg::protocols::NumericalFlux>,
+                "Failed testing protocol conformance");
+
+  const DataVector used_for_size{pow<Dim>(npts),
+                                 std::numeric_limits<double>::signaling_NaN()};
   const ScalarWave::Solutions::PlaneWave<Dim> solution(
       make_array<Dim>(0.1), make_array<Dim>(0.0),
       std::make_unique<MathFunctions::Gaussian>(1.0, 1.0, 0.0));
@@ -198,28 +197,25 @@ void check_upwind_flux(const size_t npts, const double t) {
     unit_normal.get(d) = x.get(d);
   }
 
-  Variables<typename ScalarWave::UpwindFlux<Dim>::package_tags>
-      packaged_data_int(pow<Dim>(npts), 0.0);
-  Variables<typename ScalarWave::UpwindFlux<Dim>::package_tags>
-      packaged_data_ext(pow<Dim>(npts), 0.0);
-
   ScalarWave::UpwindFlux<Dim> flux_computer{};
-  flux_computer.package_data(
-      make_not_null(&packaged_data_int), solution.dpsi_dt(x, t + 1.0),
+
+  auto packaged_data_int = TestHelpers::NumericalFluxes::get_packaged_data(
+      flux_computer, used_for_size, solution.dpsi_dt(x, t + 1.0),
       solution.dpsi_dx(x, t + 2.0), solution.psi(x, t + 4.0), unit_normal);
-  flux_computer.package_data(make_not_null(&packaged_data_ext),
-                             solution.dpsi_dt(x, 2.0 * t + 10.0),
-                             solution.dpsi_dx(x, 2.0 * t + 9.0),
-                             solution.psi(x, 2.0 * t + 7.0), unit_normal);
+  auto packaged_data_ext = TestHelpers::NumericalFluxes::get_packaged_data(
+      flux_computer, used_for_size, solution.dpsi_dt(x, 2.0 * t + 10.0),
+      solution.dpsi_dx(x, 2.0 * t + 9.0), solution.psi(x, 2.0 * t + 7.0),
+      unit_normal);
 
   Scalar<DataVector> normal_dot_numerical_flux_pi(pow<Dim>(npts), 0.0);
   Scalar<DataVector> normal_dot_numerical_flux_psi(pow<Dim>(npts), 0.0);
   tnsr::i<DataVector, Dim, Frame::Inertial> normal_dot_numerical_flux_phi(
       pow<Dim>(npts), 0.0);
-  apply_numerical_flux(flux_computer, packaged_data_int, packaged_data_ext,
-                       make_not_null(&normal_dot_numerical_flux_pi),
-                       make_not_null(&normal_dot_numerical_flux_phi),
-                       make_not_null(&normal_dot_numerical_flux_psi));
+  dg::NumericalFluxes::normal_dot_numerical_fluxes(
+      flux_computer, packaged_data_int, packaged_data_ext,
+      make_not_null(&normal_dot_numerical_flux_pi),
+      make_not_null(&normal_dot_numerical_flux_phi),
+      make_not_null(&normal_dot_numerical_flux_psi));
 
   CHECK(normal_dot_numerical_flux_psi ==
         Scalar<DataVector>(pow<Dim>(npts), 0.0));
@@ -267,28 +263,30 @@ void penalty_flux(
     const Scalar<DataVector>& v_plus_ext, const Scalar<DataVector>& v_minus_ext,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_ext) noexcept {
   const size_t num_pts = v_plus_int.begin()->size();
+  const DataVector used_for_size{num_pts,
+                                 std::numeric_limits<double>::signaling_NaN()};
 
-  Variables<typename ScalarWave::PenaltyFlux<Dim>::package_tags>
-      packaged_data_int(num_pts, 0.0);
-  Variables<typename ScalarWave::PenaltyFlux<Dim>::package_tags>
-      packaged_data_ext(num_pts, 0.0);
   ScalarWave::PenaltyFlux<Dim> flux_computer{};
 
-  flux_computer.package_data(make_not_null(&packaged_data_int),
-                             n_dot_flux_pi_int, n_dot_flux_phi_int, v_plus_int,
-                             v_minus_int, unit_normal_int);
-  flux_computer.package_data(make_not_null(&packaged_data_ext),
-                             minus_n_dot_flux_pi_ext, minus_n_dot_flux_phi_ext,
-                             v_plus_ext, v_minus_ext, unit_normal_ext);
+  auto packaged_data_int = TestHelpers::NumericalFluxes::get_packaged_data(
+      flux_computer, used_for_size, n_dot_flux_pi_int, n_dot_flux_phi_int,
+      v_plus_int, v_minus_int, unit_normal_int);
+  auto packaged_data_ext = TestHelpers::NumericalFluxes::get_packaged_data(
+      flux_computer, used_for_size, minus_n_dot_flux_pi_ext,
+      minus_n_dot_flux_phi_ext, v_plus_ext, v_minus_ext, unit_normal_ext);
 
-  apply_numerical_flux(flux_computer, packaged_data_int, packaged_data_ext,
-                       normal_dot_numerical_flux_pi,
-                       normal_dot_numerical_flux_phi,
-                       normal_dot_numerical_flux_psi);
+  dg::NumericalFluxes::normal_dot_numerical_fluxes(
+      flux_computer, packaged_data_int, packaged_data_ext,
+      normal_dot_numerical_flux_pi, normal_dot_numerical_flux_phi,
+      normal_dot_numerical_flux_psi);
 }
 
 template <size_t Dim>
 void check_penalty_flux(const size_t num_pts_per_dim) noexcept {
+  static_assert(test_protocol_conformance<ScalarWave::PenaltyFlux<Dim>,
+                                          dg::protocols::NumericalFlux>,
+                "Failed testing protocol conformance");
+
   pypp::check_with_random_values<10>(
       &penalty_flux<Dim>, "PenaltyFlux",
       {"pi_penalty_flux", "phi_penalty_flux", "psi_penalty_flux"},

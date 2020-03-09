@@ -23,7 +23,6 @@
 #include "Domain/Tags.hpp"
 #include "Domain/TagsCharacteresticSpeeds.hpp"
 #include "Domain/TagsTimeDependent.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
@@ -56,17 +55,20 @@ namespace Actions {
 /// DataBox changes:
 /// - Adds:
 ///   * Tags::Interface<Tags::InternalDirections<Dim>,
-///                     typename flux_comm_types::normal_dot_fluxes_tag>
+///                     normal_dot_fluxes_tag>
 ///   * Tags::Interface<Tags::BoundaryDirectionsInterior<Dim>,
-///                     typename flux_comm_types::normal_dot_fluxes_tag>
+///                     normal_dot_fluxes_tag>
 ///   * Tags::Interface<Tags::BoundaryDirectionsExterior<Dim>,
-///                     typename flux_comm_types::normal_dot_fluxes_tag>
+///                     normal_dot_fluxes_tag>
 /// - Removes: nothing
 /// - Modifies: nothing
 template <typename Metavariables>
 struct DiscontinuousGalerkin {
   static constexpr size_t dim = Metavariables::system::volume_dim;
-  using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
+  using boundary_scheme = typename Metavariables::boundary_scheme;
+  using normal_dot_fluxes_tag =
+      db::add_tag_prefix<::Tags::NormalDotFlux,
+                         typename boundary_scheme::variables_tag>;
 
   template <typename Tag>
   using interface_tag =
@@ -85,10 +87,10 @@ struct DiscontinuousGalerkin {
   template <typename LocalSystem, bool IsInFluxConservativeForm =
                                       LocalSystem::is_in_flux_conservative_form>
   struct Impl {
-    using simple_tags = db::AddSimpleTags<
-        interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>,
-        interior_boundary_tag<typename flux_comm_types::normal_dot_fluxes_tag>,
-        external_boundary_tag<typename flux_comm_types::normal_dot_fluxes_tag>>;
+    using simple_tags =
+        db::AddSimpleTags<interface_tag<normal_dot_fluxes_tag>,
+                          interior_boundary_tag<normal_dot_fluxes_tag>,
+                          external_boundary_tag<normal_dot_fluxes_tag>>;
     using compute_tags = db::AddComputeTags<>;
 
     template <typename TagsList>
@@ -99,8 +101,8 @@ struct DiscontinuousGalerkin {
       const auto& boundary_directions =
           db::get<domain::Tags::BoundaryDirectionsInterior<dim>>(box);
 
-      typename interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>::
-          type normal_dot_fluxes_interface{};
+      db::item_type<interface_tag<normal_dot_fluxes_tag>>
+          normal_dot_fluxes_interface{};
       for (const auto& direction : internal_directions) {
         const auto& interface_num_points =
             db::get<interface_tag<domain::Tags::Mesh<dim - 1>>>(box)
@@ -110,8 +112,7 @@ struct DiscontinuousGalerkin {
                                                           0.);
       }
 
-      typename interior_boundary_tag<
-          typename flux_comm_types::normal_dot_fluxes_tag>::type
+      db::item_type<interior_boundary_tag<normal_dot_fluxes_tag>>
           normal_dot_fluxes_boundary_exterior{},
           normal_dot_fluxes_boundary_interior{};
       for (const auto& direction : boundary_directions) {

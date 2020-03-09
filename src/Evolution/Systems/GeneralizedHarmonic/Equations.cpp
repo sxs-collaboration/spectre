@@ -405,7 +405,21 @@ void ComputeNormalDotFluxes<Dim>::apply(
 
 template <size_t Dim>
 void UpwindFlux<Dim>::package_data(
-    const gsl::not_null<Variables<package_tags>*> packaged_data,
+    const gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
+        packaged_spacetime_metric,
+    const gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
+        packaged_pi,
+    const gsl::not_null<tnsr::iaa<DataVector, Dim, Frame::Inertial>*>
+        packaged_phi,
+    const gsl::not_null<Scalar<DataVector>*> packaged_lapse,
+    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+        packaged_shift,
+    const gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
+        packaged_inverse_spatial_metric,
+    const gsl::not_null<Scalar<DataVector>*> packaged_gamma1,
+    const gsl::not_null<Scalar<DataVector>*> packaged_gamma2,
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+        packaged_interface_unit_normal,
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
@@ -415,20 +429,15 @@ void UpwindFlux<Dim>::package_data(
     const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
     const noexcept {
-  get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
-      *packaged_data) = spacetime_metric;
-  get<Tags::Pi<Dim, Frame::Inertial>>(*packaged_data) = pi;
-  get<Tags::Phi<Dim, Frame::Inertial>>(*packaged_data) = phi;
-  get<gr::Tags::Lapse<DataVector>>(*packaged_data) = lapse;
-  get<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>(*packaged_data) =
-      shift;
-  get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>(
-      *packaged_data) = inverse_spatial_metric;
-  get<Tags::ConstraintGamma1>(*packaged_data) = gamma1;
-  get<Tags::ConstraintGamma2>(*packaged_data) = gamma2;
-  get<::Tags::Normalized<
-      domain::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>(
-      *packaged_data) = interface_unit_normal;
+  *packaged_spacetime_metric = spacetime_metric;
+  *packaged_pi = pi;
+  *packaged_phi = phi;
+  *packaged_lapse = lapse;
+  *packaged_shift = shift;
+  *packaged_inverse_spatial_metric = inverse_spatial_metric;
+  *packaged_gamma1 = gamma1;
+  *packaged_gamma2 = gamma2;
+  *packaged_interface_unit_normal = interface_unit_normal;
 }
 
 template <size_t Dim>

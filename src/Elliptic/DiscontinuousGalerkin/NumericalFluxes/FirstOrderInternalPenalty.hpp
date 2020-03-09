@@ -16,9 +16,11 @@
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -137,7 +139,8 @@ template <size_t Dim, typename FluxesComputerTag, typename... FieldTags,
           typename... AuxiliaryFieldTags>
 struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
                                  tmpl::list<FieldTags...>,
-                                 tmpl::list<AuxiliaryFieldTags...>> {
+                                 tmpl::list<AuxiliaryFieldTags...>>
+    : tt::ConformsTo<::dg::protocols::NumericalFlux> {
  private:
   using fluxes_computer_tag = FluxesComputerTag;
   using FluxesComputer = db::const_item_type<fluxes_computer_tag>;
@@ -168,8 +171,7 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
     // possible to communicate non-tensors (the element size and the number of
     // collocation points on either side of the mortar), this option will be
     // changed to be just the free parameter `C` multiplying `N_points^2 / h`.
-    // This will improve conditioning on non-uniform meshes. Currently, the
-    // `packaged_data` is a `Variables` which can only hold tensors.
+    // This will improve conditioning on non-uniform meshes.
     static constexpr OptionString help = {
         "The prefactor to the penalty term of the flux."};
   };
@@ -185,8 +187,8 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
   // clang-tidy: non-const reference
   void pup(PUP::er& p) noexcept { p | penalty_parameter_; }  // NOLINT
 
-  // These tags are sliced to the interface of the element and passed to
-  // `package_data` to provide the data needed to compute the numerical fluxes.
+  using variables_tags = tmpl::list<FieldTags..., AuxiliaryFieldTags...>;
+
   using argument_tags = tmpl::push_front<
       typename FluxesComputer::argument_tags,
       ::Tags::NormalDotFlux<AuxiliaryFieldTags>...,
@@ -197,21 +199,21 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
   using volume_tags =
       tmpl::push_front<get_volume_tags<FluxesComputer>, fluxes_computer_tag>;
 
-  // This is the data needed to compute the numerical flux.
-  // `SendBoundaryFluxes` calls `package_data` to store these tags in a
-  // Variables. Local and remote values of this data are then combined in the
-  // `()` operator.
-  using package_tags =
+  using package_field_tags =
       tmpl::list<::Tags::NormalDotFlux<AuxiliaryFieldTags>...,
                  NormalDotDivFlux<AuxiliaryFieldTags>...,
                  NormalDotNormalDotFlux<AuxiliaryFieldTags>...>;
+  using package_extra_tags = tmpl::list<>;
 
-  // Following the packaged_data pointer, this function expects as arguments the
-  // types in `argument_tags`.
   template <typename... FluxesArgs>
   void package_data(
-      const gsl::not_null<Variables<package_tags>*> packaged_data,
-      const db::const_item_type<::Tags::NormalDotFlux<
+      const gsl::not_null<db::item_type<::Tags::NormalDotFlux<
+          AuxiliaryFieldTags>>*>... packaged_n_dot_aux_fluxes,
+      const gsl::not_null<db::item_type<NormalDotDivFlux<
+          AuxiliaryFieldTags>>*>... packaged_n_dot_div_aux_fluxes,
+      const gsl::not_null<db::item_type<NormalDotNormalDotFlux<
+          AuxiliaryFieldTags>>*>... packaged_n_dot_principal_n_dot_aux_fluxes,
+      const db::item_type<::Tags::NormalDotFlux<
           AuxiliaryFieldTags>>&... normal_dot_auxiliary_field_fluxes,
       const db::const_item_type<::Tags::div<
           ::Tags::Flux<AuxiliaryFieldTags, tmpl::size_t<Dim>,
@@ -236,38 +238,34 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
                 principal_ndot_aux_field_fluxes))...,
         fluxes_args..., normal_dot_auxiliary_field_fluxes...);
     const auto apply_normal_dot =
-        [
-          &packaged_data, &principal_div_aux_field_fluxes,
-          &principal_ndot_aux_field_fluxes, &interface_unit_normal
-        ](auto field_tag_v, auto auxiliary_field_tag_v,
-          const auto& normal_dot_auxiliary_field_flux) noexcept {
-      using field_tag = decltype(field_tag_v);
-      using auxiliary_field_tag = decltype(auxiliary_field_tag_v);
-      // Compute n.F_v(u)
-      get<::Tags::NormalDotFlux<auxiliary_field_tag>>(*packaged_data) =
-          normal_dot_auxiliary_field_flux;
-      // Compute n.F_u(div(F_v(u))) and n.F_u(n.F_v(u))
-      normal_dot_flux(
-          make_not_null(
-              &get<NormalDotDivFlux<auxiliary_field_tag>>(*packaged_data)),
-          interface_unit_normal,
-          get<::Tags::Flux<field_tag, tmpl::size_t<Dim>, Frame::Inertial>>(
-              principal_div_aux_field_fluxes));
-      normal_dot_flux(
-          make_not_null(&get<NormalDotNormalDotFlux<auxiliary_field_tag>>(
-              *packaged_data)),
-          interface_unit_normal,
-          get<::Tags::Flux<field_tag, tmpl::size_t<Dim>, Frame::Inertial>>(
-              principal_ndot_aux_field_fluxes));
-    };
+        [&principal_div_aux_field_fluxes, &principal_ndot_aux_field_fluxes,
+         &interface_unit_normal](
+            auto field_tag_v, auto packaged_normal_dot_auxiliary_field_flux,
+            auto packaged_normal_dot_div_auxiliary_field_flux,
+            auto packaged_normal_dot_principal_ndot_aux_field_flux,
+            const auto& normal_dot_auxiliary_field_flux) noexcept {
+          using field_tag = decltype(field_tag_v);
+          // Compute n.F_v(u)
+          *packaged_normal_dot_auxiliary_field_flux =
+              normal_dot_auxiliary_field_flux;
+          // Compute n.F_u(div(F_v(u))) and n.F_u(n.F_v(u))
+          normal_dot_flux(
+              packaged_normal_dot_div_auxiliary_field_flux,
+              interface_unit_normal,
+              get<::Tags::Flux<field_tag, tmpl::size_t<Dim>, Frame::Inertial>>(
+                  principal_div_aux_field_fluxes));
+          normal_dot_flux(
+              packaged_normal_dot_principal_ndot_aux_field_flux,
+              interface_unit_normal,
+              get<::Tags::Flux<field_tag, tmpl::size_t<Dim>, Frame::Inertial>>(
+                  principal_ndot_aux_field_fluxes));
+        };
     EXPAND_PACK_LEFT_TO_RIGHT(apply_normal_dot(
-        FieldTags{}, AuxiliaryFieldTags{}, normal_dot_auxiliary_field_fluxes));
+        FieldTags{}, packaged_n_dot_aux_fluxes, packaged_n_dot_div_aux_fluxes,
+        packaged_n_dot_principal_n_dot_aux_fluxes,
+        normal_dot_auxiliary_field_fluxes));
   }
 
-  // This function combines local and remote data to the numerical fluxes.
-  // The numerical fluxes as not-null pointers are the first arguments. The
-  // other arguments are the packaged types for the interior side followed by
-  // the packaged types for the exterior side.
   void operator()(
       const gsl::not_null<db::item_type<::Tags::NormalDotNumericalFlux<
           FieldTags>>*>... numerical_flux_for_fields,

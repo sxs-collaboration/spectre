@@ -18,6 +18,8 @@
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/TestHelpers.hpp"
+#include "Helpers/Utilities/ProtocolTestHelpers.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -108,13 +110,12 @@ void apply_hllc(
       sqrt(adiabatic_index * get(pressure_ext) / get(mass_density_ext))};
 
   using hllc_flux = NewtonianEuler::NumericalFluxes::Hllc<Dim, Frame>;
-  using packaged_data_tag = typename hllc_flux::package_tags;
-  Variables<packaged_data_tag> packaged_data_int(number_of_points);
-  Variables<packaged_data_tag> packaged_data_ext(number_of_points);
+  const hllc_flux flux_computer{};
+  const auto& used_for_size = get(mass_density_int);
 
   // Package interior data
-  hllc_flux{}.package_data(
-      make_not_null(&packaged_data_int), n_dot_f_mass_density_int,
+  auto packaged_data_int = TestHelpers::NumericalFluxes::get_packaged_data(
+      flux_computer, used_for_size, n_dot_f_mass_density_int,
       n_dot_f_momentum_density_int, n_dot_f_energy_density_int,
       mass_density_int, momentum_density_int, energy_density_int, velocity_int,
       pressure_int,
@@ -130,8 +131,8 @@ void apply_hllc(
     minus_n_dot_f_momentum_density_int.get(i) =
         -n_dot_f_momentum_density_int.get(i);
   }
-  hllc_flux{}.package_data(
-      make_not_null(&packaged_data_ext),
+  auto packaged_data_ext = TestHelpers::NumericalFluxes::get_packaged_data(
+      flux_computer, used_for_size,
       dot_product(flux_mass_density_int, minus_interface_normal),
       minus_n_dot_f_momentum_density_int,
       dot_product(flux_energy_density_int, minus_interface_normal),
@@ -142,7 +143,7 @@ void apply_hllc(
       minus_interface_normal);
 
   // Test consistency: F_num(U, U) = F(U)
-  TestHelpers::NumericalFluxes::apply_numerical_flux(
+  dg::NumericalFluxes::normal_dot_numerical_fluxes(
       hllc_flux{}, packaged_data_int, packaged_data_ext,
       n_dot_num_f_mass_density, n_dot_num_f_momentum_density,
       n_dot_num_f_energy_density);
@@ -151,8 +152,8 @@ void apply_hllc(
   CHECK(*n_dot_num_f_energy_density == n_dot_f_energy_density_int);
 
   // Now package different exterior data.
-  hllc_flux{}.package_data(
-      make_not_null(&packaged_data_ext),
+  packaged_data_ext = TestHelpers::NumericalFluxes::get_packaged_data(
+      flux_computer, used_for_size,
       dot_product(flux_mass_density_ext, minus_interface_normal),
       minus_n_dot_f_momentum_density_ext,
       dot_product(flux_energy_density_ext, minus_interface_normal),
@@ -163,7 +164,7 @@ void apply_hllc(
       minus_interface_normal);
 
   // These numerical fluxes will be compared with those obtained with pypp.
-  TestHelpers::NumericalFluxes::apply_numerical_flux(
+  dg::NumericalFluxes::normal_dot_numerical_fluxes(
       hllc_flux{}, packaged_data_int, packaged_data_ext,
       n_dot_num_f_mass_density, n_dot_num_f_momentum_density,
       n_dot_num_f_energy_density);
@@ -173,7 +174,7 @@ void apply_hllc(
   tnsr::I<DataVector, Dim, Frame> minus_n_dot_num_f_momentum_density(
       number_of_points);
   Scalar<DataVector> minus_n_dot_num_f_energy_density(number_of_points);
-  TestHelpers::NumericalFluxes::apply_numerical_flux(
+  dg::NumericalFluxes::normal_dot_numerical_fluxes(
       hllc_flux{}, packaged_data_ext, packaged_data_int,
       make_not_null(&minus_n_dot_num_f_mass_density),
       make_not_null(&minus_n_dot_num_f_momentum_density),
@@ -189,6 +190,11 @@ void apply_hllc(
 
 template <size_t Dim, typename Frame>
 void test_flux(const DataVector& used_for_size) noexcept {
+  static_assert(test_protocol_conformance<
+                    NewtonianEuler::NumericalFluxes::Hllc<Dim, Frame>,
+                    dg::protocols::NumericalFlux>,
+                "Failed testing protocol conformance");
+
   pypp::check_with_random_values<9>(
       &apply_hllc<Dim, Frame>,
       "Evolution.Systems.NewtonianEuler.NumericalFluxes.Hllc",
