@@ -6,11 +6,9 @@
 #include <array>
 #include <boost/functional/hash.hpp>
 #include <cstddef>
-#include <functional>
 #include <random>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 
 #include "DataStructures/DataBox/Tag.hpp"
@@ -25,17 +23,15 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/OrientationMapHelpers.hpp"
-#include "Domain/Side.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/HwenoImpl.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/SimpleWenoImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Weno.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/WenoHelpers.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoType.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Limiters/TestHelpers.hpp"
+#include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -50,6 +46,7 @@
 // IWYU pragma: no_forward_declare Tags::Mean
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
+// IWYU pragma: no_forward_declare intrp::RegularGrid
 
 namespace {
 
@@ -217,121 +214,50 @@ void test_package_data_3d() noexcept {
 }
 
 template <size_t VolumeDim>
-void test_weno_tci_work(
-    const Scalar<DataVector>& scalar, const Mesh<VolumeDim>& mesh,
-    const std::array<double, 2 * VolumeDim>& means_no_activation,
-    const std::array<double, 2 * VolumeDim>& means_activation) noexcept {
-  using Weno = Limiters::Weno<VolumeDim, tmpl::list<ScalarTag>>;
-  const auto element = TestHelpers::Limiters::make_element<VolumeDim>();
+Variables<tmpl::list<ScalarTag, VectorTag<VolumeDim>>> make_local_vars(
+    const Mesh<VolumeDim>& mesh) noexcept;
+
+template <>
+Variables<tmpl::list<ScalarTag, VectorTag<1>>> make_local_vars(
+    const Mesh<1>& mesh) noexcept {
   const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = make_array<VolumeDim>(1.2);
-
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-      typename Weno::PackagedData,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
-      neighbor_data{};
-  for (size_t d = 0; d < VolumeDim; ++d) {
-    for (const auto side : {Side::Lower, Side::Upper}) {
-      const size_t index = 2 * d + (side == Side::Lower ? 0 : 1);
-      const auto dir_and_id = std::make_pair(Direction<VolumeDim>(d, side),
-                                             ElementId<VolumeDim>(1 + index));
-      neighbor_data[dir_and_id].volume_data =
-          Variables<tmpl::list<ScalarTag>>(mesh.number_of_grid_points(), 0.);
-      neighbor_data[dir_and_id].means =
-          tuples::TaggedTuple<::Tags::Mean<ScalarTag>>(
-              gsl::at(means_no_activation, index));
-      neighbor_data[dir_and_id].mesh = mesh;
-      neighbor_data[dir_and_id].element_size = element_size;
-    }
-  }
-
-  const double neighbor_linear_weight = 0.001;
-  const Weno sweno(Limiters::WenoType::SimpleWeno, neighbor_linear_weight);
-  auto scalar_to_limit = scalar;
-  bool activated = sweno(make_not_null(&scalar_to_limit), mesh, element,
-                         element_size, neighbor_data);
-  CHECK_FALSE(activated);
-  CHECK(scalar_to_limit == scalar);
-
-  for (size_t d = 0; d < VolumeDim; ++d) {
-    for (const auto side : {Side::Lower, Side::Upper}) {
-      const size_t index = 2 * d + (side == Side::Lower ? 0 : 1);
-      const auto dir_and_id = std::make_pair(Direction<VolumeDim>(d, side),
-                                             ElementId<VolumeDim>(1 + index));
-      neighbor_data[dir_and_id].means =
-          tuples::TaggedTuple<::Tags::Mean<ScalarTag>>(
-              gsl::at(means_activation, index));
-    }
-  }
-  activated = sweno(make_not_null(&scalar_to_limit), mesh, element,
-                    element_size, neighbor_data);
-  CHECK(activated);
-  CHECK(scalar_to_limit != scalar);
+  const auto& x = get<0>(logical_coords);
+  Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(
+      mesh.number_of_grid_points());
+  get(get<ScalarTag>(vars)) = 1.0 - 2.0 * x + square(x);
+  get<0>(get<VectorTag<1>>(vars)) = 0.4 * x - 0.1 * square(x);
+  return vars;
 }
 
-void test_weno_tci_1d() noexcept {
-  INFO("Test WENO's troubled-cell indicator in 1D");
-  const auto mesh =
-      Mesh<1>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
-
-  const auto scalar = [&mesh]() noexcept {
-    const auto logical_coords = logical_coordinates(mesh);
-    const auto& x = get<0>(logical_coords);
-    return ScalarTag::type{{{1.0 - 2.0 * x + square(x)}}};
-  }
-  ();
-
-  // Here we specify two sets of neighbor means: one such that the TCI does not
-  // trigger, another such that the TCI does trigger.
-  // Local mean: 4/3; largest mean-to-edge slope: 8/3
-  const std::array<double, 2> means_no_activation = {{4., -1.4}};
-  const std::array<double, 2> means_activation = {{4., -1.3}};
-
-  test_weno_tci_work(scalar, mesh, means_no_activation, means_activation);
+template <>
+Variables<tmpl::list<ScalarTag, VectorTag<2>>> make_local_vars(
+    const Mesh<2>& mesh) noexcept {
+  const auto logical_coords = logical_coordinates(mesh);
+  const auto& x = get<0>(logical_coords);
+  const auto& y = get<1>(logical_coords);
+  Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(
+      mesh.number_of_grid_points());
+  get(get<ScalarTag>(vars)) = x + y - 0.5 * square(x) + 0.5 * square(y);
+  get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
+  get<1>(get<VectorTag<2>>(vars)) =
+      0.1 + 0.2 * x - 0.4 * y + 0.3 * square(x) * square(y);
+  return vars;
 }
 
-void test_weno_tci_2d() noexcept {
-  INFO("Test WENO's troubled-cell indicator in 2D");
-  const auto mesh = Mesh<2>({{3, 3}}, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
-
-  const auto scalar = [&mesh]() noexcept {
-    const auto logical_coords = logical_coordinates(mesh);
-    const auto& x = get<0>(logical_coords);
-    const auto& y = get<1>(logical_coords);
-    return ScalarTag::type{{{x + y - 0.5 * square(x) + 0.5 * square(y)}}};
-  }
-  ();
-
-  // Local mean: 0; largest mean-to-edge slope in x and y: 4/3
-  const std::array<double, 4> means_no_activation = {{-1.4, 1.4, -1.4, 1.4}};
-  const std::array<double, 4> means_activation = {{-1.4, 1.4, -1.4, 1.3}};
-
-  test_weno_tci_work(scalar, mesh, means_no_activation, means_activation);
-}
-
-void test_weno_tci_3d() noexcept {
-  INFO("Test WENO's troubled-cell indicator in 3D");
-  const auto mesh = Mesh<3>({{3, 4, 5}}, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
-
-  const auto scalar = [&mesh]() noexcept {
-    const auto logical_coords = logical_coordinates(mesh);
-    const auto& x = get<0>(logical_coords);
-    const auto& y = get<1>(logical_coords);
-    const auto& z = get<2>(logical_coords);
-    return ScalarTag::type{{{x + y - 0.2 * z - y * z + x * y * square(z)}}};
-  }
-  ();
-
-  // Local mean: 0; largest mean-to-edge slope in x and y: 1, in z: -0.2
-  const std::array<double, 6> means_no_activation = {
-      {-1.1, 1.1, -1.1, 1.1, 0.25, -0.25}};
-  const std::array<double, 6> means_activation = {
-      {-1.1, 1.1, -1.1, 1.1, 0.15, -0.25}};
-
-  test_weno_tci_work(scalar, mesh, means_no_activation, means_activation);
+template <>
+Variables<tmpl::list<ScalarTag, VectorTag<3>>> make_local_vars(
+    const Mesh<3>& mesh) noexcept {
+  const auto logical_coords = logical_coordinates(mesh);
+  const auto& x = get<0>(logical_coords);
+  const auto& y = get<1>(logical_coords);
+  const auto& z = get<2>(logical_coords);
+  Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(
+      mesh.number_of_grid_points());
+  get(get<ScalarTag>(vars)) = x + y - 0.2 * z - y * z + x * y * square(z);
+  get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
+  get<1>(get<VectorTag<3>>(vars)) = 0.01 * x - 0.01 * y + z;
+  get<2>(get<VectorTag<3>>(vars)) = x + 0.2 * y + cube(z);
+  return vars;
 }
 
 template <size_t VolumeDim>
@@ -387,613 +313,297 @@ make_neighbor_data_from_neighbor_vars(
 }
 
 template <size_t VolumeDim>
-void test_weno_work(
-    const Limiters::WenoType& weno_type,
-    const Limiters::Weno_detail::DerivativeWeight derivative_weight,
-    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
-    const std::array<double, VolumeDim>& element_size,
-    const Variables<tmpl::list<ScalarTag, VectorTag<VolumeDim>>>& local_vars,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        typename Limiters::Weno<
-            VolumeDim,
-            tmpl::list<ScalarTag, VectorTag<VolumeDim>>>::PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data,
-    const VariablesMap<VolumeDim>& expected_neighbor_modified_vars,
-    Approx local_approx = approx) noexcept {
-  // First run some sanity checks on the input, and make sure the test function
-  // is being called in a reasonable way
-  if (element.neighbors().size() != neighbor_data.size()) {
-    ERROR("Different number of neighbors from element, neighbor_data");
-  }
-  if (neighbor_data.size() != expected_neighbor_modified_vars.size()) {
-    ERROR("Different sizes for neighbor_data, expected_neighbor_modified_vars");
-  }
-  for (const auto& neighbor : element.neighbors()) {
-    if (neighbor.second.ids().size() > 1) {
-      ERROR("Too many neighbors: h-refinement is not yet supported");
-    }
-    const auto dir = neighbor.first;
-    const auto id = *(neighbor.second.cbegin());
-    const auto dir_and_id = std::make_pair(dir, id);
-    if (neighbor_data.find(dir_and_id) == neighbor_data.end()) {
-      ERROR("Missing neighbor_data at an internal boundary");
-    }
-    if (expected_neighbor_modified_vars.find(dir_and_id) ==
-        expected_neighbor_modified_vars.end()) {
-      ERROR("Missing expected_neighbor_modified_vars at an internal boundary");
-    }
-  }
+std::unordered_map<
+    std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+    typename Limiters::Weno<
+        VolumeDim, tmpl::list<ScalarTag, VectorTag<VolumeDim>>>::PackagedData,
+    boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+make_neighbor_data(const Mesh<VolumeDim>& mesh,
+                   const Element<VolumeDim>& element,
+                   const std::array<double, VolumeDim>& element_size) noexcept;
+
+template <>
+std::unordered_map<std::pair<Direction<1>, ElementId<1>>,
+                   typename Limiters::Weno<
+                       1, tmpl::list<ScalarTag, VectorTag<1>>>::PackagedData,
+                   boost::hash<std::pair<Direction<1>, ElementId<1>>>>
+make_neighbor_data(const Mesh<1>& mesh, const Element<1>& element,
+                   const std::array<double, 1>& element_size) noexcept {
+  const auto make_lower_xi_vars = [&mesh]() noexcept {
+    Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(
+        mesh.number_of_grid_points());
+    get(get<ScalarTag>(vars)) = 16.4;
+    get<0>(get<VectorTag<1>>(vars)) = 1.2;
+    return vars;
+  };
+  const auto make_upper_xi_vars = [&mesh]() noexcept {
+    Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(
+        mesh.number_of_grid_points());
+    get(get<ScalarTag>(vars)) = -9.5;
+    get<0>(get<VectorTag<1>>(vars)) = 4.2;
+    return vars;
+  };
+
+  VariablesMap<1> neighbor_vars{};
+  const auto lower_xi =
+      std::make_pair(Direction<1>::lower_xi(), ElementId<1>(1));
+  const auto upper_xi =
+      std::make_pair(Direction<1>::upper_xi(), ElementId<1>(2));
+  neighbor_vars[lower_xi] = make_lower_xi_vars();
+  neighbor_vars[upper_xi] = make_upper_xi_vars();
+
+  return make_neighbor_data_from_neighbor_vars(mesh, element, element_size,
+                                               neighbor_vars);
+}
+
+template <>
+std::unordered_map<std::pair<Direction<2>, ElementId<2>>,
+                   typename Limiters::Weno<
+                       2, tmpl::list<ScalarTag, VectorTag<2>>>::PackagedData,
+                   boost::hash<std::pair<Direction<2>, ElementId<2>>>>
+make_neighbor_data(const Mesh<2>& mesh, const Element<2>& element,
+                   const std::array<double, 2>& element_size) noexcept {
+  const auto make_lower_xi_vars = [&mesh]() noexcept {
+    Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(
+        mesh.number_of_grid_points());
+    get(get<ScalarTag>(vars)) = -3.2;
+    get<0>(get<VectorTag<2>>(vars)) = -4.2;
+    get<1>(get<VectorTag<2>>(vars)) = -1.7;
+    return vars;
+  };
+  const auto make_upper_xi_vars = [&mesh]() noexcept {
+    Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(
+        mesh.number_of_grid_points());
+    get(get<ScalarTag>(vars)) = 2.8;
+    get<0>(get<VectorTag<2>>(vars)) = 3.1;
+    get<1>(get<VectorTag<2>>(vars)) = 2.3;
+    return vars;
+  };
+  const auto make_lower_eta_vars = [&mesh]() noexcept {
+    Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(
+        mesh.number_of_grid_points());
+    get(get<ScalarTag>(vars)) = -2.7;
+    get<0>(get<VectorTag<2>>(vars)) = 1.4;
+    get<1>(get<VectorTag<2>>(vars)) = 4.5;
+    return vars;
+  };
+  const auto make_upper_eta_vars = [&mesh]() noexcept {
+    Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(
+        mesh.number_of_grid_points());
+    get(get<ScalarTag>(vars)) = 3.1;
+    get<0>(get<VectorTag<2>>(vars)) = 2.4;
+    get<1>(get<VectorTag<2>>(vars)) = -1.2;
+    return vars;
+  };
+
+  VariablesMap<2> neighbor_vars{};
+  const auto lower_xi =
+      std::make_pair(Direction<2>::lower_xi(), ElementId<2>(1));
+  const auto upper_xi =
+      std::make_pair(Direction<2>::upper_xi(), ElementId<2>(2));
+  const auto lower_eta =
+      std::make_pair(Direction<2>::lower_eta(), ElementId<2>(3));
+  const auto upper_eta =
+      std::make_pair(Direction<2>::upper_eta(), ElementId<2>(4));
+  neighbor_vars[lower_xi] = make_lower_xi_vars();
+  neighbor_vars[upper_xi] = make_upper_xi_vars();
+  neighbor_vars[lower_eta] = make_lower_eta_vars();
+  neighbor_vars[upper_eta] = make_upper_eta_vars();
+
+  return make_neighbor_data_from_neighbor_vars(mesh, element, element_size,
+                                               neighbor_vars);
+}
+
+template <>
+std::unordered_map<std::pair<Direction<3>, ElementId<3>>,
+                   typename Limiters::Weno<
+                       3, tmpl::list<ScalarTag, VectorTag<3>>>::PackagedData,
+                   boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+make_neighbor_data(const Mesh<3>& mesh, const Element<3>& element,
+                   const std::array<double, 3>& element_size) noexcept {
+  const auto make_lower_xi_vars = [&mesh]() noexcept {
+    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(
+        mesh.number_of_grid_points());
+    get(get<ScalarTag>(vars)) = -3.2;
+    get<0>(get<VectorTag<3>>(vars)) = 0.;
+    get<1>(get<VectorTag<3>>(vars)) = -0.1;
+    get<2>(get<VectorTag<3>>(vars)) = -2.1;
+    return vars;
+  };
+  const auto make_upper_xi_vars = [&mesh]() noexcept {
+    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(
+        mesh.number_of_grid_points());
+    get(get<ScalarTag>(vars)) = 3.8;
+    get<0>(get<VectorTag<3>>(vars)) = 0.;
+    get<1>(get<VectorTag<3>>(vars)) = 0.1;
+    get<2>(get<VectorTag<3>>(vars)) = 2.1;
+    return vars;
+  };
+  const auto make_lower_eta_vars = [&mesh]() noexcept {
+    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(
+        mesh.number_of_grid_points());
+    get(get<ScalarTag>(vars)) = -2.5;
+    get<0>(get<VectorTag<3>>(vars)) = 0.;
+    get<1>(get<VectorTag<3>>(vars)) = 0.1;
+    get<2>(get<VectorTag<3>>(vars)) = -0.4;
+    return vars;
+  };
+  const auto make_upper_eta_vars = [&mesh]() noexcept {
+    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(
+        mesh.number_of_grid_points());
+    get(get<ScalarTag>(vars)) = 2.3;
+    get<0>(get<VectorTag<3>>(vars)) = 0.;
+    get<1>(get<VectorTag<3>>(vars)) = -0.1;
+    get<2>(get<VectorTag<3>>(vars)) = 1.1;
+    return vars;
+  };
+  const auto make_lower_zeta_vars = [&mesh]() noexcept {
+    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(
+        mesh.number_of_grid_points());
+    get(get<ScalarTag>(vars)) = 0.41;
+    get<0>(get<VectorTag<3>>(vars)) = 0.;
+    get<1>(get<VectorTag<3>>(vars)) = -2.3;
+    ;
+    get<2>(get<VectorTag<3>>(vars)) = -8.2;
+    return vars;
+  };
+  const auto make_upper_zeta_vars = [&mesh]() noexcept {
+    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(
+        mesh.number_of_grid_points());
+    get(get<ScalarTag>(vars)) = -0.42;
+    get<0>(get<VectorTag<3>>(vars)) = 0.;
+    get<1>(get<VectorTag<3>>(vars)) = 2.3;
+    get<2>(get<VectorTag<3>>(vars)) = 9.;
+    return vars;
+  };
+
+  VariablesMap<3> neighbor_vars{};
+  const auto lower_xi =
+      std::make_pair(Direction<3>::lower_xi(), ElementId<3>(1));
+  const auto upper_xi =
+      std::make_pair(Direction<3>::upper_xi(), ElementId<3>(2));
+  const auto lower_eta =
+      std::make_pair(Direction<3>::lower_eta(), ElementId<3>(3));
+  const auto upper_eta =
+      std::make_pair(Direction<3>::upper_eta(), ElementId<3>(4));
+  const auto lower_zeta =
+      std::make_pair(Direction<3>::lower_zeta(), ElementId<3>(5));
+  const auto upper_zeta =
+      std::make_pair(Direction<3>::upper_zeta(), ElementId<3>(6));
+  neighbor_vars[lower_xi] = make_lower_xi_vars();
+  neighbor_vars[upper_xi] = make_upper_xi_vars();
+  neighbor_vars[lower_eta] = make_lower_eta_vars();
+  neighbor_vars[upper_eta] = make_upper_eta_vars();
+  neighbor_vars[lower_zeta] = make_lower_zeta_vars();
+  neighbor_vars[upper_zeta] = make_upper_zeta_vars();
+
+  return make_neighbor_data_from_neighbor_vars(mesh, element, element_size,
+                                               neighbor_vars);
+}
+
+template <size_t VolumeDim>
+void test_simple_weno(const std::array<size_t, VolumeDim>& extents) noexcept {
+  INFO("Test simple WENO limiter");
+  CAPTURE(VolumeDim);
+  const auto mesh = Mesh<VolumeDim>(extents, Spectral::Basis::Legendre,
+                                    Spectral::Quadrature::GaussLobatto);
+  const auto element = TestHelpers::Limiters::make_element<VolumeDim>();
+  const auto element_size = make_array<VolumeDim>(1.2);
+
+  // Make local + neighbor data where the vector x-component triggers limiting
+  const auto local_vars = make_local_vars(mesh);
+  const auto neighbor_data = make_neighbor_data(mesh, element, element_size);
 
   const double neighbor_linear_weight = 0.001;
   using Weno =
       Limiters::Weno<VolumeDim, tmpl::list<ScalarTag, VectorTag<VolumeDim>>>;
+  const Weno simple_weno(Limiters::WenoType::SimpleWeno,
+                         neighbor_linear_weight);
 
   auto scalar = get<ScalarTag>(local_vars);
   auto vector = get<VectorTag<VolumeDim>>(local_vars);
+  const bool activated =
+      simple_weno(make_not_null(&scalar), make_not_null(&vector), mesh, element,
+                  element_size, neighbor_data);
 
-  // WENO should preserve the mean, so expected = initial
-  const double expected_scalar_mean = mean_value(get(scalar), mesh);
-  const auto expected_vector_means = [&vector, &mesh ]() noexcept {
-    std::array<double, VolumeDim> means{};
-    for (size_t d = 0; d < VolumeDim; ++d) {
-      gsl::at(means, d) = mean_value(vector.get(d), mesh);
-    }
-    return means;
-  }
-  ();
-
-  const Weno weno(weno_type, neighbor_linear_weight);
-  const bool activated = weno(make_not_null(&scalar), make_not_null(&vector),
-                              mesh, element, element_size, neighbor_data);
-
-  CHECK(activated);
-
-  CHECK(mean_value(get(scalar), mesh) == approx(expected_scalar_mean));
-  for (size_t d = 0; d < VolumeDim; ++d) {
-    CHECK(mean_value(vector.get(d), mesh) ==
-          approx(gsl::at(expected_vector_means, d)));
-  }
-
+  // Because simple WENO acts on each tensor component independently, only the
+  // vector x-component should be modified by the limiter
+  const auto& expected_scalar = get<ScalarTag>(local_vars);
+  auto expected_vector = get<VectorTag<VolumeDim>>(local_vars);
+  std::unordered_map<
+      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+      intrp::RegularGrid<VolumeDim>,
+      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+      interpolator_buffer{};
   std::unordered_map<
       std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
       boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
-      expected_neighbor_polynomials;
+      modified_neighbor_solution_buffer{};
+  for (const auto& neighbor_and_data : neighbor_data) {
+    const auto& neighbor = neighbor_and_data.first;
+    modified_neighbor_solution_buffer.insert(
+        make_pair(neighbor, DataVector(mesh.number_of_grid_points())));
+  }
+  Limiters::Weno_detail::simple_weno_impl<VectorTag<VolumeDim>>(
+      make_not_null(&interpolator_buffer),
+      make_not_null(&modified_neighbor_solution_buffer),
+      make_not_null(&expected_vector), neighbor_linear_weight,
+      0,  // the x-component
+      mesh, element, neighbor_data);
 
+  CHECK(activated);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_scalar, scalar, approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_vector, vector, approx);
+}
+
+template <size_t VolumeDim>
+void test_hweno(const std::array<size_t, VolumeDim>& extents) noexcept {
+  INFO("Test HWENO limiter");
+  CAPTURE(VolumeDim);
+  const auto mesh = Mesh<VolumeDim>(extents, Spectral::Basis::Legendre,
+                                    Spectral::Quadrature::GaussLobatto);
+  const auto element = TestHelpers::Limiters::make_element<VolumeDim>();
+  const auto element_size = make_array<VolumeDim>(1.2);
+
+  // Make local + neighbor data where the vector x-component triggers limiting
+  const auto local_vars = make_local_vars(mesh);
+  const auto neighbor_data = make_neighbor_data(mesh, element, element_size);
+
+  const double neighbor_linear_weight = 0.001;
+  using Weno =
+      Limiters::Weno<VolumeDim, tmpl::list<ScalarTag, VectorTag<VolumeDim>>>;
+  const Weno hweno(Limiters::WenoType::Hweno, neighbor_linear_weight);
+
+  auto scalar = get<ScalarTag>(local_vars);
+  auto vector = get<VectorTag<VolumeDim>>(local_vars);
+  const bool activated = hweno(make_not_null(&scalar), make_not_null(&vector),
+                               mesh, element, element_size, neighbor_data);
+
+  // Because HWENO acts on the whole solution, the scalar and all vector
+  // components should be modified by the limiter
   auto expected_scalar = get<ScalarTag>(local_vars);
-  for (auto& neighbor_and_vars : expected_neighbor_modified_vars) {
-    expected_neighbor_polynomials[neighbor_and_vars.first] =
-        get(get<ScalarTag>(neighbor_and_vars.second));
-  }
-  Limiters::Weno_detail::reconstruct_from_weighted_sum(
-      make_not_null(&get(expected_scalar)), neighbor_linear_weight,
-      derivative_weight, mesh, expected_neighbor_polynomials);
-  CHECK_ITERABLE_CUSTOM_APPROX(expected_scalar, scalar, local_approx);
-
   auto expected_vector = get<VectorTag<VolumeDim>>(local_vars);
-  for (size_t i = 0; i < VolumeDim; ++i) {
-    for (auto& neighbor_and_vars : expected_neighbor_modified_vars) {
-      expected_neighbor_polynomials[neighbor_and_vars.first] =
-          get<VectorTag<VolumeDim>>(neighbor_and_vars.second).get(i);
-    }
-    Limiters::Weno_detail::reconstruct_from_weighted_sum(
-        make_not_null(&(expected_vector.get(i))), neighbor_linear_weight,
-        derivative_weight, mesh, expected_neighbor_polynomials);
+  std::unordered_map<
+      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
+      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+      modified_neighbor_solution_buffer{};
+  for (const auto& neighbor_and_data : neighbor_data) {
+    const auto& neighbor = neighbor_and_data.first;
+    modified_neighbor_solution_buffer.insert(
+        make_pair(neighbor, DataVector(mesh.number_of_grid_points())));
   }
-  CHECK_ITERABLE_CUSTOM_APPROX(expected_vector, vector, local_approx);
-}
+  Limiters::Weno_detail::hweno_impl<ScalarTag>(
+      make_not_null(&modified_neighbor_solution_buffer),
+      make_not_null(&expected_scalar), neighbor_linear_weight, mesh, element,
+      neighbor_data);
+  Limiters::Weno_detail::hweno_impl<VectorTag<VolumeDim>>(
+      make_not_null(&modified_neighbor_solution_buffer),
+      make_not_null(&expected_vector), neighbor_linear_weight, mesh, element,
+      neighbor_data);
 
-void test_simple_weno_1d(const std::unordered_set<Direction<1>>&
-                             directions_of_external_boundaries = {}) noexcept {
-  INFO("Test simple WENO limiter in 1D");
-  CAPTURE(directions_of_external_boundaries);
-  const auto mesh =
-      Mesh<1>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
-  const auto element =
-      TestHelpers::Limiters::make_element<1>(directions_of_external_boundaries);
-  const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = make_array<1>(1.2);
-
-  // Functions to produce dummy data on each element
-  const auto make_center_vars =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
-    const auto& x = get<0>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = 1.0 - 2.0 * x + square(x);
-    get<0>(get<VectorTag<1>>(vars)) = 0.4 * x - 0.1 * square(x);
-    return vars;
-  };
-  const auto make_lower_xi_vars =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords,
-         const double offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + offset;
-    Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = -2.0 - 10.0 * x - square(x);
-    get<0>(get<VectorTag<1>>(vars)) = -0.1 + 0.3 * x - 0.1 * square(x);
-    return vars;
-  };
-  const auto make_upper_xi_vars =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords,
-         const double offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + offset;
-    Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = -0.3 - x + 0.5 * square(x);
-    get<0>(get<VectorTag<1>>(vars)) = 0.6 * x - 0.3 * square(x);
-    return vars;
-  };
-
-  const auto local_vars = make_center_vars(logical_coords);
-  VariablesMap<1> neighbor_vars{};
-  VariablesMap<1> neighbor_modified_vars{};
-
-  const auto shift_vars_to_local_means = [&mesh, &local_vars ](
-      const Variables<tmpl::list<ScalarTag, VectorTag<1>>>& input) noexcept {
-    const auto& local_s = get<ScalarTag>(local_vars);
-    const auto& local_v = get<VectorTag<1>>(local_vars);
-    auto result = input;
-    auto& s = get<ScalarTag>(result);
-    auto& v = get<VectorTag<1>>(result);
-    get(s) += mean_value(get(local_s), mesh) - mean_value(get(s), mesh);
-    get<0>(v) +=
-        mean_value(get<0>(local_v), mesh) - mean_value(get<0>(v), mesh);
-    return result;
-  };
-
-  const auto lower_xi =
-      std::make_pair(Direction<1>::lower_xi(), ElementId<1>(1));
-  if (directions_of_external_boundaries.count(lower_xi.first) == 0) {
-    neighbor_vars[lower_xi] = make_lower_xi_vars(logical_coords, -2.0);
-    neighbor_modified_vars[lower_xi] =
-        shift_vars_to_local_means(make_lower_xi_vars(logical_coords));
-  }
-
-  const auto upper_xi =
-      std::make_pair(Direction<1>::upper_xi(), ElementId<1>(2));
-  if (directions_of_external_boundaries.count(upper_xi.first) == 0) {
-    neighbor_vars[upper_xi] = make_upper_xi_vars(logical_coords, 2.0);
-    neighbor_modified_vars[upper_xi] =
-        shift_vars_to_local_means(make_upper_xi_vars(logical_coords));
-  }
-
-  const auto neighbor_data = make_neighbor_data_from_neighbor_vars(
-      mesh, element, element_size, neighbor_vars);
-
-  test_weno_work<1>(Limiters::WenoType::SimpleWeno,
-                    Limiters::Weno_detail::DerivativeWeight::PowTwoEll, mesh,
-                    element, element_size, local_vars, neighbor_data,
-                    neighbor_modified_vars);
-}
-
-void test_simple_weno_2d(const std::unordered_set<Direction<2>>&
-                             directions_of_external_boundaries = {}) noexcept {
-  INFO("Test simple WENO limiter in 2D");
-  CAPTURE(directions_of_external_boundaries);
-  const auto mesh =
-      Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
-  const auto element =
-      TestHelpers::Limiters::make_element<2>(directions_of_external_boundaries);
-  const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = make_array<2>(1.2);
-
-  const auto make_center_vars =
-      [](const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
-    const auto& x = get<0>(coords);
-    const auto& y = get<1>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = x + y - 0.5 * square(x) + 0.5 * square(y);
-    get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
-    get<1>(get<VectorTag<2>>(vars)) =
-        0.1 + 0.2 * x - 0.4 * y + 0.3 * square(x) * square(y);
-    return vars;
-  };
-  const auto make_lower_xi_vars =
-      [](const tnsr::I<DataVector, 2, Frame::Logical>& coords,
-         const double xi_offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + xi_offset;
-    const auto& y = get<1>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = 2.0 * x + 1.2 * y;
-    get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
-    get<1>(get<VectorTag<2>>(vars)) = 3.0 + 0.2 * y;
-    return vars;
-  };
-  const auto make_upper_xi_vars =
-      [](const tnsr::I<DataVector, 2, Frame::Logical>& coords,
-         const double xi_offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + xi_offset;
-    const auto& y = get<1>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = x + y - 0.25 * square(x) - square(y);
-    get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
-    get<1>(get<VectorTag<2>>(vars)) = -2.4 + square(x);
-    return vars;
-  };
-  const auto make_lower_eta_vars =
-      [](const tnsr::I<DataVector, 2, Frame::Logical>& coords,
-         const double eta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto y = get<1>(coords) + eta_offset;
-    Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = -1 + 0.5 * x + y;
-    get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
-    get<1>(get<VectorTag<2>>(vars)) = 0.2 - y;
-    return vars;
-  };
-  const auto make_upper_eta_vars =
-      [](const tnsr::I<DataVector, 2, Frame::Logical>& coords,
-         const double eta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto y = get<1>(coords) + eta_offset;
-    Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(x.size());
-    get(get<ScalarTag>(vars)) =
-        -6.0 + x + 2.0 * y + 0.5 * square(x) + 0.5 * square(y);
-    get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
-    get<1>(get<VectorTag<2>>(vars)) = 0.4 + 0.3 * x * square(y);
-    return vars;
-  };
-
-  const auto local_vars = make_center_vars(logical_coords);
-  VariablesMap<2> neighbor_vars{};
-  VariablesMap<2> neighbor_modified_vars{};
-
-  const auto shift_vars_to_local_means = [&mesh, &local_vars ](
-      const Variables<tmpl::list<ScalarTag, VectorTag<2>>>& input) noexcept {
-    const auto& local_s = get<ScalarTag>(local_vars);
-    const auto& local_v = get<VectorTag<2>>(local_vars);
-    auto result = input;
-    auto& s = get<ScalarTag>(result);
-    auto& v = get<VectorTag<2>>(result);
-    get(s) += mean_value(get(local_s), mesh) - mean_value(get(s), mesh);
-    get<0>(v) +=
-        mean_value(get<0>(local_v), mesh) - mean_value(get<0>(v), mesh);
-    get<1>(v) +=
-        mean_value(get<1>(local_v), mesh) - mean_value(get<1>(v), mesh);
-    return result;
-  };
-
-  const auto lower_xi =
-      std::make_pair(Direction<2>::lower_xi(), ElementId<2>(1));
-  if (directions_of_external_boundaries.count(lower_xi.first) == 0) {
-    neighbor_vars[lower_xi] = make_lower_xi_vars(logical_coords, -2.0);
-    neighbor_modified_vars[lower_xi] =
-        shift_vars_to_local_means(make_lower_xi_vars(logical_coords));
-  }
-
-  const auto upper_xi =
-      std::make_pair(Direction<2>::upper_xi(), ElementId<2>(2));
-  if (directions_of_external_boundaries.count(upper_xi.first) == 0) {
-    neighbor_vars[upper_xi] = make_upper_xi_vars(logical_coords, 2.0);
-    neighbor_modified_vars[upper_xi] =
-        shift_vars_to_local_means(make_upper_xi_vars(logical_coords));
-  }
-
-  const auto lower_eta =
-      std::make_pair(Direction<2>::lower_eta(), ElementId<2>(3));
-  if (directions_of_external_boundaries.count(lower_eta.first) == 0) {
-    neighbor_vars[lower_eta] = make_lower_eta_vars(logical_coords, -2.0);
-    neighbor_modified_vars[lower_eta] =
-        shift_vars_to_local_means(make_lower_eta_vars(logical_coords));
-  }
-
-  const auto upper_eta =
-      std::make_pair(Direction<2>::upper_eta(), ElementId<2>(4));
-  if (directions_of_external_boundaries.count(upper_eta.first) == 0) {
-    neighbor_vars[upper_eta] = make_upper_eta_vars(logical_coords, 2.0);
-    neighbor_modified_vars[upper_eta] =
-        shift_vars_to_local_means(make_upper_eta_vars(logical_coords));
-  }
-
-  const auto neighbor_data = make_neighbor_data_from_neighbor_vars(
-      mesh, element, element_size, neighbor_vars);
-
-  test_weno_work<2>(Limiters::WenoType::SimpleWeno,
-                    Limiters::Weno_detail::DerivativeWeight::PowTwoEll, mesh,
-                    element, element_size, local_vars, neighbor_data,
-                    neighbor_modified_vars);
-}
-
-void test_simple_weno_3d(const std::unordered_set<Direction<3>>&
-                             directions_of_external_boundaries = {}) noexcept {
-  INFO("Test simple WENO limiter in 3D");
-  CAPTURE(directions_of_external_boundaries);
-  const auto mesh = Mesh<3>({{3, 4, 5}}, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
-  const auto element =
-      TestHelpers::Limiters::make_element<3>(directions_of_external_boundaries);
-  const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = make_array<3>(1.2);
-
-  const auto make_center_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords) noexcept {
-    const auto& x = get<0>(coords);
-    const auto& y = get<1>(coords);
-    const auto& z = get<2>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = x + y - 0.2 * z - y * z + x * y * square(z);
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = z;
-    get<2>(get<VectorTag<3>>(vars)) = x + square(y) + cube(z);
-    return vars;
-  };
-  const auto make_lower_xi_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
-         const double xi_offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + xi_offset;
-    const auto& y = get<1>(coords);
-    const auto& z = get<2>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = 1.2 * x + y - 0.4 * z + x * y * square(z);
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = 0.8 * z + 0.3 * x * y;
-    get<2>(get<VectorTag<3>>(vars)) = x + y;
-    return vars;
-  };
-  const auto make_upper_xi_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
-         const double xi_offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + xi_offset;
-    const auto& y = get<1>(coords);
-    const auto& z = get<2>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = 0.8 * x + y - 0.4 * z + 0.5 * x * y * z;
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = z + 0.1 * square(x);
-    get<2>(get<VectorTag<3>>(vars)) = y + square(x) * z;
-    return vars;
-  };
-  const auto make_lower_eta_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
-         const double eta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto y = get<1>(coords) + eta_offset;
-    const auto& z = get<2>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = x + y - y * z + 0.2 * x * y * square(z);
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = -0.1 * y + z;
-    get<2>(get<VectorTag<3>>(vars)) = -square(z);
-    return vars;
-  };
-  const auto make_upper_eta_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
-         const double eta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto y = get<1>(coords) + eta_offset;
-    const auto& z = get<2>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = 1.5 * y - square(y) * z + x * y * square(z);
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = z + 0.4 * x * cube(z);
-    get<2>(get<VectorTag<3>>(vars)) = y * z + square(y) + cube(z);
-    return vars;
-  };
-  const auto make_lower_zeta_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
-         const double zeta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto& y = get<1>(coords);
-    const auto z = get<2>(coords) + zeta_offset;
-    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = 2.4 - 0.2 * z + 0.1 * x * square(y) * square(z);
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = 0.9 * z - 2. * x * z;
-    get<2>(get<VectorTag<3>>(vars)) = y + cube(z);
-    return vars;
-  };
-  const auto make_upper_zeta_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
-         const double zeta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto& y = get<1>(coords);
-    const auto z = get<2>(coords) + zeta_offset;
-    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = x - 0.4 * x * y * square(z);
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = 1.3 * square(y) * square(z);
-    get<2>(get<VectorTag<3>>(vars)) = -x * y * z + square(y);
-    return vars;
-  };
-
-  const auto local_vars = make_center_vars(logical_coords);
-  VariablesMap<3> neighbor_vars{};
-  VariablesMap<3> neighbor_modified_vars{};
-
-  const auto shift_vars_to_local_means = [&mesh, &local_vars ](
-      const Variables<tmpl::list<ScalarTag, VectorTag<3>>>& input) noexcept {
-    const auto& local_s = get<ScalarTag>(local_vars);
-    const auto& local_v = get<VectorTag<3>>(local_vars);
-    auto result = input;
-    auto& s = get<ScalarTag>(result);
-    auto& v = get<VectorTag<3>>(result);
-    get(s) += mean_value(get(local_s), mesh) - mean_value(get(s), mesh);
-    get<0>(v) +=
-        mean_value(get<0>(local_v), mesh) - mean_value(get<0>(v), mesh);
-    get<1>(v) +=
-        mean_value(get<1>(local_v), mesh) - mean_value(get<1>(v), mesh);
-    get<2>(v) +=
-        mean_value(get<2>(local_v), mesh) - mean_value(get<2>(v), mesh);
-    return result;
-  };
-
-  const auto lower_xi =
-      std::make_pair(Direction<3>::lower_xi(), ElementId<3>(1));
-  if (directions_of_external_boundaries.count(lower_xi.first) == 0) {
-    neighbor_vars[lower_xi] = make_lower_xi_vars(logical_coords, -2.0);
-    neighbor_modified_vars[lower_xi] =
-        shift_vars_to_local_means(make_lower_xi_vars(logical_coords));
-  }
-
-  const auto upper_xi =
-      std::make_pair(Direction<3>::upper_xi(), ElementId<3>(2));
-  if (directions_of_external_boundaries.count(upper_xi.first) == 0) {
-    neighbor_vars[upper_xi] = make_upper_xi_vars(logical_coords, 2.0);
-    neighbor_modified_vars[upper_xi] =
-        shift_vars_to_local_means(make_upper_xi_vars(logical_coords));
-  }
-
-  const auto lower_eta =
-      std::make_pair(Direction<3>::lower_eta(), ElementId<3>(3));
-  if (directions_of_external_boundaries.count(lower_eta.first) == 0) {
-    neighbor_vars[lower_eta] = make_lower_eta_vars(logical_coords, -2.0);
-    neighbor_modified_vars[lower_eta] =
-        shift_vars_to_local_means(make_lower_eta_vars(logical_coords));
-  }
-
-  const auto upper_eta =
-      std::make_pair(Direction<3>::upper_eta(), ElementId<3>(4));
-  if (directions_of_external_boundaries.count(upper_eta.first) == 0) {
-    neighbor_vars[upper_eta] = make_upper_eta_vars(logical_coords, 2.0);
-    neighbor_modified_vars[upper_eta] =
-        shift_vars_to_local_means(make_upper_eta_vars(logical_coords));
-  }
-
-  const auto lower_zeta =
-      std::make_pair(Direction<3>::lower_zeta(), ElementId<3>(5));
-  if (directions_of_external_boundaries.count(lower_zeta.first) == 0) {
-    neighbor_vars[lower_zeta] = make_lower_zeta_vars(logical_coords, -2.0);
-    neighbor_modified_vars[lower_zeta] =
-        shift_vars_to_local_means(make_lower_zeta_vars(logical_coords));
-  }
-
-  const auto upper_zeta =
-      std::make_pair(Direction<3>::upper_zeta(), ElementId<3>(6));
-  if (directions_of_external_boundaries.count(upper_zeta.first) == 0) {
-    neighbor_vars[upper_zeta] = make_upper_zeta_vars(logical_coords, 2.0);
-    neighbor_modified_vars[upper_zeta] =
-        shift_vars_to_local_means(make_upper_zeta_vars(logical_coords));
-  }
-
-  const auto neighbor_data = make_neighbor_data_from_neighbor_vars(
-      mesh, element, element_size, neighbor_vars);
-
-  // The 3D Simple WENO solution has slightly larger numerical error
-  Approx custom_approx = Approx::custom().epsilon(1.e-11).scale(1.0);
-  test_weno_work<3>(Limiters::WenoType::SimpleWeno,
-                    Limiters::Weno_detail::DerivativeWeight::PowTwoEll, mesh,
-                    element, element_size, local_vars, neighbor_data,
-                    neighbor_modified_vars, custom_approx);
-}
-
-// Helper for HWENO testing ... simply regroups the HWENO subfunctions in a
-// mildly different way. Does not provide a true test that HWENO is correctly
-// computed, but should be sufficient to test that the WenoType::Hweno has
-// been properly implemented to call the HWENO limiter
-template <typename Tag, size_t VolumeDim, typename PackagedData>
-void hweno_modified_neighbor_solution(
-    const gsl::not_null<db::item_type<Tag>*> modified_tensor,
-    const db::const_item_type<Tag>& local_tensor, const Mesh<VolumeDim>& mesh,
-    const Element<VolumeDim>& element,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data,
-    const std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>&
-        primary_neighbor) noexcept {
-  for (size_t tensor_index = 0; tensor_index < local_tensor.size();
-       ++tensor_index) {
-    const auto& tensor_component = local_tensor[tensor_index];
-    const auto neighbors_to_exclude =
-        Limiters::Weno_detail::secondary_neighbors_to_exclude_from_fit<Tag>(
-            mean_value(tensor_component, mesh), tensor_index, neighbor_data,
-            primary_neighbor);
-    Limiters::Weno_detail::solve_constrained_fit<Tag>(
-        make_not_null(&(*modified_tensor)[tensor_index]),
-        local_tensor[tensor_index], tensor_index, mesh, element, neighbor_data,
-        primary_neighbor, neighbors_to_exclude);
-  }
-}
-
-void test_hweno_1d(const std::unordered_set<Direction<1>>&
-                       directions_of_external_boundaries = {}) noexcept {
-  INFO("Test Hermite WENO limiter in 1D");
-  CAPTURE(directions_of_external_boundaries);
-  const auto mesh =
-      Mesh<1>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
-  const auto element =
-      TestHelpers::Limiters::make_element<1>(directions_of_external_boundaries);
-  const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = make_array<1>(1.2);
-
-  // Functions to produce dummy data on each element
-  const auto make_center_vars =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
-    const auto& x = get<0>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = 1.0 - 2.0 * x + square(x);
-    get<0>(get<VectorTag<1>>(vars)) = 0.4 * x - 0.1 * square(x);
-    return vars;
-  };
-  const auto make_lower_xi_vars =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords,
-         const double offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + offset;
-    Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = -2.0 - 10.0 * x - square(x);
-    get<0>(get<VectorTag<1>>(vars)) = -0.1 + 0.3 * x - 0.1 * square(x);
-    return vars;
-  };
-  const auto make_upper_xi_vars =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords,
-         const double offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + offset;
-    Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = -0.3 - x + 0.5 * square(x);
-    get<0>(get<VectorTag<1>>(vars)) = 0.6 * x - 0.3 * square(x);
-    return vars;
-  };
-
-  const auto local_vars = make_center_vars(logical_coords);
-  VariablesMap<1> neighbor_vars{};
-  VariablesMap<1> neighbor_modified_vars{};
-
-  const auto lower_xi =
-      std::make_pair(Direction<1>::lower_xi(), ElementId<1>(1));
-  if (directions_of_external_boundaries.count(lower_xi.first) == 0) {
-    neighbor_vars[lower_xi] = make_lower_xi_vars(logical_coords, -2.0);
-  }
-
-  const auto upper_xi =
-      std::make_pair(Direction<1>::upper_xi(), ElementId<1>(2));
-  if (directions_of_external_boundaries.count(upper_xi.first) == 0) {
-    neighbor_vars[upper_xi] = make_upper_xi_vars(logical_coords, 2.0);
-  }
-
-  const auto neighbor_data = make_neighbor_data_from_neighbor_vars(
-      mesh, element, element_size, neighbor_vars);
-
-  if (directions_of_external_boundaries.count(lower_xi.first) == 0) {
-    neighbor_modified_vars[lower_xi] =
-        Variables<tmpl::list<ScalarTag, VectorTag<1>>>(
-            mesh.number_of_grid_points());
-    auto& mod_scalar = get<ScalarTag>(neighbor_modified_vars.at(lower_xi));
-    hweno_modified_neighbor_solution<ScalarTag>(
-        make_not_null(&mod_scalar), get<ScalarTag>(local_vars), mesh, element,
-        neighbor_data, lower_xi);
-    auto& mod_vector = get<VectorTag<1>>(neighbor_modified_vars.at(lower_xi));
-    hweno_modified_neighbor_solution<VectorTag<1>>(
-        make_not_null(&mod_vector), get<VectorTag<1>>(local_vars), mesh,
-        element, neighbor_data, lower_xi);
-  }
-
-  if (directions_of_external_boundaries.count(upper_xi.first) == 0) {
-    neighbor_modified_vars[upper_xi] =
-        Variables<tmpl::list<ScalarTag, VectorTag<1>>>(
-            mesh.number_of_grid_points());
-    auto& mod_scalar = get<ScalarTag>(neighbor_modified_vars.at(upper_xi));
-    hweno_modified_neighbor_solution<ScalarTag>(
-        make_not_null(&mod_scalar), get<ScalarTag>(local_vars), mesh, element,
-        neighbor_data, upper_xi);
-    auto& mod_vector = get<VectorTag<1>>(neighbor_modified_vars.at(upper_xi));
-    hweno_modified_neighbor_solution<VectorTag<1>>(
-        make_not_null(&mod_vector), get<VectorTag<1>>(local_vars), mesh,
-        element, neighbor_data, upper_xi);
-  }
-
-  test_weno_work<1>(
-      Limiters::WenoType::Hweno,
-      Limiters::Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial, mesh,
-      element, element_size, local_vars, neighbor_data, neighbor_modified_vars);
+  CHECK(activated);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_scalar, scalar, approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_vector, vector, approx);
 }
 
 }  // namespace
@@ -1006,32 +616,19 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.Weno", "[Limiters][Unit]") {
   test_package_data_2d();
   test_package_data_3d();
 
-  // Here we test that the WENO limiter correctly does/doesn't activate,
-  // assuming that the MinmodTci is being used. This is not a test of the TCI
-  // itself -- that is already done elsewhere.
-  test_weno_tci_1d();
-  test_weno_tci_2d();
-  test_weno_tci_3d();
+  // The simple WENO reconstruction is tested in Test_SimpleWenoImpl.cpp.
+  // Here we test that
+  // - the TCI correctly acts component-by-component
+  // - the limiter is indeed calling `simple_weno_impl`
+  test_simple_weno<1>({{3}});
+  test_simple_weno<2>({{3, 4}});
+  test_simple_weno<3>({{3, 4, 5}});
 
-  // Test simple WENO
-  test_simple_weno_1d();
-  test_simple_weno_2d();
-  test_simple_weno_3d();
-
-  // Test simple WENO with particular boundaries labeled as external
-  test_simple_weno_1d({{Direction<1>::lower_xi()}});
-  test_simple_weno_2d({{Direction<2>::lower_eta()}});
-  test_simple_weno_2d({{Direction<2>::lower_xi(), Direction<2>::lower_eta(),
-                        Direction<2>::upper_eta()}});
-  test_simple_weno_3d({{Direction<3>::lower_zeta()}});
-  test_simple_weno_3d({{Direction<3>::lower_xi(), Direction<3>::upper_xi(),
-                        Direction<3>::lower_eta(), Direction<3>::lower_zeta(),
-                        Direction<3>::lower_zeta()}});
-
-  // Test HWENO
-  // Note that the bulk of the HWENO is in the computation of the HWENO fits,
-  // and these are independently tested. The goal here is to make sure we
-  // correctly switch between the different WENO types.
-  test_hweno_1d();
-  test_hweno_1d({{Direction<1>::lower_xi()}});
+  // The HWENO reconstruction is tested in Test_HwenoImpl.cpp.
+  // Here we test that
+  // - the TCI correctly triggers limiting on all tensors at once
+  // - the limiter is indeed calling `hweno_impl`
+  test_hweno<1>({{3}});
+  test_hweno<2>({{3, 4}});
+  test_hweno<3>({{3, 4, 5}});
 }
