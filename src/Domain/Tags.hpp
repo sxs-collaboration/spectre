@@ -20,6 +20,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/Element.hpp"
 #include "Domain/OptionTags.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
@@ -35,8 +36,6 @@ template <size_t VolumeDim>
 class Domain;
 template <size_t VolumeDim>
 class DomainCreator;
-template <size_t VolumeDim>
-class Element;
 template <size_t VolumeDim, typename Frame>
 class ElementMap;
 template <size_t VolumeDim>
