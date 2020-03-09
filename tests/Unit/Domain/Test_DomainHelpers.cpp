@@ -38,8 +38,8 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 
 namespace domain {
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.SameBlock",
-                  "[Domain][Unit]") {
+namespace {
+void test_periodic_same_block() noexcept {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
       {{0, 1, 2, 3, 4, 5, 6, 7}}, {{8, 9, 10, 11, 0, 1, 2, 3}}};
   std::vector<DirectionMap<3, BlockNeighbor<3>>> neighbors_of_all_blocks;
@@ -66,8 +66,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.SameBlock",
   CHECK(neighbors_of_all_blocks == expected_block_neighbors);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.DifferentBlocks",
-                  "[Domain][Unit]") {
+void test_periodic_different_blocks() noexcept {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
       {{0, 1, 2, 3, 4, 5, 6, 7}}, {{8, 9, 10, 11, 0, 1, 2, 3}}};
   std::vector<DirectionMap<3, BlockNeighbor<3>>> neighbors_of_all_blocks;
@@ -93,7 +92,6 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.DifferentBlocks",
   CHECK(neighbors_of_all_blocks == expected_block_neighbors);
 }
 
-namespace {
 std::vector<
     std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
 test_wedge_map_generation(double inner_radius, double outer_radius,
@@ -254,8 +252,6 @@ void test_wedge_map_generation_against_domain_helpers(
     check_if_maps_are_equal(*expected_coord_maps[i],*maps[i]);
   }
 }
-
-}  // namespace
 
 // [[OutputRegex, If we are using half wedges we must also be using
 // ShellWedges::All.]]
@@ -475,8 +471,7 @@ void test_ten_wedge_directions_compressed_translated_equidistant() {
       aspect_ratio);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.WedgeMapGeneration",
-                  "[Domain][Unit]") {
+void test_wedge_map_generation() noexcept {
   test_default_six_wedge_directions_equiangular();
   test_default_six_wedge_directions_equidistant();
   test_translated_six_wedge_directions_equiangular();
@@ -491,8 +486,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.WedgeMapGeneration",
   test_ten_wedge_directions_compressed_translated_equidistant();
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.AllFrustumDirections",
-                  "[Domain][Unit]") {
+void test_all_frustum_directions() noexcept {
   using FrustumMap = CoordinateMaps::Frustum;
   // half of the length of the inner cube in the binary compact object domain:
   const double lower = 1.7;
@@ -730,7 +724,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.AllFrustumDirections",
 #endif
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.ShellGraph", "[Domain][Unit]") {
+void test_shell_graph() noexcept {
   std::vector<std::array<size_t, 8>> expected_corners = {
       // Shell on left-hand side:
       {{5, 6, 7, 8, 13, 14, 15, 16}} /*+z*/,
@@ -747,7 +741,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.ShellGraph", "[Domain][Unit]") {
   CHECK(generated_corners == expected_corners);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SphereGraph", "[Domain][Unit]") {
+void test_sphere_graph() noexcept {
   std::vector<std::array<size_t, 8>> expected_corners = {
       // Shell on left-hand side:
       {{5, 6, 7, 8, 13, 14, 15, 16}} /*+z*/,
@@ -765,7 +759,6 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SphereGraph", "[Domain][Unit]") {
   CHECK(generated_corners == expected_corners);
 }
 
-namespace {
 std::vector<std::array<size_t, 8>> expected_bbh_corners() {
   return {// Shell on left-hand side:
           {{5, 6, 7, 8, 13, 14, 15, 16}} /*+z*/,
@@ -818,9 +811,8 @@ std::vector<std::array<size_t, 8>> expected_bbh_corners() {
           {{66, 68, 70, 72, 74, 76, 78, 80}} /*+xR*/,
           {{27, 25, 31, 29, 35, 33, 39, 37}} /*-xL*/};
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.BBHCorners", "[Domain][Unit]") {
+void test_bbh_corners() noexcept {
   const auto generated_corners =
       corners_for_biradially_layered_domains(2, 2, false, false);
   for (size_t i = 0; i < expected_bbh_corners().size(); i++) {
@@ -830,7 +822,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.BBHCorners", "[Domain][Unit]") {
   CHECK(generated_corners == expected_bbh_corners());
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.NSBHCorners", "[Domain][Unit]") {
+void test_nsbh_corners() noexcept {
   std::vector<std::array<size_t, 8>> expected_corners = expected_bbh_corners();
   expected_corners.push_back(std::array<size_t, 8>{{1, 2, 3, 4, 5, 6, 7, 8}});
   const auto generated_corners =
@@ -842,7 +834,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.NSBHCorners", "[Domain][Unit]") {
   CHECK(generated_corners == expected_corners);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.BHNSCorners", "[Domain][Unit]") {
+void test_bhns_corners() noexcept {
   std::vector<std::array<size_t, 8>> expected_corners = expected_bbh_corners();
   expected_corners.push_back(
       std::array<size_t, 8>{{41, 42, 43, 44, 45, 46, 47, 48}});
@@ -855,7 +847,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.BHNSCorners", "[Domain][Unit]") {
   CHECK(generated_corners == expected_corners);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.BNSCorners", "[Domain][Unit]") {
+void test_bns_corners() noexcept {
   std::vector<std::array<size_t, 8>> expected_corners = expected_bbh_corners();
   expected_corners.push_back(std::array<size_t, 8>{{1, 2, 3, 4, 5, 6, 7, 8}});
   expected_corners.push_back(
@@ -869,7 +861,6 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.BNSCorners", "[Domain][Unit]") {
   CHECK(generated_corners == expected_corners);
 }
 
-namespace {
 void test_vci_1d() {
   VolumeCornerIterator<1> vci{};
   CHECK(vci);
@@ -1041,16 +1032,13 @@ void test_vci_3d() {
                                      Direction<3>::lower_eta(),
                                      Direction<3>::upper_zeta()}});
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.VolumeCornerIterator",
-                  "[Domain][Unit]") {
+void test_volume_corner_iterator() noexcept {
   test_vci_1d();
   test_vci_2d();
   test_vci_3d();
 }
 
-namespace {
 void test_fci_1d() {
   FaceCornerIterator<1> fci{Direction<1>::upper_xi()};
   CHECK(fci);
@@ -1205,17 +1193,63 @@ void test_fci_3d() {
   ++fci6;
   CHECK(not fci6);
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.FaceCornerIterator",
-                  "[Domain][Unit]") {
+void test_face_corner_iterator() noexcept {
   test_fci_1d();
   test_fci_2d();
   test_fci_3d();
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.CornersForRectilinearDomains",
-                  "[Domain][Unit]") {
+void test_indices_for_rectilinear_domains() noexcept {
+  std::vector<Index<1>> indices_for_a_1d_road{Index<1>{0}, Index<1>{1},
+                                              Index<1>{2}};
+  std::vector<Index<2>> indices_for_a_2d_vertical_tower{
+      Index<2>{0, 0}, Index<2>{0, 1}, Index<2>{0, 2}};
+  std::vector<Index<2>> indices_for_a_2d_horizontal_wall{
+      Index<2>{0, 0}, Index<2>{1, 0}, Index<2>{2, 0}};
+  std::vector<Index<2>> indices_for_a_2d_field{Index<2>{0, 0}, Index<2>{1, 0},
+                                               Index<2>{0, 1}, Index<2>{1, 1}};
+  std::vector<Index<2>> indices_for_a_2d_net_of_a_cube{
+      Index<2>{1, 0}, Index<2>{1, 1}, Index<2>{0, 2},
+      Index<2>{1, 2}, Index<2>{2, 2}, Index<2>{1, 3}};
+  std::vector<Index<3>> indices_for_a_3d_cube{
+      Index<3>{0, 0, 0}, Index<3>{1, 0, 0}, Index<3>{0, 1, 0},
+      Index<3>{1, 1, 0}, Index<3>{0, 0, 1}, Index<3>{1, 0, 1},
+      Index<3>{0, 1, 1}, Index<3>{1, 1, 1}};
+  std::vector<Index<3>> indices_for_a_rubiks_cube_with_hole{
+      Index<3>{0, 0, 0}, Index<3>{1, 0, 0}, Index<3>{2, 0, 0},
+      Index<3>{0, 1, 0}, Index<3>{1, 1, 0}, Index<3>{2, 1, 0},
+      Index<3>{0, 2, 0}, Index<3>{1, 2, 0}, Index<3>{2, 2, 0},
+      Index<3>{0, 0, 1}, Index<3>{1, 0, 1}, Index<3>{2, 0, 1},
+      Index<3>{0, 1, 1},
+      /*central block is skipped!*/
+      Index<3>{2, 1, 1}, Index<3>{0, 2, 1}, Index<3>{1, 2, 1},
+      Index<3>{2, 2, 1}, Index<3>{0, 0, 2}, Index<3>{1, 0, 2},
+      Index<3>{2, 0, 2}, Index<3>{0, 1, 2}, Index<3>{1, 1, 2},
+      Index<3>{2, 1, 2}, Index<3>{0, 2, 2}, Index<3>{1, 2, 2},
+      Index<3>{2, 2, 2}};
+
+  CHECK(indices_for_rectilinear_domains(Index<1>{3}) == indices_for_a_1d_road);
+  CHECK(indices_for_rectilinear_domains(Index<2>{1, 3}) ==
+        indices_for_a_2d_vertical_tower);
+  CHECK(indices_for_rectilinear_domains(Index<2>{3, 1}) ==
+        indices_for_a_2d_horizontal_wall);
+  CHECK(indices_for_rectilinear_domains(Index<2>{2, 2}) ==
+        indices_for_a_2d_field);
+  CHECK(indices_for_rectilinear_domains(
+            Index<2>{3, 4},
+            std::vector<Index<2>>{Index<2>{0, 0}, Index<2>{2, 0},
+                                  Index<2>{0, 1}, Index<2>{2, 1},
+                                  Index<2>{0, 3}, Index<2>{2, 3}}) ==
+        indices_for_a_2d_net_of_a_cube);
+  CHECK(indices_for_rectilinear_domains(Index<3>{2, 2, 2}) ==
+        indices_for_a_3d_cube);
+  CHECK(indices_for_rectilinear_domains(
+            Index<3>{3, 3, 3}, std::vector<Index<3>>{Index<3>{1, 1, 1}}) ==
+        indices_for_a_rubiks_cube_with_hole);
+}
+
+void test_corners_for_rectilinear_domains() noexcept {
   std::vector<std::array<size_t, 2>> corners_for_a_1d_road{
       {{0, 1}}, {{1, 2}}, {{2, 3}}};
   std::vector<std::array<size_t, 4>> corners_for_a_2d_vertical_tower{
@@ -1284,8 +1318,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.CornersForRectilinearDomains",
         corners_for_a_rubiks_cube_with_hole);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.DiscreteRotation.CornerNumbers",
-                  "[Domain][Unit]") {
+void test_discrete_rotation_corner_numbers() noexcept {
   CHECK(std::array<size_t, 2>{{0, 1}} ==
         discrete_rotation(OrientationMap<1>{std::array<Direction<1>, 1>{
                               {Direction<1>::upper_xi()}}},
@@ -1331,8 +1364,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.DiscreteRotation.CornerNumbers",
             std::array<size_t, 8>{{0, 1, 3, 4, 9, 10, 12, 13}}));
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
-                  "[Domain][Unit]") {
+void test_maps_for_rectilinear_domains() noexcept {
   using Affine = CoordinateMaps::Affine;
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
@@ -1456,8 +1488,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries1",
-                  "[Domain][Unit]") {
+void test_set_cartesian_periodic_boundaries_1() noexcept {
   const auto domain = rectilinear_domain<3>(
       Index<3>{3, 3, 3},
       std::array<std::vector<double>, 3>{
@@ -1522,8 +1553,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries1",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries2",
-                  "[Domain][Unit]") {
+void test_set_cartesian_periodic_boundaries_2() noexcept {
   const auto rotation = OrientationMap<2>{std::array<Direction<2>, 2>{
       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}};
   auto orientations_of_all_blocks =
@@ -1556,8 +1586,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries2",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries3",
-                  "[Domain][Unit]") {
+void test_set_cartesian_periodic_boundaries_3() noexcept {
   const OrientationMap<2> flipped{std::array<Direction<2>, 2>{
       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}};
   const OrientationMap<2> quarter_turn_cw{std::array<Direction<2>, 2>{
@@ -1611,9 +1640,33 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries3",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.WhichWedges", "[Domain][Unit]") {
+void test_which_wedges() noexcept {
   CHECK(get_output(ShellWedges::All) == "All");
   CHECK(get_output(ShellWedges::FourOnEquator) == "FourOnEquator");
   CHECK(get_output(ShellWedges::OneAlongMinusX) == "OneAlongMinusX");
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers", "[Domain][Unit]") {
+  test_periodic_same_block();
+  test_periodic_different_blocks();
+  test_wedge_map_generation();
+  test_all_frustum_directions();
+  test_shell_graph();
+  test_sphere_graph();
+  test_bbh_corners();
+  test_nsbh_corners();
+  test_bhns_corners();
+  test_bns_corners();
+  test_volume_corner_iterator();
+  test_face_corner_iterator();
+  test_indices_for_rectilinear_domains();
+  test_corners_for_rectilinear_domains();
+  test_discrete_rotation_corner_numbers();
+  test_maps_for_rectilinear_domains();
+  test_set_cartesian_periodic_boundaries_1();
+  test_set_cartesian_periodic_boundaries_2();
+  test_set_cartesian_periodic_boundaries_3();
+  test_which_wedges();
 }
 }  // namespace domain

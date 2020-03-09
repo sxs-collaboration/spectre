@@ -75,6 +75,14 @@ void set_identified_boundaries(
         neighbors_of_all_blocks) noexcept;
 
 /// \ingroup ComputationalDomainGroup
+/// \brief The multi-indices that identify the individual Blocks in the lattice
+template <size_t VolumeDim>
+auto indices_for_rectilinear_domains(
+    const Index<VolumeDim>& domain_extents,
+    const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {}) noexcept
+    -> std::vector<Index<VolumeDim>>;
+
+/// \ingroup ComputationalDomainGroup
 /// \brief The corners for a rectilinear domain made of n-cubes.
 ///
 /// The `domain_extents` argument holds the number of blocks to have

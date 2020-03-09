@@ -3,9 +3,15 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <array>
+#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <memory>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -18,8 +24,6 @@
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-
-// IWYU pragma: no_include <vector>
 
 namespace Frame {
 struct Inertial;
@@ -100,6 +104,52 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
       dynamic_cast<const creators::AlignedLattice<3>*>(
           unit_cubical_shell_domain.get());
   test_aligned_blocks(*unit_cubical_shell_creator_3d);
+
+  {
+    // Expected domain refinement:
+    // 23 23 67
+    // 23 45 67
+    // 23 XX 45
+    const auto refined_domain =
+        TestHelpers::test_factory_creation<DomainCreator<2>>(
+            "AlignedLattice:\n"
+            "  BlockBounds: [[70, 71, 72, 73], [90, 91, 92, 93]]\n"
+            "  InitialGridPoints: [2, 3]\n"
+            "  InitialRefinement: [0, 0]\n"
+            "  BlocksToExclude: [[1, 0]]\n"
+            "  RefinedGridPoints:\n"
+            "  - LowerCornerIndex: [1, 0]\n"
+            "    UpperCornerIndex: [3, 2]\n"
+            "    Refinement: [4, 5]\n"
+            "  - LowerCornerIndex: [2, 1]\n"
+            "    UpperCornerIndex: [3, 3]\n"
+            "    Refinement: [6, 7]");
+    std::unordered_set<
+        std::pair<std::vector<double>, std::array<size_t, 2>>,
+        boost::hash<std::pair<std::vector<double>, std::array<size_t, 2>>>>
+        expected_blocks{{{70.0, 90.0}, {{2, 3}}}, {{72.0, 90.0}, {{4, 5}}},
+                        {{70.0, 91.0}, {{2, 3}}}, {{71.0, 91.0}, {{4, 5}}},
+                        {{72.0, 91.0}, {{6, 7}}}, {{70.0, 92.0}, {{2, 3}}},
+                        {{71.0, 92.0}, {{2, 3}}}, {{72.0, 92.0}, {{6, 7}}}};
+    const auto domain = refined_domain->create_domain();
+    const auto& blocks = domain.blocks();
+    const auto extents = refined_domain->initial_extents();
+    REQUIRE(blocks.size() == extents.size());
+    for (size_t i = 0; i < blocks.size(); ++i) {
+      const auto location =
+          blocks[i]
+              .stationary_map()(
+                  tnsr::I<double, 2, Frame::Logical>{{{-1.0, -1.0}}})
+              .get_vector_of_data()
+              .second;
+      INFO("Unexpected block");
+      CAPTURE(location);
+      CAPTURE(extents[i]);
+      CHECK(expected_blocks.erase({location, extents[i]}) == 1);
+    }
+    CAPTURE_PRECISE(expected_blocks);
+    CHECK(expected_blocks.empty());
+  }
 }
 
 // [[OutputRegex, Cannot exclude blocks as well as have periodic boundary

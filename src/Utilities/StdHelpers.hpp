@@ -151,9 +151,9 @@ inline std::ostream& operator<<(std::ostream& os,
  * \ingroup UtilitiesGroup
  * \brief Output the items of a std::unordered_set
  */
-template <typename T>
+template <typename T, typename H>
 inline std::ostream& operator<<(std::ostream& os,
-                                const std::unordered_set<T>& v) noexcept {
+                                const std::unordered_set<T, H>& v) noexcept {
   unordered_print_helper(os, std::begin(v), std::end(v));
   return os;
 }
