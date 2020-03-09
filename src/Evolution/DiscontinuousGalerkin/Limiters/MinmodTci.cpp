@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <array>
-#include <utility>
 
 #include "Domain/Element.hpp"  // IWYU pragma: keep
 #include "Domain/Side.hpp"
@@ -16,19 +15,16 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Limiters {
-namespace Minmod_detail {
+namespace Tci {
 
 template <size_t VolumeDim>
-bool troubled_cell_indicator(
-    const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    const double tvb_constant, const DataVector& u,
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+bool tvb_minmod_indicator(
+    const gsl::not_null<Minmod_detail::BufferWrapper<VolumeDim>*> buffer,
+    const double tvb_constant, const DataVector& u, const Mesh<VolumeDim>& mesh,
+    const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes,
-    const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
-                               gsl::span<std::pair<size_t, size_t>>>,
-                     VolumeDim>& volume_and_slice_indices) noexcept {
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
   const double tvb_scale = [&tvb_constant, &element_size ]() noexcept {
     const double max_h =
         *std::max_element(element_size.begin(), element_size.end());
@@ -41,18 +37,22 @@ bool troubled_cell_indicator(
     &u_mean, &element, &element_size, &effective_neighbor_means, &
     effective_neighbor_sizes
   ](const size_t dim, const Side& side) noexcept {
-    return effective_difference_to_neighbor(
-        u_mean, element, element_size, effective_neighbor_means,
-        effective_neighbor_sizes, dim, side);
+    return Minmod_detail::effective_difference_to_neighbor(
+        u_mean, element, element_size, dim, side, effective_neighbor_means,
+        effective_neighbor_sizes);
   };
 
   for (size_t d = 0; d < VolumeDim; ++d) {
+    auto& boundary_buffers_d = gsl::at(buffer->boundary_buffers, d);
+    const auto& volume_and_slice_indices_d =
+        gsl::at(buffer->volume_and_slice_indices, d);
+
     const double u_lower = mean_value_on_boundary(
-        &(gsl::at(*boundary_buffer, d)),
-        gsl::at(volume_and_slice_indices, d).first, u, mesh, d, Side::Lower);
+        &boundary_buffers_d, volume_and_slice_indices_d.first, u, mesh, d,
+        Side::Lower);
     const double u_upper = mean_value_on_boundary(
-        &(gsl::at(*boundary_buffer, d)),
-        gsl::at(volume_and_slice_indices, d).second, u, mesh, d, Side::Upper);
+        &boundary_buffers_d, volume_and_slice_indices_d.second, u, mesh, d,
+        Side::Upper);
     const double diff_lower = difference_to_neighbor(d, Side::Lower);
     const double diff_upper = difference_to_neighbor(d, Side::Upper);
 
@@ -60,12 +60,12 @@ bool troubled_cell_indicator(
     // tvb_corrected_minmod(..., 0.0), rather than
     // tvb_corrected_minmod(..., tvb_scale)
     const bool activated_lower =
-        tvb_corrected_minmod(u_mean - u_lower, diff_lower, diff_upper,
-                             tvb_scale)
+        Minmod_detail::tvb_corrected_minmod(u_mean - u_lower, diff_lower,
+                                            diff_upper, tvb_scale)
             .activated;
     const bool activated_upper =
-        tvb_corrected_minmod(u_upper - u_mean, diff_lower, diff_upper,
-                             tvb_scale)
+        Minmod_detail::tvb_corrected_minmod(u_upper - u_mean, diff_lower,
+                                            diff_upper, tvb_scale)
             .activated;
     if (activated_lower or activated_upper) {
       return true;
@@ -77,21 +77,18 @@ bool troubled_cell_indicator(
 // Explicit instantiations
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template bool troubled_cell_indicator<DIM(data)>(                          \
-      const gsl::not_null<std::array<DataVector, DIM(data)>*>, const double, \
-      const DataVector&, const Element<DIM(data)>&, const Mesh<DIM(data)>&,  \
-      const std::array<double, DIM(data)>&,                                  \
-      const DirectionMap<DIM(data), double>&,                                \
-      const DirectionMap<DIM(data), double>&,                                \
-      const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,       \
-                                 gsl::span<std::pair<size_t, size_t>>>,      \
-                       DIM(data)>&) noexcept;
+#define INSTANTIATE(_, data)                                           \
+  template bool tvb_minmod_indicator<DIM(data)>(                       \
+      const gsl::not_null<Minmod_detail::BufferWrapper<DIM(data)>*>,   \
+      const double, const DataVector&, const Mesh<DIM(data)>&,         \
+      const Element<DIM(data)>&, const std::array<double, DIM(data)>&, \
+      const DirectionMap<DIM(data), double>&,                          \
+      const DirectionMap<DIM(data), double>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef INSTANTIATE
 
-}  // namespace Minmod_detail
+}  // namespace Tci
 }  // namespace Limiters

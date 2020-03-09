@@ -8,8 +8,9 @@
 #include <cmath>
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
-#include "Domain/Element.hpp"             // IWYU pragma: keep
-#include "Domain/Mesh.hpp"                // IWYU pragma: keep
+#include "DataStructures/SliceIterator.hpp"
+#include "Domain/Element.hpp"  // IWYU pragma: keep
+#include "Domain/Mesh.hpp"     // IWYU pragma: keep
 #include "Domain/Side.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -42,52 +43,26 @@ MinmodResult tvb_corrected_minmod(const double a, const double b,
 }
 
 template <size_t VolumeDim>
-void allocate_buffers(
-    const gsl::not_null<std::unique_ptr<double[], decltype(&free)>*>
-        contiguous_buffer,
-    const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    const Mesh<VolumeDim>& mesh) noexcept {
+BufferWrapper<VolumeDim>::BufferWrapper(const Mesh<VolumeDim>& mesh) noexcept
+    : contiguous_boundary_buffer_(nullptr, &free),
+      volume_and_slice_buffer_and_indices_(
+          ::volume_and_slice_indices(mesh.extents())),
+      volume_and_slice_indices(volume_and_slice_buffer_and_indices_.second) {
   const size_t half_number_boundary_points = alg::accumulate(
       alg::iota(std::array<size_t, VolumeDim>{{}}, 0_st),
       0_st, [&mesh](const size_t state, const size_t d) noexcept {
         return state + mesh.slice_away(d).number_of_grid_points();
       });
-  contiguous_buffer->reset(static_cast<double*>(
+  contiguous_boundary_buffer_.reset(static_cast<double*>(
       // clang-tidy incorrectly thinks this is a 0-byte malloc
       // NOLINTNEXTLINE(clang-analyzer-unix.API)
       malloc(sizeof(double) * half_number_boundary_points)));
   size_t alloc_offset = 0;
   for (size_t d = 0; d < VolumeDim; ++d) {
     const size_t num_points = mesh.slice_away(d).number_of_grid_points();
-    gsl::at(*boundary_buffer, d)
-        .set_data_ref(contiguous_buffer->get() + alloc_offset, num_points);
-    alloc_offset += num_points;
-  }
-}
-
-template <size_t VolumeDim>
-void allocate_buffers(
-    const gsl::not_null<std::unique_ptr<double[], decltype(&free)>*>
-        contiguous_buffer,
-    const gsl::not_null<DataVector*> u_lin_buffer,
-    const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    const Mesh<VolumeDim>& mesh) noexcept {
-  const size_t half_number_boundary_points = alg::accumulate(
-      alg::iota(std::array<size_t, VolumeDim>{{}}, 0_st),
-      0_st, [&mesh](const size_t state, const size_t d) noexcept {
-        return state + mesh.slice_away(d).number_of_grid_points();
-      });
-  contiguous_buffer->reset(static_cast<double*>(
-      malloc(sizeof(double) *
-             (mesh.number_of_grid_points() + half_number_boundary_points))));
-  size_t alloc_offset = 0;
-  u_lin_buffer->set_data_ref(contiguous_buffer->get() + alloc_offset,
-                             mesh.number_of_grid_points());
-  alloc_offset += mesh.number_of_grid_points();
-  for (size_t d = 0; d < VolumeDim; ++d) {
-    const size_t num_points = mesh.slice_away(d).number_of_grid_points();
-    gsl::at(*boundary_buffer, d)
-        .set_data_ref(contiguous_buffer->get() + alloc_offset, num_points);
+    gsl::at(boundary_buffers, d)
+        .set_data_ref(contiguous_boundary_buffer_.get() + alloc_offset,
+                      num_points);
     alloc_offset += num_points;
   }
 }
@@ -95,10 +70,10 @@ void allocate_buffers(
 template <size_t VolumeDim>
 double effective_difference_to_neighbor(
     const double u_mean, const Element<VolumeDim>& element,
-    const std::array<double, VolumeDim>& element_size,
+    const std::array<double, VolumeDim>& element_size, const size_t dim,
+    const Side& side,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes,
-    const size_t dim, const Side& side) noexcept {
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
   const auto& externals = element.external_boundaries();
   const auto dir = Direction<VolumeDim>(dim, side);
   const bool has_neighbors = (externals.find(dir) == externals.end());
@@ -118,19 +93,11 @@ double effective_difference_to_neighbor(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
-  template void allocate_buffers<DIM(data)>(                                   \
-      const gsl::not_null<std::unique_ptr<double[], decltype(&free)>*>,        \
-      const gsl::not_null<std::array<DataVector, DIM(data)>*>,                 \
-      const Mesh<DIM(data)>&) noexcept;                                        \
-  template void allocate_buffers<DIM(data)>(                                   \
-      const gsl::not_null<std::unique_ptr<double[], decltype(&free)>*>,        \
-      const gsl::not_null<DataVector*>,                                        \
-      const gsl::not_null<std::array<DataVector, DIM(data)>*>,                 \
-      const Mesh<DIM(data)>&) noexcept;                                        \
+  template class Minmod_detail::BufferWrapper<DIM(data)>;                      \
   template double effective_difference_to_neighbor<DIM(data)>(                 \
       double, const Element<DIM(data)>&, const std::array<double, DIM(data)>&, \
-      const DirectionMap<DIM(data), double>&,                                  \
-      const DirectionMap<DIM(data), double>&, size_t, const Side&) noexcept;
+      size_t, const Side&, const DirectionMap<DIM(data), double>&,             \
+      const DirectionMap<DIM(data), double>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

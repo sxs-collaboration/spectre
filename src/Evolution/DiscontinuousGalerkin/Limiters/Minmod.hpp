@@ -47,6 +47,11 @@ class er;
 namespace Limiters {
 template <size_t VolumeDim, typename TagsToLimit>
 class Minmod;
+
+namespace Minmod_detail {
+template <size_t VolumeDim>
+class BufferWrapper;
+}  // namespace Minmod_detail
 }  // namespace Limiters
 
 namespace domain {
@@ -75,18 +80,15 @@ namespace Minmod_detail {
 // testing.
 template <size_t VolumeDim>
 bool minmod_limited_slopes(
+    gsl::not_null<DataVector*> u_lin_buffer,
+    gsl::not_null<BufferWrapper<VolumeDim>*> buffer,
     gsl::not_null<double*> u_mean,
     gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
-    gsl::not_null<DataVector*> u_lin_buffer,
-    gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
     Limiters::MinmodType minmod_type, double tvb_constant, const DataVector& u,
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
-    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes,
-    const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
-                               gsl::span<std::pair<size_t, size_t>>>,
-                     VolumeDim>& volume_and_slice_indices) noexcept;
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept;
 }  // namespace Minmod_detail
 
 /// \ingroup LimitersGroup
@@ -257,8 +259,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
 
   using limit_tags = tmpl::list<Tags...>;
   using limit_argument_tags =
-      tmpl::list<domain::Tags::Element<VolumeDim>,
-                 domain::Tags::Mesh<VolumeDim>,
+      tmpl::list<domain::Tags::Mesh<VolumeDim>,
+                 domain::Tags::Element<VolumeDim>,
                  domain::Tags::Coordinates<VolumeDim, Frame::Logical>,
                  domain::Tags::SizeOfElement<VolumeDim>>;
 
@@ -289,7 +291,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   ///   test cases with very clean initial data.
   bool operator()(
       const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,
-      const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+      const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
       const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
       const std::array<double, VolumeDim>& element_size,
       const std::unordered_map<
