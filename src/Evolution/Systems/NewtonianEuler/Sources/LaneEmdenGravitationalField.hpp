@@ -21,12 +21,18 @@ struct LaneEmdenStar;
 namespace PUP {
 class er;
 }  // namespace PUP
+
 namespace Tags {
-template <size_t Dim, typename Frame>
-struct Coordinates;
 template <typename SolutionType>
 struct AnalyticSolution;
 }  // namespace Tags
+
+namespace domain {
+namespace Tags {
+template <size_t Dim, typename Frame>
+struct Coordinates;
+}  // namespace Tags
+}  // namespace domain
 
 namespace gsl {
 template <typename T>
@@ -84,7 +90,7 @@ struct LaneEmdenGravitationalField {
   using argument_tags = tmpl::list<
       Tags::MassDensityCons, Tags::MomentumDensity<3>,
       ::Tags::AnalyticSolution<NewtonianEuler::Solutions::LaneEmdenStar>,
-      ::Tags::Coordinates<3, Frame::Inertial>>;
+      domain::Tags::Coordinates<3, Frame::Inertial>>;
 
   static void apply(
       gsl::not_null<tnsr::I<DataVector, 3>*> source_momentum_density,
