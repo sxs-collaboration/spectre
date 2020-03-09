@@ -455,18 +455,33 @@ void test_weno_work(
           approx(gsl::at(expected_vector_means, d)));
   }
 
+  std::unordered_map<
+      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
+      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+      expected_neighbor_polynomials;
+
   auto expected_scalar = get<ScalarTag>(local_vars);
-  Limiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
-      make_not_null(&expected_scalar), mesh, neighbor_linear_weight,
-      expected_neighbor_modified_vars,
+  for (auto& neighbor_and_vars : expected_neighbor_modified_vars) {
+    expected_neighbor_polynomials[neighbor_and_vars.first] =
+        get(get<ScalarTag>(neighbor_and_vars.second));
+  }
+  Limiters::Weno_detail::reconstruct_from_weighted_sum(
+      make_not_null(&get(expected_scalar)), mesh, neighbor_linear_weight,
+      expected_neighbor_polynomials,
       Limiters::Weno_detail::DerivativeWeight::Unity);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_scalar, scalar, local_approx);
 
   auto expected_vector = get<VectorTag<VolumeDim>>(local_vars);
-  Limiters::Weno_detail::reconstruct_from_weighted_sum<VectorTag<VolumeDim>>(
-      make_not_null(&expected_vector), mesh, neighbor_linear_weight,
-      expected_neighbor_modified_vars,
-      Limiters::Weno_detail::DerivativeWeight::Unity);
+  for (size_t i = 0; i < VolumeDim; ++i) {
+    for (auto& neighbor_and_vars : expected_neighbor_modified_vars) {
+      expected_neighbor_polynomials[neighbor_and_vars.first] =
+          get<VectorTag<VolumeDim>>(neighbor_and_vars.second).get(i);
+    }
+    Limiters::Weno_detail::reconstruct_from_weighted_sum(
+        make_not_null(&(expected_vector.get(i))), mesh, neighbor_linear_weight,
+        expected_neighbor_polynomials,
+        Limiters::Weno_detail::DerivativeWeight::Unity);
+  }
   CHECK_ITERABLE_CUSTOM_APPROX(expected_vector, vector, local_approx);
 }
 

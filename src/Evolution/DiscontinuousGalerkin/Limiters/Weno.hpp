@@ -375,9 +375,24 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
   const auto wrap_reconstruct_one_tensor =
       [ this, &mesh, &
         modified_neighbor_solutions ](auto tag, const auto tensor) noexcept {
-    Weno_detail::reconstruct_from_weighted_sum<decltype(tag)>(
-        tensor, mesh, neighbor_linear_weight_, modified_neighbor_solutions,
-        Weno_detail::DerivativeWeight::Unity);
+    // This is an inefficient copying of data. This is only done as a temporary
+    // intermediated step during a larger refactor that will later delete this
+    // code block.
+    std::unordered_map<
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
+        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+        neighbor_polynomials;
+    for (size_t i = 0; i < tensor->size(); ++i) {
+      neighbor_polynomials.clear();
+      for (const auto& neighbor_and_vars : modified_neighbor_solutions) {
+        const auto& neighbor = neighbor_and_vars.first;
+        const auto& vars = neighbor_and_vars.second;
+        neighbor_polynomials[neighbor] = get<decltype(tag)>(vars)[i];
+      }
+      Weno_detail::reconstruct_from_weighted_sum(
+          make_not_null(&(*tensor)[i]), mesh, neighbor_linear_weight_,
+          neighbor_polynomials, Weno_detail::DerivativeWeight::Unity);
+    }
     return '0';
   };
   expand_pack(wrap_reconstruct_one_tensor(Tags{}, tensors)...);
