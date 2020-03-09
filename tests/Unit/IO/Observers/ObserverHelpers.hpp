@@ -13,6 +13,7 @@
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Utilities/Functional.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
@@ -99,34 +100,18 @@ using reduction_data_from_doubles = Parallel::ReductionData<
     Parallel::ReductionDatum<size_t, funcl::Plus<>>, l2_error_datum,
     l2_error_datum>;
 
-struct VectorPlus {
-  std::vector<double> operator()(const std::vector<double>& lhs,
-                                 const std::vector<double>& rhs) const
-      noexcept {
-    ASSERT(lhs.size() == rhs.size(),
-           "Vector sizes in `VectorPlus` operator do not match. First argument "
-           "size: "
-               << lhs.size() << ". Second argument size: " << rhs.size()
-               << ".");
-    std::vector<double> result(lhs.size());
-    for (size_t i = 0; i < lhs.size(); ++i) {
-      result[i] = lhs[i] + rhs[i];
-    }
-    return result;
-  }
-};
-
 using reduction_data_from_vector = Parallel::ReductionData<
     Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
     Parallel::ReductionDatum<size_t, funcl::Plus<>>,
-    Parallel::ReductionDatum<std::vector<double>, VectorPlus>>;
+    Parallel::ReductionDatum<std::vector<double>, funcl::VectorPlus>>;
 
 // Nothing special about the order. We just want doubles and std::vector's.
 using reduction_data_from_ds_and_vs = Parallel::ReductionData<
     Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
     Parallel::ReductionDatum<size_t, funcl::Plus<>>, l2_error_datum,
-    Parallel::ReductionDatum<std::vector<double>, VectorPlus>,
-    Parallel::ReductionDatum<std::vector<double>, VectorPlus>, l2_error_datum>;
+    Parallel::ReductionDatum<std::vector<double>, funcl::VectorPlus>,
+    Parallel::ReductionDatum<std::vector<double>, funcl::VectorPlus>,
+    l2_error_datum>;
 
 template <observers::TypeOfObservation TypeOfObservation>
 struct Metavariables {

@@ -437,10 +437,12 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   }
   //@}
 
+  ///@{
   /// \brief Suffix to append to the tensor name that indicates the component
   ///
   /// The suffix is empty for scalars, otherwise it is an underscore followed by
-  /// the `Tensor::component_name` of the `tensor_index`. Use `axis_labels` to
+  /// the `Tensor::component_name` of either the `tensor_index` or the canonical
+  /// tensor index obtained from the `storage_index`. Use `axis_labels` to
   /// overwrite the default labels for each component (see
   /// `Tensor::component_name`).
   ///
@@ -456,6 +458,14 @@ class Tensor<X, Symm, IndexList<Indices...>> {
           make_array<rank()>(std::string(""))) noexcept {
     return rank() == 0 ? "" : "_" + component_name(tensor_index, axis_labels);
   }
+
+  static std::string component_suffix(
+      const size_t storage_index,
+      const std::array<std::string, rank()>& axis_labels =
+          make_array<rank()>(std::string(""))) noexcept {
+    return component_suffix(get_tensor_index(storage_index), axis_labels);
+  }
+  ///@}
 
   /// Copy tensor data into an `std::vector<X>` along with the
   /// component names into a `std::vector<std::string>`

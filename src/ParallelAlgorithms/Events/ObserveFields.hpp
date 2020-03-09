@@ -105,15 +105,6 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       "All AnalyticSolutionTensors must be listed in Tensors.");
   using coordinates_tag = domain::Tags::Coordinates<VolumeDim, Frame::Inertial>;
 
-  template <typename T>
-  static std::string component_suffix(const T& tensor,
-                                      size_t component_index) noexcept {
-    return tensor.rank() == 0
-               ? ""
-               : "_" + tensor.component_name(
-                           tensor.get_tensor_index(component_index));
-  }
-
  public:
   /// \cond
   explicit ObserveFields(CkMigrateMessage* /*unused*/) noexcept {}
@@ -207,7 +198,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       if (variables_to_observe_.count(db::tag_name<tensor_tag>()) == 1) {
         for (size_t i = 0; i < tensor.size(); ++i) {
           components.emplace_back(element_name + db::tag_name<tensor_tag>() +
-                                      component_suffix(tensor, i),
+                                      tensor.component_suffix(i),
                                   tensor[i]);
         }
       }
@@ -228,7 +219,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
           DataVector error = tensor[i] - analytic_tensor[i];
           components.emplace_back(element_name + "Error(" +
                                       db::tag_name<tensor_tag>() + ")" +
-                                      component_suffix(tensor, i),
+                                      tensor.component_suffix(i),
                                   std::move(error));
         }
       }

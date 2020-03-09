@@ -449,6 +449,12 @@ void test_real_functions(const gsl::not_null<Gen*> gen) noexcept {
   });
 }
 
+void test_vector_plus() noexcept {
+  CHECK_ITERABLE_APPROX(VectorPlus{}(std::vector<double>{0.12, -20.87, 3.2},
+                                     std::vector<double>{-11.04, 7.5, 6.18}),
+                        (std::vector<double>{-10.92, -13.37, 9.38}));
+}
+
 SPECTRE_TEST_CASE("Unit.Utilities.Functional", "[Utilities][Unit]") {
   MAKE_GENERATOR(generator);
   test_generic_unaries(make_not_null(&generator));
@@ -457,6 +463,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.Functional", "[Utilities][Unit]") {
   test_functional_combinations(make_not_null(&generator));
   test_assert_equal();
   test_get_argument();
+  test_vector_plus();
 }
 
 // [[OutputRegex, Values are not equal in funcl::AssertEqual 7 and 8]]
@@ -468,6 +475,19 @@ SPECTRE_TEST_CASE("Unit.Utilities.Functional", "[Utilities][Unit]") {
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
+
+    // clang-format off
+// [[OutputRegex, Vector sizes in `funcl::VectorPlus` operator do not match.]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Functional.VectorPlus",
+                               "[Unit][Utilities]") {
+  // clang-format on
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  VectorPlus{}(std::vector<double>{2.0}, std::vector<double>{0.4, -19.90});
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
 #undef MAKE_UNARY_TEST
 #undef MAKE_BINARY_TEST
 #undef MAKE_BINARY_OP_TEST
