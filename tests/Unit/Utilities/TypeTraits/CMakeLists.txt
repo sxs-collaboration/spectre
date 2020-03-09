@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_FunctionInfo.cpp
   Test_GetFundamentalType.cpp
   Test_IsComplexOfFundamental.cpp
+  Test_RemoveReferenceWrapper.cpp
   )
 
 add_test_library(
