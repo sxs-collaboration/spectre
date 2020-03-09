@@ -467,8 +467,8 @@ void test_weno_work(
         get(get<ScalarTag>(neighbor_and_vars.second));
   }
   Limiters::Weno_detail::reconstruct_from_weighted_sum(
-      make_not_null(&get(expected_scalar)), mesh, neighbor_linear_weight,
-      expected_neighbor_polynomials, derivative_weight);
+      make_not_null(&get(expected_scalar)), neighbor_linear_weight,
+      derivative_weight, mesh, expected_neighbor_polynomials);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_scalar, scalar, local_approx);
 
   auto expected_vector = get<VectorTag<VolumeDim>>(local_vars);
@@ -478,8 +478,8 @@ void test_weno_work(
           get<VectorTag<VolumeDim>>(neighbor_and_vars.second).get(i);
     }
     Limiters::Weno_detail::reconstruct_from_weighted_sum(
-        make_not_null(&(expected_vector.get(i))), mesh, neighbor_linear_weight,
-        expected_neighbor_polynomials, derivative_weight);
+        make_not_null(&(expected_vector.get(i))), neighbor_linear_weight,
+        derivative_weight, mesh, expected_neighbor_polynomials);
   }
   CHECK_ITERABLE_CUSTOM_APPROX(expected_vector, vector, local_approx);
 }
@@ -899,7 +899,7 @@ void hweno_modified_neighbor_solution(
             primary_neighbor);
     Limiters::Weno_detail::solve_constrained_fit<Tag>(
         make_not_null(&(*modified_tensor)[tensor_index]),
-        local_tensor[tensor_index], tensor_index, element, mesh, neighbor_data,
+        local_tensor[tensor_index], tensor_index, mesh, element, neighbor_data,
         primary_neighbor, neighbors_to_exclude);
   }
 }

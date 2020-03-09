@@ -121,7 +121,7 @@ const ConstrainedFitCache<VolumeDim>& constrained_fit_cache(
 // See the documentation of `hweno_modified_neighbor_solution`.
 template <size_t VolumeDim>
 Matrix inverse_a_matrix(
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const DataVector& quadrature_weights,
     const DirectionMap<VolumeDim, Matrix>& interpolation_matrices,
     const DirectionMap<VolumeDim, DataVector>&
@@ -210,7 +210,7 @@ secondary_neighbors_to_exclude_from_fit(
 // documentation of `hweno_modified_neighbor_solution` below.
 template <typename Tag, size_t VolumeDim, typename Package>
 DataVector b_vector(
-    const Mesh<VolumeDim>& mesh, const size_t tensor_index,
+    const size_t tensor_index, const Mesh<VolumeDim>& mesh,
     const DataVector& quadrature_weights,
     const DirectionMap<VolumeDim, Matrix>& interpolation_matrices,
     const DirectionMap<VolumeDim, DataVector>&
@@ -284,8 +284,8 @@ DataVector b_vector(
 template <typename Tag, size_t VolumeDim, typename Package>
 void solve_constrained_fit(
     const gsl::not_null<DataVector*> constrained_fit_result,
-    const DataVector& u, const size_t tensor_index,
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+    const DataVector& u, const size_t tensor_index, const Mesh<VolumeDim>& mesh,
+    const Element<VolumeDim>& element,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, Package,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
@@ -329,11 +329,11 @@ void solve_constrained_fit(
       LIKELY(directions_to_exclude.size() < 2)
           ? cache.retrieve_inverse_a_matrix(primary_direction,
                                             directions_to_exclude)
-          : inverse_a_matrix(element, mesh, w, interp_matrices,
+          : inverse_a_matrix(mesh, element, w, interp_matrices,
                              w_dot_interp_matrices, primary_direction,
                              directions_to_exclude);
 
-  const DataVector b = b_vector<Tag>(mesh, tensor_index, w, interp_matrices,
+  const DataVector b = b_vector<Tag>(tensor_index, mesh, w, interp_matrices,
                                      w_dot_interp_matrices, neighbor_data,
                                      primary_neighbor, neighbors_to_exclude);
 
@@ -556,15 +556,15 @@ void hweno_impl(
       DataVector& buffer =
           modified_neighbor_solution_buffer->at(primary_neighbor);
       solve_constrained_fit<Tag>(make_not_null(&buffer), tensor_component,
-                                 tensor_index, element, mesh, neighbor_data,
+                                 tensor_index, mesh, element, neighbor_data,
                                  primary_neighbor, neighbors_to_exclude);
     }
 
     // Sum local and modified neighbor polynomials for the WENO reconstruction
     Weno_detail::reconstruct_from_weighted_sum(
-        make_not_null(&((*tensor)[tensor_index])), mesh, neighbor_linear_weight,
-        *modified_neighbor_solution_buffer,
-        Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial);
+        make_not_null(&((*tensor)[tensor_index])), neighbor_linear_weight,
+        Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial, mesh,
+        *modified_neighbor_solution_buffer);
   }
 }
 

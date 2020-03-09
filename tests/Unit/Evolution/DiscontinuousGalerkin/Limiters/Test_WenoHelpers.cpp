@@ -61,8 +61,8 @@ void test_reconstruction_1d() noexcept {
         0.5006326303794342, 0.09987412556290375}});
 
   Limiters::Weno_detail::reconstruct_from_weighted_sum(
-      make_not_null(&local_data), mesh, neighbor_linear_weight, neighbor_data,
-      Limiters::Weno_detail::DerivativeWeight::Unity);
+      make_not_null(&local_data), neighbor_linear_weight,
+      Limiters::Weno_detail::DerivativeWeight::Unity, mesh, neighbor_data);
   CHECK(mean_value(local_data, mesh) == approx(expected_local_mean));
   CHECK_ITERABLE_APPROX(local_data, expected_reconstructed_data);
 }
@@ -118,8 +118,8 @@ void test_reconstruction_2d() noexcept {
         0.9695333707936392, 0.000026246579961852654, 0.0008131679476911193}});
 
   Limiters::Weno_detail::reconstruct_from_weighted_sum(
-      make_not_null(&local_data), mesh, neighbor_linear_weight, neighbor_data,
-      Limiters::Weno_detail::DerivativeWeight::Unity);
+      make_not_null(&local_data), neighbor_linear_weight,
+      Limiters::Weno_detail::DerivativeWeight::Unity, mesh, neighbor_data);
   CHECK(mean_value(local_data, mesh) == approx(expected_local_mean));
   CHECK_ITERABLE_APPROX(local_data, expected_reconstructed_data);
 }
@@ -179,8 +179,8 @@ void test_reconstruction_3d() noexcept {
         0.08447504580872492, 0.04260655032204396}});
 
   Limiters::Weno_detail::reconstruct_from_weighted_sum(
-      make_not_null(&local_data), mesh, neighbor_linear_weight, neighbor_data,
-      Limiters::Weno_detail::DerivativeWeight::Unity);
+      make_not_null(&local_data), neighbor_linear_weight,
+      Limiters::Weno_detail::DerivativeWeight::Unity, mesh, neighbor_data);
   CHECK(mean_value(local_data, mesh) == approx(expected_local_mean));
   CHECK_ITERABLE_APPROX(local_data, expected_reconstructed_data);
 }

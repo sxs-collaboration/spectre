@@ -111,7 +111,7 @@ namespace Weno_detail {
 
 template <size_t VolumeDim>
 Matrix inverse_a_matrix(
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const DataVector& quadrature_weights,
     const DirectionMap<VolumeDim, Matrix>& interpolation_matrices,
     const DirectionMap<VolumeDim, DataVector>&
@@ -207,7 +207,7 @@ ConstrainedFitCache<VolumeDim>::ConstrainedFitCache(
       // here we stick the data into the (normally nonsensical) slot where
       // `dir_to_exclude == primary_dir`.
       inverse_a_matrices[primary_dir][primary_dir] = inverse_a_matrix(
-          element, mesh, quadrature_weights, interpolation_matrices,
+          mesh, element, quadrature_weights, interpolation_matrices,
           quadrature_weights_dot_interpolation_matrices, primary_dir,
           nothing_to_exclude);
     } else {
@@ -219,7 +219,7 @@ ConstrainedFitCache<VolumeDim>::ConstrainedFitCache(
           continue;
         }
         inverse_a_matrices[primary_dir][dir_to_exclude] = inverse_a_matrix(
-            element, mesh, quadrature_weights, interpolation_matrices,
+            mesh, element, quadrature_weights, interpolation_matrices,
             quadrature_weights_dot_interpolation_matrices, primary_dir,
             {{dir_to_exclude}});
       }
@@ -323,7 +323,7 @@ const ConstrainedFitCache<VolumeDim>& constrained_fit_cache(
 
 #define INSTANTIATE(_, data)                                                   \
   template Matrix inverse_a_matrix<DIM(data)>(                                 \
-      const Element<DIM(data)>&, const Mesh<DIM(data)>&, const DataVector&,    \
+      const Mesh<DIM(data)>&, const Element<DIM(data)>&, const DataVector&,    \
       const DirectionMap<DIM(data), Matrix>&,                                  \
       const DirectionMap<DIM(data), DataVector>&, const Direction<DIM(data)>&, \
       const std::vector<Direction<DIM(data)>>&) noexcept;                      \

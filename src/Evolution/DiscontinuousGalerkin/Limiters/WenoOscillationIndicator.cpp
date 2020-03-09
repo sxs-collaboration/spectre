@@ -98,8 +98,8 @@ double compute_sum_of_legendre_derivs(
 // computing only the (N-1)^2 matrix where we start at m, n >= 1.
 template <size_t VolumeDim>
 Matrix compute_indicator_matrix(
-    const Mesh<VolumeDim>& mesh,
-    const Limiters::Weno_detail::DerivativeWeight derivative_weight) noexcept {
+    const Limiters::Weno_detail::DerivativeWeight derivative_weight,
+    const Mesh<VolumeDim>& mesh) noexcept {
   ASSERT(mesh.basis() == make_array<VolumeDim>(Spectral::Basis::Legendre),
          "No implementation for mesh: " << mesh);
   Matrix result(mesh.number_of_grid_points() - 1,
@@ -183,9 +183,9 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 template <size_t VolumeDim>
-double oscillation_indicator(
-    const DataVector& data, const Mesh<VolumeDim>& mesh,
-    const DerivativeWeight derivative_weight) noexcept {
+double oscillation_indicator(const DerivativeWeight derivative_weight,
+                             const DataVector& data,
+                             const Mesh<VolumeDim>& mesh) noexcept {
   ASSERT(mesh.basis() == make_array<VolumeDim>(Spectral::Basis::Legendre),
          "No implementation for mesh: " << mesh);
 
@@ -196,7 +196,7 @@ double oscillation_indicator(
       DerivativeWeight, DerivativeWeight::Unity, DerivativeWeight::PowTwoEll,
       DerivativeWeight::PowTwoEllOverEllFactorial>>(
       [&mesh](const DerivativeWeight dw) noexcept->Matrix {
-        return compute_indicator_matrix(mesh, dw);
+        return compute_indicator_matrix(dw, mesh);
       });
   const Matrix indicator_matrix = cache(derivative_weight);
 
@@ -234,7 +234,7 @@ double oscillation_indicator(
 
 #define INSTANTIATE(_, data)                        \
   template double oscillation_indicator<DIM(data)>( \
-      const DataVector&, const Mesh<DIM(data)>&, DerivativeWeight) noexcept;
+      DerivativeWeight, const DataVector&, const Mesh<DIM(data)>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

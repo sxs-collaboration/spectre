@@ -185,9 +185,9 @@ void test_simple_weno_work(
           get<VectorTag<VolumeDim>>(neighbor_and_vars.second).get(i);
     }
     Limiters::Weno_detail::reconstruct_from_weighted_sum(
-        make_not_null(&(expected_vector.get(i))), mesh, neighbor_linear_weight,
-        expected_neighbor_polynomials,
-        Limiters::Weno_detail::DerivativeWeight::PowTwoEll);
+        make_not_null(&(expected_vector.get(i))), neighbor_linear_weight,
+        Limiters::Weno_detail::DerivativeWeight::PowTwoEll, mesh,
+        expected_neighbor_polynomials);
   }
   CHECK_ITERABLE_CUSTOM_APPROX(expected_vector, vector_to_limit, local_approx);
 }

@@ -179,7 +179,7 @@ void test_constrained_fit_1d() noexcept {
 
     DataVector constrained_fit;
     Limiters::Weno_detail::solve_constrained_fit<ScalarTag>(
-        make_not_null(&constrained_fit), local_data, 0, element, mesh,
+        make_not_null(&constrained_fit), local_data, 0, mesh, element,
         neighbor_data, primary_neighbor, neighbors_to_exclude);
 
     // The expected coefficient values for the result of the constrained fit are
@@ -232,8 +232,8 @@ void test_constrained_fit_1d() noexcept {
 
     DataVector constrained_fit;
     Limiters::Weno_detail::solve_constrained_fit<ScalarTag>(
-        make_not_null(&constrained_fit), local_data, 0,
-        element_at_lower_xi_bdry, mesh, neighbor_data_at_lower_xi_bdry,
+        make_not_null(&constrained_fit), local_data, 0, mesh,
+        element_at_lower_xi_bdry, neighbor_data_at_lower_xi_bdry,
         primary_neighbor, neighbors_to_exclude);
 
     // Coefficients from Mathematica, using code similar to the one above.
@@ -367,7 +367,7 @@ void test_constrained_fit_2d_vector() noexcept {
     for (size_t tensor_index = 0; tensor_index < 2; ++tensor_index) {
       Limiters::Weno_detail::solve_constrained_fit<VectorTag<2>>(
           make_not_null(&(constrained_fit.get(tensor_index))),
-          local_tensor.get(tensor_index), tensor_index, element, mesh,
+          local_tensor.get(tensor_index), tensor_index, mesh, element,
           neighbor_data, primary_neighbor, neighbors_to_exclude);
     }
 
@@ -470,8 +470,8 @@ void test_constrained_fit_2d_vector() noexcept {
     for (size_t tensor_index = 0; tensor_index < 2; ++tensor_index) {
       Limiters::Weno_detail::solve_constrained_fit<VectorTag<2>>(
           make_not_null(&(constrained_fit.get(tensor_index))),
-          local_tensor.get(tensor_index), tensor_index,
-          element_at_lower_eta_bdry, mesh, neighbor_data_at_lower_eta_bdry,
+          local_tensor.get(tensor_index), tensor_index, mesh,
+          element_at_lower_eta_bdry, neighbor_data_at_lower_eta_bdry,
           primary_neighbor, neighbors_to_exclude);
     }
 
@@ -632,7 +632,7 @@ void test_constrained_fit_3d() noexcept {
 
     DataVector constrained_fit;
     Limiters::Weno_detail::solve_constrained_fit<ScalarTag>(
-        make_not_null(&constrained_fit), local_data, 0, element, mesh,
+        make_not_null(&constrained_fit), local_data, 0, mesh, element,
         neighbor_data, primary_neighbor, neighbors_to_exclude);
 
     // The expected coefficient values for the result of the constrained fit are
@@ -809,8 +809,9 @@ void test_constrained_fit_3d() noexcept {
 
     DataVector constrained_fit;
     Limiters::Weno_detail::solve_constrained_fit<ScalarTag>(
-        make_not_null(&constrained_fit), local_data, 0, element_two_bdries,
-        mesh, neighbor_data_two_bdries, primary_neighbor, neighbors_to_exclude);
+        make_not_null(&constrained_fit), local_data, 0, mesh,
+        element_two_bdries, neighbor_data_two_bdries, primary_neighbor,
+        neighbors_to_exclude);
 
     // Coefficients from Mathematica, using code similar to the one above.
     const auto expected = [&logical_coords]() noexcept {
@@ -946,13 +947,13 @@ void test_hweno_work(
       DataVector& constrained_fit =
           expected_neighbor_polynomials[primary_neighbor];
       Limiters::Weno_detail::solve_constrained_fit<VectorTag<VolumeDim>>(
-          make_not_null(&constrained_fit), local_vector.get(i), i, element,
-          mesh, neighbor_data, primary_neighbor, neighbors_to_exclude);
+          make_not_null(&constrained_fit), local_vector.get(i), i, mesh,
+          element, neighbor_data, primary_neighbor, neighbors_to_exclude);
     }
     Limiters::Weno_detail::reconstruct_from_weighted_sum(
-        make_not_null(&expected_hweno.get(i)), mesh, neighbor_linear_weight,
-        expected_neighbor_polynomials,
-        Limiters::Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial);
+        make_not_null(&expected_hweno.get(i)), neighbor_linear_weight,
+        Limiters::Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial,
+        mesh, expected_neighbor_polynomials);
   }
 
   // Check limited fields as expected
