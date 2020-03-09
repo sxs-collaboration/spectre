@@ -7,6 +7,7 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/FirstOrderComputeTags.hpp"

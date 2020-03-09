@@ -5,6 +5,7 @@
 
 #include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "Informer/Tags.hpp"

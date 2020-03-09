@@ -8,6 +8,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Elliptic/Systems/Poisson/Equations.hpp"

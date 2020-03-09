@@ -7,6 +7,7 @@
 
 #include "AlgorithmSingleton.hpp"
 #include "ApparentHorizons/Tags.hpp"
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"

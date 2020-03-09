@@ -4,6 +4,7 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
