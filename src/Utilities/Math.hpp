@@ -12,6 +12,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsInteger.hpp"
 
 // using for overload resolution with blaze
 // clang-tidy doesn't want these in the global namespace
