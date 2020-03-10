@@ -62,8 +62,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
       - name: Check python formatting
         run: |
           cd $GITHUB_WORKSPACE
@@ -90,8 +88,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
       - name: Fetch upstream/develop
         # We only want to check files that have changed in this pull request,
         # so we fetch its base branch and pass it to `clang-tidy-hash`.
@@ -136,8 +132,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
       - name: Configure with cmake
         working-directory: /work
         run: >
@@ -192,8 +186,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
       - name: Download built documentation
         uses: actions/download-artifact@v1
         with:
@@ -314,8 +306,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
       - name: Restore ccache
         uses: actions/cache@v1
         with:
