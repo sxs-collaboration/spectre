@@ -51,7 +51,7 @@ either a triple slash `///` or a `/*!`.
 
 Examples:
 \verbatim
-/// \brief A brief description of the object to be documented
+/// A brief description of the object to be documented
 ///
 /// Doxygen comments can be made
 /// using triple slashes...
@@ -81,6 +81,9 @@ Doxygen also conveniently provides two additional organizations of the files,
 Topics and Namespaces. To ensure that your documentation is easily found from
 within Doxygen, we recommend that you add any new objects to Topics and any
 new namespaces to Namespaces.
+
+\note The `///` Doxygen syntax does not require a `\brief`, while the C-style
+`/*!` does.
 
 ## Add your object to an existing Topic:
 
