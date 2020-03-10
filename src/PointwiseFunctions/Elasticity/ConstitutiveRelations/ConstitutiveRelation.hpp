@@ -51,11 +51,13 @@ namespace ConstitutiveRelations {
 template <size_t Dim>
 class ConstitutiveRelation : public PUP::able {
  public:
+  static constexpr size_t volume_dim = Dim;
+
   using creatable_classes = tmpl::list<IsotropicHomogeneous<Dim>>;
 
   ConstitutiveRelation() = default;
-  ConstitutiveRelation(const ConstitutiveRelation&) = delete;
-  ConstitutiveRelation& operator=(const ConstitutiveRelation&) = delete;
+  ConstitutiveRelation(const ConstitutiveRelation&) = default;
+  ConstitutiveRelation& operator=(const ConstitutiveRelation&) = default;
   ConstitutiveRelation(ConstitutiveRelation&&) = default;
   ConstitutiveRelation& operator=(ConstitutiveRelation&&) = default;
   ~ConstitutiveRelation() override = default;

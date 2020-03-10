@@ -34,6 +34,7 @@ void test_type_traits() {
   CHECK(relation !=
         Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>{2., 2.});
   test_serialization(relation);
+  test_copy_semantics(relation);
   const auto created_relation = TestHelpers::test_creation<
       Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>>(
       "BulkModulus: 1.\n"
