@@ -90,10 +90,10 @@ template <size_t Dim>
 struct NumericalFlux {
   void compute_dirichlet_boundary(
       const gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
-      const Scalar<DataVector>& field, const Fluxes<Dim>& /*flux_computer*/,
+      const Scalar<DataVector>& field,
       const tnsr::i<DataVector, Dim,
-                    Frame::Inertial>& /*interface_unit_normal*/) const
-      noexcept {
+                    Frame::Inertial>& /*interface_unit_normal*/,
+      const Fluxes<Dim>& /*flux_computer*/) const noexcept {
     numerical_flux_for_field->get() = 2. * get(field);
   }
 
