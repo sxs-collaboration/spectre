@@ -54,7 +54,7 @@ EventsAndTriggers:
   ? EveryNSlabs:
       N: 5
       Offset: 2
-  : - Interpolate
+  : - Horizon
   ? SpecifiedSlabs:
       Slabs: [3]
   : - Completion

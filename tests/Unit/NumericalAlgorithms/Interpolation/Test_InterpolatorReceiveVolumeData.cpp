@@ -160,22 +160,6 @@ struct MockInterpolationTargetReceiveVars {
   }
 };
 
-size_t called_mock_add_temporal_ids_to_interpolation_target = 0;
-template <typename InterpolationTargetTag>
-struct MockAddTemporalIdsToInterpolationTarget {
-  template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex>
-  static void apply(db::DataBox<DbTags>& /*box*/,
-                    Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    std::vector<typename Metavariables::temporal_id::type>&&
-                    /*temporal_ids*/) noexcept {
-    // We are not testing this Action here.
-    // Do nothing except make sure it is called once.
-    ++called_mock_add_temporal_ids_to_interpolation_target;
-  }
-};
-
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
   using metavariables = Metavariables;
@@ -198,14 +182,10 @@ struct mock_interpolation_target {
 
   using replace_these_simple_actions =
       tmpl::list<intrp::Actions::InterpolationTargetReceiveVars<
-                     typename Metavariables::InterpolationTargetA>,
-                 intrp::Actions::AddTemporalIdsToInterpolationTarget<
-                     typename Metavariables::InterpolationTargetA>>;
+          typename Metavariables::InterpolationTargetA>>;
   using with_these_simple_actions =
       tmpl::list<MockInterpolationTargetReceiveVars<
-                     typename Metavariables::InterpolationTargetA>,
-                 MockAddTemporalIdsToInterpolationTarget<
-                     typename Metavariables::InterpolationTargetA>>;
+          typename Metavariables::InterpolationTargetA>>;
 };
 
 template <typename Metavariables>
@@ -341,13 +321,6 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
             target_component, intrp::Tags::TemporalIds<temporal_id_type>>(
             runner, 0)
             .empty());
-
-  // Should be two queued simple actions. First is
-  // MockAddTemporalIdsToInterpolationTarget.
-  runner.invoke_queued_simple_action<target_component>(0);
-
-  // Make sure MockAddTemporalIdsToInterpolationTarget was called once.
-  CHECK(called_mock_add_temporal_ids_to_interpolation_target == 1);
 
   // Should be one queued simple action, MockInterpolationTargetReceiveVars.
   runner.invoke_queued_simple_action<target_component>(0);

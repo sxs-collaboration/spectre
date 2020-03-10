@@ -202,9 +202,9 @@ struct EvolutionMetavars {
   using triggers = Triggers::time_triggers;
 
   // Events include the observation events and finding the horizon
-  using events = tmpl::push_back<
-      observation_events,
-      intrp::Events::Registrars::Interpolate<3, interpolator_source_vars>>;
+  using events = tmpl::push_back<observation_events,
+                                 intrp::Events::Registrars::Interpolate<
+                                     3, Horizon, interpolator_source_vars>>;
 
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
   // metavariables
