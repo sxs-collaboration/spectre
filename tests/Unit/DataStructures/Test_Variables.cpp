@@ -54,6 +54,25 @@ std::string repeat_string_with_commas(const std::string& str,
   return t;
 }
 
+// An empty Variables is a separate implementation, so we put tests
+// for it in a separate function here.
+void test_empty_variables() noexcept {
+  Variables<tmpl::list<>> empty_vars;
+  auto serialized_empty_vars = serialize_and_deserialize(empty_vars);
+  CHECK(serialized_empty_vars == empty_vars);
+
+  // The following test with a std::tuple<Variables<tmpl::list<>>>
+  // revealed a gcc8 bug that passed the above test (the one that
+  // serializes/deserializes a Variables<tmpl::list<>>).
+  std::tuple<int, std::string, Variables<tmpl::list<>>> tuple_with_empty_vars{
+      3, "hello", {}};
+  auto serialized_tuple_with_empty_vars =
+      serialize_and_deserialize(tuple_with_empty_vars);
+  CHECK(serialized_tuple_with_empty_vars == tuple_with_empty_vars);
+
+  CHECK(get_output(tuple_with_empty_vars) == "(3,hello,{})");
+}
+
 template <typename VectorType>
 void test_variables_construction_and_access() noexcept {
   using value_type = typename VectorType::value_type;
@@ -880,6 +899,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   }
 
   TestHelpers::db::test_simple_tag<Tags::TempScalar<1>>("TempTensor1");
+
+  SECTION("Test empty variables") {
+    test_empty_variables();
+  }
 }
 }  // namespace
 

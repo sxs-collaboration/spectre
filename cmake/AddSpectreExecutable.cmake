@@ -66,6 +66,7 @@ function(
 
   target_link_libraries(
     ${EXECUTABLE_NAME}
+    PUBLIC
     ${LINK_LIBS}
     ${SPECTRE_LIBRARIES}
     )

@@ -92,6 +92,7 @@ class Interpolate<VolumeDim, tmpl::list<Tensors...>, EventRegistrars>
       get<tensor_tag>(interp_vars) = tensor;
       return 0;
     };
+    (void) copy_to_variables; // GCC warns unused variable if Tensors is empty.
     expand_pack(copy_to_variables(tmpl::type_<Tensors>{}, tensors)...);
 
     // Send volume data to the Interpolator, to trigger interpolation.

@@ -5,6 +5,8 @@
 
 #include <vector>
 
+#include "AlgorithmSingleton.hpp"
+#include "ApparentHorizons/Tags.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
@@ -42,6 +44,20 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"
+#include "NumericalAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
+#include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
+#include "NumericalAlgorithms/Interpolation/Interpolate.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolationTarget.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolationTargetKerrHorizon.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolationTargetReceiveVars.hpp"
+#include "NumericalAlgorithms/Interpolation/Interpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolatorReceivePoints.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolatorReceiveVolumeData.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"
+#include "NumericalAlgorithms/Interpolation/Tags.hpp"
+#include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -73,6 +89,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "PointwiseFunctions/Hydro/MassFlux.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
@@ -103,7 +120,30 @@ class CProxy_ConstGlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-template <typename InitialData>
+struct Horizon {
+  using tags_to_observe =
+      tmpl::list<StrahlkorperTags::EuclideanSurfaceIntegralVector<
+          hydro::Tags::MassFlux<DataVector, 3, ::Frame::Inertial>,
+          ::Frame::Inertial>>;
+  using compute_items_on_source = tmpl::list<>;
+  using vars_to_interpolate_to_target = tmpl::list<
+      hydro::Tags::RestMassDensity<DataVector>,
+    hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+      hydro::Tags::LorentzFactor<DataVector>, gr::Tags::Lapse<DataVector>,
+      gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>>;
+  using compute_items_on_target = tmpl::push_front<
+      tags_to_observe,
+      StrahlkorperTags::EuclideanAreaElement<::Frame::Inertial>,
+      hydro::Tags::MassFluxCompute<DataVector, 3, ::Frame::Inertial>>;
+  using compute_target_points =
+      intrp::Actions::KerrHorizon<Horizon, ::Frame::Inertial>;
+  using post_interpolation_callback =
+      intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, Horizon,
+                                                   Horizon>;
+};
+
+template <typename InitialData, typename...InterpolationTargetTags>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = 3;
   using initial_data = InitialData;
@@ -152,8 +192,14 @@ struct EvolutionMetavars {
       tmpl::append<step_choosers_common, step_choosers_for_step_only,
                    step_choosers_for_slab_only>>;
 
+  using domain_frame = Frame::Inertial;
+  static constexpr size_t domain_dim = 3;
+  using interpolator_source_vars =
+      tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
+          typename InterpolationTargetTags::vars_to_interpolate_to_target...>>>;
+
   // public for use by the Charm++ registration code
-  using events = tmpl::flatten<tmpl::list<
+  using observation_events = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
                           dg::Events::Registrars::ObserveErrorNorms<
                               Tags::Time, analytic_variables_tags>,
@@ -167,6 +213,10 @@ struct EvolutionMetavars {
           tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
                               analytic_variables_tags, tmpl::list<>>>,
       Events::Registrars::ChangeSlabSize<slab_choosers>>>;
+  using events = tmpl::push_back<
+      observation_events,
+      intrp::Events::Registrars::Interpolate<3, interpolator_source_vars>>;
+
   using triggers = Triggers::time_triggers;
 
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<
@@ -176,8 +226,12 @@ struct EvolutionMetavars {
   struct ObservationType {};
   using element_observation_type = ObservationType;
 
+  using interpolation_target_tags = tmpl::list<InterpolationTargetTags...>;
+
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-      typename Event<events>::creatable_classes>;
+      tmpl::push_back<typename Event<observation_events>::creatable_classes,
+                   typename InterpolationTargetTags::
+                                  post_interpolation_callback...>>;
 
   using step_actions = tmpl::flatten<tmpl::list<
       Actions::ComputeVolumeFluxes,
@@ -203,7 +257,7 @@ struct EvolutionMetavars {
   enum class Phase {
     Initialization,
     InitializeTimeStepperHistory,
-    RegisterWithObserver,
+    Register,
     Evolve,
     Exit
   };
@@ -239,6 +293,8 @@ struct EvolutionMetavars {
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
+      intrp::Interpolator<EvolutionMetavars>,
+      intrp::InterpolationTarget<EvolutionMetavars, InterpolationTargetTags>...,
       DgElementArray<
           EvolutionMetavars,
           tmpl::list<
@@ -250,8 +306,9 @@ struct EvolutionMetavars {
                   SelfStart::self_start_procedure<step_actions>>,
 
               Parallel::PhaseActions<
-                  Phase, Phase::RegisterWithObserver,
-                  tmpl::list<observers::Actions::RegisterWithObservers<
+                  Phase, Phase::Register,
+                  tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
+                             observers::Actions::RegisterWithObservers<
                                  observers::RegisterObservers<
                                      Tags::Time, element_observation_type>>,
                              Parallel::Actions::TerminatePhase>>,
@@ -289,8 +346,8 @@ struct EvolutionMetavars {
       case Phase::Initialization:
         return Phase::InitializeTimeStepperHistory;
       case Phase::InitializeTimeStepperHistory:
-        return Phase::RegisterWithObserver;
-      case Phase::RegisterWithObserver:
+        return Phase::Register;
+      case Phase::Register:
         return Phase::Evolve;
       case Phase::Evolve:
         return Phase::Exit;
