@@ -7,7 +7,6 @@
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/Conservative/ConservativeDuDt.hpp"
 #include "Evolution/Systems/Burgers/Characteristics.hpp"
 #include "Evolution/Systems/Burgers/Fluxes.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"  // IWYU pragma: keep
@@ -28,7 +27,6 @@ struct System {
   using variables_tag = ::Tags::Variables<tmpl::list<Tags::U>>;
   using sourced_variables = tmpl::list<>;
 
-  using compute_time_derivative = ConservativeDuDt<System>;
   using volume_fluxes = Fluxes;
   using compute_largest_characteristic_speed =
       ComputeLargestCharacteristicSpeed;

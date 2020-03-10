@@ -55,6 +55,13 @@ namespace GeneralizedHarmonic {
 template <size_t Dim>
 struct ComputeDuDt {
  public:
+  template <template <class> class StepPrefix>
+  using return_tags = tmpl::list<
+      db::add_tag_prefix<StepPrefix, gr::Tags::SpacetimeMetric<
+                                         Dim, Frame::Inertial, DataVector>>,
+      db::add_tag_prefix<StepPrefix, Tags::Pi<Dim>>,
+      db::add_tag_prefix<StepPrefix, Tags::Phi<Dim>>>;
+
   using argument_tags = tmpl::list<
       gr::Tags::SpacetimeMetric<Dim>, Tags::Pi<Dim>, Tags::Phi<Dim>,
       ::Tags::deriv<gr::Tags::SpacetimeMetric<Dim>, tmpl::size_t<Dim>,

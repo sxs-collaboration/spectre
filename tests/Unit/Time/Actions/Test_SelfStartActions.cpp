@@ -61,7 +61,10 @@ struct SystemBase {
   static constexpr bool has_primitive_and_conservative_vars = HasPrimitives;
   using variables_tag = Var;
 
-  using compute_time_derivative = struct {
+  using ComputeTimeDerivative = struct {
+    template <template <class> class StepPrefix>
+    using return_tags = tmpl::list<db::add_tag_prefix<StepPrefix, Var>>;
+
     using argument_tags =
         tmpl::list<tmpl::conditional_t<has_primitive_and_conservative_vars,
                                        PrimitiveVar, Var>>;
@@ -131,7 +134,8 @@ struct Component {
   static constexpr bool has_primitives = Metavariables::has_primitives;
 
   using step_actions =
-      tmpl::list<Actions::ComputeTimeDerivative,
+      tmpl::list<Actions::ComputeTimeDerivative<
+                     typename metavariables::system::ComputeTimeDerivative>,
                  Actions::RecordTimeStepperData<>,
                  tmpl::conditional_t<
                      has_primitives,

@@ -63,6 +63,11 @@ namespace ScalarWave {
  */
 template <size_t Dim>
 struct ComputeDuDt {
+  template <template <class> class StepPrefix>
+  using return_tags = tmpl::list<db::add_tag_prefix<StepPrefix, Pi>,
+                                 db::add_tag_prefix<StepPrefix, Phi<Dim>>,
+                                 db::add_tag_prefix<StepPrefix, Psi>>;
+
   using argument_tags =
       tmpl::list<Pi, ::Tags::deriv<Pi, tmpl::size_t<Dim>, Frame::Inertial>,
                  ::Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;

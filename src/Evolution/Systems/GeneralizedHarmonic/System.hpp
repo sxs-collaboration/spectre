@@ -37,7 +37,6 @@ struct System {
                  Tags::Pi<Dim, Frame::Inertial>,
                  Tags::Phi<Dim, Frame::Inertial>>;
 
-  using compute_time_derivative = ComputeDuDt<Dim>;
   using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
   using char_speeds_tag = CharacteristicSpeedsCompute<Dim, Frame::Inertial>;
   using compute_largest_characteristic_speed =
