@@ -34,6 +34,7 @@ set(LIBRARY_SOURCES
   Side.cpp
   SizeOfElement.cpp
   Tags.cpp
+  TagsTimeDependent.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})

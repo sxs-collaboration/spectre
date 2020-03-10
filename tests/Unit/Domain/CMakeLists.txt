@@ -37,6 +37,7 @@ set(LIBRARY_SOURCES
   Test_Side.cpp
   Test_SizeOfElement.cpp
   Test_Tags.cpp
+  Test_TagsTimeDependent.cpp
   )
 
 add_subdirectory(Amr)

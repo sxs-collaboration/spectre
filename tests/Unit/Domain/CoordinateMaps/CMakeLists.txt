@@ -18,6 +18,7 @@ set(LIBRARY_SOURCES
   Test_Rotation.cpp
   Test_RotationTimeDep.cpp
   Test_SpecialMobius.cpp
+  Test_Tags.cpp
   Test_TimeDependentHelpers.cpp
   Test_Translation.cpp
   Test_Wedge2D.cpp

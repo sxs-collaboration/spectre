@@ -59,6 +59,9 @@ add_spectre_executable(
 target_link_libraries(
   ${executable}
   ${SPECTRE_TESTS_LIBRARIES}
+  ErrorHandling
+  Informer
+  Utilities
   ${SPECTRE_LIBRARIES}
   )
 
