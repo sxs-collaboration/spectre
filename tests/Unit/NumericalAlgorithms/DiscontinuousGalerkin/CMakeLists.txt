@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory(BoundarySchemes)
+
 set(LIBRARY "Test_NumericalDiscontinuousGalerkin")
 
 set(LIBRARY_SOURCES
@@ -8,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_LiftFlux.cpp
   Test_MortarHelpers.cpp
   Test_NormalDotFlux.cpp
+  Test_Protocols.cpp
   Test_SimpleBoundaryData.cpp
   Test_SimpleMortarData.cpp
   Test_Tags.cpp
