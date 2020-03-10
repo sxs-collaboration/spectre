@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(FunctionsOfTime)
+add_subdirectory(Python)
 
 set(LIBRARY "Test_Domain")
 
