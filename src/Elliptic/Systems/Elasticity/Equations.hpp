@@ -62,6 +62,7 @@ struct Fluxes {
   using argument_tags =
       tmpl::list<Tags::ConstitutiveRelationBase,
                  domain::Tags::Coordinates<Dim, Frame::Inertial>>;
+  using volume_tags = tmpl::list<Tags::ConstitutiveRelationBase>;
   static void apply(
       const gsl::not_null<tnsr::IJ<DataVector, Dim>*> flux_for_displacement,
       const ConstitutiveRelations::ConstitutiveRelation<Dim>&
