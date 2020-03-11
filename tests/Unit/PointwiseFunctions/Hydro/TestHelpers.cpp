@@ -17,8 +17,8 @@
 #include "tests/Utilities/RandomUnitNormal.hpp"
 
 /// \cond
-namespace hydro {
 namespace TestHelpers {
+namespace hydro {
 template <typename DataType>
 Scalar<DataType> random_density(const gsl::not_null<std::mt19937*> generator,
                                 const DataType& used_for_size) noexcept {
@@ -194,6 +194,6 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_TENSORS, (double, DataVector), (1, 2, 3))
 #undef INSTANTIATE_VECTORS
 #undef DIM
 #undef DTYPE
-}  // namespace TestHelpers
 }  // namespace hydro
+}  // namespace TestHelpers
 /// \endcond

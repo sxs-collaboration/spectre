@@ -73,7 +73,7 @@ void test_compute_item_in_databox(
 template <size_t Dim>
 void test_characteristic_speeds(const DataVector& used_for_size) noexcept {
   MAKE_GENERATOR(generator);
-  namespace helper = hydro::TestHelpers;
+  namespace helper = TestHelpers::hydro;
   const auto nn_gen = make_not_null(&generator);
   const auto lapse = helper::random_lapse(nn_gen, used_for_size);
   const auto shift = helper::random_shift<Dim>(nn_gen, used_for_size);
@@ -213,7 +213,7 @@ void test_characteristic_matrices(const double used_for_size) noexcept {
   MAKE_GENERATOR(generator);
   const auto test_for_given_eos =
       [&used_for_size, &generator ](const auto& equation_of_state) noexcept {
-    namespace helper = hydro::TestHelpers;
+    namespace helper = TestHelpers::hydro;
     const auto nn_gen = make_not_null(&generator);
 
     const auto spatial_metric =

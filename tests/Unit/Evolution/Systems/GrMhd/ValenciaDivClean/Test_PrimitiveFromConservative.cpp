@@ -47,12 +47,12 @@ void test_primitive_from_conservative_random(
     const DataVector& used_for_size) noexcept {
   // generate random primitives with interesting astrophysical values
   const auto expected_rest_mass_density =
-      hydro::TestHelpers::random_density(generator, used_for_size);
+      TestHelpers::hydro::random_density(generator, used_for_size);
   const auto expected_lorentz_factor =
-      hydro::TestHelpers::random_lorentz_factor(generator, used_for_size);
+      TestHelpers::hydro::random_lorentz_factor(generator, used_for_size);
   const auto spatial_metric =
-      hydro::TestHelpers::random_spatial_metric<3>(generator, used_for_size);
-  const auto expected_spatial_velocity = hydro::TestHelpers::random_velocity(
+      TestHelpers::hydro::random_spatial_metric<3>(generator, used_for_size);
+  const auto expected_spatial_velocity = TestHelpers::hydro::random_velocity(
       generator, expected_lorentz_factor, spatial_metric);
   const auto expected_specific_internal_energy = make_overloader(
       [&expected_rest_mass_density](
@@ -65,7 +65,7 @@ void test_primitive_from_conservative_random(
        &used_for_size ](const EquationsOfState::EquationOfState<true, 2>&
                         /*the_equation_of_state*/) noexcept {
         // note this call assumes an ideal fluid
-        return hydro::TestHelpers::random_specific_internal_energy(
+        return TestHelpers::hydro::random_specific_internal_energy(
             generator, used_for_size);
       })(equation_of_state);
   const auto expected_pressure = make_overloader(
@@ -86,10 +86,10 @@ void test_primitive_from_conservative_random(
       expected_rest_mass_density, expected_specific_internal_energy,
       expected_pressure);
   const auto expected_magnetic_field =
-      hydro::TestHelpers::random_magnetic_field(generator, expected_pressure,
+      TestHelpers::hydro::random_magnetic_field(generator, expected_pressure,
                                                 spatial_metric);
   const auto expected_divergence_cleaning_field =
-      hydro::TestHelpers::random_divergence_cleaning_field(generator,
+      TestHelpers::hydro::random_divergence_cleaning_field(generator,
                                                            used_for_size);
 
   const auto det_and_inv = determinant_and_inverse(spatial_metric);

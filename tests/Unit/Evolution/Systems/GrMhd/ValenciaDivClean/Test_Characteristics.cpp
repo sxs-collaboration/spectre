@@ -47,7 +47,7 @@ void test_characteristic_speeds(const DataVector& /*used_for_size*/) noexcept {
 void test_with_normal_along_coordinate_axes(
     const DataVector& used_for_size) noexcept {
   MAKE_GENERATOR(generator);
-  namespace helper = hydro::TestHelpers;
+  namespace helper = TestHelpers::hydro;
   const auto nn_gen = make_not_null(&generator);
   const auto rest_mass_density = helper::random_density(nn_gen, used_for_size);
   EquationsOfState::PolytropicFluid<true> eos(0.001, 4.0 / 3.0);

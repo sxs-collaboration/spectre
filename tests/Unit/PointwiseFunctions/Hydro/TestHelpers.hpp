@@ -14,11 +14,11 @@ class not_null;
 }  // namespace gsl
 /// \endcond
 
-namespace hydro {
+namespace TestHelpers {
 /// \ingroup TestingFrameworkGroup
 /// \brief Make random hydro variables which correct physical behavior,
 /// e.g. Lorentz factor will be greater or equal than one.
-namespace TestHelpers {
+namespace hydro {
 template <typename DataType>
 Scalar<DataType> random_density(gsl::not_null<std::mt19937*> generator,
                                 const DataType& used_for_size) noexcept;
@@ -65,5 +65,5 @@ template <size_t Dim, typename DataType>
 tnsr::ii<DataType, Dim> random_spatial_metric(
     gsl::not_null<std::mt19937*> generator,
     const DataType& used_for_size) noexcept;
-}  // namespace TestHelpers
 }  // namespace hydro
+}  // namespace TestHelpers
