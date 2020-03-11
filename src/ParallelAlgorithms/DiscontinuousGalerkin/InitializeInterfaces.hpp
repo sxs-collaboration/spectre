@@ -186,7 +186,7 @@ struct InitializeInterfaces {
               tmpl::pin<domain::Tags::BoundaryDirectionsExterior<dim>>>>,
       domain::Tags::InterfaceCompute<
           domain::Tags::BoundaryDirectionsExterior<dim>,
-          domain::Tags::BoundaryCoordinates<dim, Frame::Inertial>>,
+          domain::Tags::BoundaryCoordinates<dim>>,
       domain::Tags::InterfaceCompute<
           domain::Tags::BoundaryDirectionsExterior<dim>,
           domain::Tags::UnnormalizedFaceNormalCompute<dim>>,
