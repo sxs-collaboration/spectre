@@ -163,7 +163,7 @@ void GaugeAdjustedBoundaryValue<Tags::BondiQ>::apply_impl(
                     0.25 *
                         square(evolution_gauge_j * conj(evolution_gauge_dy_j) +
                                evolution_gauge_dy_j * conj(evolution_gauge_j)) /
-                        square(evolution_gauge_k))) -
+                        square(evolution_gauge_k))) +
        2.0 * (-conj(eth_omega) * evolution_gauge_dy_j +
               0.5 * eth_omega / evolution_gauge_k *
                   (evolution_gauge_j * conj(evolution_gauge_dy_j) +
