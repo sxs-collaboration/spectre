@@ -105,10 +105,9 @@ struct TemplatedDirections : db::SimpleTag {
   using type = std::unordered_set<Direction<3>>;
 };
 }  // namespace TestTags
-}  // namespace
 
 
-SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
+void test_interface_items() {
   constexpr size_t dim = 3;
   using internal_directions = Tags::InternalDirections<dim>;
   using boundary_directions_interior = Tags::BoundaryDirectionsInterior<dim>;
@@ -246,7 +245,6 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
               {Direction<dim>::upper_xi(), -4.5}}));
 }
 
-namespace {
 constexpr size_t dim = 2;
 
 struct Dirs : db::ComputeTag {
@@ -333,9 +331,8 @@ auto make_interface_tensor(DataVector value_xi, DataVector value_eta) noexcept {
               Scalar<DataVector>(std::move(value_eta)));
   return ret;
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Subitems", "[Unit][Domain]") {
+void test_interface_subitems() {
   const Mesh<dim> mesh{
       {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
 
@@ -393,14 +390,12 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Subitems", "[Unit][Domain]") {
         make_interface_tensor(3. * boundary_vars_xi, boundary_vars_eta));
 }
 
-namespace {
 using simple_item_tag = ::Tags::Variables<tmpl::list<Var<0>>>;
 using compute_item_tag = Compute<1>;
 using sliced_compute_item_tag = Compute<2>;
 using sliced_simple_item_tag = ::Tags::Variables<tmpl::list<Var<3>>>;
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
+void test_interface_slice(){
   const Mesh<dim> mesh{
       {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
 
@@ -480,7 +475,6 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
         make_interface_tensor({5., 13., 21.}, {21., 23., 25., 27.}));
 }
 
-namespace {
 struct SimpleBase : db::SimpleTag {
   static std::string name() noexcept { return "SimpleBase"; }
   using type = int;
@@ -505,7 +499,7 @@ struct ComputeDerived : ComputeBase, db::ComputeTag {
 };
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.BaseTags", "[Unit][Domain]") {
+void test_interface_base_tags() {
   const auto interface = [](const auto xi_value,
                             const auto eta_value) noexcept {
     return std::unordered_map<Direction<2>, std::decay_t<decltype(xi_value)>>{
@@ -518,5 +512,13 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.BaseTags", "[Unit][Domain]") {
       interface(4, 5));
   CHECK(get<Tags::Interface<Dirs, SimpleBase>>(box) == interface(4, 5));
   CHECK(get<Tags::Interface<Dirs, ComputeBase>>(box) == interface(5.5, 6.5));
+}
+
+
+SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
+  test_interface_items();
+  test_interface_subitems();
+  test_interface_slice();
+  test_interface_base_tags();
 }
 }  // namespace domain
