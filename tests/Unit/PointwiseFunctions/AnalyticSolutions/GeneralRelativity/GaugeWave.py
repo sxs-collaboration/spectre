@@ -51,10 +51,8 @@ def gauge_wave_d_shift(x, t, amplitude, wavelength):
 
 
 def gauge_wave_spatial_metric(x, t, amplitude, wavelength):
-    spatial_metric = np.zeros((len(x), len(x)))
+    spatial_metric = np.diag(np.ones_like(x))
     spatial_metric[0, 0] = gauge_wave_h(x, t, amplitude, wavelength)
-    spatial_metric[1, 1] = 1.0
-    spatial_metric[2, 2] = 1.0
     return spatial_metric
 
 
@@ -82,9 +80,7 @@ def gauge_wave_extrinsic_curvature(x, t, amplitude, wavelength):
 
 
 def gauge_wave_inverse_spatial_metric(x, t, amplitude, wavelength):
-    inverse_spatial_metric = np.zeros((len(x), len(x)))
+    inverse_spatial_metric = np.diag(np.ones_like(x))
     inverse_spatial_metric[0,
                            0] = 1.0 / gauge_wave_h(x, t, amplitude, wavelength)
-    inverse_spatial_metric[1, 1] = 1.0
-    inverse_spatial_metric[2, 2] = 1.0
     return inverse_spatial_metric

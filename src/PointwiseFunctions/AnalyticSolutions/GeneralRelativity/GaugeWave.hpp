@@ -91,12 +91,13 @@ namespace Solutions {
  *  - Amplitude (default: 1.)
  *  - Wavelength (default: 1.)
  */
+template <size_t Dim>
 class GaugeWave : public MarkAsAnalyticSolution {
   template <typename DataType>
   struct IntermediateVars;
 
  public:
-  static constexpr size_t volume_dim = 3;
+  static constexpr size_t volume_dim = Dim;
   struct Amplitude {
     using type = double;
     static constexpr OptionString help = {"Amplitude of the gauge wave"};
@@ -278,7 +279,9 @@ class GaugeWave : public MarkAsAnalyticSolution {
   double wavelength_{1.0};
 };
 
-bool operator==(const GaugeWave& lhs, const GaugeWave& rhs) noexcept;
-bool operator!=(const GaugeWave& lhs, const GaugeWave& rhs) noexcept;
+template <size_t Dim>
+bool operator==(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs) noexcept;
+template <size_t Dim>
+bool operator!=(const GaugeWave<Dim>& lhs, const GaugeWave<Dim>& rhs) noexcept;
 }  // namespace Solutions
 }  // namespace gr

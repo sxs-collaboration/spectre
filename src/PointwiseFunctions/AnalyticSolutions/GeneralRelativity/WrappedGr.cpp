@@ -294,7 +294,9 @@ WrappedGr<SolutionType>::variables(
           Frame::Inertial>> /*meta*/,                                          \
       const IntermediateVars& intermediate_vars) const noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (gr::Solutions::GaugeWave,
+GENERATE_INSTANTIATIONS(INSTANTIATE, (gr::Solutions::GaugeWave<1>,
+                                      gr::Solutions::GaugeWave<2>,
+                                      gr::Solutions::GaugeWave<3>,
                                       gr::Solutions::Minkowski<1>,
                                       gr::Solutions::Minkowski<2>,
                                       gr::Solutions::Minkowski<3>,
