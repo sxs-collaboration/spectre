@@ -12,7 +12,6 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "Domain/Mesh.hpp"
-#include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -53,6 +52,26 @@ void test_extents_basis_and_quadrature(
   }
 }
 
+// A Mesh in 0d has some unique behavior, tested separately here
+void test_mesh_0d() noexcept {
+  INFO("Test Mesh<0>");
+  const Mesh<0> mesh0d{};
+  CHECK(mesh0d.number_of_grid_points() == 1);
+  CHECK(mesh0d ==
+        Mesh<0>(1, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss));
+  CHECK(mesh0d ==
+        Mesh<0>(1, Spectral::Basis::Chebyshev, Spectral::Quadrature::Gauss));
+  CHECK(mesh0d == Mesh<0>(1, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto));
+
+  CHECK(Mesh<0>{}.slice_through() == Mesh<0>{});
+
+  const Mesh<0> mesh0d5(5, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::Gauss);
+  CHECK(mesh0d == mesh0d5);
+  CHECK(mesh0d5.number_of_grid_points() == 1);
+}
+
 void test_uniform_lgl_mesh() noexcept {
   INFO("Uniform LGL mesh");
   const Mesh<1> mesh1d_lgl{3, Spectral::Basis::Legendre,
@@ -79,7 +98,6 @@ void test_uniform_lgl_mesh() noexcept {
 
 void test_explicit_choices_per_dimension() noexcept {
   INFO("Explicit choices per dimension");
-  CHECK(Mesh<0>{}.slice_through() == Mesh<0>{});
   const Mesh<1> mesh1d{{{2}},
                        {{Spectral::Basis::Legendre}},
                        {{Spectral::Quadrature::GaussLobatto}}};
@@ -242,6 +260,7 @@ void test_serialization() noexcept {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]") {
+  test_mesh_0d();
   test_uniform_lgl_mesh();
   test_explicit_choices_per_dimension();
   test_equality();
