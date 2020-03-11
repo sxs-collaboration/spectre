@@ -10,6 +10,7 @@
 #include <cstddef>
 
 #include "DataStructures/Index.hpp"
+#include "ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
@@ -64,6 +65,9 @@ class Mesh {
   Mesh(const size_t isotropic_extents, const Spectral::Basis basis,
        const Spectral::Quadrature quadrature) noexcept
       : extents_(isotropic_extents) {
+    ASSERT(Dim > 0 or isotropic_extents == 1,
+           "Can't make a 0-dimensional Mesh with " << isotropic_extents
+                                                   << " points");
     bases_.fill(basis);
     quadratures_.fill(quadrature);
   }

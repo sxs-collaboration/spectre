@@ -65,11 +65,6 @@ void test_mesh_0d() noexcept {
                           Spectral::Quadrature::GaussLobatto));
 
   CHECK(Mesh<0>{}.slice_through() == Mesh<0>{});
-
-  const Mesh<0> mesh0d5(5, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::Gauss);
-  CHECK(mesh0d == mesh0d5);
-  CHECK(mesh0d5.number_of_grid_points() == 1);
 }
 
 void test_uniform_lgl_mesh() noexcept {

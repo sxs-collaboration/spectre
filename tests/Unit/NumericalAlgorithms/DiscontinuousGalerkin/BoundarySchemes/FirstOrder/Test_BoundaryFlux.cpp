@@ -103,7 +103,8 @@ Scalar<DataVector> simple_boundary_flux(
   CAPTURE(num_points_per_dim);
   using BoundaryData = dg::FirstOrderScheme::BoundaryData<NumericalFluxType>;
   // Setup a mortar
-  const Mesh<Dim - 1> mortar_mesh{num_points_per_dim, Spectral::Basis::Legendre,
+  const Mesh<Dim - 1> mortar_mesh{(Dim == 1 ? 1 : num_points_per_dim),
+                                  Spectral::Basis::Legendre,
                                   Spectral::Quadrature::GaussLobatto};
   const size_t mortar_num_points = mortar_mesh.number_of_grid_points();
   dg::MortarSize<Dim - 1> mortar_size{};
