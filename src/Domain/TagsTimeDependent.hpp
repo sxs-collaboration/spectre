@@ -160,5 +160,11 @@ struct InertialMeshVelocityCompute : MeshVelocity<Dim, Frame::Inertial>,
 
   using argument_tags = tmpl::list<CoordinatesMeshVelocityAndJacobians<Dim>>;
 };
+
+/// The divergence of the mesh velocity
+struct DivMeshVelocity : db::SimpleTag {
+  using type = boost::optional<Scalar<DataVector>>;
+  static std::string name() noexcept { return "div(MeshVelocity)"; }
+};
 }  // namespace Tags
 }  // namespace domain

@@ -7,7 +7,6 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Domain.hpp"
-#include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
