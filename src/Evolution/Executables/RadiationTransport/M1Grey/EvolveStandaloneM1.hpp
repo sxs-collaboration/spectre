@@ -23,9 +23,10 @@
 #include "Evolution/Initialization/GrTagsForHydro.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Initialize.hpp"
+#include "Evolution/Systems/RadiationTransport/M1Grey/M1Closure.hpp"
+#include "Evolution/Systems/RadiationTransport/M1Grey/M1HydroCoupling.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/System.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
-#include "Evolution/Systems/RadiationTransport/M1Grey/UpdateM1Closure.hpp"
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "IO/Observer/Actions.hpp"
@@ -43,6 +44,7 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
@@ -173,7 +175,11 @@ struct EvolutionMetavars {
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                           tmpl::list<>>,
       Actions::UpdateU<>, Limiters::Actions::SendData<EvolutionMetavars>,
-      Limiters::Actions::Limit<EvolutionMetavars>, Actions::UpdateM1Closure>>;
+      Limiters::Actions::Limit<EvolutionMetavars>,
+      Actions::MutateApply<typename RadiationTransport::M1Grey::
+                               ComputeM1Closure<neutrino_species>>,
+      Actions::MutateApply<typename RadiationTransport::M1Grey::
+                               ComputeM1HydroCoupling<neutrino_species>>>>;
 
   enum class Phase {
     Initialization,
@@ -189,7 +195,10 @@ struct EvolutionMetavars {
       Initialization::Actions::ConservativeSystem,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       RadiationTransport::M1Grey::Actions::InitializeM1Tags,
-      Actions::UpdateM1Closure,
+      Actions::MutateApply<typename RadiationTransport::M1Grey::
+                               ComputeM1Closure<neutrino_species>>,
+      Actions::MutateApply<typename RadiationTransport::M1Grey::
+                               ComputeM1HydroCoupling<neutrino_species>>,
       dg::Actions::InitializeInterfaces<
           system,
           dg::Initialization::slice_tags_to_face<

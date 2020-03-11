@@ -57,6 +57,7 @@ struct TildeP : db::SimpleTag {
 };
 
 /// The upper index momentum density of a neutrino species.
+///
 /// This tag does not know the species of neutrinos being used.
 /// \f${\tilde S^i}\f$
 template <typename Fr>
@@ -104,6 +105,70 @@ struct TildeHSpatial : db::SimpleTag {
   using type = tnsr::i<DataVector, 3, Fr>;
   static std::string name() noexcept {
     return Frame::prefix<Fr>() + "TildeHSpatial_" +
+           neutrinos::get_name(Species{});
+  }
+};
+
+/// The emissivity of the fluid for neutrinos of a given species.
+///
+/// By convention, this is the emitted energy per unit volume.
+template <class Species>
+struct GreyEmissivity : db::SimpleTag {
+  using type = Scalar<DataVector>;
+  static std::string name() noexcept {
+    return "GreyEmissivity_" + neutrinos::get_name(Species{});
+  }
+};
+
+/// The absorption opacity of the fluid for neutrinos of a
+/// given species.
+///
+/// As c=1, this is both the absorption per unit length
+/// and per unit time.
+template <class Species>
+struct GreyAbsorptionOpacity : db::SimpleTag {
+  using type = Scalar<DataVector>;
+  static std::string name() noexcept {
+    return "GreyAbsorptionOpacity_" + neutrinos::get_name(Species{});
+  }
+};
+
+/// The scattering opacity of the fluid for neutrinos of a
+/// given species.
+///
+/// As c=1, this is both the absorption per unit length and per unit time.
+template <class Species>
+struct GreyScatteringOpacity : db::SimpleTag {
+  using type = Scalar<DataVector>;
+  static std::string name() noexcept {
+    return "GreyScatteringOpacity_" + neutrinos::get_name(Species{});
+  }
+};
+
+/// The normal component of the source term coupling the M1 and hydro equations.
+///
+/// This is the source term for the evolution of \f${\tilde E}\f$ (by
+/// convention, added with a positive sign to \f${\tilde E}\f$ and a negative
+/// sign to the hydro variable \f${\tilde \tau}\f$)
+template <class Species>
+struct M1HydroCouplingNormal : db::SimpleTag {
+  using type = Scalar<DataVector>;
+  static std::string name() noexcept {
+    return "M1HydroCouplingNormal_" + neutrinos::get_name(Species{});
+  }
+};
+
+/// The spatial components of source term coupling the M1 and hydro equations.
+///
+/// i.e. \f${\tilde G}^a \gamma_{ia}\f$.
+/// This is the source term for the evolution of \f${\tilde S}_i\f$ (by
+/// convention, added with a positive sign to the neutrino \f${\tilde S}_i\f$
+/// and a negative sign to the hydro variable \f${\tilde S}_i\f$)
+template <typename Fr, class Species>
+struct M1HydroCouplingSpatial : db::SimpleTag {
+  using type = tnsr::i<DataVector, 3, Fr>;
+  static std::string name() noexcept {
+    return Frame::prefix<Fr>() + "M1HydroCouplingSpatial_" +
            neutrinos::get_name(Species{});
   }
 };

@@ -55,6 +55,7 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
       gr::Tags::Shift<3, Frame::Inertial, DataVector>,
       gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
       gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
                     Frame::Inertial>,
       ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
@@ -65,13 +66,18 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
 
   using hydro_variables_tag = ::Tags::Variables<
       tmpl::list<hydro::Tags::LorentzFactor<DataVector>,
-                 hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>>;
+                 hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+                 Tags::GreyEmissivity<NeutrinoSpecies>...,
+                 Tags::GreyAbsorptionOpacity<NeutrinoSpecies>...,
+                 Tags::GreyScatteringOpacity<NeutrinoSpecies>...>>;
 
   using primitive_variables_tag = ::Tags::Variables<tmpl::list<
       Tags::ClosureFactor<NeutrinoSpecies>...,
       Tags::TildeP<Frame::Inertial, NeutrinoSpecies>...,
       Tags::TildeJ<NeutrinoSpecies>..., Tags::TildeHNormal<NeutrinoSpecies>...,
-      Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>...>>;
+      Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>...,
+      Tags::M1HydroCouplingNormal<NeutrinoSpecies>...,
+      Tags::M1HydroCouplingSpatial<Frame::Inertial, NeutrinoSpecies>...>>;
 
   template <typename Tag>
   using magnitude_tag = ::Tags::NonEuclideanMagnitude<

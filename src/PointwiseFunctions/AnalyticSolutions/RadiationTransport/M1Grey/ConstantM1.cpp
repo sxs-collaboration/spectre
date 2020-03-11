@@ -37,7 +37,7 @@ void ConstantM1::pup(PUP::er& p) noexcept {
   p | background_spacetime_;
 }
 
-// M1 variables.
+// Variables templated on neutrino species.
 template <typename NeutrinoSpecies>
 tuples::TaggedTuple<
     RadiationTransport::M1Grey::Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>
@@ -72,7 +72,37 @@ ConstantM1::variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
   return {std::move(result)};
 }
 
-// Hydro variables.
+template <typename NeutrinoSpecies>
+tuples::TaggedTuple<
+    RadiationTransport::M1Grey::Tags::GreyEmissivity<NeutrinoSpecies>>
+ConstantM1::variables(
+    const tnsr::I<DataVector, 3>& x, double /*t*/,
+    tmpl::list<RadiationTransport::M1Grey::Tags::GreyEmissivity<
+        NeutrinoSpecies>> /*meta*/) const noexcept {
+  return {Scalar<DataVector>{DataVector(get<0>(x).size(), 0.)}};
+}
+
+template <typename NeutrinoSpecies>
+tuples::TaggedTuple<
+    RadiationTransport::M1Grey::Tags::GreyAbsorptionOpacity<NeutrinoSpecies>>
+ConstantM1::variables(
+    const tnsr::I<DataVector, 3>& x, double /*t*/,
+    tmpl::list<RadiationTransport::M1Grey::Tags::GreyAbsorptionOpacity<
+        NeutrinoSpecies>> /*meta*/) const noexcept {
+  return {Scalar<DataVector>{DataVector(get<0>(x).size(), 0.)}};
+}
+
+template <typename NeutrinoSpecies>
+tuples::TaggedTuple<
+    RadiationTransport::M1Grey::Tags::GreyScatteringOpacity<NeutrinoSpecies>>
+ConstantM1::variables(
+    const tnsr::I<DataVector, 3>& x, double /*t*/,
+    tmpl::list<RadiationTransport::M1Grey::Tags::GreyScatteringOpacity<
+        NeutrinoSpecies>> /*meta*/) const noexcept {
+  return {Scalar<DataVector>{DataVector(get<0>(x).size(), 0.)}};
+}
+
+// Variables not templated on neutrino species.
 tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataVector>>
 ConstantM1::variables(
     const tnsr::I<DataVector, 3>& x, double /*t*/,
@@ -112,7 +142,7 @@ bool operator!=(const ConstantM1& lhs, const ConstantM1& rhs) noexcept {
 #define EBIN(data) BOOST_PP_TUPLE_ELEM(2, data)
 #define GENERATE_LIST(z, n, _) BOOST_PP_COMMA_IF(n) n
 
-#define INSTANTIATE_M1_FUNCTION(_, data)                                      \
+#define INSTANTIATE_M1_FUNCTION_WITH_FRAME(_, data)                           \
   template tuples::TaggedTuple<TAG(data) < Frame::Inertial,                   \
                                NTYPE(data) < EBIN(data)>>>                    \
       ConstantM1::variables(                                                  \
@@ -123,7 +153,7 @@ bool operator!=(const ConstantM1& lhs, const ConstantM1& rhs) noexcept {
 #define temp_list \
   (BOOST_PP_REPEAT(MAX_NUMBER_OF_NEUTRINO_ENERGY_BINS, GENERATE_LIST, _))
 
-GENERATE_INSTANTIATIONS(INSTANTIATE_M1_FUNCTION,
+GENERATE_INSTANTIATIONS(INSTANTIATE_M1_FUNCTION_WITH_FRAME,
                         (RadiationTransport::M1Grey::Tags::TildeE,
                          RadiationTransport::M1Grey::Tags::TildeS),
                         (neutrinos::ElectronNeutrinos,
@@ -131,6 +161,38 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_M1_FUNCTION,
                          neutrinos::HeavyLeptonNeutrinos),
                         temp_list)
 
+#undef temp_list
+#undef INSTANTIATE_M1_FUNCTION_WITH_FRAME
+#undef TAG
+#undef NTYPE
+#undef EBIN
+#undef GENERATE_LIST
+
+#define TAG(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define NTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define EBIN(data) BOOST_PP_TUPLE_ELEM(2, data)
+#define GENERATE_LIST(z, n, _) BOOST_PP_COMMA_IF(n) n
+
+#define INSTANTIATE_M1_FUNCTION(_, data)                                       \
+  template tuples::TaggedTuple<TAG(data) < NTYPE(data) < EBIN(data)>>>         \
+      ConstantM1::variables(const tnsr::I<DataVector, 3>& x, double t,         \
+                            tmpl::list<TAG(data) < NTYPE(data) < EBIN(data)>>> \
+                            /*meta*/) const noexcept;
+
+#define temp_list \
+  (BOOST_PP_REPEAT(MAX_NUMBER_OF_NEUTRINO_ENERGY_BINS, GENERATE_LIST, _))
+
+GENERATE_INSTANTIATIONS(
+    INSTANTIATE_M1_FUNCTION,
+    (RadiationTransport::M1Grey::Tags::GreyEmissivity,
+     RadiationTransport::M1Grey::Tags::GreyAbsorptionOpacity,
+     RadiationTransport::M1Grey::Tags::GreyScatteringOpacity),
+    (neutrinos::ElectronNeutrinos, neutrinos::ElectronAntiNeutrinos,
+     neutrinos::HeavyLeptonNeutrinos),
+    temp_list)
+
+#undef INSTANTIATE_M1_FUNCTION
+#undef temp_list
 #undef TAG
 #undef NTYPE
 #undef EBIN
