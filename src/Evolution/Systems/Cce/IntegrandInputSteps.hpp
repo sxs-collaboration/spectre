@@ -91,7 +91,9 @@ template <>
 struct TagsToComputeForImpl<Tags::BondiW> {
   using pre_swsh_derivative_tags =
       tmpl::list<Tags::Dy<Tags::BondiU>, Tags::Dy<Tags::Dy<Tags::BondiU>>,
-                 Tags::Dy<::Tags::Multiplies<Tags::BondiJ, Tags::BondiJbar>>>;
+                 Tags::Dy<::Tags::Multiplies<Tags::BondiJ, Tags::BondiJbar>>,
+                 Tags::Dy<Spectral::Swsh::Tags::Derivative<
+                     Tags::BondiJ, Spectral::Swsh::Tags::Ethbar>>>;
   using swsh_derivative_tags = tmpl::list<
       Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiBeta>,
                                        Spectral::Swsh::Tags::Ethbar>,
@@ -122,7 +124,6 @@ struct TagsToComputeForImpl<Tags::BondiW> {
                  Spectral::Swsh::Tags::Derivative<
                      ::Tags::Multiplies<Tags::BondiJ, Tags::BondiJbar>,
                      Spectral::Swsh::Tags::EthEthbar>,
-
                  Spectral::Swsh::Tags::Derivative<
                      Tags::BondiJ, Spectral::Swsh::Tags::EthbarEthbar>,
                  Spectral::Swsh::Tags::Derivative<
@@ -250,7 +251,7 @@ struct second_swsh_derivative_tags_to_compute_for {
 
 template <typename Tag>
 using second_swsh_derivative_tags_to_compute_for_t =
-    typename single_swsh_derivative_tags_to_compute_for<Tag>::type;
+    typename second_swsh_derivative_tags_to_compute_for<Tag>::type;
 // @}
 
 /// Typelist of steps for `SwshDerivatives` mutations called on volume
