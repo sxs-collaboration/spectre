@@ -26,7 +26,7 @@
 #include "Utilities/PrintHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StlStreamDeclarations.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsStreamable.hpp"
 
 namespace StdHelpers_detail {
 // Helper classes for operator<< for tuples

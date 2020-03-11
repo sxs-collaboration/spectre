@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_GetFundamentalType.cpp
   Test_IsComplexOfFundamental.cpp
   Test_IsInteger.cpp
+  Test_IsStreamable.cpp
   Test_RemoveReferenceWrapper.cpp
   )
 

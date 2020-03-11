@@ -14,7 +14,7 @@
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsStreamable.hpp"
 
 namespace Parallel {
 namespace detail {

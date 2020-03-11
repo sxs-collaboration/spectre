@@ -1,28 +1,26 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Defines class tuples::TaggedTuple
-
 #pragma once
 
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
 #include <ostream>
+#include <stack>
+#include <string>
 #include <utility>
 
 #include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsStreamable.hpp"
 
-#include <initializer_list>
-#include <ostream>
-#include <stack>
-#include <string>
+/// \cond
 namespace PUP {
 class er;
 }  // namespace PUP
+/// \endcond
 
 namespace tuples {
 

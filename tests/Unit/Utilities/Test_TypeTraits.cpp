@@ -476,18 +476,3 @@ static_assert(not tt::is_maplike<std::vector<CClassInTestTypeTraits>>::value,
 static_assert(not tt::is_maplike<D>::value,
               "Failed testing type trait is_maplike");
 /// [is_maplike_example]
-
-/// [is_streamable_example]
-static_assert(
-    not tt::is_streamable<std::ostream, CClassInTestTypeTraits>::value,
-    "Failed testing type trait is_streamable");
-static_assert(
-    not tt::is_streamable_t<std::ostream, CClassInTestTypeTraits>::value,
-    "Failed testing type trait is_streamable");
-static_assert(not tt::is_streamable_v<std::ostream, CClassInTestTypeTraits>,
-              "Failed testing type trait is_streamable");
-static_assert(not tt::is_streamable<std::ostream, A>::value,
-              "Failed testing type trait is_streamable");
-static_assert(tt::is_streamable<std::ostream, D>::value,
-              "Failed testing type trait is_streamable");
-/// [is_streamable_example]
