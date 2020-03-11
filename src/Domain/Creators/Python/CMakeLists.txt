@@ -9,12 +9,20 @@ spectre_python_add_module(
   MODULE_PATH "Domain"
   SOURCES
   Bindings.cpp
+  Brick.cpp
   Cylinder.cpp
   DomainCreator.cpp
+  Interval.cpp
+  Rectangle.cpp
   )
 
 spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE
   DomainCreators
+  )
+
+spectre_python_add_dependencies(
+  ${LIBRARY}
+  PyDomain
   )
