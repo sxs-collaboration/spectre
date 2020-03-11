@@ -21,30 +21,43 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/CubicScale.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
+#include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Side.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Utilities/MakeWithRandomValues.hpp"
 
 // IWYU pragma: no_forward_declare domain::CoordinateMaps::Rotation
 // IWYU pragma: no_forward_declare Tensor
 
 namespace domain {
 namespace {
+template <size_t Dim>
+struct Directions : db::SimpleTag {
+  static std::string name() noexcept { return "Directions"; }
+  using type = std::unordered_set<Direction<Dim>>;
+};
+
 template <typename Map>
 void check(const Map& map,
            const std::array<std::array<double, Map::dim>, Map::dim>& expected) {
@@ -64,6 +77,121 @@ void check(const Map& map,
           lower_normal.get(i),
           DataVector(num_grid_points, -gsl::at(gsl::at(expected, d), i)));
     }
+  }
+}
+
+template <size_t Dim>
+std::unordered_set<Direction<Dim>> get_directions();
+
+template <>
+std::unordered_set<Direction<1>> get_directions<1>() {
+  return std::unordered_set<Direction<1>>{Direction<1>::upper_xi()};
+}
+
+template <>
+std::unordered_set<Direction<2>> get_directions<2>() {
+  return std::unordered_set<Direction<2>>{Direction<2>::upper_xi(),
+                                          Direction<2>::lower_eta()};
+}
+
+template <>
+std::unordered_set<Direction<3>> get_directions<3>() {
+  return std::unordered_set<Direction<3>>{Direction<3>::upper_xi(),
+                                          Direction<3>::lower_eta(),
+                                          Direction<3>::lower_zeta()};
+}
+
+template <size_t Dim>
+void check_time_dependent(
+    const ElementMap<Dim, Frame::Grid>& logical_to_grid_map,
+    const std::unique_ptr<CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>>&
+        grid_to_inertial_map,
+    const std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial,
+                                            Dim>>& logical_to_inertial_map,
+    const double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) {
+  const Mesh<Dim - 1> interface_mesh{Dim == 1 ? 1 : 3,
+                                     Spectral::Basis::Legendre,
+                                     Spectral::Quadrature::GaussLobatto};
+  for (size_t d = 0; d < Dim; ++d) {
+    const auto upper_normal = unnormalized_face_normal(
+        interface_mesh, logical_to_grid_map, *grid_to_inertial_map, time,
+        functions_of_time, Direction<Dim>(d, Side::Upper));
+    const auto lower_normal = unnormalized_face_normal(
+        interface_mesh, logical_to_grid_map, *grid_to_inertial_map, time,
+        functions_of_time, Direction<Dim>(d, Side::Lower));
+
+    const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+        inv_jacobian_upper = logical_to_inertial_map->inv_jacobian(
+            interface_logical_coordinates(interface_mesh,
+                                          Direction<Dim>(d, Side::Upper)),
+            time, functions_of_time);
+    const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+        inv_jacobian_lower = logical_to_inertial_map->inv_jacobian(
+            interface_logical_coordinates(interface_mesh,
+                                          Direction<Dim>(d, Side::Lower)),
+            time, functions_of_time);
+
+    for (size_t i = 0; i < Dim; ++i) {
+      CHECK_ITERABLE_APPROX(upper_normal.get(i),
+                            DataVector{inv_jacobian_upper.get(d, i)});
+      CHECK_ITERABLE_APPROX(lower_normal.get(i),
+                            DataVector{-inv_jacobian_lower.get(d, i)});
+    }
+  }
+
+  // Now check the compute items
+  const auto box = db::create<
+      db::AddSimpleTags<Tags::Element<Dim>, Directions<Dim>, Tags::Mesh<Dim>,
+                        Tags::ElementMap<Dim, Frame::Grid>,
+                        CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                            Frame::Inertial>,
+                        ::Tags::Time, Tags::FunctionsOfTime>,
+      db::AddComputeTags<
+          Tags::BoundaryDirectionsExterior<Dim>,
+          Tags::InterfaceCompute<Directions<Dim>, Tags::Direction<Dim>>,
+          Tags::InterfaceCompute<Directions<Dim>, Tags::InterfaceMesh<Dim>>,
+          Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<Dim>,
+                                 Tags::Direction<Dim>>,
+          Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<Dim>,
+                                 Tags::InterfaceMesh<Dim>>,
+          Tags::InterfaceCompute<
+              Tags::BoundaryDirectionsExterior<Dim>,
+              Tags::UnnormalizedFaceNormalMovingMeshCompute<Dim>>,
+          Tags::InterfaceCompute<
+              Directions<Dim>,
+              Tags::UnnormalizedFaceNormalMovingMeshCompute<Dim>>>>(
+      Element<Dim>(logical_to_grid_map.element_id(), {}), get_directions<Dim>(),
+      Mesh<Dim>{3, Spectral::Basis::Legendre,
+                Spectral::Quadrature::GaussLobatto},
+      ElementMap<Dim, Frame::Grid>(logical_to_grid_map.element_id(),
+                                   logical_to_grid_map.block_map().get_clone()),
+      grid_to_inertial_map->get_clone(), time,
+      clone_unique_ptrs(functions_of_time));
+
+  for (const auto& direction_and_face_normal :
+       db::get<Tags::Interface<Tags::BoundaryDirectionsExterior<Dim>,
+                               Tags::UnnormalizedFaceNormal<Dim>>>(box)) {
+    auto expected_normal = unnormalized_face_normal(
+        interface_mesh, logical_to_grid_map, *grid_to_inertial_map, time,
+        functions_of_time, direction_and_face_normal.first);
+    for (size_t i = 0; i < expected_normal.size(); ++i) {
+      expected_normal.get(i) *= -1.0;
+    }
+
+    CHECK_ITERABLE_APPROX(expected_normal, direction_and_face_normal.second);
+  }
+
+  for (const auto& direction_and_face_normal : db::get<
+           Tags::Interface<Directions<Dim>, Tags::UnnormalizedFaceNormal<Dim>>>(
+           box)) {
+    const auto expected_normal = unnormalized_face_normal(
+        interface_mesh, logical_to_grid_map, *grid_to_inertial_map, time,
+        functions_of_time, direction_and_face_normal.first);
+
+    CHECK_ITERABLE_APPROX(expected_normal, direction_and_face_normal.second);
   }
 }
 
@@ -127,27 +255,115 @@ void test_face_normal_element_map() {
         {{{{0.4, 0., 0.}}, {{0., 0.6, 0.8}}, {{0., -0.8, 0.6}}}});
 }
 
-struct Directions : db::SimpleTag {
-  static std::string name() noexcept { return "Directions"; }
-  using type = std::unordered_set<Direction<2>>;
-};
+void test_face_normal_moving_mesh() {
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> dist(-1., 1.);
+
+  const std::array<double, 4> times_to_check{{0.0, 0.3, 1.1, 7.8}};
+  const double outer_boundary = 10.0;
+  std::array<std::string, 2> functions_of_time_names{
+      {"ExpansionA", "ExpansionB"}};
+  using Polynomial = domain::FunctionsOfTime::PiecewisePolynomial<2>;
+  using FoftPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
+  std::unordered_map<std::string, FoftPtr> functions_of_time{};
+  const std::array<DataVector, 3> init_func_a{{{1.0}, {-0.1}, {0.0}}};
+  const std::array<DataVector, 3> init_func_b{{{1.0}, {0.0}, {0.0}}};
+  const double initial_time = 0.0;
+  functions_of_time["ExpansionA"] =
+      std::make_unique<Polynomial>(initial_time, init_func_a);
+  functions_of_time["ExpansionB"] =
+      std::make_unique<Polynomial>(initial_time, init_func_b);
+
+  {
+    INFO("1d");
+    const ElementMap<1, Frame::Grid> logical_to_grid_map(
+        ElementId<1>(0), make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                             CoordinateMaps::Affine(-1.0, 1.0, 2.0, 7.8)));
+    const auto grid_to_inertial_map =
+        make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            CoordMapsTimeDependent::CubicScale<1>{outer_boundary,
+                                                  functions_of_time_names[0],
+                                                  functions_of_time_names[1]});
+    const auto logical_to_inertial_map =
+        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            CoordinateMaps::Affine(-1.0, 1.0, 2.0, 7.8),
+            CoordMapsTimeDependent::CubicScale<1>{outer_boundary,
+                                                  functions_of_time_names[0],
+                                                  functions_of_time_names[1]});
+
+    for (const double time : times_to_check) {
+      check_time_dependent(logical_to_grid_map, grid_to_inertial_map,
+                           logical_to_inertial_map, time, functions_of_time);
+    }
+  }
+  {
+    INFO("2d");
+    const ElementMap<2, Frame::Grid> logical_to_grid_map(
+        ElementId<2>(0), make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                             CoordinateMaps::Rotation<2>(atan2(4., 3.))));
+    const auto grid_to_inertial_map =
+        make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            CoordMapsTimeDependent::CubicScale<2>{outer_boundary,
+                                                  functions_of_time_names[0],
+                                                  functions_of_time_names[1]});
+    const auto logical_to_inertial_map =
+        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            CoordinateMaps::Rotation<2>(atan2(4., 3.)),
+            CoordMapsTimeDependent::CubicScale<2>{outer_boundary,
+                                                  functions_of_time_names[0],
+                                                  functions_of_time_names[1]});
+
+    for (const double time : times_to_check) {
+      check_time_dependent(logical_to_grid_map, grid_to_inertial_map,
+                           logical_to_inertial_map, time, functions_of_time);
+    }
+  }
+  {
+    INFO("3d");
+    const ElementMap<3, Frame::Grid> logical_to_grid_map(
+        ElementId<3>(0),
+        make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+            CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                           CoordinateMaps::Rotation<2>>(
+                {-1., 1., 2., 7.},
+                CoordinateMaps::Rotation<2>(atan2(4., 3.)))));
+    const auto grid_to_inertial_map =
+        make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            CoordMapsTimeDependent::CubicScale<3>{outer_boundary,
+                                                  functions_of_time_names[0],
+                                                  functions_of_time_names[1]});
+    const auto logical_to_inertial_map =
+        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                           CoordinateMaps::Rotation<2>>(
+                {-1., 1., 2., 7.}, CoordinateMaps::Rotation<2>(atan2(4., 3.))),
+            CoordMapsTimeDependent::CubicScale<3>{outer_boundary,
+                                                  functions_of_time_names[0],
+                                                  functions_of_time_names[1]});
+
+    for (const double time : times_to_check) {
+      check_time_dependent(logical_to_grid_map, grid_to_inertial_map,
+                           logical_to_inertial_map, time, functions_of_time);
+    }
+  }
+}
 
 void test_compute_item() {
   INFO("Testing compute item");
   const auto box = db::create<
-      db::AddSimpleTags<Tags::Element<2>, Directions, Tags::Mesh<2>,
+      db::AddSimpleTags<Tags::Element<2>, Directions<2>, Tags::Mesh<2>,
                         Tags::ElementMap<2>>,
       db::AddComputeTags<
           Tags::BoundaryDirectionsExterior<2>,
-          Tags::InterfaceCompute<Directions, Tags::Direction<2>>,
-          Tags::InterfaceCompute<Directions, Tags::InterfaceMesh<2>>,
+          Tags::InterfaceCompute<Directions<2>, Tags::Direction<2>>,
+          Tags::InterfaceCompute<Directions<2>, Tags::InterfaceMesh<2>>,
           Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<2>,
                                  Tags::Direction<2>>,
           Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<2>,
                                  Tags::InterfaceMesh<2>>,
           Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<2>,
                                  Tags::UnnormalizedFaceNormalCompute<2>>,
-          Tags::InterfaceCompute<Directions,
+          Tags::InterfaceCompute<Directions<2>,
                                  Tags::UnnormalizedFaceNormalCompute<2>>>>(
       Element<2>(ElementId<2>(0), {}),
       std::unordered_set<Direction<2>>{Direction<2>::upper_xi(),
@@ -181,7 +397,8 @@ void test_compute_item() {
       tnsr::i<DataVector, 2>{{{{0.8, 0.8}, {-0.6, -0.6}}}};
 
   CHECK_ITERABLE_APPROX(
-      (get<Tags::Interface<Directions, Tags::UnnormalizedFaceNormal<2>>>(box)),
+      (get<Tags::Interface<Directions<2>, Tags::UnnormalizedFaceNormal<2>>>(
+          box)),
       expected);
   CHECK_ITERABLE_APPROX(
       (get<Tags::Interface<Tags::BoundaryDirectionsExterior<2>,
@@ -238,6 +455,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal", "[Unit][Domain]") {
   test_face_normal_coordinate_map();
   test_face_normal_element_map<Frame::Inertial>();
   test_face_normal_element_map<Frame::Grid>();
+  test_face_normal_moving_mesh();
   test_compute_item();
 }
 }  // namespace domain
