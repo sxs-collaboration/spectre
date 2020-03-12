@@ -51,9 +51,9 @@ void ZeroNonSmooth::operator()(
   get(*j).data() = 0.0;
   const double final_angular_coordinate_deviation =
       detail::adjust_angular_coordinates_for_j(
-          cartesian_cauchy_coordinates, angular_cauchy_coordinates,
+          j, cartesian_cauchy_coordinates, angular_cauchy_coordinates,
           get(boundary_j), l_max, angular_coordinate_tolerance_,
-          max_iterations_);
+          max_iterations_, false);
   if (final_angular_coordinate_deviation > angular_coordinate_tolerance_ and
       error_if_not_converged_) {
     ERROR(MakeString{}

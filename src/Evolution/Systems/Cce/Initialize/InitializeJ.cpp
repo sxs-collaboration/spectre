@@ -3,6 +3,7 @@
 
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 
+#include <complex>
 #include <cstddef>
 #include <memory>
 #include <type_traits>
@@ -37,12 +38,14 @@ namespace detail {
 // function becomes a bottleneck, the numerical procedure of the iterative
 // method should be revisited.
 double adjust_angular_coordinates_for_j(
+    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> volume_j,
     const gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_cauchy_coordinates,
     const gsl::not_null<
         tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
         angular_cauchy_coordinates,
     const SpinWeighted<ComplexDataVector, 2>& surface_j, const size_t l_max,
-    const double tolerance, const size_t max_steps) noexcept {
+    const double tolerance, const size_t max_steps,
+    const bool adjust_volume_gauge) noexcept {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
@@ -316,12 +319,22 @@ double adjust_angular_coordinates_for_j(
       Tags::CauchyCartesianCoords>::apply(angular_cauchy_coordinates,
                                           cartesian_cauchy_coordinates);
 
-  GaugeUpdateJacobianFromCoordinates<
-      Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
-      Tags::CauchyCartesianCoords>::apply(make_not_null(&gauge_c),
-                                          make_not_null(&gauge_d),
-                                          angular_cauchy_coordinates,
-                                          *cartesian_cauchy_coordinates, l_max);
+  if (adjust_volume_gauge) {
+    GaugeUpdateJacobianFromCoordinates<
+        Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
+        Tags::CauchyCartesianCoords>::apply(make_not_null(&gauge_c),
+                                            make_not_null(&gauge_d),
+                                            angular_cauchy_coordinates,
+                                            *cartesian_cauchy_coordinates,
+                                            l_max);
+
+    get(gauge_omega).data() =
+        0.5 * sqrt(get(gauge_d).data() * conj(get(gauge_d).data()) -
+                   get(gauge_c).data() * conj(get(gauge_c).data()));
+
+    GaugeAdjustInitialJ::apply(volume_j, gauge_c, gauge_d, gauge_omega,
+                               *angular_cauchy_coordinates, l_max);
+  }
   return max_error;
 }
 }  // namespace detail
