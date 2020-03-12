@@ -18,7 +18,13 @@
 // IWYU pragma: no_forward_declare hydro::Tags::RestMassDensity
 // IWYU pragma: no_forward_declare hydro::Tags::SpatialVelocity
 
+namespace gsl {
+template <typename>
+struct not_null;
+}  // namespace gsl
+
 namespace hydro {
+//@{
 /// Computes the vector \f$J^i\f$ in \f$\dot{M} = -\int J^i s_i d^2S\f$,
 /// representing the mass flux through a surface with normal \f$s_i\f$.
 ///
@@ -37,12 +43,22 @@ namespace hydro {
 /// \f$\gamma\f$ is the determinant of the 3-metric \f$\gamma_{ij}\f$,
 /// \f$\alpha\f$ is the lapse, and \f$\beta^i\f$ is the shift.
 template <typename DataType, size_t Dim, typename Frame>
+void mass_flux(gsl::not_null<tnsr::I<DataType, Dim, Frame>*> result,
+               const Scalar<DataType>& rest_mass_density,
+               const tnsr::I<DataType, Dim, Frame>& spatial_velocity,
+               const Scalar<DataType>& lorentz_factor,
+               const Scalar<DataType>& lapse,
+               const tnsr::I<DataType, Dim, Frame>& shift,
+               const Scalar<DataType>& sqrt_det_spatial_metric) noexcept;
+
+template <typename DataType, size_t Dim, typename Frame>
 tnsr::I<DataType, Dim, Frame> mass_flux(
     const Scalar<DataType>& rest_mass_density,
     const tnsr::I<DataType, Dim, Frame>& spatial_velocity,
     const Scalar<DataType>& lorentz_factor, const Scalar<DataType>& lapse,
     const tnsr::I<DataType, Dim, Frame>& shift,
     const Scalar<DataType>& sqrt_det_spatial_metric) noexcept;
+//@}
 
 namespace Tags {
 /// Compute item for mass flux vector \f$J^i\f$.
@@ -51,7 +67,6 @@ namespace Tags {
 template <typename DataType, size_t Dim, typename Frame>
 struct MassFluxCompute : MassFlux<DataType, Dim, Frame>,
                                db::ComputeTag {
-  static constexpr auto function = &mass_flux<DataType, Dim, Frame>;
   using argument_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
                  hydro::Tags::SpatialVelocity<DataType, Dim, Frame>,
@@ -59,6 +74,15 @@ struct MassFluxCompute : MassFlux<DataType, Dim, Frame>,
                  ::gr::Tags::Lapse<DataType>,
                  ::gr::Tags::Shift<Dim, Frame, DataType>,
                  ::gr::Tags::SqrtDetSpatialMetric<DataType>>;
+
+  using return_type = tnsr::I<DataType, Dim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::I<DataType, Dim, Frame>*>, const Scalar<DataType>&,
+      const tnsr::I<DataType, Dim, Frame>&, const Scalar<DataType>&,
+      const Scalar<DataType>&, const tnsr::I<DataType, Dim, Frame>&,
+      const Scalar<DataType>&) noexcept>(&mass_flux<DataType, Dim, Frame>);
+
   using base = MassFlux<DataType, Dim, Frame>;
 };
 }  // namespace Tags
