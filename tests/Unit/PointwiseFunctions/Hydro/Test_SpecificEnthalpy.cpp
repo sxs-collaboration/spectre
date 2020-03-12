@@ -22,8 +22,12 @@ template <typename DataType>
 void test_relativistic_specific_enthalpy(
     const DataType& used_for_size) noexcept {
   pypp::check_with_random_values<1>(
-      &hydro::relativistic_specific_enthalpy<DataType>, "TestFunctions",
-      "relativistic_specific_enthalpy", {{{0.01, 1.0}}}, used_for_size);
+      static_cast<Scalar<DataType> (*)(const Scalar<DataType>&,
+                                       const Scalar<DataType>&,
+                                       const Scalar<DataType>&) noexcept>(
+          &hydro::relativistic_specific_enthalpy<DataType>),
+      "TestFunctions", "relativistic_specific_enthalpy", {{{0.01, 1.0}}},
+      used_for_size);
 }
 }  // namespace
 
