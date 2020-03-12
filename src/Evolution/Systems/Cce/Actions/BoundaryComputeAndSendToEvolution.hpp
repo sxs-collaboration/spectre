@@ -7,7 +7,7 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Evolution/Systems/Cce/Actions/ReceiveWorldtubeData.hpp"
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"

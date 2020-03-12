@@ -6,7 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
-#include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/NewtonianEuler/Characteristics.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/NewtonianEuler/Fluxes.hpp"
@@ -15,13 +15,6 @@
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
-
-/// \cond
-namespace Tags {
-template <class>
-class Variables;
-}  // namespace Tags
-/// \endcond
 
 /// \ingroup EvolutionSystemsGroup
 /// \brief Items related to evolving the Newtonian Euler system

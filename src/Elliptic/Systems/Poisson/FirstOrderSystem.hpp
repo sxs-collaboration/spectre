@@ -8,7 +8,9 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Elliptic/Systems/Poisson/Equations.hpp"
 #include "Elliptic/Systems/Poisson/Geometry.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"
@@ -18,11 +20,6 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace Tags {
-template <typename>
-class Variables;
-}  // namespace Tags
-
 namespace LinearSolver {
 namespace Tags {
 template <typename>

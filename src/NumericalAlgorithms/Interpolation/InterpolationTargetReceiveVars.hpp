@@ -11,6 +11,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Gsl.hpp"
@@ -38,10 +39,6 @@ template <typename Metavariables>
 struct TemporalIds;
 }  // namespace Tags
 }  // namespace intrp
-namespace Tags {
-template <typename TagsList>
-struct Variables;
-}  // namespace Tags
 /// \endcond
 
 namespace intrp {

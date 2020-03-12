@@ -15,6 +15,7 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -41,28 +42,6 @@ class Tensor;
 template <typename TagsList>
 class Variables;
 /// \endcond
-
-namespace Tags {
-template <typename TagsList>
-struct Variables : db::SimpleTag {
-  static_assert(tt::is_a<tmpl::list, TagsList>::value,
-                "The TagsList passed to Tags::Variables is not a typelist");
-  using tags_list = TagsList;
-  using type = ::Variables<TagsList>;
-  static std::string name() noexcept {
-    std::string tag_name{"Variables("};
-    size_t iter = 0;
-    tmpl::for_each<TagsList>([&tag_name, &iter ](auto tag) noexcept {
-      tag_name += db::tag_name<tmpl::type_from<decltype(tag)>>();
-      if (iter + 1 != tmpl::size<TagsList>::value) {
-        tag_name += ",";
-      }
-      iter++;
-    });
-    return tag_name + ")";
-  }
-};
-}  // namespace Tags
 
 /*!
  * \ingroup DataStructuresGroup

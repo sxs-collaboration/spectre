@@ -5,14 +5,10 @@
 
 #include <cstddef>
 
+#include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Equations.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Utilities/TMPL.hpp"
-
-namespace Tags {
-template <class>
-class Variables;
-}  // Namespace Tags
 
 /*!
  * \ingroup EvolutionSystemsGroup

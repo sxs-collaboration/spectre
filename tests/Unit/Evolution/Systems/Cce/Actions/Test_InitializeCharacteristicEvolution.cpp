@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionScri.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionTime.hpp"
