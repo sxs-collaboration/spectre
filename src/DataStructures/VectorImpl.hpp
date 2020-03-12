@@ -583,23 +583,23 @@ std::ostream& operator<<(std::ostream& os,
  *
  * \param VECTOR_TYPE The vector type (e.g. `DataVector`)
  */
-#define MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(VECTOR_TYPE)                      \
-  namespace MakeWithValueImpls {                                              \
-  template <>                                                                 \
-  struct MakeWithValueImpl<VECTOR_TYPE, VECTOR_TYPE> {                        \
-    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE                                  \
-    apply(const VECTOR_TYPE& input,                                           \
-          const VECTOR_TYPE::value_type value) noexcept {                     \
-      return VECTOR_TYPE(input.size(), value);                                \
-    }                                                                         \
-  };                                                                          \
-  template <>                                                                 \
-  struct MakeWithValueImpl<VECTOR_TYPE, size_t> {                             \
-    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE                                  \
-    apply(const size_t& size, const VECTOR_TYPE::value_type value) noexcept { \
-      return VECTOR_TYPE(size, value);                                        \
-    }                                                                         \
-  };                                                                          \
+#define MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(VECTOR_TYPE)                     \
+  namespace MakeWithValueImpls {                                             \
+  template <>                                                                \
+  struct MakeWithValueImpl<VECTOR_TYPE, VECTOR_TYPE> {                       \
+    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE                                 \
+    apply(const VECTOR_TYPE& input,                                          \
+          const VECTOR_TYPE::value_type value) noexcept {                    \
+      return VECTOR_TYPE(input.size(), value);                               \
+    }                                                                        \
+  };                                                                         \
+  template <>                                                                \
+  struct MakeWithValueImpl<VECTOR_TYPE, size_t> {                            \
+    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE                                 \
+    apply(const size_t size, const VECTOR_TYPE::value_type value) noexcept { \
+      return VECTOR_TYPE(size, value);                                       \
+    }                                                                        \
+  };                                                                         \
   }  // namespace MakeWithValueImpls
 
 // {@

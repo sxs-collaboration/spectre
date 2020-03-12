@@ -230,7 +230,7 @@ struct HasConvergedCompute : LinearSolver::Tags::HasConverged, db::ComputeTag {
                  initial_residual_magnitude_tag>;
   static db::const_item_type<LinearSolver::Tags::HasConverged> function(
       const Convergence::Criteria& convergence_criteria,
-      const size_t& iteration_id, const double residual_magnitude,
+      const size_t iteration_id, const double residual_magnitude,
       const double initial_residual_magnitude) noexcept {
     return Convergence::HasConverged(convergence_criteria, iteration_id,
                                      residual_magnitude,
@@ -324,7 +324,7 @@ template <>
 struct NextCompute<LinearSolver::Tags::IterationId>
     : Next<LinearSolver::Tags::IterationId>, db::ComputeTag {
   using argument_tags = tmpl::list<LinearSolver::Tags::IterationId>;
-  static size_t function(const size_t& iteration_id) noexcept {
+  static size_t function(const size_t iteration_id) noexcept {
     return iteration_id + 1;
   }
 };

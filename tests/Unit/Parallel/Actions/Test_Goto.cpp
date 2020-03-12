@@ -23,7 +23,7 @@ struct Counter : db::SimpleTag {
 
 struct HasConverged : db::ComputeTag {
   using argument_tags = tmpl::list<Counter>;
-  static bool function(const size_t& counter) noexcept { return counter >= 2; }
+  static bool function(const size_t counter) noexcept { return counter >= 2; }
   static std::string name() noexcept { return "HasConverged"; }
 };
 
