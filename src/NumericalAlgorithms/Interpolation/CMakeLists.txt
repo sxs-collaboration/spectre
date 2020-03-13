@@ -27,8 +27,10 @@ add_dependencies(
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE ApparentHorizons
-  INTERFACE Domain
-  INTERFACE ErrorHandling
-  INTERFACE Spectral
+  PUBLIC
+  ApparentHorizons
+  Blas
+  Domain
+  ErrorHandling
+  Spectral
   )

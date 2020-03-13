@@ -18,8 +18,10 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE DataStructures
-  INTERFACE Domain
-  INTERFACE ErrorHandling
-  INTERFACE Spectral
+  PUBLIC
+  Blas
+  DataStructures
+  Domain
+  ErrorHandling
+  Spectral
   )
