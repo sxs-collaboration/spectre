@@ -35,6 +35,8 @@ class er;
 template <size_t VolumeDim>
 class ElementId {
  public:
+  static constexpr size_t volume_dim = VolumeDim;
+
   /// Default constructor needed for Charm++ serialization.
   constexpr ElementId() = default;
 

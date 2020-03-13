@@ -16,6 +16,9 @@
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
 template <size_t VolumeDim>
+constexpr size_t ElementId<VolumeDim>::volume_dim;
+
+template <size_t VolumeDim>
 ElementId<VolumeDim>::ElementId(const size_t block_id) noexcept
     : block_id_{block_id},
       segment_ids_(make_array<VolumeDim>(SegmentId(0, 0))) {}
