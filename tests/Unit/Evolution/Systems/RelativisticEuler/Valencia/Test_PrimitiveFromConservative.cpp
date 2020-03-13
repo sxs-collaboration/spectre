@@ -20,6 +20,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Overloader.hpp"
+#include "tests/Unit/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "tests/Unit/PointwiseFunctions/Hydro/TestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -34,12 +35,12 @@ void test_primitive_from_conservative(
         equation_of_state,
     const DataVector& used_for_size) noexcept {
   const auto expected_rest_mass_density =
-      hydro::TestHelpers::random_density(generator, used_for_size);
+      TestHelpers::hydro::random_density(generator, used_for_size);
   const auto expected_lorentz_factor =
-      hydro::TestHelpers::random_lorentz_factor(generator, used_for_size);
+      TestHelpers::hydro::random_lorentz_factor(generator, used_for_size);
   const auto spatial_metric =
-      hydro::TestHelpers::random_spatial_metric<Dim>(generator, used_for_size);
-  const auto expected_spatial_velocity = hydro::TestHelpers::random_velocity(
+      TestHelpers::gr::random_spatial_metric<Dim>(generator, used_for_size);
+  const auto expected_spatial_velocity = TestHelpers::hydro::random_velocity(
       generator, expected_lorentz_factor, spatial_metric);
   const auto expected_specific_internal_energy = make_overloader(
       [&expected_rest_mass_density](
@@ -52,7 +53,7 @@ void test_primitive_from_conservative(
        &used_for_size ](const EquationsOfState::EquationOfState<true, 2>&
                         /*the_equation_of_state*/) noexcept {
         // note this call assumes an ideal fluid
-        return hydro::TestHelpers::random_specific_internal_energy(
+        return TestHelpers::hydro::random_specific_internal_energy(
             generator, used_for_size);
       })(equation_of_state);
   const auto expected_pressure = make_overloader(

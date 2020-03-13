@@ -12,6 +12,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "tests/Unit/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "tests/Unit/PointwiseFunctions/Hydro/TestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -20,11 +21,11 @@ template <size_t Dim, typename DataType>
 void test_spatial_velocity(const gsl::not_null<std::mt19937*> generator,
                            const DataType& used_for_size) noexcept {
   const auto metric =
-      hydro::TestHelpers::random_spatial_metric<Dim>(generator, used_for_size);
+      TestHelpers::gr::random_spatial_metric<Dim>(generator, used_for_size);
   const auto lorentz_factor =
-      hydro::TestHelpers::random_lorentz_factor(generator, used_for_size);
+      TestHelpers::hydro::random_lorentz_factor(generator, used_for_size);
   const auto spatial_velocity =
-      hydro::TestHelpers::random_velocity(generator, lorentz_factor, metric);
+      TestHelpers::hydro::random_velocity(generator, lorentz_factor, metric);
   CHECK_ITERABLE_APPROX(
       get(dot_product(spatial_velocity, spatial_velocity, metric)),
       1.0 - 1.0 / square(get(lorentz_factor)));

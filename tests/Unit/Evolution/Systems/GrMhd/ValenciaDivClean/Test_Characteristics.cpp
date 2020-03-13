@@ -17,6 +17,7 @@
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
+#include "tests/Unit/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "tests/Unit/PointwiseFunctions/Hydro/TestHelpers.hpp"
 #include "tests/Unit/Pypp/Pypp.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
@@ -47,7 +48,8 @@ void test_characteristic_speeds(const DataVector& /*used_for_size*/) noexcept {
 void test_with_normal_along_coordinate_axes(
     const DataVector& used_for_size) noexcept {
   MAKE_GENERATOR(generator);
-  namespace helper = hydro::TestHelpers;
+  namespace helper = TestHelpers::hydro;
+  namespace gr_helper = TestHelpers::gr;
   const auto nn_gen = make_not_null(&generator);
   const auto rest_mass_density = helper::random_density(nn_gen, used_for_size);
   EquationsOfState::PolytropicFluid<true> eos(0.001, 4.0 / 3.0);
@@ -56,10 +58,10 @@ void test_with_normal_along_coordinate_axes(
   const auto specific_enthalpy =
       eos.specific_enthalpy_from_density(rest_mass_density);
 
-  const auto lapse = helper::random_lapse(nn_gen, used_for_size);
-  const auto shift = helper::random_shift<3>(nn_gen, used_for_size);
+  const auto lapse = gr_helper::random_lapse(nn_gen, used_for_size);
+  const auto shift = gr_helper::random_shift<3>(nn_gen, used_for_size);
   const auto spatial_metric =
-      helper::random_spatial_metric<3>(nn_gen, used_for_size);
+      gr_helper::random_spatial_metric<3>(nn_gen, used_for_size);
   const auto lorentz_factor =
       helper::random_lorentz_factor(nn_gen, used_for_size);
   const auto spatial_velocity =

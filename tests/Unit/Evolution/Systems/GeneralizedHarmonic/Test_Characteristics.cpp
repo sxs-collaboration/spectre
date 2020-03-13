@@ -3,11 +3,14 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <limits>
 #include <memory>
 #include <pup.h>
+#include <random>
 
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
@@ -31,11 +34,16 @@
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
+#include "tests/Unit/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
+#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Utilities/MakeWithRandomValues.hpp"
+#include "tests/Utilities/RandomUnitNormal.hpp"
 
 // IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::Pi
 // IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::Phi
@@ -543,76 +551,71 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Characteristics",
                                                    lower_bound, upper_bound);
 }
 
+namespace {
+template <size_t Dim>
+void check_max_char_speed(const DataVector& used_for_size) noexcept {
+  CAPTURE(Dim);
+  MAKE_GENERATOR(gen);
+
+  // Fraction of times the test can randomly fail
+  const double failure_tolerance = 1e-10;
+  // Minimum fraction of the claimed result that must be found in some
+  // random trial
+  const double check_minimum = 0.9;
+  // Minimum fraction of the claimed result that can be found in any
+  // random trial (generally only important for 1D where the random
+  // vector will point along the maximum speed direction)
+  const double check_maximum = 1.0 + 1e-12;
+
+  double trial_failure_rate;
+  if (Dim == 1) {
+    // The correct value is actually 0.0, but we don't want to take
+    // the logarithm of 0.
+    trial_failure_rate = 0.1;
+  } else if (Dim == 2) {
+    trial_failure_rate = 1.0 - 2.0 * acos(check_minimum) / M_PI;
+  } else {
+    trial_failure_rate = check_minimum;
+  }
+  const size_t trials =
+      static_cast<size_t>(log(failure_tolerance) / log(trial_failure_rate)) + 1;
+
+  const auto lapse = TestHelpers::gr::random_lapse(&gen, used_for_size);
+  const auto shift = TestHelpers::gr::random_shift<Dim>(&gen, used_for_size);
+  const auto spatial_metric =
+      TestHelpers::gr::random_spatial_metric<Dim>(&gen, used_for_size);
+  std::uniform_real_distribution<> gamma_1_dist(-5.0, 5.0);
+  const auto gamma_1 = make_with_random_values<Scalar<DataVector>>(
+      make_not_null(&gen), make_not_null(&gamma_1_dist), used_for_size);
+  const double max_char_speed =
+      GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+          Dim, Frame::Inertial>::apply(gamma_1, lapse, shift, spatial_metric);
+
+  double maximum_observed = -std::numeric_limits<double>::infinity();
+  for (size_t i = 0; i < trials; ++i) {
+    const auto unit_one_form = raise_or_lower_index(
+        random_unit_normal(&gen, spatial_metric), spatial_metric);
+
+    const auto characteristic_speeds =
+        GeneralizedHarmonic::characteristic_speeds(gamma_1, lapse, shift,
+                                                   unit_one_form);
+    double max_speed_in_chosen_direction = 0.0;
+    for (const auto& speed : characteristic_speeds) {
+      max_speed_in_chosen_direction =
+          std::max(max_speed_in_chosen_direction, max(abs(speed)));
+    }
+
+    CHECK(max_speed_in_chosen_direction <= max_char_speed * check_maximum);
+    maximum_observed =
+        std::max(maximum_observed, max_speed_in_chosen_direction);
+  }
+  CHECK(maximum_observed >= check_minimum * max_char_speed);
+}
+}  // namespace
+
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.MaxCharSpeed",
                   "[Unit][Evolution]") {
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            1, Frame::Grid>::apply({{DataVector{1., 4., 3., 2., 5.},
-                                     DataVector{2., 8., 10., 6., 4.},
-                                     DataVector{1., 7., 3., 2., 5.},
-                                     DataVector{7., 3., 4., 2., 1.}}}) == 10.);
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            1, Frame::Grid>::apply({{DataVector{1., 4., 3., 2., 5.},
-                                     DataVector{2., 8., 10., 6., 4.},
-                                     DataVector{1., 7., 3., -11., 5.},
-                                     DataVector{7., 3., 4., 2., 1.}}}) == 11.);
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            1, Frame::Inertial>::apply({{DataVector{1., 4., 3., 2., 5.},
-                                         DataVector{2., 8., 10., 6., 4.},
-                                         DataVector{1., 7., 3., 2., 5.},
-                                         DataVector{7., 3., 4., 2., 1.}}}) ==
-        10.);
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            1, Frame::Inertial>::apply({{DataVector{1., 4., 3., 2., 5.},
-                                         DataVector{2., 8., 10., 6., 4.},
-                                         DataVector{1., 7., 3., -11., 5.},
-                                         DataVector{7., 3., 4., 2., 1.}}}) ==
-        11.);
-
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            2, Frame::Grid>::apply({{DataVector{1., 4., 3., 2., 5.},
-                                     DataVector{2., 8., 7., 6., 4.},
-                                     DataVector{1., 10., 3., 2., 5.},
-                                     DataVector{7., 3., 4., 2., 1.}}}) == 10.);
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            2, Frame::Grid>::apply({{DataVector{1., 4., 3., 2., 5.},
-                                     DataVector{2., 8., 10., 6., 4.},
-                                     DataVector{1., 7., 3., 1., 5.},
-                                     DataVector{7., 3., 4., 2., -11.}}}) ==
-        11.);
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            2, Frame::Inertial>::apply({{DataVector{1., 4., 3., 2., 5.},
-                                         DataVector{2., 8., 7., 6., 4.},
-                                         DataVector{1., 10., 3., 2., 5.},
-                                         DataVector{7., 3., 4., 2., 1.}}}) ==
-        10.);
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            2, Frame::Inertial>::apply({{DataVector{1., 4., 3., 2., 5.},
-                                         DataVector{2., 8., 10., 6., 4.},
-                                         DataVector{1., 7., 3., 1., 5.},
-                                         DataVector{7., 3., 4., 2., -11.}}}) ==
-        11.);
-
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            3, Frame::Grid>::apply({{DataVector{1., 4., 10., 2., 5.},
-                                     DataVector{2., 8., 3., 6., 4.},
-                                     DataVector{1., 7., 3., 2., 5.},
-                                     DataVector{7., 3., 4., 2., 1.}}}) == 10.);
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            3, Frame::Grid>::apply({{DataVector{1., 4., 3., 2., 5.},
-                                     DataVector{2., 8., 10., 6., 4.},
-                                     DataVector{1., 7., 3., 2., 5.},
-                                     DataVector{7., 3., 4., -11., 1.}}}) ==
-        11.);
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            3, Frame::Inertial>::apply({{DataVector{1., 4., 10., 2., 5.},
-                                         DataVector{2., 8., 3., 6., 4.},
-                                         DataVector{1., 7., 3., 2., 5.},
-                                         DataVector{7., 3., 4., 2., 1.}}}) ==
-        10.);
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            3, Frame::Inertial>::apply({{DataVector{1., 4., 3., 2., 5.},
-                                         DataVector{2., 8., 10., 6., 4.},
-                                         DataVector{1., 7., 3., 2., 5.},
-                                         DataVector{7., 3., 4., -11., 1.}}}) ==
-        11.);
+  check_max_char_speed<1>(DataVector(5));
+  check_max_char_speed<2>(DataVector(5));
+  check_max_char_speed<3>(DataVector(5));
 }

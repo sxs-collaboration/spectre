@@ -3,11 +3,12 @@
 
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 
-#include <algorithm>
+#include <algorithm>  // IWYU pragma: keep
 #include <array>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
@@ -166,11 +167,12 @@ evolved_fields_from_characteristic_fields(
 
 template <size_t Dim, typename Frame>
 double ComputeLargestCharacteristicSpeed<Dim, Frame>::apply(
-    const std::array<DataVector, 4>& char_speeds) noexcept {
-  std::array<double, 4> max_speeds{
-      {max(abs(char_speeds.at(0))), max(abs(char_speeds.at(1))),
-       max(abs(char_speeds.at(2))), max(abs(char_speeds.at(3)))}};
-  return *std::max_element(max_speeds.begin(), max_speeds.end());
+    const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const tnsr::ii<DataVector, Dim, Frame>& spatial_metric) noexcept {
+  const auto shift_magnitude = magnitude(shift, spatial_metric);
+  return std::max(max(abs(1. + get(gamma_1)) * get(shift_magnitude)),
+                  max(get(shift_magnitude) + get(lapse)));
 }
 }  // namespace GeneralizedHarmonic
 

@@ -48,7 +48,7 @@ template <typename DataType>
 void test_sound_speed_squared(const DataType& used_for_size) noexcept {
   MAKE_GENERATOR(generator);
 
-  const auto rest_mass_density = hydro::TestHelpers::random_density(
+  const auto rest_mass_density = TestHelpers::hydro::random_density(
       make_not_null(&generator), used_for_size);
   Scalar<DataType> specific_internal_energy{};
   Scalar<DataType> specific_enthalpy{};
@@ -71,7 +71,7 @@ void test_sound_speed_squared(const DataType& used_for_size) noexcept {
   // check with representative equation of state of two independent variables
   const EquationsOfState::IdealFluid<true> eos_2d(5.0 / 3.0);
   specific_internal_energy =
-      hydro::TestHelpers::random_specific_internal_energy(
+      TestHelpers::hydro::random_specific_internal_energy(
           make_not_null(&generator), used_for_size);
   specific_enthalpy = eos_2d.specific_enthalpy_from_density_and_energy(
       rest_mass_density, specific_internal_energy);

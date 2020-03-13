@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <array>
 #include <cstddef>
 
 #include "DataStructures/DataBox/Tag.hpp"
@@ -243,7 +242,13 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
  */
 template <size_t Dim, typename Frame>
 struct ComputeLargestCharacteristicSpeed {
-  using argument_tags = tmpl::list<Tags::CharacteristicSpeeds<Dim, Frame>>;
-  static double apply(const std::array<DataVector, 4>& char_speeds) noexcept;
+  using argument_tags =
+      tmpl::list<Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<Dim, Frame, DataVector>,
+                 gr::Tags::SpatialMetric<Dim, Frame, DataVector>>;
+  static double apply(
+      const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
+      const tnsr::I<DataVector, Dim, Frame>& shift,
+      const tnsr::ii<DataVector, Dim, Frame>& spatial_metric) noexcept;
 };
 }  // namespace GeneralizedHarmonic

@@ -19,5 +19,5 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/Hydro/"
   "${LIBRARY_SOURCES}"
-  "Test_Pypp;Hydro"
+  "Hydro;Test_GeneralRelativity;Test_Pypp"
   )

@@ -17,8 +17,8 @@
 #include "tests/Utilities/RandomUnitNormal.hpp"
 
 /// \cond
-namespace hydro {
 namespace TestHelpers {
+namespace hydro {
 template <typename DataType>
 Scalar<DataType> random_density(const gsl::not_null<std::mt19937*> generator,
                                 const DataType& used_for_size) noexcept {
@@ -112,36 +112,6 @@ Scalar<DataType> random_divergence_cleaning_field(
       generator, make_not_null(&distribution), used_for_size);
 }
 
-template <typename DataType>
-Scalar<DataType> random_lapse(const gsl::not_null<std::mt19937*> generator,
-                              const DataType& used_for_size) noexcept {
-  std::uniform_real_distribution<> distribution(0.0, 3.0);
-  return make_with_random_values<Scalar<DataType>>(
-      generator, make_not_null(&distribution), used_for_size);
-}
-
-template <size_t Dim, typename DataType>
-tnsr::I<DataType, Dim> random_shift(
-    const gsl::not_null<std::mt19937*> generator,
-    const DataType& used_for_size) noexcept {
-  std::uniform_real_distribution<> distribution(-1.0, 1.0);
-  return make_with_random_values<tnsr::I<DataType, Dim>>(
-      generator, make_not_null(&distribution), used_for_size);
-}
-
-template <size_t Dim, typename DataType>
-tnsr::ii<DataType, Dim> random_spatial_metric(
-    const gsl::not_null<std::mt19937*> generator,
-    const DataType& used_for_size) noexcept {
-  std::uniform_real_distribution<> distribution(-0.05, 0.05);
-  auto spatial_metric = make_with_random_values<tnsr::ii<DataType, Dim>>(
-      generator, make_not_null(&distribution), used_for_size);
-  for (size_t d = 0; d < Dim; ++d) {
-    spatial_metric.get(d, d) += 1.0;
-  }
-  return spatial_metric;
-}
-
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
@@ -160,9 +130,6 @@ tnsr::ii<DataType, Dim> random_spatial_metric(
       const DTYPE(data) & used_for_size) noexcept;               \
   template Scalar<DTYPE(data)> random_divergence_cleaning_field( \
       const gsl::not_null<std::mt19937*> generator,              \
-      const DTYPE(data) & used_for_size) noexcept;               \
-  template Scalar<DTYPE(data)> random_lapse(                     \
-      const gsl::not_null<std::mt19937*> generator,              \
       const DTYPE(data) & used_for_size) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (double, DataVector))
@@ -171,13 +138,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (double, DataVector))
   template tnsr::I<DTYPE(data), DIM(data)> random_velocity(             \
       const gsl::not_null<std::mt19937*> generator,                     \
       const Scalar<DTYPE(data)>& lorentz_factor,                        \
-      const tnsr::ii<DTYPE(data), DIM(data)>& spatial_metric) noexcept; \
-  template tnsr::I<DTYPE(data), DIM(data)> random_shift(                \
-      const gsl::not_null<std::mt19937*> generator,                     \
-      const DTYPE(data) & used_for_size) noexcept;                      \
-  template tnsr::ii<DTYPE(data), DIM(data)> random_spatial_metric(      \
-      const gsl::not_null<std::mt19937*> generator,                     \
-      const DTYPE(data) & used_for_size) noexcept;
+      const tnsr::ii<DTYPE(data), DIM(data)>& spatial_metric) noexcept;
 
 template tnsr::I<double, 3> random_magnetic_field(
     const gsl::not_null<std::mt19937*> generator,
@@ -191,9 +152,9 @@ template tnsr::I<DataVector, 3> random_magnetic_field(
 GENERATE_INSTANTIATIONS(INSTANTIATE_TENSORS, (double, DataVector), (1, 2, 3))
 
 #undef INSTANTIATE_SCALARS
-#undef INSTANTIATE_VECTORS
+#undef INSTANTIATE_TENSORS
 #undef DIM
 #undef DTYPE
-}  // namespace TestHelpers
 }  // namespace hydro
+}  // namespace TestHelpers
 /// \endcond

@@ -18,5 +18,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/GeneralizedHarmonic/"
   "${LIBRARY_SOURCES}"
-  "GeneralizedHarmonic"
+  "GeneralizedHarmonic;Test_GeneralRelativity"
   )
