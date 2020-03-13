@@ -20,6 +20,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Numeric.hpp"
+#include "Utilities/Tuple.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
@@ -34,52 +35,6 @@ struct OperatorAppliedTo : db::SimpleTag, db::PrefixTag {
 };
 
 }  // namespace Tags
-
-namespace detail {
-
-template <typename System,
-          typename FluxesArgs =
-              tmpl::transform<typename System::fluxes::argument_tags,
-                              tmpl::bind<db::const_item_type, tmpl::_1>>,
-          typename FluxesArgsIndices =
-              std::make_index_sequence<tmpl::size<FluxesArgs>::value>,
-          typename SourcesArgs =
-              tmpl::transform<typename System::sources::argument_tags,
-                              tmpl::bind<db::const_item_type, tmpl::_1>>,
-          typename SourcesArgsIndices =
-              std::make_index_sequence<tmpl::size<SourcesArgs>::value>>
-struct ExpandTuplesImpl;
-
-template <typename System, typename... FluxesArgs, size_t... FluxesArgsIndices,
-          typename... SourcesArgs, size_t... SourcesArgsIndices>
-struct ExpandTuplesImpl<System, tmpl::list<FluxesArgs...>,
-                        std::index_sequence<FluxesArgsIndices...>,
-                        tmpl::list<SourcesArgs...>,
-                        std::index_sequence<SourcesArgsIndices...>> {
-  static constexpr size_t volume_dim = System::volume_dim;
-  using all_fields = db::get_variables_tags_list<typename System::fields_tag>;
-  using primal_fields = typename System::primal_fields;
-  using auxiliary_fields = typename System::auxiliary_fields;
-
-  static auto first_order_fluxes(
-      const Variables<all_fields>& vars,
-      const typename System::fluxes& fluxes_computer,
-      const std::tuple<FluxesArgs...>& fluxes_args) noexcept {
-    return elliptic::first_order_fluxes<volume_dim, primal_fields,
-                                        auxiliary_fields>(
-        vars, fluxes_computer, get<FluxesArgsIndices>(fluxes_args)...);
-  }
-
-  static auto first_order_sources(
-      const Variables<all_fields>& vars,
-      const std::tuple<SourcesArgs...>& sources_args) noexcept {
-    return elliptic::first_order_sources<primal_fields, auxiliary_fields,
-                                         typename System::sources>(
-        vars, get<SourcesArgsIndices>(sources_args)...);
-  }
-};
-
-}  // namespace detail
 
 /// \ingroup TestingFrameworkGroup
 /// Test that the `solution` numerically solves the `System` on the given grid
@@ -96,6 +51,8 @@ void verify_solution(
     const std::tuple<FluxesArgs...>& fluxes_args = std::tuple<>{},
     const std::tuple<SourcesArgs...>& sources_args = std::tuple<>{}) {
   using all_fields = db::get_variables_tags_list<typename System::fields_tag>;
+  using primal_fields = typename System::primal_fields;
+  using auxiliary_fields = typename System::auxiliary_fields;
 
   const size_t num_points = mesh.number_of_grid_points();
   const auto logical_coords = logical_coordinates(mesh);
@@ -104,12 +61,23 @@ void verify_solution(
       solution.variables(inertial_coords, all_fields{}));
 
   // Apply operator to solution fields
-  auto fluxes = detail::ExpandTuplesImpl<System>::first_order_fluxes(
-      solution_fields, fluxes_computer, fluxes_args);
+  auto fluxes = cpp17::apply(
+      [&solution_fields,
+       &fluxes_computer](const auto&... expanded_fluxes_args) {
+        return ::elliptic::first_order_fluxes<System::volume_dim, primal_fields,
+                                              auxiliary_fields>(
+            solution_fields, fluxes_computer, expanded_fluxes_args...);
+      },
+      fluxes_args);
   auto div_fluxes = divergence(std::move(fluxes), mesh,
                                coord_map.inv_jacobian(logical_coords));
-  auto sources = detail::ExpandTuplesImpl<System>::first_order_sources(
-      solution_fields, sources_args);
+  auto sources = cpp17::apply(
+      [&solution_fields](const auto&... expanded_sources_args) {
+        return ::elliptic::first_order_sources<primal_fields, auxiliary_fields,
+                                               typename System::sources>(
+            solution_fields, expanded_sources_args...);
+      },
+      sources_args);
   Variables<db::wrap_tags_in<Tags::OperatorAppliedTo, all_fields>>
       operator_applied_to_fields{num_points};
   elliptic::first_order_operator(make_not_null(&operator_applied_to_fields),
@@ -120,8 +88,7 @@ void verify_solution(
   Variables<db::wrap_tags_in<::Tags::FixedSource, all_fields>> fixed_sources{
       num_points, 0.};
   fixed_sources.assign_subset(solution.variables(
-      inertial_coords,
-      db::wrap_tags_in<::Tags::FixedSource, typename System::primal_fields>{}));
+      inertial_coords, db::wrap_tags_in<::Tags::FixedSource, primal_fields>{}));
 
   // Check error norms against the given tolerance
   tmpl::for_each<all_fields>([&operator_applied_to_fields, &fixed_sources,
