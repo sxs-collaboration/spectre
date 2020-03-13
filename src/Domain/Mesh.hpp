@@ -48,6 +48,8 @@ enum class Quadrature;
 template <size_t Dim>
 class Mesh {
  public:
+  static constexpr size_t dim = Dim;
+
   Mesh() noexcept = default;
 
   /*!

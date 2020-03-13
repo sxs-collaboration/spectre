@@ -18,11 +18,11 @@ Mesh<Dim - 1> Mesh<Dim>::slice_away(const size_t d) const noexcept {
   ASSERT(d < Dim, "Tried to slice away non-existing dimension "
                       << d << " of " << Dim << "-dimensional mesh.");
   std::array<size_t, Dim - 1> dims{};
-  for (size_t dim = 0; dim < d; dim++) {
-    gsl::at(dims, dim) = dim;
+  for (size_t i = 0; i < d; i++) {
+    gsl::at(dims, i) = i;
   }
-  for (size_t dim = d + 1; dim < Dim; dim++) {
-    gsl::at(dims, dim - 1) = dim;
+  for (size_t i = d + 1; i < Dim; i++) {
+    gsl::at(dims, i - 1) = i;
   }
   return slice_through(dims);
 }
@@ -41,10 +41,10 @@ Mesh<SliceDim> Mesh<Dim>::slice_through(
   std::array<Spectral::Basis, SliceDim> slice_bases{};
   std::array<Spectral::Quadrature, SliceDim> slice_quadratures{};
   for (size_t i = 0; i < SliceDim; ++i) {
-    const auto& dim = gsl::at(dims, i);
-    ASSERT(dim < Dim, "Tried to slice through non-existing dimension "
-                          << dim << " of " << Dim << "-dimensional mesh.");
-    gsl::at(slice_extents, i) = gsl::at(extents_.indices(), dim);
+    const auto& d = gsl::at(dims, i);
+    ASSERT(d < Dim, "Tried to slice through non-existing dimension "
+                        << d << " of " << Dim << "-dimensional mesh.");
+    gsl::at(slice_extents, i) = gsl::at(extents_.indices(), d);
     gsl::at(slice_bases, i) = gsl::at(bases_, gsl::at(dims, i));
     gsl::at(slice_quadratures, i) = gsl::at(quadratures_, gsl::at(dims, i));
   }
