@@ -29,6 +29,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
+#include "Utilities/TypeTraits/IsCallable.hpp"
 
 // IWYU pragma: no_forward_declare brigand::get_destination
 // IWYU pragma: no_forward_declare brigand::get_source

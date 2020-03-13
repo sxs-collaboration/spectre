@@ -372,20 +372,3 @@ static_assert(tt::has_inequivalence_t<CClassInTestTypeTraits>::value,
 static_assert(tt::has_inequivalence_v<CClassInTestTypeTraits>,
               "Failed testing type trait has_inequivalence");
 /// [has_inequivalence_example]
-
-/// [is_callable_example]
-static_assert(not tt::is_callable<A, int, double>::value,
-              "Failed testing type trait is_callable");
-static_assert(not tt::is_callable<A, int>::value,
-              "Failed testing type trait is_callable");
-static_assert(tt::is_callable<A>::value,
-              "Failed testing type trait is_callable");
-static_assert(tt::is_callable<BClassInTestTypeTraits, int, double>::value,
-              "Failed testing type trait is_callable");
-static_assert(tt::is_callable_t<BClassInTestTypeTraits, int, double>::value,
-              "Failed testing type trait is_callable");
-static_assert(tt::is_callable_v<BClassInTestTypeTraits, int, double>,
-              "Failed testing type trait is_callable");
-static_assert(not tt::is_callable<BClassInTestTypeTraits>::value,
-              "Failed testing type trait is_callable");
-/// [is_callable_example]

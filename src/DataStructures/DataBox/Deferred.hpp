@@ -17,6 +17,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsCallable.hpp"
 
 template <typename Rt, typename MakeConstReference = std::false_type>
 class Deferred;

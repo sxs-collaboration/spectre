@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_CreateIsCallable.cpp
   Test_FunctionInfo.cpp
   Test_GetFundamentalType.cpp
+  Test_IsCallable.cpp
   Test_IsComplexOfFundamental.cpp
   Test_IsInteger.cpp
   Test_IsMaplike.cpp
