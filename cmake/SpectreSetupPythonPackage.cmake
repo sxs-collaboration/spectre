@@ -30,6 +30,8 @@ configure_file(
   "${CMAKE_BINARY_DIR}/tmp/LoadPython.sh"
   "${CMAKE_BINARY_DIR}/bin/LoadPython.sh")
 
+add_custom_target(all-pybindings)
+
 # Add a python module, either with or without python bindings and with
 # or without additional python files. If bindings are being provided then
 # the library will be named Py${MODULE_NAME}, e.g. if MODULE_NAME is
@@ -121,6 +123,7 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       )
     set(SPECTRE_PYTHON_MODULE_IMPORT "from ._${ARG_LIBRARY_NAME} import *")
     add_dependencies(test-executables ${ARG_LIBRARY_NAME})
+    add_dependencies(all-pybindings ${ARG_LIBRARY_NAME})
   endif(BUILD_PYTHON_BINDINGS AND NOT "${ARG_SOURCES}" STREQUAL "")
 
   # Read the __init__.py file if it exists
