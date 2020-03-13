@@ -18,7 +18,7 @@
 #include "Parallel/Printf.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 namespace RootFinder {
 namespace gsl_multiroot_detail {

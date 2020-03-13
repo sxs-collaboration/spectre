@@ -7,6 +7,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
+#include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 namespace dg {
 /// \ref protocols related to Discontinuous Galerkin functionality
