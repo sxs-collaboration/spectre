@@ -20,6 +20,7 @@
 #include "Parallel/Exit.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsMaplike.hpp"
 
 /// \cond
 // The macro SPECTRE_TEST_REGISTER_FUNCTION is defined inside the

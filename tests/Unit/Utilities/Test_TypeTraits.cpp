@@ -461,18 +461,3 @@ static_assert(not has_foobar_alias_v<testing_create_has_type_alias, int>,
               "Failed testing CREATE_HAS_TYPE_ALIAS");
 /// [CREATE_HAS_TYPE_ALIAS]
 }  // namespace
-
-/// [is_maplike_example]
-static_assert(tt::is_maplike<std::unordered_map<int, double>>::value,
-              "Failed testing type trait is_maplike");
-static_assert(tt::is_maplike_t<std::unordered_map<int, double>>::value,
-              "Failed testing type trait is_maplike");
-static_assert(tt::is_maplike_v<std::unordered_map<int, double>>,
-              "Failed testing type trait is_maplike");
-static_assert(tt::is_maplike<std::map<int, CClassInTestTypeTraits>>::value,
-              "Failed testing type trait is_maplike");
-static_assert(not tt::is_maplike<std::vector<CClassInTestTypeTraits>>::value,
-              "Failed testing type trait is_maplike");
-static_assert(not tt::is_maplike<D>::value,
-              "Failed testing type trait is_maplike");
-/// [is_maplike_example]
