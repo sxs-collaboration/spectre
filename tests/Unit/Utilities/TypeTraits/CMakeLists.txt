@@ -4,6 +4,7 @@
 set(LIBRARY "Test_TypeTraits")
 
 set(LIBRARY_SOURCES
+  Test_CreateHasStaticMemberVariable.cpp
   Test_CreateHasTypeAlias.cpp
   Test_FunctionInfo.cpp
   Test_GetFundamentalType.cpp
