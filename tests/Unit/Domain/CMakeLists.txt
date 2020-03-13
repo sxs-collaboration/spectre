@@ -38,6 +38,7 @@ set(LIBRARY_SOURCES
   Test_Side.cpp
   Test_SizeOfElement.cpp
   Test_Tags.cpp
+  Test_TagsCharacteristicSpeeds.cpp
   Test_TagsTimeDependent.cpp
   )
 
