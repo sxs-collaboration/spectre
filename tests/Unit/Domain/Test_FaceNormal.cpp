@@ -112,8 +112,7 @@ void check_time_dependent(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) {
-  const Mesh<Dim - 1> interface_mesh{Dim == 1 ? 1 : 3,
-                                     Spectral::Basis::Legendre,
+  const Mesh<Dim - 1> interface_mesh{3, Spectral::Basis::Legendre,
                                      Spectral::Quadrature::GaussLobatto};
   for (size_t d = 0; d < Dim; ++d) {
     const auto upper_normal = unnormalized_face_normal(
@@ -434,8 +433,8 @@ void test_compute_item() {
 
   auto invert = [](std::unordered_map<Direction<2>, tnsr::i<DataVector, 2>>
                        map_of_vectors) noexcept {
-    for(auto& vector : map_of_vectors) {
-      for(auto& dv : vector.second){
+    for (auto& vector : map_of_vectors) {
+      for (auto& dv : vector.second) {
         dv *= -1.;
       }
     }
