@@ -388,8 +388,9 @@ make_neighbor_data_from_neighbor_vars(
 
 template <size_t VolumeDim>
 void test_weno_work(
-    const Limiters::WenoType& weno_type, const Element<VolumeDim>& element,
-    const Mesh<VolumeDim>& mesh,
+    const Limiters::WenoType& weno_type,
+    const Limiters::Weno_detail::DerivativeWeight derivative_weight,
+    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
     const Variables<tmpl::list<ScalarTag, VectorTag<VolumeDim>>>& local_vars,
     const std::unordered_map<
@@ -467,8 +468,7 @@ void test_weno_work(
   }
   Limiters::Weno_detail::reconstruct_from_weighted_sum(
       make_not_null(&get(expected_scalar)), mesh, neighbor_linear_weight,
-      expected_neighbor_polynomials,
-      Limiters::Weno_detail::DerivativeWeight::Unity);
+      expected_neighbor_polynomials, derivative_weight);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_scalar, scalar, local_approx);
 
   auto expected_vector = get<VectorTag<VolumeDim>>(local_vars);
@@ -479,8 +479,7 @@ void test_weno_work(
     }
     Limiters::Weno_detail::reconstruct_from_weighted_sum(
         make_not_null(&(expected_vector.get(i))), mesh, neighbor_linear_weight,
-        expected_neighbor_polynomials,
-        Limiters::Weno_detail::DerivativeWeight::Unity);
+        expected_neighbor_polynomials, derivative_weight);
   }
   CHECK_ITERABLE_CUSTOM_APPROX(expected_vector, vector, local_approx);
 }
@@ -560,8 +559,10 @@ void test_simple_weno_1d(const std::unordered_set<Direction<1>>&
   const auto neighbor_data = make_neighbor_data_from_neighbor_vars(
       element, mesh, element_size, neighbor_vars);
 
-  test_weno_work<1>(Limiters::WenoType::SimpleWeno, element, mesh, element_size,
-                    local_vars, neighbor_data, neighbor_modified_vars);
+  test_weno_work<1>(Limiters::WenoType::SimpleWeno,
+                    Limiters::Weno_detail::DerivativeWeight::PowTwoEll, element,
+                    mesh, element_size, local_vars, neighbor_data,
+                    neighbor_modified_vars);
 }
 
 void test_simple_weno_2d(const std::unordered_set<Direction<2>>&
@@ -686,8 +687,10 @@ void test_simple_weno_2d(const std::unordered_set<Direction<2>>&
   const auto neighbor_data = make_neighbor_data_from_neighbor_vars(
       element, mesh, element_size, neighbor_vars);
 
-  test_weno_work<2>(Limiters::WenoType::SimpleWeno, element, mesh, element_size,
-                    local_vars, neighbor_data, neighbor_modified_vars);
+  test_weno_work<2>(Limiters::WenoType::SimpleWeno,
+                    Limiters::Weno_detail::DerivativeWeight::PowTwoEll, element,
+                    mesh, element_size, local_vars, neighbor_data,
+                    neighbor_modified_vars);
 }
 
 void test_simple_weno_3d(const std::unordered_set<Direction<3>>&
@@ -866,9 +869,10 @@ void test_simple_weno_3d(const std::unordered_set<Direction<3>>&
 
   // The 3D Simple WENO solution has slightly larger numerical error
   Approx custom_approx = Approx::custom().epsilon(1.e-11).scale(1.0);
-  test_weno_work<3>(Limiters::WenoType::SimpleWeno, element, mesh, element_size,
-                    local_vars, neighbor_data, neighbor_modified_vars,
-                    custom_approx);
+  test_weno_work<3>(Limiters::WenoType::SimpleWeno,
+                    Limiters::Weno_detail::DerivativeWeight::PowTwoEll, element,
+                    mesh, element_size, local_vars, neighbor_data,
+                    neighbor_modified_vars, custom_approx);
 }
 
 void test_hweno_1d(const std::unordered_set<Direction<1>>&
@@ -957,8 +961,10 @@ void test_hweno_1d(const std::unordered_set<Direction<1>>&
         mesh, neighbor_data, upper_xi);
   }
 
-  test_weno_work<1>(Limiters::WenoType::Hweno, element, mesh, element_size,
-                    local_vars, neighbor_data, neighbor_modified_vars);
+  test_weno_work<1>(Limiters::WenoType::Hweno,
+                    Limiters::Weno_detail::DerivativeWeight::Unity, element,
+                    mesh, element_size, local_vars, neighbor_data,
+                    neighbor_modified_vars);
 }
 
 }  // namespace

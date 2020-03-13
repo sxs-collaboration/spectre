@@ -26,6 +26,7 @@
 #include "Evolution/DiscontinuousGalerkin/Limiters/HwenoModifiedSolution.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodTci.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/SimpleWenoImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoGridHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoType.hpp"
@@ -291,28 +292,25 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
     }
   });
 
-  // Troubled-cell detection for WENO flags the element for limiting if any
-  // component of any tensor needs limiting.
-  const double tci_tvb_constant = 0.0;
-  const bool cell_is_troubled =
-      Tci::tvb_minmod_indicator<VolumeDim, PackagedData, Tags...>(
-          tci_tvb_constant, (*tensors)..., mesh, element, element_size,
-          neighbor_data);
-
-  if (not cell_is_troubled) {
-    // No limiting is needed
-    return false;
-  }
-
-  // Compute the modified solutions from each neighbor, for each tensor
-  // component. For this step, each WenoType requires a different treatment.
-  std::unordered_map<
-      std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-      Variables<tmpl::list<Tags...>>,
-      boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
-      modified_neighbor_solutions;
-
   if (weno_type_ == WenoType::Hweno) {
+    // Troubled-cell detection for HWENO flags the element for limiting if any
+    // component of any tensor needs limiting.
+    const double tci_tvb_constant = 0.0;
+    const bool cell_is_troubled =
+        Tci::tvb_minmod_indicator<VolumeDim, PackagedData, Tags...>(
+            tci_tvb_constant, (*tensors)..., mesh, element, element_size,
+            neighbor_data);
+    if (not cell_is_troubled) {
+      // No limiting is needed
+      return false;
+    }
+
+    std::unordered_map<
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+        Variables<tmpl::list<Tags...>>,
+        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+        modified_neighbor_solutions;
+
     // For each neighbor, the HWENO fits are done one tensor at a time.
     for (const auto& neighbor_and_data : neighbor_data) {
       modified_neighbor_solutions[neighbor_and_data.first].initialize(
@@ -332,71 +330,98 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
       return '0';
     };
     expand_pack(wrap_hweno_neighbor_solution_one_tensor(Tags{}, tensors)...);
-  } else if (weno_type_ == WenoType::SimpleWeno) {
-    // For each neighbor, the simple WENO data is obtained by extrapolation,
-    // with a constant offset added to preserve the correct mean value.
-    // The extrapolation step is done on the entire Variables:
-    for (const auto& neighbor_and_data : neighbor_data) {
-      const auto& neighbor = neighbor_and_data.first;
-      const auto& direction = neighbor.first;
-      const auto& data = neighbor_and_data.second;
-      const auto& source_mesh = data.mesh;
-      const auto target_1d_logical_coords =
-          Weno_detail::local_grid_points_in_neighbor_logical_coords(
-              mesh, source_mesh, element, direction);
-      const intrp::RegularGrid<VolumeDim> interpolant(source_mesh, mesh,
-                                                      target_1d_logical_coords);
-      modified_neighbor_solutions.insert(
-          std::make_pair(neighbor, interpolant.interpolate(data.volume_data)));
-    }
 
-    // Then the correction is added one tensor component at a time:
-    const auto wrap_mean_correction = [&mesh, &modified_neighbor_solutions ](
-        auto tag, const auto tensor) noexcept {
+    // Reconstruct WENO solution from local solution and modified neighbor
+    // solutions.
+    const auto wrap_reconstruct_one_tensor =
+        [ this, &mesh, &
+          modified_neighbor_solutions ](auto tag, const auto tensor) noexcept {
+      // This is an inefficient copying of data. This is only done as a
+      // temporary intermediate step during a larger refactor that will later
+      // delete this code block.
+      std::unordered_map<
+          std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
+          boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+          neighbor_polynomials;
       for (size_t i = 0; i < tensor->size(); ++i) {
-        const double local_mean = mean_value((*tensor)[i], mesh);
-        for (auto& kv : modified_neighbor_solutions) {
-          DataVector& neighbor_component_to_correct =
-              get<decltype(tag)>(kv.second)[i];
-          const double neighbor_mean =
-              mean_value(neighbor_component_to_correct, mesh);
-          neighbor_component_to_correct += local_mean - neighbor_mean;
+        neighbor_polynomials.clear();
+        for (const auto& neighbor_and_vars : modified_neighbor_solutions) {
+          const auto& neighbor = neighbor_and_vars.first;
+          const auto& vars = neighbor_and_vars.second;
+          neighbor_polynomials[neighbor] = get<decltype(tag)>(vars)[i];
+        }
+        Weno_detail::reconstruct_from_weighted_sum(
+            make_not_null(&(*tensor)[i]), mesh, neighbor_linear_weight_,
+            neighbor_polynomials, Weno_detail::DerivativeWeight::Unity);
+      }
+      return '0';
+    };
+    expand_pack(wrap_reconstruct_one_tensor(Tags{}, tensors)...);
+    return true;  // cell_is_troubled
+
+  } else if (weno_type_ == WenoType::SimpleWeno) {
+    // Buffers and pre-computations for TCI
+    Minmod_detail::BufferWrapper<VolumeDim> tci_buffer(mesh);
+    const auto effective_neighbor_sizes =
+        Minmod_detail::compute_effective_neighbor_sizes(element, neighbor_data);
+
+    // Buffers for simple WENO implementation
+    std::unordered_map<
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+        intrp::RegularGrid<VolumeDim>,
+        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+        interpolator_buffer{};
+    std::unordered_map<
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
+        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
+        modified_neighbor_solution_buffer{};
+
+    bool some_component_was_limited = false;
+
+    const auto wrap_minmod_tci_and_simple_weno_impl = [
+      this, &some_component_was_limited, &tci_buffer, &interpolator_buffer,
+      &modified_neighbor_solution_buffer, &mesh, &element, &element_size,
+      &neighbor_data, &effective_neighbor_sizes
+    ](auto tag, const auto tensor) noexcept {
+      for (size_t tensor_storage_index = 0;
+           tensor_storage_index < tensor->size(); ++tensor_storage_index) {
+        // Check TCI
+        const double tvb_constant = 0.0;
+        const auto effective_neighbor_means =
+            Minmod_detail::compute_effective_neighbor_means<decltype(tag)>(
+                tensor_storage_index, element, neighbor_data);
+        const bool component_needs_limiting = Tci::tvb_minmod_indicator(
+            make_not_null(&tci_buffer), tvb_constant,
+            (*tensor)[tensor_storage_index], mesh, element, element_size,
+            effective_neighbor_means, effective_neighbor_sizes);
+
+        if (component_needs_limiting) {
+          if (modified_neighbor_solution_buffer.empty()) {
+            // Allocate the neighbor solution buffers only if the limiter is
+            // triggered. This reduces allocation when no limiting occurs.
+            for (const auto& neighbor_and_data : neighbor_data) {
+              const auto& neighbor = neighbor_and_data.first;
+              modified_neighbor_solution_buffer.insert(make_pair(
+                  neighbor, DataVector(mesh.number_of_grid_points())));
+            }
+          }
+          Weno_detail::simple_weno_impl<decltype(tag)>(
+              make_not_null(&interpolator_buffer),
+              make_not_null(&modified_neighbor_solution_buffer), tensor,
+              neighbor_linear_weight_, tensor_storage_index, mesh, element,
+              neighbor_data);
+          some_component_was_limited = true;
         }
       }
       return '0';
     };
-    expand_pack(wrap_mean_correction(Tags{}, tensors)...);
+    expand_pack(wrap_minmod_tci_and_simple_weno_impl(Tags{}, tensors)...);
+    return some_component_was_limited;  // cell_is_troubled
   } else {
     ERROR("WENO limiter not implemented for WenoType: " << weno_type_);
   }
 
-  // Reconstruct WENO solution from local solution and modified neighbor
-  // solutions.
-  const auto wrap_reconstruct_one_tensor =
-      [ this, &mesh, &
-        modified_neighbor_solutions ](auto tag, const auto tensor) noexcept {
-    // This is an inefficient copying of data. This is only done as a temporary
-    // intermediated step during a larger refactor that will later delete this
-    // code block.
-    std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
-        neighbor_polynomials;
-    for (size_t i = 0; i < tensor->size(); ++i) {
-      neighbor_polynomials.clear();
-      for (const auto& neighbor_and_vars : modified_neighbor_solutions) {
-        const auto& neighbor = neighbor_and_vars.first;
-        const auto& vars = neighbor_and_vars.second;
-        neighbor_polynomials[neighbor] = get<decltype(tag)>(vars)[i];
-      }
-      Weno_detail::reconstruct_from_weighted_sum(
-          make_not_null(&(*tensor)[i]), mesh, neighbor_linear_weight_,
-          neighbor_polynomials, Weno_detail::DerivativeWeight::Unity);
-    }
-    return '0';
-  };
-  expand_pack(wrap_reconstruct_one_tensor(Tags{}, tensors)...);
-  return true;  // cell_is_troubled
+  return false;  // cell_is_troubled
 }
 
 template <size_t LocalDim, typename LocalTagList>
