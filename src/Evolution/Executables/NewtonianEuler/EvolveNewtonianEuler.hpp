@@ -36,6 +36,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/Hll.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
@@ -92,6 +93,9 @@ class CProxy_ConstGlobalCache;
 template <size_t Dim, typename InitialData>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
+  static constexpr dg::Formulation dg_formulation =
+      dg::Formulation::StrongInertial;
+
   using initial_data = InitialData;
   static_assert(
       evolution::is_analytic_data_v<initial_data> xor
@@ -178,7 +182,8 @@ struct EvolutionMetavars {
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<has_source_terms, Actions::ComputeVolumeSources,
                           tmpl::list<>>,
-      Actions::ComputeTimeDerivative<evolution::dg::ConservativeDuDt<system>>,
+      Actions::ComputeTimeDerivative<
+          evolution::dg::ConservativeDuDt<system, dg_formulation>>,
       tmpl::conditional_t<
           evolution::is_analytic_solution_v<initial_data>,
           dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,

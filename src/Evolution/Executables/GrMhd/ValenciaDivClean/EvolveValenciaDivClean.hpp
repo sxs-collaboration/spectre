@@ -44,6 +44,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"
@@ -148,6 +149,8 @@ struct Horizon {
 template <typename InitialData, typename...InterpolationTargetTags>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = 3;
+  static constexpr dg::Formulation dg_formulation =
+      dg::Formulation::StrongInertial;
   using initial_data = InitialData;
   static_assert(
       evolution::is_analytic_data_v<initial_data> xor
@@ -239,7 +242,8 @@ struct EvolutionMetavars {
       Actions::ComputeVolumeFluxes,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
       Actions::ComputeVolumeSources,
-      Actions::ComputeTimeDerivative<evolution::dg::ConservativeDuDt<system>>,
+      Actions::ComputeTimeDerivative<
+          evolution::dg::ConservativeDuDt<system, dg_formulation>>,
       tmpl::conditional_t<
           evolution::is_analytic_solution_v<initial_data>,
           dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,

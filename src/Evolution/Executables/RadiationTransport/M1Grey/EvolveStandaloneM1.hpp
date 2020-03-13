@@ -38,6 +38,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
@@ -92,6 +93,9 @@ class CProxy_ConstGlobalCache;
 
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = 3;
+  static constexpr dg::Formulation dg_formulation =
+      dg::Formulation::StrongInertial;
+
   // To switch which initial data is evolved you only need to change the
   // line `using initial_data = ...;` and include the header file for the
   // solution.
@@ -163,7 +167,8 @@ struct EvolutionMetavars {
       Actions::ComputeVolumeFluxes,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
       Actions::ComputeVolumeSources,
-      Actions::ComputeTimeDerivative<evolution::dg::ConservativeDuDt<system>>,
+      Actions::ComputeTimeDerivative<
+          evolution::dg::ConservativeDuDt<system, dg_formulation>>,
       tmpl::conditional_t<
           evolution::is_analytic_solution_v<initial_data>,
           dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,

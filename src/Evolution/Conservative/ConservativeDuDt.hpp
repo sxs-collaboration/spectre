@@ -14,6 +14,7 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -29,7 +30,7 @@ namespace dg {
 ///
 /// Source terms are only added for variables in the
 /// `System::sourced_variables` type list.
-template <typename System>
+template <typename System, ::dg::Formulation DgFormulation>
 struct ConservativeDuDt {
   static constexpr size_t volume_dim = System::volume_dim;
   using frame = Frame::Inertial;
@@ -57,6 +58,10 @@ struct ConservativeDuDt {
                                               Frame::Inertial>...>>& fluxes,
       const Variables<tmpl::list<::Tags::Source<VarsTags>...>>&
           sources) noexcept {
+    static_assert(DgFormulation == ::dg::Formulation::StrongInertial,
+                  "Curently only support StrongInertial DG formulation in "
+                  "ConservativeDuDt.");
+
     const Variables<tmpl::list<::Tags::div<
         ::Tags::Flux<VarsTags, tmpl::size_t<Dim>, Frame::Inertial>>...>>
         div_fluxes = divergence(fluxes, mesh, inverse_jacobian);
