@@ -27,7 +27,7 @@ void multiply_in_first_dimension(const gsl::not_null<double*> result,
                matrix.columns(),  // columns of matrix and rows of u
                1.0,               // overall multiplier
                matrix.data(),     // matrix
-               matrix.rows(),     // rows of matrix
+               matrix.spacing(),  // rows of matrix including padding
                data,              // u
                matrix.columns(),  // rows of u
                0.0,               // multiplier for unused term

@@ -88,9 +88,9 @@ struct DivTrait<ComplexModalVector, double> {
   using Type = ComplexModalVector;
 };
 
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION < 6))
 template <typename Operator>
-struct UnaryMapTrait<ComplexModalVector, Operator> {
+struct MapTrait<ComplexModalVector, Operator> {
   // Selectively allow unary operations for spectral coefficients
   static_assert(
       tmpl::list_contains_v<
@@ -108,26 +108,24 @@ struct UnaryMapTrait<ComplexModalVector, Operator> {
   using Type = ComplexModalVector;
 };
 template <>
-struct UnaryMapTrait<ComplexModalVector, blaze::Imag> {
+struct MapTrait<ComplexModalVector, blaze::Imag> {
   using Type = ModalVector;
 };
 template <>
-struct UnaryMapTrait<ComplexModalVector, blaze::Real> {
-  using Type = ModalVector;
-};
-// for consistency with the std::imag and std::real, these operations should be
-// supported on real types
-template <>
-struct UnaryMapTrait<ModalVector, blaze::Imag> {
+struct MapTrait<ComplexModalVector, blaze::Real> {
   using Type = ModalVector;
 };
 template <>
-struct UnaryMapTrait<ModalVector, blaze::Real> {
+struct MapTrait<ModalVector, blaze::Imag> {
+  using Type = ModalVector;
+};
+template <>
+struct MapTrait<ModalVector, blaze::Real> {
   using Type = ModalVector;
 };
 
 template <typename Operator>
-struct BinaryMapTrait<ComplexModalVector, ComplexModalVector, Operator> {
+struct MapTrait<ComplexModalVector, ComplexModalVector, Operator> {
   // Forbid math operations in this specialization of BinaryMap traits for
   // ComplexModalVector that are unlikely to be used on spectral coefficients.
   // Currently no non-arithmetic binary operations are supported.
@@ -149,7 +147,15 @@ struct MapTrait<ComplexModalVector, Operator> {
                      blaze::SubScalarRhs<ComplexModalVector::ElementType>,
                      blaze::SubScalarLhs<ComplexModalVector::ElementType>,
                      blaze::AddScalar<double>, blaze::SubScalarRhs<double>,
-                     blaze::SubScalarLhs<double>>,
+                     blaze::SubScalarLhs<double>,
+                     blaze::Bind1st<blaze::Add, std::complex<double>>,
+                     blaze::Bind2nd<blaze::Add, std::complex<double>>,
+                     blaze::Bind1st<blaze::Sub, std::complex<double>>,
+                     blaze::Bind2nd<blaze::Sub, std::complex<double>>,
+                     blaze::Bind1st<blaze::Add, double>,
+                     blaze::Bind2nd<blaze::Add, double>,
+                     blaze::Bind1st<blaze::Sub, double>,
+                     blaze::Bind2nd<blaze::Sub, double>>,
           Operator>,
       "Only unary operations permitted on a ComplexModalVector are:"
       " conj, imag, and real");
@@ -200,8 +206,8 @@ namespace blaze {
 // ComplexModalVector. This does *not* prevent taking the norm of the square (or
 // some other math expression) of a ComplexModalVector.
 template <typename Abs, typename Power>
-struct DVecNormHelper<PointerVector<std::complex<double>, false, false, false,
-                                    ComplexModalVector>,
+struct DVecNormHelper<PointerVector<std::complex<double>, blaze_unaligned,
+                                    blaze_unpadded, false, ComplexModalVector>,
                       Abs, Power> {};
 }  // namespace blaze
 /// \endcond

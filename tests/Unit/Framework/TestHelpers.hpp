@@ -133,6 +133,35 @@ void test_move_semantics(T&& a, const T& comparison, Args&&... args) {
   CHECK(c == comparison);
 }
 
+/// Test for move semantics assuming operator== is implemented correctly.
+/// \requires `std::is_rvalue_reference<decltype(a)>::%value` is true.
+/// This version is included for use with the rare type that (likely
+/// incorrectly) has not marked the move assignment and move construction
+/// operators `noexcept`
+template <typename T, Requires<tt::has_equivalence<T>::value> = nullptr,
+          typename... Args>
+void test_throwing_move_semantics(T&& a, const T& comparison,
+                                  Args&&... args) noexcept {
+  static_assert(std::is_rvalue_reference<decltype(a)>::value,
+                "Must move into test_move_semantics");
+  static_assert(std::is_move_assignable<T>::value,
+                "Class is not nothrow move assignable.");
+  static_assert(std::is_move_constructible<T>::value,
+                "Class is not nothrow move constructible.");
+  if (&a == &comparison or a != comparison) {
+    // We use ERROR instead of ASSERT (which we normally should be using) to
+    // guard against someone writing tests in Release mode where ASSERTs don't
+    // show up.
+    ERROR("'a' and 'comparison' must be distinct (but equal in value) objects");
+  }
+  T b(std::forward<Args>(args)...);
+  // clang-tidy: use std::forward instead of std::move
+  b = std::move(a);  // NOLINT
+  CHECK(b == comparison);
+  T c(std::move(b));
+  CHECK(c == comparison);
+}
+
 // Test for iterators
 template <typename Container>
 void test_iterators(Container& c) {

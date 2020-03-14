@@ -21,8 +21,8 @@ DataVector integrate(const DataVector& u, const Mesh<1>& mesh) noexcept {
   const size_t num_pts = mesh.number_of_grid_points();
   DataVector result(num_pts, 0.0);
   const Matrix& indef_int_with_constant = integration_matrix(mesh);
-  dgemv_('N', num_pts, num_pts, 1.0, indef_int_with_constant.data(), num_pts,
-         u.data(), 1, 0.0, result.data(), 1);
+  dgemv_('N', num_pts, num_pts, 1.0, indef_int_with_constant.data(),
+         indef_int_with_constant.spacing(), u.data(), 1, 0.0, result.data(), 1);
   return result;
 }
 

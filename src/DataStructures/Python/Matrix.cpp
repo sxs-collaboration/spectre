@@ -50,7 +50,7 @@ void bind_matrix(py::module& m) {  // NOLINT
             {matrix.rows(), matrix.columns()},
             // Stride for each index (in bytes). Data is stored
             // in column-major layout (see `Matrix.hpp`).
-            {sizeof(double), sizeof(double) * matrix.rows()});
+            {sizeof(double), sizeof(double) * matrix.spacing()});
       })
       .def_property_readonly(
           "shape",

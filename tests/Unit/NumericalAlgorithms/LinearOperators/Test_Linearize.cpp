@@ -45,7 +45,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Linearize",
             const auto slice_points = mesh.extents(d);
             DataVector u_s(slice_points);
             dgemv_('N', slice_points, slice_points, 1., inv_v.data(),
-                   slice_points, u_lin.data() + s.offset(),  // NOLINT
+                   inv_v.spacing(), u_lin.data() + s.offset(),  // NOLINT
                    s.stride(), 0.0, u_s.data(), 1);
             for (size_t i = 2; i < slice_points; ++i) {
               CHECK(0.0 == approx(u_s[i]));
@@ -112,7 +112,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeInOneDim",
             const auto slice_points = mesh.extents(d);
             DataVector u_s(slice_points);
             dgemv_('N', slice_points, slice_points, 1., inv_v.data(),
-                   slice_points, u_lin.data() + s.offset(),  // NOLINT
+                   inv_v.spacing(), u_lin.data() + s.offset(),  // NOLINT
                    s.stride(), 0.0, u_s.data(), 1);
             for (size_t i = 2; i < slice_points; ++i) {
               CHECK(0.0 == approx(u_s[i]));

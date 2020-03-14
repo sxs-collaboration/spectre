@@ -24,8 +24,19 @@
  * the [Blaze
  * documentation](https://bitbucket.org/blaze-lib/blaze/wiki/Matrices) for
  * information on how to use it.
+ *
+ * \warning In Blaze 3.7, a combination of changes were made such that our use
+ * of `DynamicMatrix` winds up with non-optional padding associated with the
+ * length of vector registers on the target hardware, which often adds some
+ * number of zeros to the fastest-varying dimension. To be compatible with
+ * LAPACK calls in Blaze 3.7, it is necessary to use `blaze::columnMajor`
+ * ordering (the current default storage order for this custom class) and to
+ * provide `spacing()` to the LAPACK `LDA`, `LDB`, etc. parameters
+ * whenever using the `data()` pointer from this class. This is a defect that is
+ * expected to be solved by additional configuration options in future versions
+ * of Blaze.
  */
-template <typename T, bool SO = blaze::defaultStorageOrder>
+template <typename T, bool SO = blaze::columnMajor>
 class DenseMatrix : public blaze::DynamicMatrix<T, SO> {
  public:
   // Inherit constructors
@@ -41,10 +52,11 @@ class DenseMatrix : public blaze::DynamicMatrix<T, SO> {
     if (p.isUnpacking()) {
       blaze::DynamicMatrix<T, SO>::resize(rows, columns);
     }
+    auto spacing = blaze::DynamicMatrix<T, SO>::spacing();
     if (cpp17::is_fundamental_v<T>) {
-      PUParray(p, blaze::DynamicMatrix<T, SO>::data(), rows * columns);
+      PUParray(p, blaze::DynamicMatrix<T, SO>::data(), columns * spacing);
     } else {
-      for (size_t i = 0; i < rows * columns; i++) {
+      for (size_t i = 0; i < columns * spacing; i++) {
         p | blaze::DynamicMatrix<T, SO>::data()[i];
       }
     }

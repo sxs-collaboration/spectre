@@ -24,11 +24,16 @@ constexpr bool useStreaming = true;
 constexpr bool useOptimizedKernels = true;
 }
 
+namespace blaze {
+constexpr bool useDefaultInitialization = false;
+}
+
 // Override SMP configurations
 #define _BLAZE_SYSTEM_SMP_H_
 #define BLAZE_USE_SHARED_MEMORY_PARALLELIZATION 0
 #define BLAZE_OPENMP_PARALLEL_MODE 0
 #define BLAZE_CPP_THREADS_PARALLEL_MODE 0
+#define BLAZE_BOOST_THREADS_PARALLEL_MODE 0
 
 // Disable MPI parallelization
 #define _BLAZE_SYSTEM_MPI_H_

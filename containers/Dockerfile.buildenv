@@ -99,7 +99,7 @@ RUN apt-get update -y \
 # build time of the Docker image.
 
 # Install blaze, brigand, catch2, libsharp, libxsmm, yaml-cpp in /usr/local
-RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.2.tar.gz -O blaze.tar.gz \
+RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.7.tar.gz -O blaze.tar.gz \
     && tar -xzf blaze.tar.gz \
     && mv blaze-* blaze \
     && mv blaze/blaze /usr/local/include \

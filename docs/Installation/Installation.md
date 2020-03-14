@@ -18,7 +18,7 @@ installation_on_clusters "Installation on clusters" page.
 * [Charm++](http://charm.cs.illinois.edu/) 6.8 or newer (must be compiled from source)
 * [Git](https://git-scm.com/)
 * BLAS (e.g. [OpenBLAS](http://www.openblas.net))
-* [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.2
+* [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.5
 * [Boost](http://www.boost.org/) 1.60.0 or later
 * [Brigand](https://github.com/edouarda/brigand)
 * [Catch](https://github.com/philsquared/Catch) 2.1.0 or later

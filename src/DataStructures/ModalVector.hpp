@@ -64,42 +64,7 @@ struct DivTrait<ModalVector, double> {
   using Type = ModalVector;
 };
 
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-template <typename Operator>
-struct UnaryMapTrait<ModalVector, Operator> {
-  // Selectively allow unary operations for spectral coefficients
-  static_assert(
-      tmpl::list_contains_v<
-          tmpl::list<blaze::Abs,
-                     // Following 3 reqd. by operator(+,+=), (-,-=),
-                     // (-) w/doubles
-                     blaze::AddScalar<ModalVector::ElementType>,
-                     blaze::SubScalarRhs<ModalVector::ElementType>,
-                     blaze::SubScalarLhs<ModalVector::ElementType>,
-                     // With these and the blaze traits in
-                     // `ComplexModalVector.hpp`, the `ModalVector`
-                     // can be operated with a `std::complex<double>` to produce
-                     // a `ComplexModalVector`, analogous to implicit
-                     // casting in the standard library
-                     blaze::AddScalar<std::complex<double>>,
-                     blaze::SubScalarRhs<std::complex<double>>,
-                     blaze::SubScalarLhs<std::complex<double>>>,
-          Operator>,
-      "The only unary operation permitted on a ModalVector is:"
-      " abs");
-  using Type = ModalVector;
-};
-
-template <typename Operator>
-struct BinaryMapTrait<ModalVector, ModalVector, Operator> {
-  // Forbid math operations in this specialization of BinaryMap traits for
-  // ModalVector that are unlikely to be used on spectral coefficients.
-  // Currently no non-arithmetic binary operations are supported.
-  static_assert(tmpl::list_contains_v<tmpl::list<>, Operator>,
-                "This binary operation is not permitted on a ModalVector.");
-  using Type = ModalVector;
-};
-#else
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION < 6))
 template <typename Operator>
 struct MapTrait<ModalVector, Operator> {
   // Selectively allow unary operations for spectral coefficients
@@ -133,7 +98,50 @@ struct MapTrait<ModalVector, ModalVector, Operator> {
                 "This binary operation is not permitted on a ModalVector.");
   using Type = ModalVector;
 };
-#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
+#else
+template <typename Operator>
+struct MapTrait<ModalVector, Operator> {
+  // Selectively allow unary operations for spectral coefficients
+  static_assert(
+      tmpl::list_contains_v<
+          tmpl::list<blaze::Abs,
+                     // Following 3 reqd. by operator(+,+=), (-,-=),
+                     // (-) w/doubles
+                     blaze::AddScalar<ModalVector::ElementType>,
+                     blaze::SubScalarRhs<ModalVector::ElementType>,
+                     blaze::SubScalarLhs<ModalVector::ElementType>,
+                     // With these and the blaze traits in
+                     // `ComplexModalVector.hpp`, the `ModalVector`
+                     // can be operated with a `std::complex<double>`
+                     // to produce a `ComplexModalVector`, analogous
+                     // to implicit casting in the standard library
+                     blaze::AddScalar<std::complex<double>>,
+                     blaze::SubScalarRhs<std::complex<double>>,
+                     blaze::SubScalarLhs<std::complex<double>>,
+                     blaze::Bind1st<blaze::Add, double>,
+                     blaze::Bind2nd<blaze::Add, double>,
+                     blaze::Bind1st<blaze::Sub, double>,
+                     blaze::Bind2nd<blaze::Sub, double>,
+                     blaze::Bind1st<blaze::Add, std::complex<double>>,
+                     blaze::Bind2nd<blaze::Add, std::complex<double>>,
+                     blaze::Bind1st<blaze::Sub, std::complex<double>>,
+                     blaze::Bind2nd<blaze::Sub, std::complex<double>>>,
+          Operator>,
+      "The only unary operation permitted on a ModalVector is:"
+      " abs.");
+  using Type = ModalVector;
+};
+
+template <typename Operator>
+struct MapTrait<ModalVector, ModalVector, Operator> {
+  // Forbid math operations in this specialization of BinaryMap traits for
+  // ModalVector that are unlikely to be used on spectral coefficients.
+  // Currently no non-arithmetic binary operations are supported.
+  static_assert(tmpl::list_contains_v<tmpl::list<>, Operator>,
+                "This binary operation is not permitted on a ModalVector.");
+  using Type = ModalVector;
+};
+#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION < 6))
 }  // namespace blaze
 
 /// \cond

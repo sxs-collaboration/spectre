@@ -57,43 +57,7 @@ BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ModalVector,
                                                DiagonalModalOperator,
                                                MultTrait, ModalVector);
 
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-template <typename Operator>
-struct UnaryMapTrait<DiagonalModalOperator, Operator> {
-  // Selectively allow unary operations for spectral coefficient operators
-  static_assert(
-      tmpl::list_contains_v<
-          tmpl::list<
-              // these traits are required for operators acting with doubles
-              blaze::AddScalar<DiagonalModalOperator::ElementType>,
-              blaze::SubScalarRhs<DiagonalModalOperator::ElementType>,
-              blaze::SubScalarLhs<DiagonalModalOperator::ElementType>,
-              blaze::DivideScalarByVector<DiagonalModalOperator::ElementType>,
-              // With these and the blaze traits in
-              // `ComplexDiagonalModalOperator.hpp`, the `DiagonalModalOperator`
-              // can be operated with a `std::complex<double>` to produce a
-              // `ComplexDiagonalModalOperator`, analogous to implicit casting
-              // in the standard library
-              blaze::AddScalar<std::complex<double>>,
-              blaze::SubScalarRhs<std::complex<double>>,
-              blaze::SubScalarLhs<std::complex<double>>,
-              blaze::DivideScalarByVector<std::complex<double>>>,
-          Operator>,
-      "This unary operation is not permitted on a DiagonalModalOperator");
-  using Type = DiagonalModalOperator;
-};
-
-template <typename Operator>
-struct BinaryMapTrait<DiagonalModalOperator, DiagonalModalOperator, Operator> {
-  // Forbid math operations in this specialization of BinaryMap traits for
-  // DiagonalModalOperator that are unlikely to be used on spectral
-  // coefficients. Currently no non-arithmetic binary operations are supported.
-  static_assert(
-      tmpl::list_contains_v<tmpl::list<>, Operator>,
-      "This binary operation is not permitted on a DiagonalModalOperator.");
-  using Type = DiagonalModalOperator;
-};
-#else
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION < 6))
 template <typename Operator>
 struct MapTrait<DiagonalModalOperator, Operator> {
   // Selectively allow unary operations for spectral coefficient operators
@@ -129,7 +93,55 @@ struct MapTrait<DiagonalModalOperator, DiagonalModalOperator, Operator> {
       "This binary operation is not permitted on a DiagonalModalOperator.");
   using Type = DiagonalModalOperator;
 };
-#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
+#else
+template <typename Operator>
+struct MapTrait<DiagonalModalOperator, Operator> {
+  // Selectively allow unary operations for spectral coefficient operators
+  static_assert(
+      tmpl::list_contains_v<
+          tmpl::list<
+              // these traits are required for operators acting with doubles
+              blaze::AddScalar<DiagonalModalOperator::ElementType>,
+              blaze::SubScalarRhs<DiagonalModalOperator::ElementType>,
+              blaze::SubScalarLhs<DiagonalModalOperator::ElementType>,
+              blaze::DivideScalarByVector<DiagonalModalOperator::ElementType>,
+              // With these and the blaze traits in
+              // `ComplexDiagonalModalOperator.hpp`, the `DiagonalModalOperator`
+              // can be operated with a `std::complex<double>` to produce a
+              // `ComplexDiagonalModalOperator`, analogous to implicit casting
+              // in the standard library
+              blaze::AddScalar<std::complex<double>>,
+              blaze::SubScalarRhs<std::complex<double>>,
+              blaze::SubScalarLhs<std::complex<double>>,
+              blaze::DivideScalarByVector<std::complex<double>>,
+              blaze::Bind1st<blaze::Add, double>,
+              blaze::Bind2nd<blaze::Add, double>,
+              blaze::Bind1st<blaze::Div, double>,
+              blaze::Bind2nd<blaze::Div, double>,
+              blaze::Bind1st<blaze::Sub, double>,
+              blaze::Bind2nd<blaze::Sub, double>,
+              blaze::Bind1st<blaze::Add, std::complex<double>>,
+              blaze::Bind2nd<blaze::Add, std::complex<double>>,
+              blaze::Bind1st<blaze::Div, std::complex<double>>,
+              blaze::Bind2nd<blaze::Div, std::complex<double>>,
+              blaze::Bind1st<blaze::Sub, std::complex<double>>,
+              blaze::Bind2nd<blaze::Sub, std::complex<double>>>,
+          Operator>,
+      "This unary operation is not permitted on a DiagonalModalOperator");
+  using Type = DiagonalModalOperator;
+};
+
+template <typename Operator>
+struct MapTrait<DiagonalModalOperator, DiagonalModalOperator, Operator> {
+  // Forbid math operations in this specialization of BinaryMap traits for
+  // DiagonalModalOperator that are unlikely to be used on spectral
+  // coefficients. Currently no non-arithmetic binary operations are supported.
+  static_assert(
+      tmpl::list_contains_v<tmpl::list<>, Operator>,
+      "This binary operation is not permitted on a DiagonalModalOperator.");
+  using Type = DiagonalModalOperator;
+};
+#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION < 6))
 }  // namespace blaze
 
 MAKE_STD_ARRAY_VECTOR_BINOPS(DiagonalModalOperator)

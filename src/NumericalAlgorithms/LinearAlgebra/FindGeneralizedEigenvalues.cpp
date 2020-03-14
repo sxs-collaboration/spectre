@@ -85,13 +85,16 @@ void find_generalized_eigenvalues(
   //  info > 0: some other failure
   int info = 0;
 
+  int matrix_a_spacing = matrix_a.spacing();
+  int matrix_b_spacing = matrix_b.spacing();
+  int eigenvectors_spacing = eigenvectors->spacing();
+
   dggev_(&compute_left_eigenvectors, &compute_right_eigenvectors,
-         &matrix_and_vector_size, matrix_a.data(), &matrix_and_vector_size,
-         matrix_b.data(), &matrix_and_vector_size,
-         eigenvalues_real_part->data(), eigenvalues_imaginary_part->data(),
-         eigenvalue_normalization.data(), eigenvectors->data(),
-         &matrix_and_vector_size, eigenvectors->data(), &matrix_and_vector_size,
-         lapack_work.data(), &work_size, &info);
+         &matrix_and_vector_size, matrix_a.data(), &matrix_a_spacing,
+         matrix_b.data(), &matrix_b_spacing, eigenvalues_real_part->data(),
+         eigenvalues_imaginary_part->data(), eigenvalue_normalization.data(),
+         eigenvectors->data(), &eigenvectors_spacing, eigenvectors->data(),
+         &eigenvectors_spacing, lapack_work.data(), &work_size, &info);
 
   if (UNLIKELY(info != 0)) {
     ERROR(

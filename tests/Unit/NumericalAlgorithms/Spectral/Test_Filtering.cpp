@@ -39,9 +39,9 @@ void test_exponential_filter(const double alpha, const unsigned half_power,
     DataVector filtered_nodal_coeffs(num_pts);
     const Matrix filter_matrix =
         Spectral::filtering::exponential_filter(mesh, alpha, half_power);
-    dgemv_('N', num_pts, num_pts, 1., filter_matrix.data(), num_pts,
-           initial_nodal_coeffs.data(), 1, 0.0, filtered_nodal_coeffs.data(),
-           1);
+    dgemv_('N', num_pts, num_pts, 1., filter_matrix.data(),
+           filter_matrix.spacing(), initial_nodal_coeffs.data(), 1, 0.0,
+           filtered_nodal_coeffs.data(), 1);
     const ModalVector filtered_modal_coeffs =
         to_modal_coefficients(filtered_nodal_coeffs, mesh);
     const double basis_order = num_pts - 1;

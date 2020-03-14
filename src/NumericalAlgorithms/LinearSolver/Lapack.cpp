@@ -12,7 +12,11 @@
 #include "Utilities/Gsl.hpp"
 
 extern "C" {
-extern void dgesv_(int*, int*, double*, int*, int*, double*, int*, int*);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+extern void dgesv_(int*, int*, double*, int*, int*, double*, int*,  // NOLINT
+                   int*);
+#pragma GCC diagnostic pop
 }
 
 namespace lapack {
@@ -32,6 +36,7 @@ int general_matrix_linear_solve(
     const gsl::not_null<Matrix*> matrix_operator, int number_of_rhs) noexcept {
   int output_vector_size = matrix_operator->columns();
   int rhs_vector_size = matrix_operator->rows();
+  int matrix_spacing = matrix_operator->spacing();
   ASSERT(output_vector_size == rhs_vector_size,
          "The LAPACK-based general linear solve requires a square matrix "
          "input, not "
@@ -55,7 +60,7 @@ int general_matrix_linear_solve(
          "The single DataVector passed to the LAPACK call must be sufficiently "
          "large to contain x and b in A x = b");
   dgesv_(&rhs_vector_size, &number_of_rhs, matrix_operator->data(),
-         &output_vector_size, pivots->data(), rhs_in_solution_out->data(),
+         &matrix_spacing, pivots->data(), rhs_in_solution_out->data(),
          &output_vector_size, &info);
   return info;
 }
