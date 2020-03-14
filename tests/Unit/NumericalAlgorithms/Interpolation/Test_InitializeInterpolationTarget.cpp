@@ -58,6 +58,7 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Initialize",
                   "[Unit]") {
   using metavars = Metavariables;
+  using temporal_id_type = typename metavars::temporal_id::type;
   using component =
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>;
@@ -74,23 +75,22 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Initialize",
                            Metavariables::Phase::Testing);
 
   CHECK(ActionTesting::get_databox_tag<
-            component, ::intrp::Tags::IndicesOfFilledInterpPoints>(runner, 0)
-            .empty());
-  CHECK(ActionTesting::get_databox_tag<component,
-                                       ::intrp::Tags::TemporalIds<metavars>>(
+            component,
+            ::intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
             runner, 0)
+            .empty());
+  CHECK(ActionTesting::get_databox_tag<
+            component, ::intrp::Tags::TemporalIds<temporal_id_type>>(runner, 0)
             .empty());
 
   CHECK(Parallel::get<domain::Tags::Domain<3>>(runner.cache()) ==
         domain_creator.create_domain());
 
-  const auto test_vars = db::item_type<
-      ::Tags::Variables<tmpl::list<gr::Tags::Lapse<DataVector>>>>{};
-  CHECK(
-      ActionTesting::get_databox_tag<
-          component, ::Tags::Variables<typename metavars::InterpolationTargetA::
-                                           vars_to_interpolate_to_target>>(
-          runner, 0) == test_vars);
+  CHECK(ActionTesting::get_databox_tag<
+            component, ::intrp::Tags::InterpolatedVars<
+                           metavars::InterpolationTargetA, temporal_id_type>>(
+            runner, 0)
+            .empty());
 }
 
 }  // namespace

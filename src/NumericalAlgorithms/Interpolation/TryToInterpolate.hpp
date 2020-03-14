@@ -154,7 +154,7 @@ void try_to_interpolate(
           InterpolationTarget<Metavariables, InterpolationTargetTag>>(*cache);
       Parallel::simple_action<
           Actions::InterpolationTargetReceiveVars<InterpolationTargetTag>>(
-          receiver_proxy, info.vars, info.global_offsets);
+          receiver_proxy, info.vars, info.global_offsets, temporal_id);
     }
 
     // Clear interpolated data, since we don't need it anymore.
