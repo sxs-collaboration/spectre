@@ -21,9 +21,13 @@ namespace hydro {
 namespace {
 template <size_t Dim, typename Frame, typename DataType>
 void test_mass_flux(const DataType& used_for_size) {
-  pypp::check_with_random_values<1>(&mass_flux<DataType, Dim, Frame>,
-                                    "TestFunctions", "mass_flux",
-                                    {{{-10.0, 10.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::I<DataType, Dim, Frame> (*)(
+          const Scalar<DataType>&, const tnsr::I<DataType, Dim, Frame>&,
+          const Scalar<DataType>&, const Scalar<DataType>&,
+          const tnsr::I<DataType, Dim, Frame>&,
+          const Scalar<DataType>&) noexcept>(&mass_flux<DataType, Dim, Frame>),
+      "TestFunctions", "mass_flux", {{{-10.0, 10.0}}}, used_for_size);
 }
 }  // namespace
 
