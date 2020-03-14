@@ -32,14 +32,16 @@ void PrimitiveFromConservative<Dim, ThermodynamicDim>::apply(
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state) noexcept {
   get(*mass_density) = get(mass_density_cons);
-  const DataVector one_over_mass_density = 1.0 / get(mass_density_cons);
 
+  // store inverse mass density here in order to save allocation
+  get(*specific_internal_energy) = 1.0 / get(mass_density_cons);
   for (size_t i = 0; i < Dim; ++i) {
-    velocity->get(i) = momentum_density.get(i) * one_over_mass_density;
+    velocity->get(i) = momentum_density.get(i) * get(*specific_internal_energy);
   }
 
-  get(*specific_internal_energy) = one_over_mass_density * get(energy_density) -
-                                   0.5 * get(dot_product(*velocity, *velocity));
+  get(*specific_internal_energy) *= get(energy_density);
+  get(*specific_internal_energy) -=
+      (0.5 * get(dot_product(*velocity, *velocity)));
 
   *pressure = make_overloader(
       [&mass_density_cons](const EquationsOfState::EquationOfState<false, 1>&
