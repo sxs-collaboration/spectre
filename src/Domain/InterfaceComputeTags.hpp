@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/TagTraits.hpp"
 #include "DataStructures/SliceVariables.hpp"
 #include "DataStructures/Tensor/Slice.hpp"
+#include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/IndexToSliceAt.hpp"
@@ -18,10 +19,15 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace domain {
+namespace Tags {
+struct FunctionsOfTime;
+}  // namespace Tags
+
 namespace Tags {
 
 namespace Interface_detail {
@@ -226,20 +232,52 @@ struct InterfaceMesh : db::ComputeTag, Tags::Mesh<VolumeDim - 1> {
 /// Computes the coordinates in the frame `Frame` on the faces defined by
 /// `Direction`. Intended to be prefixed by a `Tags::InterfaceCompute` to
 /// define the directions on which to compute the coordinates.
-template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
+template <size_t VolumeDim, bool MovingMesh = false>
 struct BoundaryCoordinates : db::ComputeTag,
-                             Tags::Coordinates<VolumeDim, Frame> {
+                             Tags::Coordinates<VolumeDim, Frame::Inertial> {
   static constexpr auto function(
       const ::Direction<VolumeDim>& direction,
       const ::Mesh<VolumeDim - 1>& interface_mesh,
-      const ::ElementMap<VolumeDim, Frame>& map) noexcept {
+      const ::ElementMap<VolumeDim, Frame::Inertial>& map) noexcept {
     return map(interface_logical_coordinates(interface_mesh, direction));
   }
+
+  static constexpr auto function(
+      const ::Direction<VolumeDim>& direction,
+      const ::Mesh<VolumeDim - 1>& interface_mesh,
+      const ::ElementMap<VolumeDim, ::Frame::Grid>& logical_to_grid_map,
+      const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>&
+          grid_to_inertial_map,
+      const double time,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) noexcept {
+    auto boundary_coords =
+        grid_to_inertial_map(logical_to_grid_map(interface_logical_coordinates(
+                                 interface_mesh, direction)),
+                             time, functions_of_time);
+    return boundary_coords;
+  }
+
   static std::string name() noexcept { return "BoundaryCoordinates"; }
-  using base = Tags::Coordinates<VolumeDim, Frame>;
-  using argument_tags = tmpl::list<Direction<VolumeDim>, Mesh<VolumeDim - 1>,
-                                   ElementMap<VolumeDim, Frame>>;
-  using volume_tags = tmpl::list<ElementMap<VolumeDim, Frame>>;
+  using base = Tags::Coordinates<VolumeDim, Frame::Inertial>;
+  using argument_tags = tmpl::conditional_t<
+      MovingMesh,
+      tmpl::list<Direction<VolumeDim>, Mesh<VolumeDim - 1>,
+                 Tags::ElementMap<VolumeDim, Frame::Grid>,
+                 CoordinateMaps::Tags::CoordinateMap<VolumeDim, Frame::Grid,
+                                                     Frame::Inertial>,
+                 ::Tags::Time, domain::Tags::FunctionsOfTime>,
+      tmpl::list<Direction<VolumeDim>, Mesh<VolumeDim - 1>,
+                 ElementMap<VolumeDim, Frame::Inertial>>>;
+  using volume_tags = tmpl::conditional_t<
+      MovingMesh,
+      tmpl::list<Tags::ElementMap<VolumeDim, Frame::Grid>,
+                 CoordinateMaps::Tags::CoordinateMap<VolumeDim, Frame::Grid,
+                                                     Frame::Inertial>,
+                 ::Tags::Time, domain::Tags::FunctionsOfTime>,
+      tmpl::list<ElementMap<VolumeDim, Frame::Inertial>>>;
 };
 
 }  // namespace Tags

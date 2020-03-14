@@ -265,7 +265,7 @@ struct EvolutionMetavars {
               gr::Tags::Shift<volume_dim, frame, DataVector>,
               gr::Tags::Lapse<DataVector>>,
           dg::Initialization::face_compute_tags<
-              domain::Tags::BoundaryCoordinates<volume_dim, frame>,
+              domain::Tags::BoundaryCoordinates<volume_dim>,
               GeneralizedHarmonic::Tags::ConstraintGamma0Compute<volume_dim,
                                                                  frame>,
               GeneralizedHarmonic::Tags::ConstraintGamma1Compute<volume_dim,

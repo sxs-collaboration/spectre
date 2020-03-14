@@ -50,6 +50,11 @@ std::array<tt::remove_cvref_wrap_t<T>, 2> Rotation<2>::operator()(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const noexcept {
+  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
+         "Could not find function of time: '"
+             << f_of_t_name_ << "' in functions of time. Known functions are "
+             << keys_of(functions_of_time));
+
   const Matrix& rot_matrix =
       rotation_matrix(f_of_t_name_, time, functions_of_time);
   return {{source_coords[0] * rot_matrix(0, 0) +
@@ -63,6 +68,11 @@ boost::optional<std::array<double, 2>> Rotation<2>::inverse(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const noexcept {
+  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
+         "Could not find function of time: '"
+             << f_of_t_name_ << "' in functions of time. Known functions are "
+             << keys_of(functions_of_time));
+
   const Matrix& rot_matrix =
       rotation_matrix(f_of_t_name_, time, functions_of_time);
   // The inverse map uses the inverse rotation matrix, which is just the
@@ -79,6 +89,11 @@ std::array<tt::remove_cvref_wrap_t<T>, 2> Rotation<2>::frame_velocity(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const noexcept {
+  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
+         "Could not find function of time: '"
+             << f_of_t_name_ << "' in functions of time. Known functions are "
+             << keys_of(functions_of_time));
+
   // The mapped coordinates (x,y) are related to the unmapped
   // coordinates (\xi, \eta) by
   //   x = \cos(\alpha) \xi - \sin(\alpha) \eta
@@ -105,6 +120,11 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> Rotation<2>::jacobian(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const noexcept {
+  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
+         "Could not find function of time: '"
+             << f_of_t_name_ << "' in functions of time. Known functions are "
+             << keys_of(functions_of_time));
+
   const Matrix& rot_matrix =
       rotation_matrix(f_of_t_name_, time, functions_of_time);
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> jacobian_matrix{
@@ -123,6 +143,11 @@ Rotation<2>::inv_jacobian(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) const noexcept {
+  ASSERT(functions_of_time.find(f_of_t_name_) != functions_of_time.end(),
+         "Could not find function of time: '"
+             << f_of_t_name_ << "' in functions of time. Known functions are "
+             << keys_of(functions_of_time));
+
   const Matrix& rot_matrix =
       rotation_matrix(f_of_t_name_, time, functions_of_time);
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 2, Frame::NoFrame> inv_jacobian_matrix{

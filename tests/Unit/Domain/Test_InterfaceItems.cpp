@@ -21,22 +21,33 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/CubicScale.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Time/Tags.hpp"
+#include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Utilities/MakeWithRandomValues.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 
@@ -105,10 +116,9 @@ struct TemplatedDirections : db::SimpleTag {
   using type = std::unordered_set<Direction<3>>;
 };
 }  // namespace TestTags
-}  // namespace
 
 
-SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
+void test_interface_items() {
   constexpr size_t dim = 3;
   using internal_directions = Tags::InternalDirections<dim>;
   using boundary_directions_interior = Tags::BoundaryDirectionsInterior<dim>;
@@ -246,7 +256,6 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
               {Direction<dim>::upper_xi(), -4.5}}));
 }
 
-namespace {
 constexpr size_t dim = 2;
 
 struct Dirs : db::ComputeTag {
@@ -333,9 +342,8 @@ auto make_interface_tensor(DataVector value_xi, DataVector value_eta) noexcept {
               Scalar<DataVector>(std::move(value_eta)));
   return ret;
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Subitems", "[Unit][Domain]") {
+void test_interface_subitems() {
   const Mesh<dim> mesh{
       {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
 
@@ -393,14 +401,12 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Subitems", "[Unit][Domain]") {
         make_interface_tensor(3. * boundary_vars_xi, boundary_vars_eta));
 }
 
-namespace {
 using simple_item_tag = ::Tags::Variables<tmpl::list<Var<0>>>;
 using compute_item_tag = Compute<1>;
 using sliced_compute_item_tag = Compute<2>;
 using sliced_simple_item_tag = ::Tags::Variables<tmpl::list<Var<3>>>;
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
+void test_interface_slice(){
   const Mesh<dim> mesh{
       {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
 
@@ -480,7 +486,137 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
         make_interface_tensor({5., 13., 21.}, {21., 23., 25., 27.}));
 }
 
-namespace {
+template <size_t Dim>
+struct Directions : db::SimpleTag {
+  static std::string name() noexcept { return "Directions"; }
+  using type = std::unordered_set<Direction<Dim>>;
+};
+
+template <size_t Dim>
+std::unordered_set<Direction<Dim>> get_directions();
+
+template <>
+std::unordered_set<Direction<1>> get_directions<1>() {
+  return std::unordered_set<Direction<1>>{Direction<1>::upper_xi()};
+}
+
+template <>
+std::unordered_set<Direction<2>> get_directions<2>() {
+  return std::unordered_set<Direction<2>>{Direction<2>::upper_xi(),
+                                          Direction<2>::lower_eta()};
+}
+
+template <>
+std::unordered_set<Direction<3>> get_directions<3>() {
+  return std::unordered_set<Direction<3>>{Direction<3>::upper_xi(),
+                                          Direction<3>::lower_eta(),
+                                          Direction<3>::lower_zeta()};
+}
+
+template <size_t Dim>
+void test_boundary_coordinates_moving_mesh_impl(
+    const ElementMap<Dim, Frame::Grid>& logical_to_grid_map,
+    const std::unique_ptr<CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>>&
+        grid_to_inertial_map,
+    const std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial,
+                                            Dim>>& logical_to_inertial_map,
+    const double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) {
+  CAPTURE(Dim);
+  const Mesh<Dim> mesh{3, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+  auto box = db::create<
+      db::AddSimpleTags<Tags::Mesh<Dim>, Directions<Dim>,
+                        Tags::ElementMap<Dim, Frame::Grid>,
+                        CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                            Frame::Inertial>,
+                        ::Tags::Time, Tags::FunctionsOfTime>,
+      db::AddComputeTags<
+          Tags::InterfaceCompute<Directions<Dim>, Tags::Direction<Dim>>,
+          Tags::InterfaceCompute<Directions<Dim>, Tags::InterfaceMesh<Dim>>,
+          Tags::InterfaceCompute<Directions<Dim>,
+                                 Tags::BoundaryCoordinates<Dim, true>>>>(
+      mesh, get_directions<Dim>(),
+      ElementMap<Dim, Frame::Grid>(logical_to_grid_map.element_id(),
+                                   logical_to_grid_map.block_map().get_clone()),
+      grid_to_inertial_map->get_clone(), time,
+      clone_unique_ptrs(functions_of_time));
+  for (const auto& direction_and_coordinates :
+       db::get<Tags::Interface<Directions<Dim>,
+                               Tags::Coordinates<Dim, Frame::Inertial>>>(box)) {
+    const auto& direction = direction_and_coordinates.first;
+    CHECK_ITERABLE_APPROX(
+        (*logical_to_inertial_map)(
+            interface_logical_coordinates(
+                mesh.slice_away(direction.dimension()), direction),
+            time, functions_of_time),
+        direction_and_coordinates.second);
+  }
+}
+
+void test_boundary_coordinates_moving_mesh() {
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> dist(-1., 1.);
+
+  const std::array<double, 4> times_to_check{{0.0, 0.3, 1.1, 7.8}};
+  const double outer_boundary = 10.0;
+  std::array<std::string, 2> functions_of_time_names{
+      {"ExpansionA", "ExpansionB"}};
+  using Polynomial = domain::FunctionsOfTime::PiecewisePolynomial<2>;
+  using FoftPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
+  std::unordered_map<std::string, FoftPtr> functions_of_time{};
+  const std::array<DataVector, 3> init_func_a{{{1.0}, {-0.1}, {0.0}}};
+  const std::array<DataVector, 3> init_func_b{{{1.0}, {0.0}, {0.0}}};
+  const double initial_time = 0.0;
+  functions_of_time["ExpansionA"] =
+      std::make_unique<Polynomial>(initial_time, init_func_a);
+  functions_of_time["ExpansionB"] =
+      std::make_unique<Polynomial>(initial_time, init_func_b);
+
+  const auto perform_checks = [&functions_of_time, &times_to_check](
+                                  const auto& element_id,
+                                  const auto& time_independent_map,
+                                  const auto& time_dependent_map) noexcept {
+    INFO(std::decay_t<decltype(element_id)>::volume_dim);
+    const ElementMap<std::decay_t<decltype(element_id)>::volume_dim,
+                     Frame::Grid>
+        logical_to_grid_map(
+            element_id, make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                            time_independent_map));
+    const auto grid_to_inertial_map =
+        make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            time_dependent_map);
+    const auto logical_to_inertial_map =
+        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            time_independent_map, time_dependent_map);
+
+    for (const double time : times_to_check) {
+      test_boundary_coordinates_moving_mesh_impl(
+          logical_to_grid_map, grid_to_inertial_map, logical_to_inertial_map,
+          time, functions_of_time);
+    }
+  };
+
+  perform_checks(ElementId<1>(0), CoordinateMaps::Affine{-1.0, 1.0, 2.0, 7.8},
+                 CoordMapsTimeDependent::CubicScale<1>{
+                     outer_boundary, functions_of_time_names[0],
+                     functions_of_time_names[1]});
+  perform_checks(ElementId<2>(0), CoordinateMaps::Rotation<2>{atan2(4., 3.)},
+                 CoordMapsTimeDependent::CubicScale<2>{
+                     outer_boundary, functions_of_time_names[0],
+                     functions_of_time_names[1]});
+  perform_checks(
+      ElementId<3>(0),
+      CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                     CoordinateMaps::Rotation<2>>{
+          {-1., 1., 2., 7.}, CoordinateMaps::Rotation<2>(atan2(4., 3.))},
+      CoordMapsTimeDependent::CubicScale<3>{outer_boundary,
+                                            functions_of_time_names[0],
+                                            functions_of_time_names[1]});
+}
+
 struct SimpleBase : db::SimpleTag {
   static std::string name() noexcept { return "SimpleBase"; }
   using type = int;
@@ -505,7 +641,7 @@ struct ComputeDerived : ComputeBase, db::ComputeTag {
 };
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.BaseTags", "[Unit][Domain]") {
+void test_interface_base_tags() {
   const auto interface = [](const auto xi_value,
                             const auto eta_value) noexcept {
     return std::unordered_map<Direction<2>, std::decay_t<decltype(xi_value)>>{
@@ -518,5 +654,14 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.BaseTags", "[Unit][Domain]") {
       interface(4, 5));
   CHECK(get<Tags::Interface<Dirs, SimpleBase>>(box) == interface(4, 5));
   CHECK(get<Tags::Interface<Dirs, ComputeBase>>(box) == interface(5.5, 6.5));
+}
+
+
+SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
+  test_interface_items();
+  test_interface_subitems();
+  test_interface_slice();
+  test_boundary_coordinates_moving_mesh();
+  test_interface_base_tags();
 }
 }  // namespace domain
