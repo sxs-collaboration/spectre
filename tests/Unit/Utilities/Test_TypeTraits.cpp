@@ -350,14 +350,3 @@ static_assert(tt::array_size<std::array<double, 3>>::value == 3,
 static_assert(tt::array_size<std::array<A, 4>>::value == 4,
               "Failed testing type trait array_size");
 /// [array_size_example]
-
-/// [has_equivalence_example]
-static_assert(not tt::has_equivalence<A>::value,
-              "Failed testing type trait has_equivalence");
-static_assert(tt::has_equivalence<CClassInTestTypeTraits>::value,
-              "Failed testing type trait has_equivalence");
-static_assert(tt::has_equivalence_t<CClassInTestTypeTraits>::value,
-              "Failed testing type trait has_equivalence");
-static_assert(tt::has_equivalence_v<CClassInTestTypeTraits>,
-              "Failed testing type trait has_equivalence");
-/// [has_equivalence_example]

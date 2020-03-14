@@ -35,6 +35,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/Tuple.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/HasEquivalence.hpp"
 
 /*!
  * \ingroup TestingFrameworkGroup
