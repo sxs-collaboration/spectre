@@ -222,7 +222,7 @@ void test_ricci_scalar(const Solution& solution,
 }
 
 template <typename Solution, typename ExpectedLambda>
-void test_area_element(const Solution& solution, const double& surface_radius,
+void test_area_element(const Solution& solution, const double surface_radius,
                        const ExpectedLambda& expected) noexcept {
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,

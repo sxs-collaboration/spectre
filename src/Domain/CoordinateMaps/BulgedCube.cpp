@@ -57,7 +57,7 @@ class RootFunction {
                      1.0 / sqrt(2.0 + square(rho) * y_sq_over_r_sq) -
                      1.0 / sqrt(2.0 + square(rho) * z_sq_over_r_sq)));
   }
-  const double& get_r_sq() noexcept { return physical_r_squared_; }
+  double get_r_sq() const noexcept { return physical_r_squared_; }
 
  private:
   const double radius_;
@@ -69,7 +69,7 @@ class RootFunction {
 };
 
 boost::optional<double> scaling_factor(RootFunction&& rootfunction) noexcept {
-  const double& physical_r_squared = rootfunction.get_r_sq();
+  const double physical_r_squared = rootfunction.get_r_sq();
   try {
     constexpr double tol = 10.0 * std::numeric_limits<double>::epsilon();
     // Use a small nonzero number since the inverse map is singular at r==0 and

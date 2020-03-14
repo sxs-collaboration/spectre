@@ -26,7 +26,7 @@ namespace Schwarzschild {
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ii<DataType, SpatialDim, Frame> spatial_ricci(
-    const tnsr::I<DataType, SpatialDim, Frame>& x, const double& mass) noexcept;
+    const tnsr::I<DataType, SpatialDim, Frame>& x, double mass) noexcept;
 }  // namespace Schwarzschild
 
 namespace Minkowski {
@@ -56,9 +56,9 @@ namespace Kerr {
  * in terms of mass `mass` and dimensionless spin `dimensionless_spin_z`.
  */
 template <typename DataType>
-Scalar<DataType> horizon_ricci_scalar(
-    const Scalar<DataType>& horizon_radius, const double& mass,
-    const double& dimensionless_spin_z) noexcept;
+Scalar<DataType> horizon_ricci_scalar(const Scalar<DataType>& horizon_radius,
+                                      double mass,
+                                      double dimensionless_spin_z) noexcept;
 
 /*!
  * \ingroup TestingFrameworkGroup
@@ -73,8 +73,7 @@ template <typename DataType>
 Scalar<DataType> horizon_ricci_scalar(
     const Scalar<DataType>& horizon_radius_with_spin_on_z_axis,
     const YlmSpherepack& ylm_with_spin_on_z_axis, const YlmSpherepack& ylm,
-    const double& mass,
-    const std::array<double, 3>& dimensionless_spin) noexcept;
+    double mass, const std::array<double, 3>& dimensionless_spin) noexcept;
 
 }  // namespace Kerr
 }  // namespace TestHelpers

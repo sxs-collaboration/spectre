@@ -34,7 +34,7 @@ struct AnalyticCompute
       const db::const_item_type<AnalyticSolutionTag>&
           analytic_solution_computer,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
-      const double& time) noexcept {
+      const double time) noexcept {
     return db::const_item_type<base>(
         variables_from_tagged_tuple(analytic_solution_computer.variables(
             inertial_coords, time, AnalyticFieldsTagList{})));

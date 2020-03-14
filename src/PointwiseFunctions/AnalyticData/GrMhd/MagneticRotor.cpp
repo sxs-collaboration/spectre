@@ -23,9 +23,10 @@
 
 namespace {
 template <typename DataType>
-Scalar<DataType> compute_piecewise(
-    const tnsr::I<DataType, 3>& x, const double rotor_radius,
-    const double rotor_value, const double background_value) noexcept {
+Scalar<DataType> compute_piecewise(const tnsr::I<DataType, 3>& x,
+                                   const double rotor_radius,
+                                   const double rotor_value,
+                                   const double background_value) noexcept {
   const DataType cylindrical_radius =
       sqrt(square(get<0>(x)) + square(get<1>(x)));
   return Scalar<DataType>(rotor_value -
@@ -186,11 +187,11 @@ bool operator!=(const MagneticRotor& lhs, const MagneticRotor& rhs) noexcept {
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define TAG(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE_SCALARS(_, data)                         \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>     \
-      MagneticRotor::variables(                              \
-          const tnsr::I<DTYPE(data), 3>& x, \
-          tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) const noexcept;
+#define INSTANTIATE_SCALARS(_, data)                                          \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>                      \
+      MagneticRotor::variables(const tnsr::I<DTYPE(data), 3>& x,              \
+                               tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) \
+          const noexcept;
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
@@ -198,12 +199,11 @@ GENERATE_INSTANTIATIONS(
      hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
      hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
 
-#define INSTANTIATE_VECTORS(_, data)                                         \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>>                  \
-      MagneticRotor::variables(                                              \
+#define INSTANTIATE_VECTORS(_, data)                        \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>> \
+      MagneticRotor::variables(                             \
           const tnsr::I<DTYPE(data), 3>& x,                 \
-          tmpl::list<TAG(data) < DTYPE(data), 3>> /*meta*/) \
-          const noexcept;
+          tmpl::list<TAG(data) < DTYPE(data), 3>> /*meta*/) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
                         (hydro::Tags::SpatialVelocity,

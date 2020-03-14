@@ -310,7 +310,7 @@ return density * volume *  velocity * velocity / radius;
 }
 
 double mass_from_density_and_volume(
-  const double& density, const double& volume) noexcept {
+  const double density, const double volume) noexcept {
   return density * volume;
 }
 /// [compute_tags]
@@ -322,7 +322,7 @@ struct MassCompute : db::ComputeTag, Mass {
 /// [compute_tags]
 
 double acceleration_from_velocity_and_radius(
-  const double& velocity, const double& radius) noexcept {
+  const double velocity, const double radius) noexcept {
   return velocity * velocity / radius;
 }
 
@@ -344,7 +344,7 @@ struct Force : db::SimpleTag {
 struct ForceCompute : db::ComputeTag, Force {
   static std::string name() noexcept { return "ForceCompute"; }
   static constexpr auto function(
-    const double& mass, const double& acceleration) noexcept {
+    const double mass, const double acceleration) noexcept {
     return mass * acceleration; }
   using argument_tags = tmpl::list<Mass, Acceleration>;
 };
@@ -478,8 +478,8 @@ db::mutate_apply<
   tmpl::list<TimeStep, EarthGravity>>(
   [](const gsl::not_null<double*> time,
      const gsl::not_null<double*> falling_speed,
-     const double& time_step,
-     const double& earth_gravity) {
+     const double time_step,
+     const double earth_gravity) {
     *time += time_step;
     *falling_speed += time_step * earth_gravity;
   },

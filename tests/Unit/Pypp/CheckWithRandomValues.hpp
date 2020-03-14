@@ -77,7 +77,7 @@ struct ConvertToTensorImpl;
 
 template <typename UsedForSize>
 struct ConvertToTensorImpl<double, UsedForSize> {
-  static auto apply(const double& value,
+  static auto apply(const double value,
                     const UsedForSize& used_for_size) noexcept {
     return make_with_value<Scalar<DataVector>>(used_for_size, value);
   }
@@ -743,7 +743,7 @@ void check_with_random_values(
  *
  * \code
  * template <class Arg1, size_t Arg2, class Arg3>
- * my_function(const double& var_1, const int& var_2) noexcept { ... }
+ * my_function(const double var_1, const int& var_2) noexcept { ... }
  * \endcode
  *
  * can be invoked by writing

@@ -129,7 +129,7 @@ struct SliceContainerImpl<Scalar<SpinWeighted<ValueType, Spin>>> {
 
 template <>
 struct SliceContainerImpl<double> {
-  static double apply(const double& t, const size_t /*slice_index*/) noexcept {
+  static double apply(const double t, const size_t /*slice_index*/) noexcept {
     return t;
   }
 };

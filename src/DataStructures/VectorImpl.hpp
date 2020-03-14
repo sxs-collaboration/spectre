@@ -19,8 +19,8 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/MakeWithValue.hpp" // IWYU pragma: keep
-#include "Utilities/PointerVector.hpp" // IWYU pragma: keep
+#include "Utilities/MakeWithValue.hpp"  // IWYU pragma: keep
+#include "Utilities/PointerVector.hpp"  // IWYU pragma: keep
 #include "Utilities/PrintHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -242,7 +242,7 @@ class VectorImpl
    */
   void SPECTRE_ALWAYS_INLINE
   destructive_resize(const size_t new_size) noexcept {
-    if(UNLIKELY(size() != new_size)) {
+    if (UNLIKELY(size() != new_size)) {
       if (owning_) {
         owned_data_ = std::unique_ptr<value_type[], decltype(&free)>{
             new_size > 0 ? static_cast<value_type*>(
@@ -583,23 +583,23 @@ std::ostream& operator<<(std::ostream& os,
  *
  * \param VECTOR_TYPE The vector type (e.g. `DataVector`)
  */
-#define MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(VECTOR_TYPE)                      \
-  namespace MakeWithValueImpls {                                              \
-  template <>                                                                 \
-  struct MakeWithValueImpl<VECTOR_TYPE, VECTOR_TYPE> {                        \
-    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE                                  \
-    apply(const VECTOR_TYPE& input,                                           \
-          const VECTOR_TYPE::value_type value) noexcept {                     \
-      return VECTOR_TYPE(input.size(), value);                                \
-    }                                                                         \
-  };                                                                          \
-  template <>                                                                 \
-  struct MakeWithValueImpl<VECTOR_TYPE, size_t> {                             \
-    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE                                  \
-    apply(const size_t& size, const VECTOR_TYPE::value_type value) noexcept { \
-      return VECTOR_TYPE(size, value);                                        \
-    }                                                                         \
-  };                                                                          \
+#define MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(VECTOR_TYPE)                     \
+  namespace MakeWithValueImpls {                                             \
+  template <>                                                                \
+  struct MakeWithValueImpl<VECTOR_TYPE, VECTOR_TYPE> {                       \
+    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE                                 \
+    apply(const VECTOR_TYPE& input,                                          \
+          const VECTOR_TYPE::value_type value) noexcept {                    \
+      return VECTOR_TYPE(input.size(), value);                               \
+    }                                                                        \
+  };                                                                         \
+  template <>                                                                \
+  struct MakeWithValueImpl<VECTOR_TYPE, size_t> {                            \
+    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE                                 \
+    apply(const size_t size, const VECTOR_TYPE::value_type value) noexcept { \
+      return VECTOR_TYPE(size, value);                                       \
+    }                                                                        \
+  };                                                                         \
   }  // namespace MakeWithValueImpls
 
 // {@

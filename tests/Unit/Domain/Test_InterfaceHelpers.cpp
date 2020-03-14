@@ -42,8 +42,8 @@ void test_interface_apply(
   const auto computed_number_on_interfaces =
       interface_apply<DirectionsTag, tmpl::list<SomeNumber, SomeVolumeArgument>,
                       tmpl::list<SomeVolumeArgument>>(
-          [](const double& some_number_on_interface,
-             const double& volume_argument, const double factor) noexcept {
+          [](const double some_number_on_interface,
+             const double volume_argument, const double factor) noexcept {
             return factor * some_number_on_interface + volume_argument;
           },
           box, 2.);
@@ -61,8 +61,8 @@ void test_interface_apply(
   const auto computed_numbers_with_base_tag =
       interface_apply<DirectionsTag, tmpl::list<SomeNumber, VolumeArgumentBase>,
                       tmpl::list<VolumeArgumentBase>>(
-          [](const double& some_number_on_interface,
-             const double& volume_argument, const double factor) noexcept {
+          [](const double some_number_on_interface,
+             const double volume_argument, const double factor) noexcept {
             return factor * some_number_on_interface + volume_argument;
           },
           box, 2.);

@@ -115,11 +115,10 @@ ConstantM1::variables(
   return {Scalar<DataVector>{DataVector(get<0>(x).size(), W)}};
 }
 
-tuples::TaggedTuple<
-    hydro::Tags::SpatialVelocity<DataVector, 3>>
-ConstantM1::variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
-                      tmpl::list<hydro::Tags::SpatialVelocity<
-                          DataVector, 3>> /*meta*/) const
+tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataVector, 3>>
+ConstantM1::variables(
+    const tnsr::I<DataVector, 3>& x, double /*t*/,
+    tmpl::list<hydro::Tags::SpatialVelocity<DataVector, 3>> /*meta*/) const
     noexcept {
   auto result = make_with_value<tnsr::I<DataVector, 3>>(x, mean_velocity_[0]);
   get<1>(result) = mean_velocity_[1];

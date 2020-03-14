@@ -283,9 +283,7 @@ class VolumeCornerIterator {
     return local_corner_number_ < two_to_the(VolumeDim);
   }
 
-  const size_t& local_corner_number() const noexcept {
-    return local_corner_number_;
-  }
+  size_t local_corner_number() const noexcept { return local_corner_number_; }
 
   size_t global_corner_number() const noexcept {
     std::array<size_t, VolumeDim> new_indices{};

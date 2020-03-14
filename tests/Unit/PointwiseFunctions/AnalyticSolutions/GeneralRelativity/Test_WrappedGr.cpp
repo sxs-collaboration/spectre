@@ -28,8 +28,8 @@
 
 namespace {
 void compare_different_wrapped_solutions(
-    const double& mass, const std::array<double, 3>& spin,
-    const std::array<double, 3>& center, const double& mass2,
+    const double mass, const std::array<double, 3>& spin,
+    const std::array<double, 3>& center, const double mass2,
     const std::array<double, 3>& spin2,
     const std::array<double, 3>& center2) noexcept {
   const gr::Solutions::KerrSchild& solution{mass, spin, center};

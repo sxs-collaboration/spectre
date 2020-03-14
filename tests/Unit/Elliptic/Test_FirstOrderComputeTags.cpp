@@ -36,7 +36,7 @@ struct Fluxes {
   using argument_tags = tmpl::list<AnArgument>;
   static void apply(
       const gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
-      const double& an_argument,
+      const double an_argument,
       const tnsr::i<DataVector, Dim>& auxiliary_field) {
     for (size_t d = 0; d < Dim; d++) {
       flux_for_field->get(d) = auxiliary_field.get(d) * an_argument;
@@ -44,7 +44,7 @@ struct Fluxes {
   }
   static void apply(
       const gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_aux_field,
-      const double& an_argument, const Scalar<DataVector>& field) {
+      const double an_argument, const Scalar<DataVector>& field) {
     std::fill(flux_for_aux_field->begin(), flux_for_aux_field->end(), 0.);
     for (size_t d = 0; d < Dim; d++) {
       flux_for_aux_field->get(d, d) = get(field) * an_argument;
@@ -55,7 +55,7 @@ struct Fluxes {
 struct Sources {
   using argument_tags = tmpl::list<AnArgument>;
   static void apply(const gsl::not_null<Scalar<DataVector>*> source_for_field,
-                    const double& an_argument,
+                    const double an_argument,
                     const Scalar<DataVector>& field) {
     get(*source_for_field) = get(field) * square(an_argument);
   }

@@ -76,7 +76,7 @@ struct InitializeResidual {
     db::mutate<initial_residual_magnitude_tag>(
         make_not_null(&box),
         [](const gsl::not_null<double*> local_initial_residual_magnitude,
-           const double& initial_residual_magnitude) noexcept {
+           const double initial_residual_magnitude) noexcept {
           *local_initial_residual_magnitude = initial_residual_magnitude;
         },
         get<residual_magnitude_tag>(box));

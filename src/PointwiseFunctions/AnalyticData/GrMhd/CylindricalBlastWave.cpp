@@ -7,7 +7,7 @@
 #include <ostream>
 #include <pup.h>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -15,15 +15,15 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "Utilities/Math.hpp" // IWYU pragma: keep
+#include "Utilities/Math.hpp"  // IWYU pragma: keep
 
 namespace {
 template <typename DataType>
 Scalar<DataType> compute_piecewise(const tnsr::I<DataType, 3>& x,
-                                   const double& inner_radius,
-                                   const double& outer_radius,
-                                   const double& inner_value,
-                                   const double& outer_value) noexcept {
+                                   const double inner_radius,
+                                   const double outer_radius,
+                                   const double inner_value,
+                                   const double outer_value) noexcept {
   const DataType cylindrical_radius =
       sqrt(square(get<0>(x)) + square(get<1>(x)));
   auto piecewise_scalar = make_with_value<Scalar<DataType>>(x, 0.0);

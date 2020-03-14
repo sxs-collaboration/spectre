@@ -59,7 +59,7 @@ namespace Solutions {
  */
 template <typename DataType>
 Scalar<DataType> kerr_horizon_radius(
-    const std::array<DataType, 2>& theta_phi, const double& mass,
+    const std::array<DataType, 2>& theta_phi, double mass,
     const std::array<double, 3>& dimensionless_spin) noexcept;
 
 }  // namespace Solutions

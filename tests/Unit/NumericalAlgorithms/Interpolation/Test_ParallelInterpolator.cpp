@@ -111,13 +111,13 @@ struct TestFunctionHelper;
 template <>
 struct TestFunctionHelper<Tags::Square> {
   static constexpr size_t npts = 15;
-  static double apply(const double& a) noexcept { return square(a); }
+  static double apply(const double a) noexcept { return square(a); }
   static double coords(size_t i) noexcept { return 1.0 + 0.1 * i; }
 };
 template <>
 struct TestFunctionHelper<Tags::Negate> {
   static constexpr size_t npts = 17;
-  static double apply(const double& a) noexcept { return -square(a); }
+  static double apply(const double a) noexcept { return -square(a); }
   static double coords(size_t i) noexcept { return 1.1 + 0.0875 * i; }
 };
 
