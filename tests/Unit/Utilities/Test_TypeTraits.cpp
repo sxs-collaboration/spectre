@@ -330,16 +330,3 @@ static_assert(tt::is_iterable_v<std::vector<double>>,
 static_assert(not tt::is_iterable<double>::value,
               "Failed testing type trait is_iterable");
 /// [is_iterable_example]
-
-/// [is_comparable_example]
-static_assert(tt::is_comparable<std::vector<double>>::value,
-              "Failed testing type trait is_comparable");
-static_assert(tt::is_comparable_t<std::vector<double>>::value,
-              "Failed testing type trait is_comparable");
-static_assert(tt::is_comparable_v<std::vector<double>>,
-              "Failed testing type trait is_comparable");
-static_assert(tt::is_comparable<double>::value,
-              "Failed testing type trait is_comparable");
-static_assert(not tt::is_comparable<A>::value,
-              "Failed testing type trait is_comparable");
-/// [is_comparable_example]

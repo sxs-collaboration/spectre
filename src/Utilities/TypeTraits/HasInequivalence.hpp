@@ -37,7 +37,7 @@ namespace tt {
 ///
 /// \example
 /// \snippet Test_HasInequivalence.cpp has_inequivalence_example
-/// \see is_comparable has_equivalence
+/// \see has_equivalence
 /// \tparam T the type we want to know if it has operator!=
 template <typename T, typename U = void>
 struct has_inequivalence : std::false_type {};
