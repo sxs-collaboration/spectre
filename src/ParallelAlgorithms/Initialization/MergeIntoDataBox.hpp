@@ -13,7 +13,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/HasInequivalence.hpp"
 
 namespace Initialization {
 /// The merge policy for resolving conflicts in `merge_into_databox` when adding

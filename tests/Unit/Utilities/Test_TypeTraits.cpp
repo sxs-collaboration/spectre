@@ -361,14 +361,3 @@ static_assert(tt::has_equivalence_t<CClassInTestTypeTraits>::value,
 static_assert(tt::has_equivalence_v<CClassInTestTypeTraits>,
               "Failed testing type trait has_equivalence");
 /// [has_equivalence_example]
-
-/// [has_inequivalence_example]
-static_assert(not tt::has_inequivalence<A>::value,
-              "Failed testing type trait has_inequivalence");
-static_assert(tt::has_inequivalence<CClassInTestTypeTraits>::value,
-              "Failed testing type trait has_inequivalence");
-static_assert(tt::has_inequivalence_t<CClassInTestTypeTraits>::value,
-              "Failed testing type trait has_inequivalence");
-static_assert(tt::has_inequivalence_v<CClassInTestTypeTraits>,
-              "Failed testing type trait has_inequivalence");
-/// [has_inequivalence_example]
