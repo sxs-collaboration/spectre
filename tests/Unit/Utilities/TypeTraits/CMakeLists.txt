@@ -4,6 +4,7 @@
 set(LIBRARY "Test_TypeTraits")
 
 set(LIBRARY_SOURCES
+  Test_ArraySize.cpp
   Test_CreateHasStaticMemberVariable.cpp
   Test_CreateHasTypeAlias.cpp
   Test_CreateIsCallable.cpp
