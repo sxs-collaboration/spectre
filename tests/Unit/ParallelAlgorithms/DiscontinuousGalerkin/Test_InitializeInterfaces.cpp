@@ -140,110 +140,109 @@ void check_compute_items(
           ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>{}));
 }
 
+void test_1d() {
+  INFO("1D");
+  // Reference element:
+  // [ |X| | ]-> xi
+  const ElementId<1> element_id{0, {{SegmentId{2, 1}}}};
+  const domain::creators::Interval domain_creator{
+      {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
+  // Register the coordinate map for serialization
+  PUPable_reg(
+      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                       domain::CoordinateMaps::Affine>));
+
+  db::item_type<vars_tag> vars{4, 0.};
+  db::item_type<other_vars_tag> other_vars{4, 0.};
+
+  using metavariables = Metavariables<1>;
+  using element_array = ElementArray<1, metavariables>;
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
+      {domain_creator.create_domain()}};
+  ActionTesting::emplace_component_and_initialize<element_array>(
+      &runner, element_id,
+      {domain_creator.initial_extents(), vars, other_vars});
+  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Testing);
+  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
+
+  check_compute_items(runner, element_id);
+}
+
+void test_2d() {
+  INFO("2D");
+  // Reference element:
+  // ^ eta
+  // +-+-+-+-+> xi
+  // | |X| | |
+  // +-+-+-+-+
+  const ElementId<2> element_id{0, {{SegmentId{2, 1}, SegmentId{0, 0}}}};
+  const domain::creators::Rectangle domain_creator{
+      {{-0.5, 0.}}, {{1.5, 2.}}, {{false, false}}, {{2, 0}}, {{4, 3}}};
+  // Register the coordinate map for serialization
+  PUPable_reg(
+      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                       domain::CoordinateMaps::ProductOf2Maps<
+                                           domain::CoordinateMaps::Affine,
+                                           domain::CoordinateMaps::Affine>>));
+
+  db::item_type<vars_tag> vars{12, 0.};
+  db::item_type<other_vars_tag> other_vars{12, 0.};
+
+  using metavariables = Metavariables<2>;
+  using element_array = ElementArray<2, metavariables>;
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
+      {domain_creator.create_domain()}};
+  ActionTesting::emplace_component_and_initialize<element_array>(
+      &runner, element_id,
+      {domain_creator.initial_extents(), vars, other_vars});
+  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Testing);
+  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
+
+  check_compute_items(runner, element_id);
+}
+
+void test_3d() {
+  INFO("3D");
+  const ElementId<3> element_id{
+      0, {{SegmentId{2, 1}, SegmentId{0, 0}, SegmentId{1, 1}}}};
+  const domain::creators::Brick domain_creator{{{-0.5, 0., -1.}},
+                                               {{1.5, 2., 3.}},
+                                               {{false, false, false}},
+                                               {{2, 0, 1}},
+                                               {{4, 3, 2}}};
+  // Register the coordinate map for serialization
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<
+          Frame::Logical, Frame::Inertial,
+          domain::CoordinateMaps::ProductOf3Maps<
+              domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine,
+              domain::CoordinateMaps::Affine>>));
+
+  db::item_type<vars_tag> vars{24, 0.};
+  db::item_type<other_vars_tag> other_vars{24, 0.};
+
+  using metavariables = Metavariables<3>;
+  using element_array = ElementArray<3, metavariables>;
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
+      {domain_creator.create_domain()}};
+  ActionTesting::emplace_component_and_initialize<element_array>(
+      &runner, element_id,
+      {domain_creator.initial_extents(), vars, other_vars});
+  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Testing);
+  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
+
+  check_compute_items(runner, element_id);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeInterfaces", "[Unit][Actions]") {
-  {
-    INFO("1D");
-    // Reference element:
-    // [ |X| | ]-> xi
-    const ElementId<1> element_id{0, {{SegmentId{2, 1}}}};
-    const domain::creators::Interval domain_creator{
-        {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
-    // Register the coordinate map for serialization
-    PUPable_reg(
-        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
-                                         domain::CoordinateMaps::Affine>));
-
-    db::item_type<vars_tag> vars{4, 0.};
-    db::item_type<other_vars_tag> other_vars{4, 0.};
-
-    using metavariables = Metavariables<1>;
-    using element_array = ElementArray<1, metavariables>;
-    ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {domain_creator.create_domain()}};
-    ActionTesting::emplace_component_and_initialize<element_array>(
-        &runner, element_id,
-        {domain_creator.initial_extents(), vars, other_vars});
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              element_id);
-    ActionTesting::set_phase(make_not_null(&runner),
-                             metavariables::Phase::Testing);
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              element_id);
-
-    check_compute_items(runner, element_id);
-  }
-  {
-    INFO("2D");
-    // Reference element:
-    // ^ eta
-    // +-+-+-+-+> xi
-    // | |X| | |
-    // +-+-+-+-+
-    const ElementId<2> element_id{0, {{SegmentId{2, 1}, SegmentId{0, 0}}}};
-    const domain::creators::Rectangle domain_creator{
-        {{-0.5, 0.}}, {{1.5, 2.}}, {{false, false}}, {{2, 0}}, {{4, 3}}};
-    // Register the coordinate map for serialization
-    PUPable_reg(
-        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
-                                         domain::CoordinateMaps::ProductOf2Maps<
-                                             domain::CoordinateMaps::Affine,
-                                             domain::CoordinateMaps::Affine>>));
-
-    db::item_type<vars_tag> vars{12, 0.};
-    db::item_type<other_vars_tag> other_vars{12, 0.};
-
-    using metavariables = Metavariables<2>;
-    using element_array = ElementArray<2, metavariables>;
-    ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {domain_creator.create_domain()}};
-    ActionTesting::emplace_component_and_initialize<element_array>(
-        &runner, element_id,
-        {domain_creator.initial_extents(), vars, other_vars});
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              element_id);
-    ActionTesting::set_phase(make_not_null(&runner),
-                             metavariables::Phase::Testing);
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              element_id);
-
-    check_compute_items(runner, element_id);
-  }
-  {
-    INFO("3D");
-    const ElementId<3> element_id{
-        0, {{SegmentId{2, 1}, SegmentId{0, 0}, SegmentId{1, 1}}}};
-    const domain::creators::Brick domain_creator{{{-0.5, 0., -1.}},
-                                                 {{1.5, 2., 3.}},
-                                                 {{false, false, false}},
-                                                 {{2, 0, 1}},
-                                                 {{4, 3, 2}}};
-    // Register the coordinate map for serialization
-    PUPable_reg(SINGLE_ARG(
-        domain::CoordinateMap<
-            Frame::Logical, Frame::Inertial,
-            domain::CoordinateMaps::ProductOf3Maps<
-                domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine,
-                domain::CoordinateMaps::Affine>>));
-
-    db::item_type<vars_tag> vars{24, 0.};
-    db::item_type<other_vars_tag> other_vars{24, 0.};
-
-    using metavariables = Metavariables<3>;
-    using element_array = ElementArray<3, metavariables>;
-    ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {domain_creator.create_domain()}};
-    ActionTesting::emplace_component_and_initialize<element_array>(
-        &runner, element_id,
-        {domain_creator.initial_extents(), vars, other_vars});
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              element_id);
-    ActionTesting::set_phase(make_not_null(&runner),
-                             metavariables::Phase::Testing);
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              element_id);
-
-    check_compute_items(runner, element_id);
-  }
+  test_1d();
+  test_2d();
+  test_3d();
 }
