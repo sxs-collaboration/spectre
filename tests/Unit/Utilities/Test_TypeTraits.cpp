@@ -319,14 +319,3 @@ static_assert(tt::is_a<std::shared_future,
 static_assert(not tt::is_a<std::shared_future, std::future<double>>::value,
               "Failed testing type trait is_a<shared_future>");
 /// [is_a_example]
-
-/// [is_iterable_example]
-static_assert(tt::is_iterable<std::vector<double>>::value,
-              "Failed testing type trait is_iterable");
-static_assert(tt::is_iterable_t<std::vector<double>>::value,
-              "Failed testing type trait is_iterable");
-static_assert(tt::is_iterable_v<std::vector<double>>,
-              "Failed testing type trait is_iterable");
-static_assert(not tt::is_iterable<double>::value,
-              "Failed testing type trait is_iterable");
-/// [is_iterable_example]

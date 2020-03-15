@@ -20,6 +20,7 @@
 #include "Parallel/Exit.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsIterable.hpp"
 #include "Utilities/TypeTraits/IsMaplike.hpp"
 
 /// \cond
