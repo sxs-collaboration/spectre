@@ -39,12 +39,9 @@ void weyl_electric(
       for (size_t k = 0; k < SpatialDim; ++k) {
         for (size_t l = 0; l < SpatialDim; ++l) {
           weyl_electric_part->get(i, j) +=
-              extrinsic_curvature.get(k, l) *
-                  (inverse_spatial_metric.get(k, l)) *
-                  extrinsic_curvature.get(i, j) -
-              extrinsic_curvature.get(i, l) *
-                  (inverse_spatial_metric.get(k, l)) *
-                  extrinsic_curvature.get(k, j);
+              inverse_spatial_metric.get(k, l) *
+              (extrinsic_curvature.get(k, l) * extrinsic_curvature.get(i, j) -
+               extrinsic_curvature.get(i, l) * extrinsic_curvature.get(k, j));
         }
       }
     }
