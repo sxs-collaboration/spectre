@@ -5,6 +5,7 @@
 
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
 namespace db {

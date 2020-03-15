@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Utilities/BoostHelpers.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
 template <typename X, typename Symm, typename IndexList>

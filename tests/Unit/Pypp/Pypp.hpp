@@ -13,6 +13,7 @@
 
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 #include "tests/Unit/Pypp/PyppFundamentals.hpp"
 
 /// \ingroup TestingFrameworkGroup

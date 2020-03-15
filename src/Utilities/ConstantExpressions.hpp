@@ -22,6 +22,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/GetFundamentalType.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsInteger.hpp"
 
 // IWYU pragma: no_include "DataStructures/DataVector.hpp"

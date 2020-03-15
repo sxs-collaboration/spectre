@@ -30,6 +30,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsMaplike.hpp"
 
 // Defining methods as inline in a different header from the class

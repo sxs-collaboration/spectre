@@ -13,7 +13,7 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Math.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 /// \ingroup UtilitiesGroup
 /// \brief Returns the reference object held by a reference wrapper, if a

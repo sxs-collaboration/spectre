@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_GetFundamentalType.cpp
   Test_HasEquivalence.cpp
   Test_HasInequivalence.cpp
+  Test_IsA.cpp
   Test_IsCallable.cpp
   Test_IsComplexOfFundamental.cpp
   Test_IsInteger.cpp

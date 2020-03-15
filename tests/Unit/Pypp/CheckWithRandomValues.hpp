@@ -54,6 +54,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/FunctionInfo.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 #include "tests/Unit/Pypp/Pypp.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"

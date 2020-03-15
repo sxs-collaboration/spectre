@@ -26,6 +26,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/ArraySize.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
 #define PRETTY_TYPE_USE_BOOST

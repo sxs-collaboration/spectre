@@ -13,7 +13,7 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"  // IWYU pragma: keep
 
 /*!
  * \ingroup TensorExpressionsGroup
