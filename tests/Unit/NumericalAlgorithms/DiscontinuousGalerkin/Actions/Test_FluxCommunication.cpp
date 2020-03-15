@@ -8,10 +8,8 @@
 #include <cstddef>
 #include <functional>
 #include <initializer_list>  // IWYU pragma: keep
-#include <map>
 #include <memory>
 #include <pup.h>
-#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -25,6 +23,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -52,6 +51,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -81,14 +81,17 @@ struct OtherData : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
-template <size_t Dim>
+template <size_t Dim, bool PackageFlux>
 class NumericalFlux {
  public:
   struct ExtraData : db::SimpleTag {
     using type = tnsr::I<DataVector, 1>;
   };
 
-  using package_tags = tmpl::list<ExtraData, Var>;
+  using package_tags =
+      tmpl::conditional_t<PackageFlux,
+                          tmpl::list<Tags::NormalDotFlux<Var>, ExtraData, Var>,
+                          tmpl::list<ExtraData, Var>>;
   // This is a silly set of things to request, but it tests not
   // requesting the evolved variables and requesting multiple other
   // things.
@@ -104,7 +107,23 @@ class NumericalFlux {
     get<0>(get<ExtraData>(*packaged_data)) =
         get(other_data) + 2. * get<0>(interface_unit_normal) +
         3. * get<1>(interface_unit_normal);
+    maybe_copy_flux(packaged_data, var_flux);
   }
+
+  // PackageFlux == true
+  void maybe_copy_flux(
+      const gsl::not_null<
+          Variables<tmpl::list<Tags::NormalDotFlux<Var>, ExtraData, Var>>*>
+          packaged_data,
+      const Scalar<DataVector>& var_flux) const noexcept {
+    get(get<Tags::NormalDotFlux<Var>>(*packaged_data)) = get(var_flux);
+  }
+
+  // PackageFlux == false
+  void maybe_copy_flux(
+      const gsl::not_null<
+          Variables<tmpl::list<ExtraData, Var>>*> /*packaged_data*/,
+      const Scalar<DataVector>& /*var_flux*/) const noexcept {}
 
   // void operator()(...) is unused
 
@@ -112,9 +131,9 @@ class NumericalFlux {
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
-template <size_t Dim>
+template <size_t Dim, bool PackageFlux>
 struct NumericalFluxTag {
-  using type = NumericalFlux<Dim>;
+  using type = NumericalFlux<Dim, PackageFlux>;
 };
 
 template <size_t Dim>
@@ -161,7 +180,8 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tags = tmpl::list<NumericalFluxTag<Dim>>;
+  using const_global_cache_tags =
+      tmpl::list<typename Metavariables::normal_dot_numerical_flux>;
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
 
   using simple_tags = db::AddSimpleTags<
@@ -195,35 +215,40 @@ struct component {
                      dg::Actions::ReceiveDataForFluxes<Metavariables>>>>;
 };
 
-template <size_t Dim>
+template <size_t Dim, bool PackageFlux>
 struct Metavariables {
   using system = System<Dim>;
   using component_list = tmpl::list<component<Dim, Metavariables>>;
   using temporal_id = TemporalId;
 
-  using normal_dot_numerical_flux = NumericalFluxTag<Dim>;
+  using normal_dot_numerical_flux = NumericalFluxTag<Dim, PackageFlux>;
   enum class Phase { Initialization, Testing, Exit };
 };
 
 template <typename Component>
 using compute_items = typename Component::compute_tags;
 
-template <size_t Dim>
+template <size_t Dim, bool PackageFlux>
 using flux_comm_types =
-    typename component<Dim, Metavariables<Dim>>::flux_comm_types;
+    typename component<Dim, Metavariables<Dim, PackageFlux>>::flux_comm_types;
 
 Scalar<DataVector> reverse(Scalar<DataVector> x) noexcept {
   std::reverse(get(x).begin(), get(x).end());
   return x;
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
-                  "[Unit][NumericalAlgorithms][Actions]") {
-  using metavariables = Metavariables<2>;
+// The mortars match the element (even though in one case the neighbor
+// is larger).
+template <bool PackageFlux>
+void test_no_refinement() noexcept {
+  CAPTURE(PackageFlux);
+  using metavariables = Metavariables<2, PackageFlux>;
   using my_component = component<2, metavariables>;
   using simple_tags = typename my_component::simple_tags;
   using compute_tags = typename my_component::compute_tags;
+  using NumericalFlux = NumericalFlux<2, PackageFlux>;
+  using flux_comm_types = flux_comm_types<2, PackageFlux>;
+
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
 
@@ -286,7 +311,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
        {Direction<2>::upper_xi(), Scalar<DataVector>{{{{31., 32., 33.}}}}},
        {Direction<2>::upper_eta(), Scalar<DataVector>{{{{34., 35., 36.}}}}}}};
 
-  ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux<2>{}}};
+  ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux{}}};
 
   // Emplace self element
   {
@@ -297,8 +322,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
 
     auto map = ElementMap<2, Frame::Inertial>(self_id, coordmap->get_clone());
 
-    db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>
-        normal_dot_fluxes;
+    db::item_type<normal_dot_fluxes_tag<2, flux_comm_types>> normal_dot_fluxes;
     for (const auto& direction : neighbor_directions) {
       auto& flux_vars = normal_dot_fluxes[direction];
       flux_vars.initialize(3);
@@ -312,7 +336,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
       get<OtherData>(other_data_vars) = data.other_data.at(direction);
     }
 
-    db::item_type<mortar_data_tag<flux_comm_types<2>>> mortar_history{};
+    db::item_type<mortar_data_tag<flux_comm_types>> mortar_history{};
     db::item_type<mortar_next_temporal_ids_tag<2>> mortar_next_temporal_ids{};
     db::item_type<mortar_meshes_tag<2>> mortar_meshes{};
     db::item_type<mortar_sizes_tag<2>> mortar_sizes{};
@@ -339,7 +363,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     const Element<2> element(id, {{direction, {{self_id}, orientation}}});
     auto map = ElementMap<2, Frame::Inertial>(id, coordmap->get_clone());
 
-    db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>
+    db::item_type<normal_dot_fluxes_tag<2, flux_comm_types>>
         normal_dot_fluxes_map{};
     normal_dot_fluxes_map[direction].initialize(get(normal_dot_fluxes).size());
     get<Tags::NormalDotFlux<Var>>(normal_dot_fluxes_map[direction]) =
@@ -349,7 +373,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     other_data_map[direction].initialize(get(other_data).size());
     get<OtherData>(other_data_map[direction]) = other_data;
 
-    db::item_type<mortar_data_tag<flux_comm_types<2>>> mortar_history{};
+    db::item_type<mortar_data_tag<flux_comm_types>> mortar_history{};
     mortar_history[std::make_pair(direction, self_id)];
 
     db::item_type<mortar_meshes_tag<2>> mortar_meshes{};
@@ -379,20 +403,19 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Testing);
 
-  runner.next_action<my_component>(self_id);
+  ActionTesting::next_action<my_component>(make_not_null(&runner), self_id);
 
   // Here, we just check that messages are sent to the correct places.
   // We will check the received values on the central element later.
   {
-    CHECK(
-        runner
-            .nonempty_inboxes<my_component, fluxes_tag<flux_comm_types<2>>>() ==
-        std::unordered_set<ElementIndex<2>>{west_id, east_id, south_id});
+    CHECK(runner.template nonempty_inboxes<my_component,
+                                           fluxes_tag<flux_comm_types>>() ==
+          std::unordered_set<ElementIndex<2>>{west_id, east_id, south_id});
     const auto check_sent_data = [&runner, &self_id ](
         const ElementId<2>& id, const Direction<2>& direction) noexcept {
-      const auto& inboxes = runner.inboxes<my_component>();
       const auto& flux_inbox =
-          tuples::get<fluxes_tag<flux_comm_types<2>>>(inboxes.at(id));
+          ActionTesting::get_inbox_tag<my_component,
+                                       fluxes_tag<flux_comm_types>>(runner, id);
       CHECK(flux_inbox.size() == 1);
       CHECK(flux_inbox.count(0) == 1);
       const auto& flux_inbox_at_time = flux_inbox.at(0);
@@ -405,23 +428,23 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   }
 
   // Now check ReceiveDataForFluxes
-  CHECK_FALSE(runner.is_ready<my_component>(self_id));
-  runner.next_action<my_component>(south_id);
-  CHECK_FALSE(runner.is_ready<my_component>(self_id));
-  runner.next_action<my_component>(east_id);
-  CHECK_FALSE(runner.is_ready<my_component>(self_id));
-  runner.next_action<my_component>(west_id);
-  CHECK(runner.is_ready<my_component>(self_id));
+  CHECK_FALSE(ActionTesting::is_ready<my_component>(runner, self_id));
+  ActionTesting::next_action<my_component>(make_not_null(&runner), south_id);
+  CHECK_FALSE(ActionTesting::is_ready<my_component>(runner, self_id));
+  ActionTesting::next_action<my_component>(make_not_null(&runner), east_id);
+  CHECK_FALSE(ActionTesting::is_ready<my_component>(runner, self_id));
+  ActionTesting::next_action<my_component>(make_not_null(&runner), west_id);
+  CHECK(ActionTesting::is_ready<my_component>(runner, self_id));
 
   // ReceiveDataForFluxes
-  runner.next_action<my_component>(self_id);
+  ActionTesting::next_action<my_component>(make_not_null(&runner), self_id);
   const auto& self_box =
       ActionTesting::get_databox<my_component,
                                  tmpl::append<simple_tags, compute_tags>>(
           make_not_null(&runner), self_id);
 
-  CHECK(tuples::get<fluxes_tag<flux_comm_types<2>>>(
-            runner.inboxes<my_component>().at(self_id))
+  CHECK(ActionTesting::get_inbox_tag<my_component, fluxes_tag<flux_comm_types>>(
+            runner, self_id)
             .empty());
 
   for (const auto& mortar_id : neighbor_mortar_ids) {
@@ -430,7 +453,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   };
 
   auto mortar_history = serialize_and_deserialize(
-      db::get<mortar_data_tag<flux_comm_types<2>>>(self_box));
+      db::get<mortar_data_tag<flux_comm_types>>(self_box));
   CHECK(mortar_history.size() == 3);
   const auto check_mortar = [&mortar_history](
       const std::pair<Direction<2>, ElementId<2>>& mortar_id,
@@ -440,16 +463,16 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
       const Scalar<DataVector>& remote_other,
       const tnsr::i<DataVector, 2>& local_normal,
       const tnsr::i<DataVector, 2>& remote_normal) noexcept {
-    LocalMortarData<flux_comm_types<2>> local_mortar_data(3);
+    LocalMortarData<flux_comm_types> local_mortar_data(3);
     get<Tags::NormalDotFlux<Var>>(local_mortar_data) = local_flux;
     const auto magnitude_local_normal = magnitude(local_normal);
     auto normalized_local_normal = local_normal;
     for (auto& x : normalized_local_normal) {
       x /= get(magnitude_local_normal);
     }
-    PackagedData<flux_comm_types<2>> local_packaged(3);
-    NumericalFlux<2>{}.package_data(&local_packaged, local_flux, local_other,
-                                    normalized_local_normal);
+    PackagedData<flux_comm_types> local_packaged(3);
+    NumericalFlux{}.package_data(&local_packaged, local_flux, local_other,
+                                 normalized_local_normal);
     local_mortar_data.assign_subset(local_packaged);
 
     const auto magnitude_remote_normal = magnitude(remote_normal);
@@ -457,9 +480,9 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     for (auto& x : normalized_remote_normal) {
       x /= get(magnitude_remote_normal);
     }
-    PackagedData<flux_comm_types<2>> remote_packaged(3);
-    NumericalFlux<2>{}.package_data(&remote_packaged, remote_flux, remote_other,
-                                    normalized_remote_normal);
+    PackagedData<flux_comm_types> remote_packaged(3);
+    NumericalFlux{}.package_data(&remote_packaged, remote_flux, remote_other,
+                                 normalized_remote_normal);
 
     const auto result = mortar_history.at(mortar_id).extract();
     CHECK(result.first.mortar_data == local_mortar_data);
@@ -494,11 +517,13 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
       tnsr::i<DataVector, 2>{{{DataVector{3, 0.0}, DataVector{3, 1.0}}}});
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.DiscontinuousGalerkin.Actions.FluxCommunication.NoNeighbors",
-    "[Unit][NumericalAlgorithms][Actions]") {
-  using metavariables = Metavariables<2>;
+template <bool PackageFlux>
+void test_no_neighbors() noexcept {
+  CAPTURE(PackageFlux);
+  using metavariables = Metavariables<2, PackageFlux>;
   using my_component = component<2, metavariables>;
+  using NumericalFlux = NumericalFlux<2, PackageFlux>;
+  using flux_comm_types = flux_comm_types<2, PackageFlux>;
 
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
@@ -514,45 +539,51 @@ SPECTRE_TEST_CASE(
       domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Affine2D({-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
-  ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux<2>{}}};
+  ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux{}}};
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, self_id,
       {0, 1, mesh, element, std::move(map),
-       db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>{},
+       db::item_type<normal_dot_fluxes_tag<2, flux_comm_types>>{},
        db::item_type<other_data_tag<2>>{},
-       db::item_type<mortar_data_tag<flux_comm_types<2>>>{},
+       db::item_type<mortar_data_tag<flux_comm_types>>{},
        db::item_type<mortar_next_temporal_ids_tag<2>>{},
        db::item_type<mortar_meshes_tag<2>>{},
        db::item_type<mortar_sizes_tag<2>>{}});
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Testing);
 
-  runner.next_action<my_component>(self_id);
+  ActionTesting::next_action<my_component>(make_not_null(&runner), self_id);
 
   CHECK(ActionTesting::get_databox_tag<my_component,
-                                       mortar_data_tag<flux_comm_types<2>>>(
+                                       mortar_data_tag<flux_comm_types>>(
             runner, self_id)
             .empty());
-  CHECK(runner.nonempty_inboxes<my_component, fluxes_tag<flux_comm_types<2>>>()
+  CHECK(runner
+            .template nonempty_inboxes<my_component,
+                                       fluxes_tag<flux_comm_types>>()
             .empty());
 
-  CHECK(runner.is_ready<my_component>(self_id));
+  CHECK(ActionTesting::is_ready<my_component>(runner, self_id));
 
-  runner.next_action<my_component>(self_id);
+  ActionTesting::next_action<my_component>(make_not_null(&runner), self_id);
 
   CHECK(ActionTesting::get_databox_tag<my_component,
-                                       mortar_data_tag<flux_comm_types<2>>>(
+                                       mortar_data_tag<flux_comm_types>>(
             runner, self_id)
             .empty());
-  CHECK(runner.nonempty_inboxes<my_component, fluxes_tag<flux_comm_types<2>>>()
+  CHECK(runner
+            .template nonempty_inboxes<my_component,
+                                       fluxes_tag<flux_comm_types>>()
             .empty());
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.DiscontinuousGalerkin.Actions.FluxCommunication.p-refinement",
-    "[Unit][NumericalAlgorithms][Actions]") {
-  using metavariables = Metavariables<3>;
+template <bool PackageFlux>
+void test_p_refinement() noexcept {
+  CAPTURE(PackageFlux);
+  using metavariables = Metavariables<3, PackageFlux>;
   using my_component = component<3, metavariables>;
+  using NumericalFlux = NumericalFlux<3, PackageFlux>;
+  using flux_comm_types = flux_comm_types<3, PackageFlux>;
 
   const ElementId<3> self_id(1);
   const ElementId<3> neighbor_id(2);
@@ -589,14 +620,14 @@ SPECTRE_TEST_CASE(
     return Scalar<DataVector>(x * cube(y));
   };
   const auto packaged_data = [](const Scalar<DataVector>& var_flux) noexcept {
-    PackagedData<flux_comm_types<3>> packaged(get(var_flux).size());
+    PackagedData<flux_comm_types> packaged(get(var_flux).size());
     const tnsr::i<DataVector, 3, Frame::Inertial> normal(get(var_flux).size(),
                                                          1.);
-    NumericalFlux<3>{}.package_data(&packaged, var_flux, var_flux, normal);
+    NumericalFlux{}.package_data(&packaged, var_flux, var_flux, normal);
     return packaged;
   };
 
-  db::item_type<normal_dot_fluxes_tag<3, flux_comm_types<3>>> normal_dot_fluxes;
+  db::item_type<normal_dot_fluxes_tag<3, flux_comm_types>> normal_dot_fluxes;
   normal_dot_fluxes[mortar_id.first].initialize(
       face_mesh.number_of_grid_points());
   get<Tags::NormalDotFlux<Var>>(normal_dot_fluxes[mortar_id.first]) =
@@ -609,12 +640,12 @@ SPECTRE_TEST_CASE(
   using simple_tags = typename my_component::simple_tags;
   using compute_tags = typename my_component::compute_tags;
 
-  ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux<3>{}}};
+  ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux{}}};
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, self_id,
       {0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
        std::move(other_data),
-       db::item_type<mortar_data_tag<flux_comm_types<3>>>{{mortar_id, {}}},
+       db::item_type<mortar_data_tag<flux_comm_types>>{{mortar_id, {}}},
        db::item_type<mortar_next_temporal_ids_tag<3>>{{mortar_id, 1}},
        db::item_type<mortar_meshes_tag<3>>{{mortar_id, mortar_mesh}},
        db::item_type<mortar_sizes_tag<3>>{
@@ -623,16 +654,16 @@ SPECTRE_TEST_CASE(
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, neighbor_id,
       {0, 1, mesh, element, ElementMap<3, Frame::Inertial>{},
-       db::item_type<normal_dot_fluxes_tag<3, flux_comm_types<3>>>{},
+       db::item_type<normal_dot_fluxes_tag<3, flux_comm_types>>{},
        db::item_type<other_data_tag<3>>{},
-       db::item_type<mortar_data_tag<flux_comm_types<3>>>{{mortar_id, {}}},
+       db::item_type<mortar_data_tag<flux_comm_types>>{{mortar_id, {}}},
        db::item_type<mortar_next_temporal_ids_tag<3>>{{mortar_id, 1}},
        db::item_type<mortar_meshes_tag<3>>{{mortar_id, face_mesh}},
        db::item_type<mortar_sizes_tag<3>>{{mortar_id, {{}}}}});
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Testing);
 
-  runner.next_action<my_component>(self_id);
+  ActionTesting::next_action<my_component>(make_not_null(&runner), self_id);
 
   // Check local data
   {
@@ -640,10 +671,10 @@ SPECTRE_TEST_CASE(
         ActionTesting::get_databox<my_component,
                                    tmpl::append<simple_tags, compute_tags>>(
             runner, self_id);
-    CHECK(db::get<mortar_data_tag<flux_comm_types<3>>>(sent_box).size() == 1);
+    CHECK(db::get<mortar_data_tag<flux_comm_types>>(sent_box).size() == 1);
     auto mortar_data =
-        db::get<mortar_data_tag<flux_comm_types<3>>>(sent_box).at(mortar_id);
-    mortar_data.remote_insert(0, PackagedData<flux_comm_types<3>>{});
+        db::get<mortar_data_tag<flux_comm_types>>(sent_box).at(mortar_id);
+    mortar_data.remote_insert(0, PackagedData<flux_comm_types>{});
     const auto local_data = mortar_data.extract().first;
     CHECK(local_data.mortar_data.number_of_grid_points() ==
           mortar_mesh.number_of_grid_points());
@@ -662,12 +693,13 @@ SPECTRE_TEST_CASE(
 
   // Check sent data
   {
-    CHECK(
-        runner.nonempty_inboxes<my_component, fluxes_tag<flux_comm_types<3>>>()
-            .size() == 1);
-    const auto& inbox = tuples::get<fluxes_tag<flux_comm_types<3>>>(
-        runner.inboxes<my_component>().at(neighbor_id));
-
+    CHECK(runner
+              .template nonempty_inboxes<my_component,
+                                         fluxes_tag<flux_comm_types>>()
+              .size() == 1);
+    const auto& inbox =
+        ActionTesting::get_inbox_tag<my_component, fluxes_tag<flux_comm_types>>(
+            runner, neighbor_id);
     const auto& received_flux =
         inbox.at(0).at({Direction<3>::upper_xi(), self_id}).second;
     CHECK_ITERABLE_APPROX(
@@ -677,11 +709,14 @@ SPECTRE_TEST_CASE(
   }
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.DiscontinuousGalerkin.Actions.FluxCommunication.h-refinement",
-    "[Unit][NumericalAlgorithms][Actions]") {
-  using metavariables = Metavariables<2>;
+template <bool PackageFlux>
+void test_h_refinement() noexcept {
+  CAPTURE(PackageFlux);
+  using metavariables = Metavariables<2, PackageFlux>;
   using my_component = component<2, metavariables>;
+  using NumericalFlux = NumericalFlux<2, PackageFlux>;
+  using flux_comm_types = flux_comm_types<2, PackageFlux>;
+
   const Scalar<DataVector> n_dot_f{{{{2., 3.}}}};
   for (const auto& test :
        {std::make_pair(Spectral::MortarSize::Full, DataVector{2., 3.}),
@@ -715,15 +750,13 @@ SPECTRE_TEST_CASE(
 
     const auto packaged_data = [](const DataVector& var_flux) noexcept {
       const Scalar<DataVector> scalar_flux(var_flux);
-      PackagedData<flux_comm_types<2>> packaged(var_flux.size());
+      PackagedData<flux_comm_types> packaged(var_flux.size());
       const tnsr::i<DataVector, 2, Frame::Inertial> normal(var_flux.size(), 1.);
-      NumericalFlux<2>{}.package_data(&packaged, scalar_flux, scalar_flux,
-                                      normal);
+      NumericalFlux{}.package_data(&packaged, scalar_flux, scalar_flux, normal);
       return packaged;
     };
 
-    db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>
-        normal_dot_fluxes;
+    db::item_type<normal_dot_fluxes_tag<2, flux_comm_types>> normal_dot_fluxes;
     normal_dot_fluxes[mortar_id.first].initialize(
         face_mesh.number_of_grid_points());
     get<Tags::NormalDotFlux<Var>>(normal_dot_fluxes[mortar_id.first]) = n_dot_f;
@@ -733,43 +766,42 @@ SPECTRE_TEST_CASE(
     other_data[mortar_id.first].initialize(face_mesh.number_of_grid_points(),
                                            0.);
 
-    ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {NumericalFlux<2>{}}};
+    ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux{}}};
 
     ActionTesting::emplace_component_and_initialize<my_component>(
         &runner, self_id,
         {0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
          std::move(other_data),
-         db::item_type<mortar_data_tag<flux_comm_types<2>>>{{mortar_id, {}}},
+         db::item_type<mortar_data_tag<flux_comm_types>>{{mortar_id, {}}},
          db::item_type<mortar_next_temporal_ids_tag<2>>{{mortar_id, 1}},
          db::item_type<mortar_meshes_tag<2>>{{mortar_id, face_mesh}},
          db::item_type<mortar_sizes_tag<2>>{{mortar_id, {{test.first}}}}});
     ActionTesting::emplace_component_and_initialize<my_component>(
         &runner, neighbor_id,
         {0, 1, mesh, element, ElementMap<2, Frame::Inertial>{},
-         db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>{},
+         db::item_type<normal_dot_fluxes_tag<2, flux_comm_types>>{},
          db::item_type<other_data_tag<2>>{},
-         db::item_type<mortar_data_tag<flux_comm_types<2>>>{{mortar_id, {}}},
+         db::item_type<mortar_data_tag<flux_comm_types>>{{mortar_id, {}}},
          db::item_type<mortar_next_temporal_ids_tag<2>>{{mortar_id, 1}},
          db::item_type<mortar_meshes_tag<2>>{{mortar_id, face_mesh}},
          db::item_type<mortar_sizes_tag<2>>{{mortar_id, {{test.first}}}}});
     ActionTesting::set_phase(make_not_null(&runner),
                              metavariables::Phase::Testing);
 
-    runner.next_action<my_component>(self_id);
+    ActionTesting::next_action<my_component>(make_not_null(&runner), self_id);
 
     // Check local data
     {
       CHECK(ActionTesting::get_databox_tag<my_component,
-                                           mortar_data_tag<flux_comm_types<2>>>(
+                                           mortar_data_tag<flux_comm_types>>(
                 runner, self_id)
                 .size() == 1);
       auto mortar_data =
           ActionTesting::get_databox_tag<my_component,
-                                         mortar_data_tag<flux_comm_types<2>>>(
+                                         mortar_data_tag<flux_comm_types>>(
               runner, self_id)
               .at(mortar_id);
-      mortar_data.remote_insert(0, PackagedData<flux_comm_types<2>>{});
+      mortar_data.remote_insert(0, PackagedData<flux_comm_types>{});
       const auto local_data = mortar_data.extract().first;
       CHECK(local_data.mortar_data.number_of_grid_points() ==
             face_mesh.number_of_grid_points());
@@ -779,19 +811,21 @@ SPECTRE_TEST_CASE(
       CHECK_ITERABLE_APPROX(get<Var>(local_data.mortar_data),
                             get<Var>(packaged_data(test.second)));
 
-      CHECK(get<Tags::NormalDotFlux<Var>>(local_data.mortar_data) == n_dot_f);
+      CHECK(get(get<Tags::NormalDotFlux<Var>>(local_data.mortar_data)) ==
+            test.second);
       CHECK(get(local_data.magnitude_of_face_normal) ==
             DataVector(face_mesh.number_of_grid_points(), 1.));
     }
 
     // Check sent data
     {
-      CHECK(
-          runner
-              .nonempty_inboxes<my_component, fluxes_tag<flux_comm_types<2>>>()
-              .size() == 1);
-      auto& inbox = tuples::get<fluxes_tag<flux_comm_types<2>>>(
-          runner.inboxes<my_component>().at(neighbor_id));
+      CHECK(runner
+                .template nonempty_inboxes<my_component,
+                                           fluxes_tag<flux_comm_types>>()
+                .size() == 1);
+      auto& inbox = ActionTesting::get_inbox_tag<my_component,
+                                                 fluxes_tag<flux_comm_types>>(
+          make_not_null(&runner), neighbor_id);
 
       const auto& received_flux =
           inbox.at(0).at({Direction<2>::lower_xi(), self_id}).second;
@@ -802,4 +836,17 @@ SPECTRE_TEST_CASE(
       inbox.clear();
     }
   }
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
+                  "[Unit][NumericalAlgorithms][Actions]") {
+  test_no_refinement<true>();
+  test_no_refinement<false>();
+  test_no_neighbors<true>();
+  test_no_neighbors<false>();
+  test_p_refinement<true>();
+  test_p_refinement<false>();
+  test_h_refinement<true>();
+  test_h_refinement<false>();
 }
