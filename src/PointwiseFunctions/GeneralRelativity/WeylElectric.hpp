@@ -44,7 +44,7 @@ void weyl_electric(
 
 namespace Tags {
 /// Compute item for the electric part of the weyl tensor in vacuum
-/// Computed from the RicciTensor, ExtrinsicCurvature, and InverseSpatialMetric
+/// Computed from the SpatialRicci, ExtrinsicCurvature, and InverseSpatialMetric
 ///
 /// Can be retrieved using gr::Tags::WeylElectric
 template <size_t SpatialDim, typename Frame, typename DataType>
@@ -56,7 +56,7 @@ struct WeylElectricCompute : WeylElectric<SpatialDim, Frame, DataType>,
       const tnsr::II<DataType, SpatialDim, Frame>&) =
           &weyl_electric<SpatialDim, Frame, DataType>;
   using argument_tags = tmpl::list<
-      gr::Tags::RicciTensor<SpatialDim, Frame, DataType>,
+      gr::Tags::SpatialRicci<SpatialDim, Frame, DataType>,
       gr::Tags::ExtrinsicCurvature<SpatialDim, Frame, DataType>,
       gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataType>>;
   using base = WeylElectric<SpatialDim, Frame, DataType>;

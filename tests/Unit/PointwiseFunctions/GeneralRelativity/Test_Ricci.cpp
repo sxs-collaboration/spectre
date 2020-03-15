@@ -36,6 +36,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Ricci.",
                                     (IndexType::Spatial, IndexType::Spacetime));
 
   TestHelpers::db::test_compute_tag<
-      gr::Tags::RicciTensorCompute<3, Frame::Inertial, DataVector>>(
-      "RicciTensor");
+      gr::Tags::SpatialRicciCompute<3, Frame::Inertial, DataVector>>(
+      "SpatialRicci");
 }

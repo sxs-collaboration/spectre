@@ -35,10 +35,10 @@ namespace Tags {
 /// Compute item for spatial Ricci tensor \f$R_{ij}\f$
 /// computed from SpatialChristoffelSecondKind and its spatial derivatives.
 ///
-/// Can be retrieved using `gr::Tags::RicciTensor`
+/// Can be retrieved using `gr::Tags::SpatialRicci`
 template <size_t SpatialDim, typename Frame, typename DataType>
-struct RicciTensorCompute : RicciTensor<SpatialDim, Frame, DataType>,
-                            db::ComputeTag {
+struct SpatialRicciCompute : SpatialRicci<SpatialDim, Frame, DataType>,
+                             db::ComputeTag {
   using argument_tags = tmpl::list<
       gr::Tags::SpatialChristoffelSecondKind<SpatialDim, Frame, DataType>,
       ::Tags::deriv<
@@ -48,7 +48,7 @@ struct RicciTensorCompute : RicciTensor<SpatialDim, Frame, DataType>,
       const tnsr::Ijj<DataType, SpatialDim, Frame>&,
       const tnsr::iJkk<DataType, SpatialDim, Frame>&) =
       &ricci_tensor<SpatialDim, Frame, IndexType::Spatial, DataType>;
-  using base = RicciTensor<SpatialDim, Frame, DataType>;
+  using base = SpatialRicci<SpatialDim, Frame, DataType>;
 };
 }  // namespace Tags
 } // namespace gr
