@@ -35,6 +35,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
+#include "Utilities/TypeTraits/IsStdArray.hpp"
 
 namespace pypp {
 /// \cond

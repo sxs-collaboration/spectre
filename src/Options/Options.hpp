@@ -18,6 +18,7 @@
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 /// \cond
 namespace YAML {

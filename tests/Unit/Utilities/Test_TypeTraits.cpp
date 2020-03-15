@@ -127,16 +127,3 @@ static_assert(tt::can_be_copy_constructed_v<std::unordered_map<int, int>>,
 static_assert(
     not tt::can_be_copy_constructed_v<std::unordered_map<int, NonCopyable>>,
     "Failed testing type trait is_copy_constructible");
-
-/// [is_std_array_example]
-static_assert(tt::is_std_array<std::array<double, 3>>::value,
-              "Failed testing type trait is_std_array");
-static_assert(tt::is_std_array_t<std::array<double, 3>>::value,
-              "Failed testing type trait is_std_array");
-static_assert(tt::is_std_array_v<std::array<double, 3>>,
-              "Failed testing type trait is_std_array");
-static_assert(not tt::is_std_array<double>::value,
-              "Failed testing type trait is_std_array");
-static_assert(tt::is_std_array<std::array<D, 10>>::value,
-              "Failed testing type trait is_std_array");
-/// [is_std_array_example]
