@@ -17,6 +17,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
+/// \cond
 namespace GeneralizedHarmonic {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void phi(const gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> phi,
@@ -758,7 +759,6 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_norm_of_shift(
 }
 }  // namespace GeneralizedHarmonic
 
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)

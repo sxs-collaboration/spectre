@@ -8,10 +8,12 @@
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
 namespace gsl {
 template <typename>
 struct not_null;
 }  // namespace gsl
+/// \endcond
 
 namespace hydro {
 //@{

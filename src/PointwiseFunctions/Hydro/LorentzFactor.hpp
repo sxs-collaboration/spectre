@@ -10,10 +10,12 @@
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
+/// \cond
 namespace gsl {
 template <typename>
 struct not_null;
 }  // namespace gsl
+/// \endcond
 
 namespace hydro {
 // @{
