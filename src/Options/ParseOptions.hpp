@@ -32,6 +32,7 @@
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsMaplike.hpp"
+#include "Utilities/TypeTraits/IsStdArrayOfSize.hpp"
 
 // Defining methods as inline in a different header from the class
 // definition is somewhat strange.  It is done here to minimize the

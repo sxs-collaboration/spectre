@@ -18,6 +18,7 @@ set(LIBRARY_SOURCES
   Test_IsInteger.cpp
   Test_IsIterable.cpp
   Test_IsMaplike.cpp
+  Test_IsStdArrayOfSize.cpp
   Test_IsStreamable.cpp
   Test_RemoveReferenceWrapper.cpp
   )
