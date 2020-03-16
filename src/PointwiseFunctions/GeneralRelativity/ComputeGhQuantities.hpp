@@ -19,16 +19,13 @@
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare Tags::deriv
 
 /// \cond
-namespace gsl {
-template <class T>
-class not_null;
-}  // namespace gsl
 namespace domain {
 namespace Tags {
 template <size_t Dim, typename Frame>
@@ -549,11 +546,16 @@ struct TimeDerivSpatialMetricCompute
       tmpl::list<gr::Tags::Lapse<DataVector>,
                  gr::Tags::Shift<SpatialDim, Frame, DataVector>,
                  Phi<SpatialDim, Frame>, Pi<SpatialDim, Frame>>;
-  static constexpr tnsr::ii<DataVector, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::ii<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::ii<DataVector, SpatialDim, Frame>*>,
       const Scalar<DataVector>&, const tnsr::I<DataVector, SpatialDim, Frame>&,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
-      const tnsr::aa<DataVector, SpatialDim, Frame>&) =
-      &time_deriv_of_spatial_metric<SpatialDim, Frame>;
+      const tnsr::aa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &time_deriv_of_spatial_metric<SpatialDim, Frame>);
+
   using base =
       ::Tags::dt<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>>;
 };
@@ -573,12 +575,17 @@ struct TimeDerivLapseCompute : ::Tags::dt<gr::Tags::Lapse<DataVector>>,
                  gr::Tags::Shift<SpatialDim, Frame, DataVector>,
                  gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
                  Phi<SpatialDim, Frame>, Pi<SpatialDim, Frame>>;
-  static constexpr Scalar<DataVector> (*function)(
-      const Scalar<DataVector>&, const tnsr::I<DataVector, SpatialDim, Frame>&,
+
+  using return_type = Scalar<DataVector>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<Scalar<DataVector>*>, const Scalar<DataVector>&,
+      const tnsr::I<DataVector, SpatialDim, Frame>&,
       const tnsr::A<DataVector, SpatialDim, Frame>&,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
-      const tnsr::aa<DataVector, SpatialDim, Frame>&) =
-      &time_deriv_of_lapse<SpatialDim, Frame>;
+      const tnsr::aa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &time_deriv_of_lapse<SpatialDim, Frame>);
+
   using base = ::Tags::dt<gr::Tags::Lapse<DataVector>>;
 };
 
@@ -599,13 +606,18 @@ struct TimeDerivShiftCompute
                  gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
                  gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
                  Phi<SpatialDim, Frame>, Pi<SpatialDim, Frame>>;
-  static constexpr tnsr::I<DataVector, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::I<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::I<DataVector, SpatialDim, Frame>*>,
       const Scalar<DataVector>&, const tnsr::I<DataVector, SpatialDim, Frame>&,
       const tnsr::II<DataVector, SpatialDim, Frame>&,
       const tnsr::A<DataVector, SpatialDim, Frame>&,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
-      const tnsr::aa<DataVector, SpatialDim, Frame>&) =
-      &time_deriv_of_shift<SpatialDim, Frame, DataVector>;
+      const tnsr::aa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &time_deriv_of_shift<SpatialDim, Frame, DataVector>);
+
   using base = ::Tags::dt<gr::Tags::Shift<SpatialDim, Frame, DataVector>>;
 };
 
@@ -622,9 +634,14 @@ struct DerivSpatialMetricCompute
                     tmpl::size_t<SpatialDim>, Frame>,
       db::ComputeTag {
   using argument_tags = tmpl::list<Phi<SpatialDim, Frame>>;
-  static constexpr tnsr::ijj<DataVector, SpatialDim, Frame> (*function)(
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&) =
-      &deriv_spatial_metric<SpatialDim, Frame>;
+
+  using return_type = tnsr::ijj<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::ijj<DataVector, SpatialDim, Frame>*>,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &deriv_spatial_metric<SpatialDim, Frame>);
+
   using base =
       ::Tags::deriv<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
                     tmpl::size_t<SpatialDim>, Frame>;
@@ -645,10 +662,15 @@ struct DerivLapseCompute : ::Tags::deriv<gr::Tags::Lapse<DataVector>,
       tmpl::list<gr::Tags::Lapse<DataVector>,
                  gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
                  Phi<SpatialDim, Frame>>;
-  static constexpr tnsr::i<DataVector, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::i<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::i<DataVector, SpatialDim, Frame>*>,
       const Scalar<DataVector>&, const tnsr::A<DataVector, SpatialDim, Frame>&,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&) =
-      &spatial_deriv_of_lapse<SpatialDim, Frame>;
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &spatial_deriv_of_lapse<SpatialDim, Frame>);
+
   using base = ::Tags::deriv<gr::Tags::Lapse<DataVector>,
                              tmpl::size_t<SpatialDim>, Frame>;
 };
@@ -670,11 +692,16 @@ struct DerivShiftCompute
       gr::Tags::InverseSpacetimeMetric<SpatialDim, Frame, DataVector>,
       gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
       Phi<SpatialDim, Frame>>;
-  static constexpr tnsr::iJ<DataVector, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::iJ<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::iJ<DataVector, SpatialDim, Frame>*>,
       const Scalar<DataVector>&, const tnsr::AA<DataVector, SpatialDim, Frame>&,
       const tnsr::A<DataVector, SpatialDim, Frame>&,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&) =
-      &spatial_deriv_of_shift<SpatialDim, Frame, DataVector>;
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &spatial_deriv_of_shift<SpatialDim, Frame, DataVector>);
+
   using base = ::Tags::deriv<gr::Tags::Shift<SpatialDim, Frame, DataVector>,
                              tmpl::size_t<SpatialDim>, Frame>;
 };
@@ -698,13 +725,18 @@ struct PhiCompute : Phi<SpatialDim, Frame>, db::ComputeTag {
       gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
       ::Tags::deriv<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
                     tmpl::size_t<SpatialDim>, Frame>>;
-  static constexpr tnsr::iaa<DataVector, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::iaa<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::iaa<DataVector, SpatialDim, Frame>*>,
       const Scalar<DataVector>&, const tnsr::i<DataVector, SpatialDim, Frame>&,
       const tnsr::I<DataVector, SpatialDim, Frame>&,
       const tnsr::iJ<DataVector, SpatialDim, Frame>&,
       const tnsr::ii<DataVector, SpatialDim, Frame>&,
-      const tnsr::ijj<DataVector, SpatialDim, Frame>&) =
-      &phi<SpatialDim, Frame, DataVector>;
+      const tnsr::ijj<DataVector, SpatialDim, Frame>&) noexcept>(
+      &phi<SpatialDim, Frame, DataVector>);
+
   using base = Phi<SpatialDim, Frame>;
 };
 
@@ -723,14 +755,19 @@ struct PiCompute : Pi<SpatialDim, Frame>, db::ComputeTag {
       gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
       ::Tags::dt<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>>,
       Phi<SpatialDim, Frame>>;
-  static constexpr tnsr::aa<DataVector, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::aa<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::aa<DataVector, SpatialDim, Frame>*>,
       const Scalar<DataVector>&, const Scalar<DataVector>&,
       const tnsr::I<DataVector, SpatialDim, Frame>&,
       const tnsr::I<DataVector, SpatialDim, Frame>&,
       const tnsr::ii<DataVector, SpatialDim, Frame>&,
       const tnsr::ii<DataVector, SpatialDim, Frame>&,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&) =
-      &pi<SpatialDim, Frame, DataVector>;
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &pi<SpatialDim, Frame, DataVector>);
+
   using base = Pi<SpatialDim, Frame>;
 };
 
@@ -780,9 +817,14 @@ struct TraceExtrinsicCurvatureCompute
   using argument_tags =
       tmpl::list<gr::Tags::ExtrinsicCurvature<SpatialDim, Frame, DataVector>,
                  gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>>;
-  static constexpr Scalar<DataVector> (*function)(
+
+  using return_type = Scalar<DataVector>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<Scalar<DataVector>*>,
       const tnsr::ii<DataVector, SpatialDim, Frame>&,
-      const tnsr::II<DataVector, SpatialDim, Frame>&) = &trace;
+      const tnsr::II<DataVector, SpatialDim, Frame>&) noexcept>(&trace);
+
   using base = gr::Tags::TraceExtrinsicCurvature<DataVector>;
 };
 
@@ -923,15 +965,20 @@ struct GaugeConstraintCompute : GaugeConstraint<SpatialDim, Frame>,
       gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
       gr::Tags::InverseSpacetimeMetric<SpatialDim, Frame, DataVector>,
       Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>>;
-  static constexpr tnsr::a<DataVector, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::a<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame>*>,
       const tnsr::a<DataVector, SpatialDim, Frame>&,
       const tnsr::a<DataVector, SpatialDim, Frame>&,
       const tnsr::A<DataVector, SpatialDim, Frame>&,
       const tnsr::II<DataVector, SpatialDim, Frame>&,
       const tnsr::AA<DataVector, SpatialDim, Frame>&,
       const tnsr::aa<DataVector, SpatialDim, Frame>&,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&) =
-      &gauge_constraint<SpatialDim, Frame, DataVector>;
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &gauge_constraint<SpatialDim, Frame, DataVector>);
+
   using base = GaugeConstraint<SpatialDim, Frame>;
 };
 
@@ -955,7 +1002,11 @@ struct FConstraintCompute : FConstraint<SpatialDim, Frame>, db::ComputeTag {
       ::Tags::deriv<Pi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
       ::Tags::deriv<Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
       ConstraintGamma2, ThreeIndexConstraint<SpatialDim, Frame>>;
-  static constexpr tnsr::a<DataVector, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::a<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame>*>,
       const tnsr::a<DataVector, SpatialDim, Frame>&,
       const tnsr::ia<DataVector, SpatialDim, Frame>&,
       const tnsr::a<DataVector, SpatialDim, Frame>&,
@@ -967,8 +1018,9 @@ struct FConstraintCompute : FConstraint<SpatialDim, Frame>, db::ComputeTag {
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
       const tnsr::ijaa<DataVector, SpatialDim, Frame>&,
       const Scalar<DataVector>&,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&) =
-      &f_constraint<SpatialDim, Frame, DataVector>;
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &f_constraint<SpatialDim, Frame, DataVector>);
+
   using base = FConstraint<SpatialDim, Frame>;
 };
 
@@ -992,7 +1044,11 @@ struct TwoIndexConstraintCompute : TwoIndexConstraint<SpatialDim, Frame>,
       ::Tags::deriv<Pi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
       ::Tags::deriv<Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
       ConstraintGamma2, ThreeIndexConstraint<SpatialDim, Frame>>;
-  static constexpr tnsr::ia<DataVector, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::ia<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::ia<DataVector, SpatialDim, Frame>*>,
       const tnsr::ia<DataVector, SpatialDim, Frame>&,
       const tnsr::a<DataVector, SpatialDim, Frame>&,
       const tnsr::A<DataVector, SpatialDim, Frame>&,
@@ -1003,8 +1059,9 @@ struct TwoIndexConstraintCompute : TwoIndexConstraint<SpatialDim, Frame>,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
       const tnsr::ijaa<DataVector, SpatialDim, Frame>&,
       const Scalar<DataVector>&,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&) =
-      &two_index_constraint<SpatialDim, Frame, DataVector>;
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &two_index_constraint<SpatialDim, Frame, DataVector>);
+
   using base = TwoIndexConstraint<SpatialDim, Frame>;
 };
 
@@ -1021,10 +1078,15 @@ struct ThreeIndexConstraintCompute : ThreeIndexConstraint<SpatialDim, Frame>,
   using argument_tags =
       tmpl::list<gr::Tags::DerivSpacetimeMetric<SpatialDim, Frame>,
                  Phi<SpatialDim, Frame>>;
-  static constexpr tnsr::iaa<DataVector, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::iaa<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::iaa<DataVector, SpatialDim, Frame>*>,
       const tnsr::iaa<DataVector, SpatialDim, Frame>&,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&) =
-      &three_index_constraint<SpatialDim, Frame, DataVector>;
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &three_index_constraint<SpatialDim, Frame, DataVector>);
+
   using base = ThreeIndexConstraint<SpatialDim, Frame>;
 };
 
@@ -1040,9 +1102,14 @@ struct FourIndexConstraintCompute : FourIndexConstraint<SpatialDim, Frame>,
                                     db::ComputeTag {
   using argument_tags = tmpl::list<
       ::Tags::deriv<Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>>;
-  static constexpr tnsr::iaa<DataVector, SpatialDim, Frame> (*function)(
-      const tnsr::ijaa<DataVector, SpatialDim, Frame>&) =
-      &four_index_constraint<SpatialDim, Frame, DataVector>;
+
+  using return_type = tnsr::iaa<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::iaa<DataVector, SpatialDim, Frame>*>,
+      const tnsr::ijaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &four_index_constraint<SpatialDim, Frame, DataVector>);
+
   using base = FourIndexConstraint<SpatialDim, Frame>;
 };
 
@@ -1064,7 +1131,11 @@ struct ConstraintEnergyCompute : ConstraintEnergy<SpatialDim, Frame>,
                  FourIndexConstraint<SpatialDim, Frame>,
                  gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
                  gr::Tags::DetSpatialMetric<DataVector>>;
+
+  using return_type = Scalar<DataVector>;
+
   static constexpr auto function(
+      const gsl::not_null<Scalar<DataVector>*> energy,
       const tnsr::a<DataVector, SpatialDim, Frame>& gauge_constraint,
       const tnsr::a<DataVector, SpatialDim, Frame>& f_constraint,
       const tnsr::ia<DataVector, SpatialDim, Frame>& two_index_constraint,
@@ -1072,11 +1143,12 @@ struct ConstraintEnergyCompute : ConstraintEnergy<SpatialDim, Frame>,
       const tnsr::iaa<DataVector, SpatialDim, Frame>& four_index_constraint,
       const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
       const Scalar<DataVector>& spatial_metric_determinant) noexcept {
-    return constraint_energy<SpatialDim, Frame, DataVector>(
-        gauge_constraint, f_constraint, two_index_constraint,
+    constraint_energy<SpatialDim, Frame, DataVector>(
+        energy, gauge_constraint, f_constraint, two_index_constraint,
         three_index_constraint, four_index_constraint, inverse_spatial_metric,
         spatial_metric_determinant);
   }
+
   using base = ConstraintEnergy<SpatialDim, Frame>;
 };
 }  // namespace Tags
