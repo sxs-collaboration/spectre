@@ -60,9 +60,15 @@ struct SpatialChristoffelFirstKindCompute
   using argument_tags = tmpl::list<
       ::Tags::deriv<gr::Tags::SpatialMetric<SpatialDim, Frame, DataType>,
                     tmpl::size_t<SpatialDim>, Frame>>;
-  static constexpr tnsr::ijj<DataType, SpatialDim, Frame> (*function)(
-      const tnsr::ijj<DataType, SpatialDim, Frame>&) =
-      &christoffel_first_kind<SpatialDim, Frame, IndexType::Spatial, DataType>;
+
+  using return_type = tnsr::ijj<DataType, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<
+          tnsr::abb<DataType, SpatialDim, Frame, IndexType::Spatial>*>,
+      const tnsr::ijj<DataType, SpatialDim, Frame>&) noexcept>(
+      &christoffel_first_kind<SpatialDim, Frame, IndexType::Spatial, DataType>);
+
   using base = SpatialChristoffelFirstKind<SpatialDim, Frame, DataType>;
 };
 
@@ -78,12 +84,17 @@ struct SpatialChristoffelSecondKindCompute
   using argument_tags =
       tmpl::list<SpatialChristoffelFirstKind<SpatialDim, Frame, DataType>,
                  InverseSpatialMetric<SpatialDim, Frame, DataType>>;
-  static constexpr tnsr::Ijj<DataType, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::Ijj<DataType, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::Ijj<DataType, SpatialDim, Frame>*>,
       const tnsr::ijj<DataType, SpatialDim, Frame>&,
-      const tnsr::II<DataType, SpatialDim, Frame>&) =
+      const tnsr::II<DataType, SpatialDim, Frame>&) noexcept>(
       &raise_or_lower_first_index<DataType,
                                   SpatialIndex<SpatialDim, UpLo::Lo, Frame>,
-                                  SpatialIndex<SpatialDim, UpLo::Lo, Frame>>;
+                                  SpatialIndex<SpatialDim, UpLo::Lo, Frame>>);
+
   using base = SpatialChristoffelSecondKind<SpatialDim, Frame, DataType>;
 };
 
@@ -100,11 +111,16 @@ struct TraceSpatialChristoffelFirstKindCompute
   using argument_tags =
       tmpl::list<SpatialChristoffelFirstKind<SpatialDim, Frame, DataType>,
                  InverseSpatialMetric<SpatialDim, Frame, DataType>>;
-  static constexpr tnsr::i<DataType, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::i<DataType, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::i<DataType, SpatialDim, Frame>*>,
       const tnsr::ijj<DataType, SpatialDim, Frame>&,
-      const tnsr::II<DataType, SpatialDim, Frame>&) =
+      const tnsr::II<DataType, SpatialDim, Frame>&) noexcept>(
       &trace_last_indices<DataType, SpatialIndex<SpatialDim, UpLo::Lo, Frame>,
-                          SpatialIndex<SpatialDim, UpLo::Lo, Frame>>;
+                          SpatialIndex<SpatialDim, UpLo::Lo, Frame>>);
+
   using base = TraceSpatialChristoffelFirstKind<SpatialDim, Frame, DataType>;
 };
 
@@ -121,11 +137,16 @@ struct TraceSpatialChristoffelSecondKindCompute
   using argument_tags =
       tmpl::list<SpatialChristoffelSecondKind<SpatialDim, Frame, DataType>,
                  InverseSpatialMetric<SpatialDim, Frame, DataType>>;
-  static constexpr tnsr::I<DataType, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::I<DataType, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*>,
       const tnsr::Ijj<DataType, SpatialDim, Frame>&,
-      const tnsr::II<DataType, SpatialDim, Frame>&) =
+      const tnsr::II<DataType, SpatialDim, Frame>&) noexcept>(
       &trace_last_indices<DataType, SpatialIndex<SpatialDim, UpLo::Up, Frame>,
-                          SpatialIndex<SpatialDim, UpLo::Lo, Frame>>;
+                          SpatialIndex<SpatialDim, UpLo::Lo, Frame>>);
+
   using base = TraceSpatialChristoffelSecondKind<SpatialDim, Frame, DataType>;
 };
 
@@ -140,11 +161,18 @@ struct SpacetimeChristoffelFirstKindCompute
       db::ComputeTag {
   using argument_tags =
       tmpl::list<DerivativesOfSpacetimeMetric<SpatialDim, Frame, DataType>>;
-  static constexpr tnsr::abb<DataType, SpatialDim, Frame,
-                             IndexType::Spacetime> (*function)(
-      const tnsr::abb<DataType, SpatialDim, Frame, IndexType::Spacetime>&) =
-      &christoffel_first_kind<SpatialDim, Frame, IndexType::Spacetime,
-                              DataType>;
+
+  using return_type =
+      tnsr::abb<DataType, SpatialDim, Frame, IndexType::Spacetime>;
+
+  static constexpr auto function =
+      static_cast<void (*)(gsl::not_null<tnsr::abb<DataType, SpatialDim, Frame,
+                                                   IndexType::Spacetime>*>,
+                           const tnsr::abb<DataType, SpatialDim, Frame,
+                                           IndexType::Spacetime>&) noexcept>(
+          &christoffel_first_kind<SpatialDim, Frame, IndexType::Spacetime,
+                                  DataType>);
+
   using base = SpacetimeChristoffelFirstKind<SpatialDim, Frame, DataType>;
 };
 
@@ -160,12 +188,17 @@ struct SpacetimeChristoffelSecondKindCompute
   using argument_tags =
       tmpl::list<SpacetimeChristoffelFirstKind<SpatialDim, Frame, DataType>,
                  InverseSpacetimeMetric<SpatialDim, Frame, DataType>>;
-  static constexpr tnsr::Abb<DataType, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::Abb<DataType, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::Abb<DataType, SpatialDim, Frame>*>,
       const tnsr::abb<DataType, SpatialDim, Frame>&,
-      const tnsr::AA<DataType, SpatialDim, Frame>&) =
+      const tnsr::AA<DataType, SpatialDim, Frame>&) noexcept>(
       &raise_or_lower_first_index<DataType,
                                   SpacetimeIndex<SpatialDim, UpLo::Lo, Frame>,
-                                  SpacetimeIndex<SpatialDim, UpLo::Lo, Frame>>;
+                                  SpacetimeIndex<SpatialDim, UpLo::Lo, Frame>>);
+
   using base = SpacetimeChristoffelSecondKind<SpatialDim, Frame, DataType>;
 };
 
@@ -182,11 +215,16 @@ struct TraceSpacetimeChristoffelFirstKindCompute
   using argument_tags =
       tmpl::list<SpacetimeChristoffelFirstKind<SpatialDim, Frame, DataType>,
                  InverseSpacetimeMetric<SpatialDim, Frame, DataType>>;
-  static constexpr tnsr::a<DataType, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::a<DataType, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*>,
       const tnsr::abb<DataType, SpatialDim, Frame>&,
-      const tnsr::AA<DataType, SpatialDim, Frame>&) =
+      const tnsr::AA<DataType, SpatialDim, Frame>&) noexcept>(
       &trace_last_indices<DataType, SpacetimeIndex<SpatialDim, UpLo::Lo, Frame>,
-                          SpacetimeIndex<SpatialDim, UpLo::Lo, Frame>>;
+                          SpacetimeIndex<SpatialDim, UpLo::Lo, Frame>>);
+
   using base = TraceSpacetimeChristoffelFirstKind<SpatialDim, Frame, DataType>;
 };
 }  // namespace Tags
