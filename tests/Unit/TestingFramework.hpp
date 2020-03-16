@@ -14,11 +14,13 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <unordered_set>
 
 #include "ErrorHandling/Error.hpp"
 #include "Parallel/Abort.hpp"
 #include "Parallel/Exit.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/StlStreamDeclarations.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsIterable.hpp"
 #include "Utilities/TypeTraits/IsMaplike.hpp"

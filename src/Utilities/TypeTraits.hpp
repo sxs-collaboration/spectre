@@ -1,35 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Defines type traits, some of which are future STL type_traits header
-///
-/// Features present in C++17 are in the "cpp17" namespace.
-
 #pragma once
 
-#include <array>
-#include <cstddef>
-#include <deque>
-#include <forward_list>
-#include <functional>  // for reference_wrapper
-#include <future>
-#include <list>
-#include <map>
-#include <memory>
-#include <ostream>
-#include <queue>
-#include <set>
-#include <stack>
 #include <type_traits>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
-
-#include "Utilities/NoSuchType.hpp"
-#include "Utilities/Requires.hpp"
-#include "Utilities/StlStreamDeclarations.hpp"
-#include "Utilities/TMPL.hpp"
 
 /// \ingroup TypeTraitsGroup
 /// C++ STL code present in C++17
