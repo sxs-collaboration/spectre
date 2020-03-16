@@ -185,11 +185,14 @@ struct get_first_derived_tag_for_base_tag {
   static_assert(
       not cpp17::is_same_v<TagList, NoSuchType>,
       "Can't retrieve the storage type of a base tag without the full tag "
-      "list. If you're using 'item_type' or 'const_item_type' then make sure "
-      "you pass the DataBox's tag list as the second template parameter to "
-      "those metafunctions. The base tag for which the storage type is being"
-      "retrieved is listed as the second template argument to the "
-      "'get_first_derived_tag_for_base_tag' class below");
+      "list or a type alias `type` that provides a base class. If you're "
+      "writing a new base tag for classes that inherit from a base class, "
+      "provide the base class as the tag's `type`. If you're using 'item_type' "
+      "or 'const_item_type' then make sure you pass the DataBox's tag list as "
+      "the second template parameter to those metafunctions. The base tag for "
+      "which the storage type is being retrieved is listed as the second "
+      "template argument to the 'get_first_derived_tag_for_base_tag' class "
+      "below.");
   using type = first_matching_tag<TagList, Tag>;
 };
 
@@ -223,17 +226,32 @@ struct item_type_impl {
                 "cannot be modified.  You probably wanted const_item_type.");
   using type = DataBox_detail::storage_type<Tag, TagList>;
 };
+
+template <typename Tag, typename TagList, typename = std::nullptr_t>
+struct const_item_type_impl {
+  using type = std::decay_t<decltype(DataBox_detail::convert_to_const_type(
+      std::declval<DataBox_detail::storage_type<Tag, TagList>>()))>;
+};
+
+CREATE_HAS_TYPE_ALIAS(type)
+CREATE_HAS_TYPE_ALIAS_V(type)
+
+template <typename Tag>
+struct const_item_type_impl<Tag, NoSuchType,
+                            Requires<is_base_tag_v<Tag> and has_type_v<Tag>>> {
+  using type = tmpl::type_from<Tag>;
+};
 }  // namespace DataBox_detail
 
 /*!
  * \ingroup DataBoxGroup
  * \brief Get the type that is returned by `get<Tag>`. If it is a base
- * tag then a `TagList` must be passed as a second argument.
+ * tag then a `TagList` must be passed as a second argument, or the base tag
+ * must provide a `type` that is a base class of the type in the DataBox.
  */
 template <typename Tag, typename TagList = NoSuchType>
 using const_item_type =
-    std::decay_t<decltype(DataBox_detail::convert_to_const_type(
-        std::declval<DataBox_detail::storage_type<Tag, TagList>>()))>;
+    tmpl::type_from<DataBox_detail::const_item_type_impl<Tag, TagList>>;
 
 /*!
  * \ingroup DataBoxGroup

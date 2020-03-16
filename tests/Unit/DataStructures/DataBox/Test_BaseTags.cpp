@@ -60,6 +60,16 @@ struct ArrayComputeBase : Array<I>, db::ComputeTag {
                                    VectorBase<VectorBaseExtraIndices>...>;
 };
 /// [compute_template_base_tags]
+
+class BaseClass {};
+class Subclass : public BaseClass {};
+
+struct BaseClassTag : db::BaseTag {
+  using type = BaseClass;
+};
+struct SubclassTag : BaseClassTag ,db::SimpleTag {
+  using type = Subclass;
+};
 }  // namespace TestTags
 
 void test_non_subitems() {
@@ -154,6 +164,25 @@ void test_non_subitems() {
         std::vector<double>{101.8, 10.0});
   CHECK(db::get<TestTags::ArrayBase<0>>(box6) ==
         std::array<int, 3>{{2, 101, -8}});
+
+  {
+    INFO("Base- and subclasses");
+    static_assert(cpp17::is_same_v<db::const_item_type<TestTags::BaseClassTag>,
+                                   TestTags::BaseClass>,
+                  "Failed testing const_item_type");
+    static_assert(
+        cpp17::is_same_v<db::const_item_type<TestTags::BaseClassTag,
+                                             tmpl::list<TestTags::SubclassTag>>,
+                         TestTags::Subclass>,
+        "Failed testing const_item_type");
+    const auto box7 = db::create<db::AddSimpleTags<TestTags::SubclassTag>>(
+        TestTags::Subclass{});
+    static_assert(
+        cpp17::is_same_v<
+            std::decay_t<decltype(db::get<TestTags::BaseClassTag>(box7))>,
+            TestTags::Subclass>,
+        "Failed testing base tag");
+  }
 }
 
 namespace TestTags {
