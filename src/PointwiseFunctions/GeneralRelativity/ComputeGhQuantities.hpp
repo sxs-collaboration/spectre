@@ -160,6 +160,7 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
         trace_christoffel_last_indices) noexcept;
 //@}
 
+//@{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes extrinsic curvature from generalized harmonic variables
@@ -174,10 +175,18 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
  * \f}
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
+void extrinsic_curvature(
+    gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> ex_curv,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+//@}
 
 // @{
 /*!
@@ -739,8 +748,16 @@ struct ExtrinsicCurvatureCompute
   using argument_tags =
       tmpl::list<gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
                  Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>>;
-  static constexpr auto function =
-      &extrinsic_curvature<SpatialDim, Frame, DataVector>;
+
+  using return_type = tnsr::ii<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::ii<DataVector, SpatialDim, Frame>*>,
+      const tnsr::A<DataVector, SpatialDim, Frame>&,
+      const tnsr::aa<DataVector, SpatialDim, Frame>&,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &extrinsic_curvature<SpatialDim, Frame, DataVector>);
+
   using base = gr::Tags::ExtrinsicCurvature<SpatialDim, Frame, DataVector>;
 };
 
