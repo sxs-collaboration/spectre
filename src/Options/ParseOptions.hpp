@@ -8,6 +8,7 @@
 
 #include <cstring>
 #include <exception>
+#include <ios>
 #include <iterator>
 #include <map>
 #include <ostream>
@@ -358,10 +359,12 @@ void Options<OptionList, Group>::parse_file(
   context_.append("In " + file_name);
   try {
     parse(YAML::LoadFile(file_name));
-  } catch (YAML::BadFile& /*e*/) {
+  } catch (const YAML::BadFile& /*e*/) {
     ERROR("Could not open the input file " << file_name);
   } catch (const YAML::Exception& e) {
     parser_error(e);
+  } catch (const std::ios_base::failure& e) {
+    ERROR("I/O error reading " << file_name << ": " << e.what());
   }
 }
 
