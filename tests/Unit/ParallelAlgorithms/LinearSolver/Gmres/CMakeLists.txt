@@ -12,7 +12,7 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/LinearSolver/Gmres"
   "${LIBRARY_SOURCES}"
-  "Convergence;DataStructures;IO"
+  "DataStructures;IO;ParallelLinearSolver"
   )
 
 add_dependencies(
@@ -39,11 +39,12 @@ function(add_algorithm_test TEST_NAME)
 
   target_link_libraries(
     ${EXECUTABLE_NAME}
-    Convergence
+    PUBLIC
     DataStructures
     ErrorHandling
     Informer
     IO
+    ParallelLinearSolver
     ${SPECTRE_LIBRARIES}
     )
 
