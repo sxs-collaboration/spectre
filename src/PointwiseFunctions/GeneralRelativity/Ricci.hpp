@@ -12,8 +12,16 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 
+/// \cond
+namespace gsl {
+template <typename>
+struct not_null;
+}  // namespace gsl
+/// \endcond
+
 namespace gr {
 
+//@{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes Ricci tensor from the (spatial or spacetime)
@@ -26,10 +34,18 @@ namespace gr {
  * where \f$\Gamma^{a}_{bc}\f$ is the Christoffel symbol of the second kind.
  */
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
+void ricci_tensor(
+    gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame, Index>*> result,
+    const tnsr::Abb<DataType, SpatialDim, Frame, Index>& christoffel_2nd_kind,
+    const tnsr::aBcc<DataType, SpatialDim, Frame, Index>&
+        d_christoffel_2nd_kind) noexcept;
+
+template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
 tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
     const tnsr::Abb<DataType, SpatialDim, Frame, Index>& christoffel_2nd_kind,
     const tnsr::aBcc<DataType, SpatialDim, Frame, Index>&
         d_christoffel_2nd_kind) noexcept;
+//@}
 
 namespace Tags {
 /// Compute item for spatial Ricci tensor \f$R_{ij}\f$
@@ -44,10 +60,15 @@ struct SpatialRicciCompute : SpatialRicci<SpatialDim, Frame, DataType>,
       ::Tags::deriv<
           gr::Tags::SpatialChristoffelSecondKind<SpatialDim, Frame, DataType>,
           tmpl::size_t<SpatialDim>, Frame>>;
-  static constexpr tnsr::ii<DataType, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::ii<DataType, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*>,
       const tnsr::Ijj<DataType, SpatialDim, Frame>&,
-      const tnsr::iJkk<DataType, SpatialDim, Frame>&) =
-      &ricci_tensor<SpatialDim, Frame, IndexType::Spatial, DataType>;
+      const tnsr::iJkk<DataType, SpatialDim, Frame>&)>(
+      &ricci_tensor<SpatialDim, Frame, IndexType::Spatial, DataType>);
+
   using base = SpatialRicci<SpatialDim, Frame, DataType>;
 };
 }  // namespace Tags
