@@ -120,6 +120,7 @@ tnsr::aa<DataType, SpatialDim, Frame> pi(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
 // @}
 
+//@{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief  Computes generalized harmonic gauge source function.
@@ -134,6 +135,19 @@ tnsr::aa<DataType, SpatialDim, Frame> pi(
  * See Eqs. 8 and 9 of \cite Lindblom2005qh
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
+void gauge_source(
+    gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> gauge_source_h,
+    const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
+    const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
+    const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const Scalar<DataType>& trace_extrinsic_curvature,
+    const tnsr::i<DataType, SpatialDim, Frame>&
+        trace_christoffel_last_indices) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::a<DataType, SpatialDim, Frame> gauge_source(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
@@ -144,6 +158,7 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
     const Scalar<DataType>& trace_extrinsic_curvature,
     const tnsr::i<DataType, SpatialDim, Frame>&
         trace_christoffel_last_indices) noexcept;
+//@}
 
 /*!
  * \ingroup GeneralRelativityGroup
@@ -825,7 +840,20 @@ struct GaugeHImplicitFrom3p1QuantitiesCompute : GaugeH<SpatialDim, Frame>,
                  gr::Tags::TraceExtrinsicCurvature<DataVector>,
                  gr::Tags::TraceSpatialChristoffelFirstKind<SpatialDim, Frame,
                                                             DataVector>>;
-  static constexpr auto function = &gauge_source<SpatialDim, Frame, DataVector>;
+
+  using return_type = tnsr::a<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame>*>,
+      const Scalar<DataVector>&, const Scalar<DataVector>&,
+      const tnsr::i<DataVector, SpatialDim, Frame>&,
+      const tnsr::I<DataVector, SpatialDim, Frame>&,
+      const tnsr::I<DataVector, SpatialDim, Frame>&,
+      const tnsr::iJ<DataVector, SpatialDim, Frame>&,
+      const tnsr::ii<DataVector, SpatialDim, Frame>&, const Scalar<DataVector>&,
+      const tnsr::i<DataVector, SpatialDim, Frame>&) noexcept>(
+      &gauge_source<SpatialDim, Frame, DataVector>);
+
   using base = GaugeH<SpatialDim, Frame>;
 };
 

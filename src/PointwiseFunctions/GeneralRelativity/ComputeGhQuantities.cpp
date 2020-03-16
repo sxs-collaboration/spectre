@@ -133,7 +133,8 @@ tnsr::aa<DataType, SpatialDim, Frame> pi(
 }
 
 template <size_t SpatialDim, typename Frame, typename DataType>
-tnsr::a<DataType, SpatialDim, Frame> gauge_source(
+void gauge_source(
+    const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> gauge_source_h,
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -143,9 +144,11 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
     const Scalar<DataType>& trace_extrinsic_curvature,
     const tnsr::i<DataType, SpatialDim, Frame>&
         trace_christoffel_last_indices) noexcept {
-  DataType one_over_lapse = 1. / get(lapse);
-  auto gauge_source_h =
-      make_with_value<tnsr::a<DataType, SpatialDim, Frame>>(lapse, 0.);
+  destructive_resize_components(gauge_source_h, get_size(get(lapse)));
+  for (auto& component : *gauge_source_h) {
+    component = 0.0;
+  }
+  DataType one_over_lapse = 1.0 / get(lapse);
 
   // Temporary to avoid more nested loops.
   auto temp = dt_shift;
@@ -157,24 +160,40 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
 
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t k = 0; k < SpatialDim; ++k) {
-      gauge_source_h.get(i + 1) += spatial_metric.get(i, k) * temp.get(k);
+      gauge_source_h->get(i + 1) += spatial_metric.get(i, k) * temp.get(k);
     }
-    gauge_source_h.get(i + 1) *= square(one_over_lapse);
+    gauge_source_h->get(i + 1) *= square(one_over_lapse);
   }
 
   for (size_t i = 0; i < SpatialDim; ++i) {
-    gauge_source_h.get(i + 1) += one_over_lapse * deriv_lapse.get(i) -
-                                 trace_christoffel_last_indices.get(i);
+    gauge_source_h->get(i + 1) += one_over_lapse * deriv_lapse.get(i) -
+                                  trace_christoffel_last_indices.get(i);
   }
 
   for (size_t i = 0; i < SpatialDim; ++i) {
-    get<0>(gauge_source_h) +=
+    get<0>(*gauge_source_h) +=
         shift.get(i) *
-        (gauge_source_h.get(i + 1) + deriv_lapse.get(i) * one_over_lapse);
+        (gauge_source_h->get(i + 1) + deriv_lapse.get(i) * one_over_lapse);
   }
-  get<0>(gauge_source_h) -= one_over_lapse * get(dt_lapse) +
-                            get(lapse) * get(trace_extrinsic_curvature);
+  get<0>(*gauge_source_h) -= one_over_lapse * get(dt_lapse) +
+                             get(lapse) * get(trace_extrinsic_curvature);
+}
 
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::a<DataType, SpatialDim, Frame> gauge_source(
+    const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
+    const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
+    const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const Scalar<DataType>& trace_extrinsic_curvature,
+    const tnsr::i<DataType, SpatialDim, Frame>&
+        trace_christoffel_last_indices) noexcept {
+  tnsr::a<DataType, SpatialDim, Frame> gauge_source_h{};
+  gauge_source(make_not_null(&gauge_source_h), lapse, dt_lapse, deriv_lapse,
+               shift, dt_shift, deriv_shift, spatial_metric,
+               trace_extrinsic_curvature, trace_christoffel_last_indices);
   return gauge_source_h;
 }
 
@@ -966,6 +985,18 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_norm_of_shift(
           spacetime_unit_normal,                                              \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;      \
+  template void GeneralizedHarmonic::gauge_source(                            \
+      const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>      \
+          gauge_source_h,                                                     \
+      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,  \
+      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& deriv_lapse,        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,           \
+      const tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>& deriv_shift,       \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
+      const Scalar<DTYPE(data)>& trace_extrinsic_curvature,                   \
+      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          trace_christoffel_last_indices) noexcept;                           \
   template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                       \
   GeneralizedHarmonic::gauge_source(                                          \
       const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,  \
