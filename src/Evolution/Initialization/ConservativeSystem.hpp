@@ -10,6 +10,10 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "Domain/CoordinateMaps/Tags.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/Tags.hpp"
+#include "Domain/TagsTimeDependent.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -139,8 +143,13 @@ struct ConservativeSystem {
     const size_t num_grid_points =
         db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
 
-    const auto& inertial_coords =
-        db::get<domain::Tags::Coordinates<dim, Frame::Inertial>>(box);
+    const auto inertial_coords =
+        db::get<domain::CoordinateMaps::Tags::CoordinateMap<dim, Frame::Grid,
+                                                            Frame::Inertial>>(
+            box)(
+            db::get<domain::Tags::ElementMap<dim, Frame::Grid>>(box)(
+                db::get<domain::Tags::Coordinates<dim, Frame::Logical>>(box)),
+            initial_time, db::get<domain::Tags::FunctionsOfTime>(box));
 
     // Set initial data from analytic solution
     const auto& solution_or_data =
@@ -169,8 +178,14 @@ struct ConservativeSystem {
     using variables_tag = typename system::variables_tag;
 
     const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
-    const auto& inertial_coords =
-        db::get<domain::Tags::Coordinates<dim, Frame::Inertial>>(box);
+
+    const auto inertial_coords =
+        db::get<domain::CoordinateMaps::Tags::CoordinateMap<dim, Frame::Grid,
+                                                            Frame::Inertial>>(
+            box)(
+            db::get<domain::Tags::ElementMap<dim, Frame::Grid>>(box)(
+                db::get<domain::Tags::Coordinates<dim, Frame::Logical>>(box)),
+            initial_time, db::get<domain::Tags::FunctionsOfTime>(box));
 
     // Set initial data from analytic solution
     using Vars = typename variables_tag::type;

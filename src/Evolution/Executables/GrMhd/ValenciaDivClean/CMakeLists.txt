@@ -5,6 +5,7 @@ set(LIBS_TO_LINK
   CoordinateMaps
   DiscontinuousGalerkin
   DomainCreators
+  Evolution
   GeneralRelativitySolutions
   GrMhdAnalyticData
   GrMhdSolutions

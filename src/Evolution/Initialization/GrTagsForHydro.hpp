@@ -8,6 +8,9 @@
 #include <utility>  // IWYU pragma: keep  // for move
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Domain/CoordinateMaps/Tags.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
@@ -16,6 +19,7 @@
 
 /// \cond
 namespace Frame {
+struct Grid;
 struct Inertial;
 }  // namespace Frame
 namespace Initialization {
@@ -75,8 +79,13 @@ struct GrTagsForHydro {
 
     const size_t num_grid_points =
         db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
-    const auto& inertial_coords =
-        db::get<domain::Tags::Coordinates<dim, Frame::Inertial>>(box);
+    const auto inertial_coords =
+        db::get<domain::CoordinateMaps::Tags::CoordinateMap<dim, Frame::Grid,
+                                                            Frame::Inertial>>(
+            box)(
+            db::get<domain::Tags::ElementMap<dim, Frame::Grid>>(box)(
+                db::get<domain::Tags::Coordinates<dim, Frame::Logical>>(box)),
+            initial_time, db::get<domain::Tags::FunctionsOfTime>(box));
 
     // Set initial data from analytic solution
     GrVars gr_vars{num_grid_points};

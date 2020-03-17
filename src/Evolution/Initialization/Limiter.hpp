@@ -34,7 +34,7 @@ namespace Actions {
 template <size_t Dim>
 struct Minmod {
   using simple_tags = db::AddSimpleTags<>;
-  using compute_tags = tmpl::list<domain::Tags::SizeOfElement<Dim>>;
+  using compute_tags = tmpl::list<domain::Tags::SizeOfElementCompute<Dim>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,

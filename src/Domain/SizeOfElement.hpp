@@ -5,13 +5,26 @@
 
 #include <array>
 #include <cstddef>
+#include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
+#include "Domain/CoordinateMaps/Tags.hpp"
+#include "Domain/Tags.hpp"
+#include "Domain/TagsTimeDependent.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace domain {
+template <typename SourceFrame, typename TargetFrame, size_t Dim>
+class CoordinateMapBase;
+namespace FunctionsOfTime {
+class FunctionOfTime;
+}  // namespace FunctionsOfTime
+}  // namespace domain
 template <size_t VolumeDim, typename Frame>
 class ElementMap;
 namespace domain {
@@ -22,6 +35,7 @@ struct ElementMap;
 }  // namespace domain
 /// \endcond
 
+// @{
 /*!
  * \ingroup ComputationalDomainGroup
  * \brief Compute the inertial-coordinate size of an element along each of its
@@ -38,8 +52,16 @@ struct ElementMap;
  * not well represented by a `Tensor`, so we use a `std::array`.
  */
 template <size_t VolumeDim>
-std::array<double, VolumeDim> size_of_element(
-    const ElementMap<VolumeDim, Frame::Inertial>& element_map) noexcept;
+void size_of_element(
+    gsl::not_null<std::array<double, VolumeDim>*> result,
+    const ElementMap<VolumeDim, Frame::Grid>& logical_to_grid_map,
+    const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>&
+        grid_to_inertial_map,
+    double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) noexcept;
+// @}
 
 namespace domain {
 namespace Tags {
@@ -48,11 +70,29 @@ namespace Tags {
 /// The inertial-coordinate size of an element along each of its logical
 /// directions.
 template <size_t VolumeDim>
-struct SizeOfElement : db::ComputeTag {
-  static std::string name() noexcept { return "SizeOfElement"; }
+struct SizeOfElement : db::SimpleTag {
+  using type = std::array<double, VolumeDim>;
+};
+
+template <size_t VolumeDim>
+struct SizeOfElementCompute : db::ComputeTag, SizeOfElement<VolumeDim> {
+  using base = SizeOfElement<VolumeDim>;
   using argument_tags =
-      tmpl::list<Tags::ElementMap<VolumeDim, Frame::Inertial>>;
-  static constexpr auto function = size_of_element<VolumeDim>;
+      tmpl::list<Tags::ElementMap<VolumeDim, Frame::Grid>,
+                 CoordinateMaps::Tags::CoordinateMap<VolumeDim, Frame::Grid,
+                                                     Frame::Inertial>,
+                 ::Tags::Time, domain::Tags::FunctionsOfTime>;
+  using return_type = typename base::type;
+
+  static constexpr void (*function)(
+      gsl::not_null<std::array<double, VolumeDim>*> result,
+      const ::ElementMap<VolumeDim, Frame::Grid>&,
+      const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>&,
+      const double,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&) =
+      size_of_element<VolumeDim>;
 };
 }  // namespace Tags
 }  // namespace domain

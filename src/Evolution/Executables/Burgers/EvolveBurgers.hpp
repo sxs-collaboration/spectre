@@ -7,8 +7,11 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Evolution/Actions/AddMeshVelocitySourceTerms.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"    // IWYU pragma: keep
 #include "Evolution/ComputeTags.hpp"
@@ -18,6 +21,7 @@
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
 #include "Evolution/Initialization/ConservativeSystem.hpp"
+#include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
@@ -142,6 +146,7 @@ struct EvolutionMetavars {
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
       Actions::ComputeTimeDerivative<
           evolution::dg::ConservativeDuDt<Burgers::System, dg_formulation>>,
+      evolution::Actions::AddMeshVelocitySourceTerms,
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
@@ -163,14 +168,16 @@ struct EvolutionMetavars {
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
-      dg::Actions::InitializeDomain<1>,
+      evolution::dg::Initialization::Domain<1>,
       Initialization::Actions::ConservativeSystem,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       dg::Actions::InitializeInterfaces<
           system,
           dg::Initialization::slice_tags_to_face<
               typename system::variables_tag>,
-          dg::Initialization::slice_tags_to_exterior<>>,
+          dg::Initialization::slice_tags_to_exterior<>,
+          dg::Initialization::face_compute_tags<>,
+          dg::Initialization::exterior_compute_tags<>, true, true>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<evolution::Tags::AnalyticCompute<
               1, initial_data_tag, analytic_solution_fields>>>,
@@ -240,7 +247,10 @@ struct EvolutionMetavars {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &domain::creators::register_derived_with_charm,
+    &setup_error_handling,
+    &domain::creators::register_derived_with_charm,
+    &domain::creators::time_dependence::register_derived_with_charm,
+    &domain::FunctionsOfTime::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<
         Event<metavariables::events>>,
     &Parallel::register_derived_classes_with_charm<
