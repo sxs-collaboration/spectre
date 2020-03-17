@@ -38,6 +38,16 @@ std::string compose_spin_weighted_derivative_name<EthbarEthbar>(
   return "EthbarEthbar(" + suffix + ")";
 }
 template <>
+std::string compose_spin_weighted_derivative_name<InverseEth>(
+    const std::string& suffix) noexcept {
+  return "InverseEth(" + suffix + ")";
+}
+template <>
+std::string compose_spin_weighted_derivative_name<InverseEthbar>(
+    const std::string& suffix) noexcept {
+  return "InverseEthbar(" + suffix + ")";
+}
+template <>
 std::string compose_spin_weighted_derivative_name<NoDerivative>(
     const std::string& suffix) noexcept {
   return "NoDerivative(" + suffix + ")";

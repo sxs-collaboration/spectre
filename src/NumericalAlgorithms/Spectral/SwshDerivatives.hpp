@@ -75,6 +75,24 @@ SPECTRE_ALWAYS_INLINE std::complex<double> derivative_factor<Tags::EthEthbar>(
   return static_cast<std::complex<double>>(-(l + s) * (l - s + 1));
 }
 
+template <>
+SPECTRE_ALWAYS_INLINE std::complex<double> derivative_factor<Tags::InverseEth>(
+    const int l, const int s) noexcept {
+  return (l - s + 1) * (l + s) == 0
+             ? 0.0
+             : 1.0 / sqrt(static_cast<std::complex<double>>((l - s + 1) *
+                                                            (l + s)));
+}
+
+template <>
+SPECTRE_ALWAYS_INLINE std::complex<double>
+derivative_factor<Tags::InverseEthbar>(const int l, const int s) noexcept {
+  return (l + s + 1) * (l - s) == 0
+             ? 0.0
+             : 1.0 / -sqrt(static_cast<std::complex<double>>((l + s + 1) *
+                                                             (l - s)));
+}
+
 // For a particular derivative represented by `DerivativeKind` and input spin
 // `Spin`, multiplies the derivative spectral factors with
 // `pre_derivative_modes`, returning by pointer via parameter `derivative_modes`
@@ -174,13 +192,11 @@ struct dispatch_to_transform<
 // template 'implementation' for the DataBox mutate-compatible interface to
 // spin-weighted derivative evaluation. This impl version is needed to have easy
 // access to the `UniqueDifferentiatedFromTagList` as a parameter pack
-template <typename DerivativeTagList,
-          typename UniqueDifferentiatedFromTagList,
+template <typename DerivativeTagList, typename UniqueDifferentiatedFromTagList,
           ComplexRepresentation Representation>
 struct AngularDerivativesImpl;
 
-template <typename... DerivativeTags,
-          typename... UniqueDifferentiatedFromTags,
+template <typename... DerivativeTags, typename... UniqueDifferentiatedFromTags,
           ComplexRepresentation Representation>
 struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
                               tmpl::list<UniqueDifferentiatedFromTags...>,
@@ -198,8 +214,7 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
           DerivativeTags>>*>... transform_of_derivative_scalars,
       const gsl::not_null<db::item_type<Tags::SwshTransform<
           UniqueDifferentiatedFromTags>>*>... transform_of_input_scalars,
-      const db::const_item_type<
-          UniqueDifferentiatedFromTags>&... input_scalars,
+      const db::const_item_type<UniqueDifferentiatedFromTags>&... input_scalars,
       const size_t l_max, const size_t number_of_radial_points) noexcept {
     apply_to_vectors(make_not_null(&get(*transform_of_derivative_scalars))...,
                      make_not_null(&get(*transform_of_input_scalars))...,
@@ -236,17 +251,17 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
         make_transform_list_from_derivative_tags<Representation,
                                                  tmpl::list<DerivativeTags...>>;
 
-    tmpl::for_each<ForwardTransformList>([
-      &number_of_radial_points, &l_max, &inputs..., &transform_of_inputs...
-    ](auto transform_v) noexcept {
-      using transform = typename decltype(transform_v)::type;
-      auto input_transforms = std::make_tuple(transform_of_inputs...);
-      dispatch_to_transform<transform,
-                            tmpl::list<UniqueDifferentiatedFromTags...>>::
-          apply(make_not_null(&input_transforms),
-                std::forward_as_tuple(inputs...), l_max,
-                number_of_radial_points);
-    });
+    tmpl::for_each<ForwardTransformList>(
+        [&number_of_radial_points, &l_max, &inputs...,
+         &transform_of_inputs...](auto transform_v) noexcept {
+          using transform = typename decltype(transform_v)::type;
+          auto input_transforms = std::make_tuple(transform_of_inputs...);
+          dispatch_to_transform<transform,
+                                tmpl::list<UniqueDifferentiatedFromTags...>>::
+              apply(make_not_null(&input_transforms),
+                    std::forward_as_tuple(inputs...), l_max,
+                    number_of_radial_points);
+        });
 
     // apply the modal derivative factors and place the result in the
     // `transform_of_derivatives`
@@ -263,10 +278,10 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
         make_inverse_transform_list<Representation,
                                     tmpl::list<DerivativeTags...>>;
 
-    tmpl::for_each<InverseTransformList>([
-      &number_of_radial_points, &l_max, &derivatives...,
-      &transform_of_derivatives...
-    ](auto transform_v) noexcept {
+    tmpl::for_each<InverseTransformList>([&number_of_radial_points, &l_max,
+                                          &derivatives...,
+                                          &transform_of_derivatives...](
+                                             auto transform_v) noexcept {
       using transform = typename decltype(transform_v)::type;
       auto derivative_tuple = std::make_tuple(derivatives...);
       dispatch_to_transform<transform, tmpl::list<DerivativeTags...>>::apply(
