@@ -42,7 +42,8 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
-              tmpl::list<domain::Tags::InitialExtents<Dim>>>>>,
+              tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
+                         domain::Tags::InitialExtents<Dim>>>>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
@@ -101,7 +102,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     ActionTesting::MockRuntimeSystem<metavariables> runner{
         {domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
-        &runner, element_id, {domain_creator.initial_extents()});
+        &runner, element_id, {domain_creator.initial_refinement_levels(),
+                              domain_creator.initial_extents()});
     ActionTesting::set_phase(make_not_null(&runner),
                              metavariables::Phase::Testing);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
@@ -166,7 +168,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     ActionTesting::MockRuntimeSystem<metavariables> runner{
         {domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
-        &runner, element_id, {domain_creator.initial_extents()});
+        &runner, element_id, {domain_creator.initial_refinement_levels(),
+                              domain_creator.initial_extents()});
     ActionTesting::set_phase(make_not_null(&runner),
                              metavariables::Phase::Testing);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
@@ -234,7 +237,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     ActionTesting::MockRuntimeSystem<metavariables> runner{
         {domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
-        &runner, element_id, {domain_creator.initial_extents()});
+        &runner, element_id, {domain_creator.initial_refinement_levels(),
+                              domain_creator.initial_extents()});
     ActionTesting::set_phase(make_not_null(&runner),
                              metavariables::Phase::Testing);
     ActionTesting::next_action<element_array>(make_not_null(&runner),

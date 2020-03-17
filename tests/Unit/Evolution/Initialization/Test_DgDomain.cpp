@@ -155,6 +155,7 @@ struct Component {
 
   using simple_tags =
       db::AddSimpleTags<domain::Tags::InitialExtents<dim>,
+                        domain::Tags::InitialRefinementLevels<dim>,
                         domain::Tags::InitialFunctionsOfTime<dim>, Tags::Time>;
 
   using phase_dependent_action_list = tmpl::list<
@@ -188,6 +189,8 @@ void test() noexcept {
 
   const std::vector<std::array<size_t, Dim>> initial_extents{
       make_array<Dim>(4_st)};
+  const std::vector<std::array<size_t, Dim>> initial_refinement{
+      make_array<Dim>(0_st)};
   const size_t num_pts = pow<Dim>(4_st);
   const std::array<double, 3> velocity{{1.2, 0.2, -8.9}};
   const double initial_time = 0.0;
@@ -222,8 +225,8 @@ void test() noexcept {
   ActionTesting::MockRuntimeSystem<metavars> runner{{std::move(domain)}};
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, self_id,
-      {initial_extents, std::move(clone_unique_ptrs(functions_of_time)),
-       initial_time});
+      {initial_extents, initial_refinement,
+       std::move(clone_unique_ptrs(functions_of_time)), initial_time});
   runner.set_phase(metavars::Phase::Testing);
   CHECK(ActionTesting::get_next_action_index<component>(runner, self_id) == 0);
   ActionTesting::next_action<component>(make_not_null(&runner), self_id);

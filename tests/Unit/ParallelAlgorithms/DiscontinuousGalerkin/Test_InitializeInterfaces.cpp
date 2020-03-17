@@ -88,7 +88,8 @@ struct ElementArray {
                       evolution::dg::Initialization::Domain<Dim>>,
                   tmpl::list<dg::Actions::InitializeDomain<Dim>>>,
               ActionTesting::InitializeDataBox<tmpl::append<
-                  tmpl::list<domain::Tags::InitialExtents<Dim>, vars_tag,
+                  tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
+                             domain::Tags::InitialExtents<Dim>, vars_tag,
                              other_vars_tag>,
                   tmpl::conditional_t<
                       use_moving_mesh,
@@ -189,7 +190,8 @@ void create_runner_and_run_tests(
   ActionTesting::emplace_component_and_initialize<
       typename Metavariables::element_array>(
       &runner, element_id,
-      {domain_creator.initial_extents(), vars, other_vars, 0.0, 0.1, 0.1,
+      {domain_creator.initial_refinement_levels(),
+       domain_creator.initial_extents(), vars, other_vars, 0.0, 0.1, 0.1,
        domain_creator.functions_of_time()});
 
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
@@ -217,7 +219,8 @@ void create_runner_and_run_tests(
   ActionTesting::emplace_component_and_initialize<
       typename Metavariables::element_array>(
       &runner, element_id,
-      {domain_creator.initial_extents(), vars, other_vars});
+      {domain_creator.initial_refinement_levels(),
+       domain_creator.initial_extents(), vars, other_vars});
 
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
   ActionTesting::set_phase(make_not_null(&runner),
