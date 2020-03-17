@@ -352,7 +352,3 @@ struct remove_cvref {
 template <class T>
 using remove_cvref_t = typename remove_cvref<T>::type;
 }  // namespace cpp20
-
-/// \ingroup TypeTraitsGroup
-/// A collection of useful type traits
-namespace tt {}  // namespace tt
