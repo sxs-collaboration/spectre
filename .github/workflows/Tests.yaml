@@ -317,6 +317,7 @@ jobs:
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D DEBUG_SYMBOLS=OFF
           -D RUN_TESTS_IN_TEST_EXECUTABLES=OFF
+          -D STRIP_SYMBOLS=ON
           -D USE_CCACHE=ON
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
           -D PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE:-'/usr/bin/python3'}
