@@ -64,7 +64,9 @@ struct NoCopy {
 };
 
 namespace TestTags {
-struct Int : db::SimpleTag {
+struct BaseInt : db::BaseTag {};
+
+struct Int : db::SimpleTag, BaseInt {
   static std::string name() noexcept { return "Int"; }
   using type = int;
 };
@@ -88,6 +90,18 @@ struct Negate : db::PrefixTag, db::ComputeTag {
     return -x;
   }
   using argument_tags = tmpl::list<Tag>;
+};
+
+struct NegateDoubleAddInt : db::ComputeTag {
+  static std::string name() noexcept { return "NegateDoubleAddInt"; }
+
+  using return_type = double;
+  static constexpr void function(const gsl::not_null<double*> result,
+                                 const double x, const int y) noexcept {
+    *result = -x + y;
+  }
+  using argument_tags = tmpl::list<Double, BaseInt>;
+  using volume_tags = tmpl::list<BaseInt>;
 };
 
 struct AddThree : db::ComputeTag, Int {
@@ -116,7 +130,6 @@ struct TemplatedDirections : db::SimpleTag {
   using type = std::unordered_set<Direction<3>>;
 };
 }  // namespace TestTags
-
 
 void test_interface_items() {
   constexpr size_t dim = 3;
@@ -160,10 +173,14 @@ void test_interface_items() {
           Tags::InterfaceCompute<internal_directions,
                                  TestTags::Negate<TestTags::Double>>,
           Tags::InterfaceCompute<internal_directions,
+                                 TestTags::NegateDoubleAddInt>,
+          Tags::InterfaceCompute<internal_directions,
                                  TestTags::ComplexComputeItem<dim>>,
           Tags::InterfaceCompute<templated_directions, Tags::Direction<dim>>,
           Tags::InterfaceCompute<templated_directions,
                                  TestTags::Negate<TestTags::Double>>,
+          Tags::InterfaceCompute<templated_directions,
+                                 TestTags::NegateDoubleAddInt>,
           boundary_directions_interior,
           Tags::InterfaceCompute<boundary_directions_interior,
                                  Tags::Direction<dim>>,
@@ -171,6 +188,8 @@ void test_interface_items() {
                                  TestTags::AddThree>,
           Tags::InterfaceCompute<boundary_directions_interior,
                                  TestTags::Negate<TestTags::Double>>,
+          Tags::InterfaceCompute<boundary_directions_interior,
+                                 TestTags::NegateDoubleAddInt>,
           Tags::InterfaceCompute<boundary_directions_interior,
                                  TestTags::ComplexComputeItem<dim>>,
           boundary_directions_exterior>>(
@@ -204,56 +223,75 @@ void test_interface_items() {
   CHECK(get<Tags::BoundaryDirectionsInterior<dim>>(box) ==
         get<Tags::BoundaryDirectionsExterior<dim>>(box));
 
-    CHECK(get<TestTags::Negate<TestTags::Int>>(box) == -5);
+  CHECK(get<TestTags::Negate<TestTags::Int>>(box) == -5);
 
   CHECK((get<Tags::Interface<templated_directions, TestTags::Double>>(box)) ==
         (std::unordered_map<Direction<dim>, double>{
-                           {Direction<dim>::upper_xi(), 4.5}}));
+            {Direction<dim>::upper_xi(), 4.5}}));
 
-    CHECK((get<Tags::Interface<internal_directions,
-                               TestTags::Negate<TestTags::Double>>>(box)) ==
-          (std::unordered_map<Direction<dim>, double>{
-              {Direction<dim>::lower_xi(), -1.5},
-              {Direction<dim>::upper_xi(), -2.5},
-              {Direction<dim>::upper_zeta(), -3.5}}));
+  CHECK((get<Tags::Interface<internal_directions,
+                             TestTags::Negate<TestTags::Double>>>(box)) ==
+        (std::unordered_map<Direction<dim>, double>{
+            {Direction<dim>::lower_xi(), -1.5},
+            {Direction<dim>::upper_xi(), -2.5},
+            {Direction<dim>::upper_zeta(), -3.5}}));
 
-    CHECK((get<Tags::Interface<boundary_directions_interior,
-                               TestTags::Negate<TestTags::Double>>>(box)) ==
-          (std::unordered_map<Direction<dim>, double>{
-              {Direction<dim>::lower_eta(), -10.5},
-              {Direction<dim>::upper_eta(), -20.5},
-              {Direction<dim>::lower_zeta(), -30.5}}));
+  CHECK(
+      (get<Tags::Interface<internal_directions, TestTags::NegateDoubleAddInt>>(
+          box)) == (std::unordered_map<Direction<dim>, double>{
+                       {Direction<dim>::lower_xi(), -1.5 + 5.0},
+                       {Direction<dim>::upper_xi(), -2.5 + 5.0},
+                       {Direction<dim>::upper_zeta(), -3.5 + 5.0}}));
 
-    CHECK((get<Tags::Interface<internal_directions, TestTags::Int>>(box)) ==
-          (std::unordered_map<Direction<dim>, int>{
-              {Direction<dim>::lower_xi(), 8},
-              {Direction<dim>::upper_xi(), 8},
-              {Direction<dim>::upper_zeta(), 8}}));
+  CHECK((get<Tags::Interface<boundary_directions_interior,
+                             TestTags::Negate<TestTags::Double>>>(box)) ==
+        (std::unordered_map<Direction<dim>, double>{
+            {Direction<dim>::lower_eta(), -10.5},
+            {Direction<dim>::upper_eta(), -20.5},
+            {Direction<dim>::lower_zeta(), -30.5}}));
 
-    CHECK((get<Tags::Interface<boundary_directions_interior, TestTags::Int>>(
-              box)) == (std::unordered_map<Direction<dim>, int>{
-                           {Direction<dim>::lower_eta(), 8},
-                           {Direction<dim>::upper_eta(), 8},
-                           {Direction<dim>::lower_zeta(), 8}}));
+  CHECK((get<Tags::Interface<boundary_directions_interior,
+                             TestTags::NegateDoubleAddInt>>(box)) ==
+        (std::unordered_map<Direction<dim>, double>{
+            {Direction<dim>::lower_eta(), -10.5 + 5.0},
+            {Direction<dim>::upper_eta(), -20.5 + 5.0},
+            {Direction<dim>::lower_zeta(), -30.5 + 5.0}}));
 
-    CHECK((get<Tags::Interface<internal_directions,
-                               TestTags::ComplexComputeItem<dim>>>(box)) ==
-          (std::unordered_map<Direction<dim>, std::pair<int, double>>{
-              {Direction<dim>::lower_xi(), {5, 1.5}},
-              {Direction<dim>::upper_xi(), {5, 2.5}},
-              {Direction<dim>::upper_zeta(), {5, 3.5}}}));
+  CHECK((get<Tags::Interface<internal_directions, TestTags::Int>>(box)) ==
+        (std::unordered_map<Direction<dim>, int>{
+            {Direction<dim>::lower_xi(), 8},
+            {Direction<dim>::upper_xi(), 8},
+            {Direction<dim>::upper_zeta(), 8}}));
 
-    CHECK((get<Tags::Interface<boundary_directions_interior,
-                               TestTags::ComplexComputeItem<dim>>>(box)) ==
-          (std::unordered_map<Direction<dim>, std::pair<int, double>>{
-              {Direction<dim>::lower_eta(), {5, 10.5}},
-              {Direction<dim>::upper_eta(), {5, 20.5}},
-              {Direction<dim>::lower_zeta(), {5, 30.5}}}));
+  CHECK((get<Tags::Interface<boundary_directions_interior, TestTags::Int>>(
+            box)) == (std::unordered_map<Direction<dim>, int>{
+                         {Direction<dim>::lower_eta(), 8},
+                         {Direction<dim>::upper_eta(), 8},
+                         {Direction<dim>::lower_zeta(), 8}}));
 
-    CHECK((get<Tags::Interface<templated_directions,
-                               TestTags::Negate<TestTags::Double>>>(box)) ==
-          (std::unordered_map<Direction<dim>, double>{
-              {Direction<dim>::upper_xi(), -4.5}}));
+  CHECK((get<Tags::Interface<internal_directions,
+                             TestTags::ComplexComputeItem<dim>>>(box)) ==
+        (std::unordered_map<Direction<dim>, std::pair<int, double>>{
+            {Direction<dim>::lower_xi(), {5, 1.5}},
+            {Direction<dim>::upper_xi(), {5, 2.5}},
+            {Direction<dim>::upper_zeta(), {5, 3.5}}}));
+
+  CHECK((get<Tags::Interface<boundary_directions_interior,
+                             TestTags::ComplexComputeItem<dim>>>(box)) ==
+        (std::unordered_map<Direction<dim>, std::pair<int, double>>{
+            {Direction<dim>::lower_eta(), {5, 10.5}},
+            {Direction<dim>::upper_eta(), {5, 20.5}},
+            {Direction<dim>::lower_zeta(), {5, 30.5}}}));
+
+  CHECK((get<Tags::Interface<templated_directions,
+                             TestTags::Negate<TestTags::Double>>>(box)) ==
+        (std::unordered_map<Direction<dim>, double>{
+            {Direction<dim>::upper_xi(), -4.5}}));
+
+  CHECK(
+      (get<Tags::Interface<templated_directions, TestTags::NegateDoubleAddInt>>(
+          box)) == (std::unordered_map<Direction<dim>, double>{
+                       {Direction<dim>::upper_xi(), -4.5 + 5.0}}));
 }
 
 constexpr size_t dim = 2;
