@@ -78,7 +78,15 @@ target_include_directories(
   PUBLIC ${PYTHON_INCLUDE_DIRS}
   )
 
-add_dependencies(test-executables ${executable})
+option(
+  RUN_TESTS_IN_TEST_EXECUTABLES
+  "Build RunTests as part of test-executables"
+  ON
+  )
+
+if (RUN_TESTS_IN_TEST_EXECUTABLES)
+  add_dependencies(test-executables ${executable})
+endif (RUN_TESTS_IN_TEST_EXECUTABLES)
 
 spectre_add_catch_tests(${executable} "${SPECTRE_TESTS_LIBRARIES}")
 
