@@ -27,8 +27,9 @@ template <size_t VolumeDim>
 AlignedLattice<VolumeDim>::AlignedLattice(
     const typename BlockBounds::type block_bounds,
     const typename IsPeriodicIn::type is_periodic_in,
-    const typename InitialRefinement::type initial_refinement_levels,
+    const typename InitialLevels::type initial_refinement_levels,
     const typename InitialGridPoints::type initial_number_of_grid_points,
+    typename RefinedLevels::type refined_refinement,
     typename RefinedGridPoints::type refined_grid_points,
     typename BlocksToExclude::type blocks_to_exclude) noexcept
     // clang-tidy: trivially copyable
@@ -38,6 +39,7 @@ AlignedLattice<VolumeDim>::AlignedLattice(
           std::move(initial_refinement_levels)),      // NOLINT
       initial_number_of_grid_points_(                 // NOLINT
           std::move(initial_number_of_grid_points)),  // NOLINT
+      refined_refinement_(std::move(refined_refinement)),
       refined_grid_points_(std::move(refined_grid_points)),
       blocks_to_exclude_(std::move(blocks_to_exclude)),
       number_of_blocks_by_dim_{map_array(
@@ -50,6 +52,16 @@ AlignedLattice<VolumeDim>::AlignedLattice(
         "conditions!");
   }
   for (const auto& refinement_region : refined_grid_points_) {
+    for (size_t i = 0; i < VolumeDim; ++i) {
+      if (gsl::at(refinement_region.upper_corner_index, i) >=
+          gsl::at(block_bounds_, i).size()) {
+        ERROR("Refinement region extends to "
+              << refinement_region.upper_corner_index
+              << ", which is outside the domain");
+      }
+    }
+  }
+  for (const auto& refinement_region : refined_refinement_) {
     for (size_t i = 0; i < VolumeDim; ++i) {
       if (gsl::at(refinement_region.upper_corner_index, i) >=
           gsl::at(block_bounds_, i).size()) {
@@ -74,16 +86,21 @@ Domain<VolumeDim> AlignedLattice<VolumeDim>::create_domain() const noexcept {
       {}, make_array<VolumeDim>(false));
 }
 
+namespace {
 template <size_t VolumeDim>
-std::vector<std::array<size_t, VolumeDim>>
-AlignedLattice<VolumeDim>::initial_extents() const noexcept {
-  std::vector<std::array<size_t, VolumeDim>> all_extents;
+std::vector<std::array<size_t, VolumeDim>> apply_refinement_regions(
+    const Index<VolumeDim>& number_of_blocks_by_dim,
+    const std::vector<std::array<size_t, VolumeDim>>& blocks_to_exclude,
+    const std::array<size_t, VolumeDim>& default_refinement,
+    const std::vector<RefinementRegion<VolumeDim>>&
+        refinement_regions) noexcept {
+  std::vector<std::array<size_t, VolumeDim>> result;
   for (const auto& block_index : indices_for_rectilinear_domains(
-           number_of_blocks_by_dim_,
-           std::vector<Index<VolumeDim>>(blocks_to_exclude_.begin(),
-                                         blocks_to_exclude_.end()))) {
-    std::array<size_t, VolumeDim> extents = initial_number_of_grid_points_;
-    for (const auto& refinement_region : refined_grid_points_) {
+           number_of_blocks_by_dim,
+           std::vector<Index<VolumeDim>>(blocks_to_exclude.begin(),
+                                         blocks_to_exclude.end()))) {
+    std::array<size_t, VolumeDim> block_result = default_refinement;
+    for (const auto& refinement_region : refinement_regions) {
       for (size_t d = 0; d < VolumeDim; ++d) {
         if (block_index[d] < gsl::at(refinement_region.lower_corner_index, d) or
             block_index[d] >=
@@ -91,19 +108,29 @@ AlignedLattice<VolumeDim>::initial_extents() const noexcept {
           goto next_region;
         }
       }
-      extents = refinement_region.refinement;
+      block_result = refinement_region.refinement;
     next_region:;
     }
-    all_extents.push_back(extents);
+    result.push_back(block_result);
   }
-  return all_extents;
+  return result;
+}
+}  // namespace
+
+template <size_t VolumeDim>
+std::vector<std::array<size_t, VolumeDim>>
+AlignedLattice<VolumeDim>::initial_extents() const noexcept {
+  return apply_refinement_regions(number_of_blocks_by_dim_, blocks_to_exclude_,
+                                  initial_number_of_grid_points_,
+                                  refined_grid_points_);
 }
 
 template <size_t VolumeDim>
 std::vector<std::array<size_t, VolumeDim>>
 AlignedLattice<VolumeDim>::initial_refinement_levels() const noexcept {
-  return {number_of_blocks_by_dim_.product() - blocks_to_exclude_.size(),
-          initial_refinement_levels_};
+  return apply_refinement_regions(number_of_blocks_by_dim_, blocks_to_exclude_,
+                                  initial_refinement_levels_,
+                                  refined_refinement_);
 }
 
 template class AlignedLattice<1>;

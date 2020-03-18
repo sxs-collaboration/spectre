@@ -57,8 +57,8 @@ struct RefinementRegion {
 
   static constexpr OptionString help = {
       "A region to be refined differently from the default for the lattice.\n"
-      "The region is a box between the block boundaries indexed by the bound\n"
-      "options."};
+      "The region is a box between the block boundaries indexed by the\n"
+      "Lower- and UpperCornerIndex options."};
   using options = tmpl::list<LowerCornerIndex, UpperCornerIndex, Refinement>;
   RefinementRegion(const std::array<size_t, VolumeDim>& lower_corner_index_in,
                    const std::array<size_t, VolumeDim>& upper_corner_index_in,
@@ -119,7 +119,7 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
     }
   };
 
-  struct InitialRefinement {
+  struct InitialLevels {
     using type = std::array<size_t, VolumeDim>;
     static constexpr OptionString help = {
         "Initial refinement level in each dimension."};
@@ -131,10 +131,17 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
         "Initial number of grid points in each dimension."};
   };
 
+  struct RefinedLevels {
+    using type = std::vector<RefinementRegion<VolumeDim>>;
+    static constexpr OptionString help = {
+        "h-refined regions.  Later entries take priority."};
+    static type default_value() noexcept { return {}; }
+  };
+
   struct RefinedGridPoints {
     using type = std::vector<RefinementRegion<VolumeDim>>;
     static constexpr OptionString help = {
-        "Refined regions.  Later entries take priority."};
+        "p-refined regions.  Later entries take priority."};
     static type default_value() noexcept { return {}; }
   };
 
@@ -147,9 +154,9 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
     }
   };
 
-  using options =
-      tmpl::list<BlockBounds, IsPeriodicIn, InitialRefinement,
-                 InitialGridPoints, RefinedGridPoints, BlocksToExclude>;
+  using options = tmpl::list<BlockBounds, IsPeriodicIn, InitialLevels,
+                             InitialGridPoints, RefinedLevels,
+                             RefinedGridPoints, BlocksToExclude>;
 
   static constexpr OptionString help = {
       "AlignedLattice creates a regular lattice of blocks whose corners are\n"
@@ -165,8 +172,9 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
 
   AlignedLattice(typename BlockBounds::type block_bounds,
                  typename IsPeriodicIn::type is_periodic_in,
-                 typename InitialRefinement::type initial_refinement_levels,
+                 typename InitialLevels::type initial_refinement_levels,
                  typename InitialGridPoints::type initial_number_of_grid_points,
+                 typename RefinedLevels::type refined_refinement,
                  typename RefinedGridPoints::type refined_grid_points,
                  typename BlocksToExclude::type blocks_to_exclude) noexcept;
 
@@ -189,10 +197,11 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
   typename BlockBounds::type block_bounds_{
       make_array<VolumeDim, std::vector<double>>({})};
   typename IsPeriodicIn::type is_periodic_in_{make_array<VolumeDim>(false)};
-  typename InitialRefinement::type initial_refinement_levels_{
+  typename InitialLevels::type initial_refinement_levels_{
       make_array<VolumeDim>(std::numeric_limits<size_t>::max())};
   typename InitialGridPoints::type initial_number_of_grid_points_{
       make_array<VolumeDim>(std::numeric_limits<size_t>::max())};
+  typename RefinedLevels::type refined_refinement_{};
   typename RefinedGridPoints::type refined_grid_points_{};
   typename BlocksToExclude::type blocks_to_exclude_{};
   Index<VolumeDim> number_of_blocks_by_dim_{};
