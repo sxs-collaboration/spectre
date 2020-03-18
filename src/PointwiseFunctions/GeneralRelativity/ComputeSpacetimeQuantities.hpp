@@ -240,6 +240,7 @@ tnsr::abb<DataType, SpatialDim, Frame> derivatives_of_spacetime_metric(
         deriv_spatial_metric) noexcept;
 //@}
 
+//@{
 /*!
  * \brief Computes spacetime normal one-form from lapse.
  *
@@ -249,8 +250,14 @@ tnsr::abb<DataType, SpatialDim, Frame> derivatives_of_spacetime_metric(
  * is computed.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
+void spacetime_normal_one_form(
+    gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> normal_one_form,
+    const Scalar<DataType>& lapse) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::a<DataType, SpatialDim, Frame> spacetime_normal_one_form(
     const Scalar<DataType>& lapse) noexcept;
+//@}
 
 // @{
 /*!
@@ -310,8 +317,14 @@ struct SpacetimeNormalOneFormCompute
     : SpacetimeNormalOneForm<SpatialDim, Frame, DataType>,
       db::ComputeTag {
   using argument_tags = tmpl::list<Lapse<DataType>>;
+
+  using return_type = tnsr::a<DataType, SpatialDim, Frame>;
+
   static constexpr auto function =
-      &spacetime_normal_one_form<SpatialDim, Frame, DataType>;
+      static_cast<void (*)(gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*>,
+                           const Scalar<DataType>&) noexcept>(
+          &spacetime_normal_one_form<SpatialDim, Frame, DataType>);
+
   using base = SpacetimeNormalOneForm<SpatialDim, Frame, DataType>;
 };
 

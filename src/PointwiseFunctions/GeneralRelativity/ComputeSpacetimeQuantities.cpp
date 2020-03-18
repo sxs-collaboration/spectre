@@ -304,11 +304,21 @@ void derivatives_of_spacetime_metric(
 }
 
 template <size_t SpatialDim, typename Frame, typename DataType>
+void spacetime_normal_one_form(
+    const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> normal_one_form,
+    const Scalar<DataType>& lapse) noexcept {
+  destructive_resize_components(normal_one_form, get_size(get(lapse)));
+  for (auto& component : *normal_one_form) {
+    component = 0.0;
+  }
+  get<0>(*normal_one_form) = -get(lapse);
+}
+
+template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::a<DataType, SpatialDim, Frame> spacetime_normal_one_form(
     const Scalar<DataType>& lapse) noexcept {
-  auto normal_one_form =
-      make_with_value<tnsr::a<DataType, SpatialDim, Frame>>(lapse, 0.);
-  get<0>(normal_one_form) = -get(lapse);
+  tnsr::a<DataType, SpatialDim, Frame> normal_one_form{};
+  spacetime_normal_one_form(make_not_null(&normal_one_form), lapse);
   return normal_one_form;
 }
 
@@ -450,6 +460,10 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
           dt_spatial_metric) noexcept;                                         \
   template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                        \
   gr::spacetime_normal_one_form(const Scalar<DTYPE(data)>& lapse) noexcept;    \
+  template void gr::spacetime_normal_one_form(                                 \
+      const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>       \
+          normal_one_form,                                                     \
+      const Scalar<DTYPE(data)>& lapse) noexcept;                              \
   template tnsr::A<DTYPE(data), DIM(data), FRAME(data)>                        \
   gr::spacetime_normal_vector(                                                 \
       const Scalar<DTYPE(data)>& lapse,                                        \
