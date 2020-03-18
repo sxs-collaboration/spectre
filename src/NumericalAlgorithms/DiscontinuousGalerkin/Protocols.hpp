@@ -23,29 +23,6 @@ CREATE_HAS_TYPE_ALIAS(package_field_tags)
 CREATE_HAS_TYPE_ALIAS_V(package_field_tags)
 CREATE_HAS_TYPE_ALIAS(package_extra_tags)
 CREATE_HAS_TYPE_ALIAS_V(package_extra_tags)
-CREATE_IS_CALLABLE(package_data)
-
-template <typename NumericalFluxType, typename ArgumentTags,
-          typename PackageFieldTags, typename PackageExtraTags>
-struct IsPackageDataCallableImpl;
-
-template <typename NumericalFluxType, typename... ArgumentTags,
-          typename... PackageFieldTags, typename... PackageExtraTags>
-struct IsPackageDataCallableImpl<NumericalFluxType, tmpl::list<ArgumentTags...>,
-                                 tmpl::list<PackageFieldTags...>,
-                                 tmpl::list<PackageExtraTags...>>
-    : is_package_data_callable_r_t<
-          void, NumericalFluxType,
-          gsl::not_null<db::item_type<PackageFieldTags>*>...,
-          gsl::not_null<db::item_type<PackageExtraTags>*>...,
-          db::const_item_type<ArgumentTags>...> {};
-
-template <typename NumericalFluxType>
-struct IsPackageDataCallable
-    : IsPackageDataCallableImpl<
-          NumericalFluxType, typename NumericalFluxType::argument_tags,
-          typename NumericalFluxType::package_field_tags,
-          typename NumericalFluxType::package_extra_tags> {};
 
 template <typename NumericalFluxType, typename VariablesTags,
           typename PackageFieldTags, typename PackageExtraTags>
@@ -135,9 +112,10 @@ using NumericalFlux = std::conditional_t<
                       detail::has_argument_tags_v<ConformingType>,
                       detail::has_package_field_tags_v<ConformingType>,
                       detail::has_package_extra_tags_v<ConformingType>>,
-    std::conjunction<detail::IsPackageDataCallable<ConformingType>,
-                     detail::IsNumericalFluxCallable<ConformingType>>,
-    std::false_type>;
+    // We can't currently check that the package_data function is callable
+    // because the `argument_tags` may contain base tags and we can't resolve
+    // their types.
+    detail::IsNumericalFluxCallable<ConformingType>, std::false_type>;
 
 }  // namespace protocols
 }  // namespace dg
