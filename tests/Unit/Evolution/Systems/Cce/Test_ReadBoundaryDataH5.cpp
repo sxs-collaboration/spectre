@@ -690,6 +690,10 @@ void test_reduced_spec_worldtube_buffer_updater(
 }
 }  // namespace
 
+// An increased timeout because this test seems to have high variance in
+// duration. It usually finishes within ~3 seconds. The high variance may be due
+// to the comparatively high magnitude of disk operations in this test.
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
                   "[Unit][Cce]") {
   MAKE_GENERATOR(gen);
