@@ -316,6 +316,8 @@ jobs:
           -D CHARM_ROOT=/work/charm/multicore-linux64-${CHARM_CC}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D DEBUG_SYMBOLS=OFF
+          -D RUN_TESTS_IN_TEST_EXECUTABLES=OFF
+          -D STRIP_SYMBOLS=ON
           -D USE_CCACHE=ON
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
           -D PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE:-'/usr/bin/python3'}
@@ -329,6 +331,9 @@ jobs:
         working-directory: /work/build
         run: |
           make -j2 RunTests
+          # Find and delete object files in the build dir for unit tests.
+          # This reduces the size of the build dir by at least 1.5GB
+          find ./tests/ -type f -name "*.cpp.o" -print0 | xargs -0 rm
       # Build the executables in a single thread to reduce memory usage
       # sufficiently so they compile on the GitHub-hosted runners
       - name: Build executables
@@ -340,6 +345,11 @@ jobs:
         working-directory: /work/build
         run: |
           make -j2 Benchmark
+      - name: Print size of build directory
+        working-directory: /work/build
+        run: |
+          ls | xargs du -sh
+          du -sh .
       - name: Diagnose ccache
         run: |
           ccache -s
