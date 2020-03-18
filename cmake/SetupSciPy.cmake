@@ -10,3 +10,7 @@ file(APPEND
   "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
   "SciPy Version:  ${SCIPY_VERSION}\n"
   )
+
+add_library(SciPy INTERFACE IMPORTED)
+set_property(TARGET SciPy PROPERTY
+  INTERFACE_INCLUDE_DIRECTORIES ${SCIPY_INCLUDE_DIR})
