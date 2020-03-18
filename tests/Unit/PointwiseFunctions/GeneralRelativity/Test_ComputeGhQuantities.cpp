@@ -88,7 +88,16 @@ void test_compute_pi(const DataType& used_for_size) {
 template <size_t Dim, typename DataType>
 void test_compute_gauge_source(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
-      &GeneralizedHarmonic::gauge_source<Dim, Frame::Inertial, DataType>,
+      static_cast<tnsr::a<DataType, Dim, Frame::Inertial> (*)(
+          const Scalar<DataType>&, const Scalar<DataType>&,
+          const tnsr::i<DataType, Dim, Frame::Inertial>&,
+          const tnsr::I<DataType, Dim, Frame::Inertial>&,
+          const tnsr::I<DataType, Dim, Frame::Inertial>&,
+          const tnsr::iJ<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ii<DataType, Dim, Frame::Inertial>&,
+          const Scalar<DataType>&,
+          const tnsr::i<DataType, Dim, Frame::Inertial>&) noexcept>(
+          &::GeneralizedHarmonic::gauge_source<Dim, Frame::Inertial, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "gauge_source", {{{-10., 10.}}},
       used_for_size, 1.e-11);
 }

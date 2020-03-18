@@ -14,6 +14,7 @@
 
 // IWYU pragma: no_include <complex>
 
+/// \cond
 namespace gr {
 template <size_t Dim, typename Frame, typename DataType>
 void spacetime_metric(
@@ -336,7 +337,6 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
 }
 }  // namespace gr
 
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)

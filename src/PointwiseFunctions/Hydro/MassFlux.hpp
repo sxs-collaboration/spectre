@@ -18,10 +18,12 @@
 // IWYU pragma: no_forward_declare hydro::Tags::RestMassDensity
 // IWYU pragma: no_forward_declare hydro::Tags::SpatialVelocity
 
+/// \cond
 namespace gsl {
 template <typename>
 struct not_null;
 }  // namespace gsl
+/// \endcond
 
 namespace hydro {
 //@{

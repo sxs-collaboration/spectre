@@ -1044,6 +1044,7 @@ void two_index_constraint(
     const Scalar<DataType>& gamma2,
     const tnsr::iaa<DataType, SpatialDim, Frame>&
         three_index_constraint) noexcept {
+  destructive_resize_components(constraint, get_size(get(gamma2)));
   for (auto& component : *constraint) {
     component = 0.0;
   }

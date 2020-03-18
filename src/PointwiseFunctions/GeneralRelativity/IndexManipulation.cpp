@@ -8,6 +8,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
+/// \cond
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
 
@@ -98,7 +99,6 @@ void trace(
   }
 }
 
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)

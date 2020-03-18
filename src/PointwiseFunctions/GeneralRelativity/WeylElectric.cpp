@@ -10,6 +10,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
+/// \cond
 namespace gr {
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ii<DataType, SpatialDim, Frame> weyl_electric(
@@ -38,12 +39,9 @@ void weyl_electric(
       for (size_t k = 0; k < SpatialDim; ++k) {
         for (size_t l = 0; l < SpatialDim; ++l) {
           weyl_electric_part->get(i, j) +=
-              extrinsic_curvature.get(k, l) *
-                  (inverse_spatial_metric.get(k, l)) *
-                  extrinsic_curvature.get(i, j) -
-              extrinsic_curvature.get(i, l) *
-                  (inverse_spatial_metric.get(k, l)) *
-                  extrinsic_curvature.get(k, j);
+              inverse_spatial_metric.get(k, l) *
+              (extrinsic_curvature.get(k, l) * extrinsic_curvature.get(i, j) -
+               extrinsic_curvature.get(i, l) * extrinsic_curvature.get(k, j));
         }
       }
     }
@@ -51,8 +49,6 @@ void weyl_electric(
 }
 }  // namespace gr
 
-// Explicit Instantiations
-/// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)

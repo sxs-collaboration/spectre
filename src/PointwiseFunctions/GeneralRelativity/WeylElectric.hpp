@@ -9,10 +9,16 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 
-#include "Utilities/Gsl.hpp"
+/// \cond
+namespace gsl {
+template <typename>
+struct not_null;
+}  // namespace gsl
+/// \endcond
 
 namespace gr {
 
+//@(
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes the electric part of the Weyl tensor in vacuum.
@@ -41,24 +47,30 @@ void weyl_electric(
     const tnsr::ii<DataType, SpatialDim, Frame>& extrinsic_curvature,
     const tnsr::II<DataType, SpatialDim, Frame>&
         inverse_spatial_metric) noexcept;
+//@}
 
 namespace Tags {
 /// Compute item for the electric part of the weyl tensor in vacuum
-/// Computed from the RicciTensor, ExtrinsicCurvature, and InverseSpatialMetric
+/// Computed from the SpatialRicci, ExtrinsicCurvature, and InverseSpatialMetric
 ///
 /// Can be retrieved using gr::Tags::WeylElectric
 template <size_t SpatialDim, typename Frame, typename DataType>
 struct WeylElectricCompute : WeylElectric<SpatialDim, Frame, DataType>,
                              db::ComputeTag {
-  static constexpr tnsr::ii<DataType, SpatialDim, Frame> (*function)(
-      const tnsr::ii<DataType, SpatialDim, Frame>&,
-      const tnsr::ii<DataType, SpatialDim, Frame>&,
-      const tnsr::II<DataType, SpatialDim, Frame>&) =
-          &weyl_electric<SpatialDim, Frame, DataType>;
   using argument_tags = tmpl::list<
-      gr::Tags::RicciTensor<SpatialDim, Frame, DataType>,
+      gr::Tags::SpatialRicci<SpatialDim, Frame, DataType>,
       gr::Tags::ExtrinsicCurvature<SpatialDim, Frame, DataType>,
       gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataType>>;
+
+  using return_type = tnsr::ii<DataType, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*>,
+      const tnsr::ii<DataType, SpatialDim, Frame>&,
+      const tnsr::ii<DataType, SpatialDim, Frame>&,
+      const tnsr::II<DataType, SpatialDim, Frame>&)>(
+      &weyl_electric<SpatialDim, Frame, DataType>);
+
   using base = WeylElectric<SpatialDim, Frame, DataType>;
 };
 }  // namespace Tags
