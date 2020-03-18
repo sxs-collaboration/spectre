@@ -57,7 +57,12 @@ include(CheckBrokenArray0)
 # Need to load python libs before boost.python.
 include(SetupPythonLibs)
 
+# Blaze depends on both Blas and Lapack, since LIBXSMM is a Blas
+# alternative we set it up early too.
 include(SetupBlas)
+include(SetupLapack)
+include(SetupLIBXSMM)
+
 include(SetupBlaze)
 include(SetupBoost)
 include(SetupBrigand)
@@ -66,8 +71,6 @@ include(SetupGoogleBenchmark)
 include(SetupGsl)
 include(SetupHdf5)
 include(SetupAllocator)
-include(SetupLIBXSMM)
-include(SetupLapack)
 include(SetupNumPy)
 include(SetupPapi)
 include(SetupPybind11)

@@ -13,6 +13,8 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+
   PRIVATE
   Blas
+  Lapack
   )

@@ -26,6 +26,8 @@ target_link_libraries(
   PUBLIC
   DataStructures
   ErrorHandling
+
   PRIVATE
   Blas
+  Lapack
   )
