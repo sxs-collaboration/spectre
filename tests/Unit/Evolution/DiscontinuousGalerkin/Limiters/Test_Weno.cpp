@@ -75,6 +75,10 @@ void test_weno_option_parsing() noexcept {
       TestHelpers::test_creation<Limiters::Weno<1, tmpl::list<ScalarTag>>>(
           "Type: Hweno\n"
           "NeighborWeight: 0.01");
+  const auto hweno_1d_tvb =
+      TestHelpers::test_creation<Limiters::Weno<1, tmpl::list<ScalarTag>>>(
+          "Type: Hweno\n"
+          "TvbConstant: 1.0");
   const auto hweno_1d_disabled =
       TestHelpers::test_creation<Limiters::Weno<1, tmpl::list<ScalarTag>>>(
           "Type: Hweno\n"
@@ -86,6 +90,7 @@ void test_weno_option_parsing() noexcept {
   // Check neighbor_weight default from options, op==, op!=
   CHECK(hweno_1d == hweno_1d_default_weight);
   CHECK(hweno_1d != hweno_1d_larger_weight);
+  CHECK(hweno_1d != hweno_1d_tvb);
   CHECK(hweno_1d != hweno_1d_disabled);
   CHECK(hweno_1d != simple_weno_1d);
 
@@ -103,16 +108,20 @@ void test_weno_option_parsing() noexcept {
       Limiters::WenoType::Hweno, 0.001);
   const Limiters::Weno<1, tmpl::list<ScalarTag>>
       expected_hweno_1d_larger_weight(Limiters::WenoType::Hweno, 0.01);
+  const Limiters::Weno<1, tmpl::list<ScalarTag>> expected_hweno_1d_tvb(
+      Limiters::WenoType::Hweno, 0.001, 1.0);
   const Limiters::Weno<1, tmpl::list<ScalarTag>> expected_hweno_1d_disabled(
-      Limiters::WenoType::Hweno, 0.001, true);
+      Limiters::WenoType::Hweno, 0.001, 0.0, true);
   const Limiters::Weno<1, tmpl::list<ScalarTag>> expected_simple_weno_1d(
       Limiters::WenoType::SimpleWeno, 0.001);
   const Limiters::Weno<2, tmpl::list<ScalarTag>> expected_hweno_2d(
       Limiters::WenoType::Hweno, 0.001);
   const Limiters::Weno<3, tmpl::list<ScalarTag, VectorTag<3>>>
-      expected_hweno_3d_larger_weight(Limiters::WenoType::Hweno, 0.01, true);
+      expected_hweno_3d_larger_weight(Limiters::WenoType::Hweno, 0.01, 0.0,
+                                      true);
   CHECK(hweno_1d == expected_hweno_1d);
   CHECK(hweno_1d_larger_weight == expected_hweno_1d_larger_weight);
+  CHECK(hweno_1d_tvb == expected_hweno_1d_tvb);
   CHECK(hweno_1d_disabled == expected_hweno_1d_disabled);
   CHECK(simple_weno_1d == expected_simple_weno_1d);
   CHECK(hweno_2d == expected_hweno_2d);
@@ -122,7 +131,7 @@ void test_weno_option_parsing() noexcept {
 void test_weno_serialization() noexcept {
   INFO("Test WENO serialization");
   const Limiters::Weno<1, tmpl::list<ScalarTag>> weno(Limiters::WenoType::Hweno,
-                                                      0.01, true);
+                                                      0.01, 1.0, true);
   test_serialization(weno);
 }
 
@@ -554,6 +563,25 @@ void test_simple_weno(const std::array<size_t, VolumeDim>& extents) noexcept {
   CHECK(activated);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_scalar, scalar, approx);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_vector, vector, approx);
+
+  // Now call the limiter again, but this time use a non-zero TVB constant such
+  // that the TCI says limiting isn't needed
+  const double tvb_constant = 2.0;
+  const Weno simple_weno_tvb(Limiters::WenoType::SimpleWeno,
+                             neighbor_linear_weight, tvb_constant);
+
+  scalar = get<ScalarTag>(local_vars);
+  vector = get<VectorTag<VolumeDim>>(local_vars);
+  const bool activated_tvb =
+      simple_weno_tvb(make_not_null(&scalar), make_not_null(&vector), mesh,
+                      element, element_size, neighbor_data);
+
+  // expected_scalar is already set to local_vars
+  expected_vector = get<VectorTag<VolumeDim>>(local_vars);
+
+  CHECK_FALSE(activated_tvb);
+  CHECK_ITERABLE_APPROX(expected_scalar, scalar);
+  CHECK_ITERABLE_APPROX(expected_vector, vector);
 }
 
 template <size_t VolumeDim>
@@ -604,6 +632,25 @@ void test_hweno(const std::array<size_t, VolumeDim>& extents) noexcept {
   CHECK(activated);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_scalar, scalar, approx);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_vector, vector, approx);
+
+  // Now call the limiter again, but this time use a non-zero TVB constant such
+  // that the TCI says limiting isn't needed
+  const double tvb_constant = 2.0;
+  const Weno hweno_tvb(Limiters::WenoType::Hweno, neighbor_linear_weight,
+                       tvb_constant);
+
+  scalar = get<ScalarTag>(local_vars);
+  vector = get<VectorTag<VolumeDim>>(local_vars);
+  const bool activated_tvb =
+      hweno_tvb(make_not_null(&scalar), make_not_null(&vector), mesh, element,
+                element_size, neighbor_data);
+
+  expected_scalar = get<ScalarTag>(local_vars);
+  expected_vector = get<VectorTag<VolumeDim>>(local_vars);
+
+  CHECK_FALSE(activated_tvb);
+  CHECK_ITERABLE_APPROX(expected_scalar, scalar);
+  CHECK_ITERABLE_APPROX(expected_vector, vector);
 }
 
 }  // namespace
