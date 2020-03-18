@@ -186,6 +186,14 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - This needs to be turned `OFF` in order to use
     [include-what-you-use
     (IWYU)](https://github.com/include-what-you-use/include-what-you-use)
+- DEBUG_SYMBOLS
+  - Whether or not to use debug symbols (default is `ON`)
+  - Disabling debug symbols will reduce compile time and total size of the build
+    directory.
+- STRIP_SYMBOLS
+  - Whether or not to strip all symbols (default is `OFF`)
+  - If enabled strips all extraneous symbols from libraries and executables,
+    further reducing the size of them.
 
 ## Formaline
 
