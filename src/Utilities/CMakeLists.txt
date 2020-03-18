@@ -17,6 +17,7 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   Blaze
+  Boost::boost
   Brigand
   ErrorHandling
   Libxsmm

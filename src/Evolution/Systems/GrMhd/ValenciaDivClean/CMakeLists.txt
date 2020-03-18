@@ -19,11 +19,13 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
-  PUBLIC DataStructures
-  INTERFACE ErrorHandling
-  INTERFACE GeneralRelativity
-  INTERFACE Hydro
-  INTERFACE Limiters
-  INTERFACE Valencia
-  INTERFACE VariableFixing
+  PUBLIC
+  Boost::boost
+  DataStructures
+  ErrorHandling
+  GeneralRelativity
+  Hydro
+  Limiters
+  Valencia
+  VariableFixing
   )

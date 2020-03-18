@@ -13,5 +13,5 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/Convergence/"
   "${LIBRARY_SOURCES}"
-  "Convergence;DataStructures"
+  "Boost::boost;Convergence;DataStructures"
   )

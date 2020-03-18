@@ -3,7 +3,6 @@
 
 #include "Evolution/Systems/RelativisticEuler/Valencia/PrimitiveFromConservative.hpp"
 
-#include <boost/none.hpp>
 #include <cmath>
 #include <limits>
 

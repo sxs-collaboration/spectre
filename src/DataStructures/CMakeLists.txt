@@ -19,6 +19,7 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   Blaze
+  Boost::boost
   ErrorHandling
   )
 

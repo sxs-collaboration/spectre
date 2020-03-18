@@ -9,7 +9,6 @@
 #include <pup.h>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"

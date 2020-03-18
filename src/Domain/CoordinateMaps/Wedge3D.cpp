@@ -9,7 +9,6 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/OrientationMap.hpp"
-#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/ConstantExpressions.hpp"

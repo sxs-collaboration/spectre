@@ -30,6 +30,7 @@ target_link_libraries(
   PUBLIC
   ApparentHorizons
   Blas
+  Boost::boost
   Domain
   ErrorHandling
   GSL::gsl

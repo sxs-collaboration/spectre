@@ -40,6 +40,9 @@ function(add_algorithm_test TEST_NAME)
   target_link_libraries(
     ${EXECUTABLE_NAME}
     PUBLIC
+    # Link against Boost::program_options for now until we have proper
+    # dependency handling for header-only libs
+    Boost::program_options
     DataStructures
     ErrorHandling
     Informer

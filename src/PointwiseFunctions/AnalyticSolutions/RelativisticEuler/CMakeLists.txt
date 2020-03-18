@@ -13,8 +13,10 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
-  PUBLIC DataStructures
-  INTERFACE ErrorHandling
-  INTERFACE GeneralRelativitySolutions
-  INTERFACE Hydro
+  PUBLIC
+  Boost::boost
+  DataStructures
+  ErrorHandling
+  GeneralRelativitySolutions
+  Hydro
   )

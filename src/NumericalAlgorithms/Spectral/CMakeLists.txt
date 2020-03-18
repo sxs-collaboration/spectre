@@ -28,7 +28,12 @@ target_link_libraries(
   ErrorHandling
   Libsharp
 
+  INTERFACE
+  # LinearOperators should be PUBLIC but there is a cyclic dependency
+  LinearOperators
+
   PRIVATE
   Blas
+  Boost::boost
   Lapack
   )

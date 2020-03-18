@@ -15,5 +15,5 @@ add_test_library(
   ${LIBRARY}
   "ControlSystem"
   "${LIBRARY_SOURCES}"
-  "ControlSystem;FunctionsOfTime"
+  "Boost::boost;ControlSystem;FunctionsOfTime"
   )

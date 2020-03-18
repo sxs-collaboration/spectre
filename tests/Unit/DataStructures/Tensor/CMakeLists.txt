@@ -17,5 +17,5 @@ add_test_library(
   ${LIBRARY}
   "DataStructures/Tensor"
   "${LIBRARY_SOURCES}"
-  "DataStructures;ErrorHandling"
+  "Boost::boost;DataStructures;ErrorHandling"
   )
