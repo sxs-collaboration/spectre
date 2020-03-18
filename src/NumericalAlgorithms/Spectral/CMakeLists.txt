@@ -26,6 +26,7 @@ target_link_libraries(
   PUBLIC
   DataStructures
   ErrorHandling
+  Libsharp
 
   PRIVATE
   Blas
