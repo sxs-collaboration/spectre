@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "Domain/ElementId.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
@@ -288,10 +289,10 @@ struct SendDataForFluxes {
           const auto& normal_dot_fluxes =
               db::get<interface_normal_dot_fluxes_tag>(box).at(direction);
           local_data.mortar_data.assign_subset(
-              boundary_mesh == mortar_mesh
-                  ? normal_dot_fluxes
-                  : project_to_mortar(normal_dot_fluxes, boundary_mesh,
-                                      mortar_mesh, mortar_size));
+              needs_projection(boundary_mesh, mortar_mesh, mortar_size)
+                  ? project_to_mortar(normal_dot_fluxes, boundary_mesh,
+                                      mortar_mesh, mortar_size)
+                  : normal_dot_fluxes);
         }
 
         if (not orientation.is_aligned()) {
