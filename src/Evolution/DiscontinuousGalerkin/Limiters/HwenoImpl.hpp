@@ -22,6 +22,8 @@
 #include "Domain/DirectionMap.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoGridHelpers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/WenoHelpers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
 #include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -38,7 +40,7 @@ class Mesh;
 /// \endcond
 
 namespace Limiters {
-namespace Hweno_detail {
+namespace Weno_detail {
 
 // Caching class that holds various precomputed terms used in the constrained-
 // fit algebra on each element.
@@ -292,6 +294,13 @@ void solve_constrained_fit(
         primary_neighbor,
     const std::vector<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>&
         neighbors_to_exclude) noexcept {
+  ASSERT(not alg::found(neighbors_to_exclude, primary_neighbor),
+         "Logical inconsistency: trying to exclude the primary neighbor.");
+  ASSERT(not neighbors_to_exclude.empty() or neighbor_data.size() == 1,
+         "The HWENO constrained fit algorithm expects at least one neighbor \n"
+         "to exclude from the fit (unless if the element has a single \n"
+         "neighbor, which would automatically be the primary neighbor).");
+
   // Get the cache of linear algebra quantities for this element
   const ConstrainedFitCache<VolumeDim>& cache =
       constrained_fit_cache(element, mesh);
@@ -320,9 +329,9 @@ void solve_constrained_fit(
       LIKELY(directions_to_exclude.size() < 2)
           ? cache.retrieve_inverse_a_matrix(primary_direction,
                                             directions_to_exclude)
-          : Hweno_detail::inverse_a_matrix(
-                element, mesh, w, interp_matrices, w_dot_interp_matrices,
-                primary_direction, directions_to_exclude);
+          : inverse_a_matrix(element, mesh, w, interp_matrices,
+                             w_dot_interp_matrices, primary_direction,
+                             directions_to_exclude);
 
   const DataVector b = b_vector<Tag>(mesh, tensor_index, w, interp_matrices,
                                      w_dot_interp_matrices, neighbor_data,
@@ -357,17 +366,9 @@ void solve_constrained_fit(
       inverse_a_times_b + lagrange_multiplier * inverse_a_times_w;
 }
 
-}  // namespace Hweno_detail
-
-template <size_t VolumeDim, typename Package>
-using LimiterNeighborData = std::unordered_map<
-    std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, Package,
-    boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>;
-
 /*!
  * \ingroup LimitersGroup
- * \brief Compute the HWENO modified solution for a particular tensor
- * from a particular neighbor element
+ * \brief Compute the HWENO solution for one tensor
  *
  * The HWENO limiter reconstructs a new solution from the linear combination of
  * the local DG solution and a "modified" solution from each neighbor element.
@@ -521,34 +522,51 @@ using LimiterNeighborData = std::unordered_map<
  * untested for grids where elements are curved, and it should not be expected
  * to work in these cases.
  */
-template <typename Tag, size_t VolumeDim, typename Package>
-void hweno_modified_neighbor_solution(
-    const gsl::not_null<db::item_type<Tag>*> modified_tensor,
-    const db::const_item_type<Tag>& local_tensor,
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
-    const LimiterNeighborData<VolumeDim, Package>& neighbor_data,
-    const std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>&
-        primary_neighbor) noexcept {
-  ASSERT(Weno_detail::check_element_has_one_similar_neighbor_in_direction(
-             element, primary_neighbor.first),
-         "Found some amount of h-refinement; this is not supported");
-  alg::for_each(neighbor_data, [&mesh](const auto& neighbor_and_data) noexcept {
+template <typename Tag, size_t VolumeDim, typename PackagedData>
+void hweno_impl(
+    const gsl::not_null<std::unordered_map<
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
+        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>*>
+        modified_neighbor_solution_buffer,
+    const gsl::not_null<db::item_type<Tag>*> tensor,
+    const double neighbor_linear_weight, const Mesh<VolumeDim>& mesh,
+    const Element<VolumeDim>& element,
+    const std::unordered_map<
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
+        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+        neighbor_data) noexcept {
+  alg::for_each(neighbor_data, [&element, &
+                                mesh ](const auto& neighbor_and_data) noexcept {
+    ASSERT(Weno_detail::check_element_has_one_similar_neighbor_in_direction(
+               element, neighbor_and_data.first.first),
+           "Found some amount of h-refinement; this is not supported");
     ASSERT(neighbor_and_data.second.mesh == mesh,
            "Found some amount of p-refinement; this is not supported");
   });
 
-  for (size_t tensor_index = 0; tensor_index < local_tensor.size();
-       ++tensor_index) {
-    const auto& tensor_component = local_tensor[tensor_index];
-    const auto neighbors_to_exclude =
-        Hweno_detail::secondary_neighbors_to_exclude_from_fit<Tag>(
-            mean_value(tensor_component, mesh), tensor_index, neighbor_data,
-            primary_neighbor);
-    Hweno_detail::solve_constrained_fit<Tag>(
-        make_not_null(&(*modified_tensor)[tensor_index]),
-        local_tensor[tensor_index], tensor_index, element, mesh, neighbor_data,
-        primary_neighbor, neighbors_to_exclude);
+  for (size_t tensor_index = 0; tensor_index < tensor->size(); ++tensor_index) {
+    const auto& tensor_component = (*tensor)[tensor_index];
+    for (const auto& neighbor_and_data : neighbor_data) {
+      const auto& primary_neighbor = neighbor_and_data.first;
+      const auto neighbors_to_exclude =
+          secondary_neighbors_to_exclude_from_fit<Tag>(
+              mean_value(tensor_component, mesh), tensor_index, neighbor_data,
+              primary_neighbor);
+
+      DataVector& buffer =
+          modified_neighbor_solution_buffer->at(primary_neighbor);
+      solve_constrained_fit<Tag>(make_not_null(&buffer), tensor_component,
+                                 tensor_index, element, mesh, neighbor_data,
+                                 primary_neighbor, neighbors_to_exclude);
+    }
+
+    // Sum local and modified neighbor polynomials for the WENO reconstruction
+    Weno_detail::reconstruct_from_weighted_sum(
+        make_not_null(&((*tensor)[tensor_index])), mesh, neighbor_linear_weight,
+        *modified_neighbor_solution_buffer,
+        Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial);
   }
 }
 
+}  // namespace Weno_detail
 }  // namespace Limiters

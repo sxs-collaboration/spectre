@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/DiscontinuousGalerkin/Limiters/HwenoModifiedSolution.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/HwenoImpl.hpp"
 
 #include <array>
 #include <bitset>
@@ -107,7 +107,7 @@ Matrix volume_interpolation_matrix(
 }  // namespace
 
 namespace Limiters {
-namespace Hweno_detail {
+namespace Weno_detail {
 
 template <size_t VolumeDim>
 Matrix inverse_a_matrix(
@@ -336,5 +336,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef INSTANTIATE
 
-}  // namespace Hweno_detail
+}  // namespace Weno_detail
 }  // namespace Limiters

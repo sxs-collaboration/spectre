@@ -4,7 +4,7 @@
 set(LIBRARY "Test_Limiters")
 
 set(LIBRARY_SOURCES
-  Test_HwenoModifiedSolution.cpp
+  Test_HwenoImpl.cpp
   Test_Krivodonova.cpp
   Test_LimiterActions.cpp
   Test_LimiterActionsWithMinmod.cpp
