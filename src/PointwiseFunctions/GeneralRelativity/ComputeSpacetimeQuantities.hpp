@@ -74,6 +74,7 @@ void spatial_metric(
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept;
 // @}
 
+//@{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Compute inverse spacetime metric from inverse spatial metric, lapse
@@ -89,11 +90,21 @@ void spatial_metric(
  * spatial metric respectively
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
+void inverse_spacetime_metric(
+    gsl::not_null<tnsr::AA<DataType, SpatialDim, Frame>*>
+        inverse_spacetime_metric,
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::II<DataType, SpatialDim, Frame>&
+        inverse_spatial_metric) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::AA<DataType, SpatialDim, Frame> inverse_spacetime_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::II<DataType, SpatialDim, Frame>&
         inverse_spatial_metric) noexcept;
+//@}
 
 // @{
 /*!
@@ -341,8 +352,15 @@ struct InverseSpacetimeMetricCompute
   using argument_tags =
       tmpl::list<Lapse<DataType>, Shift<SpatialDim, Frame, DataType>,
                  InverseSpatialMetric<SpatialDim, Frame, DataType>>;
-  static constexpr auto function =
-      &inverse_spacetime_metric<SpatialDim, Frame, DataType>;
+
+  using return_type = tnsr::AA<DataType, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::AA<DataType, SpatialDim, Frame>*>,
+      const Scalar<DataType>&, const tnsr::I<DataType, SpatialDim, Frame>&,
+      const tnsr::II<DataType, SpatialDim, Frame>&) noexcept>(
+      &inverse_spacetime_metric<SpatialDim, Frame, DataType>);
+
   using base = InverseSpacetimeMetric<SpatialDim, Frame, DataType>;
 };
 
