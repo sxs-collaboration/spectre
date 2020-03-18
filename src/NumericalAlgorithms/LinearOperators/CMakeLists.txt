@@ -22,6 +22,7 @@ target_link_libraries(
   Blas
   DataStructures
   ErrorHandling
+  Options
   Spectral
 
   INTERFACE

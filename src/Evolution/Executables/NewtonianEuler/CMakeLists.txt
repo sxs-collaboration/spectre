@@ -15,6 +15,7 @@ set(LIBS_TO_LINK
   NewtonianEulerNumericalFluxes
   NewtonianEulerSolutions
   NewtonianEulerSources
+  Options
   Time
   Utilities
   )

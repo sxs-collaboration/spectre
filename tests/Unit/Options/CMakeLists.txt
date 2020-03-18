@@ -13,5 +13,5 @@ add_test_library(
   ${LIBRARY}
   "Options/"
   "${LIBRARY_SOURCES}"
-  "Utilities"
+  "Options;Utilities"
   )

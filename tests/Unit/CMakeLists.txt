@@ -65,6 +65,7 @@ target_link_libraries(
   Boost::program_options
   ErrorHandling
   Informer
+  Options
   Utilities
   ${SPECTRE_LIBRARIES}
   )

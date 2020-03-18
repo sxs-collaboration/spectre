@@ -26,6 +26,7 @@ target_link_libraries(
   GeneralRelativity
   Hydro
   Limiters
+  Options
   Valencia
   VariableFixing
   )

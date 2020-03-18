@@ -11,6 +11,7 @@ set(LIBS_TO_LINK
     MathFunctions
     ScalarWave
     Time
+    Options
     Utilities
     WaveEquation
     ${SPECTRE_LIBRARIES}

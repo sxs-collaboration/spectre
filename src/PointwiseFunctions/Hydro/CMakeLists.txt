@@ -21,6 +21,7 @@ target_link_libraries(
   Boost::boost
   DataStructures
   ErrorHandling
+  Options
   )
 
 if(BUILD_PYTHON_BINDINGS)

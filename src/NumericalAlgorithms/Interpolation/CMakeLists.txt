@@ -34,5 +34,6 @@ target_link_libraries(
   Domain
   ErrorHandling
   GSL::gsl
+  Options
   Spectral
   )

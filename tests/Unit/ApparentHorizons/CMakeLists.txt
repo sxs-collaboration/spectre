@@ -20,7 +20,7 @@ add_test_library(
   ${LIBRARY}
   "ApparentHorizons"
   "${LIBRARY_SOURCES}"
-  "ApparentHorizons;GeneralRelativitySolutions;RootFinding;Utilities"
+  "ApparentHorizons;GeneralRelativitySolutions;RootFinding;Options;Utilities"
   )
 
 add_dependencies(

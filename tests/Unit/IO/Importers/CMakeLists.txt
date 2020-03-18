@@ -12,7 +12,7 @@ add_test_library(
   ${LIBRARY}
   "IO/Importers"
   "${LIBRARY_SOURCES}"
-  "IO"
+  "IO;Options"
   )
 
 add_dependencies(
@@ -30,7 +30,7 @@ function(add_algorithm_test TEST_NAME DIM)
     ${HPP_NAME}
     tests/Unit/IO/Importers
     Metavariables<${DIM}>
-    "DataStructures;Domain;ErrorHandling;Informer;IO"
+    "DataStructures;Domain;ErrorHandling;Informer;IO;Options"
     )
 
   add_dependencies(test-executables ${EXECUTABLE_NAME})

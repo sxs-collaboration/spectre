@@ -13,5 +13,5 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/"
   "${LIBRARY_SOURCES}"
-  "NewtonianEulerSolutions;Utilities"
+  "NewtonianEulerSolutions;Options;Utilities"
   )

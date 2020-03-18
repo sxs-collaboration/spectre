@@ -16,6 +16,7 @@ target_link_libraries(
   Boost::boost
   Domain
   DataStructures
+  Options
   Utilities
 
   PRIVATE

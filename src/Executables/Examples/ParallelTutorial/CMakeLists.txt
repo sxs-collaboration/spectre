@@ -4,6 +4,7 @@
 # [add_spectre_executable]
 set(LIBS_TO_LINK
   Informer
+  Options
   Utilities
   )
 

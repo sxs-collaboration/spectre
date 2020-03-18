@@ -14,5 +14,5 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/GrMhd"
   "${LIBRARY_SOURCES}"
-  "GrMhdSolutions;Utilities"
+  "GrMhdSolutions;Options;Utilities"
   )

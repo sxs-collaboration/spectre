@@ -18,4 +18,5 @@ target_link_libraries(
   GeneralRelativitySolutions
   Hydro
   M1Grey
+  Options
   )

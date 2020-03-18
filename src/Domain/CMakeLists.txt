@@ -48,6 +48,7 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   FunctionsOfTime
+  Options
   Spectral
   Utilities
   )

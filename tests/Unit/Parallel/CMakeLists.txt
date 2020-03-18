@@ -22,6 +22,7 @@ function(add_algorithm_test EXECUTABLE_NAME)
     Boost::program_options
     ErrorHandling
     Informer
+    Options
     Utilities
     ${SPECTRE_LIBRARIES}
     )
@@ -139,7 +140,7 @@ add_test_library(
   ${LIBRARY}
   "Parallel"
   "${LIBRARY_SOURCES}"
-  ""
+  "Options"
   )
 
 add_dependencies(

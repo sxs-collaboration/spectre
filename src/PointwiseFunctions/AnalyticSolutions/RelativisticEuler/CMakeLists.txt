@@ -19,4 +19,5 @@ target_link_libraries(
   ErrorHandling
   GeneralRelativitySolutions
   Hydro
+  Options
   )

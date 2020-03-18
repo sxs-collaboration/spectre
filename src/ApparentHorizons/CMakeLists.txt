@@ -23,5 +23,6 @@ target_link_libraries(
   ErrorHandling
   GeneralRelativity
   LinearAlgebra
+  Options
   SPHEREPACK
   )

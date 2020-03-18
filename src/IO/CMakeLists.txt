@@ -29,6 +29,7 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   Hdf5
+  Options
   Utilities
   )
 

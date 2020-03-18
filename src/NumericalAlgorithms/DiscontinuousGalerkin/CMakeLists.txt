@@ -15,5 +15,6 @@ target_link_libraries(
   PUBLIC
   Boost::boost
   DataStructures
+  Options
   Spectral
   )

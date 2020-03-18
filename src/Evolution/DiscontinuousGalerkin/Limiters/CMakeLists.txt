@@ -25,4 +25,5 @@ target_link_libraries(
   Domain
   Interpolation  # for WENO
   LinearOperators
+  Options
   )

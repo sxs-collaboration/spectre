@@ -31,6 +31,7 @@ target_link_libraries(
   ErrorHandling
   IO
   LinearOperators
+  Options
   Spectral
   Utilities
   )
