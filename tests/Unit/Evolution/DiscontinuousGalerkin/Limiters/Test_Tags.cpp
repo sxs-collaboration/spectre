@@ -10,7 +10,6 @@ namespace {
 struct SomeType {};
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.DiscontinuousGalerkin.Limiters.Tags",
-                  "[Unit][Evolution]") {
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.Tags", "[Unit][Evolution]") {
   TestHelpers::db::test_simple_tag<Tags::Limiter<SomeType>>("Limiter");
 }
