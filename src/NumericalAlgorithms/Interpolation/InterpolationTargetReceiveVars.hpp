@@ -199,10 +199,23 @@ void clean_up_interpolation_target(
   // We are now done with this temporal_id, so we can pop it and
   // clean up data associated with it.
   db::mutate<Tags::TemporalIds<TemporalId>,
-             Tags::CompletedTemporalIds<TemporalId>>(
-      box, [&temporal_id](const gsl::not_null<std::deque<TemporalId>*> ids,
-                          const gsl::not_null<std::deque<TemporalId>*>
-                              completed_ids) noexcept {
+             Tags::CompletedTemporalIds<TemporalId>,
+             Tags::IndicesOfFilledInterpPoints<TemporalId>,
+             Tags::IndicesOfInvalidInterpPoints<TemporalId>,
+             Tags::InterpolatedVars<InterpolationTargetTag, TemporalId>>(
+      box, [&temporal_id](
+               const gsl::not_null<std::deque<TemporalId>*> ids,
+               const gsl::not_null<std::deque<TemporalId>*> completed_ids,
+               const gsl::not_null<
+                   std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
+                   indices_of_filled,
+               const gsl::not_null<
+                   std::unordered_map<TemporalId, std::unordered_set<size_t>>*>
+                   indices_of_invalid,
+               const gsl::not_null<std::unordered_map<
+                   TemporalId, Variables<typename InterpolationTargetTag::
+                                             vars_to_interpolate_to_target>>*>
+                   interpolated_vars) noexcept {
         completed_ids->push_back(temporal_id);
         ids->pop_front();
         // We want to keep track of all completed temporal_ids to deal with
@@ -215,6 +228,9 @@ void clean_up_interpolation_target(
         if (completed_ids->size() > 1000) {
           completed_ids->pop_front();
         }
+        indices_of_filled->erase(temporal_id);
+        indices_of_invalid->erase(temporal_id);
+        interpolated_vars->erase(temporal_id);
       });
 }
 
