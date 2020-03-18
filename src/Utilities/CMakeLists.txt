@@ -15,7 +15,9 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE ErrorHandling
+  PUBLIC
+  Blaze
+  ErrorHandling
   )
 
 if (NOT USE_FORMALINE)
