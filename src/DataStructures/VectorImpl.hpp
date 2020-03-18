@@ -24,6 +24,7 @@
 #include "Utilities/PrintHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
+#include "Utilities/TypeTraits/IsComplexOfFundamental.hpp"
 
 // IWYU doesn't like that we want PointerVector.hpp to expose Blaze and also
 // have VectorImpl.hpp to expose PointerVector.hpp without including Blaze

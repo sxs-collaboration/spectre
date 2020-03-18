@@ -12,7 +12,7 @@
 #include "Domain/SegmentId.hpp"  // IWYU pragma: keep
 #include "Domain/Side.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 namespace PUP {
 class er;

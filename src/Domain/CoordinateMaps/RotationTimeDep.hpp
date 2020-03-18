@@ -11,7 +11,7 @@
 #include <unordered_map>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 namespace domain {

@@ -6,6 +6,9 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
+#include "Utilities/TypeTraits/CreateIsCallable.hpp"
+#include "Utilities/TypeTraits/IsCallable.hpp"
 
 namespace dg {
 /// \ref protocols related to Discontinuous Galerkin functionality

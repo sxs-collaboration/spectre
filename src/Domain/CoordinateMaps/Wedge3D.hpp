@@ -10,11 +10,13 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/OrientationMap.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
+/// \cond
 namespace PUP {
 class er;
 }  // namespace PUP
+/// \endcond
 
 namespace domain {
 namespace CoordinateMaps {

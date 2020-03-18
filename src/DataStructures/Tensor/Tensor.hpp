@@ -29,6 +29,7 @@
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsStreamable.hpp"
 
 /// \cond
 template <typename X, typename Symm = Symmetry<>,

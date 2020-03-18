@@ -28,7 +28,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 namespace domain {
 namespace CoordMapsTimeDependent {

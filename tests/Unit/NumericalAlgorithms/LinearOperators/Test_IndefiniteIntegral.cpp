@@ -14,6 +14,7 @@
 #include "NumericalAlgorithms/LinearOperators/IndefiniteIntegral.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TypeTraits/GetFundamentalType.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 

@@ -11,7 +11,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/CoordinateMaps/TimeDependentHelpers.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 class DataVector;

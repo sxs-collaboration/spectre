@@ -21,7 +21,7 @@
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
 namespace LinearSolver {

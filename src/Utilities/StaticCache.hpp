@@ -10,7 +10,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsInteger.hpp"
 
 /// \ingroup UtilitiesGroup
 /// Range of values for StaticCache indices.  The `Start` is inclusive

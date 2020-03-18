@@ -11,7 +11,8 @@
 #include <unordered_map>
 
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/CreateIsCallable.hpp"
+#include "Utilities/TypeTraits/IsCallable.hpp"
 
 namespace domain {
 /// Check if the calls to the coordinate map and its inverse map are

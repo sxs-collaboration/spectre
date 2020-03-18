@@ -21,6 +21,7 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 namespace Cce {
 namespace detail {

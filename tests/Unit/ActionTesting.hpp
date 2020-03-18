@@ -47,6 +47,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
 // IWYU pragma: no_forward_declare db::DataBox

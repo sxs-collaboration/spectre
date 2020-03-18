@@ -16,7 +16,7 @@
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
+#include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
 template <class>

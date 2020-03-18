@@ -7,6 +7,8 @@
 
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
+#include "Utilities/TypeTraits/CreateIsCallable.hpp"
 #include "tests/Unit/ProtocolTestHelpers.hpp"
 
 namespace {

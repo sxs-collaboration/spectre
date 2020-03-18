@@ -18,7 +18,7 @@
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
 namespace PUP {

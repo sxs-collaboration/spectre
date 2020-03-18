@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "Utilities/Requires.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 namespace {
 /// [function_definitions]

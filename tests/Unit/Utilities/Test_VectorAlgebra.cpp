@@ -10,7 +10,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/ModalVector.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/GetFundamentalType.hpp"
 #include "Utilities/VectorAlgebra.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"

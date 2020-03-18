@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 namespace TestHelpers {
 

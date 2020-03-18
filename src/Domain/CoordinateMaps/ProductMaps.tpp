@@ -17,7 +17,6 @@
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits.hpp"
 
 namespace domain {
 namespace CoordinateMaps {

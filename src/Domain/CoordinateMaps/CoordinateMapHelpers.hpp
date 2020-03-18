@@ -15,7 +15,7 @@
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 namespace domain {
 namespace CoordinateMap_detail {
