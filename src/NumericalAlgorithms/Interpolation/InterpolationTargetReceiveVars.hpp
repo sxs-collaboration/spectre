@@ -20,6 +20,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
 
 /// \cond
 // IWYU pragma: no_forward_declare db::DataBox
@@ -78,30 +79,21 @@ auto apply_callback(
   return true;
 }
 
-// type trait testing if the class has a fill_invalid_points_with member.
-template <typename T, typename = void>
-struct has_fill_invalid_points_with : std::false_type {};
-
-template <typename T>
-struct has_fill_invalid_points_with<
-    T, cpp17::void_t<decltype(
-           T::post_interpolation_callback::fill_invalid_points_with)>>
-    : std::true_type {};
-
-template <typename T>
-constexpr bool has_fill_invalid_points_with_v =
-    has_fill_invalid_points_with<T>::value;
+CREATE_HAS_STATIC_MEMBER_VARIABLE(fill_invalid_points_with)
+CREATE_HAS_STATIC_MEMBER_VARIABLE_V(fill_invalid_points_with)
 
 // Fills invalid points with some constant value.
 template <typename InterpolationTargetTag, typename TemporalId, typename DbTags,
-          Requires<not has_fill_invalid_points_with_v<InterpolationTargetTag>> =
+          Requires<not has_fill_invalid_points_with_v<
+              typename InterpolationTargetTag::post_interpolation_callback>> =
               nullptr>
 void fill_invalid_points(const gsl::not_null<db::DataBox<DbTags>*> /*box*/,
                          const TemporalId& /*temporal_id*/) noexcept {}
 
-template <
-    typename InterpolationTargetTag, typename TemporalId, typename DbTags,
-    Requires<has_fill_invalid_points_with_v<InterpolationTargetTag>> = nullptr>
+template <typename InterpolationTargetTag, typename TemporalId, typename DbTags,
+          Requires<has_fill_invalid_points_with_v<
+              typename InterpolationTargetTag::post_interpolation_callback>> =
+              nullptr>
 void fill_invalid_points(const gsl::not_null<db::DataBox<DbTags>*> box,
                          const TemporalId& temporal_id) noexcept {
   const auto& invalid_indices =
@@ -217,7 +209,10 @@ void clean_up_interpolation_target(
                                              vars_to_interpolate_to_target>>*>
                    interpolated_vars) noexcept {
         completed_ids->push_back(temporal_id);
-        ids->pop_front();
+        ASSERT(std::find(ids->begin(), ids->end(), temporal_id) != ids->end(),
+               "Temporal id " << temporal_id << " does not exist in ids");
+        ids->erase(std::remove(ids->begin(), ids->end(), temporal_id),
+                   ids->end());
         // We want to keep track of all completed temporal_ids to deal with
         // the possibility of late calls to
         // AddTemporalIdsToInterpolationTarget.  We could keep all
