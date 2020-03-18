@@ -195,6 +195,7 @@ tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric) noexcept;
 //@}
 
+//@{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes spacetime derivative of spacetime metric from spatial metric,
@@ -213,6 +214,20 @@ tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
  * respectively.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
+void derivatives_of_spacetime_metric(
+    gsl::not_null<tnsr::abb<DataType, SpatialDim, Frame>*>
+        spacetime_deriv_spacetime_metric,
+    const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
+    const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
+    const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
+    const tnsr::ijj<DataType, SpatialDim, Frame>&
+        deriv_spatial_metric) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::abb<DataType, SpatialDim, Frame> derivatives_of_spacetime_metric(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
@@ -223,6 +238,7 @@ tnsr::abb<DataType, SpatialDim, Frame> derivatives_of_spacetime_metric(
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::ijj<DataType, SpatialDim, Frame>&
         deriv_spatial_metric) noexcept;
+//@}
 
 /*!
  * \brief Computes spacetime normal one-form from lapse.
@@ -430,8 +446,22 @@ struct DerivativesOfSpacetimeMetricCompute
       ::Tags::dt<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>>,
       ::Tags::deriv<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
                     tmpl::size_t<SpatialDim>, Frame>>;
-  static constexpr auto function =
-      &gr::derivatives_of_spacetime_metric<SpatialDim, Frame, DataVector>;
+
+  using return_type = tnsr::abb<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::abb<DataVector, SpatialDim, Frame>*>
+          spacetime_deriv_spacetime_metric,
+      const Scalar<DataVector>&, const Scalar<DataVector>&,
+      const tnsr::i<DataVector, SpatialDim, Frame>&,
+      const tnsr::I<DataVector, SpatialDim, Frame>&,
+      const tnsr::I<DataVector, SpatialDim, Frame>&,
+      const tnsr::iJ<DataVector, SpatialDim, Frame>&,
+      const tnsr::ii<DataVector, SpatialDim, Frame>&,
+      const tnsr::ii<DataVector, SpatialDim, Frame>&,
+      const tnsr::ijj<DataVector, SpatialDim, Frame>&) noexcept>(
+      &gr::derivatives_of_spacetime_metric<SpatialDim, Frame, DataVector>);
+
   using base =
       gr::Tags::DerivativesOfSpacetimeMetric<SpatialDim, Frame, DataVector>;
 };
