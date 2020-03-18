@@ -17,6 +17,5 @@ if(BUILD_PYTHON_BINDINGS)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/external/pybind11/tools")
   include(pybind11Tools)
 
-  spectre_include_directories("${pybind11_INCLUDE_DIR}")
   message(STATUS "Pybind11 include: ${pybind11_INCLUDE_DIR}")
 endif()
