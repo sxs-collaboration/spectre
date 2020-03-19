@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <memory>
 #include <tuple>
 #include <utility>
 #include <vector>

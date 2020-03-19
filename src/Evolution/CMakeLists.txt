@@ -4,6 +4,7 @@
 set(LIBRARY Evolution)
 
 set(LIBRARY_SOURCES
+  Initialization/DgDomain.cpp
   TagsDomain.cpp
   )
 

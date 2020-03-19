@@ -45,7 +45,7 @@ namespace Actions {
  * Uses:
  * - DataBox:
  *   - `System::variables_tags`
- *   - `domain::Tags::DivFrameVelocity`
+ *   - `domain::Tags::DivMeshVelocity`
  *
  * DataBox changes:
  * - Adds: nothing
