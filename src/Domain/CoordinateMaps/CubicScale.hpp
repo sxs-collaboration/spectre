@@ -7,6 +7,7 @@
 #include <boost/optional.hpp>
 #include <cstddef>
 #include <limits>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
