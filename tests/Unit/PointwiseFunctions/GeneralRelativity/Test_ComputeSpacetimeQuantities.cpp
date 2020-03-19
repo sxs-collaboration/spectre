@@ -349,9 +349,10 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
           expected_lapse, dt_lapse, deriv_lapse, expected_shift, dt_shift,
           deriv_shift, expected_spatial_metric, dt_spatial_metric,
           deriv_spatial_metric);
-  const auto expected_deriv_spacetime_metric =
-      gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>::function(
-          expected_derivatives_of_spacetime_metric);
+  tnsr::iaa<DataVector, 3, Frame::Inertial> expected_deriv_spacetime_metric{};
+  gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>::function(
+      make_not_null(&expected_deriv_spacetime_metric),
+      expected_derivatives_of_spacetime_metric);
 
   const auto third_box = db::create<
       db::AddSimpleTags<

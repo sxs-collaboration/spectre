@@ -18,15 +18,10 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-/// \cond
-namespace gsl {
-template <class T>
-class not_null;
-}  // namespace gsl
-/// \endcond
 
 /// \ingroup GeneralRelativityGroup
 /// Holds functions related to general relativity.
@@ -353,11 +348,15 @@ struct SpacetimeNormalVectorCompute
       db::ComputeTag {
   using argument_tags =
       tmpl::list<Lapse<DataType>, Shift<SpatialDim, Frame, DataType>>;
-  static constexpr auto function =
-      static_cast<tnsr::A<DataType, SpatialDim, Frame> (*)(
-          const Scalar<DataType>&,
-          const tnsr::I<DataType, SpatialDim, Frame>&)>(
-          &spacetime_normal_vector<SpatialDim, Frame, DataType>);
+
+  using return_type = tnsr::A<DataType, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::A<DataType, SpatialDim, Frame>*>,
+      const Scalar<DataType>&,
+      const tnsr::I<DataType, SpatialDim, Frame>&) noexcept>(
+      &spacetime_normal_vector<SpatialDim, Frame, DataType>);
+
   using base = SpacetimeNormalVector<SpatialDim, Frame, DataType>;
 };
 
@@ -373,11 +372,16 @@ struct SpacetimeMetricCompute : SpacetimeMetric<SpatialDim, Frame, DataType>,
   using argument_tags =
       tmpl::list<Lapse<DataType>, Shift<SpatialDim, Frame, DataType>,
                  SpatialMetric<SpatialDim, Frame, DataType>>;
-  using base = SpacetimeMetric<SpatialDim, Frame, DataType>;
-  static constexpr tnsr::aa<DataType, SpatialDim, Frame> (*function)(
+
+  using return_type = tnsr::aa<DataType, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*>,
       const Scalar<DataType>&, const tnsr::I<DataType, SpatialDim, Frame>&,
-      const tnsr::ii<DataType, SpatialDim, Frame>&) =
-      &spacetime_metric<SpatialDim, Frame, DataType>;
+      const tnsr::ii<DataType, SpatialDim, Frame>&) noexcept>(
+      &spacetime_metric<SpatialDim, Frame, DataType>);
+
+  using base = SpacetimeMetric<SpatialDim, Frame, DataType>;
 };
 
 /*!
@@ -417,10 +421,14 @@ struct SpatialMetricCompute : SpatialMetric<SpatialDim, Frame, DataType>,
                               db::ComputeTag {
   using argument_tags =
       tmpl::list<SpacetimeMetric<SpatialDim, Frame, DataType>>;
-  static constexpr auto function =
-      static_cast<tnsr::ii<DataType, SpatialDim, Frame> (*)(
-          const tnsr::aa<DataType, SpatialDim, Frame>&)>(
-          &spatial_metric<SpatialDim, Frame, DataType>);
+
+  using return_type = tnsr::ii<DataType, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*>,
+      const tnsr::aa<DataType, SpatialDim, Frame>&) noexcept>(
+      &spatial_metric<SpatialDim, Frame, DataType>);
+
   using base = SpatialMetric<SpatialDim, Frame, DataType>;
 };
 
@@ -506,22 +514,27 @@ struct DerivSpacetimeMetricCompute
       db::ComputeTag {
   using argument_tags = tmpl::list<
       gr::Tags::DerivativesOfSpacetimeMetric<SpatialDim, Frame, DataVector>>;
+
+  using return_type = tnsr::iaa<DataVector, SpatialDim, Frame>;
+
   static constexpr auto function(
+      const gsl::not_null<tnsr::iaa<DataVector, SpatialDim, Frame>*>
+          deriv_spacetime_metric,
       const tnsr::abb<DataVector, SpatialDim, Frame>&
           spacetime_deriv_of_spacetime_metric) noexcept {
-    auto deriv_spacetime_metric =
-        make_with_value<tnsr::iaa<DataVector, SpatialDim, Frame>>(
-            spacetime_deriv_of_spacetime_metric, 0.);
+    destructive_resize_components(
+        deriv_spacetime_metric,
+        spacetime_deriv_of_spacetime_metric.begin()->size());
     for (size_t i = 0; i < SpatialDim; ++i) {
       for (size_t a = 0; a < SpatialDim + 1; ++a) {
         for (size_t b = a; b < SpatialDim + 1; ++b) {
-          deriv_spacetime_metric.get(i, a, b) =
+          deriv_spacetime_metric->get(i, a, b) =
               spacetime_deriv_of_spacetime_metric.get(i + 1, a, b);
         }
       }
     }
-    return deriv_spacetime_metric;
   }
+
   using base = gr::Tags::DerivSpacetimeMetric<SpatialDim, Frame, DataVector>;
 };
 
@@ -535,9 +548,15 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 struct SqrtDetSpatialMetricCompute : SqrtDetSpatialMetric<DataType>,
                                      db::ComputeTag {
   using argument_tags = tmpl::list<DetSpatialMetric<DataType>>;
-  static Scalar<DataType> function(const Scalar<DataType>& det_spatial_metric) {
-    return Scalar<DataType>{sqrt(get(det_spatial_metric))};
+
+  using return_type = Scalar<DataType>;
+
+  static void function(const gsl::not_null<Scalar<DataType>*> result,
+                       const Scalar<DataType>& det_spatial_metric) noexcept {
+    destructive_resize_components(result, get_size(get(det_spatial_metric)));
+    get(*result) = sqrt(get(det_spatial_metric));
   }
+
   using base = SqrtDetSpatialMetric<DataType>;
 };
 
@@ -552,11 +571,15 @@ struct ShiftCompute : Shift<SpatialDim, Frame, DataType>, db::ComputeTag {
   using argument_tags =
       tmpl::list<SpacetimeMetric<SpatialDim, Frame, DataType>,
                  InverseSpatialMetric<SpatialDim, Frame, DataType>>;
-  static constexpr auto function =
-      static_cast<tnsr::I<DataType, SpatialDim, Frame> (*)(
-          const tnsr::aa<DataType, SpatialDim, Frame>&,
-          const tnsr::II<DataType, SpatialDim, Frame>&)>(
-          &shift<SpatialDim, Frame, DataType>);
+
+  using return_type = tnsr::I<DataType, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      const gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> shift,
+      const tnsr::aa<DataType, SpatialDim, Frame>&,
+      const tnsr::II<DataType, SpatialDim, Frame>&) noexcept>(
+      &shift<SpatialDim, Frame, DataType>);
+
   using base = Shift<SpatialDim, Frame, DataType>;
 };
 
@@ -571,10 +594,15 @@ struct LapseCompute : Lapse<DataType>, db::ComputeTag {
   using argument_tags =
       tmpl::list<Shift<SpatialDim, Frame, DataType>,
                  SpacetimeMetric<SpatialDim, Frame, DataType>>;
-  static constexpr auto function = static_cast<Scalar<DataType> (*)(
+
+  using return_type = Scalar<DataType>;
+
+  static constexpr auto function = static_cast<void (*)(
+      const gsl::not_null<Scalar<DataType>*> lapse,
       const tnsr::I<DataType, SpatialDim, Frame>&,
-      const tnsr::aa<DataType, SpatialDim, Frame>&)>(
+      const tnsr::aa<DataType, SpatialDim, Frame>&) noexcept>(
       &lapse<SpatialDim, Frame, DataType>);
+
   using base = Lapse<DataType>;
 };
 }  // namespace Tags

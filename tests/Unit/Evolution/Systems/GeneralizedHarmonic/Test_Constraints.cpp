@@ -811,9 +811,9 @@ void test_constraint_compute_items(
           lapse, time_deriv_lapse, deriv_lapse, shift, time_deriv_shift,
           deriv_shift, spatial_metric, time_deriv_spatial_metric,
           deriv_spatial_metric);
-  const auto deriv_spacetime_metric =
-      gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>::function(
-          derivatives_of_spacetime_metric);
+  tnsr::iaa<DataVector, 3, Frame::Inertial> deriv_spacetime_metric{};
+  gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>::function(
+      make_not_null(&deriv_spacetime_metric), derivatives_of_spacetime_metric);
 
   auto time_deriv_gauge_source =
       make_with_value<tnsr::a<DataVector, 3, Frame::Inertial>>(x, 0.);
