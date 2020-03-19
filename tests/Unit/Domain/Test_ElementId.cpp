@@ -18,7 +18,8 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
-SPECTRE_TEST_CASE("Unit.Domain.ElementId", "[Domain][Unit]") {
+namespace {
+void test_element_id() {
   // Test retrieval functions:
   auto segment_ids = std::array<SegmentId, 3>(
       {{SegmentId(2, 3), SegmentId(1, 0), SegmentId(1, 1)}});
@@ -60,8 +61,7 @@ SPECTRE_TEST_CASE("Unit.Domain.ElementId", "[Domain][Unit]") {
         make_array<3>(SegmentId(0, 0)));
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.ElementId.ElementIndexConversion",
-                  "[Domain][Unit]") {
+void test_element_id_conversion_to_element_index() {
   auto segment_ids = std::array<SegmentId, 3>(
       {{SegmentId(2, 3), SegmentId(1, 0), SegmentId(1, 1)}});
   ElementId<3> block_2_3d(2, segment_ids);
@@ -81,4 +81,10 @@ SPECTRE_TEST_CASE("Unit.Domain.ElementId.ElementIndexConversion",
   ElementId<3> block_2_3d_from_index(block_2_3d_index);
   CHECK(block_2_3d_from_index.block_id() == 2);
   CHECK(block_2_3d_from_index.segment_ids() == segment_ids);
+}
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.ElementId", "[Domain][Unit]") {
+  test_element_id();
+  test_element_id_conversion_to_element_index();
 }
