@@ -8,7 +8,6 @@
 
 #include <cstddef>
 #include <iosfwd>
-#include <limits>
 
 #include "Domain/Side.hpp"
 #include "ErrorHandling/Assert.hpp"
@@ -46,13 +45,33 @@ class er;
  * a segment can only abut its `sibling` or `abutting nibling`, while on the
  * opposite side, it can abut a segment on its level, the next-lower, or the
  * next-higher level.
+ *
+ * \details
+ * Because `ElementId` is built up of `VolumeDim` `SegmentId`s, and `ElementId`
+ * is used as a Charm++ index, `ElementId` has the following restrictions:
+ * - `ElementId` must satisfy `std::is_pod`
+ * - `ElementId` must not be larger than the size of three `int`s, i.e.
+ *   `sizeof(ElementId) <= 3 * sizeof(int)`
+ * which means `SegmentId` must be the size of an `int` and satisfy
+ * `std::is_pod`. In order to satisfy the size requirement, we use bitfields
+ * internally in `SegmentId` with `ASSERT`s in the constructors to check for
+ * potential overflows.
  */
 class SegmentId {
  public:
+  static constexpr size_t block_id_bits = 7;
+  static constexpr size_t refinement_bits = 5;
+  static constexpr size_t max_refinement_level = 20;
+  static_assert(block_id_bits + refinement_bits + max_refinement_level ==
+                    8 * sizeof(int),
+                "Bit representation requires padding or is too large");
+  static_assert(two_to_the(refinement_bits) >= max_refinement_level,
+                "Not enough bits to represent all refinement levels");
+
   /// Default constructor needed for Charm++ serialization.
-  constexpr SegmentId() noexcept = default;
-  constexpr SegmentId(const SegmentId& segment_id) noexcept = default;
-  constexpr SegmentId(SegmentId&& segment_id) noexcept = default;
+  SegmentId() noexcept = default;
+  SegmentId(const SegmentId& segment_id) noexcept = default;
+  SegmentId(SegmentId&& segment_id) noexcept = default;
   ~SegmentId() noexcept = default;
   SegmentId& operator=(const SegmentId& segment_id) noexcept = default;
   SegmentId& operator=(SegmentId&& segment_id) noexcept = default;
@@ -96,8 +115,9 @@ class SegmentId {
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
-  size_t refinement_level_ = std::numeric_limits<size_t>::max();
-  size_t index_ = std::numeric_limits<size_t>::max();
+  unsigned block_id_ : block_id_bits;
+  unsigned refinement_level_ : refinement_bits;
+  unsigned index_ : max_refinement_level;
 };
 
 /// Output operator for SegmentId.
@@ -117,7 +137,7 @@ inline SegmentId SegmentId::id_of_parent() const noexcept {
   ASSERT(0 != refinement_level_,
          "Cannot call id_of_parent() on root refinement level!");
   // The parent has half as many segments as the child.
-  return {refinement_level_ - 1, index_ / 2};
+  return {refinement_level() - 1, index() / 2};
 }
 
 inline SegmentId SegmentId::id_of_child(Side side) const noexcept {
@@ -127,46 +147,46 @@ inline SegmentId SegmentId::id_of_child(Side side) const noexcept {
   // The child has twice as many segments as the parent, so for a particular
   // parent segment, there is both an upper and lower child segment.
   if (Side::Lower == side) {
-    return {refinement_level_ + 1, index_ * 2};
+    return {refinement_level() + 1, index() * 2};
   }
-  return {refinement_level_ + 1, 1 + index_ * 2};
+  return {refinement_level() + 1, 1 + index() * 2};
 }
 
 inline SegmentId SegmentId::id_of_sibling() const noexcept {
-  ASSERT(0 != refinement_level_,
+  ASSERT(0 != refinement_level(),
          "The segment on the root refinement level has no sibling");
-  return {refinement_level_, (0 == index_ % 2 ? index_ + 1 : index_ - 1)};
+  return {refinement_level(), (0 == index() % 2 ? index() + 1 : index() - 1)};
 }
 
 inline SegmentId SegmentId::id_of_abutting_nibling() const noexcept {
-  ASSERT(0 != refinement_level_,
+  ASSERT(0 != refinement_level(),
          "The segment on the root refinement level has no abutting nibling");
-  return {refinement_level_ + 1,
-          (0 == index_ % 2 ? 2 * index_ + 2 : 2 * index_ - 1)};
+  return {refinement_level() + 1,
+          (0 == index() % 2 ? 2 * index() + 2 : 2 * index() - 1)};
 }
 
 inline Side SegmentId::side_of_sibling() const noexcept {
-  ASSERT(0 != refinement_level_,
+  ASSERT(0 != refinement_level(),
          "The segment on the root refinement level has no sibling");
-  return 0 == index_ % 2 ? Side::Upper : Side::Lower;
+  return 0 == index() % 2 ? Side::Upper : Side::Lower;
 }
 
 inline SegmentId SegmentId::id_if_flipped() const noexcept {
-  return {refinement_level_, two_to_the(refinement_level_) - 1 - index_};
+  return {refinement_level(), two_to_the(refinement_level()) - 1 - index()};
 }
 
 inline double SegmentId::endpoint(Side side) const noexcept {
   if (Side::Lower == side) {
-    return -1.0 + (2.0 * index_) / two_to_the(refinement_level_);
+    return -1.0 + (2.0 * index()) / two_to_the(refinement_level());
   }
-  return -1.0 + (2.0 * index_ + 2.0) / two_to_the(refinement_level_);
+  return -1.0 + (2.0 * index() + 2.0) / two_to_the(refinement_level());
 }
 
 inline bool SegmentId::overlaps(const SegmentId& other) const noexcept {
-  const size_t this_denom = two_to_the(refinement_level_);
-  const size_t other_denom = two_to_the(other.refinement_level_);
-  return index_ * other_denom < (other.index_ + 1) * this_denom and
-         other.index_ * this_denom < (index_ + 1) * other_denom;
+  const size_t this_denom = two_to_the(refinement_level());
+  const size_t other_denom = two_to_the(other.refinement_level());
+  return index() * other_denom < (other.index() + 1) * this_denom and
+         other.index() * this_denom < (index() + 1) * other_denom;
 }
 
 // These are defined so that a SegmentId can be used as part of a key of an
