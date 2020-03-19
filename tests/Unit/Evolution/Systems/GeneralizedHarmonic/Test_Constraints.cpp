@@ -822,10 +822,11 @@ void test_constraint_compute_items(
   get<2>(time_deriv_gauge_source) = 0.07;
   get<3>(time_deriv_gauge_source) = -0.05;
 
-  const auto derivatives_of_gauge_source =
-      GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<
-          3, Frame::Inertial>::function(time_deriv_gauge_source,
-                                        deriv_gauge_source);
+  tnsr::ab<DataVector, 3, Frame::Inertial> derivatives_of_gauge_source{};
+  GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<
+      3, Frame::Inertial>::function(make_not_null(&derivatives_of_gauge_source),
+                                    time_deriv_gauge_source,
+                                    deriv_gauge_source);
 
   // Insert into databox
   const auto box = db::create<
@@ -897,12 +898,15 @@ void test_constraint_compute_items(
       deriv_pi);
 
   // Compute tested quantities locally
-  const auto gamma0 = GeneralizedHarmonic::Tags::ConstraintGamma0Compute<
-      3, Frame::Inertial>::function(x);
-  const auto gamma1 = GeneralizedHarmonic::Tags::ConstraintGamma1Compute<
-      3, Frame::Inertial>::function(x);
-  const auto gamma2 = GeneralizedHarmonic::Tags::ConstraintGamma2Compute<
-      3, Frame::Inertial>::function(x);
+  Scalar<DataVector> gamma0{};
+  GeneralizedHarmonic::Tags::ConstraintGamma0Compute<
+      3, Frame::Inertial>::function(make_not_null(&gamma0), x);
+  Scalar<DataVector> gamma1{};
+  GeneralizedHarmonic::Tags::ConstraintGamma1Compute<
+      3, Frame::Inertial>::function(make_not_null(&gamma1), x);
+  Scalar<DataVector> gamma2{};
+  GeneralizedHarmonic::Tags::ConstraintGamma2Compute<
+      3, Frame::Inertial>::function(make_not_null(&gamma2), x);
 
   const auto four_index_constraint =
       GeneralizedHarmonic::four_index_constraint(deriv_phi);
