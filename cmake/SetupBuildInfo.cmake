@@ -38,9 +38,3 @@ configure_file(
   ${CMAKE_BINARY_DIR}/tmp/WrapLinker.sh
   @ONLY
   )
-
-string(
-  REGEX REPLACE "<CMAKE_CXX_COMPILER>"
-  "${CMAKE_BINARY_DIR}/tmp/WrapLinker.sh <CMAKE_CXX_COMPILER>"
-  CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}"
-  )
