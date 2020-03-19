@@ -8,8 +8,8 @@ function(add_spectre_executable TARGET_NAME)
   set_target_properties(
     ${TARGET_NAME}
     PROPERTIES
-    RULE_LAUNCH_LINK "${CMAKE_BINARY_DIR}/tmp/WrapLinker.sh"
-    LINK_DEPENDS "${CMAKE_BINARY_DIR}/tmp/WrapLinker.sh"
+    RULE_LAUNCH_LINK "${CMAKE_BINARY_DIR}/tmp/WrapExecutableLinker.sh"
+    LINK_DEPENDS "${CMAKE_BINARY_DIR}/tmp/WrapExecutableLinker.sh"
     )
 endfunction()
 

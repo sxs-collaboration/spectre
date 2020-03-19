@@ -34,7 +34,7 @@ else()
 endif()
 
 configure_file(
-  ${CMAKE_SOURCE_DIR}/tools/WrapLinker.sh
-  ${CMAKE_BINARY_DIR}/tmp/WrapLinker.sh
+  ${CMAKE_SOURCE_DIR}/tools/WrapExecutableLinker.sh
+  ${CMAKE_BINARY_DIR}/tmp/WrapExecutableLinker.sh
   @ONLY
   )

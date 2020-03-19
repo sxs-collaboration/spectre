@@ -210,14 +210,14 @@ rather than creating a large source file, we can directly encode the source tree
 archive into the binary at the linking stage.
 
 Most of SpECTRE's Formaline is implemented
-inside the `tools/WrapLinker.sh` script. Function declarations are provided
-in `Utilities/Formaline.hpp` and a small function that writes the source
-file to disk is defined in `Utilities/Formaline.cpp`. The first
-Formaline-related thing done in `WrapLinker.sh` is to archive everything in the
-source directory tracked by git. Once the archive is created we run
-`ld -r -b binary -o object.o src.tar.gz` (with unique names for `object.o` and
-`src.tar.gz` for each executable that is built to avoid name collisions) to
-generate an object file with the source file encoded from
+inside the `tools/WrapExecutableLinker.sh` script. Function declarations are
+provided in `Utilities/Formaline.hpp` and a small function that writes the
+source file to disk is defined in `Utilities/Formaline.cpp`. The first
+Formaline-related thing done in `WrapExecutableLinker.sh` is to archive
+everything in the source directory tracked by git. Once the archive is created
+we run `ld -r -b binary -o object.o src.tar.gz` (with unique names for
+`object.o` and `src.tar.gz` for each executable that is built to avoid name
+collisions) to generate an object file with the source file encoded from
 `_binary_src_tar_gz_start` to `_binary_src_tar_gz_end`. Next we write a C++
 source file that defines a function `get_archive` to convert the byte stream
 into a `std::vector<char>`. We also encode the output of `printenv`, the various
