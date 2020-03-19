@@ -194,6 +194,12 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - Whether or not to strip all symbols (default is `OFF`)
   - If enabled strips all extraneous symbols from libraries and executables,
     further reducing the size of them.
+- STUB_EXECUTABLE_OBJECT_FILES
+  - Replace object files from executables after linking with empty stubs
+    (default is `OFF`)
+  - This is useful for drastically reducing the build size in CI, but since the
+    object files are replaced with empty stubs will generally cause linking
+    problems if used during development.
 
 ## Formaline
 
