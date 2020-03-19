@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Domain/CoordinateMaps/ProductMapsTimeDep.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
 
 #include <array>
 #include <boost/none.hpp>

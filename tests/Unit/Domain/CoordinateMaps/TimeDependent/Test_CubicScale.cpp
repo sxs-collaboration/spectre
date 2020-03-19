@@ -11,7 +11,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/CoordinateMaps/CubicScale.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Framework/TestHelpers.hpp"

@@ -12,7 +12,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/CoordinateMaps/Translation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Framework/TestHelpers.hpp"

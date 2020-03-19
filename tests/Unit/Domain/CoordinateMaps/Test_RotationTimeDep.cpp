@@ -12,7 +12,7 @@
 #include <unordered_map>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/CoordinateMaps/RotationTimeDep.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"

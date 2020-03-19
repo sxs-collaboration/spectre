@@ -4,21 +4,21 @@
 set(LIBRARY CoordinateMaps)
 
 set(LIBRARY_SOURCES
-    Affine.cpp
-    BulgedCube.cpp
-    CubicScale.cpp
-    DiscreteRotation.cpp
-    EquatorialCompression.cpp
-    Equiangular.cpp
-    Frustum.cpp
-    Identity.cpp
-    Rotation.cpp
-    RotationTimeDep.cpp
-    SpecialMobius.cpp
-    Translation.cpp
-    Wedge2D.cpp
-    Wedge3D.cpp
-    )
+  Affine.cpp
+  BulgedCube.cpp
+  DiscreteRotation.cpp
+  EquatorialCompression.cpp
+  Equiangular.cpp
+  Frustum.cpp
+  Identity.cpp
+  Rotation.cpp
+  SpecialMobius.cpp
+  TimeDependent/CubicScale.cpp
+  TimeDependent/Rotation.cpp
+  TimeDependent/Translation.cpp
+  Wedge2D.cpp
+  Wedge3D.cpp
+  )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 

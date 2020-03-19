@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/CoordinateMaps/CubicScale.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"

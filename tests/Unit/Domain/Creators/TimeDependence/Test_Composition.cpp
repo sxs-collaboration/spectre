@@ -7,9 +7,9 @@
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/ProductMapsTimeDep.hpp"
-#include "Domain/CoordinateMaps/ProductMapsTimeDep.tpp"
-#include "Domain/CoordinateMaps/Translation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Creators/TimeDependence/Composition.hpp"
 #include "Domain/Creators/TimeDependence/Composition.tpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"

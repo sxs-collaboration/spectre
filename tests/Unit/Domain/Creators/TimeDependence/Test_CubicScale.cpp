@@ -16,6 +16,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/Creators/TimeDependence/CubicScale.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Framework/TestCreation.hpp"

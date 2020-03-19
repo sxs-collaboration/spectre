@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/CoordinateMaps/CubicScale.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 
 #include <array>
 #include <boost/none.hpp>

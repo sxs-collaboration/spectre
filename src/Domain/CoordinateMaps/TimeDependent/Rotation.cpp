@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/CoordinateMaps/RotationTimeDep.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
 
 #include <cmath>
 #include <ostream>
