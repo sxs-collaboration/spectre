@@ -13,9 +13,13 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
+/// \cond
+template <size_t>
+class ElementId;
 namespace PUP {
 class er;
 }  // namespace PUP
+/// \endcond
 
 /*!
  *  \ingroup ComputationalDomainGroup
@@ -115,6 +119,13 @@ class SegmentId {
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
+  template <size_t VolumeDim>
+  friend class ElementId;
+
+  SegmentId(size_t block_id, size_t refinement_level, size_t index) noexcept;
+  size_t block_id() const noexcept { return block_id_; }
+  void set_block_id(const size_t block_id) noexcept { block_id_ = block_id; }
+
   unsigned block_id_ : block_id_bits;
   unsigned refinement_level_ : refinement_bits;
   unsigned index_ : max_refinement_level;

@@ -21,21 +21,25 @@ constexpr size_t ElementId<VolumeDim>::volume_dim;
 template <size_t VolumeDim>
 ElementId<VolumeDim>::ElementId(const size_t block_id) noexcept
     : block_id_{block_id},
-      segment_ids_(make_array<VolumeDim>(SegmentId(0, 0))) {}
+      segment_ids_(make_array<VolumeDim>(SegmentId(block_id, 0, 0))) {}
 
 template <size_t VolumeDim>
 ElementId<VolumeDim>::ElementId(
     const size_t block_id,
     std::array<SegmentId, VolumeDim> segment_ids) noexcept
-    : block_id_{block_id}, segment_ids_(std::move(segment_ids)) {}
+    : block_id_{block_id}, segment_ids_(segment_ids) {
+  for (size_t d = 0; d < VolumeDim; ++d) {
+    gsl::at(segment_ids_, d).set_block_id(block_id);
+  }
+}
 
 template <size_t VolumeDim>
 ElementId<VolumeDim>::ElementId(const ElementIndex<VolumeDim>& index) noexcept {
   block_id_ = index.block_id();
   for (size_t d = 0; d < VolumeDim; ++d) {
-    gsl::at(segment_ids_, d) =
-        SegmentId{gsl::at(index.segments(), d).refinement_level(),
-                  gsl::at(index.segments(), d).index()};
+    gsl::at(segment_ids_, d) = SegmentId{
+        index.block_id(), gsl::at(index.segments(), d).refinement_level(),
+        gsl::at(index.segments(), d).index()};
   }
 }
 
@@ -77,7 +81,7 @@ ElementId<VolumeDim> ElementId<VolumeDim>::external_boundary_id() noexcept {
   // block id to be much larger than the possible number of blocks.
   // We use half of the maximum possible value in case the id of an actual block
   // underflows to the maximum.
-  return ElementId<VolumeDim>(std::numeric_limits<size_t>::max() / 2,
+  return ElementId<VolumeDim>(two_to_the(SegmentId::block_id_bits) - 1,
                               make_array<VolumeDim>(SegmentId(0, 0)));
 }
 

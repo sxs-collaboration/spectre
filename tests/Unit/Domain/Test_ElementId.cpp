@@ -19,11 +19,6 @@
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
 SPECTRE_TEST_CASE("Unit.Domain.ElementId", "[Domain][Unit]") {
-  // Test default constructor:
-  ElementId<3> test_id;
-  CHECK(test_id.block_id() == std::numeric_limits<size_t>::max());
-  CHECK(test_id.segment_ids() == make_array<3>(SegmentId()));
-
   // Test retrieval functions:
   auto segment_ids = std::array<SegmentId, 3>(
       {{SegmentId(2, 3), SegmentId(1, 0), SegmentId(1, 1)}});
@@ -60,7 +55,7 @@ SPECTRE_TEST_CASE("Unit.Domain.ElementId", "[Domain][Unit]") {
   CHECK(get_output(block_2_3d) == "[B2,(L2I3,L1I0,L1I1)]");
 
   CHECK(ElementId<3>::external_boundary_id().block_id() ==
-        std::numeric_limits<size_t>::max() / 2);
+        two_to_the(SegmentId::block_id_bits) - 1);
   CHECK(ElementId<3>::external_boundary_id().segment_ids() ==
         make_array<3>(SegmentId(0, 0)));
 }

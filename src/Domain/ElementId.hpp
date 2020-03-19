@@ -60,7 +60,13 @@ class ElementId {
 
   ElementId<VolumeDim> id_of_parent(size_t dim) const noexcept;
 
-  constexpr size_t block_id() const noexcept { return block_id_; }
+  size_t block_id() const noexcept {
+    ASSERT(block_id_ == segment_ids_[0].block_id(),
+           "The block_id of element is " << block_id_
+                                         << " but of the segment id it is "
+                                         << segment_ids_[0].block_id());
+    return segment_ids_[0].block_id();
+  }
 
   const std::array<SegmentId, VolumeDim>& segment_ids() const noexcept {
     return segment_ids_;

@@ -18,6 +18,20 @@ SegmentId::SegmentId(const size_t refinement_level, const size_t index) noexcept
          "index = " << index << ", refinement_level = " << refinement_level);
 }
 
+SegmentId::SegmentId(const size_t block_id, const size_t refinement_level,
+                     const size_t index) noexcept
+    : block_id_(block_id), refinement_level_(refinement_level), index_(index) {
+  ASSERT(block_id < two_to_the(block_id_bits),
+         "Block id out of bounds: " << block_id << "\nMaximum value is: "
+                                    << two_to_the(block_id_bits) - 1);
+  ASSERT(refinement_level <= max_refinement_level,
+         "Refinement level out of bounds: " << refinement_level
+                                            << "\nMaximum value is: "
+                                            << max_refinement_level);
+  ASSERT(index < two_to_the(refinement_level),
+         "index = " << index << ", refinement_level = " << refinement_level);
+}
+
 // Because `ElementId` is built up of `VolumeDim` `SegmentId`s, and `ElementId`
 // is used as a Charm++ index, `ElementId` has the following restrictions:
 // - `ElementId` must satisfy `std::is_pod`
