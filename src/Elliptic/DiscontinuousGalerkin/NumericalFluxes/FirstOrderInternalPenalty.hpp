@@ -130,20 +130,17 @@ namespace NumericalFluxes {
  * \cite HesthavenWarburton, section 7.2).
  */
 template <size_t Dim, typename FluxesComputerTag, typename FieldTagsList,
-          typename AuxiliaryFieldTagsList,
-          typename FluxesComputer = db::item_type<FluxesComputerTag>,
-          typename FluxesArgs = typename FluxesComputer::argument_tags>
+          typename AuxiliaryFieldTagsList>
 struct FirstOrderInternalPenalty;
 
 template <size_t Dim, typename FluxesComputerTag, typename... FieldTags,
-          typename... AuxiliaryFieldTags, typename FluxesComputer,
-          typename... FluxesArgs>
+          typename... AuxiliaryFieldTags>
 struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
                                  tmpl::list<FieldTags...>,
-                                 tmpl::list<AuxiliaryFieldTags...>,
-                                 FluxesComputer, tmpl::list<FluxesArgs...>> {
+                                 tmpl::list<AuxiliaryFieldTags...>> {
  private:
   using fluxes_computer_tag = FluxesComputerTag;
+  using FluxesComputer = db::const_item_type<fluxes_computer_tag>;
 
   template <typename Tag>
   struct NormalDotDivFlux : db::PrefixTag, db::SimpleTag {
@@ -190,13 +187,15 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
 
   // These tags are sliced to the interface of the element and passed to
   // `package_data` to provide the data needed to compute the numerical fluxes.
-  using argument_tags =
-      tmpl::list<::Tags::NormalDotFlux<AuxiliaryFieldTags>...,
-                 ::Tags::div<::Tags::Flux<AuxiliaryFieldTags, tmpl::size_t<Dim>,
-                                          Frame::Inertial>>...,
-                 fluxes_computer_tag, FluxesArgs...,
-                 ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
-  using volume_tags = tmpl::list<fluxes_computer_tag>;
+  using argument_tags = tmpl::push_front<
+      typename FluxesComputer::argument_tags,
+      ::Tags::NormalDotFlux<AuxiliaryFieldTags>...,
+      ::Tags::div<::Tags::Flux<AuxiliaryFieldTags, tmpl::size_t<Dim>,
+                               Frame::Inertial>>...,
+      ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>,
+      fluxes_computer_tag>;
+  using volume_tags =
+      tmpl::push_front<get_volume_tags<FluxesComputer>, fluxes_computer_tag>;
 
   // This is the data needed to compute the numerical flux.
   // `SendBoundaryFluxes` calls `package_data` to store these tags in a
@@ -209,17 +208,17 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
 
   // Following the packaged_data pointer, this function expects as arguments the
   // types in `argument_tags`.
+  template <typename... FluxesArgs>
   void package_data(
       const gsl::not_null<Variables<package_tags>*> packaged_data,
-      const db::item_type<::Tags::NormalDotFlux<
+      const db::const_item_type<::Tags::NormalDotFlux<
           AuxiliaryFieldTags>>&... normal_dot_auxiliary_field_fluxes,
-      const db::item_type<::Tags::div<
+      const db::const_item_type<::Tags::div<
           ::Tags::Flux<AuxiliaryFieldTags, tmpl::size_t<Dim>,
                        Frame::Inertial>>>&... div_auxiliary_field_fluxes,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal,
       const FluxesComputer& fluxes_computer,
-      const db::item_type<FluxesArgs>&... fluxes_args,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
-      const noexcept {
+      const FluxesArgs&... fluxes_args) const noexcept {
     auto principal_div_aux_field_fluxes = make_with_value<Variables<tmpl::list<
         ::Tags::Flux<FieldTags, tmpl::size_t<Dim>, Frame::Inertial>...>>>(
         interface_unit_normal, std::numeric_limits<double>::signaling_NaN());
@@ -336,16 +335,16 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
   // numerical field values, but only on the Dirichlet boundary data, it may be
   // added as contribution to the source of the elliptic systems. Then, it
   // remains to solve the homogeneous problem with the modified source.
+  template <typename... FluxesArgs>
   void compute_dirichlet_boundary(
       const gsl::not_null<db::item_type<::Tags::NormalDotNumericalFlux<
           FieldTags>>*>... numerical_flux_for_fields,
       const gsl::not_null<db::item_type<::Tags::NormalDotNumericalFlux<
           AuxiliaryFieldTags>>*>... numerical_flux_for_auxiliary_fields,
-      const db::item_type<FieldTags>&... dirichlet_fields,
+      const db::const_item_type<FieldTags>&... dirichlet_fields,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal,
       const FluxesComputer& fluxes_computer,
-      const db::item_type<FluxesArgs>&... fluxes_args,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
-      const noexcept {
+      const FluxesArgs&... fluxes_args) const noexcept {
     // Need polynomial degrees and element size to compute this dynamically
     const double penalty = penalty_parameter_;
 

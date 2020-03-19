@@ -79,7 +79,7 @@ void apply_ip_flux(
       face_normal_int, std::numeric_limits<double>::signaling_NaN());
   numerical_flux.package_data(
       make_not_null(&packaged_data_interior), n_dot_aux_flux_int,
-      div_aux_flux_int, fluxes_computer, fluxes_argument, face_normal_int);
+      div_aux_flux_int, face_normal_int, fluxes_computer, fluxes_argument);
   auto packaged_data_exterior = make_with_value<PackagedData>(
       face_normal_int, std::numeric_limits<double>::signaling_NaN());
   tnsr::i<DataVector, Dim> face_normal_ext{face_normal_int};
@@ -88,7 +88,7 @@ void apply_ip_flux(
   }
   numerical_flux.package_data(
       make_not_null(&packaged_data_exterior), n_dot_aux_flux_ext,
-      div_aux_flux_ext, fluxes_computer, fluxes_argument, face_normal_ext);
+      div_aux_flux_ext, face_normal_ext, fluxes_computer, fluxes_argument);
 
   EllipticNumericalFluxesTestHelpers::apply_numerical_flux(
       numerical_flux, packaged_data_interior, packaged_data_exterior,
@@ -111,8 +111,8 @@ void apply_ip_dirichlet_flux(
   Fluxes<Dim> fluxes_computer{};
 
   numerical_flux.compute_dirichlet_boundary(n_dot_num_f_field, n_dot_num_f_aux,
-                                            dirichlet_field, fluxes_computer,
-                                            fluxes_argument, face_normal);
+                                            dirichlet_field, face_normal,
+                                            fluxes_computer, fluxes_argument);
 }
 
 template <size_t Dim>

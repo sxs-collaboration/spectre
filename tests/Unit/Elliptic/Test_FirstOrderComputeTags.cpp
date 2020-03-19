@@ -31,33 +31,43 @@ struct AnArgument : db::SimpleTag {
   using type = double;
 };
 
+struct BaseArgumentTag : db::BaseTag {};
+
+struct DerivedArgumentTag : BaseArgumentTag, db::SimpleTag {
+  using type = double;
+};
+
 template <size_t Dim>
 struct Fluxes {
-  using argument_tags = tmpl::list<AnArgument>;
+  using argument_tags = tmpl::list<AnArgument, BaseArgumentTag>;
   static void apply(
       const gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
-      const double an_argument,
+      const double an_argument, const double base_tag_argument,
       const tnsr::i<DataVector, Dim>& auxiliary_field) {
     for (size_t d = 0; d < Dim; d++) {
-      flux_for_field->get(d) = auxiliary_field.get(d) * an_argument;
+      flux_for_field->get(d) =
+          auxiliary_field.get(d) * an_argument + base_tag_argument;
     }
   }
   static void apply(
       const gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_aux_field,
-      const double an_argument, const Scalar<DataVector>& field) {
+      const double an_argument, const double base_tag_argument,
+      const Scalar<DataVector>& field) {
     std::fill(flux_for_aux_field->begin(), flux_for_aux_field->end(), 0.);
     for (size_t d = 0; d < Dim; d++) {
-      flux_for_aux_field->get(d, d) = get(field) * an_argument;
+      flux_for_aux_field->get(d, d) =
+          get(field) * an_argument + base_tag_argument;
     }
   }
 };
 
 struct Sources {
-  using argument_tags = tmpl::list<AnArgument>;
+  using argument_tags = tmpl::list<AnArgument, BaseArgumentTag>;
   static void apply(const gsl::not_null<Scalar<DataVector>*> source_for_field,
-                    const double an_argument,
+                    const double an_argument, const double base_tag_argument,
                     const Scalar<DataVector>& field) {
-    get(*source_for_field) = get(field) * square(an_argument);
+    get(*source_for_field) =
+        get(field) * square(an_argument) + base_tag_argument;
   }
 };
 
@@ -98,18 +108,19 @@ void test_first_order_compute_tags() {
 
   // Construct DataBox for testing the compute tags
   const auto box =
-      db::create<db::AddSimpleTags<vars_tag, fluxes_computer_tag, AnArgument>,
+      db::create<db::AddSimpleTags<vars_tag, fluxes_computer_tag, AnArgument,
+                                   DerivedArgumentTag>,
                  db::AddComputeTags<first_order_fluxes_compute_tag,
                                     first_order_sources_compute_tag>>(
-          std::move(vars), FluxesComputer{}, 3.);
+          std::move(vars), FluxesComputer{}, 3., 1.);
 
   // Check computed fluxes
   for (size_t d = 0; d < Dim; d++) {
     CHECK(get<::Tags::Flux<FieldTag, tmpl::size_t<Dim>, Frame::Inertial>>(box)
-              .get(d) == DataVector{num_points, 3. * (d + 1.)});
+              .get(d) == DataVector{num_points, 3. * (d + 1.) + 1.});
     CHECK(get<::Tags::Flux<AuxiliaryFieldTag<Dim>, tmpl::size_t<Dim>,
                            Frame::Inertial>>(box)
-              .get(d, d) == DataVector{num_points, 6.});
+              .get(d, d) == DataVector{num_points, 7.});
     for (size_t i0 = 0; i0 < Dim; i0++) {
       if (i0 != d) {
         CHECK(get<::Tags::Flux<AuxiliaryFieldTag<Dim>, tmpl::size_t<Dim>,
@@ -120,7 +131,7 @@ void test_first_order_compute_tags() {
   }
 
   // Check computed sources
-  CHECK(get(get<::Tags::Source<FieldTag>>(box)) == DataVector{num_points, 18.});
+  CHECK(get(get<::Tags::Source<FieldTag>>(box)) == DataVector{num_points, 19.});
   for (size_t d = 0; d < Dim; d++) {
     CHECK(get<::Tags::Source<AuxiliaryFieldTag<Dim>>>(box).get(d) ==
           get<AuxiliaryFieldTag<Dim>>(box).get(d));
