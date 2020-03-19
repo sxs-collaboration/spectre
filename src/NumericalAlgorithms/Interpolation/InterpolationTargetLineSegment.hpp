@@ -140,6 +140,30 @@ struct LineSegment {
   using const_global_cache_tags =
       tmpl::list<Tags::LineSegment<InterpolationTargetTag, VolumeDim>>;
   using is_sequential = std::false_type;
+
+  template <typename Metavariables, typename DbTags, typename TemporalId>
+  static tnsr::I<DataVector, VolumeDim, Frame::Inertial> points(
+      const db::DataBox<DbTags>& box,
+      Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const TemporalId& /*temporal_id*/) noexcept {
+    const auto& options =
+        get<Tags::LineSegment<InterpolationTargetTag, VolumeDim>>(box);
+
+    // Fill points on a line segment
+    const double fractional_distance = 1.0 / (options.number_of_points - 1);
+    tnsr::I<DataVector, VolumeDim, Frame::Inertial> target_points(
+        options.number_of_points);
+    for (size_t n = 0; n < options.number_of_points; ++n) {
+      for (size_t d = 0; d < VolumeDim; ++d) {
+        target_points.get(d)[n] =
+            gsl::at(options.begin, d) +
+            n * fractional_distance *
+                (gsl::at(options.end, d) - gsl::at(options.begin, d));
+      }
+    }
+    return target_points;
+  }
+
   template <
       typename ParallelComponent, typename DbTags, typename Metavariables,
       typename ArrayIndex, typename TemporalId,

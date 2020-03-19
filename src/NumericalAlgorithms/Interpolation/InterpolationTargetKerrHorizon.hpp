@@ -175,6 +175,14 @@ struct KerrHorizon {
         db::AddComputeTags<StrahlkorperTags::compute_items_tags<Frame>>>(
         std::move(box), std::move(strahlkorper));
   }
+
+  template <typename Metavariables, typename DbTags, typename TemporalId>
+  static auto points(const db::DataBox<DbTags>& box,
+                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                     const TemporalId& /*temporal_id*/) noexcept {
+    return db::get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box);
+  }
+
   template <
       typename ParallelComponent, typename DbTags, typename Metavariables,
       typename ArrayIndex, typename TemporalId,

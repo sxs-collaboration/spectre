@@ -182,6 +182,34 @@ struct ApparentHorizon {
         std::move(box), options.initial_guess, options.fast_flow,
         options.verbosity);
   }
+
+  template <typename Metavariables, typename DbTags, typename TemporalId>
+  static auto points(const db::DataBox<DbTags>& box,
+                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                     const TemporalId& /*temporal_id*/) noexcept {
+    const auto& fast_flow = db::get<::ah::Tags::FastFlow>(box);
+    const auto& strahlkorper =
+        db::get<StrahlkorperTags::Strahlkorper<Frame>>(box);
+
+    const size_t L_mesh = fast_flow.current_l_mesh(strahlkorper);
+    const auto prolonged_strahlkorper =
+        Strahlkorper<Frame>(L_mesh, L_mesh, strahlkorper);
+
+    const auto prolonged_coords =
+        StrahlkorperTags::CartesianCoords<Frame>::function(
+            prolonged_strahlkorper,
+            StrahlkorperTags::Radius<Frame>::function(prolonged_strahlkorper),
+            StrahlkorperTags::Rhat<Frame>::function(
+                StrahlkorperTags::ThetaPhi<Frame>::function(
+                    prolonged_strahlkorper)));
+
+    // In the future, when we add support for multiple Frames,
+    // the code that transforms coordinates from the Strahlkorper Frame
+    // to Frame::Inertial will go here.  That transformation
+    // may depend on `temporal_id`.
+    return prolonged_coords;
+  }
+
   template <
       typename ParallelComponent, typename DbTags, typename Metavariables,
       typename ArrayIndex, typename TemporalId,
