@@ -49,3 +49,20 @@ configure_file(
   ${CMAKE_BINARY_DIR}/tmp/WrapExecutableLinker.sh
   @ONLY
   )
+
+option(
+  STUB_LIBRARY_OBJECT_FILES
+  "Replace library object files with stubs to reduce disk usage."
+  OFF
+  )
+
+set(WRAP_LIBRARY_LINKER_USE_STUB_OBJECT_FILES "false")
+if (STUB_LIBRARY_OBJECT_FILES)
+  set(WRAP_LIBRARY_LINKER_USE_STUB_OBJECT_FILES "true")
+endif (STUB_LIBRARY_OBJECT_FILES)
+
+configure_file(
+  ${CMAKE_SOURCE_DIR}/tools/WrapLibraryLinker.sh
+  ${CMAKE_BINARY_DIR}/tmp/WrapLibraryLinker.sh
+  @ONLY
+  )
