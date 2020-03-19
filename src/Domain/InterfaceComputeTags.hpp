@@ -50,17 +50,18 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
 
  private:
   // Order matters so we mix public/private
-  template <class ComputeItem, bool = db::has_return_type_member_v<ComputeItem>>
+  template <class ComputeItem, typename = std::nullptr_t>
   struct ComputeItemType {
+    using type = typename BaseComputeItem::return_type;
+  };
+
+  template <class ComputeItem>
+  struct ComputeItemType<
+      ComputeItem, Requires<not db::has_return_type_member_v<ComputeItem>>> {
     using type = std::decay_t<decltype(BaseComputeItem::function(
         std::declval<typename InterfaceHelpers_detail::unmap_interface_args<
             tmpl::list_contains_v<volume_tags, ArgumentTags>>::
                          template f<db::const_item_type<ArgumentTags>>>()...))>;
-  };
-
-  template <class ComputeItem>
-  struct ComputeItemType<ComputeItem, true> {
-    using type = typename BaseComputeItem::return_type;
   };
 
  public:
@@ -68,10 +69,11 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
       typename db::const_item_type<DirectionsTag>::value_type,
       typename ComputeItemType<BaseComputeItem>::type>;
 
+  template <typename... ArgTypes>
   static constexpr void apply(
       const gsl::not_null<return_type*> result,
       const db::const_item_type<DirectionsTag>& directions,
-      const db::const_item_type<ArgumentTags>&... args) noexcept {
+      const ArgTypes&... args) noexcept {
     apply_helper(
         std::integral_constant<bool,
                                db::has_return_type_member_v<BaseComputeItem>>{},
@@ -79,11 +81,12 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
   }
 
  private:
+  template <typename... ArgTypes>
   static constexpr void apply_helper(
       std::false_type /*has_return_type_member*/,
       const gsl::not_null<return_type*> result,
       const db::const_item_type<DirectionsTag>& directions,
-      const db::const_item_type<ArgumentTags>&... args) noexcept {
+      const ArgTypes&... args) noexcept {
     for (const auto& direction : directions) {
       (*result)[direction] = BaseComputeItem::function(
           InterfaceHelpers_detail::unmap_interface_args<tmpl::list_contains_v<
@@ -91,11 +94,12 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
     }
   }
 
+  template <typename... ArgTypes>
   static constexpr void apply_helper(
       std::true_type /*has_return_type_member*/,
       const gsl::not_null<return_type*> result,
       const db::const_item_type<DirectionsTag>& directions,
-      const db::const_item_type<ArgumentTags>&... args) noexcept {
+      const ArgTypes&... args) noexcept {
     for (const auto& direction : directions) {
       BaseComputeItem::function(
           make_not_null(&(*result)[direction]),
@@ -146,9 +150,12 @@ struct InterfaceCompute : Interface<DirectionsTag, Tag>,
 
   using return_type = typename Interface_detail::evaluate_compute_item<
       DirectionsTag, Tag, forwarded_argument_tags>::return_type;
-  static constexpr auto function =
-      Interface_detail::evaluate_compute_item<DirectionsTag, Tag,
-                                              forwarded_argument_tags>::apply;
+  template <typename... Ts>
+  static constexpr auto function(Ts&&... ts) noexcept {
+    return Interface_detail::evaluate_compute_item<
+        DirectionsTag, Tag,
+        forwarded_argument_tags>::apply(std::forward<Ts>(ts)...);
+  }
 };
 
 /// \ingroup DataBoxTagsGroup
