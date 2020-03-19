@@ -19,6 +19,64 @@
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
 namespace {
+template <size_t VolumeDim>
+void test_placement_new_and_hashing_impl(
+    const size_t block1, const std::array<SegmentId, VolumeDim>& segments1,
+    const size_t block2, const std::array<SegmentId, VolumeDim>& segments2) {
+  using Hash = std::hash<ElementId<VolumeDim>>;
+
+  const ElementId<VolumeDim> id1(block1, segments1);
+  const ElementId<VolumeDim> id2(block2, segments2);
+
+  ElementId<VolumeDim> test_id1{}, test_id2{};
+  // Check for nondeterminacy due to previous memory state.
+  std::memset(&test_id1, 0, sizeof(test_id1));
+#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ > 7)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
+#endif  // defined(__GNUC__) && !defined(__clang__) && (__GNUC__ > 7)
+  std::memset(&test_id2, 255, sizeof(test_id2));
+#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ > 7)
+#pragma GCC diagnostic pop
+#endif  // defined(__GNUC__) && !defined(__clang__) && (__GNUC__ > 7)
+  new (&test_id1) ElementId<VolumeDim>(id1);
+  new (&test_id2) ElementId<VolumeDim>(id2);
+
+  CHECK((test_id1 == test_id2) == (id1 == id2));
+  CHECK((test_id1 != test_id2) == (id1 != id2));
+  CHECK((Hash{}(test_id1) == Hash{}(test_id2)) == (id1 == id2));
+}
+
+void test_placement_new_and_hashing() {
+  const std::array<size_t, 3> blocks{{0, 1, 4}};
+  const std::array<SegmentId, 4> segments{{{0, 0}, {1, 0}, {1, 1}, {8, 4}}};
+
+  for (const auto& block1 : blocks) {
+    for (const auto& block2 : blocks) {
+      for (const auto& segment10 : segments) {
+        for (const auto& segment20 : segments) {
+          test_placement_new_and_hashing_impl<1>(block1, {{segment10}}, block2,
+                                                 {{segment20}});
+          for (const auto& segment11 : segments) {
+            for (const auto& segment21 : segments) {
+              test_placement_new_and_hashing_impl<2>(
+                  block1, {{segment10, segment11}}, block2,
+                  {{segment20, segment21}});
+              for (const auto& segment12 : segments) {
+                for (const auto& segment22 : segments) {
+                  test_placement_new_and_hashing_impl<3>(
+                      block1, {{segment10, segment11, segment12}}, block2,
+                      {{segment20, segment21, segment22}});
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 void test_element_id() {
   // Test retrieval functions:
   auto segment_ids = std::array<SegmentId, 3>(
@@ -58,7 +116,7 @@ void test_element_id() {
   CHECK(ElementId<3>::external_boundary_id().block_id() ==
         two_to_the(SegmentId::block_id_bits) - 1);
   CHECK(ElementId<3>::external_boundary_id().segment_ids() ==
-        make_array<3>(SegmentId(0, 0)));
+        make_array<3>(SegmentId(SegmentId::max_refinement_level, 0)));
 }
 
 void test_element_id_conversion_to_element_index() {
@@ -82,9 +140,10 @@ void test_element_id_conversion_to_element_index() {
   CHECK(block_2_3d_from_index.block_id() == 2);
   CHECK(block_2_3d_from_index.segment_ids() == segment_ids);
 }
-}
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.ElementId", "[Domain][Unit]") {
   test_element_id();
+  test_placement_new_and_hashing();
   test_element_id_conversion_to_element_index();
 }

@@ -15,6 +15,8 @@
 #include "Domain/ElementIndex.hpp" // IWYU pragma: keep
 #include "Domain/SegmentId.hpp"
 #include "Domain/Side.hpp"
+#include "ErrorHandling/Assert.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/MakeArray.hpp"
 
 /// \cond
@@ -27,18 +29,39 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
-/// \ingroup ComputationalDomainGroup
-/// An ElementId uniquely labels an Element.
-/// It is constructed from the BlockId of the Block to which the Element belongs
-/// and the VolumeDim SegmentIds that label the segments of the Block that the
-/// Element covers.
+/*!
+ * \ingroup ComputationalDomainGroup
+ * \brief An ElementId uniquely labels an Element.
+ *
+ * It is constructed from the BlockId of the Block to which the Element belongs
+ * and the VolumeDim SegmentIds that label the segments of the Block that the
+ * Element covers.
+ *
+ * \details
+ * The `ElementId` serves as an index that is compatible with Charm++ and
+ * therefore must adhere to the restrictions imposed by Charm++. These are:
+ * - `ElementId` must satisfy `std::is_pod`
+ * - `ElementId` must not be larger than the size of three `int`s, i.e.
+ *   `sizeof(ElementId) <= 3 * sizeof(int)`
+ *
+ * The latter restriction can be relaxed with a special compilation flag to
+ * Charm++, but we have not yet needed more elements than can be accounted for
+ * by densely packing bits together. `SegmentId` is responsible for handling the
+ * low-level bit manipulations to create an index that satisfies the size
+ * constraints.
+ */
 template <size_t VolumeDim>
 class ElementId {
  public:
   static constexpr size_t volume_dim = VolumeDim;
 
   /// Default constructor needed for Charm++ serialization.
-  constexpr ElementId() = default;
+  ElementId() noexcept = default;
+  ElementId(const ElementId&) noexcept = default;
+  ElementId& operator=(const ElementId&) noexcept = default;
+  ElementId(ElementId&&) noexcept = default;
+  ElementId& operator=(ElementId&&) noexcept = default;
+  ~ElementId() noexcept = default;
 
   /// Create the ElementId of the root Element of a Block.
   explicit ElementId(size_t block_id) noexcept;
@@ -61,10 +84,13 @@ class ElementId {
   ElementId<VolumeDim> id_of_parent(size_t dim) const noexcept;
 
   size_t block_id() const noexcept {
-    ASSERT(block_id_ == segment_ids_[0].block_id(),
-           "The block_id of element is " << block_id_
-                                         << " but of the segment id it is "
-                                         << segment_ids_[0].block_id());
+    ASSERT(
+        alg::all_of(segment_ids_,
+                    [this](const SegmentId& current_id) noexcept {
+                      return current_id.block_id() ==
+                             segment_ids_[0].block_id();
+                    }),
+        "Not all of the `SegmentId`s inside `ElementId` have same `BlockId`.");
     return segment_ids_[0].block_id();
   }
 
@@ -80,9 +106,7 @@ class ElementId {
   static ElementId<VolumeDim> external_boundary_id() noexcept;
 
  private:
-  size_t block_id_ = std::numeric_limits<size_t>::max();
-  std::array<SegmentId, VolumeDim> segment_ids_ =
-      make_array<VolumeDim>(SegmentId());
+  std::array<SegmentId, VolumeDim> segment_ids_;
 };
 
 /// Output operator for ElementId.
