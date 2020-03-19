@@ -60,19 +60,24 @@ namespace Limiters {
 /// \brief A compact-stencil WENO limiter for DG
 ///
 /// Implements the simple WENO limiter of \cite Zhong2013 and the Hermite WENO
-/// (HWENO) limiter of \cite Zhu2016. These limiters require communication only
-/// between nearest-neighbor elements, but preserve the full order of the DG
-/// solution when the solution is smooth. Full volume data is communicated
-/// between neighbors.
+/// (HWENO) limiter of \cite Zhu2016 for an arbitrary set of tensors. These
+/// limiters require communication only between nearest-neighbor elements, but
+/// preserve the full order of the DG solution when the solution is smooth.
+/// Full volume data is communicated between neighbors.
 ///
-/// The limiter uses a Minmod-based troubled-cell indicator to identify elements
-/// that need limiting. The \f$\Lambda\Pi^N\f$ limiter of \cite Cockburn1999 is
-/// used. Note that the HWENO paper recommends a more sophisticated
-/// troubled-cell indicator instead, but the specific choice of indicator should
-/// not be too important for a high-order WENO limiter.
+/// The limiter uses the minmod-based TVB troubled-cell indicator (TCI) of
+/// \cite Cockburn1999 to identify elements that need limiting. The simple
+/// WENO implementation follows the paper: it checks the TCI independently
+/// to each tensor component, so that only certain tensor components may be
+/// limited. The HWENO implementation checks the TCI for all tensor components,
+/// and if any single component is troubled, then all components are limited.
+/// Note that the HWENO paper, because it specializes the limiter to the
+/// Newtonian Euler fluid system, uses a more sophisticated TCI that is adapted
+/// to the particulars of the fluid system. We instead use the TVB indicator
+/// because it is easily applied to a general set of tensors.
 ///
-/// On any identified "troubled" elements, the limited solution is obtained by
-/// WENO reconstruction --- a linear combination of the local DG solution and a
+/// For each tensor component to limit, the new solution is obtained by WENO
+/// reconstruction --- a linear combination of the local DG solution and a
 /// "modified" solution from each neighbor element. For the simple WENO limiter,
 /// the modified solution is obtained by simply extrapolating the neighbor
 /// solution onto the troubled element. For the HWENO limiter, the modified
