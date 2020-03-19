@@ -281,6 +281,7 @@ void spacetime_normal_vector(
     const tnsr::I<DataType, SpatialDim, Frame>& shift) noexcept;
 // @}
 
+//@{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief  Computes extrinsic curvature from metric and derivatives.
@@ -304,6 +305,18 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::ijj<DataType, SpatialDim, Frame>&
         deriv_spatial_metric) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+void extrinsic_curvature(
+    gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> ex_curvature,
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
+    const tnsr::ijj<DataType, SpatialDim, Frame>&
+        deriv_spatial_metric) noexcept;
+//@}
 
 namespace Tags {
 /*!

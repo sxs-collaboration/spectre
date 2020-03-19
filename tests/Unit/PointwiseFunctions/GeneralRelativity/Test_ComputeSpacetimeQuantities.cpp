@@ -118,7 +118,14 @@ void test_compute_spacetime_normal_one_form(const DataType& used_for_size) {
 template <size_t Dim, typename DataType>
 void test_compute_extrinsic_curvature(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
-      &gr::extrinsic_curvature<Dim, Frame::Inertial, DataType>,
+      static_cast<tnsr::ii<DataType, Dim, Frame::Inertial> (*)(
+          const Scalar<DataType>&,
+          const tnsr::I<DataType, Dim, Frame::Inertial>&,
+          const tnsr::iJ<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ii<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ii<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ijj<DataType, Dim, Frame::Inertial>&) noexcept>(
+          &gr::extrinsic_curvature<Dim, Frame::Inertial, DataType>),
       "ComputeSpacetimeQuantities", "extrinsic_curvature", {{{-10., 10.}}},
       used_for_size);
 }
