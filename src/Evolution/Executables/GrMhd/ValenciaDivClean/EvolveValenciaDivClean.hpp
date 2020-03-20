@@ -181,11 +181,11 @@ struct EvolutionMetavars {
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
   // Do not limit the divergence-cleaning field Phi
-  using limiter = Tags::Limiter<Limiters::Minmod<
-      3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
-                    grmhd::ValenciaDivClean::Tags::TildeTau,
-                    grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>,
-                    grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>>>;
+  using limiter = Tags::Limiter<
+      Limiters::Minmod<3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
+                                     grmhd::ValenciaDivClean::Tags::TildeTau,
+                                     grmhd::ValenciaDivClean::Tags::TildeS<>,
+                                     grmhd::ValenciaDivClean::Tags::TildeB<>>>>;
 
   using step_choosers_common =
       tmpl::list<StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial>,
