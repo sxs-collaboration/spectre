@@ -396,10 +396,15 @@ std::vector<std::string> get_attribute_names(const hid_t file_id,
   // attributes retrieving their names and storing them in names
   detail::OpenGroup my_group(file_id, group_name, AccessType::ReadOnly);
   const hid_t group_id = my_group.id();
-  H5O_info_t group_info{};
   std::string name;
   std::vector<std::string> names;
+#if H5_VERSION_GE(1, 12, 0)
+  H5O_info1_t group_info{};
+  CHECK_H5(H5Oget_info1(group_id, &group_info), "Failed to get group info");
+#else
+  H5O_info_t group_info{};
   CHECK_H5(H5Oget_info(group_id, &group_info), "Failed to get group info");
+#endif
   names.reserve(group_info.num_attrs);
   for (size_t i = 0; i < group_info.num_attrs; ++i) {
 #pragma GCC diagnostic push
