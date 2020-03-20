@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Evolution/Systems/Cce/InitializeCce.hpp"
+#include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/ScriPlusValues.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -48,7 +48,8 @@ struct InitializeFirstHypersurface {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    db::mutate_apply<InitializeJ::mutate_tags, InitializeJ::argument_tags>(
+    db::mutate_apply<InitializeJ::InitializeJ::mutate_tags,
+                     InitializeJ::InitializeJ::argument_tags>(
         db::get<Tags::InitializeJ>(box), make_not_null(&box));
     db::mutate_apply<InitializeScriPlusValue<Tags::InertialRetardedTime>>(
         make_not_null(&box));

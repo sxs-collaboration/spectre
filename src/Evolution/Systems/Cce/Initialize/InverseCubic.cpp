@@ -1,31 +1,33 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/Cce/InitializeCce.hpp"
+#include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
 
 #include <cstddef>
 #include <memory>
+#include <type_traits>
 
 #include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
+#include "DataStructures/Tags.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/Cce/GaugeTransformBoundaryData.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
-#include "Time/History.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace Cce {
+namespace InitializeJ {
 
-std::unique_ptr<InitializeJ> InitializeJInverseCubic::get_clone() const
+std::unique_ptr<InitializeJ> InverseCubic::get_clone() const
     noexcept {
-  return std::make_unique<InitializeJInverseCubic>();
+  return std::make_unique<InverseCubic>();
 }
 
-void InitializeJInverseCubic::operator()(
+void InverseCubic::operator()(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
     const gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_cauchy_coordinates,
     const gsl::not_null<
@@ -74,9 +76,10 @@ void InitializeJInverseCubic::operator()(
       cos(get<0>(*angular_cauchy_coordinates));
 }
 
-void InitializeJInverseCubic::pup(PUP::er& /*p*/) noexcept {}
+void InverseCubic::pup(PUP::er& /*p*/) noexcept {}
 
 /// \cond
-PUP::able::PUP_ID InitializeJInverseCubic::my_PUP_ID = 0;
+PUP::able::PUP_ID InverseCubic::my_PUP_ID = 0;
 /// \endcond
+}  // namespace InitializeJ
 }  // namespace Cce

@@ -7,7 +7,9 @@ set(LIBRARY_SOURCES
   BoundaryData.cpp
   Equations.cpp
   GaugeTransformBoundaryData.cpp
-  InitializeCce.cpp
+  Initialize/InitializeJ.cpp
+  Initialize/InverseCubic.cpp
+  Initialize/ZeroNonSmooth.cpp
   InterfaceManagers/GhLockstepInterfaceManager.cpp
   LinearOperators.cpp
   LinearSolve.cpp

@@ -8,7 +8,9 @@
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
-#include "Evolution/Systems/Cce/InitializeCce.hpp"
+#include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
+#include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
+#include "Evolution/Systems/Cce/Initialize/ZeroNonSmooth.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
@@ -115,7 +117,8 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling,
     &Parallel::register_derived_classes_with_charm<
         Cce::ReducedWorldtubeBufferUpdater>,
-    &Parallel::register_derived_classes_with_charm<Cce::InitializeJ>,
+    &Parallel::register_derived_classes_with_charm<
+        Cce::InitializeJ::InitializeJ>,
     &Parallel::register_derived_classes_with_charm<Cce::WorldtubeBufferUpdater>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>};

@@ -29,7 +29,59 @@ struct NumberOfRadialPoints;
 /// \endcond
 }  // namespace Tags
 
-struct InitializeJInverseCubic;
+/// Contains utilities and \ref DataBoxGroup mutators for generating data for
+/// \f$J\f$ on the initial CCE hypersurface.
+namespace InitializeJ {
+
+namespace detail {
+double adjust_angular_coordinates_for_j(
+    gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_cauchy_coordinates,
+    gsl::not_null<
+        tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
+        angular_cauchy_coordinates,
+    const SpinWeighted<ComplexDataVector, 2>& surface_j, size_t l_max,
+    double tolerance, size_t max_steps) noexcept;
+}  // namespace detail
+
+/*!
+ * \brief Apply a radius-independent angular gauge transformation to a volume
+ * \f$J\f$, for use with initial data generation.
+ *
+ * \details Performs the gauge transformation to \f$\hat J\f$,
+ *
+ * \f{align*}{
+ * \hat J = \frac{1}{4 \hat{\omega}^2} \left( \bar{\hat d}^2  J(\hat x^{\hat A})
+ *  + \hat c^2 \bar J(\hat x^{\hat A})
+ *  + 2 \hat c \bar{\hat d} K(\hat x^{\hat A}) \right).
+ * \f}
+ *
+ * Where \f$\hat c\f$ and \f$\hat d\f$ are the spin-weighted angular Jacobian
+ * factors computed by `GaugeUpdateJacobianFromCoords`, and \f$\hat \omega\f$ is
+ * the conformal factor associated with the angular coordinate transformation.
+ * Note that the right-hand sides with explicit \f$\hat x^{\hat A}\f$ dependence
+ * must be interpolated and that \f$K = \sqrt{1 + J \bar J}\f$.
+ */
+struct GaugeAdjustInitialJ {
+  using boundary_tags =
+      tmpl::list<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega,
+                 Tags::CauchyAngularCoords, Spectral::Swsh::Tags::LMax>;
+  using return_tags = tmpl::list<Tags::BondiJ>;
+  using argument_tags = tmpl::append<boundary_tags>;
+
+  static void apply(
+      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> volume_j,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>& gauge_c,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_d,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& gauge_omega,
+      const tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>&
+          cauchy_angular_coordinates,
+      size_t l_max) noexcept;
+};
+
+/// \cond
+struct ZeroNonSmooth;
+struct InverseCubic;
+/// \endcond
 
 /*!
  * \brief Abstract base class for an initial hypersurface data generator for
@@ -57,7 +109,7 @@ struct InitializeJ : public PUP::able {
   using argument_tags =
       tmpl::push_back<boundary_tags, Tags::LMax, Tags::NumberOfRadialPoints>;
 
-  using creatable_classes = tmpl::list<InitializeJInverseCubic>;
+  using creatable_classes = tmpl::list<ZeroNonSmooth, InverseCubic>;
 
   WRAPPED_PUPable_abstract(InitializeJ);  // NOLINT
 
@@ -74,50 +126,5 @@ struct InitializeJ : public PUP::able {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, size_t l_max,
       size_t number_of_radial_points) const noexcept = 0;
 };
-
-/*!
- * \brief Initialize \f$J\f$ on the first hypersurface from provided boundary
- * values of \f$J\f$, \f$R\f$, and \f$\partial_r J\f$.
- *
- * \details This initial data is chosen to take the function:
- *
- * \f[ J = \frac{A}{r} + \frac{B}{r^3},\f]
- *
- * where
- *
- * \f{align*}{
- * A &= R \left( \frac{3}{2} J|_{r = R} + \frac{1}{2} R \partial_r J|_{r =
- * R}\right) \notag\\
- * B &= - \frac{1}{2} R^3 (J|_{r = R} + R \partial_r J|_{r = R})
- * \f}
- */
-struct InitializeJInverseCubic : InitializeJ {
-  using options = tmpl::list<>;
-  static constexpr OptionString help = {
-      "Initialization process where J is set to a simple Ansatz with a\n"
-      " A/r + B/r^3 piece such that it is smooth with the Cauchy data at the \n"
-      "worldtube"};
-
-  static std::string name() noexcept { return "InverseCubic"; }
-
-  WRAPPED_PUPable_decl_template(InitializeJInverseCubic);  // NOLINT
-  explicit InitializeJInverseCubic(CkMigrateMessage* /*unused*/) noexcept {}
-
-  InitializeJInverseCubic() = default;
-
-  std::unique_ptr<InitializeJ> get_clone() const noexcept override;
-
-  void operator()(
-      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
-      gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_cauchy_coordinates,
-      gsl::not_null<
-          tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
-          angular_cauchy_coordinates,
-      const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
-      const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, size_t l_max,
-      size_t number_of_radial_points) const noexcept override;
-
-  void pup(PUP::er& /*p*/) noexcept override;
-};
+}  // namespace InitializeJ
 }  // namespace Cce
