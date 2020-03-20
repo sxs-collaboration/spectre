@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <string>
 #include <utility>
@@ -9,10 +9,10 @@
 #include "DataStructures/DenseMatrix.hpp"  // IWYU pragma: keep
 #include "DataStructures/DenseVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_include "DataStructures/DataVector.hpp"
 

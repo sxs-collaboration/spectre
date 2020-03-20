@@ -4,7 +4,6 @@
 set(LIBRARY "Test_GeneralRelativity")
 
 set(LIBRARY_SOURCES
-  TestHelpers.cpp
   Test_Christoffel.cpp
   Test_ComputeGhQuantities.cpp
   Test_ComputeSpacetimeQuantities.cpp
@@ -19,5 +18,5 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/GeneralRelativity/"
   "${LIBRARY_SOURCES}"
-  "GeneralRelativity;Test_Pypp"
+  "GeneralRelativityHelpers"
   )

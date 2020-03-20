@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <array>
 #include <cstddef>
@@ -11,9 +11,9 @@
 #include "Domain/Direction.hpp"
 #include "Domain/Side.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 void test_construction_1d() {

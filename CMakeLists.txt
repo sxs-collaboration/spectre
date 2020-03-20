@@ -112,7 +112,7 @@ include(SetupCompilationFailureTests)
 
 include_directories(${CMAKE_SOURCE_DIR}/external)
 include_directories(${CMAKE_SOURCE_DIR}/src)
-include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/tests/Unit)
 
 # Charm++ generated headers are created in the build directory
 spectre_include_directories(${CMAKE_BINARY_DIR})

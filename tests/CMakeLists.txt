@@ -2,4 +2,3 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(Unit)
-add_subdirectory(Utilities)

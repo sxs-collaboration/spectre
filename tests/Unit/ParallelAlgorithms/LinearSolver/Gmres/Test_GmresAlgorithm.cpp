@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Helpers.hpp"            // IWYU pragma: keep
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "Parallel/ConstGlobalCache.hpp"
@@ -13,7 +14,6 @@
 #include "Parallel/Main.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"  // IWYU pragma: keep
 
 namespace helpers = LinearSolverAlgorithmTestHelpers;
 

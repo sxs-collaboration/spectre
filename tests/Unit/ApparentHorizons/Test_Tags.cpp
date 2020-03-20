@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <array>
 #include <cmath>
@@ -18,11 +18,11 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Helpers/ApparentHorizons/YlmTestFunctions.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/ApparentHorizons/YlmTestFunctions.hpp"
-#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace {
 

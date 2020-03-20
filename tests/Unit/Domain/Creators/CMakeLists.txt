@@ -26,5 +26,5 @@ add_test_library(
   ${LIBRARY}
   "Domain/Creators"
   "${LIBRARY_SOURCES}"
-  "DomainCreators;Domain;Test_Domain"
+  "DomainCreators;Domain;DomainHelpers;Test_Domain"
   )

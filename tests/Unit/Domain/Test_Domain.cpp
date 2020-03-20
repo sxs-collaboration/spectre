@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <array>
 #include <cstddef>
@@ -30,11 +30,11 @@
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/StdHelpers.hpp"
-#include "tests/Unit/Domain/DomainTestHelpers.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 namespace domain {
 namespace {

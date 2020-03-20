@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <boost/none.hpp>
 #include <boost/none_t.hpp>
@@ -10,11 +10,11 @@
 #include <string>
 
 #include "ErrorHandling/Error.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "Utilities/GetOutput.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
                   "[Unit][NumericalAlgorithms]") {

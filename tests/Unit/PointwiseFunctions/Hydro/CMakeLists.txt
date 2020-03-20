@@ -6,7 +6,6 @@ add_subdirectory(EquationsOfState)
 set(LIBRARY "Test_Hydro")
 
 set(LIBRARY_SOURCES
-  TestHelpers.cpp
   Test_LorentzFactor.cpp
   Test_MassFlux.cpp
   Test_SoundSpeedSquared.cpp
@@ -19,5 +18,5 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/Hydro/"
   "${LIBRARY_SOURCES}"
-  "Hydro;Test_GeneralRelativity;Test_Pypp"
+  "HydroHelpers;Test_GeneralRelativity"
   )

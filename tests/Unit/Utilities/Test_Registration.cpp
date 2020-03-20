@@ -1,14 +1,14 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <memory>
 
+#include "Framework/TestCreation.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestCreation.hpp"
 
 namespace {
 /// [registrar_structure]

@@ -1,13 +1,13 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
-#include "tests/Unit/DataStructures/DataBox/TestTags.hpp"
+#include "Helpers/DataStructures/DataBox/TestTags.hpp"
 
 namespace {
 struct NamedSimple : db::SimpleTag {

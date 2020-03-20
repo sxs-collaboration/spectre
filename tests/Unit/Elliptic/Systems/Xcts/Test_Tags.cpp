@@ -1,12 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <string>
 
 #include "Elliptic/Systems/Xcts/Tags.hpp"
-#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 
 struct DataVector;
 namespace Frame {

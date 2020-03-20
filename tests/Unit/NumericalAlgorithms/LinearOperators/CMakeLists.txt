@@ -22,3 +22,8 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "LinearOperators;MathFunctions;Spectral;Utilities"
   )
+
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )

@@ -1,19 +1,19 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
 #include <unordered_map>
 #include <unordered_set>
 
+#include "Framework/ActionTesting.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Initialize.hpp"
-#include "IO/Observer/Tags.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Tags.hpp"                   // IWYU pragma: keep
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_include <exception>
 

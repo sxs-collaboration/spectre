@@ -16,3 +16,8 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "WaveEquation;MathFunctions;Utilities"
   )
+
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )

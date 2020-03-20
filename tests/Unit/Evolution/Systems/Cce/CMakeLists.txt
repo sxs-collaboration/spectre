@@ -6,7 +6,6 @@ add_subdirectory(Actions)
 set(LIBRARY "Test_Cce")
 
 set(LIBRARY_SOURCES
-  CceComputationTestHelpers.cpp
   Test_BoundaryData.cpp
   Test_Equations.cpp
   Test_GaugeTransformBoundaryData.cpp
@@ -27,5 +26,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/Cce/"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;Cce;GeneralRelativitySolutions"
+  "Boost::boost;Cce;CceHelpers;GeneralRelativitySolutions"
   )

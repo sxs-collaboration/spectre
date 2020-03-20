@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <string>
 
@@ -9,7 +9,7 @@
 #include "Evolution/Systems/RadiationTransport/M1Grey/Characteristics.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"
-#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 
 /// Test tags used in M1Grey code
 SPECTRE_TEST_CASE("Evolution.Systems.RadiationTransport.M1Grey.Tags",

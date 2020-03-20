@@ -4,7 +4,6 @@
 set(LIBRARY "Test_ApparentHorizons")
 
 set(LIBRARY_SOURCES
-  StrahlkorperGrTestHelpers.cpp
   Test_ApparentHorizonFinder.cpp
   Test_ComputeItems.cpp
   Test_FastFlow.cpp
@@ -13,14 +12,13 @@ set(LIBRARY_SOURCES
   Test_StrahlkorperGr.cpp
   Test_Tags.cpp
   Test_YlmSpherepack.cpp
-  YlmTestFunctions.cpp
   )
 
 add_test_library(
   ${LIBRARY}
   "ApparentHorizons"
   "${LIBRARY_SOURCES}"
-  "ApparentHorizons;GeneralRelativitySolutions;RootFinding;Options;Utilities"
+  "ApparentHorizons;ApparentHorizonsHelpers;GeneralRelativitySolutions;Options;RootFinding;Utilities"
   )
 
 add_dependencies(

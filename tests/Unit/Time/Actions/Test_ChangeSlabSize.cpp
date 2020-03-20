@@ -5,7 +5,7 @@
 // it cannot currently be tested with the mocking code.  This tests
 // the action portion.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <initializer_list>
 #include <memory>
@@ -14,6 +14,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Framework/ActionTesting.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Slab.hpp"
@@ -25,7 +26,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "tests/Unit/ActionTesting.hpp"
 
 /// \cond
 // IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox

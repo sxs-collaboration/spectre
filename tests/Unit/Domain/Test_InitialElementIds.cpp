@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <array>
 #include <boost/rational.hpp>
@@ -10,9 +10,9 @@
 
 #include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/InitialElementIds.hpp"
+#include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
-#include "tests/Unit/Domain/DomainTestHelpers.hpp"
 
 namespace {
 template <size_t VolumeDim>

@@ -1,14 +1,14 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Tags.hpp"
-#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace {
 struct DummyType {};

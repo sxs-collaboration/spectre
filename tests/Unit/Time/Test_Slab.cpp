@@ -1,16 +1,16 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <functional>
 #include <string>
 
 #include "ErrorHandling/Error.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/GetOutput.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.Slab", "[Unit][Time]") {
   const double tstart_d = 0.68138945475734402635;

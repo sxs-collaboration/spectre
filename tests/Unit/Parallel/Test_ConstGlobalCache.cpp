@@ -3,11 +3,11 @@
 
 #define CATCH_CONFIG_RUNNER
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 void register_pupables();
 
-#include "tests/Unit/Parallel/Test_ConstGlobalCache.hpp"
+#include "Parallel/Test_ConstGlobalCache.hpp"
 
 #include <algorithm>
 #include <charm++.h>

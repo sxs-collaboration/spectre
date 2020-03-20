@@ -1,14 +1,14 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <string>
 
+#include "Framework/TestHelpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeString.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 namespace observer_testing_detail {
 struct ObservationType1 {};

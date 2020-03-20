@@ -3,12 +3,7 @@
 
 set(executable RunTests)
 
-set(SPECTRE_TESTS
-  Test_ActionTesting.cpp
-  Test_TestCreation.cpp
-  Test_TestHelpers.cpp
-  Test_TestingFramework.cpp
-  )
+set(SPECTRE_TESTS)
 
 set(SPECTRE_COMPILATION_TESTS "TestCompilationFramework.cpp")
 
@@ -22,6 +17,8 @@ add_subdirectory(Domain)
 add_subdirectory(Elliptic)
 add_subdirectory(ErrorHandling)
 add_subdirectory(Evolution)
+add_subdirectory(Framework)
+add_subdirectory(Helpers)
 add_subdirectory(IO)
 add_subdirectory(Informer)
 add_subdirectory(NumericalAlgorithms)
@@ -29,8 +26,6 @@ add_subdirectory(Options)
 add_subdirectory(Parallel)
 add_subdirectory(ParallelAlgorithms)
 add_subdirectory(PointwiseFunctions)
-add_subdirectory(Pypp)
-add_subdirectory(TestUtilities)
 add_subdirectory(Time)
 add_subdirectory(Utilities)
 add_subdirectory(Visualization)
@@ -64,6 +59,7 @@ target_link_libraries(
   # dependency handling for header-only libs
   Boost::program_options
   ErrorHandling
+  Framework
   Informer
   Options
   Utilities

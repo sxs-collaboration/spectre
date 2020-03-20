@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <array>
 #include <cstddef>
@@ -27,6 +27,7 @@
 #include "Domain/SegmentId.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/DiscontinuousGalerkin/InitializeFluxes.hpp"
+#include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
@@ -34,7 +35,6 @@
 #include "Utilities/Functional.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/ActionTesting.hpp"
 
 namespace {
 struct ScalarFieldTag : db::SimpleTag {

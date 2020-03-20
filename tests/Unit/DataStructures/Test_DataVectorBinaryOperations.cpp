@@ -4,18 +4,18 @@
 // This file is separated from `Test_DataVector.cpp` in an effort to parallelize
 // the test builds.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <array>
 #include <tuple>
 
-#include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
-#include "ErrorHandling/Error.hpp"           // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "ErrorHandling/Error.hpp"        // IWYU pragma: keep
+#include "Helpers/DataStructures/VectorImplTestHelper.hpp"
 #include "Utilities/DereferenceWrapper.hpp"  // IWYU pragma: keep
 #include "Utilities/Functional.hpp"
 #include "Utilities/Math.hpp"        // IWYU pragma: keep
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
-#include "tests/Unit/DataStructures/VectorImplTestHelper.hpp"
 
 // IWYU pragma: no_include <algorithm>
 

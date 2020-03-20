@@ -1,15 +1,15 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <functional>
 #include <string>
 
 #include "ErrorHandling/Error.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Rational.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.Rational", "[Unit][Utilities]") {
   CHECK(Rational(6, 8).numerator() == 3);

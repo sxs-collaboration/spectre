@@ -1,18 +1,18 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <cmath>
 #include <complex>
 #include <cstddef>
 #include <random>
 
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/NumericalAlgorithms/Spectral/SwshTestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Math.hpp"
-#include "tests/Unit/NumericalAlgorithms/Spectral/SwshTestHelpers.hpp"
-#include "tests/Unit/TestHelpers.hpp"
-#include "tests/Utilities/MakeWithRandomValues.hpp"
 
 namespace Spectral {
 namespace Swsh {

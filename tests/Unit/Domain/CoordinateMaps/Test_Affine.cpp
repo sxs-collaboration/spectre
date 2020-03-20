@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <array>
 #include <boost/optional.hpp>
@@ -10,8 +10,8 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
-#include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
-#include "tests/Unit/TestHelpers.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
 
 namespace domain {
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Affine", "[Domain][Unit]") {

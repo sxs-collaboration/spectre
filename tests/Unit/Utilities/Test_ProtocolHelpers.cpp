@@ -1,15 +1,15 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <string>
 
+#include "Helpers/Utilities/ProtocolTestHelpers.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
-#include "tests/Unit/ProtocolTestHelpers.hpp"
 
 namespace {
 

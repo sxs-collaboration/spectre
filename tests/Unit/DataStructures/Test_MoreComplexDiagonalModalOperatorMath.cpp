@@ -4,7 +4,7 @@
 // This file is separated from `Test_ComplexDiagonalModalOperator.cpp` in an
 // effort to parallelize the test builds.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <array>
 #include <tuple>
@@ -14,10 +14,10 @@
 #include "DataStructures/DiagonalModalOperator.hpp"
 #include "DataStructures/ModalVector.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Error.hpp"         // IWYU pragma: keep
+#include "Helpers/DataStructures/VectorImplTestHelper.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
-#include "tests/Unit/DataStructures/VectorImplTestHelper.hpp"
 
 // IWYU pragma: no_include <algorithm>
 

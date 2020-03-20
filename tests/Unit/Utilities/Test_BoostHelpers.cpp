@@ -1,15 +1,15 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
 #include <string>
 
+#include "Framework/TestHelpers.hpp"
 #include "Utilities/BoostHelpers.hpp"  // IWYU pragma: associated
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 static_assert(
     cpp17::is_same_v<boost::variant<double, int, char>,

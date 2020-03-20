@@ -1,11 +1,11 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
+#include "Framework/TestCreation.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
-#include "tests/Unit/TestCreation.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.Convergence.Criteria",
                   "[Unit][NumericalAlgorithms]") {

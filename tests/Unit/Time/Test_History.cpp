@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <boost/iterator/transform_iterator.hpp>
 #include <cmath>
@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "Framework/TestHelpers.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
@@ -18,7 +19,6 @@
 #include "Time/TimeStepId.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 

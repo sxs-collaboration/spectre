@@ -18,3 +18,8 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "Convergence;DataStructures;Options;ParallelLinearSolver"
   )
+
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )

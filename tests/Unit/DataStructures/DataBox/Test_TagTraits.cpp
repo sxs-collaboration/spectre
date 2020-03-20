@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 #include "DataStructures/DataBox/TagTraits.hpp"
-#include "tests/Unit/DataStructures/DataBox/TestTags.hpp"
+#include "Helpers/DataStructures/DataBox/TestTags.hpp"
 
 static_assert(not db::is_compute_item_v<TestHelpers::db::Tags::Bad>,
               "Failed testing is_compute_item");

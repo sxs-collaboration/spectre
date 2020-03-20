@@ -12,5 +12,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Initialization/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Domain;Utilities"
+  "DataStructures;Domain;Evolution;Utilities"
   )

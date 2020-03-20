@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <boost/math/tools/roots.hpp>
 #include <cmath>
@@ -11,11 +11,11 @@
 #include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/Exceptions.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 std::pair<double, double> func_and_deriv_free(double x) noexcept {

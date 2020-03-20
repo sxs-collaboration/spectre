@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <string>
 
@@ -9,9 +9,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/M1HydroCoupling.hpp"
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"  // IWYU pragma: keep
+#include "Framework/CheckWithRandomValues.hpp"
+#include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Utilities/Gsl.hpp"
-#include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
-#include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
 SPECTRE_TEST_CASE("Unit.RadiationTransport.M1Grey.M1HydroCoupling",
                   "[Unit][M1Grey]") {

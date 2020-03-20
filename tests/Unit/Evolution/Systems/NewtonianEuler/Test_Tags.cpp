@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
 #include <string>
@@ -9,7 +9,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
-#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 
 struct SomeSourceType {};
 struct SomeInitialDataType {

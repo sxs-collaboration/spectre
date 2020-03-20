@@ -4,17 +4,17 @@
 // This file is separated from `Test_ModalVector.cpp` in an effort to
 // parallelize the test builds.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <tuple>
 
 #include "DataStructures/ModalVector.hpp"
-#include "ErrorHandling/Error.hpp"           // IWYU pragma: keep
+#include "ErrorHandling/Error.hpp"  // IWYU pragma: keep
+#include "Helpers/DataStructures/VectorImplTestHelper.hpp"
 #include "Utilities/DereferenceWrapper.hpp"  // IWYU pragma: keep
 #include "Utilities/Functional.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
-#include "tests/Unit/DataStructures/VectorImplTestHelper.hpp"
 
 // IWYU pragma: no_include <algorithm>
 

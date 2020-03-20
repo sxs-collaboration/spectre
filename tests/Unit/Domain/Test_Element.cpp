@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
 #include <functional>
@@ -14,9 +14,9 @@
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Side.hpp"
 #include "Domain/Tags.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
-#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 template <size_t VolumeDim>

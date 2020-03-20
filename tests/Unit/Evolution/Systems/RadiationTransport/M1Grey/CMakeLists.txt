@@ -17,7 +17,7 @@ add_test_library(
   "Evolution/Systems/RadiationTransport/M1Grey/"
   "${LIBRARY_SOURCES}"
   "M1Grey"
-  "Boost::boost;Test_Pypp"
+  "Boost::boost"
   )
 
 add_dependencies(

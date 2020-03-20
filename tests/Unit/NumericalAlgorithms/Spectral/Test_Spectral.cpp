@@ -4,7 +4,7 @@
 // \file
 // Tests of spectral operations that should work for any basis and quadrature.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <cmath>
 #include <cstddef>

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
 #include <limits>
@@ -16,6 +16,8 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/MinimumGridSpacing.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
+#include "Framework/TestCreation.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -25,8 +27,6 @@
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/TestCreation.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_include <pup.h>
 

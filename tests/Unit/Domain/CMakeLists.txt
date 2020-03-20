@@ -7,7 +7,6 @@ add_subdirectory(Python)
 set(LIBRARY "Test_Domain")
 
 set(LIBRARY_SOURCES
-  DomainTestHelpers.cpp
   Test_Block.cpp
   Test_BlockAndElementLogicalCoordinates.cpp
   Test_BlockId.cpp
