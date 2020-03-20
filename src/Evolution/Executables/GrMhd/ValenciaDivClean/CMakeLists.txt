@@ -33,7 +33,7 @@ endfunction(add_grmhd_executable)
 
 add_grmhd_executable(
   FishboneMoncriefDisk
-  RelativisticEuler::Solutions::FishboneMoncriefDisk,Horizon
+  RelativisticEuler::Solutions::FishboneMoncriefDisk,KerrHorizon
   )
 target_link_libraries(
   EvolveFishboneMoncriefDisk

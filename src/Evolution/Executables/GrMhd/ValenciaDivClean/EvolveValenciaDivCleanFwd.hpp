@@ -35,7 +35,7 @@ class OrszagTangVortex;
 }  // namespace AnalyticData
 }  // namespace grmhd
 
-struct Horizon;
+struct KerrHorizon;
 template <typename InitialData, typename...InterpolationTargetTags>
 struct EvolutionMetavars;
 /// \endcond
