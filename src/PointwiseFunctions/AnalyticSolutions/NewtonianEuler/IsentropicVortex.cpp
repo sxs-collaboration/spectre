@@ -107,9 +107,9 @@ IsentropicVortex<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Inertial>>
+tuples::TaggedTuple<Tags::Velocity<DataType, Dim>>
 IsentropicVortex<Dim>::variables(
-    tmpl::list<Tags::Velocity<DataType, Dim, Frame::Inertial>> /*meta*/,
+    tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/,
     const IntermediateVariables<DataType>& vars) const noexcept {
   auto velocity = make_with_value<tnsr::I<DataType, Dim, Frame::Inertial>>(
       vars.y_tilde, 0.0);
@@ -199,11 +199,10 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (2, 3), (double, DataVector),
                         (Tags::MassDensity, Tags::SpecificInternalEnergy,
                          Tags::Pressure))
 
-#define INSTANTIATE_VELOCITY(_, data)                                       \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data),          \
-                               Frame::Inertial>>                            \
-      IsentropicVortex<DIM(data)>::variables(                               \
-          tmpl::list<TAG(data) < DTYPE(data), DIM(data), Frame::Inertial>>, \
+#define INSTANTIATE_VELOCITY(_, data)                               \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data)>> \
+      IsentropicVortex<DIM(data)>::variables(                       \
+          tmpl::list<TAG(data) < DTYPE(data), DIM(data)>>,          \
           const IntermediateVariables<DTYPE(data)>&) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (2, 3), (double, DataVector),

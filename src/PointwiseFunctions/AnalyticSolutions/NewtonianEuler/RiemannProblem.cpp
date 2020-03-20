@@ -406,10 +406,10 @@ tuples::TaggedTuple<Tags::MassDensity<DataType>> RiemannProblem<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Inertial>>
+tuples::TaggedTuple<Tags::Velocity<DataType, Dim>>
 RiemannProblem<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
-    tmpl::list<Tags::Velocity<DataType, Dim, Frame::Inertial>> /*meta*/,
+    tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/,
     const Wave& left, const Wave& right) const noexcept {
   auto velocity = make_with_value<tnsr::I<DataType, Dim, Frame::Inertial>>(
       get<0>(x_shifted), 0.0);
@@ -519,12 +519,11 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1, 2, 3), (double, DataVector),
                          Tags::SpecificInternalEnergy))
 
 #define INSTANTIATE_VELOCITY(_, data)                                        \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data),           \
-                               Frame::Inertial>>                             \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data)>>          \
       RiemannProblem<DIM(data)>::variables(                                  \
           const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& x_shifted, \
           const double t,                                                    \
-          tmpl::list<TAG(data) < DTYPE(data), DIM(data), Frame::Inertial>>,  \
+          tmpl::list<TAG(data) < DTYPE(data), DIM(data)>>,  \
           const Wave& left, const Wave& right) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (1, 2, 3), (double, DataVector),

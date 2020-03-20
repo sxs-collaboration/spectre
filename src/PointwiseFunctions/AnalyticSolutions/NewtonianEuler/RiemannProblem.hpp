@@ -297,9 +297,9 @@ class RiemannProblem : public MarkAsAnalyticSolution {
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, double t,
-      tmpl::list<Tags::Velocity<DataType, Dim, Frame::Inertial>> /*meta*/,
+      tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/,
       const Wave& left, const Wave& right) const noexcept
-      -> tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Inertial>>;
+      -> tuples::TaggedTuple<Tags::Velocity<DataType, Dim>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted,

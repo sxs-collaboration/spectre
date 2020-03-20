@@ -139,10 +139,9 @@ struct EvolutionMetavars {
       Tags::NumericalFlux<dg::NumericalFluxes::Hll<system>>;
 
   using limiter = Tags::Limiter<Limiters::Minmod<
-      Dim,
-      tmpl::list<NewtonianEuler::Tags::MassDensityCons,
-                 NewtonianEuler::Tags::MomentumDensity<Dim, Frame::Inertial>,
-                 NewtonianEuler::Tags::EnergyDensity>>>;
+      Dim, tmpl::list<NewtonianEuler::Tags::MassDensityCons,
+                      NewtonianEuler::Tags::MomentumDensity<Dim>,
+                      NewtonianEuler::Tags::EnergyDensity>>>;
 
   using step_choosers_common =
       tmpl::list<StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial>,

@@ -50,7 +50,7 @@ struct LaneEmdenStarProxy : NewtonianEuler::Solutions::LaneEmdenStar {
   template <typename DataType>
   using variables_tags =
       tmpl::list<NewtonianEuler::Tags::MassDensity<DataType>,
-                 NewtonianEuler::Tags::Velocity<DataType, 3, Frame::Inertial>,
+                 NewtonianEuler::Tags::Velocity<DataType, 3>,
                  NewtonianEuler::Tags::SpecificInternalEnergy<DataType>,
                  NewtonianEuler::Tags::Pressure<DataType>>;
 

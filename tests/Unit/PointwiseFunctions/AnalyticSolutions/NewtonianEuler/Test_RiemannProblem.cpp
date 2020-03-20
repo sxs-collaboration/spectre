@@ -33,7 +33,7 @@ struct RiemannProblemProxy : NewtonianEuler::Solutions::RiemannProblem<Dim> {
   template <typename DataType>
   using variables_tags =
       tmpl::list<NewtonianEuler::Tags::MassDensity<DataType>,
-                 NewtonianEuler::Tags::Velocity<DataType, Dim, Frame::Inertial>,
+                 NewtonianEuler::Tags::Velocity<DataType, Dim>,
                  NewtonianEuler::Tags::Pressure<DataType>,
                  NewtonianEuler::Tags::SpecificInternalEnergy<DataType>>;
 

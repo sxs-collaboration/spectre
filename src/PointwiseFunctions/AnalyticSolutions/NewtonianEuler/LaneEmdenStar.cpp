@@ -94,9 +94,8 @@ tuples::TaggedTuple<Tags::MassDensity<DataType>> LaneEmdenStar::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<Tags::Velocity<DataType, 3, Frame::Inertial>>
-LaneEmdenStar::variables(
-    tmpl::list<Tags::Velocity<DataType, 3, Frame::Inertial>> /*meta*/,
+tuples::TaggedTuple<Tags::Velocity<DataType, 3>> LaneEmdenStar::variables(
+    tmpl::list<Tags::Velocity<DataType, 3>> /*meta*/,
     const Scalar<DataType>& mass_density) const noexcept {
   return make_with_value<tnsr::I<DataType, 3>>(get(mass_density), 0.0);
 }
@@ -140,12 +139,10 @@ bool operator!=(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs) noexcept {
   LaneEmdenStar::variables(                                                  \
       tmpl::list<Tags::MassDensity<DTYPE(data)>> /*meta*/,                   \
       const Scalar<DTYPE(data)>& mass_density) const noexcept;               \
-  template tuples::TaggedTuple<                                              \
-      Tags::Velocity<DTYPE(data), 3, Frame::Inertial>>                       \
-      LaneEmdenStar::variables(                                              \
-          tmpl::list<                                                        \
-              Tags::Velocity<DTYPE(data), 3, Frame::Inertial>> /*meta*/,     \
-          const Scalar<DTYPE(data)>& mass_density) const noexcept;           \
+  template tuples::TaggedTuple<Tags::Velocity<DTYPE(data), 3>>               \
+  LaneEmdenStar::variables(                                                  \
+      tmpl::list<Tags::Velocity<DTYPE(data), 3>> /*meta*/,                   \
+      const Scalar<DTYPE(data)>& mass_density) const noexcept;               \
   template tuples::TaggedTuple<Tags::Pressure<DTYPE(data)>>                  \
   LaneEmdenStar::variables(tmpl::list<Tags::Pressure<DTYPE(data)>> /*meta*/, \
                            const Scalar<DTYPE(data)>& mass_density)          \

@@ -37,7 +37,7 @@ struct IsentropicVortexProxy
   template <typename DataType>
   using variables_tags =
       tmpl::list<NewtonianEuler::Tags::MassDensity<DataType>,
-                 NewtonianEuler::Tags::Velocity<DataType, Dim, Frame::Inertial>,
+                 NewtonianEuler::Tags::Velocity<DataType, Dim>,
                  NewtonianEuler::Tags::SpecificInternalEnergy<DataType>,
                  NewtonianEuler::Tags::Pressure<DataType>>;
 

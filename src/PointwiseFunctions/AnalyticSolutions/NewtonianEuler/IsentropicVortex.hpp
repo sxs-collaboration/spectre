@@ -205,9 +205,9 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
 
   template <typename DataType>
   auto variables(
-      tmpl::list<Tags::Velocity<DataType, Dim, Frame::Inertial>> /*meta*/,
+      tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/,
       const IntermediateVariables<DataType>& vars) const noexcept
-      -> tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Inertial>>;
+      -> tuples::TaggedTuple<Tags::Velocity<DataType, Dim>>;
 
   template <typename DataType>
   auto variables(tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
