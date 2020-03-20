@@ -507,7 +507,6 @@ class DataBox<tmpl::list<Tags...>>
                     tmpl::list<ComputeTags...> /*meta*/,
                     tmpl::list<FullComputeItems...> /*meta*/,
                     Args&&... args) noexcept;
-  /// \endcond
 
  private:
   template <typename... MutateTags, typename TagList, typename Invokable,
