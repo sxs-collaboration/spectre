@@ -53,6 +53,7 @@ add_spectre_executable(
 
 target_link_libraries(
   ${executable}
+  PRIVATE
   ${SPECTRE_TESTS_LIBRARIES}
   Boost::boost
   # Link against Boost::program_options for now until we have proper

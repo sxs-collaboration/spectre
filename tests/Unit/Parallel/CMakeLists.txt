@@ -17,6 +17,7 @@ function(add_algorithm_test EXECUTABLE_NAME)
 
   target_link_libraries(
     ${EXECUTABLE_NAME}
+    PRIVATE
     # Link against Boost::program_options for now until we have proper
     # dependency handling for header-only libs
     Boost::program_options
@@ -58,6 +59,7 @@ add_dependencies(
 
 target_link_libraries(
   Test_ConstGlobalCache
+  PRIVATE
   ErrorHandling
   Informer
   ${SPECTRE_LIBRARIES}
