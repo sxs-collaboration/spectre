@@ -207,7 +207,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDisk",
 #endif
 }
 
-    // clang-format off
+// clang-format off
 // [[OutputRegex, The threshold density must be in the range \(0, 1\)]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDiskThreshUpper",
@@ -233,7 +233,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDisk",
 #endif
 }
 
-    // clang-format off
+// clang-format off
 // [[OutputRegex, The grid resolution used in the magnetic field
 // normalization must be at least 4 points.]]
 [[noreturn]] SPECTRE_TEST_CASE(

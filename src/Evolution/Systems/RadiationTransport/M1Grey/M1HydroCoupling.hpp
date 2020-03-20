@@ -129,4 +129,3 @@ struct ComputeM1HydroCoupling<tmpl::list<NeutrinoSpecies...>> {
 
 }  // namespace M1Grey
 }  // namespace RadiationTransport
-

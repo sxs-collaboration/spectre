@@ -154,7 +154,7 @@ struct KerrHorizon {
                                                    KerrHorizon>;
 };
 
-template <typename InitialData, typename...InterpolationTargetTags>
+template <typename InitialData, typename... InterpolationTargetTags>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = 3;
   static constexpr dg::Formulation dg_formulation =
