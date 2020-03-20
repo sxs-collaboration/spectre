@@ -118,6 +118,7 @@ function(add_test_library LIBRARY FOLDER LIBRARY_SOURCES LINK_LIBS)
     PRIVATE
     ${LINK_LIBS}
     ${PYTHON_LIBRARIES}
+    SpectreWarnings
     )
 
   set_target_properties(

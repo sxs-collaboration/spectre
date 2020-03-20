@@ -108,8 +108,13 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
         -Wl,--no-whole-archive
         )
     endif()
+    target_link_libraries(
+      ${ARG_LIBRARY_NAME}
+      PRIVATE
+      SpectreWarnings
+      )
     # We don't want the 'lib' prefix for python modules, so we set the output name
-    SET_TARGET_PROPERTIES(
+    set_target_properties(
       ${ARG_LIBRARY_NAME}
       PROPERTIES
       PREFIX ""

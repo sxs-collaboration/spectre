@@ -11,6 +11,11 @@ function(add_spectre_executable TARGET_NAME)
     RULE_LAUNCH_LINK "${CMAKE_BINARY_DIR}/tmp/WrapExecutableLinker.sh"
     LINK_DEPENDS "${CMAKE_BINARY_DIR}/tmp/WrapExecutableLinker.sh"
     )
+  target_link_libraries(
+    ${TARGET_NAME}
+    PRIVATE
+    SpectreWarnings
+    )
 endfunction()
 
 # A function to add a SpECTRE executable that uses Charm++
