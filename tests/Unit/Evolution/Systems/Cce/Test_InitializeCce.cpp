@@ -12,6 +12,7 @@
 #include "Domain/Mesh.hpp"
 #include "Evolution/Systems/Cce/InitializeCce.hpp"
 #include "Evolution/Systems/Cce/LinearOperators.hpp"
+#include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -28,20 +29,24 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ",
   const size_t number_of_radial_points = sdist(generator);
 
   using boundary_variables_tag =
-      ::Tags::Variables<InitializeJ<Tags::BoundaryValue>::boundary_tags>;
+      ::Tags::Variables<InitializeJInverseCubic::boundary_tags>;
   using pre_swsh_derivatives_variables_tag =
       ::Tags::Variables<tmpl::list<Tags::BondiJ>>;
+  using tensor_variables_tag = ::Tags::Variables<
+      tmpl::list<Tags::CauchyCartesianCoords, Tags::CauchyAngularCoords>>;
 
   const size_t number_of_boundary_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   const size_t number_of_volume_points =
       number_of_boundary_points * number_of_radial_points;
-  auto box_to_initialize =
-      db::create<db::AddSimpleTags<boundary_variables_tag,
-                                   pre_swsh_derivatives_variables_tag>>(
-          typename boundary_variables_tag::type{number_of_boundary_points},
-          typename pre_swsh_derivatives_variables_tag::type{
-              number_of_volume_points});
+  auto box_to_initialize = db::create<db::AddSimpleTags<
+      boundary_variables_tag, pre_swsh_derivatives_variables_tag,
+      tensor_variables_tag, Tags::LMax, Tags::NumberOfRadialPoints>>(
+      typename boundary_variables_tag::type{number_of_boundary_points},
+      typename pre_swsh_derivatives_variables_tag::type{
+          number_of_volume_points},
+      typename tensor_variables_tag::type{number_of_boundary_points}, l_max,
+      number_of_radial_points);
 
   // generate some random values for the boundary data
   UniformCustomDistribution<double> dist(0.1, 1.0);
@@ -67,8 +72,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ",
             Spectral::Swsh::number_of_swsh_collocation_points(l_max));
       });
 
-  db::mutate_apply<InitializeJ<Tags::BoundaryValue>>(
-      make_not_null(&box_to_initialize));
+  db::mutate_apply<InitializeJ::mutate_tags, InitializeJ::argument_tags>(
+      InitializeJInverseCubic{}, make_not_null(&box_to_initialize));
 
   SpinWeighted<ComplexDataVector, 2> dy_j{
       number_of_radial_points *

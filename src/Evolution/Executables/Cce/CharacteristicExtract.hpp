@@ -86,9 +86,6 @@ struct EvolutionMetavars {
 
   using cce_boundary_component = Cce::H5WorldtubeBoundary<EvolutionMetavars>;
 
-  using cce_hypersurface_initialization =
-      Cce::InitializeJ<Cce::Tags::BoundaryValue>;
-
   using component_list =
       tmpl::list<observers::ObserverWriter<EvolutionMetavars>,
                  cce_boundary_component,
@@ -118,6 +115,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling,
     &Parallel::register_derived_classes_with_charm<
         Cce::ReducedWorldtubeBufferUpdater>,
+    &Parallel::register_derived_classes_with_charm<Cce::InitializeJ>,
     &Parallel::register_derived_classes_with_charm<Cce::WorldtubeBufferUpdater>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>};

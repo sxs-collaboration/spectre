@@ -22,6 +22,55 @@
 namespace Cce {
 namespace {
 
+struct InitializeJInverseCubicEvolutionGauge {
+  using boundary_tags =
+      tmpl::list<Tags::EvolutionGaugeBoundaryValue<Tags::BondiJ>,
+                 Tags::EvolutionGaugeBoundaryValue<Tags::Dr<Tags::BondiJ>>,
+                 Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>>;
+
+  using mutate_tags = tmpl::list<Tags::BondiJ, Tags::CauchyCartesianCoords,
+                                 Tags::CauchyAngularCoords>;
+  using argument_tags =
+      tmpl::append<boundary_tags,
+                   tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>>;
+
+  InitializeJInverseCubicEvolutionGauge() = default;
+
+  void operator()(
+      const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
+      const gsl::not_null<tnsr::i<DataVector, 3>*> /*cartesian_x_of_x_tilde*/,
+      const gsl::not_null<
+          tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
+      /*angular_cauchy_coordinates*/,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
+      const size_t /*l_max*/, const size_t number_of_radial_points) const
+      noexcept {
+    const DataVector one_minus_y_collocation =
+        1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,
+                                           Spectral::Quadrature::GaussLobatto>(
+                  number_of_radial_points);
+    for (size_t i = 0; i < number_of_radial_points; i++) {
+      ComplexDataVector angular_view_j{
+          get(*j).data().data() + get(boundary_j).size() * i,
+          get(boundary_j).size()};
+      // auto is acceptable here as these two values are only used once in the
+      // below computation. `auto` causes an expression template to be
+      // generated, rather than allocating.
+      const auto one_minus_y_coefficient =
+          0.25 * (3.0 * get(boundary_j).data() +
+                  get(r).data() * get(boundary_dr_j).data());
+      const auto one_minus_y_cubed_coefficient =
+          -0.0625 *
+          (get(boundary_j).data() + get(r).data() * get(boundary_dr_j).data());
+      angular_view_j =
+          one_minus_y_collocation[i] * one_minus_y_coefficient +
+          pow<3>(one_minus_y_collocation[i]) * one_minus_y_cubed_coefficient;
+    }
+  }
+};
+
 // These gauge transforms are extremely hard to validate outside of a true
 // evolution system. Here we settle for verifying that for an
 // analytically-generated set of worldtube data, the transform for a
@@ -273,9 +322,10 @@ void test_gauge_transforms_via_inverse_coordinate_map(
           .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
           .scale(1.0);
 
-  const auto check_gauge_adjustment_against_inverse =
-      [&forward_transform_box, &inverse_transform_box, &
-       interpolation_approx ](auto tag_v) noexcept {
+  const auto check_gauge_adjustment_against_inverse = [&forward_transform_box,
+                                                       &inverse_transform_box,
+                                                       &interpolation_approx](
+                                                          auto tag_v) noexcept {
     using tag = typename decltype(tag_v)::type;
     INFO("computing tag : " << db::tag_name<tag>());
     db::mutate_apply<GaugeAdjustedBoundaryValue<tag>>(
@@ -354,9 +404,13 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         check_gauge_adjustment_against_inverse);
   }
 
-  db::mutate_apply<InitializeJ<Tags::EvolutionGaugeBoundaryValue>>(
+  db::mutate_apply<InitializeJInverseCubicEvolutionGauge::mutate_tags,
+                   InitializeJInverseCubicEvolutionGauge::argument_tags>(
+      InitializeJInverseCubicEvolutionGauge{},
       make_not_null(&forward_transform_box));
-  db::mutate_apply<InitializeJ<Tags::EvolutionGaugeBoundaryValue>>(
+  db::mutate_apply<InitializeJInverseCubicEvolutionGauge::mutate_tags,
+                   InitializeJInverseCubicEvolutionGauge::argument_tags>(
+      InitializeJInverseCubicEvolutionGauge{},
       make_not_null(&inverse_transform_box));
 
   db::mutate_apply<PreSwshDerivatives<Tags::Dy<Tags::BondiJ>>>(
@@ -381,10 +435,10 @@ void test_gauge_transforms_via_inverse_coordinate_map(
   // conditions.
   db::mutate<Tags::BondiU>(
       make_not_null(&forward_transform_box),
-      [
-      ](const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
-            bondi_u,
-        const Scalar<SpinWeighted<ComplexDataVector, 1>>& boundary_u) noexcept {
+      [](const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
+             bondi_u,
+         const Scalar<SpinWeighted<ComplexDataVector, 1>>&
+             boundary_u) noexcept {
         const ComplexDataVector time_transform = 10.0 * get(boundary_u).data();
         fill_with_n_copies(make_not_null(&(get(*bondi_u).data())),
                            time_transform, number_of_radial_grid_points);

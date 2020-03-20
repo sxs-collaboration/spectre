@@ -28,16 +28,16 @@ namespace Actions {
  * an initialization phase or early (before a `Actions::Goto` loop or similar)
  * in the `Evolve` phase.
  *
- * Internally, this dispatches to
- * `Metavariables::cce_hypersufrace_initialization`, which designates a
- * hypersurface initial data generator, `InitializeGauge`,
- * and `InitializeScriPlusValue<Tags::InertialRetardedTime>` to perform the
+ * Internally, this dispatches to the call function of
+ * `Tags::InitializeJ`, which designates a hypersurface initial data generator
+ * chosen by input file options, `InitializeGauge`, and
+ * `InitializeScriPlusValue<Tags::InertialRetardedTime>` to perform the
  * computations. Refer to the documentation for those mutators for mathematical
  * details.
  */
 struct InitializeFirstHypersurface {
   using const_global_cache_tags =
-      tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>;
+      tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints, Tags::InitializeJ>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -48,9 +48,8 @@ struct InitializeFirstHypersurface {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    db::mutate_apply<typename Metavariables::cce_hypersurface_initialization>(
-        make_not_null(&box));
-    db::mutate_apply<InitializeGauge>(make_not_null(&box));
+    db::mutate_apply<InitializeJ::mutate_tags, InitializeJ::argument_tags>(
+        db::get<Tags::InitializeJ>(box), make_not_null(&box));
     db::mutate_apply<InitializeScriPlusValue<Tags::InertialRetardedTime>>(
         make_not_null(&box));
     return {std::move(box)};

@@ -16,6 +16,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/Actions/CharacteristicEvolutionBondiCalculations.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionVariables.hpp"
+#include "Evolution/Systems/Cce/Actions/InitializeFirstHypersurface.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeWorldtubeBoundary.hpp"
 #include "Evolution/Systems/Cce/Actions/ReceiveWorldtubeData.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
@@ -51,7 +52,7 @@ struct mock_characteristic_evolution {
       tmpl::list<Actions::InitializeCharacteristicEvolutionVariables,
                  Actions::InitializeCharacteristicEvolutionTime,
                  Actions::ReceiveWorldtubeData<Metavariables>,
-                 ::Actions::MutateApply<InitializeJ<Tags::BoundaryValue>>,
+                 Actions::InitializeFirstHypersurface,
                  ::Actions::MutateApply<InitializeGauge>,
                  ::Actions::MutateApply<GaugeUpdateAngularFromCartesian<
                      Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>,
@@ -179,7 +180,8 @@ SPECTRE_TEST_CASE(
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       {l_max, number_of_radial_points,
        std::make_unique<::TimeSteppers::RungeKutta3>(), start_time,
-       start_time + target_step_size}};
+       start_time + target_step_size,
+       std::make_unique<InitializeJInverseCubic>()}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Initialization);
@@ -265,8 +267,9 @@ SPECTRE_TEST_CASE(
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
 
   // perform the expected transformations on the `boundary_box`
-  db::mutate_apply<InitializeJ<Tags::BoundaryValue>>(
-      make_not_null(&boundary_box));
+  db::mutate_apply<InitializeJ::mutate_tags, InitializeJ::argument_tags>(
+      InitializeJInverseCubic{}, make_not_null(&boundary_box));
+
   db::mutate_apply<InitializeGauge>(make_not_null(&boundary_box));
   db::mutate_apply<GaugeUpdateAngularFromCartesian<
       Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
