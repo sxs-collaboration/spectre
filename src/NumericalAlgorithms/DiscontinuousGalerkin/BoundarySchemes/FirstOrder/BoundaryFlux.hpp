@@ -41,12 +41,15 @@ namespace FirstOrderScheme {
  * integrals to preserve conservation; this only happens if the two operations
  * are done on the same grid.
  */
-template <size_t FaceDim, typename NumericalFluxType,
+template <size_t FaceDim, typename NumericalFluxType, typename AllFieldsTags,
+          typename AllExtraDataTags,
           Requires<tt::conforms_to_v<NumericalFluxType,
                                      dg::protocols::NumericalFlux>> = nullptr>
 Variables<typename NumericalFluxType::variables_tags> boundary_flux(
-    const BoundaryData<NumericalFluxType>& local_boundary_data,
-    const BoundaryData<NumericalFluxType>& remote_boundary_data,
+    const dg::SimpleBoundaryData<AllFieldsTags, AllExtraDataTags>&
+        local_boundary_data,
+    const dg::SimpleBoundaryData<AllFieldsTags, AllExtraDataTags>&
+        remote_boundary_data,
     const NumericalFluxType& numerical_flux_computer,
     const Scalar<DataVector>& magnitude_of_face_normal,
     const size_t extent_perpendicular_to_boundary,

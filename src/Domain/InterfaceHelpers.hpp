@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DirectionMap.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Tags.hpp"
@@ -101,11 +102,16 @@ SPECTRE_ALWAYS_INLINE constexpr auto interface_apply_impl(
 
 }  // namespace InterfaceHelpers_detail
 
+// @{
 /*!
- * \brief Apply the `interface_invokable` to the `box` on all interfaces given
- * by the `DirectionsTag`.
+ * \brief Apply an invokable to the `box` on all interfaces given by the
+ * `DirectionsTag`.
  *
- * \details The `interface_invokable` is expected to be invokable with the types
+ * This function has an overload that takes an `interface_invokable` as its
+ * first argument, and one that takes an `InterfaceInvokable` class as its first
+ * template parameter instead. For the latter, the `InterfaceInvokable` class
+ * must have a static `apply` function. The `interface_invokable` or static
+ * `apply` function, respectively, is expected to be invokable with the types
  * held by the `ArgumentTags`, followed by the `extra_args`. The `ArgumentTags`
  * will be prefixed as `::Tags::Interface<DirectionsTag, ArgumentTag>` and thus
  * taken from the interface, except for those specified in the `VolumeTags`.
@@ -116,6 +122,15 @@ SPECTRE_ALWAYS_INLINE constexpr auto interface_apply_impl(
  * Here is an example how to use this function:
  *
  * \snippet Test_InterfaceHelpers.cpp interface_apply_example
+ *
+ * Here is another example how to use this function with a stateless invokable
+ * class:
+ *
+ * \snippet Test_InterfaceHelpers.cpp interface_apply_example_stateless
+ *
+ * This is the class that defines the invokable in the example above:
+ *
+ * \snippet Test_InterfaceHelpers.cpp interface_invokable_example
  */
 template <typename DirectionsTag, typename ArgumentTags, typename VolumeTags,
           typename InterfaceInvokable, typename DbTagsList,
@@ -128,3 +143,16 @@ SPECTRE_ALWAYS_INLINE constexpr auto interface_apply(
       std::forward<InterfaceInvokable>(interface_invokable), box,
       ArgumentTags{}, std::forward<ExtraArgs>(extra_args)...);
 }
+
+template <typename DirectionsTag, typename InterfaceInvokable,
+          typename DbTagsList, typename... ExtraArgs,
+          // Needed to disambiguate the overloads
+          typename ArgumentTags = typename InterfaceInvokable::argument_tags>
+SPECTRE_ALWAYS_INLINE constexpr auto interface_apply(
+    const db::DataBox<DbTagsList>& box, ExtraArgs&&... extra_args) noexcept {
+  return InterfaceHelpers_detail::interface_apply_impl<
+      DirectionsTag, get_volume_tags<InterfaceInvokable>>(
+      &InterfaceInvokable::apply, box, ArgumentTags{},
+      std::forward<ExtraArgs>(extra_args)...);
+}
+// @}
