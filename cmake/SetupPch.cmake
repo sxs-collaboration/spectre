@@ -7,6 +7,15 @@ option(
   ON
   )
 
+function(is_implicit_include_directory INCLUDE_DIR)
+  set(FOUND_IN_IMPLICIT_INCLUDE_DIRECTORIES OFF PARENT_SCOPE)
+  foreach(DIR ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+    if("${INCLUDE_DIR}" STREQUAL "${DIR}")
+      set(FOUND_IN_IMPLICIT_INCLUDE_DIRECTORIES ON PARENT_SCOPE)
+    endif()
+  endforeach()
+endfunction()
+
 if (USE_PCH)
   # We store the header to precompile in ${CMAKE_SOURCE_DIR}/tools so
   # that it cannot accidentally be included incorrectly anywhere since
@@ -79,6 +88,27 @@ if (USE_PCH)
       )
   endif()
 
+  is_implicit_include_directory(${BLAZE_INCLUDE_DIR})
+  if(NOT ${FOUND_IN_IMPLICIT_INCLUDE_DIRECTORIES})
+    set(BLAZE_INCLUDE_ARGUMENT "-isystem${BLAZE_INCLUDE_DIR}")
+  else()
+    set(BLAZE_INCLUDE_ARGUMENT "")
+  endif()
+
+  is_implicit_include_directory(${BRIGAND_INCLUDE_DIR})
+  if(NOT ${FOUND_IN_IMPLICIT_INCLUDE_DIRECTORIES})
+    set(BRIGAND_INCLUDE_ARGUMENT "-isystem${BRIGAND_INCLUDE_DIR}")
+  else()
+    set(BRIGAND_INCLUDE_ARGUMENT "")
+  endif()
+
+  is_implicit_include_directory(${CHARM_INCLUDE_DIRS})
+  if(NOT ${FOUND_IN_IMPLICIT_INCLUDE_DIRECTORIES})
+    set(CHARM_INCLUDE_ARGUMENT "-isystem${CHARM_INCLUDE_DIRS}")
+  else()
+    set(CHARM_INCLUDE_ARGUMENT "")
+  endif()
+
   add_custom_command(
     OUTPUT ${PCH_PATH}.gch
     COMMAND ${CMAKE_CXX_COMPILER}
@@ -86,9 +116,9 @@ if (USE_PCH)
     -std=c++14
     ${PCH_COMPILE_FLAGS}
     -I${CMAKE_SOURCE_DIR}/src
-    "-isystem${BLAZE_INCLUDE_DIR}"
-    "-isystem${BRIGAND_INCLUDE_DIR}"
-    "-isystem${CHARM_INCLUDE_DIRS}"
+    ${BLAZE_INCLUDE_ARGUMENT}
+    ${BRIGAND_INCLUDE_ARGUMENT}
+    ${CHARM_INCLUDE_ARGUMENT}
     ${PCH_PATH}
     -o ${PCH_PATH}.gch
     DEPENDS
