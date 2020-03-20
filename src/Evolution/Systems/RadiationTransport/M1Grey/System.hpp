@@ -61,7 +61,7 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
 
   using hydro_variables_tag = ::Tags::Variables<
       tmpl::list<hydro::Tags::LorentzFactor<DataVector>,
-                 hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+                 hydro::Tags::SpatialVelocity<DataVector, 3>,
                  Tags::GreyEmissivity<NeutrinoSpecies>...,
                  Tags::GreyAbsorptionOpacity<NeutrinoSpecies>...,
                  Tags::GreyScatteringOpacity<NeutrinoSpecies>...>>;

@@ -61,13 +61,13 @@ namespace Valencia {
  */
 template <size_t ThermodynamicDim, size_t Dim>
 struct PrimitiveFromConservative {
-  using return_tags = tmpl::list<
-      hydro::Tags::RestMassDensity<DataVector>,
-      hydro::Tags::SpecificInternalEnergy<DataVector>,
-      hydro::Tags::LorentzFactor<DataVector>,
-      hydro::Tags::SpecificEnthalpy<DataVector>,
-      hydro::Tags::Pressure<DataVector>,
-      hydro::Tags::SpatialVelocity<DataVector, Dim, Frame::Inertial>>;
+  using return_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
+                 hydro::Tags::LorentzFactor<DataVector>,
+                 hydro::Tags::SpecificEnthalpy<DataVector>,
+                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, Dim>>;
 
   using argument_tags =
       tmpl::list<RelativisticEuler::Valencia::Tags::TildeD,

@@ -58,7 +58,7 @@ struct ConservativeFromPrimitive {
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
                  hydro::Tags::SpecificEnthalpy<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::SpatialVelocity<DataVector, Dim, Frame::Inertial>,
+                 hydro::Tags::SpatialVelocity<DataVector, Dim>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  gr::Tags::SqrtDetSpatialMetric<>,
                  gr::Tags::SpatialMetric<Dim>>;

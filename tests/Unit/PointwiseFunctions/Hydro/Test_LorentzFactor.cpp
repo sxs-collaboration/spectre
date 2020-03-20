@@ -58,13 +58,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.LorentzFactor",
   tnsr::i<DataVector, 2> velocity_one_form{
       {{DataVector{5, 0.2}, DataVector{5, 0.3}}}};
   tnsr::I<DataVector, 2> velocity{{{DataVector{5, 0.25}, DataVector{5, 0.35}}}};
-  const auto box = db::create<
-      db::AddSimpleTags<
-          Tags::SpatialVelocity<DataVector, 2, Frame::Inertial>,
-          Tags::SpatialVelocityOneForm<DataVector, 2, Frame::Inertial>>,
-      db::AddComputeTags<
-          Tags::LorentzFactorCompute<DataVector, 2, Frame::Inertial>>>(
-      velocity, velocity_one_form);
+  const auto box =
+      db::create<db::AddSimpleTags<Tags::SpatialVelocity<DataVector, 2>,
+                                   Tags::SpatialVelocityOneForm<DataVector, 2>>,
+                 db::AddComputeTags<Tags::LorentzFactorCompute<
+                     DataVector, 2, Frame::Inertial>>>(velocity,
+                                                       velocity_one_form);
   CHECK(db::get<Tags::LorentzFactor<DataVector>>(box) ==
         lorentz_factor(velocity, velocity_one_form));
 }

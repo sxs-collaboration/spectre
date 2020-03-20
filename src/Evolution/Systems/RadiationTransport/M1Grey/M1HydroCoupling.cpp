@@ -51,9 +51,8 @@ void compute_m1_hydro_coupling_impl(
     const Scalar<DataVector>& lapse,
     const tnsr::ii<DataVector, 3>& spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric) noexcept {
-  Variables<tmpl::list<
-      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
-      densitized_eta_minus_kappaJ, kappaT_lapse>>
+  Variables<tmpl::list<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>,
+                       densitized_eta_minus_kappaJ, kappaT_lapse>>
       temp_tensors(get(lapse).size());
   // Dimension of spatial tensors
   constexpr size_t spatial_dim = 3;
@@ -67,8 +66,7 @@ void compute_m1_hydro_coupling_impl(
   get(kT_lapse) =
       get(lapse) * (get(absorption_opacity) + get(scattering_opacity));
   auto& fluid_velocity_i =
-      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
-          temp_tensors);
+      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>>(temp_tensors);
   raise_or_lower_index(make_not_null(&fluid_velocity_i), fluid_velocity,
                        spatial_metric);
 

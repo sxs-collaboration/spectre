@@ -37,7 +37,7 @@ struct ConstantM1Proxy : RadiationTransport::M1Grey::Solutions::ConstantM1 {
   using RadiationTransport::M1Grey::Solutions::ConstantM1::ConstantM1;
 
   using hydro_variables_tags =
-      tmpl::list<hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+      tmpl::list<hydro::Tags::SpatialVelocity<DataVector, 3>,
                  hydro::Tags::LorentzFactor<DataVector>>;
 
   using m1_variables_tags =

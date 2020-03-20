@@ -91,7 +91,7 @@ struct ComputeM1HydroCoupling<tmpl::list<NeutrinoSpecies...>> {
                  Tags::TildeJ<NeutrinoSpecies>...,
                  Tags::TildeHNormal<NeutrinoSpecies>...,
                  Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>...,
-                 hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+                 hydro::Tags::SpatialVelocity<DataVector, 3>,
                  hydro::Tags::LorentzFactor<DataVector>, gr::Tags::Lapse<>,
                  gr::Tags::SpatialMetric<3>, gr::Tags::SqrtDetSpatialMetric<>>;
 
@@ -111,8 +111,7 @@ struct ComputeM1HydroCoupling<tmpl::list<NeutrinoSpecies...>> {
           Tags::TildeHNormal<NeutrinoSpecies>>&... tilde_hn,
       const db::const_item_type<
           Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>>&... tilde_hi,
-      const db::const_item_type<
-          hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>&
+      const db::const_item_type<hydro::Tags::SpatialVelocity<DataVector, 3>>&
           spatial_velocity,
       const db::const_item_type<hydro::Tags::LorentzFactor<DataVector>>&
           lorentz_factor,

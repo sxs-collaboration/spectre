@@ -125,7 +125,7 @@ struct ComputeM1Closure<tmpl::list<NeutrinoSpecies...>> {
   using argument_tags =
       tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
                  Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...,
-                 hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+                 hydro::Tags::SpatialVelocity<DataVector, 3>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>>;
 
@@ -144,8 +144,7 @@ struct ComputeM1Closure<tmpl::list<NeutrinoSpecies...>> {
           Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>&... tilde_e,
       const db::const_item_type<
           Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>&... tilde_s,
-      const db::const_item_type<
-          hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>&
+      const db::const_item_type<hydro::Tags::SpatialVelocity<DataVector, 3>>&
           spatial_velocity,
       const db::const_item_type<hydro::Tags::LorentzFactor<DataVector>>&
           lorentz_factor,

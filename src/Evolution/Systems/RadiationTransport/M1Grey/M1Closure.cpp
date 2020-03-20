@@ -72,11 +72,10 @@ void compute_closure_impl(
   // used to find the closure factor
   constexpr size_t root_find_number_of_digits = 6;
   constexpr double root_find_tolerance = 1.e-6;
-  Variables<tmpl::list<
-      hydro::Tags::LorentzFactorSquared<DataVector>, MomentumSquared,
-      MomentumUp,
-      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
-      hydro::Tags::SpatialVelocitySquared<DataVector>>>
+  Variables<
+      tmpl::list<hydro::Tags::LorentzFactorSquared<DataVector>, MomentumSquared,
+                 MomentumUp, hydro::Tags::SpatialVelocityOneForm<DataVector, 3>,
+                 hydro::Tags::SpatialVelocitySquared<DataVector>>>
       temp_closure_tensors(get(energy_density).size());
 
   // The main calculation needed for the M1 closure is to find the
@@ -99,9 +98,8 @@ void compute_closure_impl(
   auto& s_sqr = get<MomentumSquared>(temp_closure_tensors);
   dot_product(make_not_null(&s_sqr), s_M, momentum_density);
   // v_i, the spatial velocity one-form of the fluid
-  auto& v_m =
-      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
-          temp_closure_tensors);
+  auto& v_m = get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>>(
+      temp_closure_tensors);
   raise_or_lower_index(make_not_null(&v_m), fluid_velocity, spatial_metric);
 
   // Allocate memory for H^i

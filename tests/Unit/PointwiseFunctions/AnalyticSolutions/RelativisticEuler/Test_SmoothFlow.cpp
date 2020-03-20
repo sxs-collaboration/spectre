@@ -36,7 +36,7 @@ struct SmoothFlowProxy : RelativisticEuler::Solutions::SmoothFlow<Dim> {
   template <typename DataType>
   using variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, Dim, Frame::Inertial>,
+                 hydro::Tags::SpatialVelocity<DataType, Dim>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
                  hydro::Tags::LorentzFactor<DataType>,
