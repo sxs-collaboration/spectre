@@ -23,6 +23,7 @@ endif (DOCS_ONLY)
 
 include(CheckCompilerVersion)
 include(ProhibitInSourceBuild)
+include(SpectreSetupFlagsTarget)
 include(SetupNinjaColors)
 include(SetOutputDirectory)
 # We need yapf before we set up the git hooks

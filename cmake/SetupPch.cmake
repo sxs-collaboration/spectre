@@ -190,7 +190,7 @@ if (USE_PCH)
   target_link_libraries(
     ${SPECTRE_PCH_LIB}
     PRIVATE
-    SpectreWarnings
+    SpectreFlags
     )
 
   # Make the source file ${SPECTRE_PCH_DEP_SOURCE_PATH} depend on
