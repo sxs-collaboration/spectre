@@ -89,6 +89,13 @@ function(add_test_library LIBRARY FOLDER LIBRARY_SOURCES LINK_LIBS)
     ${LIBRARY_SOURCES}
     )
 
+  set_target_properties(
+    ${LIBRARY}
+    PROPERTIES
+    RULE_LAUNCH_LINK "${CMAKE_BINARY_DIR}/tmp/WrapLibraryLinker.sh"
+    LINK_DEPENDS "${CMAKE_BINARY_DIR}/tmp/WrapLibraryLinker.sh"
+    )
+
   target_link_libraries(
     ${LIBRARY}
     PRIVATE

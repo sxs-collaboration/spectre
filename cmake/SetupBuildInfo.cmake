@@ -33,14 +33,36 @@ else()
   file(REMOVE ${CMAKE_BINARY_DIR}/tmp/Formaline.sh)
 endif()
 
+option(
+  STUB_EXECUTABLE_OBJECT_FILES
+  "Replace executable object files with stubs to reduce disk usage."
+  OFF
+  )
+
+set(WRAP_EXECUTABLE_LINKER_USE_STUB_OBJECT_FILES "false")
+if (STUB_EXECUTABLE_OBJECT_FILES)
+  set(WRAP_EXECUTABLE_LINKER_USE_STUB_OBJECT_FILES "true")
+endif (STUB_EXECUTABLE_OBJECT_FILES)
+
 configure_file(
-  ${CMAKE_SOURCE_DIR}/tools/WrapLinker.sh
-  ${CMAKE_BINARY_DIR}/tmp/WrapLinker.sh
+  ${CMAKE_SOURCE_DIR}/tools/WrapExecutableLinker.sh
+  ${CMAKE_BINARY_DIR}/tmp/WrapExecutableLinker.sh
   @ONLY
   )
 
-string(
-  REGEX REPLACE "<CMAKE_CXX_COMPILER>"
-  "${CMAKE_BINARY_DIR}/tmp/WrapLinker.sh <CMAKE_CXX_COMPILER>"
-  CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}"
+option(
+  STUB_LIBRARY_OBJECT_FILES
+  "Replace library object files with stubs to reduce disk usage."
+  OFF
+  )
+
+set(WRAP_LIBRARY_LINKER_USE_STUB_OBJECT_FILES "false")
+if (STUB_LIBRARY_OBJECT_FILES)
+  set(WRAP_LIBRARY_LINKER_USE_STUB_OBJECT_FILES "true")
+endif (STUB_LIBRARY_OBJECT_FILES)
+
+configure_file(
+  ${CMAKE_SOURCE_DIR}/tools/WrapLibraryLinker.sh
+  ${CMAKE_BINARY_DIR}/tmp/WrapLibraryLinker.sh
+  @ONLY
   )
