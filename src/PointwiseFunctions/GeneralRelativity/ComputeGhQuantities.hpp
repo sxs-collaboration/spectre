@@ -19,6 +19,7 @@
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -841,13 +842,17 @@ template <size_t SpatialDim, typename Frame>
 struct ConstraintGamma0Compute : ConstraintGamma0, db::ComputeTag {
   using argument_tags =
       tmpl::list<domain::Tags::Coordinates<SpatialDim, Frame>>;
-  static auto function(
+
+  using return_type = Scalar<DataVector>;
+
+  static constexpr void function(
+      const gsl::not_null<Scalar<DataVector>*> gamma,
       const tnsr::I<DataVector, SpatialDim, Frame>& coords) noexcept {
-    const DataVector r_squared = get(dot_product(coords, coords));
-    Scalar<DataVector> gamma = make_with_value<type>(coords, 0.);
-    get(gamma) = 3. * exp(-0.0078125 * r_squared) + 0.001;
-    return gamma;
+    destructive_resize_components(gamma, get<0>(coords).size());
+    get(*gamma) =
+        3. * exp(-0.0078125 * get(dot_product(coords, coords))) + 0.001;
   }
+
   using base = ConstraintGamma0;
 };
 /// \copydoc ConstraintGamma0Compute
@@ -855,10 +860,16 @@ template <size_t SpatialDim, typename Frame>
 struct ConstraintGamma1Compute : ConstraintGamma1, db::ComputeTag {
   using argument_tags =
       tmpl::list<domain::Tags::Coordinates<SpatialDim, Frame>>;
-  static constexpr auto function(
+
+  using return_type = Scalar<DataVector>;
+
+  static constexpr void function(
+      const gsl::not_null<Scalar<DataVector>*> gamma1,
       const tnsr::I<DataVector, SpatialDim, Frame>& coords) noexcept {
-    return make_with_value<type>(coords, -1.);
+    destructive_resize_components(gamma1, get<0>(coords).size());
+    get(*gamma1) = -1.;
   }
+
   using base = ConstraintGamma1;
 };
 /// \copydoc ConstraintGamma0Compute
@@ -866,13 +877,16 @@ template <size_t SpatialDim, typename Frame>
 struct ConstraintGamma2Compute : ConstraintGamma2, db::ComputeTag {
   using argument_tags =
       tmpl::list<domain::Tags::Coordinates<SpatialDim, Frame>>;
-  static auto function(
+
+  using return_type = Scalar<DataVector>;
+
+  static constexpr void function(
+      const gsl::not_null<Scalar<DataVector>*> gamma,
       const tnsr::I<DataVector, SpatialDim, Frame>& coords) noexcept {
-    const DataVector r_squared = get(dot_product(coords, coords));
-    Scalar<DataVector> gamma = make_with_value<type>(coords, 0.);
-    get(gamma) = exp(-0.0078125 * r_squared) + 0.001;
-    return gamma;
+    destructive_resize_components(gamma, get<0>(coords).size());
+    get(*gamma) = exp(-0.0078125 * get(dot_product(coords, coords))) + 0.001;
   }
+
   using base = ConstraintGamma2;
 };
 
@@ -930,21 +944,26 @@ struct SpacetimeDerivGaugeHCompute : SpacetimeDerivGaugeH<SpatialDim, Frame>,
       ::Tags::dt<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame>>,
       ::Tags::deriv<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame>,
                     tmpl::size_t<SpatialDim>, Frame>>;
-  static constexpr tnsr::ab<DataVector, SpatialDim, Frame> function(
+
+  using return_type = tnsr::ab<DataVector, SpatialDim, Frame>;
+
+  static constexpr void function(
+      const gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame>*>
+          spacetime_deriv_gauge_source,
       const tnsr::a<DataVector, SpatialDim, Frame>& time_deriv_gauge_source,
-      const tnsr::ia<DataVector, SpatialDim, Frame>& deriv_gauge_source) {
-    auto spacetime_deriv_gauge_source =
-        make_with_value<tnsr::ab<DataVector, SpatialDim, Frame>>(
-            time_deriv_gauge_source, 0.0);
+      const tnsr::ia<DataVector, SpatialDim, Frame>&
+          deriv_gauge_source) noexcept {
+    destructive_resize_components(spacetime_deriv_gauge_source,
+                                  get<0>(time_deriv_gauge_source).size());
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
-      spacetime_deriv_gauge_source.get(0, b) = time_deriv_gauge_source.get(b);
+      spacetime_deriv_gauge_source->get(0, b) = time_deriv_gauge_source.get(b);
       for (size_t a = 1; a < SpatialDim + 1; ++a) {
-        spacetime_deriv_gauge_source.get(a, b) =
+        spacetime_deriv_gauge_source->get(a, b) =
             deriv_gauge_source.get(a - 1, b);
       }
     }
-    return spacetime_deriv_gauge_source;
   }
+
   using base = SpacetimeDerivGaugeH<SpatialDim, Frame>;
 };
 
@@ -1143,6 +1162,8 @@ struct ConstraintEnergyCompute : ConstraintEnergy<SpatialDim, Frame>,
       const tnsr::iaa<DataVector, SpatialDim, Frame>& four_index_constraint,
       const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
       const Scalar<DataVector>& spatial_metric_determinant) noexcept {
+    destructive_resize_components(energy,
+                                  get(spatial_metric_determinant).size());
     constraint_energy<SpatialDim, Frame, DataVector>(
         energy, gauge_constraint, f_constraint, two_index_constraint,
         three_index_constraint, four_index_constraint, inverse_spatial_metric,

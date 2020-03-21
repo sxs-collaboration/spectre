@@ -188,10 +188,11 @@ struct InitializeGauge {
                 initial_gauge_h_vars, mesh, inverse_jacobian));
 
     // compute spacetime derivatives of InitialGaugeH
-    auto initial_d4_gauge_h =
-        GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<
-            Dim, frame>::function(std::move(dt_initial_gauge_source),
-                                  std::move(d_initial_gauge_source));
+    tnsr::ab<DataVector, Dim, Frame::Inertial> initial_d4_gauge_h{};
+    GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<
+        Dim, frame>::function(make_not_null(&initial_d4_gauge_h),
+                              std::move(dt_initial_gauge_source),
+                              std::move(d_initial_gauge_source));
     // Add gauge tags
     using compute_tags = db::AddComputeTags<
         GeneralizedHarmonic::DampedHarmonicHCompute<Dim, frame>,

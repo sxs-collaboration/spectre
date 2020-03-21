@@ -50,7 +50,11 @@ void test_compute_spacetime_metric(const DataType& used_for_size) {
 template <size_t Dim, typename DataType>
 void test_compute_inverse_spacetime_metric(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
-      &gr::inverse_spacetime_metric<Dim, Frame::Inertial, DataType>,
+      static_cast<tnsr::AA<DataType, Dim, Frame::Inertial> (*)(
+          const Scalar<DataType>&,
+          const tnsr::I<DataType, Dim, Frame::Inertial>&,
+          const tnsr::II<DataType, Dim, Frame::Inertial>&) noexcept>(
+          &gr::inverse_spacetime_metric<Dim, Frame::Inertial, DataType>),
       "ComputeSpacetimeQuantities", "inverse_spacetime_metric", {{{-10., 10.}}},
       used_for_size);
 }
@@ -73,7 +77,16 @@ template <size_t Dim, typename DataType>
 void test_compute_derivatives_of_spacetime_metric(
     const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
-      &gr::derivatives_of_spacetime_metric<Dim, Frame::Inertial, DataType>,
+      static_cast<tnsr::abb<DataType, Dim, Frame::Inertial> (*)(
+          const Scalar<DataType>&, const Scalar<DataType>&,
+          const tnsr::i<DataType, Dim, Frame::Inertial>&,
+          const tnsr::I<DataType, Dim, Frame::Inertial>&,
+          const tnsr::I<DataType, Dim, Frame::Inertial>&,
+          const tnsr::iJ<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ii<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ii<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ijj<DataType, Dim, Frame::Inertial>&) noexcept>(
+          &gr::derivatives_of_spacetime_metric<Dim, Frame::Inertial, DataType>),
       "ComputeSpacetimeQuantities", "derivatives_of_spacetime_metric",
       {{{-10., 10.}}}, used_for_size);
 }
@@ -105,7 +118,14 @@ void test_compute_spacetime_normal_one_form(const DataType& used_for_size) {
 template <size_t Dim, typename DataType>
 void test_compute_extrinsic_curvature(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
-      &gr::extrinsic_curvature<Dim, Frame::Inertial, DataType>,
+      static_cast<tnsr::ii<DataType, Dim, Frame::Inertial> (*)(
+          const Scalar<DataType>&,
+          const tnsr::I<DataType, Dim, Frame::Inertial>&,
+          const tnsr::iJ<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ii<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ii<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ijj<DataType, Dim, Frame::Inertial>&) noexcept>(
+          &gr::extrinsic_curvature<Dim, Frame::Inertial, DataType>),
       "ComputeSpacetimeQuantities", "extrinsic_curvature", {{{-10., 10.}}},
       used_for_size);
 }
@@ -329,9 +349,10 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
           expected_lapse, dt_lapse, deriv_lapse, expected_shift, dt_shift,
           deriv_shift, expected_spatial_metric, dt_spatial_metric,
           deriv_spatial_metric);
-  const auto expected_deriv_spacetime_metric =
-      gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>::function(
-          expected_derivatives_of_spacetime_metric);
+  tnsr::iaa<DataVector, 3, Frame::Inertial> expected_deriv_spacetime_metric{};
+  gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>::function(
+      make_not_null(&expected_deriv_spacetime_metric),
+      expected_derivatives_of_spacetime_metric);
 
   const auto third_box = db::create<
       db::AddSimpleTags<
