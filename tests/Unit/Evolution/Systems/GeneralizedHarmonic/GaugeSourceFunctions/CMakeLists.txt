@@ -11,5 +11,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/"
   "${LIBRARY_SOURCES}"
-  "GeneralizedHarmonicGaugeSourceFunctions"
+  "GeneralizedHarmonicGaugeSourceFunctions;Options"
   )

@@ -9,6 +9,7 @@ set(LIBS_TO_LINK
   IO
   LinearOperators
   MathFunctions
+  Options
   ParallelLinearSolver
   Utilities
   ${SPECTRE_LIBRARIES}

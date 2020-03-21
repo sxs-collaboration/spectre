@@ -3,6 +3,7 @@
 
 set(LIBS_TO_LINK
   Informer
+  Options
   Utilities
   )
 

@@ -13,5 +13,5 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/"
   "${LIBRARY_SOURCES}"
-  "RelativisticEulerSolutions;Utilities"
+  "RelativisticEulerSolutions;Options;Utilities"
   )

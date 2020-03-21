@@ -12,6 +12,9 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE DataStructures
-  INTERFACE Spectral
+  PUBLIC
+  Boost::boost
+  DataStructures
+  Options
+  Spectral
   )

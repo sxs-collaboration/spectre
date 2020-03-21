@@ -16,6 +16,7 @@ set(LIBS_TO_LINK
     Interpolation
     LinearOperators
     MathFunctions
+    Options
     Time
     Utilities
     ${SPECTRE_LIBRARIES}

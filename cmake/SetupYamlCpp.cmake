@@ -13,8 +13,3 @@ set_property(TARGET YamlCpp
   APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${YAMLCPP_INCLUDE_DIRS})
 set_property(TARGET YamlCpp
   APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${YAMLCPP_LIBRARIES})
-
-# Add to catch-all lists of dependencies. Can be removed once all targets that
-# depend on yaml-cpp link with the `Options` library or with `YamlCpp` directly.
-spectre_include_directories(${YAMLCPP_INCLUDE_DIRS})
-list(APPEND SPECTRE_LIBRARIES ${YAMLCPP_LIBRARIES})

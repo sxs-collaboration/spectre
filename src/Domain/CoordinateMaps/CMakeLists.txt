@@ -24,8 +24,12 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE DataStructures
-  INTERFACE Domain
-  INTERFACE ErrorHandling
-  INTERFACE FunctionsOfTime
+  PUBLIC
+  Boost::boost
+  DataStructures
+  ErrorHandling
+  FunctionsOfTime
+
+  INTERFACE
+  Domain  # Domain should really be PUBLIC but there are cyclic dependencies
   )

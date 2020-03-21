@@ -44,7 +44,7 @@ add_test_library(
   ${LIBRARY}
   "DataStructures"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Utilities"
+  "DataStructures;Options;Utilities"
   )
 
 # [example_add_pybindings_test]

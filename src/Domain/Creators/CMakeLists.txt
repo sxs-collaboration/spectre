@@ -28,7 +28,7 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 target_link_libraries(
   ${LIBRARY}
   INTERFACE CoordinateMaps
-  INTERFACE DataStructures
+  PUBLIC DataStructures
   INTERFACE Domain
   INTERFACE DomainTimeDependence
   INTERFACE ErrorHandling

@@ -11,7 +11,7 @@ add_test_library(
   ${LIBRARY}
   "Informer/"
   "${LIBRARY_SOURCES}"
-  "Informer;Utilities"
+  "Informer;Options;Utilities"
   )
 spectre_add_python_bindings_test(
   "Unit.Informer.Python"

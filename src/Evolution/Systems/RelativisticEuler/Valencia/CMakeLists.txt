@@ -16,10 +16,12 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE DataStructures
-  INTERFACE ErrorHandling
-  INTERFACE GeneralRelativity
-  INTERFACE Hydro
-  INTERFACE Limiters
-  INTERFACE VariableFixing
+  PUBLIC
+  DataStructures
+  ErrorHandling
+  GeneralRelativity
+  Hydro
+  Limiters
+  Options
+  VariableFixing
   )

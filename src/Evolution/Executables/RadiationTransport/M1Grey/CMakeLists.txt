@@ -14,6 +14,7 @@ set(LIBS_TO_LINK
   MathFunctions
   M1Grey
   M1GreySolutions
+  Options
   Time
   Utilities
   )
@@ -25,4 +26,3 @@ add_spectre_parallel_executable(
   EvolutionMetavars
   "${LIBS_TO_LINK}"
   )
-

@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <array>
-#include <blaze/math/typetraits/IsVector.h>  // IWYU pragma: keep
 #include <cassert>
 #include <cstddef>
 #include <cstdint>

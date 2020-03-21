@@ -44,6 +44,9 @@ target_link_libraries(
 # Core required libraries
 target_link_libraries(
   ${EXECUTABLE}
+  # Link against Boost::program_options for now until we have proper
+  # dependency handling for header-only libs
+  Boost::program_options
   Informer
   Test_Pypp
   ${SPECTRE_LIBRARIES}

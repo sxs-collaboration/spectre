@@ -10,5 +10,5 @@ add_test_library(
   "Test_Pypp"
   "Pypp"
   "${LIBRARY_SOURCES}"
-  "DataStructures;ErrorHandling"
+  "Boost::boost;DataStructures;ErrorHandling;NumPy;SciPy"
   )

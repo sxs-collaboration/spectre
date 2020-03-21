@@ -6,6 +6,7 @@ set(LIBS_TO_LINK
   DomainCreators
   Informer
   IO
+  Options
   Utilities
   )
 

@@ -15,6 +15,7 @@ set(LIBS_TO_LINK
   LinearOperators
   MathFunctions
   RelativisticEulerSolutions
+  Options
   Time
   Utilities
   ValenciaDivClean

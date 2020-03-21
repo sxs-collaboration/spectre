@@ -21,7 +21,10 @@ target_link_libraries(
   PUBLIC
   Blas
   DataStructures
-  Domain
   ErrorHandling
+  Options
   Spectral
+
+  INTERFACE
+  Domain # Domain should be PUBLIC but then there's a cyclic dependency
   )

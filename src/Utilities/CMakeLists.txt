@@ -15,7 +15,12 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE ErrorHandling
+  PUBLIC
+  Blaze
+  Boost::boost
+  Brigand
+  ErrorHandling
+  Libxsmm
   )
 
 if (NOT USE_FORMALINE)

@@ -10,6 +10,7 @@ set(LIBS_TO_LINK
   Informer
   Limiters
   LinearOperators
+  Options
   Time
   Utilities
   )

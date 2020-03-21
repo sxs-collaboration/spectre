@@ -17,10 +17,10 @@ if("${GOOGLE_BENCHMARK_FOUND}" AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   # Add specific libraries needed for the benchmark you are interested in.
   target_link_libraries(
     ${executable}
-    benchmark
     CoordinateMaps
     Domain
     Informer
+    GoogleBenchmark
     Spectral
     ${SPECTRE_LIBRARIES}
     )

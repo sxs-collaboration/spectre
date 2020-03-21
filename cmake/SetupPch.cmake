@@ -68,6 +68,12 @@ if (USE_PCH)
     ${PCH_LIB_NAME} STATIC
     ${CMAKE_BINARY_DIR}/tmp/.SpectrePchForDependencies.cpp
     )
+  target_link_libraries(
+    ${PCH_LIB_NAME}
+    PRIVATE
+    Blaze
+    Brigand
+    )
   set_target_properties(
     PCH_SPECTRE_DEPENDENCIES
     PROPERTIES

@@ -17,7 +17,11 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE ErrorHandling
+  PUBLIC
+  Blaze
+  Boost::boost
+  ErrorHandling
+  Options
   )
 
 add_subdirectory(Python)

@@ -59,8 +59,13 @@ add_spectre_executable(
 target_link_libraries(
   ${executable}
   ${SPECTRE_TESTS_LIBRARIES}
+  Boost::boost
+  # Link against Boost::program_options for now until we have proper
+  # dependency handling for header-only libs
+  Boost::program_options
   ErrorHandling
   Informer
+  Options
   Utilities
   ${SPECTRE_LIBRARIES}
   )

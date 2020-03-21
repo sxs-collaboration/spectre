@@ -25,9 +25,11 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  Boost::boost # PUBLIC because of the actions
   DataStructures
   ErrorHandling
   Hdf5
+  Options
   Utilities
   )
 

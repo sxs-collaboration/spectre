@@ -42,11 +42,13 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE CoordinateMaps
-  INTERFACE DataStructures
-  INTERFACE ErrorHandling
-  INTERFACE FunctionsOfTime
-  INTERFACE LinearOperators
-  INTERFACE Spectral
-  INTERFACE Utilities
+  PUBLIC
+  Boost::boost
+  CoordinateMaps
+  DataStructures
+  ErrorHandling
+  FunctionsOfTime
+  Options
+  Spectral
+  Utilities
   )

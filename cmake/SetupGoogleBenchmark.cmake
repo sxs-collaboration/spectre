@@ -4,9 +4,6 @@
 find_package(GoogleBenchmark QUIET)
 
 if (${GOOGLE_BENCHMARK_FOUND})
-  spectre_include_directories(${GOOGLE_BENCHMARK_INCLUDE_DIRS})
-  set(SPECTRE_LIBRARIES "${SPECTRE_LIBRARIES};${GOOGLE_BENCHMARK_LIBRARIES}")
-
   message(STATUS "Google Benchmark libs: " ${GOOGLE_BENCHMARK_LIBRARIES})
   message(STATUS "Google Benchmark incl: " ${GOOGLE_BENCHMARK_INCLUDE_DIRS})
 
@@ -14,4 +11,10 @@ if (${GOOGLE_BENCHMARK_FOUND})
     "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
     "Google Benchmark Found\n"
     )
+
+  add_library(GoogleBenchmark INTERFACE IMPORTED)
+  set_property(TARGET GoogleBenchmark PROPERTY
+    INTERFACE_INCLUDE_DIRECTORIES ${GOOGLE_BENCHMARK_INCLUDE_DIR})
+  set_property(TARGET GoogleBenchmark PROPERTY
+    INTERFACE_LINK_LIBRARIES ${GOOGLE_BENCHMARK_LIBRARIES})
 endif()

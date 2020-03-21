@@ -3,5 +3,8 @@
 
 find_package(Brigand REQUIRED)
 
-spectre_include_directories("${BRIGAND_INCLUDE_DIR}")
 message(STATUS "Brigand include: ${BRIGAND_INCLUDE_DIR}")
+
+add_library(Brigand INTERFACE IMPORTED)
+set_property(TARGET Brigand PROPERTY
+  INTERFACE_INCLUDE_DIRECTORIES ${BRIGAND_INCLUDE_DIR})

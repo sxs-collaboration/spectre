@@ -14,7 +14,7 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Actions/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Domain;ErrorHandling"
+  "Boost::boost;DataStructures;Domain;ErrorHandling"
   )
 
 add_dependencies(
