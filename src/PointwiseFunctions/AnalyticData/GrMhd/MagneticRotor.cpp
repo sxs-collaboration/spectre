@@ -39,14 +39,11 @@ Scalar<DataType> compute_piecewise(const tnsr::I<DataType, 3>& x,
 namespace grmhd {
 namespace AnalyticData {
 
-MagneticRotor::MagneticRotor(const double rotor_radius,
-                             const double rotor_density,
-                             const double background_density,
-                             const double pressure,
-                             const double angular_velocity,
-                             const std::array<double, 3> magnetic_field,
-                             const double adiabatic_index,
-                             const OptionContext& context)
+MagneticRotor::MagneticRotor(
+    const double rotor_radius, const double rotor_density,
+    const double background_density, const double pressure,
+    const double angular_velocity, const std::array<double, 3>& magnetic_field,
+    const double adiabatic_index, const OptionContext& context)
     : rotor_radius_(rotor_radius),
       rotor_density_(rotor_density),
       background_density_(background_density),

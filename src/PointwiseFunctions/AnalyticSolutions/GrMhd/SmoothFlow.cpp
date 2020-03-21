@@ -15,8 +15,8 @@
 namespace grmhd {
 namespace Solutions {
 
-SmoothFlow::SmoothFlow(const std::array<double, 3> mean_velocity,
-                       const std::array<double, 3> wavevector,
+SmoothFlow::SmoothFlow(const std::array<double, 3>& mean_velocity,
+                       const std::array<double, 3>& wavevector,
                        const double pressure, const double adiabatic_index,
                        const double perturbation_size) noexcept
     : RelativisticEuler::Solutions::SmoothFlow<3>(mean_velocity, wavevector,

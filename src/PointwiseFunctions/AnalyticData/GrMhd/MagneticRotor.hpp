@@ -119,7 +119,8 @@ class MagneticRotor : public MarkAsAnalyticData {
 
   MagneticRotor(double rotor_radius, double rotor_density,
                 double background_density, double pressure,
-                double angular_velocity, std::array<double, 3> magnetic_field,
+                double angular_velocity,
+                const std::array<double, 3>& magnetic_field,
                 double adiabatic_index, const OptionContext& context = {});
 
   explicit MagneticRotor(CkMigrateMessage* /*unused*/) noexcept {}

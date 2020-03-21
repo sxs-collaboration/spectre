@@ -23,8 +23,8 @@ namespace RelativisticEuler {
 namespace Solutions {
 
 template <size_t Dim>
-SmoothFlow<Dim>::SmoothFlow(const std::array<double, Dim> mean_velocity,
-                            const std::array<double, Dim> wavevector,
+SmoothFlow<Dim>::SmoothFlow(const std::array<double, Dim>& mean_velocity,
+                            const std::array<double, Dim>& wavevector,
                             const double pressure, const double adiabatic_index,
                             const double perturbation_size) noexcept
     :  // clang-tidy: do not std::move trivial types.

@@ -103,8 +103,8 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
   SmoothFlow& operator=(SmoothFlow&& /*rhs*/) noexcept = default;
   ~SmoothFlow() = default;
 
-  SmoothFlow(std::array<double, Dim> mean_velocity,
-             std::array<double, Dim> wavevector, double pressure,
+  SmoothFlow(const std::array<double, Dim>& mean_velocity,
+             const std::array<double, Dim>& wavevector, double pressure,
              double adiabatic_index, double perturbation_size) noexcept;
 
   explicit SmoothFlow(CkMigrateMessage* /*unused*/) noexcept {}

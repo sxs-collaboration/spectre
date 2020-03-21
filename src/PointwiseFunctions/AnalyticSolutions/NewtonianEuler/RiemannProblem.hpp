@@ -207,7 +207,7 @@ class RiemannProblem : public MarkAsAnalyticSolution {
     InitialData& operator=(InitialData&& /*rhs*/) noexcept = default;
     ~InitialData() = default;
 
-    InitialData(double mass_density, std::array<double, Dim> velocity,
+    InitialData(double mass_density, const std::array<double, Dim>& velocity,
                 double pressure, double adiabatic_index,
                 size_t propagation_axis) noexcept;
 
@@ -248,8 +248,8 @@ class RiemannProblem : public MarkAsAnalyticSolution {
 
   RiemannProblem(
       double adiabatic_index, double initial_position, double left_mass_density,
-      std::array<double, Dim> left_velocity, double left_pressure,
-      double right_mass_density, std::array<double, Dim> right_velocity,
+      const std::array<double, Dim>& left_velocity, double left_pressure,
+      double right_mass_density, const std::array<double, Dim>& right_velocity,
       double right_pressure,
       double pressure_star_tol = PressureStarTol::default_value()) noexcept;
 

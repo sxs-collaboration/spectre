@@ -53,8 +53,8 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   SmoothFlow& operator=(SmoothFlow&& /*rhs*/) noexcept = default;
   ~SmoothFlow() = default;
 
-  SmoothFlow(std::array<double, 3> mean_velocity,
-             std::array<double, 3> wavevector, double pressure,
+  SmoothFlow(const std::array<double, 3>& mean_velocity,
+             const std::array<double, 3>& wavevector, double pressure,
              double adiabatic_index, double perturbation_size) noexcept;
 
   using smooth_flow::equation_of_state;

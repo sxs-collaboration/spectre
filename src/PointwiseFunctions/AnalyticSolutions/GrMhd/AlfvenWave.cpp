@@ -26,11 +26,11 @@
 namespace grmhd {
 namespace Solutions {
 
-AlfvenWave::AlfvenWave(const double wavenumber, const double pressure,
-                       const double rest_mass_density,
-                       const double adiabatic_index,
-                       const std::array<double, 3> background_magnetic_field,
-                       const std::array<double, 3> wave_magnetic_field) noexcept
+AlfvenWave::AlfvenWave(
+    const double wavenumber, const double pressure,
+    const double rest_mass_density, const double adiabatic_index,
+    const std::array<double, 3>& background_magnetic_field,
+    const std::array<double, 3>& wave_magnetic_field) noexcept
     : wavenumber_(wavenumber),
       pressure_(pressure),
       rest_mass_density_(rest_mass_density),

@@ -152,8 +152,8 @@ class AlfvenWave : public MarkAsAnalyticSolution {
 
   AlfvenWave(double wavenumber, double pressure, double rest_mass_density,
              double adiabatic_index,
-             std::array<double, 3> background_magnetic_field,
-             std::array<double, 3> wave_magnetic_field) noexcept;
+             const std::array<double, 3>& background_magnetic_field,
+             const std::array<double, 3>& wave_magnetic_field) noexcept;
 
   // @{
   /// Retrieve hydro variable at `(x, t)`
