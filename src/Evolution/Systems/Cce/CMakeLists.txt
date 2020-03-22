@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   InterfaceManagers/GhLockstepInterfaceManager.cpp
   LinearOperators.cpp
   LinearSolve.cpp
+  NewmanPenrose.cpp
   PrecomputeCceDependencies.cpp
   ReadBoundaryDataH5.cpp
   ReducedWorldtubeModeRecorder.cpp
