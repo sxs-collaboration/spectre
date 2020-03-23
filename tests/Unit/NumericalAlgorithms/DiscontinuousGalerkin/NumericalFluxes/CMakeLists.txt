@@ -12,5 +12,5 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/"
   "${LIBRARY_SOURCES}"
-  "" # Header-only, link dependencies included from testing lib
+  "DataStructures;DiscontinuousGalerkin"
   )
