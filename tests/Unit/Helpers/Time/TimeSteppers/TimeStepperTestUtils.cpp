@@ -321,7 +321,7 @@ void check_dense_output(const TimeStepper& stepper,
     for (;;) {
       // Dense output is done after the last substep
       const auto next_time_id = stepper.next_time_id(time_id, step_size);
-      history.insert(time_id, y, static_cast<double>(y));
+      history.insert(time_id, y, y);
       if (next_time_id.substep() == 0 and
           time < next_time_id.step_time().value()) {
         stepper.dense_update_u(make_not_null(&y), history, time);

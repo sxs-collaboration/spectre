@@ -4,7 +4,6 @@
 #pragma once
 
 #include <tuple>
-#include <utility>  // IWYU pragma: keep // for std::move
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -13,6 +12,7 @@
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
@@ -45,7 +45,6 @@ namespace Actions {
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies:
-///   - dt_variables_tag,
 ///   - Tags::HistoryEvolvedVariables<variables_tag>
 template <typename VariablesTag = NoSuchType>
 struct RecordTimeStepperData {
@@ -64,15 +63,16 @@ struct RecordTimeStepperData {
     using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
     using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
 
-    db::mutate<dt_variables_tag, history_tag>(
+    db::mutate<history_tag>(
         make_not_null(&box),
-        [](const gsl::not_null<db::item_type<dt_variables_tag>*> dt_vars,
-           const gsl::not_null<db::item_type<history_tag>*> history,
+        [](const gsl::not_null<db::item_type<history_tag>*> history,
+           const TimeStepId& time_step_id,
            const db::const_item_type<variables_tag>& vars,
-           const db::const_item_type<Tags::TimeStepId>& time_step_id) noexcept {
-          history->insert(time_step_id, vars, std::move(*dt_vars));
+           const db::const_item_type<dt_variables_tag>& dt_vars) noexcept {
+          history->insert(time_step_id, vars, dt_vars);
         },
-        db::get<variables_tag>(box), db::get<Tags::TimeStepId>(box));
+        db::get<Tags::TimeStepId>(box), db::get<variables_tag>(box),
+        db::get<dt_variables_tag>(box));
 
     return std::forward_as_tuple(std::move(box));
   }
