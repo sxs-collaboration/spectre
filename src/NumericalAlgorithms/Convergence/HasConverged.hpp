@@ -72,6 +72,17 @@ struct HasConverged {
    */
   Reason reason() const noexcept;
 
+  /// The number of iterations the algorithm has completed
+  size_t num_iterations() const noexcept;
+
+  /// The residual magnitude after the last iteration. NaN if no iteration has
+  /// completed yet.
+  double residual_magnitude() const noexcept;
+
+  /// The residual magnitude before the first iteration. NaN if this information
+  /// is not available yet.
+  double initial_residual_magnitude() const noexcept;
+
   void pup(PUP::er& p) noexcept;  // NOLINT
 
   friend bool operator==(const HasConverged& lhs,
@@ -83,7 +94,10 @@ struct HasConverged {
                                   const HasConverged& has_converged) noexcept;
 
  private:
-  boost::optional<Reason> reason_{boost::none};
+  // This default initialization is equivalent to boost::none, but works around
+  // a `-Wmaybe-uninitialized` warning on GCC 7 in Release mode
+  boost::optional<Reason> reason_ =
+      boost::make_optional(false, Reason::MaxIterations);
   Criteria criteria_{};
   size_t iteration_id_{};
   double residual_magnitude_{};

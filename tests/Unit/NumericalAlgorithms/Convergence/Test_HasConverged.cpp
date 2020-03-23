@@ -48,9 +48,12 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
 
   {
     INFO("HasConverged - MaxIterations")
-    const Convergence::HasConverged has_converged{criteria, 2, 1., 1.};
+    const Convergence::HasConverged has_converged{criteria, 2, 1., 1.5};
     CHECK(has_converged);
     CHECK(has_converged.reason() == Convergence::Reason::MaxIterations);
+    CHECK(has_converged.num_iterations() == 2);
+    CHECK(has_converged.residual_magnitude() == 1.);
+    CHECK(has_converged.initial_residual_magnitude() == 1.5);
     CHECK(get_output(has_converged) ==
           "Reached the maximum number of iterations (2).");
     test_serialization(has_converged);
