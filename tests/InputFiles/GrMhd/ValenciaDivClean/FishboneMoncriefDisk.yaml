@@ -31,8 +31,8 @@ DomainCreator:
 
 AnalyticSolution:
   FishboneMoncriefDisk:
-    BhMass: 1.0
-    BhDimlessSpin: 0.9375
+    BhMass: &BhMass 1.0
+    BhDimlessSpin: &BhDimlessSpin 0.9375
     InnerEdgeRadius: 6.0
     MaxPressureRadius: 12.0
     PolytropicConstant: 0.001
@@ -90,5 +90,5 @@ InterpolationTargets:
   KerrHorizon:
     Lmax: 10
     Center: [0.0, 0.0, 0.0]
-    Mass: 1.0
-    DimensionlessSpin: [0.0, 0.0, 0.9375]
+    Mass: *BhMass
+    DimensionlessSpin: [0.0, 0.0, *BhDimlessSpin]
