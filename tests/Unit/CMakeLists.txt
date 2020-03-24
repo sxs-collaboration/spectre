@@ -63,6 +63,9 @@ target_link_libraries(
   Framework
   Informer
   Options
+  Python::NumPy
+  Python::Python
+  Python::SciPy
   Utilities
   ${SPECTRE_LIBRARIES}
   )
@@ -71,13 +74,6 @@ add_dependencies(
   ${executable}
   module_ConstGlobalCache
   module_Main
-  )
-
-target_include_directories(
-  ${executable}
-  SYSTEM
-  PUBLIC ${NUMPY_INCLUDE_DIRS}
-  PUBLIC ${PYTHON_INCLUDE_DIRS}
   )
 
 option(

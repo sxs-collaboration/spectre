@@ -55,8 +55,7 @@ include(SetupListTargets)
 include(AddSpectreExecutable)
 include(CheckBrokenArray0)
 
-# Need to load python libs before boost.python.
-include(SetupPythonLibs)
+include(SetupPython)
 
 # Blaze depends on both Blas and Lapack, since LIBXSMM is a Blas
 # alternative we set it up early too.
@@ -72,10 +71,8 @@ include(SetupGoogleBenchmark)
 include(SetupGsl)
 include(SetupHdf5)
 include(SetupAllocator)
-include(SetupNumPy)
 include(SetupPapi)
 include(SetupPybind11)
-include(SetupSciPy)
 include(SetupLibsharp)
 include(SetupYamlCpp)
 

@@ -1,7 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(PythonInterp REQUIRED)
+include(SpectreFindPython)
+spectre_find_python(REQUIRED COMPONENTS Interpreter)
 
 # Add a function to generate the charm interface files for the module.
 function(add_charm_module MODULE)
@@ -53,11 +54,12 @@ function(generate_algorithms_impl ALGORITHM_NAME ALGORITHM_TYPE ALGORITHM_DIR)
   #                    nodegroup - A nodegroup, one chare per "node"
   #  ALGORITHM_DIR: the output dir where the header files are generated
 
+  get_property(PYTHON_EXEC TARGET Python::Interpreter PROPERTY OUTPUT_LOCATION)
   string(TOLOWER ${ALGORITHM_TYPE} ALGORITHM_TYPE)
   execute_process(
     WORKING_DIRECTORY ${ALGORITHM_DIR}
 
-    COMMAND ${PYTHON_EXECUTABLE}
+    COMMAND ${PYTHON_EXEC}
     ${CMAKE_SOURCE_DIR}/cmake/SetupCharmAlgorithm.py
     --algorithm_name "${ALGORITHM_NAME}"
     --algorithm_type "${ALGORITHM_TYPE}"

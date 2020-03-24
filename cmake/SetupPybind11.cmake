@@ -4,13 +4,16 @@
 option(BUILD_PYTHON_BINDINGS "Build the python bindings for SpECTRE" OFF)
 
 if(BUILD_PYTHON_BINDINGS)
-  # Make sure to find the Python interpreter first, so it is consistent with
-  # the one that pybind11 uses
-  find_package(PythonInterp)
-  find_package(PythonLibs)
+  # Pybind11's internal python library finding functions break CMake's
+  # FindPythonLibs (which we use). Thus, we need to configure both the
+  # interpreter and the libs before configuring pybind11.
+  include(SpectreFindPython)
+  spectre_find_python(REQUIRED COMPONENTS Development Interpreter)
+
   # Uses `Findpybind11.cmake` to find the headers. Since we can't rely on the
   # corresponding cmake files to be installed as well we bundle them in
   # `external/pybind11`.
+  include(SpectreFindPython)
   find_package(pybind11 REQUIRED)
 
   # Load the CMake files from `external/pybind11`

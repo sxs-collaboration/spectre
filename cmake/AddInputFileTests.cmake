@@ -1,7 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(PythonInterp REQUIRED)
+include(SpectreFindPython)
+spectre_find_python(REQUIRED COMPONENTS Interpreter)
 
 function(add_single_input_file_test INPUT_FILE EXECUTABLE CHECK_TYPE TIMEOUT)
   # Extract just the name of the input file
@@ -146,6 +147,7 @@ endfunction()
 # Dependencies will be added as the tests are processed.
 add_custom_target(test-executables)
 
+get_property(PYTHON_EXEC TARGET Python::Interpreter PROPERTY OUTPUT_LOCATION)
 # Write command to execute an input file and clean its output into a shell
 # script, which makes it easier to chain multiple commands
 file(
@@ -153,10 +155,10 @@ file(
   ${PROJECT_BINARY_DIR}/tmp/InputFileExecuteAndClean.sh
   "\
 #!/bin/sh\n\
-${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v --force \
+${PYTHON_EXEC} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v --force \
 --input-file $2 --output-dir ${CMAKE_BINARY_DIR}
 ${CMAKE_BINARY_DIR}/bin/$1 --input-file $2 && \
-${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v \
+${PYTHON_EXEC} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v \
 --input-file $2 --output-dir ${CMAKE_BINARY_DIR}\n"
 )
 

@@ -8,9 +8,13 @@ EXECUTE_PROCESS(COMMAND test -w ${CMAKE_SOURCE_DIR}
 
 # The logic is inverted because shell
 if(NOT CHECK_SOURCE_DIR_WRITABLE_RESULT)
-  find_package(PythonInterp REQUIRED)
+  include(SpectreFindPython)
+  spectre_find_python(REQUIRED COMPONENTS Interpreter)
 
   find_package(Git REQUIRED)
+
+  get_property(PYTHON_EXEC TARGET Python::Interpreter
+    PROPERTY OUTPUT_LOCATION)
 
   # We use several client-side git hooks to ensure commits are correct as
   # early as possible.

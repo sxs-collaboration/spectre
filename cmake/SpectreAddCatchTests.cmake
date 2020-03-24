@@ -37,7 +37,8 @@
 #               example, to match "some (word) and" you must specify the
 #               string "some \(word\) and".
 
-find_package(PythonInterp REQUIRED)
+include(SpectreFindPython)
+spectre_find_python(REQUIRED COMPONENTS Interpreter)
 
 # Main function - the only one designed to be called from outside this module.
 function(spectre_add_catch_tests TEST_TARGET TEST_LIBS)
@@ -73,9 +74,10 @@ function(spectre_add_catch_tests TEST_TARGET TEST_LIBS)
     endif()
   endforeach()
 
+  get_property(PYTHON_EXEC TARGET Python::Interpreter PROPERTY OUTPUT_LOCATION)
   execute_process(
     COMMAND
-    ${PYTHON_EXECUTABLE}
+    ${PYTHON_EXEC}
     ${CMAKE_SOURCE_DIR}/cmake/SpectreParseTests.py
     ${ABSOLUTE_SOURCE_FILES}
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tmp

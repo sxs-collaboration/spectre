@@ -1,7 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(PythonInterp REQUIRED)
+include(SpectreFindPython)
+spectre_find_python(REQUIRED COMPONENTS Interpreter)
 
 # Main function - the only one designed to be called from outside this module.
 function(add_compilation_tests TEST_TARGET)
@@ -16,9 +17,11 @@ function(add_compilation_tests TEST_TARGET)
       set(ABSOLUTE_SOURCE_FILES "${ABSOLUTE_SOURCE_FILES};${SOURCE_FILE}")
     endforeach()
 
+    get_property(PYTHON_EXEC TARGET Python::Interpreter
+      PROPERTY OUTPUT_LOCATION)
     execute_process(
         COMMAND
-        ${PYTHON_EXECUTABLE}
+        ${PYTHON_EXEC}
         ${CMAKE_SOURCE_DIR}/cmake/CompilationTestsParse.py
         ${ABSOLUTE_SOURCE_FILES}
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tmp

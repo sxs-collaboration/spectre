@@ -1,6 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+include(SpectreFindPython)
+spectre_find_python(REQUIRED COMPONENTS Interpreter)
+
 set(SPECTRE_PYTHON_PREFIX "${CMAKE_BINARY_DIR}/bin/python/spectre/")
 get_filename_component(
   SPECTRE_PYTHON_PREFIX
@@ -301,10 +304,12 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS)
   get_filename_component(FILE "${FILE}" ABSOLUTE)
   string(TOLOWER "${TAGS}" TAGS)
 
+  get_property(PYTHON_EXEC TARGET Python::Interpreter
+    PROPERTY OUTPUT_LOCATION)
   add_test(
     NAME "\"${TEST_NAME}\""
     COMMAND
-    ${PYTHON_EXECUTABLE}
+    ${PYTHON_EXEC}
     ${FILE}
     )
 
