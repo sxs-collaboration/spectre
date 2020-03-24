@@ -227,6 +227,43 @@ jobs:
         compiler: [gcc-6, gcc-7, gcc-8, gcc-9, clang-4.0, clang-5.0,
           clang-8, clang-9]
         build_type: [Debug, Release]
+        use_pch: [OFF, ON]
+
+        # Perform a single build with the PCH off to make sure we can
+        # properly configure and build the core libraries when the
+        # PCH is disabled. Building all the tests without the PCH takes
+        # very long and the most we would catch is a missing include of
+        # something that's in the PCH.
+        #
+        # GitHub currently doesn't allow us specifying a list of compilers
+        # or wildcards (e.g. gcc-* means literally gcc-* not gcc-ANYTHING).
+        # We also cannot exclude all the pch:OFF builds and then later
+        # include only one (GitHub applies exclude more aggressively than
+        # include rather than going by ordering).
+        exclude:
+          - use_pch: OFF
+            build_type: Release
+          - use_pch: OFF
+            build_type: Debug
+            compiler: gcc-6
+          - use_pch: OFF
+            build_type: Debug
+            compiler: gcc-7
+          - use_pch: OFF
+            build_type: Debug
+            compiler: gcc-8
+          - use_pch: OFF
+            build_type: Debug
+            compiler: gcc-9
+          - use_pch: OFF
+            build_type: Debug
+            compiler: clang-4.0
+          - use_pch: OFF
+            build_type: Debug
+            compiler: clang-5.0
+          - use_pch: OFF
+            build_type: Debug
+            compiler: clang-8
         include:
           # Prevent random failures of Debug builds.
           # See issue https://github.com/sxs-collaboration/spectre/issues/1807
@@ -276,7 +313,9 @@ jobs:
         uses: actions/cache@v1
         with:
           path: /work/ccache
-          key: ccache-${{ matrix.compiler }}-${{ matrix.build_type }}
+          key:
+            "ccache-${{ matrix.compiler }}-${{ matrix.build_type }}-pch-${{
+            matrix.use_pch }}"
       - name: Configure ccache
         # Print the ccache configuration and reset statistics
         run: |
@@ -306,6 +345,7 @@ jobs:
           ASAN=${{ matrix.ASAN }}
           UBSAN_UNDEFINED=${{ matrix.UBSAN_UNDEFINED }}
           UBSAN_INTEGER=${{ matrix.UBSAN_INTEGER }}
+          USE_PCH=${{ matrix.use_pch }}
 
           cmake
           -D CMAKE_C_COMPILER=${CC}
@@ -320,6 +360,7 @@ jobs:
           -D STRIP_SYMBOLS=ON
           -D STUB_EXECUTABLE_OBJECT_FILES=ON
           -D STUB_LIBRARY_OBJECT_FILES=ON
+          -D USE_PCH=${USE_PCH}
           -D USE_CCACHE=ON
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
           -D PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE:-'/usr/bin/python3'}
@@ -330,6 +371,7 @@ jobs:
         # Make sure this runs in bash so the regex matching works
         shell: bash
       - name: Build tests
+        if: matrix.use_pch == 'ON'
         working-directory: /work/build
         run: |
           make -j2 RunTests
@@ -353,6 +395,12 @@ jobs:
         run: |
           ccache -s
       - name: Run unit tests
+        if: matrix.use_pch == 'ON'
         working-directory: /work/build
         run: |
           ctest -j2 --output-on-failure
+      - name: Run input file tests without PCH
+        if: matrix.use_pch == 'OFF'
+        working-directory: /work/build
+        run: |
+          ctest -j2 --output-on-failure -L inputfiles
