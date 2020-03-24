@@ -19,7 +19,7 @@
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"
-#include "NumericalAlgorithms/Interpolation/SendPointsToInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"

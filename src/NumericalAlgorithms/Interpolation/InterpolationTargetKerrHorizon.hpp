@@ -11,7 +11,6 @@
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "NumericalAlgorithms/Interpolation/SendPointsToInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
