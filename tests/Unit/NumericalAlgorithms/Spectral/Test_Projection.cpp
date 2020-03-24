@@ -13,6 +13,7 @@
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/GetOutput.hpp"
 
 namespace {
 constexpr auto quadratures = {Spectral::Quadrature::Gauss,
@@ -28,10 +29,18 @@ DataVector apply_matrix(const Matrix& m, const DataVector& v) noexcept {
   }
   return result;
 }
+
+void test_mortar_size() {
+  CHECK(get_output(Spectral::MortarSize::Full) == "Full");
+  CHECK(get_output(Spectral::MortarSize::UpperHalf) == "UpperHalf");
+  CHECK(get_output(Spectral::MortarSize::LowerHalf) == "LowerHalf");
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Projection.p.mortar_to_element",
                   "[NumericalAlgorithms][Spectral][Unit]") {
+  test_mortar_size();
+
   for (const auto& quadrature_dest : quadratures) {
     for (size_t num_points_dest = 2;
          num_points_dest <=
