@@ -19,6 +19,9 @@
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Options/Options.hpp"
 
+/// Functionality related to discontinuous Galerkin schemes
+namespace dg {}
+
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DiscontinuousGalerkinGroup
