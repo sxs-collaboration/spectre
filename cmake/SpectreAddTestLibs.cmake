@@ -21,6 +21,9 @@
 # Note: Both add_test_library and write_test_registration_function
 # are documented below.
 
+include(SpectreFindPython)
+spectre_find_python(REQUIRED COMPONENTS Development NumPy SciPy)
+
 # We want a global variable without having to worry about scope at all since
 # we provide an easy-to-use user function for adding test libraries
 set_property(GLOBAL PROPERTY SPECTRE_TESTS_LIB_FUNCTIONS_PROPERTY "")

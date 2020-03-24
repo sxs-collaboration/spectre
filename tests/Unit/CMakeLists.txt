@@ -51,6 +51,9 @@ add_spectre_executable(
   ${SPECTRE_TESTS}
   )
 
+include(SpectreFindPython)
+spectre_find_python(REQUIRED COMPONENTS Development NumPy SciPy)
+
 target_link_libraries(
   ${executable}
   PRIVATE
