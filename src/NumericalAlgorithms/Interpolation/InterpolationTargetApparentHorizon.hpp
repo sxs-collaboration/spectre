@@ -11,7 +11,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Informer/Verbosity.hpp"
-#include "NumericalAlgorithms/Interpolation/SendPointsToInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Utilities/Requires.hpp"
@@ -120,38 +120,14 @@ struct ApparentHorizon : db::SimpleTag {
 };
 }  // namespace Tags
 
-namespace Actions {
-/// \ingroup ActionsGroup
-/// \brief Sends points on a trial apparent horizon to an `Interpolator`.
+namespace TargetPoints {
+/// \brief Computes points on a trial apparent horizon`.
 ///
 /// This differs from `KerrHorizon` in the following ways:
 /// - It supplies points on a prolonged Strahlkorper, at a higher resolution
 ///   than the Strahlkorper in the DataBox, as needed for horizon finding.
 /// - It uses a `FastFlow` in the DataBox.
 /// - It has different options (including those for `FastFlow`).
-///
-/// Uses:
-/// - DataBox:
-///   - `domain::Tags::Domain<3>`
-///   - `::ah::Tags::FastFlow`
-///   - `StrahlkorperTags::CartesianCoords<Frame>`
-///   - `::Tags::Variables<typename
-///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
-///
-/// DataBox changes:
-/// - Adds: nothing
-/// - Removes: nothing
-/// - Modifies:
-///   - `Tags::IndicesOfFilledInterpPoints`
-///   - `Tags::IndicesOfInvalidInterpPoints`
-///   - `::Tags::Variables<typename
-///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
-///
-/// This Action also has an initialize function that adds to the DataBox:
-/// - `StrahlkorperTags::items_tags<Frame>`
-/// - `StrahlkorperTags::compute_items_tags<Frame>`
-/// - `::ah::Tags::FastFlow`
-/// - `::Tags::Verbosity`
 ///
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag, typename Frame>
@@ -209,41 +185,7 @@ struct ApparentHorizon {
     // may depend on `temporal_id`.
     return prolonged_coords;
   }
-
-  template <
-      typename ParallelComponent, typename DbTags, typename Metavariables,
-      typename ArrayIndex, typename TemporalId,
-      Requires<tmpl::list_contains_v<DbTags, Tags::TemporalIds<TemporalId>>> =
-          nullptr>
-  static void apply(db::DataBox<DbTags>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const TemporalId& temporal_id) noexcept {
-    const auto& fast_flow = db::get<::ah::Tags::FastFlow>(box);
-    const auto& strahlkorper =
-        db::get<StrahlkorperTags::Strahlkorper<Frame>>(box);
-
-    const size_t L_mesh = fast_flow.current_l_mesh(strahlkorper);
-    const auto prolonged_strahlkorper =
-        Strahlkorper<Frame>(L_mesh, L_mesh, strahlkorper);
-
-    const auto prolonged_coords =
-        StrahlkorperTags::CartesianCoords<Frame>::function(
-            prolonged_strahlkorper,
-            StrahlkorperTags::Radius<Frame>::function(prolonged_strahlkorper),
-            StrahlkorperTags::Rhat<Frame>::function(
-                StrahlkorperTags::ThetaPhi<Frame>::function(
-                    prolonged_strahlkorper)));
-
-    // In the future, when we add support for multiple Frames,
-    // the code that transforms coordinates from the Strahlkorper Frame
-    // to Frame::Inertial will go here.  That transformation
-    // may depend on `temporal_id`.
-
-    send_points_to_interpolator<InterpolationTargetTag>(
-        box, cache, prolonged_coords, temporal_id);
-  }
 };
 
-}  // namespace Actions
+}  // namespace TargetPoints
 }  // namespace intrp

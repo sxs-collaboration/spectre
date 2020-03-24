@@ -184,23 +184,8 @@ struct WedgeSectionTorus : db::SimpleTag {
 };
 }  // namespace Tags
 
-namespace Actions {
-/// \ingroup ActionsGroup
-/// \brief Sends points in a wedge-sectioned torus to an `Interpolator`.
-///
-/// Uses:
-/// - DataBox:
-///   - `domain::Tags::Domain<3>`
-///   - `::Tags::Variables<typename
-///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
-///
-/// DataBox changes:
-/// - Adds: nothing
-/// - Removes: nothing
-/// - Modifies:
-///   - `Tags::IndicesOfFilledInterpPoints`
-///   - `::Tags::Variables<typename
-///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
+namespace TargetPoints {
+/// \brief Computes points in a wedge-sectioned torus.
 ///
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag>
@@ -299,102 +284,7 @@ struct WedgeSectionTorus {
 
     return target_points;
   }
-
-  template <
-      typename ParallelComponent, typename DbTags, typename Metavariables,
-      typename ArrayIndex, typename TemporalId,
-      Requires<tmpl::list_contains_v<DbTags, Tags::TemporalIds<TemporalId>>> =
-          nullptr>
-  static void apply(db::DataBox<DbTags>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const TemporalId& temporal_id) noexcept {
-    const auto& options =
-        Parallel::get<Tags::WedgeSectionTorus<InterpolationTargetTag>>(cache);
-
-    // Compute locations of constant r/theta/phi surfaces
-    const size_t num_radial = options.number_of_radial_points;
-    const DataVector radii_1d = [&num_radial, &options ]() noexcept {
-      DataVector result(num_radial);
-      if (options.use_uniform_radial_grid) {
-        // uniform point distribution
-        for (size_t r = 0; r < num_radial; ++r) {
-          result[r] =
-              options.min_radius + (options.max_radius - options.min_radius) *
-                                       r / (num_radial - 1.0);
-        }
-      } else {
-        // Legendre Gauss-Lobatto point distribution
-        const double mean = 0.5 * (options.max_radius + options.min_radius);
-        const double diff = 0.5 * (options.max_radius - options.min_radius);
-        result =
-            mean + diff * Spectral::collocation_points<
-                              Spectral::Basis::Legendre,
-                              Spectral::Quadrature::GaussLobatto>(num_radial);
-      }
-      return result;
-    }
-    ();
-    const size_t num_theta = options.number_of_theta_points;
-    const DataVector thetas_1d = [&num_theta, &options ]() noexcept {
-      DataVector result(num_theta);
-      if (options.use_uniform_theta_grid) {
-        // uniform point distribution
-        for (size_t theta = 0; theta < num_theta; ++theta) {
-          result[theta] =
-              options.min_theta + (options.max_theta - options.min_theta) *
-                                      theta / (num_theta - 1.0);
-        }
-      } else {
-        // Legendre Gauss-Lobatto point distribution
-        const double mean = 0.5 * (options.max_theta + options.min_theta);
-        const double diff = 0.5 * (options.max_theta - options.min_theta);
-        result =
-            mean + diff * Spectral::collocation_points<
-                              Spectral::Basis::Legendre,
-                              Spectral::Quadrature::GaussLobatto>(num_theta);
-      }
-      return result;
-    }
-    ();
-    const size_t num_phi = options.number_of_phi_points;
-    const DataVector phis_1d = [&num_phi]() noexcept {
-      DataVector result(num_phi);
-      for (size_t phi = 0; phi < num_phi; ++phi) {
-        // We do NOT want a grid point at phi = 2pi, as this would duplicate the
-        // phi = 0 data. So, divide by num_phi rather than (n-1) as elsewhere.
-        result[phi] = 2.0 * M_PI * phi / num_phi;
-      }
-      return result;
-    }
-    ();
-
-    // Take tensor product to get full 3D r/theta/phi points
-    const size_t num_total = num_radial * num_theta * num_phi;
-    DataVector radii(num_total), thetas(num_total), phis(num_total);
-    for (size_t phi = 0; phi < num_phi; ++phi) {
-      for (size_t theta = 0; theta < num_theta; ++theta) {
-        for (size_t r = 0; r < num_radial; ++r) {
-          const size_t i =
-              r + theta * num_radial + phi * num_theta * num_radial;
-          radii[i] = radii_1d[r];
-          thetas[i] = thetas_1d[theta];
-          phis[i] = phis_1d[phi];
-        }
-      }
-    }
-
-    // Compute x/y/z coordinates
-    // Note: theta measured from +z axis, phi measured from +x axis
-    tnsr::I<DataVector, 3, Frame::Inertial> target_points(num_total);
-    get<0>(target_points) = radii * sin(thetas) * cos(phis);
-    get<1>(target_points) = radii * sin(thetas) * sin(phis);
-    get<2>(target_points) = radii * cos(thetas);
-
-    send_points_to_interpolator<InterpolationTargetTag>(
-        box, cache, target_points, temporal_id);
-  }
 };
 
-}  // namespace Actions
+}  // namespace TargetPoints
 }  // namespace intrp

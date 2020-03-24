@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "NumericalAlgorithms/Interpolation/SendPointsToInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Utilities/Gsl.hpp"
@@ -116,23 +116,8 @@ struct LineSegment : db::SimpleTag {
 };
 }  // namespace Tags
 
-namespace Actions {
-/// \ingroup ActionsGroup
-/// \brief Sends points on a line segment to an `Interpolator`.
-///
-/// Uses:
-/// - DataBox:
-///   - `domain::Tags::Domain<3>`
-///   - `::Tags::Variables<typename
-///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
-///
-/// DataBox changes:
-/// - Adds: nothing
-/// - Removes: nothing
-/// - Modifies:
-///   - `Tags::IndicesOfFilledInterpPoints`
-///   - `::Tags::Variables<typename
-///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
+namespace TargetPoints {
+/// \brief Computes points on a line segment.
 ///
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag, size_t VolumeDim>
@@ -163,37 +148,7 @@ struct LineSegment {
     }
     return target_points;
   }
-
-  template <
-      typename ParallelComponent, typename DbTags, typename Metavariables,
-      typename ArrayIndex, typename TemporalId,
-      Requires<tmpl::list_contains_v<DbTags, Tags::TemporalIds<TemporalId>>> =
-          nullptr>
-  static void apply(db::DataBox<DbTags>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const TemporalId& temporal_id) noexcept {
-    const auto& options =
-        Parallel::get<Tags::LineSegment<InterpolationTargetTag, VolumeDim>>(
-            cache);
-
-    // Fill points on a line segment
-    const double fractional_distance = 1.0 / (options.number_of_points - 1);
-    tnsr::I<DataVector, VolumeDim, Frame::Inertial> target_points(
-        options.number_of_points);
-    for (size_t n = 0; n < options.number_of_points; ++n) {
-      for (size_t d = 0; d < VolumeDim; ++d) {
-        target_points.get(d)[n] =
-            gsl::at(options.begin, d) +
-            n * fractional_distance *
-                (gsl::at(options.end, d) - gsl::at(options.begin, d));
-      }
-    }
-
-    send_points_to_interpolator<InterpolationTargetTag>(
-        box, cache, target_points, temporal_id);
-  }
 };
 
-}  // namespace Actions
+}  // namespace TargetPoints
 }  // namespace intrp

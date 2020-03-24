@@ -31,7 +31,8 @@ struct MockMetavariables {
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
-        ::intrp::Actions::KerrHorizon<InterpolationTargetA, ::Frame::Inertial>;
+        ::intrp::TargetPoints::KerrHorizon<InterpolationTargetA,
+                                           ::Frame::Inertial>;
   };
   using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;

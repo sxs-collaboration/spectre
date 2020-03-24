@@ -201,7 +201,7 @@ struct MockMetavariables {
                    gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial>>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
-        intrp::Actions::ApparentHorizon<AhA, ::Frame::Inertial>;
+        intrp::TargetPoints::ApparentHorizon<AhA, ::Frame::Inertial>;
     using post_interpolation_callback =
         intrp::callbacks::FindApparentHorizon<AhA>;
     using post_horizon_find_callback = PostHorizonFindCallback;
