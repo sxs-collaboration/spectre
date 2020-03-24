@@ -3,9 +3,9 @@
 
 #define CATCH_CONFIG_RUNNER
 
-#include "tests/Unit/RunTests.hpp"
+#include "RunTests.hpp"
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <charm++.h>
 #include <cstddef>
@@ -14,11 +14,11 @@
 #include <string>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Parallel/Abort.hpp"
 #include "Parallel/Exit.hpp"
 #include "Parallel/Printf.hpp"
-#include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/RunTestsRegister.hpp"
 
 RunTests::RunTests(CkArgMsg* msg) {

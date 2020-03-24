@@ -1,16 +1,16 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
 #include <string>
 #include <utility>
 
 #include "ErrorHandling/Error.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
 #include "Utilities/Literals.hpp"  // IWYU pragma: keep
-#include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_include <type_traits>  // for __decay_and_strip<>::__type
 

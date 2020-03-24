@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <ckarrayindex.h>
 #include <functional>
@@ -9,9 +9,9 @@
 
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 struct Component0 {};

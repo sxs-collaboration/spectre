@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <array>
 #include <memory>
@@ -10,8 +10,8 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/SettleToConstant.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 void test(

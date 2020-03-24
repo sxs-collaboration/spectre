@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <array>
 #include <cstddef>
@@ -13,8 +13,8 @@
 #include "Domain/OrientationMap.hpp"
 #include "Domain/SegmentId.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "Utilities/Gsl.hpp"
-#include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 
 namespace {
 void test_desired_refinement_levels() noexcept {

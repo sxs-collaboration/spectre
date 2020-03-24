@@ -1,19 +1,19 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <complex>
 #include <tuple>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "ErrorHandling/Error.hpp"           // IWYU pragma: keep
+#include "ErrorHandling/Error.hpp"  // IWYU pragma: keep
+#include "Helpers/DataStructures/VectorImplTestHelper.hpp"
 #include "Utilities/DereferenceWrapper.hpp"  // IWYU pragma: keep
 #include "Utilities/Functional.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
-#include "tests/Unit/DataStructures/VectorImplTestHelper.hpp"
 
 // IWYU pragma: no_include "DataStructures/DenseMatrix.hpp"
 

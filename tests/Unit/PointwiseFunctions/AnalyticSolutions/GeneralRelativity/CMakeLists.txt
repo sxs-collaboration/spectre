@@ -16,7 +16,7 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/"
   "${LIBRARY_SOURCES}"
-  "Test_Pypp;GeneralRelativitySolutions;GeneralizedHarmonic;GeneralRelativity;Options;Utilities"
+  "GeneralRelativitySolutions;GeneralizedHarmonic;GeneralRelativity;Options;Utilities"
   )
 
 add_subdirectory(Python)

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <cmath>
 #include <cstddef>
@@ -12,9 +12,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/Exceptions.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 double f_free(double x) { return 2.0 - square(x); }

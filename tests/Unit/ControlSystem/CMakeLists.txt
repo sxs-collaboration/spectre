@@ -8,12 +8,11 @@ set(LIBRARY_SOURCES
   Test_Controller.cpp
   Test_FuntionOfTimeUpdater.cpp
   Test_TimescaleTuner.cpp
-  FoTUpdater_Helper.cpp
   )
 
 add_test_library(
   ${LIBRARY}
   "ControlSystem"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;ControlSystem;FunctionsOfTime"
+  "Boost::boost;ControlSystem;ControlSystemHelpers;FunctionsOfTime"
   )

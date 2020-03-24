@@ -12,7 +12,7 @@ add_test_library(
   ${LIBRARY}
   "IO/Importers"
   "${LIBRARY_SOURCES}"
-  "IO;Options"
+  "Domain;IO;Options"
   )
 
 add_dependencies(
@@ -28,7 +28,7 @@ function(add_algorithm_test TEST_NAME DIM)
   add_spectre_parallel_executable(
     ${EXECUTABLE_NAME}
     ${HPP_NAME}
-    tests/Unit/IO/Importers
+    IO/Importers
     Metavariables<${DIM}>
     "DataStructures;Domain;ErrorHandling;Informer;IO;Options"
     )

@@ -7,5 +7,4 @@ set(LIBRARY_SOURCES
   TimeSteppers/Test_DormandPrince5.cpp
   TimeSteppers/Test_RungeKutta3.cpp
   TimeSteppers/Test_RungeKutta4.cpp
-  TimeSteppers/TimeStepperTestUtils.cpp
   PARENT_SCOPE)

@@ -23,7 +23,7 @@ add_test_library(
   ${LIBRARY}
   "Time"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;Time"
+  "Boost::boost;Time;TimeStepperHelpers"
   )
 
 add_dependencies(

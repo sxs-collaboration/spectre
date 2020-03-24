@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
 #include <limits>
@@ -10,11 +10,11 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
+#include "Helpers/PointwiseFunctions/Hydro/TestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
-#include "tests/Unit/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
-#include "tests/Unit/PointwiseFunctions/Hydro/TestHelpers.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 template <size_t Dim, typename DataType>

@@ -421,4 +421,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (gr::Solutions::TovSolution))
 #undef INSTANTIATE_VARS
 }  // namespace Solutions
 }  // namespace RelativisticEuler
-/// \endcond

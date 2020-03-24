@@ -1,15 +1,15 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <initializer_list>
 #include <string>
 
+#include "Framework/TestHelpers.hpp"
 #include "Utilities/Array.hpp"  // IWYU pragma: associated
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeArray.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 // AppleClang does not correctly compute noexcept
 #ifndef __APPLE__

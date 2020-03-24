@@ -1,13 +1,13 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <string>
 
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Utilities/GetOutput.hpp"
-#include "tests/Unit/TestCreation.hpp"
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.MinmodType", "[Limiters][Unit]") {
   CHECK(Limiters::MinmodType::LambdaPi1 ==

@@ -67,4 +67,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 }  // namespace Sources
 }  // namespace NewtonianEuler
-/// \endcond

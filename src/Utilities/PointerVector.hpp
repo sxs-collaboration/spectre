@@ -648,7 +648,6 @@ VT& operator-=(blaze::DenseVector<VT, TF>& vec, Scalar scalar) {
   return ~vec;
 }
 }  // namespace blaze
-/// \endcond
 
 namespace blaze {
 // Enable support for reference wrappers with Blaze

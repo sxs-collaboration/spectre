@@ -80,31 +80,11 @@ CITE_BIB_FILES         = @PROJECT_SOURCE_DIR@/docs/References.bib
 INPUT = @SPECTRE_DOXYGEN_GROUPS@ \
         @PROJECT_SOURCE_DIR@/docs/MainSite/Main.md \
         @PROJECT_SOURCE_DIR@/src \
-        @PROJECT_SOURCE_DIR@/tests/Utilities/
+        @PROJECT_SOURCE_DIR@/tests/Unit/Framework \
+        @PROJECT_SOURCE_DIR@/tests/Unit/Helpers
 
 # Add tutorials directory
 INPUT += @PROJECT_SOURCE_DIR@/docs
-
-# Add files to scan that explain testing framework
-INPUT += @PROJECT_SOURCE_DIR@/tests/Unit/ActionTesting.hpp \
-         @PROJECT_SOURCE_DIR@/tests/Unit/DataStructures/VectorImplTestHelper.hpp \
-         @PROJECT_SOURCE_DIR@/tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp \
-         @PROJECT_SOURCE_DIR@/tests/Unit/PointwiseFunctions/AnalyticSolutions/FirstOrderEllipticSolutionsTestHelpers.hpp \
-         @PROJECT_SOURCE_DIR@/tests/Unit/PointwiseFunctions/AnalyticSolutions/GeneralRelativity/VerifyGrSolution.hpp \
-         @PROJECT_SOURCE_DIR@/tests/Unit/PointwiseFunctions/AnalyticSolutions/GrMhd/VerifyGrMhdSolution.hpp \
-         @PROJECT_SOURCE_DIR@/tests/Unit/PointwiseFunctions/AnalyticSolutions/TestHelpers.hpp \
-         @PROJECT_SOURCE_DIR@/tests/Unit/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp \
-         @PROJECT_SOURCE_DIR@/tests/Unit/ProtocolTestHelpers.hpp \
-         @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/CheckWithRandomValues.hpp  \
-         @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/Pypp.hpp  \
-         @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/PyppFundamentals.hpp  \
-         @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/PyppPyTests.py  \
-         @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp \
-         @PROJECT_SOURCE_DIR@/tests/Unit/TestCreation.hpp \
-         @PROJECT_SOURCE_DIR@/tests/Unit/TestHelpers.hpp \
-         @PROJECT_SOURCE_DIR@/tests/Unit/TestingFramework.hpp
-
-
 
 FILE_PATTERNS          = *.cpp \
                          *.hpp \

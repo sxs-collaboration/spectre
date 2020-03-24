@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
 #include <initializer_list>
@@ -16,12 +16,12 @@
 
 #include "DataStructures/FixedHashMap.hpp"
 #include "Domain/Direction.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/StdHelpers.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 template <size_t Dim>

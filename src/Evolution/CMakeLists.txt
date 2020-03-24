@@ -23,6 +23,11 @@ target_link_libraries(
   LinearOperators
   )
 
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )
+
 add_subdirectory(DiscontinuousGalerkin)
 add_subdirectory(Executables)
 add_subdirectory(Systems)

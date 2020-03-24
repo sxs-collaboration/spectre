@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
 
@@ -10,10 +10,10 @@
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Equations.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
+#include "Helpers/Evolution/Systems/CurvedScalarWave/TestHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/Evolution/Systems/CurvedScalarWave/TestHelpers.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 

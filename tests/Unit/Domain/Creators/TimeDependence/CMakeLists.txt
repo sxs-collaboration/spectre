@@ -14,5 +14,5 @@ add_test_library(
   ${LIBRARY}
   "Domain/Creators/TimeDependence"
   "${LIBRARY_SOURCES}"
-  "DomainTimeDependence;Options;TestUtilities;Test_Domain"
+  "DataStructuresHelpers;DomainHelpers;DomainTimeDependence;Options"
   )

@@ -1,15 +1,15 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <cmath>
 #include <cstddef>
 #include <random>
 #include <vector>
 
+#include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/CubicSpline.hpp"
-#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 template <class F>

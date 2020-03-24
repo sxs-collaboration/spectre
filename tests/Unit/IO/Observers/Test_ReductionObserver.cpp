@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
 #include <functional>
@@ -14,6 +14,8 @@
 #include "DataStructures/Matrix.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
+#include "Framework/ActionTesting.hpp"
+#include "Helpers/IO/Observers/ObserverHelpers.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
@@ -32,8 +34,6 @@
 #include "Utilities/Numeric.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "tests/Unit/ActionTesting.hpp"
-#include "tests/Unit/IO/Observers/ObserverHelpers.hpp"
 
 namespace helpers = TestObservers_detail;
 

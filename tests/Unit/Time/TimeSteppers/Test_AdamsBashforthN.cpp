@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <algorithm>
 #include <array>
@@ -12,6 +12,9 @@
 #include <initializer_list>
 
 #include "ErrorHandling/Assert.hpp"
+#include "Framework/TestCreation.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/History.hpp"
@@ -24,9 +27,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "tests/Unit/TestCreation.hpp"
-#include "tests/Unit/TestHelpers.hpp"
-#include "tests/Unit/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
   for (size_t order = 1; order < 9; ++order) {

@@ -1,17 +1,17 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <tuple>
 
 #include "DataStructures/DiagonalModalOperator.hpp"
 #include "DataStructures/ModalVector.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Error.hpp"         // IWYU pragma: keep
+#include "Helpers/DataStructures/VectorImplTestHelper.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
-#include "tests/Unit/DataStructures/VectorImplTestHelper.hpp"
 
 // IWYU pragma: no_include <algorithm>
 

@@ -24,3 +24,8 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "Cce"
   )
+
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )

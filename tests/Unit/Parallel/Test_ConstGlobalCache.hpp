@@ -6,7 +6,7 @@
 #include <limits>
 #include <pup.h>
 
-#include "src/Parallel/Info.hpp"
+#include "Parallel/Info.hpp"
 #include "tests/Unit/Parallel/Test_ConstGlobalCache.decl.h"
 
 /// \cond

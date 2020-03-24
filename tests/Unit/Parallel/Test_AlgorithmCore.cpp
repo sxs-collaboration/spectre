@@ -4,7 +4,7 @@
 // Need CATCH_CONFIG_RUNNER to avoid linking errors with Catch2
 #define CATCH_CONFIG_RUNNER
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
 #include <functional>
