@@ -1,0 +1,36 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: CharacteristicExtract
+# Check: parse
+
+Evolution:
+  TimeStepper: RungeKutta3
+
+Observers:
+  VolumeFileName: "CharacteristicExtractVolume"
+  ReductionFileName: "CharacteristicExtractUnusedReduction"
+
+Cce:
+  LMax: 12
+  NumberOfRadialPoints: 12
+  ObservationLMax: 8
+
+  StartTime: 0.0
+  EndTime: 1000.0
+  TargetStepSize: 1.0
+  BoundaryDataFilename: CceR0257.h5
+  H5Interpolator:
+    BarycentricRationalSpanInterpolator:
+      MinOrder: 10
+      MaxOrder: 10
+
+  H5LookaheadTimes: 10000
+
+  Filtering:
+    RadialFilterHalfPower: 24
+    RadialFilterAlpha: 35.0
+    FilterLMax: 10
+
+  ScriInterpOrder: 5
+  ScriOutputDensity: 5

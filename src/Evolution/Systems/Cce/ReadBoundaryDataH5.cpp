@@ -223,9 +223,11 @@ void SpecWorldtubeH5BufferUpdater::update_buffer(
   const Matrix data_matrix = read_data.get_data_subset(
       cols, time_span_start, time_span_end - time_span_start);
 
+  *buffer_to_update = 0.0;
   for (size_t time_row = 0; time_row < time_span_end - time_span_start;
        ++time_row) {
-    for (int l = 0; l <= static_cast<int>(computation_l_max); ++l) {
+    for (int l = 0; l <= static_cast<int>(std::min(computation_l_max, l_max_));
+         ++l) {
       for (int m = -l; m <= l; ++m) {
         (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
                                 computation_l_max, static_cast<size_t>(l), m) *

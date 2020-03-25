@@ -28,6 +28,17 @@ namespace Cce {
 using gauge_adjustments_setup_tags =
     tmpl::list<Tags::BondiR, Tags::BondiJ, Tags::Dr<Tags::BondiJ>>;
 
+/*!
+ * \brief Computes the gauge-transformed
+ * `Tags::EvolutionGaugeBoundaryValue<Tag>` for any of the boundary tags needed
+ * in the evolution.
+ *
+ * \details Most of these computations involve first interpolating via a
+ * `Spectral::Swsh::SwshInterpolator` to the new angular grid, followed by
+ * manipulations associated with the tensor transformation of the metric and its
+ * derivatives. Individual template specializations contain detailed
+ * explanations about the respective gauge transformations.
+ */
 template <typename Tag>
 struct GaugeAdjustedBoundaryValue;
 

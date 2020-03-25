@@ -375,11 +375,14 @@ void generate_separable_expected(
     calculate_separable_for_swsh_derivative
   ](auto target_tag_v) noexcept {
     using target_tag = typename decltype(target_tag_v)::type;
-    tmpl::for_each<pre_swsh_derivative_tags_to_compute_for_t<target_tag>>(
+    tmpl::for_each<typename detail::TagsToComputeForImpl<
+        target_tag>::pre_swsh_derivative_tags>(
         calculate_separable_for_pre_swsh_derivative);
-    tmpl::for_each<single_swsh_derivative_tags_to_compute_for_t<target_tag>>(
+    tmpl::for_each<typename detail::TagsToComputeForImpl<
+        target_tag>::swsh_derivative_tags>(
         calculate_separable_for_swsh_derivative);
-    tmpl::for_each<second_swsh_derivative_tags_to_compute_for_t<target_tag>>(
+    tmpl::for_each<typename detail::TagsToComputeForImpl<
+        target_tag>::second_swsh_derivative_tags>(
         calculate_separable_for_swsh_derivative);
   });
 }

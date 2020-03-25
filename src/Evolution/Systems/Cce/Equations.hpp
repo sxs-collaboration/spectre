@@ -51,7 +51,6 @@
 class ComplexDataVector;
 /// \endcond
 
-/// Contains functionality for Cauchy Characteristic Extraction
 namespace Cce {
 
 namespace detail {

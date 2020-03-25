@@ -409,10 +409,9 @@ struct CalculateScriPlusValue<::Tags::dt<Tags::InertialRetardedTime>> {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta) noexcept;
 };
 
-/// \cond
+/// Initialize the \f$\mathcal I^+\f$ value `Tag` for the first hypersurface.
 template <typename Tag>
 struct InitializeScriPlusValue;
-/// \endcond
 
 /// Initialize the inertial retarded time to the value provided in the mutator
 /// arguments.
