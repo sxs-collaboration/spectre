@@ -5,8 +5,6 @@ set(executable RunTests)
 
 set(SPECTRE_TESTS)
 
-set(SPECTRE_COMPILATION_TESTS "TestCompilationFramework.cpp")
-
 set_property(GLOBAL PROPERTY SPECTRE_TESTS_LIB_FUNCTIONS_PROPERTY "")
 set_property(GLOBAL PROPERTY SPECTRE_TESTS_LIBS_PROPERTY "")
 
@@ -108,20 +106,5 @@ if(COVERAGE)
       '${CMAKE_SOURCE_DIR}/tests/*'
   )
 endif()
-
-# Setup tests of static_assert's and other compilation failures
-
-set(EXECUTABLE compilation-failure-tests)
-
-add_spectre_executable(${EXECUTABLE} ${SPECTRE_COMPILATION_TESTS})
-
-set_target_properties(
-  ${EXECUTABLE}
-  PROPERTIES
-  COMPILE_FLAGS "\${WHICH_TEST} -DFILE_IS_COMPILATION_TEST=\"static_assert(false, \\\"File is compilation test\\\");\""
-  EXCLUDE_FROM_ALL TRUE
-  )
-
-add_compilation_tests(${EXECUTABLE})
 
 add_subdirectory(RunSingleTest)
