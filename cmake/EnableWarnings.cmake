@@ -7,7 +7,7 @@ include(AddCxxFlag)
 # all the warnings enabled because we get flooded with system warnings.
 option(ENABLE_WARNINGS "Enable the default warning level" ON)
 if(${ENABLE_WARNINGS})
-  check_and_add_cxx_flags(
+  create_cxx_flags_target(
     "-W;\
 -Wall;\
 -Wextra;\
@@ -39,11 +39,32 @@ if(${ENABLE_WARNINGS})
 -Wstack-protector;\
 -Wswitch-default;\
 -Wunreachable-code;\
--Wwrite-strings")
+-Wwrite-strings" SpectreWarnings)
 endif()
 
 # GCC 7.1ish and newer warn about noexcept changing mangled names,
 # but we don't care
-check_and_add_cxx_flag("-Wno-noexcept-type")
+create_cxx_flag_target("-Wno-noexcept-type" SpectreWarnNoNoexceptType)
 
-check_and_add_cxx_link_flag("-Qunused-arguments")
+if(CMAKE_SUPPORTS_LINK_OPTIONS)
+  create_cxx_link_flag_target("-Qunused-arguments" LinkUnusedArgument)
+  target_link_libraries(
+    SpectreFlags
+    INTERFACE
+    LinkUnusedArgument
+    )
+else(CMAKE_SUPPORTS_LINK_OPTIONS)
+  check_and_add_cxx_link_flag("-Qunused-arguments")
+endif(CMAKE_SUPPORTS_LINK_OPTIONS)
+
+target_link_libraries(
+  SpectreWarnings
+  INTERFACE
+  SpectreWarnNoNoexceptType
+  )
+
+target_link_libraries(
+  SpectreFlags
+  INTERFACE
+  SpectreWarnings
+  )

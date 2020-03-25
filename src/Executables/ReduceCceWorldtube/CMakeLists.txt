@@ -11,6 +11,7 @@ add_spectre_executable(
 
 target_link_libraries(
   ${EXECUTABLE}
+  PRIVATE
   Boost::boost
   Boost::program_options
   Cce

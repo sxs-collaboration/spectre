@@ -38,12 +38,14 @@ add_spectre_executable(
 # Modify which libraries to link for your test case.
 target_link_libraries(
   ${EXECUTABLE}
+  PRIVATE
   DataStructures
   )
 
 # Core required libraries
 target_link_libraries(
   ${EXECUTABLE}
+  PRIVATE
   # Link against Boost::program_options for now until we have proper
   # dependency handling for header-only libs
   Boost::program_options

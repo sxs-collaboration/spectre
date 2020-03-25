@@ -23,6 +23,7 @@ add_dependencies(
 
 target_link_libraries(
   ${EXECUTABLE}
+  PRIVATE
   ErrorHandling
   Informer
   )

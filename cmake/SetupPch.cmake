@@ -187,6 +187,11 @@ if (USE_PCH)
     ARCHIVE_OUTPUT_DIRECTORY ${SPECTRE_PCH_LIB_DIR}
     RULE_LAUNCH_COMPILE ${SPECTRE_PCH_COMPILER_WRAPPER}
     )
+  target_link_libraries(
+    ${SPECTRE_PCH_LIB}
+    PRIVATE
+    SpectreFlags
+    )
 
   # Make the source file ${SPECTRE_PCH_DEP_SOURCE_PATH} depend on
   # ${SPECTRE_PCH_COMPILER_WRAPPER} and set the source file to produce
