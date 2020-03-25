@@ -61,10 +61,6 @@ struct BaseTag {};
  * A PrefixTag tag has the structure:
  * \snippet Test_DataBox.cpp databox_prefix_tag_example
  *
- * The name used to retrieve a prefix tag from the DataBox is:
- * \snippet Test_DataBox.cpp databox_name_prefix
- *
- *
  * \see DataBox DataBoxTag tag_name ComputeTag
  */
 struct PrefixTag {};

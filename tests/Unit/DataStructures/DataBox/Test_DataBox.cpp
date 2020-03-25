@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxHelpers.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/DataOnSlice.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -557,53 +556,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_mutate",
       });
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box",
-                  "[Unit][DataStructures]") {
-  /// [get_item_from_box]
-  auto original_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2,
-                        test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
-                        test_databox_tags::Pointer>,
-      db::AddComputeTags<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1,
-                         test_databox_tags::ComputeFromBase,
-                         test_databox_tags::PointerComputeItem,
-                         test_databox_tags::PointerComputeItemMutating>>(
-      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s, 8.7,
-      std::make_unique<int>(3));
-  const auto& compute_string =
-      db::get_item_from_box<std::string>(original_box, "ComputeTag1");
-  /// [get_item_from_box]
-  CHECK(compute_string == "My Sample String6.28"s);
-  const std::string added_string =
-      db::get_item_from_box<std::string>(original_box, "Tag2");
-  CHECK(added_string == "My Sample String"s);
-  /// [databox_name_prefix]
-  CHECK(db::get_item_from_box<double>(original_box, "TagPrefix(Tag0)") == 8.7);
-  /// [databox_name_prefix]
-  CHECK(db::get_item_from_box<std::string>(original_box, "ComputeFromBase") ==
-        "My Sample String"s);
-
-  CHECK(db::get_item_from_box<int>(original_box, "Pointer") == 3);
-  CHECK(db::get_item_from_box<int>(original_box, "PointerComputeItem") == 4);
-  CHECK(db::get_item_from_box<int>(original_box,
-                                   "PointerComputeItemMutating") == 8);
-}
-
-// [[OutputRegex, Could not find the tag named "time__" in the DataBox]]
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box_error_name",
-                  "[Unit][DataStructures]") {
-  ERROR_TEST();
-  auto original_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>,
-      db::AddComputeTags<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1>>(
-      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
-  static_cast<void>(db::get_item_from_box<double>(original_box, "time__"));
-}
-
 namespace {
 struct NonCopyableFunctor {
   NonCopyableFunctor() = default;
@@ -729,41 +681,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
     }
   };
   db::apply<PointerApplyCallable>(original_box);
-}
-
-// [[OutputRegex, Could not find the tag named "TagTensor__" in the DataBox]]
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.HelpersBadTensorFromBox",
-                  "[Unit][DataStructures]") {
-  ERROR_TEST();
-  auto original_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>,
-      db::AddComputeTags<test_databox_tags::TagTensor>>(
-      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
-
-  std::pair<std::vector<std::string>, std::vector<double>> tag_tensor =
-      get_tensor_from_box(original_box, "TagTensor__");
-  static_cast<void>(tag_tensor);  // make sure compilers don't warn
-}
-
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Helpers",
-                  "[Unit][DataStructures]") {
-  auto original_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>,
-      db::AddComputeTags<test_databox_tags::TagTensor>>(
-      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
-
-  auto tag_tensor = get_tensor_from_box(original_box, "TagTensor");
-  CHECK(tag_tensor.first == (std::vector<std::string>{"t"s, "x"s, "y"s, "z"s}));
-  CHECK(tag_tensor.second[0] == 7.82);
-  CHECK(tag_tensor.second[1] == 8.0);
-  CHECK(tag_tensor.second[2] == 3.0);
-  CHECK(tag_tensor.second[3] == 9.0);
-  //  auto grid_coords_norm = get_tensor_norm_from_box(
-  //      original_box, std::make_pair("GridCoordinates"s, TypeOfNorm::Max));
-  //  CHECK(grid_coords_norm == decltype(grid_coords_norm){std::make_pair(
-  //                                "x"s, std::make_pair(0.5, 3_st))});
 }
 
 // Test the tags

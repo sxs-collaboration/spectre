@@ -1419,64 +1419,6 @@ SPECTRE_ALWAYS_INLINE constexpr const auto create_from(
 /**@}*/
 
 namespace DataBox_detail {
-template <typename Type, typename... Tags, typename... TagsInBox>
-const Type& get_item_from_box(const DataBox<tmpl::list<TagsInBox...>>& box,
-                              const std::string& tag_name,
-                              tmpl::list<Tags...> /*meta*/) {
-  DEBUG_STATIC_ASSERT(
-      sizeof...(Tags) != 0,
-      "No items with the requested type were found in the DataBox");
-  const Type* result = nullptr;
-  const auto helper = [&box, &tag_name, &result ](auto current_tag) noexcept {
-    using tag = decltype(current_tag);
-    if (::db::tag_name<tag>() == tag_name) {
-      result = &::db::get<tag>(box);
-    }
-  };
-  EXPAND_PACK_LEFT_TO_RIGHT(helper(Tags{}));
-  if (result == nullptr) {
-    std::string tags_in_box;
-    const auto print_helper = [&tags_in_box](auto tag) noexcept {
-      tags_in_box += "  " + db::tag_name<decltype(tag)>() + "\n";
-    };
-    EXPAND_PACK_LEFT_TO_RIGHT(print_helper(Tags{}));
-    ERROR("Could not find the tag named \""
-          << tag_name << "\" in the DataBox. Available tags are:\n"
-          << tags_in_box);
-  }
-  return *result;
-}  // namespace db
-}  // namespace DataBox_detail
-
-/*!
- * \ingroup DataBoxGroup
- * \brief Retrieve an item from the DataBox that has a tag with label `tag_name`
- * and type `Type`
- *
- * \details
- * The type that the tag represents must be of the type `Type`, and the tag must
- * have the label `tag_name`. The function iterates over all tags in the DataBox
- * `box` that have the type `Type` searching linearly for one whose `label`
- * matches `tag_name`.
- *
- * \example
- * \snippet Test_DataBox.cpp get_item_from_box
- *
- * \tparam Type the type of the tag with the `label` `tag_name`
- * \param box the DataBox through which to search
- * \param tag_name the `label` of the tag to retrieve
- */
-template <typename Type, typename TagList>
-constexpr const Type& get_item_from_box(const DataBox<TagList>& box,
-                                        const std::string& tag_name) noexcept {
-  using tags = tmpl::filter<
-      TagList,
-      std::is_same<tmpl::bind<const_item_type, tmpl::_1, tmpl::pin<TagList>>,
-                   tmpl::pin<Type>>>;
-  return DataBox_detail::get_item_from_box<Type>(box, tag_name, tags{});
-}
-
-namespace DataBox_detail {
 CREATE_IS_CALLABLE(apply)
 CREATE_IS_CALLABLE_V(apply)
 
