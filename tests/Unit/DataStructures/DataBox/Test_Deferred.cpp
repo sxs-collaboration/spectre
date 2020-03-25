@@ -55,11 +55,6 @@ void simple_deferred() {
   CHECK(5.0 == obj.get());
   /// [deferred_with_update]
   CHECK(obj.evaluated());
-
-  auto copied_obj = obj.deep_copy();
-  CHECK(obj.get() == 5.0);
-  CHECK(copied_obj.get() == 5.0);
-  CHECK(std::addressof(copied_obj.get()) != std::addressof(obj.get()));
 }
 
 void single_call_deferred() {
@@ -230,13 +225,4 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred.PupNonfunction",
   auto data = std::make_unique<char[]>(10);
   PUP::fromMem p{static_cast<const void*>(data.get())};
   deferred.pack_unpack_lazy_function(p);
-}
-
-// [[OutputRegex, Have not yet implemented a deep_copy for
-// deferred_assoc_state]]
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Deferred.BadDeepCopy",
-                  "[Utilities][Unit]") {
-  ERROR_TEST();
-  Deferred<double> deferred = make_deferred<double>(func{});
-  (void)deferred.deep_copy();
 }

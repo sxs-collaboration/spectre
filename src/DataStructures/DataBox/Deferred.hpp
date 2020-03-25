@@ -62,7 +62,6 @@ class assoc_state {
   // clang-tidy: no non-const references
   virtual void pack_unpack_lazy_function(PUP::er& p) noexcept = 0;  // NOLINT
   virtual bool evaluated() const noexcept = 0;
-  virtual boost::shared_ptr<assoc_state<Rt>> deep_copy() const noexcept = 0;
   virtual ~assoc_state() = default;
 };
 
@@ -84,26 +83,7 @@ class simple_assoc_state : public assoc_state<Rt> {
 
   bool evaluated() const noexcept override { return true; }
 
-  boost::shared_ptr<assoc_state<Rt>> deep_copy() const noexcept override {
-    return deep_copy_impl();
-  }
-
  private:
-  template <typename T = Rt,
-            Requires<tt::can_be_copy_constructed_v<T>> = nullptr>
-  boost::shared_ptr<assoc_state<Rt>> deep_copy_impl() const noexcept {
-    return boost::make_shared<simple_assoc_state>(t_);
-  }
-
-  template <typename T = Rt,
-            Requires<not tt::can_be_copy_constructed_v<T>> = nullptr>
-  boost::shared_ptr<assoc_state<Rt>> deep_copy_impl() const noexcept {
-    ERROR(
-        "Cannot create a copy of a DataBox (e.g. using db::create_copy) that "
-        "holds a non-copyable simple item. The item type is '"
-        << pretty_type::get_name<T>() << "'.");
-  }
-
   Rt t_;
 };
 
@@ -141,13 +121,6 @@ class deferred_assoc_state : public assoc_state<Rt> {
   }
 
   bool evaluated() const noexcept override { return evaluated_; }
-
-  boost::shared_ptr<assoc_state<Rt>> deep_copy() const noexcept override {
-    ERROR(
-        "Have not yet implemented a deep_copy for deferred_assoc_state. It's "
-        "not at all clear if this is even possible because it is incorrect to "
-        "assume that the args_ have not changed.");
-  }
 
  private:
   const Fp func_;
@@ -217,13 +190,6 @@ class deferred_assoc_state<const Rt&, Fp, Args...> : public assoc_state<Rt> {
   void pack_unpack_lazy_function(PUP::er& /*p*/) noexcept override {}  // NOLINT
 
   bool evaluated() const noexcept override { return t_ != nullptr; }
-
-  boost::shared_ptr<assoc_state<Rt>> deep_copy() const noexcept override {
-    ERROR(
-        "Have not yet implemented a deep_copy for deferred_assoc_state. It's "
-        "not at all clear if this is even possible because it is incorrect to "
-        "assume that the args_ have not changed.");
-  }
 
  private:
   const Fp func_;
@@ -301,8 +267,6 @@ class Deferred {
   bool evaluated() const noexcept { return state_->evaluated(); }
 
   void reset() noexcept { state_->reset(); }
-
-  Deferred deep_copy() const noexcept { return Deferred{state_->deep_copy()}; }
 
   explicit Deferred(
       boost::shared_ptr<Deferred_detail::assoc_state<tmpl::conditional_t<
