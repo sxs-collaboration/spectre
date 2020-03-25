@@ -6,6 +6,14 @@ cmake_minimum_required(VERSION 3.3.2)
 # Fortran below is needed for SPHEREPACK.
 project(SpECTRE VERSION 0.0.0 LANGUAGES CXX C Fortran)
 
+# Policies
+# The `cmake_minimum_required` above sets policies to `NEW` that are compatible
+# with the given minimum cmake version. Here we overwrite policies that we
+# have implemented explicitly in our cmake code.
+# - We use `<PACKAGE_NAME>_ROOT` variables to provide search paths for
+#   dependencies
+cmake_policy(SET CMP0074 NEW)
+
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 site_name(HOSTNAME)
