@@ -18,6 +18,19 @@
 
 namespace Spectral {
 
+std::ostream& operator<<(std::ostream& os, MortarSize mortar_size) noexcept {
+  switch (mortar_size) {
+    case MortarSize::Full:
+      return os << "Full";
+    case MortarSize::UpperHalf:
+      return os << "UpperHalf";
+    case MortarSize::LowerHalf:
+      return os << "LowerHalf";
+    default:
+      ERROR("Invalid MortarSize");
+  }
+}
+
 const Matrix& projection_matrix_mortar_to_element(
     const MortarSize size, const Mesh<1>& element_mesh,
     const Mesh<1>& mortar_mesh) noexcept {

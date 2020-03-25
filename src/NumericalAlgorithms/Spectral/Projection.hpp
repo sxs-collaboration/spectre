@@ -17,6 +17,8 @@ namespace Spectral {
 /// The portion of an element covered by a mortar.
 enum class MortarSize { Full, UpperHalf, LowerHalf };
 
+std::ostream& operator<<(std::ostream& os, MortarSize mortar_size) noexcept;
+
 /*!
  * \brief The projection matrix from a 1D mortar to an element.
  *
