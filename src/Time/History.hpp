@@ -47,13 +47,9 @@ class History {
   History& operator=(History&&) = default;
   ~History() = default;
 
-  /// Add a new set of values to the end of the history.  `deriv` is
-  /// either left unchanged or set to a previously inserted `deriv`
-  /// value.  The different argument types for `value` and `deriv`
-  /// reflect the common use of this class, which wants `value` to
-  /// remain unchanged but does not care about `deriv`.
-  void insert(TimeStepId time_step_id, const Vars& value,
-              DerivVars&& deriv) noexcept;
+  /// Add a new set of values to the end of the history.
+  void insert(const TimeStepId& time_step_id, const Vars& value,
+              const DerivVars& deriv) noexcept;
 
   /// Add a new set of values to the front of the history.  This is
   /// often convenient for setting initial data.
@@ -186,21 +182,18 @@ class HistoryIterator {
 // ================================================================
 
 template <typename Vars, typename DerivVars>
-void History<Vars, DerivVars>::insert(TimeStepId time_step_id,
+void History<Vars, DerivVars>::insert(const TimeStepId& time_step_id,
                                       const Vars& value,
-                                      DerivVars&& deriv) noexcept {
+                                      const DerivVars& deriv) noexcept {
   if (first_needed_entry_ == 0) {
-    // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
-    data_.emplace_back(std::move(time_step_id), value, deriv);
+    data_.emplace_back(time_step_id, value, deriv);
   } else {
-    // Move an unneeded entry into the arguments so the caller can
-    // reuse any resources the entry contained.
-    using std::swap;
+    // Reuse resources from an old entry.
     auto& old_entry = data_.front();
     // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
-    std::get<0>(old_entry) = std::move(time_step_id);
+    std::get<0>(old_entry) = time_step_id;
     std::get<1>(old_entry) = value;
-    swap(std::get<2>(old_entry), deriv);
+    std::get<2>(old_entry) = deriv;
     data_.push_back(std::move(old_entry));
     data_.pop_front();
     --first_needed_entry_;
