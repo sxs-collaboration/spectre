@@ -20,7 +20,7 @@ file(APPEND
 if(NOT TARGET Boost::boost)
   add_library(Boost::boost INTERFACE IMPORTED)
   set_property(TARGET Boost::boost PROPERTY
-    INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+    INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 endif(NOT TARGET Boost::boost)
 
 if(NOT TARGET Boost::program_options)
@@ -28,5 +28,5 @@ if(NOT TARGET Boost::program_options)
   set_property(TARGET Boost::program_options
     APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
   set_property(TARGET Boost::program_options PROPERTY
-    INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+    INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 endif(NOT TARGET Boost::program_options)
