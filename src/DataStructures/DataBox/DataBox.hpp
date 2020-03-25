@@ -1851,30 +1851,4 @@ struct compute_dbox_type<tmpl::list<ItemsPack...>, ComputeItemsList> {
 template <class TagList>
 using compute_databox_type = typename DataBox_detail::compute_dbox_type<
     get_items<TagList>, get_compute_items<TagList>>::type;
-
-// @{
-/// \ingroup DataBoxGroup
-/// Returns the type of `Tag` (including const and reference-ness as would be
-/// returned by `db::get<Tag>`) if the tag is in the `DataBox` of type
-/// `DataBoxType`, otherwise returns `NoSuchType`.
-template <typename Tag, typename DataBoxType,
-          bool = tag_is_retrievable_v<Tag, DataBoxType>>
-struct item_type_if_contained;
-
-/// \cond
-template <typename Tag, typename DataBoxType>
-struct item_type_if_contained<Tag, DataBoxType, true> {
-  using type = decltype(db::get<Tag>(DataBoxType{}));
-};
-
-template <typename Tag, typename DataBoxType>
-struct item_type_if_contained<Tag, DataBoxType, false> {
-  using type = NoSuchType;
-};
-/// \endcond
-
-template <typename Tag, typename DataBoxType>
-using item_type_if_contained_t =
-    typename item_type_if_contained<Tag, DataBoxType>::type;
-// @}
 }  // namespace db

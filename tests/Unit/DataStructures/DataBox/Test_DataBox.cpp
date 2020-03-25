@@ -2599,7 +2599,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Serialization",
   serialization_of_pointers();
 }
 
-// Test `item_type_if_contained_t` and `tag_is_retrievable_v`
+// Test`tag_is_retrievable_v`
 namespace {
 namespace tags_types {
 struct PureBaseTag : db::BaseTag {};
@@ -2612,25 +2612,6 @@ struct DummyTag : db::SimpleTag {
   using type = int;
 };
 }  // namespace tags_types
-
-static_assert(
-    cpp17::is_same_v<db::item_type_if_contained_t<
-                         tags_types::PureBaseTag,
-                         db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
-                     const double&>,
-    "Failed testing item_type_if_contained_t");
-static_assert(
-    cpp17::is_same_v<db::item_type_if_contained_t<
-                         tags_types::SimpleTag,
-                         db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
-                     const double&>,
-    "Failed testing item_type_if_contained_t");
-static_assert(
-    cpp17::is_same_v<db::item_type_if_contained_t<
-                         tags_types::DummyTag,
-                         db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
-                     NoSuchType>,
-    "Failed testing item_type_if_contained_t");
 
 static_assert(
     db::tag_is_retrievable_v<tags_types::PureBaseTag,
