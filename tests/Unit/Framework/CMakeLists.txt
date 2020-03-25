@@ -13,13 +13,11 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
+  PUBLIC
+  Python::NumPy
+  Python::Python
+  Python::SciPy
+
   PRIVATE
   ErrorHandling
-  NumPy
-  )
-
-target_include_directories(
-  ${LIBRARY}
-  SYSTEM
-  PUBLIC ${NUMPY_INCLUDE_DIRS}
   )

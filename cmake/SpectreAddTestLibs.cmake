@@ -121,9 +121,7 @@ function(add_test_library LIBRARY FOLDER LIBRARY_SOURCES LINK_LIBS)
     PRIVATE
     ${LINK_LIBS}
     SpectreFlags
-    Python::NumPy
-    Python::Python
-    Python::SciPy
+    Framework
     )
 
   set_target_properties(
