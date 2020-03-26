@@ -19,9 +19,16 @@
 #  PAPI_LIBRARIES          The PAPI library
 #  PAPI_INCLUDE_DIRS       The location of PAPI headers
 
+if(NOT PAPI_ROOT)
+  # Need to set to empty to avoid warnings with --warn-uninitialized
+  set(PAPI_ROOT "")
+  set(PAPI_ROOT $ENV{PAPI_ROOT})
+endif()
+
 find_path(
     PAPI_PREFIX
     NAMES include/papi.h
+    HINTS ${PAPI_ROOT}
 )
 
 find_library(
