@@ -5,7 +5,7 @@ find_path(
     BRIGAND_INCLUDE_DIR
     PATH_SUFFIXES include
     NAMES brigand/brigand.hpp
-    HINTS ${BRIGAND_ROOT}
+    HINTS ${BRIGAND_ROOT} ENV BRIGAND_ROOT
     DOC "Brigand include directory. Used BRIGAND_ROOT to set a search dir."
 )
 

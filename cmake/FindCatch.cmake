@@ -2,7 +2,7 @@
 # Copyright (C) 2011-2016 Peter Spiess-Knafl
 
 # SpECTRE modifications:
-# - add PATH_SUFFIXES to find_path
+# - add PATH_SUFFIXES and HINTS ENV to find_path
 # - call function _get_catch_version (taken from another source)
 # - pass version to find_package_handle_standard_args
 
@@ -25,7 +25,7 @@ find_path(
   CATCH_INCLUDE_DIR
   PATH_SUFFIXES single_include include catch catch2
   NAMES catch.hpp
-  HINTS ${CATCH_ROOT}
+  HINTS ${CATCH_ROOT} ENV CATCH_ROOT
   DOC "catch include dir"
   )
 

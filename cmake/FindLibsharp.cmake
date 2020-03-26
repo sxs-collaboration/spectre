@@ -10,22 +10,22 @@ include (CheckCXXSourceRuns)
 # find the libsharp include directory
 find_path(LIBSHARP_INCLUDE_DIRS sharp_cxx.h
     PATH_SUFFIXES include
-    HINTS ${LIBSHARP_ROOT}/include/)
+    HINTS ${LIBSHARP_ROOT}/include/ ENV LIBSHARP_ROOT)
 
 find_library(LIBSHARP_LIBFFTPACK
     NAMES libfftpack libfftpack.a
     PATH_SUFFIXES lib64 lib
-    HINTS ${LIBSHARP_ROOT})
+    HINTS ${LIBSHARP_ROOT} ENV LIBSHARP_ROOT)
 
 find_library(LIBSHARP_LIBRARIES
     NAMES libsharp libsharp.a
     PATH_SUFFIXES lib64 lib
-    HINTS ${LIBSHARP_ROOT})
+    HINTS ${LIBSHARP_ROOT} ENV LIBSHARP_ROOT)
 
 find_library(LIBSHARP_LIBCUTILS
     NAMES libc_utils libc_utils.a
     PATH_SUFFIXES lib64 lib
-    HINTS ${LIBSHARP_ROOT})
+    HINTS ${LIBSHARP_ROOT} ENV LIBSHARP_ROOT)
 
 
 include(FindPackageHandleStandardArgs)
