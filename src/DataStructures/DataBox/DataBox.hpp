@@ -84,24 +84,6 @@ class DataBoxLeaf {
   using value_type = Deferred<Type>;
   value_type value_;
 
-  template <class T>
-  static constexpr bool can_bind_reference() noexcept {
-    using rem_ref_value_type = typename std::remove_reference<value_type>::type;
-    using rem_ref_T = typename std::remove_reference<T>::type;
-    using is_lvalue_type = std::integral_constant<
-        bool, cpp17::is_lvalue_reference_v<T> or
-                  cpp17::is_same_v<std::reference_wrapper<rem_ref_value_type>,
-                                   rem_ref_T> or
-                  cpp17::is_same_v<std::reference_wrapper<
-                                       std::remove_const_t<rem_ref_value_type>>,
-                                   rem_ref_T>>;
-    return not cpp17::is_reference_v<value_type> or
-           (cpp17::is_lvalue_reference_v<value_type> and
-            is_lvalue_type::value) or
-           (cpp17::is_rvalue_reference_v<value_type> and
-            not cpp17::is_lvalue_reference_v<T>);
-  }
-
  public:
   constexpr DataBoxLeaf() noexcept(
       cpp17::is_nothrow_default_constructible_v<value_type>)
@@ -109,17 +91,6 @@ class DataBoxLeaf {
     static_assert(!cpp17::is_reference_v<value_type>,
                   "Cannot default construct a reference element in a "
                   "DataBox");
-  }
-
-  // clang-tidy: forwarding references are hard
-  template <class T,
-            Requires<not cpp17::is_same_v<std::decay_t<T>, DataBoxLeaf> and
-                     cpp17::is_constructible_v<value_type, T&&>> = nullptr>
-  constexpr explicit DataBoxLeaf(T&& t) noexcept(  // NOLINT
-      cpp17::is_nothrow_constructible_v<value_type, T&&>)
-      : value_(std::forward<T>(t)) {  // NOLINT
-    static_assert(can_bind_reference<T>(),
-                  "Cannot construct an lvalue reference with an rvalue");
   }
 
   constexpr DataBoxLeaf(DataBoxLeaf const& /*rhs*/) = default;
@@ -592,11 +563,6 @@ class DataBox<tmpl::list<Tags...>>
   friend class DataBox;
 
   template <typename... OldTags, typename... TagsToCopy>
-  constexpr void merge_old_box(
-      const db::DataBox<tmpl::list<OldTags...>>& old_box,
-      tmpl::list<TagsToCopy...> /*meta*/) noexcept;
-
-  template <typename... OldTags, typename... TagsToCopy>
   constexpr void merge_old_box(db::DataBox<tmpl::list<OldTags...>>&& old_box,
                                tmpl::list<TagsToCopy...> /*meta*/) noexcept;
 
@@ -893,15 +859,6 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
 
 ////////////////////////////////////////////////////////////////
 // Construct DataBox from an existing one
-template <typename... Tags>
-template <typename... OldTags, typename... TagsToCopy>
-constexpr void DataBox<tmpl::list<Tags...>>::merge_old_box(
-    const db::DataBox<tmpl::list<OldTags...>>& old_box,
-    tmpl::list<TagsToCopy...> /*meta*/) noexcept {
-  EXPAND_PACK_LEFT_TO_RIGHT(get_deferred<TagsToCopy>() =
-                                old_box.template get_deferred<TagsToCopy>());
-}
-
 template <typename... Tags>
 template <typename... OldTags, typename... TagsToCopy>
 constexpr void DataBox<tmpl::list<Tags...>>::merge_old_box(
@@ -1357,17 +1314,6 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
  * \brief Create a new DataBox from an existing one adding or removing items
  * and compute items
  *
- * When passed an lvalue this function will return a const DataBox
- * whose members cannot be modified.  When passed a (mutable) rvalue
- * this function will return a mutable DataBox.
- *
- * Note that in the const lvalue case the output DataBox shares all
- * items that were not removed with the input DataBox. This means if an item is
- * mutated in the input DataBox it is also mutated in the output DataBox.
- * Similarly, if a compute item is evaluated in either the returned DataBox or
- * the input DataBox it is evaluated in both (at the cost of only evaluating it
- * once).
- *
  * \example
  * Removing an item or compute item is done using:
  * \snippet Test_DataBox.cpp create_from_remove
@@ -1386,7 +1332,6 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
  * \param box the DataBox the new box should be based off
  * \param args the values for the items to add to the DataBox
  * \return DataBox like `box` but altered by RemoveTags and AddTags
- *@{
  */
 template <typename RemoveTags, typename AddTags = tmpl::list<>,
           typename AddComputeTags = tmpl::list<>, typename TagsList,
@@ -1396,27 +1341,6 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(db::DataBox<TagsList>&& box,
   return DataBox_detail::create_from<RemoveTags, AddTags, AddComputeTags>(
       std::move(box), std::forward<Args>(args)...);
 }
-
-/// \cond HIDDEN_SYMBOLS
-// Clang warns that the const qualifier on the return type has no
-// effect.  It does have an effect.
-#ifdef __clang__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wignored-qualifiers"
-#endif
-template <typename RemoveTags, typename AddTags = tmpl::list<>,
-          typename AddComputeTags = tmpl::list<>, typename TagsList,
-          typename... Args>
-SPECTRE_ALWAYS_INLINE constexpr const auto create_from(
-    const db::DataBox<TagsList>& box, Args&&... args) noexcept {
-  return DataBox_detail::create_from<RemoveTags, AddTags, AddComputeTags>(
-      box, std::forward<Args>(args)...);
-}
-#ifdef __clang__
-#pragma GCC diagnostic pop
-#endif
-/// \endcond
-/**@}*/
 
 namespace DataBox_detail {
 CREATE_IS_CALLABLE(apply)

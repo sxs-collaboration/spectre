@@ -100,15 +100,17 @@ void test_non_subitems() {
   /// [base_simple_and_compute_mutate]
 
   // - adding compute item that uses a base tag as its argument
-  const auto& box2 =  // Add compute item that uses base tag as its argument
+  auto box2 =
       db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
-                      db::AddComputeTags<TestTags::ArrayComputeBase<1>>>(box);
+                      db::AddComputeTags<TestTags::ArrayComputeBase<1>>>(
+          std::move(box));
   CHECK(db::get<TestTags::ArrayBase<1>>(box2) ==
         std::array<int, 3>{{2, 101, -8}});
   CHECK(db::get<TestTags::ArrayComputeBase<1>>(box2) ==
         std::array<int, 3>{{2, 101, -8}});
-  const auto& box3 =
-      db::create_from<db::RemoveTags<TestTags::ArrayComputeBase<1>>>(box2);
+  const auto box3 =
+      db::create_from<db::RemoveTags<TestTags::ArrayComputeBase<1>>>(
+          std::move(box2));
   CHECK(db::get<TestTags::VectorBase<0>>(box3) ==
         std::vector<double>{101.8, 10.0});
   CHECK(db::get<TestTags::ArrayBase<0>>(box3) ==
@@ -126,8 +128,10 @@ void test_non_subitems() {
       db::RemoveTags<>,
       db::AddSimpleTags<TestTags::Vector<1>, TestTags::Vector<2>>,
       db::AddComputeTags<TestTags::ArrayComputeBase<1, 0, 1, 2>>>(
-      std::move(box), std::vector<double>{-7.1, 8.9},
-      std::vector<double>{103.1, -73.2});
+      db::create<db::AddSimpleTags<TestTags::Vector<0>>,
+                 db::AddComputeTags<TestTags::ArrayComputeBase<0>>>(
+          std::vector<double>{101.8, 10.0}),
+      std::vector<double>{-7.1, 8.9}, std::vector<double>{103.1, -73.2});
   CHECK(db::get<TestTags::ArrayBase<1>>(box4) ==
         std::array<int, 4>{{2, 101, -7, 103}});
   db::mutate<TestTags::VectorBase<2>>(
@@ -137,8 +141,8 @@ void test_non_subitems() {
 
   // - removing a compute item that uses a base tag as its argument
   // - removing a compute item by its base tag
-  const auto& box5 =
-      db::create_from<db::RemoveTags<TestTags::ArrayBase<1>>>(box4);
+  const auto box5 =
+      db::create_from<db::RemoveTags<TestTags::ArrayBase<1>>>(std::move(box4));
   CHECK(db::get<TestTags::VectorBase<1>>(box5) ==
         std::vector<double>{-7.1, 8.9});
   CHECK(db::get<TestTags::VectorBase<2>>(box5) ==
@@ -148,7 +152,15 @@ void test_non_subitems() {
   /// [remove_using_base]
   const auto& box6 = db::create_from<
       db::RemoveTags<TestTags::VectorBase<1>, TestTags::VectorBase<2>,
-                     TestTags::ArrayBase<1>>>(box4);
+                     TestTags::ArrayBase<1>>>(
+      db::create_from<
+          db::RemoveTags<>,
+          db::AddSimpleTags<TestTags::Vector<1>, TestTags::Vector<2>>,
+          db::AddComputeTags<TestTags::ArrayComputeBase<1, 0, 1, 2>>>(
+          db::create<db::AddSimpleTags<TestTags::Vector<0>>,
+                     db::AddComputeTags<TestTags::ArrayComputeBase<0>>>(
+              std::vector<double>{101.8, 10.0}),
+          std::vector<double>{-7.1, 8.9}, std::vector<double>{408.8, -73.2}));
   /// [remove_using_base]
   CHECK(db::get<TestTags::VectorBase<0>>(box6) ==
         std::vector<double>{101.8, 10.0});
@@ -325,10 +337,10 @@ void test_subitems_tags() {
 
   // - adding a compute item that uses subitems via base tags, one that's
   //   already in the box another that's being added
-  const auto& box2 =
+  const auto box2 =
       db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
                       db::AddComputeTags<TestTags::ComputeMultiplyByTwo<0, 1>>>(
-          box);
+          std::move(box));
   CHECK(db::get<TestTags::MultiplyByTwo<0, 1>>(box2) == -3 * 7.0);
 
   // - using a subitem by base tag as the argument to a compute item (make
@@ -338,9 +350,13 @@ void test_subitems_tags() {
   auto box3 =
       db::create_from<db::RemoveTags<>, db::AddSimpleTags<TestTags::Parent<2>>,
                       db::AddComputeTags<TestTags::ComputeMultiplyByTwo<0, 2>>>(
-          std::move(box),
+          db::create<db::AddSimpleTags<TestTags::Parent<0>>,
+                     db::AddComputeTags<TestTags::Parent<1, true>>>(
+              std::make_pair(
+                  TestTags::Boxed<int>(std::make_shared<int>(-3)),
+                  TestTags::Boxed<double>(std::make_shared<double>(3.5)))),
           std::make_pair(
-              TestTags::Boxed<int>(std::make_shared<int>(8)),
+              TestTags::Boxed<int>(std::make_shared<int>(-3)),
               TestTags::Boxed<double>(std::make_shared<double>(9.5))));
   CHECK(db::get<TestTags::MultiplyByTwo<0, 2>>(box3) == -3 * 9.5);
   db::mutate<TestTags::FirstBase<0>>(
