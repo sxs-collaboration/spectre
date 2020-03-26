@@ -36,6 +36,7 @@ include(ProhibitInSourceBuild)
 include(SpectreSetupFlagsTarget)
 include(SetupNinjaColors)
 include(SetOutputDirectory)
+include(SpectreTargetHeaders)
 include(SpectreTargetSources)
 # We need yapf before we set up the git hooks
 include(SetupYapf)
