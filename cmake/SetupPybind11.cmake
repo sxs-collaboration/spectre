@@ -13,7 +13,6 @@ if(BUILD_PYTHON_BINDINGS)
   # Uses `Findpybind11.cmake` to find the headers. Since we can't rely on the
   # corresponding cmake files to be installed as well we bundle them in
   # `external/pybind11`.
-  include(SpectreFindPython)
   find_package(pybind11 REQUIRED)
 
   # Load the CMake files from `external/pybind11`
