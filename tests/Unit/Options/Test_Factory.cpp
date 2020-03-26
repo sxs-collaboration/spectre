@@ -19,6 +19,7 @@ class OptionTest;
 class Test1;
 class Test2;
 class TestWithArg;
+class TestWithArg2;
 struct TestWithMetavars;
 
 /// [factory_example]
@@ -31,7 +32,7 @@ struct OptionType {
 class OptionTest {
  public:
   using creatable_classes =
-      tmpl::list<Test1, Test2, TestWithArg, TestWithMetavars>;
+      tmpl::list<Test1, Test2, TestWithArg, TestWithArg2, TestWithMetavars>;
 
   OptionTest() = default;
   OptionTest(const OptionTest&) = default;
@@ -74,6 +75,27 @@ class TestWithArg : public OptionTest {
   explicit TestWithArg(std::string arg) : arg_(std::move(arg)) {}
 
   std::string name() const override { return "TestWithArg(" + arg_ + ")"; }
+
+ private:
+  std::string arg_;
+};
+
+// Same as TestWithArg, except there is an TestWithArg2::Arg::name() that
+// returns something other than "Arg" to test that Arg is named in the
+// input file using option_name rather than pretty_type::short_name
+class TestWithArg2 : public OptionTest {
+ public:
+  struct Arg {
+    using type = std::string;
+    static constexpr OptionString help = {"halp"};
+    static std::string name() noexcept { return "ThisIsArg"; }
+  };
+  using options = tmpl::list<Arg>;
+  static constexpr OptionString help = {""};
+  TestWithArg2() = default;
+  explicit TestWithArg2(std::string arg) : arg_(std::move(arg)) {}
+
+  std::string name() const override { return "TestWithArg2(" + arg_ + ")"; }
 
  private:
   std::string arg_;
@@ -151,6 +173,18 @@ void test_factory_with_arg() {
   CHECK(opts.get<OptionType, Metavars<true>>()->name() == "TestWithArg(stuff)");
 }
 
+void test_factory_with_name_function() {
+  Options<tmpl::list<OptionType>> opts("");
+  opts.parse(
+      "OptionType:\n"
+      "  TestWithArg2:\n"
+      "    ThisIsArg: stuff");
+  // must pass metavars because TestWithMetavars is a derived class in
+  // `creatable_classes`
+  CHECK(opts.get<OptionType, Metavars<true>>()->name() ==
+        "TestWithArg2(stuff)");
+}
+
 void test_factory_with_metavars() {
   Options<tmpl::list<OptionType>> opts("");
   opts.parse(
@@ -216,6 +250,7 @@ void test_factory_format() {
 SPECTRE_TEST_CASE("Unit.Options.Factory", "[Unit][Options]") {
   test_factory();
   test_factory_with_arg();
+  test_factory_with_name_function();
   test_factory_with_colon();
   test_factory_with_metavars();
   test_factory_object_vector();

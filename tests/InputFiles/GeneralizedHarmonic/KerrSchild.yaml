@@ -54,7 +54,7 @@ EventsAndTriggers:
   ? EveryNSlabs:
       N: 5
       Offset: 2
-  : - Interpolate
+  : - AhA
   ? SpecifiedSlabs:
       Slabs: [3]
   : - Completion
@@ -64,7 +64,7 @@ Observers:
   ReductionFileName: "GhKerrSchildReductionData"
 
 ApparentHorizons:
-  Horizon:
+  AhA:
     InitialGuess:
       Lmax: 4
       Radius: 2.2

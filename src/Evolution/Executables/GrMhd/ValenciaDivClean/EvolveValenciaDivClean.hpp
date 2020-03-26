@@ -123,7 +123,7 @@ class CProxy_ConstGlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-struct Horizon {
+struct KerrHorizon {
   using tags_to_observe =
       tmpl::list<StrahlkorperTags::EuclideanSurfaceIntegralVector<
           hydro::Tags::MassFlux<DataVector, 3, ::Frame::Inertial>,
@@ -140,10 +140,10 @@ struct Horizon {
       StrahlkorperTags::EuclideanAreaElement<::Frame::Inertial>,
       hydro::Tags::MassFluxCompute<DataVector, 3, ::Frame::Inertial>>;
   using compute_target_points =
-      intrp::Actions::KerrHorizon<Horizon, ::Frame::Inertial>;
+      intrp::Actions::KerrHorizon<KerrHorizon, ::Frame::Inertial>;
   using post_interpolation_callback =
-      intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, Horizon,
-                                                   Horizon>;
+      intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, KerrHorizon,
+                                                   KerrHorizon>;
 };
 
 template <typename InitialData, typename...InterpolationTargetTags>
@@ -218,9 +218,10 @@ struct EvolutionMetavars {
           tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
                               analytic_variables_tags, tmpl::list<>>>,
       Events::Registrars::ChangeSlabSize<slab_choosers>>>;
-  using events = tmpl::push_back<
-      observation_events,
-      intrp::Events::Registrars::Interpolate<3, interpolator_source_vars>>;
+  using interpolation_events =
+      tmpl::list<intrp::Events::Registrars::Interpolate<
+          3, InterpolationTargetTags, interpolator_source_vars>...>;
+  using events = tmpl::append<observation_events, interpolation_events>;
 
   using triggers = Triggers::time_triggers;
 

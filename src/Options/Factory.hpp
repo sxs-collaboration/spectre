@@ -16,7 +16,6 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
-#include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -35,7 +34,7 @@ std::unique_ptr<BaseClass> create_derived(const std::string& id,
                                           const Option& opts) {
   using derived = tmpl::front<CreateList>;
 
-  if (pretty_type::short_name<derived>() != id) {
+  if (option_name<derived>() != id) {
     return create_derived<BaseClass, tmpl::pop_front<CreateList>,
                           Metavariables>(id, opts);
   }
@@ -60,7 +59,7 @@ struct print_derived {
     std::ostringstream ss;
     ss << std::left
        << std::setw(name_col) << ""
-       << std::setw(help_col - name_col - 1) << pretty_type::short_name<T>();
+       << std::setw(help_col - name_col - 1) << option_name<T>();
     if (ss.str().size() >= help_col) {
       ss << "\n" << std::setw(help_col - 1) << "";
     }
@@ -90,7 +89,7 @@ std::unique_ptr<BaseClass> create(const Option& options) {
   const auto& node = options.node();
   Option derived_opts(options.context());
   derived_opts.append_context("While operating factory for " +
-                              pretty_type::short_name<BaseClass>());
+                              option_name<BaseClass>());
   std::string id;
   if (node.IsScalar()) {
     id = node.as<std::string>();

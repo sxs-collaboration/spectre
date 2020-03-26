@@ -163,7 +163,7 @@ struct EvolutionMetavars {
         tmpl::list<StrahlkorperGr::Tags::AreaElement<Frame::Inertial>>;
   };
 
-  struct Horizon {
+  struct AhA {
     using tags_to_observe =
         tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<Unity, frame>>;
     using compute_items_on_source = tmpl::list<
@@ -180,14 +180,14 @@ struct EvolutionMetavars {
         tmpl::list<StrahlkorperGr::Tags::AreaElement<frame>, Unity>,
         tags_to_observe>;
     using compute_target_points =
-        intrp::Actions::ApparentHorizon<Horizon, ::Frame::Inertial>;
+        intrp::Actions::ApparentHorizon<AhA, ::Frame::Inertial>;
     using post_interpolation_callback =
-        intrp::callbacks::FindApparentHorizon<Horizon>;
+        intrp::callbacks::FindApparentHorizon<AhA>;
     using post_horizon_find_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, Horizon,
-                                                     Horizon>;
+        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA,
+                                                     AhA>;
   };
-  using interpolation_target_tags = tmpl::list<Horizon>;
+  using interpolation_target_tags = tmpl::list<AhA>;
   using interpolator_source_vars =
       tmpl::list<gr::Tags::SpacetimeMetric<volume_dim, frame>,
                  GeneralizedHarmonic::Tags::Pi<volume_dim, frame>,
@@ -202,9 +202,9 @@ struct EvolutionMetavars {
   using triggers = Triggers::time_triggers;
 
   // Events include the observation events and finding the horizon
-  using events = tmpl::push_back<
-      observation_events,
-      intrp::Events::Registrars::Interpolate<3, interpolator_source_vars>>;
+  using events = tmpl::push_back<observation_events,
+                                 intrp::Events::Registrars::Interpolate<
+                                     3, AhA, interpolator_source_vars>>;
 
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
   // metavariables
@@ -220,7 +220,7 @@ struct EvolutionMetavars {
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::push_back<Event<observation_events>::creatable_classes,
-                      typename Horizon::post_horizon_find_callback>>;
+                      typename AhA::post_horizon_find_callback>>;
 
   using step_actions = tmpl::flatten<tmpl::list<
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
@@ -300,7 +300,7 @@ struct EvolutionMetavars {
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       intrp::Interpolator<EvolutionMetavars>,
-      intrp::InterpolationTarget<EvolutionMetavars, Horizon>,
+      intrp::InterpolationTarget<EvolutionMetavars, AhA>,
       DgElementArray<
           EvolutionMetavars,
           tmpl::list<

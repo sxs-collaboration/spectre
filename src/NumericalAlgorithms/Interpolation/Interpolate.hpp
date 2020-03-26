@@ -8,16 +8,17 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Domain/ElementId.hpp"
+#include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-class TimeStepId;
 namespace Tags {
 struct TimeStepId;
 }  // namespace Tags
@@ -34,6 +35,8 @@ struct Variables;
 template <size_t Dim> class Mesh;
 template <size_t VolumeDim> class ElementIndex;
 namespace intrp {
+template <typename Metavariables, typename Tag>
+struct InterpolationTarget;
 template <typename Metavariables>
 struct Interpolator;
 namespace Actions {
@@ -44,26 +47,30 @@ struct InterpolatorReceiveVolumeData;
 
 namespace intrp {
 namespace Events {
-template <size_t VolumeDim, typename Tensors, typename EventRegistrars>
+template <size_t VolumeDim, typename InterpolationTargetTag, typename Tensors,
+          typename EventRegistrars>
 class Interpolate;
 
 namespace Registrars {
-template <size_t VolumeDim, typename Tensors>
+template <size_t VolumeDim, typename InterpolationTargetTag, typename Tensors>
 struct Interpolate {
   template <typename RegistrarList>
-  using f = Events::Interpolate<VolumeDim, Tensors, RegistrarList>;
+  using f = Events::Interpolate<VolumeDim, InterpolationTargetTag, Tensors,
+                                RegistrarList>;
 };
 }  // namespace Registrars
 
-/// Does an interpolation by calling Actions on Interpolator.
-template <size_t VolumeDim, typename Tensors,
-          typename EventRegistrars =
-              tmpl::list<Registrars::Interpolate<VolumeDim, Tensors>>>
+/// Does an interpolation onto InterpolationTargetTag by calling Actions on
+/// the Interpolator and InterpolationTarget components.
+template <size_t VolumeDim, typename InterpolationTargetTag, typename Tensors,
+          typename EventRegistrars = tmpl::list<Registrars::Interpolate<
+              VolumeDim, InterpolationTargetTag, Tensors>>>
 class Interpolate;  // IWYU pragma: keep
 
-template <size_t VolumeDim, typename... Tensors, typename EventRegistrars>
-class Interpolate<VolumeDim, tmpl::list<Tensors...>, EventRegistrars>
-    : public Event<EventRegistrars> {
+template <size_t VolumeDim, typename InterpolationTargetTag,
+          typename... Tensors, typename EventRegistrars>
+class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>,
+                  EventRegistrars> : public Event<EventRegistrars> {
   /// \cond
   explicit Interpolate(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
@@ -72,7 +79,11 @@ class Interpolate<VolumeDim, tmpl::list<Tensors...>, EventRegistrars>
 
   using options = tmpl::list<>;
   static constexpr OptionString help =
-      "Starts interpolation by sending data to the Interpolator.";
+      "Starts interpolation onto the given InterpolationTargetTag.";
+
+  static std::string name() noexcept {
+    return option_name<InterpolationTargetTag>();
+  }
 
   Interpolate() = default;
 
@@ -102,13 +113,22 @@ class Interpolate<VolumeDim, tmpl::list<Tensors...>, EventRegistrars>
     Parallel::simple_action<Actions::InterpolatorReceiveVolumeData>(
         interpolator, time_id, ElementId<VolumeDim>(array_index), mesh,
         interp_vars);
+
+    // Tell the interpolation target that it should interpolate.
+    auto& target = Parallel::get_parallel_component<
+        InterpolationTarget<Metavariables, InterpolationTargetTag>>(cache);
+    Parallel::simple_action<
+        Actions::AddTemporalIdsToInterpolationTarget<InterpolationTargetTag>>(
+        target, std::vector<TimeStepId>{time_id});
   }
 };
 
 /// \cond
-template <size_t VolumeDim, typename... Tensors, typename EventRegistrars>
-PUP::able::PUP_ID Interpolate<VolumeDim, tmpl::list<Tensors...>,
-                              EventRegistrars>::my_PUP_ID = 0;  // NOLINT
+template <size_t VolumeDim, typename InterpolationTargetTag,
+          typename... Tensors, typename EventRegistrars>
+PUP::able::PUP_ID
+    Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>,
+                EventRegistrars>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
 }  // namespace Events
