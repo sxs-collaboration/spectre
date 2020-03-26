@@ -5,6 +5,19 @@ add_custom_target(libs)
 
 function(ADD_SPECTRE_LIBRARY LIBRARY_NAME)
   add_library(${LIBRARY_NAME} ${ARGN})
+  add_dependencies(libs ${LIBRARY_NAME})
+
+  get_target_property(
+    LIBRARY_IS_IMPORTED
+    ${LIBRARY_NAME}
+    IMPORTED
+    )
+  get_target_property(
+    LIBRARY_TYPE
+    ${LIBRARY_NAME}
+    TYPE
+    )
+
   # We need to link custom allocators before we link anything else so that
   # any third-party libraries, which generally should all be built as shared
   # libraries, use the allocator that we use. Unfortunately, how exactly
@@ -27,26 +40,14 @@ function(ADD_SPECTRE_LIBRARY LIBRARY_NAME)
       ${SPECTRE_ALLOCATOR_LIBRARY}
       SpectreAllocator
       )
+
+    set_target_properties(
+      ${LIBRARY_NAME}
+      PROPERTIES
+      RULE_LAUNCH_LINK "${CMAKE_BINARY_DIR}/tmp/WrapLibraryLinker.sh"
+      LINK_DEPENDS "${CMAKE_BINARY_DIR}/tmp/WrapLibraryLinker.sh"
+      )
   endif (NOT ${LIBRARY_TYPE} STREQUAL INTERFACE_LIBRARY)
-
-  add_dependencies(libs ${LIBRARY_NAME})
-  set_target_properties(
-    ${TARGET_NAME}
-    PROPERTIES
-    RULE_LAUNCH_LINK "${CMAKE_BINARY_DIR}/tmp/WrapLibraryLinker.sh"
-    LINK_DEPENDS "${CMAKE_BINARY_DIR}/tmp/WrapLibraryLinker.sh"
-    )
-
-  get_target_property(
-    LIBRARY_IS_IMPORTED
-    ${LIBRARY_NAME}
-    IMPORTED
-    )
-  get_target_property(
-    LIBRARY_TYPE
-    ${LIBRARY_NAME}
-    TYPE
-    )
   if (NOT "${LIBRARY_NAME}" MATCHES "^${SPECTRE_PCH}"
       AND NOT ${LIBRARY_IS_IMPORTED}
       AND NOT ${LIBRARY_TYPE} STREQUAL INTERFACE_LIBRARY)
