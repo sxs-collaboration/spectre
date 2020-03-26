@@ -21,6 +21,12 @@
 #                      which can have severe performance impacts.
 set(CLANG_TIDY_IGNORE_CHECKS "*,-cppcoreguidelines-no-malloc,-llvm-header-guard,-google-runtime-int,-readability-else-after-return,-misc-noexcept-move-constructor,-misc-unconventional-assign-operator,-cppcoreguidelines-c-copy-assignment-signature,-modernize-raw-string-literal,-hicpp-noexcept-move,-hicpp-no-assembler,-android-*,-cert-err58-cpp,-google-default-arguments,-fuchsia-*,-performance-noexcept-move-constructor")
 
+if(NOT CLANG_TIDY_ROOT)
+  # Need to set to empty to avoid warnings with --warn-uninitialized
+  set(CLANG_TIDY_ROOT "")
+  set(CLANG_TIDY_ROOT $ENV{CLANG_TIDY_ROOT})
+endif()
+
 if(NOT CMAKE_CXX_CLANG_TIDY AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   string(
       REGEX MATCH "^[0-9]+.[0-9]+" LLVM_VERSION
@@ -29,7 +35,7 @@ if(NOT CMAKE_CXX_CLANG_TIDY AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   find_program(
       CLANG_TIDY_BIN
       NAMES "clang-tidy-${LLVM_VERSION}" "clang-tidy"
-      HINTS ${COMPILER_PATH}
+      HINTS ${CLANG_TIDY_ROOT}
       )
 elseif(CMAKE_CXX_CLANG_TIDY)
   set(CLANG_TIDY_BIN "${CMAKE_CXX_CLANG_TIDY}")
