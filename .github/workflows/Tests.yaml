@@ -359,9 +359,16 @@ jobs:
           -D ASAN=${ASAN:-'OFF'}
           -D UBSAN_UNDEFINED=${UBSAN_UNDEFINED:-'OFF'}
           -D UBSAN_INTEGER=${UBSAN_INTEGER:-'OFF'}
-          $GITHUB_WORKSPACE
+          --warn-uninitialized
+          $GITHUB_WORKSPACE 2>&1 | tee CMakeOutput.txt 2>&1
+
         # Make sure this runs in bash so the regex matching works
         shell: bash
+      - name: Check for CMake warnings
+        if: matrix.BUILD_PYTHON_BINDINGS == 'OFF'
+        working-directory: /work/build
+        run: |
+          ! grep -A 6 "CMake Warning" ./CMakeOutput.txt
       - name: Build tests
         if: matrix.use_pch == 'ON'
         working-directory: /work/build
