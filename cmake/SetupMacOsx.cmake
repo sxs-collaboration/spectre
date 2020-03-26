@@ -8,4 +8,5 @@ if(APPLE)
   endif()
   set(CMAKE_EXE_LINKER_FLAGS
     "${CMAKE_EXE_LINKER_FLAGS} -mmacosx-version-min=${SPECTRE_MACOSX_MIN}")
+  message(STATUS "Minimum macOS version: ${SPECTRE_MACOSX_MIN}")
 endif()
