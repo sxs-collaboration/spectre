@@ -37,12 +37,12 @@ namespace Weno_detail {
 template <size_t VolumeDim>
 void reconstruct_from_weighted_sum(
     const gsl::not_null<DataVector*> local_polynomial,
-    const Mesh<VolumeDim>& mesh, const double neighbor_linear_weight,
+    const double neighbor_linear_weight,
+    const DerivativeWeight derivative_weight, const Mesh<VolumeDim>& mesh,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_polynomials,
-    const DerivativeWeight derivative_weight) noexcept {
+        neighbor_polynomials) noexcept {
 #ifdef SPECTRE_DEBUG
   ASSERT(local_polynomial->size() > 0,
          "The local_polynomial values are missing - was the input correctly\n"
@@ -76,13 +76,13 @@ void reconstruct_from_weighted_sum(
   // nonlinear weights.
   local_weight = unnormalized_nonlinear_weight(
       local_weight,
-      oscillation_indicator(*local_polynomial, mesh, derivative_weight));
+      oscillation_indicator(derivative_weight, *local_polynomial, mesh));
   for (const auto& kv : neighbor_polynomials) {
     const auto& key = kv.first;
     const auto& neighbor_polynomial = kv.second;
     neighbor_weights[key] = unnormalized_nonlinear_weight(
         neighbor_weights[key],
-        oscillation_indicator(neighbor_polynomial, mesh, derivative_weight));
+        oscillation_indicator(derivative_weight, neighbor_polynomial, mesh));
   }
 
   // Update `local_weights` and `neighbor_weights` to hold the normalized
@@ -110,12 +110,12 @@ void reconstruct_from_weighted_sum(
 
 #define INSTANTIATE(_, data)                                                  \
   template void reconstruct_from_weighted_sum(                                \
-      const gsl::not_null<DataVector*>, const Mesh<DIM(data)>&, const double, \
+      const gsl::not_null<DataVector*>, const double, const DerivativeWeight, \
+      const Mesh<DIM(data)>&,                                                 \
       const std::unordered_map<                                               \
           std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>, DataVector,  \
-          boost::hash<                                                        \
-              std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>&,       \
-      const DerivativeWeight) noexcept;
+          boost::hash<std::pair<Direction<DIM(data)>,                         \
+                                ElementId<DIM(data)>>>>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

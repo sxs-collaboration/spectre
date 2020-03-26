@@ -60,19 +60,24 @@ namespace Limiters {
 /// \brief A compact-stencil WENO limiter for DG
 ///
 /// Implements the simple WENO limiter of \cite Zhong2013 and the Hermite WENO
-/// (HWENO) limiter of \cite Zhu2016. These limiters require communication only
-/// between nearest-neighbor elements, but preserve the full order of the DG
-/// solution when the solution is smooth. Full volume data is communicated
-/// between neighbors.
+/// (HWENO) limiter of \cite Zhu2016 for an arbitrary set of tensors. These
+/// limiters require communication only between nearest-neighbor elements, but
+/// preserve the full order of the DG solution when the solution is smooth.
+/// Full volume data is communicated between neighbors.
 ///
-/// The limiter uses a Minmod-based troubled-cell indicator to identify elements
-/// that need limiting. The \f$\Lambda\Pi^N\f$ limiter of \cite Cockburn1999 is
-/// used. Note that the HWENO paper recommends a more sophisticated
-/// troubled-cell indicator instead, but the specific choice of indicator should
-/// not be too important for a high-order WENO limiter.
+/// The limiter uses the minmod-based TVB troubled-cell indicator (TCI) of
+/// \cite Cockburn1999 to identify elements that need limiting. The simple
+/// WENO implementation follows the paper: it checks the TCI independently
+/// to each tensor component, so that only certain tensor components may be
+/// limited. The HWENO implementation checks the TCI for all tensor components,
+/// and if any single component is troubled, then all components are limited.
+/// Note that the HWENO paper, because it specializes the limiter to the
+/// Newtonian Euler fluid system, uses a more sophisticated TCI that is adapted
+/// to the particulars of the fluid system. We instead use the TVB indicator
+/// because it is easily applied to a general set of tensors.
 ///
-/// On any identified "troubled" elements, the limited solution is obtained by
-/// WENO reconstruction --- a linear combination of the local DG solution and a
+/// For each tensor component to limit, the new solution is obtained by WENO
+/// reconstruction --- a linear combination of the local DG solution and a
 /// "modified" solution from each neighbor element. For the simple WENO limiter,
 /// the modified solution is obtained by simply extrapolating the neighbor
 /// solution onto the troubled element. For the HWENO limiter, the modified
@@ -115,6 +120,15 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
     static constexpr OptionString help = {
         "Linear weight for each neighbor element's solution"};
   };
+  /// \brief The TVB constant for the minmod TCI
+  ///
+  /// See `Limiters::Minmod` documentation for details.
+  struct TvbConstant {
+    using type = double;
+    static type default_value() noexcept { return 0.0; }
+    static type lower_bound() noexcept { return 0.0; }
+    static constexpr OptionString help = {"TVB constant 'm'"};
+  };
   /// \brief Turn the limiter off
   ///
   /// This option exists to temporarily disable the limiter for debugging
@@ -125,11 +139,12 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
     static type default_value() noexcept { return false; }
     static constexpr OptionString help = {"Disable the limiter"};
   };
-  using options = tmpl::list<Type, NeighborWeight, DisableForDebugging>;
+  using options =
+      tmpl::list<Type, NeighborWeight, TvbConstant, DisableForDebugging>;
   static constexpr OptionString help = {"A WENO limiter for DG"};
 
   Weno(WenoType weno_type, double neighbor_linear_weight,
-       bool disable_for_debugging = false) noexcept;
+       double tvb_constant = 0.0, bool disable_for_debugging = false) noexcept;
 
   Weno() noexcept = default;
   Weno(const Weno& /*rhs*/) = default;
@@ -172,14 +187,14 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
 
   using limit_tags = tmpl::list<Tags...>;
   using limit_argument_tags =
-      tmpl::list<domain::Tags::Element<VolumeDim>,
-                 domain::Tags::Mesh<VolumeDim>,
+      tmpl::list<domain::Tags::Mesh<VolumeDim>,
+                 domain::Tags::Element<VolumeDim>,
                  domain::Tags::SizeOfElement<VolumeDim>>;
 
   /// \brief Limit the solution on the element
   bool operator()(
       const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,
-      const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+      const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
       const std::array<double, VolumeDim>& element_size,
       const std::unordered_map<
           std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
@@ -194,15 +209,17 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
 
   WenoType weno_type_;
   double neighbor_linear_weight_;
+  double tvb_constant_;
   bool disable_for_debugging_;
 };
 
 template <size_t VolumeDim, typename... Tags>
 Weno<VolumeDim, tmpl::list<Tags...>>::Weno(
     const WenoType weno_type, const double neighbor_linear_weight,
-    const bool disable_for_debugging) noexcept
+    const double tvb_constant, const bool disable_for_debugging) noexcept
     : weno_type_(weno_type),
       neighbor_linear_weight_(neighbor_linear_weight),
+      tvb_constant_(tvb_constant),
       disable_for_debugging_(disable_for_debugging) {}
 
 template <size_t VolumeDim, typename... Tags>
@@ -210,6 +227,7 @@ template <size_t VolumeDim, typename... Tags>
 void Weno<VolumeDim, tmpl::list<Tags...>>::pup(PUP::er& p) noexcept {
   p | weno_type_;
   p | neighbor_linear_weight_;
+  p | tvb_constant_;
   p | disable_for_debugging_;
 }
 
@@ -262,7 +280,7 @@ void Weno<VolumeDim, tmpl::list<Tags...>>::package_data(
 template <size_t VolumeDim, typename... Tags>
 bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
     const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+    const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
@@ -295,10 +313,9 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
   if (weno_type_ == WenoType::Hweno) {
     // Troubled-cell detection for HWENO flags the element for limiting if any
     // component of any tensor needs limiting.
-    const double tci_tvb_constant = 0.0;
     const bool cell_is_troubled =
         Tci::tvb_minmod_indicator<VolumeDim, PackagedData, Tags...>(
-            tci_tvb_constant, (*tensors)..., mesh, element, element_size,
+            tvb_constant_, (*tensors)..., mesh, element, element_size,
             neighbor_data);
     if (not cell_is_troubled) {
       // No limiting is needed
@@ -347,12 +364,11 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
       for (size_t tensor_storage_index = 0;
            tensor_storage_index < tensor->size(); ++tensor_storage_index) {
         // Check TCI
-        const double tvb_constant = 0.0;
         const auto effective_neighbor_means =
             Minmod_detail::compute_effective_neighbor_means<decltype(tag)>(
                 tensor_storage_index, element, neighbor_data);
         const bool component_needs_limiting = Tci::tvb_minmod_indicator(
-            make_not_null(&tci_buffer), tvb_constant,
+            make_not_null(&tci_buffer), tvb_constant_,
             (*tensor)[tensor_storage_index], mesh, element, element_size,
             effective_neighbor_means, effective_neighbor_sizes);
 
@@ -390,6 +406,7 @@ bool operator==(const Weno<LocalDim, LocalTagList>& lhs,
                 const Weno<LocalDim, LocalTagList>& rhs) noexcept {
   return lhs.weno_type_ == rhs.weno_type_ and
          lhs.neighbor_linear_weight_ == rhs.neighbor_linear_weight_ and
+         lhs.tvb_constant_ == rhs.tvb_constant_ and
          lhs.disable_for_debugging_ == rhs.disable_for_debugging_;
 }
 

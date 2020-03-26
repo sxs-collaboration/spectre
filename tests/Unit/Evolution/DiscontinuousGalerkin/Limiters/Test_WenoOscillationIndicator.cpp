@@ -37,7 +37,7 @@ void test_oscillation_indicator_1d() noexcept {
 
   const auto data = DataVector{1. + x - pow<4>(x)};
   const auto indicator = Limiters::Weno_detail::oscillation_indicator(
-      data, mesh, Limiters::Weno_detail::DerivativeWeight::Unity);
+      Limiters::Weno_detail::DerivativeWeight::Unity, data, mesh);
 
   // Expected result computed in Mathematica:
   // f[x_] := 1 + x - x^4
@@ -49,15 +49,15 @@ void test_oscillation_indicator_1d() noexcept {
   // As above, but with derivative weights given by
   // w[i_] := 2^(2 i - 1)
   const auto indicator2 = Limiters::Weno_detail::oscillation_indicator(
-      data, mesh, Limiters::Weno_detail::DerivativeWeight::PowTwoEll);
+      Limiters::Weno_detail::DerivativeWeight::PowTwoEll, data, mesh);
   const double expected2 = 5607628. / 35.;
   CHECK(indicator2 == approx(expected2));
 
   // Again as above, but with derivative weights given by
   // w[i_] := 2^(2 i - 1) / (i!)^2
   const auto indicator3 = Limiters::Weno_detail::oscillation_indicator(
-      data, mesh,
-      Limiters::Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial);
+      Limiters::Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial, data,
+      mesh);
   const double expected3 = 76196. / 105.;
   CHECK(indicator3 == approx(expected3));
 }
@@ -73,7 +73,7 @@ void test_oscillation_indicator_2d() noexcept {
   const auto data =
       DataVector{square(x) + cube(y) - 2.5 * x * y + square(x) * y};
   const auto indicator = Limiters::Weno_detail::oscillation_indicator(
-      data, mesh, Limiters::Weno_detail::DerivativeWeight::Unity);
+      Limiters::Weno_detail::DerivativeWeight::Unity, data, mesh);
 
   // Expected result computed in Mathematica:
   // g[x_, y_] := x^2 + y^3 - (5/2) x y + x^2 y
@@ -89,14 +89,14 @@ void test_oscillation_indicator_2d() noexcept {
 
   // w[i_] := 2^(2 i - 1)
   const auto indicator2 = Limiters::Weno_detail::oscillation_indicator(
-      data, mesh, Limiters::Weno_detail::DerivativeWeight::PowTwoEll);
+      Limiters::Weno_detail::DerivativeWeight::PowTwoEll, data, mesh);
   const double expected2 = 26938. / 9.;
   CHECK(indicator2 == approx(expected2));
 
   // w[i_] := 2^(2 i - 1) / (i!)^2
   const auto indicator3 = Limiters::Weno_detail::oscillation_indicator(
-      data, mesh,
-      Limiters::Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial);
+      Limiters::Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial, data,
+      mesh);
   const double expected3 = 3178. / 9.;
   CHECK(indicator3 == approx(expected3));
 }
@@ -113,7 +113,7 @@ void test_oscillation_indicator_3d() noexcept {
   const auto data = DataVector{square(x) + 2. * y + z - 6. * cube(z) -
                                3. * x * square(y) * cube(z) - x * y + y * z};
   const auto indicator = Limiters::Weno_detail::oscillation_indicator(
-      data, mesh, Limiters::Weno_detail::DerivativeWeight::Unity);
+      Limiters::Weno_detail::DerivativeWeight::Unity, data, mesh);
 
   // Expected result computed in Mathematica:
   // h[x_, y_, z_] := x^2 + 2 y + z - 6 z^3 - 3 x y^2 z^3 - x y + y z
@@ -136,14 +136,14 @@ void test_oscillation_indicator_3d() noexcept {
 
   // w[i_] := 2^(2 i - 1)
   const auto indicator2 = Limiters::Weno_detail::oscillation_indicator(
-      data, mesh, Limiters::Weno_detail::DerivativeWeight::PowTwoEll);
+      Limiters::Weno_detail::DerivativeWeight::PowTwoEll, data, mesh);
   const double expected2 = 3611348444. / 525.;
   CHECK(indicator2 == approx(expected2));
 
   // w[i_] := 2^(2 i - 1) / (i!)^2
   const auto indicator3 = Limiters::Weno_detail::oscillation_indicator(
-      data, mesh,
-      Limiters::Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial);
+      Limiters::Weno_detail::DerivativeWeight::PowTwoEllOverEllFactorial, data,
+      mesh);
   const double expected3 = 54886604. / 525.;
   CHECK(indicator3 == approx(expected3));
 }

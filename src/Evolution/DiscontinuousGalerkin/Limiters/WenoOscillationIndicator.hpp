@@ -40,9 +40,9 @@ std::ostream& operator<<(std::ostream& os,
 // use for the WENO reconstruction, and because it lends itself to an efficient
 // implementation.
 template <size_t VolumeDim>
-double oscillation_indicator(const DataVector& data,
-                             const Mesh<VolumeDim>& mesh,
-                             DerivativeWeight derivative_weight) noexcept;
+double oscillation_indicator(DerivativeWeight derivative_weight,
+                             const DataVector& data,
+                             const Mesh<VolumeDim>& mesh) noexcept;
 
 }  // namespace Weno_detail
 }  // namespace Limiters
