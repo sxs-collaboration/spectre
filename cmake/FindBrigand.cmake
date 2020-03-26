@@ -1,11 +1,17 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+if(NOT BRIGAND_ROOT)
+  # Need to set to empty to avoid warnings with --warn-uninitialized
+  set(BRIGAND_ROOT "")
+  set(BRIGAND_ROOT $ENV{BRIGAND_ROOT})
+endif()
+
 find_path(
     BRIGAND_INCLUDE_DIR
     PATH_SUFFIXES include
     NAMES brigand/brigand.hpp
-    HINTS ${BRIGAND_ROOT} ENV BRIGAND_ROOT
+    HINTS ${BRIGAND_ROOT}
     DOC "Brigand include directory. Used BRIGAND_ROOT to set a search dir."
 )
 
