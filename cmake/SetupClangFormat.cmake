@@ -1,6 +1,12 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+if(NOT CLANG_FORMAT_ROOT)
+  # Need to set to empty to avoid warnings with --warn-uninitialized
+  set(CLANG_FORMAT_ROOT "")
+  set(CLANG_FORMAT_ROOT $ENV{CLANG_FORMAT_ROOT})
+endif()
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   string(
       REGEX MATCH "^[0-9]+.[0-9]+" LLVM_VERSION
@@ -9,7 +15,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   find_program(
       CLANG_FORMAT_BIN
       NAMES "clang-format-${LLVM_VERSION}" "clang-format"
-      HINTS ${COMPILER_PATH}
+      HINTS ${CLANG_FORMAT_ROOT}
   )
 else()
   find_program(
