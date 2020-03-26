@@ -14,6 +14,12 @@
 
 # Attempt to find tools required for code coverage analysis
 
+if(NOT LLVM_COV_ROOT)
+  # Need to set to empty to avoid warnings with --warn-uninitialized
+  set(LLVM_COV_ROOT "")
+  set(LLVM_COV_ROOT $ENV{LLVM_COV_ROOT})
+endif()
+
 if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
   string(
       REGEX MATCH "^[0-9]+.[0-9]+" LLVM_VERSION
@@ -22,7 +28,7 @@ if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
   find_program(
       LLVM_COV_BIN
       NAMES "llvm-cov-${LLVM_VERSION}" "llvm-cov"
-      HINTS ${COMPILER_PATH}
+      HINTS ${LLVM_COV_ROOT}
   )
   configure_file(
       "${CMAKE_SOURCE_DIR}/tools/llvm-gcov.sh"
