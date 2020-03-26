@@ -1,6 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+option(SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR
+  "Multiply timeout for Python tests by this factor"
+  1)
+
 set(SPECTRE_PYTHON_PREFIX "${CMAKE_BINARY_DIR}/bin/python/spectre/")
 get_filename_component(
   SPECTRE_PYTHON_PREFIX
@@ -308,13 +312,21 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS)
     ${FILE}
     )
 
+  set(TIMEOUT 2)
+
+  # Multiply timeout by the user option
+  # Note: "1" is parsed as "ON" by cmake
+  if (NOT "${SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR}" STREQUAL ON)
+    math(EXPR TIMEOUT "${SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR} * ${TIMEOUT}")
+  endif()
+
   # The fail regular expression is what Python.unittest returns when no
   # tests are found to be run. We treat this as a test failure.
   set_tests_properties(
     "\"${TEST_NAME}\""
     PROPERTIES
     FAIL_REGULAR_EXPRESSION "Ran 0 test"
-    TIMEOUT 2
+    TIMEOUT ${TIMEOUT}
     LABELS "${TAGS};Python"
     ENVIRONMENT "PYTHONPATH=${SPECTRE_PYTHON_PREFIX_PARENT}:\$PYTHONPATH"
     )

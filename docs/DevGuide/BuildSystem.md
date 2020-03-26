@@ -206,6 +206,11 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - This is useful for drastically reducing the build size in CI, but since the
     object files are replaced with empty stubs will generally cause linking
     problems if used during development.
+- SPECTRE_UNIT_TEST_TIMEOUT_FACTOR, SPECTRE_INPUT_FILE_TEST_TIMEOUT_FACTOR and
+  SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR
+  - Multiply the timeout for the respective set of tests by this factor (default
+    is `1`).
+  - This is useful to run tests on slower machines.
 
 ## Formaline
 
