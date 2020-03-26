@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "BlockLogicalCoordinates.hpp"
+#include "Domain/BlockLogicalCoordinates.hpp"
 
 #include <cstddef>
 #include <vector>
