@@ -18,7 +18,6 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/TensorData.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/IO/Observers/ObserverHelpers.hpp"
 #include "IO/H5/AccessType.hpp"
@@ -127,7 +126,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   for (const auto& id : element_ids) {
     const observers::ArrayComponentId array_id(
         std::add_pointer_t<element_comp>{nullptr},
-        Parallel::ArrayIndex<ElementIndex<2>>{ElementIndex<2>{id}});
+        Parallel::ArrayIndex<ElementId<2>>{ElementId<2>{id}});
 
     auto volume_data_fakes =
         make_fake_volume_data(array_id, MakeString{} << id << '/');
@@ -223,7 +222,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
     const std::string grid_name = MakeString{} << element_id;
     const observers::ArrayComponentId array_id(
         std::add_pointer_t<element_comp>{nullptr},
-        Parallel::ArrayIndex<ElementIndex<2>>{ElementIndex<2>{element_id}});
+        Parallel::ArrayIndex<ElementId<2>>{ElementId<2>{element_id}});
     const auto volume_data_fakes = make_fake_volume_data(array_id, "");
     // Each element contains as many data points as the product of its
     // extents, compute this number

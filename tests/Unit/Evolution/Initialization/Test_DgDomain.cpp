@@ -150,7 +150,7 @@ struct Component {
   using metavariables = Metavariables;
   static constexpr size_t dim = metavariables::dim;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndex<dim>;
+  using array_index = ElementId<dim>;
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<dim>>;
 
   using simple_tags =

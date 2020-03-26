@@ -392,7 +392,7 @@ a `tmpl::list`. The `inbox_tags` must have two member type aliases, a
 which is the type of the data to be stored in the `inboxes`. The types are
 typically a `std::unordered_map<temporal_id, DATA>`. In the discussed scenario
 of waiting for neighboring elements to send their data the `DATA` type would be
-a `std::unordered_map<TheElementIndex, DataSent>`. Inbox tags must also specify
+a `std::unordered_map<TheElementId, DataSent>`. Inbox tags must also specify
 a `static void insert_into_inbox()` function. For example,
 
 \snippet Test_AlgorithmParallel.cpp int_receive_tag

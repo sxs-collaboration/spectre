@@ -7,8 +7,6 @@
 #include <limits>
 #include <ostream>
 
-#include "Domain/ElementIndex.hpp"
-#include "Parallel/ArrayIndex.hpp"
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -48,23 +46,6 @@ ElementId<VolumeDim>::ElementId(
   for (size_t d = 0; d < VolumeDim; ++d) {
     gsl::at(segment_ids_, d).set_block_id(block_id);
   }
-}
-
-template <size_t VolumeDim>
-ElementId<VolumeDim>::ElementId(const ElementIndex<VolumeDim>& index) noexcept {
-  for (size_t d = 0; d < VolumeDim; ++d) {
-    gsl::at(segment_ids_, d) = SegmentId{
-        index.block_id(), gsl::at(index.segments(), d).refinement_level(),
-        gsl::at(index.segments(), d).index()};
-  }
-}
-
-// clang-tidy: mark explicit, we want implicit conversion
-template <size_t VolumeDim>
-ElementId<VolumeDim>::
-operator Parallel::ArrayIndex<ElementIndex<VolumeDim>>()  // NOLINT
-    const noexcept {
-  return {ElementIndex<VolumeDim>{*this}};
 }
 
 template <size_t VolumeDim>

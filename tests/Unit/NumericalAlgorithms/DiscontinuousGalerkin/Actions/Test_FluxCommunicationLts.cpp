@@ -30,7 +30,7 @@
 #include "Domain/DirectionMap.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"  // IWYU pragma: keep
+#include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceComputeTags.hpp"
@@ -156,7 +156,7 @@ template <size_t Dim, typename MV>
 struct lts_component {
   using metavariables = MV;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndex<Dim>;
+  using array_index = ElementId<Dim>;
   using const_global_cache_tags = tmpl::list<NumericalFluxTag<Dim>>;
   using flux_comm_types = dg::FluxCommunicationTypes<MV>;
 

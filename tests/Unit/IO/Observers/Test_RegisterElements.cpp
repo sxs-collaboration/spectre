@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/IO/Observers/ObserverHelpers.hpp"
 #include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
@@ -134,20 +133,19 @@ void check_observer_registration() {
                                        observers::Tags::TensorData>(runner, 0)
             .empty());
   for (const auto& id : element_ids) {
-    CHECK(
-        ActionTesting::get_databox_tag<
-            obs_component, observers::Tags::ReductionArrayComponentIds>(runner,
-                                                                        0)
-            .count(observers::ArrayComponentId(
-                std::add_pointer_t<element_comp>{nullptr},
-                Parallel::ArrayIndex<ElementIndex<2>>(ElementIndex<2>(id)))) ==
-        (TypeOfObservation == observers::TypeOfObservation::Volume ? 0 : 1));
+    CHECK(ActionTesting::get_databox_tag<
+              obs_component, observers::Tags::ReductionArrayComponentIds>(
+              runner, 0)
+              .count(observers::ArrayComponentId(
+                  std::add_pointer_t<element_comp>{nullptr},
+                  Parallel::ArrayIndex<ElementId<2>>(ElementId<2>(id)))) ==
+          (TypeOfObservation == observers::TypeOfObservation::Volume ? 0 : 1));
     CHECK(
         ActionTesting::get_databox_tag<
             obs_component, observers::Tags::VolumeArrayComponentIds>(runner, 0)
             .count(observers::ArrayComponentId(
                 std::add_pointer_t<element_comp>{nullptr},
-                Parallel::ArrayIndex<ElementIndex<2>>(ElementIndex<2>(id)))) ==
+                Parallel::ArrayIndex<ElementId<2>>(ElementId<2>(id)))) ==
         (TypeOfObservation == observers::TypeOfObservation::Reduction ? 0 : 1));
   }
   if (TypeOfObservation != observers::TypeOfObservation::Volume) {

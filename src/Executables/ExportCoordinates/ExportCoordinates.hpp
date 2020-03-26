@@ -83,7 +83,7 @@ struct ExportCoordinates {
         std::string{"/element_data"},
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
-            Parallel::ArrayIndex<ElementIndex<Dim>>(array_index)),
+            Parallel::ArrayIndex<ElementId<Dim>>(array_index)),
         std::move(components), mesh.extents());
     return {std::move(box), true};
   }

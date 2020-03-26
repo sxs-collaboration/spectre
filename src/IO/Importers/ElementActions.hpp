@@ -35,7 +35,7 @@ struct RegisterWithVolumeDataReader {
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::ConstGlobalCache<Metavariables>& cache,
-      const ElementIndex<Dim>& array_index, const ActionList /*meta*/,
+      const ElementId<Dim>& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     const std::string element_name = MakeString{}
                                      << ElementId<Dim>(array_index);
@@ -47,7 +47,7 @@ struct RegisterWithVolumeDataReader {
         local_reader_component,
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
-            Parallel::ArrayIndex<ElementIndex<Dim>>(array_index)),
+            Parallel::ArrayIndex<ElementId<Dim>>(array_index)),
         element_name);
     return {std::move(box)};
   }

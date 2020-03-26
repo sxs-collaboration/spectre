@@ -11,7 +11,6 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Domain/InitialElementIds.hpp"
 #include "Domain/OptionTags.hpp"
 #include "Domain/Tags.hpp"
@@ -41,7 +40,7 @@ struct DgElementArray {
   using chare_type = Parallel::Algorithms::Array;
   using metavariables = Metavariables;
   using phase_dependent_action_list = PhaseDepActionList;
-  using array_index = ElementIndex<volume_dim>;
+  using array_index = ElementId<volume_dim>;
 
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<volume_dim>>;
 
@@ -86,7 +85,7 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
     int which_proc = 0;
     const int number_of_procs = Parallel::number_of_procs();
     for (size_t i = 0; i < element_ids.size(); ++i) {
-      dg_element_array(ElementIndex<volume_dim>(element_ids[i]))
+      dg_element_array(ElementId<volume_dim>(element_ids[i]))
           .insert(global_cache, initialization_items, which_proc);
       which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
     }

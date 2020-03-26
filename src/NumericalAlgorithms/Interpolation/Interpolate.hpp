@@ -33,7 +33,8 @@ template <typename TagsList>
 struct Variables;
 }  // namespace Tags
 template <size_t Dim> class Mesh;
-template <size_t VolumeDim> class ElementIndex;
+template <size_t VolumeDim>
+class ElementId;
 namespace intrp {
 template <typename Metavariables, typename Tag>
 struct InterpolationTarget;
@@ -94,7 +95,7 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>,
   void operator()(const TimeStepId& time_id, const Mesh<VolumeDim>& mesh,
                   const db::const_item_type<Tensors>&... tensors,
                   Parallel::ConstGlobalCache<Metavariables>& cache,
-                  const ElementIndex<VolumeDim>& array_index,
+                  const ElementId<VolumeDim>& array_index,
                   const ParallelComponent* const /*meta*/) const noexcept {
     Variables<tmpl::list<Tensors...>> interp_vars(mesh.number_of_grid_points());
     const auto copy_to_variables = [&interp_vars](const auto tensor_tag_v,

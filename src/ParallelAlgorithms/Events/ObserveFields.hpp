@@ -18,7 +18,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TensorData.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
@@ -175,7 +174,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
           ::Tags::Analytic<AnalyticSolutionTensors>>&... analytic_solutions,
       const db::const_item_type<NonSolutionTensors>&... non_solution_tensors,
       Parallel::ConstGlobalCache<Metavariables>& cache,
-      const ElementIndex<VolumeDim>& array_index,
+      const ElementId<VolumeDim>& array_index,
       const ParallelComponent* const /*meta*/) const noexcept {
     const std::string element_name =
         MakeString{} << ElementId<VolumeDim>(array_index) << '/';
@@ -243,7 +242,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         std::string{"/element_data"},
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
-            Parallel::ArrayIndex<ElementIndex<VolumeDim>>(array_index)),
+            Parallel::ArrayIndex<ElementId<VolumeDim>>(array_index)),
         std::move(components), mesh.extents());
   }
 

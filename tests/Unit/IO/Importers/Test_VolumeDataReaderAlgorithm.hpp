@@ -20,7 +20,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TensorData.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "IO/H5/AccessType.hpp"
@@ -236,7 +235,7 @@ struct InitializeElement {
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ElementIndex<Dim>& /*array_index*/,
+                    const ElementId<Dim>& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     return std::make_tuple(
@@ -249,7 +248,7 @@ struct InitializeElement {
 };
 
 template <size_t Dim, Grid TheGrid>
-void test_result(const ElementIndex<Dim>& element_index,
+void test_result(const ElementId<Dim>& element_index,
                  const TestVolumeData<TheGrid>& test_data,
                  const Scalar<DataVector>& scalar_field,
                  const tnsr::I<DataVector, Dim>& vector_field) noexcept {
@@ -273,7 +272,7 @@ struct TestResult {
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ElementIndex<Dim>& array_index, const ActionList /*meta*/,
+      const ElementId<Dim>& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     if (TheGrid == Grid::Fine) {
       test_result(array_index, fine_volume_data, get<ScalarFieldTag>(box),
@@ -289,7 +288,7 @@ struct TestResult {
 template <size_t Dim, Grid TheGrid, typename Metavariables>
 struct ElementArray {
   using chare_type = Parallel::Algorithms::Array;
-  using array_index = ElementIndex<Dim>;
+  using array_index = ElementId<Dim>;
   using metavariables = Metavariables;
   using initialization_tags = tmpl::list<>;
   using array_allocation_tags = tmpl::list<>;
@@ -330,7 +329,7 @@ struct ElementArray {
                 number_of_procs =
                     static_cast<size_t>(Parallel::number_of_procs());
          i < number_of_elements<TheGrid>; i++) {
-      ElementIndex<Dim> element_index{ElementId<Dim>{i}};
+      ElementId<Dim> element_index{i};
       array_proxy[element_index].insert(global_cache, initialization_items,
                                         which_proc);
       which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;

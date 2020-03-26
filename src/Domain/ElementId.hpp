@@ -12,7 +12,6 @@
 #include <iosfwd>
 #include <limits>
 
-#include "Domain/ElementIndex.hpp" // IWYU pragma: keep
 #include "Domain/SegmentId.hpp"
 #include "Domain/Side.hpp"
 #include "ErrorHandling/Assert.hpp"
@@ -20,10 +19,6 @@
 #include "Utilities/MakeArray.hpp"
 
 /// \cond
-namespace Parallel {
-template <class>
-class ArrayIndex;
-}  // namespace Parallel
 /// \endcond
 namespace PUP {
 class er;
@@ -65,15 +60,6 @@ class ElementId {
 
   /// Create the ElementId of the root Element of a Block.
   explicit ElementId(size_t block_id) noexcept;
-
-  /// Convert an ElementIndex to an ElementId
-  // clang-tidy: mark explicit: we want to allow conversion
-  ElementId(const ElementIndex<VolumeDim>& index) noexcept;  // NOLINT
-
-  /// Conversion operator needed to index `proxy`s using `ElementId`
-  // clang-tidy: mark explicit, we want implicit conversion
-  operator Parallel::ArrayIndex<ElementIndex<VolumeDim>>() const  // NOLINT
-      noexcept;
 
   /// Create an arbitrary ElementId.
   ElementId(size_t block_id,

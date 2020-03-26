@@ -35,7 +35,7 @@
 
 /// \cond
 template <size_t VolumeDim>
-class ElementIndex;
+class ElementId;
 namespace Frame {
 struct Inertial;
 }  // namespace Frame
@@ -92,7 +92,7 @@ struct Domain {
   static auto apply(DataBox& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ElementIndex<Dim>& array_index,
+                    const ElementId<Dim>& array_index,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     using simple_tags = db::AddSimpleTags<

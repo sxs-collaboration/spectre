@@ -33,7 +33,6 @@
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceComputeTags.hpp"
@@ -179,7 +178,7 @@ template <size_t Dim, typename Metavariables>
 struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndex<Dim>;
+  using array_index = ElementId<Dim>;
   using const_global_cache_tags =
       tmpl::list<typename Metavariables::normal_dot_numerical_flux>;
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
@@ -410,7 +409,7 @@ void test_no_refinement() noexcept {
   {
     CHECK(runner.template nonempty_inboxes<my_component,
                                            fluxes_tag<flux_comm_types>>() ==
-          std::unordered_set<ElementIndex<2>>{west_id, east_id, south_id});
+          std::unordered_set<ElementId<2>>{west_id, east_id, south_id});
     const auto check_sent_data = [&runner, &self_id ](
         const ElementId<2>& id, const Direction<2>& direction) noexcept {
       const auto& flux_inbox =

@@ -18,7 +18,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"  // IWYU pragma: keep
+#include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/IndexToSliceAt.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/OrientationMap.hpp"
@@ -83,7 +83,7 @@ template <typename Metavariables>
 struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndex<2>;
+  using array_index = ElementId<2>;
   using const_global_cache_tags =
       tmpl::list<Tags::TimeStepper<LtsTimeStepper>, NumericalFluxTag>;
   using simple_tags = db::AddSimpleTags<

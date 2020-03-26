@@ -20,7 +20,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"  // IWYU pragma: keep
+#include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/IndexToSliceAt.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
@@ -101,7 +101,7 @@ template <size_t Dim, typename Flux, typename Metavariables>
 struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndex<Dim>;
+  using array_index = ElementId<Dim>;
   using const_global_cache_tags = tmpl::list<NumericalFluxTag<Flux>>;
   using simple_tags =
       db::AddSimpleTags<domain::Tags::Mesh<Dim>,

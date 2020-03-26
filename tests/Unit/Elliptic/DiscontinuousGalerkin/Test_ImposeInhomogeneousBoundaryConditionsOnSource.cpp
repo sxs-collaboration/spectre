@@ -27,7 +27,6 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/SegmentId.hpp"
 #include "Domain/Tags.hpp"
@@ -105,7 +104,7 @@ template <size_t Dim, typename Metavariables>
 struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndex<Dim>;
+  using array_index = ElementId<Dim>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,

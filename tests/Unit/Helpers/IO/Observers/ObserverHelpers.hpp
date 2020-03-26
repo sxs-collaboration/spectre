@@ -5,7 +5,7 @@
 
 #include <functional>
 
-#include "Domain/ElementIndex.hpp"
+#include "Domain/ElementId.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Helpers.hpp"
@@ -25,7 +25,7 @@ class DataBox;
 /// \endcond
 
 namespace TestObservers_detail {
-using ElementIndexType = ElementIndex<2>;
+using ElementIdType = ElementId<2>;
 
 template <observers::TypeOfObservation TypeOfObservation>
 struct RegisterThisObsType {
@@ -46,7 +46,7 @@ struct element_component {
   using component_being_mocked = void;  // Not needed
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndexType;
+  using array_index = ElementIdType;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase,
