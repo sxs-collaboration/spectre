@@ -5,14 +5,20 @@
 # If not in one of the default paths specify
 # -DGOOGLE_BENCHMARK_ROOT=/path/to/GOOGLE_BENCHMARK to search there as well.
 
+if(NOT GOOGLE_BENCHMARK_ROOT)
+  # Need to set to empty to avoid warnings with --warn-uninitialized
+  set(GOOGLE_BENCHMARK_ROOT "")
+  set(GOOGLE_BENCHMARK_ROOT $ENV{GOOGLE_BENCHMARK_ROOT})
+endif()
+
 find_path(GOOGLE_BENCHMARK_INCLUDE_DIRS benchmark.h
     PATH_SUFFIXES include/benchmark
-    HINTS ${GOOGLE_BENCHMARK_ROOT} ENV GOOGLE_BENCHMARK_ROOT)
+    HINTS ${GOOGLE_BENCHMARK_ROOT})
 
 find_library(GOOGLE_BENCHMARK_LIBRARIES
     NAMES benchmark
     PATH_SUFFIXES lib64 lib
-    HINTS ${GOOGLE_BENCHMARK_ROOT} ENV GOOGLE_BENCHMARK_ROOT)
+    HINTS ${GOOGLE_BENCHMARK_ROOT})
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GOOGLE_BENCHMARK
