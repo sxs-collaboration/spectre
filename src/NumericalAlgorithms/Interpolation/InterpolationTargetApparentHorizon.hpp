@@ -10,6 +10,7 @@
 #include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/Interpolation/SendPointsToInterpolator.hpp"
 #include "Options/Options.hpp"
@@ -19,6 +20,8 @@
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
+class DataVector;
+
 namespace PUP {
 class er;
 }  // namespace PUP
@@ -199,13 +202,24 @@ struct ApparentHorizon {
     const auto prolonged_strahlkorper =
         Strahlkorper<Frame>(L_mesh, L_mesh, strahlkorper);
 
-    const auto prolonged_coords =
-        StrahlkorperTags::CartesianCoords<Frame>::function(
-            prolonged_strahlkorper,
-            StrahlkorperTags::Radius<Frame>::function(prolonged_strahlkorper),
-            StrahlkorperTags::Rhat<Frame>::function(
-                StrahlkorperTags::ThetaPhi<Frame>::function(
-                    prolonged_strahlkorper)));
+    Variables<tmpl::list<::Tags::Tempi<0, 2, ::Frame::Spherical<Frame>>,
+                         ::Tags::Tempi<1, 3, Frame>, ::Tags::TempScalar<2>>>
+        temp_buffer(prolonged_strahlkorper.ylm_spherepack().physical_size());
+
+    auto& theta_phi =
+        get<::Tags::Tempi<0, 2, ::Frame::Spherical<Frame>>>(temp_buffer);
+    auto& r_hat = get<::Tags::Tempi<1, 3, Frame>>(temp_buffer);
+    auto& radius = get(get<::Tags::TempScalar<2>>(temp_buffer));
+    StrahlkorperTags::ThetaPhi<Frame>::function(make_not_null(&theta_phi),
+                                                prolonged_strahlkorper);
+    StrahlkorperTags::Rhat<Frame>::function(make_not_null(&r_hat), theta_phi);
+    StrahlkorperTags::Radius<Frame>::function(make_not_null(&radius),
+                                              prolonged_strahlkorper);
+
+    tnsr::I<DataVector, 3, Frame> prolonged_coords{};
+    StrahlkorperTags::CartesianCoords<Frame>::function(
+        make_not_null(&prolonged_coords), prolonged_strahlkorper, radius,
+        r_hat);
 
     // In the future, when we add support for multiple Frames,
     // the code that transforms coordinates from the Strahlkorper Frame
