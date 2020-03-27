@@ -21,6 +21,8 @@
 #include "Domain/Neighbors.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/TagsCharacteresticSpeeds.hpp"
+#include "Domain/TagsTimeDependent.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
@@ -158,7 +160,10 @@ struct DiscontinuousGalerkin {
                                tmpl::size_t<dim>, Frame::Inertial>>,
         interface_compute_tag<::Tags::NormalDotFluxCompute<
             typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
-        interface_compute_tag<char_speed_tag>,
+        domain::Tags::Slice<domain::Tags::InternalDirections<dim>,
+                            domain::Tags::MeshVelocity<dim>>,
+        interface_compute_tag<
+            domain::Tags::CharSpeedCompute<char_speed_tag, dim>>,
         domain::Tags::Slice<
             domain::Tags::BoundaryDirectionsInterior<dim>,
             db::add_tag_prefix<::Tags::Flux,
@@ -174,7 +179,10 @@ struct DiscontinuousGalerkin {
                                tmpl::size_t<dim>, Frame::Inertial>>,
         boundary_exterior_compute_tag<::Tags::NormalDotFluxCompute<
             typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
-        boundary_exterior_compute_tag<char_speed_tag>>;
+        domain::Tags::Slice<domain::Tags::BoundaryDirectionsExterior<dim>,
+                            domain::Tags::MeshVelocity<dim>>,
+        boundary_exterior_compute_tag<
+            domain::Tags::CharSpeedCompute<char_speed_tag, dim>>>;
 
     template <typename TagsList>
     static auto initialize(db::DataBox<TagsList>&& box) noexcept {

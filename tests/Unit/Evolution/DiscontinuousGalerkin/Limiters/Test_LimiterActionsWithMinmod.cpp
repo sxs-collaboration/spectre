@@ -18,12 +18,16 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/CubicScale.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/SizeOfElement.hpp"  // IWYU pragma: keep
@@ -66,13 +70,18 @@ struct component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
   using const_global_cache_tags = tmpl::list<LimiterTag>;
-  using simple_tags =
-      db::AddSimpleTags<TemporalId, domain::Tags::Mesh<Dim>,
-                        domain::Tags::Element<Dim>,
-                        domain::Tags::ElementMap<Dim>,
-                        domain::Tags::Coordinates<Dim, Frame::Logical>,
-                        domain::Tags::Coordinates<Dim, Frame::Inertial>, Var>;
-  using compute_tags = db::AddComputeTags<domain::Tags::SizeOfElement<Dim>>;
+  using simple_tags = db::AddSimpleTags<
+      TemporalId, domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+      domain::Tags::ElementMap<Dim, Frame::Grid>,
+      domain::CoordinateMaps::Tags::CoordinateMap<2, Frame::Grid,
+                                                  Frame::Inertial>,
+      ::Tags::Time, domain::Tags::FunctionsOfTime, Var>;
+  using compute_tags =
+      db::AddComputeTags<::domain::Tags::LogicalCoordinates<Dim>,
+                         ::domain::Tags::MappedCoordinates<
+                             ::domain::Tags::ElementMap<Dim, Frame::Grid>,
+                             ::domain::Tags::Coordinates<Dim, Frame::Logical>>,
+                         domain::Tags::SizeOfElementCompute<Dim>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -112,25 +121,41 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Minmod",
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+  using CubicScaleMap = domain::CoordMapsTimeDependent::CubicScale<2>;
+  PUPable_reg(
+      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Grid, Affine2D>));
   PUPable_reg(SINGLE_ARG(
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial, CubicScaleMap>));
+  domain::FunctionsOfTime::register_derived_with_charm();
+
   const Affine xi_map{-1., 1., 3., 7.};
   const Affine eta_map{-1., 1., 7., 3.};
-  auto map = ElementMap<2, Frame::Inertial>(
-      self_id,
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          Affine2D(xi_map, eta_map)));
+  auto logical_to_grid_map = ElementMap<2, Frame::Grid>(
+      self_id, domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                   Affine2D(xi_map, eta_map)));
+  std::unique_ptr<domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, 2>>
+      grid_to_inertial_map =
+          domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+              CubicScaleMap{10.0, "Expansion", "Expansion"});
 
-  auto logical_coords = logical_coordinates(mesh);
-  auto inertial_coords = map(logical_coords);
+  const double initial_time = 0.0;
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      functions_of_time{};
+  functions_of_time.insert(std::make_pair(
+      "Expansion",
+      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
+          initial_time, std::array<DataVector, 3>{{{0.0}, {1.0}, {0.0}}})));
+
   auto var = Scalar<DataVector>(mesh.number_of_grid_points(), 1234.);
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       Limiters::Minmod<2, tmpl::list<Var>>(Limiters::MinmodType::LambdaPi1)};
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, self_id,
-      {0, mesh, element, std::move(map), std::move(logical_coords),
-       std::move(inertial_coords), std::move(var)});
+      {0, mesh, element, std::move(logical_to_grid_map),
+       std::move(grid_to_inertial_map), 1.0, std::move(functions_of_time),
+       std::move(var)});
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Testing);
 
