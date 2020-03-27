@@ -37,9 +37,17 @@ function(ADD_SPECTRE_LIBRARY LIBRARY_NAME)
       $<TARGET_PROPERTY:${SPECTRE_PCH},INTERFACE_COMPILE_OPTIONS>
       )
   endif()
-  target_link_libraries(
-    ${LIBRARY_NAME}
-    PUBLIC
-    SpectreFlags
-    )
+  if (${LIBRARY_TYPE} STREQUAL INTERFACE_LIBRARY)
+    target_link_libraries(
+      ${LIBRARY_NAME}
+      INTERFACE
+      SpectreFlags
+      )
+  else()
+    target_link_libraries(
+      ${LIBRARY_NAME}
+      PUBLIC
+      SpectreFlags
+      )
+  endif()
 endfunction()
