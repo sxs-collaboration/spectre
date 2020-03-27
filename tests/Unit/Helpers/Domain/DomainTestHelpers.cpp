@@ -416,7 +416,8 @@ void test_initial_domain(const Domain<VolumeDim>& domain,
   for (const auto& element_id : element_ids) {
     elements.emplace(element_id,
                      domain::Initialization::create_initial_element(
-                         element_id, blocks[element_id.block_id()]));
+                         element_id, blocks[element_id.block_id()],
+                         initial_refinement_levels));
   }
   domain::test_domain_connectivity(domain, elements);
   domain::test_refinement_levels_of_neighbors<0>(elements);

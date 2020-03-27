@@ -50,7 +50,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           "  BlockBounds: [[0.1, 2.6, 5.1, 5.2, 7.2]]\n"
           "  IsPeriodicIn: [false]\n"
           "  InitialGridPoints: [3]\n"
-          "  InitialRefinement: [2]\n");
+          "  InitialLevels: [2]\n");
   const auto* aligned_blocks_creator_1d =
       dynamic_cast<const creators::AlignedLattice<1>*>(domain_creator_1d.get());
   test_aligned_blocks(*aligned_blocks_creator_1d);
@@ -61,7 +61,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           "  BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2, 8.9]]\n"
           "  IsPeriodicIn: [false, true]\n"
           "  InitialGridPoints: [3, 4]\n"
-          "  InitialRefinement: [2, 1]\n");
+          "  InitialLevels: [2, 1]\n");
   const auto* aligned_blocks_creator_2d =
       dynamic_cast<const creators::AlignedLattice<2>*>(domain_creator_2d.get());
   test_aligned_blocks(*aligned_blocks_creator_2d);
@@ -72,7 +72,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           "  BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2], [-0.2, 3.2]]\n"
           "  IsPeriodicIn: [false, true, false]\n"
           "  InitialGridPoints: [3, 4, 5]\n"
-          "  InitialRefinement: [2, 1, 0]\n");
+          "  InitialLevels: [2, 1, 0]\n");
   const auto* aligned_blocks_creator_3d =
       dynamic_cast<const creators::AlignedLattice<3>*>(domain_creator_3d.get());
   test_aligned_blocks(*aligned_blocks_creator_3d);
@@ -84,7 +84,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           "[-0.2, 3.2, 4.0, 5.2]]\n"
           "  IsPeriodicIn: [false, false, false]\n"
           "  InitialGridPoints: [3, 4, 5]\n"
-          "  InitialRefinement: [2, 1, 0]\n"
+          "  InitialLevels: [2, 1, 0]\n"
           "  BlocksToExclude: [[1, 1, 1]]");
   const auto* cubical_shell_creator_3d =
       dynamic_cast<const creators::AlignedLattice<3>*>(
@@ -98,7 +98,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           "[-1.5, -0.5, 0.5, 1.5]]\n"
           "  IsPeriodicIn: [false, false, false]\n"
           "  InitialGridPoints: [5, 5, 5]\n"
-          "  InitialRefinement: [1, 1, 1]\n"
+          "  InitialLevels: [1, 1, 1]\n"
           "  BlocksToExclude: [[1, 1, 1]]");
   const auto* unit_cubical_shell_creator_3d =
       dynamic_cast<const creators::AlignedLattice<3>*>(
@@ -115,7 +115,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
             "AlignedLattice:\n"
             "  BlockBounds: [[70, 71, 72, 73], [90, 91, 92, 93]]\n"
             "  InitialGridPoints: [2, 3]\n"
-            "  InitialRefinement: [0, 0]\n"
+            "  InitialLevels: [0, 0]\n"
             "  BlocksToExclude: [[1, 0]]\n"
             "  RefinedGridPoints:\n"
             "  - LowerCornerIndex: [1, 0]\n"
@@ -150,6 +150,52 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     CAPTURE_PRECISE(expected_blocks);
     CHECK(expected_blocks.empty());
   }
+
+  {
+    // Expected domain refinement:
+    // 25 25 36
+    // 25 35 36
+    // 25 XX 35
+    const auto refined_domain =
+        TestHelpers::test_factory_creation<DomainCreator<2>>(
+            "AlignedLattice:\n"
+            "  BlockBounds: [[70, 71, 72, 73], [90, 91, 92, 93]]\n"
+            "  InitialGridPoints: [10, 10]\n"
+            "  InitialLevels: [2, 5]\n"
+            "  BlocksToExclude: [[1, 0]]\n"
+            "  RefinedLevels:\n"
+            "  - LowerCornerIndex: [1, 0]\n"
+            "    UpperCornerIndex: [3, 2]\n"
+            "    Refinement: [3, 5]\n"
+            "  - LowerCornerIndex: [2, 1]\n"
+            "    UpperCornerIndex: [3, 3]\n"
+            "    Refinement: [3, 6]");
+    std::unordered_set<
+        std::pair<std::vector<double>, std::array<size_t, 2>>,
+        boost::hash<std::pair<std::vector<double>, std::array<size_t, 2>>>>
+        expected_blocks{{{70.0, 90.0}, {{2, 5}}}, {{72.0, 90.0}, {{3, 5}}},
+                        {{70.0, 91.0}, {{2, 5}}}, {{71.0, 91.0}, {{3, 5}}},
+                        {{72.0, 91.0}, {{3, 6}}}, {{70.0, 92.0}, {{2, 5}}},
+                        {{71.0, 92.0}, {{2, 5}}}, {{72.0, 92.0}, {{3, 6}}}};
+    const auto domain = refined_domain->create_domain();
+    const auto& blocks = domain.blocks();
+    const auto refinement_levels = refined_domain->initial_refinement_levels();
+    REQUIRE(blocks.size() == refinement_levels.size());
+    for (size_t i = 0; i < blocks.size(); ++i) {
+      const auto location =
+          blocks[i]
+              .stationary_map()(
+                  tnsr::I<double, 2, Frame::Logical>{{{-1.0, -1.0}}})
+              .get_vector_of_data()
+              .second;
+      INFO("Unexpected block");
+      CAPTURE(location);
+      CAPTURE(refinement_levels[i]);
+      CHECK(expected_blocks.erase({location, refinement_levels[i]}) == 1);
+    }
+    CAPTURE_PRECISE(expected_blocks);
+    CHECK(expected_blocks.empty());
+  }
 }
 
 // [[OutputRegex, Cannot exclude blocks as well as have periodic boundary
@@ -164,7 +210,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice.Error",
           "[-1.5, -0.5, 0.5, 1.5]]\n"
           "  IsPeriodicIn: [true, false, false]\n"
           "  InitialGridPoints: [5, 5, 5]\n"
-          "  InitialRefinement: [1, 1, 1]\n"
+          "  InitialLevels: [1, 1, 1]\n"
           "  BlocksToExclude: [[1, 1, 1]]");
 }
 }  // namespace domain

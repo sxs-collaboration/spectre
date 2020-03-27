@@ -111,7 +111,9 @@ struct ElementArray {
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<
               ActionTesting::InitializeDataBox<tmpl::list<
-                  domain::Tags::Domain<Dim>, domain::Tags::InitialExtents<Dim>,
+                  domain::Tags::Domain<Dim>,
+                  domain::Tags::InitialRefinementLevels<Dim>,
+                  domain::Tags::InitialExtents<Dim>,
                   db::add_tag_prefix<
                       ::Tags::FixedSource,
                       typename Metavariables::system::fields_tag>>>,
@@ -158,8 +160,9 @@ void test_impose_inhomogeneous_boundary_conditions_on_source(
       {Fluxes<Dim>{}, AnalyticSolution<Dim>{}, NumericalFlux<Dim>{}}};
   ActionTesting::emplace_component_and_initialize<element_array>(
       &runner, element_id,
-      {domain_creator.create_domain(), domain_creator.initial_extents(),
-       std::move(source_vars)});
+      {domain_creator.create_domain(),
+       domain_creator.initial_refinement_levels(),
+       domain_creator.initial_extents(), std::move(source_vars)});
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
   ActionTesting::set_phase(make_not_null(&runner),

@@ -114,7 +114,8 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
-                         tmpl::list<domain::Tags::InitialExtents<Dim>>>,
+                         tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
+                                    domain::Tags::InitialExtents<Dim>>>,
                      dg::Actions::InitializeDomain<Dim>>>,
 
       Parallel::PhaseActions<typename Metavariables::Phase,
@@ -184,7 +185,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     ActionTesting::MockRuntimeSystem<metavariables> runner{
         {AnalyticSolution<1>{}, Fluxes<1>{}, domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
-        &runner, element_id, {domain_creator.initial_extents()});
+        &runner, element_id, {domain_creator.initial_refinement_levels(),
+                              domain_creator.initial_extents()});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     ActionTesting::set_phase(make_not_null(&runner),
@@ -235,7 +237,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     ActionTesting::MockRuntimeSystem<metavariables> runner{
         {AnalyticSolution<2>{}, Fluxes<2>{}, domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
-        &runner, element_id, {domain_creator.initial_extents()});
+        &runner, element_id, {domain_creator.initial_refinement_levels(),
+                              domain_creator.initial_extents()});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     ActionTesting::set_phase(make_not_null(&runner),
@@ -290,7 +293,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     ActionTesting::MockRuntimeSystem<metavariables> runner{
         {AnalyticSolution<3>{}, Fluxes<3>{}, domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
-        &runner, element_id, {domain_creator.initial_extents()});
+        &runner, element_id, {domain_creator.initial_refinement_levels(),
+                              domain_creator.initial_extents()});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     ActionTesting::set_phase(make_not_null(&runner),

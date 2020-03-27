@@ -79,13 +79,16 @@ template <size_t Dim>
 struct Domain {
   using initialization_tags =
       tmpl::list<::domain::Tags::InitialExtents<Dim>,
+                 ::domain::Tags::InitialRefinementLevels<Dim>,
                  ::domain::Tags::InitialFunctionsOfTime<Dim>>;
   using const_global_cache_tags = tmpl::list<::domain::Tags::Domain<Dim>>;
 
-  template <typename DataBox, typename... InboxTags, typename Metavariables,
-            typename ActionList, typename ParallelComponent,
-            Requires<db::tag_is_retrievable_v<
-                ::domain::Tags::InitialExtents<Dim>, DataBox>> = nullptr>
+  template <
+      typename DataBox, typename... InboxTags, typename Metavariables,
+      typename ActionList, typename ParallelComponent,
+      Requires<tmpl::all<initialization_tags,
+                         tmpl::bind<db::tag_is_retrievable, tmpl::_1,
+                                    tmpl::pin<DataBox>>>::value> = nullptr>
   static auto apply(DataBox& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
@@ -122,14 +125,16 @@ struct Domain {
 
     const auto& initial_extents =
         db::get<::domain::Tags::InitialExtents<Dim>>(box);
+    const auto& initial_refinement =
+        db::get<::domain::Tags::InitialRefinementLevels<Dim>>(box);
     const auto& domain = db::get<::domain::Tags::Domain<Dim>>(box);
 
     const ElementId<Dim> element_id{array_index};
     const auto& my_block = domain.blocks()[element_id.block_id()];
     Mesh<Dim> mesh = ::domain::Initialization::create_initial_mesh(
         initial_extents, element_id);
-    Element<Dim> element =
-        ::domain::Initialization::create_initial_element(element_id, my_block);
+    Element<Dim> element = ::domain::Initialization::create_initial_element(
+        element_id, my_block, initial_refinement);
     ElementMap<Dim, Frame::Grid> element_map{
         element_id, my_block.is_time_dependent()
                         ? my_block.moving_mesh_logical_to_grid_map().get_clone()
@@ -166,11 +171,12 @@ struct Domain {
         std::move(functions_of_time)));
   }
 
-  template <typename DataBox, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<not db::tag_is_retrievable_v<
-                ::domain::Tags::InitialExtents<Dim>, DataBox>> = nullptr>
+  template <
+      typename DataBox, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<not tmpl::all<initialization_tags,
+                             tmpl::bind<db::tag_is_retrievable, tmpl::_1,
+                                        tmpl::pin<DataBox>>>::value> = nullptr>
   static std::tuple<DataBox&&> apply(
       DataBox& /*box*/, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
