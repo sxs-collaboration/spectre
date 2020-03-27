@@ -19,3 +19,9 @@ add_dependencies(
   ${LIBRARY}
   module_ConstGlobalCache
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PUBLIC
+  Parallel
+  )

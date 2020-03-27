@@ -16,3 +16,9 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "ErrorHandling"
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PUBLIC
+  Framework
+  )
