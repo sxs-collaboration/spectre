@@ -23,7 +23,7 @@ spectre_unload_modules() {
     module unload prun/1.2
     module unload cmake-3.13.1-gcc-7.3.0-r7qr3qo
     module unload git-2.19.2-gcc-7.3.0-jfnpgdh
-    module unload blaze-3.2-gcc-7.3.0-d4xgiej
+    module unload blaze-3.5-gcc-7.3.0-dtnocst
     module unload brigand-master-gcc-7.3.0-3m5ibui
     module unload libsharp-2018-01-17-gcc-7.3.0-4xamgaw
     module unload catch-2.4.0-gcc-7.3.0-prvl6kv
@@ -47,7 +47,7 @@ spectre_load_modules() {
     source /opt/ohpc/pub/apps/spack/0.12.0/share/spack/setup-env.sh
     module load cmake-3.13.1-gcc-7.3.0-r7qr3qo
     module load git-2.19.2-gcc-7.3.0-jfnpgdh
-    module load blaze-3.2-gcc-7.3.0-d4xgiej
+    module load blaze-3.5-gcc-7.3.0-dtnocst
     module load brigand-master-gcc-7.3.0-3m5ibui
     module load libsharp-2018-01-17-gcc-7.3.0-4xamgaw
     module load catch-2.4.0-gcc-7.3.0-prvl6kv
