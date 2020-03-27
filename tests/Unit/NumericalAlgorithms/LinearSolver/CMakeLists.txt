@@ -4,6 +4,7 @@
 set(LIBRARY "Test_LinearSolver")
 
 set(LIBRARY_SOURCES
+  Test_Gmres.cpp
   Test_InnerProduct.cpp
   Test_Lapack.cpp
   )

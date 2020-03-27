@@ -4,6 +4,7 @@
 set(LIBRARY LinearSolver)
 
 set(LIBRARY_SOURCES
+  Gmres.cpp
   Lapack.cpp
   )
 
@@ -13,7 +14,9 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   Blas
+  Convergence
   DataStructures
+  Options
 
   PRIVATE
   Lapack
