@@ -79,8 +79,9 @@ void Irregular<Dim>::interpolate(
   if (result->number_of_grid_points() != m) {
     *result = Variables<TagsList>(m, 0.);
   }
-  dgemm_('n', 'n', m, n, k, 1.0, interpolation_matrix_.data(), m, vars.data(),
-         k, 0.0, result->data(), m);
+  dgemm_('n', 'n', m, n, k, 1.0, interpolation_matrix_.data(),
+         interpolation_matrix_.spacing(), vars.data(), k, 0.0, result->data(),
+         m);
 }
 
 template <size_t Dim>

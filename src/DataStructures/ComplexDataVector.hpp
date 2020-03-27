@@ -63,28 +63,6 @@ class ComplexDataVector
 namespace blaze {
 VECTOR_BLAZE_TRAIT_SPECIALIZE_ARITHMETIC_TRAITS(ComplexDataVector);
 VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS(ComplexDataVector);
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-template <>
-struct UnaryMapTrait<ComplexDataVector, blaze::Real> {
-  using Type = DataVector;
-};
-template <>
-struct UnaryMapTrait<ComplexDataVector, blaze::Imag> {
-  using Type = DataVector;
-};
-template <>
-struct UnaryMapTrait<DataVector, blaze::Real> {
-  using Type = DataVector;
-};
-template <>
-struct UnaryMapTrait<DataVector, blaze::Imag> {
-  using Type = DataVector;
-};
-template <>
-struct UnaryMapTrait<ComplexDataVector, blaze::Abs> {
-  using Type = DataVector;
-};
-#else
 template <>
 struct MapTrait<ComplexDataVector, blaze::Real> {
   using Type = DataVector;
@@ -105,7 +83,6 @@ template <>
 struct MapTrait<ComplexDataVector, blaze::Abs> {
   using Type = DataVector;
 };
-#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDataVector, DataVector,
                                                AddTrait, ComplexDataVector);
@@ -134,17 +111,6 @@ BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(DataVector, std::complex<double>,
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(DataVector, std::complex<double>,
                                                SubTrait, ComplexDataVector);
 
-
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-template <typename Operator>
-struct BinaryMapTrait<DataVector, ComplexDataVector, Operator> {
-  using Type = ComplexDataVector;
-};
-template <typename Operator>
-struct BinaryMapTrait<ComplexDataVector, DataVector, Operator> {
-  using Type = ComplexDataVector;
-};
-#else
 template <typename Operator>
 struct MapTrait<DataVector, ComplexDataVector, Operator> {
   using Type = ComplexDataVector;
@@ -153,7 +119,6 @@ template <typename Operator>
 struct MapTrait<ComplexDataVector, DataVector, Operator> {
   using Type = ComplexDataVector;
 };
-#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 }  // namespace blaze
 
 MAKE_STD_ARRAY_VECTOR_BINOPS(ComplexDataVector)
@@ -191,9 +156,9 @@ namespace blaze {
 // ComplexDataVector. This does *not* prevent taking the norm of the square (or
 // some other math expression) of a ComplexDataVector.
 template <typename Abs, typename Power>
-struct DVecNormHelper<
-    PointerVector<std::complex<double>, false, false, false, ComplexDataVector>,
-    Abs, Power> {};
+struct DVecNormHelper<PointerVector<std::complex<double>, blaze_unaligned,
+                                    blaze_unpadded, false, ComplexDataVector>,
+                      Abs, Power> {};
 }  // namespace blaze
 /// \endcond
 

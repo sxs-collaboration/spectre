@@ -66,8 +66,8 @@ void test_exact_differentiation(const Function& max_poly_deg) {
           Spectral::differentiation_matrix<BasisType, QuadratureType>(n);
       const auto u = unit_polynomial(p, collocation_pts);
       DataVector numeric_derivative{n};
-      dgemv_('N', n, n, 1., diff_matrix.data(), n, u.data(), 1, 0.0,
-             numeric_derivative.data(), 1);
+      dgemv_('N', n, n, 1., diff_matrix.data(), diff_matrix.spacing(), u.data(),
+             1, 0.0, numeric_derivative.data(), 1);
       const auto analytic_derivative =
           unit_polynomial_derivative(p, collocation_pts);
       CHECK_ITERABLE_APPROX(analytic_derivative, numeric_derivative);
@@ -117,7 +117,8 @@ void test_weak_differentiation() {
             Spectral::collocation_points<BasisType, QuadratureType>(n);
         const auto u = unit_polynomial(p, collocation_pts);
         DataVector numeric_derivative{n};
-        dgemv_('N', n, n, 1., weak_diff_matrix.data(), n, u.data(), 1, 0.0,
+        dgemv_('N', n, n, 1., weak_diff_matrix.data(),
+               weak_diff_matrix.spacing(), u.data(), 1, 0.0,
                numeric_derivative.data(), 1);
         const auto analytic_derivative =
             unit_polynomial_derivative(p, collocation_pts);
@@ -163,11 +164,12 @@ void test_linear_filter() {
         Spectral::collocation_points<BasisType, QuadratureType>(n);
     const DataVector u = exp(collocation_pts);
     DataVector u_filtered(n);
-    dgemv_('N', n, n, 1.0, filter_matrix.data(), n, u.data(), 1, 0.0,
-           u_filtered.data(), 1);
+    dgemv_('N', n, n, 1.0, filter_matrix.data(), filter_matrix.spacing(),
+           u.data(), 1, 0.0, u_filtered.data(), 1);
     DataVector u_filtered_spectral(n);
-    dgemv_('N', n, n, 1.0, nodal_to_modal_matrix.data(), n, u_filtered.data(),
-           1, 0.0, u_filtered_spectral.data(), 1);
+    dgemv_('N', n, n, 1.0, nodal_to_modal_matrix.data(),
+           nodal_to_modal_matrix.spacing(), u_filtered.data(), 1, 0.0,
+           u_filtered_spectral.data(), 1);
     for (size_t s = 2; s < n; ++s) {
       CHECK(0.0 == approx(u_filtered_spectral[s]));
     }
@@ -216,7 +218,8 @@ void test_interpolation_matrix(const DataVector& target_points,
     for (size_t p = 0; p <= max_poly_deg(n); p++) {
       const DataVector u = unit_polynomial(p, collocation_pts);
       dgemv_('n', target_points.size(), n, 1., interp_matrix.data(),
-             target_points.size(), u.data(), 1, 0., interpolated_u.data(), 1);
+             interp_matrix.spacing(), u.data(), 1, 0., interpolated_u.data(),
+             1);
       CHECK(interpolated_u.size() == target_points.size());
       if (eps <= 0.) {
         CHECK_ITERABLE_APPROX(unit_polynomial(p, target_points),

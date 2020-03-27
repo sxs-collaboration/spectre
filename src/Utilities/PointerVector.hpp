@@ -14,6 +14,7 @@
 #include "Utilities/Blaze.hpp"
 
 #include <blaze/math/CustomVector.h>
+#include <blaze/system/Optimizations.h>
 #include <blaze/system/Version.h>
 #include <blaze/util/typetraits/RemoveConst.h>
 
@@ -26,41 +27,31 @@
 // between Blaze 3.2 and 3.4, there have been several minor changes to type
 // definitions. Here, we define the aliases to the appropriate tokens for the
 // respective versions.
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION == 2))
-const bool blaze_unaligned = blaze::unaligned;
-template <typename T>
-using BlazePow = blaze::Pow<T>;
-#else  // we only support blaze 3.2+, so this is all later versions
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION < 6))
 const bool blaze_unaligned = blaze::unaligned != 0;
+const bool blaze_unpadded = blaze::unpadded != 0;
+using AlignmentFlag_t = bool;
+using PaddingFlag_t = bool;
 template <typename T>
 using BlazePow = blaze::UnaryPow<T>;
+#elif ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION == 6))
+const blaze::AlignmentFlag blaze_unaligned = blaze::AlignmentFlag::unaligned;
+const bool blaze_unpadded = blaze::unpadded;
+#define BLAZE_TEMPLATE template
+using AlignmentFlag_t = blaze::AlignmentFlag;
+using PaddingFlag_t = bool;
+template <typename T>
+using BlazePow = blaze::Bind2nd<blaze::Pow, T>;
+#elif ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION >= 7))
+const blaze::AlignmentFlag blaze_unaligned = blaze::AlignmentFlag::unaligned;
+const blaze::PaddingFlag blaze_unpadded = blaze::PaddingFlag::unpadded;
+#define BLAZE_TEMPLATE template
+using AlignmentFlag_t = blaze::AlignmentFlag;
+using PaddingFlag_t = blaze::PaddingFlag;
+template <typename T>
+using BlazePow = blaze::Bind2nd<blaze::Pow, T>;
 #endif
 
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-template <typename T>
-using blaze_enable_if_t = blaze::EnableIf_<T>;
-template <typename T>
-using blaze_remove_const_t = blaze::RemoveConst_<T>;
-template <typename T>
-using blaze_simd_trait_t = blaze::SIMDTrait_<T>;
-template <typename T>
-using blaze_element_type_t = blaze::ElementType_<T>;
-template <typename T>
-using blaze_result_type_t = blaze::ResultType_<T>;
-template <typename T1, typename T2>
-using blaze_mult_trait_t = blaze::MultTrait_<T1, T2>;
-template <typename T1, typename T2>
-using blaze_div_trait_t = blaze::DivTrait_<T1, T2>;
-template <typename T1, typename T2>
-using blaze_cross_trait_t = blaze::CrossTrait_<T1, T2>;
-template <typename T>
-using blaze_const_iterator_t = blaze::ConstIterator_<T>;
-template <typename T>
-using blaze_is_numeric = blaze::IsNumeric<T>;
-template <typename T>
-const bool blaze_is_numeric_v = blaze_is_numeric<T>::value;
-
-#else   // we only support blaze 3.2+, so this is all later versions
 template <bool B>
 using blaze_enable_if_t = blaze::EnableIf_t<B>;
 template <typename T>
@@ -83,197 +74,6 @@ template <typename T>
 const bool blaze_is_numeric = blaze::IsNumeric_v<T>;
 template <typename T>
 const bool blaze_is_numeric_v = blaze_is_numeric<T>;
-#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 2))
-// The code to the corresponding endif has the following license applied to it
-// since it is a modification of the Blaze v3.3 code.
-//
-//  Copyright (C) 2012-2018 Klaus Iglberger - All Rights Reserved
-//
-//  This file is part of the Blaze library. You can redistribute it and/or
-//  modify it under the terms of the New (Revised) BSD License. Redistribution
-//  and use in source and binary forms, with or without modification, are
-//  permitted provided that the following conditions are met:
-//
-//  1. Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//  3. Neither the names of the Blaze development group nor the names of its
-//     contributors may be used to endorse or promote products derived from this
-//     software without specific prior written permission.
-//
-//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-//  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-//  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-//  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-//  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-//  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-//  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-//  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-//  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-//  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-//  POSSIBILITY OF SUCH DAMAGE.
-namespace blaze {
-template <typename T>
-BLAZE_ALWAYS_INLINE constexpr EnableIf_<Or<IsBuiltin<T>, IsComplex<T>>, T>
-evaluate(const T& a) noexcept {
-  return a;
-}
-
-template <typename T>
-BLAZE_ALWAYS_INLINE constexpr decltype(auto) pow2(const T& a) noexcept(
-    noexcept(a * a)) {
-  return (a * a);
-}
-
-struct Pow2 {
-  explicit inline Pow2() noexcept = default;
-  template <typename T>
-  BLAZE_ALWAYS_INLINE constexpr decltype(auto) operator()(const T& a) const
-      noexcept {
-    return pow2(a);
-  }
-
-  template <typename T>
-  static constexpr bool simdEnabled() {
-    return HasSIMDMult<T, T>::value;
-  }
-
-  template <typename T>
-  BLAZE_ALWAYS_INLINE decltype(auto) load(const T& a) const {
-    BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
-    return pow2(a);
-  }
-};
-
-template <typename VT, typename Abs, typename Power>
-struct DVecNormHelper {
-  using CT = RemoveReference_<CompositeType_<VT>>;
-
-  // NOLINTNEXTLINE
-  BLAZE_CREATE_HAS_DATA_OR_FUNCTION_MEMBER_TYPE_TRAIT(HasSIMDEnabled,
-                                                      simdEnabled);
-  // NOLINTNEXTLINE
-  BLAZE_CREATE_HAS_DATA_OR_FUNCTION_MEMBER_TYPE_TRAIT(HasLoad, load);
-
-  struct UseSIMDEnabledFlag {
-    enum : bool {
-      value = Power::BLAZE_TEMPLATE simdEnabled<ElementType_<VT>>()
-    };
-  };
-
-  enum : bool {
-    value = useOptimizedKernels && CT::simdEnabled &&
-            If_<And<HasSIMDEnabled<Abs>, HasSIMDEnabled<Power>>,
-                UseSIMDEnabledFlag, And<HasLoad<Abs>, HasLoad<Power>>>::value &&
-            HasSIMDAdd<ElementType_<CT>, ElementType_<CT>>::value
-  };
-};
-
-template <typename VT, bool TF, typename Abs, typename Power, typename Root>
-inline decltype(auto) norm_backend(const DenseVector<VT, TF>& dv, Abs abs,
-                                   Power power, Root root,
-                                   FalseType /*meta*/) noexcept {
-  using CT = CompositeType_<VT>;
-  using ET = ElementType_<VT>;
-  using RT = decltype(evaluate(root(std::declval<ET>())));
-
-  if ((~dv).size() == 0UL) {
-    return RT();
-  }
-
-  CT tmp(~dv);
-
-  const size_t N(tmp.size());
-
-  ET norm(power(abs(tmp[0UL])));
-  size_t i(1UL);
-
-  for (; (i + 4UL) <= N; i += 4UL) {
-    norm += power(abs(tmp[i])) + power(abs(tmp[i + 1UL])) +
-            power(abs(tmp[i + 2UL])) + power(abs(tmp[i + 3UL]));
-  }
-  for (; (i + 2UL) <= N; i += 2UL) {
-    norm += power(abs(tmp[i])) + power(abs(tmp[i + 1UL]));
-  }
-  for (; i < N; ++i) {
-    norm += power(abs(tmp[i]));
-  }
-
-  return evaluate(root(norm));
-}
-
-template <typename VT, bool TF, typename Abs, typename Power, typename Root>
-inline decltype(auto) norm_backend(const DenseVector<VT, TF>& dv, Abs abs,
-                                   Power power, Root root,
-                                   TrueType /*meta*/) noexcept {
-  using CT = CompositeType_<VT>;
-  using ET = ElementType_<VT>;
-  using RT = decltype(evaluate(root(std::declval<ET>())));
-
-  enum : size_t { SIMDSIZE = SIMDTrait<ET>::size };
-
-  if ((~dv).size() == 0UL) {
-    return RT();
-  }
-
-  CT tmp(~dv);
-
-  const size_t N(tmp.size());
-
-  constexpr bool remainder(!usePadding || !IsPadded<VT>::value);
-
-  const size_t ipos((remainder) ? (N & size_t(-SIMDSIZE)) : (N));
-  BLAZE_INTERNAL_ASSERT(!remainder || (N - (N % SIMDSIZE)) == ipos,
-                        "Invalid end calculation");
-
-  SIMDTrait_<ET> xmm1, xmm2, xmm3, xmm4;
-  size_t i(0UL);
-
-  for (; (i + SIMDSIZE * 3UL) < ipos; i += SIMDSIZE * 4UL) {
-    xmm1 += power(abs(tmp.load(i)));
-    xmm2 += power(abs(tmp.load(i + SIMDSIZE)));
-    xmm3 += power(abs(tmp.load(i + SIMDSIZE * 2UL)));
-    xmm4 += power(abs(tmp.load(i + SIMDSIZE * 3UL)));
-  }
-  for (; (i + SIMDSIZE) < ipos; i += SIMDSIZE * 2UL) {
-    xmm1 += power(abs(tmp.load(i)));
-    xmm2 += power(abs(tmp.load(i + SIMDSIZE)));
-  }
-  for (; i < ipos; i += SIMDSIZE) {
-    xmm1 += power(abs(tmp.load(i)));
-  }
-
-  ET norm(sum(xmm1 + xmm2 + xmm3 + xmm4));
-
-  for (; remainder && i < N; ++i) {
-    norm += power(abs(tmp[i]));
-  }
-
-  return evaluate(root(norm));
-}
-
-template <typename VT, bool TF, typename Abs, typename Power, typename Root>
-decltype(auto) norm_backend(const DenseVector<VT, TF>& dv, Abs abs, Power power,
-                            Root root) {
-  return norm_backend(~dv, abs, power, root,
-                      Bool<DVecNormHelper<VT, Abs, Power>::value>());
-}
-
-template <typename VT, bool TF>
-decltype(auto) l1Norm(const DenseVector<VT, TF>& dv) noexcept {
-  return norm_backend(~dv, Abs(), Noop(), Noop());
-}
-
-template <typename VT, bool TF>
-inline decltype(auto) l2Norm(const DenseVector<VT, TF>& dv) noexcept {
-  return norm_backend(~dv, Noop(), Pow2(), Sqrt());
-}
-}  // namespace blaze
-#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 2))
 
 namespace blaze {
 template <typename T>
@@ -339,169 +139,6 @@ BLAZE_ALWAYS_INLINE decltype(auto) StepFunction(
   return map(~vec, blaze::StepFunction{});
 }
 
-// Blaze 3.3 and newer already has atan2 implemented
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION == 2))
-namespace blaze {
-template <typename T0, typename T1>
-BLAZE_ALWAYS_INLINE const SIMDfloat atan2(const SIMDf32<T0>& a,
-                                          const SIMDf32<T1>& b) noexcept
-#if BLAZE_SVML_MODE && (BLAZE_AVX512F_MODE || BLAZE_MIC_MODE)
-{
-  return _mm512_atan2_ps((~a).eval().value, (~b).eval().value);
-}
-#elif BLAZE_SVML_MODE && BLAZE_AVX_MODE
-{
-  return _mm256_atan2_ps((~a).eval().value, (~b).eval().value);
-}
-#elif BLAZE_SVML_MODE && BLAZE_SSE_MODE
-{
-  return _mm_atan2_ps((~a).eval().value, (~b).eval().value);
-}
-#else
-    = delete;
-#endif
-
-template <typename T0, typename T1>
-BLAZE_ALWAYS_INLINE const SIMDdouble atan2(const SIMDf64<T0>& a,
-                                           const SIMDf64<T1>& b) noexcept
-#if BLAZE_SVML_MODE && (BLAZE_AVX512F_MODE || BLAZE_MIC_MODE)
-{
-  return _mm512_atan2_pd((~a).eval().value, (~b).eval().value);
-}
-#elif BLAZE_SVML_MODE && BLAZE_AVX_MODE
-{
-  return _mm256_atan2_pd((~a).eval().value, (~b).eval().value);
-}
-#elif BLAZE_SVML_MODE && BLAZE_SSE_MODE
-{
-  return _mm_atan2_pd((~a).eval().value, (~b).eval().value);
-}
-#else
-    = delete;
-#endif
-
-template <typename T0, typename T1>
-using HasSIMDAtan2 = std::integral_constant<
-    bool, std::is_same<std::decay_t<T0>, std::decay_t<T1>>::value and
-              std::is_arithmetic<std::decay_t<T0>>::value and bool(  // NOLINT
-                  BLAZE_SVML_MODE) and                               // NOLINT
-              (bool(BLAZE_SSE_MODE) || bool(BLAZE_AVX_MODE) ||       // NOLINT
-               bool(BLAZE_MIC_MODE) || bool(BLAZE_AVX512F_MODE))>;   // NOLINT
-
-struct Atan2 {
-  template <typename T1, typename T2>
-  BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T1& a, const T2& b) const
-      noexcept {
-    using std::atan2;
-    return atan2(a, b);
-  }
-
-  template <typename T1, typename T2>
-  static constexpr bool simdEnabled() noexcept {
-    return HasSIMDAtan2<T1, T2>::value;
-  }
-
-  template <typename T1, typename T2>
-  BLAZE_ALWAYS_INLINE decltype(auto) load(const T1& a, const T2& b) const
-      noexcept {
-    using std::atan2;
-    BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T1);
-    BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T2);
-    return atan2(a, b);
-  }
-};
-}  // namespace blaze
-
-template <typename VT0, typename VT1, bool TF>
-BLAZE_ALWAYS_INLINE decltype(auto) atan2(
-    const blaze::DenseVector<VT0, TF>& y,
-    const blaze::DenseVector<VT1, TF>& x) noexcept {
-  return map(~y, ~x, blaze::Atan2{});
-}
-#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION == 2))
-
-// hypot function support
-// Blaze 3.3 and newer already has hypot implemented
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION == 2))
-namespace blaze {
-template <typename T0, typename T1>
-BLAZE_ALWAYS_INLINE const SIMDfloat hypot(const SIMDf32<T0>& a,
-                                          const SIMDf32<T1>& b) noexcept
-#if BLAZE_SVML_MODE && (BLAZE_AVX512F_MODE || BLAZE_MIC_MODE)
-{
-  return _mm512_hypot_ps((~a).eval().value, (~b).eval().value);
-}
-#elif BLAZE_SVML_MODE && BLAZE_AVX_MODE
-{
-  return _mm256_hypot_ps((~a).eval().value, (~b).eval().value);
-}
-#elif BLAZE_SVML_MODE && BLAZE_SSE_MODE
-{
-  return _mm_hypot_ps((~a).eval().value, (~b).eval().value);
-}
-#else
-    = delete;
-#endif
-
-template <typename T0, typename T1>
-BLAZE_ALWAYS_INLINE const SIMDdouble hypot(const SIMDf64<T0>& a,
-                                           const SIMDf64<T1>& b) noexcept
-#if BLAZE_SVML_MODE && (BLAZE_AVX512F_MODE || BLAZE_MIC_MODE)
-{
-  return _mm512_hypot_pd((~a).eval().value, (~b).eval().value);
-}
-#elif BLAZE_SVML_MODE && BLAZE_AVX_MODE
-{
-  return _mm256_hypot_pd((~a).eval().value, (~b).eval().value);
-}
-#elif BLAZE_SVML_MODE && BLAZE_SSE_MODE
-{
-  return _mm_hypot_pd((~a).eval().value, (~b).eval().value);
-}
-#else
-    = delete;
-#endif
-
-template <typename T0, typename T1>
-using HasSIMDHypot = std::integral_constant<
-    bool, std::is_same<std::decay_t<T0>, std::decay_t<T1>>::value and
-              std::is_arithmetic<std::decay_t<T0>>::value and bool(  // NOLINT
-                  BLAZE_SVML_MODE) and                               // NOLINT
-              (bool(BLAZE_SSE_MODE) || bool(BLAZE_AVX_MODE) ||       // NOLINT
-               bool(BLAZE_MIC_MODE) || bool(BLAZE_AVX512F_MODE))>;   // NOLINT
-
-struct Hypot {
-  template <typename T1, typename T2>
-  BLAZE_ALWAYS_INLINE decltype(auto) operator()(const T1& a, const T2& b) const
-      noexcept {
-    using std::hypot;
-    return hypot(a, b);
-  }
-
-  template <typename T1, typename T2>
-  static constexpr bool simdEnabled() noexcept {
-    return HasSIMDHypot<T1, T2>::value;
-  }
-
-  template <typename T1, typename T2>
-  BLAZE_ALWAYS_INLINE decltype(auto) load(const T1& a, const T2& b) const
-      noexcept {
-    using std::hypot;
-    BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T1);
-    BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T2);
-    return hypot(a, b);
-  }
-};
-}  // namespace blaze
-
-template <typename VT0, typename VT1, bool TF>
-BLAZE_ALWAYS_INLINE decltype(auto) hypot(
-    const blaze::DenseVector<VT0, TF>& x,
-    const blaze::DenseVector<VT1, TF>& y) noexcept {
-  return map(~x, ~y, blaze::Hypot{});
-}
-#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION == 2))
-
 namespace blaze {
 template <typename ST>
 struct DivideScalarByVector {
@@ -528,12 +165,14 @@ struct DivideScalarByVector {
   ST scalar_;
 };
 
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION < 6))
 template <typename Scalar, typename VT, bool TF,
           typename = blaze_enable_if_t<blaze_is_numeric<Scalar>>>
 BLAZE_ALWAYS_INLINE decltype(auto) operator/(
     Scalar scalar, const blaze::DenseVector<VT, TF>& vec) {
   return forEach(~vec, DivideScalarByVector<Scalar>(scalar));
 }
+#endif
 
 template <typename ST>
 struct AddScalar {
@@ -560,6 +199,7 @@ struct AddScalar {
   ST scalar_;
 };
 
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION < 6))
 template <typename VT, bool TF, typename Scalar,
           typename = blaze_enable_if_t<blaze_is_numeric<Scalar>>>
 decltype(auto) operator+(const blaze::DenseVector<VT, TF>& vec, Scalar scalar) {
@@ -578,6 +218,7 @@ VT& operator+=(blaze::DenseVector<VT, TF>& vec, Scalar scalar) {
   (~vec) = (~vec) + scalar;
   return ~vec;
 }
+#endif
 
 template <typename ST>
 struct SubScalarRhs {
@@ -629,6 +270,7 @@ struct SubScalarLhs {
   ST scalar_;
 };
 
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION < 6))
 template <typename VT, bool TF, typename Scalar,
           typename = blaze_enable_if_t<blaze_is_numeric<Scalar>>>
 decltype(auto) operator-(const blaze::DenseVector<VT, TF>& vec, Scalar scalar) {
@@ -647,6 +289,7 @@ VT& operator-=(blaze::DenseVector<VT, TF>& vec, Scalar scalar) {
   (~vec) = (~vec) - scalar;
   return ~vec;
 }
+#endif
 }  // namespace blaze
 
 namespace blaze {
@@ -678,7 +321,8 @@ struct UnderlyingElement<std::reference_wrapper<T>> {
  * allows this by passing the `ExprResultType` template parameter. For example,
  * `DataVector` sets `ExprResultType = DataVector`.
  */
-template <typename Type, bool AF = blaze_unaligned, bool PF = blaze::unpadded,
+template <typename Type, AlignmentFlag_t AF = blaze_unaligned,
+          PaddingFlag_t PF = blaze_unpadded,
           bool TF = blaze::defaultTransposeFlag,
           typename ExprResultType =
               blaze::DynamicVector<blaze_remove_const_t<Type>, TF>>
@@ -701,9 +345,13 @@ struct PointerVector
   using Pointer = Type*;
   using ConstPointer = const Type*;
 
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 6))
+  using Iterator = blaze::DenseIterator<Type, AF != blaze_unaligned>;
+  using ConstIterator = blaze::DenseIterator<const Type, AF != blaze_unaligned>;
+#else
   using Iterator = blaze::DenseIterator<Type, AF>;
   using ConstIterator = blaze::DenseIterator<const Type, AF>;
-
+#endif
   enum : bool { simdEnabled = blaze::IsVectorizable<Type>::value };
   enum : bool { smpAssignable = !blaze::IsSMPAssignable<Type>::value };
 
@@ -910,7 +558,8 @@ struct PointerVector
 };
 
 /// \cond
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 inline typename PointerVector<Type, AF, PF, TF, ExprResultType>::Reference
 PointerVector<Type, AF, PF, TF, ExprResultType>::at(size_t index) {
   if (index >= size_) {
@@ -919,7 +568,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::at(size_t index) {
   return (*this)[index];
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 inline typename PointerVector<Type, AF, PF, TF, ExprResultType>::ConstReference
 PointerVector<Type, AF, PF, TF, ExprResultType>::at(size_t index) const {
   if (index >= size_) {
@@ -928,7 +578,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::at(size_t index) const {
   return (*this)[index];
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 inline PointerVector<Type, AF, PF, TF, ExprResultType>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator=(const Type& rhs) {
   for (size_t i = 0; i < size_; ++i) {
@@ -938,7 +589,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::operator=(const Type& rhs) {
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 inline PointerVector<Type, AF, PF, TF, ExprResultType>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator=(
     std::initializer_list<Type> list) {
@@ -947,7 +599,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::operator=(
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename Other, size_t N>
 inline PointerVector<Type, AF, PF, TF, ExprResultType>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator=(
@@ -960,7 +613,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::operator=(
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline PointerVector<Type, AF, PF, TF, ExprResultType>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator=(
@@ -970,7 +624,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::operator=(
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline PointerVector<Type, AF, PF, TF, ExprResultType>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator+=(
@@ -980,7 +635,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::operator+=(
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline PointerVector<Type, AF, PF, TF, ExprResultType>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator-=(
@@ -990,7 +646,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::operator-=(
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline PointerVector<Type, AF, PF, TF, ExprResultType>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator*=(
@@ -1008,7 +665,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::operator*=(
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline PointerVector<Type, AF, PF, TF, ExprResultType>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator/=(
@@ -1026,7 +684,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::operator/=(
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline PointerVector<Type, AF, PF, TF, ExprResultType>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator%=(
@@ -1052,7 +711,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::operator%=(
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename Other>
 inline std::enable_if_t<blaze_is_numeric_v<Other>,
                         PointerVector<Type, AF, PF, TF, ExprResultType>>&
@@ -1061,7 +721,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::operator*=(Other rhs) {
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename Other>
 inline std::enable_if_t<blaze_is_numeric_v<Other>,
                         PointerVector<Type, AF, PF, TF, ExprResultType>>&
@@ -1071,44 +732,50 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::operator/=(Other rhs) {
   return *this;
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename Other>
 inline bool PointerVector<Type, AF, PF, TF, ExprResultType>::canAlias(
     const Other* alias) const noexcept {
   return static_cast<const void*>(this) == static_cast<const void*>(alias);
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename Other>
 inline bool PointerVector<Type, AF, PF, TF, ExprResultType>::isAliased(
     const Other* alias) const noexcept {
   return static_cast<const void*>(this) == static_cast<const void*>(alias);
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 inline bool PointerVector<Type, AF, PF, TF, ExprResultType>::isAligned() const
     noexcept {
   return (AF || checkAlignment(v_));
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 inline bool PointerVector<Type, AF, PF, TF, ExprResultType>::canSMPAssign()
     const noexcept {
   return (size() > blaze::SMP_DVECASSIGN_THRESHOLD);
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 BLAZE_ALWAYS_INLINE
     typename PointerVector<Type, AF, PF, TF, ExprResultType>::SIMDType
     PointerVector<Type, AF, PF, TF, ExprResultType>::load(size_t index) const
     noexcept {
-  if (AF) {
+  if (AF != blaze_unaligned) {
     return loada(index);
   }
   return loadu(index);
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 BLAZE_ALWAYS_INLINE
     typename PointerVector<Type, AF, PF, TF, ExprResultType>::SIMDType
     PointerVector<Type, AF, PF, TF, ExprResultType>::loada(size_t index) const
@@ -1128,7 +795,8 @@ BLAZE_ALWAYS_INLINE
   return loada(v_ + index);  // NOLINT
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 BLAZE_ALWAYS_INLINE
     typename PointerVector<Type, AF, PF, TF, ExprResultType>::SIMDType
     PointerVector<Type, AF, PF, TF, ExprResultType>::loadu(size_t index) const
@@ -1144,17 +812,19 @@ BLAZE_ALWAYS_INLINE
   return loadu(v_ + index);  // NOLINT
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 BLAZE_ALWAYS_INLINE void PointerVector<Type, AF, PF, TF, ExprResultType>::store(
     size_t index, const SIMDType& value) noexcept {
-  if (AF) {
+  if (AF != blaze_unaligned) {
     storea(index, value);
   } else {
     storeu(index, value);
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 BLAZE_ALWAYS_INLINE void
 PointerVector<Type, AF, PF, TF, ExprResultType>::storea(
     size_t index, const SIMDType& value) noexcept {
@@ -1173,7 +843,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::storea(
   storea(v_ + index, value);  // NOLINT
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 BLAZE_ALWAYS_INLINE void
 PointerVector<Type, AF, PF, TF, ExprResultType>::storeu(
     size_t index, const SIMDType& value) noexcept {
@@ -1188,7 +859,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::storeu(
   storeu(v_ + index, value);  // NOLINT
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 BLAZE_ALWAYS_INLINE void
 PointerVector<Type, AF, PF, TF, ExprResultType>::stream(
     size_t index, const SIMDType& value) noexcept {
@@ -1207,7 +879,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::stream(
   stream(v_ + index, value);  // NOLINT
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline std::enable_if_t<not(PointerVector<Type, AF, PF, TF, ExprResultType>::
                                 BLAZE_TEMPLATE VectorizedAssign<VT>::value)>
@@ -1230,7 +903,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::assign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline std::enable_if_t<(PointerVector<Type, AF, PF, TF, ExprResultType>::
                              BLAZE_TEMPLATE VectorizedAssign<VT>::value)>
@@ -1285,7 +959,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::assign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline std::enable_if_t<not(PointerVector<Type, AF, PF, TF, ExprResultType>::
                                 BLAZE_TEMPLATE VectorizedAddAssign<VT>::value)>
@@ -1308,7 +983,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::addAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline std::enable_if_t<(PointerVector<Type, AF, PF, TF, ExprResultType>::
                              BLAZE_TEMPLATE VectorizedAddAssign<VT>::value)>
@@ -1349,7 +1025,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::addAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline void PointerVector<Type, AF, PF, TF, ExprResultType>::addAssign(
     const blaze::SparseVector<VT, TF>& rhs) {
@@ -1361,7 +1038,8 @@ inline void PointerVector<Type, AF, PF, TF, ExprResultType>::addAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline std::enable_if_t<not(PointerVector<Type, AF, PF, TF, ExprResultType>::
                                 BLAZE_TEMPLATE VectorizedSubAssign<VT>::value)>
@@ -1384,7 +1062,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::subAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline std::enable_if_t<(PointerVector<Type, AF, PF, TF, ExprResultType>::
                              BLAZE_TEMPLATE VectorizedSubAssign<VT>::value)>
@@ -1425,7 +1104,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::subAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline void PointerVector<Type, AF, PF, TF, ExprResultType>::subAssign(
     const blaze::SparseVector<VT, TF>& rhs) {
@@ -1437,7 +1117,8 @@ inline void PointerVector<Type, AF, PF, TF, ExprResultType>::subAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline std::enable_if_t<not(PointerVector<Type, AF, PF, TF, ExprResultType>::
                                 BLAZE_TEMPLATE VectorizedMultAssign<VT>::value)>
@@ -1460,7 +1141,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::multAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline std::enable_if_t<(PointerVector<Type, AF, PF, TF, ExprResultType>::
                              BLAZE_TEMPLATE VectorizedMultAssign<VT>::value)>
@@ -1501,7 +1183,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::multAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline void PointerVector<Type, AF, PF, TF, ExprResultType>::multAssign(
     const blaze::SparseVector<VT, TF>& rhs) {
@@ -1515,7 +1198,8 @@ inline void PointerVector<Type, AF, PF, TF, ExprResultType>::multAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline std::enable_if_t<not(PointerVector<Type, AF, PF, TF, ExprResultType>::
                                 BLAZE_TEMPLATE VectorizedDivAssign<VT>::value)>
@@ -1538,7 +1222,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::divAssign(
   }
 }
 
-template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
+template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+          typename ExprResultType>
 template <typename VT>
 inline std::enable_if_t<(PointerVector<Type, AF, PF, TF, ExprResultType>::
                              BLAZE_TEMPLATE VectorizedDivAssign<VT>::value)>
@@ -1580,37 +1265,41 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::divAssign(
 }
 /// \endcond
 
-#define CHECK_FOR_SIZE_ZERO(SCALAR_TYPE)                                       \
-  template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType> \
-  inline bool operator==(                                                      \
-      const PointerVector<Type, AF, PF, TF, ExprResultType>& a,                \
-      const SCALAR_TYPE& b) noexcept {                                         \
-    ASSERT(a.size() != 0,                                                      \
-           "Comparing an empty vector to a value usually indicates a bug, "    \
-           "and so is disallowed.");                                           \
-    return static_cast<const typename PointerVector<                           \
-               Type, AF, PF, TF, ExprResultType>::BaseType&>(a) == b;          \
-  }                                                                            \
-                                                                               \
-  template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType> \
-  inline bool operator==(                                                      \
-      const SCALAR_TYPE& a,                                                    \
-      const PointerVector<Type, AF, PF, TF, ExprResultType>& b) noexcept {     \
-    return b == a;                                                             \
-  }                                                                            \
-                                                                               \
-  template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType> \
-  inline bool operator!=(                                                      \
-      const PointerVector<Type, AF, PF, TF, ExprResultType>& a,                \
-      const SCALAR_TYPE& b) noexcept {                                         \
-    return not(a == b);                                                        \
-  }                                                                            \
-                                                                               \
-  template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType> \
-  inline bool operator!=(                                                      \
-      const SCALAR_TYPE& a,                                                    \
-      const PointerVector<Type, AF, PF, TF, ExprResultType>& b) noexcept {     \
-    return not(a == b);                                                        \
+#define CHECK_FOR_SIZE_ZERO(SCALAR_TYPE)                                    \
+  template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,   \
+            typename ExprResultType>                                        \
+  inline bool operator==(                                                   \
+      const PointerVector<Type, AF, PF, TF, ExprResultType>& a,             \
+      const SCALAR_TYPE& b) noexcept {                                      \
+    ASSERT(a.size() != 0,                                                   \
+           "Comparing an empty vector to a value usually indicates a bug, " \
+           "and so is disallowed.");                                        \
+    return static_cast<const typename PointerVector<                        \
+               Type, AF, PF, TF, ExprResultType>::BaseType&>(a) == b;       \
+  }                                                                         \
+                                                                            \
+  template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,   \
+            typename ExprResultType>                                        \
+  inline bool operator==(                                                   \
+      const SCALAR_TYPE& a,                                                 \
+      const PointerVector<Type, AF, PF, TF, ExprResultType>& b) noexcept {  \
+    return b == a;                                                          \
+  }                                                                         \
+                                                                            \
+  template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,   \
+            typename ExprResultType>                                        \
+  inline bool operator!=(                                                   \
+      const PointerVector<Type, AF, PF, TF, ExprResultType>& a,             \
+      const SCALAR_TYPE& b) noexcept {                                      \
+    return not(a == b);                                                     \
+  }                                                                         \
+                                                                            \
+  template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,   \
+            typename ExprResultType>                                        \
+  inline bool operator!=(                                                   \
+      const SCALAR_TYPE& a,                                                 \
+      const PointerVector<Type, AF, PF, TF, ExprResultType>& b) noexcept {  \
+    return not(a == b);                                                     \
   }
 
 CHECK_FOR_SIZE_ZERO(double)
@@ -1623,15 +1312,20 @@ CHECK_FOR_SIZE_ZERO(std::complex<double>)
 // aggressive and matches everything), convert the exponent to a double, and
 // then call the double pow.
 template <
-    typename Type, bool AF, bool PF, bool TF, typename ExprResultType,
-    typename T,
+    typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
+    typename ExprResultType, typename T,
     typename = std::enable_if_t<std::is_fundamental<std::decay_t<T>>::value>>
 decltype(auto) pow(const PointerVector<Type, AF, PF, TF, ExprResultType>& t,
                    T&& exponent) noexcept {
   using ReturnType =
       const blaze::DVecMapExpr<PointerVector<Type, AF, PF, TF, ExprResultType>,
                                BlazePow<double>, TF>;
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION >= 6))
+  return ReturnType(
+      t, BlazePow<double>{blaze::Pow{}, static_cast<double>(exponent)});
+#else
   return ReturnType(t, BlazePow<double>{static_cast<double>(exponent)});
+#endif
 }
 
 /*!
@@ -1643,6 +1337,9 @@ decltype(auto) pow(const PointerVector<Type, AF, PF, TF, ExprResultType>& t,
  * the cases where the new vector type inherits from `PointerVector` with a
  * custom `ExprResultType`.
  */
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION >= 6))
+#define MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(OP, TYPE)
+#else
 #define MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(OP, TYPE)             \
   TYPE& operator OP(const TYPE& rhs) noexcept {                         \
     /* clang-tidy: parens around OP */                                  \
@@ -1661,3 +1358,4 @@ decltype(auto) pow(const PointerVector<Type, AF, PF, TF, ExprResultType>& t,
     ~*this OP rhs;                                                      \
     return *this;                                                       \
   }
+#endif

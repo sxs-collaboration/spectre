@@ -255,12 +255,13 @@ struct LinearFilterMatrixGenerator {
     // `nodal_to_modal_matrix` with the first two rows of
     // `modal_to_nodal_matrix`.
     Matrix lin_filter(num_points, num_points);
-    dgemm_('N', 'N', num_points, num_points, std::min(size_t{2}, num_points),
-           1.0,
-           modal_to_nodal_matrix<BasisType, QuadratureType>(num_points).data(),
-           num_points,
-           nodal_to_modal_matrix<BasisType, QuadratureType>(num_points).data(),
-           num_points, 0.0, lin_filter.data(), num_points);
+    dgemm_(
+        'N', 'N', num_points, num_points, std::min(size_t{2}, num_points), 1.0,
+        modal_to_nodal_matrix<BasisType, QuadratureType>(num_points).data(),
+        modal_to_nodal_matrix<BasisType, QuadratureType>(num_points).spacing(),
+        nodal_to_modal_matrix<BasisType, QuadratureType>(num_points).data(),
+        nodal_to_modal_matrix<BasisType, QuadratureType>(num_points).spacing(),
+        0.0, lin_filter.data(), lin_filter.spacing());
     return lin_filter;
   }
 };

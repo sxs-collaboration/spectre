@@ -26,49 +26,6 @@
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits/IsComplexOfFundamental.hpp"
 
-// IWYU doesn't like that we want PointerVector.hpp to expose Blaze and also
-// have VectorImpl.hpp to expose PointerVector.hpp without including Blaze
-// directly in VectorImpl.hpp
-//
-// IWYU pragma: no_include <blaze/math/AlignmentFlag.h>
-// IWYU pragma: no_include <blaze/math/PaddingFlag.h>
-// IWYU pragma: no_include <blaze/math/dense/DenseVector.h>
-// IWYU pragma: no_include <blaze/math/expressions/DVecDVecAddExpr.h>
-// IWYU pragma: no_include <blaze/math/expressions/DVecDVecDivExpr.h>
-// IWYU pragma: no_include <blaze/math/expressions/DVecDVecMultExpr.h>
-// IWYU pragma: no_include <blaze/math/expressions/DVecDVecSubExpr.h>
-// IWYU pragma: no_include <blaze/math/expressions/DVecMapExpr.h>
-// IWYU pragma: no_include <blaze/math/expressions/DVecScalarDivExpr.h>
-// IWYU pragma: no_include <blaze/math/expressions/DVecScalarMultExpr.h>
-// IWYU pragma: no_include <blaze/math/expressions/DenseVector.h>
-// IWYU pragma: no_include <blaze/math/expressions/Forward.h>
-// IWYU pragma: no_include <blaze/math/expressions/Vector.h>
-// IWYU pragma: no_include <blaze/math/traits/AddTrait.h>
-// IWYU pragma: no_include <blaze/math/traits/DivTrait.h>
-// IWYU pragma: no_include <blaze/math/traits/MultTrait.h>
-// IWYU pragma: no_include <blaze/math/traits/SubTrait.h>
-// IWYU pragma: no_include <blaze/math/typetraits/IsVector.h>
-// IWYU pragma: no_include <blaze/system/TransposeFlag.h>
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-// IWYU pragma: no_include <blaze/math/traits/BinaryMapTrait.h>
-// IWYU pragma: no_include <blaze/math/traits/UnaryMapTrait.h>
-#else
-// IWYU pragma: no_include <blaze/math/traits/MapTrait.h>
-#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-// IWYU pragma: no_include <blaze/math/typetraits/TransposeFlag.h>
-
-// IWYU pragma: no_forward_declare blaze::DenseVector
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-// IWYU pragma: no_forward_declare blaze::UnaryMapTrait
-// IWYU pragma: no_forward_declare blaze::BinaryMapTrait
-#else
-// IWYU pragma: no_forward_declare blaze::MapTrait
-#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-// IWYU pragma: no_forward_declare blaze::IsVector
-// IWYU pragma: no_forward_declare blaze::TransposeFlag
-
-// IWYU pragma: no_include "DataStructures/DataVector.hpp"
-
 /*!
  * \ingroup DataStructuresGroup
  * \brief Base class template for various DataVector and related types
@@ -112,7 +69,7 @@
  */
 template <typename T, typename VectorType>
 class VectorImpl
-    : public PointerVector<T, blaze::unaligned, blaze::unpadded,
+    : public PointerVector<T, blaze_unaligned, blaze_unpadded,
                            blaze::defaultTransposeFlag, VectorType> {
  public:
   using value_type = T;
@@ -507,17 +464,6 @@ std::ostream& operator<<(std::ostream& os,
  * \param VECTOR_TYPE The vector type, which for the `Map` operations is
  * the type of the operation result (e.g. `DataVector`)
  */
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-#define VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS(VECTOR_TYPE) \
-  template <typename Operator>                                    \
-  struct UnaryMapTrait<VECTOR_TYPE, Operator> {                   \
-    using Type = VECTOR_TYPE;                                     \
-  };                                                              \
-  template <typename Operator>                                    \
-  struct BinaryMapTrait<VECTOR_TYPE, VECTOR_TYPE, Operator> {     \
-    using Type = VECTOR_TYPE;                                     \
-  }
-#else
 #define VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS(VECTOR_TYPE) \
   template <typename Operator>                                    \
   struct MapTrait<VECTOR_TYPE, Operator> {                        \
@@ -527,7 +473,6 @@ std::ostream& operator<<(std::ostream& os,
   struct MapTrait<VECTOR_TYPE, VECTOR_TYPE, Operator> {           \
     using Type = VECTOR_TYPE;                                     \
   }
-#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 
 /*!
  * \ingroup DataStructuresGroup

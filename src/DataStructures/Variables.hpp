@@ -111,7 +111,7 @@ class Variables<tmpl::list<Tags...>> {
   using value_type = typename vector_type::value_type;
   using allocator_type = std::allocator<value_type>;
   using pointer_type =
-      PointerVector<value_type, blaze::unaligned, blaze::unpadded,
+      PointerVector<value_type, blaze_unaligned, blaze_unpadded,
                     transpose_flag,
                     blaze::DynamicVector<value_type, transpose_flag>>;
 

@@ -252,8 +252,8 @@ struct LogicalImpl<1, VariableTags, DerivativeTags> {
         Spectral::differentiation_matrix(mesh.slice_through(0));
     dgemm_<true>('N', 'N', mesh.extents(0), deriv_size / mesh.extents(0),
                  mesh.extents(0), 1.0, differentiation_matrix_xi.data(),
-                 mesh.extents(0), u.data(), mesh.extents(0), 0.0,
-                 logical_partial_derivatives_of_u[0], mesh.extents(0));
+                 differentiation_matrix_xi.spacing(), u.data(), mesh.extents(0),
+                 0.0, logical_partial_derivatives_of_u[0], mesh.extents(0));
   }
 };
 
@@ -278,8 +278,8 @@ struct LogicalImpl<2, VariableTags, DerivativeTags> {
     const size_t num_components_times_xi_slices = deriv_size / mesh.extents(0);
     dgemm_<true>('N', 'N', mesh.extents(0), num_components_times_xi_slices,
                  mesh.extents(0), 1.0, differentiation_matrix_xi.data(),
-                 mesh.extents(0), u.data(), mesh.extents(0), 0.0,
-                 logical_partial_derivatives_of_u[0], mesh.extents(0));
+                 differentiation_matrix_xi.spacing(), u.data(), mesh.extents(0),
+                 0.0, logical_partial_derivatives_of_u[0], mesh.extents(0));
 
     const auto u_eta_fastest =
         transpose<Variables<VariableTags>, Variables<DerivativeTags>>(
@@ -289,8 +289,9 @@ struct LogicalImpl<2, VariableTags, DerivativeTags> {
     const size_t num_components_times_eta_slices = deriv_size / mesh.extents(1);
     dgemm_<true>('N', 'N', mesh.extents(1), num_components_times_eta_slices,
                  mesh.extents(1), 1.0, differentiation_matrix_eta.data(),
-                 mesh.extents(1), u_eta_fastest.data(), mesh.extents(1), 0.0,
-                 partial_u_wrt_eta->data(), mesh.extents(1));
+                 differentiation_matrix_eta.spacing(), u_eta_fastest.data(),
+                 mesh.extents(1), 0.0, partial_u_wrt_eta->data(),
+                 mesh.extents(1));
     raw_transpose(make_not_null(logical_partial_derivatives_of_u[1]),
                   partial_u_wrt_eta->data(), num_components_times_xi_slices,
                   mesh.extents(0));
@@ -318,8 +319,8 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
     const size_t num_components_times_xi_slices = deriv_size / mesh.extents(0);
     dgemm_<true>('N', 'N', mesh.extents(0), num_components_times_xi_slices,
                  mesh.extents(0), 1.0, differentiation_matrix_xi.data(),
-                 mesh.extents(0), u.data(), mesh.extents(0), 0.0,
-                 logical_partial_derivatives_of_u[0], mesh.extents(0));
+                 differentiation_matrix_xi.spacing(), u.data(), mesh.extents(0),
+                 0.0, logical_partial_derivatives_of_u[0], mesh.extents(0));
 
     auto u_eta_or_zeta_fastest =
         transpose<Variables<VariableTags>, Variables<DerivativeTags>>(
@@ -329,8 +330,9 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
     const size_t num_components_times_eta_slices = deriv_size / mesh.extents(1);
     dgemm_<true>('N', 'N', mesh.extents(1), num_components_times_eta_slices,
                  mesh.extents(1), 1.0, differentiation_matrix_eta.data(),
-                 mesh.extents(1), u_eta_or_zeta_fastest.data(), mesh.extents(1),
-                 0.0, partial_u_wrt_eta_or_zeta->data(), mesh.extents(1));
+                 differentiation_matrix_eta.spacing(),
+                 u_eta_or_zeta_fastest.data(), mesh.extents(1), 0.0,
+                 partial_u_wrt_eta_or_zeta->data(), mesh.extents(1));
     raw_transpose(make_not_null(logical_partial_derivatives_of_u[1]),
                   partial_u_wrt_eta_or_zeta->data(),
                   num_components_times_xi_slices, mesh.extents(0));
@@ -345,8 +347,9 @@ struct LogicalImpl<3, VariableTags, DerivativeTags> {
         deriv_size / mesh.extents(2);
     dgemm_<true>('N', 'N', mesh.extents(2), num_components_times_zeta_slices,
                  mesh.extents(2), 1.0, differentiation_matrix_zeta.data(),
-                 mesh.extents(2), u_eta_or_zeta_fastest.data(), mesh.extents(2),
-                 0.0, partial_u_wrt_eta_or_zeta->data(), mesh.extents(2));
+                 differentiation_matrix_zeta.spacing(),
+                 u_eta_or_zeta_fastest.data(), mesh.extents(2), 0.0,
+                 partial_u_wrt_eta_or_zeta->data(), mesh.extents(2));
     raw_transpose(make_not_null(logical_partial_derivatives_of_u[2]),
                   partial_u_wrt_eta_or_zeta->data(), number_of_chunks,
                   chunk_size);
