@@ -59,8 +59,9 @@ void test_swsh_coefficients_class_interface() noexcept {
         computed_coefficients.get_sharp_alm_info()->lmax);
   CHECK(precomputed_libsharp_lm.get_sharp_alm_info()->lmax ==
         expected_sharp_alm_info->lmax);
-  CHECK(precomputed_libsharp_lm.get_sharp_alm_info()->lmax ==
-        computed_coefficients.l_max());
+  CHECK(
+      static_cast<size_t>(precomputed_libsharp_lm.get_sharp_alm_info()->lmax) ==
+      computed_coefficients.l_max());
 
   CHECK(precomputed_libsharp_lm.get_sharp_alm_info()->nm ==
         computed_coefficients.get_sharp_alm_info()->nm);

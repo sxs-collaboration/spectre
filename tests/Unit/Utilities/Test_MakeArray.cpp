@@ -117,7 +117,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.MakeArray", "[Unit][Utilities]") {
     }
     const auto array = make_array<MyNonCopyable<int>, 3>(std::move(vector));
     for (size_t i = 0; i < 3; ++i) {
-      CHECK(gsl::at(array, i).get() == i);
+      CHECK(gsl::at(array, i).get() == static_cast<int>(i));
     }
   }
 

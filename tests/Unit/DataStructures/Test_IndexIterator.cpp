@@ -26,7 +26,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.IndexIterator",
     CHECK(index_iterator() == expected);
     CHECK(*index_iterator == expected);
     CHECK(index_iterator->indices() == expected.indices());
-    CHECK(index_iterator.collapsed_index() == call_num);
+    CHECK(index_iterator.collapsed_index() == static_cast<size_t>(call_num));
     ++index_iterator;
     ++call_num;
   };
