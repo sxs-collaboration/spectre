@@ -3,7 +3,7 @@
 
 set(LIBRARY Options)
 
-add_library(${LIBRARY} INTERFACE)
+add_spectre_library(${LIBRARY} INTERFACE)
 
 target_link_libraries(
   ${LIBRARY}
