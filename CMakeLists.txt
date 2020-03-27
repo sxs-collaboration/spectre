@@ -109,7 +109,6 @@ enable_testing(true)
 include(SpectreAddTestLibs)
 include(SpectreAddCatchTests)
 include(AddInputFileTests)
-include(SetupCompilationFailureTests)
 
 include_directories(${CMAKE_SOURCE_DIR}/external)
 include_directories(${CMAKE_SOURCE_DIR}/src)

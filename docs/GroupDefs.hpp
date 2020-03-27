@@ -758,31 +758,6 @@
  * \example
  * \snippet Test_H5.cpp willfail_example_for_dev_doc
  *
- * ### Testing static assert
- *
- * You are able to test that a `static_assert` is being triggered using
- * the compilation failure test framework. When creating a new `static_assert`
- * test you must be sure to not have it in the same file as the runtime tests
- * since the file will not compile. The new file, say
- * `Test_StaticAssertDataBox.cpp` must be added to the
- * `SPECTRE_COMPILATION_TESTS` CMake variable, not `SPECTRE_TESTS`. Here is
- * an example of how to write a compilation failure test:
- *
- * \snippet TestCompilationFramework.cpp compilation_test_example
- *
- * Each individual test must be inside an `#%ifdef COMPILATION_TEST_.*` block
- * and each compilation test `cpp` file must contain
- * `FILE_IS_COMPILATION_TEST` outside of any `#%ifdef`s and at the end of
- * the file.
- *
- * Specific compiler versions can be specified for which the regex changes.
- * That is, the compiler version specified and all versions newer than that
- * will use the regex, until a newer compiler version is specified. For
- * example, see the below code prints a different static_assert for pre-GCC 6
- * and GCC 6 and newer.
- *
- * \snippet TestCompilationFramework.cpp gnu_versions_example
- *
  * ### Debugging Tests in GDB or LLDB
  *
  * Several tests fail intentionally at the executable level to test error
