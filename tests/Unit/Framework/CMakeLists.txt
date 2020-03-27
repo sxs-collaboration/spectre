@@ -13,9 +13,20 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
+  INTERFACE
+  Boost::boost
+  DataStructures
+  DataStructuresHelpers
+  Options
+  Parallel
+  Utilities
+
   PRIVATE
-  ErrorHandling
+  Informer
   NumPy
+
+  PUBLIC
+  ErrorHandling
   )
 
 target_include_directories(
