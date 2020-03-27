@@ -42,13 +42,19 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
+  INTERFACE
+  FunctionsOfTime
+  Time
+
   PUBLIC
   Boost::boost
   CoordinateMaps
   DataStructures
   ErrorHandling
-  FunctionsOfTime
   Options
-  Spectral
   Utilities
+
+  PRIVATE
+  DomainCreators
+  Spectral
   )
