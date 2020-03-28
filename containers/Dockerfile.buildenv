@@ -120,7 +120,7 @@ RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.7.tar.gz -O bla
     && cd libsharp_build \
     && sed -i 's/march=native/march=x86-64/' configure.ac \
     && autoconf \
-    && ./configure --prefix=/usr/local --disable-openmp \
+    && ./configure --prefix=/usr/local --enable-pic --disable-openmp \
     && make $PARALLEL_MAKE_ARG \
     && mv auto/bin/* /usr/local/bin \
     && mv auto/include/* /usr/local/include \
