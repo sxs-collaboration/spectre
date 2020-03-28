@@ -184,6 +184,14 @@ maintainers:
    > that the failure was a false positive, then we will open an issue
    > to track that problem with our status check suite.
 
+   Only those status check failures that occur in the containerized build
+   environment are your responsibility to fix. If you encounter an issue with a
+   status check that runs in an environment that you do not have access to, e.g.
+   on macOS or on a supercomputer, please notify
+   `@sxs-collaboration/spectre-core-devs`. They will refer the issue to a person
+   who has access to that environment. Unless requested by the reviewers, the PR
+   will not be held up until the issue is resolved.
+
 While the prerequisites above must be satisfied prior to having your
 pull request reviewed, the reviewers may ask you to complete
 additional design work, tests, or other changes before your pull
