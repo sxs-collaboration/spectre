@@ -3,8 +3,6 @@
 
 find_package(TCMALLOC REQUIRED)
 
-
-spectre_include_directories(${TCMALLOC_INCLUDE_DIRS})
 # Allocators should be linked as early as possible.
 set(SPECTRE_LIBRARIES "${TCMALLOC_LIBRARIES};${SPECTRE_LIBRARIES}")
 
@@ -15,3 +13,9 @@ file(APPEND
   "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
   "tcmalloc Version:  ${TCMALLOC_VERSION}\n"
   )
+
+add_library(Tcmalloc INTERFACE IMPORTED)
+set_property(TARGET Tcmalloc
+  APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${TCMALLOC_LIBRARIES})
+set_property(TARGET Tcmalloc PROPERTY
+  INTERFACE_INCLUDE_DIRECTORIES ${TCMALLOC_INCLUDE_DIRS})

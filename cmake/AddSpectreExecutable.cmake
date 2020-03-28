@@ -5,6 +5,28 @@
 # us to inject dependencies, flags, etc. into the targets.
 function(add_spectre_executable TARGET_NAME)
   add_executable(${TARGET_NAME} ${ARGN})
+  # We need to link custom allocators before we link anything else so that
+  # any third-party libraries, which generally should all be built as shared
+  # libraries, use the allocator that we use. Unfortunately, how exactly
+  # CMake decides on the linking order is not clear when using
+  # INTERFACE_LINK_LIBRARIES and targets. To this end, we set a global
+  # property SPECTRE_ALLOCATOR_LIBRARY that contains the link flag to link
+  # to the memory allocator. By linking to the allocator library first
+  # explicitly in target_link_libraries CMake correctly places the allocator
+  # library as the first entry in the link libraries. We also link to the
+  # SpectreAllocator target to pull in any additional allocator-related
+  # flags, such as include directories.
+  get_property(
+    SPECTRE_ALLOCATOR_LIBRARY
+    GLOBAL
+    PROPERTY SPECTRE_ALLOCATOR_LIBRARY
+    )
+  target_link_libraries(
+    ${TARGET_NAME}
+    PUBLIC
+    ${SPECTRE_ALLOCATOR_LIBRARY}
+    SpectreAllocator
+    )
   set_target_properties(
     ${TARGET_NAME}
     PROPERTIES
