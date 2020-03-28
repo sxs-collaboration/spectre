@@ -84,24 +84,6 @@ class DataBoxLeaf {
   using value_type = Deferred<Type>;
   value_type value_;
 
-  template <class T>
-  static constexpr bool can_bind_reference() noexcept {
-    using rem_ref_value_type = typename std::remove_reference<value_type>::type;
-    using rem_ref_T = typename std::remove_reference<T>::type;
-    using is_lvalue_type = std::integral_constant<
-        bool, cpp17::is_lvalue_reference_v<T> or
-                  cpp17::is_same_v<std::reference_wrapper<rem_ref_value_type>,
-                                   rem_ref_T> or
-                  cpp17::is_same_v<std::reference_wrapper<
-                                       std::remove_const_t<rem_ref_value_type>>,
-                                   rem_ref_T>>;
-    return not cpp17::is_reference_v<value_type> or
-           (cpp17::is_lvalue_reference_v<value_type> and
-            is_lvalue_type::value) or
-           (cpp17::is_rvalue_reference_v<value_type> and
-            not cpp17::is_lvalue_reference_v<T>);
-  }
-
  public:
   constexpr DataBoxLeaf() noexcept(
       cpp17::is_nothrow_default_constructible_v<value_type>)
@@ -109,17 +91,6 @@ class DataBoxLeaf {
     static_assert(!cpp17::is_reference_v<value_type>,
                   "Cannot default construct a reference element in a "
                   "DataBox");
-  }
-
-  // clang-tidy: forwarding references are hard
-  template <class T,
-            Requires<not cpp17::is_same_v<std::decay_t<T>, DataBoxLeaf> and
-                     cpp17::is_constructible_v<value_type, T&&>> = nullptr>
-  constexpr explicit DataBoxLeaf(T&& t) noexcept(  // NOLINT
-      cpp17::is_nothrow_constructible_v<value_type, T&&>)
-      : value_(std::forward<T>(t)) {  // NOLINT
-    static_assert(can_bind_reference<T>(),
-                  "Cannot construct an lvalue reference with an rvalue");
   }
 
   constexpr DataBoxLeaf(DataBoxLeaf const& /*rhs*/) = default;
@@ -515,20 +486,6 @@ class DataBox<tmpl::list<Tags...>>
   friend void mutate(gsl::not_null<DataBox<TagList>*> box,             // NOLINT
                      Invokable&& invokable, Args&&... args) noexcept;  // NOLINT
 
-  template <typename... SimpleTags>
-  SPECTRE_ALWAYS_INLINE void copy_simple_items(
-      const DataBox& box, tmpl::list<SimpleTags...> /*meta*/) noexcept;
-
-  // Creates a copy with no aliasing of items.
-  template <typename SimpleItemTags>
-  DataBox deep_copy() const noexcept;
-
-  template <typename TagsList_>
-  // clang-tidy: redundant declaration
-  friend SPECTRE_ALWAYS_INLINE constexpr DataBox<TagsList_>  // NOLINT
-  create_copy(                                               // NOLINT
-      const DataBox<TagsList_>& box) noexcept;
-
   /*!
    * \requires Type `T` is one of the Tags corresponding to an object stored in
    * the DataBox
@@ -604,11 +561,6 @@ class DataBox<tmpl::list<Tags...>>
   // DataBox be friends with each other.
   template <typename OtherTags>
   friend class DataBox;
-
-  template <typename... OldTags, typename... TagsToCopy>
-  constexpr void merge_old_box(
-      const db::DataBox<tmpl::list<OldTags...>>& old_box,
-      tmpl::list<TagsToCopy...> /*meta*/) noexcept;
 
   template <typename... OldTags, typename... TagsToCopy>
   constexpr void merge_old_box(db::DataBox<tmpl::list<OldTags...>>&& old_box,
@@ -910,15 +862,6 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
 template <typename... Tags>
 template <typename... OldTags, typename... TagsToCopy>
 constexpr void DataBox<tmpl::list<Tags...>>::merge_old_box(
-    const db::DataBox<tmpl::list<OldTags...>>& old_box,
-    tmpl::list<TagsToCopy...> /*meta*/) noexcept {
-  EXPAND_PACK_LEFT_TO_RIGHT(get_deferred<TagsToCopy>() =
-                                old_box.template get_deferred<TagsToCopy>());
-}
-
-template <typename... Tags>
-template <typename... OldTags, typename... TagsToCopy>
-constexpr void DataBox<tmpl::list<Tags...>>::merge_old_box(
     db::DataBox<tmpl::list<OldTags...>>&& old_box,
     tmpl::list<TagsToCopy...> /*meta*/) noexcept {
   (void)std::initializer_list<char>{
@@ -957,30 +900,6 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
       args_tuple, tmpl::list<AddTags...>{},
       std::make_index_sequence<sizeof...(AddTags)>{},
       tmpl::list<AddComputeTags...>{});
-}
-
-////////////////////////////////////////////////////////////////
-// Create a copy of the DataBox with no aliasing items.
-template <typename... Tags>
-template <typename... SimpleTags>
-SPECTRE_ALWAYS_INLINE void DataBox<tmpl::list<Tags...>>::copy_simple_items(
-    const DataBox& box, tmpl::list<SimpleTags...> /*meta*/) noexcept {
-  EXPAND_PACK_LEFT_TO_RIGHT((get_deferred<SimpleTags>() =
-                                 box.get_deferred<SimpleTags>().deep_copy()));
-}
-
-template <typename... Tags>
-template <typename SimpleItemTags>
-DataBox<tmpl::list<Tags...>> DataBox<tmpl::list<Tags...>>::deep_copy() const
-    noexcept {
-  DataBox new_box{};
-  new_box.copy_simple_items(*this, simple_item_tags{});
-
-  std::tuple<> empty_tuple{};
-  new_box.add_items_to_box<tmpl::list<Tags...>>(empty_tuple, tmpl::list<>{},
-                                                std::make_index_sequence<0>{},
-                                                compute_item_tags{});
-  return new_box;
 }
 /// \endcond
 
@@ -1395,17 +1314,6 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
  * \brief Create a new DataBox from an existing one adding or removing items
  * and compute items
  *
- * When passed an lvalue this function will return a const DataBox
- * whose members cannot be modified.  When passed a (mutable) rvalue
- * this function will return a mutable DataBox.
- *
- * Note that in the const lvalue case the output DataBox shares all
- * items that were not removed with the input DataBox. This means if an item is
- * mutated in the input DataBox it is also mutated in the output DataBox.
- * Similarly, if a compute item is evaluated in either the returned DataBox or
- * the input DataBox it is evaluated in both (at the cost of only evaluating it
- * once).
- *
  * \example
  * Removing an item or compute item is done using:
  * \snippet Test_DataBox.cpp create_from_remove
@@ -1424,7 +1332,6 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
  * \param box the DataBox the new box should be based off
  * \param args the values for the items to add to the DataBox
  * \return DataBox like `box` but altered by RemoveTags and AddTags
- *@{
  */
 template <typename RemoveTags, typename AddTags = tmpl::list<>,
           typename AddComputeTags = tmpl::list<>, typename TagsList,
@@ -1433,102 +1340,6 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(db::DataBox<TagsList>&& box,
                                                  Args&&... args) noexcept {
   return DataBox_detail::create_from<RemoveTags, AddTags, AddComputeTags>(
       std::move(box), std::forward<Args>(args)...);
-}
-
-/// \cond HIDDEN_SYMBOLS
-// Clang warns that the const qualifier on the return type has no
-// effect.  It does have an effect.
-#ifdef __clang__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wignored-qualifiers"
-#endif
-template <typename RemoveTags, typename AddTags = tmpl::list<>,
-          typename AddComputeTags = tmpl::list<>, typename TagsList,
-          typename... Args>
-SPECTRE_ALWAYS_INLINE constexpr const auto create_from(
-    const db::DataBox<TagsList>& box, Args&&... args) noexcept {
-  return DataBox_detail::create_from<RemoveTags, AddTags, AddComputeTags>(
-      box, std::forward<Args>(args)...);
-}
-#ifdef __clang__
-#pragma GCC diagnostic pop
-#endif
-/// \endcond
-/**@}*/
-
-/*!
- * \ingroup DataBoxGroup
- * \brief Create a non-aliasing copy of the DataBox. That is, the new DataBox
- * will not share items with the old one.
- *
- * \warning Currently all compute items will be reset in the new DataBox because
- * copying of DataBoxes shouldn't be done in general. This does not lead to
- * incorrect behavior, but is less efficient.
- *
- * \see db::create_from
- */
-template <typename TagsList>
-SPECTRE_ALWAYS_INLINE constexpr DataBox<TagsList> create_copy(
-    const DataBox<TagsList>& box) noexcept {
-  return box.template deep_copy<typename DataBox<TagsList>::simple_item_tags>();
-}
-
-namespace DataBox_detail {
-template <typename Type, typename... Tags, typename... TagsInBox>
-const Type& get_item_from_box(const DataBox<tmpl::list<TagsInBox...>>& box,
-                              const std::string& tag_name,
-                              tmpl::list<Tags...> /*meta*/) {
-  DEBUG_STATIC_ASSERT(
-      sizeof...(Tags) != 0,
-      "No items with the requested type were found in the DataBox");
-  const Type* result = nullptr;
-  const auto helper = [&box, &tag_name, &result ](auto current_tag) noexcept {
-    using tag = decltype(current_tag);
-    if (::db::tag_name<tag>() == tag_name) {
-      result = &::db::get<tag>(box);
-    }
-  };
-  EXPAND_PACK_LEFT_TO_RIGHT(helper(Tags{}));
-  if (result == nullptr) {
-    std::string tags_in_box;
-    const auto print_helper = [&tags_in_box](auto tag) noexcept {
-      tags_in_box += "  " + db::tag_name<decltype(tag)>() + "\n";
-    };
-    EXPAND_PACK_LEFT_TO_RIGHT(print_helper(Tags{}));
-    ERROR("Could not find the tag named \""
-          << tag_name << "\" in the DataBox. Available tags are:\n"
-          << tags_in_box);
-  }
-  return *result;
-}  // namespace db
-}  // namespace DataBox_detail
-
-/*!
- * \ingroup DataBoxGroup
- * \brief Retrieve an item from the DataBox that has a tag with label `tag_name`
- * and type `Type`
- *
- * \details
- * The type that the tag represents must be of the type `Type`, and the tag must
- * have the label `tag_name`. The function iterates over all tags in the DataBox
- * `box` that have the type `Type` searching linearly for one whose `label`
- * matches `tag_name`.
- *
- * \example
- * \snippet Test_DataBox.cpp get_item_from_box
- *
- * \tparam Type the type of the tag with the `label` `tag_name`
- * \param box the DataBox through which to search
- * \param tag_name the `label` of the tag to retrieve
- */
-template <typename Type, typename TagList>
-constexpr const Type& get_item_from_box(const DataBox<TagList>& box,
-                                        const std::string& tag_name) noexcept {
-  using tags = tmpl::filter<
-      TagList,
-      std::is_same<tmpl::bind<const_item_type, tmpl::_1, tmpl::pin<TagList>>,
-                   tmpl::pin<Type>>>;
-  return DataBox_detail::get_item_from_box<Type>(box, tag_name, tags{});
 }
 
 namespace DataBox_detail {
@@ -1964,30 +1775,4 @@ struct compute_dbox_type<tmpl::list<ItemsPack...>, ComputeItemsList> {
 template <class TagList>
 using compute_databox_type = typename DataBox_detail::compute_dbox_type<
     get_items<TagList>, get_compute_items<TagList>>::type;
-
-// @{
-/// \ingroup DataBoxGroup
-/// Returns the type of `Tag` (including const and reference-ness as would be
-/// returned by `db::get<Tag>`) if the tag is in the `DataBox` of type
-/// `DataBoxType`, otherwise returns `NoSuchType`.
-template <typename Tag, typename DataBoxType,
-          bool = tag_is_retrievable_v<Tag, DataBoxType>>
-struct item_type_if_contained;
-
-/// \cond
-template <typename Tag, typename DataBoxType>
-struct item_type_if_contained<Tag, DataBoxType, true> {
-  using type = decltype(db::get<Tag>(DataBoxType{}));
-};
-
-template <typename Tag, typename DataBoxType>
-struct item_type_if_contained<Tag, DataBoxType, false> {
-  using type = NoSuchType;
-};
-/// \endcond
-
-template <typename Tag, typename DataBoxType>
-using item_type_if_contained_t =
-    typename item_type_if_contained<Tag, DataBoxType>::type;
-// @}
 }  // namespace db

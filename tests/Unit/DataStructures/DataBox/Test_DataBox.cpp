@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxHelpers.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/DataOnSlice.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -155,18 +154,6 @@ static_assert(cpp17::is_same_v<decltype(db::create_from<db::RemoveTags<>>(
                                    std::declval<EmptyBox>())),
                                EmptyBox>,
               "Wrong create_from result type");
-static_assert(cpp17::is_same_v<decltype(db::create_from<db::RemoveTags<>>(
-                                   std::declval<const EmptyBox>())),
-                               const EmptyBox>,
-              "Wrong create_from result type");
-static_assert(cpp17::is_same_v<decltype(db::create_from<db::RemoveTags<>>(
-                                   std::declval<EmptyBox&>())),
-                               const EmptyBox>,
-              "Wrong create_from result type");
-static_assert(cpp17::is_same_v<decltype(db::create_from<db::RemoveTags<>>(
-                                   std::declval<const EmptyBox&>())),
-                               const EmptyBox>,
-              "Wrong create_from result type");
 
 using Box_t = db::DataBox<tmpl::list<
     test_databox_tags::Tag0, test_databox_tags::Tag1, test_databox_tags::Tag2,
@@ -201,64 +188,73 @@ static_assert(std::is_same<decltype(db::create_from<db::RemoveTags<>>(Box_t{})),
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
-  /// [create_databox]
-  auto original_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>,
-      db::AddComputeTags<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1,
-                         test_databox_tags::ComputeLambda0,
-                         test_databox_tags::ComputeLambda1>>(
-      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
-  /// [create_databox]
-  static_assert(
-      std::is_same<
-          decltype(original_box),
-          db::DataBox<db::DataBox_detail::expand_subitems<
-              tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                         test_databox_tags::Tag2>,
-              tmpl::list<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1,
-                         test_databox_tags::ComputeLambda0,
-                         test_databox_tags::ComputeLambda1>,
-              true>>>::value,
-      "Failed to create original_box");
+  const auto create_original_box = []() {
+    /// [create_databox]
+    auto original_box = db::create<
+        db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                          test_databox_tags::Tag2>,
+        db::AddComputeTags<test_databox_tags::ComputeTag0,
+                           test_databox_tags::ComputeTag1,
+                           test_databox_tags::ComputeLambda0,
+                           test_databox_tags::ComputeLambda1>>(
+        3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+    /// [create_databox]
+    return original_box;
+  };
+  {
+    const auto original_box = create_original_box();
+    static_assert(
+        std::is_same<
+            decltype(original_box),
+            const db::DataBox<db::DataBox_detail::expand_subitems<
+                tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1,
+                           test_databox_tags::Tag2>,
+                tmpl::list<test_databox_tags::ComputeTag0,
+                           test_databox_tags::ComputeTag1,
+                           test_databox_tags::ComputeLambda0,
+                           test_databox_tags::ComputeLambda1>,
+                true>>>::value,
+        "Failed to create original_box");
 
-  /// [using_db_get]
-  const auto& tag0 = db::get<test_databox_tags::Tag0>(original_box);
-  /// [using_db_get]
-  CHECK(tag0 == 3.14);
-  // Check retrieving chained compute item result
-  CHECK(db::get<test_databox_tags::ComputeTag1>(original_box) ==
-        "My Sample String6.28"s);
-  CHECK(db::get<test_databox_tags::ComputeLambda0>(original_box) == 3.0 * 3.14);
-  CHECK(db::get<test_databox_tags::ComputeLambda1>(original_box) == 7.0);
+    /// [using_db_get]
+    const auto& tag0 = db::get<test_databox_tags::Tag0>(original_box);
+    /// [using_db_get]
+    CHECK(tag0 == 3.14);
+    // Check retrieving chained compute item result
+    CHECK(db::get<test_databox_tags::ComputeTag1>(original_box) ==
+          "My Sample String6.28"s);
+    CHECK(db::get<test_databox_tags::ComputeLambda0>(original_box) ==
+          3.0 * 3.14);
+    CHECK(db::get<test_databox_tags::ComputeLambda1>(original_box) == 7.0);
+  }
   // No removal
   {
-    const auto& box = db::create_from<db::RemoveTags<>>(original_box);
+    auto original_box = create_original_box();
+    const auto& box =
+        db::create_from<db::RemoveTags<>>(std::move(original_box));
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     CHECK(db::get<test_databox_tags::ComputeTag1>(box) ==
           "My Sample String6.28"s);
     CHECK(db::get<test_databox_tags::ComputeLambda0>(box) == 3.0 * 3.14);
-    CHECK(db::get<test_databox_tags::ComputeLambda1>(original_box) == 7.0);
   }
   {
     /// [create_from_remove]
-    const auto& box =
-        db::create_from<db::RemoveTags<test_databox_tags::Tag1>>(original_box);
+    auto original_box = create_original_box();
+    const auto& box = db::create_from<db::RemoveTags<test_databox_tags::Tag1>>(
+        std::move(original_box));
     /// [create_from_remove]
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     CHECK(db::get<test_databox_tags::ComputeTag1>(box) ==
           "My Sample String6.28"s);
     CHECK(db::get<test_databox_tags::ComputeLambda0>(box) == 3.0 * 3.14);
-    CHECK(db::get<test_databox_tags::ComputeLambda1>(original_box) == 7.0);
   }
   {
     /// [create_from_add_item]
+    auto original_box = create_original_box();
     const auto& box =
         db::create_from<db::RemoveTags<>,
                         db::AddSimpleTags<test_databox_tags::Tag3>>(
-            original_box, "Yet another test string"s);
+            std::move(original_box), "Yet another test string"s);
     /// [create_from_add_item]
     CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
@@ -266,7 +262,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
     CHECK(db::get<test_databox_tags::ComputeTag1>(box) ==
           "My Sample String6.28"s);
     CHECK(db::get<test_databox_tags::ComputeLambda0>(box) == 3.0 * 3.14);
-    CHECK(db::get<test_databox_tags::ComputeLambda1>(original_box) == 7.0);
   }
   {
     /// [create_from_add_compute_item]
@@ -277,7 +272,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
     const auto& box =
         db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
                         db::AddComputeTags<test_databox_tags::ComputeTag0>>(
-            simple_box);
+            std::move(simple_box));
     /// [create_from_add_compute_item]
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
@@ -292,7 +287,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
         db::create_from<db::RemoveTags<>,
                         db::AddSimpleTags<test_databox_tags::Tag3>,
                         db::AddComputeTags<test_databox_tags::ComputeTag0>>(
-            simple_box, "Yet another test string"s);
+            std::move(simple_box), "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
@@ -307,7 +302,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
         db::create_from<db::RemoveTags<test_databox_tags::Tag1>,
                         db::AddSimpleTags<test_databox_tags::Tag3>,
                         db::AddComputeTags<test_databox_tags::ComputeTag0>>(
-            simple_box, "Yet another test string"s);
+            std::move(simple_box), "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
@@ -557,53 +552,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_mutate",
       });
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box",
-                  "[Unit][DataStructures]") {
-  /// [get_item_from_box]
-  auto original_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2,
-                        test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
-                        test_databox_tags::Pointer>,
-      db::AddComputeTags<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1,
-                         test_databox_tags::ComputeFromBase,
-                         test_databox_tags::PointerComputeItem,
-                         test_databox_tags::PointerComputeItemMutating>>(
-      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s, 8.7,
-      std::make_unique<int>(3));
-  const auto& compute_string =
-      db::get_item_from_box<std::string>(original_box, "ComputeTag1");
-  /// [get_item_from_box]
-  CHECK(compute_string == "My Sample String6.28"s);
-  const std::string added_string =
-      db::get_item_from_box<std::string>(original_box, "Tag2");
-  CHECK(added_string == "My Sample String"s);
-  /// [databox_name_prefix]
-  CHECK(db::get_item_from_box<double>(original_box, "TagPrefix(Tag0)") == 8.7);
-  /// [databox_name_prefix]
-  CHECK(db::get_item_from_box<std::string>(original_box, "ComputeFromBase") ==
-        "My Sample String"s);
-
-  CHECK(db::get_item_from_box<int>(original_box, "Pointer") == 3);
-  CHECK(db::get_item_from_box<int>(original_box, "PointerComputeItem") == 4);
-  CHECK(db::get_item_from_box<int>(original_box,
-                                   "PointerComputeItemMutating") == 8);
-}
-
-// [[OutputRegex, Could not find the tag named "time__" in the DataBox]]
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box_error_name",
-                  "[Unit][DataStructures]") {
-  ERROR_TEST();
-  auto original_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>,
-      db::AddComputeTags<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1>>(
-      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
-  static_cast<void>(db::get_item_from_box<double>(original_box, "time__"));
-}
-
 namespace {
 struct NonCopyableFunctor {
   NonCopyableFunctor() = default;
@@ -729,41 +677,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
     }
   };
   db::apply<PointerApplyCallable>(original_box);
-}
-
-// [[OutputRegex, Could not find the tag named "TagTensor__" in the DataBox]]
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.HelpersBadTensorFromBox",
-                  "[Unit][DataStructures]") {
-  ERROR_TEST();
-  auto original_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>,
-      db::AddComputeTags<test_databox_tags::TagTensor>>(
-      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
-
-  std::pair<std::vector<std::string>, std::vector<double>> tag_tensor =
-      get_tensor_from_box(original_box, "TagTensor__");
-  static_cast<void>(tag_tensor);  // make sure compilers don't warn
-}
-
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Helpers",
-                  "[Unit][DataStructures]") {
-  auto original_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>,
-      db::AddComputeTags<test_databox_tags::TagTensor>>(
-      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
-
-  auto tag_tensor = get_tensor_from_box(original_box, "TagTensor");
-  CHECK(tag_tensor.first == (std::vector<std::string>{"t"s, "x"s, "y"s, "z"s}));
-  CHECK(tag_tensor.second[0] == 7.82);
-  CHECK(tag_tensor.second[1] == 8.0);
-  CHECK(tag_tensor.second[2] == 3.0);
-  CHECK(tag_tensor.second[3] == 9.0);
-  //  auto grid_coords_norm = get_tensor_norm_from_box(
-  //      original_box, std::make_pair("GridCoordinates"s, TypeOfNorm::Max));
-  //  CHECK(grid_coords_norm == decltype(grid_coords_norm){std::make_pair(
-  //                                "x"s, std::make_pair(0.5, 3_st))});
 }
 
 // Test the tags
@@ -1992,184 +1905,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Subitems",
       "not change the type of the DataBox");
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.create_copy_Variables",
-                  "[Unit][DataStructures]") {
-  auto original_box = db::create<
-      db::AddSimpleTags<Tags::Variables<tmpl::list<
-          test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>,
-      db::AddComputeTags<test_databox_tags::MultiplyScalarByTwo,
-                         test_databox_tags::MultiplyScalarByFour,
-                         test_databox_tags::MultiplyScalarByThree,
-                         test_databox_tags::DivideScalarByThree,
-                         test_databox_tags::DivideScalarByTwo,
-                         test_databox_tags::MultiplyVariablesByTwo>>(
-      Variables<tmpl::list<test_databox_tags::ScalarTag,
-                           test_databox_tags::VectorTag>>(2, 3.));
-  const auto check_0 = [](const auto& box) {
-    CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
-          Scalar<DataVector>(DataVector(2, 3.)));
-    CHECK(db::get<test_databox_tags::VectorTag>(box) ==
-          (tnsr::I<DataVector, 3>(DataVector(2, 3.))));
-    CHECK(db::get<test_databox_tags::ScalarTag2>(box) ==
-          Scalar<DataVector>(DataVector(2, 6.)));
-    CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
-          (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
-    CHECK(db::get<test_databox_tags::MultiplyScalarByFour>(box) ==
-          Scalar<DataVector>(DataVector(2, 24.)));
-    CHECK(db::get<test_databox_tags::MultiplyScalarByThree>(box) ==
-          Scalar<DataVector>(DataVector(2, 72.)));
-    CHECK(db::get<test_databox_tags::DivideScalarByThree>(box) ==
-          Scalar<DataVector>(DataVector(2, 24.)));
-    CHECK(db::get<test_databox_tags::ScalarTag3>(box) ==
-          Scalar<DataVector>(DataVector(2, 12.)));
-    CHECK(db::get<test_databox_tags::VectorTag3>(box) ==
-          (tnsr::I<DataVector, 3>(DataVector(2, 10.))));
-    CHECK(db::get<test_databox_tags::ScalarTag4>(box) ==
-          Scalar<DataVector>(DataVector(2, 6.)));
-    CHECK(db::get<test_databox_tags::VectorTag4>(box) ==
-          (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
-    {
-      const auto& vars =
-          db::get<test_databox_tags::MultiplyVariablesByTwo>(box);
-      CHECK(get<test_databox_tags::ScalarTag4>(vars) ==
-            Scalar<DataVector>(DataVector(2, 6.)));
-      CHECK(get<test_databox_tags::VectorTag4>(vars) ==
-            (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
-    }
-  };
-  check_0(original_box);
-  const auto copied_box = db::create_copy(original_box);
-  check_0(copied_box);
-
-  db::mutate<test_databox_tags::ScalarTag>(
-      make_not_null(&original_box),
-      [](const gsl::not_null<Scalar<DataVector>*> scalar) {
-        scalar->get() = 4.0;
-      });
-  check_0(copied_box);
-
-  CHECK(db::get<test_databox_tags::ScalarTag>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 4.)));
-  CHECK(db::get<test_databox_tags::VectorTag>(original_box) ==
-        (tnsr::I<DataVector, 3>(DataVector(2, 3.))));
-  CHECK(db::get<test_databox_tags::ScalarTag2>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 8.)));
-  CHECK(db::get<test_databox_tags::VectorTag2>(original_box) ==
-        (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
-  CHECK(db::get<test_databox_tags::MultiplyScalarByFour>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 32.)));
-  CHECK(db::get<test_databox_tags::MultiplyScalarByThree>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 96.)));
-  CHECK(db::get<test_databox_tags::DivideScalarByThree>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 32.)));
-  CHECK(db::get<test_databox_tags::ScalarTag3>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 16.)));
-  CHECK(db::get<test_databox_tags::VectorTag3>(original_box) ==
-        (tnsr::I<DataVector, 3>(DataVector(2, 10.))));
-  CHECK(db::get<test_databox_tags::ScalarTag4>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 8.)));
-  CHECK(db::get<test_databox_tags::VectorTag4>(original_box) ==
-        (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
-  {
-    const auto& vars =
-        db::get<test_databox_tags::MultiplyVariablesByTwo>(original_box);
-    CHECK(get<test_databox_tags::ScalarTag4>(vars) ==
-          Scalar<DataVector>(DataVector(2, 8.)));
-    CHECK(get<test_databox_tags::VectorTag4>(vars) ==
-          (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
-  }
-
-  db::mutate<Tags::Variables<
-      tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>(
-      make_not_null(&original_box), [](const auto vars) {
-        get<test_databox_tags::ScalarTag>(*vars).get() = 6.0;
-      });
-
-  CHECK(db::get<test_databox_tags::ScalarTag>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 6.)));
-  CHECK(db::get<test_databox_tags::VectorTag>(original_box) ==
-        (tnsr::I<DataVector, 3>(DataVector(2, 3.))));
-  CHECK(db::get<test_databox_tags::ScalarTag2>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 12.)));
-  CHECK(db::get<test_databox_tags::VectorTag2>(original_box) ==
-        (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
-  CHECK(db::get<test_databox_tags::MultiplyScalarByFour>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 48.)));
-  CHECK(db::get<test_databox_tags::MultiplyScalarByThree>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 144.)));
-  CHECK(db::get<test_databox_tags::DivideScalarByThree>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 48.)));
-  CHECK(db::get<test_databox_tags::ScalarTag3>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 24.)));
-  CHECK(db::get<test_databox_tags::VectorTag3>(original_box) ==
-        (tnsr::I<DataVector, 3>(DataVector(2, 10.))));
-  CHECK(db::get<test_databox_tags::ScalarTag4>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 12.)));
-  CHECK(db::get<test_databox_tags::VectorTag4>(original_box) ==
-        (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
-  {
-    const auto& vars =
-        db::get<test_databox_tags::MultiplyVariablesByTwo>(original_box);
-    CHECK(get<test_databox_tags::ScalarTag4>(vars) ==
-          Scalar<DataVector>(DataVector(2, 12.)));
-    CHECK(get<test_databox_tags::VectorTag4>(vars) ==
-          (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
-  }
-  check_0(copied_box);
-
-  db::mutate<Tags::Variables<
-      tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>(
-      make_not_null(&original_box), [](const auto vars) {
-        get<test_databox_tags::ScalarTag>(*vars).get() = 4.0;
-        get<test_databox_tags::VectorTag>(*vars) =
-            tnsr::I<DataVector, 3>(DataVector(2, 6.));
-      });
-
-  CHECK(db::get<test_databox_tags::ScalarTag>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 4.)));
-  CHECK(db::get<test_databox_tags::VectorTag>(original_box) ==
-        (tnsr::I<DataVector, 3>(DataVector(2, 6.))));
-  CHECK(db::get<test_databox_tags::ScalarTag2>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 8.)));
-  CHECK(db::get<test_databox_tags::VectorTag2>(original_box) ==
-        (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
-  CHECK(db::get<test_databox_tags::MultiplyScalarByFour>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 32.)));
-  CHECK(db::get<test_databox_tags::MultiplyScalarByThree>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 96.)));
-  CHECK(db::get<test_databox_tags::DivideScalarByThree>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 32.)));
-  CHECK(db::get<test_databox_tags::ScalarTag3>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 16.)));
-  CHECK(db::get<test_databox_tags::VectorTag3>(original_box) ==
-        (tnsr::I<DataVector, 3>(DataVector(2, 10.))));
-  CHECK(db::get<test_databox_tags::ScalarTag4>(original_box) ==
-        Scalar<DataVector>(DataVector(2, 8.)));
-  CHECK(db::get<test_databox_tags::VectorTag4>(original_box) ==
-        (tnsr::I<DataVector, 3>(DataVector(2, 12.))));
-  {
-    const auto& vars =
-        db::get<test_databox_tags::MultiplyVariablesByTwo>(original_box);
-    CHECK(get<test_databox_tags::ScalarTag4>(vars) ==
-          Scalar<DataVector>(DataVector(2, 8.)));
-    CHECK(get<test_databox_tags::VectorTag4>(vars) ==
-          (tnsr::I<DataVector, 3>(DataVector(2, 12.))));
-  }
-  check_0(copied_box);
-}
-
-// [[OutputRegex, Cannot create a copy of a DataBox.*holds a non-copyable]]
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.create_copy_error",
-                  "[Unit][DataStructures]") {
-  ERROR_TEST();
-  auto box = db::create<db::AddSimpleTags<test_subitems::Parent<0>>,
-                        db::AddComputeTags<test_subitems::Parent<1, true>>>(
-      std::make_pair(
-          test_subitems::Boxed<int>(std::make_shared<int>(5)),
-          test_subitems::Boxed<double>(std::make_shared<double>(3.5))));
-  const auto copied_box = db::create_copy(box);
-}
-
 namespace test_databox_tags {
 struct Tag0Int : db::SimpleTag {
   using type = int;
@@ -2860,7 +2595,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Serialization",
   serialization_of_pointers();
 }
 
-// Test `item_type_if_contained_t` and `tag_is_retrievable_v`
+// Test`tag_is_retrievable_v`
 namespace {
 namespace tags_types {
 struct PureBaseTag : db::BaseTag {};
@@ -2873,25 +2608,6 @@ struct DummyTag : db::SimpleTag {
   using type = int;
 };
 }  // namespace tags_types
-
-static_assert(
-    cpp17::is_same_v<db::item_type_if_contained_t<
-                         tags_types::PureBaseTag,
-                         db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
-                     const double&>,
-    "Failed testing item_type_if_contained_t");
-static_assert(
-    cpp17::is_same_v<db::item_type_if_contained_t<
-                         tags_types::SimpleTag,
-                         db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
-                     const double&>,
-    "Failed testing item_type_if_contained_t");
-static_assert(
-    cpp17::is_same_v<db::item_type_if_contained_t<
-                         tags_types::DummyTag,
-                         db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
-                     NoSuchType>,
-    "Failed testing item_type_if_contained_t");
 
 static_assert(
     db::tag_is_retrievable_v<tags_types::PureBaseTag,

@@ -40,6 +40,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/NoSuchType.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
@@ -443,6 +444,27 @@ struct ForwardAllOptionsToDataBox<tmpl::list<SimpleTags...>> {
         std::move(box), std::forward<Args>(args)...);
   }
 };
+
+// Returns the type of `Tag` (including const and reference-ness as would be
+// returned by `db::get<Tag>`) if the tag is in the `DataBox` of type
+// `DataBoxType`, otherwise returns `NoSuchType`.
+template <typename Tag, typename DataBoxType,
+          bool = db::tag_is_retrievable_v<Tag, DataBoxType>>
+struct item_type_if_contained;
+
+template <typename Tag, typename DataBoxType>
+struct item_type_if_contained<Tag, DataBoxType, true> {
+  using type = decltype(db::get<Tag>(DataBoxType{}));
+};
+
+template <typename Tag, typename DataBoxType>
+struct item_type_if_contained<Tag, DataBoxType, false> {
+  using type = NoSuchType;
+};
+
+template <typename Tag, typename DataBoxType>
+using item_type_if_contained_t =
+    typename item_type_if_contained<Tag, DataBoxType>::type;
 }  // namespace detail
 
 // Initializes the DataBox values not set via the ConstGlobalCache. This is
@@ -975,10 +997,10 @@ class MockDistributedObject {
   template <typename Tag, typename... Variants>
   const auto& get_databox_tag_visitation(
       const boost::variant<Variants...>& box) const noexcept {
-    using item_types = tmpl::remove_duplicates<
-        tmpl::remove_if<tmpl::list<cpp20::remove_cvref_t<
-                            db::item_type_if_contained_t<Tag, Variants>>...>,
-                        std::is_same<NoSuchType, tmpl::_1>>>;
+    using item_types = tmpl::remove_duplicates<tmpl::remove_if<
+        tmpl::list<cpp20::remove_cvref_t<
+            detail::item_type_if_contained_t<Tag, Variants>>...>,
+        std::is_same<NoSuchType, tmpl::_1>>>;
     static_assert(tmpl::size<item_types>::value != 0,
                   "Could not find the tag or the tag as a base tag in any "
                   "DataBox in the get_databox_tag function.");

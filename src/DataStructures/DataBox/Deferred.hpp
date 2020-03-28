@@ -62,7 +62,6 @@ class assoc_state {
   // clang-tidy: no non-const references
   virtual void pack_unpack_lazy_function(PUP::er& p) noexcept = 0;  // NOLINT
   virtual bool evaluated() const noexcept = 0;
-  virtual boost::shared_ptr<assoc_state<Rt>> deep_copy() const noexcept = 0;
   virtual ~assoc_state() = default;
 };
 
@@ -84,26 +83,7 @@ class simple_assoc_state : public assoc_state<Rt> {
 
   bool evaluated() const noexcept override { return true; }
 
-  boost::shared_ptr<assoc_state<Rt>> deep_copy() const noexcept override {
-    return deep_copy_impl();
-  }
-
  private:
-  template <typename T = Rt,
-            Requires<tt::can_be_copy_constructed_v<T>> = nullptr>
-  boost::shared_ptr<assoc_state<Rt>> deep_copy_impl() const noexcept {
-    return boost::make_shared<simple_assoc_state>(t_);
-  }
-
-  template <typename T = Rt,
-            Requires<not tt::can_be_copy_constructed_v<T>> = nullptr>
-  boost::shared_ptr<assoc_state<Rt>> deep_copy_impl() const noexcept {
-    ERROR(
-        "Cannot create a copy of a DataBox (e.g. using db::create_copy) that "
-        "holds a non-copyable simple item. The item type is '"
-        << pretty_type::get_name<T>() << "'.");
-  }
-
   Rt t_;
 };
 
@@ -132,11 +112,6 @@ class deferred_assoc_state : public assoc_state<Rt> {
 
   void reset() noexcept override { evaluated_ = false; }
 
-  void update_args(std::decay_t<Args>... args) noexcept {
-    evaluated_ = false;
-    args_ = std::tuple<std::decay_t<Args>...>{std::move(args)...};
-  }
-
   // clang-tidy: no non-const references
   void pack_unpack_lazy_function(PUP::er& p) noexcept override {  // NOLINT
     p | evaluated_;
@@ -146,13 +121,6 @@ class deferred_assoc_state : public assoc_state<Rt> {
   }
 
   bool evaluated() const noexcept override { return evaluated_; }
-
-  boost::shared_ptr<assoc_state<Rt>> deep_copy() const noexcept override {
-    ERROR(
-        "Have not yet implemented a deep_copy for deferred_assoc_state. It's "
-        "not at all clear if this is even possible because it is incorrect to "
-        "assume that the args_ have not changed.");
-  }
 
  private:
   const Fp func_;
@@ -218,22 +186,10 @@ class deferred_assoc_state<const Rt&, Fp, Args...> : public assoc_state<Rt> {
 
   void reset() noexcept override { t_ = nullptr; }
 
-  void update_args(std::decay_t<Args>... args) noexcept {
-    t_ = nullptr;
-    args_ = std::tuple<std::decay_t<Args>...>{std::move(args)...};
-  }
-
   // clang-tidy: no non-const references
   void pack_unpack_lazy_function(PUP::er& /*p*/) noexcept override {}  // NOLINT
 
   bool evaluated() const noexcept override { return t_ != nullptr; }
-
-  boost::shared_ptr<assoc_state<Rt>> deep_copy() const noexcept override {
-    ERROR(
-        "Have not yet implemented a deep_copy for deferred_assoc_state. It's "
-        "not at all clear if this is even possible because it is incorrect to "
-        "assume that the args_ have not changed.");
-  }
 
  private:
   const Fp func_;
@@ -264,10 +220,6 @@ deferred_assoc_state<const Rt&, Fp, Args...>::deferred_assoc_state(
  * mutate a lazily evaluated function's data is an error.
  *
  * To construct a Deferred for lazy evaluation use the make_deferred() function.
- *
- * \example
- * Construction of a Deferred with an object followed by mutation:
- * \snippet Test_Deferred.cpp deferred_with_update
  *
  * \warning If passed a lazy function that returns a `const Rt& t` (a const
  * lvalue reference) the underlying data stored is actually a pointer to `t`,
@@ -316,8 +268,6 @@ class Deferred {
 
   void reset() noexcept { state_->reset(); }
 
-  Deferred deep_copy() const noexcept { return Deferred{state_->deep_copy()}; }
-
   explicit Deferred(
       boost::shared_ptr<Deferred_detail::assoc_state<tmpl::conditional_t<
           MakeConstReference::value, const value_type&, value_type>>>&&
@@ -327,17 +277,6 @@ class Deferred {
   boost::shared_ptr<Deferred_detail::assoc_state<tmpl::conditional_t<
       MakeConstReference::value, const value_type&, value_type>>>
       state_{nullptr};
-
-  // clang-tidy: redundant declaration
-  template <typename Rt1, typename Fp, typename... Args>
-  friend void update_deferred_args(  // NOLINT
-      gsl::not_null<Deferred<Rt1>*> deferred, Fp /*f used for type deduction*/,
-      Args&&... args) noexcept;
-
-  // clang-tidy: redundant declaration
-  template <typename Rt1, typename Fp, typename... Args>
-  friend void update_deferred_args(  // NOLINT
-      gsl::not_null<Deferred<Rt1>*> deferred, Args&&... args) noexcept;
 };
 
 template <typename Rt, typename MakeConstReference>
@@ -412,49 +351,3 @@ auto make_deferred_for_subitem(Fp&& f, Args&&... args) noexcept {
   return Deferred_detail::MakeDeferredForSubitemImpl<Rt>::apply(
       std::forward<Fp>(f), std::forward<Args>(args)...);
 }
-
-// @{
-/*!
- * \ingroup DataBoxGroup
- * \brief Change the arguments to the Deferred function
- *
- * In order to make mutating Deferred functions really powerful, the `args` to
- * them must be updated without destructing the held `Rt` object. The type of
- * `Fp` (the invokable being lazily evaluated) as well as the types of the
- * `std::decay_t<Args>...` must match their respective types at the time of
- * creation of the Deferred object.
- *
- * \example
- * You can avoid specifying the type of the function held by the Deferred class
- * by passing the function as a second argument:
- * \snippet Test_Deferred.cpp update_args_of_deferred_deduced_fp
- *
- * You can also specify the type of the function held by the Deferred explicitly
- * as follows:
- * \snippet Test_Deferred.cpp update_args_of_deferred_specified_fp
- */
-template <typename Rt, typename Fp, typename... Args>
-void update_deferred_args(const gsl::not_null<Deferred<Rt>*> deferred,
-                          Fp /*f used for type deduction*/,
-                          Args&&... args) noexcept {
-  update_deferred_args<Rt, Fp>(deferred, std::forward<Args>(args)...);
-}
-
-template <typename Rt, typename Fp, typename... Args>
-void update_deferred_args(const gsl::not_null<Deferred<Rt>*> deferred,
-                          Args&&... args) noexcept {
-  auto* ptr = dynamic_cast<Deferred_detail::deferred_assoc_state<
-      Rt, std::decay_t<Fp>, std::decay_t<Args>...>*>(deferred->state_.get());
-  if (ptr == nullptr) {
-    ERROR("Cannot cast the Deferred class to: "s
-          << (pretty_type::get_name<Deferred_detail::deferred_assoc_state<
-                  Rt, std::decay_t<Fp>, std::decay_t<Args>...>>())
-          << " which means you are either passing in args of incorrect "
-             "types, that you are attempting to modify the args of a "
-             "Deferred that is not a lazily evaluated function, or that the "
-             "function type that the Deferred is expected to be holding is "
-             "incorrect."s);
-  }
-  ptr->update_args(std::forward<Args>(args)...);
-}
-// @}
