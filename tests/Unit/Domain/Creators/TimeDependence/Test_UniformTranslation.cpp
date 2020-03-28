@@ -16,9 +16,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/ProductMapsTimeDep.hpp"
-#include "Domain/CoordinateMaps/ProductMapsTimeDep.tpp"
-#include "Domain/CoordinateMaps/Translation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
 #include "Framework/TestCreation.hpp"
@@ -33,7 +33,7 @@ namespace creators {
 namespace time_dependence {
 
 namespace {
-using Translation = domain::CoordMapsTimeDependent::Translation;
+using Translation = domain::CoordinateMaps::TimeDependent::Translation;
 
 template <size_t MeshDim>
 using ConcreteMap = tmpl::conditional_t<
@@ -42,11 +42,12 @@ using ConcreteMap = tmpl::conditional_t<
     tmpl::conditional_t<
         MeshDim == 2,
         domain::CoordinateMap<Frame::Grid, Frame::Inertial,
-                              domain::CoordMapsTimeDependent::ProductOf2Maps<
-                                  Translation, Translation>>,
-        domain::CoordinateMap<Frame::Grid, Frame::Inertial,
-                              domain::CoordMapsTimeDependent::ProductOf3Maps<
-                                  Translation, Translation, Translation>>>>;
+                              domain::CoordinateMaps::TimeDependent::
+                                  ProductOf2Maps<Translation, Translation>>,
+        domain::CoordinateMap<
+            Frame::Grid, Frame::Inertial,
+            domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
+                Translation, Translation, Translation>>>>;
 
 template <size_t MeshDim>
 ConcreteMap<MeshDim> create_coord_map(

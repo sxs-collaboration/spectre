@@ -20,18 +20,18 @@
 #include "Domain/CoordinateMaps/BulgedCube.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/CubicScale.hpp"
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 #include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/ProductMapsTimeDep.hpp"
-#include "Domain/CoordinateMaps/ProductMapsTimeDep.tpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/CoordinateMaps/SpecialMobius.hpp"
-#include "Domain/CoordinateMaps/Translation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Direction.hpp"
@@ -1075,7 +1075,7 @@ void test_time_dependent_map() {
   functions_of_time["Translation"] =
       std::make_unique<Polynomial>(initial_time, init_func);
 
-  const CoordMapsTimeDependent::Translation trans_map{"Translation"};
+  const CoordinateMaps::TimeDependent::Translation trans_map{"Translation"};
 
   // affine(x) = 1.5 * x + 5.5
   domain::CoordinateMaps::Affine affine_map{-1., 1., 4., 7.};
@@ -1267,11 +1267,12 @@ void test_push_back() {
 
 void test_jacobian_is_time_dependent() noexcept {
   using affine_map = CoordinateMaps::Affine;
-  using cubic_scale_map = CoordMapsTimeDependent::CubicScale<1>;
-  using map_2d =
-      CoordMapsTimeDependent::ProductOf2Maps<affine_map, cubic_scale_map>;
-  using map_3d = CoordMapsTimeDependent::ProductOf3Maps<affine_map, affine_map,
-                                                        cubic_scale_map>;
+  using cubic_scale_map = CoordinateMaps::TimeDependent::CubicScale<1>;
+  using map_2d = CoordinateMaps::TimeDependent::ProductOf2Maps<affine_map,
+                                                               cubic_scale_map>;
+  using map_3d =
+      CoordinateMaps::TimeDependent::ProductOf3Maps<affine_map, affine_map,
+                                                    cubic_scale_map>;
 
   const auto coord_map_1 = make_coordinate_map<Frame::Logical, Frame::Grid>(
       cubic_scale_map(10.0, "ExpansionA", "ExpansionB"));
@@ -1313,14 +1314,15 @@ void test_jacobian_is_time_dependent() noexcept {
 
 void test_coords_frame_velocity_jacobians() noexcept {
   using affine_map = CoordinateMaps::Affine;
-  using trans_map = CoordMapsTimeDependent::Translation;
+  using trans_map = CoordinateMaps::TimeDependent::Translation;
   using affine_map_2d = CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;
   using trans_map_2d =
-      CoordMapsTimeDependent::ProductOf2Maps<trans_map, trans_map>;
+      CoordinateMaps::TimeDependent::ProductOf2Maps<trans_map, trans_map>;
   using affine_map_3d =
       CoordinateMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
   using trans_map_3d =
-      CoordMapsTimeDependent::ProductOf3Maps<trans_map, trans_map, trans_map>;
+      CoordinateMaps::TimeDependent::ProductOf3Maps<trans_map, trans_map,
+                                                    trans_map>;
 
   const double initial_time = 0.0;
   const double time = 2.0;
@@ -1382,8 +1384,8 @@ void test_coords_frame_velocity_jacobians() noexcept {
   const affine_map_3d affine3d{affine_map{-1.0, 1.0, 0.0, 2.3},
                                affine_map{-1.0, 1.0, 1.0, 7.2},
                                affine_map{-1.0, 1.0, -10.0, 7.2}};
-  const CoordMapsTimeDependent::CubicScale<3> cubic_scale{20.0, "ExpansionA",
-                                                          "ExpansionB"};
+  const CoordinateMaps::TimeDependent::CubicScale<3> cubic_scale{
+      20.0, "ExpansionA", "ExpansionB"};
   const auto composed_map_3d =
       make_coordinate_map<Frame::Logical, Frame::Inertial>(
           translation3d, affine3d, cubic_scale);

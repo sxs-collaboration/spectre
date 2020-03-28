@@ -12,7 +12,7 @@
 #include <unordered_map>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/CoordinateMaps/RotationTimeDep.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
@@ -68,7 +68,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.RotationTimeDep",
   std::unordered_map<std::string, FoftPtr> f_of_t_list{};
   f_of_t_list[f_of_t_name] = std::make_unique<Polynomial>(t, init_func);
 
-  const CoordMapsTimeDependent::Rotation<spatial_dim> rotation_map{f_of_t_name};
+  const CoordinateMaps::TimeDependent::Rotation<spatial_dim> rotation_map{
+      f_of_t_name};
   const auto rotation_map_deserialized =
       serialize_and_deserialize(rotation_map);
 
@@ -139,6 +140,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.RotationTimeDep",
 
   test_coordinate_map_argument_types(rotation_map, initial_unmapped_point, t,
                                      f_of_t_list);
-  CHECK(not CoordMapsTimeDependent::Rotation<spatial_dim>{}.is_identity());
+  CHECK(
+      not CoordinateMaps::TimeDependent::Rotation<spatial_dim>{}.is_identity());
 }
 }  // namespace domain

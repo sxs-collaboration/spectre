@@ -18,9 +18,9 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
-#include "Domain/CoordinateMaps/ProductMapsTimeDep.hpp"
-#include "Domain/CoordinateMaps/ProductMapsTimeDep.tpp"
-#include "Domain/CoordinateMaps/Translation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DirectionMap.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
@@ -70,13 +70,14 @@ void test_block_time_independent() {
   test_move_semantics(std::move(original_block), block_copy);
 }
 
-using Translation = domain::CoordMapsTimeDependent::Translation;
+using Translation = domain::CoordinateMaps::TimeDependent::Translation;
 template <size_t Dim>
-using TranslationDimD = tmpl::conditional_t<
-    Dim == 2,
-    domain::CoordMapsTimeDependent::ProductOf2Maps<Translation, Translation>,
-    domain::CoordMapsTimeDependent::ProductOf3Maps<Translation, Translation,
-                                                   Translation>>;
+using TranslationDimD =
+    tmpl::conditional_t<Dim == 2,
+                        domain::CoordinateMaps::TimeDependent::ProductOf2Maps<
+                            Translation, Translation>,
+                        domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
+                            Translation, Translation, Translation>>;
 
 template <size_t VolumeDim>
 auto make_translation_map() noexcept;
@@ -109,11 +110,12 @@ void test_block_time_dependent() {
       tmpl::conditional_t<
           Dim == 2,
           domain::CoordinateMap<Frame::Grid, Frame::Inertial,
-                                domain::CoordMapsTimeDependent::ProductOf2Maps<
-                                    Translation, Translation>>,
-          domain::CoordinateMap<Frame::Grid, Frame::Inertial,
-                                domain::CoordMapsTimeDependent::ProductOf3Maps<
-                                    Translation, Translation, Translation>>>>;
+                                domain::CoordinateMaps::TimeDependent::
+                                    ProductOf2Maps<Translation, Translation>>,
+          domain::CoordinateMap<
+              Frame::Grid, Frame::Inertial,
+              domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
+                  Translation, Translation, Translation>>>>;
   using logical_to_grid_coordinate_map =
       CoordinateMap<Frame::Logical, Frame::Inertial,
                     CoordinateMaps::Identity<Dim>>;

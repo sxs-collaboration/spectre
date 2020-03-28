@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/CoordinateMaps/Translation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Creators/TimeDependence/GenerateCoordinateMap.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Options/Options.hpp"
@@ -23,12 +23,14 @@ namespace domain {
 namespace FunctionsOfTime {
 class FunctionOfTime;
 }  // namespace FunctionsOfTime
-namespace CoordMapsTimeDependent {
+namespace CoordinateMaps {
+namespace TimeDependent {
 template <typename Map1, typename Map2, typename Map3>
 class ProductOf3Maps;
 template <typename Map1, typename Map2>
 class ProductOf2Maps;
-}  // namespace CoordMapsTimeDependent
+}  // namespace TimeDependent
+}  // namespace CoordinateMaps
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 class CoordinateMap;
@@ -57,16 +59,16 @@ namespace time_dependence {
 template <size_t MeshDim>
 class UniformTranslation final : public TimeDependence<MeshDim> {
  private:
-  using Translation = domain::CoordMapsTimeDependent::Translation;
+  using Translation = domain::CoordinateMaps::TimeDependent::Translation;
 
  public:
   using maps_list = tmpl::list<
       domain::CoordinateMap<Frame::Grid, Frame::Inertial, Translation>,
-      domain::CoordinateMap<
-          Frame::Grid, Frame::Inertial,
-          CoordMapsTimeDependent::ProductOf2Maps<Translation, Translation>>,
       domain::CoordinateMap<Frame::Grid, Frame::Inertial,
-                            CoordMapsTimeDependent::ProductOf3Maps<
+                            CoordinateMaps::TimeDependent::ProductOf2Maps<
+                                Translation, Translation>>,
+      domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                            CoordinateMaps::TimeDependent::ProductOf3Maps<
                                 Translation, Translation, Translation>>>;
 
   static constexpr size_t mesh_dim = MeshDim;
@@ -97,11 +99,12 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
   using MapForComposition =
       detail::generate_coordinate_map_t<tmpl::list<tmpl::conditional_t<
           MeshDim == 1, Translation,
-          tmpl::conditional_t<MeshDim == 2,
-                              domain::CoordMapsTimeDependent::ProductOf2Maps<
-                                  Translation, Translation>,
-                              domain::CoordMapsTimeDependent::ProductOf3Maps<
-                                  Translation, Translation, Translation>>>>>;
+          tmpl::conditional_t<
+              MeshDim == 2,
+              domain::CoordinateMaps::TimeDependent::ProductOf2Maps<
+                  Translation, Translation>,
+              domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
+                  Translation, Translation, Translation>>>>>;
 
   using options = tmpl::list<InitialTime, Velocity, FunctionOfTimeNames>;
 

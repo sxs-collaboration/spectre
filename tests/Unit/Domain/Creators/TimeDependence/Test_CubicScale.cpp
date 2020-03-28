@@ -16,6 +16,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/Creators/TimeDependence/CubicScale.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Framework/TestCreation.hpp"
@@ -30,7 +31,8 @@ namespace creators {
 namespace time_dependence {
 namespace {
 template <size_t MeshDim>
-using CubicScaleMap = domain::CoordMapsTimeDependent::CubicScale<MeshDim>;
+using CubicScaleMap =
+    domain::CoordinateMaps::TimeDependent::CubicScale<MeshDim>;
 
 template <size_t MeshDim>
 using CoordMap =

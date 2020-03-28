@@ -14,9 +14,9 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/MapInstantiationMacros.hpp"
-#include "Domain/CoordinateMaps/ProductMapsTimeDep.hpp"
-#include "Domain/CoordinateMaps/ProductMapsTimeDep.tpp"
-#include "Domain/CoordinateMaps/Translation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "ErrorHandling/Assert.hpp"
@@ -95,15 +95,16 @@ UniformTranslation<MeshDim>::functions_of_time() const noexcept {
 template <>
 auto UniformTranslation<1>::map_for_composition() const noexcept
     -> MapForComposition {
-  return MapForComposition{
-      domain::CoordMapsTimeDependent::Translation{functions_of_time_names_[0]}};
+  return MapForComposition{domain::CoordinateMaps::TimeDependent::Translation{
+      functions_of_time_names_[0]}};
 }
 
 template <>
 auto UniformTranslation<2>::map_for_composition() const noexcept
     -> MapForComposition {
   using ProductMap =
-      domain::CoordMapsTimeDependent::ProductOf2Maps<Translation, Translation>;
+      domain::CoordinateMaps::TimeDependent::ProductOf2Maps<Translation,
+                                                            Translation>;
   return MapForComposition{
       ProductMap{Translation{functions_of_time_names_[0]},
                  Translation{functions_of_time_names_[1]}}};
@@ -112,9 +113,8 @@ auto UniformTranslation<2>::map_for_composition() const noexcept
 template <>
 auto UniformTranslation<3>::map_for_composition() const noexcept
     -> MapForComposition {
-  using ProductMap =
-      domain::CoordMapsTimeDependent::ProductOf3Maps<Translation, Translation,
-                                                     Translation>;
+  using ProductMap = domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
+      Translation, Translation, Translation>;
   return MapForComposition{
       ProductMap{Translation{functions_of_time_names_[0]},
                  Translation{functions_of_time_names_[1]},
@@ -172,16 +172,17 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 }  // namespace time_dependence
 }  // namespace creators
 
-using Translation = CoordMapsTimeDependent::Translation;
+using Translation = CoordinateMaps::TimeDependent::Translation;
 using Translation2d =
-    CoordMapsTimeDependent::ProductOf2Maps<Translation, Translation>;
+    CoordinateMaps::TimeDependent::ProductOf2Maps<Translation, Translation>;
 using Translation3d =
-    CoordMapsTimeDependent::ProductOf3Maps<Translation, Translation,
-                                           Translation>;
+    CoordinateMaps::TimeDependent::ProductOf3Maps<Translation, Translation,
+                                                  Translation>;
 
-template class CoordMapsTimeDependent::ProductOf2Maps<Translation, Translation>;
-template class CoordMapsTimeDependent::ProductOf3Maps<Translation, Translation,
-                                                      Translation>;
+template class CoordinateMaps::TimeDependent::ProductOf2Maps<Translation,
+                                                             Translation>;
+template class CoordinateMaps::TimeDependent::ProductOf3Maps<
+    Translation, Translation, Translation>;
 
 INSTANTIATE_MAPS_FUNCTIONS(((Translation), (Translation2d), (Translation3d)),
                            (Frame::Grid), (Frame::Inertial),

@@ -24,10 +24,10 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/CubicScale.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
@@ -638,11 +638,11 @@ void test_boundary_coordinates_moving_mesh() {
   };
 
   perform_checks(ElementId<1>(0), CoordinateMaps::Affine{-1.0, 1.0, 2.0, 7.8},
-                 CoordMapsTimeDependent::CubicScale<1>{
+                 CoordinateMaps::TimeDependent::CubicScale<1>{
                      outer_boundary, functions_of_time_names[0],
                      functions_of_time_names[1]});
   perform_checks(ElementId<2>(0), CoordinateMaps::Rotation<2>{atan2(4., 3.)},
-                 CoordMapsTimeDependent::CubicScale<2>{
+                 CoordinateMaps::TimeDependent::CubicScale<2>{
                      outer_boundary, functions_of_time_names[0],
                      functions_of_time_names[1]});
   perform_checks(
@@ -650,9 +650,9 @@ void test_boundary_coordinates_moving_mesh() {
       CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                      CoordinateMaps::Rotation<2>>{
           {-1., 1., 2., 7.}, CoordinateMaps::Rotation<2>(atan2(4., 3.))},
-      CoordMapsTimeDependent::CubicScale<3>{outer_boundary,
-                                            functions_of_time_names[0],
-                                            functions_of_time_names[1]});
+      CoordinateMaps::TimeDependent::CubicScale<3>{outer_boundary,
+                                                   functions_of_time_names[0],
+                                                   functions_of_time_names[1]});
 }
 
 struct SimpleBase : db::SimpleTag {

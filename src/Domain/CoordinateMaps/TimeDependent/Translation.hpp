@@ -25,7 +25,8 @@ class er;
 /// \endcond
 
 namespace domain {
-namespace CoordMapsTimeDependent {
+namespace CoordinateMaps {
+namespace TimeDependent {
 /*!
  * \ingroup CoordMapsTimeDependentGroup
  * \brief Translation map defined by \f$x = \xi+T(t)\f$.
@@ -83,11 +84,11 @@ class Translation {
   std::string f_of_t_name_{};
 };
 
-inline bool operator!=(
-    const CoordMapsTimeDependent::Translation& lhs,
-    const CoordMapsTimeDependent::Translation& rhs) noexcept {
+inline bool operator!=(const Translation& lhs,
+                       const Translation& rhs) noexcept {
   return not(lhs == rhs);
 }
 
-}  // namespace CoordMapsTimeDependent
+}  // namespace TimeDependent
+}  // namespace CoordinateMaps
 }  // namespace domain

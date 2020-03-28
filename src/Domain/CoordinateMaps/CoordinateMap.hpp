@@ -32,6 +32,8 @@ class DataVector;
 namespace domain {
 /// Contains all coordinate maps.
 namespace CoordinateMaps {
+/// Contains the time-dependent coordinate maps
+namespace TimeDependent {}
 template <typename FirstMap, typename... Maps>
 constexpr size_t map_dim = FirstMap::dim;
 }  // namespace CoordinateMaps

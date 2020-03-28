@@ -21,11 +21,11 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/CubicScale.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
@@ -280,15 +280,15 @@ void test_face_normal_moving_mesh() {
                              CoordinateMaps::Affine(-1.0, 1.0, 2.0, 7.8)));
     const auto grid_to_inertial_map =
         make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            CoordMapsTimeDependent::CubicScale<1>{outer_boundary,
-                                                  functions_of_time_names[0],
-                                                  functions_of_time_names[1]});
+            CoordinateMaps::TimeDependent::CubicScale<1>{
+                outer_boundary, functions_of_time_names[0],
+                functions_of_time_names[1]});
     const auto logical_to_inertial_map =
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             CoordinateMaps::Affine(-1.0, 1.0, 2.0, 7.8),
-            CoordMapsTimeDependent::CubicScale<1>{outer_boundary,
-                                                  functions_of_time_names[0],
-                                                  functions_of_time_names[1]});
+            CoordinateMaps::TimeDependent::CubicScale<1>{
+                outer_boundary, functions_of_time_names[0],
+                functions_of_time_names[1]});
 
     for (const double time : times_to_check) {
       check_time_dependent(logical_to_grid_map, grid_to_inertial_map,
@@ -302,15 +302,15 @@ void test_face_normal_moving_mesh() {
                              CoordinateMaps::Rotation<2>(atan2(4., 3.))));
     const auto grid_to_inertial_map =
         make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            CoordMapsTimeDependent::CubicScale<2>{outer_boundary,
-                                                  functions_of_time_names[0],
-                                                  functions_of_time_names[1]});
+            CoordinateMaps::TimeDependent::CubicScale<2>{
+                outer_boundary, functions_of_time_names[0],
+                functions_of_time_names[1]});
     const auto logical_to_inertial_map =
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             CoordinateMaps::Rotation<2>(atan2(4., 3.)),
-            CoordMapsTimeDependent::CubicScale<2>{outer_boundary,
-                                                  functions_of_time_names[0],
-                                                  functions_of_time_names[1]});
+            CoordinateMaps::TimeDependent::CubicScale<2>{
+                outer_boundary, functions_of_time_names[0],
+                functions_of_time_names[1]});
 
     for (const double time : times_to_check) {
       check_time_dependent(logical_to_grid_map, grid_to_inertial_map,
@@ -328,17 +328,17 @@ void test_face_normal_moving_mesh() {
                 CoordinateMaps::Rotation<2>(atan2(4., 3.)))));
     const auto grid_to_inertial_map =
         make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            CoordMapsTimeDependent::CubicScale<3>{outer_boundary,
-                                                  functions_of_time_names[0],
-                                                  functions_of_time_names[1]});
+            CoordinateMaps::TimeDependent::CubicScale<3>{
+                outer_boundary, functions_of_time_names[0],
+                functions_of_time_names[1]});
     const auto logical_to_inertial_map =
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                            CoordinateMaps::Rotation<2>>(
                 {-1., 1., 2., 7.}, CoordinateMaps::Rotation<2>(atan2(4., 3.))),
-            CoordMapsTimeDependent::CubicScale<3>{outer_boundary,
-                                                  functions_of_time_names[0],
-                                                  functions_of_time_names[1]});
+            CoordinateMaps::TimeDependent::CubicScale<3>{
+                outer_boundary, functions_of_time_names[0],
+                functions_of_time_names[1]});
 
     for (const double time : times_to_check) {
       check_time_dependent(logical_to_grid_map, grid_to_inertial_map,

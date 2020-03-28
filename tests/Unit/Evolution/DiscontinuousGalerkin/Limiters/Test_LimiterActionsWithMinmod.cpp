@@ -18,9 +18,9 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/CubicScale.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
@@ -121,7 +121,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Minmod",
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-  using CubicScaleMap = domain::CoordMapsTimeDependent::CubicScale<2>;
+  using CubicScaleMap = domain::CoordinateMaps::TimeDependent::CubicScale<2>;
   PUPable_reg(
       SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Grid, Affine2D>));
   PUPable_reg(SINGLE_ARG(

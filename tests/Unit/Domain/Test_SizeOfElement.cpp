@@ -13,12 +13,12 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/CubicScale.hpp"
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
@@ -34,7 +34,7 @@
 
 namespace {
 template <size_t Dim>
-using CubicScale = domain::CoordMapsTimeDependent::CubicScale<Dim>;
+using CubicScale = domain::CoordinateMaps::TimeDependent::CubicScale<Dim>;
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>

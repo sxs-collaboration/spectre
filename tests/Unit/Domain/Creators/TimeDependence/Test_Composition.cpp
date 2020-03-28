@@ -7,9 +7,9 @@
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/ProductMapsTimeDep.hpp"
-#include "Domain/CoordinateMaps/ProductMapsTimeDep.tpp"
-#include "Domain/CoordinateMaps/Translation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Creators/TimeDependence/Composition.hpp"
 #include "Domain/Creators/TimeDependence/Composition.tpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
@@ -24,7 +24,7 @@ namespace creators {
 namespace time_dependence {
 
 namespace {
-using Translation = domain::CoordMapsTimeDependent::Translation;
+using Translation = domain::CoordinateMaps::TimeDependent::Translation;
 
 template <typename T0, size_t MeshDim>
 void test_impl(

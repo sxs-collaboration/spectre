@@ -20,7 +20,7 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/Translation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
@@ -39,7 +39,7 @@
 namespace domain {
 namespace {
 void test_1d_domains() {
-  using Translation = domain::CoordMapsTimeDependent::Translation;
+  using Translation = domain::CoordinateMaps::TimeDependent::Translation;
   {
     PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
                                          CoordinateMaps::Affine>));

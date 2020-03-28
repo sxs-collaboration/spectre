@@ -18,9 +18,9 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/ProductMapsTimeDep.hpp"
-#include "Domain/CoordinateMaps/ProductMapsTimeDep.tpp"
-#include "Domain/CoordinateMaps/Translation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
@@ -44,10 +44,10 @@ namespace domain {
 namespace {
 using Affine = CoordinateMaps::Affine;
 using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-using Translation = CoordMapsTimeDependent::Translation;
+using Translation = CoordinateMaps::TimeDependent::Translation;
 using Translation3D =
-    CoordMapsTimeDependent::ProductOf3Maps<Translation, Translation,
-                                           Translation>;
+    CoordinateMaps::TimeDependent::ProductOf3Maps<Translation, Translation,
+                                                  Translation>;
 
 template <typename... FuncsOfTime>
 void test_brick_construction(

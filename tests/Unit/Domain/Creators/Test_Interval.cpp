@@ -16,7 +16,7 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/Translation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
@@ -154,7 +154,7 @@ void test_interval_factory() {
                 "TranslationX",
                 {1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-            CoordMapsTimeDependent::Translation{"TranslationX"}));
+            CoordinateMaps::TimeDependent::Translation{"TranslationX"}));
   }
 }
 }  // namespace

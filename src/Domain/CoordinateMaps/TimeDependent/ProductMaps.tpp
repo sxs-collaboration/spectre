@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Domain/CoordinateMaps/ProductMapsTimeDep.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
 
 #include <array>
 #include <boost/none.hpp>
@@ -20,7 +20,8 @@
 #include "Utilities/TMPL.hpp"
 
 namespace domain {
-namespace CoordMapsTimeDependent {
+namespace CoordinateMaps {
+namespace TimeDependent {
 namespace product_detail {
 template <typename T, size_t Size, typename Map1, typename Map2, size_t... Is,
           size_t... Js>
@@ -403,5 +404,6 @@ bool operator!=(const ProductOf3Maps<Map1, Map2, Map3>& lhs,
                 const ProductOf3Maps<Map1, Map2, Map3>& rhs) noexcept {
   return not(lhs == rhs);
 }
-}  // namespace CoordMapsTimeDependent
+}  // namespace TimeDependent
+}  // namespace CoordinateMaps
 }  // namespace domain
