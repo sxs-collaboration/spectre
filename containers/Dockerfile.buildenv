@@ -116,7 +116,7 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2
 # Build with GCC7 when easily possible to maximize ABI compatibility.
 #
 # Install blaze, brigand, catch2, libsharp, libxsmm, yaml-cpp in /usr/local
-RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.7.tar.gz -O blaze.tar.gz \
+RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.8.tar.gz -O blaze.tar.gz \
     && tar -xzf blaze.tar.gz \
     && mv blaze-* blaze \
     && mv blaze/blaze /usr/local/include \
