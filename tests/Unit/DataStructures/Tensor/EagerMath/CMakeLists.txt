@@ -17,5 +17,14 @@ add_test_library(
   ${LIBRARY}
   "DataStructures/Tensor/EagerMath"
   "${LIBRARY_SOURCES}"
-  "DataStructures;DomainHelpers;ErrorHandling"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  INTERFACE
+  DataStructures
+  DomainHelpers
+  ErrorHandling
+  GeneralRelativity
   )

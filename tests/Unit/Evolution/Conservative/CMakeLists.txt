@@ -11,5 +11,17 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Conservative/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;ErrorHandling"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  INTERFACE
+  CoordinateMaps
+  DataStructures
+  Domain
+  ErrorHandling
+  LinearOperators
+  MathFunctions
+  Utilities
   )

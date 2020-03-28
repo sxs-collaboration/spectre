@@ -46,7 +46,7 @@ target_link_libraries(
   FunctionsOfTime
   Time
 
-  PUBLIC
+  # PUBLIC
   Boost::boost
   CoordinateMaps
   DataStructures
@@ -54,7 +54,7 @@ target_link_libraries(
   Options
   Utilities
 
-  PRIVATE
+  # PRIVATE
   DomainCreators
   Spectral
   )
