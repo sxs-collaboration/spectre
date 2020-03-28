@@ -46,17 +46,6 @@ endif()
 # but we don't care
 create_cxx_flag_target("-Wno-noexcept-type" SpectreWarnNoNoexceptType)
 
-if(CMAKE_SUPPORTS_LINK_OPTIONS)
-  create_cxx_link_flag_target("-Qunused-arguments" LinkUnusedArgument)
-  target_link_libraries(
-    SpectreFlags
-    INTERFACE
-    LinkUnusedArgument
-    )
-else(CMAKE_SUPPORTS_LINK_OPTIONS)
-  check_and_add_cxx_link_flag("-Qunused-arguments")
-endif(CMAKE_SUPPORTS_LINK_OPTIONS)
-
 target_link_libraries(
   SpectreWarnings
   INTERFACE
