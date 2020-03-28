@@ -28,7 +28,7 @@ namespace domain {
 namespace {
 template <typename Map1, typename Map2>
 void test_product_of_2_maps_time_dep(
-    const CoordMapsTimeDependent::ProductOf2Maps<Map1, Map2>& map2d,
+    const CoordinateMaps::TimeDependent::ProductOf2Maps<Map1, Map2>& map2d,
     const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -39,7 +39,7 @@ void test_product_of_2_maps_time_dep(
     const double y_target_a, const double y_target_b,
     const std::array<double, 2>& expected_frame_velocity) noexcept {
   using AffineMap = CoordinateMaps::Affine;
-  using TranslationMap = CoordMapsTimeDependent::Translation;
+  using TranslationMap = CoordinateMaps::TimeDependent::Translation;
   static_assert(cpp17::is_same_v<Map1, AffineMap> or
                     cpp17::is_same_v<Map1, TranslationMap>,
                 "Map1 must be either an affine map or a translation map");
@@ -150,7 +150,7 @@ void test_product_of_2_maps_time_dep() noexcept {
   INFO("Product of two maps with time dependence");
   constexpr size_t deriv_order = 3;
   using affine_map = CoordinateMaps::Affine;
-  using translation_map = CoordMapsTimeDependent::Translation;
+  using translation_map = CoordinateMaps::TimeDependent::Translation;
 
   const std::string f_of_t_name{"translation"};
   const double time = 2.0;
@@ -186,7 +186,8 @@ void test_product_of_2_maps_time_dep() noexcept {
     translation_map translation_map_y{f_of_t_name};
 
     using Map2d =
-        CoordMapsTimeDependent::ProductOf2Maps<affine_map, translation_map>;
+        CoordinateMaps::TimeDependent::ProductOf2Maps<affine_map,
+                                                      translation_map>;
     Map2d map2d(affine_map_x, translation_map_y);
 
     test_product_of_2_maps_time_dep(
@@ -201,7 +202,8 @@ void test_product_of_2_maps_time_dep() noexcept {
         {{0.0, functions_of_time.at(f_of_t_name)->func_and_deriv(time)[1][0]}});
 
     using Map2d_b =
-        CoordMapsTimeDependent::ProductOf2Maps<translation_map, affine_map>;
+        CoordinateMaps::TimeDependent::ProductOf2Maps<translation_map,
+                                                      affine_map>;
     Map2d_b map2d_b(translation_map_y, affine_map_x);
 
     test_product_of_2_maps_time_dep(
@@ -217,8 +219,9 @@ void test_product_of_2_maps_time_dep() noexcept {
   }
 
   {
-    using Map2d = CoordMapsTimeDependent::ProductOf2Maps<translation_map,
-                                                         translation_map>;
+    using Map2d =
+        CoordinateMaps::TimeDependent::ProductOf2Maps<translation_map,
+                                                      translation_map>;
 
     const std::string f_of_t_name_x{"translation_x"};
     const std::string f_of_t_name_y{"translation_y"};
@@ -271,7 +274,8 @@ void test_product_of_2_maps_time_dep() noexcept {
 
 template <typename Map1, typename Map2, typename Map3>
 void test_product_of_3_maps_time_dep(
-    const CoordMapsTimeDependent::ProductOf3Maps<Map1, Map2, Map3>& map3d,
+    const CoordinateMaps::TimeDependent::ProductOf3Maps<Map1, Map2, Map3>&
+        map3d,
     const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -284,7 +288,7 @@ void test_product_of_3_maps_time_dep(
     const double z_target_b,
     const std::array<double, 3>& expected_frame_velocity) noexcept {
   using AffineMap = CoordinateMaps::Affine;
-  using TranslationMap = CoordMapsTimeDependent::Translation;
+  using TranslationMap = CoordinateMaps::TimeDependent::Translation;
   static_assert(cpp17::is_same_v<Map1, AffineMap> or
                     cpp17::is_same_v<Map1, TranslationMap>,
                 "Map1 must be either an affine map or a translation map");
@@ -419,7 +423,7 @@ void test_product_of_3_maps() noexcept {
   INFO("Product of 3 maps");
   constexpr size_t deriv_order = 3;
   using affine_map = CoordinateMaps::Affine;
-  using translation_map = CoordMapsTimeDependent::Translation;
+  using translation_map = CoordinateMaps::TimeDependent::Translation;
 
   const std::string f_of_t_name_x{"translation_x"};
   const std::string f_of_t_name_y{"translation_y"};
@@ -477,8 +481,8 @@ void test_product_of_3_maps() noexcept {
 
       translation_map translation_map_z{f_of_t_name_z};
       using Map3d =
-          CoordMapsTimeDependent::ProductOf3Maps<affine_map, affine_map,
-                                                 translation_map>;
+          CoordinateMaps::TimeDependent::ProductOf3Maps<affine_map, affine_map,
+                                                        translation_map>;
       Map3d map3d{affine_map_x, affine_map_y, translation_map_z};
 
       test_product_of_3_maps_time_dep(
@@ -510,9 +514,8 @@ void test_product_of_3_maps() noexcept {
           zeta + functions_of_time.at(f_of_t_name_y)->func(time)[0][0];
 
       translation_map translation_map_z{f_of_t_name_y};
-      using Map3d =
-          CoordMapsTimeDependent::ProductOf3Maps<affine_map, translation_map,
-                                                 affine_map>;
+      using Map3d = CoordinateMaps::TimeDependent::ProductOf3Maps<
+          affine_map, translation_map, affine_map>;
       Map3d map3d{affine_map_x, translation_map_z, affine_map_y};
 
       test_product_of_3_maps_time_dep(
@@ -547,8 +550,8 @@ void test_product_of_3_maps() noexcept {
 
       translation_map translation_map_z{f_of_t_name_x};
       using Map3d =
-          CoordMapsTimeDependent::ProductOf3Maps<translation_map, affine_map,
-                                                 affine_map>;
+          CoordinateMaps::TimeDependent::ProductOf3Maps<translation_map,
+                                                        affine_map, affine_map>;
       Map3d map3d{translation_map_z, affine_map_y, affine_map_x};
 
       test_product_of_3_maps_time_dep(
@@ -604,9 +607,8 @@ void test_product_of_3_maps() noexcept {
 
       translation_map translation_map_y{f_of_t_name_y};
       translation_map translation_map_z{f_of_t_name_z};
-      using Map3d =
-          CoordMapsTimeDependent::ProductOf3Maps<affine_map, translation_map,
-                                                 translation_map>;
+      using Map3d = CoordinateMaps::TimeDependent::ProductOf3Maps<
+          affine_map, translation_map, translation_map>;
       Map3d map3d{affine_map_x, translation_map_y, translation_map_z};
 
       test_product_of_3_maps_time_dep(
@@ -650,9 +652,8 @@ void test_product_of_3_maps() noexcept {
 
       translation_map translation_map_y{f_of_t_name_x};
       translation_map translation_map_z{f_of_t_name_z};
-      using Map3d =
-          CoordMapsTimeDependent::ProductOf3Maps<translation_map, affine_map,
-                                                 translation_map>;
+      using Map3d = CoordinateMaps::TimeDependent::ProductOf3Maps<
+          translation_map, affine_map, translation_map>;
       Map3d map3d{translation_map_y, affine_map_x, translation_map_z};
 
       test_product_of_3_maps_time_dep(
@@ -696,9 +697,8 @@ void test_product_of_3_maps() noexcept {
 
       translation_map translation_map_y{f_of_t_name_y};
       translation_map translation_map_z{f_of_t_name_x};
-      using Map3d =
-          CoordMapsTimeDependent::ProductOf3Maps<translation_map,
-                                                 translation_map, affine_map>;
+      using Map3d = CoordinateMaps::TimeDependent::ProductOf3Maps<
+          translation_map, translation_map, affine_map>;
       Map3d map3d{translation_map_z, translation_map_y, affine_map_x};
 
       test_product_of_3_maps_time_dep(
@@ -752,9 +752,8 @@ void test_product_of_3_maps() noexcept {
     translation_map translation_map_x{f_of_t_name_x};
     translation_map translation_map_y{f_of_t_name_y};
     translation_map translation_map_z{f_of_t_name_z};
-    using Map3d =
-        CoordMapsTimeDependent::ProductOf3Maps<translation_map, translation_map,
-                                               translation_map>;
+    using Map3d = CoordinateMaps::TimeDependent::ProductOf3Maps<
+        translation_map, translation_map, translation_map>;
     Map3d map3d{translation_map_x, translation_map_y, translation_map_z};
 
     test_product_of_3_maps_time_dep(
@@ -776,7 +775,7 @@ void test_product_of_3_maps() noexcept {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.ProductMaps",
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.TimeDependent.ProductMaps",
                   "[Domain][Unit]") {
   test_product_of_2_maps_time_dep();
   test_product_of_3_maps();

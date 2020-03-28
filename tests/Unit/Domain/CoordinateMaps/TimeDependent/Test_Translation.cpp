@@ -22,7 +22,7 @@
 #include "Utilities/TypeTraits.hpp"
 
 namespace domain {
-SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.Translation",
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.TimeDependent.Translation",
                   "[Domain][Unit]") {
   // define vars for FunctionOfTime::PiecewisePolynomial f(t) = t**2.
   double t = -1.0;
@@ -40,7 +40,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.Translation",
 
   const FoftPtr& f_of_t = f_of_t_list.at("translation");
 
-  const CoordMapsTimeDependent::Translation trans_map{"translation"};
+  const CoordinateMaps::TimeDependent::Translation trans_map{"translation"};
   // test serialized/deserialized map
   const auto trans_map_deserialized = serialize_and_deserialize(trans_map);
 
@@ -85,6 +85,6 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.Translation",
   CHECK_FALSE(trans_map != trans_map_deserialized);
 
   test_coordinate_map_argument_types(trans_map, point_xi, t, f_of_t_list);
-  CHECK(not CoordMapsTimeDependent::Translation{}.is_identity());
+  CHECK(not CoordinateMaps::TimeDependent::Translation{}.is_identity());
 }
 }  // namespace domain

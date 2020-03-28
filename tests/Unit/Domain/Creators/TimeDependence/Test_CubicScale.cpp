@@ -31,7 +31,8 @@ namespace creators {
 namespace time_dependence {
 namespace {
 template <size_t MeshDim>
-using CubicScaleMap = domain::CoordMapsTimeDependent::CubicScale<MeshDim>;
+using CubicScaleMap =
+    domain::CoordinateMaps::TimeDependent::CubicScale<MeshDim>;
 
 template <size_t MeshDim>
 using CoordMap =

@@ -39,7 +39,8 @@ Matrix rotation_matrix(
 }  // namespace
 
 namespace domain {
-namespace CoordMapsTimeDependent {
+namespace CoordinateMaps {
+namespace TimeDependent {
 
 Rotation<2>::Rotation(std::string function_of_time_name) noexcept
     : f_of_t_name_(std::move(function_of_time_name)) {}
@@ -217,5 +218,6 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2),
 #undef INSTANTIATE
 /// \endcond
 
-}  // namespace CoordMapsTimeDependent
+}  // namespace TimeDependent
+}  // namespace CoordinateMaps
 }  // namespace domain

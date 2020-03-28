@@ -43,9 +43,9 @@ namespace domain {
 namespace {
 using Affine = CoordinateMaps::Affine;
 using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-using Translation = CoordMapsTimeDependent::Translation;
+using Translation = CoordinateMaps::TimeDependent::Translation;
 using Translation2D =
-    CoordMapsTimeDependent::ProductOf2Maps<Translation, Translation>;
+    CoordinateMaps::TimeDependent::ProductOf2Maps<Translation, Translation>;
 
 template <typename... FuncsOfTime>
 void test_rectangle_construction(

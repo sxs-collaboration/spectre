@@ -62,11 +62,11 @@ void test_tags() noexcept {
       "div(MeshVelocity)");
 }
 
-using TranslationMap = domain::CoordMapsTimeDependent::Translation;
+using TranslationMap = domain::CoordinateMaps::TimeDependent::Translation;
 using TranslationMap2d =
-    domain::CoordMapsTimeDependent::ProductOf2Maps<TranslationMap,
-                                                   TranslationMap>;
-using TranslationMap3d = domain::CoordMapsTimeDependent::ProductOf3Maps<
+    domain::CoordinateMaps::TimeDependent::ProductOf2Maps<TranslationMap,
+                                                          TranslationMap>;
+using TranslationMap3d = domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
     TranslationMap, TranslationMap, TranslationMap>;
 
 using AffineMap = domain::CoordinateMaps::Affine;

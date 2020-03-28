@@ -44,10 +44,10 @@ namespace domain {
 namespace {
 using Affine = CoordinateMaps::Affine;
 using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-using Translation = CoordMapsTimeDependent::Translation;
+using Translation = CoordinateMaps::TimeDependent::Translation;
 using Translation3D =
-    CoordMapsTimeDependent::ProductOf3Maps<Translation, Translation,
-                                           Translation>;
+    CoordinateMaps::TimeDependent::ProductOf3Maps<Translation, Translation,
+                                                  Translation>;
 
 template <typename... FuncsOfTime>
 void test_brick_construction(

@@ -130,9 +130,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 }  // namespace time_dependence
 }  // namespace creators
 
-INSTANTIATE_MAPS_FUNCTIONS(((CoordMapsTimeDependent::CubicScale<1>),
-                            (CoordMapsTimeDependent::CubicScale<2>),
-                            (CoordMapsTimeDependent::CubicScale<3>)),
+INSTANTIATE_MAPS_FUNCTIONS(((CoordinateMaps::TimeDependent::CubicScale<1>),
+                            (CoordinateMaps::TimeDependent::CubicScale<2>),
+                            (CoordinateMaps::TimeDependent::CubicScale<3>)),
                            (Frame::Grid), (Frame::Inertial),
                            (double, DataVector))
 }  // namespace domain

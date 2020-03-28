@@ -27,7 +27,8 @@ class er;
 /// \endcond
 
 namespace domain {
-namespace CoordMapsTimeDependent {
+namespace CoordinateMaps {
+namespace TimeDependent {
 /// \ingroup CoordMapsTimeDependentGroup
 /// \brief Product of two codimension=0 CoordinateMaps, where one or both must
 /// be time-dependent.
@@ -194,5 +195,6 @@ class ProductOf3Maps {
 template <typename Map1, typename Map2, typename Map3>
 bool operator!=(const ProductOf3Maps<Map1, Map2, Map3>& lhs,
                 const ProductOf3Maps<Map1, Map2, Map3>& rhs) noexcept;
-}  // namespace CoordMapsTimeDependent
+}  // namespace TimeDependent
+}  // namespace CoordinateMaps
 }  // namespace domain

@@ -38,13 +38,14 @@ namespace creators {
 namespace time_dependence {
 /// \brief A linear or cubic radial scaling time dependence.
 ///
-/// Adds the `domain::CoordMapsTimeDependent::CubicScale` map. A linear radial
-/// scaling can be used by specifying the two functions of time to have the same
-/// name.
+/// Adds the `domain::CoordinateMaps::TimeDependent::CubicScale` map. A linear
+/// radial scaling can be used by specifying the two functions of time to have
+/// the same name.
 template <size_t MeshDim>
 class CubicScale final : public TimeDependence<MeshDim> {
  private:
-  using CubicScaleMap = domain::CoordMapsTimeDependent::CubicScale<MeshDim>;
+  using CubicScaleMap =
+      domain::CoordinateMaps::TimeDependent::CubicScale<MeshDim>;
 
  public:
   using maps_list =
@@ -59,7 +60,7 @@ class CubicScale final : public TimeDependence<MeshDim> {
         "The initial time of the functions of time"};
   };
   /// \brief The outer boundary or pivot point of the
-  /// `domain::CoordMapsTimeDependent::CubicScale` map
+  /// `domain::CoordinateMaps::TimeDependent::CubicScale` map
   struct OuterBoundary {
     using type = double;
     static constexpr OptionString help = {

@@ -39,7 +39,7 @@
 namespace domain {
 namespace {
 void test_1d_domains() {
-  using Translation = domain::CoordMapsTimeDependent::Translation;
+  using Translation = domain::CoordinateMaps::TimeDependent::Translation;
   {
     PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
                                          CoordinateMaps::Affine>));

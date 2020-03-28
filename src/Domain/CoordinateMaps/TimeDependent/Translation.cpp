@@ -18,7 +18,8 @@
 #include "Utilities/StdHelpers.hpp"
 
 namespace domain {
-namespace CoordMapsTimeDependent {
+namespace CoordinateMaps {
+namespace TimeDependent {
 
 Translation::Translation(std::string function_of_time_name) noexcept
     : f_of_t_name_(std::move(function_of_time_name)) {}
@@ -83,8 +84,7 @@ Translation::inv_jacobian(const std::array<T, 1>& source_coords) const
 
 void Translation::pup(PUP::er& p) noexcept { p | f_of_t_name_; }
 
-bool operator==(const CoordMapsTimeDependent::Translation& lhs,
-                const CoordMapsTimeDependent::Translation& rhs) noexcept {
+bool operator==(const Translation& lhs, const Translation& rhs) noexcept {
   return lhs.f_of_t_name_ == rhs.f_of_t_name_;
 }
 
@@ -120,5 +120,6 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
 #undef DTYPE
 #undef INSTANTIATE
 /// \endcond
-}  // namespace CoordMapsTimeDependent
+}  // namespace TimeDependent
+}  // namespace CoordinateMaps
 }  // namespace domain

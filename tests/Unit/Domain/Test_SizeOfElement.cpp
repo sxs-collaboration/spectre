@@ -34,7 +34,7 @@
 
 namespace {
 template <size_t Dim>
-using CubicScale = domain::CoordMapsTimeDependent::CubicScale<Dim>;
+using CubicScale = domain::CoordinateMaps::TimeDependent::CubicScale<Dim>;
 
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>

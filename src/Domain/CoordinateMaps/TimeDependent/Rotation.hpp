@@ -25,7 +25,8 @@ class er;
 /// \endcond
 
 namespace domain {
-namespace CoordMapsTimeDependent {
+namespace CoordinateMaps {
+namespace TimeDependent {
 
 /// \cond HIDDEN_SYMBOLS
 template <size_t Dim>
@@ -111,5 +112,6 @@ class Rotation<2> {
 
 bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept;
 
-}  // namespace CoordMapsTimeDependent
+}  // namespace TimeDependent
+}  // namespace CoordinateMaps
 }  // namespace domain

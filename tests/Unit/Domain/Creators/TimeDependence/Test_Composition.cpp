@@ -24,7 +24,7 @@ namespace creators {
 namespace time_dependence {
 
 namespace {
-using Translation = domain::CoordMapsTimeDependent::Translation;
+using Translation = domain::CoordinateMaps::TimeDependent::Translation;
 
 template <typename T0, size_t MeshDim>
 void test_impl(

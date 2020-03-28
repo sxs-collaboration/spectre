@@ -26,7 +26,8 @@ class er;
 /// \endcond
 
 namespace domain {
-namespace CoordMapsTimeDependent {
+namespace CoordinateMaps {
+namespace TimeDependent {
 /*!
  * \ingroup CoordMapsTimeDependentGroup
  * \brief Maps the radius as \f$r(t) = a(t)\rho + \left(b(t) - a(t)\right)
@@ -168,5 +169,6 @@ bool operator!=(const CubicScale<Dim>& lhs,
   return not(lhs == rhs);
 }
 
-}  // namespace CoordMapsTimeDependent
+}  // namespace TimeDependent
+}  // namespace CoordinateMaps
 }  // namespace domain
