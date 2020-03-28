@@ -5,7 +5,7 @@ find_path(
     pybind11_INCLUDE_DIR
     PATH_SUFFIXES include
     NAMES pybind11/pybind11.h
-    HINTS ${pybind11_ROOT}
+    HINTS ${pybind11_ROOT} ENV pybind11_ROOT
     DOC "Pybind11 include directory. Used pybind11_ROOT to set a search dir."
 )
 

@@ -8,12 +8,12 @@
 # find the jemalloc include directory
 find_path(JEMALLOC_INCLUDE_DIRS jemalloc/jemalloc.h
     PATH_SUFFIXES include
-    HINTS ${JEMALLOC_ROOT})
+    HINTS ${JEMALLOC_ROOT} ENV JEMALLOC_ROOT)
 
 find_library(JEMALLOC_LIBRARIES
     NAMES jemalloc
     PATH_SUFFIXES lib64 lib
-    HINTS ${JEMALLOC_ROOT})
+    HINTS ${JEMALLOC_ROOT} ENV JEMALLOC_ROOT)
 
 # Extract version info from header
 file(READ

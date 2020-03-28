@@ -7,12 +7,12 @@
 
 find_path(GOOGLE_BENCHMARK_INCLUDE_DIRS benchmark.h
     PATH_SUFFIXES include/benchmark
-    HINTS ${GOOGLE_BENCHMARK_ROOT})
+    HINTS ${GOOGLE_BENCHMARK_ROOT} ENV GOOGLE_BENCHMARK_ROOT)
 
 find_library(GOOGLE_BENCHMARK_LIBRARIES
     NAMES benchmark
     PATH_SUFFIXES lib64 lib
-    HINTS ${GOOGLE_BENCHMARK_ROOT})
+    HINTS ${GOOGLE_BENCHMARK_ROOT} ENV GOOGLE_BENCHMARK_ROOT)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GOOGLE_BENCHMARK

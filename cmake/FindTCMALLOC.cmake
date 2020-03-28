@@ -8,12 +8,12 @@
 # find the tcmalloc include directory
 find_path(TCMALLOC_INCLUDE_DIRS gperftools/tcmalloc.h
     PATH_SUFFIXES include
-    HINTS ${TCMALLOC_ROOT})
+    HINTS ${TCMALLOC_ROOT} ENV TCMALLOC_ROOT)
 
 find_library(TCMALLOC_LIBRARIES
     NAMES tcmalloc
     PATH_SUFFIXES lib64 lib
-    HINTS ${TCMALLOC_ROOT})
+    HINTS ${TCMALLOC_ROOT} ENV TCMALLOC_ROOT)
 
 # Extract version info from header
 file(READ

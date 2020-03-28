@@ -5,7 +5,7 @@ find_path(
     BLAZE_INCLUDE_DIR
     PATH_SUFFIXES include
     NAMES blaze/Blaze.h
-    HINTS ${BLAZE_ROOT}
+    HINTS ${BLAZE_ROOT} ENV BLAZE_ROOT
     DOC "Blaze include directory. Used BLAZE_ROOT to set a search dir."
 )
 

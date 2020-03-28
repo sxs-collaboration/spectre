@@ -21,7 +21,7 @@ endif ()
 find_path(
     CHARM_INCLUDE_DIRS charm.h
     PATH_SUFFIXES include
-    HINTS ${CHARM_ROOT}
+    HINTS ${CHARM_ROOT} ENV CHARM_ROOT
 )
 
 if (EXISTS "${CHARM_INCLUDE_DIRS}/VERSION")
@@ -51,14 +51,14 @@ set(CHARM_VERSION
 find_library(CHARM_LIBCK
     NAMES ck
     PATH_SUFFIXES lib
-    HINTS ${CHARM_ROOT}
+    HINTS ${CHARM_ROOT} ENV CHARM_ROOT
 )
 get_filename_component(CHARM_LIBRARIES ${CHARM_LIBCK} DIRECTORY)
 
 find_program(CHARM_COMPILER
   NAMES charmc
   PATH_SUFFIXES bin
-  HINTS ${CHARM_ROOT}
+  HINTS ${CHARM_ROOT} ENV CHARM_ROOT
   DOC "The full-path to the charm++ compiler"
   )
 

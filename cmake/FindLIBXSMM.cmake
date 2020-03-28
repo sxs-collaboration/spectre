@@ -8,12 +8,12 @@
 # find the LIBXSMM include directory
 find_path(LIBXSMM_INCLUDE_DIRS libxsmm.h
     PATH_SUFFIXES include
-    HINTS ${LIBXSMM_ROOT})
+    HINTS ${LIBXSMM_ROOT} ENV LIBXSMM_ROOT)
 
 find_library(LIBXSMM_LIBRARIES
     NAMES xsmm
     PATH_SUFFIXES lib64 lib
-    HINTS ${LIBXSMM_ROOT})
+    HINTS ${LIBXSMM_ROOT} ENV LIBXSMM_ROOT)
 
 # Extract version info from header
 file(READ
