@@ -3,8 +3,8 @@
 
 #pragma once
 
+#include "Utilities/Blaze.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/PointerVector.hpp"  // For blaze::MultTrait
 
 // @{
 /// \ingroup UtilitiesGroup

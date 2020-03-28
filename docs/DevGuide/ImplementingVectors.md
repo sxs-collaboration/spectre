@@ -45,6 +45,19 @@ DataVector>`. This template pattern is known as the
 ["Curiously Recurring Template Pattern"]
 (https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern) (CRTP).
 
+For the Blaze system to use the CRTP inheritance appropriately, it requires the
+specification of separate type traits in the `blaze` namespace.
+These traits can usually be declared in a standard form, so are abstracted in a
+macro. For any new vector `MyNewVector`, the pattern that must appear at the
+beginning of the file (i.e. before the class definition) is:
+```
+/// \cond
+class MyNewVector;
+/// \endcond
+namespace blaze {
+DECLARE_GENERAL_VECTOR_BLAZE_TRAITS(MyNewVector);
+}
+```
 The class template `VectorImpl` defines various constructors, assignment
 operators, and iterator generation members. Most of these are inherited from
 Blaze types, but in addition, the methods `set_data_ref`, and `pup` are defined
@@ -52,7 +65,6 @@ for use in SpECTRE. All except for the assignment operators and constructors
 will be implicitly inherited from `VectorImpl`. The assignment and constructors
 may be inherited calling the following alias code in the vector class
 definition:
-
 ```
 using VectorImpl<T,VectorType>::operator=;
 using VectorImpl<T,VectorType>::VectorImpl;
@@ -62,12 +74,6 @@ Only the mathematical operations supported on the base Blaze types are supported
 by default. Those operations are determined by the storage type `T` and by the
 Blaze library. See [blaze-wiki/Vector_Operations]
 (https://bitbucket.org/blaze-lib/blaze/wiki/Vector%20Operations).
-
-Other math operations may be defined either in the class definition or
-outside. For ease in defining some of these math operations, `PointerVector.hpp`
-defines the macro `MAKE_EXPRESSION_MATH_ASSIGN(OP, TYPE)`, which can be used to
-define math assignment operations such as `+=` provided the underlying operation
-(e.g. `+`) is defined on the Blaze type.
 
 # Allowed operator specification {#blaze_definitions}
 
@@ -300,9 +306,15 @@ More use cases of this functionality can be found in `Test_DataVector.cpp`.
 # Vector storage nuts and bolts {#Vector_storage}
 
 Internally, all vector classes inherit from the templated `VectorImpl`, which
-inherits from `PointerVector`, which inherits from a `blaze::DenseVector`. Most
-of the mathematical operations are supported through the Blaze inheritance,
-which ensures that the math operations execute the optimized forms in Blaze.
+inherits from a `blaze::CustomVector`. Most of the mathematical operations are
+supported through the Blaze inheritance, which ensures that the math operations
+execute the optimized forms in Blaze.
+
+Blaze also offers the possibility of restricting operations via `groups` in the
+`blaze::CustomVector` template arguments.
+Currently, we do not use the `blaze::GroupTag` functionality to determine
+available operations for vectors, but in principle this feature could allow us
+to further simplify our operator choice logic in the SpECTRE vector code.
 
 SpECTRE vectors can be either "owning" or "non-owning". If a vector is owning,
 it allocates and controls the data it has access to, and is responsible for
@@ -312,27 +324,16 @@ memory. Non-owning vectors do not manage memory, nor can they change size. The
 two cases of data ownership cause the underlying data to be handled fairly
 differently, so we will discuss each in turn.
 
-In both cases of ownership, the base `PointerVector` contains a pointer to the
-allocated contiguous block of memory via a raw pointer `v_` (accessible via
-`PointerVector.data()` and the extent of that memory `size_` (accessible via
-`PointerVector.size()`). The raw pointer in `PointerVector` then gives access to
-the memory block to the base Blaze types, which perform the work of the actual
-math operations. `PointerVector` is closely patterned off of Blaze internal
-functionality (`CustomVector`), and we stress that direct alteration of
-`PointerVector` should be avoided unless completely necessary. The discussion in
-this section is intended to provide a better understanding of how the interface
-is used for the SpECTRE vector types so that future customization of derived
-classes of `VectorImpl` is as easy as possible.
-
 When a SpECTRE vector is constructed as owning, or becomes owning, it allocates
 its own block of memory of appropriate size, and stores a pointer to that memory
 in a `std::unique_ptr` named `owned_data_`. The `std::unique_ptr` ensures that
 the SpECTRE vector needs to perform no further direct memory management, and
-that the memory will be appropriately managed whenever the `std::unique_ptr
-owned_data_` member is deleted or moved. The base `PointerVector` must also be
-told about the pointer, which is always accomplished by calling the protected
-function `VectorImpl.reset_pointer_vector(const size_t set_size)`, which sets
-the `PointerVector` internal pointer to the pointer obtained by
+that the memory will be appropriately managed whenever the
+`std::unique_ptr owned_data_` member is deleted or moved. The base
+`blaze::CustomVector` must also be told about the pointer, which is always
+accomplished by calling the protected function
+`VectorImpl.reset_pointer_vector(const size_t set_size)`, which sets the
+`blaze::CustomVector` internal pointer to the pointer obtained by
 `std::unique_pointer.get()`.
 
 When a SpECTRE vector is constructed as non-owning by the `VectorImpl(ValueType*
@@ -342,6 +343,6 @@ longer points to the data represented by the vector and can be thought of as
 "inactive" for the purposes of computation and memory management. This behavior
 is desirable, because otherwise the `std::unique_ptr` would attempt to free
 memory that is presumed to be also used elsewhere, causing difficult to diagnose
-memory errors. The non-owning SpECTRE vector updates the base `PointerVector`
-pointer directly by calling `PointerVector.reset` from the derived class (on
-itself).
+memory errors. The non-owning SpECTRE vector updates the base
+`blaze::CustomVector` pointer directly by calling `blaze::CustomVector.reset`
+from the derived class (on itself).
