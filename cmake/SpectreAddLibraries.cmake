@@ -21,11 +21,13 @@ function(ADD_SPECTRE_LIBRARY LIBRARY_NAME)
     GLOBAL
     PROPERTY SPECTRE_ALLOCATOR_LIBRARY
     )
-  target_link_libraries(${LIBRARY_NAME}
-    PUBLIC
-    ${SPECTRE_ALLOCATOR_LIBRARY}
-    SpectreAllocator
-    )
+  if (NOT ${LIBRARY_TYPE} STREQUAL INTERFACE_LIBRARY)
+    target_link_libraries(${LIBRARY_NAME}
+      PUBLIC
+      ${SPECTRE_ALLOCATOR_LIBRARY}
+      SpectreAllocator
+      )
+  endif (NOT ${LIBRARY_TYPE} STREQUAL INTERFACE_LIBRARY)
 
   add_dependencies(libs ${LIBRARY_NAME})
   set_target_properties(

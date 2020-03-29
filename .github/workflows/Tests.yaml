@@ -284,6 +284,13 @@ jobs:
           - compiler: gcc-8
             build_type: Debug
             PYTHON_EXECUTABLE: /usr/bin/python2
+          - compiler: clang-9
+            # The python bindings don't work with shared libs currently, but we
+            # support shared libs, so add at least one build to test that
+            # nothing is very broken with shared libs.
+            build_type: Debug
+            BUILD_PYTHON_BINDINGS: OFF
+            BUILD_SHARED_LIBS: ON
 
     container:
       image: sxscollaboration/spectrebuildenv:latest
@@ -341,6 +348,7 @@ jobs:
           fi
 
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
+          BUILD_SHARED_LIBS=${{ matrix.BUILD_SHARED_LIBS }}
           PYTHON_EXECUTABLE=${{ matrix.PYTHON_EXECUTABLE }}
           ASAN=${{ matrix.ASAN }}
           UBSAN_UNDEFINED=${{ matrix.UBSAN_UNDEFINED }}
@@ -364,6 +372,7 @@ jobs:
           -D USE_CCACHE=ON
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
           -D PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE:-'/usr/bin/python3'}
+          -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS:-'OFF'}
           -D ASAN=${ASAN:-'OFF'}
           -D UBSAN_UNDEFINED=${UBSAN_UNDEFINED:-'OFF'}
           -D UBSAN_INTEGER=${UBSAN_INTEGER:-'OFF'}
@@ -398,9 +407,13 @@ jobs:
         if: matrix.use_pch == 'ON'
         working-directory: /work/build
         run: |
-          ctest -j2 --output-on-failure
+          # We get occasional random timeouts, repeat tests to see if
+          # it is a random timeout or systematic
+          ctest -j2 --output-on-failure --repeat after-timeout:3
       - name: Run input file tests without PCH
         if: matrix.use_pch == 'OFF'
         working-directory: /work/build
         run: |
-          ctest -j2 --output-on-failure -L inputfiles
+          # We get occasional random timeouts, repeat tests to see if
+          # it is a random timeout or systematic
+          ctest -j2 --output-on-failure -L inputfiles --repeat after-timeout:3

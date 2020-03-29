@@ -49,5 +49,14 @@ add_test_library(
   ${LIBRARY}
   "Domain"
   "${LIBRARY_SOURCES}"
-  "Domain;DomainCreators;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  INTERFACE
+  Domain
+  DomainCreators
+  DomainHelpers
+  Utilities
   )
