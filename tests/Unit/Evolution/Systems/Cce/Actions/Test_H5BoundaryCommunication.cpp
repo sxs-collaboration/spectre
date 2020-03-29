@@ -49,7 +49,8 @@ struct mock_h5_worldtube_boundary {
   using replace_these_simple_actions = tmpl::list<>;
   using with_these_simple_actions = tmpl::list<>;
 
-  using initialize_action_list = tmpl::list<InitializeH5WorldtubeBoundary>;
+  using initialize_action_list =
+      tmpl::list<Actions::InitializeH5WorldtubeBoundary>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
 

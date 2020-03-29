@@ -7,6 +7,8 @@
 #include <limits>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhLockstepInterfaceManager.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/WorldtubeInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Options/Options.hpp"
@@ -65,6 +67,12 @@ struct NumberOfRadialPoints {
   using group = Cce;
 };
 
+struct ExtractionRadius {
+  using type = double;
+  static constexpr OptionString help{"Extraction radius from the GH system."};
+  using group = Cce;
+};
+
 struct EndTime {
   using type = double;
   static constexpr OptionString help{"End time for the Cce Evolution."};
@@ -109,6 +117,13 @@ struct H5Interpolator {
   using type = std::unique_ptr<intrp::SpanInterpolator>;
   static constexpr OptionString help{
       "The interpolator for imported h5 worldtube data."};
+  using group = Cce;
+};
+
+struct GhInterfaceManager {
+  using type = std::unique_ptr<GhWorldtubeInterfaceManager>;
+  static constexpr OptionString help{
+      "Class to manage worldtube data from a GH system."};
   using group = Cce;
 };
 
@@ -167,6 +182,16 @@ struct TargetStepSize : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static double create_from_options(const double target_step_size) noexcept {
     return target_step_size;
+  }
+};
+
+struct ExtractionRadius : db::SimpleTag {
+  using type = double;
+  using option_tags = tmpl::list<OptionTags::ExtractionRadius>;
+
+  template <typename Metavariables>
+  static double create_from_options(const double extraction_radius) noexcept {
+    return extraction_radius;
   }
 };
 
@@ -283,6 +308,18 @@ struct EndTime : db::SimpleTag {
       end_time = time_buffer[time_buffer.size() - 1];
     }
     return end_time;
+  }
+};
+
+struct GhInterfaceManager : db::SimpleTag {
+  using type = std::unique_ptr<GhWorldtubeInterfaceManager>;
+  using option_tags = tmpl::list<OptionTags::GhInterfaceManager>;
+
+  template <typename Metavariables>
+  static std::unique_ptr<::Cce::GhWorldtubeInterfaceManager>
+  create_from_options(const std::unique_ptr<::Cce::GhWorldtubeInterfaceManager>&
+                          interface_manager) noexcept {
+    return interface_manager->get_clone();
   }
 };
 

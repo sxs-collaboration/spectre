@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Equations.cpp
   GaugeTransformBoundaryData.cpp
   InitializeCce.cpp
+  InterfaceManagers/GhLockstepInterfaceManager.cpp
   LinearOperators.cpp
   LinearSolve.cpp
   PrecomputeCceDependencies.cpp
