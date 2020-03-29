@@ -407,9 +407,13 @@ jobs:
         if: matrix.use_pch == 'ON'
         working-directory: /work/build
         run: |
-          ctest -j2 --output-on-failure
+          # We get occasional random timeouts, repeat tests to see if
+          # it is a random timeout or systematic
+          ctest -j2 --output-on-failure --repeat after-timeout:3
       - name: Run input file tests without PCH
         if: matrix.use_pch == 'OFF'
         working-directory: /work/build
         run: |
-          ctest -j2 --output-on-failure -L inputfiles
+          # We get occasional random timeouts, repeat tests to see if
+          # it is a random timeout or systematic
+          ctest -j2 --output-on-failure -L inputfiles --repeat after-timeout:3
