@@ -54,7 +54,7 @@ add_test_library(
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE
+  PRIVATE
   Domain
   DomainCreators
   DomainHelpers
