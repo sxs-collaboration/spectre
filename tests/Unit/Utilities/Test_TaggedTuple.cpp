@@ -47,6 +47,18 @@ constexpr bool operator==(const not_streamable& /*unused*/,
 struct not_streamable_tag {
   using type = not_streamable;
 };
+
+/// [expand_tuple_example_function]
+struct FirstArg {
+  using type = int;
+};
+struct SecondArg {
+  using type = double;
+};
+double test_function(const int first_arg, const double second_arg) {
+  return static_cast<double>(first_arg) + second_arg;
+}
+/// [expand_tuple_example_function]
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
@@ -109,6 +121,25 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
         tuples::TaggedTuple<email, not_streamable_tag, parents, age, name>{
             "bla@bla.bla", 0, std::vector<std::string>{"Mom", "Dad"}, 17,
             "Eamonn"});
+
+  {
+    INFO("Expand tuple");
+    /// [expand_tuple_example]
+    const double extra_factor = 3.;
+    const double result = tuples::apply(
+        [&extra_factor](const auto&... expanded_args) {
+          return extra_factor * test_function(expanded_args...);
+        },
+        tuples::TaggedTuple<FirstArg, SecondArg>{1, 2.});
+    /// [expand_tuple_example]
+    CHECK(result == 9.);
+    CHECK(1 == tuples::apply<tmpl::list<FirstArg>>(
+                   [](const int arg) { return arg; },
+                   tuples::TaggedTuple<FirstArg, SecondArg>{1, 2.}));
+    CHECK(0 == tuples::apply<tmpl::list<>>(
+                   []() { return 0; },
+                   tuples::TaggedTuple<FirstArg, SecondArg>{1, 2.}));
+  }
 }
 
 namespace {
