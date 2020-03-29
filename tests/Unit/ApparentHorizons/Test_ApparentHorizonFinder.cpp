@@ -378,8 +378,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
                   "[Unit]") {
   test_apparent_horizon<TestSchwarzschildHorizon>(
-      &test_schwarzschild_horizon_called, 4, 5, 1.0, {{0.0, 0.0, 0.0}});
-  test_apparent_horizon<TestKerrHorizon>(&test_kerr_horizon_called, 8, 5, 1.1,
+      &test_schwarzschild_horizon_called, 3, 3, 1.0, {{0.0, 0.0, 0.0}});
+  test_apparent_horizon<TestKerrHorizon>(&test_kerr_horizon_called, 3, 5, 1.1,
                                          {{0.12, 0.23, 0.45}});
 }
 }  // namespace
