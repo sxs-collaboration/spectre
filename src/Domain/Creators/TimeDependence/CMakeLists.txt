@@ -14,12 +14,16 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE
+  PUBLIC
   CoordinateMaps
   DataStructures
-  Domain
-  ErrorHandling
-  FunctionsOfTime
   Options
   Utilities
+
+  PRIVATE
+  ErrorHandling
+
+  INTERFACE
+  Domain
+  FunctionsOfTime
   )
