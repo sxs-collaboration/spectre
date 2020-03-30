@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <map>
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
@@ -72,6 +73,34 @@ struct ObservationValue {
   using group = ImporterOptionsGroup;
 };
 
+/*!
+ * \ingroup OptionGroupsGroup
+ * \brief Groups options for reading in FunctionOfTime data from SpEC
+ */
+struct SpecFuncOfTimeReader {
+  static constexpr OptionString help{
+      "Options for importing FunctionOfTimes from SpEC"};
+};
+
+/*!
+ * \brief Path to an H5 file containing SpEC FunctionOfTime data
+ */
+struct FunctionOfTimeFile {
+  using type = std::string;
+  static constexpr OptionString help{
+      "Path to an H5 file containing SpEC FunctionOfTime data"};
+  using group = SpecFuncOfTimeReader;
+};
+
+/*!
+ * \brief Pairs of strings mapping SpEC FunctionOfTime names to SpECTRE names
+ */
+struct FunctionOfTimeNameMap {
+  using type = std::map<std::string, std::string>;
+  static constexpr OptionString help{
+      "String pairs mapping spec names to spectre names"};
+  using group = SpecFuncOfTimeReader;
+};
 }  // namespace OptionTags
 
 /// The \ref DataBoxGroup tags associated with the data importer
@@ -140,6 +169,43 @@ struct ObservationValue : db::SimpleTag {
  */
 struct RegisteredElements : db::SimpleTag {
   using type = std::unordered_map<observers::ArrayComponentId, std::string>;
+};
+
+/*!
+ * \brief Path to an H5 file containing SpEC `FunctionOfTime` data to read.
+ */
+struct FunctionOfTimeFile : db::SimpleTag {
+  static std::string name() noexcept { return "FunctionOfTimeFile"; }
+  using type = std::string;
+  using option_tags = tmpl::list<::importers::OptionTags::FunctionOfTimeFile>;
+  static constexpr bool pass_metavariables = false;
+  template <typename Metavariables>
+  static std::string create_from_options(
+      const std::string& function_of_time_file) noexcept {
+    return function_of_time_file;
+  }
+};
+
+/*!
+ * \brief Pairs of strings mapping SpEC -> SpECTRE FunctionOfTime names
+ *
+ * \details The first string in each pair is the name of a Dat file inside
+ * an H5 file that contains SpEC FunctionOfTime data.
+ * The second string in each pair is the SpECTRE name of the FunctionOfTime,
+ * which will be the key used to index the `FunctionOfTime` in a
+ * `std::unordered_map` after reading it.
+ */
+struct FunctionOfTimeNameMap : db::SimpleTag {
+  static std::string name() noexcept { return "FunctionOfTimeNameMap"; }
+  using type = std::map<std::string, std::string>;
+  using option_tags =
+      tmpl::list<::importers::OptionTags::FunctionOfTimeNameMap>;
+  static constexpr bool pass_metavariables = false;
+  template <typename Metavariables>
+  static std::map<std::string, std::string> create_from_options(
+      const std::map<std::string, std::string>& dataset_names) noexcept {
+    return dataset_names;
+  }
 };
 
 }  // namespace Tags
