@@ -5,14 +5,15 @@
 
 #include <cstddef>
 
+#include "Evolution/Systems/Cce/Actions/BoundaryComputeAndSendToEvolution.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeWorldtubeBoundary.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
+#include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Framework/ActionTesting.hpp"
 
 namespace Cce {
 /// \cond
@@ -23,11 +24,9 @@ struct mock_characteristic_evolution;
 }  // namespace
 namespace Actions {
 namespace {  // NOLINT
-template <typename EvolutionComponent>
+template <typename BoundaryComponent, typename EvolutionComponent>
 struct MockBoundaryComputeAndSendToEvolution;
 }  // namespace
-template <typename EvolutionComponent>
-struct BoundaryComputeAndSendToEvolution;
 }  // namespace Actions
 /// \endcond
 
@@ -36,9 +35,11 @@ struct mock_h5_worldtube_boundary {
   using component_being_mocked = H5WorldtubeBoundary<Metavariables>;
   using replace_these_simple_actions =
       tmpl::list<Actions::BoundaryComputeAndSendToEvolution<
+          H5WorldtubeBoundary<Metavariables>,
           mock_characteristic_evolution<test_metavariables>>>;
   using with_these_simple_actions =
       tmpl::list<Actions::MockBoundaryComputeAndSendToEvolution<
+          H5WorldtubeBoundary<Metavariables>,
           mock_characteristic_evolution<test_metavariables>>>;
 
   using initialize_action_list =
@@ -65,9 +66,11 @@ struct mock_gh_worldtube_boundary {
   using component_being_mocked = GhWorldtubeBoundary<Metavariables>;
   using replace_these_simple_actions =
       tmpl::list<Actions::BoundaryComputeAndSendToEvolution<
+          GhWorldtubeBoundary<Metavariables>,
           mock_characteristic_evolution<test_metavariables>>>;
   using with_these_simple_actions =
       tmpl::list<Actions::MockBoundaryComputeAndSendToEvolution<
+          GhWorldtubeBoundary<Metavariables>,
           mock_characteristic_evolution<test_metavariables>>>;
 
   using initialize_action_list =
