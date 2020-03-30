@@ -236,7 +236,8 @@ void test_detail_functions(const DataType& used_for_size) noexcept {
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "DampedHarmonic",
       "spacetime_deriv_log_fac",
-      {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
+      {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size,
+      1.0e-11);
   // spacetime_deriv_of_power_log_factor_metric_lapse
   pypp::check_with_random_values<1>(
       &wrap_spacetime_deriv_of_power_log_factor_metric_lapse<SpatialDim, Frame,
