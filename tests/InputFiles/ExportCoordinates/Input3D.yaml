@@ -7,11 +7,29 @@
 #   ExportCoordinates3DVolume0.h5
 
 DomainCreator:
-  Shell:
-    InnerRadius: 1.
-    OuterRadius: 3.
-    InitialRefinement: 1
-    InitialGridPoints: [3, 3]
+  Brick:
+    LowerBound: [-0.5, -0.5, -0.5]
+    UpperBound: [0.5, 0.5, 0.5]
+    IsPeriodicIn: [false, false, false]
+    InitialRefinement: [0, 0, 0]
+    InitialGridPoints: [3, 3, 3]
+    TimeDependence:
+      UniformTranslation:
+        InitialTime: 0.0
+        Velocity: [0.5, 0.0, 0.0]
+        FunctionOfTimeNames: ["TranslationX", "TranslationY", "TranslationZ"]
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.01
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 1
+
+# To export a time-independent mesh, replace `? PastTime: 1.0` with `Always:`
+EventsAndTriggers:
+  ? PastTime: 1.0
+  : - Completion
 
 Observers:
   VolumeFileName: "ExportCoordinates3DVolume"

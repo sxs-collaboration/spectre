@@ -8,15 +8,20 @@
 #include "AlgorithmArray.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/ElementId.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/Initialization/DgDomain.hpp"
+#include "Evolution/Initialization/Evolution.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/RegisterObservers.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
@@ -26,8 +31,15 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Printf.hpp"
-#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "Time/Actions/AdvanceTime.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Time/Triggers/TimeTriggers.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -52,12 +64,14 @@ struct ExportCoordinates {
       typename ArrayIndex, typename ActionList, typename ParallelComponent,
       Requires<tmpl::list_contains_v<DbTagsList, domain::Tags::Mesh<Dim>>> =
           nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+  static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
+    const double time = get<Tags::Time>(box);
+
     const auto& mesh = get<domain::Tags::Mesh<Dim>>(box);
     const auto& inertial_coordinates =
         db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
@@ -79,13 +93,13 @@ struct ExportCoordinates {
              cache)
              .ckLocalBranch();
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
-        local_observer, observers::ObservationId(0., ObservationType{}),
+        local_observer, observers::ObservationId(time, ObservationType{}),
         std::string{"/element_data"},
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ElementIndex<Dim>>(array_index)),
         std::move(components), mesh.extents());
-    return {std::move(box), true};
+    return std::forward_as_tuple(std::move(box));
   }
 };
 }  // namespace Actions
@@ -93,6 +107,14 @@ struct ExportCoordinates {
 template <size_t Dim>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
+  static constexpr bool local_time_stepping = false;
+
+  using triggers = Triggers::time_triggers;
+  using events = tmpl::list<>;
+
+  using const_global_cache_tags =
+      tmpl::list<Tags::TimeStepper<TimeStepper>,
+                 Tags::EventsAndTriggers<events, triggers>>;
 
   static constexpr OptionString help{
       "Export the inertial coordinates of the Domain specified in the input "
@@ -108,9 +130,11 @@ struct Metavariables {
               Parallel::PhaseActions<
                   typename Metavariables::Phase,
                   Metavariables::Phase::Initialization,
-                  tmpl::list<dg::Actions::InitializeDomain<Dim>,
-                             ::Initialization::Actions::
-                                 RemoveOptionsAndTerminatePhase>>,
+                  tmpl::list<
+                      Initialization::Actions::TimeAndTimeStep<Metavariables>,
+                      evolution::dg::Initialization::Domain<Dim>,
+                      ::Initialization::Actions::
+                          RemoveOptionsAndTerminatePhase>>,
               Parallel::PhaseActions<
                   typename Metavariables::Phase,
                   Metavariables::Phase::RegisterWithObserver,
@@ -119,7 +143,9 @@ struct Metavariables {
                              Parallel::Actions::TerminatePhase>>,
               Parallel::PhaseActions<
                   typename Metavariables::Phase, Metavariables::Phase::Export,
-                  tmpl::list<Actions::ExportCoordinates<Dim>>>>>,
+                  tmpl::list<Actions::AdvanceTime,
+                             Actions::ExportCoordinates<Dim>,
+                             Actions::RunEventsAndTriggers>>>>,
       observers::Observer<Metavariables>,
       observers::ObserverWriter<Metavariables>>;
 
@@ -147,7 +173,15 @@ struct Metavariables {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &domain::creators::register_derived_with_charm};
+    &setup_error_handling,
+    &domain::creators::register_derived_with_charm,
+    &domain::creators::time_dependence::register_derived_with_charm,
+    &domain::FunctionsOfTime::register_derived_with_charm,
+    &Parallel::register_derived_classes_with_charm<
+        Event<metavariables::events>>,
+    &Parallel::register_derived_classes_with_charm<TimeStepper>,
+    &Parallel::register_derived_classes_with_charm<
+        Trigger<metavariables::triggers>>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 /// \endcond
