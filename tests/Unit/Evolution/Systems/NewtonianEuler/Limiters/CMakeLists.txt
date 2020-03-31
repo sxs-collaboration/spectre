@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_CharacteristicHelpers.cpp
   Test_Flattener.cpp
   Test_KxrcfTci.cpp
+  Test_Minmod.cpp
   Test_VariablesToLimit.cpp
   )
 
