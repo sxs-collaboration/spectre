@@ -20,7 +20,6 @@ set(LIBRARY_SOURCES
   Test_DomainTestHelpers.cpp
   Test_Element.cpp
   Test_ElementId.cpp
-  Test_ElementIndex.cpp
   Test_ElementMap.cpp
   Test_FaceNormal.cpp
   Test_IndexToSliceAt.cpp

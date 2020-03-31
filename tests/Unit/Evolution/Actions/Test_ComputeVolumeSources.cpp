@@ -16,7 +16,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Evolution/Actions/ComputeVolumeSources.hpp"  // IWYU pragma: keep
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
@@ -64,14 +63,13 @@ struct System {
   using volume_sources = ComputeSources;
 };
 
-using ElementIndexType = ElementIndex<dim>;
-
+using ElementIdType = ElementId<dim>;
 
 template <typename Metavariables>
 struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndexType;
+  using array_index = ElementIdType;
   using simple_tags = tmpl::list<System::variables_tag, Var3, source_tag>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<

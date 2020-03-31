@@ -18,7 +18,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TensorData.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
@@ -51,14 +50,14 @@ struct TestVolumeData {
   using group = importers::OptionTags::Group;
 };
 
-using ElementIndexType = ElementIndex<2>;
+using ElementIdType = ElementId<2>;
 
 template <typename Metavariables>
 struct MockElementArray {
   using component_being_mocked = void;  // Not needed
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndexType;
+  using array_index = ElementIdType;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<import_tags_list>,
@@ -92,7 +91,7 @@ struct TestCallback {
             Requires<db::tag_is_retrievable_v<VectorTag, DataBox>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ElementIndexType& /*array_index*/,
+                    const ElementIdType& /*array_index*/,
                     tuples::tagged_tuple_from_typelist<import_tags_list>
                         tensor_data) noexcept {
     CHECK(get<VectorTag>(tensor_data) == get<VectorTag>(box));
@@ -138,7 +137,7 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
     get<1, 1>(tensor) = DataVector{-10.5 * hashed_id, -11.0 * hashed_id,
                                    -13.0 * hashed_id, 22.0 * hashed_id};
     ActionTesting::emplace_component_and_initialize<element_array>(
-        make_not_null(&runner), ElementIndexType{id},
+        make_not_null(&runner), ElementIdType{id},
         {std::move(vector), std::move(tensor)});
 
     // Register element

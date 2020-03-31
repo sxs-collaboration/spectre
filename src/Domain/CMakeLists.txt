@@ -20,7 +20,6 @@ set(LIBRARY_SOURCES
   DomainHelpers.cpp
   Element.cpp
   ElementId.cpp
-  ElementIndex.cpp
   ElementLogicalCoordinates.cpp
   ElementMap.cpp
   FaceNormal.cpp

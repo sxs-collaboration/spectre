@@ -20,7 +20,6 @@
 #include "DataStructures/Tensor/TensorData.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -108,7 +107,7 @@ struct ElementComponent {
 
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndex<Metavariables::system::volume_dim>;
+  using array_index = ElementId<Metavariables::system::volume_dim>;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
                                         Metavariables::Phase::Initialization,
@@ -342,7 +341,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   CHECK(results.array_component_id ==
         observers::ArrayComponentId(
             std::add_pointer_t<element_component>{},
-            Parallel::ArrayIndex<ElementIndex<volume_dim>>(array_index)));
+            Parallel::ArrayIndex<ElementId<volume_dim>>(array_index)));
   CHECK(results.received_extents.size() == volume_dim);
   CHECK(std::equal(results.received_extents.begin(),
                    results.received_extents.end(), mesh.extents().begin()));

@@ -8,7 +8,6 @@
 #include <type_traits>
 
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
@@ -20,19 +19,15 @@ struct Component1 {};
 SPECTRE_TEST_CASE("Unit.IO.Observers.ArrayComponentId", "[Unit][Observers]") {
   using ArrayComponentId = observers::ArrayComponentId;
   using Hash = std::hash<ArrayComponentId>;
-  ArrayComponentId c0id0{
-      std::add_pointer_t<Component0>{nullptr},
-      Parallel::ArrayIndex<ElementIndex<1>>(ElementIndex<1>{ElementId<1>{0}})};
-  ArrayComponentId c0id1{
-      std::add_pointer_t<Component0>{nullptr},
-      Parallel::ArrayIndex<ElementIndex<1>>(ElementIndex<1>{ElementId<1>{1}})};
+  ArrayComponentId c0id0{std::add_pointer_t<Component0>{nullptr},
+                         Parallel::ArrayIndex<ElementId<1>>(ElementId<1>{0})};
+  ArrayComponentId c0id1{std::add_pointer_t<Component0>{nullptr},
+                         Parallel::ArrayIndex<ElementId<1>>(ElementId<1>{1})};
 
-  ArrayComponentId c1id0{
-      std::add_pointer_t<Component1>{nullptr},
-      Parallel::ArrayIndex<ElementIndex<1>>(ElementIndex<1>{ElementId<1>{0}})};
-  ArrayComponentId c1id1{
-      std::add_pointer_t<Component1>{nullptr},
-      Parallel::ArrayIndex<ElementIndex<1>>(ElementIndex<1>{ElementId<1>{1}})};
+  ArrayComponentId c1id0{std::add_pointer_t<Component1>{nullptr},
+                         Parallel::ArrayIndex<ElementId<1>>(ElementId<1>{0})};
+  ArrayComponentId c1id1{std::add_pointer_t<Component1>{nullptr},
+                         Parallel::ArrayIndex<ElementId<1>>(ElementId<1>{1})};
 
   CHECK(c0id0 == c0id0);
   CHECK_FALSE(c0id0 != c0id0);

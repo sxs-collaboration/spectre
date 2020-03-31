@@ -12,7 +12,6 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"  // IWYU pragma: keep
 #include "Framework/ActionTesting.hpp"
@@ -59,13 +58,13 @@ struct System {
   using volume_fluxes = ComputeFluxes;
 };
 
-using ElementIndexType = ElementIndex<dim>;
+using ElementIdType = ElementId<dim>;
 
 template <typename Metavariables>
 struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndexType;
+  using array_index = ElementIdType;
   using simple_tags = tmpl::list<Tags::Variables<tmpl::list<Var1>>, Var2,
                                  flux_tag, domain::Tags::MeshVelocity<dim>>;
   using phase_dependent_action_list = tmpl::list<

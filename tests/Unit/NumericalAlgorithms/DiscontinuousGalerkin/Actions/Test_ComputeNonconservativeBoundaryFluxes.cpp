@@ -27,7 +27,7 @@
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"  // IWYU pragma: keep
+#include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceComputeTags.hpp"
@@ -106,7 +106,7 @@ template <typename Metavariables>
 struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndex<2>;
+  using array_index = ElementId<2>;
   using simple_tags =
       db::AddSimpleTags<domain::Tags::Element<2>, domain::Tags::Mesh<2>,
                         domain::Tags::ElementMap<2>,

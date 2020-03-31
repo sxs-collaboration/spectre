@@ -29,7 +29,6 @@
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Neighbors.hpp"
@@ -105,7 +104,7 @@ template <size_t Dim, typename Metavariables>
 struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndex<Dim>;
+  using array_index = ElementId<Dim>;
   using const_global_cache_tags = tmpl::list<LimiterTag>;
   using simple_tags = db::AddSimpleTags<TemporalId, domain::Tags::Mesh<Dim>,
                                         domain::Tags::Element<Dim>,
@@ -228,7 +227,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
   // messages on self later
   {
     CHECK(runner.nonempty_inboxes<my_component, limiter_comm_tag>() ==
-          std::unordered_set<ElementIndex<2>>{west_id, east_id, south_id});
+          std::unordered_set<ElementId<2>>{west_id, east_id, south_id});
     const auto check_sent_data = [&runner, &self_id ](
         const ElementId<2>& id, const Direction<2>& direction) noexcept {
       const auto& inboxes = runner.inboxes<my_component>();

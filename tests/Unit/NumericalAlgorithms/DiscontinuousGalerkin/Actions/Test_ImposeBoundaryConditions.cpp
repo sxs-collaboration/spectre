@@ -29,7 +29,6 @@
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceComputeTags.hpp"
@@ -193,7 +192,7 @@ template <typename Metavariables>
 struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndex<Dim>;
+  using array_index = ElementId<Dim>;
   using const_global_cache_tags =
       tmpl::list<NumericalFluxTag, BoundaryConditionTag>;
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;

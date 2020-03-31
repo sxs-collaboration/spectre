@@ -11,7 +11,6 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -49,7 +48,7 @@ template <size_t Dim, typename Metavariables>
 struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndex<Dim>;
+  using array_index = ElementId<Dim>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,

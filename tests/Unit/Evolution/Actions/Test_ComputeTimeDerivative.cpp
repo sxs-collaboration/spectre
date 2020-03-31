@@ -9,7 +9,6 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
@@ -44,13 +43,13 @@ struct System {
   using variables_tag = var_tag;
 };
 
-using ElementIndexType = ElementIndex<2>;
+using ElementIdType = ElementId<2>;
 
 template <typename Metavariables>
 struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndexType;
+  using array_index = ElementIdType;
   using simple_tags = tmpl::list<var_tag, Tags::dt<var_tag>>;
 
   using phase_dependent_action_list = tmpl::list<

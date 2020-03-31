@@ -8,7 +8,6 @@
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "Options/Options.hpp"
 

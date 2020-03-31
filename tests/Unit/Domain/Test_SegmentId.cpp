@@ -15,12 +15,6 @@
 #include "Utilities/GetOutput.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.SegmentId", "[Domain][Unit]") {
-  // Test default constructor:
-  SegmentId test_id;
-  CHECK(test_id.index() == std::numeric_limits<size_t>::max());
-  CHECK(test_id.refinement_level() == std::numeric_limits<size_t>::max());
-  static_cast<void>(test_id);
-
   // Test equality operator:
   SegmentId segment_one(4, 3);
   SegmentId segment_two(4, 3);

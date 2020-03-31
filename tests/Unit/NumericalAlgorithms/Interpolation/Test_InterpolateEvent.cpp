@@ -14,7 +14,6 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -152,7 +151,7 @@ template <typename Metavariables>
 struct mock_element {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndex<Metavariables::volume_dim>;
+  using array_index = ElementId<Metavariables::volume_dim>;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
                                         Metavariables::Phase::Initialization,
@@ -180,7 +179,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
                   "[Unit]") {
   using metavars = MockMetavariables;
   const ElementId<metavars::volume_dim> element_id(2);
-  const ElementIndex<metavars::volume_dim> array_index(element_id);
+  const ElementId<metavars::volume_dim> array_index(element_id);
 
   using interp_component = mock_interpolator<metavars>;
   using interp_target_component =

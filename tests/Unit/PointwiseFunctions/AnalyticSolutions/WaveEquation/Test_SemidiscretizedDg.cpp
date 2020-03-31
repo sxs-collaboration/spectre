@@ -23,7 +23,6 @@
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceComputeTags.hpp"
@@ -56,7 +55,7 @@ template <typename Metavariables>
 struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndex<1>;
+  using array_index = ElementId<1>;
   using const_global_cache_tags = tmpl::list<>;
 
   using variables_tag = typename metavariables::system::variables_tag;

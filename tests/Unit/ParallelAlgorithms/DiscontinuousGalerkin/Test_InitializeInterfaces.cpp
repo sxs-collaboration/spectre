@@ -71,7 +71,7 @@ struct ElementArray {
   using metavariables = Metavariables;
   static constexpr bool use_moving_mesh = Metavariables::use_moving_mesh;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndex<Dim>;
+  using array_index = ElementId<Dim>;
   using const_global_cache_tags = tmpl::append<
       tmpl::list<domain::Tags::Domain<Dim>>,
       tmpl::conditional_t<use_moving_mesh,
