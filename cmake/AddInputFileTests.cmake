@@ -1,6 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+option(SPECTRE_INPUT_FILE_TEST_TIMEOUT_FACTOR
+  "Multiply timeout for input file tests by this factor"
+  1)
+
 find_package(PythonInterp REQUIRED)
 
 function(add_single_input_file_test INPUT_FILE EXECUTABLE CHECK_TYPE TIMEOUT)
@@ -51,6 +55,12 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE CHECK_TYPE TIMEOUT)
   # Double timeout if address sanitizer is enabled.
   if (ASAN)
     math(EXPR TIMEOUT "2 * ${TIMEOUT}")
+  endif()
+
+  # Multiply timeout by the user option
+  # Note: "1" is parsed as "ON" by cmake
+  if (NOT "${SPECTRE_INPUT_FILE_TEST_TIMEOUT_FACTOR}" STREQUAL ON)
+    math(EXPR TIMEOUT "${SPECTRE_INPUT_FILE_TEST_TIMEOUT_FACTOR} * ${TIMEOUT}")
   endif()
 
   set_tests_properties(

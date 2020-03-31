@@ -37,6 +37,10 @@
 #               example, to match "some (word) and" you must specify the
 #               string "some \(word\) and".
 
+option(SPECTRE_UNIT_TEST_TIMEOUT_FACTOR
+  "Multiply timeout for unit tests by this factor"
+  1)
+
 find_package(PythonInterp REQUIRED)
 
 # Main function - the only one designed to be called from outside this module.
@@ -193,6 +197,12 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
     # Double timeout if address sanitizer is enabled.
     if (ASAN)
       math(EXPR TIMEOUT "2 * ${TIMEOUT}")
+    endif()
+
+    # Multiply timeout by the user option
+    # Note: "1" is parsed as "ON" by cmake
+    if (NOT "${SPECTRE_UNIT_TEST_TIMEOUT_FACTOR}" STREQUAL ON)
+      math(EXPR TIMEOUT "${SPECTRE_UNIT_TEST_TIMEOUT_FACTOR} * ${TIMEOUT}")
     endif()
 
     # Add the test and set its properties
