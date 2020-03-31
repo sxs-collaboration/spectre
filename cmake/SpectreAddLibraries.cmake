@@ -73,5 +73,9 @@ function(ADD_SPECTRE_LIBRARY LIBRARY_NAME)
       PUBLIC
       SpectreFlags
       )
+    set_property(
+      TARGET ${LIBRARY_NAME}
+      PROPERTY FOLDER ${CMAKE_CURRENT_SOURCE_DIR}
+      )
   endif()
 endfunction()
