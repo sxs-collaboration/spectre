@@ -128,7 +128,7 @@ void test_characteristic_fields() noexcept {
   // VZero
   pypp::check_with_random_values<1>(
       field_with_tag<ScalarWave::Tags::VZero<Dim>, Dim>, "Characteristics",
-      "char_field_vzero", {{{-100., 100.}}}, used_for_size);
+      "char_field_vzero", {{{-100., 100.}}}, used_for_size, 1.e-11);
   // VPlus
   pypp::check_with_random_values<1>(
       field_with_tag<ScalarWave::Tags::VPlus, Dim>, "Characteristics",
