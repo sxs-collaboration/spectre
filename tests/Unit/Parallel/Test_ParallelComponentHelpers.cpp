@@ -294,11 +294,12 @@ struct Sides {
   }
 };
 struct FullGreeting {
-  using option_tags = tmpl::list<OptionTags::Greeting, OptionTags::Name>;
   using type = std::string;
 
   static constexpr bool pass_metavariables = true;
-  template <typename Metavariables, typename... Tags>
+  template <typename Metavariables>
+  using option_tags = tmpl::list<OptionTags::Greeting, OptionTags::Name>;
+  template <typename Metavariables>
   static std::string create_from_options(const std::string& greeting,
                                          const std::string& name) noexcept {
     if (std::is_same<Metavariables, MetavariablesGreeting>::value) {
@@ -321,17 +322,19 @@ using initialization_tags_2 =
     tmpl::list<Initialization::Tags::Yards, Initialization::Tags::Feet,
                Initialization::Tags::FullGreeting>;
 
-static_assert(cpp17::is_same_v<Parallel::get_option_tags<initialization_tags_0>,
-                               tmpl::list<>>,
+static_assert(cpp17::is_same_v<
+                  Parallel::get_option_tags<initialization_tags_0, NoSuchType>,
+                  tmpl::list<>>,
               "Failed testing get_option_tags");
 
-static_assert(cpp17::is_same_v<Parallel::get_option_tags<initialization_tags_1>,
-                               tmpl::list<OptionTags::Yards, OptionTags::Dim>>,
+static_assert(cpp17::is_same_v<
+                  Parallel::get_option_tags<initialization_tags_1, NoSuchType>,
+                  tmpl::list<OptionTags::Yards, OptionTags::Dim>>,
               "Failed testing get_option_tags");
 
 static_assert(
     cpp17::is_same_v<
-        Parallel::get_option_tags<initialization_tags_2>,
+        Parallel::get_option_tags<initialization_tags_2, NoSuchType>,
         tmpl::list<OptionTags::Yards, OptionTags::Greeting, OptionTags::Name>>,
     "Failed testing get_option_tags");
 
@@ -343,7 +346,8 @@ void check_initialization_items(
     const Options<all_option_tags>& all_options,
     const tuples::TaggedTuple<InitializationTags...>& expected_items) {
   using initialization_tags = tmpl::list<InitializationTags...>;
-  using option_tags = Parallel::get_option_tags<initialization_tags>;
+  using option_tags =
+      Parallel::get_option_tags<initialization_tags, Metavariables>;
   const auto options = all_options.apply<option_tags>([](
       auto... args) noexcept {
     return tuples::tagged_tuple_from_typelist<option_tags>(std::move(args)...);

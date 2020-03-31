@@ -776,4 +776,44 @@ std::ostream& operator<<(std::ostream& os,
   return os << ")";
 }
 
+namespace TaggedTuple_detail {
+
+template <typename F, typename... Tags, typename... ApplyTags>
+constexpr decltype(auto) apply_impl(F&& f, const TaggedTuple<Tags...>& t,
+                                    tmpl::list<ApplyTags...> /* meta */) {
+  return std::forward<F>(f)(get<ApplyTags>(t)...);
+}
+
+}  // namespace TaggedTuple_detail
+
+// @{
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Invoke `f` with the `ApplyTags` taken from `t` expanded in a parameter
+ * pack
+ *
+ * `ApplyTags` defaults to the full list of tags in `t`.
+ *
+ * Here is an example how to use the function:
+ *
+ * \snippet Test_TaggedTuple.cpp expand_tuple_example
+ *
+ * This is the function being called in the above example:
+ *
+ * \snippet Test_TaggedTuple.cpp expand_tuple_example_function
+ *
+ * \see cpp17::apply
+ */
+template <typename ApplyTags, typename F, typename... Tags>
+constexpr decltype(auto) apply(F&& f, const TaggedTuple<Tags...>& t) {
+  return TaggedTuple_detail::apply_impl(std::forward<F>(f), t, ApplyTags{});
+}
+
+template <typename F, typename... Tags>
+constexpr decltype(auto) apply(F&& f, const TaggedTuple<Tags...>& t) {
+  return TaggedTuple_detail::apply_impl(
+      std::forward<F>(f), t, typename TaggedTuple<Tags...>::tags_list{});
+}
+// @}
+
 }  // namespace tuples

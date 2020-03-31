@@ -71,10 +71,11 @@ class Main : public CBase_Main<Metavariables> {
 
  private:
   template <typename ParallelComponent>
-  using parallel_component_options = Parallel::get_option_tags<
-      typename ParallelComponent::initialization_tags>;
+  using parallel_component_options =
+      Parallel::get_option_tags<typename ParallelComponent::initialization_tags,
+                                Metavariables>;
   using option_list = tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
-      Parallel::get_option_tags<const_global_cache_tags>,
+      Parallel::get_option_tags<const_global_cache_tags, Metavariables>,
       tmpl::transform<component_list,
                       tmpl::bind<parallel_component_options, tmpl::_1>>>>>;
   using parallel_component_tag_list = tmpl::transform<

@@ -151,19 +151,33 @@ using get_initialization_tags_to_keep =
         detail::get_initialization_tags_to_keep_from_action<tmpl::_1>>>>;
 
 namespace detail {
-template <typename InitializationTag>
-struct get_option_tags_from_initialization_tag {
+template <typename InitializationTag, typename Metavariables,
+          bool PassMetavariables = InitializationTag::pass_metavariables>
+struct get_option_tags_from_initialization_tag_impl {
   using type = typename InitializationTag::option_tags;
+};
+template <typename InitializationTag, typename Metavariables>
+struct get_option_tags_from_initialization_tag_impl<InitializationTag,
+                                                    Metavariables, true> {
+  using type = typename InitializationTag::template option_tags<Metavariables>;
+};
+template <typename Metavariables>
+struct get_option_tags_from_initialization_tag {
+  template <typename InitializationTag>
+  using f = tmpl::type_from<get_option_tags_from_initialization_tag_impl<
+      InitializationTag, Metavariables>>;
 };
 }  // namespace detail
 
 /// \ingroup ParallelGroup
 /// \brief Given a list of initialization tags, returns a list of the
 /// unique option tags required to construct them.
-template <typename InitializationTagsList>
-using get_option_tags = tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
-    InitializationTagsList,
-    detail::get_option_tags_from_initialization_tag<tmpl::_1>>>>;
+template <typename InitializationTagsList, typename Metavariables>
+using get_option_tags = tmpl::remove_duplicates<tmpl::flatten<
+    tmpl::transform<InitializationTagsList,
+                    tmpl::bind<detail::get_option_tags_from_initialization_tag<
+                                   Metavariables>::template f,
+                               tmpl::_1>>>>;
 
 /// \cond
 namespace Algorithms {
