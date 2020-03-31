@@ -45,18 +45,26 @@ function(spectre_target_headers TARGET_NAME)
       "spectre_target_headers. The named argument is INCLUDE_DIRECTORY.")
   endif(NOT ARG_INCLUDE_DIRECTORY)
 
-  get_property(
-    INCLUDE_DIRS
-    TARGET ${TARGET_NAME}
-    PROPERTY INCLUDE_DIRECTORIES
+  get_target_property(
+    TARGET_TYPE
+    ${TARGET_NAME}
+    TYPE
     )
-  if(NOT ${ARG_INCLUDE_DIRECTORY} IN_LIST INCLUDE_DIRS)
-    set_property(
+
+  if(NOT ${LIBRARY_TYPE} STREQUAL INTERFACE_LIBRARY)
+    get_property(
+      INCLUDE_DIRS
       TARGET ${TARGET_NAME}
-      APPEND
-      PROPERTY INCLUDE_DIRECTORIES ${ARG_INCLUDE_DIRECTORY}
+      PROPERTY INCLUDE_DIRECTORIES
       )
-  endif(NOT ${ARG_INCLUDE_DIRECTORY} IN_LIST INCLUDE_DIRS)
+    if(NOT ${ARG_INCLUDE_DIRECTORY} IN_LIST INCLUDE_DIRS)
+      set_property(
+        TARGET ${TARGET_NAME}
+        APPEND
+        PROPERTY INCLUDE_DIRECTORIES ${ARG_INCLUDE_DIRECTORY}
+        )
+    endif(NOT ${ARG_INCLUDE_DIRECTORY} IN_LIST INCLUDE_DIRS)
+  endif(NOT ${LIBRARY_TYPE} STREQUAL INTERFACE_LIBRARY)
 
   get_property(
     INTERFACE_INCLUDE_DIRS
@@ -87,7 +95,7 @@ function(spectre_target_headers TARGET_NAME)
     TARGET ${TARGET_NAME}
     APPEND
     PROPERTY
-    PUBLIC_HEADERS
+    PUBLIC_HEADER
     ${_HEADER_FILES}
     )
 endfunction(spectre_target_headers TARGET_NAME)
