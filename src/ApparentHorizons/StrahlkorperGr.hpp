@@ -15,12 +15,18 @@ template <typename Frame>
 class Strahlkorper;
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
+
+namespace gsl {
+template <typename>
+struct not_null;
+}  // namespace gsl
 /// \endcond
 
 /// \ingroup SurfacesGroup
 /// Contains functions that depend both on a Strahlkorper and a metric.
 namespace StrahlkorperGr {
 
+//@{
 /// \ingroup SurfacesGroup
 /// \brief Computes normalized unit normal one-form to a Strahlkorper.
 ///
@@ -30,10 +36,18 @@ namespace StrahlkorperGr {
 /// is \f$1/\sqrt{g^{ij}n_i n_j}\f$, which can be computed using (one
 /// over) the `magnitude` function.
 template <typename Frame>
-tnsr::i<DataVector, 3, Frame> unit_normal_one_form(
+void unit_normal_one_form(
+    gsl::not_null<tnsr::i<DataVector, 3, Frame>*> result,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const DataVector& one_over_one_form_magnitude) noexcept;
 
+template <typename Frame>
+tnsr::i<DataVector, 3, Frame> unit_normal_one_form(
+    const tnsr::i<DataVector, 3, Frame>& normal_one_form,
+    const DataVector& one_over_one_form_magnitude) noexcept;
+//@}
+
+//@{
 /// \ingroup SurfacesGroup
 /// \brief Computes 3-covariant gradient \f$D_i S_j\f$ of a
 /// Strahlkorper's normal.
@@ -52,13 +66,24 @@ tnsr::i<DataVector, 3, Frame> unit_normal_one_form(
 /// using (one over) the `magnitude` function.  The input argument
 /// `unit_normal_one_form` is \f$S_j\f$,the normalized one-form.
 template <typename Frame>
-tnsr::ii<DataVector, 3, Frame> grad_unit_normal_one_form(
+void grad_unit_normal_one_form(
+    gsl::not_null<tnsr::ii<DataVector, 3, Frame>*> result,
     const tnsr::i<DataVector, 3, Frame>& r_hat, const DataVector& radius,
     const tnsr::i<DataVector, 3, Frame>& unit_normal_one_form,
     const tnsr::ii<DataVector, 3, Frame>& d2x_radius,
     const DataVector& one_over_one_form_magnitude,
     const tnsr::Ijj<DataVector, 3, Frame>& christoffel_2nd_kind) noexcept;
 
+template <typename Frame>
+tnsr::ii<DataVector, 3, Frame> grad_unit_normal_one_form(
+    const tnsr::i<DataVector, 3, Frame>& r_hat, const DataVector& radius,
+    const tnsr::i<DataVector, 3, Frame>& unit_normal_one_form,
+    const tnsr::ii<DataVector, 3, Frame>& d2x_radius,
+    const DataVector& one_over_one_form_magnitude,
+    const tnsr::Ijj<DataVector, 3, Frame>& christoffel_2nd_kind) noexcept;
+//@}
+
+//@{
 /// \ingroup SurfacesGroup
 /// \brief Computes inverse 2-metric \f$g^{ij}-S^i S^j\f$ of a Strahlkorper.
 ///
@@ -71,10 +96,18 @@ tnsr::ii<DataVector, 3, Frame> grad_unit_normal_one_form(
 /// appropriate choice of basis. The input argument `unit_normal_vector` is
 /// \f$S^i = g^{ij} S_j\f$, where \f$S_j\f$ is the unit normal one form.
 template <typename Frame>
-tnsr::II<DataVector, 3, Frame> inverse_surface_metric(
+void inverse_surface_metric(
+    gsl::not_null<tnsr::II<DataVector, 3, Frame>*> result,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric) noexcept;
 
+template <typename Frame>
+tnsr::II<DataVector, 3, Frame> inverse_surface_metric(
+    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
+    const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric) noexcept;
+//@}
+
+//@{
 /// \ingroup SurfacesGroup
 /// \brief Expansion of a `Strahlkorper`. Should be zero on apparent horizons.
 ///
@@ -83,11 +116,20 @@ tnsr::II<DataVector, 3, Frame> inverse_surface_metric(
 /// `StrahlkorperGr::grad_unit_normal_one_form`, and `inverse_surface_metric`
 /// is the quantity returned by `StrahlkorperGr::inverse_surface_metric`.
 template <typename Frame>
-Scalar<DataVector> expansion(
+void expansion(
+    gsl::not_null<Scalar<DataVector>*> result,
     const tnsr::ii<DataVector, 3, Frame>& grad_normal,
     const tnsr::II<DataVector, 3, Frame>& inverse_surface_metric,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept;
 
+template <typename Frame>
+Scalar<DataVector> expansion(
+    const tnsr::ii<DataVector, 3, Frame>& grad_normal,
+    const tnsr::II<DataVector, 3, Frame>& inverse_surface_metric,
+    const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept;
+//@}
+
+//@{
 /*!
  * \ingroup SurfacesGroup
  * \brief Extrinsic curvature of a 2D `Strahlkorper` embedded in a 3D space.
@@ -107,11 +149,20 @@ Scalar<DataVector> expansion(
  * + S_i S_j S^k S^l \nabla_{k} n_{l}\f$.
  */
 template <typename Frame>
-tnsr::ii<DataVector, 3, Frame> extrinsic_curvature(
+void extrinsic_curvature(
+    const gsl::not_null<tnsr::ii<DataVector, 3, Frame>*> result,
     const tnsr::ii<DataVector, 3, Frame>& grad_normal,
     const tnsr::i<DataVector, 3, Frame>& unit_normal_one_form,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector) noexcept;
 
+template <typename Frame>
+tnsr::ii<DataVector, 3, Frame> extrinsic_curvature(
+    const tnsr::ii<DataVector, 3, Frame>& grad_normal,
+    const tnsr::i<DataVector, 3, Frame>& unit_normal_one_form,
+    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector) noexcept;
+//@}
+
+//@{
 /// \ingroup SurfacesGroup
 /// \brief Intrinsic Ricci scalar of a 2D `Strahlkorper`.
 ///
@@ -128,12 +179,22 @@ tnsr::ii<DataVector, 3, Frame> extrinsic_curvature(
 /// and `unit_normal_vector` is
 /// \f$S^i = g^{ij} S_j\f$ where \f$S_j\f$ is the unit normal one form.
 template <typename Frame>
-Scalar<DataVector> ricci_scalar(
+void ricci_scalar(
+    gsl::not_null<Scalar<DataVector>*> result,
     const tnsr::ii<DataVector, 3, Frame>& spatial_ricci_tensor,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature,
     const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric) noexcept;
 
+template <typename Frame>
+Scalar<DataVector> ricci_scalar(
+    const tnsr::ii<DataVector, 3, Frame>& spatial_ricci_tensor,
+    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
+    const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature,
+    const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric) noexcept;
+//@}
+
+//@{
 /*!
  * \ingroup SurfacesGroup
  * \brief Area element of a 2D `Strahlkorper`.
@@ -156,13 +217,23 @@ Scalar<DataVector> ricci_scalar(
  * `definite_integral` defined in `YlmSpherePack.hpp`.
  */
 template <typename Frame>
+void area_element(gsl::not_null<Scalar<DataVector>*> result,
+                  const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
+                  const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
+                  const tnsr::i<DataVector, 3, Frame>& normal_one_form,
+                  const DataVector& radius,
+                  const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept;
+
+template <typename Frame>
 Scalar<DataVector> area_element(
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
     const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const DataVector& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept;
+//@}
 
+//@{
 /*!
  * \ingroup SurfacesGroup
  * \brief Euclidean area element of a 2D `Strahlkorper`.
@@ -188,11 +259,20 @@ Scalar<DataVector> area_element(
  * `definite_integral` defined in `YlmSpherePack.hpp`.
  */
 template <typename Frame>
+void euclidean_area_element(
+    gsl::not_null<Scalar<DataVector>*> result,
+    const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
+    const tnsr::i<DataVector, 3, Frame>& normal_one_form,
+    const DataVector& radius,
+    const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept;
+
+template <typename Frame>
 Scalar<DataVector> euclidean_area_element(
     const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const DataVector& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept;
+//@}
 
 /*!
  * \ingroup SurfacesGroup
@@ -228,6 +308,7 @@ double euclidean_surface_integral_of_vector(
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const Strahlkorper<Frame>& strahlkorper) noexcept;
 
+//@{
 /*!
  * \ingroup SurfacesGroup
  * \brief Spin function of a 2D `Strahlkorper`.
@@ -262,12 +343,22 @@ double euclidean_surface_integral_of_vector(
  * StrahlkorperDataBox using the `StrahlkorperTags::Tangents` tag.
  */
 template <typename Frame>
+void spin_function(
+    gsl::not_null<Scalar<DataVector>*> result,
+    const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
+    const YlmSpherepack& ylm,
+    const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
+    const Scalar<DataVector>& area_element,
+    const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept;
+
+template <typename Frame>
 Scalar<DataVector> spin_function(
     const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
     const YlmSpherepack& ylm,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept;
+//@}
 
 /*!
  * \ingroup SurfacesGroup
