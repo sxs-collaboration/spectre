@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Evolution/Systems/Cce/InitializeCce.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLockstepInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/WorldtubeInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
@@ -14,6 +15,9 @@
 #include "Options/Options.hpp"
 
 namespace Cce {
+/// \cond
+struct InitializeJ;
+/// \endcond
 namespace OptionTags {
 
 /// %Option group
@@ -140,6 +144,13 @@ struct ScriOutputDensity {
   static constexpr OptionString help{
       "Number of scri output points per timestep."};
   static size_t default_value() noexcept { return 1; }
+  using group = Cce;
+};
+
+struct InitializeJ {
+  using type = std::unique_ptr<::Cce::InitializeJ>;
+  static constexpr OptionString help{
+      "The initialization for the first hypersurface for J"};
   using group = Cce;
 };
 
@@ -320,6 +331,17 @@ struct GhInterfaceManager : db::SimpleTag {
   create_from_options(const std::unique_ptr<::Cce::GhWorldtubeInterfaceManager>&
                           interface_manager) noexcept {
     return interface_manager->get_clone();
+  }
+};
+
+struct InitializeJ : db::SimpleTag {
+  using type = std::unique_ptr<::Cce::InitializeJ>;
+  using option_tags = tmpl::list<OptionTags::InitializeJ>;
+
+  static constexpr bool pass_metavariables = false;
+  static std::unique_ptr<::Cce::InitializeJ> create_from_options(
+      const std::unique_ptr<::Cce::InitializeJ>& initialize_j) noexcept {
+    return initialize_j->get_clone();
   }
 };
 

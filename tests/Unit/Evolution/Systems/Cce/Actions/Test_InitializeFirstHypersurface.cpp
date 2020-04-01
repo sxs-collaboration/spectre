@@ -41,8 +41,7 @@ using real_boundary_tags_to_compute =
     tmpl::list<Tags::CauchyCartesianCoords, Tags::CauchyAngularCoords,
                Tags::InertialRetardedTime>;
 
-using swsh_boundary_tags_to_compute =
-    tmpl::list<Tags::GaugeC, Tags::GaugeD, Tags::GaugeOmega>;
+using swsh_boundary_tags_to_compute = tmpl::list<Tags::GaugeC, Tags::GaugeD>;
 
 using swsh_volume_tags_to_compute = tmpl::list<Tags::BondiJ>;
 
@@ -62,16 +61,22 @@ struct mock_characteristic_evolution {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing,
-                             tmpl::list<Actions::InitializeFirstHypersurface>>>;
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          tmpl::list<
+              Actions::InitializeFirstHypersurface,
+              ::Actions::MutateApply<GaugeUpdateAngularFromCartesian<
+                  Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>,
+              ::Actions::MutateApply<GaugeUpdateJacobianFromCoordinates<
+                  Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
+                  Tags::CauchyCartesianCoords>>>>>;
 };
 
 struct metavariables {
   using component_list =
       tmpl::list<mock_characteristic_evolution<metavariables>>;
 
-  using cce_hypersurface_initialization = InitializeJ<Tags::BoundaryValue>;
+  using cce_hypersurface_initialization = InitializeJInverseCubic;
   enum class Phase { Initialization, Testing, Exit };
 };
 }  // namespace
@@ -90,7 +95,8 @@ SPECTRE_TEST_CASE(
 
   using component = mock_characteristic_evolution<metavariables>;
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {l_max, number_of_radial_points}};
+      {l_max, number_of_radial_points,
+       std::make_unique<InitializeJInverseCubic>()}};
 
   Variables<real_boundary_tags_to_compute> real_variables{
       Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
@@ -131,11 +137,19 @@ SPECTRE_TEST_CASE(
   runner.set_phase(metavariables::Phase::Testing);
   // apply the `InitializeFirstHypersurface` action
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  ActionTesting::next_action<component>(make_not_null(&runner), 0);
 
   // apply the corresponding mutators to the `expected_box`
-  db::mutate_apply<InitializeJ<Tags::BoundaryValue>>(
+  db::mutate_apply<Cce::InitializeJ::mutate_tags,
+                   Cce::InitializeJ::argument_tags>(
+      Cce::InitializeJInverseCubic{}, make_not_null(&expected_box));
+  db::mutate_apply<GaugeUpdateAngularFromCartesian<
+      Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
       make_not_null(&expected_box));
-  db::mutate_apply<InitializeGauge>(make_not_null(&expected_box));
+  db::mutate_apply<GaugeUpdateJacobianFromCoordinates<
+      Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
+      Tags::CauchyCartesianCoords>>(make_not_null(&expected_box));
   db::mutate_apply<InitializeScriPlusValue<Tags::InertialRetardedTime>>(
       make_not_null(&expected_box));
 
@@ -144,6 +158,7 @@ SPECTRE_TEST_CASE(
                    swsh_volume_tags_to_compute>>(
       [&runner, &expected_box](auto tag_v) noexcept {
         using tag = typename decltype(tag_v)::type;
+        CAPTURE(db::tag_name<tag>());
         const auto& test_lhs =
             ActionTesting::get_databox_tag<component, tag>(runner, 0);
         const auto& test_rhs = db::get<tag>(expected_box);

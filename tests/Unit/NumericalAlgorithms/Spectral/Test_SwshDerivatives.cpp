@@ -129,7 +129,7 @@ void test_compute_angular_derivatives() noexcept {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> size_distribution{2, 7};
   const size_t l_max = size_distribution(gen);
-  const size_t number_of_radial_points = 2;
+  constexpr size_t number_of_radial_points = 2;
   UniformCustomDistribution<double> coefficient_distribution{-10.0, 10.0};
 
   using input_tag_list = tmpl::list<TestTag<0, Spin0>, TestTag<1, Spin1>>;
@@ -165,17 +165,17 @@ void test_compute_angular_derivatives() noexcept {
       make_not_null(&expected_modes_spin_1), make_not_null(&gen),
       make_not_null(&coefficient_distribution), number_of_radial_points, l_max);
 
-  const auto coefficients_to_analytic_collocation = [&l_max](
-      const auto computed_collocation,
-      const ComplexModalVector& expected_modes) noexcept {
-    constexpr int lambda_spin =
-        std::decay_t<decltype(*computed_collocation)>::type::spin;
-    TestHelpers::swsh_collocation_from_coefficients_and_basis_func<
-        lambda_spin, Representation>(
-        make_not_null(&get(*computed_collocation).data()), expected_modes,
-        l_max, number_of_radial_points,
-        TestHelpers::spin_weighted_spherical_harmonic);
-  };
+  const auto coefficients_to_analytic_collocation =
+      [&l_max](const auto computed_collocation,
+               const ComplexModalVector& expected_modes) noexcept {
+        constexpr int lambda_spin =
+            std::decay_t<decltype(*computed_collocation)>::type::spin;
+        TestHelpers::swsh_collocation_from_coefficients_and_basis_func<
+            lambda_spin, Representation>(
+            make_not_null(&get(*computed_collocation).data()), expected_modes,
+            l_max, number_of_radial_points,
+            TestHelpers::spin_weighted_spherical_harmonic);
+      };
   // Put the collocation information derived from the generated modes in the
   // DataBox
   db::mutate<TestTag<0, Spin0>>(make_not_null(&box),
@@ -300,6 +300,49 @@ void test_compute_angular_derivatives() noexcept {
   }
 }
 
+template <typename InverseDerivativeKind, typename DerivativeKind,
+          ComplexRepresentation Representation, int Spin>
+void test_inverse_derivative() noexcept {
+  MAKE_GENERATOR(gen);
+  UniformCustomDistribution<size_t> size_distribution{2, 7};
+  const size_t l_max = size_distribution(gen);
+  constexpr size_t number_of_radial_points = 2;
+  UniformCustomDistribution<double> coefficient_distribution{0.1, 1.0};
+
+  // fill the expected collocation point data by evaluating the analytic
+  // functions. This is very slow and imprecise (due to factorial division), but
+  // comparatively simple to formulate.
+  SpinWeighted<ComplexModalVector, Spin> generated_modes{
+      size_of_libsharp_coefficient_vector(l_max) * number_of_radial_points};
+  TestHelpers::generate_swsh_modes<Spin>(
+      make_not_null(&generated_modes.data()), make_not_null(&gen),
+      make_not_null(&coefficient_distribution), number_of_radial_points, l_max);
+
+  const auto computed_collocation =
+      inverse_swsh_transform(l_max, number_of_radial_points, generated_modes);
+  const auto expected_derivative_collocation =
+      inverse_swsh_transform(l_max, number_of_radial_points, generated_modes);
+
+  // perform inverse derivative operator
+  const auto inverse_derivative_values =
+      angular_derivative<InverseDerivativeKind, Representation>(
+          l_max, number_of_radial_points, computed_collocation);
+
+  // perform forward derivative operator
+  const auto derivative_values =
+      angular_derivative<DerivativeKind, Representation>(
+          l_max, number_of_radial_points, inverse_derivative_values);
+
+  Approx swsh_approx =
+      Approx::custom()
+          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e3)
+          .scale(1.0);
+
+  // check if original is the same as the round-trip data.
+  CHECK_ITERABLE_CUSTOM_APPROX(derivative_values,
+                               expected_derivative_collocation, swsh_approx);
+}
+
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.AngularDerivatives",
                   "[Unit][NumericalAlgorithms]") {
   // we do not test the full set of combinations of derivatives, spins, and
@@ -350,6 +393,30 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.AngularDerivatives",
                                    ComplexRepresentation::Interleaved, 0>();
     test_derivative_via_transforms<Tags::EthbarEth,
                                    ComplexRepresentation::RealsThenImags, 1>();
+  }
+  {
+    INFO(
+        "Test evaluation of InverseEth and InverseEthbar using generated "
+        "values");
+    test_compute_angular_derivatives<ComplexRepresentation::Interleaved, -1, 1,
+                                     Tags::InverseEth, Tags::InverseEthbar>();
+    test_compute_angular_derivatives<ComplexRepresentation::RealsThenImags, -1,
+                                     1, Tags::InverseEth,
+                                     Tags::InverseEthbar>();
+  }
+  {
+    INFO("Test inverse derivative operator InverseEth is inverse of Eth");
+    test_inverse_derivative<Tags::InverseEth, Tags::Eth,
+                            ComplexRepresentation::RealsThenImags, 1>();
+    test_inverse_derivative<Tags::InverseEth, Tags::Eth,
+                            ComplexRepresentation::Interleaved, 2>();
+  }
+  {
+    INFO("Test inverse derivative operator InverseEthbar is inverse of Ethbar");
+    test_inverse_derivative<Tags::InverseEthbar, Tags::Ethbar,
+                            ComplexRepresentation::Interleaved, -1>();
+    test_inverse_derivative<Tags::InverseEthbar, Tags::Ethbar,
+                            ComplexRepresentation::RealsThenImags, -2>();
   }
   {
     INFO("Test angular_derivatives utility");

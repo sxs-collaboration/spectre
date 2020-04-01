@@ -13,7 +13,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
@@ -22,6 +21,13 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
+
+namespace Tags {
+/// \cond
+struct LMax;
+struct NumberOfRadialPoints;
+/// \endcond
+}  // namespace Tags
 
 /// The set of tags that should be calculated before the initial data is
 /// computed on the first hypersurface.

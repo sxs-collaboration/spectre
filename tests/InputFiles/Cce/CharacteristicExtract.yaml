@@ -16,6 +16,9 @@ Cce:
   NumberOfRadialPoints: 12
   ObservationLMax: 8
 
+  InitializeJ:
+    InverseCubic
+
   StartTime: 0.0
   EndTime: 1000.0
   TargetStepSize: 1.0

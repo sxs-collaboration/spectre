@@ -110,6 +110,32 @@ derivative_of_spin_weighted_spherical_harmonic<Tags::EthbarEthbar>(
              s - 1, l, m, theta, phi);
 }
 
+template <>
+std::complex<double>
+derivative_of_spin_weighted_spherical_harmonic<Tags::InverseEth>(
+    const int s, const int l, const int m, const double theta,
+    const double phi) noexcept {
+  return (l - s + 1) * (l + s) == 0
+             ? 0.0
+             : spin_weighted_spherical_harmonic(s - 1, l, m, theta, phi) /
+                   sqrt(static_cast<std::complex<double>>((l - s + 1) *
+                                                          (l + s)));
+}
+
+template <>
+std::complex<double>
+derivative_of_spin_weighted_spherical_harmonic<Tags::InverseEthbar>(
+    const int s, const int l, const int m, const double theta,
+    const double phi) noexcept {
+  return (l + s + 1) * (l - s) == 0
+             ? 0.0
+             : spin_weighted_spherical_harmonic(s + 1, l, m, theta, phi) /
+                   -sqrt(static_cast<std::complex<double>>((l + s + 1) *
+                                                           (l - s)));
+  ;
+}
+
+
 }  // namespace TestHelpers
 }  // namespace Swsh
 }  // namespace Spectral

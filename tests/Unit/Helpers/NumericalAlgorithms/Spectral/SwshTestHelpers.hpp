@@ -10,12 +10,12 @@
 
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
-#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 
 /// \cond
 class ComplexDataVector;

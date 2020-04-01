@@ -4,25 +4,37 @@
 #include "Evolution/Systems/Cce/InitializeCce.hpp"
 
 #include <cstddef>
+#include <memory>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/Cce/GaugeTransformBoundaryData.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
+#include "Time/History.hpp"
+#include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace Cce {
 
-template <template <typename> class BoundaryPrefix>
-void InitializeJ<BoundaryPrefix>::apply(
+std::unique_ptr<InitializeJ> InitializeJInverseCubic::get_clone() const
+    noexcept {
+  return std::make_unique<InitializeJInverseCubic>();
+}
+
+void InitializeJInverseCubic::operator()(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
+    const gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_cauchy_coordinates,
+    const gsl::not_null<
+        tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
+        angular_cauchy_coordinates,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
-    const Scalar<SpinWeighted<ComplexDataVector, 0>>& r) noexcept {
-  const size_t number_of_radial_points =
-      get(*j).size() / get(boundary_j).size();
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, const size_t l_max,
+    const size_t number_of_radial_points) const noexcept {
   const DataVector one_minus_y_collocation =
       1.0 - Spectral::collocation_points<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::GaussLobatto>(
@@ -44,8 +56,27 @@ void InitializeJ<BoundaryPrefix>::apply(
         one_minus_y_collocation[i] * one_minus_y_coefficient +
         pow<3>(one_minus_y_collocation[i]) * one_minus_y_cubed_coefficient;
   }
+  const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
+      Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
+  for (const auto& collocation_point : collocation) {
+    get<0>(*angular_cauchy_coordinates)[collocation_point.offset] =
+        collocation_point.theta;
+    get<1>(*angular_cauchy_coordinates)[collocation_point.offset] =
+        collocation_point.phi;
+  }
+  get<0>(*cartesian_cauchy_coordinates) =
+      sin(get<0>(*angular_cauchy_coordinates)) *
+      cos(get<1>(*angular_cauchy_coordinates));
+  get<1>(*cartesian_cauchy_coordinates) =
+      sin(get<0>(*angular_cauchy_coordinates)) *
+      sin(get<1>(*angular_cauchy_coordinates));
+  get<2>(*cartesian_cauchy_coordinates) =
+      cos(get<0>(*angular_cauchy_coordinates));
 }
 
-template struct InitializeJ<Tags::BoundaryValue>;
-template struct InitializeJ<Tags::EvolutionGaugeBoundaryValue>;
+void InitializeJInverseCubic::pup(PUP::er& /*p*/) noexcept {}
+
+/// \cond
+PUP::able::PUP_ID InitializeJInverseCubic::my_PUP_ID = 0;
+/// \endcond
 }  // namespace Cce

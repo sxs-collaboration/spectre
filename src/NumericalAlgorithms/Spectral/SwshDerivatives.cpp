@@ -120,9 +120,13 @@ GENERATE_INSTANTIATIONS(DERIVKIND_AND_SPIN_INSTANTIATION,
                         (Tags::EthEthbar, Tags::EthbarEth), (-2, -1, 0, 1, 2))
 GENERATE_INSTANTIATIONS(DERIVKIND_AND_SPIN_INSTANTIATION, (Tags::Eth),
                         (-2, -1, 0, 1))
+GENERATE_INSTANTIATIONS(DERIVKIND_AND_SPIN_INSTANTIATION, (Tags::InverseEthbar),
+                        (-2, -1, 0, 1))
 GENERATE_INSTANTIATIONS(DERIVKIND_AND_SPIN_INSTANTIATION, (Tags::EthEth),
                         (-2, -1, 0))
 GENERATE_INSTANTIATIONS(DERIVKIND_AND_SPIN_INSTANTIATION, (Tags::Ethbar),
+                        (-1, 0, 1, 2))
+GENERATE_INSTANTIATIONS(DERIVKIND_AND_SPIN_INSTANTIATION, (Tags::InverseEth),
                         (-1, 0, 1, 2))
 GENERATE_INSTANTIATIONS(DERIVKIND_AND_SPIN_INSTANTIATION, (Tags::EthbarEthbar),
                         (0, 1, 2))
@@ -156,11 +160,19 @@ GENERATE_INSTANTIATIONS(FULL_DERIVATIVE_INSTANTIATION,
 GENERATE_INSTANTIATIONS(FULL_DERIVATIVE_INSTANTIATION,
                         (ComplexRepresentation::Interleaved,
                          ComplexRepresentation::RealsThenImags),
+                        (Tags::InverseEthbar), (-2, -1, 0, 1))
+GENERATE_INSTANTIATIONS(FULL_DERIVATIVE_INSTANTIATION,
+                        (ComplexRepresentation::Interleaved,
+                         ComplexRepresentation::RealsThenImags),
                         (Tags::EthEth), (-2, -1, 0))
 GENERATE_INSTANTIATIONS(FULL_DERIVATIVE_INSTANTIATION,
                         (ComplexRepresentation::Interleaved,
                          ComplexRepresentation::RealsThenImags),
                         (Tags::Ethbar), (-1, 0, 1, 2))
+GENERATE_INSTANTIATIONS(FULL_DERIVATIVE_INSTANTIATION,
+                        (ComplexRepresentation::Interleaved,
+                         ComplexRepresentation::RealsThenImags),
+                        (Tags::InverseEth), (-1, 0, 1, 2))
 GENERATE_INSTANTIATIONS(FULL_DERIVATIVE_INSTANTIATION,
                         (ComplexRepresentation::Interleaved,
                          ComplexRepresentation::RealsThenImags),

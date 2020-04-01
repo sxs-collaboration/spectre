@@ -47,6 +47,16 @@ struct EthEthbar {};
 /// \brief Struct for labeling the \f$\bar{\eth}^2\f$ spin-weighted derivative
 /// in tags
 struct EthbarEthbar {};
+
+/// \ingroup SwshGroup
+/// \brief Struct for labeling the inverse \f$\eth^{-1}\f$ spin-weighted
+/// derivative in tags
+struct InverseEth {};
+/// \ingroup SwshGroup
+/// \brief Struct for labeling the inverse\f$\bar{\eth}^{-1}\f$ spin-weighted
+/// derivative in tags
+struct InverseEthbar {};
+
 /// \brief Struct which acts as a placeholder for a spin-weighted derivative
 /// label in the spin-weighted derivative utilities, but represents a 'no-op':
 /// no derivative is taken.
@@ -55,9 +65,11 @@ struct NoDerivative {};
 namespace detail {
 template <typename DerivativeKind>
 inline constexpr int derivative_spin_weight_impl() noexcept {
-  if (cpp17::is_same_v<DerivativeKind, Eth>) {
+  if (cpp17::is_same_v<DerivativeKind, Eth> or
+      cpp17::is_same_v<DerivativeKind, InverseEthbar>) {
     return 1;
-  } else if (cpp17::is_same_v<DerivativeKind, Ethbar>) {
+  } else if (cpp17::is_same_v<DerivativeKind, Ethbar> or
+             cpp17::is_same_v<DerivativeKind, InverseEth>) {
     return -1;
   } else if (cpp17::is_same_v<DerivativeKind, EthEth>) {
     return 2;
