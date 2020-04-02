@@ -14,6 +14,8 @@ void bind_cylinder(py::module& m);        // NOLINT
 void bind_domain_creator(py::module& m);  // NOLINT
 void bind_interval(py::module& m);        // NOLINT
 void bind_rectangle(py::module& m);       // NOLINT
+void bind_shell(py::module& m);           // NOLINT
+void bind_sphere(py::module& m);          // NOLINT
 }  // namespace py_bindings
 
 PYBIND11_MODULE(_PyDomainCreators, m) {  // NOLINT
@@ -24,6 +26,8 @@ PYBIND11_MODULE(_PyDomainCreators, m) {  // NOLINT
   py_bindings::bind_cylinder(m);
   py_bindings::bind_interval(m);
   py_bindings::bind_rectangle(m);
+  py_bindings::bind_shell(m);
+  py_bindings::bind_sphere(m);
 }
 
 }  // namespace creators
