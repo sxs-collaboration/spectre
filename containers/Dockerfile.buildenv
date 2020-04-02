@@ -33,8 +33,7 @@ RUN apt-get update -y \
 # The system MPI libraries are usually configured to take advantage of
 # InfiniBand or various other networking layers.
 RUN apt-get update -y \
-    && apt-get install -y gcc-6 g++-6 gfortran-6 \
-                          gcc-7 g++-7 gfortran-7 \
+    && apt-get install -y gcc-7 g++-7 gfortran-7 \
                           gcc-8 g++-8 gfortran-8 \
                           gcc-9 g++-9 gfortran-9 \
                           gdb git cmake autoconf \
@@ -49,11 +48,11 @@ RUN apt-get update -y \
                           libboost-tools-dev libssl-dev \
                           libbenchmark-dev
 
-# Add clang 4 and 8
+# Add clang 8 and 9
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
     && add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main' \
     && apt-get update -y \
-    && apt-get install -y clang-4.0 clang-8 clang-9
+    && apt-get install -y clang-8 clang-9
 
 # Update is needed to get libc++ correctly
 # Install jemalloc
