@@ -91,11 +91,19 @@ function(spectre_target_headers TARGET_NAME)
     list(APPEND _HEADER_FILES ${HEADER})
   endforeach()
 
-  set_property(
-    TARGET ${TARGET_NAME}
-    APPEND
-    PROPERTY
-    PUBLIC_HEADER
-    ${_HEADER_FILES}
-    )
+  if(${TARGET_TYPE} STREQUAL INTERFACE_LIBRARY)
+    add_interface_lib_headers(
+      TARGET ${TARGET_NAME}
+      HEADERS
+      ${_HEADER_FILES}
+      )
+  else(${TARGET_TYPE} STREQUAL INTERFACE_LIBRARY)
+    set_property(
+      TARGET ${TARGET_NAME}
+      APPEND
+      PROPERTY
+      PUBLIC_HEADER
+      ${_HEADER_FILES}
+      )
+  endif(${TARGET_TYPE} STREQUAL INTERFACE_LIBRARY)
 endfunction(spectre_target_headers TARGET_NAME)
