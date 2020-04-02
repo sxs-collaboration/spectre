@@ -216,8 +216,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: [gcc-6, gcc-7, gcc-8, gcc-9, clang-4.0, clang-5.0,
-          clang-8, clang-9]
+        compiler: [gcc-7, gcc-8, gcc-9, clang-5.0, clang-8, clang-9]
         build_type: [Debug, Release]
         use_pch: [OFF, ON]
 
@@ -237,9 +236,6 @@ jobs:
             build_type: Release
           - use_pch: OFF
             build_type: Debug
-            compiler: gcc-6
-          - use_pch: OFF
-            build_type: Debug
             compiler: gcc-7
           - use_pch: OFF
             build_type: Debug
@@ -247,9 +243,6 @@ jobs:
           - use_pch: OFF
             build_type: Debug
             compiler: gcc-9
-          - use_pch: OFF
-            build_type: Debug
-            compiler: clang-4.0
           - use_pch: OFF
             build_type: Debug
             compiler: clang-5.0
