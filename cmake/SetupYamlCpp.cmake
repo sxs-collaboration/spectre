@@ -19,3 +19,8 @@ add_interface_lib_headers(
   HEADERS
   yaml-cpp/yaml.h
   )
+
+set_property(
+  GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
+  YamlCpp
+  )

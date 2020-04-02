@@ -26,3 +26,8 @@ add_interface_lib_headers(
   HEADERS
   libxsmm.h
   )
+
+set_property(
+  GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
+  Libxsmm
+  )

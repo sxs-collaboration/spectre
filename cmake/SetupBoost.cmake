@@ -59,3 +59,8 @@ set_property(
   APPEND PROPERTY PUBLIC_HEADER
   boost/program_options.hpp
   )
+
+set_property(
+  GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
+  Boost::boost Boost::program_options
+  )

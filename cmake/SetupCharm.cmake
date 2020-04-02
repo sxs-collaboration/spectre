@@ -16,6 +16,10 @@ if(NOT TARGET Charmxx)
     pup.h
     pup_stl.h
     )
+  set_property(
+    GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
+    Charmxx
+    )
 endif(NOT TARGET Charmxx)
 
 # SpECTRE must be linked with Charm++'s script charmc. In turn, charmc

@@ -13,6 +13,11 @@ set_property(TARGET Hdf5
 set_property(TARGET Hdf5
   APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${HDF5_LIBRARIES})
 
+set_property(
+  GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
+  Hdf5
+  )
+
 file(APPEND
   "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
   "HDF5 Version:  ${HDF5_VERSION}\n"

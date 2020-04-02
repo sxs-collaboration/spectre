@@ -27,3 +27,8 @@ add_interface_lib_headers(
   blaze/system/Version.h
   blaze/util/typetraits/RemoveConst.h
   )
+
+set_property(
+  GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
+  Blaze
+  )

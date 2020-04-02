@@ -14,3 +14,8 @@ add_interface_lib_headers(
   HEADERS
   brigand/brigand.hpp
   )
+
+set_property(
+  GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
+  Brigand
+  )

@@ -115,4 +115,9 @@ if(NOT TARGET Stl)
     unistd.h
     xmmintrin.h
     )
+
+  set_property(
+    GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
+    Stl
+    )
 endif(NOT TARGET Stl)
