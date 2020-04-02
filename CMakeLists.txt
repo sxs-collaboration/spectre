@@ -141,3 +141,5 @@ add_subdirectory(tests)
 
 include(PrintUsefulCMakeInfo)
 include(SetupVersionFile)
+
+include(SpectreCheckDependencies)
