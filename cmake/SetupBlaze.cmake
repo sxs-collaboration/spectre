@@ -16,3 +16,14 @@ set_property(TARGET Blaze PROPERTY
   INTERFACE_INCLUDE_DIRECTORIES ${BLAZE_INCLUDE_DIR})
 set_property(TARGET Blaze PROPERTY
   INTERFACE_LINK_LIBRARIES Lapack)
+
+add_interface_lib_headers(
+  TARGET Blaze
+  HEADERS
+  blaze/math/CustomVector.h
+  blaze/math/DynamicMatrix.h
+  blaze/math/DynamicVector.h
+  blaze/system/Optimizations.h
+  blaze/system/Version.h
+  blaze/util/typetraits/RemoveConst.h
+  )

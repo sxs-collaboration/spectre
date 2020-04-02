@@ -6,6 +6,18 @@ find_package(Charm 6.8.0 EXACT REQUIRED)
 spectre_include_directories("${CHARM_INCLUDE_DIRS}")
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -L${CHARM_LIBRARIES}")
 
+if(NOT TARGET Charmxx)
+  add_library(Charmxx INTERFACE IMPORTED)
+  set_property(TARGET Charmxx PROPERTY
+    INTERFACE_INCLUDE_DIRECTORIES ${CHARM_INCLUDE_DIRS})
+  add_interface_lib_headers(
+    TARGET Charmxx
+    HEADERS
+    pup.h
+    pup_stl.h
+    )
+endif(NOT TARGET Charmxx)
+
 # SpECTRE must be linked with Charm++'s script charmc. In turn, charmc
 # will call your normal compiler, set at charm++ installation time internally.
 # Note: The -pthread is necessary with Charm v6.8 to get linking working

@@ -20,3 +20,9 @@ set_property(TARGET Libxsmm
 # LIBXSMM falls back to blas, so we need to link against Blas with it as well.
 set_property(TARGET Libxsmm
   APPEND PROPERTY INTERFACE_LINK_LIBRARIES Blas)
+
+add_interface_lib_headers(
+  TARGET Libxsmm
+  HEADERS
+  libxsmm.h
+  )
