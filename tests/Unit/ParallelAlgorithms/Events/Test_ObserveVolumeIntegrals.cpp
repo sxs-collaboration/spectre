@@ -15,6 +15,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Creators/Brick.hpp"
@@ -22,8 +23,6 @@
 #include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/Rectangle.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/ElementMap.hpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -182,32 +181,28 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   const typename element_component::array_index array_index(0);
   const ElementId<VolumeDim> element_id{array_index};
 
-  // ObserveVolumeIntegrals requires some domain items in the DataBox.
+  // ObserveVolumeIntegrals requires the domain mesh in the DataBox.
   // Any domain, mesh and basis should be fine--we'll just check received data
   const auto creator = domain_creator<VolumeDim>();
-  const auto domain = creator->create_domain();
-  const auto& block = domain.blocks()[element_id.block_id()];
-
-  ElementMap<VolumeDim, Frame::Inertial> map{
-      element_id, block.stationary_map().get_clone()};
   Mesh<VolumeDim> mesh{creator->initial_extents()[0],
                        Spectral::Basis::Chebyshev,
                        Spectral::Quadrature::GaussLobatto};
-  auto logical_coords = logical_coordinates(mesh);
 
   // Any data held by tensors to integrate should be fine
   MAKE_GENERATOR(gen);
   using value_type = DataVector::value_type;
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-10.0,
                                                                          10.0};
-  Variables<variables_for_test<VolumeDim>> vars(mesh.number_of_grid_points());
+  const size_t number_of_grid_points = mesh.number_of_grid_points();
+  Variables<variables_for_test<VolumeDim>> vars(number_of_grid_points);
   fill_with_random_values(make_not_null(&vars), make_not_null(&gen),
                           make_not_null(&dist));
+  auto det_inv_jacobian = make_with_random_values<Scalar<DataVector>>(
+      make_not_null(&gen), make_not_null(&dist), number_of_grid_points);
 
   // Compute expected data for checks
   size_t num_tensor_components = 0;
-  const DataVector det_jacobian =
-      get(determinant(map.jacobian(logical_coords)));
+  const DataVector det_jacobian = 1.0 / get(det_inv_jacobian);
   const double expected_volume = definite_integral(det_jacobian, mesh);
   std::vector<double> expected_volume_integrals{};
   std::vector<std::string> expected_reduction_names = {
@@ -229,12 +224,11 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   });
 
   const double observation_time = 2.0;
-  const auto box = db::create<
-      db::AddSimpleTags<ObservationTimeTag, domain::Tags::Mesh<VolumeDim>,
-                        domain::Tags::ElementMap<VolumeDim, Frame::Inertial>,
-                        domain::Tags::Coordinates<VolumeDim, Frame::Logical>,
-                        Tags::Variables<typename decltype(vars)::tags_list>>>(
-      observation_time, mesh, std::move(map), logical_coords, vars);
+  const auto box = db::create<db::AddSimpleTags<
+      ObservationTimeTag, domain::Tags::Mesh<VolumeDim>,
+      domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>,
+      Tags::Variables<typename decltype(vars)::tags_list>>>(
+      observation_time, mesh, det_inv_jacobian, vars);
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
   ActionTesting::emplace_component<element_component>(make_not_null(&runner),
