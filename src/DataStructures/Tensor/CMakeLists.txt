@@ -13,7 +13,7 @@ spectre_target_headers(
   HEADERS
   Identity.hpp
   IndexType.hpp
-  MathFunctions.hpp
+  Metafunctions.hpp
   Slice.hpp
   Structure.hpp
   Symmetry.hpp
