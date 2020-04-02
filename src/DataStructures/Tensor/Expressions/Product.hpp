@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "Data/Tensor/Expressions/TensorExpression.hpp"
+#include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 
 namespace TensorExpressions {
 
