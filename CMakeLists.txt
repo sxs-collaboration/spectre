@@ -89,6 +89,7 @@ include(SetupNumPy)
 include(SetupPapi)
 include(SetupPybind11)
 include(SetupSciPy)
+include(SetupStl)
 include(SetupLibsharp)
 include(SetupYamlCpp)
 
