@@ -3,10 +3,10 @@
 
 #pragma once
 
+#include <brigand/brigand.hpp>
 #include <type_traits>
 
 #include "Utilities/Requires.hpp"
-#include "Utilities/TMPL.hpp"
 
 namespace brigand {
 
