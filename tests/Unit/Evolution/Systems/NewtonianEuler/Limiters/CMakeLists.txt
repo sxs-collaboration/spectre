@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_KxrcfTci.cpp
   Test_Minmod.cpp
   Test_VariablesToLimit.cpp
+  Test_Weno.cpp
   )
 
 add_test_library(
