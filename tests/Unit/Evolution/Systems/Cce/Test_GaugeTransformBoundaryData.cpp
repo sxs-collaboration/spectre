@@ -164,10 +164,17 @@ void test_gauge_transforms_via_inverse_coordinate_map(
   const double variation_amplitude = value_dist(*gen);
   db::mutate<Tags::CauchyCartesianCoords>(
       make_not_null(&forward_transform_box),
-      [&variation_amplitude](const gsl::not_null<tnsr::i<DataVector, 3>*>
+      [&l_max,
+       &variation_amplitude](const gsl::not_null<tnsr::i<DataVector, 3>*>
                                  cauchy_cartesian_coordinates) noexcept {
         tnsr::i<DataVector, 2> cauchy_angular_coordinates{
             get<0>(*cauchy_cartesian_coordinates).size()};
+        // There is a bug in Clang 10.0.0 that gives a nonsensical
+        // error message for the following call to
+        // cached_collocation_metadata unless l_max is captured in
+        // this lambda.  (The capture should not be necessary.)  This
+        // line silences the (correct) "unused capture" warnings.
+        (void)l_max;
         const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
             Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
         for (const auto& collocation_point : collocation) {
@@ -201,11 +208,17 @@ void test_gauge_transforms_via_inverse_coordinate_map(
 
   db::mutate<Tags::CauchyCartesianCoords>(
       make_not_null(&inverse_transform_box),
-      [&variation_amplitude](
+      [&l_max, &variation_amplitude](
           const gsl::not_null<tnsr::i<DataVector, 3>*>
               inverse_cauchy_cartesian_coordinates) noexcept {
         tnsr::i<DataVector, 2> inverse_cauchy_angular_coordinates{
             get<0>(*inverse_cauchy_cartesian_coordinates).size()};
+        // There is a bug in Clang 10.0.0 that gives a nonsensical
+        // error message for the following call to
+        // cached_collocation_metadata unless l_max is captured in
+        // this lambda.  (The capture should not be necessary.)  This
+        // line silences the (correct) "unused capture" warnings.
+        (void)l_max;
         const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
             Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
         for (const auto& collocation_point : collocation) {
