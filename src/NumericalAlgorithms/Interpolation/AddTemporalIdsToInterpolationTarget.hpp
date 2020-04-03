@@ -10,6 +10,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -45,39 +46,9 @@ struct AddTemporalIdsToInterpolationTarget {
     const bool temporal_id_added_for_the_first_time =
         db::get<Tags::TemporalIds<TemporalId>>(box).empty();
 
-    // Some of the temporal_ids may not be new;
-    // i.e. AddTemporalIdsToInterpolationTarget may have already been
-    // called for them.  So keep track of the new ones.
-    std::vector<TemporalId> new_temporal_ids{};
-
-    db::mutate_apply<tmpl::list<Tags::TemporalIds<TemporalId>>,
-                     tmpl::list<Tags::CompletedTemporalIds<TemporalId>>>(
-        [&temporal_ids, &new_temporal_ids ](
-            const gsl::not_null<std::deque<TemporalId>*> ids,
-            const std::deque<TemporalId>& completed_ids) noexcept {
-          // We allow this Action to be called multiple times with the
-          // same temporal_ids (e.g. from each node of a NodeGroup
-          // ParallelComponent such as Interpolator). If multiple calls
-          // occur, we care only about the first one, and ignore the others.
-          // The first call will often begin interpolation.
-          // So if multiple calls occur, it is possible that some of them
-          // may arrive late, even after interpolation
-          // has been completed on one or more of the temporal_ids (and after
-          // that id has already been removed from `ids`).  If this happens,
-          // we don't want to add the temporal_ids again. For that
-          // reason we keep track of the temporal_ids that we have already
-          // completed interpolation on.  So here we do not add any temporal_ids
-          // that are already present in `ids` or `completed_ids`.
-          for (auto& id : temporal_ids) {
-            if (std::find(completed_ids.begin(), completed_ids.end(), id) ==
-                    completed_ids.end() and
-                std::find(ids->begin(), ids->end(), id) == ids->end()) {
-              ids->push_back(id);
-              new_temporal_ids.push_back(id);
-            }
-          }
-        },
-        make_not_null(&box));
+    const std::vector<TemporalId> new_temporal_ids =
+        InterpolationTarget_detail::flag_temporal_ids_for_interpolation<
+            InterpolationTargetTag>(make_not_null(&box), temporal_ids);
 
     const auto& ids = db::get<Tags::TemporalIds<TemporalId>>(box);
     if (InterpolationTargetTag::compute_target_points::is_sequential::value) {
