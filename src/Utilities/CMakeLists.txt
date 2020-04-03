@@ -37,7 +37,6 @@ spectre_target_headers(
   ConstantExpressions.hpp
   ContainerHelpers.hpp
   DereferenceWrapper.hpp
-  Digraph.hpp
   EqualWithinRoundoff.hpp
   FakeVirtual.hpp
   FileSystem.hpp
@@ -74,6 +73,7 @@ spectre_target_headers(
   TMPL.hpp
   TaggedTuple.hpp
   TmplDebugging.hpp
+  TmplDigraph.hpp
   Tuple.hpp
   TypeTraits.hpp
   VectorAlgebra.hpp
