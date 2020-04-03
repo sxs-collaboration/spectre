@@ -163,9 +163,10 @@ struct ApparentHorizon {
   }
 
   template <typename Metavariables, typename DbTags, typename TemporalId>
-  static auto points(const db::DataBox<DbTags>& box,
-                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                     const TemporalId& /*temporal_id*/) noexcept {
+  static tnsr::I<DataVector, 3, Frame> points(
+      const db::DataBox<DbTags>& box,
+      const tmpl::type_<Metavariables>& /*meta*/,
+      const TemporalId& /*temporal_id*/) noexcept {
     const auto& fast_flow = db::get<::ah::Tags::FastFlow>(box);
     const auto& strahlkorper =
         db::get<StrahlkorperTags::Strahlkorper<Frame>>(box);

@@ -12,7 +12,6 @@
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -194,11 +193,10 @@ struct WedgeSectionTorus {
       tmpl::list<Tags::WedgeSectionTorus<InterpolationTargetTag>>;
   using is_sequential = std::false_type;
 
-  template <typename Metavariables, typename DbTags, typename TemporalId>
+  template <typename Metavariables, typename DbTags>
   static tnsr::I<DataVector, 3, Frame::Inertial> points(
       const db::DataBox<DbTags>& box,
-      Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const TemporalId& /*temporal_id*/) noexcept {
+      const tmpl::type_<Metavariables>& /*meta*/) noexcept {
     const auto& options =
         get<Tags::WedgeSectionTorus<InterpolationTargetTag>>(box);
 
@@ -283,6 +281,13 @@ struct WedgeSectionTorus {
     get<2>(target_points) = radii * cos(thetas);
 
     return target_points;
+  }
+
+  template <typename Metavariables, typename DbTags, typename TemporalId>
+  static tnsr::I<DataVector, 3, Frame::Inertial> points(
+      const db::DataBox<DbTags>& box, const tmpl::type_<Metavariables>& meta,
+      const TemporalId& /*temporal_id*/) noexcept {
+    return points(box, meta);
   }
 };
 

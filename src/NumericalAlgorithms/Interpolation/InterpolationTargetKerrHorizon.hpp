@@ -11,6 +11,7 @@
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -20,6 +21,7 @@
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
+class DataVector;
 namespace PUP {
 class er;
 }  // namespace PUP
@@ -162,13 +164,20 @@ struct KerrHorizon {
   }
 
   template <typename Metavariables, typename DbTags, typename TemporalId>
-  static auto points(const db::DataBox<DbTags>& box,
-                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                     const TemporalId& /*temporal_id*/) noexcept {
+  static tnsr::I<DataVector, 3, ::Frame::Inertial> points(
+      const db::DataBox<DbTags>& box,
+      const tmpl::type_<Metavariables>& /*meta*/,
+      const TemporalId& /*temporal_id*/) noexcept {
     // In the future, when we add support for multiple Frames,
     // the code that transforms coordinates from the Strahlkorper Frame
     // to Frame::Inertial will go here.  That transformation
     // may depend on `temporal_id`.
+    return db::get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box);
+  }
+  template <typename Metavariables, typename DbTags>
+  static tnsr::I<DataVector, 3, ::Frame::Inertial> points(
+      const db::DataBox<DbTags>& box,
+      const tmpl::type_<Metavariables>& /*meta*/) noexcept {
     return db::get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box);
   }
 };
