@@ -81,10 +81,12 @@ class BentBeam {
         "The bending moment applied to the beam"};
     static type lower_bound() noexcept { return 0.0; }
   };
+  struct Material {
+    using type = constitutive_relation_type;
+    static constexpr OptionString help{"The material properties of the beam"};
+  };
 
-  using options = tmpl::list<
-      Length, Height, BendingMoment,
-      Elasticity::Tags::ConstitutiveRelation<constitutive_relation_type>>;
+  using options = tmpl::list<Length, Height, BendingMoment, Material>;
   static constexpr OptionString help{
       "A 2D slice through an elastic beam which is subject to a bending "
       "moment. The bending moment is applied along the length of the beam, "

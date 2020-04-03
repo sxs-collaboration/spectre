@@ -94,6 +94,8 @@ namespace ConstitutiveRelations {
 template <size_t Dim>
 class IsotropicHomogeneous : public ConstitutiveRelation<Dim> {
  public:
+  static constexpr size_t volume_dim = Dim;
+
   struct BulkModulus {
     using type = double;
     static constexpr OptionString help = {
@@ -116,8 +118,8 @@ class IsotropicHomogeneous : public ConstitutiveRelation<Dim> {
       "respectively. Both are measured in units of stress, typically Pascals."};
 
   IsotropicHomogeneous() = default;
-  IsotropicHomogeneous(const IsotropicHomogeneous&) = delete;
-  IsotropicHomogeneous& operator=(const IsotropicHomogeneous&) = delete;
+  IsotropicHomogeneous(const IsotropicHomogeneous&) = default;
+  IsotropicHomogeneous& operator=(const IsotropicHomogeneous&) = default;
   IsotropicHomogeneous(IsotropicHomogeneous&&) = default;
   IsotropicHomogeneous& operator=(IsotropicHomogeneous&&) = default;
   ~IsotropicHomogeneous() override = default;
