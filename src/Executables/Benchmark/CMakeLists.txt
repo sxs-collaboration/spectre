@@ -23,7 +23,6 @@ if("${GOOGLE_BENCHMARK_FOUND}" AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     Informer
     GoogleBenchmark
     Spectral
-    ${SPECTRE_LIBRARIES}
     )
 
   set_target_properties(

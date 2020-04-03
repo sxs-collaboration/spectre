@@ -25,7 +25,6 @@ function(add_algorithm_test EXECUTABLE_NAME)
     Informer
     Options
     Utilities
-    ${SPECTRE_LIBRARIES}
     )
 
   add_dependencies(test-executables ${EXECUTABLE_NAME})
@@ -62,7 +61,6 @@ target_link_libraries(
   PRIVATE
   ErrorHandling
   Informer
-  ${SPECTRE_LIBRARIES}
   )
 
 add_dependencies(test-executables Test_ConstGlobalCache)

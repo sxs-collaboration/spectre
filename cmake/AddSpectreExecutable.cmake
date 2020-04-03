@@ -104,6 +104,5 @@ function(
     # dependency handling for header-only libs
     Boost::program_options
     ${LINK_LIBS}
-    ${SPECTRE_LIBRARIES}
     )
 endfunction(add_spectre_parallel_executable)

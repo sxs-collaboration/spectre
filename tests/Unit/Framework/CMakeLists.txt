@@ -23,10 +23,11 @@ target_link_libraries(
 
   PRIVATE
   Informer
-  NumPy
 
   PUBLIC
   ErrorHandling
+  NumPy
+  PythonLibs
   )
 
 target_include_directories(

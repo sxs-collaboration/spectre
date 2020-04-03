@@ -48,7 +48,6 @@ function(add_algorithm_test TEST_NAME)
     Informer
     IO
     ParallelLinearSolver
-    ${SPECTRE_LIBRARIES}
     )
 
   add_dependencies(test-executables ${EXECUTABLE_NAME})

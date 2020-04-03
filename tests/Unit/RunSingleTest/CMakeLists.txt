@@ -51,7 +51,6 @@ target_link_libraries(
   Boost::program_options
   Framework
   Informer
-  ${SPECTRE_LIBRARIES}
   )
 
 add_dependencies(

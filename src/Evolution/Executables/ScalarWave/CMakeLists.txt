@@ -14,7 +14,6 @@ set(LIBS_TO_LINK
     Options
     Utilities
     WaveEquation
-    ${SPECTRE_LIBRARIES}
   )
 
 add_spectre_parallel_executable(

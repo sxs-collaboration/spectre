@@ -19,7 +19,6 @@ target_link_libraries(
   IO
   Informer
   Spectral
-  ${SPECTRE_LIBRARIES}
   )
 
 set_target_properties(
