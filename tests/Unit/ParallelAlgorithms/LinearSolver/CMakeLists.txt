@@ -5,7 +5,6 @@ set(LIBRARY "Test_ParallelLinearSolver")
 
 set(LIBRARY_SOURCES
   Actions/Test_TerminateIfConverged.cpp
-  Test_InnerProduct.cpp
   Test_Tags.cpp
   )
 

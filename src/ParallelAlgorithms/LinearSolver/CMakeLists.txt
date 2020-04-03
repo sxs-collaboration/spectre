@@ -8,9 +8,9 @@ add_spectre_library(${LIBRARY} INTERFACE)
 target_link_libraries(
   ${LIBRARY}
   INTERFACE
-  Blas
   Convergence
   DataStructures
+  LinearSolver
   IO
   Utilities
   )

@@ -46,6 +46,16 @@ Reason HasConverged::reason() const noexcept {
   return *reason_;
 }
 
+size_t HasConverged::num_iterations() const noexcept { return iteration_id_; }
+
+double HasConverged::residual_magnitude() const noexcept {
+  return residual_magnitude_;
+}
+
+double HasConverged::initial_residual_magnitude() const noexcept {
+  return initial_residual_magnitude_;
+}
+
 std::ostream& operator<<(std::ostream& os,
                          const HasConverged& has_converged) noexcept {
   if (has_converged) {

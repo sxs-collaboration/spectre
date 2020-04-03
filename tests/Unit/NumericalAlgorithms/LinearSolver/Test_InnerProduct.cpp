@@ -7,7 +7,7 @@
 #include "DataStructures/DenseVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "ParallelAlgorithms/LinearSolver/InnerProduct.hpp"
+#include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
 #include "Utilities/TMPL.hpp"
 
 class DataVector;
@@ -24,8 +24,8 @@ struct AnotherScalarFieldTag : db::SimpleTag {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.InnerProduct",
-                  "[Unit][ParallelAlgorithms][LinearSolver]") {
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.LinearSolver.InnerProduct",
+                  "[Unit][NumericalAlgorithms][LinearSolver]") {
   const DenseVector<double> lhs{1., 0., 2.};
   const DenseVector<double> rhs{1.5, 1., 3.};
   CHECK(LinearSolver::inner_product(lhs, rhs) == dot(lhs, rhs));
