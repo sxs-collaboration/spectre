@@ -70,12 +70,12 @@ namespace GeneralizedHarmonic {
  *  \mu_{S} &= A_{S} R_{S}(t) W(x^i) \mathrm{log}(\sqrt{g}/N)^{e_{S}},
  * \f}
  *
- * temporal roll-on functions \f$ R_X(t)\f$ (with label \f$ X\f$) are:
+ * temporal roll-on functions \f$ R_X(t)\f$ (for \f$ X = \{L1, L2, S\} \f$) are:
  *
  * \f{align*}
  * \begin{array}{ll}
- *     R_X(t) & = 1 - \exp[-((t - t_{0,X})/ \sigma_t^X)^4], & t\geq t_{0,X} \\
- *     & = 0, & t< t_{0,X} \\
+ *     R_X(t) & = 0, & t< t_{0,X} \\
+ *             & = 1 - \exp[-((t - t_{0,X})/ \sigma_t^X)^4], & t\geq t_{0,X} \\
  * \end{array}
  * \f}
  *
@@ -89,13 +89,15 @@ namespace GeneralizedHarmonic {
  * \f$ \sigma_r\f$ here. The coordinate \f$ r\f$ is the Euclidean radius
  * in Inertial coordinates.
  *
- * Note:
- *   - Amplitude factors \f$ A_{X} \f$ are input as amp\_coef\_X
- *   - \f$ R_{X} \f$ is specified by \f$\{ t_{0,X}, \sigma_t^X\}\f$, which are
- *     input as \f$\{\f$t\_start\_X, sigma\_t\_X \f$\}\f$.
- *   - Exponents \f$ e_X\f$ are input as exp\_X.
- *   - The spatial weight function is specified completely by \f$\{\f$sigma\_r
- * \f$\}\f$.
+ * Note that for the last three terms in \f$H_a\f$ (with \f$ X = \{L1, L2, S\}
+ * \f$):
+ *   - Amplitude factors \f$ A_{X} \f$ are taken as input here as `amp_coef_X`
+ *   - Roll-on factor \f$ R_{X} \f$ is specified completely by \f$\{ t_{0,X},
+ *     \sigma_t^X\}\f$, which are taken as input here as `t_start_X` and
+ *     `sigma_t_X`.
+ *   - Exponents \f$ e_X\f$ are taken as input here as `exp_X`.
+ *   - Spatial weight function \f$W\f$ is specified completely by
+ *     \f$\sigma_r\f$, which is taken as input here as `sigma_r`.
  */
 template <size_t SpatialDim, typename Frame>
 void damped_harmonic_h(
@@ -122,6 +124,19 @@ void damped_harmonic_h(
  * \brief Damped harmonic gauge source function.
  *
  * \details See damped_harmonic_h() for details.
+ *
+ * \note This compute tag:
+ *   1. fixes amplitude factors to  \f$ A_{L1} = A_{L2} = A_{S} = 1 \f$,
+ *   2. fixes exponents to \f$ e_{L1} = e_{L2} = e_{S} = 4 \f$,
+ *   3. fixes roll-on start time to be equal for all terms in \f$H_a\f$, i.e.
+ *     \f$ t_{0,L1} = t_{0,L2} = t_{0,S} \f$,
+ *   4. fixes roll-on timescale to be equal for all terms in \f$H_a\f$, i.e.
+ *     \f$ \sigma_t^{L1} = \sigma_t^{L2} = \sigma_t^{S} \f$.
+ * \note
+ * The first two set of parameters are set to reproduce \cite Deppe2018uye, and
+ * not through input options. They would need to be changed to reproduce,
+ * for instance, the gauge source of \cite Szilagyi2009qz. Values of the last
+ * two set of parameters are set through input options.
  */
 template <size_t SpatialDim, typename Frame>
 struct DampedHarmonicHCompute : Tags::GaugeH<SpatialDim, Frame>,
@@ -229,6 +244,9 @@ struct DampedHarmonicHCompute : Tags::GaugeH<SpatialDim, Frame>,
  * [\mathrm{log}(\sqrt{g}/N)^{e_S}] \\
  *                  +& A_S \mathrm{log}(\sqrt{g} / N)^{e_S} \partial_a [R_S(t)
  * W(x^i)]. \f}
+ *
+ * See the list at the end of the documentation for damped_harmonic_h() for
+ * mappings between coefficients used above and inputs to this function.
  */
 template <size_t SpatialDim, typename Frame>
 void spacetime_deriv_damped_harmonic_h(
@@ -263,6 +281,19 @@ void spacetime_deriv_damped_harmonic_h(
  * \brief Spacetime derivatives of the damped harmonic gauge source function.
  *
  * \details See spacetime_deriv_damped_harmonic_h() for details.
+ *
+ * \note As `DampedHarmonicHCompute`, this compute tag also:
+ *   1. fixes amplitude factors to  \f$ A_{L1} = A_{L2} = A_{S} = 1 \f$,
+ *   2. fixes exponents to \f$ e_{L1} = e_{L2} = e_{S} = 4 \f$,
+ *   3. fixes roll-on start time to be equal for all terms in \f$H_a\f$, i.e.
+ *     \f$ t_{0,L1} = t_{0,L2} = t_{0,S} \f$,
+ *   4. fixes roll-on timescale to be equal for all terms in \f$H_a\f$, i.e.
+ *     \f$ \sigma_t^{L1} = \sigma_t^{L2} = \sigma_t^{S} \f$.
+ * \note
+ * The first two set of parameters are set to reproduce \cite Deppe2018uye, and
+ * not through input options. They would need to be changed to reproduce,
+ * for instance, the gauge source of \cite Szilagyi2009qz. Values of the last
+ * two set of parameters are set through input options.
  */
 template <size_t SpatialDim, typename Frame>
 struct SpacetimeDerivDampedHarmonicHCompute
