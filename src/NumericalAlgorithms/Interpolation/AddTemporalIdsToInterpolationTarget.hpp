@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Tags.hpp"
+#include "NumericalAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -90,7 +91,7 @@ struct AddTemporalIdsToInterpolationTarget {
         auto& my_proxy =
             Parallel::get_parallel_component<ParallelComponent>(cache);
         Parallel::simple_action<
-            typename InterpolationTargetTag::compute_target_points>(
+            Actions::SendPointsToInterpolator<InterpolationTargetTag>>(
             my_proxy, ids.front());
       }
     } else {
@@ -100,8 +101,8 @@ struct AddTemporalIdsToInterpolationTarget {
           Parallel::get_parallel_component<ParallelComponent>(cache);
       for (const auto& id : new_temporal_ids) {
         Parallel::simple_action<
-            typename InterpolationTargetTag::compute_target_points>(my_proxy,
-                                                                    id);
+            Actions::SendPointsToInterpolator<InterpolationTargetTag>>(my_proxy,
+                                                                       id);
       }
     }
   }

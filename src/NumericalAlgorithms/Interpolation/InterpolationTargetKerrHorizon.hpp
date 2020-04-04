@@ -11,7 +11,7 @@
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "NumericalAlgorithms/Interpolation/SendPointsToInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
@@ -115,9 +115,8 @@ struct KerrHorizon : db::SimpleTag {
 };
 }  // namespace Tags
 
-namespace Actions {
-/// \ingroup ActionsGroup
-/// \brief Sends points on a Kerr horizon to an `Interpolator`.
+namespace TargetPoints {
+/// \brief Computes points on a Kerr horizon.
 ///
 /// The points are such that they conform to the horizon of a Kerr
 /// black hole (in Kerr-Schild coordinates) with given center, mass,
@@ -129,20 +128,6 @@ namespace Actions {
 /// Lmax, where Lmax is the spherical-harmonic order specified in the
 /// options.  As Lmax increases, the returned points converge to the
 /// horizon.
-///
-/// Uses:
-/// - DataBox:
-///   - `domain::Tags::Domain<3>`
-///   - `::Tags::Variables<typename
-///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
-///
-/// DataBox changes:
-/// - Adds: nothing
-/// - Removes: nothing
-/// - Modifies:
-///   - `Tags::IndicesOfFilledInterpPoints`
-///   - `::Tags::Variables<typename
-///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
 ///
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag, typename Frame>
@@ -175,25 +160,18 @@ struct KerrHorizon {
         db::AddComputeTags<StrahlkorperTags::compute_items_tags<Frame>>>(
         std::move(box), std::move(strahlkorper));
   }
-  template <
-      typename ParallelComponent, typename DbTags, typename Metavariables,
-      typename ArrayIndex, typename TemporalId,
-      Requires<tmpl::list_contains_v<DbTags, Tags::TemporalIds<TemporalId>>> =
-          nullptr>
-  static void apply(db::DataBox<DbTags>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const TemporalId& temporal_id) noexcept {
+
+  template <typename Metavariables, typename DbTags, typename TemporalId>
+  static auto points(const db::DataBox<DbTags>& box,
+                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                     const TemporalId& /*temporal_id*/) noexcept {
     // In the future, when we add support for multiple Frames,
     // the code that transforms coordinates from the Strahlkorper Frame
     // to Frame::Inertial will go here.  That transformation
     // may depend on `temporal_id`.
-    send_points_to_interpolator<InterpolationTargetTag>(
-        box, cache,
-        db::get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box),
-        temporal_id);
+    return db::get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box);
   }
 };
 
-}  // namespace Actions
+}  // namespace TargetPoints
 }  // namespace intrp

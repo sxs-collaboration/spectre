@@ -206,7 +206,7 @@ struct MockMetavariables {
         StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
         StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square, ::Frame::Inertial>>;
     using compute_target_points =
-        intrp::Actions::KerrHorizon<SurfaceA, ::Frame::Inertial>;
+        intrp::TargetPoints::KerrHorizon<SurfaceA, ::Frame::Inertial>;
     using post_interpolation_callback =
         intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<
@@ -224,7 +224,7 @@ struct MockMetavariables {
         StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square, Frame::Inertial>,
         StrahlkorperGr::Tags::SurfaceIntegral<Tags::Negate, Frame::Inertial>>;
     using compute_target_points =
-        intrp::Actions::KerrHorizon<SurfaceB, ::Frame::Inertial>;
+        intrp::TargetPoints::KerrHorizon<SurfaceB, ::Frame::Inertial>;
     using post_interpolation_callback =
         intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square,
@@ -243,7 +243,7 @@ struct MockMetavariables {
         StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
         StrahlkorperGr::Tags::SurfaceIntegral<Tags::Negate, ::Frame::Inertial>>;
     using compute_target_points =
-        intrp::Actions::KerrHorizon<SurfaceC, ::Frame::Inertial>;
+        intrp::TargetPoints::KerrHorizon<SurfaceC, ::Frame::Inertial>;
     using post_interpolation_callback =
         intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<

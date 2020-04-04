@@ -404,17 +404,18 @@ void test_interpolation_target_receive_vars() noexcept {
                                    typename metavars::InterpolationTargetA>>(
       make_not_null(&runner), 0, vars_src, global_offsets, first_temporal_id);
 
-  // It should have interpolated all the points by now.
-  CHECK(
-      ActionTesting::get_databox_tag<
-          target_component,
-          intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(runner, 0)
-          .at(first_temporal_id)
-          .size() == num_points);
-
   if (NumberOfExpectedCleanUpActions == 0) {
     // We called the function without cleanup, as a test, so there should
     // be no queued simple actions (tested below outside the if-else).
+
+    // It should have interpolated all the points by now.
+    // But those points should have not been cleaned up.
+    CHECK(ActionTesting::get_databox_tag<
+              target_component,
+              intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
+              runner, 0)
+              .at(first_temporal_id)
+              .size() == num_points);
 
     // Check that MockCleanUpInterpolator was NOT called.  If called, it resets
     // the (fake) number of elements, specifically so we can test it here.
@@ -438,6 +439,14 @@ void test_interpolation_target_receive_vars() noexcept {
 
   } else {
     // This is the (usual) case where we want a cleanup.
+
+    // It should have interpolated all the points by now,
+    // and the list of points should have been cleaned up.
+    CHECK(ActionTesting::get_databox_tag<
+              target_component,
+              intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
+              runner, 0)
+              .count(first_temporal_id) == 0);
 
     // Now there should be a queued simple action, which is
     // CleanUpInterpolator, which here we mock.

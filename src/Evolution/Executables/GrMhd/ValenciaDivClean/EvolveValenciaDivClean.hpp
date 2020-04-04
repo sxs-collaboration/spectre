@@ -145,7 +145,7 @@ struct KerrHorizon {
       StrahlkorperTags::EuclideanAreaElement<::Frame::Inertial>,
       hydro::Tags::MassFluxCompute<DataVector, 3, ::Frame::Inertial>>;
   using compute_target_points =
-      intrp::Actions::KerrHorizon<KerrHorizon, ::Frame::Inertial>;
+      intrp::TargetPoints::KerrHorizon<KerrHorizon, ::Frame::Inertial>;
   using post_interpolation_callback =
       intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, KerrHorizon,
                                                    KerrHorizon>;

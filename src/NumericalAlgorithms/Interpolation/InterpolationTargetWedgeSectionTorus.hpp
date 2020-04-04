@@ -9,7 +9,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "NumericalAlgorithms/Interpolation/SendPointsToInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -184,23 +184,8 @@ struct WedgeSectionTorus : db::SimpleTag {
 };
 }  // namespace Tags
 
-namespace Actions {
-/// \ingroup ActionsGroup
-/// \brief Sends points in a wedge-sectioned torus to an `Interpolator`.
-///
-/// Uses:
-/// - DataBox:
-///   - `domain::Tags::Domain<3>`
-///   - `::Tags::Variables<typename
-///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
-///
-/// DataBox changes:
-/// - Adds: nothing
-/// - Removes: nothing
-/// - Modifies:
-///   - `Tags::IndicesOfFilledInterpPoints`
-///   - `::Tags::Variables<typename
-///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
+namespace TargetPoints {
+/// \brief Computes points in a wedge-sectioned torus.
 ///
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag>
@@ -208,17 +193,14 @@ struct WedgeSectionTorus {
   using const_global_cache_tags =
       tmpl::list<Tags::WedgeSectionTorus<InterpolationTargetTag>>;
   using is_sequential = std::false_type;
-  template <
-      typename ParallelComponent, typename DbTags, typename Metavariables,
-      typename ArrayIndex, typename TemporalId,
-      Requires<tmpl::list_contains_v<DbTags, Tags::TemporalIds<TemporalId>>> =
-          nullptr>
-  static void apply(db::DataBox<DbTags>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const TemporalId& temporal_id) noexcept {
+
+  template <typename Metavariables, typename DbTags, typename TemporalId>
+  static tnsr::I<DataVector, 3, Frame::Inertial> points(
+      const db::DataBox<DbTags>& box,
+      Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const TemporalId& /*temporal_id*/) noexcept {
     const auto& options =
-        Parallel::get<Tags::WedgeSectionTorus<InterpolationTargetTag>>(cache);
+        get<Tags::WedgeSectionTorus<InterpolationTargetTag>>(box);
 
     // Compute locations of constant r/theta/phi surfaces
     const size_t num_radial = options.number_of_radial_points;
@@ -226,13 +208,13 @@ struct WedgeSectionTorus {
       DataVector result(num_radial);
       if (options.use_uniform_radial_grid) {
         // uniform point distribution
+        const double coefficient =
+            (options.max_radius - options.min_radius) / (num_radial - 1.0);
         for (size_t r = 0; r < num_radial; ++r) {
-          result[r] =
-              options.min_radius + (options.max_radius - options.min_radius) *
-                                       r / (num_radial - 1.0);
+          result[r] = options.min_radius + coefficient * r;
         }
       } else {
-        // Legendre Gauss-Lobatto point distribution
+        // radial Legendre-Gauss-Lobatto distribution via linear rescaling
         const double mean = 0.5 * (options.max_radius + options.min_radius);
         const double diff = 0.5 * (options.max_radius - options.min_radius);
         result =
@@ -248,13 +230,13 @@ struct WedgeSectionTorus {
       DataVector result(num_theta);
       if (options.use_uniform_theta_grid) {
         // uniform point distribution
+        const double coefficient =
+            (options.max_theta - options.min_theta) / (num_theta - 1.0);
         for (size_t theta = 0; theta < num_theta; ++theta) {
-          result[theta] =
-              options.min_theta + (options.max_theta - options.min_theta) *
-                                      theta / (num_theta - 1.0);
+          result[theta] = options.min_theta + coefficient * theta;
         }
       } else {
-        // Legendre Gauss-Lobatto point distribution
+        // Legendre-Gauss-Lobatto point distribution (in theta)
         const double mean = 0.5 * (options.max_theta + options.min_theta);
         const double diff = 0.5 * (options.max_theta - options.min_theta);
         result =
@@ -268,10 +250,11 @@ struct WedgeSectionTorus {
     const size_t num_phi = options.number_of_phi_points;
     const DataVector phis_1d = [&num_phi]() noexcept {
       DataVector result(num_phi);
+      // We do NOT want a grid point at phi = 2pi, as this would duplicate the
+      // phi = 0 data. So, divide by num_phi rather than (n-1) as elsewhere.
+      const double coefficient = 2.0 * M_PI / num_phi;
       for (size_t phi = 0; phi < num_phi; ++phi) {
-        // We do NOT want a grid point at phi = 2pi, as this would duplicate the
-        // phi = 0 data. So, divide by num_phi rather than (n-1) as elsewhere.
-        result[phi] = 2.0 * M_PI * phi / num_phi;
+        result[phi] = coefficient * phi;
       }
       return result;
     }
@@ -299,10 +282,9 @@ struct WedgeSectionTorus {
     get<1>(target_points) = radii * sin(thetas) * sin(phis);
     get<2>(target_points) = radii * cos(thetas);
 
-    send_points_to_interpolator<InterpolationTargetTag>(
-        box, cache, target_points, temporal_id);
+    return target_points;
   }
 };
 
-}  // namespace Actions
+}  // namespace TargetPoints
 }  // namespace intrp

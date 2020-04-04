@@ -174,7 +174,7 @@ struct FindApparentHorizon {
           intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>>(
           *cache);
       Parallel::simple_action<
-          typename InterpolationTargetTag::compute_target_points>(
+          Actions::SendPointsToInterpolator<InterpolationTargetTag>>(
           interpolation_target, temporal_ids.front());
       // We return false because we don't want this iteration to clean
       // up the volume data, since we are using it for the next iteration

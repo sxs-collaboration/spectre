@@ -180,7 +180,7 @@ struct EvolutionMetavars {
         tmpl::list<StrahlkorperGr::Tags::AreaElement<frame>, Unity>,
         tags_to_observe>;
     using compute_target_points =
-        intrp::Actions::ApparentHorizon<AhA, ::Frame::Inertial>;
+        intrp::TargetPoints::ApparentHorizon<AhA, ::Frame::Inertial>;
     using post_interpolation_callback =
         intrp::callbacks::FindApparentHorizon<AhA>;
     using post_horizon_find_callback =

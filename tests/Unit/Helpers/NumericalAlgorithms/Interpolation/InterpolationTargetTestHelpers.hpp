@@ -15,10 +15,11 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "NumericalAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"
-#include "NumericalAlgorithms/Interpolation/SendPointsToInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
@@ -166,9 +167,9 @@ void test_interpolation_target(
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, 0));
 
-  ActionTesting::simple_action<
-      target_component,
-      typename metavars::InterpolationTargetA::compute_target_points>(
+  ActionTesting::simple_action<target_component,
+                               intrp::Actions::SendPointsToInterpolator<
+                                   typename metavars::InterpolationTargetA>>(
       make_not_null(&runner), 0, temporal_id);
 
   // This should not have changed.
@@ -217,9 +218,9 @@ void test_interpolation_target(
 
   // Call again at a different temporal_id
   TimeStepId new_temporal_id(true, 0, Time(slab, 1));
-  ActionTesting::simple_action<
-      target_component,
-      typename metavars::InterpolationTargetA::compute_target_points>(
+  ActionTesting::simple_action<target_component,
+                               intrp::Actions::SendPointsToInterpolator<
+                                   typename metavars::InterpolationTargetA>>(
       make_not_null(&runner), 0, new_temporal_id);
   ActionTesting::invoke_queued_simple_action<interp_component>(
       make_not_null(&runner), 0);

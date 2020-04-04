@@ -48,24 +48,7 @@ class ConstGlobalCache;
 
 namespace {
 
-template <typename Metavariables, typename InterpolationTargetTag>
-struct mock_interpolation_target {
-  using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
-  using array_index = size_t;
-  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<3>>;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<intrp::Actions::InitializeInterpolationTarget<
-              Metavariables, InterpolationTargetTag>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
-};
-
-template <typename IsSequential>
-struct MockComputeTargetPoints {
-  using is_sequential = IsSequential;
+struct MockSendPointsToInterpolator {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex, typename TemporalId,
             Requires<tmpl::list_contains_v<
@@ -86,6 +69,29 @@ struct MockComputeTargetPoints {
           (*indices)[temporal_id].insert((*indices)[temporal_id].size() + 1);
         });
   }
+};
+
+template <typename Metavariables, typename InterpolationTargetTag>
+struct mock_interpolation_target {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<3>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<intrp::Actions::InitializeInterpolationTarget<
+              Metavariables, InterpolationTargetTag>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing, tmpl::list<>>>;
+  using replace_these_simple_actions = tmpl::list<
+      intrp::Actions::SendPointsToInterpolator<InterpolationTargetTag>>;
+  using with_these_simple_actions = tmpl::list<MockSendPointsToInterpolator>;
+};
+
+template <typename IsSequential>
+struct MockComputeTargetPoints {
+  using is_sequential = IsSequential;
 };
 
 template <typename IsSequential>
@@ -160,7 +166,7 @@ void test_add_temporal_ids() {
     runner.template invoke_queued_simple_action<target_component>(0);
   }
 
-  // Check that MockComputeTargetPoints was called.
+  // Check that MockSendPointsToInterpolator was called.
   CHECK(ActionTesting::get_databox_tag<
             target_component,
             ::intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
@@ -168,7 +174,7 @@ void test_add_temporal_ids() {
             .at(temporal_ids[0])
             .size() == 1);
   if (not IsSequential::value) {
-    // MockComputeTargetPoints should have been called twice
+    // MockSendPointsToInterpolator should have been called twice
     CHECK(ActionTesting::get_databox_tag<
               target_component,
               ::intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
@@ -178,8 +184,8 @@ void test_add_temporal_ids() {
   }
 
   // Call again.
-  // If sequential, it should not call MockComputeTargetPoints this time.
-  // Otherwise it should call MockComputeTargetPoints twice.
+  // If sequential, it should not call MockSendPointsToInterpolator this time.
+  // Otherwise it should call MockSendPointsToInterpolator twice.
   const std::vector<TimeStepId> temporal_ids_2 = {
       TimeStepId(true, 0, Time(slab, Rational(2, 3))),
       TimeStepId(true, 0, Time(slab, Rational(3, 3)))};
@@ -190,7 +196,7 @@ void test_add_temporal_ids() {
 
   if (not IsSequential::value) {
     // For non-sequential, there should be two queued_simple_actions,
-    // each of which will call MockComputeTargetPoints for one of the
+    // each of which will call MockSendPointsToInterpolator for one of the
     // new temporal_ids.
     for (size_t i = 0; i < 2; ++i) {
       runner.template invoke_queued_simple_action<target_component>(0);
