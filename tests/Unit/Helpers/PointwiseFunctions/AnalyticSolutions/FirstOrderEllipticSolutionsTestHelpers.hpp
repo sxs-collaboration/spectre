@@ -136,13 +136,15 @@ void verify_solution(
  * per dimension.
  */
 template <typename System, typename SolutionType,
-          size_t Dim = System::volume_dim, typename... Maps>
+          size_t Dim = System::volume_dim, typename... Maps,
+          typename... FluxesArgs>
 void verify_smooth_solution(
     const SolutionType& solution,
     const typename System::fluxes& fluxes_computer,
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, Maps...>&
         coord_map,
-    const double tolerance_offset, const double tolerance_scaling) {
+    const double tolerance_offset, const double tolerance_scaling,
+    const std::tuple<FluxesArgs...>& fluxes_args = std::tuple<>{}) {
   INFO("Verify smooth solution");
   for (size_t num_points = Spectral::minimum_number_of_points<
            Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
@@ -153,11 +155,10 @@ void verify_smooth_solution(
     const double tolerance =
         tolerance_offset * exp(-tolerance_scaling * num_points);
     CAPTURE(tolerance);
+    const Mesh<Dim> mesh{num_points, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
     FirstOrderEllipticSolutionsTestHelpers::verify_solution<System>(
-        solution, fluxes_computer,
-        Mesh<Dim>{num_points, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto},
-        coord_map, tolerance);
+        solution, fluxes_computer, mesh, coord_map, tolerance, fluxes_args);
   }
 }
 

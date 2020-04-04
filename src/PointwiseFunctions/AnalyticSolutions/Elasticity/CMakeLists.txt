@@ -5,6 +5,7 @@ set(LIBRARY ElasticitySolutions)
 
 set(LIBRARY_SOURCES
   BentBeam.cpp
+  HalfSpaceMirror.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
@@ -15,4 +16,5 @@ target_link_libraries(
   INTERFACE ErrorHandling
   INTERFACE Utilities
   INTERFACE ConstitutiveRelations
+  INTERFACE Integration
   )
