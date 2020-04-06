@@ -71,7 +71,7 @@ struct ZeroNonSmooth : InitializeJ {
   explicit ZeroNonSmooth(CkMigrateMessage* /*unused*/) noexcept {}
 
   ZeroNonSmooth(double angular_coordinate_tolerance, size_t max_iterations,
-                bool error_if_not_converged = false) noexcept;
+                bool require_convergence = false) noexcept;
 
   ZeroNonSmooth() = default;
 
@@ -93,7 +93,7 @@ struct ZeroNonSmooth : InitializeJ {
  private:
   double angular_coordinate_tolerance_ = 1.0e-10;
   size_t max_iterations_ = 300;
-  bool error_if_not_converged_ = false;
+  bool require_convergence_ = false;
 };
 }  // namespace InitializeJ
 }  // namespace Cce

@@ -21,10 +21,10 @@ namespace InitializeJ {
 
 ZeroNonSmooth::ZeroNonSmooth(const double angular_coordinate_tolerance,
                              const size_t max_iterations,
-                             const bool error_if_not_converged) noexcept
+                             const bool require_convergence) noexcept
     : angular_coordinate_tolerance_{angular_coordinate_tolerance},
       max_iterations_{max_iterations},
-      error_if_not_converged_{error_if_not_converged} {}
+      require_convergence_{require_convergence} {}
 
 std::unique_ptr<InitializeJ> ZeroNonSmooth::get_clone() const noexcept {
   return std::make_unique<ZeroNonSmooth>(angular_coordinate_tolerance_,
@@ -55,7 +55,7 @@ void ZeroNonSmooth::operator()(
           get(boundary_j), l_max, angular_coordinate_tolerance_,
           max_iterations_, false);
   if (final_angular_coordinate_deviation > angular_coordinate_tolerance_ and
-      error_if_not_converged_) {
+      require_convergence_) {
     ERROR(MakeString{}
           << "Initial data iterative angular solve did not reach "
              "target tolerance "
