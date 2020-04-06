@@ -6,6 +6,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace tt {
+/// \cond
 namespace detail {
 template <typename T>
 struct function_info_impl;
@@ -18,61 +19,49 @@ struct function_info_impl<Ret(Args...)> {
 };
 
 template <typename Ret, typename... Args>
-struct function_info_impl<Ret (*)(Args...)> {
+struct function_info_impl<Ret(Args...) noexcept> {
   using return_type = Ret;
   using argument_types = tmpl::list<Args...>;
   using class_type = void;
 };
 
-template <typename Ret, typename... Args>
-struct function_info_impl<Ret (*const)(Args...)> {
-  using return_type = Ret;
-  using argument_types = tmpl::list<Args...>;
-  using class_type = void;
-};
+#define FUNCTION_INFO_IMPL_FUNCTION_PTR(MODIFIERS, NOEXCEPT_STATUS)      \
+  template <typename Ret, typename... Args>                              \
+  struct function_info_impl<Ret (*MODIFIERS)(Args...) NOEXCEPT_STATUS> { \
+    using return_type = Ret;                                             \
+    using argument_types = tmpl::list<Args...>;                          \
+    using class_type = void;                                             \
+  }
 
-template <typename Ret, typename... Args>
-struct function_info_impl<Ret (*const volatile)(Args...)> {
-  using return_type = Ret;
-  using argument_types = tmpl::list<Args...>;
-  using class_type = void;
-};
+FUNCTION_INFO_IMPL_FUNCTION_PTR(, );
+FUNCTION_INFO_IMPL_FUNCTION_PTR(, noexcept);
+FUNCTION_INFO_IMPL_FUNCTION_PTR(const, );
+FUNCTION_INFO_IMPL_FUNCTION_PTR(const, noexcept);
+FUNCTION_INFO_IMPL_FUNCTION_PTR(volatile, );
+FUNCTION_INFO_IMPL_FUNCTION_PTR(volatile, noexcept);
+FUNCTION_INFO_IMPL_FUNCTION_PTR(const volatile, );
+FUNCTION_INFO_IMPL_FUNCTION_PTR(const volatile, noexcept);
+#undef FUNCTION_INFO_IMPL_FUNCTION_PTR
 
-template <typename Ret, typename... Args>
-struct function_info_impl<Ret (*volatile)(Args...)> {
-  using return_type = Ret;
-  using argument_types = tmpl::list<Args...>;
-  using class_type = void;
-};
+#define FUNCTION_INFO_IMPL_CLASS(MODIFIERS)                      \
+  template <typename Ret, typename Class, typename... Args>      \
+  struct function_info_impl<Ret (Class::*)(Args...) MODIFIERS> { \
+    using return_type = Ret;                                     \
+    using argument_types = tmpl::list<Args...>;                  \
+    using class_type = Class;                                    \
+  }
 
-template <typename Ret, typename Class, typename... Args>
-struct function_info_impl<Ret (Class::*)(Args...)> {
-  using return_type = Ret;
-  using argument_types = tmpl::list<Args...>;
-  using class_type = Class;
-};
-
-template <typename Ret, typename Class, typename... Args>
-struct function_info_impl<Ret (Class::*)(Args...) const> {
-  using return_type = Ret;
-  using argument_types = tmpl::list<Args...>;
-  using class_type = Class;
-};
-
-template <typename Ret, typename Class, typename... Args>
-struct function_info_impl<Ret (Class::*)(Args...) const volatile> {
-  using return_type = Ret;
-  using argument_types = tmpl::list<Args...>;
-  using class_type = Class;
-};
-
-template <typename Ret, typename Class, typename... Args>
-struct function_info_impl<Ret (Class::*)(Args...) volatile> {
-  using return_type = Ret;
-  using argument_types = tmpl::list<Args...>;
-  using class_type = Class;
-};
+FUNCTION_INFO_IMPL_CLASS();
+FUNCTION_INFO_IMPL_CLASS(const);
+FUNCTION_INFO_IMPL_CLASS(noexcept);
+FUNCTION_INFO_IMPL_CLASS(volatile);
+FUNCTION_INFO_IMPL_CLASS(const noexcept);
+FUNCTION_INFO_IMPL_CLASS(const volatile);
+FUNCTION_INFO_IMPL_CLASS(const volatile noexcept);
+FUNCTION_INFO_IMPL_CLASS(volatile noexcept);
+#undef FUNCTION_INFO_IMPL_CLASS
 }  // namespace detail
+/// \endcond
 
 /*!
  * \ingroup TypeTraitsGroup

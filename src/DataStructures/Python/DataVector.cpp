@@ -70,7 +70,7 @@ void bind_datavector(py::module& m) {  // NOLINT
           // Keep object alive while iterator exists
           py::keep_alive<0, 1>())
       // __len__ is for being able to write len(my_data_vector) in python
-      .def("__len__", &DataVector::size)
+      .def("__len__", [](const DataVector& t) { return t.size(); })
       // __getitem__ and __setitem__ are the subscript operators (operator[]).
       // To define (and overload) operator() use __call__
       .def("__getitem__",

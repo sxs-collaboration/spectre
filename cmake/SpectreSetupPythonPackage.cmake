@@ -117,6 +117,16 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       PRIVATE
       SpectreFlags
       )
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+      # Clang doesn't by default enable sized deallocation so we need to
+      # enable it explicitly. This can potentially cause problems if the
+      # standard library being used is too old, but GCC doesn't have any
+      # safeguards against that either.
+      #
+      # See https://github.com/pybind/pybind11/issues/1604
+      target_compile_options(${ARG_LIBRARY_NAME}
+        PRIVATE -fsized-deallocation)
+    endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     # We don't want the 'lib' prefix for python modules, so we set the output name
     set_target_properties(
       ${ARG_LIBRARY_NAME}
