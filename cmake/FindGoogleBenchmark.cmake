@@ -11,16 +11,23 @@ if(NOT GOOGLE_BENCHMARK_ROOT)
   set(GOOGLE_BENCHMARK_ROOT $ENV{GOOGLE_BENCHMARK_ROOT})
 endif()
 
-find_path(GOOGLE_BENCHMARK_INCLUDE_DIRS benchmark.h
+if(NOT GoogleBenchmark_ROOT)
+  # Need to set to empty to avoid warnings with --warn-uninitialized
+  set(GoogleBenchmark_ROOT "")
+  set(GoogleBenchmark_ROOT $ENV{GoogleBenchmark_ROOT})
+endif()
+
+find_path(GoogleBenchmark_INCLUDE_DIRS benchmark.h
     PATH_SUFFIXES include/benchmark
     HINTS ${GOOGLE_BENCHMARK_ROOT})
 
-find_library(GOOGLE_BENCHMARK_LIBRARIES
+find_library(GoogleBenchmark_LIBRARIES
     NAMES benchmark
     PATH_SUFFIXES lib64 lib
-    HINTS ${GOOGLE_BENCHMARK_ROOT})
+    HINTS ${GOOGLE_BENCHMARK_ROOT} ${GoogleBenchmark_ROOT})
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(GOOGLE_BENCHMARK
-    DEFAULT_MSG GOOGLE_BENCHMARK_INCLUDE_DIRS GOOGLE_BENCHMARK_LIBRARIES)
-mark_as_advanced(GOOGLE_BENCHMARK_INCLUDE_DIRS GOOGLE_BENCHMARK_LIBRARIES)
+find_package_handle_standard_args(GoogleBenchmark
+  FOUND_VAR GoogleBenchmark_FOUND
+  REQUIRED_VARS GoogleBenchmark_INCLUDE_DIRS GoogleBenchmark_LIBRARIES)
+mark_as_advanced(GoogleBenchmark_INCLUDE_DIRS GoogleBenchmark_LIBRARIES)
