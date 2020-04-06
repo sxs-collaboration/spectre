@@ -216,7 +216,7 @@ void test_constrained_fit_1d() noexcept {
   // primary = upper_xi
   // excluded = {}
   {
-    INFO("One external neighbor");
+    INFO("One external neighbor on lower_xi side");
     const Element<1> element_at_lower_xi_bdry{
         ElementId<1>{0},
         Element<1>::Neighbors_t{
@@ -244,6 +244,50 @@ void test_constrained_fit_1d() noexcept {
       return DataVector{c[0] + c[1] * x + c[2] * square(x)};
     }
     ();
+
+    Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.);
+    CHECK_ITERABLE_CUSTOM_APPROX(constrained_fit, expected, local_approx);
+    CHECK(mean_value(constrained_fit, mesh) ==
+          local_approx(mean_value(local_data, mesh)));
+  }
+
+  // external = upper_xi
+  // primary = lower_xi
+  // excluded = {}
+  {
+    INFO("One external neighbor on upper_xi side");
+    const Element<1> element_at_upper_xi_bdry{
+        ElementId<1>{0},
+        Element<1>::Neighbors_t{
+            {Direction<1>::lower_xi(),
+             TestHelpers::Limiters::make_neighbor_with_id<1>(1)}
+            // upper_xi is external boundary
+        }};
+    auto neighbor_data_at_upper_xi_bdry = neighbor_data;
+    neighbor_data_at_upper_xi_bdry.erase(upper_xi_neighbor);
+
+    const auto primary_neighbor = lower_xi_neighbor;
+    const std::vector<std::pair<Direction<1>, ElementId<1>>>
+        neighbors_to_exclude = {};
+
+    DataVector constrained_fit;
+    Limiters::Weno_detail::solve_constrained_fit<ScalarTag>(
+        make_not_null(&constrained_fit), local_data, 0, mesh,
+        element_at_upper_xi_bdry, neighbor_data_at_upper_xi_bdry,
+        primary_neighbor, neighbors_to_exclude);
+
+    // This test case should produce the same fit as the first test case above,
+    // because in both cases the lower_xi neighbor is NOT part of the fit.
+    // In the earlier test case, the lower_xi neighbor was in the domain but was
+    // excluded from the fit; here, it is not even in the domain. So while this
+    // test is not an orthogonal test of the fitting itself, it is a useful test
+    // of the caching mechanism in the corner case of having a single
+    // neighboring element.
+    const auto expected = [&logical_coords]() noexcept {
+      const auto& x = get<0>(logical_coords);
+      constexpr std::array<double, 3> c{{41. / 30., -31. / 10., -7. / 10.}};
+      return DataVector{c[0] + c[1] * x + c[2] * square(x)};
+    }();
 
     Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.);
     CHECK_ITERABLE_CUSTOM_APPROX(constrained_fit, expected, local_approx);
