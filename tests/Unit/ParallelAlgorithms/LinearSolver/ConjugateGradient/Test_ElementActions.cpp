@@ -77,7 +77,7 @@ SPECTRE_TEST_CASE(
       make_not_null(&runner), 0,
       {DenseVector<double>(3, 0.), DenseVector<double>(3, 2.),
        std::numeric_limits<size_t>::max(), DenseVector<double>(3, 1.),
-       db::item_type<LinearSolver::Tags::HasConverged<DummyOptionsGroup>>{}});
+       Convergence::HasConverged{}});
 
   // DataBox shortcuts
   const auto get_tag = [&runner](auto tag_v) -> decltype(auto) {
@@ -98,8 +98,7 @@ SPECTRE_TEST_CASE(
         element_array, LinearSolver::cg_detail::InitializeHasConverged<
                            fields_tag, DummyOptionsGroup>>(
         make_not_null(&runner), 0,
-        db::item_type<LinearSolver::Tags::HasConverged<DummyOptionsGroup>>{
-            {1, 0., 0.}, 1, 0., 0.});
+        Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.});
     CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
   }
   SECTION("PrepareStep") {
@@ -116,8 +115,7 @@ SPECTRE_TEST_CASE(
         element_array,
         LinearSolver::cg_detail::UpdateOperand<fields_tag, DummyOptionsGroup>>(
         make_not_null(&runner), 0, 2.,
-        db::item_type<LinearSolver::Tags::HasConverged<DummyOptionsGroup>>{
-            {1, 0., 0.}, 1, 0., 0.});
+        Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.});
     CHECK(get_tag(LinearSolver::Tags::Operand<VectorTag>{}) ==
           DenseVector<double>(3, 5.));
     CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));

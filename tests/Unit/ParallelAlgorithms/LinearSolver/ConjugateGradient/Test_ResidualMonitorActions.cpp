@@ -200,7 +200,7 @@ SPECTRE_TEST_CASE(
   ActionTesting::emplace_component_and_initialize<element_array>(
       &runner, 0,
       {std::numeric_limits<double>::signaling_NaN(),
-       db::item_type<CheckConvergedTag>{}});
+       Convergence::HasConverged{}});
 
   // Setup mock observer writer
   ActionTesting::emplace_component_and_initialize<observer_writer>(

@@ -55,8 +55,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Actions.TerminateIfConverged",
     INFO("ProceedIfNotConverged");
     MockRuntimeSystem runner{{}};
     ActionTesting::emplace_component_and_initialize<component>(
-        &runner, self_id,
-        {db::item_type<LinearSolver::Tags::HasConverged<DummyOptionsGroup>>{}});
+        &runner, self_id, {Convergence::HasConverged{}});
     ActionTesting::set_phase(make_not_null(&runner),
                              Metavariables::Phase::Testing);
 
@@ -76,9 +75,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Actions.TerminateIfConverged",
     INFO("TerminateIfConverged");
     MockRuntimeSystem runner{{}};
     ActionTesting::emplace_component_and_initialize<component>(
-        &runner, self_id,
-        {db::item_type<LinearSolver::Tags::HasConverged<DummyOptionsGroup>>{
-            {1, 0., 0.}, 1, 0., 0.}});
+        &runner, self_id, {Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.}});
     ActionTesting::set_phase(make_not_null(&runner),
                              Metavariables::Phase::Testing);
 

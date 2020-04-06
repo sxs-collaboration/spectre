@@ -87,7 +87,7 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
        size_t{0},
        std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
                                         DenseVector<double>(3, 1.5)},
-       db::item_type<LinearSolver::Tags::HasConverged<DummyOptionsGroup>>{}});
+       Convergence::HasConverged{}});
 
   // DataBox shortcuts
   const auto get_tag = [&runner](auto tag_v) -> decltype(auto) {
@@ -108,8 +108,7 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
         element_array, LinearSolver::gmres_detail::NormalizeInitialOperand<
                            fields_tag, DummyOptionsGroup>>(
         make_not_null(&runner), 0, 4.,
-        db::item_type<LinearSolver::Tags::HasConverged<DummyOptionsGroup>>{
-            {1, 0., 0.}, 1, 0., 0.});
+        Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.});
     CHECK_ITERABLE_APPROX(get_tag(operand_tag{}), DenseVector<double>(3, 0.5));
     CHECK(get_tag(basis_history_tag{}).size() == 3);
     CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
@@ -131,8 +130,7 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
         LinearSolver::gmres_detail::NormalizeOperandAndUpdateField<
             fields_tag, DummyOptionsGroup>>(
         make_not_null(&runner), 0, 4., DenseVector<double>{2., 4.},
-        db::item_type<LinearSolver::Tags::HasConverged<DummyOptionsGroup>>{
-            {1, 0., 0.}, 1, 0., 0.});
+        Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.});
     CHECK_ITERABLE_APPROX(get_tag(operand_tag{}), DenseVector<double>(3, 0.5));
     CHECK(get_tag(basis_history_tag{}).size() == 3);
     CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
