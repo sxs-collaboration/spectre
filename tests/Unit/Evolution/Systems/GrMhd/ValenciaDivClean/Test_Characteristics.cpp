@@ -94,7 +94,8 @@ void test_with_normal_along_coordinate_axes(
 
     const auto& eos_base =
         static_cast<const EquationsOfState::EquationOfState<true, 1>&>(eos);
-    CHECK_ITERABLE_APPROX(
+    Approx custom_approx = Approx::custom().epsilon(4.0e-12);
+    CHECK_ITERABLE_CUSTOM_APPROX(
         grmhd::ValenciaDivClean::characteristic_speeds(
             rest_mass_density, specific_internal_energy, specific_enthalpy,
             spatial_velocity, lorentz_factor, magnetic_field, lapse, shift,
@@ -102,7 +103,7 @@ void test_with_normal_along_coordinate_axes(
         (pypp::call<std::array<DataVector, 9>>(
             "TestFunctions", "characteristic_speeds", lapse, shift,
             spatial_velocity, spatial_velocity_squared, sound_speed_squared,
-            alfven_speed_squared, normal)));
+            alfven_speed_squared, normal)), custom_approx);
   }
 }
 
