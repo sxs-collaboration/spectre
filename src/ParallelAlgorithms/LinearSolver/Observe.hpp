@@ -55,7 +55,8 @@ struct Registration {
  *   - `LinearSolver::Tags::IterationId`
  *   - `residual_magnitude_tag`
  */
-template <typename FieldsTag, typename DbTagsList, typename Metavariables>
+template <typename FieldsTag, typename OptionsGroup, typename DbTagsList,
+          typename Metavariables>
 void contribute_to_reduction_observer(
     db::DataBox<DbTagsList>& box,
     Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
@@ -65,7 +66,8 @@ void contribute_to_reduction_observer(
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
 
   const auto observation_id = observers::ObservationId(
-      get<LinearSolver::Tags::IterationId>(box), ObservationType{});
+      get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
+      ObservationType{});
   auto& reduction_writer = Parallel::get_parallel_component<
       observers::ObserverWriter<Metavariables>>(cache);
   Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>(
@@ -75,9 +77,9 @@ void contribute_to_reduction_observer(
       // When multiple linear solves are performed, e.g. for the nonlinear
       // solver, we'll need to write into separate subgroups, e.g.:
       // `/linear_residuals/<nonlinear_iteration_id>`
-      std::string{"/linear_residuals"},
+      std::string{"/" + option_name<OptionsGroup>() + "Residuals"},
       std::vector<std::string>{"Iteration", "Residual"},
-      reduction_data{get<LinearSolver::Tags::IterationId>(box),
+      reduction_data{get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
                      get<residual_magnitude_tag>(box)});
 }
 

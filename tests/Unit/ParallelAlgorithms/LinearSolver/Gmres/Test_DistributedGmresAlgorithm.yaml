@@ -29,7 +29,7 @@ Observers:
   VolumeFileName: "Test_DistributedGmresAlgorithm_Volume"
   ReductionFileName: "Test_DistributedGmresAlgorithm_Reductions"
 
-LinearSolver:
+ParallelGmres:
   ConvergenceCriteria:
     MaxIterations: 6
     AbsoluteResidual: 1e-14

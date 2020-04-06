@@ -27,7 +27,7 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace gmres_detail {
-template <typename Metavariables, typename FieldsTag>
+template <typename Metavariables, typename FieldsTag, typename OptionsGroup>
 struct ResidualMonitor;
 }  // namespace gmres_detail
 }  // namespace LinearSolver
@@ -36,6 +36,112 @@ struct ResidualMonitor;
 namespace LinearSolver {
 namespace gmres_detail {
 
+template <typename FieldsTag, typename OptionsGroup>
+struct PrepareSolve {
+ private:
+  using fields_tag = FieldsTag;
+  using initial_fields_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
+  using source_tag = db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
+  using operator_applied_to_fields_tag =
+      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
+  using operand_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
+  using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
+
+ public:
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>, operand_tag,
+               initial_fields_tag, basis_history_tag>(
+        make_not_null(&box),
+        [](const gsl::not_null<size_t*> iteration_id,
+           const gsl::not_null<db::item_type<operand_tag>*> operand,
+           const gsl::not_null<db::item_type<initial_fields_tag>*>
+               initial_fields,
+           const gsl::not_null<db::item_type<basis_history_tag>*> basis_history,
+           const db::item_type<source_tag>& source,
+           const db::item_type<operator_applied_to_fields_tag>&
+               operator_applied_to_fields,
+           const db::item_type<fields_tag>& fields) noexcept {
+          // We have not started iterating yet, so we initialize the current
+          // iteration ID such that the _next_ iteration ID is zero.
+          *iteration_id = std::numeric_limits<size_t>::max();
+          *operand = source - operator_applied_to_fields;
+          *initial_fields = fields;
+          *basis_history = db::item_type<basis_history_tag>{};
+        },
+        get<source_tag>(box), get<operator_applied_to_fields_tag>(box),
+        get<fields_tag>(box));
+
+    Parallel::contribute_to_reduction<gmres_detail::InitializeResidualMagnitude<
+        FieldsTag, OptionsGroup, ParallelComponent>>(
+        Parallel::ReductionData<
+            Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Sqrt<>>>{
+            inner_product(get<operand_tag>(box), get<operand_tag>(box))},
+        Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
+        Parallel::get_parallel_component<
+            ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>(cache));
+
+    return {
+        std::move(box),
+        // Terminate algorithm for now. The `ResidualMonitor` will receive the
+        // reduction that is performed above and then broadcast to the following
+        // action, which is responsible for restarting the algorithm.
+        true};
+  }
+};
+
+template <typename FieldsTag, typename OptionsGroup>
+struct NormalizeInitialOperand {
+ private:
+  using fields_tag = FieldsTag;
+  using operand_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
+  using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
+
+ public:
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex, typename DataBox = db::DataBox<DbTagsList>,
+      Requires<db::tag_is_retrievable_v<operand_tag, DataBox> and
+               db::tag_is_retrievable_v<basis_history_tag, DataBox> and
+               db::tag_is_retrievable_v<
+                   LinearSolver::Tags::HasConverged<OptionsGroup>, DataBox>> =
+          nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
+                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const ArrayIndex& array_index,
+                    const double residual_magnitude,
+                    const Convergence::HasConverged& has_converged) noexcept {
+    db::mutate<operand_tag, basis_history_tag,
+               LinearSolver::Tags::HasConverged<OptionsGroup>>(
+        make_not_null(&box),
+        [residual_magnitude, &has_converged](
+            const gsl::not_null<db::item_type<operand_tag>*> operand,
+            const gsl::not_null<db::item_type<basis_history_tag>*>
+                basis_history,
+            const gsl::not_null<Convergence::HasConverged*>
+                local_has_converged) noexcept {
+          *operand /= residual_magnitude;
+          basis_history->push_back(*operand);
+          *local_has_converged = has_converged;
+        });
+
+    // Proceed with algorithm
+    Parallel::get_parallel_component<ParallelComponent>(cache)[array_index]
+        .perform_algorithm(true);
+  }
+};
+
+template <typename FieldsTag, typename OptionsGroup>
 struct PrepareStep {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -48,27 +154,23 @@ struct PrepareStep {
       const ParallelComponent* const /*meta*/) noexcept {
     using orthogonalization_iteration_id_tag =
         db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-                           LinearSolver::Tags::IterationId>;
+                           LinearSolver::Tags::IterationId<OptionsGroup>>;
 
-    db::mutate<LinearSolver::Tags::IterationId,
+    db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>,
                orthogonalization_iteration_id_tag>(
         make_not_null(&box),
-        [](const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
-               iteration_id,
-           const gsl::not_null<
-               db::item_type<orthogonalization_iteration_id_tag>*>
-               orthogonalization_iteration_id,
-           const db::const_item_type<::Tags::Next<
-               LinearSolver::Tags::IterationId>>& next_iteration_id) noexcept {
+        [](const gsl::not_null<size_t*> iteration_id,
+           const gsl::not_null<size_t*> orthogonalization_iteration_id,
+           const size_t& next_iteration_id) noexcept {
           *iteration_id = next_iteration_id;
           *orthogonalization_iteration_id = 0;
         },
-        get<::Tags::Next<LinearSolver::Tags::IterationId>>(box));
+        get<::Tags::Next<LinearSolver::Tags::IterationId<OptionsGroup>>>(box));
     return {std::move(box)};
   }
 };
 
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct PerformStep {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -90,10 +192,11 @@ struct PerformStep {
     using basis_history_tag =
         LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
 
-    ASSERT(get<LinearSolver::Tags::IterationId>(box) !=
+    ASSERT(get<LinearSolver::Tags::IterationId<OptionsGroup>>(box) !=
                std::numeric_limits<size_t>::max(),
-           "Linear solve iteration ID is at initial state. Did you forget to "
-           "invoke 'PrepareStep'?");
+           "'" + option_name<OptionsGroup>() +
+               "' iteration ID is at initial state. Did you forget to "
+               "invoke 'PrepareStep'?");
 
     db::mutate<operand_tag>(
         make_not_null(&box),
@@ -104,13 +207,13 @@ struct PerformStep {
         get<operator_tag>(box));
 
     Parallel::contribute_to_reduction<
-        StoreOrthogonalization<FieldsTag, ParallelComponent>>(
+        StoreOrthogonalization<FieldsTag, OptionsGroup, ParallelComponent>>(
         Parallel::ReductionData<
             Parallel::ReductionDatum<double, funcl::Plus<>>>{inner_product(
             get<basis_history_tag>(box)[0], get<operand_tag>(box))},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
         Parallel::get_parallel_component<
-            ResidualMonitor<Metavariables, FieldsTag>>(cache));
+            ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>(cache));
 
     // Terminate algorithm for now. The `ResidualMonitor` will receive the
     // reduction that is performed above and then broadcast to the following
@@ -119,7 +222,7 @@ struct PerformStep {
   }
 };
 
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct OrthogonalizeOperand {
  private:
   using fields_tag = FieldsTag;
@@ -127,20 +230,21 @@ struct OrthogonalizeOperand {
       db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
   using orthogonalization_iteration_id_tag =
       db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-                         LinearSolver::Tags::IterationId>;
+                         LinearSolver::Tags::IterationId<OptionsGroup>>;
   using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
 
  public:
-  template <typename ParallelComponent, typename DbTagsList,
-            typename Metavariables, typename ArrayIndex,
-            typename DataBox = db::DataBox<DbTagsList>,
-            Requires<db::tag_is_retrievable_v<fields_tag, DataBox> and
-                     db::tag_is_retrievable_v<operand_tag, DataBox> and
-                     db::tag_is_retrievable_v<
-                         orthogonalization_iteration_id_tag, DataBox> and
-                     db::tag_is_retrievable_v<basis_history_tag, DataBox> and
-                     db::tag_is_retrievable_v<LinearSolver::Tags::IterationId,
-                                              DataBox>> = nullptr>
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex, typename DataBox = db::DataBox<DbTagsList>,
+      Requires<db::tag_is_retrievable_v<fields_tag, DataBox> and
+               db::tag_is_retrievable_v<operand_tag, DataBox> and
+               db::tag_is_retrievable_v<orthogonalization_iteration_id_tag,
+                                        DataBox> and
+               db::tag_is_retrievable_v<basis_history_tag, DataBox> and
+               db::tag_is_retrievable_v<
+                   LinearSolver::Tags::IterationId<OptionsGroup>, DataBox>> =
+          nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index,
@@ -149,9 +253,7 @@ struct OrthogonalizeOperand {
         make_not_null(&box),
         [orthogonalization](
             const gsl::not_null<db::item_type<operand_tag>*> operand,
-            const gsl::not_null<
-                db::item_type<orthogonalization_iteration_id_tag>*>
-                orthogonalization_iteration_id,
+            const gsl::not_null<size_t*> orthogonalization_iteration_id,
             const db::const_item_type<basis_history_tag>&
                 basis_history) noexcept {
           *operand -= orthogonalization *
@@ -162,11 +264,12 @@ struct OrthogonalizeOperand {
 
     const auto& next_orthogonalization_iteration_id =
         get<orthogonalization_iteration_id_tag>(box);
-    const auto& iteration_id = get<LinearSolver::Tags::IterationId>(box);
+    const auto& iteration_id =
+        get<LinearSolver::Tags::IterationId<OptionsGroup>>(box);
 
     if (next_orthogonalization_iteration_id <= iteration_id) {
       Parallel::contribute_to_reduction<
-          StoreOrthogonalization<FieldsTag, ParallelComponent>>(
+          StoreOrthogonalization<FieldsTag, OptionsGroup, ParallelComponent>>(
           Parallel::ReductionData<
               Parallel::ReductionDatum<double, funcl::Plus<>>>{
               inner_product(gsl::at(get<basis_history_tag>(box),
@@ -175,22 +278,22 @@ struct OrthogonalizeOperand {
           Parallel::get_parallel_component<ParallelComponent>(
               cache)[array_index],
           Parallel::get_parallel_component<
-              ResidualMonitor<Metavariables, FieldsTag>>(cache));
+              ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>(cache));
     } else {
-      Parallel::contribute_to_reduction<
-          StoreFinalOrthogonalization<FieldsTag, ParallelComponent>>(
+      Parallel::contribute_to_reduction<StoreFinalOrthogonalization<
+          FieldsTag, OptionsGroup, ParallelComponent>>(
           Parallel::ReductionData<
               Parallel::ReductionDatum<double, funcl::Plus<>>>{
               inner_product(get<operand_tag>(box), get<operand_tag>(box))},
           Parallel::get_parallel_component<ParallelComponent>(
               cache)[array_index],
           Parallel::get_parallel_component<
-              ResidualMonitor<Metavariables, FieldsTag>>(cache));
+              ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>(cache));
     }
   }
 };
 
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct NormalizeOperandAndUpdateField {
  private:
   using fields_tag = FieldsTag;
@@ -201,33 +304,32 @@ struct NormalizeOperandAndUpdateField {
   using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
 
  public:
-  template <typename ParallelComponent, typename DbTagsList,
-            typename Metavariables, typename ArrayIndex,
-            typename DataBox = db::DataBox<DbTagsList>,
-            Requires<db::tag_is_retrievable_v<fields_tag, DataBox> and
-                     db::tag_is_retrievable_v<initial_fields_tag, DataBox> and
-                     db::tag_is_retrievable_v<operand_tag, DataBox> and
-                     db::tag_is_retrievable_v<basis_history_tag, DataBox> and
-                     db::tag_is_retrievable_v<LinearSolver::Tags::HasConverged,
-                                              DataBox>> = nullptr>
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex, typename DataBox = db::DataBox<DbTagsList>,
+      Requires<db::tag_is_retrievable_v<fields_tag, DataBox> and
+               db::tag_is_retrievable_v<initial_fields_tag, DataBox> and
+               db::tag_is_retrievable_v<operand_tag, DataBox> and
+               db::tag_is_retrievable_v<basis_history_tag, DataBox> and
+               db::tag_is_retrievable_v<
+                   LinearSolver::Tags::HasConverged<OptionsGroup>, DataBox>> =
+          nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const double normalization,
                     const DenseVector<double>& minres,
-                    const db::const_item_type<LinearSolver::Tags::HasConverged>&
-                        has_converged) noexcept {
+                    const Convergence::HasConverged& has_converged) noexcept {
     db::mutate<operand_tag, basis_history_tag, fields_tag,
-               LinearSolver::Tags::HasConverged>(
+               LinearSolver::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
-        [
-          normalization, &minres, &has_converged
-        ](const gsl::not_null<db::item_type<operand_tag>*> operand,
-          const gsl::not_null<db::item_type<basis_history_tag>*> basis_history,
-          const gsl::not_null<db::item_type<fields_tag>*> field,
-          const gsl::not_null<db::item_type<LinearSolver::Tags::HasConverged>*>
-              local_has_converged,
-          const db::const_item_type<initial_fields_tag>&
-              initial_field) noexcept {
+        [normalization, &minres, &has_converged](
+            const gsl::not_null<db::item_type<operand_tag>*> operand,
+            const gsl::not_null<db::item_type<basis_history_tag>*>
+                basis_history,
+            const gsl::not_null<db::item_type<fields_tag>*> field,
+            const gsl::not_null<Convergence::HasConverged*> local_has_converged,
+            const db::const_item_type<initial_fields_tag>&
+                initial_field) noexcept {
           *operand /= normalization;
           basis_history->push_back(*operand);
           *field = initial_field;

@@ -18,7 +18,10 @@
 
 namespace {
 
-using simple_tags = db::AddSimpleTags<LinearSolver::Tags::HasConverged>;
+struct DummyOptionsGroup {};
+
+using simple_tags =
+    db::AddSimpleTags<LinearSolver::Tags::HasConverged<DummyOptionsGroup>>;
 
 template <typename Metavariables>
 struct ElementArray {
@@ -31,7 +34,8 @@ struct ElementArray {
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<LinearSolver::Actions::TerminateIfConverged>>>;
+          tmpl::list<
+              LinearSolver::Actions::TerminateIfConverged<DummyOptionsGroup>>>>;
 };
 
 struct Metavariables {
@@ -51,39 +55,39 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Actions.TerminateIfConverged",
     INFO("ProceedIfNotConverged");
     MockRuntimeSystem runner{{}};
     ActionTesting::emplace_component_and_initialize<component>(
-        &runner, self_id, {db::item_type<LinearSolver::Tags::HasConverged>{}});
+        &runner, self_id, {Convergence::HasConverged{}});
     ActionTesting::set_phase(make_not_null(&runner),
                              Metavariables::Phase::Testing);
 
     CHECK_FALSE(ActionTesting::get_databox_tag<
-                component, LinearSolver::Tags::HasConverged>(runner, self_id));
+                component, LinearSolver::Tags::HasConverged<DummyOptionsGroup>>(
+        runner, self_id));
 
     // This should do nothing
     runner.next_action<component>(self_id);
 
     CHECK_FALSE(ActionTesting::get_databox_tag<
-                component, LinearSolver::Tags::HasConverged>(runner, self_id));
+                component, LinearSolver::Tags::HasConverged<DummyOptionsGroup>>(
+        runner, self_id));
     CHECK_FALSE(ActionTesting::get_terminate<component>(runner, self_id));
   }
   {
     INFO("TerminateIfConverged");
     MockRuntimeSystem runner{{}};
     ActionTesting::emplace_component_and_initialize<component>(
-        &runner, self_id,
-        {db::item_type<LinearSolver::Tags::HasConverged>{
-            {1, 0., 0.}, 1, 0., 0.}});
+        &runner, self_id, {Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.}});
     ActionTesting::set_phase(make_not_null(&runner),
                              Metavariables::Phase::Testing);
 
-    CHECK(ActionTesting::get_databox_tag<component,
-                                         LinearSolver::Tags::HasConverged>(
+    CHECK(ActionTesting::get_databox_tag<
+          component, LinearSolver::Tags::HasConverged<DummyOptionsGroup>>(
         runner, self_id));
 
     // This should terminate the algorithm
     runner.next_action<component>(self_id);
 
-    CHECK(ActionTesting::get_databox_tag<component,
-                                         LinearSolver::Tags::HasConverged>(
+    CHECK(ActionTesting::get_databox_tag<
+          component, LinearSolver::Tags::HasConverged<DummyOptionsGroup>>(
         runner, self_id));
     CHECK(ActionTesting::get_terminate<component>(runner, self_id));
   }

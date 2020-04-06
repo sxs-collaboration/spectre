@@ -27,8 +27,9 @@ namespace Actions {
  *
  * Uses:
  * - DataBox:
- *   - `LinearSolver::Tags::HasConverged`
+ *   - `LinearSolver::Tags::HasConverged<OptionsGroup>`
  */
+template <typename OptionsGroup>
 struct TerminateIfConverged {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -40,7 +41,8 @@ struct TerminateIfConverged {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     return std::tuple<db::DataBox<DbTagsList>&&, bool>(
-        std::move(box), db::get<LinearSolver::Tags::HasConverged>(box));
+        std::move(box),
+        db::get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box));
   }
 };
 

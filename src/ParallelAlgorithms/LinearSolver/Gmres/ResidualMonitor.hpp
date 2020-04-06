@@ -25,7 +25,7 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace gmres_detail {
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct InitializeResidualMonitor;
 }  // namespace gmres_detail
 }  // namespace LinearSolver
@@ -37,17 +37,17 @@ struct Criteria;
 namespace LinearSolver {
 namespace gmres_detail {
 
-template <typename Metavariables, typename FieldsTag>
+template <typename Metavariables, typename FieldsTag, typename OptionsGroup>
 struct ResidualMonitor {
   using chare_type = Parallel::Algorithms::Singleton;
   using const_global_cache_tags =
-      tmpl::list<LinearSolver::Tags::Verbosity,
-                 LinearSolver::Tags::ConvergenceCriteria>;
+      tmpl::list<LinearSolver::Tags::Verbosity<OptionsGroup>,
+                 LinearSolver::Tags::ConvergenceCriteria<OptionsGroup>>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             tmpl::list<InitializeResidualMonitor<FieldsTag>>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<InitializeResidualMonitor<FieldsTag, OptionsGroup>>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase,
@@ -66,7 +66,7 @@ struct ResidualMonitor {
   }
 };
 
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct InitializeResidualMonitor {
  private:
   using fields_tag = FieldsTag;
@@ -77,7 +77,7 @@ struct InitializeResidualMonitor {
       db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
   using orthogonalization_iteration_id_tag =
       db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-                         LinearSolver::Tags::IterationId>;
+                         LinearSolver::Tags::IterationId<OptionsGroup>>;
   using orthogonalization_history_tag =
       db::add_tag_prefix<LinearSolver::Tags::OrthogonalizationHistory,
                          fields_tag>;
@@ -92,22 +92,24 @@ struct InitializeResidualMonitor {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using compute_tags =
-        db::AddComputeTags<LinearSolver::Tags::HasConvergedCompute<fields_tag>>;
+    using compute_tags = db::AddComputeTags<
+        LinearSolver::Tags::HasConvergedCompute<fields_tag, OptionsGroup>>;
     return std::make_tuple(
         ::Initialization::merge_into_databox<
             InitializeResidualMonitor,
             db::AddSimpleTags<residual_magnitude_tag,
                               initial_residual_magnitude_tag,
-                              LinearSolver::Tags::IterationId,
+                              LinearSolver::Tags::IterationId<OptionsGroup>,
                               orthogonalization_iteration_id_tag,
                               orthogonalization_history_tag>,
             compute_tags>(std::move(box),
+                          // The `InitializeResidualMagnitude` action populates
+                          // these tags with initial values
                           std::numeric_limits<double>::signaling_NaN(),
                           std::numeric_limits<double>::signaling_NaN(),
-                          db::item_type<LinearSolver::Tags::IterationId>{0},
-                          db::item_type<orthogonalization_iteration_id_tag>{0},
-                          DenseMatrix<double>{2, 1, 0.}),
+                          std::numeric_limits<size_t>::max(),
+                          std::numeric_limits<size_t>::max(),
+                          DenseMatrix<double>{}),
         true);
   }
 };

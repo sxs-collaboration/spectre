@@ -29,7 +29,7 @@ Observers:
   VolumeFileName: "Test_DistributedConjugateGradientAlgorithm_Volume"
   ReductionFileName: "Test_DistributedConjugateGradientAlgorithm_Reductions"
 
-LinearSolver:
+ParallelCg:
   ConvergenceCriteria:
     MaxIterations: 6
     AbsoluteResidual: 1e-14

@@ -53,13 +53,16 @@ namespace LinearSolver {
  * \see Gmres for a linear solver that can invert nonsymmetric operators
  * \f$A\f$.
  */
-template <typename Metavariables, typename FieldsTag>
+template <typename Metavariables, typename FieldsTag, typename OptionsGroup>
 struct ConjugateGradient {
+  using fields_tag = FieldsTag;
+  using options_group = OptionsGroup;
+
   /*!
    * \brief The parallel components used by the conjugate gradient linear solver
    */
-  using component_list =
-      tmpl::list<cg_detail::ResidualMonitor<Metavariables, FieldsTag>>;
+  using component_list = tmpl::list<
+      cg_detail::ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>;
 
   /*!
    * \brief Initialize the tags used by the conjugate gradient linear solver.
@@ -98,7 +101,8 @@ struct ConjugateGradient {
    * not need to be initialized until it is computed for the first time in the
    * first step of the algorithm.
    */
-  using initialize_element = cg_detail::InitializeElement<FieldsTag>;
+  using initialize_element =
+      cg_detail::InitializeElement<FieldsTag, OptionsGroup>;
 
   /*!
    * \brief Reset the linear solver to its initial state.
@@ -120,9 +124,7 @@ struct ConjugateGradient {
    *
    * \see `initialize_element`
    */
-  using reinitialize_element =
-      cg_detail::InitializeElement<FieldsTag,
-                                   ::Initialization::MergePolicy::Overwrite>;
+  using prepare_solve = cg_detail::PrepareSolve<FieldsTag, OptionsGroup>;
 
   // Compile-time interface for observers
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
@@ -138,7 +140,7 @@ struct ConjugateGradient {
    *   * `LinearSolver::Tags::IterationId`
    *   * `Tags::Next<LinearSolver::Tags::IterationId>`
    */
-  using prepare_step = cg_detail::PrepareStep;
+  using prepare_step = cg_detail::PrepareStep<FieldsTag, OptionsGroup>;
 
   /*!
    * \brief Perform an iteration of the conjugate gradient linear solver.
@@ -161,7 +163,7 @@ struct ConjugateGradient {
    *   * `residual_tag`
    *   * `LinearSolver::Tags::HasConverged`
    */
-  using perform_step = cg_detail::PerformStep<FieldsTag>;
+  using perform_step = cg_detail::PerformStep<FieldsTag, OptionsGroup>;
 };
 
 }  // namespace LinearSolver

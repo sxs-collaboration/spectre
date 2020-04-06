@@ -44,11 +44,11 @@ class ConstGlobalCache;
 }  // namespace Parallel
 namespace LinearSolver {
 namespace gmres_detail {
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct NormalizeInitialOperand;
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct OrthogonalizeOperand;
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct NormalizeOperandAndUpdateField;
 }  // namespace gmres_detail
 }  // namespace LinearSolver
@@ -56,6 +56,8 @@ struct NormalizeOperandAndUpdateField;
 namespace helpers = ResidualMonitorActionsTestHelpers;
 
 namespace {
+
+struct TestLinearSolver {};
 
 struct VectorTag : db::SimpleTag {
   using type = DenseVector<double>;
@@ -67,7 +69,7 @@ using residual_magnitude_tag = db::add_tag_prefix<
     db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
 using orthogonalization_iteration_id_tag =
     db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-                       LinearSolver::Tags::IterationId>;
+                       LinearSolver::Tags::IterationId<TestLinearSolver>>;
 using orthogonalization_history_tag =
     db::add_tag_prefix<LinearSolver::Tags::OrthogonalizationHistory,
                        fields_tag>;
@@ -80,14 +82,15 @@ struct CheckVectorTag : db::SimpleTag {
   using type = DenseVector<double>;
 };
 
-using CheckConvergedTag = LinearSolver::Tags::HasConverged;
+using CheckConvergedTag = LinearSolver::Tags::HasConverged<TestLinearSolver>;
 
 using check_tags = tmpl::list<CheckValueTag, CheckVectorTag, CheckConvergedTag>;
 
 template <typename Metavariables>
 struct MockResidualMonitor {
   using component_being_mocked =
-      LinearSolver::gmres_detail::ResidualMonitor<Metavariables, fields_tag>;
+      LinearSolver::gmres_detail::ResidualMonitor<Metavariables, fields_tag,
+                                                  TestLinearSolver>;
   using metavariables = Metavariables;
   // We represent the singleton as an array with only one element for the action
   // testing framework
@@ -95,11 +98,11 @@ struct MockResidualMonitor {
   using array_index = int;
   using const_global_cache_tags =
       typename LinearSolver::gmres_detail::ResidualMonitor<
-          Metavariables, fields_tag>::const_global_cache_tags;
+          Metavariables, fields_tag, TestLinearSolver>::const_global_cache_tags;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<
-          LinearSolver::gmres_detail::InitializeResidualMonitor<fields_tag>>>>;
+      tmpl::list<LinearSolver::gmres_detail::InitializeResidualMonitor<
+          fields_tag, TestLinearSolver>>>>;
 };
 
 struct MockNormalizeInitialOperand {
@@ -111,14 +114,12 @@ struct MockNormalizeInitialOperand {
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const double residual_magnitude,
-                    const db::const_item_type<LinearSolver::Tags::HasConverged>&
-                        has_converged) noexcept {
+                    const Convergence::HasConverged& has_converged) noexcept {
     db::mutate<CheckValueTag, CheckConvergedTag>(
-        make_not_null(&box),
-        [ residual_magnitude, &
-          has_converged ](const gsl::not_null<double*> check_value,
-                          const gsl::not_null<db::item_type<CheckConvergedTag>*>
-                              check_converged) noexcept {
+        make_not_null(&box), [residual_magnitude, &has_converged](
+                                 const gsl::not_null<double*> check_value,
+                                 const gsl::not_null<Convergence::HasConverged*>
+                                     check_converged) noexcept {
           *check_value = residual_magnitude;
           *check_converged = has_converged;
         });
@@ -135,8 +136,8 @@ struct MockOrthogonalizeOperand {
                     const ArrayIndex& /*array_index*/,
                     const double orthogonalization) noexcept {
     db::mutate<CheckValueTag>(
-        make_not_null(&box), [orthogonalization](const gsl::not_null<double*>
-                                                     check_value) noexcept {
+        make_not_null(&box),
+        [orthogonalization](const gsl::not_null<double*> check_value) noexcept {
           *check_value = orthogonalization;
         });
   }
@@ -152,14 +153,13 @@ struct MockNormalizeOperandAndUpdateField {
                     const ArrayIndex& /*array_index*/,
                     const double normalization,
                     const DenseVector<double>& minres,
-                    const db::const_item_type<LinearSolver::Tags::HasConverged>&
-                        has_converged) noexcept {
+                    const Convergence::HasConverged& has_converged) noexcept {
     db::mutate<CheckValueTag, CheckVectorTag, CheckConvergedTag>(
         make_not_null(&box),
-        [ normalization, &minres, &has_converged ](
+        [normalization, &minres, &has_converged](
             const gsl::not_null<double*> check_value,
             const gsl::not_null<DenseVector<double>*> check_vector,
-            const gsl::not_null<db::item_type<CheckConvergedTag>*>
+            const gsl::not_null<Convergence::HasConverged*>
                 check_converged) noexcept {
           *check_value = normalization;
           *check_vector = minres;
@@ -179,10 +179,13 @@ struct MockElementArray {
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<check_tags>>>>;
 
-  using replace_these_simple_actions = tmpl::list<
-      LinearSolver::gmres_detail::NormalizeInitialOperand<fields_tag>,
-      LinearSolver::gmres_detail::OrthogonalizeOperand<fields_tag>,
-      LinearSolver::gmres_detail::NormalizeOperandAndUpdateField<fields_tag>>;
+  using replace_these_simple_actions =
+      tmpl::list<LinearSolver::gmres_detail::NormalizeInitialOperand<
+                     fields_tag, TestLinearSolver>,
+                 LinearSolver::gmres_detail::OrthogonalizeOperand<
+                     fields_tag, TestLinearSolver>,
+                 LinearSolver::gmres_detail::NormalizeOperandAndUpdateField<
+                     fields_tag, TestLinearSolver>>;
   using with_these_simple_actions =
       tmpl::list<MockNormalizeInitialOperand, MockOrthogonalizeOperand,
                  MockNormalizeOperandAndUpdateField>;
@@ -216,7 +219,7 @@ SPECTRE_TEST_CASE(
   ActionTesting::emplace_component_and_initialize<element_array>(
       make_not_null(&runner), 0,
       {std::numeric_limits<double>::signaling_NaN(), DenseVector<double>{},
-       db::item_type<CheckConvergedTag>{}});
+       Convergence::HasConverged{}});
 
   // Setup mock observer writer
   ActionTesting::emplace_component_and_initialize<observer_writer>(
@@ -246,8 +249,8 @@ SPECTRE_TEST_CASE(
   SECTION("InitializeResidualMagnitude") {
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::InitializeResidualMagnitude<fields_tag,
-                                                                element_array>>(
+        LinearSolver::gmres_detail::InitializeResidualMagnitude<
+            fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 2.);
     ActionTesting::invoke_queued_threaded_action<observer_writer>(
         make_not_null(&runner), 0);
@@ -255,18 +258,21 @@ SPECTRE_TEST_CASE(
         make_not_null(&runner), 0);
     // Test residual monitor state
     CHECK(get_residual_monitor_tag(residual_magnitude_tag{}) == 2.);
-    CHECK(get_residual_monitor_tag(LinearSolver::Tags::IterationId{}) == 0);
-    CHECK_FALSE(get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
+    CHECK(get_residual_monitor_tag(
+              LinearSolver::Tags::IterationId<TestLinearSolver>{}) == 0);
+    CHECK_FALSE(get_residual_monitor_tag(
+        LinearSolver::Tags::HasConverged<TestLinearSolver>{}));
     // Test element state
     CHECK(get_element_tag(CheckValueTag{}) == 2.);
     CHECK(get_element_tag(CheckConvergedTag{}) ==
-          get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
+          get_residual_monitor_tag(
+              LinearSolver::Tags::HasConverged<TestLinearSolver>{}));
     // Test observer writer state
     CHECK(get_observer_writer_tag(helpers::CheckObservationIdTag{}) ==
           observers::ObservationId{
               0, LinearSolver::observe_detail::ObservationType{}});
     CHECK(get_observer_writer_tag(helpers::CheckSubfileNameTag{}) ==
-          "/linear_residuals");
+          "/TestLinearSolverResiduals");
     CHECK(get_observer_writer_tag(helpers::CheckReductionNamesTag{}) ==
           std::vector<std::string>{"Iteration", "Residual"});
     CHECK(get<0>(get_observer_writer_tag(helpers::CheckReductionDataTag{})) ==
@@ -278,35 +284,46 @@ SPECTRE_TEST_CASE(
   SECTION("InitializeResidualMagnitudeAndConverge") {
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::InitializeResidualMagnitude<fields_tag,
-                                                                element_array>>(
+        LinearSolver::gmres_detail::InitializeResidualMagnitude<
+            fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 0.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     // Test residual monitor state
     CHECK(get_residual_monitor_tag(residual_magnitude_tag{}) == 0.);
-    CHECK(get_residual_monitor_tag(LinearSolver::Tags::IterationId{}) == 0);
-    CHECK(get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
-    CHECK(
-        get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}).reason() ==
-        Convergence::Reason::AbsoluteResidual);
+    CHECK(get_residual_monitor_tag(
+              LinearSolver::Tags::IterationId<TestLinearSolver>{}) == 0);
+    CHECK(get_residual_monitor_tag(
+        LinearSolver::Tags::HasConverged<TestLinearSolver>{}));
+    CHECK(get_residual_monitor_tag(
+              LinearSolver::Tags::HasConverged<TestLinearSolver>{})
+              .reason() == Convergence::Reason::AbsoluteResidual);
     // Test element state
     CHECK(get_element_tag(CheckValueTag{}) == 0.);
     CHECK(get_element_tag(CheckConvergedTag{}) ==
-          get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
+          get_residual_monitor_tag(
+              LinearSolver::Tags::HasConverged<TestLinearSolver>{}));
   }
 
   SECTION("StoreOrthogonalization") {
     ActionTesting::simple_action<
+        residual_monitor,
+        LinearSolver::gmres_detail::InitializeResidualMagnitude<
+            fields_tag, TestLinearSolver, element_array>>(
+        make_not_null(&runner), 0, 1.);
+    ActionTesting::invoke_queued_simple_action<element_array>(
+        make_not_null(&runner), 0);
+    ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres_detail::StoreOrthogonalization<
-                              fields_tag, element_array>>(
+                              fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 2.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     // Test residual monitor state
     CHECK(get_residual_monitor_tag(orthogonalization_history_tag{})(0, 0) ==
           2.);
-    CHECK(get_residual_monitor_tag(LinearSolver::Tags::IterationId{}) == 0);
+    CHECK(get_residual_monitor_tag(
+              LinearSolver::Tags::IterationId<TestLinearSolver>{}) == 0);
     CHECK(get_residual_monitor_tag(orthogonalization_iteration_id_tag{}) == 1);
     // Test element state
     CHECK(get_element_tag(CheckValueTag{}) == 2.);
@@ -315,8 +332,8 @@ SPECTRE_TEST_CASE(
   SECTION("StoreFinalOrthogonalization") {
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::InitializeResidualMagnitude<fields_tag,
-                                                                element_array>>(
+        LinearSolver::gmres_detail::InitializeResidualMagnitude<
+            fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 2.);
     ActionTesting::invoke_queued_threaded_action<observer_writer>(
         make_not_null(&runner), 0);
@@ -324,7 +341,7 @@ SPECTRE_TEST_CASE(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres_detail::StoreOrthogonalization<
-                              fields_tag, element_array>>(
+                              fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 3.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
@@ -332,12 +349,13 @@ SPECTRE_TEST_CASE(
     CHECK(get_residual_monitor_tag(residual_magnitude_tag{}) == 2.);
     CHECK(get_residual_monitor_tag(orthogonalization_history_tag{}) ==
           DenseMatrix<double>({{3.}, {0.}}));
-    CHECK(get_residual_monitor_tag(LinearSolver::Tags::IterationId{}) == 0);
+    CHECK(get_residual_monitor_tag(
+              LinearSolver::Tags::IterationId<TestLinearSolver>{}) == 0);
     CHECK(get_residual_monitor_tag(orthogonalization_iteration_id_tag{}) == 1);
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::StoreFinalOrthogonalization<fields_tag,
-                                                                element_array>>(
+        LinearSolver::gmres_detail::StoreFinalOrthogonalization<
+            fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 4.);
     ActionTesting::invoke_queued_threaded_action<observer_writer>(
         make_not_null(&runner), 0);
@@ -345,7 +363,8 @@ SPECTRE_TEST_CASE(
         make_not_null(&runner), 0);
     // Test residual monitor state
     // Iteration ids should be prepared for next iteration
-    CHECK(get_residual_monitor_tag(LinearSolver::Tags::IterationId{}) == 1);
+    CHECK(get_residual_monitor_tag(
+              LinearSolver::Tags::IterationId<TestLinearSolver>{}) == 1);
     CHECK(get_residual_monitor_tag(orthogonalization_iteration_id_tag{}) == 0);
     // H = [[3.], [2.]] and added a zero row and column
     CHECK(get_residual_monitor_tag(orthogonalization_history_tag{}) ==
@@ -360,16 +379,18 @@ SPECTRE_TEST_CASE(
     // |r| = 1.1094003924504583
     CHECK(get_residual_monitor_tag(residual_magnitude_tag{}) ==
           approx(1.1094003924504583));
-    CHECK_FALSE(get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
+    CHECK_FALSE(get_residual_monitor_tag(
+        LinearSolver::Tags::HasConverged<TestLinearSolver>{}));
     CHECK(get_element_tag(CheckConvergedTag{}) ==
-          get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
+          get_residual_monitor_tag(
+              LinearSolver::Tags::HasConverged<TestLinearSolver>{}));
     CHECK(get_element_tag(CheckValueTag{}) == approx(2.));
     // Test observer writer state
     CHECK(get_observer_writer_tag(helpers::CheckObservationIdTag{}) ==
           observers::ObservationId{
               1, LinearSolver::observe_detail::ObservationType{}});
     CHECK(get_observer_writer_tag(helpers::CheckSubfileNameTag{}) ==
-          "/linear_residuals");
+          "/TestLinearSolverResiduals");
     CHECK(get_observer_writer_tag(helpers::CheckReductionNamesTag{}) ==
           std::vector<std::string>{"Iteration", "Residual"});
     CHECK(get<0>(get_observer_writer_tag(helpers::CheckReductionDataTag{})) ==
@@ -381,21 +402,21 @@ SPECTRE_TEST_CASE(
   SECTION("ConvergeByAbsoluteResidual") {
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::InitializeResidualMagnitude<fields_tag,
-                                                                element_array>>(
+        LinearSolver::gmres_detail::InitializeResidualMagnitude<
+            fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 2.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres_detail::StoreOrthogonalization<
-                              fields_tag, element_array>>(
+                              fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 1.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::StoreFinalOrthogonalization<fields_tag,
-                                                                element_array>>(
+        LinearSolver::gmres_detail::StoreFinalOrthogonalization<
+            fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 0.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
@@ -412,52 +433,54 @@ SPECTRE_TEST_CASE(
     // r = beta - H * minres = [0., 0.]
     // |r| = 0.
     CHECK(get_residual_monitor_tag(residual_magnitude_tag{}) == approx(0.));
-    CHECK(get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
-    CHECK(
-        get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}).reason() ==
-        Convergence::Reason::AbsoluteResidual);
+    CHECK(get_residual_monitor_tag(
+        LinearSolver::Tags::HasConverged<TestLinearSolver>{}));
+    CHECK(get_residual_monitor_tag(
+              LinearSolver::Tags::HasConverged<TestLinearSolver>{})
+              .reason() == Convergence::Reason::AbsoluteResidual);
     CHECK(get_element_tag(CheckConvergedTag{}) ==
-          get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
+          get_residual_monitor_tag(
+              LinearSolver::Tags::HasConverged<TestLinearSolver>{}));
   }
 
   SECTION("ConvergeByMaxIterations") {
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::InitializeResidualMagnitude<fields_tag,
-                                                                element_array>>(
+        LinearSolver::gmres_detail::InitializeResidualMagnitude<
+            fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 1.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     // Perform 2 mock iterations
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres_detail::StoreOrthogonalization<
-                              fields_tag, element_array>>(
+                              fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 1.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::StoreFinalOrthogonalization<fields_tag,
-                                                                element_array>>(
+        LinearSolver::gmres_detail::StoreFinalOrthogonalization<
+            fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 4.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres_detail::StoreOrthogonalization<
-                              fields_tag, element_array>>(
+                              fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 3.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres_detail::StoreOrthogonalization<
-                              fields_tag, element_array>>(
+                              fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 4.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::StoreFinalOrthogonalization<fields_tag,
-                                                                element_array>>(
+        LinearSolver::gmres_detail::StoreFinalOrthogonalization<
+            fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 25.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
@@ -476,8 +499,8 @@ SPECTRE_TEST_CASE(
     // |r| = 0.8804509063256237
     CHECK(get_residual_monitor_tag(residual_magnitude_tag{}) ==
           approx(0.8804509063256237));
-    const auto& has_converged =
-        get_residual_monitor_tag(LinearSolver::Tags::HasConverged{});
+    const auto& has_converged = get_residual_monitor_tag(
+        LinearSolver::Tags::HasConverged<TestLinearSolver>{});
     CHECK(has_converged);
     CHECK(has_converged.reason() == Convergence::Reason::MaxIterations);
     CHECK(get_element_tag(CheckConvergedTag{}) == has_converged);
@@ -486,21 +509,21 @@ SPECTRE_TEST_CASE(
   SECTION("ConvergeByRelativeResidual") {
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::InitializeResidualMagnitude<fields_tag,
-                                                                element_array>>(
+        LinearSolver::gmres_detail::InitializeResidualMagnitude<
+            fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 2.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::gmres_detail::StoreOrthogonalization<
-                              fields_tag, element_array>>(
+                              fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 3.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::StoreFinalOrthogonalization<fields_tag,
-                                                                element_array>>(
+        LinearSolver::gmres_detail::StoreFinalOrthogonalization<
+            fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 1.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
@@ -519,11 +542,13 @@ SPECTRE_TEST_CASE(
     CHECK(get_residual_monitor_tag(residual_magnitude_tag{}) ==
           approx(0.6324555320336759));
     // |r| / |r_initial| = 0.31622776601683794
-    CHECK(get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
-    CHECK(
-        get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}).reason() ==
-        Convergence::Reason::RelativeResidual);
+    CHECK(get_residual_monitor_tag(
+        LinearSolver::Tags::HasConverged<TestLinearSolver>{}));
+    CHECK(get_residual_monitor_tag(
+              LinearSolver::Tags::HasConverged<TestLinearSolver>{})
+              .reason() == Convergence::Reason::RelativeResidual);
     CHECK(get_element_tag(CheckConvergedTag{}) ==
-          get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
+          get_residual_monitor_tag(
+              LinearSolver::Tags::HasConverged<TestLinearSolver>{}));
   }
 }

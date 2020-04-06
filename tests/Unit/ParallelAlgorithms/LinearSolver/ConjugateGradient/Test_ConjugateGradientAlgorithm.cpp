@@ -19,9 +19,15 @@ namespace helpers = LinearSolverAlgorithmTestHelpers;
 
 namespace {
 
+struct SerialCg {
+  static constexpr OptionString help =
+      "Options for the iterative linear solver";
+};
+
 struct Metavariables {
   using linear_solver =
-      LinearSolver::ConjugateGradient<Metavariables, helpers::fields_tag>;
+      LinearSolver::ConjugateGradient<Metavariables, helpers::fields_tag,
+                                      SerialCg>;
 
   using component_list =
       tmpl::append<tmpl::list<helpers::ElementArray<Metavariables>,
