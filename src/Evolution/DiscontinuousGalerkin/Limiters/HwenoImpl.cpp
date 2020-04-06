@@ -202,7 +202,7 @@ ConstrainedFitCache<VolumeDim>::ConstrainedFitCache(
   for (const auto& primary_dir : directions_with_neighbors) {
     if (directions_with_neighbors.size() == 1) {
       // With a single neighbor, there can be no neighbors to exclude.
-      std::vector<Direction<VolumeDim>> nothing_to_exclude{{}};
+      std::vector<Direction<VolumeDim>> nothing_to_exclude{};
       // To reuse the same data structure from the more common `else` branch,
       // here we stick the data into the (normally nonsensical) slot where
       // `dir_to_exclude == primary_dir`.
