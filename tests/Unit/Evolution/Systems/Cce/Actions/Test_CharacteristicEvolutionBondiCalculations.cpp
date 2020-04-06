@@ -21,7 +21,8 @@
 #include "Evolution/Systems/Cce/Actions/ReceiveWorldtubeData.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
-#include "Evolution/Systems/Cce/InitializeCce.hpp"
+#include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
+#include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -181,7 +182,7 @@ SPECTRE_TEST_CASE(
       {l_max, number_of_radial_points,
        std::make_unique<::TimeSteppers::RungeKutta3>(), start_time,
        start_time + target_step_size,
-       std::make_unique<InitializeJInverseCubic>()}};
+       std::make_unique<InitializeJ::InverseCubic>()}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Initialization);
@@ -267,8 +268,9 @@ SPECTRE_TEST_CASE(
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
 
   // perform the expected transformations on the `boundary_box`
-  db::mutate_apply<InitializeJ::mutate_tags, InitializeJ::argument_tags>(
-      InitializeJInverseCubic{}, make_not_null(&boundary_box));
+  db::mutate_apply<InitializeJ::InitializeJ::mutate_tags,
+                   InitializeJ::InitializeJ::argument_tags>(
+      InitializeJ::InverseCubic{}, make_not_null(&boundary_box));
 
   db::mutate_apply<InitializeGauge>(make_not_null(&boundary_box));
   db::mutate_apply<GaugeUpdateAngularFromCartesian<

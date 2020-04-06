@@ -7,7 +7,7 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/GaugeTransformBoundaryData.hpp"
-#include "Evolution/Systems/Cce/InitializeCce.hpp"
+#include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/PreSwshDerivatives.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
@@ -22,7 +22,7 @@
 namespace Cce {
 namespace {
 
-struct InitializeJInverseCubicEvolutionGauge {
+struct InverseCubicEvolutionGauge {
   using boundary_tags =
       tmpl::list<Tags::EvolutionGaugeBoundaryValue<Tags::BondiJ>,
                  Tags::EvolutionGaugeBoundaryValue<Tags::Dr<Tags::BondiJ>>,
@@ -34,7 +34,7 @@ struct InitializeJInverseCubicEvolutionGauge {
       tmpl::append<boundary_tags,
                    tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>>;
 
-  InitializeJInverseCubicEvolutionGauge() = default;
+  InverseCubicEvolutionGauge() = default;
 
   void operator()(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
@@ -417,14 +417,12 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         check_gauge_adjustment_against_inverse);
   }
 
-  db::mutate_apply<InitializeJInverseCubicEvolutionGauge::mutate_tags,
-                   InitializeJInverseCubicEvolutionGauge::argument_tags>(
-      InitializeJInverseCubicEvolutionGauge{},
-      make_not_null(&forward_transform_box));
-  db::mutate_apply<InitializeJInverseCubicEvolutionGauge::mutate_tags,
-                   InitializeJInverseCubicEvolutionGauge::argument_tags>(
-      InitializeJInverseCubicEvolutionGauge{},
-      make_not_null(&inverse_transform_box));
+  db::mutate_apply<InverseCubicEvolutionGauge::mutate_tags,
+                   InverseCubicEvolutionGauge::argument_tags>(
+      InverseCubicEvolutionGauge{}, make_not_null(&forward_transform_box));
+  db::mutate_apply<InverseCubicEvolutionGauge::mutate_tags,
+                   InverseCubicEvolutionGauge::argument_tags>(
+      InverseCubicEvolutionGauge{}, make_not_null(&inverse_transform_box));
 
   db::mutate_apply<PreSwshDerivatives<Tags::Dy<Tags::BondiJ>>>(
       make_not_null(&forward_transform_box));

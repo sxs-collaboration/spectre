@@ -7,6 +7,9 @@
 #include <limits>
 #include <string>
 
+#include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
+#include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
+#include "Evolution/Systems/Cce/Initialize/ZeroNonSmooth.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/WorldtubeInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
@@ -70,7 +73,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::ScriOutputDensity>(
             "6") == 6_st);
 
-  TestHelpers::test_creation<std::unique_ptr<::Cce::InitializeJ>,
+  TestHelpers::test_creation<std::unique_ptr<::Cce::InitializeJ::InitializeJ>,
                              Cce::OptionTags::InitializeJ>("InverseCubic");
 
   const std::string filename = "OptionTagsTestCceR0100.h5";

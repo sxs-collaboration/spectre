@@ -14,6 +14,8 @@
 #include "Evolution/Systems/Cce/Actions/UpdateGauge.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/GaugeTransformBoundaryData.hpp"
+#include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
+#include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -76,7 +78,6 @@ struct metavariables {
   using component_list =
       tmpl::list<mock_characteristic_evolution<metavariables>>;
 
-  using cce_hypersurface_initialization = InitializeJInverseCubic;
   enum class Phase { Initialization, Testing, Exit };
 };
 }  // namespace
@@ -96,7 +97,7 @@ SPECTRE_TEST_CASE(
   using component = mock_characteristic_evolution<metavariables>;
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       {l_max, number_of_radial_points,
-       std::make_unique<InitializeJInverseCubic>()}};
+       std::make_unique<InitializeJ::InverseCubic>()}};
 
   Variables<real_boundary_tags_to_compute> real_variables{
       Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
@@ -141,9 +142,9 @@ SPECTRE_TEST_CASE(
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
 
   // apply the corresponding mutators to the `expected_box`
-  db::mutate_apply<Cce::InitializeJ::mutate_tags,
-                   Cce::InitializeJ::argument_tags>(
-      Cce::InitializeJInverseCubic{}, make_not_null(&expected_box));
+  db::mutate_apply<Cce::InitializeJ::InitializeJ::mutate_tags,
+                   Cce::InitializeJ::InitializeJ::argument_tags>(
+      Cce::InitializeJ::InverseCubic{}, make_not_null(&expected_box));
   db::mutate_apply<GaugeUpdateAngularFromCartesian<
       Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
       make_not_null(&expected_box));
