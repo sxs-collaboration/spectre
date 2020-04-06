@@ -181,6 +181,11 @@ if (USE_PCH)
     Blaze
     Brigand
     )
+  target_include_directories(
+    ${SPECTRE_PCH_LIB}
+    PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
+    )
   set_target_properties(
     ${SPECTRE_PCH_LIB}
     PROPERTIES
