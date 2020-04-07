@@ -19,8 +19,6 @@ struct SomeInitialDataType {
 namespace {
 template <size_t Dim>
 void test_tags() noexcept {
-  TestHelpers::db::test_simple_tag<
-      NewtonianEuler::Tags::CharacteristicSpeeds<Dim>>("CharacteristicSpeeds");
   TestHelpers::db::test_simple_tag<NewtonianEuler::Tags::MassDensityCons>(
       "MassDensityCons");
   TestHelpers::db::test_simple_tag<
@@ -42,6 +40,12 @@ void test_tags() noexcept {
       NewtonianEuler::Tags::SoundSpeed<DataVector>>("SoundSpeed");
   TestHelpers::db::test_simple_tag<
       NewtonianEuler::Tags::SoundSpeedSquared<DataVector>>("SoundSpeedSquared");
+  TestHelpers::db::test_simple_tag<
+      NewtonianEuler::Tags::CharacteristicSpeeds<Dim>>("CharacteristicSpeeds");
+  TestHelpers::db::test_simple_tag<NewtonianEuler::Tags::VMinus>("VMinus");
+  TestHelpers::db::test_simple_tag<NewtonianEuler::Tags::VMomentum<Dim>>(
+      "VMomentum");
+  TestHelpers::db::test_simple_tag<NewtonianEuler::Tags::VPlus>("VPlus");
   TestHelpers::db::test_base_tag<NewtonianEuler::Tags::SourceTermBase>(
       "SourceTermBase");
   TestHelpers::db::test_simple_tag<

@@ -10,8 +10,7 @@
 /// \cond
 namespace NewtonianEuler {
 namespace Tags {
-template <size_t Dim>
-struct CharacteristicSpeeds;
+
 template <typename DataType>
 struct MassDensity;
 struct MassDensityCons;
@@ -29,9 +28,17 @@ struct SoundSpeed;
 template <typename DataType>
 struct SoundSpeedSquared;
 
+template <size_t Dim>
+struct CharacteristicSpeeds;
+struct VMinus;
+template <size_t Dim>
+struct VMomentum;
+struct VPlus;
+
 struct SourceTermBase;
 template <typename InitialDataType>
 struct SourceTerm;
+
 }  // namespace Tags
 }  // namespace NewtonianEuler
 /// \endcond
