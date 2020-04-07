@@ -6,6 +6,7 @@
 #include <array>
 #include <bitset>
 #include <cstddef>
+#include <exception>
 #include <ostream>
 #include <vector>
 
@@ -118,6 +119,8 @@ Matrix inverse_a_matrix(
         quadrature_weights_dot_interpolation_matrices,
     const Direction<VolumeDim>& primary_direction,
     const std::vector<Direction<VolumeDim>>& directions_to_exclude) noexcept {
+  ASSERT(not alg::found(directions_to_exclude, primary_direction),
+         "Logical inconsistency: trying to exclude the primary direction.");
   const size_t number_of_grid_points = mesh.number_of_grid_points();
   Matrix a(number_of_grid_points, number_of_grid_points, 0.);
 
@@ -172,7 +175,12 @@ Matrix inverse_a_matrix(
   }
 
   // Invert matrix in-place before returning
-  blaze::invert<blaze::asSymmetric>(a);
+  try {
+    blaze::invert<blaze::asSymmetric>(a);
+  } catch (const std::exception& e) {
+    ERROR("Blaze matrix inversion failed with exception:\n" << e.what());
+  }
+
   return a;
 }
 
@@ -202,7 +210,7 @@ ConstrainedFitCache<VolumeDim>::ConstrainedFitCache(
   for (const auto& primary_dir : directions_with_neighbors) {
     if (directions_with_neighbors.size() == 1) {
       // With a single neighbor, there can be no neighbors to exclude.
-      std::vector<Direction<VolumeDim>> nothing_to_exclude{{}};
+      std::vector<Direction<VolumeDim>> nothing_to_exclude{};
       // To reuse the same data structure from the more common `else` branch,
       // here we stick the data into the (normally nonsensical) slot where
       // `dir_to_exclude == primary_dir`.
