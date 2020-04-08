@@ -615,7 +615,7 @@ void test_element_wise_function_impl(
  * \param size A function to override the container size function. Defaults to
  * an object which simply calls `container.size()`. A custom callable must take
  * as argument the container(s) used in `arguments`, and return a size_t. This
- * function signature follows the convention of `cpp17::size`.
+ * function signature follows the convention of `std::size`.
  * \param custom_approx An object of type `Approx` specifying an alternative
  * precision with which to test the element-wise function
  */
