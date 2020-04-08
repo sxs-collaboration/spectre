@@ -33,12 +33,12 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
   TestHelpers::db::test_simple_tag<ReductionObserversRegisteredNodes>(
       "ReductionObserversRegisteredNodes");
   static_assert(
-      cpp17::is_same_v<typename ReductionData<double, int, char>::names_tag,
-                       ReductionDataNames<double, int, char>>,
+      std::is_same_v<typename ReductionData<double, int, char>::names_tag,
+                     ReductionDataNames<double, int, char>>,
       "Failed testing Observers tags");
   static_assert(
-      cpp17::is_same_v<typename ReductionDataNames<double, int, char>::data_tag,
-                       ReductionData<double, int, char>>,
+      std::is_same_v<typename ReductionDataNames<double, int, char>::data_tag,
+                     ReductionData<double, int, char>>,
       "Failed testing Observers tags");
 }
 }  // namespace Tags

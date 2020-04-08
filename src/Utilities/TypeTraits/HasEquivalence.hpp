@@ -23,7 +23,7 @@ namespace tt {
 /// \endcode
 ///
 /// \metareturns
-/// cpp17::bool_constant
+/// std::bool_constant
 ///
 /// \semantics
 /// If the type `T` has operator== defined, then
@@ -39,13 +39,13 @@ namespace tt {
 /// \snippet Test_HasEquivalence.cpp has_equivalence_example
 /// \see has_inequivalence
 /// \tparam T the type we want to know if it has operator==
-template <typename T, typename = cpp17::void_t<>>
+template <typename T, typename = std::void_t<>>
 struct has_equivalence : std::false_type {};
 
 /// \cond HIDDEN_SYMBOLS
 template <typename T>
 struct has_equivalence<
-    T, cpp17::void_t<decltype(std::declval<T>() == std::declval<T>())>>
+    T, std::void_t<decltype(std::declval<T>() == std::declval<T>())>>
     : std::true_type {};
 /// \endcond
 

@@ -112,7 +112,7 @@ template <typename ReturnType>
 struct ForwardToPyppImpl<
     ReturnType,
     Requires<(tt::is_a_v<Tensor, ReturnType> or
-              tt::is_std_array_v<ReturnType>)and cpp17::
+              tt::is_std_array_v<ReturnType>)and std::
                  is_same_v<typename ReturnType::value_type, DataVector>>> {
   template <typename MemberArg, typename UsedForSize>
   static decltype(auto) apply(const MemberArg& member_arg,
@@ -220,7 +220,7 @@ void check_with_random_values_impl(
         return local_f(std::get<ArgumentIs>(args)...);
       })(
       std::integral_constant<
-          bool, not cpp17::is_same_v<NoSuchType, std::decay_t<Klass>>>{},
+          bool, not std::is_same_v<NoSuchType, std::decay_t<Klass>>>{},
       std::forward<F>(f));
   INFO("function: " << function_name);
   try {
@@ -283,7 +283,7 @@ void check_with_random_values_impl(
                 std::get<ArgumentIs>(args)...);
       })(
       std::integral_constant<
-          bool, not cpp17::is_same_v<NoSuchType, std::decay_t<Klass>>>{},
+          bool, not std::is_same_v<NoSuchType, std::decay_t<Klass>>>{},
       std::forward<F>(f));
   const auto helper = [&module_name, &function_names, &args, &results, &epsilon,
                        &member_args, &used_for_size](auto result_i) {
@@ -344,7 +344,7 @@ void check_with_random_values_impl(
  * in general it should be left to the default value.
  */
 template <size_t NumberOfBounds, class F, class T,
-          Requires<not cpp17::is_same_v<
+          Requires<not std::is_same_v<
               typename tt::function_info<cpp20::remove_cvref_t<F>>::return_type,
               void>> = nullptr>
 // The Requires is used so that we can call the std::vector<std::string> with
@@ -456,7 +456,7 @@ void check_with_random_values(
                 "your function returns by value do not pass the function name "
                 "as a vector<string> but just a string.");
   static_assert(
-      cpp17::is_same_v<typename f_info::return_type, void>,
+      std::is_same_v<typename f_info::return_type, void>,
       "A function returning by gsl::not_null must have a void return type.");
   static_assert(tmpl::size<argument_types>::value != 0,
                 "The function 'f' must take at least one argument.");
@@ -529,7 +529,7 @@ void check_with_random_values(
  * in general it should be left to the default value.
  */
 template <size_t NumberOfBounds, class F, class T, class... MemberArgs,
-          Requires<not cpp17::is_same_v<
+          Requires<not std::is_same_v<
               typename tt::function_info<cpp20::remove_cvref_t<F>>::return_type,
               void>> = nullptr>
 // The Requires is used so that we can call the std::vector<std::string> with
@@ -665,7 +665,7 @@ void check_with_random_values(
       "value using a TaggedTuple. If your function returns by value with a "
       "type that is not a TaggedTuple do not pass the function name as a "
       "vector<string> but just a string.");
-  static_assert(cpp17::is_same_v<typename f_info::return_type, void> or
+  static_assert(std::is_same_v<typename f_info::return_type, void> or
                     tt::is_a_v<tmpl::list, TagsList>,
                 "The function must either return by gsl::not_null and have a "
                 "void return type, or return by TaggedTuple");

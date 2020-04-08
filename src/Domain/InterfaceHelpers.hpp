@@ -14,12 +14,12 @@
 
 namespace InterfaceHelpers_detail {
 
-template <typename T, typename = cpp17::void_t<>>
+template <typename T, typename = std::void_t<>>
 struct get_volume_tags_impl {
   using type = tmpl::list<>;
 };
 template <typename T>
-struct get_volume_tags_impl<T, cpp17::void_t<typename T::volume_tags>> {
+struct get_volume_tags_impl<T, std::void_t<typename T::volume_tags>> {
   using type = typename T::volume_tags;
 };
 

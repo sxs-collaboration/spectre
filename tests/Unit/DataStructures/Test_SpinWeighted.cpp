@@ -226,15 +226,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.SpinWeighted",
 // A macro which will static_assert fail when LHSTYPE OP RHSTYPE succeeds during
 // SFINAE. Used to make sure we can't violate spin addition rules.
 // clang-tidy: wants parens around macro argument, but that breaks macro
-#define CHECK_TYPE_OPERATION_FAIL(TAG, OP, LHSTYPE, RHSTYPE)             \
-  template <typename T1, typename T2, typename = cpp17::void_t<>>        \
-  struct TAG : std::true_type {};                                        \
-  template <typename T1, typename T2>                                    \
-  struct TAG<                                                            \
-      T1, T2,                                                            \
-      cpp17::void_t<decltype(std::declval<T1>() OP std::declval<T2>())>> \
-      : std::false_type {};                                              \
-  static_assert(TAG<LHSTYPE, RHSTYPE>::value, /*NOLINT*/                 \
+#define CHECK_TYPE_OPERATION_FAIL(TAG, OP, LHSTYPE, RHSTYPE)                  \
+  template <typename T1, typename T2, typename = std::void_t<>>               \
+  struct TAG : std::true_type {};                                             \
+  template <typename T1, typename T2>                                         \
+  struct TAG<T1, T2,                                                          \
+             std::void_t<decltype(std::declval<T1>() OP std::declval<T2>())>> \
+      : std::false_type {};                                                   \
+  static_assert(TAG<LHSTYPE, RHSTYPE>::value, /*NOLINT*/                      \
                 "static_assert failed, " #LHSTYPE #OP #RHSTYPE " had a type")
 
 using SpinZero = SpinWeighted<double, 0>;

@@ -40,7 +40,6 @@ set(LIBRARY_SOURCES
   Test_TaggedTuple.cpp
   Test_TMPL.cpp
   Test_Tuple.cpp
-  Test_TypeTraits.cpp
   Test_VectorAlgebra.cpp
   )
 

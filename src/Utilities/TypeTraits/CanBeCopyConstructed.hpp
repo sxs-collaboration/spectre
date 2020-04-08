@@ -24,10 +24,10 @@ struct can_be_copy_constructed : std::is_copy_constructible<T> {};
 
 /// \cond
 template <typename T>
-struct can_be_copy_constructed<T, cpp17::void_t<typename T::value_type>>
-    : cpp17::bool_constant<
-          cpp17::is_copy_constructible_v<T> and
-          cpp17::is_copy_constructible_v<typename T::value_type>> {};
+struct can_be_copy_constructed<T, std::void_t<typename T::value_type>>
+    : std::bool_constant<std::is_copy_constructible_v<T> and
+                         std::is_copy_constructible_v<typename T::value_type>> {
+};
 /// \endcond
 
 template <typename T>

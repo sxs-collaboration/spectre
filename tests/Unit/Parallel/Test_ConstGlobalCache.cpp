@@ -157,8 +157,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
     using tag_list =
         typename Parallel::get_const_global_cache_tags<TestMetavariables>;
     static_assert(
-        cpp17::is_same_v<tag_list,
-                         tmpl::list<name, age, height, shape_of_nametag>>,
+        std::is_same_v<tag_list,
+                       tmpl::list<name, age, height, shape_of_nametag>>,
         "Wrong tag_list in ConstGlobalCache test");
 
     tuples::tagged_tuple_from_typelist<tag_list> const_data_to_be_cached(
@@ -176,8 +176,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
     using tag_list =
         typename Parallel::get_const_global_cache_tags<TestMetavariables>;
     static_assert(
-        cpp17::is_same_v<tag_list,
-                         tmpl::list<name, age, height, shape_of_nametag>>,
+        std::is_same_v<tag_list,
+                       tmpl::list<name, age, height, shape_of_nametag>>,
         "Wrong tag_list in ConstGlobalCache test");
 
     tuples::tagged_tuple_from_typelist<tag_list> const_data_to_be_cached(

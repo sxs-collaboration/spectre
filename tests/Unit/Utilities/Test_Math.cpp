@@ -53,20 +53,20 @@ SPECTRE_TEST_CASE("Unit.Utilities.Math", "[Unit][Utilities]") {
     CHECK(sgn(2) == 1);
     CHECK(sgn(0) == 0);
     CHECK(sgn(-2) == -1);
-    static_assert(cpp17::is_same_v<decltype(sgn(-2)), int>,
+    static_assert(std::is_same_v<decltype(sgn(-2)), int>,
                   "Failed testing type of sgn");
 
     CHECK(sgn(2.14) == 1.0);
     CHECK(sgn(0.0) == 0.0);
     CHECK(sgn(-3.87) == -1.0);
-    static_assert(cpp17::is_same_v<decltype(sgn(2.14)), double>,
+    static_assert(std::is_same_v<decltype(sgn(2.14)), double>,
                   "Failed testing type of sgn");
 
     CHECK(sgn(static_cast<unsigned>(2)) == 1);
     CHECK(sgn(static_cast<unsigned>(0)) == 0);
     CHECK(sgn(static_cast<unsigned>(-1)) == 1);
     static_assert(
-        cpp17::is_same_v<decltype(sgn(static_cast<unsigned>(2))), unsigned>,
+        std::is_same_v<decltype(sgn(static_cast<unsigned>(2))), unsigned>,
         "Failed testing type of sgn");
   }
 }

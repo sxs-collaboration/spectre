@@ -334,15 +334,15 @@ namespace ActionTesting {}
 namespace ActionTesting {
 namespace detail {
 #define ACTION_TESTING_CHECK_MOCK_ACTION_LIST(NAME)                        \
-  template <typename Component, typename = cpp17::void_t<>>                \
+  template <typename Component, typename = std::void_t<>>                  \
   struct get_##NAME##_mocking_list {                                       \
     using replace_these_##NAME = tmpl::list<>;                             \
     using with_these_##NAME = tmpl::list<>;                                \
   };                                                                       \
   template <typename Component>                                            \
   struct get_##NAME##_mocking_list<                                        \
-      Component, cpp17::void_t<typename Component::replace_these_##NAME,   \
-                               typename Component::with_these_##NAME>> {   \
+      Component, std::void_t<typename Component::replace_these_##NAME,     \
+                             typename Component::with_these_##NAME>> {     \
     using replace_these_##NAME = typename Component::replace_these_##NAME; \
     using with_these_##NAME = typename Component::with_these_##NAME;       \
   };                                                                       \
@@ -402,27 +402,26 @@ struct get_initialization {
 };
 
 // Checks whether or not the `Metavariables` has a `Phase::Initialization`.
-template <typename Metavariables, typename = cpp17::void_t<>>
+template <typename Metavariables, typename = std::void_t<>>
 struct has_initialization_phase : std::false_type {};
 
 template <typename Metavariables>
 struct has_initialization_phase<
-    Metavariables,
-    cpp17::void_t<decltype(Metavariables::Phase::Initialization)>>
+    Metavariables, std::void_t<decltype(Metavariables::Phase::Initialization)>>
     : std::true_type {};
 
 template <typename Metavariables>
 constexpr bool has_initialization_phase_v =
     has_initialization_phase<Metavariables>::value;
 
-template <typename Component, typename = cpp17::void_t<>>
+template <typename Component, typename = std::void_t<>>
 struct get_initialization_tags_from_component {
   using type = tmpl::list<>;
 };
 
 template <typename Component>
 struct get_initialization_tags_from_component<
-    Component, cpp17::void_t<typename Component::initialization_tags>> {
+    Component, std::void_t<typename Component::initialization_tags>> {
   using type = typename Component::initialization_tags;
 };
 

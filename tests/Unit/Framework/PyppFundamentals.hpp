@@ -90,7 +90,7 @@ struct ToPyObject<void, std::nullptr_t> {
 
 template <typename T>
 struct ToPyObject<
-    T, Requires<cpp17::is_same_v<typename std::decay<T>::type, std::string>>> {
+    T, Requires<std::is_same_v<typename std::decay<T>::type, std::string>>> {
   static PyObject* convert(const T& t) {
 #if PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION == 7
     return PyString_FromString(t.c_str());
@@ -104,7 +104,7 @@ struct ToPyObject<
 
 template <typename T>
 struct ToPyObject<
-    T, Requires<cpp17::is_same_v<typename std::decay<T>::type, bool>>> {
+    T, Requires<std::is_same_v<typename std::decay<T>::type, bool>>> {
   static PyObject* convert(const T& t) {
     return PyBool_FromLong(static_cast<long>(t));
   }
@@ -112,8 +112,8 @@ struct ToPyObject<
 
 template <typename T>
 struct ToPyObject<
-    T, Requires<cpp17::is_same_v<typename std::decay<T>::type, int> or
-                cpp17::is_same_v<typename std::decay<T>::type, short>>> {
+    T, Requires<std::is_same_v<typename std::decay<T>::type, int> or
+                std::is_same_v<typename std::decay<T>::type, short>>> {
   static PyObject* convert(const T& t) {
 #if PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION == 7
     return PyInt_FromLong(t);
@@ -127,23 +127,23 @@ struct ToPyObject<
 
 template <typename T>
 struct ToPyObject<
-    T, Requires<cpp17::is_same_v<typename std::decay<T>::type, long>>> {
+    T, Requires<std::is_same_v<typename std::decay<T>::type, long>>> {
   static PyObject* convert(const T& t) { return PyLong_FromLong(t); }
 };
 
 template <typename T>
 struct ToPyObject<
-    T, Requires<cpp17::is_same_v<typename std::decay<T>::type, unsigned long> or
-                cpp17::is_same_v<typename std::decay<T>::type, unsigned int>>> {
+    T, Requires<std::is_same_v<typename std::decay<T>::type, unsigned long> or
+                std::is_same_v<typename std::decay<T>::type, unsigned int>>> {
   static PyObject* convert(const T& t) { return PyLong_FromUnsignedLong(t); }
 };
 
 template <typename T>
 struct ToPyObject<
-    T, Requires<
-           cpp17::is_same_v<typename std::decay<T>::type, size_t> and
-           not cpp17::is_same_v<typename std::decay<T>::type, unsigned long> and
-           not cpp17::is_same_v<typename std::decay<T>::type, unsigned int>>> {
+    T,
+    Requires<std::is_same_v<typename std::decay<T>::type, size_t> and
+             not std::is_same_v<typename std::decay<T>::type, unsigned long> and
+             not std::is_same_v<typename std::decay<T>::type, unsigned int>>> {
   static PyObject* convert(const T& t) { return PyLong_FromSize_t(t); }
 };
 
@@ -540,7 +540,7 @@ struct FromPyObject<Scalar<double>> {
 
 template <typename T>
 struct FromPyObject<T, Requires<tt::is_a_v<Tensor, T> and T::rank() != 0 and
-                                cpp17::is_same_v<typename T::type, double>>> {
+                                std::is_same_v<typename T::type, double>>> {
   static T convert(PyObject* p) { return tensor_conversion_impl<T>(p); }
 };
 
@@ -560,13 +560,13 @@ struct FromPyObject<Scalar<std::complex<double>>> {
 template <typename T>
 struct FromPyObject<
     T, Requires<tt::is_a_v<Tensor, T> and T::rank() != 0 and
-                cpp17::is_same_v<typename T::type, std::complex<double>>>> {
+                std::is_same_v<typename T::type, std::complex<double>>>> {
   static T convert(PyObject* p) { return tensor_conversion_impl<T>(p); }
 };
 
 template <typename T>
 struct ToPyObject<T, Requires<tt::is_a_v<Tensor, T> and
-                              cpp17::is_same_v<typename T::type, double>>> {
+                              std::is_same_v<typename T::type, double>>> {
   static PyObject* convert(const T& t) {
     std::array<long, T::rank()> dims =
         convert_array_of_size_t_to_array_of_long(T::index_dims());
@@ -591,7 +591,7 @@ struct ToPyObject<T, Requires<tt::is_a_v<Tensor, T> and
 template <typename T>
 struct ToPyObject<
     T, Requires<tt::is_a_v<Tensor, T> and
-                cpp17::is_same_v<typename T::type, std::complex<double>>>> {
+                std::is_same_v<typename T::type, std::complex<double>>>> {
   static PyObject* convert(const T& t) {
     std::array<long, T::rank()> dims =
         convert_array_of_size_t_to_array_of_long(T::index_dims());

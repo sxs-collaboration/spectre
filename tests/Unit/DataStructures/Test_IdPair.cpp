@@ -14,9 +14,9 @@
 
 SPECTRE_TEST_CASE("Unit.DataStructures.IdPair", "[Unit][DataStructures]") {
   auto id_pair = make_id_pair(5, std::vector<double>{1.2, 7.8});
-  static_assert(cpp17::is_same_v<decltype(id_pair.id), int>,
+  static_assert(std::is_same_v<decltype(id_pair.id), int>,
                 "Failed checking type decay in make_id_pair");
-  static_assert(cpp17::is_same_v<decltype(id_pair.data), std::vector<double>>,
+  static_assert(std::is_same_v<decltype(id_pair.data), std::vector<double>>,
                 "Failed checking type decay in make_id_pair");
   CHECK(id_pair.id == 5);
   CHECK(id_pair.data == std::vector<double>{1.2, 7.8});

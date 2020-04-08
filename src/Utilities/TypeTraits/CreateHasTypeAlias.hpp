@@ -25,18 +25,17 @@
 // Use `NoSuchType*****` to represent any `AliasType`, i.e. not checking the
 // alias type at all. If someone has that many pointers to a thing that isn't
 // useful, it's their fault...
-#define CREATE_HAS_TYPE_ALIAS(ALIAS_NAME)                                     \
-  template <typename CheckingType, typename AliasType = NoSuchType*****,      \
-            typename = cpp17::void_t<>>                                       \
-  struct has_##ALIAS_NAME : std::false_type {};                               \
-                                                                              \
-  template <typename CheckingType, typename AliasType>                        \
-  struct has_##ALIAS_NAME<CheckingType, AliasType,                            \
-                          cpp17::void_t<typename CheckingType::ALIAS_NAME>>   \
-      : cpp17::bool_constant<                                                 \
-            cpp17::is_same_v<AliasType, NoSuchType*****> or                   \
-            cpp17::is_same_v<typename CheckingType::ALIAS_NAME, AliasType>> { \
-  };
+#define CREATE_HAS_TYPE_ALIAS(ALIAS_NAME)                                 \
+  template <typename CheckingType, typename AliasType = NoSuchType*****,  \
+            typename = std::void_t<>>                                     \
+  struct has_##ALIAS_NAME : std::false_type {};                           \
+                                                                          \
+  template <typename CheckingType, typename AliasType>                    \
+  struct has_##ALIAS_NAME<CheckingType, AliasType,                        \
+                          std::void_t<typename CheckingType::ALIAS_NAME>> \
+      : std::bool_constant<                                               \
+            std::is_same_v<AliasType, NoSuchType*****> or                 \
+            std::is_same_v<typename CheckingType::ALIAS_NAME, AliasType>> {};
 // Separate macros to avoid compiler warnings about unused variables
 #define CREATE_HAS_TYPE_ALIAS_V(ALIAS_NAME)                              \
   template <typename CheckingType, typename AliasType = NoSuchType*****> \

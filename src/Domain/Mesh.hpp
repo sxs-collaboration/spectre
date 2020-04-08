@@ -190,7 +190,7 @@ class Mesh {
    */
   template <typename... D, Requires<(sizeof...(D) <= Dim)> = nullptr>
   Mesh<sizeof...(D)> slice_through(D... d) const noexcept {
-    static_assert(cpp17::conjunction_v<tt::is_integer<D>...>,
+    static_assert(std::conjunction_v<tt::is_integer<D>...>,
                   "The dimensions must be integers.");
     const std::array<size_t, sizeof...(D)> dims{{static_cast<size_t>(d)...}};
     return slice_through(dims);

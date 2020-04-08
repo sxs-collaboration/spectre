@@ -39,18 +39,17 @@ struct ConformsTo {};
 #ifdef SPECTRE_ALWAYS_CHECK_PROTOCOL_CONFORMANCE
 template <typename ConformingType, template <class> class Protocol>
 constexpr bool conforms_to_v =
-    cpp17::is_convertible_v<ConformingType*, ConformsTo<Protocol>*>and
+    std::is_convertible_v<ConformingType*, ConformsTo<Protocol>*>and
         Protocol<ConformingType>::value;
 template <typename ConformingType, template <class> class Protocol>
-using conforms_to =
-    cpp17::bool_constant<conforms_to_v<ConformingType, Protocol>>;
+using conforms_to = std::bool_constant<conforms_to_v<ConformingType, Protocol>>;
 #else   // SPECTRE_ALWAYS_CHECK_PROTOCOL_CONFORMANCE
 template <typename ConformingType, template <class> class Protocol>
 using conforms_to =
     typename std::is_convertible<ConformingType*, ConformsTo<Protocol>*>;
 template <typename ConformingType, template <class> class Protocol>
 constexpr bool conforms_to_v =
-    cpp17::is_convertible_v<ConformingType*, ConformsTo<Protocol>*>;
+    std::is_convertible_v<ConformingType*, ConformsTo<Protocol>*>;
 #endif  // SPECTRE_ALWAYS_CHECK_PROTOCOL_CONFORMANCE
 // @}
 

@@ -139,7 +139,7 @@ class VectorImpl
       : BaseType(start, set_size), owning_(false) {}
 
   /// Create from an initializer list of `T`.
-  template <class U, Requires<cpp17::is_same_v<U, T>> = nullptr>
+  template <class U, Requires<std::is_same_v<U, T>> = nullptr>
   VectorImpl(std::initializer_list<U> list) noexcept
       : owned_data_(list.size() > 0 ? static_cast<value_type*>(malloc(
                                           list.size() * sizeof(value_type)))
@@ -165,7 +165,7 @@ class VectorImpl
   // clang-tidy: mark as explicit (we want conversion to VectorImpl type)
   template <
       typename VT, bool VF,
-      Requires<cpp17::is_same_v<typename VT::ResultType, VectorType>> = nullptr>
+      Requires<std::is_same_v<typename VT::ResultType, VectorType>> = nullptr>
   VectorImpl(const blaze::DenseVector<VT, VF>& expression) noexcept;  // NOLINT
 
   template <typename VT, bool VF>
@@ -298,14 +298,14 @@ VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
 // clang-tidy: mark as explicit (we want conversion to VectorImpl)
 template <typename T, typename VectorType>
 template <typename VT, bool VF,
-          Requires<cpp17::is_same_v<typename VT::ResultType, VectorType>>>
+          Requires<std::is_same_v<typename VT::ResultType, VectorType>>>
 VectorImpl<T, VectorType>::VectorImpl(
     const blaze::DenseVector<VT, VF>& expression)  // NOLINT
     noexcept
     : owned_data_(static_cast<value_type*>(
                       malloc((~expression).size() * sizeof(value_type))),
                   &free) {
-  static_assert(cpp17::is_same_v<typename VT::ResultType, VectorType>,
+  static_assert(std::is_same_v<typename VT::ResultType, VectorType>,
                 "You are attempting to assign the result of an expression "
                 "that is not consistent with the VectorImpl type you are "
                 "assigning to.");
@@ -317,7 +317,7 @@ template <typename T, typename VectorType>
 template <typename VT, bool VF>
 VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
     const blaze::DenseVector<VT, VF>& expression) noexcept {
-  static_assert(cpp17::is_same_v<typename VT::ResultType, VectorType>,
+  static_assert(std::is_same_v<typename VT::ResultType, VectorType>,
                 "You are attempting to assign the result of an expression "
                 "that is not consistent with the VectorImpl type you are "
                 "assigning to.");
@@ -567,7 +567,7 @@ std::ostream& operator<<(std::ostream& os,
 // by T
 template <typename T,
           bool = static_cast<bool>(tt::is_complex_of_fundamental_v<T> or
-                                   cpp17::is_fundamental_v<T>)>
+                                   std::is_fundamental_v<T>)>
 struct get_vector_element_type;
 template <typename T>
 struct get_vector_element_type<T, true> {

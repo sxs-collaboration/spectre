@@ -37,32 +37,32 @@ namespace Options_detail {
 // If `Root` is not in the group hierarchy of `Tag`, this function returns the
 // topmost group of `Tag` (meaning that `Root` is treated as the root of its
 // group hierarchy).
-template <typename Tag, typename Root, typename = cpp17::void_t<>>
+template <typename Tag, typename Root, typename = std::void_t<>>
 struct find_subgroup {
   using type = Tag;
 };
 
 template <typename Tag>
 struct find_subgroup<Tag, typename Tag::group,
-                     cpp17::void_t<typename Tag::group>> {
+                     std::void_t<typename Tag::group>> {
   using type = Tag;
 };
 
 template <typename Tag, typename Root>
-struct find_subgroup<Tag, Root, cpp17::void_t<typename Tag::group>> {
+struct find_subgroup<Tag, Root, std::void_t<typename Tag::group>> {
   using type = typename find_subgroup<typename Tag::group, Root>::type;
 };
 
 /// Checks if `Tag` is within the group hierarchy of `Group`.
-template <typename Tag, typename Group, typename = cpp17::void_t<>>
+template <typename Tag, typename Group, typename = std::void_t<>>
 struct is_in_group : std::false_type {};
 
 template <typename Tag>
-struct is_in_group<Tag, typename Tag::group, cpp17::void_t<typename Tag::group>>
+struct is_in_group<Tag, typename Tag::group, std::void_t<typename Tag::group>>
     : std::true_type {};
 
 template <typename Tag, typename Group>
-struct is_in_group<Tag, Group, cpp17::void_t<typename Tag::group>>
+struct is_in_group<Tag, Group, std::void_t<typename Tag::group>>
     : is_in_group<typename Tag::group, Group> {};
 
 /// The subset of tags in `OptionList` that are in the hierarchy of `Group`
@@ -123,39 +123,38 @@ struct yaml_type<std::pair<T, U>> {
   }
 };
 
-template <typename S, typename = cpp17::void_t<>>
+template <typename S, typename = std::void_t<>>
 struct has_default : std::false_type {};
 template <typename S>
-struct has_default<S,
-                   cpp17::void_t<decltype(std::declval<S>().default_value())>>
+struct has_default<S, std::void_t<decltype(std::declval<S>().default_value())>>
     : std::true_type {};
 
-template <typename S, typename = cpp17::void_t<>>
+template <typename S, typename = std::void_t<>>
 struct has_lower_bound : std::false_type {};
 template <typename S>
 struct has_lower_bound<S,
-                       cpp17::void_t<decltype(std::declval<S>().lower_bound())>>
+                       std::void_t<decltype(std::declval<S>().lower_bound())>>
     : std::true_type {};
 
-template <typename S, typename = cpp17::void_t<>>
+template <typename S, typename = std::void_t<>>
 struct has_upper_bound : std::false_type {};
 template <typename S>
 struct has_upper_bound<S,
-                       cpp17::void_t<decltype(std::declval<S>().upper_bound())>>
+                       std::void_t<decltype(std::declval<S>().upper_bound())>>
     : std::true_type {};
 
-template <typename S, typename = cpp17::void_t<>>
+template <typename S, typename = std::void_t<>>
 struct has_lower_bound_on_size : std::false_type {};
 template <typename S>
 struct has_lower_bound_on_size<
-    S, cpp17::void_t<decltype(std::declval<S>().lower_bound_on_size())>>
+    S, std::void_t<decltype(std::declval<S>().lower_bound_on_size())>>
     : std::true_type {};
 
-template <typename S, typename = cpp17::void_t<>>
+template <typename S, typename = std::void_t<>>
 struct has_upper_bound_on_size : std::false_type {};
 template <typename S>
 struct has_upper_bound_on_size<
-    S, cpp17::void_t<decltype(std::declval<S>().upper_bound_on_size())>>
+    S, std::void_t<decltype(std::declval<S>().upper_bound_on_size())>>
     : std::true_type {};
 
 template <typename Group, typename OptionList, typename = std::nullptr_t>

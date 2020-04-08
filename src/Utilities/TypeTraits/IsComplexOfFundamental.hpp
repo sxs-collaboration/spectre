@@ -15,15 +15,15 @@ namespace tt {
 /// is a `std::true_type` if so, and otherwise is a `std::false_type`
 ///
 /// \snippet Test_IsComplexOfFundamental.cpp is_complex_of_fundamental
-template <typename T, typename = cpp17::bool_constant<true>>
+template <typename T, typename = std::bool_constant<true>>
 struct is_complex_of_fundamental : std::false_type {};
 
 /// \cond
 // this version will only pattern match if `T` is both complex and a fundamental
 // type
 template <typename T>
-struct is_complex_of_fundamental<
-    std::complex<T>, cpp17::bool_constant<cpp17::is_fundamental_v<T>>>
+struct is_complex_of_fundamental<std::complex<T>,
+                                 std::bool_constant<std::is_fundamental_v<T>>>
     : std::true_type {};
 /// \endcond
 // @}
@@ -37,5 +37,5 @@ constexpr bool is_complex_of_fundamental_v =
 /// type or if `T` is a fundamental type.
 template <typename T>
 constexpr bool is_complex_or_fundamental_v =
-    is_complex_of_fundamental_v<T> or cpp17::is_fundamental_v<T>;
+    is_complex_of_fundamental_v<T> or std::is_fundamental_v<T>;
 }  // namespace tt

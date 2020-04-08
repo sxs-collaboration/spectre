@@ -117,8 +117,8 @@ struct DivVariablesCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
   using inv_jac_indices =
       typename db::const_item_type<InverseJacobianTag>::index_list;
   static constexpr auto dim = tmpl::back<inv_jac_indices>::dim;
-  static_assert(cpp17::is_same_v<typename tmpl::front<inv_jac_indices>::Frame,
-                                 Frame::Logical>,
+  static_assert(std::is_same_v<typename tmpl::front<inv_jac_indices>::Frame,
+                               Frame::Logical>,
                 "Must map from the logical frame.");
 
  public:
@@ -139,8 +139,8 @@ struct DivVectorCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
   using inv_jac_indices =
       typename db::const_item_type<InverseJacobianTag>::index_list;
   static constexpr auto dim = tmpl::back<inv_jac_indices>::dim;
-  static_assert(cpp17::is_same_v<typename tmpl::front<inv_jac_indices>::Frame,
-                                 Frame::Logical>,
+  static_assert(std::is_same_v<typename tmpl::front<inv_jac_indices>::Frame,
+                               Frame::Logical>,
                 "Must map from the logical frame.");
 
  public:

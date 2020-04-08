@@ -12,8 +12,8 @@
 #include "Utilities/TMPL.hpp"
 
 static_assert(
-    cpp17::is_same_v<boost::variant<double, int, char>,
-                     make_boost_variant_over<tmpl::list<double, int, char>>>,
+    std::is_same_v<boost::variant<double, int, char>,
+                   make_boost_variant_over<tmpl::list<double, int, char>>>,
     "Failed testing make_variant_over");
 
 SPECTRE_TEST_CASE("Unit.Utilities.BoostHelpers.Variant.Pup",

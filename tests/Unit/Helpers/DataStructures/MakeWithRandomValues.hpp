@@ -27,7 +27,7 @@ template <typename T, typename = std::nullptr_t>
 struct FillWithRandomValuesImpl;
 
 template <typename T>
-struct FillWithRandomValuesImpl<T, Requires<cpp17::is_fundamental_v<T>>> {
+struct FillWithRandomValuesImpl<T, Requires<std::is_fundamental_v<T>>> {
   template <typename UniformRandomBitGenerator,
             typename RandomNumberDistribution>
   static void apply(
@@ -35,7 +35,7 @@ struct FillWithRandomValuesImpl<T, Requires<cpp17::is_fundamental_v<T>>> {
       const gsl::not_null<UniformRandomBitGenerator*> generator,
       const gsl::not_null<RandomNumberDistribution*> distribution) noexcept {
     static_assert(
-        cpp17::is_same_v<T, typename RandomNumberDistribution::result_type>,
+        std::is_same_v<T, typename RandomNumberDistribution::result_type>,
         "Mismatch between data type and random number type.");
     *data = (*distribution)(*generator);
   }
@@ -50,7 +50,7 @@ struct FillWithRandomValuesImpl<std::complex<T>> {
       const gsl::not_null<UniformRandomBitGenerator*> generator,
       const gsl::not_null<RandomNumberDistribution*> distribution) noexcept {
     static_assert(
-        cpp17::is_same_v<T, typename RandomNumberDistribution::result_type>,
+        std::is_same_v<T, typename RandomNumberDistribution::result_type>,
         "Mismatch between data type and random number type.");
     data->real((*distribution)(*generator));
     data->imag((*distribution)(*generator));
@@ -116,14 +116,14 @@ struct FillWithRandomValuesImpl<Variables<tmpl::list<Tags...>>,
 template <typename T>
 class UniformCustomDistribution
     : public tmpl::conditional_t<
-          cpp17::is_integral_v<T>,
+          std::is_integral_v<T>,
           std::uniform_int_distribution<std::remove_const_t<T>>,
           std::uniform_real_distribution<std::remove_const_t<T>>> {
   using base = tmpl::conditional_t<
-      cpp17::is_integral_v<T>,
+      std::is_integral_v<T>,
       std::uniform_int_distribution<std::remove_const_t<T>>,
       std::uniform_real_distribution<std::remove_const_t<T>>>;
-  static_assert(cpp17::is_integral_v<T> or cpp17::is_floating_point_v<T>,
+  static_assert(std::is_integral_v<T> or std::is_floating_point_v<T>,
                 "UniformCustomDistribution currently supports only floating"
                 "point and integral values");
 

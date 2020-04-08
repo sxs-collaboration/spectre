@@ -25,7 +25,7 @@ namespace tt {
 /// \endcode
 ///
 /// \metareturns
-/// cpp17::bool_constant
+/// std::bool_constant
 ///
 /// \semantics
 /// If the type `T` has operator<<(`S`, `T`) defined for stream `S`, then
@@ -42,16 +42,16 @@ namespace tt {
 /// \see std::cout std::ifstream std::sstream std::ostream
 /// \tparam S the stream type, e.g. std::stringstream or std::ostream
 /// \tparam T the type we want to know if it has operator<<
-template <typename S, typename T, typename = cpp17::void_t<>>
+template <typename S, typename T, typename = std::void_t<>>
 struct is_streamable : std::false_type {};
 
 /// \cond
 template <typename S, typename T>
 struct is_streamable<
     S, T,
-    cpp17::void_t<decltype(std::declval<std::add_lvalue_reference_t<S>>()
-                           << std::declval<T>()),
-                  Requires<not std::is_same<S, T>::value>>> : std::true_type {};
+    std::void_t<decltype(std::declval<std::add_lvalue_reference_t<S>>()
+                         << std::declval<T>()),
+                Requires<not std::is_same<S, T>::value>>> : std::true_type {};
 /// \endcond
 
 /// \see is_streamable

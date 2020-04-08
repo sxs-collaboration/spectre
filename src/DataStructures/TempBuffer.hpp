@@ -25,7 +25,7 @@
  *
  */
 template <typename TagList,
-          bool is_fundamental = cpp17::is_fundamental_v<
+          bool is_fundamental = std::is_fundamental_v<
               typename tmpl::front<TagList>::type::value_type>>
 struct TempBuffer;
 

@@ -13,18 +13,18 @@
 #include "Utilities/TypeTraits.hpp"
 
 /// [get_vector_element_type_example]
-static_assert(cpp17::is_same_v<get_vector_element_type_t<DataVector>, double>,
+static_assert(std::is_same_v<get_vector_element_type_t<DataVector>, double>,
               "Failed testing type trait get_vector_element_type");
 
-static_assert(cpp17::is_same_v<
+static_assert(std::is_same_v<
                   get_vector_element_type_t<std::array<DataVector, 2>>, double>,
               "Failed testing type trait get_vector_element_type");
 
-static_assert(cpp17::is_same_v<get_vector_element_type_t<std::complex<double>*>,
-                               std::complex<double>>,
+static_assert(std::is_same_v<get_vector_element_type_t<std::complex<double>*>,
+                             std::complex<double>>,
               "Failed testing type trait get_vector_element_type");
 
-static_assert(cpp17::is_same_v<get_vector_element_type_t<DataVector&>, double>,
+static_assert(std::is_same_v<get_vector_element_type_t<DataVector&>, double>,
               "Failed testing type trait get_vector_element_type");
 /// [get_vector_element_type_example]
 

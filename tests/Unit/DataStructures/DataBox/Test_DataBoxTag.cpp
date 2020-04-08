@@ -33,17 +33,17 @@ struct PrefixWithArgs : db::PrefixTag, db::SimpleTag {
 };
 }  // namespace
 
-static_assert(cpp17::is_same_v<db::split_tag<Var>, tmpl::list<Var>>,
+static_assert(std::is_same_v<db::split_tag<Var>, tmpl::list<Var>>,
               "Failed testing split_tag");
 static_assert(
-    cpp17::is_same_v<db::split_tag<Prefix<Var>>, tmpl::list<Prefix<Var>>>,
+    std::is_same_v<db::split_tag<Prefix<Var>>, tmpl::list<Prefix<Var>>>,
     "Failed testing split_tag");
-static_assert(cpp17::is_same_v<
-                  db::split_tag<Tags::Variables<tmpl::list<Var, Prefix<Var>>>>,
-                  tmpl::list<Var, Prefix<Var>>>,
-              "Failed testing split_tag");
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<db::split_tag<Tags::Variables<tmpl::list<Var, Prefix<Var>>>>,
+                   tmpl::list<Var, Prefix<Var>>>,
+    "Failed testing split_tag");
+static_assert(
+    std::is_same_v<
         db::split_tag<Prefix<Tags::Variables<tmpl::list<Var, Prefix<Var>>>>>,
         tmpl::list<Var, Prefix<Var>>>,
     "Failed testing split_tag");
@@ -60,10 +60,10 @@ static_assert(db::prefix_tag_wraps_specified_tag<PrefixWithArgs<Var, int, int>,
               "failed testing prefix_tag_wraps_specified_tag");
 
 static_assert(
-    cpp17::is_same_v<tmpl::filter<tmpl::list<Prefix<Var>, Prefix<Var2>,
-                                             PrefixWithArgs<Var, int, int>>,
-                                  db::prefix_tag_wraps_specified_tag<
-                                      tmpl::_1, tmpl::pin<Var>>>,
-                     tmpl::list<Prefix<Var>, PrefixWithArgs<Var, int, int>>>,
+    std::is_same_v<tmpl::filter<tmpl::list<Prefix<Var>, Prefix<Var2>,
+                                           PrefixWithArgs<Var, int, int>>,
+                                db::prefix_tag_wraps_specified_tag<
+                                    tmpl::_1, tmpl::pin<Var>>>,
+                   tmpl::list<Prefix<Var>, PrefixWithArgs<Var, int, int>>>,
     "failed testing prefix_tag_wraps_specified_tag");
 /// [prefix_tag_wraps_specified_tag]

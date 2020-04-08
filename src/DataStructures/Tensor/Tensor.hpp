@@ -84,11 +84,10 @@ class Tensor<X, Symm, IndexList<Indices...>> {
                 "file an issue on GitHub or discuss with a core developer of "
                 "SpECTRE.");
   static_assert(
-      cpp17::is_same_v<X, std::complex<double>> or
-          cpp17::is_same_v<X, double> or
-          cpp17::is_same_v<X, ComplexDataVector> or
-          cpp17::is_same_v<X, ComplexModalVector> or
-          cpp17::is_same_v<X, DataVector> or cpp17::is_same_v<X, ModalVector> or
+      std::is_same_v<X, std::complex<double>> or std::is_same_v<X, double> or
+          std::is_same_v<X, ComplexDataVector> or
+          std::is_same_v<X, ComplexModalVector> or
+          std::is_same_v<X, DataVector> or std::is_same_v<X, ModalVector> or
           is_spin_weighted_of_v<ComplexDataVector, X> or
           is_spin_weighted_of_v<ComplexModalVector, X>,
       "Only a Tensor<std::complex<double>>, Tensor<double>, "
@@ -172,11 +171,11 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   /// Constructor that passes "args" to constructor of X and initializes each
   /// component to be the same
   template <typename... Args,
-            Requires<not(cpp17::disjunction_v<std::is_same<
+            Requires<not(std::disjunction_v<std::is_same<
                              Tensor<X, Symm, IndexList<Indices...>>,
                              std::decay_t<Args>>...> and
                          sizeof...(Args) == 1) and
-                     cpp17::is_constructible_v<X, Args...>> = nullptr>
+                     std::is_constructible_v<X, Args...>> = nullptr>
   explicit Tensor(Args&&... args) noexcept;
 
   using value_type = typename storage_type::value_type;
@@ -264,7 +263,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   // @{
   /// Retrieve a TensorExpression object with the index structure passed in
   template <typename... N,
-            Requires<cpp17::conjunction_v<tt::is_tensor_index<N>...> and
+            Requires<std::conjunction_v<tt::is_tensor_index<N>...> and
                      tmpl::is_set<N...>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE constexpr TE<tmpl::list<N...>> operator()(
       N... /*meta*/) const noexcept {
@@ -272,7 +271,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   }
 
   template <typename... N,
-            Requires<cpp17::conjunction_v<tt::is_tensor_index<N>...> and
+            Requires<std::conjunction_v<tt::is_tensor_index<N>...> and
                      not tmpl::is_set<N...>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE constexpr auto operator()(N... /*meta*/) const noexcept
       -> decltype(
@@ -502,16 +501,16 @@ template <size_t NumberOfIndices, Requires<(NumberOfIndices <= 1)>>
 Tensor<X, Symm, IndexList<Indices...>>::Tensor(storage_type data) noexcept
     : data_(std::move(data)) {}
 
-// The cpp17::disjunction is used to prevent the compiler from matching this
+// The std::disjunction is used to prevent the compiler from matching this
 // function when it should select the move constructor.
 template <typename X, typename Symm, template <typename...> class IndexList,
           typename... Indices>
 template <typename... Args,
-          Requires<not(cpp17::disjunction_v<
+          Requires<not(std::disjunction_v<
                            std::is_same<Tensor<X, Symm, IndexList<Indices...>>,
                                         std::decay_t<Args>>...> and
                        sizeof...(Args) == 1) and
-                   cpp17::is_constructible_v<X, Args...>>>
+                   std::is_constructible_v<X, Args...>>>
 Tensor<X, Symm, IndexList<Indices...>>::Tensor(Args&&... args) noexcept
     : data_(make_array<size(), X>(std::forward<Args>(args)...)) {}
 

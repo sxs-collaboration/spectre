@@ -29,13 +29,13 @@ std::ostream& operator<<(std::ostream& os, const TypeOfObservation& t) noexcept;
 // @{
 /// Inherits off of `std::true_type` if `T` has a member variable
 /// `RegisterWithObserver`
-template <class T, class = cpp17::void_t<>>
+template <class T, class = std::void_t<>>
 struct has_register_with_observer : std::false_type {};
 
 /// \cond
 template <class T>
 struct has_register_with_observer<
-    T, cpp17::void_t<decltype(T::RegisterWithObserver)>> : std::true_type {};
+    T, std::void_t<decltype(T::RegisterWithObserver)>> : std::true_type {};
 /// \endcond
 
 template <class T>

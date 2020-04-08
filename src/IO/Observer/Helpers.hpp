@@ -10,7 +10,7 @@
 
 namespace observers {
 namespace detail {
-template <class ObservingAction, class = cpp17::void_t<>>
+template <class ObservingAction, class = std::void_t<>>
 struct get_reduction_data_tags {
   using type = tmpl::list<>;
 };
@@ -18,7 +18,7 @@ struct get_reduction_data_tags {
 template <class ObservingAction>
 struct get_reduction_data_tags<
     ObservingAction,
-    cpp17::void_t<typename ObservingAction::observed_reduction_data_tags>> {
+    std::void_t<typename ObservingAction::observed_reduction_data_tags>> {
   using type = typename ObservingAction::observed_reduction_data_tags;
 };
 

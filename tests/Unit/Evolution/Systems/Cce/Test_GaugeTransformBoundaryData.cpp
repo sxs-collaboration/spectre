@@ -353,7 +353,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
               forward_transform_evolution_gauge_value;
         },
         db::get<Tags::EvolutionGaugeBoundaryValue<tag>>(forward_transform_box));
-    if (cpp17::is_same_v<tag, Tags::BondiQ>) {
+    if (std::is_same_v<tag, Tags::BondiQ>) {
       // populate dr_u in the inverse box using the equation of motion.
       db::mutate<Tags::BoundaryValue<Tags::Dr<Tags::BondiU>>>(
           make_not_null(&inverse_transform_box),
@@ -375,7 +375,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
           db::get<Tags::BoundaryValue<Tags::BondiQ>>(inverse_transform_box),
           db::get<Tags::BoundaryValue<Tags::BondiJ>>(inverse_transform_box));
     }
-    if (cpp17::is_same_v<tag, Tags::BondiH>) {
+    if (std::is_same_v<tag, Tags::BondiH>) {
       db::mutate<Tags::BoundaryValue<Tags::Du<Tags::BondiJ>>>(
           make_not_null(&inverse_transform_box),
           [](const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>

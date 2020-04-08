@@ -130,7 +130,7 @@ struct EvolutionMetavars {
 
   using source_term_tag = NewtonianEuler::Tags::SourceTerm<initial_data>;
   static constexpr bool has_source_terms =
-      not cpp17::is_same_v<source_term_type, NewtonianEuler::Sources::NoSource>;
+      not std::is_same_v<source_term_type, NewtonianEuler::Sources::NoSource>;
 
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<dg::NumericalFluxes::Hll<system>>;

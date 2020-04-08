@@ -32,7 +32,7 @@
 /// \param n the power of two to compute.
 /// \return 2^n
 template <typename T,
-          Requires<tt::is_integer_v<T> and cpp17::is_unsigned_v<T>> = nullptr>
+          Requires<tt::is_integer_v<T> and std::is_unsigned_v<T>> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr T two_to_the(T n) {
   return T(1) << n;
 }
@@ -101,7 +101,7 @@ namespace ConstantExpressions_detail {
 template <typename T>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
     const T& /*t*/, std::integral_constant<int, 0> /*meta*/,
-    cpp17::bool_constant<true> /*exponent_was_positive*/) noexcept {
+    std::bool_constant<true> /*exponent_was_positive*/) noexcept {
   return static_cast<tt::get_fundamental_type_t<T>>(1.0);
 }
 
@@ -109,7 +109,7 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
 template <typename T>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
     const T& t, std::integral_constant<int, 1> /*meta*/,
-    cpp17::bool_constant<true> /*exponent_was_positive*/) noexcept {
+    std::bool_constant<true> /*exponent_was_positive*/) noexcept {
   return t;
 }
 
@@ -118,9 +118,9 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
 template <int N, typename T>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
     const T& t, std::integral_constant<int, N> /*meta*/,
-    cpp17::bool_constant<true> /*exponent_was_positive*/) noexcept {
+    std::bool_constant<true> /*exponent_was_positive*/) noexcept {
   return t * pow_impl(t, std::integral_constant<int, N - 1>{},
-                      cpp17::bool_constant<true>{});
+                      std::bool_constant<true>{});
 }
 
 // general case for negative powers: return the multiplicative inverse of the
@@ -131,10 +131,10 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
 template <int N, typename T>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
     const T& t, std::integral_constant<int, N> /*meta*/,
-    cpp17::bool_constant<false> /*exponent_was_positive*/) noexcept {
+    std::bool_constant<false> /*exponent_was_positive*/) noexcept {
   return static_cast<tt::get_fundamental_type_t<T>>(1) /
          (pow_impl(t, std::integral_constant<int, -N>{},
-                   cpp17::bool_constant<true>{}));
+                   std::bool_constant<true>{}));
 }
 }  // namespace ConstantExpressions_detail
 
@@ -158,7 +158,7 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
 template <int N, typename T>
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow(const T& t) noexcept {
   return ConstantExpressions_detail::pow_impl(
-      t, std::integral_constant<int, N>{}, cpp17::bool_constant<(N >= 0)>{});
+      t, std::integral_constant<int, N>{}, std::bool_constant<(N >= 0)>{});
 }
 
 /// \ingroup ConstantExpressionsGroup
@@ -166,7 +166,7 @@ SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow(const T& t) noexcept {
 ///
 /// The argument must be comparable to an int and must be negatable.
 template <typename T, Requires<tt::is_integer_v<T> or
-                               cpp17::is_floating_point_v<T>> = nullptr>
+                               std::is_floating_point_v<T>> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr T ce_abs(const T& x) noexcept(
     noexcept(x < 0 ? -x : x)) {
   return x < 0 ? -x : x;

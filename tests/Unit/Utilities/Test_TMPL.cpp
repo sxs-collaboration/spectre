@@ -49,19 +49,19 @@ static_assert(not tmpl::list_contains_v<tmpl::list<Templated<int>,
                                         double>,
               "Failed testing list_contains");
 
-static_assert(cpp17::is_same_v<
-                  tmpl::list_difference<
-                      tmpl::list<Templated<int>, Templated<double>>,
-                      tmpl::list<double>>,
-                  tmpl::list<Templated<int>, Templated<double>>>,
-              "Failed testing list_difference");
+static_assert(
+    std::is_same_v<
+        tmpl::list_difference<tmpl::list<Templated<int>, Templated<double>>,
+                              tmpl::list<double>>,
+        tmpl::list<Templated<int>, Templated<double>>>,
+    "Failed testing list_difference");
 
-static_assert(cpp17::is_same_v<
-                  tmpl::list_difference<
-                      tmpl::list<Templated<int>, Templated<double>>,
-                      tmpl::list<Templated<double>>>,
-                  tmpl::list<Templated<int>>>,
-              "Failed testing list_difference");
+static_assert(
+    std::is_same_v<
+        tmpl::list_difference<tmpl::list<Templated<int>, Templated<double>>,
+                              tmpl::list<Templated<double>>>,
+        tmpl::list<Templated<int>>>,
+    "Failed testing list_difference");
 
 static_assert(tmpl::position_of_first_v<
                   tmpl::list<char, int, double, char, float>, char> == 0,

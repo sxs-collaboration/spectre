@@ -70,7 +70,7 @@ void test_serialization(const T& t) {
 /// \param args arguments passed to a constructor of the derived class
 template <typename B, typename D, typename... Args>
 void test_serialization_via_base(Args&&... args) {
-  static_assert(cpp17::is_base_of_v<B, D>,
+  static_assert(std::is_base_of_v<B, D>,
                 "passed input type is not derived from specified base");
   static_assert(tt::has_equivalence_v<D>, "No operator== for derived class");
   Parallel::register_derived_classes_with_charm<B>();

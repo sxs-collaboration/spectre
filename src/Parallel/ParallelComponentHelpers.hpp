@@ -10,14 +10,14 @@
 
 namespace Parallel {
 namespace detail {
-template <class Action, class = cpp17::void_t<>>
+template <class Action, class = std::void_t<>>
 struct get_inbox_tags_from_action {
   using type = tmpl::list<>;
 };
 
 template <class Action>
 struct get_inbox_tags_from_action<Action,
-                                  cpp17::void_t<typename Action::inbox_tags>> {
+                                  std::void_t<typename Action::inbox_tags>> {
   using type = typename Action::inbox_tags;
 };
 }  // namespace detail
@@ -32,7 +32,7 @@ using get_inbox_tags = tmpl::remove_duplicates<tmpl::join<tmpl::transform<
 
 namespace detail {
 // ParallelStruct is a metavariables, component, or action struct
-template <class ParallelStruct, class = cpp17::void_t<>>
+template <class ParallelStruct, class = std::void_t<>>
 struct get_const_global_cache_tags_from_parallel_struct {
   using type = tmpl::list<>;
 };
@@ -40,7 +40,7 @@ struct get_const_global_cache_tags_from_parallel_struct {
 template <class ParallelStruct>
 struct get_const_global_cache_tags_from_parallel_struct<
     ParallelStruct,
-    cpp17::void_t<typename ParallelStruct::const_global_cache_tags>> {
+    std::void_t<typename ParallelStruct::const_global_cache_tags>> {
   using type = typename ParallelStruct::const_global_cache_tags;
 };
 
@@ -104,25 +104,25 @@ using get_initialization_actions_list = tmpl::flatten<tmpl::transform<
     PhaseDepActionList, detail::get_initialization_actions_list<tmpl::_1>>>;
 
 namespace detail {
-template <typename Action, typename = cpp17::void_t<>>
+template <typename Action, typename = std::void_t<>>
 struct get_initialization_tags_from_action {
   using type = tmpl::list<>;
 };
 
 template <typename Action>
 struct get_initialization_tags_from_action<
-    Action, cpp17::void_t<typename Action::initialization_tags>> {
+    Action, std::void_t<typename Action::initialization_tags>> {
   using type = typename Action::initialization_tags;
 };
 
-template <typename Action, typename = cpp17::void_t<>>
+template <typename Action, typename = std::void_t<>>
 struct get_initialization_tags_to_keep_from_action {
   using type = tmpl::list<>;
 };
 
 template <typename Action>
 struct get_initialization_tags_to_keep_from_action<
-    Action, cpp17::void_t<typename Action::initialization_tags_to_keep>> {
+    Action, std::void_t<typename Action::initialization_tags_to_keep>> {
   using type = typename Action::initialization_tags_to_keep;
 };
 }  // namespace detail

@@ -37,7 +37,7 @@ struct SetData<tmpl::list<Tags...>> {
   template <
       typename ParallelComponent, typename DataBox, typename Metavariables,
       typename ArrayIndex,
-      Requires<cpp17::conjunction_v<db::tag_is_retrievable<Tags, DataBox>...>> =
+      Requires<std::conjunction_v<db::tag_is_retrievable<Tags, DataBox>...>> =
           nullptr>
   static void apply(DataBox& box,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,

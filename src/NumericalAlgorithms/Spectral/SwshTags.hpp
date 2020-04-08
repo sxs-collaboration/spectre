@@ -65,15 +65,15 @@ struct NoDerivative {};
 namespace detail {
 template <typename DerivativeKind>
 inline constexpr int derivative_spin_weight_impl() noexcept {
-  if (cpp17::is_same_v<DerivativeKind, Eth> or
-      cpp17::is_same_v<DerivativeKind, InverseEthbar>) {
+  if (std::is_same_v<DerivativeKind, Eth> or
+      std::is_same_v<DerivativeKind, InverseEthbar>) {
     return 1;
-  } else if (cpp17::is_same_v<DerivativeKind, Ethbar> or
-             cpp17::is_same_v<DerivativeKind, InverseEth>) {
+  } else if (std::is_same_v<DerivativeKind, Ethbar> or
+             std::is_same_v<DerivativeKind, InverseEth>) {
     return -1;
-  } else if (cpp17::is_same_v<DerivativeKind, EthEth>) {
+  } else if (std::is_same_v<DerivativeKind, EthEth>) {
     return 2;
-  } else if (cpp17::is_same_v<DerivativeKind, EthbarEthbar>) {
+  } else if (std::is_same_v<DerivativeKind, EthbarEthbar>) {
     return -2;
   }
   return 0;
@@ -240,7 +240,7 @@ struct SwshInterpolator : db::SimpleTag, db::PrefixTag {
 namespace detail {
 // implementation for get_tags_with_spin
 template <typename Tag, typename S>
-struct has_spin : cpp17::bool_constant<Tag::type::type::spin == S::value> {};
+struct has_spin : std::bool_constant<Tag::type::type::spin == S::value> {};
 
 template <typename PrefixTag, typename S>
 struct wrapped_has_spin : has_spin<typename PrefixTag::tag, S> {};

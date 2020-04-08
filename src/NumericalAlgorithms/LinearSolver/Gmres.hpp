@@ -267,9 +267,9 @@ std::pair<Convergence::HasConverged, VarsType> Gmres<VarsType>::operator()(
     const VarsType& initial_guess, Preconditioner&& preconditioner,
     IterationCallback&& iteration_callback) const noexcept {
   constexpr bool use_preconditioner =
-      not cpp17::is_same_v<Preconditioner, IdentityPreconditioner<VarsType>>;
+      not std::is_same_v<Preconditioner, IdentityPreconditioner<VarsType>>;
   constexpr bool use_iteration_callback =
-      not cpp17::is_same_v<IterationCallback, NoIterationCallback>;
+      not std::is_same_v<IterationCallback, NoIterationCallback>;
 
   auto result = initial_guess;
   Convergence::HasConverged has_converged{};

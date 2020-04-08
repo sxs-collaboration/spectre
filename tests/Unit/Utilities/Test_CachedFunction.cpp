@@ -36,14 +36,14 @@ SPECTRE_TEST_CASE("Unit.Utilities.CachedFunction", "[Unit][Utilities]") {
           func, std::move(comparator));
   /// [make_cached_function_example]
 
-  static_assert(cpp17::is_same_v<decltype(cached)::input, std::string>,
+  static_assert(std::is_same_v<decltype(cached)::input, std::string>,
                 "Wrong input type");
-  static_assert(cpp17::is_same_v<decltype(cached)::output, size_t>,
+  static_assert(std::is_same_v<decltype(cached)::output, size_t>,
                 "Wrong output type");
 
-  static_assert(cpp17::is_same_v<decltype(cached2)::input, std::string>,
+  static_assert(std::is_same_v<decltype(cached2)::input, std::string>,
                 "Wrong input type");
-  static_assert(cpp17::is_same_v<decltype(cached2)::output, size_t>,
+  static_assert(std::is_same_v<decltype(cached2)::output, size_t>,
                 "Wrong output type");
 
   CHECK(call_count == 0);

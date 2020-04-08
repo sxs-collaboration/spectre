@@ -120,7 +120,7 @@ struct CharacteristicEvolution {
       // Once we finish the U computation, we need to update all the quantities
       // that depend on the time derivative of the gauge
       tmpl::conditional_t<
-          cpp17::is_same_v<BondiTag, Tags::BondiU>,
+          std::is_same_v<BondiTag, Tags::BondiU>,
           tmpl::list<
               ::Actions::MutateApply<GaugeUpdateTimeDerivatives>,
               ::Actions::MutateApply<

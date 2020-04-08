@@ -178,11 +178,11 @@ static_assert(
 
 // Test as_const
 static_assert(
-    cpp17::is_same_v<const double&,
-                     decltype(cpp17::as_const(std::declval<const double&>()))>,
+    std::is_same_v<const double&,
+                   decltype(cpp17::as_const(std::declval<const double&>()))>,
     "Failed testing as_const");
-static_assert(cpp17::is_same_v<const double&, decltype(cpp17::as_const(
-                                                  std::declval<double&>()))>,
+static_assert(std::is_same_v<const double&, decltype(cpp17::as_const(
+                                                std::declval<double&>()))>,
               "Failed testing as_const");
 static_assert(5 == cpp17::as_const(static_cast<const int&>(5)),
               "Failed testing as_const");

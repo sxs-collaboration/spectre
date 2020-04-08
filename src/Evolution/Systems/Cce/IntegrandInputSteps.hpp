@@ -330,7 +330,7 @@ using all_transform_buffer_tags =
 namespace detail {
 template <typename Tag>
 struct additional_pre_swsh_derivative_tags_for {
-  using type = tmpl::conditional_t<cpp17::is_same_v<Tag, Tags::BondiH>,
+  using type = tmpl::conditional_t<std::is_same_v<Tag, Tags::BondiH>,
                                    tmpl::list<Tags::Dy<Tag>>,
                                    tmpl::list<Tag, Tags::Dy<Tag>>>;
 };

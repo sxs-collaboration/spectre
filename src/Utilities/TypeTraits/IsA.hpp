@@ -20,7 +20,7 @@ namespace tt {
 /// using result = tt::is_a<U, T>;
 /// \endcode
 /// \metareturns
-/// cpp17::bool_constant
+/// std::bool_constant
 ///
 /// \semantics
 /// If the type `T` is a template specialization of the type `U`, then

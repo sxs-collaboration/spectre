@@ -147,7 +147,7 @@ static_assert(protocols::NamedWithType<PersonWithNameType>::value,
 static_assert(tt::conforms_to_v<PersonWithNameType, protocols::NamedWithType>,
               "The class does not conform to the protocol.");
 static_assert(
-    cpp17::is_same_v<typename PersonWithNameType::NameType, std::string>,
+    std::is_same_v<typename PersonWithNameType::NameType, std::string>,
     "The `NameType` isn't a `std::string`!");
 /// [example_check_name_type]
 }  // namespace

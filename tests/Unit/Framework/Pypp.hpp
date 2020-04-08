@@ -144,7 +144,7 @@ decltype(auto) slice_container_of_datavectors_to_container_of_doubles(
 
 template <typename R>
 struct CallImpl<
-    R, Requires<(tt::is_a_v<Tensor, R> or tt::is_std_array_v<R>)and cpp17::
+    R, Requires<(tt::is_a_v<Tensor, R> or tt::is_std_array_v<R>)and std::
                     is_same_v<typename R::value_type, DataVector>>> {
   template <typename... Args>
   static R call(const std::string& module_name,

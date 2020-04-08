@@ -35,11 +35,11 @@ struct is_node_group_proxy : std::is_base_of<CProxy_NodeGroup, T>::type {};
 
 /// \ingroup ParallelGroup
 /// Check if `T` is a ParallelComponent for a Charm++ bound array
-template <typename T, typename = cpp17::void_t<>>
+template <typename T, typename = std::void_t<>>
 struct is_bound_array : std::false_type {};
 
 template <typename T>
-struct is_bound_array<T, cpp17::void_t<typename T::bind_to>> : std::true_type {
+struct is_bound_array<T, std::void_t<typename T::bind_to>> : std::true_type {
   static_assert(Parallel::is_array_proxy<typename T::type>::value,
                 "Can only bind an array chare");
   static_assert(Parallel::is_array_proxy<typename T::bind_to::type>::value,
@@ -61,7 +61,7 @@ struct is_bound_array<T, cpp17::void_t<typename T::bind_to>> : std::true_type {
 /// \endcode
 ///
 /// \metareturns
-/// cpp17::bool_constant
+/// std::bool_constant
 ///
 /// \semantics
 /// If the type `T` has a `pup(PUP::er&)` member function, then
@@ -77,12 +77,12 @@ struct is_bound_array<T, cpp17::void_t<typename T::bind_to>> : std::true_type {
 /// \snippet Parallel/Test_TypeTraits.cpp has_pup_member_example
 /// \see is_pupable
 /// \tparam T the type to check
-template <typename T, typename = cpp17::void_t<>>
+template <typename T, typename = std::void_t<>>
 struct has_pup_member : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 template <typename T>
 struct has_pup_member<
-    T, cpp17::void_t<decltype(std::declval<T>().pup(std::declval<PUP::er&>()))>>
+    T, std::void_t<decltype(std::declval<T>().pup(std::declval<PUP::er&>()))>>
     : std::true_type {};
 /// \endcond
 /// \see has_pup_member
@@ -109,7 +109,7 @@ using has_pup_member_t = typename has_pup_member<T>::type;
 /// \endcode
 ///
 /// \metareturns
-/// cpp17::bool_constant
+/// std::bool_constant
 ///
 /// \semantics
 /// If the type `T` has operator| defined, then
@@ -130,7 +130,7 @@ struct is_pupable : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 template <typename T>
 struct is_pupable<
-    T, cpp17::void_t<decltype(std::declval<PUP::er&>() | std::declval<T&>())>>
+    T, std::void_t<decltype(std::declval<PUP::er&>() | std::declval<T&>())>>
     : std::true_type {};
 /// \endcond
 /// \see is_pupable

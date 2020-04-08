@@ -48,7 +48,7 @@ class DenseVector : public blaze::DynamicVector<T, TF> {
     if (p.isUnpacking()) {
       blaze::DynamicVector<T, TF>::resize(size);
     }
-    if (cpp17::is_fundamental_v<T>) {
+    if (std::is_fundamental_v<T>) {
       PUParray(p, blaze::DynamicVector<T, TF>::data(), size);
     } else {
       for (auto& element : *this) {

@@ -47,16 +47,16 @@ static_assert(Derivative<Spin2TestTag, Ethbar>::spin == 1,
               "failed testing DerivativeTag with DerivativeType Ethbar");
 
 static_assert(
-    cpp17::is_same_v<Derivative<SpinMinus1TestTag, Ethbar>::derivative_of,
-                     SpinMinus1TestTag>,
+    std::is_same_v<Derivative<SpinMinus1TestTag, Ethbar>::derivative_of,
+                   SpinMinus1TestTag>,
     "failed testing DerivativeTag with DerivativeType Ethbar");
 
-static_assert(cpp17::is_same_v<SwshTransform<Spin2TestTag>::type,
-                               Scalar<SpinWeighted<ComplexModalVector, 2>>>,
+static_assert(std::is_same_v<SwshTransform<Spin2TestTag>::type,
+                             Scalar<SpinWeighted<ComplexModalVector, 2>>>,
               "failed testing SwshTransform");
 
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<
         SwshTransform<Derivative<Spin2TestTag, EthEthbar>>::transform_of,
         Derivative<Spin2TestTag, EthEthbar>>,
     "failed testing SwshTransform");
@@ -66,8 +66,8 @@ using TestVarTagList = tmpl::list<SpinMinus1TestTag, SpinMinus1TestTag,
                                   AnotherSpinMinus1TestTag, Spin2TestTag>;
 
 static_assert(
-    cpp17::is_same_v<get_tags_with_spin<-1, TestVarTagList>,
-                     tmpl::list<SpinMinus1TestTag, AnotherSpinMinus1TestTag>>,
+    std::is_same_v<get_tags_with_spin<-1, TestVarTagList>,
+                   tmpl::list<SpinMinus1TestTag, AnotherSpinMinus1TestTag>>,
     "failed testing get_tags_with_spin");
 
 using TestDerivativeTagList =
@@ -77,9 +77,9 @@ using TestDerivativeTagList =
                Derivative<Spin2TestTag, Ethbar>>;
 
 static_assert(
-    cpp17::is_same_v<get_tags_with_spin<1, TestDerivativeTagList>,
-                     tmpl::list<Derivative<AnotherSpinMinus1TestTag, EthEth>,
-                                Derivative<Spin2TestTag, Ethbar>>>,
+    std::is_same_v<get_tags_with_spin<1, TestDerivativeTagList>,
+                   tmpl::list<Derivative<AnotherSpinMinus1TestTag, EthEth>,
+                              Derivative<Spin2TestTag, Ethbar>>>,
     "failed testing get_tags_with_spin");
 /// [get_tags_with_spin]
 
@@ -88,12 +88,12 @@ using WrappedTagList = tmpl::list<Derivative<SpinMinus1TestTag, Eth>,
                                   Derivative<SpinMinus1TestTag, EthEthbar>,
                                   Derivative<AnotherSpinMinus1TestTag, EthEth>,
                                   Derivative<Spin2TestTag, Ethbar>>;
-static_assert(cpp17::is_same_v<
-                  get_prefix_tags_that_wrap_tags_with_spin<-1, WrappedTagList>,
-                  tmpl::list<Derivative<SpinMinus1TestTag, Eth>,
-                             Derivative<SpinMinus1TestTag, EthEthbar>,
-                             Derivative<AnotherSpinMinus1TestTag, EthEth>>>,
-              "failed testing get_wrapped_tags_with_spin_from_prefix_tag_list");
+static_assert(
+    std::is_same_v<get_prefix_tags_that_wrap_tags_with_spin<-1, WrappedTagList>,
+                   tmpl::list<Derivative<SpinMinus1TestTag, Eth>,
+                              Derivative<SpinMinus1TestTag, EthEthbar>,
+                              Derivative<AnotherSpinMinus1TestTag, EthEth>>>,
+    "failed testing get_wrapped_tags_with_spin_from_prefix_tag_list");
 /// [get_prefix_tags_that_wrap_tags_with_spin]
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Tags",

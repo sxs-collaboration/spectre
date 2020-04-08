@@ -209,10 +209,10 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>> {
   /// be locked with the `Parallel::lock()` function, and unlocked with
   /// `Parallel::unlock()`. `Parallel::try_lock()` is also provided in case
   /// something useful can be done if the lock couldn't be acquired.
-  template <typename Action, typename... Args,
-            Requires<(sizeof...(Args),
-                      cpp17::is_same_v<Parallel::Algorithms::Nodegroup,
-                                       chare_type>)> = nullptr>
+  template <
+      typename Action, typename... Args,
+      Requires<(sizeof...(Args), std::is_same_v<Parallel::Algorithms::Nodegroup,
+                                                chare_type>)> = nullptr>
   void threaded_action(std::tuple<Args...> args) noexcept {
     (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent, Action,
                                                     Args...>::registrar;
@@ -287,7 +287,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>> {
 
  private:
   static constexpr bool is_singleton =
-      cpp17::is_same_v<chare_type, Parallel::Algorithms::Singleton>;
+      std::is_same_v<chare_type, Parallel::Algorithms::Singleton>;
 
   template <class Dummy = int,
             Requires<(sizeof(Dummy), is_singleton)> = nullptr>

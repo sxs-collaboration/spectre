@@ -32,7 +32,7 @@ struct Group {
 template <typename ImporterOptionsGroup>
 struct FileName {
   static_assert(
-      cpp17::is_same_v<typename ImporterOptionsGroup::group, Group>,
+      std::is_same_v<typename ImporterOptionsGroup::group, Group>,
       "The importer options should be placed in the 'Importers' option "
       "group. Add a type alias `using group = importers::OptionTags::Group`.");
   using type = std::string;
@@ -48,7 +48,7 @@ struct FileName {
 template <typename ImporterOptionsGroup>
 struct Subgroup {
   static_assert(
-      cpp17::is_same_v<typename ImporterOptionsGroup::group, Group>,
+      std::is_same_v<typename ImporterOptionsGroup::group, Group>,
       "The importer options should be placed in the 'Importers' option "
       "group. Add a type alias `using group = importers::OptionTags::Group`.");
   using type = std::string;
@@ -63,7 +63,7 @@ struct Subgroup {
 template <typename ImporterOptionsGroup>
 struct ObservationValue {
   static_assert(
-      cpp17::is_same_v<typename ImporterOptionsGroup::group, Group>,
+      std::is_same_v<typename ImporterOptionsGroup::group, Group>,
       "The importer options should be placed in the 'Importers' option "
       "group. Add a type alias `using group = importers::OptionTags::Group`.");
   using type = double;

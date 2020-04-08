@@ -86,7 +86,7 @@ template <typename Metavariables, typename EvolutionComponent>
 struct BoundaryComputeAndSendToEvolution<H5WorldtubeBoundary<Metavariables>,
                                          EvolutionComponent> {
   template <typename ParallelComponent, typename... DbTags, typename ArrayIndex,
-            Requires<tmpl2::flat_any_v<cpp17::is_same_v<
+            Requires<tmpl2::flat_any_v<std::is_same_v<
                 ::Tags::Variables<
                     typename Metavariables::cce_boundary_communication_tags>,
                 DbTags>...>> = nullptr>
@@ -135,7 +135,7 @@ template <typename Metavariables, typename EvolutionComponent>
 struct BoundaryComputeAndSendToEvolution<GhWorldtubeBoundary<Metavariables>,
                                          EvolutionComponent> {
   template <typename ParallelComponent, typename... DbTags, typename ArrayIndex,
-            Requires<tmpl2::flat_any_v<cpp17::is_same_v<
+            Requires<tmpl2::flat_any_v<std::is_same_v<
                 ::Tags::Variables<
                     typename Metavariables::cce_boundary_communication_tags>,
                 DbTags>...>> = nullptr>
@@ -167,7 +167,7 @@ struct BoundaryComputeAndSendToEvolution<GhWorldtubeBoundary<Metavariables>,
 template <typename Metavariables, typename EvolutionComponent>
 struct SendToEvolution<GhWorldtubeBoundary<Metavariables>, EvolutionComponent> {
   template <typename ParallelComponent, typename... DbTags, typename ArrayIndex,
-            Requires<tmpl2::flat_any_v<cpp17::is_same_v<
+            Requires<tmpl2::flat_any_v<std::is_same_v<
                 ::Tags::Variables<
                     typename Metavariables::cce_boundary_communication_tags>,
                 DbTags>...>> = nullptr>

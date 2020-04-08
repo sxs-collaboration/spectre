@@ -139,8 +139,8 @@ void test_gh_initialization() noexcept {
   const auto& interface_manager =
       ActionTesting::get_databox_tag<component, Tags::GhInterfaceManager>(
           runner, 0);
-  CHECK(cpp17::is_same_v<decltype(interface_manager),
-                         const GhWorldtubeInterfaceManager&>);
+  CHECK(std::is_same_v<decltype(interface_manager),
+                       const GhWorldtubeInterfaceManager&>);
 
   // check that the Variables is in the expected state (here we just make sure
   // it has the right size - it shouldn't have been written to yet)

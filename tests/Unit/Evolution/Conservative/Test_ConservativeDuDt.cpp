@@ -118,76 +118,76 @@ using expected_argument_tags = tmpl::list<
                        typename System<SourcedVariables, Dim>::variables_tag>>;
 
 static_assert(
-    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<>, 1>,
-                         dg::Formulation::StrongInertial>::argument_tags,
-                     expected_argument_tags<tmpl::list<>, 1>>,
+    std::is_same_v<evolution::dg::ConservativeDuDt<
+                       System<tmpl::list<>, 1>,
+                       dg::Formulation::StrongInertial>::argument_tags,
+                   expected_argument_tags<tmpl::list<>, 1>>,
     "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
-    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<>, 2>,
-                         dg::Formulation::StrongInertial>::argument_tags,
-                     expected_argument_tags<tmpl::list<>, 2>>,
+    std::is_same_v<evolution::dg::ConservativeDuDt<
+                       System<tmpl::list<>, 2>,
+                       dg::Formulation::StrongInertial>::argument_tags,
+                   expected_argument_tags<tmpl::list<>, 2>>,
     "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
-    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<>, 3>,
-                         dg::Formulation::StrongInertial>::argument_tags,
-                     expected_argument_tags<tmpl::list<>, 3>>,
+    std::is_same_v<evolution::dg::ConservativeDuDt<
+                       System<tmpl::list<>, 3>,
+                       dg::Formulation::StrongInertial>::argument_tags,
+                   expected_argument_tags<tmpl::list<>, 3>>,
     "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
-    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<Var1>, 1>,
-                         dg::Formulation::StrongInertial>::argument_tags,
-                     expected_argument_tags<tmpl::list<Var1>, 1>>,
+    std::is_same_v<evolution::dg::ConservativeDuDt<
+                       System<tmpl::list<Var1>, 1>,
+                       dg::Formulation::StrongInertial>::argument_tags,
+                   expected_argument_tags<tmpl::list<Var1>, 1>>,
     "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
-    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<Var1>, 2>,
-                         dg::Formulation::StrongInertial>::argument_tags,
-                     expected_argument_tags<tmpl::list<Var1>, 2>>,
+    std::is_same_v<evolution::dg::ConservativeDuDt<
+                       System<tmpl::list<Var1>, 2>,
+                       dg::Formulation::StrongInertial>::argument_tags,
+                   expected_argument_tags<tmpl::list<Var1>, 2>>,
     "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
-    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<Var1>, 3>,
-                         dg::Formulation::StrongInertial>::argument_tags,
-                     expected_argument_tags<tmpl::list<Var1>, 3>>,
+    std::is_same_v<evolution::dg::ConservativeDuDt<
+                       System<tmpl::list<Var1>, 3>,
+                       dg::Formulation::StrongInertial>::argument_tags,
+                   expected_argument_tags<tmpl::list<Var1>, 3>>,
     "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
-    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<Var2<1>>, 1>,
-                         dg::Formulation::StrongInertial>::argument_tags,
-                     expected_argument_tags<tmpl::list<Var2<1>>, 1>>,
+    std::is_same_v<evolution::dg::ConservativeDuDt<
+                       System<tmpl::list<Var2<1>>, 1>,
+                       dg::Formulation::StrongInertial>::argument_tags,
+                   expected_argument_tags<tmpl::list<Var2<1>>, 1>>,
     "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
-    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<Var2<2>>, 2>,
-                         dg::Formulation::StrongInertial>::argument_tags,
-                     expected_argument_tags<tmpl::list<Var2<2>>, 2>>,
+    std::is_same_v<evolution::dg::ConservativeDuDt<
+                       System<tmpl::list<Var2<2>>, 2>,
+                       dg::Formulation::StrongInertial>::argument_tags,
+                   expected_argument_tags<tmpl::list<Var2<2>>, 2>>,
     "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
-    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<Var2<3>>, 3>,
-                         dg::Formulation::StrongInertial>::argument_tags,
-                     expected_argument_tags<tmpl::list<Var2<3>>, 3>>,
+    std::is_same_v<evolution::dg::ConservativeDuDt<
+                       System<tmpl::list<Var2<3>>, 3>,
+                       dg::Formulation::StrongInertial>::argument_tags,
+                   expected_argument_tags<tmpl::list<Var2<3>>, 3>>,
     "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
-    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<Var1, Var2<1>>, 1>,
-                         dg::Formulation::StrongInertial>::argument_tags,
-                     expected_argument_tags<tmpl::list<Var1, Var2<1>>, 1>>,
+    std::is_same_v<evolution::dg::ConservativeDuDt<
+                       System<tmpl::list<Var1, Var2<1>>, 1>,
+                       dg::Formulation::StrongInertial>::argument_tags,
+                   expected_argument_tags<tmpl::list<Var1, Var2<1>>, 1>>,
     "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
-    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<Var1, Var2<2>>, 2>,
-                         dg::Formulation::StrongInertial>::argument_tags,
-                     expected_argument_tags<tmpl::list<Var1, Var2<2>>, 2>>,
+    std::is_same_v<evolution::dg::ConservativeDuDt<
+                       System<tmpl::list<Var1, Var2<2>>, 2>,
+                       dg::Formulation::StrongInertial>::argument_tags,
+                   expected_argument_tags<tmpl::list<Var1, Var2<2>>, 2>>,
     "Failed testing ConservativeDuDt::argument_tags");
 static_assert(
-    cpp17::is_same_v<evolution::dg::ConservativeDuDt<
-                         System<tmpl::list<Var1, Var2<3>>, 3>,
-                         dg::Formulation::StrongInertial>::argument_tags,
-                     expected_argument_tags<tmpl::list<Var1, Var2<3>>, 3>>,
+    std::is_same_v<evolution::dg::ConservativeDuDt<
+                       System<tmpl::list<Var1, Var2<3>>, 3>,
+                       dg::Formulation::StrongInertial>::argument_tags,
+                   expected_argument_tags<tmpl::list<Var1, Var2<3>>, 3>>,
     "Failed testing ConservativeDuDt::argument_tags");
 
 using Affine = domain::CoordinateMaps::Affine;

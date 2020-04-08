@@ -68,7 +68,7 @@ struct VectorTo<2, boost::multi_array<T, 2>> {
   static boost::multi_array<T, 2> apply(
       const std::vector<T>& raw_data,
       const std::array<hsize_t, 2>& size) noexcept {
-    DEBUG_STATIC_ASSERT(cpp17::is_fundamental_v<T>,
+    DEBUG_STATIC_ASSERT(std::is_fundamental_v<T>,
                         "VectorTo is optimized for fundamentals. Need to "
                         "use move semantics for handling generic data types.");
     boost::multi_array<T, 2> temp(boost::extents[size[0]][size[1]]);
@@ -94,7 +94,7 @@ struct VectorTo<3, boost::multi_array<T, 3>> {
   static boost::multi_array<T, 3> apply(
       const std::vector<T>& raw_data,
       const std::array<hsize_t, 3>& size) noexcept {
-    DEBUG_STATIC_ASSERT(cpp17::is_fundamental_v<T>,
+    DEBUG_STATIC_ASSERT(std::is_fundamental_v<T>,
                         "VectorTo is optimized for fundamentals. Need to "
                         "use move semantics for handling generic data types.");
     boost::multi_array<T, 3> temp(boost::extents[size[0]][size[1]][size[2]]);
@@ -478,9 +478,8 @@ T read_data(const hid_t group_id, const std::string& dataset_name) noexcept {
     ERROR("At least one element in 'size' is 0. Expected data along "
           << Rank << " dimensions. size = " << size);
   }
-  tmpl::conditional_t<
-      cpp17::is_same_v<T, DataVector>, DataVector,
-      std::vector<tt::get_fundamental_type_t<T>>>
+  tmpl::conditional_t<std::is_same_v<T, DataVector>, DataVector,
+                      std::vector<tt::get_fundamental_type_t<T>>>
       data(total_number_of_components);
 
   CHECK_H5(H5Dread(dataset_id,

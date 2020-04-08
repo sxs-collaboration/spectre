@@ -129,7 +129,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
     make_overloader(
         [&command_line_options](std::true_type /*meta*/, auto mv,
                                 int /*gcc_bug*/)
-            -> cpp17::void_t<decltype(
+            -> std::void_t<decltype(
                 tmpl::type_from<decltype(mv)>::input_file)> {
           // Metavariables has options and default input file name
           command_line_options.add_options()
@@ -145,20 +145,19 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
               ("input-file", bpo::value<std::string>(), "Input file name");
         },
         [](std::false_type /*meta*/, auto mv, int /*gcc_bug*/)
-            -> cpp17::void_t<decltype(
+            -> std::void_t<decltype(
                 tmpl::type_from<decltype(mv)>::input_file)> {
           // Metavariables has no options and default input file name
 
           // always false, but must depend on mv
-          static_assert(cpp17::is_same_v<decltype(mv), void>,
+          static_assert(std::is_same_v<decltype(mv), void>,
                         "Metavariables supplies input file name, "
                         "but there are no options");
           ERROR("This should have failed at compile time");
         },
         [](std::false_type /*meta*/, auto... /*unused*/) {
           // Metavariables has no options and no default input file name
-        })(cpp17::bool_constant<has_options>{}, tmpl::type_<Metavariables>{},
-           0);
+        })(std::bool_constant<has_options>{}, tmpl::type_<Metavariables>{}, 0);
 
     bpo::command_line_parser command_line_parser(msg->argc, msg->argv);
     command_line_parser.options(command_line_options);

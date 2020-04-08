@@ -31,12 +31,12 @@ class FixedHashMapIterator;
 /// \endcond
 
 namespace FixedHashMap_detail {
-template <typename T, typename = cpp17::void_t<>>
+template <typename T, typename = std::void_t<>>
 struct has_is_perfect_member : std::false_type {};
 
 template <typename T>
 struct has_is_perfect_member<T,
-                             cpp17::void_t<decltype(T::template is_perfect<0>)>>
+                             std::void_t<decltype(T::template is_perfect<0>)>>
     : std::true_type {};
 
 template <typename T>

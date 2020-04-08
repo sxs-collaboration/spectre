@@ -203,7 +203,7 @@ struct wrapped_is_a<is_a_wrapper<U>, T> : tt::is_a<U, T> {};
 template <template <typename> class U, typename T>
 using is_a_lambda = detail::wrapped_is_a<detail::is_a_wrapper<U>, T>;
 
-using not_self_start_action = cpp17::negation<cpp17::disjunction<
+using not_self_start_action = std::negation<std::disjunction<
     std::is_same<SelfStart::Actions::Initialize, tmpl::_1>,
     is_a_lambda<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
     std::is_same<SelfStart::Actions::CheckForOrderIncrease, tmpl::_1>,

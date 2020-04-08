@@ -40,12 +40,12 @@ void test_product_of_2_maps_time_dep(
     const std::array<double, 2>& expected_frame_velocity) noexcept {
   using AffineMap = CoordinateMaps::Affine;
   using TranslationMap = CoordinateMaps::TimeDependent::Translation;
-  static_assert(cpp17::is_same_v<Map1, AffineMap> or
-                    cpp17::is_same_v<Map1, TranslationMap>,
-                "Map1 must be either an affine map or a translation map");
-  static_assert(cpp17::is_same_v<Map2, AffineMap> or
-                    cpp17::is_same_v<Map2, TranslationMap>,
-                "Map2 must be either an affine map or a translation map");
+  static_assert(
+      std::is_same_v<Map1, AffineMap> or std::is_same_v<Map1, TranslationMap>,
+      "Map1 must be either an affine map or a translation map");
+  static_assert(
+      std::is_same_v<Map2, AffineMap> or std::is_same_v<Map2, TranslationMap>,
+      "Map2 must be either an affine map or a translation map");
 
   const std::array<double, 2> point_source_a{{x_source_a, y_source_a}};
   const std::array<double, 2> point_source_b{{x_source_b, y_source_b}};
@@ -289,15 +289,15 @@ void test_product_of_3_maps_time_dep(
     const std::array<double, 3>& expected_frame_velocity) noexcept {
   using AffineMap = CoordinateMaps::Affine;
   using TranslationMap = CoordinateMaps::TimeDependent::Translation;
-  static_assert(cpp17::is_same_v<Map1, AffineMap> or
-                    cpp17::is_same_v<Map1, TranslationMap>,
-                "Map1 must be either an affine map or a translation map");
-  static_assert(cpp17::is_same_v<Map2, AffineMap> or
-                    cpp17::is_same_v<Map2, TranslationMap>,
-                "Map2 must be either an affine map or a translation map");
-  static_assert(cpp17::is_same_v<Map3, AffineMap> or
-                    cpp17::is_same_v<Map3, TranslationMap>,
-                "Map3 must be either an affine map or a translation map");
+  static_assert(
+      std::is_same_v<Map1, AffineMap> or std::is_same_v<Map1, TranslationMap>,
+      "Map1 must be either an affine map or a translation map");
+  static_assert(
+      std::is_same_v<Map2, AffineMap> or std::is_same_v<Map2, TranslationMap>,
+      "Map2 must be either an affine map or a translation map");
+  static_assert(
+      std::is_same_v<Map3, AffineMap> or std::is_same_v<Map3, TranslationMap>,
+      "Map3 must be either an affine map or a translation map");
 
   const std::array<double, 3> point_source_a{
       {x_source_a, y_source_a, z_source_a}};

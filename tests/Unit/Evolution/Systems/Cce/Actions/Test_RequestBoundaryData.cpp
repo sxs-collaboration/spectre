@@ -39,7 +39,7 @@ template <typename BoundaryComponent, typename EvolutionComponent>
 struct MockBoundaryComputeAndSendToEvolution {
   template <typename ParallelComponent, typename... DbTags,
             typename Metavariables, typename ArrayIndex,
-            Requires<tmpl2::flat_any_v<cpp17::is_same_v<
+            Requires<tmpl2::flat_any_v<std::is_same_v<
                 ::Tags::Variables<
                     typename Metavariables::cce_boundary_communication_tags>,
                 DbTags>...>> = nullptr>

@@ -38,7 +38,7 @@ class Index {
   template <typename... I, Requires<(sizeof...(I) > 1)> = nullptr>
   explicit Index(I... i) noexcept
       : indices_(make_array(static_cast<size_t>(i)...)) {
-    static_assert(cpp17::conjunction_v<tt::is_integer<I>...>,
+    static_assert(std::conjunction_v<tt::is_integer<I>...>,
                   "You must pass in a set of size_t's to Index.");
     static_assert(Dim == sizeof...(I),
                   "The number of indices given to Index must be the same as "

@@ -112,7 +112,7 @@ struct increment_count_actions_called {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     static_assert(
-        cpp17::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
+        std::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
     db::mutate<CountActionsCalled>(
         make_not_null(&box),
@@ -138,7 +138,7 @@ struct no_op {
   /// [apply_iterative]
   {
     static_assert(
-        cpp17::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
+        std::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
     return std::forward_as_tuple(std::move(box));
   }
@@ -157,7 +157,7 @@ struct initialize {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     static_assert(
-        cpp17::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
+        std::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
     return std::make_tuple(
         db::create_from<db::RemoveTags<>,
@@ -184,12 +184,12 @@ struct finalize {
   template <typename ParallelComponent, typename... DbTags,
             typename Metavariables, typename ArrayIndex,
             Requires<tmpl2::flat_any_v<
-                cpp17::is_same_v<CountActionsCalled, DbTags>...>> = nullptr>
+                std::is_same_v<CountActionsCalled, DbTags>...>> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {
     static_assert(
-        cpp17::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
+        std::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 5);
     SPECTRE_PARALLEL_REQUIRE(db::get<Int0>(box) == 1);
@@ -347,7 +347,7 @@ struct finalize {
   template <typename ParallelComponent, typename... DbTags,
             typename Metavariables, typename ArrayIndex,
             Requires<tmpl2::flat_any_v<
-                cpp17::is_same_v<CountActionsCalled, DbTags>...>> = nullptr>
+                std::is_same_v<CountActionsCalled, DbTags>...>> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {
@@ -511,7 +511,7 @@ struct finalize {
   template <typename ParallelComponent, typename... DbTags,
             typename Metavariables, typename ArrayIndex,
             Requires<tmpl2::flat_any_v<
-                cpp17::is_same_v<CountActionsCalled, DbTags>...>> = nullptr>
+                std::is_same_v<CountActionsCalled, DbTags>...>> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) noexcept {
@@ -583,9 +583,9 @@ struct iterate_increment_int0 {
                     const ParallelComponent* const  // NOLINT const
                     /*meta*/) noexcept
       -> std::tuple<db::DataBox<tmpl::list<DbTags...>>&&, bool, size_t> {
-    static_assert(cpp17::is_same_v<ParallelComponent,
-                                   AnyOrderComponent<TestMetavariables>>,
-                  "The ParallelComponent is not deduced to be the right type");
+    static_assert(
+        std::is_same_v<ParallelComponent, AnyOrderComponent<TestMetavariables>>,
+        "The ParallelComponent is not deduced to be the right type");
     db::mutate<CountActionsCalled>(
         make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called) {
@@ -615,15 +615,15 @@ struct finalize {
       typename ParallelComponent, typename... DbTags, typename Metavariables,
       typename ArrayIndex,
       Requires<
-          tmpl2::flat_any_v<cpp17::is_same_v<CountActionsCalled, DbTags>...> and
-          tmpl2::flat_any_v<cpp17::is_same_v<Int0, DbTags>...>> = nullptr>
+          tmpl2::flat_any_v<std::is_same_v<CountActionsCalled, DbTags>...> and
+          tmpl2::flat_any_v<std::is_same_v<Int0, DbTags>...>> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     const Parallel::ConstGlobalCache<Metavariables>&
                     /*cache*/,
                     const ArrayIndex& /*array_index*/) {
-    static_assert(cpp17::is_same_v<ParallelComponent,
-                                   AnyOrderComponent<TestMetavariables>>,
-                  "The ParallelComponent is not deduced to be the right type");
+    static_assert(
+        std::is_same_v<ParallelComponent, AnyOrderComponent<TestMetavariables>>,
+        "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(db::get<TemporalId>(box) ==
                              db::item_type<TemporalId>{0});
     SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 31);

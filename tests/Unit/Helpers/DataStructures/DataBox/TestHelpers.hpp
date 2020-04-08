@@ -49,18 +49,18 @@ void test_compute_tag(const std::string& expected_name) {
 
 template <typename Tag>
 void test_prefix_tag(const std::string& expected_name) {
-  static_assert(cpp17::is_base_of_v<::db::PrefixTag, Tag>,
+  static_assert(std::is_base_of_v<::db::PrefixTag, Tag>,
                 "A prefix tag must be derived from db::PrefixTag");
   detail::check_tag_name<Tag>(expected_name);
 }
 
 template <typename Tag>
 void test_simple_tag(const std::string& expected_name) {
-  static_assert(cpp17::is_base_of_v<::db::SimpleTag, Tag> and
-                    not cpp17::is_base_of_v<::db::ComputeTag, Tag>,
+  static_assert(std::is_base_of_v<::db::SimpleTag, Tag> and
+                    not std::is_base_of_v<::db::ComputeTag, Tag>,
                 "A simple tag must be derived from "
                 "db::SimpleTag, but not db::ComputeTag");
-  static_assert(not cpp17::is_same_v<Tag, typename Tag::type>,
+  static_assert(not std::is_same_v<Tag, typename Tag::type>,
                 "A type cannot be its own tag.");
   detail::check_tag_name<Tag>(expected_name);
 }

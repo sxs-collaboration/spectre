@@ -17,11 +17,11 @@
 /// Type trait to check if a type looks like a fraction (specifically,
 /// if it has numerator and denominator methods)
 //@{
-template <typename T, typename = cpp17::void_t<>>
+template <typename T, typename = std::void_t<>>
 struct is_fraction : std::false_type {};
 template <typename T>
-struct is_fraction<T, cpp17::void_t<decltype(std::declval<T>().numerator()),
-                                    decltype(std::declval<T>().denominator())>>
+struct is_fraction<T, std::void_t<decltype(std::declval<T>().numerator()),
+                                  decltype(std::declval<T>().denominator())>>
     : std::true_type {};
 
 template <typename T>

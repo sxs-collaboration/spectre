@@ -67,8 +67,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   auto option_created_lockstep_interface_manager = TestHelpers::test_creation<
       std::unique_ptr<Cce::GhWorldtubeInterfaceManager>,
       Cce::OptionTags::GhInterfaceManager>("GhLockstepInterfaceManager");
-  CHECK(cpp17::is_same_v<decltype(option_created_lockstep_interface_manager),
-                         std::unique_ptr<Cce::GhWorldtubeInterfaceManager>>);
+  CHECK(std::is_same_v<decltype(option_created_lockstep_interface_manager),
+                       std::unique_ptr<Cce::GhWorldtubeInterfaceManager>>);
 
   CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::ScriOutputDensity>(
             "6") == 6_st);
