@@ -12,7 +12,6 @@ set(LIBS_TO_LINK
   Options
   ParallelLinearSolver
   Utilities
-  ${SPECTRE_LIBRARIES}
   )
 
 function(add_linear_elliptic_executable

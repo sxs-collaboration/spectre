@@ -19,7 +19,6 @@ set(LIBS_TO_LINK
     Options
     Time
     Utilities
-    ${SPECTRE_LIBRARIES}
   )
 
 add_spectre_parallel_executable(

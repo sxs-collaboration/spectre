@@ -8,5 +8,9 @@ find_package(PythonLibs REQUIRED)
 
 message(STATUS "Python libs: " ${PYTHON_LIBRARIES})
 message(STATUS "Python incl: " ${PYTHON_INCLUDE_DIRS})
-spectre_include_directories(${PYTHON_INCLUDE_DIRS})
-list(APPEND SPECTRE_LIBRARIES ${PYTHON_LIBRARIES})
+
+add_library(PythonLibs INTERFACE IMPORTED)
+set_property(TARGET PythonLibs PROPERTY
+  INTERFACE_INCLUDE_DIRECTORIES ${PYTHON_INCLUDE_DIRS})
+set_property(TARGET PythonLibs PROPERTY
+  INTERFACE_LINK_LIBRARIES ${PYTHON_LIBRARIES})

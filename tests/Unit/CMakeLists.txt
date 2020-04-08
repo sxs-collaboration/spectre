@@ -62,7 +62,6 @@ target_link_libraries(
   Informer
   Options
   Utilities
-  ${SPECTRE_LIBRARIES}
   )
 
 add_dependencies(
