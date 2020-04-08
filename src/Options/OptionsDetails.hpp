@@ -160,10 +160,10 @@ struct has_upper_bound_on_size<
 
 template <typename Group, typename OptionList, typename = std::nullptr_t>
 struct print_impl {
-  static std::string apply(const int max_label_size) noexcept {
+  static std::string apply() noexcept {
     std::ostringstream ss;
-    ss << "  " << std::setw(max_label_size + 2) << std::left
-       << option_name<Group>() << Group::help << "\n\n";
+    ss << "  " << option_name<Group>() << ":\n"
+       << "    " << Group::help << "\n\n";
     return ss.str();
   }
 };
@@ -262,41 +262,38 @@ struct print_impl<Tag, OptionList,
     return "";
   }
 
-  static std::string apply(const int max_label_size) noexcept {
+  static std::string apply() noexcept {
     std::ostringstream ss;
-    ss << "  " << std::setw(max_label_size + 2) << std::left
-       << option_name<Tag>() << yaml_type<typename Tag::type>::value();
+    ss << "  " << option_name<Tag>() << ":\n"
+       << "    " << "type=" << yaml_type<typename Tag::type>::value();
     std::string limits;
     for (const auto& limit :
          {print_default<Tag>(), print_lower_bound<Tag>(),
           print_upper_bound<Tag>(), print_lower_bound_on_size<Tag>(),
           print_upper_bound_on_size<Tag>()}) {
       if (not limits.empty() and not limit.empty()) {
-        limits += ", ";
+        limits += "\n    ";
       }
       limits += limit;
     }
     if (not limits.empty()) {
-      ss << " [" << limits << "]";
+      ss << "\n    " << limits;
     }
-    ss << "\n" << std::setw(max_label_size + 4) << "" << Tag::help << "\n\n";
+    ss << "\n"
+       << "    " << Tag::help << "\n\n";
     return ss.str();
   }
 };
 
 template <typename OptionList>
 struct print {
-  explicit print(const int max_label_size) noexcept
-      : max_label_size_(max_label_size) {}
+  print() = default;
   using value_type = std::string;
   template <typename Tag>
   void operator()(tmpl::type_<Tag> /*meta*/) noexcept {
-    value += print_impl<Tag, OptionList>::apply(max_label_size_);
+    value += print_impl<Tag, OptionList>::apply();
   }
   value_type value{};
-
- private:
-  const int max_label_size_;
 };
 
 // TMP function to create an unordered_set of option names.

@@ -204,11 +204,8 @@ class Options {
   using tags_and_subgroups_list = tmpl::remove_duplicates<tmpl::transform<
       OptionList, Options_detail::find_subgroup<tmpl::_1, Group>>>;
 
-  // The maximum length of an option label. 21 characters fits
-  // "DiscontinuousGalerkin".
-  static constexpr int max_label_size_ = 21;
-  // The maximum length of option help strings.
-  static constexpr size_t max_help_size_ = 55;
+  // The maximum length of an option label.
+  static constexpr int max_label_size_ = 70;
 
   //@{
   /// Check that the size is not smaller than the lower bound
@@ -349,11 +346,6 @@ Options<OptionList, Group>::Options(std::string help_text) noexcept
                               << max_label_size_ << " characters or fewer");
     ASSERT(std::strlen(T::help) > 0,
            "You must supply a help string of non-zero length for " << label);
-    ASSERT(std::strlen(T::help) <= max_help_size_,
-           "Option help strings should be short and to the point.  "
-           "The help string for "
-               << label << " should have " << max_help_size_
-               << " characters or fewer.");
   });
 }
 
@@ -507,7 +499,7 @@ std::string Options<OptionList, Group>::help() const noexcept {
   if (tmpl::size<tags_and_subgroups_list>::value > 0) {
     ss << "\n\nOptions:\n"
        << tmpl::for_each<tags_and_subgroups_list>(
-              Options_detail::print<OptionList>{max_label_size_})
+              Options_detail::print<OptionList>{})
               .value;
   } else {
     ss << "\n\n<No options>\n";

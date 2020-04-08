@@ -237,13 +237,18 @@ void test_factory_object_map() {
 
 void test_factory_format() {
   Options<tmpl::list<OptionType>> opts("");
-  INFO(opts.help());
+  const std::string expected1{"default=Test1\n"};
+  const std::string expected2{"default=Test2\n"};
+  INFO("Help string:\n"
+       << opts.help() << "\n\nExpected to find:\n"
+       << expected2 << "\nExpected not to find:\n"
+       << expected1);
   // The compiler puts "(anonymous namespace)::" before the type, but
   // I don't want to rely on that, so just check that the type is at
   // the end of the line, which should ensure it is not in a template
   // parameter or something.
-  CHECK(opts.help().find("OptionTest [default=Test2]\n") != std::string::npos);
-  CHECK(opts.help().find("OptionTest [default=Test1]\n") == std::string::npos);
+  CHECK(opts.help().find(expected2) != std::string::npos);
+  CHECK(opts.help().find(expected1) == std::string::npos);
 }
 }  // namespace
 

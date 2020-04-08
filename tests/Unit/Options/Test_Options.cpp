@@ -602,13 +602,17 @@ struct NamedDuplicate {
 }
 
 #ifdef SPECTRE_DEBUG
-struct TooooooooooooooooooooLong {
+struct
+    ToooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooLong {
   using type = int;
   static constexpr OptionString help = {"halp"};
 };
 struct NamedTooLong {
   using type = int;
-  static std::string name() noexcept { return "TooooooooooooooooooooLong"; }
+  static std::string name() noexcept {
+    return "Toooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
+           "oLong";
+  }
   static constexpr OptionString help = {"halp"};
 };
 struct NoHelp {
@@ -620,31 +624,24 @@ struct NamedNoHelp {
   static std::string name() noexcept { return "NoHelp"; }
   static constexpr OptionString help = {""};
 };
-struct TooLongHelp {
-  using type = int;
-  static constexpr OptionString help = {
-      "halp halp halp halp halp halp halp halp halp halp halp halp"};
-};
-struct NamedTooLongHelp {
-  using type = int;
-  static std::string name() noexcept { return "TooLongHelp"; }
-  static constexpr OptionString help = {
-      "halp halp halp halp halp halp halp halp halp halp halp halp"};
-};
 #endif  // SPECTRE_DEBUG
 
-// [[OutputRegex, The option name TooooooooooooooooooooLong is too long for
-// nice formatting]]
+// [[OutputRegex, The option name
+// ToooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooLong is
+// too long for nice formatting]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.Options.TooLong", "[Unit][Options]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  Options<tmpl::list<TooooooooooooooooooooLong>> opts("");
+  Options<tmpl::list<
+      ToooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooLong>>
+      opts("");
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
-// [[OutputRegex, The option name TooooooooooooooooooooLong is too long for
-// nice formatting]]
+// [[OutputRegex, The option name
+// ToooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooLong is
+// too long for nice formatting]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.Options.NamedTooLong", "[Unit][Options]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
@@ -667,25 +664,6 @@ struct NamedTooLongHelp {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Options<tmpl::list<NamedNoHelp>> opts("");
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The help string for TooLongHelp should have]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Options.TooLongHelp", "[Unit][Options]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Options<tmpl::list<TooLongHelp>> opts("");
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The help string for TooLongHelp should have]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Options.NamedTooLongHelp",
-                               "[Unit][Options]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Options<tmpl::list<NamedTooLongHelp>> opts("");
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
@@ -767,9 +745,12 @@ void test_options_format() {
   const auto check = [](auto opt) noexcept {
     using Opt = decltype(opt);
     Options<tmpl::list<Opt>> opts("");
-    INFO(opts.help());
+    INFO("Help string:\n"
+         << opts.help() << "\n\nExpected to find:\n"
+         << "  type="s + Opt::expected + "\n");
     // Add whitespace to check that we've got the entire type
-    CHECK(opts.help().find("  "s + Opt::expected + "\n") != std::string::npos);
+    CHECK(opts.help().find("type="s + Opt::expected + "\n"s) !=
+          std::string::npos);
   };
   check(FormatMap{});
   check(FormatVector{});
