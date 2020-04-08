@@ -67,7 +67,7 @@ TimescaleTuner::TimescaleTuner(DataVector initial_timescale,
 void TimescaleTuner::set_timescale_if_in_allowable_range(
     const double suggested_timescale) noexcept {
   for (auto& t_scale : timescale_) {
-    t_scale = cpp17::clamp(suggested_timescale, min_timescale_, max_timescale_);
+    t_scale = std::clamp(suggested_timescale, min_timescale_, max_timescale_);
   }
 }
 
@@ -106,6 +106,6 @@ void TimescaleTuner::update_timescale(
 
     // make sure the timescale has not increased(decreased) above(below) the
     // maximum(minimum) value.
-    timescale_[i] = cpp17::clamp(timescale_[i], min_timescale_, max_timescale_);
+    timescale_[i] = std::clamp(timescale_[i], min_timescale_, max_timescale_);
   }
 }

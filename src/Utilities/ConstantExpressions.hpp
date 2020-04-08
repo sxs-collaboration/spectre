@@ -239,26 +239,6 @@ constexpr T min_by_magnitude(std::initializer_list<T> ilist) {
 }
 //@}
 
-namespace cpp17 {
-/// \ingroup ConstantExpressionsGroup
-/// \brief Clamps the value between lo and hi
-///
-/// If v compares less than lo, returns lo; otherwise if hi compares less than
-///  v, returns hi; otherwise returns v.
-template <class T, class Compare = std::less<>>
-constexpr const T& clamp(const T& v, const T& lo, const T& hi,
-                         Compare comp = Compare()) {
-  // reason for NOLINT: the warning below occurs despite no instances of an
-  // array in the clamp calls. This warning occurs sometime during the assert
-  // macro expansion rather than being due to an implementation error.
-  // "warning: do not implicitly decay an array into a pointer; consider using
-  //  gsl::array_view or an explicit cast instead
-  //  [cppcoreguidelines-pro-bounds-array-to-pointer-decay]"
-  return assert(!comp(hi, lo)),  // NOLINT
-         comp(v, lo) ? lo : comp(hi, v) ? hi : v;
-}
-}  // namespace cpp17
-
 /// \ingroup ConstantExpressionsGroup
 /// \brief Returns `f(ic<0>{}) + f(ic<1>{}) + ... + f(ic<NumTerms-1>{})`
 /// where `ic<N>` stands for `std::integral_constant<size_t, N>`.
