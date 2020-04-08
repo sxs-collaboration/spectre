@@ -150,7 +150,9 @@ struct DiscontinuousGalerkin {
     using boundary_exterior_compute_tag = domain::Tags::InterfaceCompute<
         domain::Tags::BoundaryDirectionsExterior<dim>, Tag>;
 
-    using char_speed_tag = typename LocalSystem::char_speeds_tag;
+    using char_speed_tag =
+        domain::Tags::CharSpeedCompute<typename LocalSystem::char_speeds_tag,
+                                       dim>;
 
     using compute_tags = db::AddComputeTags<
         domain::Tags::Slice<
@@ -162,8 +164,7 @@ struct DiscontinuousGalerkin {
             typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
         domain::Tags::Slice<domain::Tags::InternalDirections<dim>,
                             domain::Tags::MeshVelocity<dim>>,
-        interface_compute_tag<
-            domain::Tags::CharSpeedCompute<char_speed_tag, dim>>,
+        interface_compute_tag<char_speed_tag>,
         domain::Tags::Slice<
             domain::Tags::BoundaryDirectionsInterior<dim>,
             db::add_tag_prefix<::Tags::Flux,
@@ -171,6 +172,8 @@ struct DiscontinuousGalerkin {
                                tmpl::size_t<dim>, Frame::Inertial>>,
         boundary_interior_compute_tag<::Tags::NormalDotFluxCompute<
             typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
+        domain::Tags::Slice<domain::Tags::BoundaryDirectionsInterior<dim>,
+                            domain::Tags::MeshVelocity<dim>>,
         boundary_interior_compute_tag<char_speed_tag>,
         domain::Tags::Slice<
             domain::Tags::BoundaryDirectionsExterior<dim>,
@@ -181,8 +184,7 @@ struct DiscontinuousGalerkin {
             typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
         domain::Tags::Slice<domain::Tags::BoundaryDirectionsExterior<dim>,
                             domain::Tags::MeshVelocity<dim>>,
-        boundary_exterior_compute_tag<
-            domain::Tags::CharSpeedCompute<char_speed_tag, dim>>>;
+        boundary_exterior_compute_tag<char_speed_tag>>;
 
     template <typename TagsList>
     static auto initialize(db::DataBox<TagsList>&& box) noexcept {
