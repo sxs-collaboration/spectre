@@ -174,37 +174,3 @@ constexpr inline void tuple_transform(
       tuple, std::forward<N_aryOp>(op),
       std::make_index_sequence<sizeof...(Elements)>{}, args...);
 }
-
-namespace cpp17 {
-
-namespace detail {
-
-template <class F, class Tuple, std::size_t... I>
-constexpr decltype(auto) apply_impl(F&& f, Tuple&& t,
-                                    std::index_sequence<I...> /* meta */) {
-  return std::forward<F>(f)(std::get<I>(std::forward<Tuple>(t))...);
-}
-
-}  // namespace detail
-
-/*!
- * \ingroup UtilitiesGroup
- * \brief Invoke `f` with the arguments `t` expanded in a parameter pack
- *
- * Here is an example how to use the function:
- *
- * \snippet Test_Tuple.cpp expand_tuple_example
- *
- * This is the function being called in the above example:
- *
- * \snippet Test_Tuple.cpp expand_tuple_example_function
- */
-template <class F, class Tuple>
-constexpr decltype(auto) apply(F&& f, Tuple&& t) {
-  return detail::apply_impl(
-      std::forward<F>(f), std::forward<Tuple>(t),
-      std::make_index_sequence<
-          std::tuple_size<std::remove_reference_t<Tuple>>::value>{});
-}
-
-}  // namespace cpp17

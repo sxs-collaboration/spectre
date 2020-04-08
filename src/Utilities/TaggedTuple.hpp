@@ -802,7 +802,7 @@ constexpr decltype(auto) apply_impl(F&& f, const TaggedTuple<Tags...>& t,
  *
  * \snippet Test_TaggedTuple.cpp expand_tuple_example_function
  *
- * \see cpp17::apply
+ * \see std::apply
  */
 template <typename ApplyTags, typename F, typename... Tags>
 constexpr decltype(auto) apply(F&& f, const TaggedTuple<Tags...>& t) {

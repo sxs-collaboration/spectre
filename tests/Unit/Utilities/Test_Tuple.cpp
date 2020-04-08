@@ -249,26 +249,3 @@ SPECTRE_TEST_CASE("Unit.Utilities.tuple_transform", "[Utilities][Unit]") {
                     std::string("test sentence"), test_sentence2)),
                 "Failed testing noexcept-ness of tuple_transform");
 }
-
-namespace {
-/// [expand_tuple_example_function]
-double test_function(const int first_arg, const double second_arg) {
-  return static_cast<double>(first_arg) + second_arg;
-}
-/// [expand_tuple_example_function]
-}  // namespace
-
-SPECTRE_TEST_CASE("Unit.Utilities.ExpandTuple", "[Unit][Utilities]") {
-  /// [expand_tuple_example]
-  const double extra_factor = 3.;
-  const double result = cpp17::apply(
-      [&extra_factor](const auto&... expanded_args) {
-        return extra_factor * test_function(expanded_args...);
-      },
-      std::tuple<int, double>{1, 2.});
-  /// [expand_tuple_example]
-  CHECK(result == 9.);
-  CHECK(1 ==
-        cpp17::apply([](const int arg) { return arg; }, std::tuple<int>{1}));
-  CHECK(0 == cpp17::apply([]() { return 0; }, std::tuple<>{}));
-}
