@@ -14,6 +14,7 @@
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
+#include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
@@ -51,17 +52,17 @@
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
-#include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
-#include "Time/Actions/ChangeSlabSize.hpp"         // IWYU pragma: keep
-#include "Time/Actions/ChangeStepSize.hpp"         // IWYU pragma: keep
-#include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
-#include "Time/Actions/SelfStartActions.hpp"       // IWYU pragma: keep
-#include "Time/Actions/UpdateU.hpp"                // IWYU pragma: keep
-#include "Time/StepChoosers/ByBlock.hpp"           // IWYU pragma: keep
-#include "Time/StepChoosers/Cfl.hpp"               // IWYU pragma: keep
-#include "Time/StepChoosers/Constant.hpp"          // IWYU pragma: keep
-#include "Time/StepChoosers/Increase.hpp"          // IWYU pragma: keep
-#include "Time/StepChoosers/PreventRapidIncrease.hpp"          // IWYU pragma: keep
+#include "Time/Actions/AdvanceTime.hpp"                // IWYU pragma: keep
+#include "Time/Actions/ChangeSlabSize.hpp"             // IWYU pragma: keep
+#include "Time/Actions/ChangeStepSize.hpp"             // IWYU pragma: keep
+#include "Time/Actions/RecordTimeStepperData.hpp"      // IWYU pragma: keep
+#include "Time/Actions/SelfStartActions.hpp"           // IWYU pragma: keep
+#include "Time/Actions/UpdateU.hpp"                    // IWYU pragma: keep
+#include "Time/StepChoosers/ByBlock.hpp"               // IWYU pragma: keep
+#include "Time/StepChoosers/Cfl.hpp"                   // IWYU pragma: keep
+#include "Time/StepChoosers/Constant.hpp"              // IWYU pragma: keep
+#include "Time/StepChoosers/Increase.hpp"              // IWYU pragma: keep
+#include "Time/StepChoosers/PreventRapidIncrease.hpp"  // IWYU pragma: keep
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepChoosers/StepToTimes.hpp"
 #include "Time/StepControllers/StepController.hpp"
@@ -179,14 +180,16 @@ struct EvolutionMetavars {
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
-      dg::Actions::InitializeDomain<system::volume_dim>,
+      evolution::dg::Initialization::Domain<system::volume_dim>,
       Initialization::Actions::NonconservativeSystem,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       dg::Actions::InitializeInterfaces<
           system,
           dg::Initialization::slice_tags_to_face<
               typename system::variables_tag>,
-          dg::Initialization::slice_tags_to_exterior<>>,
+          dg::Initialization::slice_tags_to_exterior<>,
+          dg::Initialization::face_compute_tags<>,
+          dg::Initialization::exterior_compute_tags<>, true, true>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<evolution::Tags::AnalyticCompute<
               Dim, initial_data_tag, analytic_solution_fields>>>,

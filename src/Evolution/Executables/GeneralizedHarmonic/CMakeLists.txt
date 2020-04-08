@@ -7,6 +7,7 @@ set(LIBS_TO_LINK
     DiscontinuousGalerkin
     Domain
     DomainCreators
+    Evolution
     GeneralRelativity
     GeneralRelativitySolutions
     GeneralizedHarmonic
