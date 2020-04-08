@@ -164,7 +164,7 @@ class FixedHashMap {
 
   size_t count(const key_type& key) const noexcept;
   iterator find(const key_type& key) noexcept {
-    return unconst(cpp17::as_const(*this).find(key));
+    return unconst(std::as_const(*this).find(key));
   }
   const_iterator find(const key_type& key) const noexcept {
     auto it = get_data_entry(key);

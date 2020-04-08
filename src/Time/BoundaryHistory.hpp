@@ -174,8 +174,8 @@ BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::coupling(
   const bool is_new_value = insert_result.second;
   if (is_new_value) {
     inserted_value =
-        std::forward<Coupling>(c)(cpp17::as_const(std::get<1>(*local.base())),
-                                  cpp17::as_const(std::get<1>(*remote.base())));
+        std::forward<Coupling>(c)(std::as_const(std::get<1>(*local.base())),
+                                  std::as_const(std::get<1>(*remote.base())));
   }
   return inserted_value;
 }

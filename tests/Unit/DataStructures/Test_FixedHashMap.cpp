@@ -33,7 +33,7 @@ void check_single_element_map_with_direction(
 
   map.emplace(direction, std::make_pair(1.5, NonCopyable{}));
   const typename decltype(map)::value_type entry(
-      cpp17::as_const(direction), std::make_pair(1.5, NonCopyable{}));
+      std::as_const(direction), std::make_pair(1.5, NonCopyable{}));
 
   const auto& const_map = map;
 
@@ -78,10 +78,10 @@ void test_direction_key() {
   CHECK(map.empty());
   CHECK(map.size() == 0);  // NOLINT(readability-container-size-empty)
 
-  CHECK(map.begin() == cpp17::as_const(map).begin());
-  CHECK(map.begin() == cpp17::as_const(map).cbegin());
-  CHECK(map.end() == cpp17::as_const(map).end());
-  CHECK(map.end() == cpp17::as_const(map).cend());
+  CHECK(map.begin() == std::as_const(map).begin());
+  CHECK(map.begin() == std::as_const(map).cbegin());
+  CHECK(map.end() == std::as_const(map).end());
+  CHECK(map.end() == std::as_const(map).cend());
   CHECK(map.begin() == map.end());
 
   const auto dir1 = Direction<2>::lower_eta();
@@ -119,16 +119,14 @@ void test_direction_key() {
     CHECK(map.count(dir1) == 1);
   }
   CHECK(map.size() == 2);
-  CHECK(cpp17::as_const(map).at(dir1) == 1.);
-  CHECK(cpp17::as_const(map).at(dir2) == 2.);
+  CHECK(std::as_const(map).at(dir1) == 1.);
+  CHECK(std::as_const(map).at(dir2) == 2.);
   map.at(dir2) = 5.;
-  CHECK(cpp17::as_const(map).at(dir2) == 5.);
+  CHECK(std::as_const(map).at(dir2) == 5.);
   CHECK(map.size() == 2);
-  CHECK(&cpp17::as_const(map).find(dir1)->second ==
-        &cpp17::as_const(map).at(dir1));
-  CHECK(&cpp17::as_const(map).find(dir2)->second ==
-        &cpp17::as_const(map).at(dir2));
-  CHECK(cpp17::as_const(map).find(dir3) == map.end());
+  CHECK(&std::as_const(map).find(dir1)->second == &std::as_const(map).at(dir1));
+  CHECK(&std::as_const(map).find(dir2)->second == &std::as_const(map).at(dir2));
+  CHECK(std::as_const(map).find(dir3) == map.end());
 
   const auto check_exception = [&dir3](auto& passed_map) noexcept {
     try {
@@ -141,11 +139,11 @@ void test_direction_key() {
     }
   };
   check_exception(map);
-  check_exception(cpp17::as_const(map));
+  check_exception(std::as_const(map));
 
   map[dir3] = 6.;
   CHECK(map.size() == 3);
-  CHECK(cpp17::as_const(map).at(dir3) == 6.);
+  CHECK(std::as_const(map).at(dir3) == 6.);
 
   test_iterators(map);
 
@@ -157,7 +155,7 @@ void test_direction_key() {
     const auto second = std::next(map2.begin());
     const auto third = std::next(map2.begin(), 2);
     // Checks iterator mutability correctness for erase
-    const auto next = map2.erase(cpp17::as_const(map2).find(second->first));
+    const auto next = map2.erase(std::as_const(map2).find(second->first));
     CHECK(map2.size() == 2);
     CHECK(next == third);
     next->second = -1.;
@@ -326,8 +324,8 @@ void test_repeated_key() {
   CHECK_FALSE(map.contains(3));
   CHECK(map.find(1) != map.end());
   CHECK(map.find(2) == map.end());
-  CHECK(cpp17::as_const(map).find(1) != map.end());
-  CHECK(cpp17::as_const(map).find(2) == map.end());
+  CHECK(std::as_const(map).find(1) != map.end());
+  CHECK(std::as_const(map).find(2) == map.end());
 
   make_overloader(
       [](const gsl::not_null<CopyableKeyMapType*> local_map) noexcept {
@@ -348,15 +346,15 @@ void test_repeated_key() {
   CHECK(map.find(1) != map.end());
   CHECK(map.find(2) != map.end());
   CHECK(map.find(3) == map.end());
-  CHECK(cpp17::as_const(map).find(1) != map.end());
-  CHECK(cpp17::as_const(map).find(2) != map.end());
-  CHECK(cpp17::as_const(map).find(3) == map.end());
+  CHECK(std::as_const(map).find(1) != map.end());
+  CHECK(std::as_const(map).find(2) != map.end());
+  CHECK(std::as_const(map).find(3) == map.end());
 
   map.insert({3, 13});
   CHECK(map.size() == 3);
   CHECK_FALSE(map.empty());
   CHECK(map.at(3) == 13);
-  CHECK(cpp17::as_const(map).at(3) == 13);
+  CHECK(std::as_const(map).at(3) == 13);
   make_overloader(
       [](const gsl::not_null<CopyableKeyMapType*> local_map) noexcept {
         CHECK((*local_map)[3] == 13);
@@ -374,10 +372,10 @@ void test_repeated_key() {
   CHECK(map.find(2) != map.end());
   CHECK(map.find(3) != map.end());
   CHECK(map.find(2) != map.find(3));
-  CHECK(cpp17::as_const(map).find(1) != map.end());
-  CHECK(cpp17::as_const(map).find(2) != map.end());
-  CHECK(cpp17::as_const(map).find(3) != map.end());
-  CHECK(cpp17::as_const(map).find(2) != map.find(3));
+  CHECK(std::as_const(map).find(1) != map.end());
+  CHECK(std::as_const(map).find(2) != map.end());
+  CHECK(std::as_const(map).find(3) != map.end());
+  CHECK(std::as_const(map).find(2) != map.find(3));
 
   map.erase(2);
   CHECK(map.size() == 2);
@@ -408,7 +406,7 @@ void test_repeated_key() {
   CHECK(map.find(3) != map.end());
   CHECK(map.find(4) != map.end());
   CHECK(map.at(4) == 14);
-  CHECK(cpp17::as_const(map).at(4) == 14);
+  CHECK(std::as_const(map).at(4) == 14);
   make_overloader(
       [](const gsl::not_null<CopyableKeyMapType*> local_map) noexcept {
         CHECK((*local_map)[4] == 14);
@@ -439,7 +437,7 @@ void test_repeated_key() {
   CHECK(map.find(5) != map.end());
   CHECK(map.find(4) != map.find(5));
   CHECK(map.at(5) == 15);
-  CHECK(cpp17::as_const(map).at(5) == 15);
+  CHECK(std::as_const(map).at(5) == 15);
   make_overloader(
       [](const gsl::not_null<CopyableKeyMapType*> local_map) noexcept {
         CHECK((*local_map)[5] == 15);
@@ -463,7 +461,7 @@ void test_repeated_key() {
   CHECK(map.find(5) != map.end());
   CHECK(map.find(4) != map.find(5));
   CHECK(map.at(5) == 15);
-  CHECK(cpp17::as_const(map).at(5) == 15);
+  CHECK(std::as_const(map).at(5) == 15);
   make_overloader(
       [](const gsl::not_null<CopyableKeyMapType*> local_map) noexcept {
         CHECK((*local_map)[5] == 15);
@@ -493,7 +491,7 @@ void test_repeated_key() {
     CHECK(check_4_local_map->find(4) != check_4_local_map->find(5));
     CHECK(check_4_local_map->find(4) == l_it_bool_to_4.first);
     CHECK(check_4_local_map->at(4) == expected);
-    CHECK(cpp17::as_const(*check_4_local_map).at(4) == expected);
+    CHECK(std::as_const(*check_4_local_map).at(4) == expected);
     make_overloader(
         [expected](
             const gsl::not_null<CopyableKeyMapType*> more_local_map) noexcept {
@@ -524,7 +522,7 @@ void test_repeated_key() {
         CHECK(after_map.find(5) != after_map.end());
         CHECK(after_map.find(4) != after_map.find(5));
         CHECK(after_map.at(5) == 15);
-        CHECK(cpp17::as_const(after_map).at(5) == 15);
+        CHECK(std::as_const(after_map).at(5) == 15);
         CHECK(after_map[5] == 15);
 
         check_4(after_map.insert_or_assign(4, 14), 14, true, &after_map);

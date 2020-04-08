@@ -382,15 +382,3 @@ inline constexpr bool array_equal(const std::array<T, size>& lhs,
                      and array_equal(lhs, rhs, i + 1))
                   : true;
 }
-
-namespace cpp17 {
-/// \ingroup ConstantExpressionsGroup
-/// \brief Returns a const reference to its argument.
-template <typename T>
-constexpr std::add_const_t<T>& as_const(T& t) noexcept {
-  return t;
-}
-
-template <typename T>
-void as_const(const T&& t) noexcept = delete;
-}  // namespace cpp17

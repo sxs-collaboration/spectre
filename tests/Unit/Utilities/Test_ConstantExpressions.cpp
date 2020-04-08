@@ -164,17 +164,6 @@ static_assert(
                 make_array_from_list<tmpl::integral_list<size_t, 1, 2, 5>>()),
     "Failed testing make_array_from_list");
 
-// Test as_const
-static_assert(
-    std::is_same_v<const double&,
-                   decltype(cpp17::as_const(std::declval<const double&>()))>,
-    "Failed testing as_const");
-static_assert(std::is_same_v<const double&, decltype(cpp17::as_const(
-                                                std::declval<double&>()))>,
-              "Failed testing as_const");
-static_assert(5 == cpp17::as_const(static_cast<const int&>(5)),
-              "Failed testing as_const");
-
 SPECTRE_TEST_CASE("Unit.Utilities.ConstantExpressions", "[Unit][Utilities]") {
   CHECK((std::array<std::array<size_t, 3>, 3>{
             {std::array<size_t, 3>{{1, 2, 5}}, std::array<size_t, 3>{{8, 7, 2}},

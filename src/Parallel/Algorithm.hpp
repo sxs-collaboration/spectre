@@ -581,31 +581,31 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     // ```
     // typename std::tuple_size<decltype(this_action::apply(
     //                     box, inboxes_, *const_global_cache_,
-    //                     cpp17::as_const(array_index_), actions_list{},
+    //                     std::as_const(array_index_), actions_list{},
     //                     std::add_pointer_t<ParallelComponent>{}))>::type{}
     // ```
     const auto invoke_this_action = make_overloader(
-        [this](auto& my_box, std::integral_constant<size_t, 1> /*meta*/)
-            noexcept {
-              std::tie(box_) = this_action::apply(
-                  my_box, inboxes_, *const_global_cache_,
-                  cpp17::as_const(array_index_), actions_list{},
-                  std::add_pointer_t<ParallelComponent>{});
-            },
-        [this](auto& my_box, std::integral_constant<size_t, 2> /*meta*/)
-            noexcept {
-              std::tie(box_, terminate_) = this_action::apply(
-                  my_box, inboxes_, *const_global_cache_,
-                  cpp17::as_const(array_index_), actions_list{},
-                  std::add_pointer_t<ParallelComponent>{});
-            },
-        [this](auto& my_box, std::integral_constant<size_t, 3> /*meta*/)
-            noexcept {
-              std::tie(box_, terminate_, algorithm_step_) = this_action::apply(
-                  my_box, inboxes_, *const_global_cache_,
-                  cpp17::as_const(array_index_), actions_list{},
-                  std::add_pointer_t<ParallelComponent>{});
-            });
+        [this](auto& my_box,
+               std::integral_constant<size_t, 1> /*meta*/) noexcept {
+          std::tie(box_) =
+              this_action::apply(my_box, inboxes_, *const_global_cache_,
+                                 std::as_const(array_index_), actions_list{},
+                                 std::add_pointer_t<ParallelComponent>{});
+        },
+        [this](auto& my_box,
+               std::integral_constant<size_t, 2> /*meta*/) noexcept {
+          std::tie(box_, terminate_) =
+              this_action::apply(my_box, inboxes_, *const_global_cache_,
+                                 std::as_const(array_index_), actions_list{},
+                                 std::add_pointer_t<ParallelComponent>{});
+        },
+        [this](auto& my_box,
+               std::integral_constant<size_t, 3> /*meta*/) noexcept {
+          std::tie(box_, terminate_, algorithm_step_) =
+              this_action::apply(my_box, inboxes_, *const_global_cache_,
+                                 std::as_const(array_index_), actions_list{},
+                                 std::add_pointer_t<ParallelComponent>{});
+        });
 
     // `check_if_ready` calls the `is_ready` static method on the action
     // `action` if it has one, otherwise returns true. The first argument is the
@@ -618,8 +618,8 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
         [this](std::true_type /*has_is_ready*/, auto action,
                const auto& check_local_box) noexcept {
           return decltype(action)::is_ready(
-              check_local_box, cpp17::as_const(inboxes_), *const_global_cache_,
-              cpp17::as_const(array_index_));
+              check_local_box, std::as_const(inboxes_), *const_global_cache_,
+              std::as_const(array_index_));
         },
         [](std::false_type /*has_is_ready*/, auto /*action*/,
            const auto& /*box*/) noexcept { return true; });
@@ -683,7 +683,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                     box,
                     typename std::tuple_size<decltype(local_this_action::apply(
                         box, inboxes_, *const_global_cache_,
-                        cpp17::as_const(array_index_), actions_list{},
+                        std::as_const(array_index_), actions_list{},
                         std::add_pointer_t<ParallelComponent>{}))>::type{});
               } else if (box_.which() ==
                          static_cast<int>(
@@ -707,7 +707,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                     box,
                     typename std::tuple_size<decltype(local_this_action::apply(
                         box, inboxes_, *const_global_cache_,
-                        cpp17::as_const(array_index_), actions_list{},
+                        std::as_const(array_index_), actions_list{},
                         std::add_pointer_t<ParallelComponent>{}))>::type{});
               } else {
                 display_databox_error(__LINE__);
@@ -748,7 +748,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                     box,
                     typename std::tuple_size<decltype(local_this_action::apply(
                         box, inboxes_, *const_global_cache_,
-                        cpp17::as_const(array_index_), actions_list{},
+                        std::as_const(array_index_), actions_list{},
                         std::add_pointer_t<ParallelComponent>{}))>::type{});
               } else {
                 display_databox_error(__LINE__);
