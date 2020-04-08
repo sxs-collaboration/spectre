@@ -125,7 +125,7 @@ class Shell : public DomainCreator<3> {
         typename OuterRadius::type outer_radius,
         typename InitialRefinement::type initial_refinement,
         typename InitialGridPoints::type initial_number_of_grid_points,
-        typename UseEquiangularMap::type use_equiangular_map,
+        typename UseEquiangularMap::type use_equiangular_map = true,
         typename AspectRatio::type aspect_ratio = 1.0,
         typename UseLogarithmicMap::type use_logarithmic_map = false,
         typename WhichWedges::type which_wedges = ShellWedges::All,
