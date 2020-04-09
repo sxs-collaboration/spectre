@@ -90,46 +90,29 @@ struct ConservativeSystem {
     typename fluxes_tag::type fluxes(num_grid_points);
     typename sources_tag::type sources(num_grid_points);
 
-    return std::make_tuple(
-        impl<Metavariables, simple_tags, compute_tags, system>(
-            std::integral_constant<
-                bool, system::has_primitive_and_conservative_vars>{},
-            std::move(box), std::move(vars), std::move(fluxes),
-            std::move(sources)));
-  }
+    if constexpr (system::has_primitive_and_conservative_vars) {
+      using PrimitiveVars = typename system::primitive_variables_tag::type;
 
- private:
-  template <typename Metavariables, typename AddSimpleTagsList,
-            typename AddComputeTagsList, typename System, typename DbTagsList,
-            typename... Ts>
-  static auto impl(std::true_type /*has_primitive_tags*/,
-                   db::DataBox<DbTagsList>&& box, Ts&&... ts) noexcept {
-    static constexpr size_t dim = System::volume_dim;
-    using PrimitiveVars = typename System::primitive_variables_tag::type;
+      PrimitiveVars primitive_vars{
+          db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points()};
+      auto equation_of_state =
+          db::get<::Tags::AnalyticSolutionOrData>(box).equation_of_state();
 
-    PrimitiveVars primitive_vars{
-        db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points()};
-    auto equation_of_state =
-        db::get<::Tags::AnalyticSolutionOrData>(box).equation_of_state();
-
-    return merge_into_databox<
-        ConservativeSystem,
-        tmpl::push_back<AddSimpleTagsList,
-                        typename System::primitive_variables_tag,
-                        typename Metavariables::equation_of_state_tag>,
-        AddComputeTagsList>(std::move(box), std::forward<Ts>(ts)...,
-                            std::move(primitive_vars),
-                            std::move(equation_of_state));
-  }
-
-  template <typename Metavariables, typename AddSimpleTagsList,
-            typename AddComputeTagsList, typename System, typename DbTagsList,
-            typename... Ts>
-  static auto impl(std::false_type /*has_primitive_tags*/,
-                   db::DataBox<DbTagsList>&& box, Ts&&... ts) noexcept {
-    return merge_into_databox<ConservativeSystem, AddSimpleTagsList,
-                              AddComputeTagsList>(std::move(box),
-                                                  std::forward<Ts>(ts)...);
+      return std::make_tuple(
+          merge_into_databox<
+              ConservativeSystem,
+              tmpl::push_back<simple_tags,
+                              typename system::primitive_variables_tag,
+                              typename Metavariables::equation_of_state_tag>,
+              compute_tags>(std::move(box), std::move(vars), std::move(fluxes),
+                            std::move(sources), std::move(primitive_vars),
+                            std::move(equation_of_state)));
+    } else {
+      return std::make_tuple(
+          merge_into_databox<ConservativeSystem, simple_tags, compute_tags>(
+              std::move(box), std::move(vars), std::move(fluxes),
+              std::move(sources)));
+    }
   }
 };
 }  // namespace Actions
