@@ -3,8 +3,7 @@
 
 #pragma once
 
-#include "DataStructures/TempBuffer.hpp"
-#include "DataStructures/VectorImpl.hpp"
+#include "Utilities/PointerVector.hpp"  // For blaze::MultTrait
 #include "Utilities/Gsl.hpp"
 
 // @{

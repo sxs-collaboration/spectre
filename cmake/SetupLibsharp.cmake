@@ -17,3 +17,8 @@ set_property(TARGET Libsharp PROPERTY
   ${LIBSHARP_LIBFFTPACK}
   ${LIBSHARP_LIBCUTILS}
   )
+
+set_property(
+  GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
+  Libsharp
+  )

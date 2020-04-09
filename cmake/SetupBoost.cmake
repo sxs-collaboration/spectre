@@ -15,18 +15,52 @@ file(APPEND
 # - Boost::boost is the header-only parts of Boost
 # - Boost::COMPONENT are the components that need linking, e.g. program_options
 
-# This is needed if your Boost version is newer than your CMake version
-# or if you have an old version of CMake (<3.5)
-if(NOT TARGET Boost::boost)
-  add_library(Boost::boost INTERFACE IMPORTED)
-  set_property(TARGET Boost::boost PROPERTY
-    INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
-endif(NOT TARGET Boost::boost)
+add_interface_lib_headers(
+  TARGET Boost::boost
+  HEADERS
+  boost/config.hpp
+  boost/core/demangle.hpp
+  boost/functional/hash.hpp
+  boost/integer/common_factor_rt.hpp
+  boost/make_shared.hpp
+  boost/multi_array.hpp
+  boost/none.hpp
+  boost/optional.hpp
+  boost/parameter/name.hpp
+  boost/preprocessor/arithmetic/inc.hpp
+  boost/preprocessor/control/expr_iif.hpp
+  boost/preprocessor/control/iif.hpp
+  boost/preprocessor/control/while.hpp
+  boost/preprocessor/list/adt.hpp
+  boost/preprocessor/list/fold_left.hpp
+  boost/preprocessor/list/fold_right.hpp
+  boost/preprocessor/list/for_each_product.hpp
+  boost/preprocessor/list/size.hpp
+  boost/preprocessor/list/to_tuple.hpp
+  boost/preprocessor/list/transform.hpp
+  boost/preprocessor/logical/bitand.hpp
+  boost/preprocessor/logical/bool.hpp
+  boost/preprocessor/logical/compl.hpp
+  boost/preprocessor/repetition/for.hpp
+  boost/preprocessor/tuple/elem.hpp
+  boost/preprocessor/tuple/reverse.hpp
+  boost/preprocessor/tuple/size.hpp
+  boost/preprocessor/tuple/to_list.hpp
+  boost/preprocessor/variadic/elem.hpp
+  boost/preprocessor/variadic/to_list.hpp
+  boost/range/combine.hpp
+  boost/shared_ptr.hpp
+  boost/tuple/tuple.hpp
+  boost/variant.hpp
+  )
 
-if(NOT TARGET Boost::program_options)
-  add_library(Boost::program_options INTERFACE IMPORTED)
-  set_property(TARGET Boost::program_options
-    APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
-  set_property(TARGET Boost::program_options PROPERTY
-    INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
-endif(NOT TARGET Boost::program_options)
+set_property(
+  TARGET Boost::program_options
+  APPEND PROPERTY PUBLIC_HEADER
+  boost/program_options.hpp
+  )
+
+set_property(
+  GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
+  Boost::boost Boost::program_options
+  )

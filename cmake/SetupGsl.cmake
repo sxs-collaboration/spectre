@@ -11,3 +11,8 @@ file(APPEND
   "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
   "GSL Version:  ${GSL_VERSION}\n"
   )
+
+set_property(
+  GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
+  GSL::gsl GSL::gslcblas
+  )

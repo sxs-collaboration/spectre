@@ -21,7 +21,7 @@
 #include <initializer_list>  // IWYU pragma: keep
 #include <type_traits>
 
-#include "Utilities/Digraph.hpp"  // IWYU pragma: export
+#include "Utilities/TmplDigraph.hpp"  // IWYU pragma: export
 
 namespace brigand {
 namespace detail {

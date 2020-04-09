@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-cmake_minimum_required(VERSION 3.3.2)
+cmake_minimum_required(VERSION 3.8.0)
 
 # Fortran below is needed for SPHEREPACK.
 project(SpECTRE VERSION 0.0.0 LANGUAGES CXX C Fortran)
@@ -36,6 +36,7 @@ include(ProhibitInSourceBuild)
 include(SpectreSetupFlagsTarget)
 include(SetupNinjaColors)
 include(SetOutputDirectory)
+include(SpectreAddInterfaceLibraryHeaders)
 include(SpectreTargetHeaders)
 include(SpectreTargetSources)
 # We need yapf before we set up the git hooks
@@ -88,6 +89,7 @@ include(SetupNumPy)
 include(SetupPapi)
 include(SetupPybind11)
 include(SetupSciPy)
+include(SetupStl)
 include(SetupLibsharp)
 include(SetupYamlCpp)
 

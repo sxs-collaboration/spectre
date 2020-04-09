@@ -14,7 +14,7 @@ installation_on_clusters "Installation on clusters" page.
 
 * [GCC](https://gcc.gnu.org/) 7.0 or later,
 [Clang](https://clang.llvm.org/) 5.0 or later, or AppleClang 6.0 or later
-* [CMake](https://cmake.org/) 3.3.2 or later
+* [CMake](https://cmake.org/) 3.8.0 or later
 * [Charm++](http://charm.cs.illinois.edu/) 6.8 or newer (must be compiled from source)
 * [Git](https://git-scm.com/)
 * BLAS (e.g. [OpenBLAS](http://www.openblas.net))
