@@ -21,6 +21,8 @@
 #include "DataStructures/Variables.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/NumericalFluxHelpers.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -85,16 +87,16 @@ using n_dot_f_tags =
     tmpl::list<n_dot_f<Tags::Variable1>, n_dot_f<Tags::Variable2<Dim>>,
                n_dot_f<Tags::Variable3<Dim>>, n_dot_f<Tags::Variable4<Dim>>>;
 
-template <class... PackageDataTags, class FluxType,
-          class... NormalDotNumericalFluxTypes>
-void apply_numerical_flux(
-    const FluxType& flux,
-    const Variables<tmpl::list<PackageDataTags...>>& packaged_data_int,
-    const Variables<tmpl::list<PackageDataTags...>>& packaged_data_ext,
-    NormalDotNumericalFluxTypes&&... normal_dot_numerical_flux) noexcept {
-  flux(std::forward<NormalDotNumericalFluxTypes>(normal_dot_numerical_flux)...,
-       get<PackageDataTags>(packaged_data_int)...,
-       get<PackageDataTags>(packaged_data_ext)...);
+template <typename FluxType, typename... Args>
+auto get_packaged_data(const FluxType& flux_computer,
+                       const DataVector& used_for_size,
+                       const Args&... args) noexcept {
+  dg::SimpleBoundaryData<typename FluxType::package_field_tags,
+                         typename FluxType::package_extra_tags>
+      packaged_data{used_for_size.size()};
+  dg::NumericalFluxes::package_data(make_not_null(&packaged_data),
+                                    flux_computer, args...);
+  return packaged_data;
 }
 
 namespace detail {
@@ -104,6 +106,7 @@ void test_conservation(const FluxType& flux_computer,
                        const tmpl::list<VariablesTags...> /*meta*/) noexcept {
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> dist(0.0, 1.0);
+  const size_t num_points = used_for_size.size();
 
   const auto variables_interior =
       make_with_random_values<Variables<tmpl::list<VariablesTags...>>>(
@@ -118,22 +121,15 @@ void test_conservation(const FluxType& flux_computer,
       make_with_random_values<Variables<tmpl::list<VariablesTags...>>>(
           make_not_null(&gen), make_not_null(&dist), used_for_size);
 
-  Variables<typename FluxType::package_tags> packaged_data_interior(
-      used_for_size.size(), std::numeric_limits<double>::signaling_NaN());
-  flux_computer.package_data(
-      make_not_null(&packaged_data_interior),
-      get<VariablesTags>(n_dot_f_interior)...,
+  auto packaged_data_interior = get_packaged_data(
+      flux_computer, used_for_size, get<VariablesTags>(n_dot_f_interior)...,
       get<VariablesTags>(variables_interior)...,
       TestHelpers::NumericalFluxes::characteristic_speeds(
           get<Tags::Variable1>(variables_interior),
           get<Tags::Variable2<Dim>>(variables_interior),
           get<Tags::Variable3<Dim>>(variables_interior)));
-
-  Variables<typename FluxType::package_tags> packaged_data_exterior(
-      used_for_size.size(), std::numeric_limits<double>::signaling_NaN());
-  flux_computer.package_data(
-      make_not_null(&packaged_data_exterior),
-      get<VariablesTags>(n_dot_f_exterior)...,
+  auto packaged_data_exterior = get_packaged_data(
+      flux_computer, used_for_size, get<VariablesTags>(n_dot_f_exterior)...,
       get<VariablesTags>(variables_exterior)...,
       TestHelpers::NumericalFluxes::characteristic_speeds(
           get<Tags::Variable1>(variables_exterior),
@@ -141,26 +137,18 @@ void test_conservation(const FluxType& flux_computer,
           get<Tags::Variable3<Dim>>(variables_exterior)));
 
   Variables<tmpl::list<VariablesTags...>> n_dot_num_flux_interior(
-      used_for_size.size(), std::numeric_limits<double>::signaling_NaN());
-  apply_numerical_flux(flux_computer, packaged_data_interior,
-                       packaged_data_exterior,
-                       &get<VariablesTags>(n_dot_num_flux_interior)...);
+      num_points, std::numeric_limits<double>::signaling_NaN());
+  dg::NumericalFluxes::normal_dot_numerical_fluxes(
+      make_not_null(&n_dot_num_flux_interior), flux_computer,
+      packaged_data_interior, packaged_data_exterior);
 
   Variables<tmpl::list<VariablesTags...>> n_dot_num_flux_exterior(
-      used_for_size.size(), std::numeric_limits<double>::signaling_NaN());
-  apply_numerical_flux(flux_computer, packaged_data_exterior,
-                       packaged_data_interior,
-                       &get<VariablesTags>(n_dot_num_flux_exterior)...);
+      num_points, std::numeric_limits<double>::signaling_NaN());
+  dg::NumericalFluxes::normal_dot_numerical_fluxes(
+      make_not_null(&n_dot_num_flux_exterior), flux_computer,
+      packaged_data_exterior, packaged_data_interior);
 
-  auto check = [](const auto& int_flux, const auto& ext_flux) noexcept {
-    for (size_t i = 0; i < int_flux.size(); ++i) {
-      CHECK_ITERABLE_APPROX(int_flux[i], -ext_flux[i]);
-    }
-    return nullptr;
-  };
-
-  expand_pack(check(get<VariablesTags>(n_dot_num_flux_interior),
-                    get<VariablesTags>(n_dot_num_flux_exterior))...);
+  CHECK_VARIABLES_APPROX(n_dot_num_flux_interior, -n_dot_num_flux_exterior);
 }
 }  // namespace detail
 

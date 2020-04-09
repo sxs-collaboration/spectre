@@ -5,11 +5,7 @@
 
 #include <array>
 #include <cstddef>
-#include <functional>
 #include <initializer_list>  // IWYU pragma: keep
-#include <memory>
-#include <pup.h>
-#include <string>
 #include <unordered_map>
 #include <utility>
 
@@ -18,51 +14,21 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/CoordinateMaps/Affine.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/ProductMaps.hpp"
-#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Direction.hpp"
-#include "Domain/Element.hpp"
-#include "Domain/ElementId.hpp"
-#include "Domain/ElementMap.hpp"
-#include "Domain/FaceNormal.hpp"
-#include "Domain/InterfaceComputeTags.hpp"
-#include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
-#include "Time/Time.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_include <boost/functional/hash/extensions.hpp>
-
-// IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"  // for Variables
-// IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
-// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
-
-// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare Variables
-// IWYU pragma: no_forward_declare dg::Actions::ImposeDirichletBoundaryConditions
-
 namespace {
 constexpr size_t Dim = 2;
-
-using TemporalId = Tags::TimeStepId;
 
 struct Var : db::SimpleTag {
   using type = Scalar<DataVector>;
@@ -70,42 +36,6 @@ struct Var : db::SimpleTag {
 
 struct PrimitiveVar : db::SimpleTag {
   using type = Scalar<DataVector>;
-};
-
-struct OtherData : db::SimpleTag {
-  using type = Scalar<DataVector>;
-};
-
-class NumericalFlux {
- public:
-  struct ExtraData : db::SimpleTag {
-    using type = tnsr::I<DataVector, 1>;
-  };
-
-  using package_tags = tmpl::list<ExtraData, Var>;
-
-  using argument_tags =
-      tmpl::list<Tags::NormalDotFlux<Var>, OtherData,
-                 Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
-  void package_data(const gsl::not_null<Variables<package_tags>*> packaged_data,
-                    const Scalar<DataVector>& var_flux,
-                    const Scalar<DataVector>& other_data,
-                    const tnsr::i<DataVector, Dim, Frame::Inertial>&
-                        interface_unit_normal) const noexcept {
-    get(get<Var>(*packaged_data)) = 10. * get(var_flux);
-    get<0>(get<ExtraData>(*packaged_data)) =
-        get(other_data) + 2. * get<0>(interface_unit_normal) +
-        3. * get<1>(interface_unit_normal);
-  }
-
-  // void operator()(...) is unused
-
-  // clang-tidy: do not use references
-  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
-};
-
-struct NumericalFluxTag {
-  using type = NumericalFlux;
 };
 
 struct BoundaryCondition {
@@ -138,9 +68,6 @@ struct System {
 
   using variables_tag = Tags::Variables<tmpl::list<Var>>;
 
-  template <typename Tag>
-  using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
-
   struct conservative_from_primitive {
     using return_tags = tmpl::list<Var>;
     using argument_tags = tmpl::list<PrimitiveVar>;
@@ -152,84 +79,26 @@ struct System {
   };
 };
 
-template <typename Tag>
-using boundary_tag =
-    domain::Tags::Interface<domain::Tags::BoundaryDirectionsInterior<Dim>, Tag>;
-template <typename Tag>
-using boundary_compute_tag = domain::Tags::InterfaceCompute<
-    domain::Tags::BoundaryDirectionsInterior<Dim>, Tag>;
-
-template <typename Tag>
-using external_boundary_tag =
-    domain::Tags::Interface<domain::Tags::BoundaryDirectionsExterior<Dim>, Tag>;
-template <typename Tag>
-using external_boundary_compute_tag = domain::Tags::InterfaceCompute<
-    domain::Tags::BoundaryDirectionsExterior<Dim>, Tag>;
-
-template <typename FluxCommTypes>
-using mortar_data_tag = typename FluxCommTypes::simple_mortar_data_tag;
-template <typename FluxCommTypes>
-using LocalMortarData = typename FluxCommTypes::LocalMortarData;
-template <typename FluxCommTypes>
-using PackagedData = typename FluxCommTypes::PackagedData;
-template <typename FluxCommTypes>
-using bdry_normal_dot_fluxes_tag =
-    boundary_tag<typename FluxCommTypes::normal_dot_fluxes_tag>;
-template <typename FluxCommTypes>
-using external_bdry_normal_dot_fluxes_tag =
-    external_boundary_tag<typename FluxCommTypes::normal_dot_fluxes_tag>;
-
-using bdry_vars_tag = boundary_tag<Tags::Variables<tmpl::list<Var>>>;
-using external_bdry_vars_tag =
-    external_boundary_tag<Tags::Variables<tmpl::list<Var>>>;
-
-using bdry_other_data_tag =
-    boundary_tag<Tags::Variables<tmpl::list<OtherData>>>;
-using external_bdry_other_data_tag =
-    external_boundary_tag<Tags::Variables<tmpl::list<OtherData>>>;
+using exterior_bdry_vars_tag =
+    domain::Tags::Interface<domain::Tags::BoundaryDirectionsExterior<Dim>,
+                            Tags::Variables<tmpl::list<Var>>>;
 
 template <typename Metavariables>
 struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementId<Dim>;
-  using const_global_cache_tags =
-      tmpl::list<NumericalFluxTag, BoundaryConditionTag>;
-  using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
-
-  using simple_tags = db::AddSimpleTags<
-      TemporalId, Tags::Time, domain::Tags::Mesh<Dim>,
-      domain::Tags::Element<Dim>, domain::Tags::ElementMap<Dim>,
-      bdry_normal_dot_fluxes_tag<flux_comm_types>, bdry_other_data_tag,
-      external_bdry_normal_dot_fluxes_tag<flux_comm_types>,
-      external_bdry_other_data_tag, external_bdry_vars_tag,
-      mortar_data_tag<flux_comm_types>>;
-
-  using compute_tags = db::AddComputeTags<
-      domain::Tags::BoundaryDirectionsInterior<Dim>,
-      boundary_compute_tag<domain::Tags::Direction<Dim>>,
-      boundary_compute_tag<domain::Tags::InterfaceMesh<Dim>>,
-      boundary_compute_tag<domain::Tags::UnnormalizedFaceNormalCompute<Dim>>,
-      boundary_compute_tag<
-          Tags::EuclideanMagnitude<domain::Tags::UnnormalizedFaceNormal<Dim>>>,
-      boundary_compute_tag<
-          Tags::NormalizedCompute<domain::Tags::UnnormalizedFaceNormal<Dim>>>,
-      domain::Tags::BoundaryDirectionsExterior<Dim>,
-      external_boundary_compute_tag<domain::Tags::Direction<Dim>>,
-      external_boundary_compute_tag<domain::Tags::InterfaceMesh<Dim>>,
-      external_boundary_compute_tag<domain::Tags::BoundaryCoordinates<Dim>>,
-      external_boundary_compute_tag<
-          domain::Tags::UnnormalizedFaceNormalCompute<Dim>>,
-      external_boundary_compute_tag<
-          Tags::EuclideanMagnitude<domain::Tags::UnnormalizedFaceNormal<Dim>>>,
-      external_boundary_compute_tag<
-          Tags::NormalizedCompute<domain::Tags::UnnormalizedFaceNormal<Dim>>>>;
+  using array_index = int;
+  using const_global_cache_tags = tmpl::list<BoundaryConditionTag>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<
-              ActionTesting::InitializeDataBox<simple_tags, compute_tags>>>,
+          tmpl::list<ActionTesting::InitializeDataBox<db::AddSimpleTags<
+              Tags::Time,
+              domain::Tags::Interface<
+                  domain::Tags::BoundaryDirectionsExterior<Dim>,
+                  domain::Tags::Coordinates<Dim, Frame::Inertial>>,
+              exterior_bdry_vars_tag>>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<
@@ -240,9 +109,7 @@ template <bool HasPrimitiveAndConservativeVars>
 struct Metavariables {
   using system = System<HasPrimitiveAndConservativeVars>;
   using component_list = tmpl::list<component<Metavariables>>;
-  using temporal_id = TemporalId;
 
-  using normal_dot_numerical_flux = NumericalFluxTag;
   using boundary_condition_tag = BoundaryConditionTag;
   using initial_data_tag = boundary_condition_tag;
   enum class Phase { Initialization, Testing, Exit };
@@ -251,131 +118,39 @@ struct Metavariables {
 template <bool HasConservativeAndPrimitiveVars>
 void run_test() {
   using metavariables = Metavariables<HasConservativeAndPrimitiveVars>;
-  using flux_comm_types = typename component<metavariables>::flux_comm_types;
   using my_component = component<metavariables>;
-  const Mesh<2> mesh{3, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto};
-
-  const ElementId<2> self_id(1, {{{2, 0}, {1, 0}}});
-  const ElementId<2> west_id(0);
-  const ElementId<2> south_id(1, {{{2, 0}, {1, 1}}});
-
-  using Affine = domain::CoordinateMaps::Affine;
-  const Affine xi_map{-1., 1., 3., 7.};
-  const Affine eta_map{-1., 1., 7., 3.};
-  using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-  PUPable_reg(SINGLE_ARG(
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
-
-  const auto coordmap =
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          Affine2D(xi_map, eta_map));
-
+  // Just making up two "external" directions
   const auto external_directions = {Direction<2>::lower_eta(),
                                     Direction<2>::upper_xi()};
 
-  const auto external_mortar_ids = {
-      std::make_pair(Direction<2>::lower_eta(),
-                     ElementId<2>::external_boundary_id()),
-      std::make_pair(Direction<2>::upper_xi(),
-                     ElementId<2>::external_boundary_id())};
-
-  const struct {
-    std::unordered_map<Direction<2>, Scalar<DataVector>> bdry_fluxes;
-    std::unordered_map<Direction<2>, Scalar<DataVector>> bdry_other_data;
-    std::unordered_map<Direction<2>, Scalar<DataVector>> external_bdry_fluxes;
-    std::unordered_map<Direction<2>, Scalar<DataVector>>
-        external_bdry_other_data;
-    std::unordered_map<Direction<2>, Scalar<DataVector>> external_bdry_vars;
-  } data{{{Direction<2>::lower_eta(), Scalar<DataVector>{{{{1., 2., 3.}}}}},
-          {Direction<2>::upper_xi(), Scalar<DataVector>{{{{21., 22., 23.}}}}}},
-         {{Direction<2>::lower_eta(), Scalar<DataVector>{{{{4., 5., 6.}}}}},
-          {Direction<2>::upper_xi(), Scalar<DataVector>{{{{24., 25., 26.}}}}}},
-         {{Direction<2>::lower_eta(), Scalar<DataVector>{{{{7., 8., 9.}}}}},
-          {Direction<2>::upper_xi(), Scalar<DataVector>{{{{27., 28., 29.}}}}}},
-         {{Direction<2>::lower_eta(), Scalar<DataVector>{{{{10., 11., 12.}}}}},
-          {Direction<2>::upper_xi(), Scalar<DataVector>{{{{30., 31., 32.}}}}}},
-         {{Direction<2>::lower_eta(), Scalar<DataVector>{{{{13., 14., 15.}}}}},
-          {Direction<2>::upper_xi(), Scalar<DataVector>{{{{33., 34., 35.}}}}}}};
-
-  ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {NumericalFlux{}, BoundaryCondition{}}};
+  ActionTesting::MockRuntimeSystem<metavariables> runner{{BoundaryCondition{}}};
   {
-    const Element<2> element(self_id,
-                             {{Direction<2>::lower_xi(), {{west_id}, {}}},
-                              {Direction<2>::upper_eta(), {{south_id}, {}}}});
-
-    auto map = ElementMap<2, Frame::Inertial>(self_id, coordmap->get_clone());
-
-    db::item_type<bdry_normal_dot_fluxes_tag<flux_comm_types>>
-        bdry_normal_dot_fluxes;
+    tnsr::I<DataVector, Dim> arbitrary_coords{
+        DataVector{3, std::numeric_limits<double>::signaling_NaN()}};
+    db::item_type<domain::Tags::Interface<
+        domain::Tags::BoundaryDirectionsExterior<Dim>,
+        domain::Tags::Coordinates<Dim, Frame::Inertial>>>
+        external_bdry_coords{{{Direction<2>::lower_eta(), arbitrary_coords},
+                              {Direction<2>::upper_xi(), arbitrary_coords}}};
+    db::item_type<exterior_bdry_vars_tag> exterior_bdry_vars;
     for (const auto& direction : external_directions) {
-      auto& flux_vars = bdry_normal_dot_fluxes[direction];
-      flux_vars.initialize(3);
-      get<Tags::NormalDotFlux<Var>>(flux_vars) = data.bdry_fluxes.at(direction);
-    }
-
-    db::item_type<bdry_other_data_tag> bdry_other_data;
-    for (const auto& direction : external_directions) {
-      auto& other_data_vars = bdry_other_data[direction];
-      other_data_vars.initialize(3);
-      get<OtherData>(other_data_vars) = data.bdry_other_data.at(direction);
-    }
-
-    db::item_type<external_bdry_normal_dot_fluxes_tag<flux_comm_types>>
-        external_bdry_normal_dot_fluxes;
-    for (const auto& direction : external_directions) {
-      auto& flux_vars = external_bdry_normal_dot_fluxes[direction];
-      flux_vars.initialize(3);
-      get<Tags::NormalDotFlux<Var>>(flux_vars) =
-          data.external_bdry_fluxes.at(direction);
-    }
-
-    db::item_type<external_bdry_other_data_tag> external_bdry_other_data;
-    for (const auto& direction : external_directions) {
-      auto& other_data_vars = external_bdry_other_data[direction];
-      other_data_vars.initialize(3);
-      get<OtherData>(other_data_vars) =
-          data.external_bdry_other_data.at(direction);
-    }
-
-    db::item_type<external_bdry_vars_tag> external_bdry_vars;
-    for (const auto& direction : external_directions) {
-      auto& vars = external_bdry_vars[direction];
-      vars.initialize(3);
-      get<Var>(vars) = data.external_bdry_vars.at(direction);
-    }
-
-    const Slab slab(1.2, 3.4);
-    const Time start = slab.start();
-
-    TimeStepId initial_time(true, 4, start);
-
-    db::item_type<mortar_data_tag<flux_comm_types>> mortar_history{};
-    for (const auto& mortar_id : external_mortar_ids) {
-      mortar_history.insert({mortar_id, {}});
+      exterior_bdry_vars[direction].initialize(3);
     }
 
     ActionTesting::emplace_component_and_initialize<my_component>(
-        &runner, self_id,
-        {initial_time, start.value(), mesh, element, std::move(map),
-         std::move(bdry_normal_dot_fluxes), std::move(bdry_other_data),
-         std::move(external_bdry_normal_dot_fluxes),
-         std::move(external_bdry_other_data), std::move(external_bdry_vars),
-         std::move(mortar_history)});
+        &runner, 0,
+        {1.2, std::move(external_bdry_coords), std::move(exterior_bdry_vars)});
   }
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Testing);
 
-  CHECK(ActionTesting::is_ready<my_component>(runner, self_id));
-  ActionTesting::next_action<my_component>(make_not_null(&runner), self_id);
+  ActionTesting::next_action<my_component>(make_not_null(&runner), 0);
 
   // Check that BC's were indeed applied.
   const auto& external_vars =
-      ActionTesting::get_databox_tag<my_component, external_bdry_vars_tag>(
-          runner, self_id);
-
-  db::item_type<external_bdry_vars_tag> expected_vars{};
+      ActionTesting::get_databox_tag<my_component, exterior_bdry_vars_tag>(
+          runner, 0);
+  db::item_type<exterior_bdry_vars_tag> expected_vars{};
   for (const auto& direction : external_directions) {
     expected_vars[direction].initialize(3);
   }
@@ -384,67 +159,6 @@ void run_test() {
   get<Var>(expected_vars[Direction<2>::upper_xi()]) =
       Scalar<DataVector>({{{30., 40., 50.}}});
   CHECK(external_vars == expected_vars);
-
-  auto mortar_history = serialize_and_deserialize(
-      ActionTesting::get_databox_tag<my_component,
-                                     mortar_data_tag<flux_comm_types>>(
-          runner, self_id));
-  CHECK(mortar_history.size() == 2);
-  const auto check_mortar = [&mortar_history](
-      const std::pair<Direction<2>, ElementId<2>>& mortar_id,
-      const Scalar<DataVector>& local_flux,
-      const Scalar<DataVector>& remote_flux,
-      const Scalar<DataVector>& local_other,
-      const Scalar<DataVector>& remote_other,
-      const tnsr::i<DataVector, 2>& local_normal,
-      const tnsr::i<DataVector, 2>& remote_normal) noexcept {
-    LocalMortarData<flux_comm_types> local_mortar_data(3);
-    get<Tags::NormalDotFlux<Var>>(local_mortar_data) = local_flux;
-    const auto magnitude_local_normal = magnitude(local_normal);
-    auto normalized_local_normal = local_normal;
-    for (auto& x : normalized_local_normal) {
-      x /= get(magnitude_local_normal);
-    }
-    PackagedData<flux_comm_types> local_packaged(3);
-    NumericalFlux{}.package_data(&local_packaged, local_flux, local_other,
-                                 normalized_local_normal);
-    local_mortar_data.assign_subset(local_packaged);
-
-    const auto magnitude_remote_normal = magnitude(remote_normal);
-    auto normalized_remote_normal = remote_normal;
-    for (auto& x : normalized_remote_normal) {
-      x /= get(magnitude_remote_normal);
-    }
-    PackagedData<flux_comm_types> remote_packaged(3);
-    NumericalFlux{}.package_data(&remote_packaged, remote_flux, remote_other,
-                                 normalized_remote_normal);
-
-    const auto result = mortar_history.at(mortar_id).extract();
-
-    CHECK(result.first.mortar_data == local_mortar_data);
-    CHECK(result.first.magnitude_of_face_normal == magnitude_local_normal);
-    CHECK(result.second == remote_packaged);
-  };
-
-  check_mortar(
-      std::make_pair(Direction<2>::lower_eta(),
-                     ElementId<2>::external_boundary_id()),
-      data.bdry_fluxes.at(Direction<2>::lower_eta()),
-      data.external_bdry_fluxes.at(Direction<2>::lower_eta()),
-      data.bdry_other_data.at(Direction<2>::lower_eta()),
-      data.external_bdry_other_data.at(Direction<2>::lower_eta()),
-      tnsr::i<DataVector, 2>{{{DataVector{3, 0.0}, DataVector{3, 1.0}}}},
-      tnsr::i<DataVector, 2>{{{DataVector{3, 0.0}, DataVector{3, -1.0}}}});
-
-  check_mortar(
-      std::make_pair(Direction<2>::upper_xi(),
-                     ElementId<2>::external_boundary_id()),
-      data.bdry_fluxes.at(Direction<2>::upper_xi()),
-      data.external_bdry_fluxes.at(Direction<2>::upper_xi()),
-      data.bdry_other_data.at(Direction<2>::upper_xi()),
-      data.external_bdry_other_data.at(Direction<2>::upper_xi()),
-      tnsr::i<DataVector, 2>{{{DataVector{3, 2.0}, DataVector{3, 0.0}}}},
-      tnsr::i<DataVector, 2>{{{DataVector{3, -2.0}, DataVector{3, 0.0}}}});
 }
 
 }  // namespace

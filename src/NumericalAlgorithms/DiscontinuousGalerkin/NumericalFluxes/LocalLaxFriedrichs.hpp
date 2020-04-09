@@ -10,9 +10,11 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace dg {
@@ -43,7 +45,7 @@ namespace NumericalFluxes {
  * characteristic speeds along a given normal.
  */
 template <typename System>
-struct LocalLaxFriedrichs {
+struct LocalLaxFriedrichs : tt::ConformsTo<dg::protocols::NumericalFlux> {
  private:
   using char_speeds_tag = typename System::char_speeds_tag;
   using variables_tag = typename System::variables_tag;
@@ -55,11 +57,15 @@ struct LocalLaxFriedrichs {
     static std::string name() noexcept { return "MaxAbsCharSpeed"; }
   };
 
-  using package_tags =
+  using variables_tags =
+      db::get_variables_tags_list<typename System::variables_tag>;
+
+  using package_field_tags =
       tmpl::push_back<tmpl::append<db::split_tag<db::add_tag_prefix<
                                        ::Tags::NormalDotFlux, variables_tag>>,
                                    db::split_tag<variables_tag>>,
                       MaxAbsCharSpeed>;
+  using package_extra_tags = tmpl::list<>;
 
   using argument_tags =
       tmpl::push_back<tmpl::append<db::split_tag<db::add_tag_prefix<
@@ -68,27 +74,29 @@ struct LocalLaxFriedrichs {
                       char_speeds_tag>;
 
  private:
-  template <typename VariablesTagList, typename NormalDoFluxTagList>
+  template <typename VariablesTagList, typename NormalDotFluxTagList>
   struct package_data_helper;
 
   template <typename... VariablesTags, typename... NormalDotFluxTags>
   struct package_data_helper<tmpl::list<VariablesTags...>,
                              tmpl::list<NormalDotFluxTags...>> {
     static void apply(
-        const gsl::not_null<Variables<package_tags>*> packaged_data,
+        const gsl::not_null<
+            db::item_type<NormalDotFluxTags>*>... packaged_n_dot_f,
+        const gsl::not_null<db::item_type<VariablesTags>*>... packaged_u,
+        const gsl::not_null<Scalar<DataVector>*> packaged_max_char_speed,
         const db::const_item_type<NormalDotFluxTags>&... n_dot_f_to_package,
         const db::const_item_type<VariablesTags>&... u_to_package,
         const db::const_item_type<char_speeds_tag>&
             characteristic_speeds) noexcept {
-      ASSERT(packaged_data->number_of_grid_points() ==
-             characteristic_speeds[0].size(),
-             "Size of packaged data (" << packaged_data->number_of_grid_points()
-             << ") does not match size of characteristic speeds ("
-             << characteristic_speeds[0].size() << ")");
-      expand_pack((get<VariablesTags>(*packaged_data) = u_to_package)...);
-      expand_pack(
-          (get<NormalDotFluxTags>(*packaged_data) = n_dot_f_to_package)...);
-      Scalar<DataVector>& char_speed = get<MaxAbsCharSpeed>(*packaged_data);
+      ASSERT(get(*packaged_max_char_speed).size() ==
+                 characteristic_speeds[0].size(),
+             "Size of packaged data ("
+                 << get(*packaged_max_char_speed).size()
+                 << ") does not match size of characteristic speeds ("
+                 << characteristic_speeds[0].size() << ")");
+      expand_pack((*packaged_u = u_to_package)...);
+      expand_pack((*packaged_n_dot_f = n_dot_f_to_package)...);
 
       for (size_t s = 0; s < characteristic_speeds[0].size(); ++s) {
         double local_max_speed = 0.0;
@@ -96,7 +104,7 @@ struct LocalLaxFriedrichs {
           local_max_speed = std::max(
               local_max_speed, std::abs(gsl::at(characteristic_speeds, u)[s]));
         }
-        get(char_speed)[s] = local_max_speed;
+        get(*packaged_max_char_speed)[s] = local_max_speed;
       }
     }
   };

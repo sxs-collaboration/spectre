@@ -11,9 +11,11 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace dg {
@@ -54,7 +56,7 @@ namespace NumericalFluxes {
  * the HLL flux reduces to pure upwinding.
  */
 template <typename System>
-struct Hll {
+struct Hll : tt::ConformsTo<dg::protocols::NumericalFlux> {
  private:
   using char_speeds_tag = typename System::char_speeds_tag;
   using variables_tag = typename System::variables_tag;
@@ -70,10 +72,14 @@ struct Hll {
     using type = Scalar<DataVector>;
   };
 
-  using package_tags = tmpl::append<
+  using variables_tags =
+      db::get_variables_tags_list<typename System::variables_tag>;
+
+  using package_field_tags = tmpl::append<
       db::split_tag<db::add_tag_prefix<::Tags::NormalDotFlux, variables_tag>>,
       db::split_tag<variables_tag>,
       tmpl::list<LargestIngoingSpeed, LargestOutgoingSpeed>>;
+  using package_extra_tags = tmpl::list<>;
 
   using argument_tags =
       tmpl::push_back<tmpl::append<db::split_tag<db::add_tag_prefix<
@@ -82,30 +88,32 @@ struct Hll {
                       char_speeds_tag>;
 
  private:
-  template <typename VariablesTagList, typename NormalDoFluxTagList>
+  template <typename VariablesTagList, typename NormalDotFluxTagList>
   struct package_data_helper;
 
   template <typename... VariablesTags, typename... NormalDotFluxTags>
   struct package_data_helper<tmpl::list<VariablesTags...>,
                              tmpl::list<NormalDotFluxTags...>> {
     static void function(
-        const gsl::not_null<Variables<package_tags>*> packaged_data,
+        const gsl::not_null<
+            db::item_type<NormalDotFluxTags>*>... packaged_n_dot_f,
+        const gsl::not_null<db::item_type<VariablesTags>*>... packaged_u,
+        const gsl::not_null<Scalar<DataVector>*> packaged_largest_ingoing_speed,
+        const gsl::not_null<Scalar<DataVector>*>
+            packaged_largest_outgoing_speed,
         const db::const_item_type<NormalDotFluxTags>&... n_dot_f_to_package,
         const db::const_item_type<VariablesTags>&... u_to_package,
         const db::const_item_type<char_speeds_tag>&
             characteristic_speeds) noexcept {
-      expand_pack((get<VariablesTags>(*packaged_data) = u_to_package)...);
-      expand_pack(
-          (get<NormalDotFluxTags>(*packaged_data) = n_dot_f_to_package)...);
+      expand_pack((*packaged_u = u_to_package)...);
+      expand_pack((*packaged_n_dot_f = n_dot_f_to_package)...);
 
-      get<LargestIngoingSpeed>(*packaged_data) =
-          make_with_value<Scalar<DataVector>>(
-              characteristic_speeds[0],
-              std::numeric_limits<double>::signaling_NaN());
-      get<LargestOutgoingSpeed>(*packaged_data) =
-          make_with_value<Scalar<DataVector>>(
-              characteristic_speeds[0],
-              std::numeric_limits<double>::signaling_NaN());
+      *packaged_largest_ingoing_speed = make_with_value<Scalar<DataVector>>(
+          characteristic_speeds[0],
+          std::numeric_limits<double>::signaling_NaN());
+      *packaged_largest_outgoing_speed = make_with_value<Scalar<DataVector>>(
+          characteristic_speeds[0],
+          std::numeric_limits<double>::signaling_NaN());
 
       // When packaging interior data, LargestIngoingSpeed and
       // LargestOutgoingSpeed will hold the min and max char speeds,
@@ -114,12 +122,12 @@ struct Hll {
       // normal, so LargestIngoingSpeed will hold *minus* the max speed, while
       // LargestOutgoingSpeed will store *minus* the min speed.
       for (size_t s = 0; s < characteristic_speeds[0].size(); ++s) {
-        get(get<LargestIngoingSpeed>(*packaged_data))[s] = (*std::min_element(
+        get(*packaged_largest_ingoing_speed)[s] = (*std::min_element(
             characteristic_speeds.begin(), characteristic_speeds.end(),
             [&s](const DataVector& a, const DataVector& b) noexcept {
               return a[s] < b[s];
             }))[s];
-        get(get<LargestOutgoingSpeed>(*packaged_data))[s] = (*std::max_element(
+        get(*packaged_largest_outgoing_speed)[s] = (*std::max_element(
             characteristic_speeds.begin(), characteristic_speeds.end(),
             [&s](const DataVector& a, const DataVector& b) noexcept {
               return a[s] < b[s];

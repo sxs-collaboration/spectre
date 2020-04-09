@@ -34,13 +34,14 @@
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderScheme.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/CollectDataForFluxes.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/FluxCommunication.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/SemidiscretizedDg.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -56,14 +57,19 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<1>;
-  using const_global_cache_tags = tmpl::list<>;
 
   using variables_tag = typename metavariables::system::variables_tag;
-  using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
-  using normal_dot_fluxes_tag =
-      domain::Tags::Interface<domain::Tags::InternalDirections<1>,
-                              typename flux_comm_types::normal_dot_fluxes_tag>;
-  using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
+  using boundary_scheme = dg::FirstOrderScheme::FirstOrderScheme<
+      1, variables_tag, Tags::NumericalFlux<ScalarWave::UpwindFlux<1>>,
+      Tags::TimeStepId>;
+  using normal_dot_fluxes_tag = domain::Tags::Interface<
+      domain::Tags::InternalDirections<1>,
+      db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>>;
+  using mortar_data_tag =
+      Tags::Mortars<typename boundary_scheme::mortar_data_tag, 1>;
+
+  using const_global_cache_tags =
+      tmpl::list<typename boundary_scheme::numerical_flux_computer_tag>;
 
   using simple_tags = db::AddSimpleTags<
       Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, domain::Tags::Mesh<1>,
@@ -71,7 +77,12 @@ struct Component {
       db::add_tag_prefix<Tags::dt, variables_tag>, normal_dot_fluxes_tag,
       mortar_data_tag, Tags::Mortars<Tags::Next<Tags::TimeStepId>, 1>,
       Tags::Mortars<domain::Tags::Mesh<0>, 1>,
-      Tags::Mortars<Tags::MortarSize<0>, 1>>;
+      Tags::Mortars<Tags::MortarSize<0>, 1>,
+      // Need this only because the DG scheme doesn't know at compile-time that
+      // the element has no external boundaries
+      domain::Tags::Interface<
+          domain::Tags::BoundaryDirectionsInterior<1>,
+          Tags::Magnitude<domain::Tags::UnnormalizedFaceNormal<1>>>>;
 
   using inverse_jacobian = domain::Tags::InverseJacobianCompute<
       domain::Tags::ElementMap<1>,
@@ -110,18 +121,18 @@ struct Component {
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<dg::Actions::ComputeNonconservativeBoundaryFluxes<
                          domain::Tags::InternalDirections<1>>,
-                     dg::Actions::SendDataForFluxes<Metavariables>,
+                     dg::Actions::CollectDataForFluxes<
+                         boundary_scheme, domain::Tags::InternalDirections<1>>,
+                     dg::Actions::SendDataForFluxes<boundary_scheme>,
                      Actions::ComputeTimeDerivative<ScalarWave::ComputeDuDt<1>>,
-                     dg::Actions::ReceiveDataForFluxes<Metavariables>,
-                     dg::Actions::ApplyFluxes>>>;
+                     dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
+                     Actions::MutateApply<boundary_scheme>>>>;
 };
 
 struct Metavariables {
   using system = ScalarWave::System<1>;
   using component_list = tmpl::list<Component<Metavariables>>;
   using temporal_id = Tags::TimeStepId;
-  using normal_dot_numerical_flux =
-      Tags::NumericalFlux<ScalarWave::UpwindFlux<1>>;
   enum class Phase { Initialization, Testing, Exit };
 };
 
@@ -186,7 +197,8 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
              std::move(variables), std::move(dt_variables),
              std::move(normal_dot_fluxes), std::move(mortar_history),
              std::move(mortar_next_temporal_ids), std::move(mortar_meshes),
-             std::move(mortar_sizes)});
+             std::move(mortar_sizes),
+             std::unordered_map<Direction<1>, Scalar<DataVector>>{}});
 
         auto& box = ActionTesting::get_databox<
             component,
@@ -216,12 +228,12 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
                            Metavariables::Phase::Testing);
 
   // The neighbors only have to get as far as sending data
-  for (size_t i = 0; i < 2; ++i) {
+  for (size_t i = 0; i < 3; ++i) {
     runner.next_action<component>(left_id);
     runner.next_action<component>(right_id);
   }
 
-  for (size_t i = 0; i < 5; ++i) {
+  for (size_t i = 0; i < 6; ++i) {
     runner.next_action<component>(self_id);
   }
 

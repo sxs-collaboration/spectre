@@ -27,7 +27,19 @@ namespace NumericalFluxes {
 
 template <size_t Dim, typename Frame>
 void Hllc<Dim, Frame>::package_data(
-    const gsl::not_null<Variables<package_tags>*> packaged_data,
+    const gsl::not_null<Scalar<DataVector>*> packaged_n_dot_f_mass_density,
+    const gsl::not_null<tnsr::I<DataVector, Dim, Frame>*>
+        packaged_n_dot_f_momentum_density,
+    const gsl::not_null<Scalar<DataVector>*> packaged_n_dot_f_energy_density,
+    const gsl::not_null<Scalar<DataVector>*> packaged_mass_density,
+    const gsl::not_null<tnsr::I<DataVector, Dim, Frame>*>
+        packaged_momentum_density,
+    const gsl::not_null<Scalar<DataVector>*> packaged_energy_density,
+    const gsl::not_null<Scalar<DataVector>*> packaged_pressure,
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame>*> packaged_face_normal,
+    const gsl::not_null<Scalar<DataVector>*> packaged_normal_velocity,
+    const gsl::not_null<Scalar<DataVector>*> packaged_largest_ingoing_speed,
+    const gsl::not_null<Scalar<DataVector>*> packaged_largest_outgoing_speed,
     const Scalar<DataVector>& normal_dot_flux_mass_density,
     const tnsr::I<DataVector, Dim, Frame>& normal_dot_flux_momentum_density,
     const Scalar<DataVector>& normal_dot_flux_energy_density,
@@ -39,41 +51,32 @@ void Hllc<Dim, Frame>::package_data(
     const db::const_item_type<char_speeds_tag>& characteristic_speeds,
     const tnsr::i<DataVector, Dim, Frame>& interface_unit_normal) const
     noexcept {
-  get<::Tags::NormalDotFlux<Tags::MassDensityCons>>(*packaged_data) =
-      normal_dot_flux_mass_density;
-  get<::Tags::NormalDotFlux<Tags::MomentumDensity<Dim, Frame>>>(
-      *packaged_data) = normal_dot_flux_momentum_density;
-  get<::Tags::NormalDotFlux<Tags::EnergyDensity>>(*packaged_data) =
-      normal_dot_flux_energy_density;
-  get<Tags::MassDensityCons>(*packaged_data) = mass_density;
-  get<Tags::MomentumDensity<Dim, Frame>>(*packaged_data) = momentum_density;
-  get<Tags::EnergyDensity>(*packaged_data) = energy_density;
-  get<Tags::Pressure<DataVector>>(*packaged_data) = pressure;
-  get<::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>>(
-      *packaged_data) = interface_unit_normal;
-  get<NormalVelocity>(*packaged_data) =
-      dot_product(interface_unit_normal, velocity);
+  *packaged_n_dot_f_mass_density = normal_dot_flux_mass_density;
+  *packaged_n_dot_f_momentum_density = normal_dot_flux_momentum_density;
+  *packaged_n_dot_f_energy_density = normal_dot_flux_energy_density;
+  *packaged_mass_density = mass_density;
+  *packaged_momentum_density = momentum_density;
+  *packaged_energy_density = energy_density;
+  *packaged_pressure = pressure;
+  *packaged_face_normal = interface_unit_normal;
+  *packaged_normal_velocity = dot_product(interface_unit_normal, velocity);
 
   // When packaging interior data, LargestIngoingSpeed and LargestOutgoingSpeed
   // will hold the min and max char speeds, respectively. On the other hand,
   // when packaging exterior data, the characteristic speeds will be computed
   // along *minus* the exterior normal, so LargestIngoingSpeed will hold *minus*
   // the max speed, while LargestOutgoingSpeed will store *minus* the min speed.
-  get<LargestIngoingSpeed>(*packaged_data) =
-      make_with_value<Scalar<DataVector>>(
-          characteristic_speeds[0],
-          std::numeric_limits<double>::signaling_NaN());
-  get<LargestOutgoingSpeed>(*packaged_data) =
-      make_with_value<Scalar<DataVector>>(
-          characteristic_speeds[0],
-          std::numeric_limits<double>::signaling_NaN());
+  *packaged_largest_ingoing_speed = make_with_value<Scalar<DataVector>>(
+      characteristic_speeds[0], std::numeric_limits<double>::signaling_NaN());
+  *packaged_largest_outgoing_speed = make_with_value<Scalar<DataVector>>(
+      characteristic_speeds[0], std::numeric_limits<double>::signaling_NaN());
   for (size_t s = 0; s < characteristic_speeds[0].size(); ++s) {
-    get(get<LargestIngoingSpeed>(*packaged_data))[s] = (*std::min_element(
+    get(*packaged_largest_ingoing_speed)[s] = (*std::min_element(
         characteristic_speeds.begin(), characteristic_speeds.end(),
         [&s](const DataVector& a, const DataVector& b) noexcept {
           return a[s] < b[s];
         }))[s];
-    get(get<LargestOutgoingSpeed>(*packaged_data))[s] = (*std::max_element(
+    get(*packaged_largest_outgoing_speed)[s] = (*std::max_element(
         characteristic_speeds.begin(), characteristic_speeds.end(),
         [&s](const DataVector& a, const DataVector& b) noexcept {
           return a[s] < b[s];

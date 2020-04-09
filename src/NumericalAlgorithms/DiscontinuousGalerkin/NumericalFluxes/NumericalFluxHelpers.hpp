@@ -97,6 +97,28 @@ void normal_dot_numerical_fluxes(
       typename NumericalFluxType::package_extra_tags{},
       make_not_null(&get<NormalDotNumericalFluxTags>(*n_dot_num_fluxes))...);
 }
+
+template <typename NumericalFluxType, typename... AllFieldTags,
+          typename... AllExtraTags, typename... NormalDotNumericalFluxes>
+void normal_dot_numerical_fluxes(
+    const NumericalFluxType& numerical_flux_computer,
+    const dg::SimpleBoundaryData<tmpl::list<AllFieldTags...>,
+                                 tmpl::list<AllExtraTags...>>&
+        packaged_data_int,
+    const dg::SimpleBoundaryData<tmpl::list<AllFieldTags...>,
+                                 tmpl::list<AllExtraTags...>>&
+        packaged_data_ext,
+    // Need to take these return-by-reference arguments last so the template
+    // parameter pack deduction works
+    gsl::not_null<NormalDotNumericalFluxes*>... n_dot_num_fluxes) noexcept {
+  static_assert(
+      tt::conforms_to_v<NumericalFluxType, protocols::NumericalFlux>,
+      "The 'NumericalFluxType' must conform to 'dg::protocol::NumericalFlux'.");
+  detail::normal_dot_numerical_fluxes_impl(
+      numerical_flux_computer, packaged_data_int, packaged_data_ext,
+      typename NumericalFluxType::package_field_tags{},
+      typename NumericalFluxType::package_extra_tags{}, n_dot_num_fluxes...);
+}
 // @}
 
 }  // namespace NumericalFluxes
