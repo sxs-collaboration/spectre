@@ -57,7 +57,7 @@ struct RecordTimeStepperData {
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
     using variables_tag =
-        tmpl::conditional_t<cpp17::is_same_v<VariablesTag, NoSuchType>,
+        tmpl::conditional_t<std::is_same_v<VariablesTag, NoSuchType>,
                             typename Metavariables::system::variables_tag,
                             VariablesTag>;
     using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;

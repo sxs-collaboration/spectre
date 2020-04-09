@@ -152,94 +152,91 @@ struct Metavariables7 {
 };
 
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<
         Parallel::get_inbox_tags<tmpl::list<Action0, Action1, Action2>>,
         tmpl::list<Tag0, Tag1, Tag2, Tag3>>,
     "Failed testing get_inbox_tags");
 
 static_assert(
-    cpp17::is_same_v<Parallel::get_const_global_cache_tags<Metavariables0>,
-                     tmpl::list<>>,
+    std::is_same_v<Parallel::get_const_global_cache_tags<Metavariables0>,
+                   tmpl::list<>>,
     "Failed testing get_const_global_cache_tags");
 
 static_assert(
-    cpp17::is_same_v<Parallel::get_const_global_cache_tags<Metavariables1>,
-                     tmpl::list<Tag0, Tag4>>,
+    std::is_same_v<Parallel::get_const_global_cache_tags<Metavariables1>,
+                   tmpl::list<Tag0, Tag4>>,
     "Failed testing get_const_global_cache_tags");
 
 static_assert(
-    cpp17::is_same_v<Parallel::get_const_global_cache_tags<Metavariables2>,
-                     tmpl::list<Tag1, Tag5, Tag7>>,
+    std::is_same_v<Parallel::get_const_global_cache_tags<Metavariables2>,
+                   tmpl::list<Tag1, Tag5, Tag7>>,
     "Failed testing get_const_global_cache_tags");
 
 static_assert(
-    cpp17::is_same_v<Parallel::get_const_global_cache_tags<Metavariables3>,
-                     tmpl::list<Tag0, Tag4, Tag1, Tag5, Tag7>>,
+    std::is_same_v<Parallel::get_const_global_cache_tags<Metavariables3>,
+                   tmpl::list<Tag0, Tag4, Tag1, Tag5, Tag7>>,
     "Failed testing get_const_global_cache_tags");
 
 static_assert(
-    cpp17::is_same_v<Parallel::get_const_global_cache_tags<Metavariables4>,
-                     tmpl::list<Tag6>>,
+    std::is_same_v<Parallel::get_const_global_cache_tags<Metavariables4>,
+                   tmpl::list<Tag6>>,
     "Failed testing get_const_global_cache_tags");
 
 static_assert(
-    cpp17::is_same_v<Parallel::get_const_global_cache_tags<Metavariables5>,
-                     tmpl::list<Tag0, Tag4, Tag6>>,
+    std::is_same_v<Parallel::get_const_global_cache_tags<Metavariables5>,
+                   tmpl::list<Tag0, Tag4, Tag6>>,
     "Failed testing get_const_global_cache_tags");
 
 static_assert(
-    cpp17::is_same_v<Parallel::get_const_global_cache_tags<Metavariables6>,
-                     tmpl::list<Tag2, Tag4, Tag6>>,
+    std::is_same_v<Parallel::get_const_global_cache_tags<Metavariables6>,
+                   tmpl::list<Tag2, Tag4, Tag6>>,
     "Failed testing get_const_global_cache_tags");
 
 static_assert(
-    cpp17::is_same_v<Parallel::get_const_global_cache_tags<Metavariables7>,
-                     tmpl::list<Tag0, Tag4, Tag2, Tag6>>,
+    std::is_same_v<Parallel::get_const_global_cache_tags<Metavariables7>,
+                   tmpl::list<Tag0, Tag4, Tag2, Tag6>>,
     "Failed testing get_const_global_cache_tags");
 
+static_assert(std::is_same_v<Parallel::get_initialization_actions_list<
+                                 ComponentInit::phase_dependent_action_list>,
+                             tmpl::list<InitAction0, InitAction1, InitAction2>>,
+              "Failed testing get_intialization_actions_list");
+
+static_assert(std::is_same_v<Parallel::get_initialization_actions_list<
+                                 ComponentExecute::phase_dependent_action_list>,
+                             tmpl::list<>>,
+              "Failed testing get_intialization_actions_list");
+
 static_assert(
-    cpp17::is_same_v<Parallel::get_initialization_actions_list<
-                         ComponentInit::phase_dependent_action_list>,
-                     tmpl::list<InitAction0, InitAction1, InitAction2>>,
+    std::is_same_v<Parallel::get_initialization_actions_list<
+                       ComponentInitAndExecute::phase_dependent_action_list>,
+                   tmpl::list<InitAction3>>,
     "Failed testing get_intialization_actions_list");
 
-static_assert(
-    cpp17::is_same_v<Parallel::get_initialization_actions_list<
-                         ComponentExecute::phase_dependent_action_list>,
-                     tmpl::list<>>,
-    "Failed testing get_intialization_actions_list");
-
-static_assert(
-    cpp17::is_same_v<Parallel::get_initialization_actions_list<
-                         ComponentInitAndExecute::phase_dependent_action_list>,
-                     tmpl::list<InitAction3>>,
-    "Failed testing get_intialization_actions_list");
-
-static_assert(cpp17::is_same_v<ComponentInit::initialization_tags,
-                               tmpl::list<InitTag0, InitTag1, InitTag2>>,
+static_assert(std::is_same_v<ComponentInit::initialization_tags,
+                             tmpl::list<InitTag0, InitTag1, InitTag2>>,
               "Failed testing get_initialization_tags");
 
 static_assert(
-    cpp17::is_same_v<ComponentExecute::initialization_tags, tmpl::list<>>,
+    std::is_same_v<ComponentExecute::initialization_tags, tmpl::list<>>,
     "Failed testing get_initialization_tags");
 
-static_assert(cpp17::is_same_v<ComponentInitAndExecute::initialization_tags,
-                               tmpl::list<InitTag0, InitTag1, InitTag3>>,
+static_assert(std::is_same_v<ComponentInitAndExecute::initialization_tags,
+                             tmpl::list<InitTag0, InitTag1, InitTag3>>,
               "Failed testing get_initialization_tags");
 
-static_assert(cpp17::is_same_v<
+static_assert(std::is_same_v<
                   ComponentInitWithAllocate::initialization_tags,
                   tmpl::list<InitTag4, InitTag5, InitTag0, InitTag1, InitTag2>>,
               "Failed testing get_initialization_tags");
 
-static_assert(
-    cpp17::is_same_v<ComponentExecuteWithAllocate::initialization_tags,
-                     tmpl::list<InitTag6, InitTag7>>,
-    "Failed testing get_initialization_tags");
+static_assert(std::is_same_v<ComponentExecuteWithAllocate::initialization_tags,
+                             tmpl::list<InitTag6, InitTag7>>,
+              "Failed testing get_initialization_tags");
 
 static_assert(
-    cpp17::is_same_v<ComponentInitAndExecuteWithAllocate::initialization_tags,
-                     tmpl::list<InitTag3, InitTag4, InitTag0, InitTag1>>,
+    std::is_same_v<ComponentInitAndExecuteWithAllocate::initialization_tags,
+                   tmpl::list<InitTag3, InitTag4, InitTag0, InitTag1>>,
     "Failed testing get_initialization_tags");
 
 namespace OptionTags {
@@ -322,18 +319,18 @@ using initialization_tags_2 =
     tmpl::list<Initialization::Tags::Yards, Initialization::Tags::Feet,
                Initialization::Tags::FullGreeting>;
 
-static_assert(cpp17::is_same_v<
-                  Parallel::get_option_tags<initialization_tags_0, NoSuchType>,
-                  tmpl::list<>>,
-              "Failed testing get_option_tags");
-
-static_assert(cpp17::is_same_v<
-                  Parallel::get_option_tags<initialization_tags_1, NoSuchType>,
-                  tmpl::list<OptionTags::Yards, OptionTags::Dim>>,
-              "Failed testing get_option_tags");
+static_assert(
+    std::is_same_v<Parallel::get_option_tags<initialization_tags_0, NoSuchType>,
+                   tmpl::list<>>,
+    "Failed testing get_option_tags");
 
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<Parallel::get_option_tags<initialization_tags_1, NoSuchType>,
+                   tmpl::list<OptionTags::Yards, OptionTags::Dim>>,
+    "Failed testing get_option_tags");
+
+static_assert(
+    std::is_same_v<
         Parallel::get_option_tags<initialization_tags_2, NoSuchType>,
         tmpl::list<OptionTags::Yards, OptionTags::Greeting, OptionTags::Name>>,
     "Failed testing get_option_tags");

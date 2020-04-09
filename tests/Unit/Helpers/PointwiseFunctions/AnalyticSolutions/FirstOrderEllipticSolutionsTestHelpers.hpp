@@ -61,7 +61,7 @@ void verify_solution(
       solution.variables(inertial_coords, all_fields{}));
 
   // Apply operator to solution fields
-  auto fluxes = cpp17::apply(
+  auto fluxes = std::apply(
       [&solution_fields,
        &fluxes_computer](const auto&... expanded_fluxes_args) {
         return ::elliptic::first_order_fluxes<System::volume_dim, primal_fields,
@@ -71,7 +71,7 @@ void verify_solution(
       fluxes_args);
   auto div_fluxes = divergence(std::move(fluxes), mesh,
                                coord_map.inv_jacobian(logical_coords));
-  auto sources = cpp17::apply(
+  auto sources = std::apply(
       [&solution_fields](const auto&... expanded_sources_args) {
         return ::elliptic::first_order_sources<primal_fields, auxiliary_fields,
                                                typename System::sources>(

@@ -22,14 +22,14 @@ namespace tt {
 /// `type` from `get_fundamental_type<T>`
 ///
 /// \snippet Test_GetFundamentalType.cpp get_fundamental_type
-template <typename T, typename Enable = cpp17::void_t<>>
+template <typename T, typename Enable = std::void_t<>>
 struct get_fundamental_type {
-  using type = tmpl::conditional_t<cpp17::is_fundamental_v<T>, T, NoSuchType>;
+  using type = tmpl::conditional_t<std::is_fundamental_v<T>, T, NoSuchType>;
 };
 
 /// \cond
 template <typename T>
-struct get_fundamental_type<T, cpp17::void_t<typename T::value_type>> {
+struct get_fundamental_type<T, std::void_t<typename T::value_type>> {
   using type = typename get_fundamental_type<typename T::value_type>::type;
 };
 /// \endcond

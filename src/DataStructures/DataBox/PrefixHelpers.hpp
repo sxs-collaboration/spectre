@@ -40,8 +40,8 @@ template <typename Tag>
 constexpr DispatchTagType tag_type =
     tt::is_a_v<Tags::Variables, Tag>
         ? DispatchTagType::Variables
-        : cpp17::is_base_of_v<db::PrefixTag, Tag> ? DispatchTagType::Prefix
-                                                  : DispatchTagType::Other;
+        : std::is_base_of_v<db::PrefixTag, Tag> ? DispatchTagType::Prefix
+                                                : DispatchTagType::Other;
 
 template <DispatchTagType TagType>
 struct add_tag_prefix_impl;
@@ -70,8 +70,8 @@ struct add_tag_prefix_impl<DispatchTagType::Prefix> {
   struct prefix_wrapper_helper<Prefix, InnerPrefix<InnerTag, InnerArgs...>,
                                Args...> {
     static_assert(
-        cpp17::is_same_v<typename InnerPrefix<InnerTag, InnerArgs...>::tag,
-                         InnerTag>,
+        std::is_same_v<typename InnerPrefix<InnerTag, InnerArgs...>::tag,
+                       InnerTag>,
         "Inconsistent values of prefixed tag");
     using type =
         InnerPrefix<dispatch_add_tag_prefix_impl<Prefix, InnerTag, Args...>,
@@ -130,7 +130,7 @@ struct remove_variables_prefix<DispatchTagType::Variables> {
 template <typename UnprefixedTag, template <typename...> class Prefix,
           typename... Args>
 struct remove_tag_prefix_impl<Prefix<UnprefixedTag, Args...>> {
-  static_assert(cpp17::is_base_of_v<db::SimpleTag, UnprefixedTag>,
+  static_assert(std::is_base_of_v<db::SimpleTag, UnprefixedTag>,
                 "Unwrapped tag is not a DataBoxTag");
   using type = dispatch_remove_variables_prefix<UnprefixedTag>;
 };
@@ -160,7 +160,7 @@ struct remove_all_prefixes_impl;
 /// Completely remove all prefix tags from a Tag
 template <typename Tag>
 using remove_all_prefixes = typename DataBox_detail::remove_all_prefixes_impl<
-    Tag, cpp17::is_base_of_v<db::PrefixTag, Tag>>::type;
+    Tag, std::is_base_of_v<db::PrefixTag, Tag>>::type;
 
 namespace DataBox_detail {
 template <class Tag>

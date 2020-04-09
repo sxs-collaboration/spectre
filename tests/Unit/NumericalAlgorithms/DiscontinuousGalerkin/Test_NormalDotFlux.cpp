@@ -196,14 +196,14 @@ void check_compute_item() {
   using compute_n_dot_f =
       Tags::NormalDotFluxCompute<variables_tag<Dim, Frame>, Dim, Frame>;
   static_assert(
-      cpp17::is_same_v<typename compute_n_dot_f::argument_tags,
-                       tmpl::list<flux_tag<Dim, Frame>,
-                                  typename normalized_normal_tag::base>>,
+      std::is_same_v<typename compute_n_dot_f::argument_tags,
+                     tmpl::list<flux_tag<Dim, Frame>,
+                                typename normalized_normal_tag::base>>,
       "Wrong argument tags");
   const auto result = compute_n_dot_f::function(fluxes, normalized_normal);
 
   static_assert(
-      cpp17::is_base_of_v<
+      std::is_base_of_v<
           db::add_tag_prefix<Tags::NormalDotFlux, variables_tag<Dim, Frame>>,
           compute_n_dot_f>,
       "Wrong inheritance");

@@ -42,13 +42,13 @@ struct VectorTag : db::SimpleTag {
 
 void test_mean_tag() noexcept {
   static_assert(
-      cpp17::is_same_v<typename Tags::Mean<ScalarTag>::type, Scalar<double>>,
+      std::is_same_v<typename Tags::Mean<ScalarTag>::type, Scalar<double>>,
       "Failed testing Tags::Mean<ScalarTag>");
-  static_assert(cpp17::is_same_v<typename Tags::Mean<VectorTag<1>>::type,
-                                 tnsr::I<double, 1>>,
+  static_assert(std::is_same_v<typename Tags::Mean<VectorTag<1>>::type,
+                               tnsr::I<double, 1>>,
                 "Failed testing Tags::Mean<ScalarTag>");
-  static_assert(cpp17::is_same_v<typename Tags::Mean<VectorTag<3>>::type,
-                                 tnsr::I<double, 3>>,
+  static_assert(std::is_same_v<typename Tags::Mean<VectorTag<3>>::type,
+                               tnsr::I<double, 3>>,
                 "Failed testing Tags::Mean<ScalarTag>");
   TestHelpers::db::test_prefix_tag<Tags::Mean<ScalarTag>>("Mean(Scalar)");
   TestHelpers::db::test_prefix_tag<Tags::Mean<VectorTag<1>>>("Mean(I<1>)");
@@ -56,14 +56,14 @@ void test_mean_tag() noexcept {
 }
 
 void test_modal_tag() noexcept {
-  static_assert(cpp17::is_same_v<typename Tags::Modal<ScalarTag>::type,
-                                 Scalar<ModalVector>>,
+  static_assert(std::is_same_v<typename Tags::Modal<ScalarTag>::type,
+                               Scalar<ModalVector>>,
                 "Failed testing Tags::Modal<ScalarTag>");
-  static_assert(cpp17::is_same_v<typename Tags::Modal<VectorTag<1>>::type,
-                                 tnsr::I<ModalVector, 1>>,
+  static_assert(std::is_same_v<typename Tags::Modal<VectorTag<1>>::type,
+                               tnsr::I<ModalVector, 1>>,
                 "Failed testing Tags::Modal<VectorTag<1>>");
-  static_assert(cpp17::is_same_v<typename Tags::Modal<VectorTag<3>>::type,
-                                 tnsr::I<ModalVector, 3>>,
+  static_assert(std::is_same_v<typename Tags::Modal<VectorTag<3>>::type,
+                               tnsr::I<ModalVector, 3>>,
                 "Failed testing Tags::Modal<VectorTag<3>>");
   TestHelpers::db::test_prefix_tag<Tags::Modal<ScalarTag>>("Modal(Scalar)");
   TestHelpers::db::test_prefix_tag<Tags::Modal<VectorTag<1>>>("Modal(I<1>)");
@@ -72,7 +72,7 @@ void test_modal_tag() noexcept {
 
 void test_spin_weighted_tag() noexcept {
   static_assert(
-      cpp17::is_same_v<
+      std::is_same_v<
           typename Tags::SpinWeighted<ComplexScalarTag,
                                       std::integral_constant<int, 1>>::type,
           Scalar<SpinWeighted<ComplexDataVector, 1>>>,
@@ -88,8 +88,8 @@ void test_multiplies_tag() noexcept {
       Tags::SpinWeighted<ComplexScalarTag, std::integral_constant<int, 1>>,
       Tags::SpinWeighted<ComplexScalarTag, std::integral_constant<int, -2>>>;
   static_assert(
-      cpp17::is_same_v<db::const_item_type<test_multiplies_tag>,
-                       Scalar<SpinWeighted<ComplexDataVector, -1>>>,
+      std::is_same_v<db::const_item_type<test_multiplies_tag>,
+                     Scalar<SpinWeighted<ComplexDataVector, -1>>>,
       "Failed testing Tags::Multiplies for Tags::SpinWeighted operands");
   TestHelpers::db::test_prefix_tag<test_multiplies_tag>(
         "Multiplies(SpinWeighted(ComplexScalar, 1), "

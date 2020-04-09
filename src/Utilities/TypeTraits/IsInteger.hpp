@@ -23,7 +23,7 @@ namespace tt {
  * using result = tt::is_integer<I>;
  * \endcode
  * \metareturns
- * cpp17::bool_constant
+ * std::bool_constant
  *
  * \example
  * \snippet Test_IsInteger.cpp is_integer_example

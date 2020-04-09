@@ -33,30 +33,30 @@ struct PrefixWithArgs : db::PrefixTag, db::SimpleTag {
 };
 }  // namespace
 
-static_assert(cpp17::is_same_v<db::add_tag_prefix<Prefix, Var>, Prefix<Var>>,
-              "Failed testing add_tag_prefix");
-static_assert(cpp17::is_same_v<
-                  db::add_tag_prefix<Prefix, Tags::Variables<tmpl::list<Var>>>,
-                  Prefix<Tags::Variables<tmpl::list<Prefix<Var>>>>>,
+static_assert(std::is_same_v<db::add_tag_prefix<Prefix, Var>, Prefix<Var>>,
               "Failed testing add_tag_prefix");
 static_assert(
-    cpp17::is_same_v<db::add_tag_prefix<PrefixWithArgs, Var, int, double>,
-                     PrefixWithArgs<Var, int, double>>,
+    std::is_same_v<db::add_tag_prefix<Prefix, Tags::Variables<tmpl::list<Var>>>,
+                   Prefix<Tags::Variables<tmpl::list<Prefix<Var>>>>>,
     "Failed testing add_tag_prefix");
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<db::add_tag_prefix<PrefixWithArgs, Var, int, double>,
+                   PrefixWithArgs<Var, int, double>>,
+    "Failed testing add_tag_prefix");
+static_assert(
+    std::is_same_v<
         db::add_tag_prefix<PrefixWithArgs, Tags::Variables<tmpl::list<Var>>,
                            int, double>,
         PrefixWithArgs<
             Tags::Variables<tmpl::list<PrefixWithArgs<Var, int, double>>>, int,
             double>>,
     "Failed testing add_tag_prefix");
-static_assert(cpp17::is_same_v<
-                  db::add_tag_prefix<Prefix, PrefixWithArgs<Var, int, double>>,
-                  Prefix<PrefixWithArgs<Var, int, double>>>,
-              "Failed testing add_tag_prefix");
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<db::add_tag_prefix<Prefix, PrefixWithArgs<Var, int, double>>,
+                   Prefix<PrefixWithArgs<Var, int, double>>>,
+    "Failed testing add_tag_prefix");
+static_assert(
+    std::is_same_v<
         db::add_tag_prefix<
             Prefix, PrefixWithArgs<Tags::Variables<tmpl::list<
                                        PrefixWithArgs<Var, int, double>>>,
@@ -65,12 +65,12 @@ static_assert(
                                   Prefix<PrefixWithArgs<Var, int, double>>>>,
                               int, double>>>,
     "Failed testing add_tag_prefix");
-static_assert(cpp17::is_same_v<
-                  db::add_tag_prefix<PrefixWithArgs, Prefix<Var>, int, double>,
-                  PrefixWithArgs<Prefix<Var>, int, double>>,
-              "Failed testing add_tag_prefix");
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<db::add_tag_prefix<PrefixWithArgs, Prefix<Var>, int, double>,
+                   PrefixWithArgs<Prefix<Var>, int, double>>,
+    "Failed testing add_tag_prefix");
+static_assert(
+    std::is_same_v<
         db::add_tag_prefix<PrefixWithArgs,
                            Prefix<Tags::Variables<tmpl::list<Prefix<Var>>>>,
                            int, double>,
@@ -79,51 +79,49 @@ static_assert(
                        int, double>>,
     "Failed testing add_tag_prefix");
 
-static_assert(cpp17::is_same_v<db::remove_tag_prefix<Prefix<Var>>, Var>,
+static_assert(std::is_same_v<db::remove_tag_prefix<Prefix<Var>>, Var>,
               "Failed testing remove_tag_prefix");
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<
         db::remove_tag_prefix<Prefix<Tags::Variables<tmpl::list<Prefix<Var>>>>>,
         Tags::Variables<tmpl::list<Var>>>,
     "Failed testing remove_tag_prefix");
-static_assert(cpp17::is_same_v<
+static_assert(std::is_same_v<
                   db::remove_tag_prefix<PrefixWithArgs<Var, int, double>>, Var>,
               "Failed testing remove_tag_prefix");
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<
         db::remove_tag_prefix<PrefixWithArgs<
             Tags::Variables<tmpl::list<PrefixWithArgs<Var, int, double>>>, int,
             double>>,
         Tags::Variables<tmpl::list<Var>>>,
     "Failed testing remove_tag_prefix");
 static_assert(
-    cpp17::is_same_v<db::remove_tag_prefix<PrefixWithArgs<
-                         Prefix<Tags::Variables<tmpl::list<
-                             PrefixWithArgs<Prefix<Var>, int, double>>>>,
-                         int, double>>,
-                     Prefix<Tags::Variables<tmpl::list<Prefix<Var>>>>>,
+    std::is_same_v<db::remove_tag_prefix<PrefixWithArgs<
+                       Prefix<Tags::Variables<tmpl::list<
+                           PrefixWithArgs<Prefix<Var>, int, double>>>>,
+                       int, double>>,
+                   Prefix<Tags::Variables<tmpl::list<Prefix<Var>>>>>,
     "Failed testing remove_tag_prefix");
 
+static_assert(std::is_same_v<db::remove_all_prefixes<PrefixWithArgs<
+                                 PrefixWithArgs<Var, int, double>, char, bool>>,
+                             Var>,
+              "Failed testing remove_all_prefixes");
 static_assert(
-    cpp17::is_same_v<db::remove_all_prefixes<PrefixWithArgs<
-                         PrefixWithArgs<Var, int, double>, char, bool>>,
-                     Var>,
+    std::is_same_v<db::remove_all_prefixes<
+                       Prefix<Tags::Variables<tmpl::list<Prefix<Var>>>>>,
+                   Tags::Variables<tmpl::list<Var>>>,
     "Failed testing remove_all_prefixes");
-static_assert(
-    cpp17::is_same_v<db::remove_all_prefixes<
-                         Prefix<Tags::Variables<tmpl::list<Prefix<Var>>>>>,
-                     Tags::Variables<tmpl::list<Var>>>,
-    "Failed testing remove_all_prefixes");
-static_assert(
-    cpp17::is_same_v<db::remove_all_prefixes<PrefixWithArgs<
-                         Prefix<Tags::Variables<tmpl::list<
-                             PrefixWithArgs<Prefix<Var>, char, bool>>>>,
-                         char, bool>>,
-                     Tags::Variables<tmpl::list<Var>>>,
-    "Failed testing remove_all_prefixes");
+static_assert(std::is_same_v<db::remove_all_prefixes<PrefixWithArgs<
+                                 Prefix<Tags::Variables<tmpl::list<
+                                     PrefixWithArgs<Prefix<Var>, char, bool>>>>,
+                                 char, bool>>,
+                             Tags::Variables<tmpl::list<Var>>>,
+              "Failed testing remove_all_prefixes");
 
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<
         db::variables_tag_with_tags_list<
             PrefixWithArgs<Prefix<Tags::Variables<tmpl::list<
                                PrefixWithArgs<Prefix<Var>, char, bool>>>>,
@@ -135,22 +133,21 @@ static_assert(
 
 /// [variables_tag_with_tags_list]
 static_assert(
-    cpp17::is_same_v<db::variables_tag_with_tags_list<
-                         Prefix<Tags::Variables<tmpl::list<Prefix<Var>>>>,
-                         tmpl::list<Prefix<Var2>>>,
-                     Prefix<Tags::Variables<tmpl::list<Prefix<Var2>>>>>,
+    std::is_same_v<db::variables_tag_with_tags_list<
+                       Prefix<Tags::Variables<tmpl::list<Prefix<Var>>>>,
+                       tmpl::list<Prefix<Var2>>>,
+                   Prefix<Tags::Variables<tmpl::list<Prefix<Var2>>>>>,
     "Failed testing variables_tag_with_tags_list");
 /// [variables_tag_with_tags_list]
 
 static_assert(
-    cpp17::is_same_v<db::get_variables_tags_list<
-                         Prefix<Tags::Variables<tmpl::list<Prefix<Var>>>>>,
-                     tmpl::list<Prefix<Var>>>,
+    std::is_same_v<db::get_variables_tags_list<
+                       Prefix<Tags::Variables<tmpl::list<Prefix<Var>>>>>,
+                   tmpl::list<Prefix<Var>>>,
     "Failed testing get_variables_tags_list");
 
 static_assert(
-    cpp17::is_same_v<
-        db::get_variables_tags_list<
-            Prefix<Tags::Variables<tmpl::list<Prefix<Var>, Prefix<Var2>>>>>,
-        tmpl::list<Prefix<Var>, Prefix<Var2>>>,
+    std::is_same_v<db::get_variables_tags_list<Prefix<
+                       Tags::Variables<tmpl::list<Prefix<Var>, Prefix<Var2>>>>>,
+                   tmpl::list<Prefix<Var>, Prefix<Var2>>>,
     "Failed testing get_variables_tags_list");

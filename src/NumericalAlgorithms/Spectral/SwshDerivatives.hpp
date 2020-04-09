@@ -230,7 +230,7 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
                                        size_t, size_t,
                                        std::index_sequence<Is...>,
                                        tmpl::list<DerivativeKinds...>,
-                                       cpp17::bool_constant<true>) noexcept;
+                                       std::bool_constant<true>) noexcept;
 
  private:
   // note inputs reordered to accommodate the alternative tag-free functions
@@ -368,7 +368,7 @@ void angular_derivatives_impl(
     const std::tuple<ArgumentTypes...>& argument_tuple, const size_t l_max,
     const size_t number_of_radial_points, std::index_sequence<Is...> /*meta*/,
     tmpl::list<DerivativeKinds...> /*meta*/,
-    cpp17::bool_constant<true> /*buffers_included_in_arguments*/) noexcept {
+    std::bool_constant<true> /*buffers_included_in_arguments*/) noexcept {
   AngularDerivatives<
       tmpl::list<Tags::Derivative<
           ::Tags::SpinWeighted<
@@ -394,7 +394,7 @@ void angular_derivatives_impl(
     const size_t number_of_radial_points,
     std::index_sequence<Is...> index_sequence,
     tmpl::list<DerivativeKinds...> derivative_kinds,
-    cpp17::bool_constant<false> /*buffers_included_in_arguments*/) noexcept {
+    std::bool_constant<false> /*buffers_included_in_arguments*/) noexcept {
   auto derivative_buffer_tuple = std::make_tuple(
       swsh_buffer<std::decay_t<decltype(*get<Is>(argument_tuple))>::spin>(
           l_max, number_of_radial_points)...);
@@ -407,7 +407,7 @@ void angular_derivatives_impl(
                             get<Is>(argument_tuple)...,
                             get<Is + sizeof...(Is)>(argument_tuple)...),
       l_max, number_of_radial_points, index_sequence, derivative_kinds,
-      cpp17::bool_constant<true>{});
+      std::bool_constant<true>{});
 }
 }  // namespace detail
 
@@ -482,8 +482,8 @@ void angular_derivatives(const size_t l_max,                    // NOLINT
       std::forward_as_tuple(arguments...), l_max, number_of_radial_points,
       std::make_index_sequence<tmpl::size<DerivativeKindList>::value>{},
       DerivativeKindList{},
-      cpp17::bool_constant<tmpl::size<DerivativeKindList>::value * 4 ==
-                           sizeof...(ArgumentTypes)>{});
+      std::bool_constant<tmpl::size<DerivativeKindList>::value * 4 ==
+                         sizeof...(ArgumentTypes)>{});
 }
 
 /*!

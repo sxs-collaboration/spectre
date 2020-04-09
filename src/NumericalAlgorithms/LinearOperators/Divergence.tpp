@@ -31,7 +31,7 @@ Variables<db::wrap_tags_in<Tags::div, FluxTags>> divergence(
     using first_index =
         tmpl::front<typename db::const_item_type<FluxTag>::index_list>;
     static_assert(
-        cpp17::is_same_v<typename first_index::Frame, DerivativeFrame> and
+        std::is_same_v<typename first_index::Frame, DerivativeFrame> and
             first_index::ul == UpLo::Up,
         "First index of tensor cannot be contracted with derivative "
         "because either it is in the wrong frame or it has the wrong "

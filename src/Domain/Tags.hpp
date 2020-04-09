@@ -269,14 +269,13 @@ template <typename DirectionsTag, typename Tag>
 struct Interface;
 
 namespace Interface_detail {
-template <typename DirectionsTag, typename Tag, typename = cpp17::void_t<>>
+template <typename DirectionsTag, typename Tag, typename = std::void_t<>>
 struct GetBaseTagIfPresent {};
 
 template <typename DirectionsTag, typename Tag>
-struct GetBaseTagIfPresent<DirectionsTag, Tag,
-                           cpp17::void_t<typename Tag::base>>
+struct GetBaseTagIfPresent<DirectionsTag, Tag, std::void_t<typename Tag::base>>
     : Interface<DirectionsTag, typename Tag::base> {
-  static_assert(cpp17::is_base_of_v<typename Tag::base, Tag>,
+  static_assert(std::is_base_of_v<typename Tag::base, Tag>,
                 "Tag `base` alias must be a base class of `Tag`.");
 };
 }  // namespace Interface_detail

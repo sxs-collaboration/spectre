@@ -127,8 +127,8 @@ struct ArrayReduce {
   static void apply(const db::DataBox<DbTags>& /*box*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index) noexcept {
-    static_assert(cpp17::is_same_v<ParallelComponent,
-                                   ArrayParallelComponent<TestMetavariables>>,
+    static_assert(std::is_same_v<ParallelComponent,
+                                 ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     const auto& my_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent<Metavariables>>(

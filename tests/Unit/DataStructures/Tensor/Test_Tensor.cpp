@@ -31,7 +31,7 @@
 /// [change_up_lo]
 using Index = SpatialIndex<3, UpLo::Lo, Frame::Grid>;
 using UpIndex = change_index_up_lo<Index>;
-static_assert(cpp17::is_same_v<UpIndex, SpatialIndex<3, UpLo::Up, Frame::Grid>>,
+static_assert(std::is_same_v<UpIndex, SpatialIndex<3, UpLo::Up, Frame::Grid>>,
               "Failed testing change_index_up_lo");
 /// [change_up_lo]
 
@@ -48,42 +48,41 @@ static_assert(Frame::is_frame_physical_v<Frame::Inertial>,
 
 // Test Symmetry metafunction
 static_assert(
-    cpp17::is_same_v<Symmetry<4, 1>, tmpl::integral_list<std::int32_t, 2, 1>>,
+    std::is_same_v<Symmetry<4, 1>, tmpl::integral_list<std::int32_t, 2, 1>>,
     "Failed testing Symmetry");
 static_assert(
-    cpp17::is_same_v<Symmetry<1, 4>, tmpl::integral_list<std::int32_t, 2, 1>>,
+    std::is_same_v<Symmetry<1, 4>, tmpl::integral_list<std::int32_t, 2, 1>>,
     "Failed testing Symmetry");
-static_assert(
-    cpp17::is_same_v<Symmetry<4>, tmpl::integral_list<std::int32_t, 1>>,
-    "Failed testing Symmetry");
+static_assert(std::is_same_v<Symmetry<4>, tmpl::integral_list<std::int32_t, 1>>,
+              "Failed testing Symmetry");
 
 // Test prepend_spacetime_index and prepend_spatial_index
-static_assert(cpp17::is_same_v<tnsr::aB<double, 3, Frame::Grid>,
-                               TensorMetafunctions::prepend_spacetime_index<
-                                   tnsr::A<double, 3, Frame::Grid>, 3, UpLo::Lo,
-                                   Frame::Grid>>,
+static_assert(std::is_same_v<tnsr::aB<double, 3, Frame::Grid>,
+                             TensorMetafunctions::prepend_spacetime_index<
+                                 tnsr::A<double, 3, Frame::Grid>, 3, UpLo::Lo,
+                                 Frame::Grid>>,
               "Failed testing prepend_spacetime_index");
-static_assert(cpp17::is_same_v<tnsr::iJ<double, 3, Frame::Grid>,
-                               TensorMetafunctions::prepend_spatial_index<
-                                   tnsr::I<double, 3, Frame::Grid>, 3, UpLo::Lo,
-                                   Frame::Grid>>,
+static_assert(std::is_same_v<tnsr::iJ<double, 3, Frame::Grid>,
+                             TensorMetafunctions::prepend_spatial_index<
+                                 tnsr::I<double, 3, Frame::Grid>, 3, UpLo::Lo,
+                                 Frame::Grid>>,
               "Failed testing prepend_spatial_index");
 
 // Test remove_first_index
 static_assert(
-    cpp17::is_same_v<Scalar<double>, TensorMetafunctions::remove_first_index<
-                                         tnsr::a<double, 3, Frame::Grid>>>,
+    std::is_same_v<Scalar<double>, TensorMetafunctions::remove_first_index<
+                                       tnsr::a<double, 3, Frame::Grid>>>,
     "Failed testing remove_first_index");
-static_assert(cpp17::is_same_v<tnsr::A<double, 3, Frame::Grid>,
-                               TensorMetafunctions::remove_first_index<
-                                   tnsr::aB<double, 3, Frame::Grid>>>,
+static_assert(std::is_same_v<tnsr::A<double, 3, Frame::Grid>,
+                             TensorMetafunctions::remove_first_index<
+                                 tnsr::aB<double, 3, Frame::Grid>>>,
               "Failed testing remove_first_index");
-static_assert(cpp17::is_same_v<tnsr::ab<double, 3, Frame::Grid>,
-                               TensorMetafunctions::remove_first_index<
-                                   tnsr::abc<double, 3, Frame::Grid>>>,
+static_assert(std::is_same_v<tnsr::ab<double, 3, Frame::Grid>,
+                             TensorMetafunctions::remove_first_index<
+                                 tnsr::abc<double, 3, Frame::Grid>>>,
               "Failed testing remove_first_index");
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<
         tnsr::ab<double, 3, Frame::Grid>,
         TensorMetafunctions::remove_first_index<Tensor<
             double, tmpl::integral_list<std::int32_t, 2, 2, 1>,
@@ -94,9 +93,9 @@ static_assert(
                        Tensor_detail::TensorIndexType<3, UpLo::Lo, Frame::Grid,
                                                       IndexType::Spacetime>>>>>,
     "Failed testing remove_first_index");
-static_assert(cpp17::is_same_v<tnsr::aa<double, 3, Frame::Grid>,
-                               TensorMetafunctions::remove_first_index<
-                                   tnsr::abb<double, 3, Frame::Grid>>>,
+static_assert(std::is_same_v<tnsr::aa<double, 3, Frame::Grid>,
+                             TensorMetafunctions::remove_first_index<
+                                 tnsr::abb<double, 3, Frame::Grid>>>,
               "Failed testing remove_first_index");
 
 // Test check_index_symmetry
@@ -194,15 +193,15 @@ static_assert(
 
 // Test swap_type
 static_assert(
-    cpp17::is_same_v<tnsr::ij<double, 3>, TensorMetafunctions::swap_type<
-                                              double, tnsr::ij<DataVector, 3>>>,
+    std::is_same_v<tnsr::ij<double, 3>, TensorMetafunctions::swap_type<
+                                            double, tnsr::ij<DataVector, 3>>>,
     "Failed testing swap_type");
 
-static_assert(not cpp17::is_constructible_v<
+static_assert(not std::is_constructible_v<
                   Tensor<double, Symmetry<>, tmpl::list<>>, tmpl::list<>>,
               "Tensor construction failed to be SFINAE friendly");
 static_assert(
-    cpp17::is_constructible_v<Tensor<double, Symmetry<>, tmpl::list<>>, double>,
+    std::is_constructible_v<Tensor<double, Symmetry<>, tmpl::list<>>, double>,
     "Tensor construction failed to be SFINAE friendly");
 
 namespace {

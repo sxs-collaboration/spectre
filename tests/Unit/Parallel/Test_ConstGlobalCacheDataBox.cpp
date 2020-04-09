@@ -48,7 +48,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCacheDataBox", "[Unit][Parallel]") {
                  db::AddComputeTags<
                      Tags::FromConstGlobalCache<Tags::IntegerList>,
                      Tags::FromConstGlobalCache<Tags::UniquePtrIntegerList>>>(
-          &cpp17::as_const(cache));
+          &std::as_const(cache));
   CHECK(db::get<Tags::ConstGlobalCache>(box) == &cache);
   CHECK(std::array<int, 3>{{-1, 3, 7}} == db::get<Tags::IntegerList>(box));
   CHECK(std::array<int, 3>{{1, 5, -8}} ==

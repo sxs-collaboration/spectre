@@ -487,7 +487,7 @@ struct value_list {};
  * \brief A non-short-circuiting logical AND between bools 'B""
  *
  * Useful when arbitrarily large parameter packs need to be evaluated, since
- * cpp17::conjunction and cpp17::disjunction use recursion
+ * std::conjunction and std::disjunction use recursion
  */
 template <bool... Bs>
 using flat_all =
@@ -499,7 +499,7 @@ using flat_all =
  * \brief A non-short-circuiting logical AND between bools 'B""
  *
  * Useful when arbitrarily large parameter packs need to be evaluated, since
- * cpp17::conjunction and cpp17::disjunction use recursion
+ * std::conjunction and std::disjunction use recursion
  */
 template <bool... Bs>
 constexpr bool flat_all_v = flat_all<Bs...>::value;
@@ -509,7 +509,7 @@ constexpr bool flat_all_v = flat_all<Bs...>::value;
  * \brief A non-short-circuiting logical OR between bools 'B""
  *
  * Useful when arbitrarily large parameter packs need to be evaluated, since
- * cpp17::conjunction and cpp17::disjunction use recursion
+ * std::conjunction and std::disjunction use recursion
  */
 template <bool... Bs>
 using flat_any = std::integral_constant<
@@ -523,7 +523,7 @@ using flat_any = std::integral_constant<
  * \brief A non-short-circuiting logical OR between bools 'B""
  *
  * Useful when arbitrarily large parameter packs need to be evaluated, since
- * cpp17::conjunction and cpp17::disjunction use recursion
+ * std::conjunction and std::disjunction use recursion
  */
 template <bool... Bs>
 constexpr bool flat_any_v = flat_any<Bs...>::value;

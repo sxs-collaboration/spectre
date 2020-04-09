@@ -87,7 +87,7 @@ class Variables<tmpl::list<Tags...>> {
                 "You must provide at least one tag to the Variables "
                 "for type inference");
 
-  static_assert((tmpl2::flat_all<cpp17::is_same_v<
+  static_assert((tmpl2::flat_all<std::is_same_v<
                      typename Tags::type::type,
                      typename tmpl::front<tags_list>::type::type>...>::value or
                  tmpl2::flat_all<is_spin_weighted_of_same_type_v<
@@ -97,9 +97,8 @@ class Variables<tmpl::list<Tags...>> {
                 "have the same internal storage type.");
 
   static_assert(
-      tmpl2::flat_all<
-          cpp17::is_same_v<cpp17::void_t<typename Tags::type::type::value_type>,
-                           void>...>::value,
+      tmpl2::flat_all<std::is_same_v<
+          std::void_t<typename Tags::type::type::value_type>, void>...>::value,
       "The tensor stored in a Variables must have as member `type` "
       "a vector with a member `value_type` (e.g. Tensors of doubles are "
       "disallowed, use instead a Tensor of DataVectors).");
@@ -116,8 +115,7 @@ class Variables<tmpl::list<Tags...>> {
                     blaze::DynamicVector<value_type, transpose_flag>>;
 
   static_assert(
-      cpp17::is_fundamental_v<value_type> or
-          tt::is_a_v<std::complex, value_type>,
+      std::is_fundamental_v<value_type> or tt::is_a_v<std::complex, value_type>,
       "`value_type` of the Variables (so the storage type of the vector type "
       "within the tensors in the Variables) must be either a fundamental type "
       "or a std::complex. If this constraint is relaxed, the value_type "
@@ -282,7 +280,7 @@ class Variables<tmpl::list<Tags...>> {
   Variables& operator=(const blaze::Vector<VT, VF>& expression) noexcept;
 
   template <typename... WrappedTags,
-            Requires<tmpl2::flat_all<cpp17::is_same_v<
+            Requires<tmpl2::flat_all<std::is_same_v<
                 db::remove_all_prefixes<WrappedTags>,
                 db::remove_all_prefixes<Tags>>...>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE Variables& operator+=(
@@ -298,7 +296,7 @@ class Variables<tmpl::list<Tags...>> {
   }
 
   template <typename... WrappedTags,
-            Requires<tmpl2::flat_all<cpp17::is_same_v<
+            Requires<tmpl2::flat_all<std::is_same_v<
                 db::remove_all_prefixes<WrappedTags>,
                 db::remove_all_prefixes<Tags>>...>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE Variables& operator-=(
@@ -324,7 +322,7 @@ class Variables<tmpl::list<Tags...>> {
   }
 
   template <typename... WrappedTags,
-            Requires<tmpl2::flat_all<cpp17::is_same_v<
+            Requires<tmpl2::flat_all<std::is_same_v<
                 db::remove_all_prefixes<WrappedTags>,
                 db::remove_all_prefixes<Tags>>...>::value> = nullptr>
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator+(
@@ -344,7 +342,7 @@ class Variables<tmpl::list<Tags...>> {
   }
 
   template <typename... WrappedTags,
-            Requires<tmpl2::flat_all<cpp17::is_same_v<
+            Requires<tmpl2::flat_all<std::is_same_v<
                 db::remove_all_prefixes<WrappedTags>,
                 db::remove_all_prefixes<Tags>>...>::value> = nullptr>
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator-(

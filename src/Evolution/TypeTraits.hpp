@@ -21,7 +21,7 @@ using is_analytic_data = typename std::is_convertible<T*, MarkAsAnalyticData*>;
 /// \ingroup AnalyticDataGroup
 template <typename T>
 constexpr bool is_analytic_data_v =
-    cpp17::is_convertible_v<T*, MarkAsAnalyticData*>;
+    std::is_convertible_v<T*, MarkAsAnalyticData*>;
 
 /// \ingroup AnalyticSolutionsGroup
 template <typename T>
@@ -31,5 +31,5 @@ using is_analytic_solution =
 /// \ingroup AnalyticSolutionsGroup
 template <typename T>
 constexpr bool is_analytic_solution_v =
-    cpp17::is_convertible_v<T*, MarkAsAnalyticSolution*>;
+    std::is_convertible_v<T*, MarkAsAnalyticSolution*>;
 }  // namespace evolution

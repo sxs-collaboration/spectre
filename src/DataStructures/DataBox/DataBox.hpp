@@ -86,9 +86,9 @@ class DataBoxLeaf {
 
  public:
   constexpr DataBoxLeaf() noexcept(
-      cpp17::is_nothrow_default_constructible_v<value_type>)
+      std::is_nothrow_default_constructible_v<value_type>)
       : value_() {
-    static_assert(!cpp17::is_reference_v<value_type>,
+    static_assert(!std::is_reference_v<value_type>,
                   "Cannot default construct a reference element in a "
                   "DataBox");
   }
@@ -290,7 +290,7 @@ using has_subitems = tmpl::not_<
 template <typename ComputeTag, typename ArgumentTag,
           typename FoundComputeItemInBox>
 struct report_missing_compute_item_argument {
-  static_assert(cpp17::is_same_v<ComputeTag, void>,
+  static_assert(std::is_same_v<ComputeTag, void>,
                 "A compute item's argument could not be found in the "
                 "DataBox or was found multiple times.  See the first "
                 "template argument for the compute item and the second "
@@ -334,7 +334,7 @@ struct create_dependency_graph {
 namespace DataBox_detail {
 template <typename Tag, typename = std::nullptr_t>
 struct check_simple_or_compute_tag {
-  static_assert(cpp17::is_same_v<Tag, const void* const*>,
+  static_assert(std::is_same_v<Tag, const void* const*>,
                 "All tags added to a DataBox must derive off of db::SimpleTag "
                 "or db::ComputeTag, you cannot add a base tag itself. See the "
                 "first template parameter of "
@@ -411,13 +411,13 @@ class DataBox<tmpl::list<Tags...>>
   DataBox() = default;
   DataBox(DataBox&& rhs) noexcept(
       tmpl2::flat_all_v<
-          cpp17::is_nothrow_move_constructible_v<DataBox_detail::DataBoxLeaf<
+          std::is_nothrow_move_constructible_v<DataBox_detail::DataBoxLeaf<
               Tags,
               DataBox_detail::storage_type<Tags, tmpl::list<Tags...>>>>...>) =
       default;
   DataBox& operator=(DataBox&& rhs) noexcept(
       tmpl2::flat_all_v<
-          cpp17::is_nothrow_move_assignable_v<DataBox_detail::DataBoxLeaf<
+          std::is_nothrow_move_assignable_v<DataBox_detail::DataBoxLeaf<
               Tags,
               DataBox_detail::storage_type<Tags, tmpl::list<Tags...>>>>...>) {
     if (&rhs != this) {
@@ -443,12 +443,12 @@ class DataBox<tmpl::list<Tags...>>
   /// \cond HIDDEN_SYMBOLS
   /// Retrieve the tag `Tag`, should be called by the free function db::get
   template <typename Tag,
-            Requires<not cpp17::is_same_v<Tag, ::Tags::DataBox>> = nullptr>
+            Requires<not std::is_same_v<Tag, ::Tags::DataBox>> = nullptr>
   auto get() const noexcept -> const const_item_type<Tag, tags_list>&;
 
   /// Retrieve the tag `Tag`, should be called by the free function db::get
   template <typename Tag,
-            Requires<cpp17::is_same_v<Tag, ::Tags::DataBox>> = nullptr>
+            Requires<std::is_same_v<Tag, ::Tags::DataBox>> = nullptr>
   auto get() const noexcept -> const DataBox<tags_list>&;
   /// \endcond
 
@@ -726,7 +726,7 @@ DataBox<tmpl::list<Tags...>>::add_compute_item_to_box_impl(
       "db::SimpleTag.");
   DEBUG_STATIC_ASSERT(
       not tmpl2::flat_any_v<
-          cpp17::is_same_v<ComputeItemArgumentsTags, ComputeItem>...>,
+          std::is_same_v<ComputeItemArgumentsTags, ComputeItem>...>,
       "A ComputeItem cannot take its own Tag as an argument.");
   expand_pack(DataBox_detail::check_compute_item_argument_exists<
               ComputeItem, ComputeItemArgumentsTags, FullTagList>()...);
@@ -815,7 +815,7 @@ namespace DataBox_detail {
 // fails.
 template <typename Tag, typename TagType, typename SuppliedType>
 constexpr int check_argument_type() noexcept {
-  static_assert(cpp17::is_same_v<TagType, SuppliedType>,
+  static_assert(std::is_same_v<TagType, SuppliedType>,
                 "The type of each Tag must be the same as the type being "
                 "passed into the function creating the new DataBox.  See the "
                 "function template parameters for the tag, expected type, and "
@@ -1083,7 +1083,7 @@ void mutate(const gsl::not_null<DataBox<TagList>*> box, Invokable&& invokable,
 
 /// \cond
 template <typename... Tags>
-template <typename Tag, Requires<not cpp17::is_same_v<Tag, ::Tags::DataBox>>>
+template <typename Tag, Requires<not std::is_same_v<Tag, ::Tags::DataBox>>>
 SPECTRE_ALWAYS_INLINE auto DataBox<tmpl::list<Tags...>>::get() const noexcept
     -> const const_item_type<Tag, tags_list>& {
   DEBUG_STATIC_ASSERT(
@@ -1108,7 +1108,7 @@ SPECTRE_ALWAYS_INLINE auto DataBox<tmpl::list<Tags...>>::get() const noexcept
 }
 
 template <typename... Tags>
-template <typename Tag, Requires<cpp17::is_same_v<Tag, ::Tags::DataBox>>>
+template <typename Tag, Requires<std::is_same_v<Tag, ::Tags::DataBox>>>
 SPECTRE_ALWAYS_INLINE auto DataBox<tmpl::list<Tags...>>::get() const noexcept
     -> const DataBox<tags_list>& {
   if (UNLIKELY(mutate_locked_box_)) {
@@ -1366,26 +1366,25 @@ struct Apply<tmpl::list<Tags...>> {
           F, const db::const_item_type<Tags, BoxTags>&..., Args...>> = nullptr>
   static constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
                               Args&&... args) noexcept {
-    static_assert(
-        tt::is_callable_v<
-            std::remove_pointer_t<F>,
-            tmpl::conditional_t<cpp17::is_same_v<Tags, ::Tags::DataBox>,
-                                const DataBox<BoxTags>&,
-                                const_item_type<Tags, BoxTags>>...,
-            Args...>,
-        "Cannot call the function f with the list of tags and "
-        "arguments specified. Check that the Tags::type and the "
-        "types of the Args match the function f.");
+    static_assert(tt::is_callable_v<
+                      std::remove_pointer_t<F>,
+                      tmpl::conditional_t<std::is_same_v<Tags, ::Tags::DataBox>,
+                                          const DataBox<BoxTags>&,
+                                          const_item_type<Tags, BoxTags>>...,
+                      Args...>,
+                  "Cannot call the function f with the list of tags and "
+                  "arguments specified. Check that the Tags::type and the "
+                  "types of the Args match the function f.");
     return std::forward<F>(f)(::db::get<Tags>(box)...,
                               std::forward<Args>(args)...);
   }
 };
 
-template <typename F, typename = cpp17::void_t<>>
+template <typename F, typename = std::void_t<>>
 struct has_argument_tags : std::false_type {};
 
 template <typename F>
-struct has_argument_tags<F, cpp17::void_t<typename F::argument_tags>>
+struct has_argument_tags<F, std::void_t<typename F::argument_tags>>
     : std::true_type {};
 
 template <typename F>
@@ -1498,9 +1497,8 @@ SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
     Args&&... args) noexcept {
   static_assert(
-      not tmpl2::flat_any_v<
-          cpp17::is_same_v<ArgumentTags, Tags::DataBox>...> and
-          not tmpl2::flat_any_v<cpp17::is_same_v<ReturnTags, Tags::DataBox>...>,
+      not tmpl2::flat_any_v<std::is_same_v<ArgumentTags, Tags::DataBox>...> and
+          not tmpl2::flat_any_v<std::is_same_v<ReturnTags, Tags::DataBox>...>,
       "Cannot pass a DataBox to mutate_apply since the db::get won't work "
       "inside mutate_apply.");
   ::db::mutate<ReturnTags...>(
@@ -1526,9 +1524,8 @@ SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
     Args&&... args) noexcept {
   static_assert(
-      not tmpl2::flat_any_v<
-          cpp17::is_same_v<ArgumentTags, Tags::DataBox>...> and
-          not tmpl2::flat_any_v<cpp17::is_same_v<ReturnTags, Tags::DataBox>...>,
+      not tmpl2::flat_any_v<std::is_same_v<ArgumentTags, Tags::DataBox>...> and
+          not tmpl2::flat_any_v<std::is_same_v<ReturnTags, Tags::DataBox>...>,
       "Cannot pass a DataBox to mutate_apply since the db::get won't work "
       "inside mutate_apply.");
   ::db::mutate<ReturnTags...>(
@@ -1545,7 +1542,7 @@ SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
 
 template <typename Func, typename... Args>
 constexpr void error_mutate_apply_not_callable() noexcept {
-  static_assert(cpp17::is_same_v<Func, void>,
+  static_assert(std::is_same_v<Func, void>,
                 "The function is not callable with the expected arguments.  "
                 "See the first template parameter for the function type and "
                 "the remaining arguments for the parameters that cannot be "
@@ -1604,12 +1601,12 @@ constexpr bool check_mutate_apply_argument_tags(
   return true;
 }
 
-template <typename F, typename = cpp17::void_t<>>
+template <typename F, typename = std::void_t<>>
 struct has_return_tags_and_argument_tags : std::false_type {};
 
 template <typename F>
 struct has_return_tags_and_argument_tags<
-    F, cpp17::void_t<typename F::return_tags, typename F::argument_tags>>
+    F, std::void_t<typename F::return_tags, typename F::argument_tags>>
     : std::true_type {};
 
 template <typename F>

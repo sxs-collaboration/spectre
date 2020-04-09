@@ -27,7 +27,7 @@ struct AddGroups {
 };
 
 template <typename Tag>
-struct AddGroups<Tag, cpp17::void_t<typename Tag::group>> {
+struct AddGroups<Tag, std::void_t<typename Tag::group>> {
   static std::string apply(const std::string& construction_string) noexcept {
     return AddGroups<typename Tag::group>::apply(
         AddGroups<void>::template apply<Tag>(construction_string));

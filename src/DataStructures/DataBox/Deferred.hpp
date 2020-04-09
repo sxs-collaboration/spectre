@@ -245,7 +245,7 @@ class Deferred {
 
   Deferred() = default;
   template <typename Dummy = Rt,
-            Requires<cpp17::is_same_v<Dummy, value_type>> = nullptr>
+            Requires<std::is_same_v<Dummy, value_type>> = nullptr>
   explicit Deferred(Rt t)
       : state_(boost::make_shared<Deferred_detail::simple_assoc_state<Rt>>(
             std::move(t))) {}

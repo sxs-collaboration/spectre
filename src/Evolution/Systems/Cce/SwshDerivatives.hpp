@@ -39,7 +39,7 @@ namespace detail {
 // lost on the stack and the expression template is corrupted. So, in these 'on
 // demand' returns, the arguments must be fully unpacked to vector types.
 //
-// The `Select` operand is a `cpp17::bool_constant` that ensures mutual
+// The `Select` operand is a `std::bool_constant` that ensures mutual
 // exclusivity of the template specializations.
 template <typename Tag, typename SpinConstant, typename Select>
 struct OnDemandInputsForSwshJacobianImpl;
@@ -49,8 +49,8 @@ struct OnDemandInputsForSwshJacobianImpl;
 template <typename Tag>
 struct OnDemandInputsForSwshJacobianImpl<
     Tags::Dy<Tag>, std::integral_constant<int, Tag::type::type::spin>,
-    cpp17::bool_constant<not tt::is_a_v<::Tags::Multiplies, Tag> and
-                         not tt::is_a_v<Tags::Dy, Tag>>> {
+    std::bool_constant<not tt::is_a_v<::Tags::Multiplies, Tag> and
+                       not tt::is_a_v<Tags::Dy, Tag>>> {
   template <typename DataBoxTagList>
   SPECTRE_ALWAYS_INLINE decltype(auto) operator()(
       const db::DataBox<DataBoxTagList>& box) noexcept {
@@ -63,7 +63,7 @@ struct OnDemandInputsForSwshJacobianImpl<
 template <typename Tag>
 struct OnDemandInputsForSwshJacobianImpl<
     Tags::Dy<Tags::Dy<Tag>>, std::integral_constant<int, Tag::type::type::spin>,
-    cpp17::bool_constant<not tt::is_a_v<::Tags::Multiplies, Tag>>> {
+    std::bool_constant<not tt::is_a_v<::Tags::Multiplies, Tag>>> {
   template <typename DataBoxTagList>
   SPECTRE_ALWAYS_INLINE decltype(auto) operator()(
       const db::DataBox<DataBoxTagList>& box) noexcept {
@@ -78,9 +78,9 @@ struct OnDemandInputsForSwshJacobianImpl<
     Tags::Dy<::Tags::Multiplies<LhsTag, RhsTag>>,
     std::integral_constant<int,
                            LhsTag::type::type::spin + RhsTag::type::type::spin>,
-    cpp17::bool_constant<not cpp17::is_same_v<LhsTag, Tags::BondiJbar> and
-                         not cpp17::is_same_v<LhsTag, Tags::BondiUbar> and
-                         not cpp17::is_same_v<RhsTag, Tags::BondiJbar>>> {
+    std::bool_constant<not std::is_same_v<LhsTag, Tags::BondiJbar> and
+                       not std::is_same_v<LhsTag, Tags::BondiUbar> and
+                       not std::is_same_v<RhsTag, Tags::BondiJbar>>> {
   template <typename DataBoxTagList>
   SPECTRE_ALWAYS_INLINE decltype(auto) operator()(
       const db::DataBox<DataBoxTagList>& box) noexcept {

@@ -81,7 +81,7 @@ using std::min;
   struct TestFuncEval##STRUCTNAME {                                            \
     template <typename T1, typename T2, typename DistT1, typename DistT2,      \
               typename UniformGen,                                             \
-              Requires<cpp17::is_same_v<                                       \
+              Requires<std::is_same_v<                                         \
                   typename T1::type,                                           \
                   decltype(std::declval<typename T1::type>() TESTOP            \
                                std::declval<typename T2::type>())>> = nullptr> \
@@ -103,7 +103,7 @@ using std::min;
     /* Below no-op happens when inplace cannot be called. */                   \
     template <typename T1, typename T2, typename DistT1, typename DistT2,      \
               typename UniformGen,                                             \
-              Requires<not cpp17::is_same_v<                                   \
+              Requires<not std::is_same_v<                                     \
                   typename T1::type,                                           \
                   decltype(std::declval<typename T1::type>() TESTOP            \
                                std::declval<typename T2::type>())>> = nullptr> \
@@ -190,7 +190,7 @@ void test_functional_against_function(
       bounds};
   const auto args = make_with_random_values<std::array<ValType, sizeof...(Is)>>(
       gen, make_not_null(&dist));
-  if (cpp17::is_same_v<ValType, typename tt::get_fundamental_type_t<ValType>>) {
+  if (std::is_same_v<ValType, typename tt::get_fundamental_type_t<ValType>>) {
     CHECK_ITERABLE_APPROX(C{}(args[Is]...), func(args[Is]...));
   } else {
     CHECK(C{}(args[Is]...) == func(args[Is]...));

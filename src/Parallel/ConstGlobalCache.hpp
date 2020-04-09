@@ -39,7 +39,7 @@ template <typename ConstGlobalCacheTag, typename ListOfPossibleTags>
 struct list_of_matching_tags_helper {
   using type = tmpl::filter<ListOfPossibleTags,
                std::is_base_of<tmpl::pin<ConstGlobalCacheTag>, tmpl::_1>>;
-  static_assert(not cpp17::is_same_v<type, tmpl::list<>>,
+  static_assert(not std::is_same_v<type, tmpl::list<>>,
                 "Trying to get a nonexistent tag from the ConstGlobalCache. "
                 "To diagnose the problem, search for "
                 "'list_of_matching_tags_helper' in the error message. "
@@ -61,12 +61,12 @@ using type_for_get = typename type_for_get_helper<
     typename tmpl::front<ConstGlobalCache_detail::get_list_of_matching_tags<
         ConstGlobalCacheTag, Metavariables>>::type>::type;
 
-template <class T, class = cpp17::void_t<>>
+template <class T, class = std::void_t<>>
 struct has_component_being_mocked_alias : std::false_type {};
 
 template <class T>
 struct has_component_being_mocked_alias<
-    T, cpp17::void_t<typename T::component_being_mocked>> : std::true_type {};
+    T, std::void_t<typename T::component_being_mocked>> : std::true_type {};
 
 template <class T>
 constexpr bool has_component_being_mocked_alias_v =

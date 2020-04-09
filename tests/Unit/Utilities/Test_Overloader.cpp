@@ -14,12 +14,12 @@ struct my_type1 {
 
 struct my_type2 {};
 
-template <class T, class = cpp17::void_t<>>
+template <class T, class = std::void_t<>>
 struct has_func : std::false_type {};
 
 template <class T>
 struct has_func<
-    T, cpp17::void_t<decltype(std::declval<T>().func(std::declval<int>()))>>
+    T, std::void_t<decltype(std::declval<T>().func(std::declval<int>()))>>
     : std::true_type {};
 
 template <class T>

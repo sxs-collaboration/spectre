@@ -37,14 +37,14 @@ namespace initialize_interpolation_target_detail {
 
 // Sets type to initialization_tags, or
 // to empty list if initialization_tags is not defined.
-template <typename T, typename = cpp17::void_t<>>
+template <typename T, typename = std::void_t<>>
 struct initialization_tags {
   using type = tmpl::list<>;
 };
 
 template <typename T>
 struct initialization_tags<
-    T, cpp17::void_t<typename T::compute_target_points::initialization_tags>> {
+    T, std::void_t<typename T::compute_target_points::initialization_tags>> {
   using type = typename T::compute_target_points::initialization_tags;
 };
 

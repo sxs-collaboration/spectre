@@ -27,7 +27,7 @@ template <typename Tag, typename = std::nullptr_t>
 struct is_compute_item : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 template <typename Tag>
-struct is_compute_item<Tag, Requires<cpp17::is_base_of_v<db::ComputeTag, Tag>>>
+struct is_compute_item<Tag, Requires<std::is_base_of_v<db::ComputeTag, Tag>>>
     : std::true_type {};
 /// \endcond
 
@@ -45,8 +45,8 @@ template <typename Tag, typename = std::nullptr_t>
 struct is_non_base_tag : std::false_type {};
 /// \cond
 template <typename Tag>
-struct is_non_base_tag<Tag, Requires<cpp17::is_base_of_v<db::ComputeTag, Tag> or
-                                     cpp17::is_base_of_v<db::SimpleTag, Tag>>>
+struct is_non_base_tag<Tag, Requires<std::is_base_of_v<db::ComputeTag, Tag> or
+                                     std::is_base_of_v<db::SimpleTag, Tag>>>
     : std::true_type {};
 /// \endcond
 
@@ -63,9 +63,9 @@ template <typename Tag, typename = std::nullptr_t>
 struct is_tag : std::false_type {};
 /// \cond
 template <typename Tag>
-struct is_tag<Tag, Requires<cpp17::is_base_of_v<db::ComputeTag, Tag> or
-                            cpp17::is_base_of_v<db::SimpleTag, Tag> or
-                            cpp17::is_base_of_v<db::BaseTag, Tag>>>
+struct is_tag<Tag, Requires<std::is_base_of_v<db::ComputeTag, Tag> or
+                            std::is_base_of_v<db::SimpleTag, Tag> or
+                            std::is_base_of_v<db::BaseTag, Tag>>>
     : std::true_type {};
 /// \endcond
 
@@ -82,8 +82,8 @@ template <typename Tag, typename = std::nullptr_t>
 struct is_base_tag : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 template <typename Tag>
-struct is_base_tag<Tag, Requires<cpp17::is_base_of_v<db::BaseTag, Tag> and
-                                 not cpp17::is_base_of_v<db::SimpleTag, Tag> and
+struct is_base_tag<Tag, Requires<std::is_base_of_v<db::BaseTag, Tag> and
+                                 not std::is_base_of_v<db::SimpleTag, Tag> and
                                  not is_compute_item_v<Tag>>> : std::true_type {
 };
 /// \endcond

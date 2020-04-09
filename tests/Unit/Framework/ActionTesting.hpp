@@ -334,15 +334,15 @@ namespace ActionTesting {}
 namespace ActionTesting {
 namespace detail {
 #define ACTION_TESTING_CHECK_MOCK_ACTION_LIST(NAME)                        \
-  template <typename Component, typename = cpp17::void_t<>>                \
+  template <typename Component, typename = std::void_t<>>                  \
   struct get_##NAME##_mocking_list {                                       \
     using replace_these_##NAME = tmpl::list<>;                             \
     using with_these_##NAME = tmpl::list<>;                                \
   };                                                                       \
   template <typename Component>                                            \
   struct get_##NAME##_mocking_list<                                        \
-      Component, cpp17::void_t<typename Component::replace_these_##NAME,   \
-                               typename Component::with_these_##NAME>> {   \
+      Component, std::void_t<typename Component::replace_these_##NAME,     \
+                             typename Component::with_these_##NAME>> {     \
     using replace_these_##NAME = typename Component::replace_these_##NAME; \
     using with_these_##NAME = typename Component::with_these_##NAME;       \
   };                                                                       \
@@ -402,27 +402,26 @@ struct get_initialization {
 };
 
 // Checks whether or not the `Metavariables` has a `Phase::Initialization`.
-template <typename Metavariables, typename = cpp17::void_t<>>
+template <typename Metavariables, typename = std::void_t<>>
 struct has_initialization_phase : std::false_type {};
 
 template <typename Metavariables>
 struct has_initialization_phase<
-    Metavariables,
-    cpp17::void_t<decltype(Metavariables::Phase::Initialization)>>
+    Metavariables, std::void_t<decltype(Metavariables::Phase::Initialization)>>
     : std::true_type {};
 
 template <typename Metavariables>
 constexpr bool has_initialization_phase_v =
     has_initialization_phase<Metavariables>::value;
 
-template <typename Component, typename = cpp17::void_t<>>
+template <typename Component, typename = std::void_t<>>
 struct get_initialization_tags_from_component {
   using type = tmpl::list<>;
 };
 
 template <typename Component>
 struct get_initialization_tags_from_component<
-    Component, cpp17::void_t<typename Component::initialization_tags>> {
+    Component, std::void_t<typename Component::initialization_tags>> {
   using type = typename Component::initialization_tags;
 };
 
@@ -853,7 +852,7 @@ class MockDistributedObject {
       performing_action_ = true;                                              \
       Parallel::Algorithm_detail::simple_action_visitor<Action, Component>(   \
           box_, *const_global_cache_,                                         \
-          cpp17::as_const(array_index_)                                       \
+          std::as_const(array_index_)                                         \
               BOOST_PP_COMMA_IF(BOOST_PP_NOT(USE_SIMPLE_ACTION)) BOOST_PP_IF( \
                   USE_SIMPLE_ACTION, , make_not_null(&node_lock_)));          \
       performing_action_ = false;                                             \
@@ -878,7 +877,7 @@ class MockDistributedObject {
       Parallel::Algorithm_detail::simple_action_visitor<new_action,           \
                                                         Component>(           \
           box_, *const_global_cache_,                                         \
-          cpp17::as_const(array_index_)                                       \
+          std::as_const(array_index_)                                         \
               BOOST_PP_COMMA_IF(BOOST_PP_NOT(USE_SIMPLE_ACTION)) BOOST_PP_IF( \
                   USE_SIMPLE_ACTION, , make_not_null(&node_lock_)));          \
       performing_action_ = false;                                             \
@@ -940,7 +939,7 @@ class MockDistributedObject {
       std::tuple<Args...>&& args,
       std::index_sequence<Is...> /*meta*/) noexcept {
     Parallel::Algorithm_detail::simple_action_visitor<Action, Component>(
-        box_, *const_global_cache_, cpp17::as_const(array_index_),
+        box_, *const_global_cache_, std::as_const(array_index_),
         std::forward<Args>(std::get<Is>(args))...);
   }
 
@@ -949,7 +948,7 @@ class MockDistributedObject {
       std::tuple<Args...>&& args,
       std::index_sequence<Is...> /*meta*/) noexcept {
     Parallel::Algorithm_detail::simple_action_visitor<Action, Component>(
-        box_, *const_global_cache_, cpp17::as_const(array_index_),
+        box_, *const_global_cache_, std::as_const(array_index_),
         make_not_null(&node_lock_), std::forward<Args>(std::get<Is>(args))...);
   }
 
@@ -1141,31 +1140,31 @@ void MockDistributedObject<Component>::next_action_impl(
     // ```
     // typename std::tuple_size<decltype(this_action::apply(
     //                     box, inboxes_, *const_global_cache_,
-    //                     cpp17::as_const(array_index_), actions_list{},
+    //                     std::as_const(array_index_), actions_list{},
     //                     std::add_pointer_t<ParallelComponent>{}))>::type{}
     // ```
     const auto invoke_this_action = make_overloader(
-        [this](auto& my_box, std::integral_constant<size_t, 1> /*meta*/)
-            noexcept {
-              std::tie(box_) = this_action::apply(
-                  my_box, *inboxes_, *const_global_cache_,
-                  cpp17::as_const(array_index_), actions_list{},
-                  std::add_pointer_t<Component>{});
-            },
-        [this](auto& my_box, std::integral_constant<size_t, 2> /*meta*/)
-            noexcept {
-              std::tie(box_, terminate_) = this_action::apply(
-                  my_box, *inboxes_, *const_global_cache_,
-                  cpp17::as_const(array_index_), actions_list{},
-                  std::add_pointer_t<Component>{});
-            },
-        [this](auto& my_box, std::integral_constant<size_t, 3> /*meta*/)
-            noexcept {
-              std::tie(box_, terminate_, algorithm_step_) = this_action::apply(
-                  my_box, *inboxes_, *const_global_cache_,
-                  cpp17::as_const(array_index_), actions_list{},
-                  std::add_pointer_t<Component>{});
-            });
+        [this](auto& my_box,
+               std::integral_constant<size_t, 1> /*meta*/) noexcept {
+          std::tie(box_) =
+              this_action::apply(my_box, *inboxes_, *const_global_cache_,
+                                 std::as_const(array_index_), actions_list{},
+                                 std::add_pointer_t<Component>{});
+        },
+        [this](auto& my_box,
+               std::integral_constant<size_t, 2> /*meta*/) noexcept {
+          std::tie(box_, terminate_) =
+              this_action::apply(my_box, *inboxes_, *const_global_cache_,
+                                 std::as_const(array_index_), actions_list{},
+                                 std::add_pointer_t<Component>{});
+        },
+        [this](auto& my_box,
+               std::integral_constant<size_t, 3> /*meta*/) noexcept {
+          std::tie(box_, terminate_, algorithm_step_) =
+              this_action::apply(my_box, *inboxes_, *const_global_cache_,
+                                 std::as_const(array_index_), actions_list{},
+                                 std::add_pointer_t<Component>{});
+        });
 
     // `check_if_ready` calls the `is_ready` static method on the action
     // `action` if it has one, otherwise returns true. The first argument is the
@@ -1178,8 +1177,8 @@ void MockDistributedObject<Component>::next_action_impl(
         [this](std::true_type /*has_is_ready*/, auto action,
                const auto& check_local_box) noexcept {
           return decltype(action)::is_ready(
-              check_local_box, cpp17::as_const(*inboxes_), *const_global_cache_,
-              cpp17::as_const(array_index_));
+              check_local_box, std::as_const(*inboxes_), *const_global_cache_,
+              std::as_const(array_index_));
         },
         [](std::false_type /*has_is_ready*/, auto /*action*/,
            const auto& /*box*/) noexcept { return true; });
@@ -1244,7 +1243,7 @@ void MockDistributedObject<Component>::next_action_impl(
                     box,
                     typename std::tuple_size<decltype(local_this_action::apply(
                         box, *inboxes_, *const_global_cache_,
-                        cpp17::as_const(array_index_), actions_list{},
+                        std::as_const(array_index_), actions_list{},
                         std::add_pointer_t<Component>{}))>::type{});
               } else if (box_.which() ==
                          static_cast<int>(
@@ -1270,7 +1269,7 @@ void MockDistributedObject<Component>::next_action_impl(
                     box,
                     typename std::tuple_size<decltype(local_this_action::apply(
                         box, *inboxes_, *const_global_cache_,
-                        cpp17::as_const(array_index_), actions_list{},
+                        std::as_const(array_index_), actions_list{},
                         std::add_pointer_t<Component>{}))>::type{});
               } else {
                 display_databox_error();
@@ -1310,7 +1309,7 @@ void MockDistributedObject<Component>::next_action_impl(
                     box,
                     typename std::tuple_size<decltype(local_this_action::apply(
                         box, *inboxes_, *const_global_cache_,
-                        cpp17::as_const(array_index_), actions_list{},
+                        std::as_const(array_index_), actions_list{},
                         std::add_pointer_t<Component>{}))>::type{});
               } else {
                 display_databox_error();
@@ -1406,8 +1405,8 @@ bool MockDistributedObject<Component>::is_ready_impl(
         [&box, &array_index, &const_global_cache, &inboxes](
             std::true_type /*has_is_ready*/, auto t) {
           return decltype(t)::is_ready(
-              cpp17::as_const(box), cpp17::as_const(inboxes),
-              *const_global_cache, cpp17::as_const(array_index));
+              std::as_const(box), std::as_const(inboxes), *const_global_cache,
+              std::as_const(array_index));
         },
         [](std::false_type /*has_is_ready*/, auto) { return true; });
 

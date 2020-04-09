@@ -58,11 +58,11 @@ using ExpectedInverseTransforms = tmpl::list<
                    Tags::Derivative<TestTag<0, 2>, Tags::EthbarEthbar>>,
         ComplexRepresentation::RealsThenImags>>;
 
-static_assert(cpp17::is_same_v<
-                  make_transform_list<ComplexRepresentation::RealsThenImags,
-                                          TestDerivativeTagList>,
-                  ExpectedInverseTransforms>,
-              "failed testing make_transform_list");
+static_assert(
+    std::is_same_v<make_transform_list<ComplexRepresentation::RealsThenImags,
+                                       TestDerivativeTagList>,
+                   ExpectedInverseTransforms>,
+    "failed testing make_transform_list");
 /// [make_transform_list]
 
 /// [make_transform_from_derivative_tags]
@@ -72,10 +72,10 @@ using ExpectedTransforms =
                SwshTransform<tmpl::list<TestTag<0, 2>>,
                              ComplexRepresentation::Interleaved>>;
 
-static_assert(cpp17::is_same_v<make_transform_list_from_derivative_tags<
-                                   ComplexRepresentation::Interleaved,
-                                   TestDerivativeTagList>,
-                               ExpectedTransforms>,
+static_assert(std::is_same_v<make_transform_list_from_derivative_tags<
+                                 ComplexRepresentation::Interleaved,
+                                 TestDerivativeTagList>,
+                             ExpectedTransforms>,
               "failed testing make_transform_list_from_derivative_tags");
 /// [make_transform_from_derivative_tags]
 

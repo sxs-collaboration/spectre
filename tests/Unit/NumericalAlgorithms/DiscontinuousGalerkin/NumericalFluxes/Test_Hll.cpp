@@ -38,8 +38,8 @@ void test_hll_flux_tags() noexcept {
       TestHelpers::NumericalFluxes::Tags::Variable4<Dim>,
       typename TestHelpers::NumericalFluxes::System<Dim>::char_speeds_tag>;
 
-  static_assert(cpp17::is_same_v<typename hll_flux::argument_tags,
-                                 expected_type_argument_tags>,
+  static_assert(std::is_same_v<typename hll_flux::argument_tags,
+                               expected_type_argument_tags>,
                 "Failed testing dg::NumericalFluxes::Hll::argument_tags");
 
   using expected_type_package_tags = tmpl::list<
@@ -56,8 +56,8 @@ void test_hll_flux_tags() noexcept {
       typename dg::NumericalFluxes::Hll<
           TestHelpers::NumericalFluxes::System<Dim>>::LargestOutgoingSpeed>;
 
-  static_assert(cpp17::is_same_v<typename hll_flux::package_tags,
-                                 expected_type_package_tags>,
+  static_assert(std::is_same_v<typename hll_flux::package_tags,
+                               expected_type_package_tags>,
                 "Failed testing dg::NumericalFluxes::Hll::package_tags");
 }
 

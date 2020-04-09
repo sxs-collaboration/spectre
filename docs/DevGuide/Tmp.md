@@ -9,9 +9,8 @@ substitution fails, compilation must continue. This can be exploited to make
 decisions at compile time. See [here](http://nilsdeppe.com/posts/tmpl-part1)
 for a discussion using `std::enable_if` to remove certain functions from
 overload resolution or certain template specializations from name lookup.
-Another method of controlling name lookup resolution is using `std::void_t`
-which is implemented as `cpp17::void_t` in SpECTRE. `void_t` is a metafunction
-from types to `void`, that is
+Another method of controlling name lookup resolution is using
+`std::void_t`. `void_t` is a metafunction from types to `void`, that is
 
 ```cpp
 template <typename... Args>
@@ -33,8 +32,8 @@ has a `begin()` and `end()` function.
 
 ```cpp
 template <typename T>
-struct is_iterable<T, cpp17::void_t<decltype(std::declval<T>().begin(),
-                                             std::declval<T>().end())>>
+struct is_iterable<T, std::void_t<decltype(std::declval<T>().begin(),
+                                           std::declval<T>().end())>>
     : std::true_type {};
 ```
 
@@ -52,8 +51,8 @@ cannot be resolved during name lookup. We could just as well use
 
 ```cpp
 template <typename T>
-struct is_iterable<T, cpp17::void_t<decltype(std::declval<T>().begin()),
-                                    decltype(std::declval<T>().end())>>
+struct is_iterable<T, std::void_t<decltype(std::declval<T>().begin()),
+                                  decltype(std::declval<T>().end())>>
     : std::true_type {};
 ```
 
@@ -68,12 +67,12 @@ is either `void` as well or is explicitly specified when the class template
 is being invoked. Thus, the clearest implementation probably is
 
 ```cpp
-template <typename T, typename = cpp17::void_t<>>
+template <typename T, typename = std::void_t<>>
 struct is_iterable : std::false_type {};
 
 template <typename T>
-struct is_iterable<T, cpp17::void_t<decltype(std::declval<T>().begin(),
-                                             std::declval<T>().end())>>
+struct is_iterable<T, std::void_t<decltype(std::declval<T>().begin(),
+                                           std::declval<T>().end())>>
     : std::true_type {};
 ```
 

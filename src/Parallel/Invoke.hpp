@@ -24,12 +24,11 @@ inline bool max_inline_entry_methods_reached() noexcept {
   return true;
 }
 
-template <typename T, typename = cpp17::void_t<>>
+template <typename T, typename = std::void_t<>>
 struct has_ckLocal_method : std::false_type {};
 
 template <typename T>
-struct has_ckLocal_method<T,
-                          cpp17::void_t<decltype(std::declval<T>().ckLocal())>>
+struct has_ckLocal_method<T, std::void_t<decltype(std::declval<T>().ckLocal())>>
     : std::true_type {};
 }  // namespace detail
 

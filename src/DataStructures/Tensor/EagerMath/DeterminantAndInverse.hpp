@@ -391,14 +391,14 @@ template <typename DetTag, typename InvTag, typename T, typename Symm,
 auto determinant_and_inverse(
     const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor) noexcept
     -> Variables<tmpl::list<DetTag, InvTag>> {
-  static_assert(cpp17::is_same_v<typename DetTag::type, Scalar<T>>,
+  static_assert(std::is_same_v<typename DetTag::type, Scalar<T>>,
                 "Type of first return tag must correspond to that of input's "
                 "determinant.");
   static_assert(
-      cpp17::is_same_v<typename InvTag::type,
-                       Tensor<T, Symm,
-                              tmpl::list<change_index_up_lo<Index1>,
-                                         change_index_up_lo<Index0>>>>,
+      std::is_same_v<typename InvTag::type,
+                     Tensor<T, Symm,
+                            tmpl::list<change_index_up_lo<Index1>,
+                                       change_index_up_lo<Index0>>>>,
       "Type of second return tag must correspond to that of input's inverse.");
   static_assert(Index0::dim == Index1::dim,
                 "Cannot take the inverse of a Tensor whose Indices are not "

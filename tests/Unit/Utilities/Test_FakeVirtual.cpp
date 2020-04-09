@@ -236,14 +236,12 @@ SPECTRE_TEST_CASE("Unit.Utilities.call_with_dynamic_type",
         (call_with_dynamic_type<int, tmpl::list<D1, D2>>(
              d2.get(), [](auto* const p) { return p->mutable_func(); })));
 
-  CHECK(11 ==
-        (call_with_dynamic_type<int, tmpl::list<D1, D2>>(
-             &cpp17::as_const(*d1),
-             [](const auto* const p) { return p->const_func(); })));
-  CHECK(12 ==
-        (call_with_dynamic_type<int, tmpl::list<D1, D2>>(
-             &cpp17::as_const(*d2),
-             [](const auto* const p) { return p->const_func(); })));
+  CHECK(11 == (call_with_dynamic_type<int, tmpl::list<D1, D2>>(
+                  &std::as_const(*d1),
+                  [](const auto* const p) { return p->const_func(); })));
+  CHECK(12 == (call_with_dynamic_type<int, tmpl::list<D1, D2>>(
+                  &std::as_const(*d2),
+                  [](const auto* const p) { return p->const_func(); })));
 
   // Test void return type
   int result = 0;

@@ -191,7 +191,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DeterminantAndInverse",
   // input Tensor of type T^a_b, the inverse should have type T^b_a.
   {
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             Tensor<double, tmpl::integral_list<int32_t, 2, 1>,
                    index_list<SpatialIndex<2, UpLo::Up, Frame::Inertial>,
                               SpatialIndex<2, UpLo::Lo, Frame::Grid>>>,

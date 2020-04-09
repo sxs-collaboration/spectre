@@ -26,20 +26,19 @@
 // Use `NoSuchType*****` to represent any `VariableType`, i.e. not checking the
 // variable type at all. If someone has that many pointers to a thing that isn't
 // useful, it's their fault...
-#define CREATE_HAS_STATIC_MEMBER_VARIABLE(CONSTEXPR_NAME)                    \
-  template <typename CheckingType, typename VariableType = NoSuchType*****,  \
-            typename = cpp17::void_t<>>                                      \
-  struct has_##CONSTEXPR_NAME : std::false_type {};                          \
-                                                                             \
-  template <typename CheckingType, typename VariableType>                    \
-  struct has_##CONSTEXPR_NAME<CheckingType, VariableType,                    \
-                              cpp17::void_t<std::remove_const_t<decltype(    \
-                                  CheckingType::CONSTEXPR_NAME)>>>           \
-      : cpp17::bool_constant<                                                \
-            cpp17::is_same_v<VariableType, NoSuchType*****> or               \
-            cpp17::is_same_v<                                                \
-                std::remove_const_t<decltype(CheckingType::CONSTEXPR_NAME)>, \
-                VariableType>> {};
+#define CREATE_HAS_STATIC_MEMBER_VARIABLE(CONSTEXPR_NAME)                     \
+  template <typename CheckingType, typename VariableType = NoSuchType*****,   \
+            typename = std::void_t<>>                                         \
+  struct has_##CONSTEXPR_NAME : std::false_type {};                           \
+                                                                              \
+  template <typename CheckingType, typename VariableType>                     \
+  struct has_##CONSTEXPR_NAME<CheckingType, VariableType,                     \
+                              std::void_t<std::remove_const_t<decltype(       \
+                                  CheckingType::CONSTEXPR_NAME)>>>            \
+      : std::bool_constant<std::is_same_v<VariableType, NoSuchType*****> or   \
+                           std::is_same_v<std::remove_const_t<decltype(       \
+                                              CheckingType::CONSTEXPR_NAME)>, \
+                                          VariableType>> {};
 
 // Separate macros to avoid compiler warnings about unused variables
 #define CREATE_HAS_STATIC_MEMBER_VARIABLE_V(CONSTEXPR_NAME)                 \

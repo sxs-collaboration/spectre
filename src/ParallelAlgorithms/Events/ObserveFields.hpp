@@ -97,7 +97,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     : public Event<EventRegistrars> {
  private:
   static_assert(
-      cpp17::is_same_v<
+      std::is_same_v<
           tmpl::list_difference<tmpl::list<AnalyticSolutionTensors...>,
                                 tmpl::list<Tensors...>>,
           tmpl::list<>>,

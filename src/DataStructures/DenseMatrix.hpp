@@ -53,7 +53,7 @@ class DenseMatrix : public blaze::DynamicMatrix<T, SO> {
       blaze::DynamicMatrix<T, SO>::resize(rows, columns);
     }
     auto spacing = blaze::DynamicMatrix<T, SO>::spacing();
-    if (cpp17::is_fundamental_v<T>) {
+    if (std::is_fundamental_v<T>) {
       PUParray(p, blaze::DynamicMatrix<T, SO>::data(), columns * spacing);
     } else {
       for (size_t i = 0; i < columns * spacing; i++) {

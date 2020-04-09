@@ -70,7 +70,7 @@ void test_serialization(const T& t) {
 /// \param args arguments passed to a constructor of the derived class
 template <typename B, typename D, typename... Args>
 void test_serialization_via_base(Args&&... args) {
-  static_assert(cpp17::is_base_of_v<B, D>,
+  static_assert(std::is_base_of_v<B, D>,
                 "passed input type is not derived from specified base");
   static_assert(tt::has_equivalence_v<D>, "No operator== for derived class");
   Parallel::register_derived_classes_with_charm<B>();
@@ -615,7 +615,7 @@ void test_element_wise_function_impl(
  * \param size A function to override the container size function. Defaults to
  * an object which simply calls `container.size()`. A custom callable must take
  * as argument the container(s) used in `arguments`, and return a size_t. This
- * function signature follows the convention of `cpp17::size`.
+ * function signature follows the convention of `std::size`.
  * \param custom_approx An object of type `Approx` specifying an alternative
  * precision with which to test the element-wise function
  */

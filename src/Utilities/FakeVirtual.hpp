@@ -61,13 +61,13 @@
             typename... Args>                                                  \
   decltype(auto) fake_virtual_##function(Base* obj, Args&&... args) noexcept { \
     /* clang-tidy: macro arg in parentheses */                                 \
-    return call_with_dynamic_type<                                             \
-        decltype(obj->template function<TArgs...>(args...)), /* NOLINT */      \
-        Classes>(                                                              \
+    return call_with_dynamic_type<decltype(obj->template function<TArgs...>(   \
+                                      args...)), /* NOLINT */                  \
+                                  Classes>(                                    \
         obj, [&args...](auto* const dynamic_obj) noexcept -> decltype(auto) {  \
           static_assert(                                                       \
-              cpp17::is_base_of_v<typename Base::Inherit,                      \
-                                  std::decay_t<decltype(*dynamic_obj)>>,       \
+              std::is_base_of_v<typename Base::Inherit,                        \
+                                std::decay_t<decltype(*dynamic_obj)>>,         \
               "Derived class does not inherit from Base::Inherit");            \
           /* clang-tidy: macro arg in parentheses */                           \
           return dynamic_obj->template function<TArgs...>(/* NOLINT */         \

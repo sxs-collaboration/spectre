@@ -23,7 +23,7 @@ namespace tt {
 /// \endcode
 ///
 /// \metareturns
-/// cpp17::bool_constant
+/// std::bool_constant
 ///
 /// \semantics
 /// If `T` has member function `begin()` and `end()` then
@@ -38,13 +38,13 @@ namespace tt {
 /// \example
 /// \snippet Test_IsIterable.cpp is_iterable_example
 /// \tparam T the type to check
-template <typename T, typename = cpp17::void_t<>>
+template <typename T, typename = std::void_t<>>
 struct is_iterable : std::false_type {};
 
 /// \cond HIDDEN_SYMBOLS
 template <typename T>
-struct is_iterable<T, cpp17::void_t<decltype(std::declval<T>().begin(),
-                                             std::declval<T>().end())>>
+struct is_iterable<T, std::void_t<decltype(std::declval<T>().begin(),
+                                           std::declval<T>().end())>>
     : std::true_type {};
 /// \endcond
 

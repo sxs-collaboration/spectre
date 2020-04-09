@@ -465,7 +465,7 @@ struct VectorOrArraySize {
   }
   // vector version
   template <typename T,
-            Requires<cpp17::is_arithmetic_v<typename T::ElementType> or
+            Requires<std::is_arithmetic_v<typename T::ElementType> or
                      tt::is_complex_of_fundamental_v<typename T::ElementType>> =
                 nullptr>
   size_t operator()(const T& container) const noexcept {
@@ -489,7 +489,7 @@ struct VectorOrArrayAt {
   }
   // vector version
   template <typename T,
-            Requires<cpp17::is_arithmetic_v<typename T::ElementType> or
+            Requires<std::is_arithmetic_v<typename T::ElementType> or
                      tt::is_complex_of_fundamental_v<typename T::ElementType>> =
                 nullptr>
   decltype(auto) operator()(T& container, size_t index) noexcept {

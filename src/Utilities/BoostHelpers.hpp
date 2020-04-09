@@ -32,7 +32,7 @@ struct make_boost_variant_over_impl;
 
 template <template <typename...> class Sequence, typename... Ts>
 struct make_boost_variant_over_impl<Sequence<Ts...>> {
-  static_assert(not cpp17::disjunction<std::is_same<
+  static_assert(not std::disjunction<std::is_same<
                     std::decay_t<std::remove_pointer_t<Ts>>, void>...>::value,
                 "Cannot create a boost::variant with a 'void' type.");
   using type = boost::variant<Ts...>;

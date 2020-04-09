@@ -251,7 +251,7 @@ class Options {
             Requires<Options_detail::has_default<T>::value> = nullptr>
   typename T::type get_default() const noexcept {
     static_assert(
-        cpp17::is_same_v<decltype(T::default_value()), typename T::type>,
+        std::is_same_v<decltype(T::default_value()), typename T::type>,
         "Default value is not of the same type as the option.");
     return T::default_value();
   }
@@ -512,7 +512,7 @@ template <typename T,
           Requires<Options_detail::has_lower_bound_on_size<T>::value>>
 void Options<OptionList, Group>::check_lower_bound_on_size(
     const typename T::type& t, const OptionContext& context) const {
-  static_assert(cpp17::is_same_v<decltype(T::lower_bound_on_size()), size_t>,
+  static_assert(std::is_same_v<decltype(T::lower_bound_on_size()), size_t>,
                 "lower_bound_on_size() is not a size_t.");
   if (t.size() < T::lower_bound_on_size()) {
     PARSE_ERROR(context, "Value must have at least "
@@ -527,7 +527,7 @@ template <typename T,
           Requires<Options_detail::has_upper_bound_on_size<T>::value>>
 void Options<OptionList, Group>::check_upper_bound_on_size(
     const typename T::type& t, const OptionContext& context) const {
-  static_assert(cpp17::is_same_v<decltype(T::upper_bound_on_size()), size_t>,
+  static_assert(std::is_same_v<decltype(T::upper_bound_on_size()), size_t>,
                 "upper_bound_on_size() is not a size_t.");
   if (t.size() > T::upper_bound_on_size()) {
     PARSE_ERROR(context, "Value must have at most "
@@ -541,9 +541,9 @@ template <typename OptionList, typename Group>
 template <typename T, Requires<Options_detail::has_lower_bound<T>::value>>
 inline void Options<OptionList, Group>::check_lower_bound(
     const typename T::type& t, const OptionContext& context) const {
-  static_assert(cpp17::is_same_v<decltype(T::lower_bound()), typename T::type>,
+  static_assert(std::is_same_v<decltype(T::lower_bound()), typename T::type>,
                 "Lower bound is not of the same type as the option.");
-  static_assert(not cpp17::is_same_v<typename T::type, bool>,
+  static_assert(not std::is_same_v<typename T::type, bool>,
                 "Cannot set a lower bound for a bool.");
   if (t < T::lower_bound()) {
     PARSE_ERROR(context, "Value " << t << " is below the lower bound of "
@@ -556,9 +556,9 @@ template <typename OptionList, typename Group>
 template <typename T, Requires<Options_detail::has_upper_bound<T>::value>>
 inline void Options<OptionList, Group>::check_upper_bound(
     const typename T::type& t, const OptionContext& context) const {
-  static_assert(cpp17::is_same_v<decltype(T::upper_bound()), typename T::type>,
+  static_assert(std::is_same_v<decltype(T::upper_bound()), typename T::type>,
                 "Upper bound is not of the same type as the option.");
-  static_assert(not cpp17::is_same_v<typename T::type, bool>,
+  static_assert(not std::is_same_v<typename T::type, bool>,
                 "Cannot set an upper bound for a bool.");
   if (t > T::upper_bound()) {
     PARSE_ERROR(context, "Value " << t << " is above the upper bound of "
@@ -621,10 +621,10 @@ T create_from_yaml<T>::create(const Option& options) {
         [](std::false_type /*option_context_no_metavars*/,
            std::false_type /*option_context_with_metavars*/, auto&&... args2) {
           return T(std::move(args2)...);
-        })(cpp17::is_constructible_t<T, decltype(std::move(args))...,
-                                     const OptionContext&>{},
-           cpp17::is_constructible_t<T, decltype(std::move(args))...,
-                                     const OptionContext&, Metavariables>{},
+        })(std::is_constructible<T, decltype(std::move(args))...,
+                                 const OptionContext&>{},
+           std::is_constructible<T, decltype(std::move(args))...,
+                                 const OptionContext&, Metavariables>{},
            std::move(args)...);
   });
 }

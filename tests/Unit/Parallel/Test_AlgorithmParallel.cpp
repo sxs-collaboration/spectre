@@ -99,10 +99,9 @@ struct CountReceives {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         SingletonParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
+    static_assert(std::is_same_v<ParallelComponent,
+                                 SingletonParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     auto& int_receives = tuples::get<Tags::IntReceiveTag>(inboxes);
     SPECTRE_PARALLEL_REQUIRE(int_receives.size() <= 70);
     for (const auto& p : int_receives) {
@@ -158,8 +157,8 @@ struct Initialize {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(cpp17::is_same_v<ParallelComponent,
-                                   ArrayParallelComponent<TestMetavariables>>,
+    static_assert(std::is_same_v<ParallelComponent,
+                                 ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     return std::make_tuple(
         db::create_from<db::RemoveTags<>,
@@ -179,8 +178,8 @@ struct Initialize {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(cpp17::is_same_v<ParallelComponent,
-                                   ArrayParallelComponent<TestMetavariables>>,
+    static_assert(std::is_same_v<ParallelComponent,
+                                 ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     return {std::move(box), true};
   }
@@ -197,8 +196,8 @@ struct AddIntValue10 {
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(cpp17::is_same_v<ParallelComponent,
-                                   ArrayParallelComponent<TestMetavariables>>,
+    static_assert(std::is_same_v<ParallelComponent,
+                                 ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     auto& int_receives = tuples::get<Tags::IntReceiveTag>(inboxes);
     SPECTRE_PARALLEL_REQUIRE(int_receives.empty() or int_receives.size() == 1);
@@ -236,8 +235,8 @@ struct IncrementInt0 {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(cpp17::is_same_v<ParallelComponent,
-                                   ArrayParallelComponent<TestMetavariables>>,
+    static_assert(std::is_same_v<ParallelComponent,
+                                 ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     db::mutate<Tags::CountActionsCalled>(
         make_not_null(&box),
@@ -262,8 +261,8 @@ struct RemoveInt0 {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(cpp17::is_same_v<ParallelComponent,
-                                   ArrayParallelComponent<TestMetavariables>>,
+    static_assert(std::is_same_v<ParallelComponent,
+                                 ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(db::get<Tags::Int0>(box) == 11);
     db::mutate<Tags::CountActionsCalled>(
@@ -287,8 +286,8 @@ struct SendToSingleton {
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    static_assert(cpp17::is_same_v<ParallelComponent,
-                                   ArrayParallelComponent<TestMetavariables>>,
+    static_assert(std::is_same_v<ParallelComponent,
+                                 ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     auto& singleton_parallel_component = Parallel::get_parallel_component<
         SingletonParallelComponent<Metavariables>>(cache);
@@ -319,8 +318,8 @@ struct Initialize {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(cpp17::is_same_v<ParallelComponent,
-                                   GroupParallelComponent<TestMetavariables>>,
+    static_assert(std::is_same_v<ParallelComponent,
+                                 GroupParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     return std::make_tuple(
         db::create_from<db::RemoveTags<>,
@@ -340,8 +339,8 @@ struct Initialize {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(cpp17::is_same_v<ParallelComponent,
-                                   GroupParallelComponent<TestMetavariables>>,
+    static_assert(std::is_same_v<ParallelComponent,
+                                 GroupParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     return {std::move(box), true};
   }
@@ -360,10 +359,10 @@ struct CheckComponentType {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
     static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         GroupParallelComponent<TestMetavariables>> or
-            cpp17::is_same_v<ParallelComponent,
-                             NodegroupParallelComponent<TestMetavariables>>,
+        std::is_same_v<ParallelComponent,
+                       GroupParallelComponent<TestMetavariables>> or
+            std::is_same_v<ParallelComponent,
+                           NodegroupParallelComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
     return std::tuple<db::DataBox<tmpl::list<DbTags...>>&&, bool>(
         std::move(box), true);
@@ -380,8 +379,8 @@ struct ReduceInt {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    static_assert(cpp17::is_same_v<ParallelComponent,
-                                   GroupParallelComponent<TestMetavariables>>,
+    static_assert(std::is_same_v<ParallelComponent,
+                                 GroupParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     return std::tuple<db::DataBox<tmpl::list<DbTags...>>&&, bool>(
         std::move(box), true);
@@ -403,10 +402,9 @@ struct Initialize {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         NodegroupParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
+    static_assert(std::is_same_v<ParallelComponent,
+                                 NodegroupParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     return std::make_tuple(
         db::create_from<db::RemoveTags<>,
                         db::AddSimpleTags<Tags::CountActionsCalled>>(
@@ -425,10 +423,9 @@ struct Initialize {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         NodegroupParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
+    static_assert(std::is_same_v<ParallelComponent,
+                                 NodegroupParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     return {std::move(box), true};
   }
 };

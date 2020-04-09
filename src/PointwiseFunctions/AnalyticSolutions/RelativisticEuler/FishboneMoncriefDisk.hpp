@@ -262,8 +262,8 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution {
     IntermediateVariables<
         DataType,
         tmpl2::flat_any_v<(
-            cpp17::is_same_v<Tags, hydro::Tags::SpatialVelocity<DataType, 3>> or
-            cpp17::is_same_v<Tags, hydro::Tags::LorentzFactor<DataType>> or
+            std::is_same_v<Tags, hydro::Tags::SpatialVelocity<DataType, 3>> or
+            std::is_same_v<Tags, hydro::Tags::LorentzFactor<DataType>> or
             not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tags>)...>>
         vars(bh_spin_a_, background_spacetime_, x, t,
              index_helper(
@@ -285,8 +285,8 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution {
     // be threadsafe.
     IntermediateVariables<
         DataType,
-        cpp17::is_same_v<Tag, hydro::Tags::SpatialVelocity<DataType, 3>> or
-            cpp17::is_same_v<Tag, hydro::Tags::LorentzFactor<DataType>> or
+        std::is_same_v<Tag, hydro::Tags::SpatialVelocity<DataType, 3>> or
+            std::is_same_v<Tag, hydro::Tags::LorentzFactor<DataType>> or
             not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tag>>
         intermediate_vars(bh_spin_a_, background_spacetime_, x, t,
                           std::numeric_limits<size_t>::max(),

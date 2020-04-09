@@ -720,12 +720,12 @@ TaggedTuple<OutputTags...> reorder_impl(
     TaggedTuple<InputTags...>&& input,
     tmpl::list<OutputTags...> /*meta*/) noexcept {
   static_assert(
-      cpp17::is_same_v<tmpl::list_difference<tmpl::list<OutputTags...>,
-                                             tmpl::list<InputTags...>>,
-                       tmpl::list<>> and
-          cpp17::is_same_v<tmpl::list_difference<tmpl::list<InputTags...>,
-                                                 tmpl::list<OutputTags...>>,
-                           tmpl::list<>>,
+      std::is_same_v<tmpl::list_difference<tmpl::list<OutputTags...>,
+                                           tmpl::list<InputTags...>>,
+                     tmpl::list<>> and
+          std::is_same_v<tmpl::list_difference<tmpl::list<InputTags...>,
+                                               tmpl::list<OutputTags...>>,
+                         tmpl::list<>>,
       "The input and output TaggedTuples must be the same except"
       "for ordering.");
   return TaggedTuple<OutputTags...>(std::move(get<OutputTags>(input))...);
@@ -802,7 +802,7 @@ constexpr decltype(auto) apply_impl(F&& f, const TaggedTuple<Tags...>& t,
  *
  * \snippet Test_TaggedTuple.cpp expand_tuple_example_function
  *
- * \see cpp17::apply
+ * \see std::apply
  */
 template <typename ApplyTags, typename F, typename... Tags>
 constexpr decltype(auto) apply(F&& f, const TaggedTuple<Tags...>& t) {

@@ -113,8 +113,8 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
     if (Filter_detail::FilterAllEvolvedVars<
             sizeof...(TagsToFilter) ==
                 tmpl::size<evolved_vars_tags_list>::value,
-            cpp17::is_same_v<evolved_vars_tags_list,
-                             tmpl::list<TagsToFilter...>>>::
+            std::is_same_v<evolved_vars_tags_list,
+                           tmpl::list<TagsToFilter...>>>::
             template f<evolved_vars_tags_list, TagsToFilter...>::value) {
       db::mutate<typename Metavariables::system::variables_tag>(
           make_not_null(&box),

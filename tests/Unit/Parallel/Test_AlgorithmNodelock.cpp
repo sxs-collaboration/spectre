@@ -70,10 +70,9 @@ struct nodegroup_initialize {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         NodegroupParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
+    static_assert(std::is_same_v<ParallelComponent,
+                                 NodegroupParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     return std::make_tuple(
         db::create_from<db::RemoveTags<>,
                         db::AddSimpleTags<Tags::vector_of_array_indexs,
@@ -97,10 +96,9 @@ struct nodegroup_initialize {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         NodegroupParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
+    static_assert(std::is_same_v<ParallelComponent,
+                                 NodegroupParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     return {std::move(box), true};
   }
 };
@@ -112,10 +110,9 @@ struct nodegroup_receive {
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, const int& id_of_array) {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         NodegroupParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
+    static_assert(std::is_same_v<ParallelComponent,
+                                 NodegroupParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     db::mutate<Tags::vector_of_array_indexs, Tags::total_receives_on_node>(
         make_not_null(&box),
         [&id_of_array](const gsl::not_null<std::vector<int>*> array_indexs,
@@ -139,10 +136,9 @@ struct nodegroup_check_first_result {
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         NodegroupParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
+    static_assert(std::is_same_v<ParallelComponent,
+                                 NodegroupParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(db::get<Tags::total_receives_on_node>(box) ==
                              number_of_1d_array_elements_per_core *
                                  Parallel::procs_on_node(Parallel::my_node()));
@@ -192,10 +188,9 @@ struct nodegroup_check_threaded_result {
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {
-    static_assert(
-        cpp17::is_same_v<ParallelComponent,
-                         NodegroupParallelComponent<TestMetavariables>>,
-        "The ParallelComponent is not deduced to be the right type");
+    static_assert(std::is_same_v<ParallelComponent,
+                                 NodegroupParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(db::get<Tags::total_receives_on_node>(box) ==
                              2 * number_of_1d_array_elements_per_core *
                                  Parallel::procs_on_node(Parallel::my_node()));
@@ -217,8 +212,8 @@ struct reduce_to_nodegroup {
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& /*box*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index) {
-    static_assert(cpp17::is_same_v<ParallelComponent,
-                                   ArrayParallelComponent<TestMetavariables>>,
+    static_assert(std::is_same_v<ParallelComponent,
+                                 ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     auto& local_nodegroup =
         *(Parallel::get_parallel_component<
@@ -236,8 +231,8 @@ struct reduce_threaded_method {
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& /*box*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index) {
-    static_assert(cpp17::is_same_v<ParallelComponent,
-                                   ArrayParallelComponent<TestMetavariables>>,
+    static_assert(std::is_same_v<ParallelComponent,
+                                 ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     auto& local_nodegroup =
         *(Parallel::get_parallel_component<

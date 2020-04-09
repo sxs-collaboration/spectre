@@ -50,7 +50,7 @@ class FunctionOfX {
     // x used for the root solve do not guarantee a physical velocity.  Some
     // work would be needed to investigate whether better bounds could guarantee
     // a physical velocity.
-    const double v_squared = cpp17::clamp(
+    const double v_squared = std::clamp(
         (square(x) * r_ + (2 * x + s_) * t_squared_) / square(x * (x + s_)),
         0.0, square(v_maximum));
     return 1.0 / sqrt(1.0 - v_squared);

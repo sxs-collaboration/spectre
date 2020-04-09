@@ -23,7 +23,7 @@ namespace tt {
 /// \endcode
 ///
 /// \metareturns
-/// cpp17::bool_constant
+/// std::bool_constant
 ///
 /// \semantics
 /// If the type `T` has operator!= defined, then
@@ -45,7 +45,7 @@ struct has_inequivalence : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 template <typename T>
 struct has_inequivalence<
-    T, cpp17::void_t<decltype(std::declval<T>() != std::declval<T>())>>
+    T, std::void_t<decltype(std::declval<T>() != std::declval<T>())>>
     : std::true_type {};
 /// \endcond
 

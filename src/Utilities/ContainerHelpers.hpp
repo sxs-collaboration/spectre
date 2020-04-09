@@ -119,7 +119,7 @@ SPECTRE_ALWAYS_INLINE decltype(auto) get_element(
     SubscriptFunction at = GetContainerElement{}) noexcept {
   return ContainerHelpers_detail::ContainerImpls<(
       tt::is_complex_of_fundamental_v<std::remove_cv_t<T>> or
-      cpp17::is_fundamental_v<std::remove_cv_t<T>>)>::get_element(t, i, at);
+      std::is_fundamental_v<std::remove_cv_t<T>>)>::get_element(t, i, at);
 }
 
 /*!
@@ -146,7 +146,7 @@ SPECTRE_ALWAYS_INLINE decltype(auto) get_size(
     const T& t, SizeFunction size = GetContainerSize{}) noexcept {
   return ContainerHelpers_detail::ContainerImpls<(
       tt::is_complex_of_fundamental_v<std::remove_cv_t<T>> or
-      cpp17::is_fundamental_v<std::remove_cv_t<T>>)>::get_size(t, size);
+      std::is_fundamental_v<std::remove_cv_t<T>>)>::get_size(t, size);
 }
 
 /*!
@@ -183,7 +183,7 @@ void SPECTRE_ALWAYS_INLINE destructive_resize_components(
     ContainerHelpers_detail::ContainerImpls<(
         tt::is_complex_of_fundamental_v<
             std::remove_cv_t<typename Container::value_type>> or
-        cpp17::is_fundamental_v<
+        std::is_fundamental_v<
             std::remove_cv_t<typename Container::value_type>>)>::
         apply_destructive_resize(vector, new_size, destructive_resize);
   }

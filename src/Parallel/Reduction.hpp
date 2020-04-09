@@ -219,7 +219,7 @@ void ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
                                   InvokeFinalExtraArgsIndices>...>::
     invoke_final_helper(std::index_sequence<Js...> /*meta*/) noexcept {
   std::get<I>(data_) = InvokeFinal{}(std::move(std::get<I>(data_)),
-                                     cpp17::as_const(std::get<Js>(data_))...);
+                                     std::as_const(std::get<Js>(data_))...);
 }
 
 template <class... Ts, class... InvokeCombines, class... InvokeFinals,

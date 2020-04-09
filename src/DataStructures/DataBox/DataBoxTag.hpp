@@ -47,7 +47,7 @@ namespace db {
 namespace DataBox_detail {
 template <typename TagList, typename Tag>
 using list_of_matching_tags = tmpl::conditional_t<
-    cpp17::is_same_v<Tag, ::Tags::DataBox>, tmpl::list<::Tags::DataBox>,
+    std::is_same_v<Tag, ::Tags::DataBox>, tmpl::list<::Tags::DataBox>,
     tmpl::filter<TagList, std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>>;
 
 template <typename Tag, typename TagList,
@@ -103,7 +103,7 @@ constexpr bool has_no_matching_tag_v = has_no_matching_tag<TagList, Tag>::value;
 template <class T, class = void>
 struct has_return_type_member : std::false_type {};
 template <class T>
-struct has_return_type_member<T, cpp17::void_t<typename T::return_type>>
+struct has_return_type_member<T, std::void_t<typename T::return_type>>
     : std::true_type {};
 
 /*!
@@ -144,10 +144,10 @@ struct storage_type_impl {
           ? 4
           : (is_compute_item_v<Tag>and has_return_type_member_v<Tag>)
                 ? 3
-                : is_compute_item_v<Tag>
-                      ? 2
-                      : cpp17::is_base_of_v<db::SimpleTag, Tag> ? 1 : 0>::
-      template f<TagList, Tag>;
+                : is_compute_item_v<Tag> ? 2
+                                         : std::is_base_of_v<db::SimpleTag, Tag>
+                                               ? 1
+                                               : 0>::template f<TagList, Tag>;
 };
 
 template <>
@@ -185,7 +185,7 @@ struct dispatch_storage_type<3> {
 template <typename TagList, typename Tag>
 struct get_first_derived_tag_for_base_tag {
   static_assert(
-      not cpp17::is_same_v<TagList, NoSuchType>,
+      not std::is_same_v<TagList, NoSuchType>,
       "Can't retrieve the storage type of a base tag without the full tag "
       "list. If you're using 'item_type' or 'const_item_type' then make sure "
       "you pass the DataBox's tag list as the second template parameter to "

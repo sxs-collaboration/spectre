@@ -150,9 +150,9 @@ struct PointerComputeItemMutating : db::ComputeTag {
 
 namespace {
 using EmptyBox = decltype(db::create<db::AddSimpleTags<>>());
-static_assert(cpp17::is_same_v<decltype(db::create_from<db::RemoveTags<>>(
-                                   std::declval<EmptyBox>())),
-                               EmptyBox>,
+static_assert(std::is_same_v<decltype(db::create_from<db::RemoveTags<>>(
+                                 std::declval<EmptyBox>())),
+                             EmptyBox>,
               "Wrong create_from result type");
 
 using Box_t = db::DataBox<tmpl::list<
@@ -316,43 +316,43 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
         std::make_unique<int>(3));
     using DbTags = decltype(box)::tags_list;
     static_assert(
-        cpp17::is_same_v<db::const_item_type<test_databox_tags::Pointer>, int>,
+        std::is_same_v<db::const_item_type<test_databox_tags::Pointer>, int>,
         "Wrong type for const_item_type on unique_ptr simple item");
-    static_assert(cpp17::is_same_v<
-                      decltype(db::get<test_databox_tags::Pointer>(box)),
-                      const db::const_item_type<test_databox_tags::Pointer>&>,
-                  "Wrong type for get on unique_ptr simple item");
+    static_assert(
+        std::is_same_v<decltype(db::get<test_databox_tags::Pointer>(box)),
+                       const db::const_item_type<test_databox_tags::Pointer>&>,
+        "Wrong type for get on unique_ptr simple item");
     CHECK(db::get<test_databox_tags::Pointer>(box) == 3);
 
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             db::const_item_type<test_databox_tags::PointerBase, DbTags>, int>,
         "Wrong type for const_item_type on unique_ptr simple item by base");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(db::get<test_databox_tags::PointerBase>(box)),
             const db::const_item_type<test_databox_tags::PointerBase, DbTags>&>,
         "Wrong type for get on unique_ptr simple item by base");
     CHECK(db::get<test_databox_tags::PointerBase>(box) == 3);
 
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             db::const_item_type<test_databox_tags::PointerComputeItem>, int>,
         "Wrong type for const_item_type on unique_ptr compute item");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(db::get<test_databox_tags::PointerComputeItem>(box)),
             const db::const_item_type<test_databox_tags::PointerComputeItem>&>,
         "Wrong type for get on unique_ptr compute item");
     CHECK(db::get<test_databox_tags::PointerComputeItem>(box) == 4);
 
     static_assert(
-        cpp17::is_same_v<db::const_item_type<
-                             test_databox_tags::PointerComputeItemBase, DbTags>,
-                         int>,
+        std::is_same_v<db::const_item_type<
+                           test_databox_tags::PointerComputeItemBase, DbTags>,
+                       int>,
         "Wrong type for const_item_type on unique_ptr compute item by base");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(db::get<test_databox_tags::PointerComputeItemBase>(box)),
             const db::const_item_type<test_databox_tags::PointerComputeItemBase,
                                       DbTags>&>,
@@ -360,12 +360,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
     CHECK(db::get<test_databox_tags::PointerComputeItemBase>(box) == 4);
 
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             db::const_item_type<test_databox_tags::PointerComputeItemMutating>,
             int>,
         "Wrong type for const_item_type on unique_ptr");
     static_assert(
-        cpp17::is_same_v<
+        std::is_same_v<
             decltype(
                 db::get<test_databox_tags::PointerComputeItemMutating>(box)),
             const db::const_item_type<
@@ -475,31 +475,30 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate",
   CHECK(approx(db::get<test_databox_tags::ComputeTag0>(original_box)) ==
         10.32 * 2.0);
 
-  db::mutate<test_databox_tags::Pointer>(make_not_null(&original_box), [
-  ](auto p) noexcept {
-    static_assert(cpp17::is_same_v<db::item_type<test_databox_tags::Pointer>,
-                                   std::unique_ptr<int>>,
-                  "Wrong type for item_type on unique_ptr");
-    static_assert(
-        cpp17::is_same_v<
-            decltype(p),
-            gsl::not_null<db::item_type<test_databox_tags::Pointer>*>>,
-        "Wrong type for mutate on unique_ptr");
-    CHECK(**p == 3);
-    *p = std::make_unique<int>(5);
-  });
+  db::mutate<test_databox_tags::Pointer>(
+      make_not_null(&original_box), [](auto p) noexcept {
+        static_assert(std::is_same_v<db::item_type<test_databox_tags::Pointer>,
+                                     std::unique_ptr<int>>,
+                      "Wrong type for item_type on unique_ptr");
+        static_assert(
+            std::is_same_v<
+                decltype(p),
+                gsl::not_null<db::item_type<test_databox_tags::Pointer>*>>,
+            "Wrong type for mutate on unique_ptr");
+        CHECK(**p == 3);
+        *p = std::make_unique<int>(5);
+      });
   db::mutate<test_databox_tags::PointerBase>(make_not_null(&original_box), [
   ](auto p) noexcept {
     using DbTags = decltype(original_box)::tags_list;
     static_assert(
-        cpp17::is_same_v<db::item_type<test_databox_tags::PointerBase, DbTags>,
-                         std::unique_ptr<int>>,
+        std::is_same_v<db::item_type<test_databox_tags::PointerBase, DbTags>,
+                       std::unique_ptr<int>>,
         "Wrong type for item_type on unique_ptr by base");
-    static_assert(
-        cpp17::is_same_v<decltype(p),
-                         gsl::not_null<db::item_type<
-                             test_databox_tags::PointerBase, DbTags>*>>,
-        "Wrong type for mutate on unique_ptr by base");
+    static_assert(std::is_same_v<decltype(p),
+                                 gsl::not_null<db::item_type<
+                                     test_databox_tags::PointerBase, DbTags>*>>,
+                  "Wrong type for mutate on unique_ptr by base");
     CHECK(**p == 5);
     *p = std::make_unique<int>(7);
   });
@@ -708,28 +707,28 @@ using vector_only = tmpl::list<Var1>;
 using scalar_only = tmpl::list<Var2>;
 
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<
         tmpl::back<db::wrap_tags_in<PrefixTag0, scalar_only, tmpl::size_t<2>,
                                     Frame::Grid>>::type,
         tnsr::i<DataVector, 2, Frame::Grid>>,
     "Failed db::wrap_tags_in scalar_only");
 
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<
         tmpl::back<db::wrap_tags_in<PrefixTag0, vector_only, tmpl::size_t<3>,
                                     Frame::Grid>>::type,
         tnsr::iJ<DataVector, 3, Frame::Grid>>,
     "Failed db::wrap_tags_in vector_only");
 
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<
         tmpl::back<db::wrap_tags_in<PrefixTag0, two_vars, tmpl::size_t<2>,
                                     Frame::Grid>>::type,
         tnsr::i<DataVector, 2, Frame::Grid>>,
     "Failed db::wrap_tags_in two_vars scalar");
 
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<
         tmpl::front<db::wrap_tags_in<PrefixTag0, two_vars, tmpl::size_t<3>,
                                      Frame::Grid>>::type,
         tnsr::iJ<DataVector, 3, Frame::Grid>>,
@@ -1360,26 +1359,24 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
 
 namespace {
 static_assert(
-    cpp17::is_same_v<
-        tmpl::list<test_databox_tags::ComputeTag0,
-                   test_databox_tags::ComputeTag1,
-                   test_databox_tags::MultiplyScalarByTwo>,
-        db::get_compute_items<
-            tmpl::list<test_databox_tags::Tag0, test_databox_tags::ComputeTag0,
+    std::is_same_v<tmpl::list<test_databox_tags::ComputeTag0,
+                              test_databox_tags::ComputeTag1,
+                              test_databox_tags::MultiplyScalarByTwo>,
+                   db::get_compute_items<tmpl::list<
+                       test_databox_tags::Tag0, test_databox_tags::ComputeTag0,
                        test_databox_tags::Tag1, test_databox_tags::ComputeTag1,
                        test_databox_tags::MultiplyScalarByTwo>>>,
     "Failed testing db::get_compute_items");
 static_assert(
-    cpp17::is_same_v<
-        tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1>,
-        db::get_items<
-            tmpl::list<test_databox_tags::Tag0, test_databox_tags::ComputeTag0,
+    std::is_same_v<tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1>,
+                   db::get_items<tmpl::list<
+                       test_databox_tags::Tag0, test_databox_tags::ComputeTag0,
                        test_databox_tags::Tag1, test_databox_tags::ComputeTag1,
                        test_databox_tags::MultiplyScalarByTwo>>>,
     "Failed testing db::get_items");
 
 static_assert(
-    cpp17::is_same_v<
+    std::is_same_v<
         db::compute_databox_type<tmpl::list<
             test_databox_tags::Tag0, test_databox_tags::Tag1,
             Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
@@ -1879,7 +1876,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Subitems",
   }
 
   static_assert(
-      cpp17::is_same_v<
+      std::is_same_v<
           decltype(box),
           decltype(db::create_from<db::RemoveTags<test_subitems::Parent<2>>>(
               db::create_from<db::RemoveTags<>,
@@ -1893,7 +1890,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Subitems",
       "not change the type of the DataBox");
 
   static_assert(
-      cpp17::is_same_v<
+      std::is_same_v<
           decltype(box),
           decltype(db::create_from<
                    db::RemoveTags<test_subitems::Parent<2, true, true>>>(
@@ -1933,7 +1930,7 @@ struct OverloadNumberOfArgs : db::ComputeTag {
   }
 
   using argument_tags =
-      tmpl::conditional_t<cpp17::is_same_v<void, ArgumentTag1>,
+      tmpl::conditional_t<std::is_same_v<void, ArgumentTag1>,
                           tmpl::list<ArgumentTag0>,
                           tmpl::list<ArgumentTag0, ArgumentTag1>>;
 };

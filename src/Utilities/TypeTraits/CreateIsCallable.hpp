@@ -44,11 +44,10 @@
                                                                                \
    public:                                                                     \
     static constexpr bool value =                                              \
-        (cpp17::is_same_v<ReturnType, AnyReturnType##METHOD_NAME> and          \
-         not cpp17::is_same_v<decltype(test_callable<TT, TArgs...>(0)),        \
-                              NotCallable>) or                                 \
-        cpp17::is_same_v<decltype(test_callable<TT, TArgs...>(0)),             \
-                         ReturnType>;                                          \
+        (std::is_same_v<ReturnType, AnyReturnType##METHOD_NAME> and            \
+         not std::is_same_v<decltype(test_callable<TT, TArgs...>(0)),          \
+                            NotCallable>) or                                   \
+        std::is_same_v<decltype(test_callable<TT, TArgs...>(0)), ReturnType>;  \
     using type = std::integral_constant<bool, value>;                          \
   };                                                                           \
   template <typename ReturnType, typename T, typename... Args>                 \

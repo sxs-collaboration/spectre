@@ -712,8 +712,8 @@ template <int MinSpin, ComplexRepresentation Representation, typename TagList,
 struct make_transform_list_impl<MinSpin, Representation, TagList,
                                 std::integer_sequence<int, Is...>> {
   using type = tmpl::flatten<tmpl::list<tmpl::conditional_t<
-      not cpp17::is_same_v<get_tags_with_spin<Is + MinSpin, TagList>,
-                           tmpl::list<>>,
+      not std::is_same_v<get_tags_with_spin<Is + MinSpin, TagList>,
+                         tmpl::list<>>,
       SwshTransform<get_tags_with_spin<Is + MinSpin, TagList>, Representation>,
       tmpl::list<>>...>>;
 };
@@ -729,8 +729,8 @@ template <int MinSpin, ComplexRepresentation Representation, typename TagList,
 struct make_inverse_transform_list_impl<MinSpin, Representation, TagList,
                                         std::integer_sequence<int, Is...>> {
   using type = tmpl::flatten<tmpl::list<tmpl::conditional_t<
-      not cpp17::is_same_v<get_tags_with_spin<Is + MinSpin, TagList>,
-                           tmpl::list<>>,
+      not std::is_same_v<get_tags_with_spin<Is + MinSpin, TagList>,
+                         tmpl::list<>>,
       InverseSwshTransform<get_tags_with_spin<Is + MinSpin, TagList>,
                            Representation>,
       tmpl::list<>>...>>;

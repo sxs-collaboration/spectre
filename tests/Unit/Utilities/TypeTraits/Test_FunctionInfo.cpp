@@ -190,16 +190,16 @@ struct check_function_info {
   template <class Function, class ReturnType, class ClassType, class... Args>
   struct Check {
     static_assert(
-        cpp17::is_same_v<ReturnType,
-                         typename tt::function_info<Function>::return_type>,
+        std::is_same_v<ReturnType,
+                       typename tt::function_info<Function>::return_type>,
         "Failed testing function_info");
     static_assert(
-        cpp17::is_same_v<tmpl::list<Args...>,
-                         typename tt::function_info<Function>::argument_types>,
+        std::is_same_v<tmpl::list<Args...>,
+                       typename tt::function_info<Function>::argument_types>,
         "Failed testing function_info");
     static_assert(
-        cpp17::is_same_v<ClassType,
-                         typename tt::function_info<Function>::class_type>,
+        std::is_same_v<ClassType,
+                       typename tt::function_info<Function>::class_type>,
         "Failed testing function_info");
     static constexpr bool t = true;
   };

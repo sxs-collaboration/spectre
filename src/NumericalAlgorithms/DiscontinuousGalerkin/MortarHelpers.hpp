@@ -176,8 +176,8 @@ auto compute_boundary_flux_contribution(
     const MortarSize<Dim>& mortar_size) noexcept
     -> db::const_item_type<
         db::remove_tag_prefix<typename FluxCommTypes::normal_dot_fluxes_tag>> {
-  static_assert(cpp17::is_same_v<std::decay_t<LocalData>,
-                                 typename FluxCommTypes::LocalData>,
+  static_assert(std::is_same_v<std::decay_t<LocalData>,
+                               typename FluxCommTypes::LocalData>,
                 "Second argument must be a FluxCommTypes::LocalData");
   using variables_tag =
       db::remove_tag_prefix<typename FluxCommTypes::normal_dot_fluxes_tag>;

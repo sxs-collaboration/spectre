@@ -135,8 +135,8 @@ using NumericalFlux = std::conditional_t<
                       detail::has_argument_tags_v<ConformingType>,
                       detail::has_package_field_tags_v<ConformingType>,
                       detail::has_package_extra_tags_v<ConformingType>>,
-    cpp17::conjunction<detail::IsPackageDataCallable<ConformingType>,
-                       detail::IsNumericalFluxCallable<ConformingType>>,
+    std::conjunction<detail::IsPackageDataCallable<ConformingType>,
+                     detail::IsNumericalFluxCallable<ConformingType>>,
     std::false_type>;
 
 }  // namespace protocols
