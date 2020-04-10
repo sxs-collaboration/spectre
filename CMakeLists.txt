@@ -22,6 +22,8 @@ site_name(HOSTNAME)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+include(SpectreInitializeVariables)
+
 option(
   DOCS_ONLY
   "Skip all initialization not required for rendering documentation"
@@ -48,7 +50,6 @@ include(SetCxxStandard)
 include(StripSymbols)
 include(SetupBuildInfo)
 include(SetupCCache)
-include(SetupVersionFile)
 include(SetupCraySupport)
 include(SetupCharm)
 include(SetupCharmProjections)
@@ -139,3 +140,4 @@ add_subdirectory(src)
 add_subdirectory(tests)
 
 include(PrintUsefulCMakeInfo)
+include(SetupVersionFile)
