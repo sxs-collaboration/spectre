@@ -44,7 +44,7 @@ template <size_t Index, size_t Dim>
 Scalar<DataVector> speed_with_index(
     const tnsr::i<DataVector, Dim, Frame::Inertial>& normal) {
   return Scalar<DataVector>{
-      ScalarWave::CharacteristicSpeedsCompute<Dim>::function(normal)[Index]};
+      ScalarWave::characteristic_speeds<Dim>(normal)[Index]};
 }
 
 template <size_t Dim>
@@ -90,9 +90,9 @@ void test_characteristic_speeds_analytic(
       make_with_value<Scalar<DataVector>>(unit_normal_one_form, -1.);
 
   // Check that locally computed fields match returned ones
-  const auto char_speeds =
-      ScalarWave::CharacteristicSpeedsCompute<Dim>::function(
-          unit_normal_one_form);
+  std::array<DataVector, 4> char_speeds{};
+  ScalarWave::CharacteristicSpeedsCompute<Dim>::function(&char_speeds,
+                                                         unit_normal_one_form);
   const auto& vpsi_speed = char_speeds[0];
   const auto& vzero_speed = char_speeds[1];
   const auto& vplus_speed = char_speeds[2];
@@ -112,8 +112,12 @@ typename Tag::type field_with_tag(
     const Scalar<DataVector>& pi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_one_form) {
-  return get<Tag>(ScalarWave::CharacteristicFieldsCompute<Dim>::function(
-      gamma_2, psi, pi, phi, normal_one_form));
+  Variables<tmpl::list<ScalarWave::Tags::VPsi, ScalarWave::Tags::VZero<Dim>,
+                       ScalarWave::Tags::VPlus, ScalarWave::Tags::VMinus>>
+      char_fields{};
+  ScalarWave::CharacteristicFieldsCompute<Dim>::function(
+      make_not_null(&char_fields), gamma_2, psi, pi, phi, normal_one_form);
+  return get<Tag>(char_fields);
 }
 
 template <size_t Dim>
@@ -198,8 +202,11 @@ void test_characteristic_fields_analytic(
                                            get(gamma_2) * get(psi)};
 
   // Check that locally computed fields match returned ones
-  const auto uvars = ScalarWave::CharacteristicFieldsCompute<Dim>::function(
-      gamma_2, psi, pi, phi, unit_normal_one_form);
+  Variables<tmpl::list<ScalarWave::Tags::VPsi, ScalarWave::Tags::VZero<Dim>,
+                       ScalarWave::Tags::VPlus, ScalarWave::Tags::VMinus>>
+      uvars{};
+  ScalarWave::CharacteristicFieldsCompute<Dim>::function(
+      make_not_null(&uvars), gamma_2, psi, pi, phi, unit_normal_one_form);
 
   const auto& vpsi = get<ScalarWave::Tags::VPsi>(uvars);
   const auto& vzero = get<ScalarWave::Tags::VZero<Dim>>(uvars);
@@ -220,9 +227,12 @@ typename Tag::type evol_field_with_tag(
     const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero,
     const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_one_form) {
-  return get<Tag>(
-      ScalarWave::EvolvedFieldsFromCharacteristicFieldsCompute<Dim>::function(
-          gamma_2, v_psi, v_zero, v_plus, v_minus, unit_normal_one_form));
+  Variables<tmpl::list<ScalarWave::Psi, ScalarWave::Pi, ScalarWave::Phi<Dim>>>
+      evolved_vars{};
+  ScalarWave::EvolvedFieldsFromCharacteristicFieldsCompute<Dim>::function(
+      make_not_null(&evolved_vars), gamma_2, v_psi, v_zero, v_plus, v_minus,
+      unit_normal_one_form);
+  return get<Tag>(evolved_vars);
 }
 
 template <size_t Dim>
@@ -306,9 +316,11 @@ void test_evolved_from_characteristic_fields_analytic(
                                   get(gamma_2) * get(psi_expected)};
   // Second, obtain evolved fields using compute tag
   {
-    const auto fields =
-        ScalarWave::EvolvedFieldsFromCharacteristicFieldsCompute<Dim>::function(
-            gamma_2, vpsi, vzero, vplus, vminus, unit_normal_one_form);
+    Variables<tmpl::list<ScalarWave::Psi, ScalarWave::Pi, ScalarWave::Phi<Dim>>>
+        fields{};
+    ScalarWave::EvolvedFieldsFromCharacteristicFieldsCompute<Dim>::function(
+        make_not_null(&fields), gamma_2, vpsi, vzero, vplus, vminus,
+        unit_normal_one_form);
     const auto& psi = get<ScalarWave::Psi>(fields);
     const auto& pi = get<ScalarWave::Pi>(fields);
     const auto& phi = get<ScalarWave::Phi<Dim>>(fields);

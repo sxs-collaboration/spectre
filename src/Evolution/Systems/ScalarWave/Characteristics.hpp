@@ -67,15 +67,15 @@ template <size_t Dim>
 struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
                                      db::ComputeTag {
   using base = Tags::CharacteristicSpeeds<Dim>;
-  using type = typename base::type;
+  using return_type = typename base::type;
   using argument_tags =
       tmpl::list<::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
 
-  static typename Tags::CharacteristicSpeeds<Dim>::type function(
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
-          unit_normal_one_form) noexcept {
-    return characteristic_speeds(unit_normal_one_form);
-  };
+  static void function(gsl::not_null<return_type*> char_speeds,
+                       const tnsr::i<DataVector, Dim, Frame::Inertial>&
+                           unit_normal_one_form) noexcept {
+    characteristic_speeds(char_speeds, unit_normal_one_form);
+  }
 };
 // @}
 
@@ -151,18 +151,20 @@ template <size_t Dim>
 struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim>,
                                      db::ComputeTag {
   using base = Tags::CharacteristicFields<Dim>;
-  using type = typename base::type;
+  using return_type = typename base::type;
   using argument_tags =
       tmpl::list<Tags::ConstraintGamma2, Psi, Pi, Phi<Dim>,
                  ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
 
-  static typename Tags::CharacteristicFields<Dim>::type function(
-      const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& psi,
-      const Scalar<DataVector>& pi,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
-          unit_normal_one_form) noexcept {
-    return characteristic_fields(gamma_2, psi, pi, phi, unit_normal_one_form);
+  static void function(const gsl::not_null<return_type*> char_fields,
+                       const Scalar<DataVector>& gamma_2,
+                       const Scalar<DataVector>& psi,
+                       const Scalar<DataVector>& pi,
+                       const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
+                       const tnsr::i<DataVector, Dim, Frame::Inertial>&
+                           unit_normal_one_form) noexcept {
+    characteristic_fields(char_fields, gamma_2, psi, pi, phi,
+                          unit_normal_one_form);
   };
 };
 // @}
@@ -198,20 +200,23 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
     : Tags::EvolvedFieldsFromCharacteristicFields<Dim>,
       db::ComputeTag {
   using base = Tags::EvolvedFieldsFromCharacteristicFields<Dim>;
-  using type = typename base::type;
+  using return_type = typename base::type;
   using argument_tags =
       tmpl::list<Tags::ConstraintGamma2, Tags::VPsi, Tags::VZero<Dim>,
                  Tags::VPlus, Tags::VMinus,
                  ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
 
-  static typename Tags::EvolvedFieldsFromCharacteristicFields<Dim>::type
-  function(const Scalar<DataVector>& gamma_2, const Scalar<DataVector>& v_psi,
-           const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero,
-           const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
-           const tnsr::i<DataVector, Dim, Frame::Inertial>&
-               unit_normal_one_form) noexcept {
-    return evolved_fields_from_characteristic_fields(
-        gamma_2, v_psi, v_zero, v_plus, v_minus, unit_normal_one_form);
+  static void function(const gsl::not_null<return_type*> evolved_fields,
+                       const Scalar<DataVector>& gamma_2,
+                       const Scalar<DataVector>& v_psi,
+                       const tnsr::i<DataVector, Dim, Frame::Inertial>& v_zero,
+                       const Scalar<DataVector>& v_plus,
+                       const Scalar<DataVector>& v_minus,
+                       const tnsr::i<DataVector, Dim, Frame::Inertial>&
+                           unit_normal_one_form) noexcept {
+    evolved_fields_from_characteristic_fields(evolved_fields, gamma_2, v_psi,
+                                              v_zero, v_plus, v_minus,
+                                              unit_normal_one_form);
   };
 };
 // @}
