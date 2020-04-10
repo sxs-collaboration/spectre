@@ -137,7 +137,7 @@ evolved_fields_from_characteristic_fields(
   template std::array<DataVector, 4> ScalarWave::characteristic_speeds(        \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                   \
           unit_normal_one_form) noexcept;                                      \
-  template struct ScalarWave::CharacteristicSpeedsCompute<DIM(data)>;          \
+  template struct ScalarWave::Tags::CharacteristicSpeedsCompute<DIM(data)>;    \
   template void ScalarWave::characteristic_fields(                             \
       const gsl::not_null<Variables<tmpl::list<                                \
           ScalarWave::Tags::VPsi, ScalarWave::Tags::VZero<DIM(data)>,          \
@@ -157,7 +157,7 @@ evolved_fields_from_characteristic_fields(
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>& phi,              \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                   \
           unit_normal_one_form) noexcept;                                      \
-  template struct ScalarWave::CharacteristicFieldsCompute<DIM(data)>;          \
+  template struct ScalarWave::Tags::CharacteristicFieldsCompute<DIM(data)>;    \
   template void ScalarWave::evolved_fields_from_characteristic_fields(         \
       const gsl::not_null<Variables<tmpl::list<                                \
           ScalarWave::Psi, ScalarWave::Pi, ScalarWave::Phi<DIM(data)>>>*>      \
@@ -175,8 +175,8 @@ evolved_fields_from_characteristic_fields(
       const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,     \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                   \
           unit_normal_one_form) noexcept;                                      \
-  template struct ScalarWave::EvolvedFieldsFromCharacteristicFieldsCompute<    \
-      DIM(data)>;
+  template struct ScalarWave::Tags::                                           \
+      EvolvedFieldsFromCharacteristicFieldsCompute<DIM(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

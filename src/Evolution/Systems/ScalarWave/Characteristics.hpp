@@ -63,6 +63,7 @@ void characteristic_speeds(
     const tnsr::i<DataVector, Dim, Frame::Inertial>&
         unit_normal_one_form) noexcept;
 
+namespace Tags {
 template <size_t Dim>
 struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
                                      db::ComputeTag {
@@ -77,6 +78,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
     characteristic_speeds(char_speeds, unit_normal_one_form);
   }
 };
+}  // namespace Tags
 // @}
 
 // @{
@@ -84,11 +86,11 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
  * \ingroup ScalarWave
  * \brief Computes characteristic fields from evolved fields
  *
- * \ref CharacteristicFieldsCompute and
- * \ref EvolvedFieldsFromCharacteristicFieldsCompute convert between
+ * \ref Tags::CharacteristicFieldsCompute and
+ * \ref Tags::EvolvedFieldsFromCharacteristicFieldsCompute convert between
  * characteristic and evolved fields for the scalar-wave system.
  *
- * \ref CharacteristicFieldsCompute computes
+ * \ref Tags::CharacteristicFieldsCompute computes
  * characteristic fields as described in "Optimal constraint projection for
  * hyperbolic evolution systems" by Holst et al. \cite Holst2004wt .
  * Their names used here differ from this paper:
@@ -114,9 +116,9 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
  * is a constraint damping parameter, and \f$n_k\f$ is the unit normal to the
  * surface along which the characteristic fields are defined.
  *
- * \ref EvolvedFieldsFromCharacteristicFieldsCompute computes evolved fields
- * \f$u_\alpha\f$ in terms of the characteristic fields. This uses the inverse
- * of above relations:
+ * \ref Tags::EvolvedFieldsFromCharacteristicFieldsCompute computes evolved
+ * fields \f$u_\alpha\f$ in terms of the characteristic fields. This uses the
+ * inverse of above relations:
  *
  * \f{align*}
  * \psi =& v^{\hat \psi}, \\
@@ -125,7 +127,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
  * \f}
  *
  * The corresponding characteristic speeds \f$\lambda_{\hat \alpha}\f$
- * are computed by \ref CharacteristicSpeedsCompute .
+ * are computed by \ref Tags::CharacteristicSpeedsCompute .
  */
 template <size_t Dim>
 Variables<tmpl::list<Tags::VPsi, Tags::VZero<Dim>, Tags::VPlus, Tags::VMinus>>
@@ -147,6 +149,7 @@ void characteristic_fields(
     const tnsr::i<DataVector, Dim, Frame::Inertial>&
         unit_normal_one_form) noexcept;
 
+namespace Tags {
 template <size_t Dim>
 struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim>,
                                      db::ComputeTag {
@@ -167,6 +170,7 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim>,
                           unit_normal_one_form);
   };
 };
+}  // namespace Tags
 // @}
 
 // @{
@@ -175,7 +179,7 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim>,
  * \brief Compute evolved fields from characteristic fields.
  *
  * For expressions used here to compute evolved fields from characteristic ones,
- * see \ref CharacteristicFieldsCompute.
+ * see \ref Tags::CharacteristicFieldsCompute.
  */
 template <size_t Dim>
 Variables<tmpl::list<Psi, Pi, Phi<Dim>>>
@@ -195,6 +199,7 @@ void evolved_fields_from_characteristic_fields(
     const tnsr::i<DataVector, Dim, Frame::Inertial>&
         unit_normal_one_form) noexcept;
 
+namespace Tags {
 template <size_t Dim>
 struct EvolvedFieldsFromCharacteristicFieldsCompute
     : Tags::EvolvedFieldsFromCharacteristicFields<Dim>,
@@ -219,5 +224,6 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
                                               unit_normal_one_form);
   };
 };
+}  // namespace Tags
 // @}
 }  // namespace ScalarWave
