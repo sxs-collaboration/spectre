@@ -28,7 +28,6 @@ struct Normalized;
 namespace ScalarWave {
 // @{
 /*!
- * \ingroup ScalarWave
  * \brief Compute the characteristic speeds for the scalar wave system.
  *
  * Computes the speeds as described in "Optimal constraint projection for
@@ -83,7 +82,6 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
 
 // @{
 /*!
- * \ingroup ScalarWave
  * \brief Computes characteristic fields from evolved fields
  *
  * \ref Tags::CharacteristicFieldsCompute and
@@ -175,7 +173,6 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim>,
 
 // @{
 /*!
- * \ingroup ScalarWave
  * \brief Compute evolved fields from characteristic fields.
  *
  * For expressions used here to compute evolved fields from characteristic ones,
