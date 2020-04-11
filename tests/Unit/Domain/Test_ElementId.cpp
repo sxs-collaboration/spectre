@@ -7,11 +7,15 @@
 #include <cstddef>
 #include <limits>
 #include <string>
+#include <vector>
 
 #include "Domain/ElementId.hpp"
+#include "Domain/InitialElementIds.hpp"
 #include "Domain/SegmentId.hpp"
 #include "Domain/Side.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Parallel/ArrayIndex.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -117,9 +121,40 @@ void test_element_id() {
   CHECK(ElementId<3>::external_boundary_id().segment_ids() ==
         make_array<3>(SegmentId(SegmentId::max_refinement_level, 0)));
 }
+
+template <size_t VolumeDim>
+void test_serialization() noexcept {
+  constexpr size_t volume_dim = VolumeDim;
+  const ElementId<volume_dim> unused_id(0);
+  const auto initial_ref_levels = make_array<volume_dim>(1_st);
+  for (size_t block_id = 0; block_id < two_to_the(SegmentId::block_id_bits);
+       ++block_id) {
+    const std::vector<ElementId<volume_dim>> element_ids =
+        initial_element_ids(block_id, initial_ref_levels);
+    for (const auto element_id : element_ids) {
+      const auto serialized_id = serialize_and_deserialize(element_id);
+      CHECK(serialized_id == element_id);
+      // The following checks that ElementId can be used as a Charm array index
+      Parallel::ArrayIndex<ElementId<volume_dim>> array_index(element_id);
+      CHECK(element_id == array_index.get_index());
+      // now check pupping the ArrayIndex works...
+      const auto serialized_array_index =
+          serialize<Parallel::ArrayIndex<ElementId<volume_dim>>>(array_index);
+      PUP::fromMem reader(serialized_array_index.data());
+      Parallel::ArrayIndex<ElementId<volume_dim>> deserialized_array_index(
+          unused_id);
+      reader | deserialized_array_index;
+      CHECK(array_index == deserialized_array_index);
+      CHECK(element_id == deserialized_array_index.get_index());
+    }
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.ElementId", "[Domain][Unit]") {
   test_element_id();
   test_placement_new_and_hashing();
+  test_serialization<1>();
+  test_serialization<2>();
+  test_serialization<3>();
 }

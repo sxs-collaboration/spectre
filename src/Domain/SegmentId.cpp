@@ -43,39 +43,6 @@ static_assert(std::is_pod<SegmentId>::value, "SegmentId is not POD");
 static_assert(sizeof(SegmentId) == sizeof(int),
               "SegmentId does not fit in an int");
 
-void SegmentId::pup(PUP::er& p) noexcept {
-  // Because we need to use bitfields for the `SegmentId` to be used by Charm++,
-  // we need to copy data into fundamental types and then send them. We could
-  // alternatively treat `this` as an array of characters and send that at the
-  // expense of readability, if the current copy/send implementation is too
-  // slow.
-  unsigned short block_id = block_id_;
-  unsigned short refinement_level = refinement_level_;
-  unsigned index = index_;
-
-  // Make sure that the sizes of the types used for sending are sufficiently
-  // large not to drop precision.
-  static_assert(8 * sizeof(std::decay_t<decltype(block_id)>) >= block_id_bits,
-                "The number of bits specified in block_id_bits is larger than "
-                "that of the type of `block_id`.");
-  static_assert(
-      8 * sizeof(std::decay_t<decltype(refinement_level)>) >= refinement_bits,
-      "The number of bits specified in refinement_bits is larger than "
-      "that of the type of `refinement_level`.");
-  static_assert(
-      8 * sizeof(std::decay_t<decltype(index)>) >= max_refinement_level,
-      "The number of bits specified in max_refinement_level is larger than "
-      "that of the type of `index`.");
-  p | block_id;
-  p | refinement_level;
-  p | index;
-  if (p.isUnpacking()) {
-    block_id_ = block_id;
-    refinement_level_ = refinement_level;
-    index_ = index;
-  }
-}
-
 std::ostream& operator<<(std::ostream& os, const SegmentId& id) noexcept {
   os << 'L' << id.refinement_level() << 'I' << id.index();
   return os;

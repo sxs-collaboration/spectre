@@ -115,9 +115,6 @@ class SegmentId {
   /// Does the segment overlap with another?
   bool overlaps(const SegmentId& other) const noexcept;
 
-  /// Serialization for Charm++
-  void pup(PUP::er& p) noexcept;  // NOLINT
-
  private:
   template <size_t VolumeDim>
   friend class ElementId;
@@ -130,6 +127,11 @@ class SegmentId {
   unsigned refinement_level_ : refinement_bits;
   unsigned index_ : max_refinement_level;
 };
+
+/// \cond
+// macro that generate the pup operator for SegmentId
+PUPbytes(SegmentId)
+/// \endcond
 
 /// Output operator for SegmentId.
 std::ostream& operator<<(std::ostream& os, const SegmentId& id) noexcept;
