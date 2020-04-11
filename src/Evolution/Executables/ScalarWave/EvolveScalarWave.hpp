@@ -14,6 +14,7 @@
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
+#include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
@@ -193,14 +194,16 @@ struct EvolutionMetavars {
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
-      dg::Actions::InitializeDomain<system::volume_dim>,
+      evolution::dg::Initialization::Domain<system::volume_dim>,
       Initialization::Actions::NonconservativeSystem,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       dg::Actions::InitializeInterfaces<
           system,
           dg::Initialization::slice_tags_to_face<
               typename system::variables_tag>,
-          dg::Initialization::slice_tags_to_exterior<>>,
+          dg::Initialization::slice_tags_to_exterior<>,
+          dg::Initialization::face_compute_tags<>,
+          dg::Initialization::exterior_compute_tags<>, true, true>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<evolution::Tags::AnalyticCompute<
               Dim, initial_data_tag, analytic_solution_fields>>>,

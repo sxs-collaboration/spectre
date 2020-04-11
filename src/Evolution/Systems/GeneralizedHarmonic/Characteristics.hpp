@@ -58,15 +58,14 @@ namespace GeneralizedHarmonic {
  * surface.
  */
 template <size_t Dim, typename Frame>
-typename Tags::CharacteristicSpeeds<Dim, Frame>::type characteristic_speeds(
+std::array<DataVector, 4> characteristic_speeds(
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame>& shift,
     const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
 
 template <size_t Dim, typename Frame>
 void characteristic_speeds(
-    gsl::not_null<typename Tags::CharacteristicSpeeds<Dim, Frame>::type*>
-        char_speeds,
+    gsl::not_null<std::array<DataVector, 4>*> char_speeds,
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame>& shift,
     const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
@@ -81,11 +80,14 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim, Frame>,
       gr::Tags::Shift<Dim, Frame, DataVector>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>>;
 
-  static typename Tags::CharacteristicSpeeds<Dim, Frame>::type function(
+  using return_type = typename base::type;
+
+  static void function(
+      const gsl::not_null<return_type*> result,
       const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, Dim, Frame>& shift,
       const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept {
-    return characteristic_speeds(gamma_1, lapse, shift, unit_normal_one_form);
+    characteristic_speeds(result, gamma_1, lapse, shift, unit_normal_one_form);
   };
 };
 // @}
