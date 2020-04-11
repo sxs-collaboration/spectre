@@ -158,3 +158,14 @@ SPECTRE_TEST_CASE("Unit.Domain.ElementId", "[Domain][Unit]") {
   test_serialization<2>();
   test_serialization<3>();
 }
+
+// [[OutputRegex, Block id out of bounds]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.ElementId.BadBlockId",
+                               "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  auto failed_element_id = ElementId<1>(two_to_the(SegmentId::block_id_bits));
+  static_cast<void>(failed_element_id);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}

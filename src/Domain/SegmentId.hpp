@@ -121,7 +121,12 @@ class SegmentId {
 
   SegmentId(size_t block_id, size_t refinement_level, size_t index) noexcept;
   size_t block_id() const noexcept { return block_id_; }
-  void set_block_id(const size_t block_id) noexcept { block_id_ = block_id; }
+  void set_block_id(const size_t block_id) noexcept {
+    ASSERT(block_id < two_to_the(block_id_bits),
+           "Block id out of bounds: " << block_id << "\nMaximum value is: "
+                                      << two_to_the(block_id_bits) - 1);
+    block_id_ = block_id;
+  }
 
   unsigned block_id_ : block_id_bits;
   unsigned refinement_level_ : refinement_bits;
