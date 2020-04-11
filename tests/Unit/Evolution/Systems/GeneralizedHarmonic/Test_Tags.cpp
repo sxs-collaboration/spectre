@@ -35,14 +35,15 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<
       GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<Dim, Frame>>(
       "SpacetimeDerivInitialGaugeH");
-  TestHelpers::db::test_simple_tag<GeneralizedHarmonic::Tags::UPsi<Dim, Frame>>(
-      "UPsi");
   TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::UZero<Dim, Frame>>("UZero");
+      GeneralizedHarmonic::Tags::VSpacetimeMetric<Dim, Frame>>(
+      "VSpacetimeMetric");
   TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::UPlus<Dim, Frame>>("UPlus");
+      GeneralizedHarmonic::Tags::VZero<Dim, Frame>>("VZero");
   TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::UMinus<Dim, Frame>>("UMinus");
+      GeneralizedHarmonic::Tags::VPlus<Dim, Frame>>("VPlus");
+  TestHelpers::db::test_simple_tag<
+      GeneralizedHarmonic::Tags::VMinus<Dim, Frame>>("VMinus");
   TestHelpers::db::test_simple_tag<
       GeneralizedHarmonic::Tags::CharacteristicSpeeds<Dim, Frame>>(
       "CharacteristicSpeeds");

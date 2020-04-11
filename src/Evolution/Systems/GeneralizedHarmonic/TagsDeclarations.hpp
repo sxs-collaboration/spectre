@@ -33,13 +33,13 @@ template <size_t Dim, typename Frame = Frame::Inertial>
 struct SpacetimeDerivGaugeH;
 
 template <size_t Dim, typename Frame>
-struct UPsi;
+struct VSpacetimeMetric;
 template <size_t Dim, typename Frame>
-struct UZero;
+struct VZero;
 template <size_t Dim, typename Frame>
-struct UPlus;
+struct VPlus;
 template <size_t Dim, typename Frame>
-struct UMinus;
+struct VMinus;
 
 template <size_t Dim, typename Frame>
 struct CharacteristicSpeeds;

@@ -220,8 +220,9 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
   using base = Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>;
   using type = typename base::type;
   using argument_tags = tmpl::list<
-      Tags::ConstraintGamma2, Tags::UPsi<Dim, Frame>, Tags::UZero<Dim, Frame>,
-      Tags::UPlus<Dim, Frame>, Tags::UMinus<Dim, Frame>,
+      Tags::ConstraintGamma2, Tags::VSpacetimeMetric<Dim, Frame>,
+      Tags::VZero<Dim, Frame>, Tags::VPlus<Dim, Frame>,
+      Tags::VMinus<Dim, Frame>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>>;
 
   static typename Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>::type

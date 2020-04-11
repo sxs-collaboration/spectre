@@ -177,19 +177,19 @@ struct SpacetimeDerivInitialGaugeH : db::SimpleTag {
 /// \details For details on how these are defined and computed, see
 /// CharacteristicSpeedsCompute
 template <size_t Dim, typename Frame>
-struct UPsi : db::SimpleTag {
+struct VSpacetimeMetric : db::SimpleTag {
   using type = tnsr::aa<DataVector, Dim, Frame>;
 };
 template <size_t Dim, typename Frame>
-struct UZero : db::SimpleTag {
+struct VZero : db::SimpleTag {
   using type = tnsr::iaa<DataVector, Dim, Frame>;
 };
 template <size_t Dim, typename Frame>
-struct UPlus : db::SimpleTag {
+struct VPlus : db::SimpleTag {
   using type = tnsr::aa<DataVector, Dim, Frame>;
 };
 template <size_t Dim, typename Frame>
-struct UMinus : db::SimpleTag {
+struct VMinus : db::SimpleTag {
   using type = tnsr::aa<DataVector, Dim, Frame>;
 };
 // @}
@@ -201,8 +201,9 @@ struct CharacteristicSpeeds : db::SimpleTag {
 
 template <size_t Dim, typename Frame>
 struct CharacteristicFields : db::SimpleTag {
-  using type = Variables<tmpl::list<UPsi<Dim, Frame>, UZero<Dim, Frame>,
-                                    UPlus<Dim, Frame>, UMinus<Dim, Frame>>>;
+  using type =
+      Variables<tmpl::list<VSpacetimeMetric<Dim, Frame>, VZero<Dim, Frame>,
+                           VPlus<Dim, Frame>, VMinus<Dim, Frame>>>;
 };
 
 template <size_t Dim, typename Frame>

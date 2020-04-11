@@ -61,13 +61,13 @@ weight_char_fields(
     const db::const_item_type<Tags::CharacteristicSpeeds<Dim, Frame::Inertial>>&
         char_speeds_ext) noexcept {
   const auto& u_psi_int =
-      get<Tags::UPsi<Dim, Frame::Inertial>>(char_fields_int);
+      get<Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(char_fields_int);
   const auto& u_zero_int =
-      get<Tags::UZero<Dim, Frame::Inertial>>(char_fields_int);
+      get<Tags::VZero<Dim, Frame::Inertial>>(char_fields_int);
   const auto& u_plus_int =
-      get<Tags::UPlus<Dim, Frame::Inertial>>(char_fields_int);
+      get<Tags::VPlus<Dim, Frame::Inertial>>(char_fields_int);
   const auto& u_minus_int =
-      get<Tags::UMinus<Dim, Frame::Inertial>>(char_fields_int);
+      get<Tags::VMinus<Dim, Frame::Inertial>>(char_fields_int);
 
   const DataVector& char_speed_u_psi_int{char_speeds_int[0]};
   const DataVector& char_speed_u_zero_int{char_speeds_int[1]};
@@ -75,13 +75,13 @@ weight_char_fields(
   const DataVector& char_speed_u_minus_int{char_speeds_int[3]};
 
   const auto& u_psi_ext =
-      get<Tags::UPsi<Dim, Frame::Inertial>>(char_fields_ext);
+      get<Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(char_fields_ext);
   const auto& u_zero_ext =
-      get<Tags::UZero<Dim, Frame::Inertial>>(char_fields_ext);
+      get<Tags::VZero<Dim, Frame::Inertial>>(char_fields_ext);
   const auto& u_plus_ext =
-      get<Tags::UPlus<Dim, Frame::Inertial>>(char_fields_ext);
+      get<Tags::VPlus<Dim, Frame::Inertial>>(char_fields_ext);
   const auto& u_minus_ext =
-      get<Tags::UMinus<Dim, Frame::Inertial>>(char_fields_ext);
+      get<Tags::VMinus<Dim, Frame::Inertial>>(char_fields_ext);
 
   const DataVector& char_speed_u_psi_ext{char_speeds_ext[0]};
   const DataVector& char_speed_u_zero_ext{char_speeds_ext[1]};
@@ -92,18 +92,19 @@ weight_char_fields(
       db::const_item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>>(
       char_speed_u_psi_int, 0.0);
 
-  get<Tags::UPsi<Dim, Frame::Inertial>>(weighted_char_fields) =
-      weight_char_field<GeneralizedHarmonic::Tags::UPsi<Dim, Frame::Inertial>>(
-          u_psi_int, char_speed_u_psi_int, u_psi_ext, char_speed_u_psi_ext);
-  get<Tags::UZero<Dim, Frame::Inertial>>(weighted_char_fields) =
-      weight_char_field<GeneralizedHarmonic::Tags::UZero<Dim, Frame::Inertial>>(
-          u_zero_int, char_speed_u_zero_int, u_zero_ext, char_speed_u_zero_ext);
-  get<Tags::UPlus<Dim, Frame::Inertial>>(weighted_char_fields) =
-      weight_char_field<GeneralizedHarmonic::Tags::UPlus<Dim, Frame::Inertial>>(
-          u_plus_int, char_speed_u_plus_int, u_plus_ext, char_speed_u_plus_ext);
-  get<Tags::UMinus<Dim, Frame::Inertial>>(weighted_char_fields) =
+  get<Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(weighted_char_fields) =
       weight_char_field<
-          GeneralizedHarmonic::Tags::UMinus<Dim, Frame::Inertial>>(
+          GeneralizedHarmonic::Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(
+          u_psi_int, char_speed_u_psi_int, u_psi_ext, char_speed_u_psi_ext);
+  get<Tags::VZero<Dim, Frame::Inertial>>(weighted_char_fields) =
+      weight_char_field<GeneralizedHarmonic::Tags::VZero<Dim, Frame::Inertial>>(
+          u_zero_int, char_speed_u_zero_int, u_zero_ext, char_speed_u_zero_ext);
+  get<Tags::VPlus<Dim, Frame::Inertial>>(weighted_char_fields) =
+      weight_char_field<GeneralizedHarmonic::Tags::VPlus<Dim, Frame::Inertial>>(
+          u_plus_int, char_speed_u_plus_int, u_plus_ext, char_speed_u_plus_ext);
+  get<Tags::VMinus<Dim, Frame::Inertial>>(weighted_char_fields) =
+      weight_char_field<
+          GeneralizedHarmonic::Tags::VMinus<Dim, Frame::Inertial>>(
           u_minus_int, char_speed_u_minus_int, u_minus_ext,
           char_speed_u_minus_ext);
 
@@ -491,10 +492,11 @@ void UpwindFlux<Dim>::operator()(
   const auto weighted_evolved_fields =
       evolved_fields_from_characteristic_fields(
           gamma2_avg,
-          get<Tags::UPsi<Dim, Frame::Inertial>>(weighted_char_fields),
-          get<Tags::UZero<Dim, Frame::Inertial>>(weighted_char_fields),
-          get<Tags::UPlus<Dim, Frame::Inertial>>(weighted_char_fields),
-          get<Tags::UMinus<Dim, Frame::Inertial>>(weighted_char_fields),
+          get<Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(
+              weighted_char_fields),
+          get<Tags::VZero<Dim, Frame::Inertial>>(weighted_char_fields),
+          get<Tags::VPlus<Dim, Frame::Inertial>>(weighted_char_fields),
+          get<Tags::VMinus<Dim, Frame::Inertial>>(weighted_char_fields),
           interface_unit_normal_int);
 
   *psi_normal_dot_numerical_flux =
