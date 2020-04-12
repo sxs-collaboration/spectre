@@ -54,16 +54,22 @@ struct InitializeConstraints {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using compute_tags = db::AddComputeTags<
+    using compute_tags = tmpl::flatten<db::AddComputeTags<
         GeneralizedHarmonic::Tags::GaugeConstraintCompute<Dim, frame>,
-        GeneralizedHarmonic::Tags::FourIndexConstraintCompute<Dim, frame>,
         // following tags added to observe constraints
         ::Tags::PointwiseL2NormCompute<
             GeneralizedHarmonic::Tags::GaugeConstraint<Dim, frame>>,
         ::Tags::PointwiseL2NormCompute<
             GeneralizedHarmonic::Tags::ThreeIndexConstraint<Dim, frame>>,
-        ::Tags::PointwiseL2NormCompute<
-            GeneralizedHarmonic::Tags::FourIndexConstraint<Dim, frame>>>;
+        // The 4-index constraint is only implemented in 3d
+        tmpl::conditional_t<
+            Dim == 3,
+            tmpl::list<GeneralizedHarmonic::Tags::FourIndexConstraintCompute<
+                           Dim, frame>,
+                       ::Tags::PointwiseL2NormCompute<
+                           GeneralizedHarmonic::Tags::FourIndexConstraint<
+                               Dim, frame>>>,
+            tmpl::list<>>>>;
 
     return std::make_tuple(
         Initialization::merge_into_databox<InitializeConstraints,
