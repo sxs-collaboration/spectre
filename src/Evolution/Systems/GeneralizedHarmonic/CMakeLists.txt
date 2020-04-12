@@ -18,5 +18,6 @@ target_link_libraries(
   PUBLIC
   DataStructures
   ErrorHandling
+  GeneralRelativity
   Options
   )
