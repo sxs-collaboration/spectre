@@ -65,7 +65,8 @@ constexpr std::array<double, 3> DormandPrince5::_a4;
 constexpr std::array<double, 4> DormandPrince5::_a5;
 constexpr std::array<double, 5> DormandPrince5::_a6;
 constexpr std::array<double, 6> DormandPrince5::_b;
-constexpr std::array<double, 5> DormandPrince5::_c;
+const std::array<Time::rational_t, 5> DormandPrince5::_c = {
+    {{1, 5}, {3, 10}, {4, 5}, {8, 9}, {1, 1}}};
 constexpr std::array<double, 6> DormandPrince5::_d;
 }  // namespace TimeSteppers
 

@@ -119,7 +119,7 @@ class DormandPrince5 : public TimeStepper::Inherit {
   static constexpr std::array<double, 6> _b{{35.0 / 384.0, 0.0, 500.0 / 1113.0,
                                              125.0 / 192.0, -2187.0 / 6784.0,
                                              11.0 / 84.0}};
-  static constexpr std::array<double, 5> _c{{0.2, 0.3, 0.8, 8.0 / 9.0, 1.0}};
+  static const std::array<Time::rational_t, 5> _c;
 
   // Coefficients for dense output, taken from Sec. 7.2 of
   // \cite NumericalRecipes
@@ -148,7 +148,7 @@ void DormandPrince5::update_u(
   const auto& u0 = history->begin().value();
   const double dt = time_step.value();
 
-  const auto increment_u = [&u, &history, &dt ](const auto& coeffs) noexcept {
+  const auto increment_u = [&u, &history, &dt](const auto& coeffs) noexcept {
     for (size_t i = 0; i < coeffs.size(); ++i) {
       *u += (gsl::at(coeffs, i) * dt) *
             (history->begin() + static_cast<int>(i)).derivative();
