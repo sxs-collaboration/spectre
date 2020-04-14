@@ -292,6 +292,26 @@ tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
 }
 
 template <size_t SpatialDim, typename Frame, typename DataType>
+void spacetime_derivative_of_spacetime_metric(
+    const gsl::not_null<tnsr::abb<DataType, SpatialDim, Frame>*>
+        da_spacetime_metric,
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
+  destructive_resize_components(da_spacetime_metric, get_size(get(lapse)));
+  for (size_t a = 0; a < SpatialDim + 1; ++a) {
+    for (size_t b = a; b < SpatialDim + 1; ++b) {
+      da_spacetime_metric->get(0, a, b) = -pi.get(a, b) * get(lapse);
+      for (size_t i = 0; i < SpatialDim; ++i) {
+        da_spacetime_metric->get(0, a, b) += shift.get(i) * phi.get(i, a, b);
+        da_spacetime_metric->get(i + 1, a, b) = phi.get(i, a, b);
+      }
+    }
+  }
+}
+
+template <size_t SpatialDim, typename Frame, typename DataType>
 void spatial_deriv_of_lapse(
     const gsl::not_null<tnsr::i<DataType, SpatialDim, Frame>*> deriv_lapse,
     const Scalar<DataType>& lapse,
@@ -797,238 +817,245 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_norm_of_shift(
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template void GeneralizedHarmonic::phi(                                     \
-      const gsl::not_null<tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>*>    \
-          var_phi,                                                            \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& deriv_lapse,        \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>& deriv_shift,       \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
-      const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          deriv_spatial_metric) noexcept;                                     \
-  template tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>                     \
-  GeneralizedHarmonic::phi(                                                   \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& deriv_lapse,        \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>& deriv_shift,       \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
-      const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                   \
-          deriv_spatial_metric) noexcept;                                     \
-  template void GeneralizedHarmonic::pi(                                      \
-      const gsl::not_null<tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>*>     \
-          var_pi,                                                             \
-      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,  \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,           \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
-  template tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>                      \
-  GeneralizedHarmonic::pi(                                                    \
-      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,  \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,           \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
-  template void GeneralizedHarmonic::extrinsic_curvature(                     \
-      const gsl::not_null<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>*>     \
-          ex_curv,                                                            \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spacetime_normal_vector,                                            \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
-  template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>                      \
-  GeneralizedHarmonic::extrinsic_curvature(                                   \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spacetime_normal_vector,                                            \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
-  template void GeneralizedHarmonic::deriv_spatial_metric(                    \
-      const gsl::not_null<tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>*>    \
-          d_spatial_metric,                                                   \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
-  template tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>                     \
-  GeneralizedHarmonic::deriv_spatial_metric(                                  \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
-  template tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>                      \
-  GeneralizedHarmonic::time_derivative_of_spacetime_metric(                   \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
-  template void GeneralizedHarmonic::time_derivative_of_spacetime_metric(     \
-      const gsl::not_null<tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>*>     \
-          dt_spacetime_metric,                                                \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
-  template void GeneralizedHarmonic::time_deriv_of_spatial_metric(            \
-      const gsl::not_null<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>*>     \
-          dt_spatial_metric,                                                  \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;      \
-  template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>                      \
-  GeneralizedHarmonic::time_deriv_of_spatial_metric(                          \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;      \
-  template void GeneralizedHarmonic::spacetime_deriv_of_det_spatial_metric(   \
-      const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>      \
-          d4_det_spatial_metric,                                              \
-      const Scalar<DTYPE(data)>& det_spatial_metric,                          \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          inverse_spatial_metric,                                             \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
-  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                       \
-  GeneralizedHarmonic::spacetime_deriv_of_det_spatial_metric(                 \
-      const Scalar<DTYPE(data)>& det_spatial_metric,                          \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          inverse_spatial_metric,                                             \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric, \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
-  template void GeneralizedHarmonic::spatial_deriv_of_lapse(                  \
-      const gsl::not_null<tnsr::i<DTYPE(data), DIM(data), FRAME(data)>*>      \
-          deriv_lapse,                                                        \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spacetime_unit_normal,                                              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
-  template tnsr::i<DTYPE(data), DIM(data), FRAME(data)>                       \
-  GeneralizedHarmonic::spatial_deriv_of_lapse(                                \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spacetime_unit_normal,                                              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
-  template void GeneralizedHarmonic::time_deriv_of_lapse(                     \
-      const gsl::not_null<Scalar<DTYPE(data)>*> dt_lapse,                     \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spacetime_unit_normal,                                              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;      \
-  template Scalar<DTYPE(data)> GeneralizedHarmonic::time_deriv_of_lapse(      \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spacetime_unit_normal,                                              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;      \
-  template void GeneralizedHarmonic::spatial_deriv_of_shift(                  \
-      const gsl::not_null<tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>*>     \
-          deriv_shift,                                                        \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          inverse_spacetime_metric,                                           \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spacetime_unit_normal,                                              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
-  template tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>                      \
-  GeneralizedHarmonic::spatial_deriv_of_shift(                                \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          inverse_spacetime_metric,                                           \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spacetime_unit_normal,                                              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;    \
-  template void GeneralizedHarmonic::time_deriv_of_shift(                     \
-      const gsl::not_null<tnsr::I<DTYPE(data), DIM(data), FRAME(data)>*>      \
-          dt_shift,                                                           \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          inverse_spatial_metric,                                             \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spacetime_unit_normal,                                              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;      \
-  template tnsr::I<DTYPE(data), DIM(data), FRAME(data)>                       \
-  GeneralizedHarmonic::time_deriv_of_shift(                                   \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          inverse_spatial_metric,                                             \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spacetime_unit_normal,                                              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;      \
-  template void GeneralizedHarmonic::time_deriv_of_lower_shift(               \
-      const gsl::not_null<tnsr::i<DTYPE(data), DIM(data), FRAME(data)>*>      \
-          dt_lower_shift,                                                     \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spacetime_unit_normal,                                              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;      \
-  template tnsr::i<DTYPE(data), DIM(data), FRAME(data)>                       \
-  GeneralizedHarmonic::time_deriv_of_lower_shift(                             \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spacetime_unit_normal,                                              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;      \
-  template void GeneralizedHarmonic::spacetime_deriv_of_norm_of_shift(        \
-      const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>      \
-          d4_norm_of_shift,                                                   \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          inverse_spatial_metric,                                             \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          inverse_spacetime_metric,                                           \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spacetime_unit_normal,                                              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;      \
-  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                       \
-  GeneralizedHarmonic::spacetime_deriv_of_norm_of_shift(                      \
-      const Scalar<DTYPE(data)>& lapse,                                       \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
-      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          inverse_spatial_metric,                                             \
-      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                    \
-          inverse_spacetime_metric,                                           \
-      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          spacetime_unit_normal,                                              \
-      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,              \
-      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;      \
-  template void GeneralizedHarmonic::gauge_source(                            \
-      const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>      \
-          gauge_source_h,                                                     \
-      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,  \
-      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& deriv_lapse,        \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,           \
-      const tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>& deriv_shift,       \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
-      const Scalar<DTYPE(data)>& trace_extrinsic_curvature,                   \
-      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                     \
-          trace_christoffel_last_indices) noexcept;                           \
-  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                       \
-  GeneralizedHarmonic::gauge_source(                                          \
-      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,  \
-      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& deriv_lapse,        \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,              \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,           \
-      const tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>& deriv_shift,       \
-      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,    \
-      const Scalar<DTYPE(data)>& trace_extrinsic_curvature,                   \
-      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                     \
+#define INSTANTIATE(_, data)                                                   \
+  template void GeneralizedHarmonic::phi(                                      \
+      const gsl::not_null<tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>*>     \
+          var_phi,                                                             \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& deriv_lapse,         \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>& deriv_shift,        \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,     \
+      const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          deriv_spatial_metric) noexcept;                                      \
+  template tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>                      \
+  GeneralizedHarmonic::phi(                                                    \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& deriv_lapse,         \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>& deriv_shift,        \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,     \
+      const tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>&                    \
+          deriv_spatial_metric) noexcept;                                      \
+  template void GeneralizedHarmonic::pi(                                       \
+      const gsl::not_null<tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>*>      \
+          var_pi,                                                              \
+      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,   \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,            \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,     \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric,  \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;     \
+  template tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>                       \
+  GeneralizedHarmonic::pi(                                                     \
+      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,   \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,            \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,     \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric,  \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;     \
+  template void GeneralizedHarmonic::extrinsic_curvature(                      \
+      const gsl::not_null<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>*>      \
+          ex_curv,                                                             \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_normal_vector,                                             \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                 \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;     \
+  template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>                       \
+  GeneralizedHarmonic::extrinsic_curvature(                                    \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_normal_vector,                                             \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                 \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;     \
+  template void GeneralizedHarmonic::deriv_spatial_metric(                     \
+      const gsl::not_null<tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>*>     \
+          d_spatial_metric,                                                    \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;     \
+  template tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>                      \
+  GeneralizedHarmonic::deriv_spatial_metric(                                   \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;     \
+  template tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>                       \
+  GeneralizedHarmonic::time_derivative_of_spacetime_metric(                    \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                 \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;     \
+  template void GeneralizedHarmonic::time_derivative_of_spacetime_metric(      \
+      const gsl::not_null<tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>*>      \
+          dt_spacetime_metric,                                                 \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                 \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;     \
+  template void GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric( \
+      const gsl::not_null<tnsr::abb<DTYPE(data), DIM(data), FRAME(data)>*>     \
+          dt_spacetime_metric,                                                 \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi,                 \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;     \
+  template void GeneralizedHarmonic::time_deriv_of_spatial_metric(             \
+      const gsl::not_null<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>*>      \
+          dt_spatial_metric,                                                   \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,               \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;       \
+  template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>                       \
+  GeneralizedHarmonic::time_deriv_of_spatial_metric(                           \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,               \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;       \
+  template void GeneralizedHarmonic::spacetime_deriv_of_det_spatial_metric(    \
+      const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>       \
+          d4_det_spatial_metric,                                               \
+      const Scalar<DTYPE(data)>& det_spatial_metric,                           \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spatial_metric,                                              \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric,  \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;     \
+  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                        \
+  GeneralizedHarmonic::spacetime_deriv_of_det_spatial_metric(                  \
+      const Scalar<DTYPE(data)>& det_spatial_metric,                           \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spatial_metric,                                              \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& dt_spatial_metric,  \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;     \
+  template void GeneralizedHarmonic::spatial_deriv_of_lapse(                   \
+      const gsl::not_null<tnsr::i<DTYPE(data), DIM(data), FRAME(data)>*>       \
+          deriv_lapse,                                                         \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_unit_normal,                                               \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;     \
+  template tnsr::i<DTYPE(data), DIM(data), FRAME(data)>                        \
+  GeneralizedHarmonic::spatial_deriv_of_lapse(                                 \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_unit_normal,                                               \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;     \
+  template void GeneralizedHarmonic::time_deriv_of_lapse(                      \
+      const gsl::not_null<Scalar<DTYPE(data)>*> dt_lapse,                      \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_unit_normal,                                               \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,               \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;       \
+  template Scalar<DTYPE(data)> GeneralizedHarmonic::time_deriv_of_lapse(       \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_unit_normal,                                               \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,               \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;       \
+  template void GeneralizedHarmonic::spatial_deriv_of_shift(                   \
+      const gsl::not_null<tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>*>      \
+          deriv_shift,                                                         \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spacetime_metric,                                            \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_unit_normal,                                               \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;     \
+  template tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>                       \
+  GeneralizedHarmonic::spatial_deriv_of_shift(                                 \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spacetime_metric,                                            \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_unit_normal,                                               \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;     \
+  template void GeneralizedHarmonic::time_deriv_of_shift(                      \
+      const gsl::not_null<tnsr::I<DTYPE(data), DIM(data), FRAME(data)>*>       \
+          dt_shift,                                                            \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spatial_metric,                                              \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_unit_normal,                                               \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,               \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;       \
+  template tnsr::I<DTYPE(data), DIM(data), FRAME(data)>                        \
+  GeneralizedHarmonic::time_deriv_of_shift(                                    \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spatial_metric,                                              \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_unit_normal,                                               \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,               \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;       \
+  template void GeneralizedHarmonic::time_deriv_of_lower_shift(                \
+      const gsl::not_null<tnsr::i<DTYPE(data), DIM(data), FRAME(data)>*>       \
+          dt_lower_shift,                                                      \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,     \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_unit_normal,                                               \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,               \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;       \
+  template tnsr::i<DTYPE(data), DIM(data), FRAME(data)>                        \
+  GeneralizedHarmonic::time_deriv_of_lower_shift(                              \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,     \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_unit_normal,                                               \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,               \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;       \
+  template void GeneralizedHarmonic::spacetime_deriv_of_norm_of_shift(         \
+      const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>       \
+          d4_norm_of_shift,                                                    \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,     \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spatial_metric,                                              \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spacetime_metric,                                            \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_unit_normal,                                               \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,               \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;       \
+  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                        \
+  GeneralizedHarmonic::spacetime_deriv_of_norm_of_shift(                       \
+      const Scalar<DTYPE(data)>& lapse,                                        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,     \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spatial_metric,                                              \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data)>&                     \
+          inverse_spacetime_metric,                                            \
+      const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          spacetime_unit_normal,                                               \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,               \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& pi) noexcept;       \
+  template void GeneralizedHarmonic::gauge_source(                             \
+      const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>       \
+          gauge_source_h,                                                      \
+      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,   \
+      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& deriv_lapse,         \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,            \
+      const tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>& deriv_shift,        \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,     \
+      const Scalar<DTYPE(data)>& trace_extrinsic_curvature,                    \
+      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                      \
+          trace_christoffel_last_indices) noexcept;                            \
+  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                        \
+  GeneralizedHarmonic::gauge_source(                                           \
+      const Scalar<DTYPE(data)>& lapse, const Scalar<DTYPE(data)>& dt_lapse,   \
+      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& deriv_lapse,         \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift,               \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& dt_shift,            \
+      const tnsr::iJ<DTYPE(data), DIM(data), FRAME(data)>& deriv_shift,        \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& spatial_metric,     \
+      const Scalar<DTYPE(data)>& trace_extrinsic_curvature,                    \
+      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>&                      \
           trace_christoffel_last_indices) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),

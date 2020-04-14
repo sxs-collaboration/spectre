@@ -563,6 +563,46 @@ void test_gij_deriv_functions_analytic(
   CHECK_ITERABLE_APPROX(d_spatial_metric_expected, d_gij);
   CHECK_ITERABLE_APPROX(d4_g_expected, d4_g);
 }
+
+template <typename DataType, size_t SpatialDim, typename Frame>
+void test_spacetime_derivative_of_spacetime_metric(
+    const size_t num_pts) noexcept {
+  CAPTURE(SpatialDim);
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> distribution(0.1, 1.0);
+
+  const auto lapse = make_with_random_values<Scalar<DataType>>(
+      make_not_null(&generator), make_not_null(&distribution), num_pts);
+  const auto shift =
+      make_with_random_values<tnsr::I<DataType, SpatialDim, Frame>>(
+          make_not_null(&generator), make_not_null(&distribution), num_pts);
+  const auto pi =
+      make_with_random_values<tnsr::aa<DataType, SpatialDim, Frame>>(
+          make_not_null(&generator), make_not_null(&distribution), num_pts);
+  const auto phi =
+      make_with_random_values<tnsr::iaa<DataType, SpatialDim, Frame>>(
+          make_not_null(&generator), make_not_null(&distribution), num_pts);
+
+  const auto expected_dt_spacetime_metric =
+      ::GeneralizedHarmonic::time_derivative_of_spacetime_metric(lapse, shift,
+                                                                 pi, phi);
+  tnsr::abb<DataType, SpatialDim, Frame> d4_spacetime_metric;
+  ::GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
+      make_not_null(&d4_spacetime_metric), lapse, shift, pi, phi);
+  for (size_t a = 0; a < SpatialDim + 1; ++a) {
+    for (size_t b = 0; b < SpatialDim + 1; ++b) {
+      for (size_t c = 0; c < SpatialDim + 1; ++c) {
+        if (a == 0) {
+          CHECK(d4_spacetime_metric.get(a, b, c) ==
+                expected_dt_spacetime_metric.get(b, c));
+        } else {
+          CHECK(d4_spacetime_metric.get(a, b, c) == phi.get(a - 1, b, c));
+        }
+      }
+    }
+  }
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
@@ -576,7 +616,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(
       test_compute_extrinsic_curvature_and_deriv_metric, (1, 2, 3));
 
-  const DataVector used_for_size(20);
+  const size_t num_pts = 5;
+  const DataVector used_for_size(num_pts);
   test_lapse_deriv_functions<DataVector, 1, Frame::Grid>(used_for_size);
   test_lapse_deriv_functions<DataVector, 2, Frame::Grid>(used_for_size);
   test_lapse_deriv_functions<DataVector, 3, Frame::Grid>(used_for_size);
@@ -603,6 +644,19 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
       used_for_size);
   test_spacetime_metric_deriv_functions<DataVector, 3, Frame::Inertial>(
       used_for_size);
+
+  test_spacetime_derivative_of_spacetime_metric<DataVector, 1, Frame::Grid>(
+      num_pts);
+  test_spacetime_derivative_of_spacetime_metric<DataVector, 2, Frame::Grid>(
+      num_pts);
+  test_spacetime_derivative_of_spacetime_metric<DataVector, 3, Frame::Grid>(
+      num_pts);
+  test_spacetime_derivative_of_spacetime_metric<DataVector, 1, Frame::Inertial>(
+      num_pts);
+  test_spacetime_derivative_of_spacetime_metric<DataVector, 2, Frame::Inertial>(
+      num_pts);
+  test_spacetime_derivative_of_spacetime_metric<DataVector, 3, Frame::Inertial>(
+      num_pts);
 
   test_shift_deriv_functions<DataVector, 1, Frame::Grid>(used_for_size);
   test_shift_deriv_functions<DataVector, 2, Frame::Grid>(used_for_size);
