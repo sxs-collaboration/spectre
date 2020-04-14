@@ -201,8 +201,9 @@ struct InitializeDampedHarmonicRollonGauge {
                               std::move(d_initial_gauge_source));
     // Add gauge tags
     using compute_tags = db::AddComputeTags<
-        GeneralizedHarmonic::DampedHarmonicHCompute<Dim, frame>,
-        GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute<Dim, frame>>;
+        GeneralizedHarmonic::gauges::DampedHarmonicHCompute<Dim, frame>,
+        GeneralizedHarmonic::gauges::SpacetimeDerivDampedHarmonicHCompute<
+            Dim, frame>>;
 
     // Finally, insert gauge related quantities to the box
     return std::make_tuple(

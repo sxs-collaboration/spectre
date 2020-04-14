@@ -44,6 +44,7 @@ class not_null;
 // IWYU pragma: no_forward_declare gr::Tags::SqrtDetSpatialMetric
 
 namespace GeneralizedHarmonic {
+namespace gauges {
 /*!
  * \brief Damped harmonic gauge source function.
  *
@@ -163,16 +164,16 @@ struct DampedHarmonicHCompute : Tags::GaugeH<SpatialDim, Frame>,
            const double sigma_r) noexcept {
     db::item_type<Tags::GaugeH<SpatialDim, Frame>> gauge_h{
         get_size(get(lapse))};
-    GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame>(
-        make_not_null(&gauge_h), gauge_h_init, lapse, shift,
-        sqrt_det_spatial_metric, spacetime_metric, time, coords, 1., 1.,
-        1.,                // amp_coef_{L1, L2, S}
-        4, 4, 4,           // exp_{L1, L2, S}
-        t_start, sigma_t,  // _h_init
-        t_start, sigma_t,  // _L1
-        t_start, sigma_t,  // _L2
-        t_start, sigma_t,  // _S
-        sigma_r);
+    damped_harmonic_h<SpatialDim, Frame>(make_not_null(&gauge_h), gauge_h_init,
+                                         lapse, shift, sqrt_det_spatial_metric,
+                                         spacetime_metric, time, coords, 1., 1.,
+                                         1.,       // amp_coef_{L1, L2, S}
+                                         4, 4, 4,  // exp_{L1, L2, S}
+                                         t_start, sigma_t,  // _h_init
+                                         t_start, sigma_t,  // _L1
+                                         t_start, sigma_t,  // _L2
+                                         t_start, sigma_t,  // _S
+                                         sigma_r);
     return gauge_h;
   }
 };
@@ -333,7 +334,7 @@ struct SpacetimeDerivDampedHarmonicHCompute
       const double sigma_r) noexcept {
     db::item_type<Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>> d4_gauge_h{
         get_size(get(lapse))};
-    GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h(
+    spacetime_deriv_damped_harmonic_h(
         make_not_null(&d4_gauge_h), gauge_h_init, dgauge_h_init, lapse, shift,
         spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
         inverse_spatial_metric, spacetime_metric, pi, phi, time, coords, 1., 1.,
@@ -347,4 +348,5 @@ struct SpacetimeDerivDampedHarmonicHCompute
     return d4_gauge_h;
   }
 };
+}  // namespace gauges
 }  // namespace GeneralizedHarmonic
