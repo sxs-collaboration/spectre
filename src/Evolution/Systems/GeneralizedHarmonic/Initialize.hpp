@@ -131,7 +131,7 @@ struct InitializeGhAnd3Plus1Variables {
 };
 
 template <size_t Dim>
-struct InitializeGauge {
+struct InitializeDampedHarmonicRollonGauge {
   using frame = Frame::Inertial;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -207,7 +207,7 @@ struct InitializeGauge {
     // Finally, insert gauge related quantities to the box
     return std::make_tuple(
         Initialization::merge_into_databox<
-            InitializeGauge,
+            InitializeDampedHarmonicRollonGauge,
             db::AddSimpleTags<
                 GeneralizedHarmonic::Tags::InitialGaugeH<Dim, frame>,
                 GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<Dim,
