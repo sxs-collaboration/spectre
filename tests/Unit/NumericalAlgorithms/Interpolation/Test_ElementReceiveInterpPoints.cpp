@@ -85,8 +85,6 @@ struct MockMetavariables {
   };
   using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
-  using interpolator_source_vars =
-      typename InterpolationTargetA::vars_to_interpolate_to_target;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA,
                                                InterpolationTargetB>;
 
