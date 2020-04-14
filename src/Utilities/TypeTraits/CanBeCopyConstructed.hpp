@@ -5,8 +5,6 @@
 
 #include <type_traits>
 
-#include "Utilities/TypeTraits.hpp"
-
 namespace tt {
 // @{
 /*!

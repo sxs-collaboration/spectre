@@ -7,7 +7,6 @@
 
 #include "Utilities/Requires.hpp"
 #include "Utilities/StlStreamDeclarations.hpp"
-#include "Utilities/TypeTraits.hpp"
 
 namespace tt {
 // @{

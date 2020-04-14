@@ -6,7 +6,6 @@
 #include <type_traits>
 
 #include "Utilities/NoSuchType.hpp"
-#include "Utilities/TypeTraits.hpp"
 
 // @{
 /*!

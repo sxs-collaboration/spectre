@@ -7,7 +7,6 @@
 
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits.hpp"
 
 namespace tt {
 // @{
