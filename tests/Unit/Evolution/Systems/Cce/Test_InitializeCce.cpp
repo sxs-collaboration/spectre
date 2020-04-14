@@ -13,9 +13,13 @@
 #include "Evolution/Systems/Cce/GaugeTransformBoundaryData.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
+#include "Evolution/Systems/Cce/Initialize/NoIncomingRadiation.hpp"
 #include "Evolution/Systems/Cce/Initialize/ZeroNonSmooth.hpp"
 #include "Evolution/Systems/Cce/LinearOperators.hpp"
+#include "Evolution/Systems/Cce/NewmanPenrose.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
+#include "Evolution/Systems/Cce/PreSwshDerivatives.hpp"
+#include "Evolution/Systems/Cce/PrecomputeCceDependencies.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/NumericalAlgorithms/Spectral/SwshTestHelpers.hpp"
@@ -115,6 +119,25 @@ void test_initialize_j_zero_nonsmooth(
                    InitializeJ::InitializeJ::argument_tags>(
       InitializeJ::ZeroNonSmooth{1.0e-8, 400}, box_to_initialize);
 
+  // note we want to copy here to compare against the next version of the
+  // computation
+  // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
+  const auto initialized_j = db::get<Tags::BondiJ>(*box_to_initialize);
+
+  const auto initializer = InitializeJ::ZeroNonSmooth{1.0e-8, 400};
+  const auto serialized_and_deserialized_initializer =
+      serialize_and_deserialize(initializer);
+
+  db::mutate_apply<InitializeJ::InitializeJ::mutate_tags,
+                   InitializeJ::InitializeJ::argument_tags>(
+      serialized_and_deserialized_initializer, box_to_initialize);
+  const auto& initialized_j_from_serialized_and_deserialized =
+      db::get<Tags::BondiJ>(*box_to_initialize);
+
+  CHECK_ITERABLE_APPROX(
+      get(initialized_j).data(),
+      get(initialized_j_from_serialized_and_deserialized).data());
+
   // generate the extra gauge quantities and verify that the boundary value for
   // J is indeed within the tolerance.
   db::mutate_apply<GaugeUpdateAngularFromCartesian<
@@ -137,7 +160,6 @@ void test_initialize_j_zero_nonsmooth(
     CHECK(imag(val) < 1.0e-8);
   }
 
-  const auto& initialized_j = db::get<Tags::BondiJ>(*box_to_initialize);
   for (auto val : get(initialized_j).data()) {
     CHECK(real(val) < 1.0e-8);
     CHECK(imag(val) < 1.0e-8);
@@ -210,7 +232,7 @@ void test_initialize_j_zero_nonsmooth(
             10.0;
 
         SpinWeighted<ComplexModalVector, 0> generated_r_modes{
-          Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
+            Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
         Spectral::Swsh::TestHelpers::generate_swsh_modes<0>(
             make_not_null(&generated_modes.data()), make_not_null(&generator),
             make_not_null(&dist), 1, l_max);
@@ -220,13 +242,94 @@ void test_initialize_j_zero_nonsmooth(
                            10.0;
         Spectral::Swsh::filter_swsh_boundary_quantity(
             make_not_null(&get(*boundary_r)), l_max, l_max / 2);
-
       });
   db::mutate_apply<InitializeJ::InitializeJ::mutate_tags,
                    InitializeJ::InitializeJ::argument_tags>(
       InitializeJ::ZeroNonSmooth{1.0e-12, 1, true},
       make_not_null(&box_to_initialize));
   ERROR("Failed to trigger ERROR in an error test");
+}
+
+template <typename DbTags>
+void test_initialize_j_no_radiation(
+    const gsl::not_null<db::DataBox<DbTags>*> box_to_initialize,
+    const size_t l_max, const size_t /*number_of_radial_points*/) noexcept {
+  // The iterative procedure can reach error levels better than 1.0e-8, but it
+  // is difficult to do so reliably and quickly for randomly generated data.
+  db::mutate_apply<InitializeJ::InitializeJ::mutate_tags,
+                   InitializeJ::InitializeJ::argument_tags>(
+      InitializeJ::NoIncomingRadiation{1.0e-8, 400}, box_to_initialize);
+
+  // note we want to copy here to compare against the next version of the
+  // computation
+  // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
+  const auto initialized_j = db::get<Tags::BondiJ>(*box_to_initialize);
+
+  const auto initializer = InitializeJ::NoIncomingRadiation{1.0e-8, 400};
+  const auto serialized_and_deserialized_initializer =
+      serialize_and_deserialize(initializer);
+
+  db::mutate_apply<InitializeJ::InitializeJ::mutate_tags,
+                   InitializeJ::InitializeJ::argument_tags>(
+      serialized_and_deserialized_initializer, box_to_initialize);
+  const auto& initialized_j_from_serialized_and_deserialized =
+      db::get<Tags::BondiJ>(*box_to_initialize);
+
+  CHECK_ITERABLE_APPROX(
+      get(initialized_j).data(),
+      get(initialized_j_from_serialized_and_deserialized).data());
+
+  db::mutate_apply<GaugeUpdateAngularFromCartesian<
+      Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
+      box_to_initialize);
+  db::mutate_apply<GaugeUpdateJacobianFromCoordinates<
+      Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
+      Tags::CauchyCartesianCoords>>(box_to_initialize);
+  db::mutate_apply<GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>(
+      box_to_initialize);
+  db::mutate_apply<GaugeUpdateOmega>(box_to_initialize);
+
+  db::mutate_apply<PrecomputeCceDependencies<Tags::EvolutionGaugeBoundaryValue,
+                                             Tags::OneMinusY>>(
+      box_to_initialize);
+  db::mutate_apply<GaugeAdjustedBoundaryValue<Tags::BondiJ>>(box_to_initialize);
+
+  // check that the gauge-transformed boundary data matches up.
+  const auto& boundary_gauge_j =
+      db::get<Tags::EvolutionGaugeBoundaryValue<Tags::BondiJ>>(
+          *box_to_initialize);
+  for (size_t i = 0;
+       i < Spectral::Swsh::number_of_swsh_collocation_points(l_max); ++i) {
+    CHECK(approx(real(get(initialized_j).data()[i])) ==
+          real(get(boundary_gauge_j).data()[i]));
+    CHECK(approx(imag(get(initialized_j).data()[i])) ==
+          imag(get(boundary_gauge_j).data()[i]));
+  }
+
+  db::mutate_apply<GaugeAdjustedBoundaryValue<Tags::BondiR>>(box_to_initialize);
+
+  db::mutate_apply<PrecomputeCceDependencies<Tags::EvolutionGaugeBoundaryValue,
+                                             Tags::BondiR>>(box_to_initialize);
+  db::mutate_apply<PrecomputeCceDependencies<Tags::EvolutionGaugeBoundaryValue,
+                                             Tags::BondiK>>(box_to_initialize);
+  db::mutate_apply<PreSwshDerivatives<Tags::Dy<Tags::BondiJ>>>(
+      box_to_initialize);
+  db::mutate_apply<PreSwshDerivatives<Tags::Dy<Tags::Dy<Tags::BondiJ>>>>(
+      box_to_initialize);
+
+  db::mutate_apply<VolumeWeyl<Tags::Psi0>>(box_to_initialize);
+
+  Approx cce_approx =
+      Approx::custom()
+          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e5)
+          .scale(1.0);
+  // check that the psi_0 condition holds to acceptable precision -- note the
+  // result of this involves multiple numerical derivatives, so needs to be
+  // slightly loose.
+  for (auto val : get(db::get<Tags::Psi0>(*box_to_initialize)).data()) {
+    CHECK(cce_approx(real(val)) == 0.0);
+    CHECK(cce_approx(imag(val)) == 0.0);
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
@@ -240,9 +343,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
                       Tags::GaugeD, Tags::GaugeOmega,
                       Spectral::Swsh::Tags::Derivative<
                           Tags::GaugeOmega, Spectral::Swsh::Tags::Eth>,
-                      Tags::EvolutionGaugeBoundaryValue<Tags::BondiJ>>>;
-  using pre_swsh_derivatives_variables_tag =
-      ::Tags::Variables<tmpl::list<Tags::BondiJ>>;
+                      Tags::EvolutionGaugeBoundaryValue<Tags::BondiJ>,
+                      Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>>>;
+  using pre_swsh_derivatives_variables_tag = ::Tags::Variables<tmpl::list<
+      Tags::BondiJ, Tags::Dy<Tags::BondiJ>, Tags::Dy<Tags::Dy<Tags::BondiJ>>,
+      Tags::BondiK, Tags::BondiR, Tags::OneMinusY, Tags::Psi0>>;
   using tensor_variables_tag = ::Tags::Variables<
       tmpl::list<Tags::CauchyCartesianCoords, Tags::CauchyAngularCoords>>;
 
@@ -287,15 +392,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
         Spectral::Swsh::filter_swsh_boundary_quantity(
             make_not_null(&get(*boundary_j)), l_max, l_max / 2);
 
-        Spectral::Swsh::TestHelpers::generate_swsh_modes<2>(
-            make_not_null(&generated_modes.data()), make_not_null(&generator),
-            make_not_null(&dist), 1, l_max);
-        get(*boundary_dr_j) =
-            Spectral::Swsh::inverse_swsh_transform(l_max, 1, generated_modes) /
-            10.0;
-
         SpinWeighted<ComplexModalVector, 0> generated_r_modes{
-          Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
+            Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
         Spectral::Swsh::TestHelpers::generate_swsh_modes<0>(
             make_not_null(&generated_modes.data()), make_not_null(&generator),
             make_not_null(&dist), 1, l_max);
@@ -306,6 +404,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
         Spectral::Swsh::filter_swsh_boundary_quantity(
             make_not_null(&get(*boundary_r)), l_max, l_max / 2);
 
+        get(*boundary_dr_j) = -get(*boundary_j) / get(*boundary_r);
       });
   SECTION("Check inverse cubic initial data generator") {
     test_initialize_j_inverse_cubic(make_not_null(&box_to_initialize), l_max,
@@ -314,6 +413,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ", "[Unit][Cce]") {
   SECTION("Check zero nonsmooth initial data generator") {
     test_initialize_j_zero_nonsmooth(make_not_null(&box_to_initialize), l_max,
                                      number_of_radial_points);
+  }
+  SECTION("Check no incoming radiation initial data generator") {
+    test_initialize_j_no_radiation(make_not_null(&box_to_initialize), l_max,
+                                   number_of_radial_points);
   }
 }
 }  // namespace Cce

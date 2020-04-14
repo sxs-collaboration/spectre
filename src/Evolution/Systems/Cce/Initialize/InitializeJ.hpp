@@ -35,12 +35,13 @@ namespace InitializeJ {
 
 namespace detail {
 double adjust_angular_coordinates_for_j(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> volume_j,
     gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_cauchy_coordinates,
     gsl::not_null<
         tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
         angular_cauchy_coordinates,
     const SpinWeighted<ComplexDataVector, 2>& surface_j, size_t l_max,
-    double tolerance, size_t max_steps) noexcept;
+    double tolerance, size_t max_steps, bool adjust_volume_gauge) noexcept;
 }  // namespace detail
 
 /*!
@@ -79,6 +80,7 @@ struct GaugeAdjustInitialJ {
 };
 
 /// \cond
+struct NoIncomingRadiation;
 struct ZeroNonSmooth;
 struct InverseCubic;
 /// \endcond
@@ -109,7 +111,8 @@ struct InitializeJ : public PUP::able {
   using argument_tags =
       tmpl::push_back<boundary_tags, Tags::LMax, Tags::NumberOfRadialPoints>;
 
-  using creatable_classes = tmpl::list<ZeroNonSmooth, InverseCubic>;
+  using creatable_classes =
+      tmpl::list<InverseCubic, NoIncomingRadiation, ZeroNonSmooth>;
 
   WRAPPED_PUPable_abstract(InitializeJ);  // NOLINT
 

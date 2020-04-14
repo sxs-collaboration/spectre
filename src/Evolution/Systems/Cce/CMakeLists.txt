@@ -9,10 +9,12 @@ set(LIBRARY_SOURCES
   GaugeTransformBoundaryData.cpp
   Initialize/InitializeJ.cpp
   Initialize/InverseCubic.cpp
+  Initialize/NoIncomingRadiation.cpp
   Initialize/ZeroNonSmooth.cpp
   InterfaceManagers/GhLockstepInterfaceManager.cpp
   LinearOperators.cpp
   LinearSolve.cpp
+  NewmanPenrose.cpp
   PrecomputeCceDependencies.cpp
   ReadBoundaryDataH5.cpp
   ReducedWorldtubeModeRecorder.cpp

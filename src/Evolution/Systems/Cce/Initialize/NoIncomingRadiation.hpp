@@ -22,19 +22,17 @@ namespace Cce {
 namespace InitializeJ {
 
 /*!
- * \brief Initialize \f$J\f$ on the first hypersurface to be vanishing, finding
- * the appropriate angular coordinates to be continuous with the provided
- * worldtube boundary data.
+ * \brief Initialize \f$J\f$ on the first hypersurface by constraining
+ * \f$\Psi_0 = 0\f$.
  *
- * \details Internally, this performs an iterative solve for the angular
- * coordinates necessary to give rise to a vanishing gauge-transformed J on the
- * worldtube boundary. The parameters for the iterative procedure are determined
- * by options `ZeroNonSmooth::AngularCoordinateTolerance` and
- * `ZeroNonSmooth::MaxIterations`. The resulting `J` will necessarily
- * have vanishing first radial derivative, and so will typically not be smooth
- * (only continuous) with the provided Cauchy data at the worldtube boundary.
+ * \details This algorithm first radially evolves the \f$\Psi_0 = 0\f$
+ * condition, which can be converted to a second-order radial ODE for J. Then,
+ * the initial data generator performs an iterative solve for the angular
+ * coordinates necessary to ensure asymptotic flatness. The parameters for the
+ * iterative procedure are determined by options
+ * `AngularCoordinateTolerance` and `MaxIterations`.
  */
-struct ZeroNonSmooth : InitializeJ {
+struct NoIncomingRadiation : InitializeJ {
   struct AngularCoordinateTolerance {
     using type = double;
     static std::string name() noexcept { return "AngularCoordTolerance"; }
@@ -57,23 +55,24 @@ struct ZeroNonSmooth : InitializeJ {
   struct RequireConvergence {
     using type = bool;
     static constexpr OptionString help = {
-        "If true, initialization will error if it hits MaxIterations"};
+      "If true, initialization will error if it hits MaxIterations"};
     static type default_value() noexcept { return false; }
   };
+
   using options =
       tmpl::list<AngularCoordinateTolerance, MaxIterations, RequireConvergence>;
-
   static constexpr OptionString help = {
       "Initialization process where J is set so Psi0 is vanishing\n"
       "(roughly a no incoming radiation condition)"};
 
-  WRAPPED_PUPable_decl_template(ZeroNonSmooth);  // NOLINT
-  explicit ZeroNonSmooth(CkMigrateMessage* /*unused*/) noexcept {}
+  WRAPPED_PUPable_decl_template(NoIncomingRadiation);  // NOLINT
+  explicit NoIncomingRadiation(CkMigrateMessage* /*unused*/) noexcept {}
 
-  ZeroNonSmooth(double angular_coordinate_tolerance, size_t max_iterations,
-                bool require_convergence = false) noexcept;
+  NoIncomingRadiation(double angular_coordinate_tolerance,
+                      size_t max_iterations,
+                      bool require_convergence = false) noexcept;
 
-  ZeroNonSmooth() = default;
+  NoIncomingRadiation() = default;
 
   std::unique_ptr<InitializeJ> get_clone() const noexcept override;
 
@@ -91,9 +90,9 @@ struct ZeroNonSmooth : InitializeJ {
   void pup(PUP::er& p) noexcept override;
 
  private:
+  bool require_convergence_ = false;
   double angular_coordinate_tolerance_ = 1.0e-10;
   size_t max_iterations_ = 300;
-  bool require_convergence_ = false;
 };
 }  // namespace InitializeJ
 }  // namespace Cce

@@ -9,6 +9,7 @@
 
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
+#include "Evolution/Systems/Cce/Initialize/NoIncomingRadiation.hpp"
 #include "Evolution/Systems/Cce/Initialize/ZeroNonSmooth.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/WorldtubeInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
