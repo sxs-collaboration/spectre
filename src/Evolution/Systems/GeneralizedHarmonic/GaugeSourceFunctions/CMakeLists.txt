@@ -5,6 +5,7 @@ set(LIBRARY GeneralizedHarmonicGaugeSourceFunctions)
 
 set(LIBRARY_SOURCES
   DampedHarmonic.cpp
+  DampedWaveHelpers.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
