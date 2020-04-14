@@ -223,7 +223,7 @@ void test_gauge_wave(const gr::Solutions::GaugeWave<Dim>& solution,
 }
 
 void test_consistency() noexcept {
-  const gr::Solutions::GaugeWave<3> solution(1.3, 2.4);
+  const gr::Solutions::GaugeWave<3> solution(0.3, 2.4);
   TestHelpers::VerifyGrSolution::verify_consistency(
       solution, 1.234, tnsr::I<double, 3>{{{1.2, 2.3, 3.4}}}, 0.01, 1.0e-8);
 }
@@ -250,12 +250,6 @@ void test_construct_from_options() {
       "  Wavelength: 4.4");
   CHECK(opts.get<GaugeWaveOptionTag>() ==
         gr::Solutions::GaugeWave<3>(0.24, 4.4));
-
-  Options<tmpl::list<GaugeWaveOptionTag>> opts_default("");
-  opts_default.parse("GaugeWaveOptionTag:\n");
-  CHECK(opts_default.get<GaugeWaveOptionTag>() ==
-        gr::Solutions::GaugeWave<3>(1.0, 1.0));
-  test_gauge_wave(opts.get<GaugeWaveOptionTag>(), DataVector{5});
 }
 
 }  // namespace
@@ -288,39 +282,31 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.GaugeWave",
   test_construct_from_options();
 }
 
-// [[OutputRegex, Amplitude must be non-negative]]
+// [[OutputRegex, Amplitude must be less than one]]
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.Gr.GaugeWaveAmplitude",
     "[PointwiseFunctions][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const gr::Solutions::GaugeWave<3> solution(-0.25, 1.0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-  CHECK(true);
+  ERROR_TEST();
+  const gr::Solutions::GaugeWave<3> solution(-1.25, 1.0);
 }
 
 // [[OutputRegex, Wavelength must be non-negative]]
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.Gr.GaugeWaveWavelength",
     "[PointwiseFunctions][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const gr::Solutions::GaugeWave<3> solution(1.0, -0.25);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-  CHECK(true);
+  ERROR_TEST();
+  const gr::Solutions::GaugeWave<3> solution(0.0, -0.25);
 }
 
-// [[OutputRegex, In string:.*At line 2 column 14:.Value -0.25 is below the
-// lower bound of 0]]
+// [[OutputRegex, In string:.*At line 2 column 14:.Value -1.25 is below the
+// lower bound of -1]]
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.GaugeWaveOptA",
                   "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
   Options<tmpl::list<GaugeWaveOptionTag>> opts("");
   opts.parse(
       "GaugeWaveOptionTag:\n"
-      "  Amplitude: -0.25\n"
+      "  Amplitude: -1.25\n"
       "  Wavelength: 1.0");
   opts.get<GaugeWaveOptionTag>();
 }
