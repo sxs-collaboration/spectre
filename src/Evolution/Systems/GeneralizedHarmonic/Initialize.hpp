@@ -146,35 +146,38 @@ struct InitializeDampedHarmonicRollonGauge {
     // compute initial-gauge related quantities
     const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
     const size_t num_grid_points = mesh.number_of_grid_points();
-    const auto& lapse = get<gr::Tags::Lapse<DataVector>>(box);
-    const auto& dt_lapse = get<::Tags::dt<gr::Tags::Lapse<DataVector>>>(box);
-    const auto& deriv_lapse = get<
-        ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>, frame>>(
-        box);
-    const auto& shift = get<gr::Tags::Shift<Dim, frame, DataVector>>(box);
-    const auto& dt_shift =
-        get<::Tags::dt<gr::Tags::Shift<Dim, frame, DataVector>>>(box);
-    const auto& deriv_shift =
-        get<::Tags::deriv<gr::Tags::Shift<Dim, frame, DataVector>,
-                          tmpl::size_t<Dim>, frame>>(box);
-    const auto& spatial_metric =
-        get<gr::Tags::SpatialMetric<Dim, frame, DataVector>>(box);
-    const auto& trace_extrinsic_curvature =
-        get<gr::Tags::TraceExtrinsicCurvature<DataVector>>(box);
-    const auto& trace_christoffel_last_indices =
-        get<gr::Tags::TraceSpatialChristoffelFirstKind<Dim, frame, DataVector>>(
-            box);
 
-    // compute the initial gauge source function
-    auto initial_gauge_h = GeneralizedHarmonic::gauge_source<Dim, frame>(
-        lapse, dt_lapse, deriv_lapse, shift, dt_shift, deriv_shift,
-        spatial_metric, trace_extrinsic_curvature,
-        trace_christoffel_last_indices);
+    const auto& spacetime_metric =
+        db::get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
+            box);
+    const auto& pi =
+        db::get<GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>>(box);
+    const auto& phi =
+        db::get<GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>>(box);
+
+    const auto spatial_metric = gr::spatial_metric(spacetime_metric);
+    const auto inverse_spatial_metric =
+        determinant_and_inverse(spatial_metric).second;
+    const auto shift = gr::shift(spacetime_metric, inverse_spatial_metric);
+    const auto lapse = gr::lapse(shift, spacetime_metric);
+    const auto inverse_spacetime_metric =
+        gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
+    tnsr::abb<DataVector, Dim, Frame::Inertial> da_spacetime_metric{};
+    GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
+        make_not_null(&da_spacetime_metric), lapse, shift, pi, phi);
+    // H_a=-Gamma_a
+    auto initial_gauge_h =
+        trace_last_indices(gr::christoffel_first_kind(da_spacetime_metric),
+                           inverse_spacetime_metric);
+    for (size_t i = 0; i < initial_gauge_h.size(); ++i) {
+      initial_gauge_h[i] *= -1.0;
+    }
+
     // set time derivatives of InitialGaugeH = 0
     // NOTE: this will need to be generalized to handle numerical initial data
     // and analytic initial data whose gauge is not initially stationary.
     auto dt_initial_gauge_source =
-        make_with_value<tnsr::a<DataVector, Dim, frame>>(lapse, 0.);
+        make_with_value<tnsr::a<DataVector, Dim, frame>>(initial_gauge_h, 0.);
 
     // compute spatial derivatives of InitialGaugeH
     // The `partial_derivatives` function does not support single Tensor input,
