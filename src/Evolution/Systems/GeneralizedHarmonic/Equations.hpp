@@ -71,14 +71,7 @@ struct ComputeDuDt {
       ::Tags::deriv<Tags::Pi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
       ::Tags::deriv<Tags::Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
       Tags::ConstraintGamma0, Tags::ConstraintGamma1, Tags::ConstraintGamma2,
-      Tags::GaugeH<Dim>, Tags::SpacetimeDerivGaugeH<Dim>, gr::Tags::Lapse<>,
-      gr::Tags::Shift<Dim>, gr::Tags::InverseSpatialMetric<Dim>,
-      gr::Tags::InverseSpacetimeMetric<Dim>,
-      gr::Tags::TraceSpacetimeChristoffelFirstKind<Dim>,
-      gr::Tags::SpacetimeChristoffelFirstKind<Dim>,
-      gr::Tags::SpacetimeChristoffelSecondKind<Dim>,
-      gr::Tags::SpacetimeNormalVector<Dim>,
-      gr::Tags::SpacetimeNormalOneForm<Dim>>;
+      Tags::GaugeH<Dim>, Tags::SpacetimeDerivGaugeH<Dim>>;
 
   static void apply(
       gsl::not_null<tnsr::aa<DataVector, Dim>*> dt_spacetime_metric,
@@ -93,15 +86,7 @@ struct ComputeDuDt {
       const Scalar<DataVector>& gamma0, const Scalar<DataVector>& gamma1,
       const Scalar<DataVector>& gamma2,
       const tnsr::a<DataVector, Dim>& gauge_function,
-      const tnsr::ab<DataVector, Dim>& spacetime_deriv_gauge_function,
-      const Scalar<DataVector>& lapse, const tnsr::I<DataVector, Dim>& shift,
-      const tnsr::II<DataVector, Dim>& inverse_spatial_metric,
-      const tnsr::AA<DataVector, Dim>& inverse_spacetime_metric,
-      const tnsr::a<DataVector, Dim>& trace_christoffel,
-      const tnsr::abb<DataVector, Dim>& christoffel_first_kind,
-      const tnsr::Abb<DataVector, Dim>& christoffel_second_kind,
-      const tnsr::A<DataVector, Dim>& normal_spacetime_vector,
-      const tnsr::a<DataVector, Dim>& normal_spacetime_one_form);
+      const tnsr::ab<DataVector, Dim>& spacetime_deriv_gauge_function);
 };
 
 /*!

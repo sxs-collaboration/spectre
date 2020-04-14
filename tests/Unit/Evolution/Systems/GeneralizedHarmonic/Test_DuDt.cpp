@@ -8,13 +8,274 @@
 #include <random>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
+#include "DataStructures/Tensor/Identity.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
+#include "Domain/Mesh.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
+#include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/Gsl.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
+// Since repeatedly generating new numbers to compare to SpEC when the function
+// signature of the GH time derivative changes is difficult, we use a reference
+// implementation that we test against the Spectral Einstein Code (SpEC) to test
+// against our RHS changes.
+template <size_t Dim>
+std::tuple<tnsr::aa<DataVector, Dim, Frame::Inertial>,
+           tnsr::aa<DataVector, Dim, Frame::Inertial>,
+           tnsr::iaa<DataVector, Dim, Frame::Inertial>>
+gh_rhs_reference_impl(
+    const tnsr::aa<DataVector, Dim>& spacetime_metric,
+    const tnsr::aa<DataVector, Dim>& pi, const tnsr::iaa<DataVector, Dim>& phi,
+    const tnsr::iaa<DataVector, Dim>& d_spacetime_metric,
+    const tnsr::iaa<DataVector, Dim>& d_pi,
+    const tnsr::ijaa<DataVector, Dim>& d_phi, const Scalar<DataVector>& gamma0,
+    const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2,
+    const tnsr::a<DataVector, Dim>& gauge_function,
+    const tnsr::ab<DataVector, Dim>& spacetime_deriv_gauge_function,
+    const Scalar<DataVector>& lapse, const tnsr::I<DataVector, Dim>& shift,
+    const tnsr::II<DataVector, Dim>& inverse_spatial_metric,
+    const tnsr::AA<DataVector, Dim>& inverse_spacetime_metric,
+    const tnsr::a<DataVector, Dim>& trace_christoffel,
+    const tnsr::abb<DataVector, Dim>& christoffel_first_kind,
+    const tnsr::Abb<DataVector, Dim>& christoffel_second_kind,
+    const tnsr::A<DataVector, Dim>& normal_spacetime_vector,
+    const tnsr::a<DataVector, Dim>& normal_spacetime_one_form) {
+  const size_t n_pts = shift.begin()->size();
+
+  tnsr::aa<DataVector, Dim, Frame::Inertial> dt_spacetime_metric(n_pts);
+  tnsr::aa<DataVector, Dim, Frame::Inertial> dt_pi(n_pts);
+  tnsr::iaa<DataVector, Dim, Frame::Inertial> dt_phi(n_pts);
+
+  const DataVector gamma12 = gamma1.get() * gamma2.get();
+
+  tnsr::Iaa<DataVector, Dim> phi_1_up{DataVector(n_pts, 0.)};
+  for (size_t m = 0; m < Dim; ++m) {
+    for (size_t mu = 0; mu < Dim + 1; ++mu) {
+      for (size_t n = 0; n < Dim; ++n) {
+        for (size_t nu = mu; nu < Dim + 1; ++nu) {
+          phi_1_up.get(m, mu, nu) +=
+              inverse_spatial_metric.get(m, n) * phi.get(n, mu, nu);
+        }
+      }
+    }
+  }
+
+  tnsr::abC<DataVector, Dim> phi_3_up{DataVector(n_pts, 0.)};
+  for (size_t m = 0; m < Dim; ++m) {
+    for (size_t nu = 0; nu < Dim + 1; ++nu) {
+      for (size_t alpha = 0; alpha < Dim + 1; ++alpha) {
+        for (size_t beta = 0; beta < Dim + 1; ++beta) {
+          phi_3_up.get(m, nu, alpha) +=
+              inverse_spacetime_metric.get(alpha, beta) * phi.get(m, nu, beta);
+        }
+      }
+    }
+  }
+
+  tnsr::aB<DataVector, Dim> pi_2_up{DataVector(n_pts, 0.)};
+  for (size_t nu = 0; nu < Dim + 1; ++nu) {
+    for (size_t alpha = 0; alpha < Dim + 1; ++alpha) {
+      for (size_t beta = 0; beta < Dim + 1; ++beta) {
+        pi_2_up.get(nu, alpha) +=
+            inverse_spacetime_metric.get(alpha, beta) * pi.get(nu, beta);
+      }
+    }
+  }
+
+  tnsr::abC<DataVector, Dim> christoffel_first_kind_3_up{DataVector(n_pts, 0.)};
+  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    for (size_t nu = 0; nu < Dim + 1; ++nu) {
+      for (size_t alpha = 0; alpha < Dim + 1; ++alpha) {
+        for (size_t beta = 0; beta < Dim + 1; ++beta) {
+          christoffel_first_kind_3_up.get(mu, nu, alpha) +=
+              inverse_spacetime_metric.get(alpha, beta) *
+              christoffel_first_kind.get(mu, nu, beta);
+        }
+      }
+    }
+  }
+
+  tnsr::a<DataVector, Dim> pi_dot_normal_spacetime_vector{
+      DataVector(n_pts, 0.)};
+  for (size_t nu = 0; nu < Dim + 1; ++nu) {
+    for (size_t mu = 0; mu < Dim + 1; ++mu) {
+      pi_dot_normal_spacetime_vector.get(mu) +=
+          normal_spacetime_vector.get(nu) * pi.get(nu, mu);
+    }
+  }
+
+  DataVector pi_contract_two_normal_spacetime_vectors{DataVector(n_pts, 0.)};
+  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    pi_contract_two_normal_spacetime_vectors +=
+        normal_spacetime_vector.get(mu) *
+        pi_dot_normal_spacetime_vector.get(mu);
+  }
+
+  tnsr::ia<DataVector, Dim> phi_dot_normal_spacetime_vector{
+      DataVector(n_pts, 0.)};
+  for (size_t n = 0; n < Dim; ++n) {
+    for (size_t nu = 0; nu < Dim + 1; ++nu) {
+      for (size_t mu = 0; mu < Dim + 1; ++mu) {
+        phi_dot_normal_spacetime_vector.get(n, nu) +=
+            normal_spacetime_vector.get(mu) * phi.get(n, mu, nu);
+      }
+    }
+  }
+
+  tnsr::a<DataVector, Dim> phi_contract_two_normal_spacetime_vectors{
+      DataVector(n_pts, 0.)};
+  for (size_t n = 0; n < Dim; ++n) {
+    for (size_t mu = 0; mu < Dim + 1; ++mu) {
+      phi_contract_two_normal_spacetime_vectors.get(n) +=
+          normal_spacetime_vector.get(mu) *
+          phi_dot_normal_spacetime_vector.get(n, mu);
+    }
+  }
+
+  tnsr::iaa<DataVector, Dim> three_index_constraint{DataVector(n_pts, 0.)};
+  for (size_t n = 0; n < Dim; ++n) {
+    for (size_t mu = 0; mu < Dim + 1; ++mu) {
+      for (size_t nu = mu; nu < Dim + 1; ++nu) {
+        three_index_constraint.get(n, mu, nu) =
+            d_spacetime_metric.get(n, mu, nu) - phi.get(n, mu, nu);
+      }
+    }
+  }
+
+  tnsr::a<DataVector, Dim> one_index_constraint{DataVector(n_pts, 0.)};
+  for (size_t nu = 0; nu < Dim + 1; ++nu) {
+    one_index_constraint.get(nu) =
+        gauge_function.get(nu) + trace_christoffel.get(nu);
+  }
+
+  DataVector normal_dot_one_index_constraint{DataVector(n_pts, 0.)};
+  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    normal_dot_one_index_constraint +=
+        normal_spacetime_vector.get(mu) * one_index_constraint.get(mu);
+  }
+
+  const DataVector gamma1p1 = 1.0 + gamma1.get();
+
+  tnsr::aa<DataVector, Dim> shift_dot_three_index_constraint{
+      DataVector(n_pts, 0.)};
+  for (size_t m = 0; m < Dim; ++m) {
+    for (size_t mu = 0; mu < Dim + 1; ++mu) {
+      for (size_t nu = mu; nu < Dim + 1; ++nu) {
+        shift_dot_three_index_constraint.get(mu, nu) +=
+            shift.get(m) * three_index_constraint.get(m, mu, nu);
+      }
+    }
+  }
+
+  // Here are the actual equations
+
+  // Equation for dt_spacetime_metric
+  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    for (size_t nu = mu; nu < Dim + 1; ++nu) {
+      dt_spacetime_metric.get(mu, nu) = -lapse.get() * pi.get(mu, nu);
+      dt_spacetime_metric.get(mu, nu) +=
+          gamma1p1 * shift_dot_three_index_constraint.get(mu, nu);
+      for (size_t m = 0; m < Dim; ++m) {
+        dt_spacetime_metric.get(mu, nu) += shift.get(m) * phi.get(m, mu, nu);
+      }
+    }
+  }
+
+  // Equation for dt_pi
+  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    for (size_t nu = mu; nu < Dim + 1; ++nu) {
+      dt_pi.get(mu, nu) =
+          -spacetime_deriv_gauge_function.get(mu, nu) -
+          spacetime_deriv_gauge_function.get(nu, mu) -
+          0.5 * pi_contract_two_normal_spacetime_vectors * pi.get(mu, nu) +
+          gamma0.get() * (normal_spacetime_one_form.get(mu) *
+                              one_index_constraint.get(nu) +
+                          normal_spacetime_one_form.get(nu) *
+                              one_index_constraint.get(mu)) -
+          gamma0.get() * spacetime_metric.get(mu, nu) *
+              normal_dot_one_index_constraint;
+
+      for (size_t delta = 0; delta < Dim + 1; ++delta) {
+        dt_pi.get(mu, nu) += 2 * christoffel_second_kind.get(delta, mu, nu) *
+                                 gauge_function.get(delta) -
+                             2 * pi.get(mu, delta) * pi_2_up.get(nu, delta);
+
+        for (size_t n = 0; n < Dim; ++n) {
+          dt_pi.get(mu, nu) +=
+              2 * phi_1_up.get(n, mu, delta) * phi_3_up.get(n, nu, delta);
+        }
+
+        for (size_t alpha = 0; alpha < Dim + 1; ++alpha) {
+          dt_pi.get(mu, nu) -=
+              2. * christoffel_first_kind_3_up.get(mu, alpha, delta) *
+              christoffel_first_kind_3_up.get(nu, delta, alpha);
+        }
+      }
+
+      for (size_t m = 0; m < Dim; ++m) {
+        dt_pi.get(mu, nu) -=
+            pi_dot_normal_spacetime_vector.get(m + 1) * phi_1_up.get(m, mu, nu);
+
+        for (size_t n = 0; n < Dim; ++n) {
+          dt_pi.get(mu, nu) -=
+              inverse_spatial_metric.get(m, n) * d_phi.get(m, n, mu, nu);
+        }
+      }
+
+      dt_pi.get(mu, nu) *= lapse.get();
+
+      dt_pi.get(mu, nu) +=
+          gamma12 * shift_dot_three_index_constraint.get(mu, nu);
+
+      for (size_t m = 0; m < Dim; ++m) {
+        // DualFrame term
+        dt_pi.get(mu, nu) += shift.get(m) * d_pi.get(m, mu, nu);
+      }
+    }
+  }
+
+  // Equation for dt_phi
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t mu = 0; mu < Dim + 1; ++mu) {
+      for (size_t nu = mu; nu < Dim + 1; ++nu) {
+        dt_phi.get(i, mu, nu) =
+            0.5 * pi.get(mu, nu) *
+                phi_contract_two_normal_spacetime_vectors.get(i) -
+            d_pi.get(i, mu, nu) +
+            gamma2.get() * three_index_constraint.get(i, mu, nu);
+        for (size_t n = 0; n < Dim; ++n) {
+          dt_phi.get(i, mu, nu) +=
+              phi_dot_normal_spacetime_vector.get(i, n + 1) *
+              phi_1_up.get(n, mu, nu);
+        }
+
+        dt_phi.get(i, mu, nu) *= lapse.get();
+        for (size_t m = 0; m < Dim; ++m) {
+          dt_phi.get(i, mu, nu) += shift.get(m) * d_phi.get(m, i, mu, nu);
+        }
+      }
+    }
+  }
+  return std::make_tuple(std::move(dt_spacetime_metric), std::move(dt_pi),
+                         std::move(dt_phi));
+}
+
+// Creates the random numbers that match what was used when comparing the GH RHS
+// to the Spectral Einstein Code (SpEC) implementation.
 template <typename Tensor>
 Tensor create_tensor_with_random_values(
     const size_t n_pts, const gsl::not_null<std::mt19937*> gen) {
@@ -26,20 +287,14 @@ Tensor create_tensor_with_random_values(
   }
   return tensor;
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.DuDt",
-                  "[Unit][GeneralizedHarmonic]") {
+void test_reference_impl_against_spec() noexcept {
   const size_t dim = 3;
   const size_t n_pts = 2;
 
   // This test compares the output of the GeneralizedHarmonic RHS to the output
   // computed using SpEC for the specific input tensors generated by this seed.
   std::mt19937 gen(1.);
-
-  tnsr::aa<DataVector, dim, Frame::Inertial> dt_psi(n_pts);
-  tnsr::aa<DataVector, dim, Frame::Inertial> dt_pi(n_pts);
-  tnsr::iaa<DataVector, dim, Frame::Inertial> dt_phi(n_pts);
 
   const auto psi = create_tensor_with_random_values<
       tnsr::aa<DataVector, dim, Frame::Inertial>>(n_pts, make_not_null(&gen));
@@ -82,8 +337,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.DuDt",
   const auto normal_vector = create_tensor_with_random_values<
       tnsr::A<DataVector, dim, Frame::Inertial>>(n_pts, make_not_null(&gen));
 
-  GeneralizedHarmonic::ComputeDuDt<dim>::apply(
-      make_not_null(&dt_psi), make_not_null(&dt_pi), make_not_null(&dt_phi),
+  const auto [dt_psi, dt_pi, dt_phi] = gh_rhs_reference_impl(
       psi, pi, phi, d_psi, d_pi, d_phi, gamma0, gamma1, gamma2, gauge_function,
       spacetime_deriv_gauge_function, lapse, shift, upper_spatial_metric,
       upper_psi, trace_christoffel_first_kind, christoffel_first_kind,
@@ -192,4 +446,131 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.DuDt",
   CHECK(dt_phi.get(2, 2, 3)[1] == approx(1422.401000428901625));
   CHECK(dt_phi.get(2, 3, 3)[0] == approx(1116.070338196526109));
   CHECK(dt_phi.get(2, 3, 3)[1] == approx(-42638.998279054998420));
+}
+
+template <size_t Dim, typename Generator>
+void test_compute_dudt(const gsl::not_null<Generator*> generator) noexcept {
+  std::uniform_real_distribution<> distribution(0.1, 1.0);
+  using gh_tags_list = tmpl::list<gr::Tags::SpacetimeMetric<Dim>,
+                                  GeneralizedHarmonic::Tags::Pi<Dim>,
+                                  GeneralizedHarmonic::Tags::Phi<Dim>>;
+
+  const size_t num_grid_points_1d = 3;
+  const Mesh<Dim> mesh(num_grid_points_1d, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto);
+  const DataVector used_for_size(mesh.number_of_grid_points());
+
+  Variables<gh_tags_list> evolved_vars(mesh.number_of_grid_points());
+  fill_with_random_values(make_not_null(&evolved_vars), generator,
+                          make_not_null(&distribution));
+  // In order to satisfy the physical requirements on the spacetime metric we
+  // compute it from the helper functions that generate a physical lapse, shift,
+  // and spatial metric.
+  gr::spacetime_metric(
+      make_not_null(&get<gr::Tags::SpacetimeMetric<Dim>>(evolved_vars)),
+      TestHelpers::gr::random_lapse(generator, used_for_size),
+      TestHelpers::gr::random_shift<Dim>(generator, used_for_size),
+      TestHelpers::gr::random_spatial_metric<Dim>(generator, used_for_size));
+
+  InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial> inv_jac{};
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t j = 0; j < Dim; ++j) {
+      if (i == j) {
+        inv_jac.get(i, j) = DataVector(mesh.number_of_grid_points(), 1.0);
+      } else {
+        inv_jac.get(i, j) = DataVector(mesh.number_of_grid_points(), 0.0);
+      }
+    }
+  }
+
+  const auto partial_derivs =
+      partial_derivatives<gh_tags_list>(evolved_vars, mesh, inv_jac);
+
+  const auto& spacetime_metric =
+      get<gr::Tags::SpacetimeMetric<Dim>>(evolved_vars);
+  const auto& phi = get<GeneralizedHarmonic::Tags::Phi<Dim>>(evolved_vars);
+  const auto& pi = get<GeneralizedHarmonic::Tags::Pi<Dim>>(evolved_vars);
+  const auto& d_spacetime_metric =
+      get<Tags::deriv<gr::Tags::SpacetimeMetric<Dim>, tmpl::size_t<Dim>,
+                      Frame::Inertial>>(partial_derivs);
+  const auto& d_phi =
+      get<Tags::deriv<GeneralizedHarmonic::Tags::Phi<Dim>, tmpl::size_t<Dim>,
+                      Frame::Inertial>>(partial_derivs);
+  const auto& d_pi =
+      get<Tags::deriv<GeneralizedHarmonic::Tags::Pi<Dim>, tmpl::size_t<Dim>,
+                      Frame::Inertial>>(partial_derivs);
+  ;
+
+  const auto gamma0 = make_with_random_values<Scalar<DataVector>>(
+      generator, make_not_null(&distribution), used_for_size);
+  const auto gamma1 = make_with_random_values<Scalar<DataVector>>(
+      generator, make_not_null(&distribution), used_for_size);
+  const auto gamma2 = make_with_random_values<Scalar<DataVector>>(
+      generator, make_not_null(&distribution), used_for_size);
+  const auto gauge_function = make_with_random_values<tnsr::a<DataVector, Dim>>(
+      generator, make_not_null(&distribution), used_for_size);
+  const auto spacetime_deriv_gauge_function =
+      make_with_random_values<tnsr::ab<DataVector, Dim>>(
+          generator, make_not_null(&distribution), used_for_size);
+
+  // Quantities as input for reference RHS
+  const auto spatial_metric = gr::spatial_metric(spacetime_metric);
+  const auto inverse_spatial_metric_and_det = determinant_and_inverse<
+      gr::Tags::DetSpatialMetric<DataVector>,
+      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>(
+      spatial_metric);
+  const auto& upper_spatial_metric =
+      get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>(
+          inverse_spatial_metric_and_det);
+  const auto shift = gr::shift(spacetime_metric, upper_spatial_metric);
+  const auto lapse = gr::lapse(shift, spacetime_metric);
+  const auto upper_spacetime_metric =
+      gr::inverse_spacetime_metric(lapse, shift, upper_spatial_metric);
+  tnsr::abb<DataVector, Dim> da_spacetime_metric;
+  GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
+      make_not_null(&da_spacetime_metric), lapse, shift, pi, phi);
+  const auto christoffel_first_kind =
+      gr::christoffel_first_kind(da_spacetime_metric);
+  const auto christoffel_second_kind = raise_or_lower_first_index(
+      christoffel_first_kind, upper_spacetime_metric);
+  const auto trace_christoffel_first_kind =
+      trace_last_indices(christoffel_first_kind, upper_spacetime_metric);
+  const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
+  const auto normal_one_form =
+      gr::spacetime_normal_one_form<Dim, Frame::Inertial>(lapse);
+
+  const auto [expected_dt_spacetime_metric, expected_dt_pi, expected_dt_phi] =
+      gh_rhs_reference_impl(
+          spacetime_metric, pi, phi, d_spacetime_metric, d_pi, d_phi, gamma0,
+          gamma1, gamma2, gauge_function, spacetime_deriv_gauge_function, lapse,
+          shift, upper_spatial_metric, upper_spacetime_metric,
+          trace_christoffel_first_kind, christoffel_first_kind,
+          christoffel_second_kind, normal_vector, normal_one_form);
+
+  tnsr::aa<DataVector, Dim, Frame::Inertial> dt_spacetime_metric(
+      mesh.number_of_grid_points());
+  tnsr::aa<DataVector, Dim, Frame::Inertial> dt_pi(
+      mesh.number_of_grid_points());
+  tnsr::iaa<DataVector, Dim, Frame::Inertial> dt_phi(
+      mesh.number_of_grid_points());
+  GeneralizedHarmonic::ComputeDuDt<Dim>::apply(
+      make_not_null(&dt_spacetime_metric), make_not_null(&dt_pi),
+      make_not_null(&dt_phi), spacetime_metric, pi, phi, d_spacetime_metric,
+      d_pi, d_phi, gamma0, gamma1, gamma2, gauge_function,
+      spacetime_deriv_gauge_function);
+
+  CHECK_ITERABLE_APPROX(expected_dt_spacetime_metric, dt_spacetime_metric);
+  CHECK_ITERABLE_APPROX(expected_dt_pi, dt_pi);
+  CHECK_ITERABLE_APPROX(expected_dt_phi, dt_phi);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.DuDt",
+                  "[Unit][GeneralizedHarmonic]") {
+  test_reference_impl_against_spec();
+
+  MAKE_GENERATOR(generator);
+  test_compute_dudt<1>(make_not_null(&generator));
+  test_compute_dudt<2>(make_not_null(&generator));
+  test_compute_dudt<3>(make_not_null(&generator));
 }
