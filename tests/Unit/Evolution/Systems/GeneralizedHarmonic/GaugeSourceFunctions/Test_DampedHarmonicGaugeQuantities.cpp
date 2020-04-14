@@ -60,14 +60,40 @@ namespace DampedHarmonicGauge_detail {
 // The `detail` functions below are forward-declared to enable their independent
 // testing
 template <size_t SpatialDim, typename Frame, typename DataType>
+void spatial_weight_function(gsl::not_null<Scalar<DataType>*> weight,
+                             const tnsr::I<DataType, SpatialDim, Frame>& coords,
+                             double sigma_r) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+void spacetime_deriv_of_spatial_weight_function(
+    gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> d4_weight,
+    const tnsr::I<DataType, SpatialDim, Frame>& coords, double sigma_r,
+    const Scalar<DataType>& spatial_weight_function) noexcept;
+
+// The return-by-value implementations of spatial_weight_function and
+// spacetime_deriv_of_spatial_weight_function are intentionally only available
+// in the test because while convenient the additional allocations are bad for
+// performance. By not having them available in the production code we avoid
+// possible accidental usage.
+template <size_t SpatialDim, typename Frame, typename DataType>
 Scalar<DataType> spatial_weight_function(
     const tnsr::I<DataType, SpatialDim, Frame>& coords,
-    double sigma_r) noexcept;
+    const double sigma_r) noexcept {
+  Scalar<DataType> spatial_weight{};
+  spatial_weight_function(make_not_null(&spatial_weight), coords, sigma_r);
+  return spatial_weight;
+}
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_spatial_weight_function(
     const tnsr::I<DataType, SpatialDim, Frame>& coords,
-    double sigma_r) noexcept;
+    const double sigma_r) noexcept {
+  tnsr::a<DataType, SpatialDim, Frame> d4_weight{};
+  spacetime_deriv_of_spatial_weight_function(
+      make_not_null(&d4_weight), coords, sigma_r,
+      spatial_weight_function(coords, sigma_r));
+  return d4_weight;
+}
 
 double roll_on_function(double time, double t_start, double sigma_t) noexcept;
 
