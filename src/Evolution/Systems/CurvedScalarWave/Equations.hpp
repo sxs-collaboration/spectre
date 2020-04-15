@@ -10,10 +10,12 @@
 #include "Domain/FaceNormal.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Characteristics.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -218,7 +220,7 @@ struct ComputeNormalDotFluxes {
  * caution.
  */
 template <size_t Dim>
-struct UpwindFlux {
+struct UpwindFlux : tt::ConformsTo<dg::protocols::NumericalFlux> {
  public:
   using options = tmpl::list<>;
   static constexpr OptionString help = {
@@ -227,17 +229,20 @@ struct UpwindFlux {
   // clang-tidy: non-const reference
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 
+  using variables_tags = tmpl::list<Pi, Phi<Dim>, Psi>;
+
   // This is the data needed to compute the numerical flux.
   // `dg::SendBoundaryFluxes` calls `package_data` to store these tags in a
   // Variables. Local and remote values of this data are then combined in the
   // `()` operator.
-  using package_tags = tmpl::list<
+  using package_field_tags = tmpl::list<
       Pi, Phi<Dim>, Psi, gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
       gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
       Tags::ConstraintGamma1, Tags::ConstraintGamma2,
       ::Tags::Normalized<
           domain::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>;
+  using package_extra_tags = tmpl::list<>;
 
   // These tags on the interface of the element are passed to
   // `package_data` to provide the data needed to compute the numerical fluxes.
@@ -254,7 +259,17 @@ struct UpwindFlux {
   // Following the not-null pointer to packaged_data, this function expects as
   // arguments the databox types of the `argument_tags`.
   void package_data(
-      gsl::not_null<Variables<package_tags>*> packaged_data,
+      gsl::not_null<Scalar<DataVector>*> packaged_pi,
+      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> packaged_phi,
+      gsl::not_null<Scalar<DataVector>*> packaged_psi,
+      gsl::not_null<Scalar<DataVector>*> packaged_lapse,
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> packaged_shift,
+      gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
+          packaged_inverse_spatial_metric,
+      gsl::not_null<Scalar<DataVector>*> packaged_gamma1,
+      gsl::not_null<Scalar<DataVector>*> packaged_gamma2,
+      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+          packaged_interface_unit_normal,
       const Scalar<DataVector>& pi,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
       const Scalar<DataVector>& psi, const Scalar<DataVector>& lapse,
