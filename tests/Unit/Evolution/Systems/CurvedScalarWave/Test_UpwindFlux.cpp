@@ -178,21 +178,16 @@ void test_upwind_flux_random() noexcept {
   // numerical flux reduces to the flux
   INFO("test consistency of the curved-scalar-wave upwind flux")
   CurvedScalarWave::UpwindFlux<Dim> flux_computer{};
-  auto packaged_data_int = make_with_value<
-      Variables<typename CurvedScalarWave::UpwindFlux<Dim>::package_tags>>(
-      used_for_size, std::numeric_limits<double>::signaling_NaN());
-  flux_computer.package_data(make_not_null(&packaged_data_int), pi_int, phi_int,
-                             psi_int, lapse_int, shift_int,
-                             inverse_spatial_metric_int, gamma_1, gamma_2,
-                             unit_normal_one_form_int);
+  auto packaged_data_int = ::TestHelpers::NumericalFluxes::get_packaged_data(
+      flux_computer, used_for_size, pi_int, phi_int, psi_int, lapse_int,
+      shift_int, inverse_spatial_metric_int, gamma_1, gamma_2,
+      unit_normal_one_form_int);
 
-  auto packaged_data_int_opposite_normal = make_with_value<
-      Variables<typename CurvedScalarWave::UpwindFlux<Dim>::package_tags>>(
-      used_for_size, std::numeric_limits<double>::signaling_NaN());
-  flux_computer.package_data(make_not_null(&packaged_data_int_opposite_normal),
-                             pi_int, phi_int, psi_int, lapse_int, shift_int,
-                             inverse_spatial_metric_int, gamma_1, gamma_2,
-                             minus_unit_normal_one_form_int);
+  auto packaged_data_int_opposite_normal =
+      ::TestHelpers::NumericalFluxes::get_packaged_data(
+          flux_computer, used_for_size, pi_int, phi_int, psi_int, lapse_int,
+          shift_int, inverse_spatial_metric_int, gamma_1, gamma_2,
+          minus_unit_normal_one_form_int);
 
   auto psi_normal_dot_numerical_flux = make_with_value<
       db::item_type<::Tags::NormalDotNumericalFlux<CurvedScalarWave::Psi>>>(
@@ -203,7 +198,7 @@ void test_upwind_flux_random() noexcept {
   auto phi_normal_dot_numerical_flux = make_with_value<db::item_type<
       ::Tags::NormalDotNumericalFlux<CurvedScalarWave::Phi<Dim>>>>(
       used_for_size, std::numeric_limits<double>::signaling_NaN());
-  ::TestHelpers::NumericalFluxes::apply_numerical_flux(
+  dg::NumericalFluxes::normal_dot_numerical_fluxes(
       flux_computer, packaged_data_int, packaged_data_int_opposite_normal,
       make_not_null(&pi_normal_dot_numerical_flux),
       make_not_null(&phi_normal_dot_numerical_flux),
