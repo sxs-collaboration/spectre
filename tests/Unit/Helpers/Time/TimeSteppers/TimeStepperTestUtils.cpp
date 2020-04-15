@@ -40,7 +40,7 @@ void take_step(
        substep < stepper.number_of_substeps();
        ++substep) {
     CHECK(time_id.substep() == substep);
-    history->insert(time_id, *y, rhs(*y));
+    history->insert(time_id, *y, rhs(*y, time_id.substep_time().value()));
     stepper.update_u(y, history, step_size);
     time_id = stepper.next_time_id(time_id, step_size);
   }
@@ -69,7 +69,7 @@ void initialize_history(
     time -= step_size;
     history->insert_initial(
         TimeStepId(step_size.is_positive(), slab_number, time),
-        analytic(time.value()), rhs(analytic(time.value())));
+        analytic(time.value()), rhs(analytic(time.value()), time.value()));
   }
 }
 }  // namespace
@@ -96,8 +96,10 @@ void integrate_test(const TimeStepper& stepper,
                     const size_t number_of_past_steps,
                     const double integration_time,
                     const double epsilon) noexcept {
-  auto analytic = [](double t) { return sin(t); };
-  auto rhs = [](double v) { return sqrt(1. - square(v)); };
+  auto analytic = [](const double t) noexcept { return sin(t); };
+  auto rhs = [](const double v, const double /*t*/) noexcept {
+               return sqrt(1. - square(v));
+             };
 
   const uint64_t num_steps = 800;
   const Slab slab = integration_time > 0
@@ -126,11 +128,47 @@ void integrate_test(const TimeStepper& stepper,
   CHECK(history.size() < 20);
 }
 
+void integrate_test_explicit_time_dependence(const TimeStepper& stepper,
+                                             const size_t number_of_past_steps,
+                                             const double integration_time,
+                                             const double epsilon) noexcept {
+  auto analytic = [](const double t) noexcept { return square(t); };
+  auto rhs = [](const double /*v*/, const double t) noexcept { return 2 * t; };
+
+  const uint64_t num_steps = 800;
+  const Slab slab = integration_time > 0
+                        ? Slab::with_duration_from_start(0., integration_time)
+                        : Slab::with_duration_to_end(0., -integration_time);
+  const TimeDelta step_size = integration_time > 0
+                                  ? slab.duration() / num_steps
+                                  : -slab.duration() / num_steps;
+
+  Time time = integration_time > 0 ? slab.start() : slab.end();
+  double y = analytic(time.value());
+  TimeSteppers::History<double, double> history;
+
+  initialize_history(time, &history, analytic, rhs, step_size,
+                     number_of_past_steps);
+
+  for (uint64_t i = 0; i < num_steps; ++i) {
+    take_step(&time, &y, &history, stepper, rhs, step_size);
+    // This check needs a looser tolerance for lower-order time steppers.
+    CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
+  }
+  // Make sure history is being cleaned up.  The limit of 20 is
+  // arbitrary, but much larger than the order of any integrators we
+  // care about and much smaller than the number of time steps in the
+  // test.
+  CHECK(history.size() < 20);
+}
+
 void integrate_variable_test(const TimeStepper& stepper,
                              const size_t number_of_past_steps,
                              const double epsilon) noexcept {
-  auto analytic = [](double t) { return sin(t); };
-  auto rhs = [](double v) { return sqrt(1. - square(v)); };
+  auto analytic = [](const double t) noexcept { return sin(t); };
+  auto rhs = [](const double v, const double /*t*/) noexcept {
+               return sqrt(1. - square(v));
+             };
 
   const uint64_t num_steps = 800;
   const double average_step = 1. / num_steps;
@@ -170,14 +208,15 @@ void stability_test(const TimeStepper& stepper) noexcept {
     Time time = slab.start();
     double y = 1.;
     TimeSteppers::History<double, double> history;
-    initialize_history(time, &history,
-                       [](double t) { return exp(-2. * t); },
-                       [](double v) { return -2. * v; },
-                       step_size, stepper.number_of_past_steps());
+    const auto rhs = [](const double v, const double /*t*/) noexcept {
+      return -2. * v;
+    };
+    initialize_history(
+        time, &history, [](const double t) noexcept { return exp(-2. * t); },
+        rhs, step_size, stepper.number_of_past_steps());
 
     for (uint64_t i = 0; i < num_steps; ++i) {
-      take_step(&time, &y, &history, stepper, [](double v) { return -2. * v; },
-                step_size);
+      take_step(&time, &y, &history, stepper, rhs, step_size);
       CHECK(std::abs(y) < 10.);
     }
   }
@@ -191,14 +230,15 @@ void stability_test(const TimeStepper& stepper) noexcept {
     Time time = slab.start();
     double y = 1.;
     TimeSteppers::History<double, double> history;
-    initialize_history(time, &history,
-                       [](double t) { return exp(-2. * t); },
-                       [](double v) { return -2. * v; },
-                       step_size, stepper.number_of_past_steps());
+    const auto rhs = [](const double v, const double /*t*/) noexcept {
+      return -2. * v;
+    };
+    initialize_history(
+        time, &history, [](const double t) noexcept { return exp(-2. * t); },
+        rhs, step_size, stepper.number_of_past_steps());
 
     for (uint64_t i = 0; i < num_steps; ++i) {
-      take_step(&time, &y, &history, stepper, [](double v) { return -2. * v; },
-                step_size);
+      take_step(&time, &y, &history, stepper, rhs, step_size);
       if (std::abs(y) > 10.) {
         return;
       }
@@ -290,12 +330,14 @@ void check_convergence_order(const TimeStepper& stepper,
     Time time = slab.start();
     double y = 1.;
     TimeSteppers::History<double, double> history;
-    initialize_history(time, &history, [](double t) { return exp(t); },
-                       [](double v) { return v; }, step_size,
-                       stepper.number_of_past_steps());
+    const auto rhs = [](const double v, const double /*t*/) noexcept {
+      return v;
+    };
+    initialize_history(
+        time, &history, [](const double t) noexcept { return exp(t); }, rhs,
+        step_size, stepper.number_of_past_steps());
     while (time < slab.end()) {
-      take_step(&time, &y, &history, stepper, [](double v) { return v; },
-                step_size);
+      take_step(&time, &y, &history, stepper, rhs, step_size);
     }
     return abs(y - exp(1.));
   };
@@ -314,10 +356,11 @@ void check_dense_output(const TimeStepper& stepper,
     TimeStepId time_id(true, 0, step_size.slab().start());
     double y = 1.;
     TimeSteppers::History<double, double> history;
-    initialize_history(time_id.substep_time(), &history,
-                       [](double t) { return exp(t); },
-                       [](double v) { return v; }, step_size,
-                       stepper.number_of_past_steps());
+    initialize_history(
+        time_id.substep_time(), &history,
+        [](const double t) noexcept { return exp(t); },
+        [](const double v, const double /*t*/) noexcept { return v; },
+        step_size, stepper.number_of_past_steps());
     for (;;) {
       // Dense output is done after the last substep
       const auto next_time_id = stepper.next_time_id(time_id, step_size);
@@ -339,11 +382,13 @@ void check_dense_output(const TimeStepper& stepper,
     Time time = slab.start();
     double y = 1.;
     TimeSteppers::History<double, double> history;
-    initialize_history(time, &history, [](double t) { return exp(t); },
-                       [](double v) { return v; }, slab.duration(),
-                       stepper.number_of_past_steps());
-    take_step(&time, &y, &history, stepper, [](double v) { return v; },
-              slab.duration());
+    const auto rhs = [](const double v, const double /*t*/) noexcept {
+      return v;
+    };
+    initialize_history(
+        time, &history, [](const double t) noexcept { return exp(t); }, rhs,
+        slab.duration(), stepper.number_of_past_steps());
+    take_step(&time, &y, &history, stepper, rhs, slab.duration());
 
     CHECK(get_dense(slab.duration(), std::numeric_limits<double>::epsilon()) ==
           approx(1.));

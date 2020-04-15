@@ -19,6 +19,11 @@ void check_substep_properties(const TimeStepper& stepper) noexcept;
 void integrate_test(const TimeStepper& stepper, size_t number_of_past_steps,
                     double integration_time, double epsilon) noexcept;
 
+void integrate_test_explicit_time_dependence(const TimeStepper& stepper,
+                                             size_t number_of_past_steps,
+                                             double integration_time,
+                                             double epsilon) noexcept;
+
 void integrate_variable_test(const TimeStepper& stepper,
                              size_t number_of_past_steps,
                              double epsilon) noexcept;
