@@ -428,7 +428,7 @@ jobs:
       CCACHE_COMPILERCHECK: content
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
       # Install dependencies with Homebrew if we can so we don't have to build
       # and cache them. We make sure to install only prebuilt "bottles" by
       # fetching them first.
