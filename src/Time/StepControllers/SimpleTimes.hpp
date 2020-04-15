@@ -57,7 +57,7 @@ class SimpleTimes : public StepController {
     const double full_slab = time.slab().duration().value();
     const auto current_position = time.fraction().value();
     using Fraction = Time::rational_t;
-    Fraction step_end = simplest_fraction_in_interval<Fraction>(
+    auto step_end = simplest_fraction_in_interval<Fraction>(
         current_position + min_step / full_slab,
         current_position + desired_step / full_slab);
 
