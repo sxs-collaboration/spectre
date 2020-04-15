@@ -163,7 +163,7 @@ void ComputeDuDt<Dim>::apply(
                        ::Tags::TempIaa<0, Dim, Frame::Inertial, DataVector>,
                        ::Tags::TempiaB<0, Dim, Frame::Inertial, DataVector>,
                        ::Tags::TempabC<0, Dim, Frame::Inertial, DataVector>>>
-      buffer(n_pts, 0.0);
+      buffer(n_pts);
 
   get(get<::Tags::TempScalar<0>>(buffer)) = gamma1.get() * gamma2.get();
   const DataVector& gamma12 = get(get<::Tags::TempScalar<0>>(buffer));
@@ -172,8 +172,10 @@ void ComputeDuDt<Dim>::apply(
       get<::Tags::TempIaa<0, Dim, Frame::Inertial, DataVector>>(buffer);
   for (size_t m = 0; m < Dim; ++m) {
     for (size_t mu = 0; mu < Dim + 1; ++mu) {
-      for (size_t n = 0; n < Dim; ++n) {
-        for (size_t nu = mu; nu < Dim + 1; ++nu) {
+      for (size_t nu = mu; nu < Dim + 1; ++nu) {
+        phi_1_up.get(m, mu, nu) =
+            inverse_spatial_metric.get(m, 0) * phi.get(0, mu, nu);
+        for (size_t n = 1; n < Dim; ++n) {
           phi_1_up.get(m, mu, nu) +=
               inverse_spatial_metric.get(m, n) * phi.get(n, mu, nu);
         }
@@ -186,7 +188,9 @@ void ComputeDuDt<Dim>::apply(
   for (size_t m = 0; m < Dim; ++m) {
     for (size_t nu = 0; nu < Dim + 1; ++nu) {
       for (size_t alpha = 0; alpha < Dim + 1; ++alpha) {
-        for (size_t beta = 0; beta < Dim + 1; ++beta) {
+        phi_3_up.get(m, nu, alpha) =
+            inverse_spacetime_metric.get(alpha, 0) * phi.get(m, nu, 0);
+        for (size_t beta = 1; beta < Dim + 1; ++beta) {
           phi_3_up.get(m, nu, alpha) +=
               inverse_spacetime_metric.get(alpha, beta) * phi.get(m, nu, beta);
         }
@@ -198,7 +202,9 @@ void ComputeDuDt<Dim>::apply(
       get<::Tags::TempaB<0, Dim, Frame::Inertial, DataVector>>(buffer);
   for (size_t nu = 0; nu < Dim + 1; ++nu) {
     for (size_t alpha = 0; alpha < Dim + 1; ++alpha) {
-      for (size_t beta = 0; beta < Dim + 1; ++beta) {
+      pi_2_up.get(nu, alpha) =
+          inverse_spacetime_metric.get(alpha, 0) * pi.get(nu, 0);
+      for (size_t beta = 1; beta < Dim + 1; ++beta) {
         pi_2_up.get(nu, alpha) +=
             inverse_spacetime_metric.get(alpha, beta) * pi.get(nu, beta);
       }
@@ -210,7 +216,10 @@ void ComputeDuDt<Dim>::apply(
   for (size_t mu = 0; mu < Dim + 1; ++mu) {
     for (size_t nu = 0; nu < Dim + 1; ++nu) {
       for (size_t alpha = 0; alpha < Dim + 1; ++alpha) {
-        for (size_t beta = 0; beta < Dim + 1; ++beta) {
+        christoffel_first_kind_3_up.get(mu, nu, alpha) =
+            inverse_spacetime_metric.get(alpha, 0) *
+            christoffel_first_kind.get(mu, nu, 0);
+        for (size_t beta = 1; beta < Dim + 1; ++beta) {
           christoffel_first_kind_3_up.get(mu, nu, alpha) +=
               inverse_spacetime_metric.get(alpha, beta) *
               christoffel_first_kind.get(mu, nu, beta);
@@ -221,8 +230,10 @@ void ComputeDuDt<Dim>::apply(
 
   tnsr::a<DataVector, Dim>& pi_dot_normal_spacetime_vector =
       get<::Tags::Tempa<0, Dim, Frame::Inertial, DataVector>>(buffer);
-  for (size_t nu = 0; nu < Dim + 1; ++nu) {
-    for (size_t mu = 0; mu < Dim + 1; ++mu) {
+  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    pi_dot_normal_spacetime_vector.get(mu) =
+        get<0>(normal_spacetime_vector) * pi.get(0, mu);
+    for (size_t nu = 1; nu < Dim + 1; ++nu) {
       pi_dot_normal_spacetime_vector.get(mu) +=
           normal_spacetime_vector.get(nu) * pi.get(nu, mu);
     }
@@ -230,7 +241,9 @@ void ComputeDuDt<Dim>::apply(
 
   DataVector& pi_contract_two_normal_spacetime_vectors =
       get(get<::Tags::TempScalar<1>>(buffer));
-  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+  pi_contract_two_normal_spacetime_vectors =
+      get<0>(normal_spacetime_vector) * get<0>(pi_dot_normal_spacetime_vector);
+  for (size_t mu = 1; mu < Dim + 1; ++mu) {
     pi_contract_two_normal_spacetime_vectors +=
         normal_spacetime_vector.get(mu) *
         pi_dot_normal_spacetime_vector.get(mu);
@@ -240,7 +253,9 @@ void ComputeDuDt<Dim>::apply(
       get<::Tags::Tempia<0, Dim, Frame::Inertial, DataVector>>(buffer);
   for (size_t n = 0; n < Dim; ++n) {
     for (size_t nu = 0; nu < Dim + 1; ++nu) {
-      for (size_t mu = 0; mu < Dim + 1; ++mu) {
+      phi_dot_normal_spacetime_vector.get(n, nu) =
+          get<0>(normal_spacetime_vector) * phi.get(n, 0, nu);
+      for (size_t mu = 1; mu < Dim + 1; ++mu) {
         phi_dot_normal_spacetime_vector.get(n, nu) +=
             normal_spacetime_vector.get(mu) * phi.get(n, mu, nu);
       }
@@ -250,7 +265,10 @@ void ComputeDuDt<Dim>::apply(
   tnsr::i<DataVector, Dim>& phi_contract_two_normal_spacetime_vectors =
       get<::Tags::Tempi<0, Dim, Frame::Inertial, DataVector>>(buffer);
   for (size_t n = 0; n < Dim; ++n) {
-    for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    phi_contract_two_normal_spacetime_vectors.get(n) =
+        get<0>(normal_spacetime_vector) *
+        phi_dot_normal_spacetime_vector.get(n, 0);
+    for (size_t mu = 1; mu < Dim + 1; ++mu) {
       phi_contract_two_normal_spacetime_vectors.get(n) +=
           normal_spacetime_vector.get(mu) *
           phi_dot_normal_spacetime_vector.get(n, mu);
@@ -277,7 +295,9 @@ void ComputeDuDt<Dim>::apply(
 
   DataVector& normal_dot_one_index_constraint =
       get(get<::Tags::TempScalar<2>>(buffer));
-  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+  normal_dot_one_index_constraint =
+      get<0>(normal_spacetime_vector) * get<0>(one_index_constraint);
+  for (size_t mu = 1; mu < Dim + 1; ++mu) {
     normal_dot_one_index_constraint +=
         normal_spacetime_vector.get(mu) * one_index_constraint.get(mu);
   }
@@ -287,9 +307,11 @@ void ComputeDuDt<Dim>::apply(
 
   tnsr::aa<DataVector, Dim>& shift_dot_three_index_constraint =
       get<::Tags::Tempaa<0, Dim, Frame::Inertial, DataVector>>(buffer);
-  for (size_t m = 0; m < Dim; ++m) {
-    for (size_t mu = 0; mu < Dim + 1; ++mu) {
-      for (size_t nu = mu; nu < Dim + 1; ++nu) {
+  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    for (size_t nu = mu; nu < Dim + 1; ++nu) {
+      shift_dot_three_index_constraint.get(mu, nu) =
+          get<0>(shift) * three_index_constraint.get(0, mu, nu);
+      for (size_t m = 1; m < Dim; ++m) {
         shift_dot_three_index_constraint.get(mu, nu) +=
             shift.get(m) * three_index_constraint.get(m, mu, nu);
       }
