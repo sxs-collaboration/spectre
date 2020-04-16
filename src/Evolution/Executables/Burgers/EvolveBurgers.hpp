@@ -25,6 +25,7 @@
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
+#include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/Burgers/System.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
@@ -185,6 +186,8 @@ struct EvolutionMetavars {
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       evolution::dg::Initialization::Domain<1>,
       Initialization::Actions::ConservativeSystem,
+      evolution::Initialization::Actions::SetVariables<
+          domain::Tags::Coordinates<1, Frame::Logical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       dg::Actions::InitializeInterfaces<
           system,

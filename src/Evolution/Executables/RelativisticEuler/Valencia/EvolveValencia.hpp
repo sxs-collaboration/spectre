@@ -29,6 +29,7 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/GrTagsForHydro.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
+#include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/FixConservatives.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/System.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Tags.hpp"
@@ -233,6 +234,8 @@ struct EvolutionMetavars {
       evolution::dg::Initialization::Domain<Dim>,
       Initialization::Actions::GrTagsForHydro,
       Initialization::Actions::ConservativeSystem,
+      evolution::Initialization::Actions::SetVariables<
+          domain::Tags::Coordinates<Dim, Frame::Logical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim, thermodynamic_dim>>,
