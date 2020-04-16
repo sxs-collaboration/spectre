@@ -99,6 +99,7 @@ struct Domain {
     using simple_tags = db::AddSimpleTags<
         ::domain::Tags::Mesh<Dim>, ::domain::Tags::Element<Dim>,
         ::domain::Tags::ElementMap<Dim, Frame::Grid>,
+        ::domain::Tags::ElementMap<Dim, Frame::Inertial>,
         ::domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                       Frame::Inertial>,
         ::domain::Tags::FunctionsOfTime>;
@@ -142,6 +143,14 @@ struct Domain {
         element_id, my_block.is_time_dependent()
                         ? my_block.moving_mesh_logical_to_grid_map().get_clone()
                         : my_block.stationary_map().get_to_grid_frame()};
+    ElementMap<Dim, Frame::Inertial> element_map_inertial{
+        element_id, my_block.is_time_dependent()
+                        // In case of a time dependent domain, this
+                        // element map should / would not be used
+                        ? ::domain::make_coordinate_map_base<Frame::Logical,
+                                                             Frame::Inertial>(
+                              ::domain::CoordinateMaps::Identity<Dim>{})
+                        : my_block.stationary_map().get_clone()};
 
     const auto& initial_functions_of_time =
         db::get<::domain::Tags::InitialFunctionsOfTime<Dim>>(box);
@@ -170,8 +179,8 @@ struct Domain {
                            Domain, simple_tags, compute_tags,
                            ::Initialization::MergePolicy::Overwrite>(
         std::move(box), std::move(mesh), std::move(element),
-        std::move(element_map), std::move(grid_to_inertial_map),
-        std::move(functions_of_time)));
+        std::move(element_map), std::move(element_map_inertial),
+        std::move(grid_to_inertial_map), std::move(functions_of_time)));
   }
 
   template <
