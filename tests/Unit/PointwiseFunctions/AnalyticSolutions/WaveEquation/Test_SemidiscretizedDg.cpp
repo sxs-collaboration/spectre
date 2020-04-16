@@ -29,6 +29,7 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/ScalarWave/Constraints.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -100,6 +101,7 @@ struct Component {
       inverse_jacobian,
       Tags::DerivCompute<variables_tag, inverse_jacobian,
                          typename metavariables::system::gradients_tags>,
+      ScalarWave::Tags::ConstraintGamma2Compute,
       domain::Tags::InternalDirections<1>,
       domain::Tags::Slice<domain::Tags::InternalDirections<1>,
                           typename metavariables::system::variables_tag>,
@@ -109,7 +111,8 @@ struct Component {
       interface_compute_tag<
           Tags::EuclideanMagnitude<domain::Tags::UnnormalizedFaceNormal<1>>>,
       interface_compute_tag<
-          Tags::NormalizedCompute<domain::Tags::UnnormalizedFaceNormal<1>>>>;
+          Tags::NormalizedCompute<domain::Tags::UnnormalizedFaceNormal<1>>>,
+      interface_compute_tag<ScalarWave::Tags::ConstraintGamma2Compute>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<

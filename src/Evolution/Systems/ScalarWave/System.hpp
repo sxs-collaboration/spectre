@@ -41,7 +41,7 @@ struct System {
 
   using variables_tag = ::Tags::Variables<tmpl::list<Pi, Phi<Dim>, Psi>>;
   // Typelist of which subset of the variables to take the gradient of.
-  using gradients_tags = tmpl::list<Pi, Phi<Dim>>;
+  using gradients_tags = tmpl::list<Pi, Phi<Dim>, Psi>;
 
   using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
   using compute_largest_characteristic_speed =

@@ -48,7 +48,7 @@ NumericalFlux:
 
 EventsAndTriggers:
   ? SpecifiedSlabs:
-      Slabs: [10]
+      Slabs: [5]
   : - Completion
   ? EveryNSlabs:
       N: 2
