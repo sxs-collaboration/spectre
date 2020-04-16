@@ -21,6 +21,7 @@
 #include "Evolution/Systems/ScalarWave/Equations.hpp"  // IWYU pragma: keep // for UpwindFlux
 #include "Evolution/Systems/ScalarWave/Initialize.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
+#include "Evolution/TypeTraits.hpp"
 #include "IO/Observer/Actions.hpp"            // IWYU pragma: keep
 #include "IO/Observer/Helpers.hpp"            // IWYU pragma: keep
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
@@ -54,6 +55,7 @@
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/AnalyticSolutions/WaveEquation/RegularSphericalWave.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/AdvanceTime.hpp"                // IWYU pragma: keep
 #include "Time/Actions/ChangeSlabSize.hpp"             // IWYU pragma: keep
@@ -86,15 +88,19 @@ class CProxy_ConstGlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-template <size_t Dim>
+template <size_t Dim, typename InitialData>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
   // Customization/"input options" to simulation
+  using initial_data_tag = Tags::AnalyticSolution<InitialData>;
+  static_assert(
+      evolution::is_analytic_data_v<InitialData> xor
+          evolution::is_analytic_solution_v<InitialData>,
+      "initial_data must be either an analytic_data or an analytic_solution");
+
   using system = ScalarWave::System<Dim>;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = true;
-  using initial_data_tag =
-      Tags::AnalyticSolution<ScalarWave::Solutions::PlaneWave<Dim>>;
   using boundary_condition_tag = initial_data_tag;
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<ScalarWave::UpwindFlux<Dim>>;
@@ -246,7 +252,6 @@ struct EvolutionMetavars {
 
   static constexpr OptionString help{
       "Evolve a Scalar Wave in Dim spatial dimension.\n\n"
-      "The analytic solution is: PlaneWave\n"
       "The numerical flux is:    UpwindFlux\n"};
 
   static Phase determine_next_phase(
