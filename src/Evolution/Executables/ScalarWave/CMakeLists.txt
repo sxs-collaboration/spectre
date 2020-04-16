@@ -2,19 +2,19 @@
 # See LICENSE.txt for details.
 
 set(LIBS_TO_LINK
-    CoordinateMaps
-    DiscontinuousGalerkin
-    DomainCreators
-    Evolution
-    IO
-    Informer
-    LinearOperators
-    MathFunctions
-    ScalarWave
-    Time
-    Options
-    Utilities
-    WaveEquation
+  CoordinateMaps
+  DiscontinuousGalerkin
+  DomainCreators
+  Evolution
+  IO
+  Informer
+  LinearOperators
+  MathFunctions
+  ScalarWave
+  Time
+  Options
+  Utilities
+  WaveEquation
   )
 
 function(add_scalar_wave_executable EXECUTABLE_NAME DIM INITIAL_DATA)
