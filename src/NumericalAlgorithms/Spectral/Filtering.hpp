@@ -40,5 +40,30 @@ namespace filtering {
  */
 Matrix exponential_filter(const Mesh<1>& mesh, double alpha,
                           unsigned half_power) noexcept;
+
+/*!
+ * \brief Zeros the lowest `number_of_modes_to_zero` modal coefficients. Note
+ * that the matrix must be applied to a nodal representation.
+ *
+ * Given a function \f$u\f$
+ *
+ * \f{align}{
+ *   u(x)=\sum_{i=0}^N c_i P_i(x),
+ * \f}
+ *
+ * where \f$c_i\f$ are the modal coefficients and \f$P_i(x)\f$ is the basis
+ * (e.g. Legendre polynomials), the filter matrix will take the *nodal*
+ * representation of \f$u\f$ and zero out the lowest `number_of_modes_to_zero`
+ * modal coefficients. That is, after the filter is applied \f$u\to\bar{u}\f$ is
+ *
+ * \f{align}{
+ *   \bar{u}(x)=\sum_{i=k}^N c_i P_i(x),
+ * \f}
+ *
+ * where \f$k\f$ is the number of modes set to zero. The output \f$\bar{u}\f$ is
+ * also in the *nodal* representation.
+ */
+const Matrix& zero_lowest_modes(const Mesh<1>& mesh,
+                                size_t number_of_modes_to_zero) noexcept;
 }  // namespace filtering
 }  // namespace Spectral
