@@ -26,6 +26,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
+#include "Utilities/WrapText.hpp"
 
 /// Holds details of the implementation of Options
 namespace Options_detail {
@@ -162,7 +163,7 @@ struct print_impl {
   static std::string apply() noexcept {
     std::ostringstream ss;
     ss << "  " << option_name<Group>() << ":\n"
-       << "    " << Group::help << "\n\n";
+       << wrap_text(Group::help, 77, "    ") << "\n\n";
     return ss.str();
   }
 };
@@ -278,8 +279,7 @@ struct print_impl<Tag, OptionList,
     if (not limits.empty()) {
       ss << "\n    " << limits;
     }
-    ss << "\n"
-       << "    " << Tag::help << "\n\n";
+    ss << "\n" << wrap_text(Tag::help, 77, "    ") << "\n\n";
     return ss.str();
   }
 };
