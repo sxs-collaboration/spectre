@@ -243,6 +243,8 @@ void test_nsbh_equidistant_factory() {
 }
 }  // namespace
 
+// Test times out sometimes, increase timeout to make it pass reliably.
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject.FactoryTests",
                   "[Domain][Unit]") {
   test_connectivity();
