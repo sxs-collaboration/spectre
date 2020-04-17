@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   OptimizerHacks.cpp
   PrettyType.cpp
   Rational.cpp
+  WrapText.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})

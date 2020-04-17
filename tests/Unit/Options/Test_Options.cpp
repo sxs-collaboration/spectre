@@ -60,7 +60,13 @@ struct Simple {
 struct NamedSimple {
   using type = int;
   static std::string name() noexcept { return "SomeName"; }
-  static constexpr OptionString help = {"halp"};
+  static constexpr OptionString help = {
+      "halp halp halp halp halp halp halp halp halp halp halp halp\n"
+      "halp halp halp halp halp halp halp halp halp halp halp halp"
+      "halp halp halp halp halp halp halp halp halp halp halp halp"
+      "halp halp halp halp halp halp halp halp halp halp halp halp"
+      "halp halp halp halp halp halp halp halp halp halp halp halp"
+      "halp halp halp halp halp halp halp halp halp halp halp halp"};
 };
 
 void test_options_simple_success() {
@@ -74,6 +80,25 @@ void test_options_simple_success() {
     opts.parse("SomeName: -4");
     CHECK(opts.get<NamedSimple>() == -4);
   }
+}
+
+void test_options_print_long_help() {
+  Options<tmpl::list<NamedSimple>> opts("");
+  CHECK(opts.help() ==
+        R"(
+==== Description of expected options:
+
+
+Options:
+  SomeName:
+    type=int
+    halp halp halp halp halp halp halp halp halp halp halp halp
+    halp halp halp halp halp halp halp halp halp halp halp halphalp halp halp
+    halp halp halp halp halp halp halp halp halphalp halp halp halp halp halp
+    halp halp halp halp halp halphalp halp halp halp halp halp halp halp halp
+    halp halp halphalp halp halp halp halp halp halp halp halp halp halp halp
+
+)");
 }
 
 // [[OutputRegex, In string:.*At line 2 column 1:.Option 'Simple' specified
@@ -806,6 +831,7 @@ void test_options_explicit_constructor() {
 SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
   test_options_empty_success();
   test_options_simple_success();
+  test_options_print_long_help();
   test_options_grouped();
   test_options_default_specified();
   test_options_default_defaulted();

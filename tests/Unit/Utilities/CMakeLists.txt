@@ -41,6 +41,7 @@ set(LIBRARY_SOURCES
   Test_TMPL.cpp
   Test_Tuple.cpp
   Test_VectorAlgebra.cpp
+  Test_WrapText.cpp
   )
 
 add_subdirectory(TypeTraits)
