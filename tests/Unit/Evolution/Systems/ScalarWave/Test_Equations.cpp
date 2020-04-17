@@ -137,17 +137,7 @@ void check_du_dt(const size_t npts, const double time) {
   local_check_du_dt(-10.9, 43.0);
   local_check_du_dt(-90.0, -56.0);
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.DuDt",
-                  "[Unit][Evolution]") {
-  constexpr double time = 0.7;
-  check_du_dt<1>(3, time);
-  check_du_dt<2>(3, time);
-  check_du_dt<3>(3, time);
-}
-
-namespace {
 template <size_t Dim>
 void check_normal_dot_fluxes(const size_t npts, const double t) {
   const ScalarWave::Solutions::PlaneWave<Dim> solution(
@@ -182,181 +172,33 @@ void check_normal_dot_fluxes(const size_t npts, const double t) {
 
   ScalarWave::ComputeNormalDotFluxes<Dim>::apply(
       make_not_null(&normal_dot_flux_pi), make_not_null(&normal_dot_flux_phi),
-      make_not_null(&normal_dot_flux_psi), pi, phi, unit_normal);
+      make_not_null(&normal_dot_flux_psi), pi);
 
-  CHECK(get(normal_dot_flux_psi) == DataVector(pow<Dim>(npts), 0.0));
+  const DataVector expected_normal_dot_fluxes{pow<Dim>(npts), 0.0};
+  CHECK(get(normal_dot_flux_psi) == expected_normal_dot_fluxes);
+  CHECK(get(normal_dot_flux_pi) == expected_normal_dot_fluxes);
 
-  DataVector normal_dot_flux_pi_expected(pow<Dim>(npts), 0.0);
   for (size_t d = 0; d < Dim; ++d) {
-    normal_dot_flux_pi_expected += unit_normal.get(d) * phi.get(d);
+    CHECK(normal_dot_flux_phi.get(d) == expected_normal_dot_fluxes);
   }
-  CHECK(get(normal_dot_flux_pi) == normal_dot_flux_pi_expected);
-
-  auto normal_dot_flux_phi_expected =
-      make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(pi, 0.0);
-  for (size_t d = 0; d < Dim; ++d) {
-    normal_dot_flux_phi_expected.get(d) = unit_normal.get(d) * get(pi);
-  }
-  CHECK(normal_dot_flux_phi == normal_dot_flux_phi_expected);
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.NormalDotFluxes",
-                  "[Unit][Evolution]") {
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave", "[Unit][Evolution]") {
   constexpr double time = 0.7;
-  check_normal_dot_fluxes<1>(3, time);
-  check_normal_dot_fluxes<2>(3, time);
-  check_normal_dot_fluxes<3>(3, time);
-}
-
-namespace {
-template <size_t Dim>
-void check_upwind_flux(const size_t npts, const double t) {
-  static_assert(test_protocol_conformance<ScalarWave::UpwindFlux<Dim>,
-                                          dg::protocols::NumericalFlux>,
-                "Failed testing protocol conformance");
-
-  const DataVector used_for_size{pow<Dim>(npts),
-                                 std::numeric_limits<double>::signaling_NaN()};
-  const ScalarWave::Solutions::PlaneWave<Dim> solution(
-      make_array<Dim>(0.1), make_array<Dim>(0.0),
-      std::make_unique<MathFunctions::Gaussian>(1.0, 1.0, 0.0));
-
-  const tnsr::I<DataVector, Dim> x = [npts]() {
-    auto logical_coords = logical_coordinates(Mesh<Dim>{
-        3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto});
-    tnsr::I<DataVector, Dim> coords{pow<Dim>(npts)};
-    for (size_t i = 0; i < Dim; ++i) {
-      coords.get(i) = std::move(logical_coords.get(i));
-    }
-    return coords;
-  }();
-
-  // Any numbers are fine, doesn't have anything to do with unit normal
-  tnsr::i<DataVector, Dim, Frame::Inertial> unit_normal(pow<Dim>(npts), 0.0);
-  for (size_t d = 0; d < Dim; ++d) {
-    unit_normal.get(d) = x.get(d);
+  {
+    INFO("Check ComputeDuDt");
+    check_du_dt<1>(3, time);
+    check_du_dt<2>(3, time);
+    check_du_dt<3>(3, time);
   }
 
-  ScalarWave::UpwindFlux<Dim> flux_computer{};
-
-  auto packaged_data_int = TestHelpers::NumericalFluxes::get_packaged_data(
-      flux_computer, used_for_size, solution.dpsi_dt(x, t + 1.0),
-      solution.dpsi_dx(x, t + 2.0), solution.psi(x, t + 4.0),
-      solution.psi(x, t + 4.0), Scalar<DataVector>(pow<Dim>(npts), 0.0),
-      unit_normal);
-  auto packaged_data_ext = TestHelpers::NumericalFluxes::get_packaged_data(
-      flux_computer, used_for_size, solution.dpsi_dt(x, 2.0 * t + 10.0),
-      solution.dpsi_dx(x, 2.0 * t + 9.0), solution.psi(x, 2.0 * t + 7.0),
-      solution.psi(x, t + 4.0), Scalar<DataVector>(pow<Dim>(npts), 0.0),
-      unit_normal);
-
-  Scalar<DataVector> normal_dot_numerical_flux_pi(pow<Dim>(npts), 0.0);
-  Scalar<DataVector> normal_dot_numerical_flux_psi(pow<Dim>(npts), 0.0);
-  tnsr::i<DataVector, Dim, Frame::Inertial> normal_dot_numerical_flux_phi(
-      pow<Dim>(npts), 0.0);
-  dg::NumericalFluxes::normal_dot_numerical_fluxes(
-      flux_computer, packaged_data_int, packaged_data_ext,
-      make_not_null(&normal_dot_numerical_flux_pi),
-      make_not_null(&normal_dot_numerical_flux_phi),
-      make_not_null(&normal_dot_numerical_flux_psi));
-
-  CHECK(normal_dot_numerical_flux_psi ==
-        Scalar<DataVector>(pow<Dim>(npts), 0.0));
-  CHECK(normal_dot_numerical_flux_pi ==
-        Scalar<DataVector>(0.5 * (get(solution.psi(x, t + 4.0)) -
-                                  get(solution.psi(x, 2.0 * t + 7.0)) +
-                                  get(solution.dpsi_dt(x, t + 1.0)) -
-                                  get(solution.dpsi_dt(x, 2.0 * t + 10.0)))));
-
-  tnsr::i<DataVector, Dim> normal_dot_numerical_flux_phi_expected(
-      pow<Dim>(npts), 0.0);
-  for (size_t d = 0; d < Dim; ++d) {
-    normal_dot_numerical_flux_phi_expected.get(d) =
-        0.5 * (solution.dpsi_dx(x, t + 2.0).get(d) -
-               solution.dpsi_dx(x, 2.0 * t + 9.0).get(d) +
-               unit_normal.get(d) * solution.dpsi_dt(x, t + 1.0).get() -
-               unit_normal.get(d) * solution.dpsi_dt(x, 2.0 * t + 10.0).get());
+  {
+    INFO("Check NormalDotFluxes");
+    check_normal_dot_fluxes<1>(3, time);
+    check_normal_dot_fluxes<2>(3, time);
+    check_normal_dot_fluxes<3>(3, time);
   }
-  CHECK(normal_dot_numerical_flux_phi ==
-        normal_dot_numerical_flux_phi_expected);
-}
-}  // namespace
-
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.UpwindFlux",
-                  "[Unit][Evolution]") {
-  constexpr double time = 0.7;
-  check_upwind_flux<1>(3, time);
-  check_upwind_flux<2>(3, time);
-  check_upwind_flux<3>(3, time);
-}
-
-namespace {
-template <size_t Dim>
-void penalty_flux(
-    const gsl::not_null<Scalar<DataVector>*> normal_dot_numerical_flux_pi,
-    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
-        normal_dot_numerical_flux_phi,
-    const gsl::not_null<Scalar<DataVector>*> normal_dot_numerical_flux_psi,
-    const Scalar<DataVector>& n_dot_flux_pi_int,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& n_dot_flux_phi_int,
-    const Scalar<DataVector>& v_plus_int, const Scalar<DataVector>& v_minus_int,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_int,
-    const Scalar<DataVector>& minus_n_dot_flux_pi_ext,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& minus_n_dot_flux_phi_ext,
-    const Scalar<DataVector>& v_plus_ext, const Scalar<DataVector>& v_minus_ext,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_ext) noexcept {
-  const size_t num_pts = v_plus_int.begin()->size();
-  const DataVector used_for_size{num_pts,
-                                 std::numeric_limits<double>::signaling_NaN()};
-
-  ScalarWave::PenaltyFlux<Dim> flux_computer{};
-
-  auto packaged_data_int = TestHelpers::NumericalFluxes::get_packaged_data(
-      flux_computer, used_for_size, n_dot_flux_pi_int, n_dot_flux_phi_int,
-      v_plus_int, v_minus_int, unit_normal_int);
-  auto packaged_data_ext = TestHelpers::NumericalFluxes::get_packaged_data(
-      flux_computer, used_for_size, minus_n_dot_flux_pi_ext,
-      minus_n_dot_flux_phi_ext, v_plus_ext, v_minus_ext, unit_normal_ext);
-
-  dg::NumericalFluxes::normal_dot_numerical_fluxes(
-      flux_computer, packaged_data_int, packaged_data_ext,
-      normal_dot_numerical_flux_pi, normal_dot_numerical_flux_phi,
-      normal_dot_numerical_flux_psi);
-}
-
-template <size_t Dim>
-void check_penalty_flux(const size_t num_pts_per_dim) noexcept {
-  static_assert(test_protocol_conformance<ScalarWave::PenaltyFlux<Dim>,
-                                          dg::protocols::NumericalFlux>,
-                "Failed testing protocol conformance");
-
-  pypp::check_with_random_values<10>(
-      &penalty_flux<Dim>, "PenaltyFlux",
-      {"pi_penalty_flux", "phi_penalty_flux", "psi_penalty_flux"},
-      {{{-1.0, 1.0},
-        {-1.0, 1.0},
-        {-1.0, 1.0},
-        {-1.0, 1.0},
-        {-1.0, 1.0},
-        {-1.0, 1.0},
-        {-1.0, 1.0},
-        {-1.0, 1.0},
-        {-1.0, 1.0},
-        {-1.0, 1.0}}},
-      DataVector{pow<Dim>(num_pts_per_dim)});
-}
-}  // namespace
-
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.PenaltyFlux",
-                  "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
-      "Evolution/Systems/ScalarWave"};
-
-  constexpr size_t num_pts_per_dim = 5;
-  check_penalty_flux<1>(num_pts_per_dim);
-  check_penalty_flux<2>(num_pts_per_dim);
-  check_penalty_flux<3>(num_pts_per_dim);
 }
 
 static_assert(1.0 == ScalarWave::ComputeLargestCharacteristicSpeed::apply(),

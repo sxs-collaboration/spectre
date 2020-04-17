@@ -19,9 +19,10 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
-#include "Evolution/Systems/ScalarWave/Equations.hpp"  // IWYU pragma: keep // for UpwindFlux
+#include "Evolution/Systems/ScalarWave/Equations.hpp"
 #include "Evolution/Systems/ScalarWave/Initialize.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
+#include "Evolution/Systems/ScalarWave/UpwindPenaltyCorrection.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "IO/Observer/Actions.hpp"            // IWYU pragma: keep
 #include "IO/Observer/Helpers.hpp"            // IWYU pragma: keep
@@ -104,7 +105,7 @@ struct EvolutionMetavars {
   static constexpr bool local_time_stepping = true;
   using boundary_condition_tag = initial_data_tag;
   using normal_dot_numerical_flux =
-      Tags::NumericalFlux<ScalarWave::UpwindFlux<Dim>>;
+      Tags::NumericalFlux<ScalarWave::UpwindPenaltyCorrection<Dim>>;
   using time_stepper_tag = Tags::TimeStepper<
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
   using boundary_scheme = tmpl::conditional_t<
@@ -215,8 +216,11 @@ struct EvolutionMetavars {
               ScalarWave::Tags::ConstraintGamma2>,
           dg::Initialization::slice_tags_to_exterior<
               ScalarWave::Tags::ConstraintGamma2>,
-          dg::Initialization::face_compute_tags<>,
-          dg::Initialization::exterior_compute_tags<>, true, true>,
+          dg::Initialization::face_compute_tags<
+              ScalarWave::Tags::CharacteristicFieldsCompute<volume_dim>>,
+          dg::Initialization::exterior_compute_tags<
+              ScalarWave::Tags::CharacteristicFieldsCompute<volume_dim>>,
+          true, true>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<evolution::Tags::AnalyticCompute<
               Dim, initial_data_tag, analytic_solution_fields>>>,

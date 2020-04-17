@@ -29,9 +29,11 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/ScalarWave/Characteristics.hpp"
 #include "Evolution/Systems/ScalarWave/Constraints.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
+#include "Evolution/Systems/ScalarWave/UpwindPenaltyCorrection.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -61,7 +63,8 @@ struct Component {
 
   using variables_tag = typename metavariables::system::variables_tag;
   using boundary_scheme = dg::FirstOrderScheme::FirstOrderScheme<
-      1, variables_tag, Tags::NumericalFlux<ScalarWave::UpwindFlux<1>>,
+      1, variables_tag,
+      Tags::NumericalFlux<ScalarWave::UpwindPenaltyCorrection<1>>,
       Tags::TimeStepId>;
   using normal_dot_fluxes_tag = domain::Tags::Interface<
       domain::Tags::InternalDirections<1>,
@@ -112,7 +115,9 @@ struct Component {
           Tags::EuclideanMagnitude<domain::Tags::UnnormalizedFaceNormal<1>>>,
       interface_compute_tag<
           Tags::NormalizedCompute<domain::Tags::UnnormalizedFaceNormal<1>>>,
-      interface_compute_tag<ScalarWave::Tags::ConstraintGamma2Compute>>;
+      interface_compute_tag<ScalarWave::Tags::ConstraintGamma2Compute>,
+      interface_compute_tag<ScalarWave::Tags::CharacteristicFieldsCompute<1>>,
+      interface_compute_tag<ScalarWave::Tags::CharacteristicSpeedsCompute<1>>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -148,7 +153,7 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
   using component = Component<Metavariables>;
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {ScalarWave::UpwindFlux<1>{}}};
+      {ScalarWave::UpwindPenaltyCorrection<1>{}}};
 
   const Slab slab(time, time + 1.0);
   const TimeStepId current_time(true, 0, slab.start());
