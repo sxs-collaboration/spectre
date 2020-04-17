@@ -5,8 +5,6 @@
 
 #include <type_traits>
 
-#include "Utilities/TypeTraits.hpp"
-
 /*!
  * \ingroup TypeTraitsGroup
  * \brief Generate a type trait to check if a class has a member function that
