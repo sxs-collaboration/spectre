@@ -29,6 +29,8 @@ std::ostream& operator<<(std::ostream& os,
       return os << "Legendre";
     case Basis::Chebyshev:
       return os << "Chebyshev";
+    case Basis::FiniteDifference:
+      return os << "FiniteDifference";
     default: ERROR("Invalid basis");
   }
 }
@@ -40,6 +42,10 @@ std::ostream& operator<<(std::ostream& os,
       return os << "Gauss";
     case Quadrature::GaussLobatto:
       return os << "GaussLobatto";
+    case Quadrature::CellCentered:
+      return os << "CellCentered";
+    case Quadrature::FaceCentered:
+      return os << "FaceCentered";
     default: ERROR("Invalid quadrature");
   }
 }
@@ -402,8 +408,21 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f,
         default:
           ERROR("Missing quadrature case for spectral quantity");
       }
+    case Basis::FiniteDifference:
+      switch (mesh.quadrature(0)) {
+        case Quadrature::CellCentered:
+          return f(
+              std::integral_constant<Basis, Basis::FiniteDifference>{},
+              std::integral_constant<Quadrature, Quadrature::CellCentered>{},
+              num_points);
+        default:
+          ERROR(
+              "Only CellCentered is supported for finite difference "
+              "quadrature.");
+      }
     default:
-      ERROR("Missing basis case for spectral quantity");
+      ERROR("Missing basis case for spectral quantity. The missing basis is: "
+            << mesh.basis(0));
   }
 }
 
@@ -492,4 +511,17 @@ GENERATE_INSTANTIATIONS(INSTANTIATE,
 #undef BASIS
 #undef QUAD
 #undef INSTANTIATE
+
+template const DataVector& Spectral::collocation_points<
+    Spectral::Basis::FiniteDifference, Spectral::Quadrature::CellCentered>(
+    size_t) noexcept;
+template const DataVector& Spectral::quadrature_weights<
+    Spectral::Basis::FiniteDifference, Spectral::Quadrature::CellCentered>(
+    size_t) noexcept;
+template const DataVector& Spectral::collocation_points<
+    Spectral::Basis::FiniteDifference, Spectral::Quadrature::FaceCentered>(
+    size_t) noexcept;
+template const DataVector& Spectral::quadrature_weights<
+    Spectral::Basis::FiniteDifference, Spectral::Quadrature::FaceCentered>(
+    size_t) noexcept;
 /// \endcond
