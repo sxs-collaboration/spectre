@@ -60,6 +60,7 @@ function(create_cxx_flags_target FLAGS_TO_CHECK TARGET_NAME)
       INTERFACE_COMPILE_OPTIONS $<$<COMPILE_LANGUAGE:CXX>:${FLAGS_TO_CHECK}>)
   else(${RESULT} EQUAL 0)
     # Check each flag to see if it was marked as "invalid" in the output
+    unset(FLAGS_TO_ADD)
     foreach(FLAG ${POSITIVE_FLAGS_TO_CHECK})
       string(FIND "${ERROR_FROM_COMPILATION}" "'${FLAG}'" FOUND_POS)
       if(${FOUND_POS} EQUAL -1)

@@ -6,6 +6,12 @@
 # - call function _get_catch_version (taken from another source)
 # - pass version to find_package_handle_standard_args
 
+if(NOT CATCH_ROOT)
+  # Need to set to empty to avoid warnings with --warn-uninitialized
+  set(CATCH_ROOT "")
+  set(CATCH_ROOT $ENV{CATCH_ROOT})
+endif()
+
 # This function is from: https://github.com/pybind/pybind11
 # Extract the version number from catch.hpp
 function(_get_catch_version)
@@ -25,7 +31,7 @@ find_path(
   CATCH_INCLUDE_DIR
   PATH_SUFFIXES single_include include catch catch2
   NAMES catch.hpp
-  HINTS ${CATCH_ROOT} ENV CATCH_ROOT
+  HINTS ${CATCH_ROOT}
   DOC "catch include dir"
   )
 

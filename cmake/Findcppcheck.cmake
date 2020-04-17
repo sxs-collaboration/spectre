@@ -28,38 +28,26 @@
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
-file(TO_CMAKE_PATH "${CPPCHECK_ROOT_DIR}" CPPCHECK_ROOT_DIR)
-set(CPPCHECK_ROOT_DIR
-    "${CPPCHECK_ROOT_DIR}"
-    CACHE
-    PATH
-    "Path to search for cppcheck")
+if(NOT CPPCHECK_ROOT)
+  # Need to set to empty to avoid warnings with --warn-uninitialized
+  set(CPPCHECK_ROOT "")
+  set(CPPCHECK_ROOT $ENV{CPPCHECK_ROOT})
+endif()
 
 # cppcheck app bundles on Mac OS X are GUI, we want command line only
-set(_oldappbundlesetting ${CMAKE_FIND_APPBUNDLE})
-set(CMAKE_FIND_APPBUNDLE NEVER)
+if(APPLE)
+  set(_SAVED_CMAKE_FIND_APPBUNDLE ${CMAKE_FIND_APPBUNDLE})
+  set(CMAKE_FIND_APPBUNDLE NEVER)
+endif(APPLE)
 
-if(CPPCHECK_EXECUTABLE AND NOT EXISTS "${CPPCHECK_EXECUTABLE}")
-  set(CPPCHECK_EXECUTABLE "notfound" CACHE PATH FORCE "")
-endif()
+find_program(CPPCHECK_EXECUTABLE
+  NAMES cppcheck cppcheck-cli
+  HINTS "${CPPCHECK_ROOT}")
 
-# If we have a custom path, look there first.
-if(CPPCHECK_ROOT_DIR)
-  find_program(CPPCHECK_EXECUTABLE
-      NAMES
-      cppcheck
-      cli
-      PATHS
-      "${CPPCHECK_ROOT_DIR}"
-      PATH_SUFFIXES
-      cli
-      NO_DEFAULT_PATH)
-endif()
-
-find_program(CPPCHECK_EXECUTABLE NAMES cppcheck)
-
-# Restore original setting for appbundle finding
-set(CMAKE_FIND_APPBUNDLE ${_oldappbundlesetting})
+if(APPLE)
+  # Restore original setting for appbundle finding
+  set(CMAKE_FIND_APPBUNDLE ${_SAVED_CMAKE_FIND_APPBUNDLE})
+endif(APPLE)
 
 # Find out where our test file is
 get_filename_component(_cppcheckmoddir ${CMAKE_CURRENT_LIST_FILE} PATH)
@@ -91,7 +79,7 @@ function(_cppcheck_test_arg _resultvar _arg)
 endfunction()
 
 function(_cppcheck_set_arg_var _argvar _arg)
-  if("${${_argvar}}" STREQUAL "")
+  if(NOT ${_argvar})
     _cppcheck_test_arg(_cppcheck_arg "${_arg}")
     if(_cppcheck_arg)
       set(${_argvar} "${_arg}" PARENT_SCOPE)

@@ -4,7 +4,6 @@
 set(LIBRARY "Test_DiscontinuousGalerkinActions")
 
 set(LIBRARY_SOURCES
-  ${LIBRARY_SOURCES}
   Test_ComputeNonconservativeBoundaryFluxes.cpp
   Test_ImposeBoundaryConditions.cpp
   )

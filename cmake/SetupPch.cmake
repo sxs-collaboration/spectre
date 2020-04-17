@@ -146,7 +146,7 @@ if (USE_PCH)
     ${SPECTRE_PCH_HEADER_SOURCE_PATH}
     ${SPECTRE_PCH_DEP_HEADER_PATH}
     RESULT_VARIABLE RESULT_OF_LINK)
-  if(NOT ${RESULT_VARIABLE} EQUAL 0)
+  if(NOT ${RESULT_OF_LINK} EQUAL 0)
     message(FATAL_ERROR
       "Failed to create symbolic link for ${SPECTRE_PCH_DEP_HEADER_PATH}")
   endif()
@@ -180,6 +180,11 @@ if (USE_PCH)
     PRIVATE
     Blaze
     Brigand
+    )
+  target_include_directories(
+    ${SPECTRE_PCH_LIB}
+    PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
     )
   set_target_properties(
     ${SPECTRE_PCH_LIB}
@@ -240,4 +245,6 @@ if (USE_PCH)
     set_property(DIRECTORY APPEND PROPERTY
       ADDITIONAL_MAKE_CLEAN_FILES "${SPECTRE_PCH_PATH}")
   endif(CMAKE_VERSION VERSION_EQUAL 3.15 OR CMAKE_VERSION VERSION_GREATER 3.15)
+else (USE_PCH)
+  set(SPECTRE_PCH "")
 endif (USE_PCH)

@@ -66,6 +66,7 @@ function(spectre_add_catch_tests TEST_TARGET TEST_LIBS)
 
   file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/tmp")
 
+  unset(ABSOLUTE_SOURCE_FILES)
   foreach (SOURCE_FILE ${SOURCE_FILES})
     string(REGEX MATCH ".*(decl.h|def.h)" CHARM_INTERFACE_FILE
       "${SOURCE_FILE}")
@@ -143,9 +144,6 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
     # Get test type and fixture if applicable
     string(REGEX MATCH "(CATCH_)?(SPECTRE_TEST_CASE_METHOD|SCENARIO|SPECTRE_TEST_CASE)"
       TEST_TYPE "${TEST_NAME}")
-
-    string(REPLACE "${TEST_TYPE}(" ""
-      TEST_FIXTURE "${TEST_TYPE_AND_FIXTURE}")
 
     # Get string parts of test definition
     string(REGEX MATCHALL "\"[^\"]+\"" TEST_STRINGS "${TEST_NAME}")

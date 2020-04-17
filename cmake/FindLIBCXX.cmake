@@ -32,6 +32,12 @@
 #    target_link_libraries (TARGET ${LIBCXX_LIBRARIES} ${LIBCXXABI_LIBRARIES})
 #  endif()
 
+if(NOT LIBCXX_ROOT)
+  # Need to set to empty to avoid warnings with --warn-uninitialized
+  set(LIBCXX_ROOT "")
+  set(LIBCXX_ROOT $ENV{LIBCXX_ROOT})
+endif()
+
 # Extract a reasonable place to look for the libraries from the compiler path
 string(REGEX REPLACE "/bin/clang\\+\\+" ""
     LIBCXX_PATH_FROM_COMPILER ${CMAKE_CXX_COMPILER})
@@ -44,30 +50,25 @@ endif()
 find_path(LIBCXX_INCLUDE_DIR NAMES cmath
     HINTS ${LIBCXX_ROOT}/include/c++/v1
     ${LIBCXX_PATH_FROM_COMPILER}/include/c++/v1
-    /usr/include/c++/v1
-    $ENV{LIBCXX_ROOT}/include/c++/v1)
+    /usr/include/c++/v1)
 
 if(BUILD_SHARED_LIBS)
   find_library(LIBCXX_LIBRARIES NAMES c++
       HINTS ${LIBCXX_ROOT}/lib
-      ${LIBCXX_PATH_FROM_COMPILER}/lib
-      $ENV{LIBCXX_ROOT}/lib)
+      ${LIBCXX_PATH_FROM_COMPILER}/lib)
   find_library(LIBCXXABI_LIBRARIES NAMES c++abi
       HINTS ${LIBCXX_ROOT}/lib
-      ${LIBCXX_PATH_FROM_COMPILER}/lib
-      $ENV{LIBCXX_ROOT}/lib)
+      ${LIBCXX_PATH_FROM_COMPILER}/lib)
 else()
   find_library(LIBCXX_LIBRARIES NAMES libc++.a libc++.so
       HINTS ${LIBCXX_ROOT}/lib
-      ${LIBCXX_PATH_FROM_COMPILER}/lib
-      $ENV{LIBCXX_ROOT}/lib)
+      ${LIBCXX_PATH_FROM_COMPILER}/lib)
   if(ARCH MATCHES "ppc64")
     set(LIBCXXABI_LIBRARIES " ")
   else()
     find_library(LIBCXXABI_LIBRARIES NAMES libc++abi.a libc++abi.so
         HINTS ${LIBCXX_ROOT}/lib
-        ${LIBCXX_PATH_FROM_COMPILER}/lib
-        $ENV{LIBCXX_ROOT}/lib)
+        ${LIBCXX_PATH_FROM_COMPILER}/lib)
   endif()
 endif()
 

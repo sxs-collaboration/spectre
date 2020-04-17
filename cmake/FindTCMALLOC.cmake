@@ -5,37 +5,51 @@
 # If not in one of the default paths specify -D TCMALLOC_ROOT=/path/to/tcmalloc
 # to search there as well.
 
+if(NOT TCMALLOC_ROOT)
+  # Need to set to empty to avoid warnings with --warn-uninitialized
+  set(TCMALLOC_ROOT "")
+  set(TCMALLOC_ROOT $ENV{TCMALLOC_ROOT})
+endif()
+
 # find the tcmalloc include directory
 find_path(TCMALLOC_INCLUDE_DIRS gperftools/tcmalloc.h
-    PATH_SUFFIXES include
-    HINTS ${TCMALLOC_ROOT} ENV TCMALLOC_ROOT)
+  PATH_SUFFIXES include
+  HINTS ${TCMALLOC_ROOT})
 
 find_library(TCMALLOC_LIBRARIES
-    NAMES tcmalloc
-    PATH_SUFFIXES lib64 lib
-    HINTS ${TCMALLOC_ROOT} ENV TCMALLOC_ROOT)
+  NAMES tcmalloc
+  PATH_SUFFIXES lib64 lib
+  HINTS ${TCMALLOC_ROOT})
 
-# Extract version info from header
-file(READ
-  "${TCMALLOC_INCLUDE_DIRS}/gperftools/tcmalloc.h"
-  TCMALLOC_FIND_HEADER_CONTENTS)
+set(TCMALLOC_VERSION "")
 
-string(REGEX MATCH "#define TC_VERSION_MAJOR [0-9]+"
-  TCMALLOC_MAJOR_VERSION "${TCMALLOC_FIND_HEADER_CONTENTS}")
-string(REPLACE "#define TC_VERSION_MAJOR " ""
-  TCMALLOC_MAJOR_VERSION
-  "${TCMALLOC_MAJOR_VERSION}")
+if(EXISTS "${TCMALLOC_INCLUDE_DIRS}/gperftools/tcmalloc.h")
+  # Extract version info from header
+  file(READ
+    "${TCMALLOC_INCLUDE_DIRS}/gperftools/tcmalloc.h"
+    TCMALLOC_FIND_HEADER_CONTENTS)
 
-string(REGEX MATCH "#define TC_VERSION_MINOR [0-9]+"
-  TCMALLOC_MINOR_VERSION "${TCMALLOC_FIND_HEADER_CONTENTS}")
-string(REPLACE "#define TC_VERSION_MINOR " ""
-  TCMALLOC_MINOR_VERSION
-  "${TCMALLOC_MINOR_VERSION}")
+  string(REGEX MATCH "#define TC_VERSION_MAJOR [0-9]+"
+    TCMALLOC_MAJOR_VERSION "${TCMALLOC_FIND_HEADER_CONTENTS}")
+  string(REPLACE "#define TC_VERSION_MAJOR " ""
+    TCMALLOC_MAJOR_VERSION
+    "${TCMALLOC_MAJOR_VERSION}")
+
+  string(REGEX MATCH "#define TC_VERSION_MINOR [0-9]+"
+    TCMALLOC_MINOR_VERSION "${TCMALLOC_FIND_HEADER_CONTENTS}")
+  string(REPLACE "#define TC_VERSION_MINOR " ""
+    TCMALLOC_MINOR_VERSION
+    "${TCMALLOC_MINOR_VERSION}")
 
 
-set(TCMALLOC_VERSION
-  "${TCMALLOC_MAJOR_VERSION}.${TCMALLOC_MINOR_VERSION}"
-  )
+  set(TCMALLOC_VERSION
+    "${TCMALLOC_MAJOR_VERSION}.${TCMALLOC_MINOR_VERSION}"
+    )
+else()
+  message(WARNING "Failed to find file "
+    "'${TCMALLOC_INCLUDE_DIRS}/gperftools/tcmalloc.h' "
+    "while detecting the TCMALLOC version.")
+endif(EXISTS "${TCMALLOC_INCLUDE_DIRS}/gperftools/tcmalloc.h")
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
