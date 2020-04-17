@@ -212,6 +212,16 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
     is `1`).
   - This is useful to run tests on slower machines.
 
+## Checking Dependencies
+
+Getting dependencies of libraries correct is quite difficult. SpECTRE offers the
+CMake function `check_spectre_libs_dependencies`, defined in
+`cmake/SpectreCheckDependencies.cmake`, to check the dependencies for all
+libraries in the `libs` target. Individual target dependencies can be checked
+using the `check_target_dependencies` CMake function defined in
+`cmake/SpectreCheckTargetDependencies.cmake`. Please see those functions in the
+source tree for more details on how to use them.
+
 ## Formaline
 
 SpECTRE's implementation of Formaline is based on, but distinct in
