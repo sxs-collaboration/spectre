@@ -28,6 +28,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Initialize.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/UpwindPenaltyCorrection.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -122,8 +123,8 @@ struct EvolutionMetavars {
   using initial_data_tag = Tags::AnalyticSolution<
       GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>>;
   using boundary_condition_tag = initial_data_tag;
-  using normal_dot_numerical_flux =
-      Tags::NumericalFlux<GeneralizedHarmonic::UpwindFlux<volume_dim>>;
+  using normal_dot_numerical_flux = Tags::NumericalFlux<
+      GeneralizedHarmonic::UpwindPenaltyCorrection<volume_dim>>;
 
   using step_choosers_common =
       tmpl::list<StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial>,

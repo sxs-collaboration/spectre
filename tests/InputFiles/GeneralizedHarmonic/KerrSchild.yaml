@@ -40,7 +40,7 @@ EvolutionSystem:
       SpatialDecayWidth: 50.0
 
 NumericalFlux:
-  UpwindFlux:
+  UpwindPenalty:
 
 EventsAndTriggers:
   ? EveryNSlabs:

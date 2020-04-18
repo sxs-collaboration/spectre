@@ -28,95 +28,6 @@ class Variables;
 // IWYU pragma: no_forward_declare Tensor
 
 namespace GeneralizedHarmonic {
-namespace GeneralizedHarmonic_detail {
-template <typename FieldTag>
-db::const_item_type<FieldTag> weight_char_field(
-    const db::const_item_type<FieldTag>& char_field_int,
-    const DataVector& char_speed_int,
-    const db::const_item_type<FieldTag>& char_field_ext,
-    const DataVector& char_speed_ext) noexcept {
-  const DataVector& char_speed_avg{0.5 * (char_speed_int + char_speed_ext)};
-  db::const_item_type<FieldTag> weighted_char_field = char_field_int;
-  auto weighted_char_field_it = weighted_char_field.begin();
-  for (auto int_it = char_field_int.begin(), ext_it = char_field_ext.begin();
-       int_it != char_field_int.end();
-       ++int_it, ++ext_it, ++weighted_char_field_it) {
-    *weighted_char_field_it *= char_speed_avg * step_function(char_speed_avg);
-    *weighted_char_field_it +=
-        char_speed_avg * step_function(-char_speed_avg) * *ext_it;
-  }
-
-  return weighted_char_field;
-}
-
-// Function that performs the upwind weighting. Inputs are the char fields
-// and speeds in the interior and exterior. At each point, each returned
-// field is the product of the interior char field and its char speed
-// (if the char speed is outgoing) or the product of the exterior char field
-// and its char speed (if the char speed is incoming).
-template <size_t Dim>
-db::const_item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>
-weight_char_fields(
-    const db::const_item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>&
-        char_fields_int,
-    const db::const_item_type<Tags::CharacteristicSpeeds<Dim, Frame::Inertial>>&
-        char_speeds_int,
-    const db::const_item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>&
-        char_fields_ext,
-    const db::const_item_type<Tags::CharacteristicSpeeds<Dim, Frame::Inertial>>&
-        char_speeds_ext) noexcept {
-  const auto& u_psi_int =
-      get<Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(char_fields_int);
-  const auto& u_zero_int =
-      get<Tags::VZero<Dim, Frame::Inertial>>(char_fields_int);
-  const auto& u_plus_int =
-      get<Tags::VPlus<Dim, Frame::Inertial>>(char_fields_int);
-  const auto& u_minus_int =
-      get<Tags::VMinus<Dim, Frame::Inertial>>(char_fields_int);
-
-  const DataVector& char_speed_u_psi_int{char_speeds_int[0]};
-  const DataVector& char_speed_u_zero_int{char_speeds_int[1]};
-  const DataVector& char_speed_u_plus_int{char_speeds_int[2]};
-  const DataVector& char_speed_u_minus_int{char_speeds_int[3]};
-
-  const auto& u_psi_ext =
-      get<Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(char_fields_ext);
-  const auto& u_zero_ext =
-      get<Tags::VZero<Dim, Frame::Inertial>>(char_fields_ext);
-  const auto& u_plus_ext =
-      get<Tags::VPlus<Dim, Frame::Inertial>>(char_fields_ext);
-  const auto& u_minus_ext =
-      get<Tags::VMinus<Dim, Frame::Inertial>>(char_fields_ext);
-
-  const DataVector& char_speed_u_psi_ext{char_speeds_ext[0]};
-  const DataVector& char_speed_u_zero_ext{char_speeds_ext[1]};
-  const DataVector& char_speed_u_plus_ext{char_speeds_ext[2]};
-  const DataVector& char_speed_u_minus_ext{char_speeds_ext[3]};
-
-  auto weighted_char_fields = make_with_value<
-      db::const_item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>>(
-      char_speed_u_psi_int, 0.0);
-
-  get<Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(weighted_char_fields) =
-      weight_char_field<
-          GeneralizedHarmonic::Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(
-          u_psi_int, char_speed_u_psi_int, u_psi_ext, char_speed_u_psi_ext);
-  get<Tags::VZero<Dim, Frame::Inertial>>(weighted_char_fields) =
-      weight_char_field<GeneralizedHarmonic::Tags::VZero<Dim, Frame::Inertial>>(
-          u_zero_int, char_speed_u_zero_int, u_zero_ext, char_speed_u_zero_ext);
-  get<Tags::VPlus<Dim, Frame::Inertial>>(weighted_char_fields) =
-      weight_char_field<GeneralizedHarmonic::Tags::VPlus<Dim, Frame::Inertial>>(
-          u_plus_int, char_speed_u_plus_int, u_plus_ext, char_speed_u_plus_ext);
-  get<Tags::VMinus<Dim, Frame::Inertial>>(weighted_char_fields) =
-      weight_char_field<
-          GeneralizedHarmonic::Tags::VMinus<Dim, Frame::Inertial>>(
-          u_minus_int, char_speed_u_minus_int, u_minus_ext,
-          char_speed_u_minus_ext);
-
-  return weighted_char_fields;
-}
-}  // namespace GeneralizedHarmonic_detail
-
 /// \cond
 template <size_t Dim>
 void ComputeDuDt<Dim>::apply(
@@ -477,158 +388,23 @@ void ComputeNormalDotFluxes<Dim>::apply(
         spacetime_metric_normal_dot_flux,
     const gsl::not_null<tnsr::aa<DataVector, Dim>*> pi_normal_dot_flux,
     const gsl::not_null<tnsr::iaa<DataVector, Dim>*> phi_normal_dot_flux,
-    const tnsr::aa<DataVector, Dim>& spacetime_metric,
-    const tnsr::aa<DataVector, Dim>& pi, const tnsr::iaa<DataVector, Dim>& phi,
-    const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2,
-    const Scalar<DataVector>& lapse, const tnsr::I<DataVector, Dim>& shift,
-    const tnsr::II<DataVector, Dim>& inverse_spatial_metric,
-    const tnsr::i<DataVector, Dim>& unit_normal) noexcept {
-  const auto shift_dot_normal = get(dot_product(shift, unit_normal));
-
-  auto normal_dot_phi = make_with_value<tnsr::aa<DataVector, Dim>>(gamma1, 0.);
-  for (size_t mu = 0; mu < Dim + 1; ++mu) {
-    for (size_t nu = mu; nu < Dim + 1; ++nu) {
-      for (size_t i = 0; i < Dim; ++i) {
-        for (size_t j = 0; j < Dim; ++j) {
-          normal_dot_phi.get(mu, nu) += inverse_spatial_metric.get(i, j) *
-                                        unit_normal.get(j) * phi.get(i, mu, nu);
-        }
-      }
-    }
+    const tnsr::aa<DataVector, Dim>& spacetime_metric) noexcept {
+  destructive_resize_components(pi_normal_dot_flux,
+                                get<0, 0>(spacetime_metric).size());
+  destructive_resize_components(phi_normal_dot_flux,
+                                get<0, 0>(spacetime_metric).size());
+  destructive_resize_components(spacetime_metric_normal_dot_flux,
+                                get<0, 0>(spacetime_metric).size());
+  for (size_t storage_index = 0; storage_index < pi_normal_dot_flux->size();
+       ++storage_index) {
+    (*pi_normal_dot_flux)[storage_index] = 0.0;
+    (*spacetime_metric_normal_dot_flux)[storage_index] = 0.0;
   }
 
-  for (size_t mu = 0; mu < Dim + 1; ++mu) {
-    for (size_t nu = mu; nu < Dim + 1; ++nu) {
-      spacetime_metric_normal_dot_flux->get(mu, nu) =
-          -(1. + get(gamma1)) * spacetime_metric.get(mu, nu) * shift_dot_normal;
-    }
+  for (size_t storage_index = 0; storage_index < phi_normal_dot_flux->size();
+       ++storage_index) {
+    (*phi_normal_dot_flux)[storage_index] = 0.0;
   }
-
-  for (size_t mu = 0; mu < Dim + 1; ++mu) {
-    for (size_t nu = mu; nu < Dim + 1; ++nu) {
-      pi_normal_dot_flux->get(mu, nu) =
-          -shift_dot_normal *
-              (get(gamma1) * get(gamma2) * spacetime_metric.get(mu, nu) +
-               pi.get(mu, nu)) +
-          get(lapse) * normal_dot_phi.get(mu, nu);
-    }
-  }
-
-  for (size_t i = 0; i < Dim; ++i) {
-    for (size_t mu = 0; mu < Dim + 1; ++mu) {
-      for (size_t nu = mu; nu < Dim + 1; ++nu) {
-        phi_normal_dot_flux->get(i, mu, nu) =
-            get(lapse) * (unit_normal.get(i) * pi.get(mu, nu) -
-                          get(gamma2) * unit_normal.get(i) *
-                              spacetime_metric.get(mu, nu)) -
-            shift_dot_normal * phi.get(i, mu, nu);
-      }
-    }
-  }
-}
-
-template <size_t Dim>
-void UpwindFlux<Dim>::package_data(
-    const gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
-        packaged_spacetime_metric,
-    const gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
-        packaged_pi,
-    const gsl::not_null<tnsr::iaa<DataVector, Dim, Frame::Inertial>*>
-        packaged_phi,
-    const gsl::not_null<Scalar<DataVector>*> packaged_lapse,
-    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-        packaged_shift,
-    const gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
-        packaged_inverse_spatial_metric,
-    const gsl::not_null<Scalar<DataVector>*> packaged_gamma1,
-    const gsl::not_null<Scalar<DataVector>*> packaged_gamma2,
-    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
-        packaged_interface_unit_normal,
-    const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
-    const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi,
-    const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
-    const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
-    const tnsr::II<DataVector, Dim, Frame::Inertial>& inverse_spatial_metric,
-    const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
-    const noexcept {
-  *packaged_spacetime_metric = spacetime_metric;
-  *packaged_pi = pi;
-  *packaged_phi = phi;
-  *packaged_lapse = lapse;
-  *packaged_shift = shift;
-  *packaged_inverse_spatial_metric = inverse_spatial_metric;
-  *packaged_gamma1 = gamma1;
-  *packaged_gamma2 = gamma2;
-  *packaged_interface_unit_normal = interface_unit_normal;
-}
-
-template <size_t Dim>
-void UpwindFlux<Dim>::operator()(
-    const gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
-        psi_normal_dot_numerical_flux,
-    const gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
-        pi_normal_dot_numerical_flux,
-    const gsl::not_null<tnsr::iaa<DataVector, Dim, Frame::Inertial>*>
-        phi_normal_dot_numerical_flux,
-    const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric_int,
-    const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi_int,
-    const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi_int,
-    const Scalar<DataVector>& lapse_int,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& shift_int,
-    const tnsr::II<DataVector, Dim, Frame::Inertial>&
-        inverse_spatial_metric_int,
-    const Scalar<DataVector>& gamma1_int, const Scalar<DataVector>& gamma2_int,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal_int,
-    const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric_ext,
-    const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi_ext,
-    const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi_ext,
-    const Scalar<DataVector>& lapse_ext,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& shift_ext,
-    const tnsr::II<DataVector, Dim, Frame::Inertial>&
-        inverse_spatial_metric_ext,
-    const Scalar<DataVector>& gamma1_ext, const Scalar<DataVector>& gamma2_ext,
-    const tnsr::i<DataVector, Dim,
-                  Frame::Inertial>& /*interface_unit_normal_ext*/) const
-    noexcept {
-  const Scalar<DataVector> gamma1_avg{0.5 *
-                                      (get(gamma1_int) + get(gamma1_ext))};
-  const Scalar<DataVector> gamma2_avg{0.5 *
-                                      (get(gamma2_int) + get(gamma2_ext))};
-
-  const auto char_fields_int = characteristic_fields(
-      gamma2_avg, inverse_spatial_metric_int, spacetime_metric_int, pi_int,
-      phi_int, interface_unit_normal_int);
-  const auto char_speeds_int = characteristic_speeds(
-      gamma1_avg, lapse_int, shift_int, interface_unit_normal_int);
-  const auto char_fields_ext = characteristic_fields(
-      gamma2_avg, inverse_spatial_metric_ext, spacetime_metric_ext, pi_ext,
-      phi_ext, interface_unit_normal_int);
-  const auto char_speeds_ext = characteristic_speeds(
-      gamma1_avg, lapse_ext, shift_ext, interface_unit_normal_int);
-
-  const auto weighted_char_fields =
-      GeneralizedHarmonic_detail::weight_char_fields<Dim>(
-          char_fields_int, char_speeds_int, char_fields_ext, char_speeds_ext);
-
-  const auto weighted_evolved_fields =
-      evolved_fields_from_characteristic_fields(
-          gamma2_avg,
-          get<Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(
-              weighted_char_fields),
-          get<Tags::VZero<Dim, Frame::Inertial>>(weighted_char_fields),
-          get<Tags::VPlus<Dim, Frame::Inertial>>(weighted_char_fields),
-          get<Tags::VMinus<Dim, Frame::Inertial>>(weighted_char_fields),
-          interface_unit_normal_int);
-
-  *psi_normal_dot_numerical_flux =
-      get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial>>(
-          weighted_evolved_fields);
-  *pi_normal_dot_numerical_flux =
-      get<Tags::Pi<Dim, Frame::Inertial>>(weighted_evolved_fields);
-  *phi_normal_dot_numerical_flux =
-      get<Tags::Phi<Dim, Frame::Inertial>>(weighted_evolved_fields);
 }
 /// \endcond
 }  // namespace GeneralizedHarmonic
@@ -662,7 +438,6 @@ using variables_tags =
 #define INSTANTIATE(_, data)                                                 \
   template struct GeneralizedHarmonic::ComputeDuDt<DIM(data)>;               \
   template struct GeneralizedHarmonic::ComputeNormalDotFluxes<DIM(data)>;    \
-  template struct GeneralizedHarmonic::UpwindFlux<DIM(data)>;                \
   template Variables<                                                        \
       db::wrap_tags_in<::Tags::deriv, derivative_tags<DIM(data)>,            \
                        tmpl::size_t<DIM(data)>, derivative_frame>>           \

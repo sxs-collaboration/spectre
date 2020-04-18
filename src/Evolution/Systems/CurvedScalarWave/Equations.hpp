@@ -184,11 +184,9 @@ struct ComputeNormalDotFluxes {
  * \f$\Lambda^-\f$ contains characteristic speeds for variables that are
  * incoming to the element at the interface. An ambiguity naturally arises
  * as to which set of evolved variables (''interior'' or ''exterior'') to use
- * when computing these speeds. Following the treatment of generalized harmonic
- * evolution system's characteristics in its upwind flux (\ref
- * GeneralizedHarmonic::UpwindFlux ), here also we compute both and use their
- * average, i.e. \f$\lambda^{\rm avg} = (\lambda^{\rm int} + \lambda^{\rm
- * ext})/2\f$, to populate \f$\Lambda^\pm\f$.
+ * when computing these speeds. We compute both and use their average, i.e.
+ * \f$\lambda^{\rm avg} = (\lambda^{\rm int} + \lambda^{\rm ext})/2\f$, to
+ * populate \f$\Lambda^\pm\f$.
  *
  *
  * This function computes the upwind flux as follows:
