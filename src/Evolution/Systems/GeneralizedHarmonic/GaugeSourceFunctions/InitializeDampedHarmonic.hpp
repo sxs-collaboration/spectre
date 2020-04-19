@@ -26,6 +26,11 @@ template <size_t Dim>
 struct InitializeDampedHarmonic {
   using frame = Frame::Inertial;
 
+  using const_global_cache_tags = tmpl::list<
+      GeneralizedHarmonic::Tags::GaugeHRollOnStartTime,
+      GeneralizedHarmonic::Tags::GaugeHRollOnTimeWindow,
+      GeneralizedHarmonic::Tags::GaugeHSpatialWeightDecayWidth<frame>>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
