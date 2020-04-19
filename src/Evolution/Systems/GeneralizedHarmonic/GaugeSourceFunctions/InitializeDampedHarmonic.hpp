@@ -9,8 +9,10 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedHarmonic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
@@ -33,6 +35,18 @@ struct InitializeDampedHarmonic {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
+    if (not db::get<domain::CoordinateMaps::Tags::CoordinateMap<
+                Metavariables::volume_dim, Frame::Grid, Frame::Inertial>>(box)
+                .is_identity()) {
+      ERROR(
+          "Cannot use the damped harmonic rollon gauge with a moving mesh "
+          "because the rollon is not implemented for a moving mesh. The issue "
+          "is that the initial H_a needs to be in the grid frame, and then "
+          "transformed to the inertial frame at each time step. Transforming "
+          "the spacetime derivative requires spacetime Hessians, which are not "
+          "implemented for the maps and there is currently no plan to add them "
+          "because we do not need them for anything else.");
+    }
     const auto inverse_jacobian =
         db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical, frame>>(box);
 
