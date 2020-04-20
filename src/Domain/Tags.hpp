@@ -175,12 +175,14 @@ struct InverseJacobianCompute
       db::ComputeTag {
   using base = InverseJacobian<MapTag::dim, typename MapTag::source_frame,
                                typename MapTag::target_frame>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
   static constexpr auto function(
+      const gsl::not_null<return_type*> inv_jacobian,
       const db::const_item_type<MapTag>& element_map,
       const db::const_item_type<SourceCoordsTag>& source_coords) noexcept {
-    return element_map.inv_jacobian(source_coords);
+    *inv_jacobian = element_map.inv_jacobian(source_coords);
   }
-  using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
 };
 
 /// \ingroup DataBoxTagsGroup
