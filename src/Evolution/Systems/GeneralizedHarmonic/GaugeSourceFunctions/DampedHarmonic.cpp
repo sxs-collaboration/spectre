@@ -55,12 +55,13 @@ double time_deriv_of_roll_on_function(const double time, const double t_start,
 }
 }  // namespace DampedHarmonicGauge_detail
 
+namespace {
 template <size_t SpatialDim, typename Frame>
-void damped_harmonic(
+void damped_harmonic_impl(
     const gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame>*> gauge_h,
     const gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame>*> d4_gauge_h,
-    const tnsr::a<DataVector, SpatialDim, Frame>& gauge_h_init,
-    const tnsr::ab<DataVector, SpatialDim, Frame>& dgauge_h_init,
+    const tnsr::a<DataVector, SpatialDim, Frame>* gauge_h_init,
+    const tnsr::ab<DataVector, SpatialDim, Frame>* dgauge_h_init,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame>& shift,
     const tnsr::a<DataVector, SpatialDim, Frame>&
@@ -206,7 +207,7 @@ void damped_harmonic(
 
   // Calculate H_a
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
-    gauge_h->get(a) = (1. - roll_on_h_init) * gauge_h_init.get(a) +
+    gauge_h->get(a) = (1. - roll_on_h_init) * gauge_h_init->get(a) +
                       get(prefac) * spacetime_unit_normal_one_form.get(a);
     for (size_t i = 0; i < SpatialDim; ++i) {
       gauge_h->get(a) -=
@@ -327,12 +328,12 @@ void damped_harmonic(
 
   // Calc \f$ \partial_a T1 \f$
   for (size_t b = 0; b < SpatialDim + 1; ++b) {
-    dT1.get(0, b) = -gauge_h_init.get(b) * d0_roll_on_h_init;
+    dT1.get(0, b) = -gauge_h_init->get(b) * d0_roll_on_h_init;
     for (size_t a = 0; a < SpatialDim + 1; ++a) {
       if (a != 0) {
-        dT1.get(a, b) = (1. - roll_on_h_init) * dgauge_h_init.get(a, b);
+        dT1.get(a, b) = (1. - roll_on_h_init) * dgauge_h_init->get(a, b);
       } else {
-        dT1.get(a, b) += (1. - roll_on_h_init) * dgauge_h_init.get(a, b);
+        dT1.get(a, b) += (1. - roll_on_h_init) * dgauge_h_init->get(a, b);
       }
     }
   }
@@ -370,6 +371,38 @@ void damped_harmonic(
       d4_gauge_h->get(a, b) = dT1.get(a, b) + dT2.get(a, b) + dT3.get(a, b);
     }
   }
+}
+}  // namespace
+
+template <size_t SpatialDim, typename Frame>
+void damped_harmonic(
+    const gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame>*> gauge_h,
+    const gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame>*> d4_gauge_h,
+    const tnsr::a<DataVector, SpatialDim, Frame>& gauge_h_init,
+    const tnsr::ab<DataVector, SpatialDim, Frame>& dgauge_h_init,
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, SpatialDim, Frame>& shift,
+    const tnsr::a<DataVector, SpatialDim, Frame>&
+        spacetime_unit_normal_one_form,
+    const Scalar<DataVector>& sqrt_det_spatial_metric,
+    const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
+    const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
+    const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, const double time,
+    const tnsr::I<DataVector, SpatialDim, Frame>& coords,
+    const double amp_coef_L1, const double amp_coef_L2, const double amp_coef_S,
+    const int exp_L1, const int exp_L2, const int exp_S,
+    const double t_start_h_init, const double sigma_t_h_init,
+    const double t_start_L1, const double sigma_t_L1, const double t_start_L2,
+    const double sigma_t_L2, const double t_start_S, const double sigma_t_S,
+    const double sigma_r) noexcept {
+  damped_harmonic_impl(gauge_h, d4_gauge_h, &gauge_h_init, &dgauge_h_init,
+                       lapse, shift, spacetime_unit_normal_one_form,
+                       sqrt_det_spatial_metric, inverse_spatial_metric,
+                       spacetime_metric, pi, phi, time, coords, amp_coef_L1,
+                       amp_coef_L2, amp_coef_S, exp_L1, exp_L2, exp_S,
+                       t_start_h_init, sigma_t_h_init, t_start_L1, sigma_t_L1,
+                       t_start_L2, sigma_t_L2, t_start_S, sigma_t_S, sigma_r);
 }
 
 template <size_t SpatialDim, typename Frame>
