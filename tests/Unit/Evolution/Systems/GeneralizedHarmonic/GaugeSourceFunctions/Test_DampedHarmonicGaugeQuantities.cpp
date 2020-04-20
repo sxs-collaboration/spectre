@@ -168,13 +168,9 @@ tnsr::a<DataVector, SpatialDim, Frame> wrap_DampedHarmonicHCompute(
       dgauge_h_init, lapse, shift, spacetime_unit_normal_one_form,
       sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi,
       phi, t, coords, 1., 1.,
-      1.,                // amp_coef_{L1, L2, S}
-      4, 4, 4,           // exp_{L1, L2, S}
-      t_start, sigma_t,  // _h_init
-      t_start, sigma_t,  // _L1
-      t_start, sigma_t,  // _L2
-      t_start, sigma_t,  // _S
-      sigma_r);
+      1.,       // amp_coef_{L1, L2, S}
+      4, 4, 4,  // exp_{L1, L2, S}
+      t_start, sigma_t, sigma_r);
   return gauge_h;
 }
 
@@ -204,13 +200,9 @@ wrap_SpacetimeDerivDampedHarmonicHCompute(
       dgauge_h_init, lapse, shift, spacetime_unit_normal_one_form,
       sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi,
       phi, t, coords, 1., 1.,
-      1.,                // amp_coef_{L1, L2, S}
-      4, 4, 4,           // exp_{L1, L2, S}
-      t_start, sigma_t,  // _h_init
-      t_start, sigma_t,  // _L1
-      t_start, sigma_t,  // _L2
-      t_start, sigma_t,  // _S
-      sigma_r);
+      1.,       // amp_coef_{L1, L2, S}
+      4, 4, 4,  // exp_{L1, L2, S}
+      t_start, sigma_t, sigma_r);
   return d4_gauge_h;
 }
 
@@ -357,8 +349,8 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
       dt_spatial_metric, d_spatial_metric);
 
   // Initialize settings
-  const double t_start_S = pdist(generator) * 0.1;
-  const double sigma_t_S = pdist(generator) * 0.2;
+  const double t_start = pdist(generator) * 0.1;
+  const double sigma_t = pdist(generator) * 0.2;
   const double r_max = pdist(generator) * 0.7;
 
   const auto gauge_h_init =
@@ -370,13 +362,13 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
   // local H_a
   const auto gauge_h_expected = wrap_DampedHarmonicHCompute(
       gauge_h_init, lapse, shift, sqrt_det_spatial_metric, spacetime_metric, t,
-      t_start_S, sigma_t_S, x, r_max);
+      t_start, sigma_t, x, r_max);
   // local D4(H_a)
   const auto d4_gauge_h_expected = wrap_SpacetimeDerivDampedHarmonicHCompute(
       gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
-      inverse_spatial_metric, spacetime_metric, pi, phi, t, t_start_S,
-      sigma_t_S, x, r_max);
+      inverse_spatial_metric, spacetime_metric, pi, phi, t, t_start, sigma_t, x,
+      r_max);
 
   //
   // Check that compute items work correctly in the DataBox
@@ -408,8 +400,8 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
                              DampedHarmonicRollonCompute<3, Frame::Inertial>>>(
       gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
-      inverse_spatial_metric, spacetime_metric, pi, phi, t, x, t_start_S,
-      sigma_t_S, r_max);
+      inverse_spatial_metric, spacetime_metric, pi, phi, t, x, t_start, sigma_t,
+      r_max);
 
   // Verify that locally computed H_a matches the same obtained through its
   // ComputeTag from databox

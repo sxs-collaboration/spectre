@@ -74,9 +74,7 @@ void damped_harmonic_impl(
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double amp_coef_L1, const double amp_coef_L2, const double amp_coef_S,
     const int exp_L1, const int exp_L2, const int exp_S,
-    const double t_start_h_init, const double sigma_t_h_init,
-    const double t_start_L1, const double sigma_t_L1, const double t_start_L2,
-    const double sigma_t_L2, const double t_start_S, const double sigma_t_S,
+    const double rollon_start_time, const double rollon_width,
     const double sigma_r) noexcept {
   destructive_resize_components(gauge_h, get(lapse).size());
   destructive_resize_components(d4_gauge_h, get(lapse).size());
@@ -186,24 +184,18 @@ void damped_harmonic_impl(
       make_not_null(&log_fac_2), lapse, sqrt_det_spatial_metric, exp_fac_2);
 
   // Tempering functions
-  const auto roll_on_h_init = DampedHarmonicGauge_detail::roll_on_function(
-      time, t_start_h_init, sigma_t_h_init);
-  const auto roll_on_L1 = DampedHarmonicGauge_detail::roll_on_function(
-      time, t_start_L1, sigma_t_L1);
-  const auto roll_on_L2 = DampedHarmonicGauge_detail::roll_on_function(
-      time, t_start_L2, sigma_t_L2);
-  const auto roll_on_S =
-      DampedHarmonicGauge_detail::roll_on_function(time, t_start_S, sigma_t_S);
+  const double roll_on = DampedHarmonicGauge_detail::roll_on_function(
+      time, rollon_start_time, rollon_width);
   DampedHarmonicGauge_detail::spatial_weight_function<SpatialDim, Frame,
                                                       DataVector>(
       make_not_null(&weight), coords, sigma_r);
 
   // coeffs that enter gauge source function
   get(mu_L1) =
-      amp_coef_L1 * roll_on_L1 * get(weight) * pow(get(log_fac_1), exp_L1);
-  get(mu_S) = amp_coef_S * roll_on_S * get(weight) * pow(get(log_fac_1), exp_S);
+      amp_coef_L1 * roll_on * get(weight) * pow(get(log_fac_1), exp_L1);
+  get(mu_S) = amp_coef_S * roll_on * get(weight) * pow(get(log_fac_1), exp_S);
   get(mu_L2) =
-      amp_coef_L2 * roll_on_L2 * get(weight) * pow(get(log_fac_2), exp_L2);
+      amp_coef_L2 * roll_on * get(weight) * pow(get(log_fac_2), exp_L2);
   get(mu_S_over_lapse) = get(mu_S) * get(one_over_lapse);
 
   // Calc \f$ \mu_1 = \mu_{L1} log(rootg/N) = R W log(rootg/N)^5\f$
@@ -217,7 +209,7 @@ void damped_harmonic_impl(
   // Calculate H_a
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     if constexpr (UseRollon) {
-      gauge_h->get(a) = (1. - roll_on_h_init) * gauge_h_init->get(a) +
+      gauge_h->get(a) = (1. - roll_on) * gauge_h_init->get(a) +
                         get(prefac) * spacetime_unit_normal_one_form.get(a);
     } else {
       gauge_h->get(a) = get(prefac) * spacetime_unit_normal_one_form.get(a);
@@ -228,18 +220,9 @@ void damped_harmonic_impl(
     }
   }
 
-  const auto d0_roll_on_h_init =
+  const double d0_roll_on =
       DampedHarmonicGauge_detail::time_deriv_of_roll_on_function(
-          time, t_start_h_init, sigma_t_h_init);
-  const auto d0_roll_on_L1 =
-      DampedHarmonicGauge_detail::time_deriv_of_roll_on_function(
-          time, t_start_L1, sigma_t_L1);
-  const auto d0_roll_on_S =
-      DampedHarmonicGauge_detail::time_deriv_of_roll_on_function(
-          time, t_start_S, sigma_t_S);
-  const auto d0_roll_on_L2 =
-      DampedHarmonicGauge_detail::time_deriv_of_roll_on_function(
-          time, t_start_L2, sigma_t_L2);
+          time, rollon_start_time, rollon_width);
 
   // Calc \f$ \partial_a [R W] \f$
   DampedHarmonicGauge_detail::spacetime_deriv_of_spatial_weight_function<
@@ -249,13 +232,13 @@ void damped_harmonic_impl(
   d4_RW_S = d4_weight;
   d4_RW_L2 = d4_weight;
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
-    d4_RW_L1.get(a) *= roll_on_L1;
-    d4_RW_S.get(a) *= roll_on_S;
-    d4_RW_L2.get(a) *= roll_on_L2;
+    d4_RW_L1.get(a) *= roll_on;
+    d4_RW_S.get(a) *= roll_on;
+    d4_RW_L2.get(a) *= roll_on;
   }
-  get<0>(d4_RW_L1) += get(weight) * d0_roll_on_L1;
-  get<0>(d4_RW_S) += get(weight) * d0_roll_on_S;
-  get<0>(d4_RW_L2) += get(weight) * d0_roll_on_L2;
+  get<0>(d4_RW_L1) += get(weight) * d0_roll_on;
+  get<0>(d4_RW_S) += get(weight) * d0_roll_on;
+  get<0>(d4_RW_L2) += get(weight) * d0_roll_on;
 
   // \partial_a \mu_{S} = \partial_a(A_S R_S W
   //                               \log(\sqrt{g}/N)^{c_{S}})
@@ -282,15 +265,14 @@ void damped_harmonic_impl(
     // \f$ \partial_a \mu_1 \f$
     d4_mu1.get(a) =
         amp_coef_L1 * pow(get(log_fac_1), exp_L1 + 1) * d4_RW_L1.get(a) +
-        amp_coef_L1 * roll_on_L1 * get(weight) * d4_log_fac_mu1.get(a);
+        amp_coef_L1 * roll_on * get(weight) * d4_log_fac_mu1.get(a);
     // \f$ \partial_a \mu_{S} \f$
-    d4_mu_S.get(a) =
-        amp_coef_S * d4_RW_S.get(a) * pow(get(log_fac_1), exp_S) +
-        amp_coef_S * roll_on_S * get(weight) * d4_log_fac_muS.get(a);
+    d4_mu_S.get(a) = amp_coef_S * d4_RW_S.get(a) * pow(get(log_fac_1), exp_S) +
+                     amp_coef_S * roll_on * get(weight) * d4_log_fac_muS.get(a);
     // \f$ \partial_a \mu_2 \f$
     d4_mu2.get(a) =
         amp_coef_L2 * pow(get(log_fac_2), exp_L2 + 1) * d4_RW_L2.get(a) +
-        amp_coef_L2 * roll_on_L2 * get(weight) * d4_log_fac_mu2.get(a);
+        amp_coef_L2 * roll_on * get(weight) * d4_log_fac_mu2.get(a);
   }
 
   // Calc \f$ \partial_a N = {\partial_0 N, \partial_i N} \f$
@@ -342,12 +324,12 @@ void damped_harmonic_impl(
   // Calc \f$ \partial_a T1 \f$
   if constexpr (UseRollon) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
-      dT1.get(0, b) = -gauge_h_init->get(b) * d0_roll_on_h_init;
+      dT1.get(0, b) = -gauge_h_init->get(b) * d0_roll_on;
       for (size_t a = 0; a < SpatialDim + 1; ++a) {
         if (a != 0) {
-          dT1.get(a, b) = (1. - roll_on_h_init) * dgauge_h_init->get(a, b);
+          dT1.get(a, b) = (1. - roll_on) * dgauge_h_init->get(a, b);
         } else {
-          dT1.get(a, b) += (1. - roll_on_h_init) * dgauge_h_init->get(a, b);
+          dT1.get(a, b) += (1. - roll_on) * dgauge_h_init->get(a, b);
         }
       }
     }
@@ -411,17 +393,14 @@ void damped_harmonic_rollon(
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double amp_coef_L1, const double amp_coef_L2, const double amp_coef_S,
     const int exp_L1, const int exp_L2, const int exp_S,
-    const double t_start_h_init, const double sigma_t_h_init,
-    const double t_start_L1, const double sigma_t_L1, const double t_start_L2,
-    const double sigma_t_L2, const double t_start_S, const double sigma_t_S,
+    const double rollon_start_time, const double rollon_width,
     const double sigma_r) noexcept {
   damped_harmonic_impl<true>(
       gauge_h, d4_gauge_h, &gauge_h_init, &dgauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
       inverse_spatial_metric, spacetime_metric, pi, phi, time, coords,
       amp_coef_L1, amp_coef_L2, amp_coef_S, exp_L1, exp_L2, exp_S,
-      t_start_h_init, sigma_t_h_init, t_start_L1, sigma_t_L1, t_start_L2,
-      sigma_t_L2, t_start_S, sigma_t_S, sigma_r);
+      rollon_start_time, rollon_width, sigma_r);
 }
 
 template <size_t SpatialDim, typename Frame>
@@ -439,7 +418,7 @@ void DampedHarmonicRollonCompute<SpatialDim, Frame>::function(
     const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
     const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, const double time,
-    const double t_start, const double sigma_t,
+    const double rollon_start_time, const double rollon_width,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double sigma_r) noexcept {
   if (UNLIKELY(h_and_d4_h->number_of_grid_points() != get(lapse).size())) {
@@ -457,11 +436,7 @@ void DampedHarmonicRollonCompute<SpatialDim, Frame>::function(
       phi, time, coords, 1., 1.,
       1.,                            // amp_coef_{L1, L2, S}
       exponent, exponent, exponent,  // exp_{L1, L2, S}
-      t_start, sigma_t,              // _h_init
-      t_start, sigma_t,              // _L1
-      t_start, sigma_t,              // _L2
-      t_start, sigma_t,              // _S
-      sigma_r);
+      rollon_start_time, rollon_width, sigma_r);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -469,33 +444,30 @@ void DampedHarmonicRollonCompute<SpatialDim, Frame>::function(
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 #define DTYPE_SCAL(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE_DV_FUNC(_, data)                                           \
-  template void damped_harmonic_rollon(                                        \
-      const gsl::not_null<tnsr::a<DataVector, DIM(data), FRAME(data)>*>        \
-          gauge_h,                                                             \
-      const gsl::not_null<tnsr::ab<DataVector, DIM(data), FRAME(data)>*>       \
-          d4_gauge_h,                                                          \
-      const tnsr::a<DataVector, DIM(data), FRAME(data)>& gauge_h_init,         \
-      const tnsr::ab<DataVector, DIM(data), FRAME(data)>& dgauge_h_init,       \
-      const Scalar<DataVector>& lapse,                                         \
-      const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,                \
-      const tnsr::a<DataVector, DIM(data), FRAME(data)>&                       \
-          spacetime_unit_normal_one_form,                                      \
-      const Scalar<DataVector>& sqrt_det_spatial_metric,                       \
-      const tnsr::II<DataVector, DIM(data), FRAME(data)>&                      \
-          inverse_spatial_metric,                                              \
-      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& spacetime_metric,    \
-      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& pi,                  \
-      const tnsr::iaa<DataVector, DIM(data), FRAME(data)>& phi,                \
-      const double time,                                                       \
-      const tnsr::I<DataVector, DIM(data), FRAME(data)>& coords,               \
-      const double amp_coef_L1, const double amp_coef_L2,                      \
-      const double amp_coef_S, const int exp_L1, const int exp_L2,             \
-      const int exp_S, const double t_start_h_init,                            \
-      const double sigma_t_h_init, const double t_start_L1,                    \
-      const double sigma_t_L1, const double t_start_L2,                        \
-      const double sigma_t_L2, const double t_start_S, const double sigma_t_S, \
-      const double sigma_r) noexcept;                                          \
+#define INSTANTIATE_DV_FUNC(_, data)                                        \
+  template void damped_harmonic_rollon(                                     \
+      const gsl::not_null<tnsr::a<DataVector, DIM(data), FRAME(data)>*>     \
+          gauge_h,                                                          \
+      const gsl::not_null<tnsr::ab<DataVector, DIM(data), FRAME(data)>*>    \
+          d4_gauge_h,                                                       \
+      const tnsr::a<DataVector, DIM(data), FRAME(data)>& gauge_h_init,      \
+      const tnsr::ab<DataVector, DIM(data), FRAME(data)>& dgauge_h_init,    \
+      const Scalar<DataVector>& lapse,                                      \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,             \
+      const tnsr::a<DataVector, DIM(data), FRAME(data)>&                    \
+          spacetime_unit_normal_one_form,                                   \
+      const Scalar<DataVector>& sqrt_det_spatial_metric,                    \
+      const tnsr::II<DataVector, DIM(data), FRAME(data)>&                   \
+          inverse_spatial_metric,                                           \
+      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& spacetime_metric, \
+      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& pi,               \
+      const tnsr::iaa<DataVector, DIM(data), FRAME(data)>& phi,             \
+      const double time,                                                    \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& coords,            \
+      const double amp_coef_L1, const double amp_coef_L2,                   \
+      const double amp_coef_S, const int exp_L1, const int exp_L2,          \
+      const int exp_S, const double rollon_start_time,                      \
+      const double rollon_width, const double sigma_r) noexcept;            \
   template class DampedHarmonicRollonCompute<DIM(data), FRAME(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_DV_FUNC, (1, 2, 3), (DataVector),

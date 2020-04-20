@@ -175,14 +175,9 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
       ActionTesting::get_databox_tag<
           comp, domain::Tags::Coordinates<Dim, Frame::Inertial>>(runner, 0),
 
-      1., 1.,
-      1.,                // amp_coef_{L1, L2, S}
-      4, 4, 4,           // exp_{L1, L2, S}
-      t_start, sigma_t,  // _h_init
-      t_start, sigma_t,  // _L1
-      t_start, sigma_t,  // _L2
-      t_start, sigma_t,  // _S
-      r_max);
+      1., 1., 1.,  // amp_coef_{L1, L2, S}
+      4, 4, 4,     // exp_{L1, L2, S}
+      t_start, sigma_t, r_max);
 
   CHECK_ITERABLE_APPROX(
       SINGLE_ARG(ActionTesting::get_databox_tag<
