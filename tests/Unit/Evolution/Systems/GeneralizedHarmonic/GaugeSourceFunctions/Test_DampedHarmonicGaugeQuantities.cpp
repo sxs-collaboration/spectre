@@ -117,7 +117,7 @@ void test_options() noexcept {
 }
 
 template <size_t SpatialDim, typename Frame, typename DataType>
-void test_detail_functions(const DataType& used_for_size) noexcept {
+void test_rollon_function(const DataType& used_for_size) noexcept {
   // roll_on_function
   pypp::check_with_random_values<1>(
       &::GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
@@ -397,14 +397,14 @@ SPECTRE_TEST_CASE(
   test_options<Frame::Inertial>();
 
   {
-    INFO("Details");
-    test_detail_functions<1, Frame::Inertial>(used_for_size);
-    test_detail_functions<2, Frame::Inertial>(used_for_size);
-    test_detail_functions<3, Frame::Inertial>(used_for_size);
+    INFO("Test rollon function");
+    test_rollon_function<1, Frame::Inertial>(used_for_size);
+    test_rollon_function<2, Frame::Inertial>(used_for_size);
+    test_rollon_function<3, Frame::Inertial>(used_for_size);
 
-    test_detail_functions<1, Frame::Inertial>(1.);
-    test_detail_functions<2, Frame::Inertial>(1.);
-    test_detail_functions<3, Frame::Inertial>(1.);
+    test_rollon_function<1, Frame::Inertial>(1.);
+    test_rollon_function<2, Frame::Inertial>(1.);
+    test_rollon_function<3, Frame::Inertial>(1.);
   }
 
   {
