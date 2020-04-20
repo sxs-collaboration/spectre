@@ -52,7 +52,7 @@ struct InitializeDampedHarmonic {
           "implemented for the maps and there is currently no plan to add them "
           "because we do not need them for anything else.");
     }
-    const auto inverse_jacobian =
+    const auto& inverse_jacobian =
         db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical, frame>>(box);
 
     auto [initial_gauge_h, initial_d4_gauge_h] = impl(
