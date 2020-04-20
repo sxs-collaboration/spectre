@@ -388,22 +388,36 @@ void add_received_variables(
 
 /// Computes the block logical coordinates of an InterpolationTarget.
 ///
-/// get_block_logical_coords is called by an Action of InterpolationTarget.
+/// block_logical_coords is called by an Action of InterpolationTarget.
 ///
-/// Currently two Actions call get_block_logical_coords:
+/// Currently two Actions call block_logical_coords:
 /// - SendPointsToInterpolator (called by AddTemporalIdsToInterpolationTarget
 ///                             and by FindApparentHorizon)
 /// - InterpolationTargetVarsFromElement (called by DgElementArray)
+/// - InterpolationTargetSendTimeIndepPointsToElements
+///   (in InterpolationTarget ActionList)
 template <typename InterpolationTargetTag, typename DbTags,
           typename Metavariables, typename TemporalId>
-auto get_block_logical_coords(const db::DataBox<DbTags>& box,
-                              Parallel::ConstGlobalCache<Metavariables>& cache,
-                              const TemporalId& temporal_id) noexcept {
+auto block_logical_coords(const db::DataBox<DbTags>& box,
+                          const tmpl::type_<Metavariables>& meta,
+                          const TemporalId& temporal_id) noexcept {
   const auto& domain =
       db::get<domain::Tags::Domain<Metavariables::volume_dim>>(box);
-  return block_logical_coordinates(
+  return ::block_logical_coordinates(
       domain, InterpolationTargetTag::compute_target_points::points(
-                  box, cache, temporal_id));
+                  box, meta, temporal_id));
+}
+
+/// This is a version of block_logical_coords for when the coords
+/// are time-independent.
+template <typename InterpolationTargetTag, typename DbTags,
+          typename Metavariables>
+auto block_logical_coords(const db::DataBox<DbTags>& box,
+                          const tmpl::type_<Metavariables>& meta) noexcept {
+  const auto& domain =
+      db::get<domain::Tags::Domain<Metavariables::volume_dim>>(box);
+  return ::block_logical_coordinates(
+      domain, InterpolationTargetTag::compute_target_points::points(box, meta));
 }
 
 /// Initializes InterpolationTarget's variables storage and lists of indices
