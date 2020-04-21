@@ -41,14 +41,21 @@ using operator_applied_to_fields_tag =
 using initial_fields_tag =
     db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
 using operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
+using preconditioned_operand_tag =
+    db::add_tag_prefix<LinearSolver::Tags::Preconditioned, operand_tag>;
 using operator_applied_to_operand_tag =
     db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
+using operator_applied_to_preconditioned_operand_tag =
+    db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
+                       preconditioned_operand_tag>;
 using orthogonalization_iteration_id_tag =
     db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
                        LinearSolver::Tags::IterationId<DummyOptionsGroup>>;
-using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
+using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<operand_tag>;
+using preconditioned_basis_history_tag =
+    LinearSolver::Tags::KrylovSubspaceBasis<preconditioned_operand_tag>;
 
-template <typename Metavariables>
+template <typename Metavariables, bool Preconditioned>
 struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
@@ -58,25 +65,27 @@ struct ElementArray {
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<VectorTag>>,
                      LinearSolver::gmres::detail::InitializeElement<
-                         fields_tag, DummyOptionsGroup>>>,
+                         fields_tag, DummyOptionsGroup, Preconditioned>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<LinearSolver::gmres::detail::PrepareStep<
-              fields_tag, DummyOptionsGroup>>>>;
+              fields_tag, DummyOptionsGroup, Preconditioned>>>>;
 };
 
+template <bool Preconditioned>
 struct Metavariables {
-  using component_list = tmpl::list<ElementArray<Metavariables>>;
+  using element_array = ElementArray<Metavariables, Preconditioned>;
+  using component_list = tmpl::list<element_array>;
   enum class Phase { Initialization, Testing, Exit };
 };
 
-}  // namespace
+template <bool Preconditioned>
+void test_element_actions() {
+  CAPTURE(Preconditioned);
+  using metavariables = Metavariables<Preconditioned>;
+  using element_array = typename metavariables::element_array;
 
-SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
-                  "[Unit][ParallelAlgorithms][LinearSolver][Actions]") {
-  using element_array = ElementArray<Metavariables>;
-
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
+  ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
 
   // Setup mock element array
   ActionTesting::emplace_component_and_initialize<element_array>(
@@ -100,7 +109,7 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
   };
 
   ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+                           metavariables::Phase::Testing);
 
   // Can't test the other element actions because reductions are not yet
   // supported. The full algorithm is tested in
@@ -111,15 +120,20 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
     INFO("InitializeElement");
     CHECK(get_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}) ==
           std::numeric_limits<size_t>::max());
-    tmpl::for_each<
-        tmpl::list<initial_fields_tag, operator_applied_to_fields_tag,
-                   operand_tag, operator_applied_to_operand_tag,
-                   orthogonalization_iteration_id_tag, basis_history_tag>>(
+    tmpl::for_each<tmpl::list<
+        initial_fields_tag, operator_applied_to_fields_tag, operand_tag,
+        std::conditional_t<Preconditioned,
+                           operator_applied_to_preconditioned_operand_tag,
+                           operator_applied_to_operand_tag>,
+        orthogonalization_iteration_id_tag, basis_history_tag>>(
         [&tag_is_retrievable](auto tag_v) {
           using tag = tmpl::type_from<decltype(tag_v)>;
           CAPTURE(db::tag_name<tag>());
           CHECK(tag_is_retrievable(tag{}));
         });
+    CHECK(tag_is_retrievable(preconditioned_operand_tag{}) == Preconditioned);
+    CHECK(tag_is_retrievable(preconditioned_basis_history_tag{}) ==
+          Preconditioned);
     CHECK_FALSE(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
   }
 
@@ -130,7 +144,7 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
                                              DenseVector<double>(3, 1.5)});
     ActionTesting::simple_action<
         element_array, LinearSolver::gmres::detail::NormalizeInitialOperand<
-                           fields_tag, DummyOptionsGroup>>(
+                           fields_tag, DummyOptionsGroup, Preconditioned>>(
         make_not_null(&runner), 0, 4.,
         Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.});
     CHECK_ITERABLE_APPROX(get_tag(operand_tag{}), DenseVector<double>(3, 0.5));
@@ -145,11 +159,14 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
     set_tag(basis_history_tag{},
             std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
                                              DenseVector<double>(3, 1.5)});
+    if constexpr (Preconditioned) {
+      set_tag(preconditioned_basis_history_tag{}, get_tag(basis_history_tag{}));
+    }
     ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
     ActionTesting::simple_action<
         element_array,
         LinearSolver::gmres::detail::NormalizeOperandAndUpdateField<
-            fields_tag, DummyOptionsGroup>>(
+            fields_tag, DummyOptionsGroup, Preconditioned>>(
         make_not_null(&runner), 0, 4., DenseVector<double>{2., 4.},
         Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.});
     CHECK_ITERABLE_APPROX(get_tag(operand_tag{}), DenseVector<double>(3, 0.5));
@@ -160,4 +177,12 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
     CHECK(get_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}) == 3);
     CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
   }
+}
+
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
+                  "[Unit][ParallelAlgorithms][LinearSolver][Actions]") {
+  test_element_actions<true>();
+  test_element_actions<false>();
 }

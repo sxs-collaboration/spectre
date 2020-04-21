@@ -58,6 +58,8 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
       "LinearOrthogonalizationHistory(Tag)");
   TestHelpers::db::test_prefix_tag<
       LinearSolver::Tags::KrylovSubspaceBasis<Tag>>("KrylovSubspaceBasis(Tag)");
+  TestHelpers::db::test_prefix_tag<LinearSolver::Tags::Preconditioned<Tag>>(
+      "Preconditioned(Tag)");
   TestHelpers::db::test_simple_tag<
       LinearSolver::Tags::ConvergenceCriteria<TestOptionsGroup>>(
       "ConvergenceCriteria(TestLinearSolver)");

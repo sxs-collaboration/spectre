@@ -18,6 +18,7 @@
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Requires.hpp"
 
 /// \cond
@@ -33,7 +34,7 @@ struct ResidualMonitor;
 
 namespace LinearSolver::gmres::detail {
 
-template <typename FieldsTag, typename OptionsGroup>
+template <typename FieldsTag, typename OptionsGroup, bool Preconditioned>
 struct PrepareSolve {
  private:
   using fields_tag = FieldsTag;
@@ -44,7 +45,8 @@ struct PrepareSolve {
       db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
   using operand_tag =
       db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
-  using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
+  using basis_history_tag =
+      LinearSolver::Tags::KrylovSubspaceBasis<operand_tag>;
 
  public:
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -77,13 +79,29 @@ struct PrepareSolve {
         get<fields_tag>(box));
 
     Parallel::contribute_to_reduction<InitializeResidualMagnitude<
-        FieldsTag, OptionsGroup, ParallelComponent>>(
+        FieldsTag, OptionsGroup, Preconditioned, ParallelComponent>>(
         Parallel::ReductionData<
             Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Sqrt<>>>{
             inner_product(get<operand_tag>(box), get<operand_tag>(box))},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
         Parallel::get_parallel_component<
             ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>(cache));
+
+    if constexpr (Preconditioned) {
+      using preconditioned_operand_tag =
+          db::add_tag_prefix<LinearSolver::Tags::Preconditioned, operand_tag>;
+      using preconditioned_basis_history_tag =
+          LinearSolver::Tags::KrylovSubspaceBasis<preconditioned_operand_tag>;
+
+      db::mutate<preconditioned_basis_history_tag>(
+          make_not_null(&box),
+          [](const gsl::not_null<
+              db::item_type<preconditioned_basis_history_tag>*>
+                 preconditioned_basis_history) noexcept {
+            *preconditioned_basis_history =
+                db::item_type<preconditioned_basis_history_tag>{};
+          });
+    }
 
     return {
         std::move(box),
@@ -94,13 +112,14 @@ struct PrepareSolve {
   }
 };
 
-template <typename FieldsTag, typename OptionsGroup>
+template <typename FieldsTag, typename OptionsGroup, bool Preconditioned>
 struct NormalizeInitialOperand {
  private:
   using fields_tag = FieldsTag;
   using operand_tag =
       db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
-  using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
+  using basis_history_tag =
+      LinearSolver::Tags::KrylovSubspaceBasis<operand_tag>;
 
  public:
   template <
@@ -136,7 +155,7 @@ struct NormalizeInitialOperand {
   }
 };
 
-template <typename FieldsTag, typename OptionsGroup>
+template <typename FieldsTag, typename OptionsGroup, bool Preconditioned>
 struct PrepareStep {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -147,13 +166,42 @@ struct PrepareStep {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    // Nothing to do before applying the linear operator to the operand
+    if constexpr (Preconditioned) {
+      using fields_tag = FieldsTag;
+      using operand_tag =
+          db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
+      using preconditioned_operand_tag =
+          db::add_tag_prefix<LinearSolver::Tags::Preconditioned, operand_tag>;
+
+      db::mutate<preconditioned_operand_tag>(
+          make_not_null(&box),
+          [](const auto preconditioned_operand, const auto& operand) noexcept {
+            // Start the preconditioner at zero because we have no reason to
+            // expect the remaining residual to have a particular form.
+            // Another possibility would be to start the preconditioner with an
+            // initial guess equal to its source, so not running the
+            // preconditioner at all means it is the identity, but that approach
+            // appears to yield worse results.
+            *preconditioned_operand =
+                make_with_value<db::item_type<preconditioned_operand_tag>>(
+                    operand, 0.);
+          },
+          get<operand_tag>(box));
+    }
     return {std::move(box)};
   }
 };
 
-template <typename FieldsTag, typename OptionsGroup>
+template <typename FieldsTag, typename OptionsGroup, bool Preconditioned>
 struct PerformStep {
+ private:
+  using fields_tag = FieldsTag;
+  using operand_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
+  using preconditioned_operand_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Preconditioned, operand_tag>;
+
+ public:
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -166,16 +214,28 @@ struct PerformStep {
       const ActionList /*meta*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ParallelComponent* const /*meta*/) noexcept {
-    using fields_tag = FieldsTag;
-    using operand_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
-    using operator_tag =
-        db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
+    using operator_tag = db::add_tag_prefix<
+        LinearSolver::Tags::OperatorAppliedTo,
+        std::conditional_t<Preconditioned, preconditioned_operand_tag,
+                           operand_tag>>;
     using orthogonalization_iteration_id_tag =
         db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
                            LinearSolver::Tags::IterationId<OptionsGroup>>;
     using basis_history_tag =
-        LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
+        LinearSolver::Tags::KrylovSubspaceBasis<operand_tag>;
+
+    if constexpr (Preconditioned) {
+      using preconditioned_basis_history_tag =
+          LinearSolver::Tags::KrylovSubspaceBasis<preconditioned_operand_tag>;
+
+      db::mutate<preconditioned_basis_history_tag>(
+          make_not_null(&box),
+          [](const auto preconditioned_basis_history,
+             const auto& preconditioned_operand) noexcept {
+            preconditioned_basis_history->push_back(preconditioned_operand);
+          },
+          get<preconditioned_operand_tag>(box));
+    }
 
     db::mutate<operand_tag, orthogonalization_iteration_id_tag>(
         make_not_null(&box),
@@ -187,8 +247,8 @@ struct PerformStep {
         },
         get<operator_tag>(box));
 
-    Parallel::contribute_to_reduction<
-        StoreOrthogonalization<FieldsTag, OptionsGroup, ParallelComponent>>(
+    Parallel::contribute_to_reduction<StoreOrthogonalization<
+        FieldsTag, OptionsGroup, Preconditioned, ParallelComponent>>(
         Parallel::ReductionData<
             Parallel::ReductionDatum<double, funcl::Plus<>>>{inner_product(
             get<basis_history_tag>(box)[0], get<operand_tag>(box))},
@@ -203,7 +263,7 @@ struct PerformStep {
   }
 };
 
-template <typename FieldsTag, typename OptionsGroup>
+template <typename FieldsTag, typename OptionsGroup, bool Preconditioned>
 struct OrthogonalizeOperand {
  private:
   using fields_tag = FieldsTag;
@@ -212,7 +272,8 @@ struct OrthogonalizeOperand {
   using orthogonalization_iteration_id_tag =
       db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
                          LinearSolver::Tags::IterationId<OptionsGroup>>;
-  using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
+  using basis_history_tag =
+      LinearSolver::Tags::KrylovSubspaceBasis<operand_tag>;
 
  public:
   template <
@@ -249,8 +310,8 @@ struct OrthogonalizeOperand {
         get<LinearSolver::Tags::IterationId<OptionsGroup>>(box);
 
     if (next_orthogonalization_iteration_id <= iteration_id) {
-      Parallel::contribute_to_reduction<
-          StoreOrthogonalization<FieldsTag, OptionsGroup, ParallelComponent>>(
+      Parallel::contribute_to_reduction<StoreOrthogonalization<
+          FieldsTag, OptionsGroup, Preconditioned, ParallelComponent>>(
           Parallel::ReductionData<
               Parallel::ReductionDatum<double, funcl::Plus<>>>{
               inner_product(gsl::at(get<basis_history_tag>(box),
@@ -262,7 +323,7 @@ struct OrthogonalizeOperand {
               ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>(cache));
     } else {
       Parallel::contribute_to_reduction<StoreFinalOrthogonalization<
-          FieldsTag, OptionsGroup, ParallelComponent>>(
+          FieldsTag, OptionsGroup, Preconditioned, ParallelComponent>>(
           Parallel::ReductionData<
               Parallel::ReductionDatum<double, funcl::Plus<>>>{
               inner_product(get<operand_tag>(box), get<operand_tag>(box))},
@@ -274,7 +335,7 @@ struct OrthogonalizeOperand {
   }
 };
 
-template <typename FieldsTag, typename OptionsGroup>
+template <typename FieldsTag, typename OptionsGroup, bool Preconditioned>
 struct NormalizeOperandAndUpdateField {
  private:
   using fields_tag = FieldsTag;
@@ -282,7 +343,13 @@ struct NormalizeOperandAndUpdateField {
       db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
   using operand_tag =
       db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
-  using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
+  using preconditioned_operand_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Preconditioned, operand_tag>;
+  using basis_history_tag =
+      LinearSolver::Tags::KrylovSubspaceBasis<operand_tag>;
+  using preconditioned_basis_history_tag =
+      LinearSolver::Tags::KrylovSubspaceBasis<std::conditional_t<
+          Preconditioned, preconditioned_operand_tag, operand_tag>>;
 
  public:
   template <
@@ -313,18 +380,26 @@ struct NormalizeOperandAndUpdateField {
             const gsl::not_null<db::item_type<fields_tag>*> field,
             const gsl::not_null<size_t*> iteration_id,
             const gsl::not_null<Convergence::HasConverged*> local_has_converged,
-            const db::const_item_type<initial_fields_tag>&
-                initial_field) noexcept {
-          *operand /= normalization;
+            const db::const_item_type<initial_fields_tag>& initial_field,
+            const db::item_type<preconditioned_basis_history_tag>&
+                preconditioned_basis_history) noexcept {
+          // Avoid an FPE if the new operand norm is exactly zero. In that case
+          // the problem is solved and the algorithm will terminate (see
+          // Proposition 9.3 in \cite Saad2003). Since there will be no next
+          // iteration we don't need to normalize the operand.
+          if (LIKELY(normalization > 0.)) {
+            *operand /= normalization;
+          }
           basis_history->push_back(*operand);
           *field = initial_field;
           for (size_t i = 0; i < minres.size(); i++) {
-            *field += minres[i] * gsl::at(*basis_history, i);
+            *field += minres[i] * gsl::at(preconditioned_basis_history, i);
           }
           ++(*iteration_id);
           *local_has_converged = has_converged;
         },
-        get<initial_fields_tag>(box));
+        get<initial_fields_tag>(box),
+        get<preconditioned_basis_history_tag>(box));
 
     // Proceed with algorithm
     Parallel::get_parallel_component<ParallelComponent>(cache)[array_index]

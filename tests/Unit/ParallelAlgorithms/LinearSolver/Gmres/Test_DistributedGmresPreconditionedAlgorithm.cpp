@@ -6,31 +6,41 @@
 #include <vector>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Helpers/ParallelAlgorithms/LinearSolver/DistributedLinearSolverAlgorithmTestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
+#include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "ParallelAlgorithms/LinearSolver/Richardson/Richardson.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace helpers = LinearSolverAlgorithmTestHelpers;
+namespace helpers_distributed = DistributedLinearSolverAlgorithmTestHelpers;
 
 namespace {
 
-struct SerialRichardson {
+struct ParallelGmres {
   static constexpr OptionString help =
       "Options for the iterative linear solver";
 };
 
+struct Preconditioner {
+  static constexpr OptionString help = "Options for the preconditioner";
+};
+
 struct Metavariables {
   static constexpr const char* const help{
-      "Test the Richardson linear solver algorithm"};
+      "Test the preconditioned GMRES linear solver algorithm on multiple "
+      "elements"};
 
   using linear_solver =
-      LinearSolver::Richardson::Richardson<helpers::fields_tag,
-                                           SerialRichardson>;
-  using preconditioner = void;
+      LinearSolver::gmres::Gmres<Metavariables, helpers_distributed::fields_tag,
+                                 ParallelGmres, true>;
+  using preconditioner = LinearSolver::Richardson::Richardson<
+      typename linear_solver::operand_tag, Preconditioner,
+      typename linear_solver::preconditioner_source_tag>;
 
-  using component_list = helpers::component_list<Metavariables>;
+  using component_list = helpers_distributed::component_list<Metavariables>;
   using observed_reduction_data_tags =
       helpers::observed_reduction_data_tags<Metavariables>;
   static constexpr bool ignore_unrecognized_command_line_options = false;
