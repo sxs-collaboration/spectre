@@ -17,6 +17,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
+#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Direction.hpp"
@@ -182,6 +183,36 @@ struct InverseJacobianCompute
       const db::const_item_type<MapTag>& element_map,
       const db::const_item_type<SourceCoordsTag>& source_coords) noexcept {
     *inv_jacobian = element_map.inv_jacobian(source_coords);
+  }
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// \brief The determinant of the inverse Jacobian from the source frame to the
+/// target frame.
+template <typename SourceFrame, typename TargetFrame>
+struct DetInvJacobian : db::SimpleTag {
+  using type = Scalar<DataVector>;
+  static std::string name() noexcept {
+    return "DetInvJacobian(" + get_output(SourceFrame{}) + "," +
+           get_output(TargetFrame{}) + ")";
+  }
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// Computes the determinant of the inverse Jacobian.
+template <size_t Dim, typename SourceFrame, typename TargetFrame>
+struct DetInvJacobianCompute : db::ComputeTag,
+                               DetInvJacobian<SourceFrame, TargetFrame> {
+  using base = DetInvJacobian<SourceFrame, TargetFrame>;
+  using return_type = typename base::type;
+  using argument_tags =
+      tmpl::list<InverseJacobian<Dim, SourceFrame, TargetFrame>>;
+  static void function(const gsl::not_null<return_type*> det_inv_jac,
+                       const ::InverseJacobian<DataVector, Dim, SourceFrame,
+                                               TargetFrame>& inv_jac) noexcept {
+    determinant(det_inv_jac, inv_jac);
   }
 };
 

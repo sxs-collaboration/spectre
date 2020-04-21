@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
+#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -43,6 +44,9 @@ void test_simple_tags() noexcept {
   TestHelpers::db::test_simple_tag<
       Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>>(
       "InverseJacobian(Logical,Inertial)");
+  TestHelpers::db::test_simple_tag<
+      Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(
+      "DetInvJacobian(Logical,Inertial)");
 }
 
 template <size_t Dim>
@@ -91,22 +95,29 @@ void test_compute_tags() noexcept {
   TestHelpers::db::test_compute_tag<Tags::InverseJacobianCompute<
       Tags::ElementMap<Dim>, Tags::Coordinates<Dim, Frame::Logical>>>(
       "InverseJacobian(Logical,Inertial)");
+  TestHelpers::db::test_compute_tag<
+      Tags::DetInvJacobianCompute<Dim, Frame::Logical, Frame::Inertial>>(
+      "DetInvJacobian(Logical,Inertial)");
 
   auto map = element_map<Dim>();
   const tnsr::I<DataVector, Dim, Frame::Logical> logical_coords(
       make_array<Dim>(DataVector{-1.0, -0.5, 0.0, 0.5, 1.0}));
   const auto expected_inv_jacobian = map.inv_jacobian(logical_coords);
 
-  const auto box =
-      db::create<tmpl::list<Tags::ElementMap<Dim, Frame::Grid>,
-                            Tags::Coordinates<Dim, Frame::Logical>>,
-                 db::AddComputeTags<Tags::InverseJacobianCompute<
-                     Tags::ElementMap<Dim, Frame::Grid>,
-                     Tags::Coordinates<Dim, Frame::Logical>>>>(std::move(map),
-                                                               logical_coords);
+  const auto box = db::create<
+      tmpl::list<Tags::ElementMap<Dim, Frame::Grid>,
+                 Tags::Coordinates<Dim, Frame::Logical>>,
+      db::AddComputeTags<
+          Tags::InverseJacobianCompute<Tags::ElementMap<Dim, Frame::Grid>,
+                                       Tags::Coordinates<Dim, Frame::Logical>>,
+          Tags::DetInvJacobianCompute<Dim, Frame::Logical, Frame::Grid>>>(
+      std::move(map), logical_coords);
   CHECK_ITERABLE_APPROX(
       (db::get<Tags::InverseJacobian<Dim, Frame::Logical, Frame::Grid>>(box)),
       expected_inv_jacobian);
+  CHECK_ITERABLE_APPROX(
+      (db::get<Tags::DetInvJacobian<Frame::Logical, Frame::Grid>>(box)),
+      determinant(expected_inv_jacobian));
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Tags", "[Unit][Domain]") {
