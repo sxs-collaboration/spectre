@@ -31,7 +31,7 @@ def spatial_metric_from_spacetime_metric(spacetime_metric):
     return spacetime_metric[1:, 1:]
 
 
-def damped_harmonic_gauge_source_function(
+def damped_harmonic_gauge_source_function_rollon(
     gauge_h_init, dgauge_h_init, lapse, shift, unit_normal_one_form,
     sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi, phi,
     time, coords, amp_coef_L1, amp_coef_L2, amp_coef_S, rollon_start_time,
@@ -45,7 +45,10 @@ def damped_harmonic_gauge_source_function(
     log_sqrtg_over_lapse = log_fac(lapse, sqrt_det_spatial_metric, 0.5)
     log_one_over_lapse = log_fac(lapse, sqrt_det_spatial_metric, 0.)
 
-    R = roll_on_function(time, rollon_start_time, rollon_width)
+    if gauge_h_init is None:
+        R = 1.
+    else:
+        R = roll_on_function(time, rollon_start_time, rollon_width)
     W = spatial_weight_function(coords, sigma_r)
 
     muL1 = amp_coef_L1 * R * W * log_sqrtg_over_lapse**exp_L1
@@ -53,21 +56,21 @@ def damped_harmonic_gauge_source_function(
     muS = amp_coef_S * R * W * log_sqrtg_over_lapse**exp_S
     h_pre1 = muL1 * log_sqrtg_over_lapse + muL2 * log_one_over_lapse
     h_pre2 = muS / lapse
-    return ((1. - R) * gauge_h_init + h_pre1 * unit_normal_one_form -
+    if gauge_h_init is None:
+        init_gauge_term = 0.
+    else:
+        init_gauge_term = (1. - R) * gauge_h_init
+
+    return (init_gauge_term + h_pre1 * unit_normal_one_form -
             h_pre2 * np.einsum('ai,i->a', spacetime_metric[:, 1:], shift))
 
 
-def spacetime_deriv_damped_harmonic_gauge_source_function(
+def spacetime_deriv_damped_harmonic_gauge_source_function_rollon(
     gauge_h_init, dgauge_h_init, lapse, shift, spacetime_unit_normal_one_form,
     sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi, phi,
     time, coords, amp_coef_L1, amp_coef_L2, amp_coef_S, rollon_start_time,
     rollon_width, sigma_r):
     spatial_dim = len(shift)
-
-    # We cannot pass int through pypp right now, so we hard-code exponents.
-    exp_L1 = 4
-    exp_L2 = 4
-    exp_S = 4
 
     spacetime_unit_normal = spacetime_normal_vector(lapse, shift)
     spatial_metric = spatial_metric_from_spacetime_metric(spacetime_metric)
@@ -86,7 +89,10 @@ def spacetime_deriv_damped_harmonic_gauge_source_function(
     log_one_over_lapse_pow4 = log_one_over_lapse**4
     log_one_over_lapse_pow5 = log_one_over_lapse * log_one_over_lapse_pow4
 
-    R = roll_on_function(time, rollon_start_time, rollon_width)
+    if gauge_h_init is None:
+        R = 1.
+    else:
+        R = roll_on_function(time, rollon_start_time, rollon_width)
     W = spatial_weight_function(coords, sigma_r)
 
     muL1 = R * W * log_sqrtg_over_lapse_pow4
@@ -96,7 +102,11 @@ def spacetime_deriv_damped_harmonic_gauge_source_function(
     mu2 = R * W * log_one_over_lapse_pow5
 
     d4_W = spacetime_deriv_spatial_weight_function(coords, sigma_r)
-    d0_R = time_deriv_roll_on_function(time, rollon_start_time, rollon_width)
+    if gauge_h_init is None:
+        d0_R = 0.
+    else:
+        d0_R = time_deriv_roll_on_function(time, rollon_start_time,
+                                           rollon_width)
     d4_RW = R * d4_W
     d4_RW[0] += W * d0_R
 
@@ -138,8 +148,11 @@ def spacetime_deriv_damped_harmonic_gauge_source_function(
                                              spatial_metric, d0_spatial_metric,
                                              d3_spatial_metric)
 
-    dT1 = (1. - R) * dgauge_h_init
-    dT1[0, :] -= d0_R * gauge_h_init
+    if gauge_h_init is None:
+        dT1 = 0.
+    else:
+        dT1 = (1. - R) * dgauge_h_init
+        dT1[0, :] -= d0_R * gauge_h_init
 
     dT2 = (amp_coef_L1 * mu1 +
            amp_coef_L2 * mu2) * d4_normal_one_form + np.einsum(
@@ -154,3 +167,28 @@ def spacetime_deriv_damped_harmonic_gauge_source_function(
     dT3 -= muS_over_N * np.einsum('ai,bi->ab', d4_shift[:, 1:],
                                   spacetime_metric[:, 1:])
     return dT1 + dT2 + amp_coef_S * dT3
+
+
+def damped_harmonic_gauge_source_function(lapse, shift, unit_normal_one_form,
+                                          sqrt_det_spatial_metric,
+                                          inverse_spatial_metric,
+                                          spacetime_metric, pi, phi, coords,
+                                          amp_coef_L1, amp_coef_L2, amp_coef_S,
+                                          sigma_r):
+    return damped_harmonic_gauge_source_function_rollon(
+        None, None, lapse, shift, unit_normal_one_form,
+        sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi,
+        phi, None, coords, amp_coef_L1, amp_coef_L2, amp_coef_S, None, None,
+        sigma_r)
+
+
+def spacetime_deriv_damped_harmonic_gauge_source_function(
+    lapse, shift, spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
+    inverse_spatial_metric, spacetime_metric, pi, phi, coords, amp_coef_L1,
+    amp_coef_L2, amp_coef_S, sigma_r):
+
+    return spacetime_deriv_damped_harmonic_gauge_source_function_rollon(
+        None, None, lapse, shift, spacetime_unit_normal_one_form,
+        sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi,
+        phi, None, coords, amp_coef_L1, amp_coef_L2, amp_coef_S, None, None,
+        sigma_r)
