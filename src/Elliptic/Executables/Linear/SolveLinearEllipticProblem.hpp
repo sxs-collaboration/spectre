@@ -159,7 +159,7 @@ struct Metavariables {
           volume_dim, LinearSolver::Tags::OperatorAppliedTo,
           typename system::variables_tag>>,
       elliptic::dg::Actions::ImposeHomogeneousDirichletBoundaryConditions<
-          Metavariables>,
+          typename system::variables_tag, typename system::primal_variables>,
       dg::Actions::CollectDataForFluxes<
           boundary_scheme,
           domain::Tags::BoundaryDirectionsInterior<volume_dim>>,

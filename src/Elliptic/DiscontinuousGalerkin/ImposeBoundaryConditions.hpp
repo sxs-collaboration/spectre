@@ -62,8 +62,7 @@ namespace Actions {
  * \brief Set field data on external boundaries so that they represent
  * homogeneous (zero) Dirichlet boundary conditions.
  *
- * This action imposes homogeneous boundary conditions on all fields in
- * `system::primal_variables`.
+ * This action imposes homogeneous boundary conditions on all `DirichletTags`
  *
  * \see `elliptic::dg::homogeneous_dirichlet_boundary_conditions`
  *
@@ -81,55 +80,42 @@ namespace Actions {
  *   Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>, Tag>`
  *
  * Uses:
- * - System:
- *   - `volume_dim`
- *   - `variables_tag`
- *   - `primal_variables`
  * - DataBox:
- *   - `interior<variables_tag>`
+ *   - `interior<VariablesTag>`
  *
  * DataBox changes:
  * - Modifies:
- *   - `exterior<variables_tag>`
+ *   - `exterior<VariablesTag>`
  */
-template <typename Metavariables>
+template <typename VariablesTag, typename DirichletTags>
 struct ImposeHomogeneousDirichletBoundaryConditions {
-  template <typename DbTags, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent>
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
+            size_t Dim, typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
+                    const ElementId<Dim>& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using system = typename Metavariables::system;
-    using dirichlet_tags = typename system::primal_variables;
-    constexpr size_t volume_dim = system::volume_dim;
-
     // Set the data on exterior (ghost) faces to impose the boundary conditions
     db::mutate<domain::Tags::Interface<
-        domain::Tags::BoundaryDirectionsExterior<volume_dim>,
-        typename system::variables_tag>>(
+        domain::Tags::BoundaryDirectionsExterior<Dim>, VariablesTag>>(
         make_not_null(&box),
-        // Need to use system::volume_dim below instead of just
-        // volume_dim to avoid an ICE on gcc 7.
         [](const gsl::not_null<db::item_type<domain::Tags::Interface<
-               domain::Tags::BoundaryDirectionsExterior<system::volume_dim>,
-               typename system::variables_tag>>*>
+               domain::Tags::BoundaryDirectionsExterior<Dim>, VariablesTag>>*>
                exterior_boundary_vars,
            const db::const_item_type<domain::Tags::Interface<
-               domain::Tags::BoundaryDirectionsInterior<system::volume_dim>,
-               typename system::variables_tag>>& interior_vars) noexcept {
+               domain::Tags::BoundaryDirectionsInterior<Dim>, VariablesTag>>&
+               interior_vars) noexcept {
           for (auto& exterior_direction_and_vars : *exterior_boundary_vars) {
             auto& direction = exterior_direction_and_vars.first;
-            homogeneous_dirichlet_boundary_conditions<dirichlet_tags>(
+            homogeneous_dirichlet_boundary_conditions<DirichletTags>(
                 make_not_null(&exterior_direction_and_vars.second),
                 interior_vars.at(direction));
           }
         },
         get<domain::Tags::Interface<
-            domain::Tags::BoundaryDirectionsInterior<volume_dim>,
-            typename system::variables_tag>>(box));
+            domain::Tags::BoundaryDirectionsInterior<Dim>, VariablesTag>>(box));
 
     return std::forward_as_tuple(std::move(box));
   }
