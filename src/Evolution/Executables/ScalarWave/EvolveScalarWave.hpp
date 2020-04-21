@@ -19,6 +19,7 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
+#include "Evolution/Systems/ScalarWave/BoundaryConditions.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"  // IWYU pragma: keep // for UpwindFlux
 #include "Evolution/Systems/ScalarWave/Initialize.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
@@ -102,6 +103,7 @@ struct EvolutionMetavars {
   using system = ScalarWave::System<Dim>;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = true;
+  static constexpr bool bjorhus_external_boundary = true;
   using boundary_condition_tag = initial_data_tag;
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<ScalarWave::UpwindFlux<Dim>>;
@@ -137,8 +139,12 @@ struct EvolutionMetavars {
 
   // public for use by the Charm++ registration code
   using observe_fields =
+      tmpl::append<db::get_variables_tags_list<typename system::variables_tag>,
+                   db::wrap_tags_in<temporal_id::template step_prefix,
+                                    db::get_variables_tags_list<
+                                        typename system::variables_tag>>>;
+  using analytic_solution_fields =
       db::get_variables_tags_list<typename system::variables_tag>;
-  using analytic_solution_fields = observe_fields;
   using events =
       tmpl::list<dg::Events::Registrars::ObserveFields<
                      Dim, Tags::Time, observe_fields, analytic_solution_fields>,
@@ -174,16 +180,32 @@ struct EvolutionMetavars {
       Actions::ComputeTimeDerivative<ScalarWave::ComputeDuDt<Dim>>,
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
           domain::Tags::BoundaryDirectionsInterior<Dim>>,
-      dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
-      dg::Actions::CollectDataForFluxes<
-          boundary_scheme,
-          domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
+      tmpl::conditional_t<
+          bjorhus_external_boundary, tmpl::list<>,
+          tmpl::list<
+              dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
+              dg::Actions::CollectDataForFluxes<
+                  boundary_scheme,
+                  domain::Tags::BoundaryDirectionsInterior<volume_dim>>>>,
       dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
-      tmpl::conditional_t<local_time_stepping,
-                          tmpl::list<Actions::RecordTimeStepperData<>,
-                                     Actions::MutateApply<boundary_scheme>>,
-                          tmpl::list<Actions::MutateApply<boundary_scheme>,
-                                     Actions::RecordTimeStepperData<>>>,
+      tmpl::conditional_t<
+          local_time_stepping,
+          tmpl::list<tmpl::conditional_t<
+                         bjorhus_external_boundary,
+                         tmpl::list<ScalarWave::Actions::
+                                        ImposeBjorhusBoundaryConditions<
+                                            EvolutionMetavars>>,
+                         tmpl::list<>>,
+                     Actions::RecordTimeStepperData<>,
+                     Actions::MutateApply<boundary_scheme>>,
+          tmpl::list<Actions::MutateApply<boundary_scheme>,
+                     tmpl::conditional_t<
+                         bjorhus_external_boundary,
+                         tmpl::list<ScalarWave::Actions::
+                                        ImposeBjorhusBoundaryConditions<
+                                            EvolutionMetavars>>,
+                         tmpl::list<>>,
+                     Actions::RecordTimeStepperData<>>>,
       Actions::UpdateU<>,
       tmpl::conditional_t<
           use_filtering,
@@ -208,19 +230,41 @@ struct EvolutionMetavars {
           domain::Tags::Coordinates<Dim, Frame::Logical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       ScalarWave::Actions::InitializeConstraints<volume_dim>,
-      dg::Actions::InitializeInterfaces<
-          system,
-          dg::Initialization::slice_tags_to_face<
-              typename system::variables_tag,
-              ScalarWave::Tags::ConstraintGamma2>,
-          dg::Initialization::slice_tags_to_exterior<
-              ScalarWave::Tags::ConstraintGamma2>,
-          dg::Initialization::face_compute_tags<>,
-          dg::Initialization::exterior_compute_tags<>, true, true>,
+      tmpl::conditional_t<
+          bjorhus_external_boundary,
+          tmpl::list<dg::Actions::InitializeInterfaces<
+              system,
+              dg::Initialization::slice_tags_to_face<
+                  typename system::variables_tag,
+                  ScalarWave::Tags::ConstraintGamma2>,
+              dg::Initialization::slice_tags_to_exterior<
+                  typename system::variables_tag,
+                  ScalarWave::Tags::ConstraintGamma2>,
+              dg::Initialization::face_compute_tags<
+                  ScalarWave::Tags::CharacteristicFieldsCompute<
+                      system::volume_dim>,
+                  ScalarWave::Tags::CharacteristicSpeedsCompute<
+                      system::volume_dim>>,
+              dg::Initialization::exterior_compute_tags<
+                  ScalarWave::Tags::CharacteristicFieldsCompute<
+                      system::volume_dim>,
+                  ScalarWave::Tags::CharacteristicSpeedsCompute<
+                      system::volume_dim>>,
+              !bjorhus_external_boundary, true>>,
+          tmpl::list<dg::Actions::InitializeInterfaces<
+              system,
+              dg::Initialization::slice_tags_to_face<
+                  typename system::variables_tag,
+                  ScalarWave::Tags::ConstraintGamma2>,
+              dg::Initialization::slice_tags_to_exterior<
+                  ScalarWave::Tags::ConstraintGamma2>,
+              dg::Initialization::face_compute_tags<>,
+              dg::Initialization::exterior_compute_tags<>, true, true>>>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<evolution::Tags::AnalyticCompute<
               Dim, initial_data_tag, analytic_solution_fields>>>,
-      dg::Actions::InitializeMortars<boundary_scheme>,
+      dg::Actions::InitializeMortars<boundary_scheme,
+                                     !bjorhus_external_boundary>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
