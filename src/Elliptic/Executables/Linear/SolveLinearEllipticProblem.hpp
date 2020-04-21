@@ -93,8 +93,6 @@ struct Metavariables {
   using linear_solver_iteration_id =
       LinearSolver::Tags::IterationId<typename linear_solver::options_group>;
 
-  using temporal_id = linear_solver_iteration_id;
-
   // Parse numerical flux parameters from the input file to store in the cache.
   using normal_dot_numerical_flux = Tags::NumericalFlux<
       elliptic::dg::NumericalFluxes::FirstOrderInternalPenalty<
