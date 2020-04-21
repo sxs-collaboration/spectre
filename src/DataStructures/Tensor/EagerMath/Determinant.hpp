@@ -7,6 +7,7 @@
 #pragma once
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace detail {
 template <typename Symm, typename Index, typename = std::nullptr_t>
@@ -126,22 +127,32 @@ struct DeterminantImpl<Symmetry<1, 1>, Index, Requires<Index::dim == 4>> {
 };
 }  // namespace detail
 
+//@{
 /*!
  * \ingroup TensorGroup
  * \brief Computes the determinant of a rank-2 Tensor `tensor`.
  *
- * \returns The determinant of `tensor`.
  * \requires That `tensor` be a rank-2 Tensor, with both indices sharing the
  *           same dimension and type.
  */
 template <typename T, typename Symm, typename Index0, typename Index1>
-Scalar<T> determinant(
-    const Tensor<T, Symm, index_list<Index0, Index1>>& tensor) {
+void determinant(
+    const gsl::not_null<Scalar<T>*> det_tensor,
+    const Tensor<T, Symm, index_list<Index0, Index1>>& tensor) noexcept {
   static_assert(Index0::dim == Index1::dim,
                 "Cannot take the determinant of a Tensor whose Indices are not "
                 "of the same dimensionality.");
   static_assert(Index0::index_type == Index1::index_type,
                 "Taking the determinant of a mixed Spatial and Spacetime index "
                 "Tensor is not allowed since it's not clear what that means.");
-  return Scalar<T>{detail::DeterminantImpl<Symm, Index0>::apply(tensor)};
+  get(*det_tensor) = detail::DeterminantImpl<Symm, Index0>::apply(tensor);
 }
+
+template <typename T, typename Symm, typename Index0, typename Index1>
+Scalar<T> determinant(
+    const Tensor<T, Symm, index_list<Index0, Index1>>& tensor) noexcept {
+  Scalar<T> result{};
+  determinant(make_not_null(&result), tensor);
+  return result;
+}
+//@}
