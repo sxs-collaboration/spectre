@@ -26,8 +26,14 @@ class Mesh;
 class DataVector;
 template <size_t Dim>
 class Direction;
+
+namespace gsl {
+template <typename>
+struct not_null;
+}  // namespace gsl
 /// \endcond
 
+// @{
 /*!
  * \ingroup ComputationalDomainGroup
  * \brief Compute the logical coordinates in an Element.
@@ -35,14 +41,19 @@ class Direction;
  * \details The logical coordinates are the collocation points associated to the
  * spectral basis functions and quadrature of the \p mesh.
  *
- * \returns logical-frame vector holding coordinates
- *
  * \example
  * \snippet Test_LogicalCoordinates.cpp logical_coordinates_example
  */
 template <size_t VolumeDim>
+void logical_coordinates(
+    gsl::not_null<tnsr::I<DataVector, VolumeDim, Frame::Logical>*>
+        logical_coords,
+    const Mesh<VolumeDim>& mesh) noexcept;
+
+template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
     const Mesh<VolumeDim>& mesh) noexcept;
+// @}
 
 /*!
  * \ingroup ComputationalDomainGroup
@@ -66,8 +77,12 @@ namespace Tags {
 template <size_t VolumeDim>
 struct LogicalCoordinates : Coordinates<VolumeDim, Frame::Logical>,
                             db::ComputeTag {
-  using argument_tags = tmpl::list<Tags::Mesh<VolumeDim>>;
-  static constexpr auto function = logical_coordinates<VolumeDim>;
+  using base = Coordinates<VolumeDim, Frame::Logical>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<Mesh<VolumeDim>>;
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<return_type*>, const ::Mesh<VolumeDim>&) noexcept>(
+      &logical_coordinates<VolumeDim>);
 };
 }  // namespace Tags
 }  // namespace domain
