@@ -112,6 +112,7 @@ using fields_tag = VectorTag;
 using operand_tag = LinearSolver::Tags::Operand<fields_tag>;
 using operator_tag = LinearSolver::Tags::OperatorAppliedTo<operand_tag>;
 
+template <typename OperandTag>
 struct ComputeOperatorAction {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
@@ -125,7 +126,7 @@ struct ComputeOperatorAction {
       const ActionList /*meta*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ParallelComponent* const /*meta*/) noexcept {
-    db::mutate<operator_tag>(
+    db::mutate<LinearSolver::Tags::OperatorAppliedTo<OperandTag>>(
         make_not_null(&box),
         [](const gsl::not_null<DenseVector<double>*>
                operator_applied_to_operand,
@@ -133,7 +134,7 @@ struct ComputeOperatorAction {
            const DenseVector<double>& operand) noexcept {
           *operator_applied_to_operand = linear_operator * operand;
         },
-        get<LinearOperator>(cache), get<operand_tag>(box));
+        get<LinearOperator>(cache), get<OperandTag>(box));
     return {std::move(box), false};
   }
 };
@@ -175,22 +176,11 @@ struct InitializeElement {
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const int /*array_index*/, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    const auto& linear_operator = get<LinearOperator>(cache);
-    const auto& source = get<Source>(cache);
-    const auto& initial_guess = get<InitialGuess>(cache);
-
     return std::make_tuple(
         ::Initialization::merge_into_databox<
             InitializeElement,
-            db::AddSimpleTags<VectorTag, ::Tags::FixedSource<VectorTag>,
-                              LinearSolver::Tags::OperatorAppliedTo<VectorTag>,
-                              operand_tag, operator_tag>>(
-            std::move(box), initial_guess, source,
-            DenseVector<double>{linear_operator * initial_guess},
-            make_with_value<DenseVector<double>>(
-                initial_guess, std::numeric_limits<double>::signaling_NaN()),
-            make_with_value<DenseVector<double>>(
-                initial_guess, std::numeric_limits<double>::signaling_NaN())));
+            db::AddSimpleTags<VectorTag, ::Tags::FixedSource<VectorTag>>>(
+            std::move(box), get<InitialGuess>(cache), get<Source>(cache)));
   }
 };  // namespace
 
@@ -209,6 +199,7 @@ struct ElementArray {
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<InitializeElement,
                      typename linear_solver::initialize_element,
+                     ComputeOperatorAction<fields_tag>,
                      typename linear_solver::prepare_solve,
                      Parallel::Actions::TerminatePhase>>,
 
@@ -218,7 +209,7 @@ struct ElementArray {
           tmpl::list<LinearSolver::Actions::TerminateIfConverged<
                          typename linear_solver::options_group>,
                      typename linear_solver::prepare_step,
-                     ComputeOperatorAction,
+                     ComputeOperatorAction<operand_tag>,
                      typename linear_solver::perform_step>>,
 
       Parallel::PhaseActions<

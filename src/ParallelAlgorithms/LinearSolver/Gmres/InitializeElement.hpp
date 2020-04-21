@@ -29,6 +29,12 @@ struct InitializeElement {
   using fields_tag = FieldsTag;
   using initial_fields_tag =
       db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
+  using operator_applied_to_fields_tag =
+      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
+  using operand_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
+  using operator_applied_to_operand_tag =
+      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
   using orthogonalization_iteration_id_tag =
       db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
                          LinearSolver::Tags::IterationId<OptionsGroup>>;
@@ -49,19 +55,26 @@ struct InitializeElement {
     return std::make_tuple(
         ::Initialization::merge_into_databox<
             InitializeElement,
-            db::AddSimpleTags<LinearSolver::Tags::IterationId<OptionsGroup>,
-                              initial_fields_tag,
-                              orthogonalization_iteration_id_tag,
-                              basis_history_tag,
-                              LinearSolver::Tags::HasConverged<OptionsGroup>>,
-            compute_tags>(std::move(box),
-                          // The `PrepareSolve` action populates these tags with
-                          // initial values
-                          std::numeric_limits<size_t>::max(),
-                          db::item_type<initial_fields_tag>{},
-                          std::numeric_limits<size_t>::max(),
-                          db::item_type<basis_history_tag>{},
-                          Convergence::HasConverged{}));
+            db::AddSimpleTags<
+                LinearSolver::Tags::IterationId<OptionsGroup>,
+                initial_fields_tag, operator_applied_to_fields_tag, operand_tag,
+                operator_applied_to_operand_tag,
+                orthogonalization_iteration_id_tag, basis_history_tag,
+                LinearSolver::Tags::HasConverged<OptionsGroup>>,
+            compute_tags>(
+            std::move(box),
+            // The `PrepareSolve` action populates these tags with initial
+            // values, except for `operator_applied_to_fields_tag` which is
+            // expected to be filled at that point and
+            // `operator_applied_to_operand_tag` which is expected to be updated
+            // in every iteration of the algorithm.
+            std::numeric_limits<size_t>::max(),
+            db::item_type<initial_fields_tag>{},
+            db::item_type<operator_applied_to_fields_tag>{},
+            db::item_type<operand_tag>{},
+            db::item_type<operator_applied_to_operand_tag>{},
+            std::numeric_limits<size_t>::max(),
+            db::item_type<basis_history_tag>{}, Convergence::HasConverged{}));
   }
 };
 

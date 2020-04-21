@@ -13,7 +13,7 @@
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeInhomogeneousBoundaryConditionsOnSource.hpp"
-#include "Elliptic/DiscontinuousGalerkin/InitializeFluxes.hpp"
+#include "Elliptic/DiscontinuousGalerkin/InitializeFirstOrderOperator.hpp"
 #include "Elliptic/DiscontinuousGalerkin/NumericalFluxes/FirstOrderInternalPenalty.hpp"
 #include "Elliptic/FirstOrderOperator.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
@@ -92,18 +92,28 @@ struct Metavariables {
       SolveLinearEllipticProblem::OptionTags::LinearSolverGroup>;
   using linear_solver_iteration_id =
       LinearSolver::Tags::IterationId<typename linear_solver::options_group>;
+  // For the GMRES linear solver we need to apply the DG operator to its
+  // internal "operand" in every iteration of the algorithm.
+  using linear_operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand,
+                                                typename system::fields_tag>;
+  using primal_variables = db::wrap_tags_in<LinearSolver::Tags::Operand,
+                                            typename system::primal_fields>;
+  using auxiliary_variables =
+      db::wrap_tags_in<LinearSolver::Tags::Operand,
+                       typename system::auxiliary_fields>;
 
   // Parse numerical flux parameters from the input file to store in the cache.
   using normal_dot_numerical_flux = Tags::NumericalFlux<
       elliptic::dg::NumericalFluxes::FirstOrderInternalPenalty<
-          volume_dim, fluxes_computer_tag, typename system::primal_variables,
-          typename system::auxiliary_variables>>;
+          volume_dim, fluxes_computer_tag, primal_variables,
+          auxiliary_variables>>;
   // Specify the DG boundary scheme. We use the strong first-order scheme here
   // that only requires us to compute normals dotted into the first-order
   // fluxes.
-  using boundary_scheme = dg::FirstOrderScheme::FirstOrderScheme<
-      volume_dim, typename system::variables_tag, normal_dot_numerical_flux,
-      linear_solver_iteration_id>;
+  using boundary_scheme =
+      dg::FirstOrderScheme::FirstOrderScheme<volume_dim, linear_operand_tag,
+                                             normal_dot_numerical_flux,
+                                             linear_solver_iteration_id>;
 
   // Collect events and triggers
   // (public for use by the Charm++ registration code)
@@ -136,19 +146,21 @@ struct Metavariables {
 
   using initialization_actions = tmpl::list<
       dg::Actions::InitializeDomain<volume_dim>,
+      dg::Actions::InitializeInterfaces<
+          system, dg::Initialization::slice_tags_to_face<>,
+          dg::Initialization::slice_tags_to_exterior<>,
+          dg::Initialization::face_compute_tags<>,
+          dg::Initialization::exterior_compute_tags<>, false, false>,
+      typename linear_solver::initialize_element,
       elliptic::Actions::InitializeSystem,
       elliptic::Actions::InitializeAnalyticSolution<analytic_solution_tag,
                                                     analytic_solution_fields>,
-      dg::Actions::InitializeInterfaces<
-          system,
-          dg::Initialization::slice_tags_to_face<
-              typename system::variables_tag>,
-          dg::Initialization::slice_tags_to_exterior<>>,
       elliptic::dg::Actions::ImposeInhomogeneousBoundaryConditionsOnSource<
           Metavariables>,
-      typename linear_solver::initialize_element,
       dg::Actions::InitializeMortars<boundary_scheme>,
-      elliptic::dg::Actions::InitializeFluxes<Metavariables>,
+      elliptic::dg::Actions::InitializeFirstOrderOperator<
+          volume_dim, typename system::fluxes, typename system::sources,
+          linear_operand_tag, primal_variables, auxiliary_variables>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using build_linear_operator_actions = tmpl::list<
@@ -157,9 +169,9 @@ struct Metavariables {
       dg::Actions::SendDataForFluxes<boundary_scheme>,
       Actions::MutateApply<elliptic::FirstOrderOperator<
           volume_dim, LinearSolver::Tags::OperatorAppliedTo,
-          typename system::variables_tag>>,
+          linear_operand_tag>>,
       elliptic::dg::Actions::ImposeHomogeneousDirichletBoundaryConditions<
-          typename system::variables_tag, typename system::primal_variables>,
+          linear_operand_tag, primal_variables>,
       dg::Actions::CollectDataForFluxes<
           boundary_scheme,
           domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
