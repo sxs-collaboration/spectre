@@ -18,58 +18,50 @@
 namespace elliptic {
 namespace Tags {
 
-template <typename System>
+template <size_t Dim, typename FluxesComputer, typename VariablesTag,
+          typename PrimalVariables, typename AuxiliaryVariables>
 struct FirstOrderFluxesCompute
-    : db::add_tag_prefix<::Tags::Flux, typename System::variables_tag,
-                         tmpl::size_t<System::volume_dim>, Frame::Inertial>,
+    : db::add_tag_prefix<::Tags::Flux, VariablesTag, tmpl::size_t<Dim>,
+                         Frame::Inertial>,
       db::ComputeTag {
  private:
-  static constexpr size_t volume_dim = System::volume_dim;
-  using vars_tag = typename System::variables_tag;
-  using FluxesComputer = typename System::fluxes;
   using fluxes_computer_tag = elliptic::Tags::FluxesComputer<FluxesComputer>;
 
  public:
-  using base = db::add_tag_prefix<::Tags::Flux, vars_tag,
-                                  tmpl::size_t<volume_dim>, Frame::Inertial>;
+  using base = db::add_tag_prefix<::Tags::Flux, VariablesTag, tmpl::size_t<Dim>,
+                                  Frame::Inertial>;
   using argument_tags = tmpl::push_front<typename FluxesComputer::argument_tags,
-                                         vars_tag, fluxes_computer_tag>;
+                                         VariablesTag, fluxes_computer_tag>;
   using volume_tags =
       tmpl::push_front<get_volume_tags<FluxesComputer>, fluxes_computer_tag>;
   using return_type = db::item_type<base>;
   template <typename... FluxesArgs>
   static void function(const gsl::not_null<return_type*> fluxes,
-                       const db::const_item_type<vars_tag>& vars,
+                       const db::const_item_type<VariablesTag>& vars,
                        const FluxesComputer& fluxes_computer,
                        const FluxesArgs&... fluxes_args) noexcept {
     *fluxes = return_type{vars.number_of_grid_points()};
-    elliptic::first_order_fluxes<volume_dim, typename System::primal_variables,
-                                 typename System::auxiliary_variables>(
+    elliptic::first_order_fluxes<Dim, PrimalVariables, AuxiliaryVariables>(
         fluxes, vars, fluxes_computer, fluxes_args...);
   }
 };
 
-template <typename System>
+template <typename SourcesComputer, typename VariablesTag,
+          typename PrimalVariables, typename AuxiliaryVariables>
 struct FirstOrderSourcesCompute
-    : db::add_tag_prefix<::Tags::Source, typename System::variables_tag>,
+    : db::add_tag_prefix<::Tags::Source, VariablesTag>,
       db::ComputeTag {
- private:
-  using vars_tag = typename System::variables_tag;
-  using SourcesComputer = typename System::sources;
-
- public:
-  using base = db::add_tag_prefix<::Tags::Source, vars_tag>;
+  using base = db::add_tag_prefix<::Tags::Source, VariablesTag>;
   using argument_tags =
-      tmpl::push_front<typename SourcesComputer::argument_tags, vars_tag>;
+      tmpl::push_front<typename SourcesComputer::argument_tags, VariablesTag>;
   using volume_tags = get_volume_tags<SourcesComputer>;
   using return_type = db::item_type<base>;
   template <typename... SourcesArgs>
   static void function(const gsl::not_null<return_type*> sources,
-                       const db::const_item_type<vars_tag>& vars,
+                       const db::const_item_type<VariablesTag>& vars,
                        const SourcesArgs&... sources_args) noexcept {
     *sources = return_type{vars.number_of_grid_points()};
-    elliptic::first_order_sources<typename System::primal_variables,
-                                  typename System::auxiliary_variables,
+    elliptic::first_order_sources<PrimalVariables, AuxiliaryVariables,
                                   SourcesComputer>(sources, vars,
                                                    sources_args...);
   }

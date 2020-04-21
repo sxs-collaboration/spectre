@@ -72,26 +72,18 @@ struct Sources {
 };
 
 template <size_t Dim>
-struct System {
-  static constexpr size_t volume_dim = Dim;
-  using variables_tag =
-      Tags::Variables<tmpl::list<FieldTag, AuxiliaryFieldTag<Dim>>>;
-  using primal_variables = tmpl::list<FieldTag>;
-  using auxiliary_variables = tmpl::list<AuxiliaryFieldTag<Dim>>;
-  using fluxes = Fluxes<Dim>;
-  using sources = Sources;
-};
-
-template <size_t Dim>
 void test_first_order_compute_tags() {
-  using system = System<Dim>;
-  using vars_tag = typename system::variables_tag;
-  using FluxesComputer = typename system::fluxes;
-  using fluxes_computer_tag = elliptic::Tags::FluxesComputer<FluxesComputer>;
+  using vars_tag =
+      Tags::Variables<tmpl::list<FieldTag, AuxiliaryFieldTag<Dim>>>;
+  using primal_vars = tmpl::list<FieldTag>;
+  using auxiliary_vars = tmpl::list<AuxiliaryFieldTag<Dim>>;
+  using fluxes_computer_tag = elliptic::Tags::FluxesComputer<Fluxes<Dim>>;
   using first_order_fluxes_compute_tag =
-      elliptic::Tags::FirstOrderFluxesCompute<system>;
+      elliptic::Tags::FirstOrderFluxesCompute<Dim, Fluxes<Dim>, vars_tag,
+                                              primal_vars, auxiliary_vars>;
   using first_order_sources_compute_tag =
-      elliptic::Tags::FirstOrderSourcesCompute<system>;
+      elliptic::Tags::FirstOrderSourcesCompute<Sources, vars_tag, primal_vars,
+                                               auxiliary_vars>;
 
   TestHelpers::db::test_compute_tag<first_order_fluxes_compute_tag>(
       "Flux(Variables(Flux(FieldTag),Flux(AuxiliaryFieldTag)))");
@@ -112,7 +104,7 @@ void test_first_order_compute_tags() {
                                    DerivedArgumentTag>,
                  db::AddComputeTags<first_order_fluxes_compute_tag,
                                     first_order_sources_compute_tag>>(
-          std::move(vars), FluxesComputer{}, 3., 1.);
+          std::move(vars), Fluxes<Dim>{}, 3., 1.);
 
   // Check computed fluxes
   for (size_t d = 0; d < Dim; d++) {

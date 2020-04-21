@@ -93,11 +93,14 @@ struct ElementArray {
                   tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
                   domain::Tags::InitialExtents<Dim>, vars_tag<Dim>>>,
               dg::Actions::InitializeDomain<Dim>,
-              Initialization::Actions::AddComputeTags<
-                  tmpl::list<elliptic::Tags::FirstOrderFluxesCompute<
-                                 typename metavariables::system>,
-                             ::Tags::DivVariablesCompute<
-                                 fluxes_tag<Dim>, inv_jacobian_tag<Dim>>>>,
+              Initialization::Actions::AddComputeTags<tmpl::list<
+                  elliptic::Tags::FirstOrderFluxesCompute<
+                      Dim, typename metavariables::system::fluxes,
+                      typename metavariables::system::variables_tag,
+                      typename metavariables::system::primal_variables,
+                      typename metavariables::system::auxiliary_variables>,
+                  ::Tags::DivVariablesCompute<fluxes_tag<Dim>,
+                                              inv_jacobian_tag<Dim>>>>,
               dg::Actions::InitializeInterfaces<
                   typename Metavariables::system,
                   dg::Initialization::slice_tags_to_face<vars_tag<Dim>>,

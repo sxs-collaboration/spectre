@@ -62,7 +62,9 @@ struct InitializeFluxes {
                      Directions, ::Tags::NormalDotFluxCompute<
                                      vars_tag, volume_dim, Frame::Inertial>>>;
 
-  using fluxes_compute_tag = elliptic::Tags::FirstOrderFluxesCompute<system>;
+  using fluxes_compute_tag = elliptic::Tags::FirstOrderFluxesCompute<
+      volume_dim, typename system::fluxes, typename system::variables_tag,
+      typename system::primal_variables, typename system::auxiliary_variables>;
 
   using exterior_tags = tmpl::list<
       // On exterior (ghost) boundary faces we compute the fluxes from the

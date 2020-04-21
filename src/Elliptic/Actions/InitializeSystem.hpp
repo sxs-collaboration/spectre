@@ -96,9 +96,14 @@ struct InitializeSystem {
         domain::Tags::ElementMap<Dim>,
         domain::Tags::Coordinates<Dim, Frame::Logical>>;
 
-    using fluxes_compute_tag = elliptic::Tags::FirstOrderFluxesCompute<system>;
-    using sources_compute_tag =
-        elliptic::Tags::FirstOrderSourcesCompute<system>;
+    using fluxes_compute_tag = elliptic::Tags::FirstOrderFluxesCompute<
+        Dim, typename system::fluxes, typename system::variables_tag,
+        typename system::primal_variables,
+        typename system::auxiliary_variables>;
+    using sources_compute_tag = elliptic::Tags::FirstOrderSourcesCompute<
+        typename system::sources, typename system::variables_tag,
+        typename system::primal_variables,
+        typename system::auxiliary_variables>;
 
     using simple_tags =
         db::AddSimpleTags<fields_tag, linear_operator_applied_to_fields_tag,
