@@ -141,12 +141,15 @@ template <class MapTag, class SourceCoordsTag>
 struct MappedCoordinates
     : Coordinates<MapTag::dim, typename MapTag::target_frame>,
       db::ComputeTag {
+  using base = Coordinates<MapTag::dim, typename MapTag::target_frame>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
   static constexpr auto function(
+      const gsl::not_null<return_type*> target_coords,
       const db::const_item_type<MapTag>& element_map,
       const db::const_item_type<SourceCoordsTag>& source_coords) noexcept {
-    return element_map(source_coords);
+    *target_coords = element_map(source_coords);
   }
-  using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
 };
 
 /// \ingroup DataBoxTagsGroup
