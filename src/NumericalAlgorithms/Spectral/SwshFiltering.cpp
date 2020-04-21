@@ -34,40 +34,43 @@ void filter_swsh_volume_quantity(
   const size_t number_of_radial_grid_points =
       to_filter->size() / number_of_swsh_collocation_points(l_max);
 
-  buffer->destructive_resize(to_filter->size());
-  // Filter the radial direction using the provided exponential parameters.
-  apply_matrices(buffer,
-                 make_array(Matrix{}, Matrix{},
-                            Spectral::filtering::exponential_filter(
-                                Mesh<1>{number_of_radial_grid_points,
-                                        Spectral::Basis::Legendre,
-                                        Spectral::Quadrature::GaussLobatto},
-                                exponential_alpha, exponential_half_power)),
-                 to_filter->data(),
-                 Index<3>{number_of_swsh_phi_collocation_points(l_max),
-                          number_of_swsh_theta_collocation_points(l_max),
-                          number_of_radial_grid_points});
-  to_filter->data() = *buffer;
-
-  transform_buffer->destructive_resize(
-      number_of_radial_grid_points *
-      size_of_libsharp_coefficient_vector(l_max));
-  // Filter the angular direction using a transform and `limit_l`
-  swsh_transform(l_max, number_of_radial_grid_points, transform_buffer,
-                 *to_filter);
-  const auto& coefficients_metadata = cached_coefficients_metadata(l_max);
-  for (size_t i = 0; i < number_of_radial_grid_points; ++i) {
-    for (const auto& mode : coefficients_metadata) {
-      if (mode.l > limit_l) {
-        transform_buffer->data()[mode.transform_of_real_part_offset +
-                                 i * coefficients_metadata.size()] = 0.0;
-        transform_buffer->data()[mode.transform_of_imag_part_offset +
-                                 i * coefficients_metadata.size()] = 0.0;
+  if (LIKELY(exponential_alpha != 0.0)) {
+    buffer->destructive_resize(to_filter->size());
+    // Filter the radial direction using the provided exponential parameters.
+    apply_matrices(buffer,
+                   make_array(Matrix{}, Matrix{},
+                              Spectral::filtering::exponential_filter(
+                                  Mesh<1>{number_of_radial_grid_points,
+                                          Spectral::Basis::Legendre,
+                                          Spectral::Quadrature::GaussLobatto},
+                                  exponential_alpha, exponential_half_power)),
+                   to_filter->data(),
+                   Index<3>{number_of_swsh_phi_collocation_points(l_max),
+                            number_of_swsh_theta_collocation_points(l_max),
+                            number_of_radial_grid_points});
+    to_filter->data() = *buffer;
+  }
+  if (LIKELY(limit_l < l_max)) {
+    transform_buffer->destructive_resize(
+        number_of_radial_grid_points *
+        size_of_libsharp_coefficient_vector(l_max));
+    // Filter the angular direction using a transform and `limit_l`
+    swsh_transform(l_max, number_of_radial_grid_points, transform_buffer,
+                   *to_filter);
+    const auto& coefficients_metadata = cached_coefficients_metadata(l_max);
+    for (size_t i = 0; i < number_of_radial_grid_points; ++i) {
+      for (const auto& mode : coefficients_metadata) {
+        if (mode.l > limit_l) {
+          transform_buffer->data()[mode.transform_of_real_part_offset +
+                                   i * coefficients_metadata.size()] = 0.0;
+          transform_buffer->data()[mode.transform_of_imag_part_offset +
+                                   i * coefficients_metadata.size()] = 0.0;
+        }
       }
     }
-  }
   inverse_swsh_transform(l_max, number_of_radial_grid_points, to_filter,
                          *transform_buffer);
+  }
 }
 
 template <int Spin>
@@ -92,17 +95,19 @@ void filter_swsh_boundary_quantity(
     const size_t l_max, const size_t limit_l,
     const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
         transform_buffer) noexcept {
-  transform_buffer->destructive_resize(
-      size_of_libsharp_coefficient_vector(l_max));
-  swsh_transform(l_max, 1, transform_buffer, *to_filter);
-  const auto& coefficients_metadata = cached_coefficients_metadata(l_max);
-  for (const auto& mode : coefficients_metadata) {
-    if (mode.l > limit_l) {
-      transform_buffer->data()[mode.transform_of_real_part_offset] = 0.0;
-      transform_buffer->data()[mode.transform_of_imag_part_offset] = 0.0;
+  if (LIKELY(limit_l < l_max)) {
+    transform_buffer->destructive_resize(
+        size_of_libsharp_coefficient_vector(l_max));
+    swsh_transform(l_max, 1, transform_buffer, *to_filter);
+    const auto& coefficients_metadata = cached_coefficients_metadata(l_max);
+    for (const auto& mode : coefficients_metadata) {
+      if (mode.l > limit_l) {
+        transform_buffer->data()[mode.transform_of_real_part_offset] = 0.0;
+        transform_buffer->data()[mode.transform_of_imag_part_offset] = 0.0;
+      }
     }
+    inverse_swsh_transform(l_max, 1, to_filter, *transform_buffer);
   }
-  inverse_swsh_transform(l_max, 1, to_filter, *transform_buffer);
 }
 
 template <int Spin>
