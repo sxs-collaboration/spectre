@@ -25,6 +25,7 @@
 #include "DataStructures/Variables.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
@@ -44,7 +45,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare db::DataBox
+namespace helpers = LinearSolverAlgorithmTestHelpers;
 
 namespace DistributedLinearSolverAlgorithmTestHelpers {
 
@@ -339,5 +340,12 @@ struct ElementArray {
     local_component.start_phase(next_phase);
   }
 };
+
+template <typename Metavariables>
+using component_list =
+    tmpl::push_back<typename Metavariables::linear_solver::component_list,
+                    ElementArray<Metavariables>,
+                    observers::ObserverWriter<Metavariables>,
+                    helpers::OutputCleaner<Metavariables>>;
 
 }  // namespace DistributedLinearSolverAlgorithmTestHelpers

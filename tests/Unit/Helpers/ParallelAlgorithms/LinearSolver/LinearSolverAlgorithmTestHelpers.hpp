@@ -19,6 +19,8 @@
 #include "DataStructures/DenseVector.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "IO/Observer/Helpers.hpp"
+#include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Options/Options.hpp"
@@ -182,7 +184,7 @@ struct InitializeElement {
             db::AddSimpleTags<VectorTag, ::Tags::FixedSource<VectorTag>>>(
             std::move(box), get<InitialGuess>(box), get<Source>(box)));
   }
-};  // namespace
+};
 
 template <typename Metavariables>
 struct ElementArray {
@@ -288,5 +290,43 @@ struct OutputCleaner {
     local_component.start_phase(next_phase);
   }
 };
+
+enum class Phase {
+  Initialization,
+  RegisterWithObserver,
+  PerformLinearSolve,
+  TestResult,
+  CleanOutput,
+  Exit
+};
+
+template <typename Metavariables>
+Phase determine_next_phase(const Phase& current_phase,
+                           const Parallel::CProxy_ConstGlobalCache<
+                               Metavariables>& /*cache_proxy*/) noexcept {
+  switch (current_phase) {
+    case Phase::Initialization:
+      return Phase::RegisterWithObserver;
+    case Phase::RegisterWithObserver:
+      return Phase::PerformLinearSolve;
+    case Phase::PerformLinearSolve:
+      return Phase::TestResult;
+    case Phase::TestResult:
+      return Phase::CleanOutput;
+    default:
+      return Phase::Exit;
+  }
+}
+
+template <typename Metavariables>
+using component_list =
+    tmpl::push_back<typename Metavariables::linear_solver::component_list,
+                    ElementArray<Metavariables>,
+                    observers::ObserverWriter<Metavariables>,
+                    OutputCleaner<Metavariables>>;
+
+template <typename Metavariables>
+using observed_reduction_data_tags = observers::collect_reduction_data_tags<
+    tmpl::list<typename Metavariables::linear_solver>>;
 
 }  // namespace LinearSolverAlgorithmTestHelpers
