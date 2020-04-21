@@ -140,9 +140,6 @@ using fields_tag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
 using sources_tag = db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
 using operator_applied_to_fields_tag =
     db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
-using operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
-using operator_applied_to_operand_tag =
-    db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
 
 // In the following `ComputeOperatorAction` and `CollectOperatorAction` actions
 // we compute A(p)=sum_elements(A_element(p_element)) in a global reduction and
@@ -301,7 +298,7 @@ struct ElementArray {
           tmpl::list<LinearSolver::Actions::TerminateIfConverged<
                          typename linear_solver::options_group>,
                      typename linear_solver::prepare_step,
-                     ComputeOperatorAction<operand_tag>,
+                     ComputeOperatorAction<typename linear_solver::operand_tag>,
                      typename linear_solver::perform_step>>,
 
       Parallel::PhaseActions<

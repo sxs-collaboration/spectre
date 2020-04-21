@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "AlgorithmArray.hpp"
+#include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -111,8 +112,6 @@ struct VectorTag : db::SimpleTag {
 };
 
 using fields_tag = VectorTag;
-using operand_tag = LinearSolver::Tags::Operand<fields_tag>;
-using operator_tag = LinearSolver::Tags::OperatorAppliedTo<operand_tag>;
 
 template <typename OperandTag>
 struct ComputeOperatorAction {
@@ -211,7 +210,7 @@ struct ElementArray {
           tmpl::list<LinearSolver::Actions::TerminateIfConverged<
                          typename linear_solver::options_group>,
                      typename linear_solver::prepare_step,
-                     ComputeOperatorAction<operand_tag>,
+                     ComputeOperatorAction<typename linear_solver::operand_tag>,
                      typename linear_solver::perform_step>>,
 
       Parallel::PhaseActions<
