@@ -164,7 +164,7 @@ struct InitializeDampedHarmonic {
     const auto& inverse_jacobian =
         db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical, frame>>(box);
 
-    auto [initial_gauge_h, initial_d4_gauge_h] = impl(
+    auto [initial_gauge_h, initial_d4_gauge_h] = impl_rollon(
         db::get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
             box),
         db::get<GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>>(box),
@@ -189,11 +189,12 @@ struct InitializeDampedHarmonic {
  private:
   static std::tuple<tnsr::a<DataVector, Dim, Frame::Inertial>,
                     tnsr::ab<DataVector, Dim, Frame::Inertial>>
-  impl(const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
-       const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi,
-       const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
-       const Mesh<Dim>& mesh,
-       const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
-           inverse_jacobian) noexcept;
+  impl_rollon(
+      const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
+      const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi,
+      const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
+      const Mesh<Dim>& mesh,
+      const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
+          inverse_jacobian) noexcept;
 };
 }  // namespace GeneralizedHarmonic::gauges::Actions
