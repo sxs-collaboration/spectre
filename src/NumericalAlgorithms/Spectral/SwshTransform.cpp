@@ -126,6 +126,74 @@ SpinWeighted<ComplexDataVector, Spin> inverse_swsh_transform(
   return result_vector;
 }
 
+template <int Spin>
+void interpolate_to_collocation(
+    const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> target,
+    const SpinWeighted<ComplexDataVector, Spin>& source,
+    const size_t target_l_max, const size_t source_l_max,
+    const size_t number_of_radial_points) noexcept {
+  const auto source_modes =
+      swsh_transform(source_l_max, number_of_radial_points, source);
+  SpinWeighted<ComplexModalVector, Spin> target_modes{
+      size_of_libsharp_coefficient_vector(target_l_max) *
+      number_of_radial_points};
+
+  const auto& target_coefficient_metadata =
+      cached_coefficients_metadata(target_l_max);
+  for (size_t i = 0; i < number_of_radial_points; ++i) {
+    auto source_coefficient_metadata_iterator =
+        cached_coefficients_metadata(source_l_max).begin();
+    for (const auto& coefficient : target_coefficient_metadata) {
+      // first, we advance `source_coefficient_metadata_iterator` to the same
+      // mode that is represented by `coefficient`, or to the next mode
+      // following `coefficient` that is present in the source resolution, or to
+      // the iterator end if neither exists. Note: this assumes the libsharp
+      // coefficient ordering for optimizations
+      while (source_coefficient_metadata_iterator !=
+                 cached_coefficients_metadata(source_l_max).end() and
+             ((*source_coefficient_metadata_iterator).m < coefficient.m or
+              ((*source_coefficient_metadata_iterator).l < coefficient.l and
+               (*source_coefficient_metadata_iterator).m == coefficient.m))) {
+        ++source_coefficient_metadata_iterator;
+      }
+      // assign the current coefficient if present in both the source and the
+      // target
+      if (source_coefficient_metadata_iterator !=
+              cached_coefficients_metadata(source_l_max).end() and
+          coefficient.l == (*source_coefficient_metadata_iterator).l and
+          coefficient.m == (*source_coefficient_metadata_iterator).m) {
+        target_modes
+            .data()[i * size_of_libsharp_coefficient_vector(target_l_max) +
+                    coefficient.transform_of_real_part_offset] =
+            source_modes
+                .data()[i * size_of_libsharp_coefficient_vector(source_l_max) +
+                        (*source_coefficient_metadata_iterator)
+                            .transform_of_real_part_offset];
+        target_modes
+            .data()[i * size_of_libsharp_coefficient_vector(target_l_max) +
+                    coefficient.transform_of_imag_part_offset] =
+            source_modes
+                .data()[i * size_of_libsharp_coefficient_vector(source_l_max) +
+                        (*source_coefficient_metadata_iterator)
+                            .transform_of_imag_part_offset];
+      } else {
+        // assign 0.0 if the coefficient is present in the target and not in the
+        // source representation
+        target_modes
+            .data()[i * size_of_libsharp_coefficient_vector(target_l_max) +
+                    coefficient.transform_of_real_part_offset] =
+            std::complex<double>(0.0, 0.0);
+        target_modes
+            .data()[i * size_of_libsharp_coefficient_vector(target_l_max) +
+                    coefficient.transform_of_imag_part_offset] =
+            std::complex<double>(0.0, 0.0);
+      }
+    }
+  }
+  inverse_swsh_transform(target_l_max, number_of_radial_points, target,
+                         target_modes);
+}
+
 #define GET_REPRESENTATION(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define GET_SPIN(data) BOOST_PP_TUPLE_ELEM(1, data)
 
@@ -172,6 +240,21 @@ GENERATE_INSTANTIATIONS(SWSH_TRANSFORM_INSTANTIATION,
 
 #undef GET_REPRESENTATION
 #undef GET_SPIN
+
+#define GET_SPIN(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define SWSH_INTERPOLATION_INSTANTIATION(r, data)                           \
+  template void interpolate_to_collocation<GET_SPIN(data)>(                 \
+      const gsl::not_null<SpinWeighted<ComplexDataVector, GET_SPIN(data)>*> \
+          target,                                                           \
+      const SpinWeighted<ComplexDataVector, GET_SPIN(data)>& source,        \
+      const size_t target_l_max, const size_t source_l_max,                 \
+      const size_t number_of_radial_points) noexcept;
+
+GENERATE_INSTANTIATIONS(SWSH_INTERPOLATION_INSTANTIATION, (-2, -1, 0, 1, 2))
+
+#undef GET_SPIN
+#undef SWSH_INTERPOLATION_INSTANTIATION
 #undef SWSH_TRANSFORM_INSTANTIATION
 #undef SWSH_TRANSFORM_UTILITIES_INSTANTIATION
 
