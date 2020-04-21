@@ -462,6 +462,31 @@ SpinWeighted<ComplexModalVector, Spin> libsharp_to_goldberg_modes(
     size_t l_max) noexcept;
 // @}
 
+// @{
+/*!
+ * \ingroup SwshGroup
+ * \brief Compute the set of libsharp-compatible spin-weighted spherical
+ * harmonic modes  from a set of Goldberg modes (following the convention of
+ * \cite Goldberg1966uu)
+ *
+ * \details Internally iterates and uses the
+ * `goldberg_modes_to_libsharp_modes_single_pair()`. In many applications where
+ * it is not necessary to store the full Goldberg representation, memory
+ * allocation can be saved by manually performing the iteration and calls to
+ * `goldberg_modes_to_libsharp_modes_single_pair()`.
+ */
+template <int Spin>
+void goldberg_to_libsharp_modes(
+    gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> libsharp_modes,
+    const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes,
+    size_t l_max) noexcept;
+
+template <int Spin>
+SpinWeighted<ComplexModalVector, Spin> goldberg_to_libsharp_modes(
+    const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes,
+    size_t l_max) noexcept;
+// @}
+
 /*!
  * \ingroup SwshGroup
  * \brief Returns the index into a vector of modes consistent with

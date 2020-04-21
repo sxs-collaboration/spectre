@@ -182,6 +182,38 @@ SpinWeighted<ComplexModalVector, Spin> libsharp_to_goldberg_modes(
   return result;
 }
 
+template <int Spin>
+void goldberg_to_libsharp_modes(
+    const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> libsharp_modes,
+    const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes,
+    const size_t l_max) noexcept {
+  const size_t number_of_radial_grid_points =
+      goldberg_modes.data().size() / square(l_max + 1);
+  for(size_t i = 0; i < number_of_radial_grid_points; ++i) {
+    for (const auto& mode : cached_coefficients_metadata(l_max)) {
+      goldberg_modes_to_libsharp_modes_single_pair(
+          mode, libsharp_modes, i,
+          goldberg_modes.data()[goldberg_mode_index(
+              l_max, mode.l, static_cast<int>(mode.m), i)],
+          goldberg_modes.data()[goldberg_mode_index(
+              l_max, mode.l, -static_cast<int>(mode.m), i)]);
+    }
+  }
+}
+
+template <int Spin>
+SpinWeighted<ComplexModalVector, Spin> goldberg_to_libsharp_modes(
+    const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes,
+    const size_t l_max) noexcept {
+  const size_t number_of_radial_grid_points =
+      goldberg_modes.data().size() / square(l_max + 1);
+  SpinWeighted<ComplexModalVector, Spin> result{
+      size_of_libsharp_coefficient_vector(l_max)
+      * number_of_radial_grid_points};
+  goldberg_to_libsharp_modes(make_not_null(&result), goldberg_modes, l_max);
+  return result;
+}
+
 #define GET_SPIN(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define LIBSHARP_TO_GOLDBERG_INSTANTIATION(r, data)                           \
@@ -219,6 +251,10 @@ SpinWeighted<ComplexModalVector, Spin> libsharp_to_goldberg_modes(
   template SpinWeighted<ComplexModalVector, GET_SPIN(data)>                   \
   libsharp_to_goldberg_modes(                                                 \
       const SpinWeighted<ComplexModalVector, GET_SPIN(data)>& libsharp_modes, \
+      const size_t l_max) noexcept;                                           \
+  template SpinWeighted<ComplexModalVector, GET_SPIN(data)>                   \
+  goldberg_to_libsharp_modes(                                                 \
+      const SpinWeighted<ComplexModalVector, GET_SPIN(data)>& goldberg_modes, \
       const size_t l_max) noexcept;
 
 GENERATE_INSTANTIATIONS(LIBSHARP_TO_GOLDBERG_INSTANTIATION, (-2, -1, 0, 1, 2))
