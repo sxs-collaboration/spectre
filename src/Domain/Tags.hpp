@@ -231,13 +231,13 @@ template <size_t VolumeDim>
 struct InternalDirections : db::ComputeTag {
   static constexpr size_t volume_dim = VolumeDim;
   static std::string name() noexcept { return "InternalDirections"; }
+  using return_type = std::unordered_set<::Direction<VolumeDim>>;
   using argument_tags = tmpl::list<Element<VolumeDim>>;
-  static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
-    std::unordered_set<::Direction<VolumeDim>> result;
+  static void function(const gsl::not_null<return_type*> directions,
+                       const ::Element<VolumeDim>& element) noexcept {
     for (const auto& direction_neighbors : element.neighbors()) {
-      result.insert(direction_neighbors.first);
+      directions->insert(direction_neighbors.first);
     }
-    return result;
   }
 };
 
@@ -250,9 +250,11 @@ template <size_t VolumeDim>
 struct BoundaryDirectionsInterior : db::ComputeTag {
   static constexpr size_t volume_dim = VolumeDim;
   static std::string name() noexcept { return "BoundaryDirectionsInterior"; }
+  using return_type = std::unordered_set<::Direction<VolumeDim>>;
   using argument_tags = tmpl::list<Element<VolumeDim>>;
-  static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
-    return element.external_boundaries();
+  static void function(const gsl::not_null<return_type*> directions,
+                       const ::Element<VolumeDim>& element) noexcept {
+    *directions = element.external_boundaries();
   }
 };
 
@@ -265,9 +267,11 @@ template <size_t VolumeDim>
 struct BoundaryDirectionsExterior : db::ComputeTag {
   static constexpr size_t volume_dim = VolumeDim;
   static std::string name() noexcept { return "BoundaryDirectionsExterior"; }
+  using return_type = std::unordered_set<::Direction<VolumeDim>>;
   using argument_tags = tmpl::list<Element<VolumeDim>>;
-  static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
-    return element.external_boundaries();
+  static constexpr auto function(const gsl::not_null<return_type*> directions,
+                                 const ::Element<VolumeDim>& element) noexcept {
+    *directions = element.external_boundaries();
   }
 };
 
