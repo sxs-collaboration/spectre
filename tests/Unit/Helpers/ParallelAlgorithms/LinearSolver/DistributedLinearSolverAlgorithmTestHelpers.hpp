@@ -168,7 +168,7 @@ struct ComputeOperatorAction {
       const ActionList /*meta*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ParallelComponent* const /*meta*/) noexcept {
-    const auto& operator_matrices = get<LinearOperator>(cache);
+    const auto& operator_matrices = get<LinearOperator>(box);
     const auto number_of_elements = operator_matrices.size();
     const auto& linear_operator = gsl::at(operator_matrices, array_index);
     const auto number_of_grid_points = linear_operator.columns();
@@ -209,7 +209,7 @@ struct CollectOperatorAction {
                         Ap_global_data) noexcept {
     // This could be generalized to work on the Variables instead of the
     // Scalar, but it's only for the purpose of this test.
-    const auto number_of_grid_points = get<LinearOperator>(cache)[0].columns();
+    const auto number_of_grid_points = get<LinearOperator>(box)[0].columns();
     const auto& Ap_global = get<ScalarFieldOperandTag>(Ap_global_data).get();
     DataVector Ap_local{number_of_grid_points};
     std::copy(Ap_global.begin() +
@@ -239,7 +239,7 @@ struct TestResult {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const int array_index,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
@@ -252,7 +252,7 @@ struct TestResult {
     SPECTRE_PARALLEL_REQUIRE(has_converged.reason() ==
                              Convergence::Reason::AbsoluteResidual);
     const auto& expected_result =
-        gsl::at(get<ExpectedResult>(cache), array_index);
+        gsl::at(get<ExpectedResult>(box), array_index);
     const auto& result = get<ScalarFieldTag>(box).get();
     for (size_t i = 0; i < expected_result.size(); i++) {
       SPECTRE_PARALLEL_REQUIRE(result[i] == approx(expected_result[i]));
@@ -266,10 +266,10 @@ struct InitializeElement {
             typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const int array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    const auto& source = gsl::at(get<Source>(cache), array_index);
+    const auto& source = gsl::at(get<Source>(box), array_index);
     const size_t num_points = source.size();
 
     return std::make_tuple(

@@ -119,7 +119,7 @@ struct ComputeOperatorAction {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const int /*array_index*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
@@ -134,7 +134,7 @@ struct ComputeOperatorAction {
            const DenseVector<double>& operand) noexcept {
           *operator_applied_to_operand = linear_operator * operand;
         },
-        get<LinearOperator>(cache), get<OperandTag>(box));
+        get<LinearOperator>(box), get<OperandTag>(box));
     return {std::move(box), false};
   }
 };
@@ -147,7 +147,7 @@ struct TestResult {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const int /*array_index*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
@@ -160,7 +160,7 @@ struct TestResult {
     SPECTRE_PARALLEL_REQUIRE(has_converged.reason() ==
                              Convergence::Reason::AbsoluteResidual);
     const auto& result = get<VectorTag>(box);
-    const auto& expected_result = get<ExpectedResult>(cache);
+    const auto& expected_result = get<ExpectedResult>(box);
     for (size_t i = 0; i < expected_result.size(); i++) {
       SPECTRE_PARALLEL_REQUIRE(result[i] == approx(expected_result[i]));
     }
@@ -173,14 +173,14 @@ struct InitializeElement {
             typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const int /*array_index*/, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     return std::make_tuple(
         ::Initialization::merge_into_databox<
             InitializeElement,
             db::AddSimpleTags<VectorTag, ::Tags::FixedSource<VectorTag>>>(
-            std::move(box), get<InitialGuess>(cache), get<Source>(cache)));
+            std::move(box), get<InitialGuess>(box), get<Source>(box)));
   }
 };  // namespace
 
@@ -250,11 +250,11 @@ struct CleanOutput {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     const auto& reductions_file_name =
-        get<observers::Tags::ReductionFileName>(cache) + ".h5";
+        get<observers::Tags::ReductionFileName>(box) + ".h5";
     if (file_system::check_if_file_exists(reductions_file_name)) {
       file_system::rm(reductions_file_name, true);
     } else if (CheckExpectedOutput) {
