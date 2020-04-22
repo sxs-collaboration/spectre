@@ -124,7 +124,7 @@ struct Dy : db::PrefixTag, db::SimpleTag {
 /// The derivative with respect to Bondi \f$r\f$
 template <typename Tag>
 struct Dr : db::PrefixTag, db::SimpleTag {
-  using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
+  using type = typename Tag::type;
   using tag = Tag;
   static std::string name() noexcept {
     return "Dr(" + db::tag_name<Tag>() + ")";
