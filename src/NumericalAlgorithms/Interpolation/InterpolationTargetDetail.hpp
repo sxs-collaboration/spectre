@@ -268,6 +268,57 @@ bool have_data_at_all_points(const db::DataBox<DbTags>& box,
   return (invalid_size + filled_size == interp_size);
 }
 
+/// Tells an InterpolationTarget that it should interpolate at
+/// the supplied temporal_ids.  Changes the InterpolationTarget's DataBox
+/// accordingly.
+///
+/// Returns the temporal_ids that have actually been newly flagged
+/// (since some of them may have been flagged already).
+///
+/// flag_temporal_ids_for_interpolation is called by an Action
+/// of InterpolationTarget
+///
+/// Currently two Actions call flag_temporal_ids_for_interpolation:
+/// - AddTemporalIdsToInterpolationTarget (called by Events::Interpolate)
+/// - InterpolationTargetVarsFromElement (called by DgElementArray)
+template <typename InterpolationTargetTag, typename DbTags, typename TemporalId>
+std::vector<TemporalId> flag_temporal_ids_for_interpolation(
+    const gsl::not_null<db::DataBox<DbTags>*> box,
+    const std::vector<TemporalId>& temporal_ids) noexcept {
+  // We allow this function to be called multiple times with the same
+  // temporal_ids (e.g. from each element, or from each node of a
+  // NodeGroup ParallelComponent such as Interpolator). If multiple
+  // calls occur, we care only about the first one, and ignore the
+  // others.  The first call will often begin interpolation.  So if
+  // multiple calls occur, it is possible that some of them may arrive
+  // late, even after interpolation has been completed on one or more
+  // of the temporal_ids (and after that id has already been removed
+  // from `ids`).  If this happens, we don't want to add the
+  // temporal_ids again. For that reason we keep track of the
+  // temporal_ids that we have already completed interpolation on.  So
+  // here we do not add any temporal_ids that are already present in
+  // `ids` or `completed_ids`.
+  std::vector<TemporalId> new_temporal_ids{};
+
+  db::mutate_apply<tmpl::list<Tags::TemporalIds<TemporalId>>,
+                   tmpl::list<Tags::CompletedTemporalIds<TemporalId>>>(
+      [&temporal_ids, &new_temporal_ids ](
+          const gsl::not_null<std::deque<TemporalId>*> ids,
+          const std::deque<TemporalId>& completed_ids) noexcept {
+        for (auto& id : temporal_ids) {
+          if (std::find(completed_ids.begin(), completed_ids.end(), id) ==
+                  completed_ids.end() and
+              std::find(ids->begin(), ids->end(), id) == ids->end()) {
+            ids->push_back(id);
+            new_temporal_ids.push_back(id);
+          }
+        }
+      },
+      box);
+
+  return new_temporal_ids;
+}
+
 /// Adds the supplied interpolated variables and offsets to the
 /// InterpolationTarget's internal DataBox.
 ///
@@ -337,22 +388,36 @@ void add_received_variables(
 
 /// Computes the block logical coordinates of an InterpolationTarget.
 ///
-/// get_block_logical_coords is called by an Action of InterpolationTarget.
+/// block_logical_coords is called by an Action of InterpolationTarget.
 ///
-/// Currently two Actions call get_block_logical_coords:
+/// Currently two Actions call block_logical_coords:
 /// - SendPointsToInterpolator (called by AddTemporalIdsToInterpolationTarget
 ///                             and by FindApparentHorizon)
 /// - InterpolationTargetVarsFromElement (called by DgElementArray)
+/// - InterpolationTargetSendTimeIndepPointsToElements
+///   (in InterpolationTarget ActionList)
 template <typename InterpolationTargetTag, typename DbTags,
           typename Metavariables, typename TemporalId>
-auto get_block_logical_coords(const db::DataBox<DbTags>& box,
-                              Parallel::ConstGlobalCache<Metavariables>& cache,
-                              const TemporalId& temporal_id) noexcept {
+auto block_logical_coords(const db::DataBox<DbTags>& box,
+                          const tmpl::type_<Metavariables>& meta,
+                          const TemporalId& temporal_id) noexcept {
   const auto& domain =
       db::get<domain::Tags::Domain<Metavariables::volume_dim>>(box);
-  return block_logical_coordinates(
+  return ::block_logical_coordinates(
       domain, InterpolationTargetTag::compute_target_points::points(
-                  box, cache, temporal_id));
+                  box, meta, temporal_id));
+}
+
+/// This is a version of block_logical_coords for when the coords
+/// are time-independent.
+template <typename InterpolationTargetTag, typename DbTags,
+          typename Metavariables>
+auto block_logical_coords(const db::DataBox<DbTags>& box,
+                          const tmpl::type_<Metavariables>& meta) noexcept {
+  const auto& domain =
+      db::get<domain::Tags::Domain<Metavariables::volume_dim>>(box);
+  return ::block_logical_coordinates(
+      domain, InterpolationTargetTag::compute_target_points::points(box, meta));
 }
 
 /// Initializes InterpolationTarget's variables storage and lists of indices

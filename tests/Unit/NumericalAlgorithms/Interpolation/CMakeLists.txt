@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_BarycentricRational.cpp
   Test_CleanUpInterpolator.cpp
   Test_CubicSpline.cpp
+  Test_ElementReceiveInterpPoints.cpp
   Test_InitializeInterpolationTarget.cpp
   Test_InitializeInterpolator.cpp
   Test_InterpolateEvent.cpp
