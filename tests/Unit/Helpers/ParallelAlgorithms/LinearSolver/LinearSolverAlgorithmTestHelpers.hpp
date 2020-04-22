@@ -20,8 +20,10 @@
 #include "DataStructures/DenseVector.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/RegisterObservers.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Options/Options.hpp"
@@ -201,9 +203,17 @@ struct ElementArray {
           tmpl::list<InitializeElement,
                      typename linear_solver::initialize_element,
                      ComputeOperatorAction<fields_tag>,
+                     Parallel::Actions::TerminatePhase>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase,
+          Metavariables::Phase::RegisterWithObserver,
+          tmpl::list<observers::Actions::RegisterWithObservers<
+                         observers::RegisterObservers<
+                             LinearSolver::Tags::IterationId<
+                                 typename linear_solver::options_group>,
+                             typename Metavariables::element_observation_type>>,
                      typename linear_solver::prepare_solve,
                      Parallel::Actions::TerminatePhase>>,
-
       Parallel::PhaseActions<
           typename Metavariables::Phase,
           Metavariables::Phase::PerformLinearSolve,
@@ -318,11 +328,12 @@ Phase determine_next_phase(const Phase& current_phase,
 }
 
 template <typename Metavariables>
-using component_list =
-    tmpl::push_back<typename Metavariables::linear_solver::component_list,
-                    ElementArray<Metavariables>,
-                    observers::ObserverWriter<Metavariables>,
-                    OutputCleaner<Metavariables>>;
+using component_list = tmpl::push_back<
+    typename Metavariables::linear_solver::component_list,
+    ElementArray<Metavariables>, observers::Observer<Metavariables>,
+    observers::ObserverWriter<Metavariables>, OutputCleaner<Metavariables>>;
+
+struct element_observation_type {};
 
 template <typename Metavariables>
 using observed_reduction_data_tags = observers::collect_reduction_data_tags<

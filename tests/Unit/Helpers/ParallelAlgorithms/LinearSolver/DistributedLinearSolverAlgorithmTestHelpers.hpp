@@ -26,6 +26,9 @@
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
+#include "IO/Observer/Actions.hpp"
+#include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/RegisterObservers.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
@@ -289,9 +292,17 @@ struct ElementArray {
           tmpl::list<InitializeElement,
                      typename linear_solver::initialize_element,
                      ComputeOperatorAction<fields_tag>,
+                     Parallel::Actions::TerminatePhase>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase,
+          Metavariables::Phase::RegisterWithObserver,
+          tmpl::list<observers::Actions::RegisterWithObservers<
+                         observers::RegisterObservers<
+                             LinearSolver::Tags::IterationId<
+                                 typename linear_solver::options_group>,
+                             typename Metavariables::element_observation_type>>,
                      typename linear_solver::prepare_solve,
                      Parallel::Actions::TerminatePhase>>,
-
       Parallel::PhaseActions<
           typename Metavariables::Phase,
           Metavariables::Phase::PerformLinearSolve,
@@ -342,6 +353,7 @@ template <typename Metavariables>
 using component_list =
     tmpl::push_back<typename Metavariables::linear_solver::component_list,
                     ElementArray<Metavariables>,
+                    observers::Observer<Metavariables>,
                     observers::ObserverWriter<Metavariables>,
                     helpers::OutputCleaner<Metavariables>>;
 
