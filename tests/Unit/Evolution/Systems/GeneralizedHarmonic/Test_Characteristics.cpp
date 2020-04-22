@@ -47,10 +47,10 @@
 
 // IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::Pi
 // IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::Phi
-// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::UPsi
-// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::UZero
-// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::UMinus
-// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::UPlus
+// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::VSpacetimeMetric
+// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::VZero
+// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::VMinus
+// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::VPlus
 // IWYU pragma: no_forward_declare Tags::dt
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
@@ -178,29 +178,30 @@ void test_characteristic_fields() noexcept {
       GeneralizedHarmonic::CharacteristicFieldsCompute<Dim, Frame>>(
       "CharacteristicFields");
   const DataVector used_for_size(20);
-  // UPsi
+  // VSpacetimeMetric
   pypp::check_with_random_values<1>(
-      field_with_tag<GeneralizedHarmonic::Tags::UPsi<Dim, Frame>, Dim, Frame>,
+      field_with_tag<GeneralizedHarmonic::Tags::VSpacetimeMetric<Dim, Frame>,
+                     Dim, Frame>,
       "TestFunctions", "char_field_upsi", {{{-100., 100.}}}, used_for_size);
-  // UZero
+  // VZero
   pypp::check_with_random_values<1>(
-      field_with_tag<GeneralizedHarmonic::Tags::UZero<Dim, Frame>, Dim, Frame>,
+      field_with_tag<GeneralizedHarmonic::Tags::VZero<Dim, Frame>, Dim, Frame>,
       "TestFunctions", "char_field_uzero", {{{-100., 100.}}}, used_for_size,
       1.e-9);  // last argument loosens tolerance from
                // default of 1.0e-12 to avoid occasional
                // failures of this test, suspected from
                // accumulated roundoff error
-  // UPlus
+  // VPlus
   pypp::check_with_random_values<1>(
-      field_with_tag<GeneralizedHarmonic::Tags::UPlus<Dim, Frame>, Dim, Frame>,
+      field_with_tag<GeneralizedHarmonic::Tags::VPlus<Dim, Frame>, Dim, Frame>,
       "TestFunctions", "char_field_uplus", {{{-100., 100.}}}, used_for_size,
       1.e-10);  // last argument loosens tolerance from
                 // default of 1.0e-12 to avoid occasional
                 // failures of this test, suspected from
                 // accumulated roundoff error
-  // UMinus
+  // VMinus
   pypp::check_with_random_values<1>(
-      field_with_tag<GeneralizedHarmonic::Tags::UMinus<Dim, Frame>, Dim, Frame>,
+      field_with_tag<GeneralizedHarmonic::Tags::VMinus<Dim, Frame>, Dim, Frame>,
       "TestFunctions", "char_field_uminus", {{{-100., 100.}}}, used_for_size,
       1.e-10);  // last argument loosens tolerance from
                 // default of 1.0e-12 to avoid occasional
@@ -323,15 +324,16 @@ void test_characteristic_fields_analytic(
                                               unit_normal_one_form);
 
   const auto& upsi_from_func =
-      get<GeneralizedHarmonic::Tags::UPsi<spatial_dim, Frame::Inertial>>(uvars);
+      get<GeneralizedHarmonic::Tags::VSpacetimeMetric<spatial_dim,
+                                                      Frame::Inertial>>(uvars);
   const auto& uzero_from_func =
-      get<GeneralizedHarmonic::Tags::UZero<spatial_dim, Frame::Inertial>>(
+      get<GeneralizedHarmonic::Tags::VZero<spatial_dim, Frame::Inertial>>(
           uvars);
   const auto& uplus_from_func =
-      get<GeneralizedHarmonic::Tags::UPlus<spatial_dim, Frame::Inertial>>(
+      get<GeneralizedHarmonic::Tags::VPlus<spatial_dim, Frame::Inertial>>(
           uvars);
   const auto& uminus_from_func =
-      get<GeneralizedHarmonic::Tags::UMinus<spatial_dim, Frame::Inertial>>(
+      get<GeneralizedHarmonic::Tags::VMinus<spatial_dim, Frame::Inertial>>(
           uvars);
 
   CHECK_ITERABLE_APPROX(upsi, upsi_from_func);

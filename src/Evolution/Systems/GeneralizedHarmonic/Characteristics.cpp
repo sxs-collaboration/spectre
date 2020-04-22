@@ -27,10 +27,11 @@ void characteristic_speeds(
     const tnsr::I<DataVector, Dim, Frame>& shift,
     const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept {
   const auto shift_dot_normal = get(dot_product(shift, unit_normal_one_form));
-  (*char_speeds)[0] = -(1. + get(gamma_1)) * shift_dot_normal;  // v(UPsi)
-  (*char_speeds)[1] = -shift_dot_normal;                        // v(UZero)
-  (*char_speeds)[2] = -shift_dot_normal + get(lapse);           // v(UPlus)
-  (*char_speeds)[3] = -shift_dot_normal - get(lapse);           // v(UMinus)
+  (*char_speeds)[0] =
+      -(1. + get(gamma_1)) * shift_dot_normal;  // lambda(VSpacetimeMetric)
+  (*char_speeds)[1] = -shift_dot_normal;        // lambda(VZero)
+  (*char_speeds)[2] = -shift_dot_normal + get(lapse);  // lambda(VPlus)
+  (*char_speeds)[3] = -shift_dot_normal - get(lapse);  // lambda(VMinus)
 }
 
 template <size_t Dim, typename Frame>
@@ -75,7 +76,7 @@ void characteristic_fields(
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t a = 0; a < Dim + 1; ++a) {
       for (size_t b = 0; b < a + 1; ++b) {
-        get<Tags::UZero<Dim, Frame>>(*char_fields).get(i, a, b) =
+        get<Tags::VZero<Dim, Frame>>(*char_fields).get(i, a, b) =
             phi.get(i, a, b) -
             unit_normal_one_form.get(i) * phi_dot_normal.get(a, b);
       }
@@ -83,15 +84,15 @@ void characteristic_fields(
   }
 
   // Eq.(32) of Lindblom+ (2005)
-  get<Tags::UPsi<Dim, Frame>>(*char_fields) = spacetime_metric;
+  get<Tags::VSpacetimeMetric<Dim, Frame>>(*char_fields) = spacetime_metric;
 
   for (size_t a = 0; a < Dim + 1; ++a) {
     for (size_t b = 0; b < a + 1; ++b) {
       // Eq.(33) of Lindblom+ (2005)
-      get<Tags::UPlus<Dim, Frame>>(*char_fields).get(a, b) =
+      get<Tags::VPlus<Dim, Frame>>(*char_fields).get(a, b) =
           pi.get(a, b) + phi_dot_normal.get(a, b) -
           get(gamma_2) * spacetime_metric.get(a, b);
-      get<Tags::UMinus<Dim, Frame>>(*char_fields).get(a, b) =
+      get<Tags::VMinus<Dim, Frame>>(*char_fields).get(a, b) =
           pi.get(a, b) - phi_dot_normal.get(a, b) -
           get(gamma_2) * spacetime_metric.get(a, b);
     }

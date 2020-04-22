@@ -33,10 +33,10 @@
 
 // IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::Pi
 // IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::Phi
-// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::UPsi
-// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::UZero
-// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::UMinus
-// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::UPlus
+// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::VSpacetimeMetric
+// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::VZero
+// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::VMinus
+// IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::VPlus
 // IWYU pragma: no_forward_declare Tags::CharSpeed
 // IWYU pragma: no_forward_declare Tags::dt
 // IWYU pragma: no_forward_declare Tensor

@@ -1013,6 +1013,15 @@ template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
 using Tempiaa = TempTensor<N, tnsr::iaa<DataType, SpatialDim, Fr>>;
 template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
           typename DataType = DataVector>
+using TempIaa = TempTensor<N, tnsr::Iaa<DataType, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using TempiaB = TempTensor<N, tnsr::iaB<DataType, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
 using Tempabb = TempTensor<N, tnsr::abb<DataType, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using TempabC = TempTensor<N, tnsr::abC<DataType, SpatialDim, Fr>>;
 // @}
 }  // namespace Tags

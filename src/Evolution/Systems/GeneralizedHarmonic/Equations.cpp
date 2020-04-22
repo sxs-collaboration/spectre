@@ -9,6 +9,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -61,13 +62,13 @@ weight_char_fields(
     const db::const_item_type<Tags::CharacteristicSpeeds<Dim, Frame::Inertial>>&
         char_speeds_ext) noexcept {
   const auto& u_psi_int =
-      get<Tags::UPsi<Dim, Frame::Inertial>>(char_fields_int);
+      get<Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(char_fields_int);
   const auto& u_zero_int =
-      get<Tags::UZero<Dim, Frame::Inertial>>(char_fields_int);
+      get<Tags::VZero<Dim, Frame::Inertial>>(char_fields_int);
   const auto& u_plus_int =
-      get<Tags::UPlus<Dim, Frame::Inertial>>(char_fields_int);
+      get<Tags::VPlus<Dim, Frame::Inertial>>(char_fields_int);
   const auto& u_minus_int =
-      get<Tags::UMinus<Dim, Frame::Inertial>>(char_fields_int);
+      get<Tags::VMinus<Dim, Frame::Inertial>>(char_fields_int);
 
   const DataVector& char_speed_u_psi_int{char_speeds_int[0]};
   const DataVector& char_speed_u_zero_int{char_speeds_int[1]};
@@ -75,13 +76,13 @@ weight_char_fields(
   const DataVector& char_speed_u_minus_int{char_speeds_int[3]};
 
   const auto& u_psi_ext =
-      get<Tags::UPsi<Dim, Frame::Inertial>>(char_fields_ext);
+      get<Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(char_fields_ext);
   const auto& u_zero_ext =
-      get<Tags::UZero<Dim, Frame::Inertial>>(char_fields_ext);
+      get<Tags::VZero<Dim, Frame::Inertial>>(char_fields_ext);
   const auto& u_plus_ext =
-      get<Tags::UPlus<Dim, Frame::Inertial>>(char_fields_ext);
+      get<Tags::VPlus<Dim, Frame::Inertial>>(char_fields_ext);
   const auto& u_minus_ext =
-      get<Tags::UMinus<Dim, Frame::Inertial>>(char_fields_ext);
+      get<Tags::VMinus<Dim, Frame::Inertial>>(char_fields_ext);
 
   const DataVector& char_speed_u_psi_ext{char_speeds_ext[0]};
   const DataVector& char_speed_u_zero_ext{char_speeds_ext[1]};
@@ -92,18 +93,19 @@ weight_char_fields(
       db::const_item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>>(
       char_speed_u_psi_int, 0.0);
 
-  get<Tags::UPsi<Dim, Frame::Inertial>>(weighted_char_fields) =
-      weight_char_field<GeneralizedHarmonic::Tags::UPsi<Dim, Frame::Inertial>>(
-          u_psi_int, char_speed_u_psi_int, u_psi_ext, char_speed_u_psi_ext);
-  get<Tags::UZero<Dim, Frame::Inertial>>(weighted_char_fields) =
-      weight_char_field<GeneralizedHarmonic::Tags::UZero<Dim, Frame::Inertial>>(
-          u_zero_int, char_speed_u_zero_int, u_zero_ext, char_speed_u_zero_ext);
-  get<Tags::UPlus<Dim, Frame::Inertial>>(weighted_char_fields) =
-      weight_char_field<GeneralizedHarmonic::Tags::UPlus<Dim, Frame::Inertial>>(
-          u_plus_int, char_speed_u_plus_int, u_plus_ext, char_speed_u_plus_ext);
-  get<Tags::UMinus<Dim, Frame::Inertial>>(weighted_char_fields) =
+  get<Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(weighted_char_fields) =
       weight_char_field<
-          GeneralizedHarmonic::Tags::UMinus<Dim, Frame::Inertial>>(
+          GeneralizedHarmonic::Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(
+          u_psi_int, char_speed_u_psi_int, u_psi_ext, char_speed_u_psi_ext);
+  get<Tags::VZero<Dim, Frame::Inertial>>(weighted_char_fields) =
+      weight_char_field<GeneralizedHarmonic::Tags::VZero<Dim, Frame::Inertial>>(
+          u_zero_int, char_speed_u_zero_int, u_zero_ext, char_speed_u_zero_ext);
+  get<Tags::VPlus<Dim, Frame::Inertial>>(weighted_char_fields) =
+      weight_char_field<GeneralizedHarmonic::Tags::VPlus<Dim, Frame::Inertial>>(
+          u_plus_int, char_speed_u_plus_int, u_plus_ext, char_speed_u_plus_ext);
+  get<Tags::VMinus<Dim, Frame::Inertial>>(weighted_char_fields) =
+      weight_char_field<
+          GeneralizedHarmonic::Tags::VMinus<Dim, Frame::Inertial>>(
           u_minus_int, char_speed_u_minus_int, u_minus_ext,
           char_speed_u_minus_ext);
 
@@ -135,13 +137,45 @@ void ComputeDuDt<Dim>::apply(
     const tnsr::a<DataVector, Dim>& normal_spacetime_one_form) {
   const size_t n_pts = shift.begin()->size();
 
-  const DataVector gamma12 = gamma1.get() * gamma2.get();
+  // Scalar: TempScalar<0> = gamma12
+  //         TempScalar<1> = pi_contract_two_normal_spacetime_vectors
+  //         TempScalar<2> = normal_dot_one_index_constraint
+  //         TempScalar<3> = gamma1p1
+  // a: Tempa<0> = pi_dot_normal_spacetime_vector
+  //    Tempa<1> = one_index_constraint
+  // i: Tempi<0> = phi_contract_two_normal_spacetime_vectors
+  // aa: shift_dot_three_index_constraint
+  // ia: phi_dot_normal_spacetime_vector
+  // aB: pi_2_up
+  // iaa: three_index_constraint
+  // Iaa: phi_1_up
+  // ibC: phi_3_up
+  // abC: christoffel_first_kind_3_up
+  Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
+                       ::Tags::TempScalar<2>, ::Tags::TempScalar<3>,
+                       ::Tags::Tempa<0, Dim, Frame::Inertial, DataVector>,
+                       ::Tags::Tempa<1, Dim, Frame::Inertial, DataVector>,
+                       ::Tags::Tempi<0, Dim, Frame::Inertial, DataVector>,
+                       ::Tags::Tempaa<0, Dim, Frame::Inertial, DataVector>,
+                       ::Tags::Tempia<0, Dim, Frame::Inertial, DataVector>,
+                       ::Tags::TempaB<0, Dim, Frame::Inertial, DataVector>,
+                       ::Tags::Tempiaa<0, Dim, Frame::Inertial, DataVector>,
+                       ::Tags::TempIaa<0, Dim, Frame::Inertial, DataVector>,
+                       ::Tags::TempiaB<0, Dim, Frame::Inertial, DataVector>,
+                       ::Tags::TempabC<0, Dim, Frame::Inertial, DataVector>>>
+      buffer(n_pts);
 
-  tnsr::Iaa<DataVector, Dim> phi_1_up{DataVector(n_pts, 0.)};
+  get(get<::Tags::TempScalar<0>>(buffer)) = gamma1.get() * gamma2.get();
+  const DataVector& gamma12 = get(get<::Tags::TempScalar<0>>(buffer));
+
+  tnsr::Iaa<DataVector, Dim>& phi_1_up =
+      get<::Tags::TempIaa<0, Dim, Frame::Inertial, DataVector>>(buffer);
   for (size_t m = 0; m < Dim; ++m) {
     for (size_t mu = 0; mu < Dim + 1; ++mu) {
-      for (size_t n = 0; n < Dim; ++n) {
-        for (size_t nu = mu; nu < Dim + 1; ++nu) {
+      for (size_t nu = mu; nu < Dim + 1; ++nu) {
+        phi_1_up.get(m, mu, nu) =
+            inverse_spatial_metric.get(m, 0) * phi.get(0, mu, nu);
+        for (size_t n = 1; n < Dim; ++n) {
           phi_1_up.get(m, mu, nu) +=
               inverse_spatial_metric.get(m, n) * phi.get(n, mu, nu);
         }
@@ -149,11 +183,14 @@ void ComputeDuDt<Dim>::apply(
     }
   }
 
-  tnsr::abC<DataVector, Dim> phi_3_up{DataVector(n_pts, 0.)};
+  tnsr::iaB<DataVector, Dim>& phi_3_up =
+      get<::Tags::TempiaB<0, Dim, Frame::Inertial, DataVector>>(buffer);
   for (size_t m = 0; m < Dim; ++m) {
     for (size_t nu = 0; nu < Dim + 1; ++nu) {
       for (size_t alpha = 0; alpha < Dim + 1; ++alpha) {
-        for (size_t beta = 0; beta < Dim + 1; ++beta) {
+        phi_3_up.get(m, nu, alpha) =
+            inverse_spacetime_metric.get(alpha, 0) * phi.get(m, nu, 0);
+        for (size_t beta = 1; beta < Dim + 1; ++beta) {
           phi_3_up.get(m, nu, alpha) +=
               inverse_spacetime_metric.get(alpha, beta) * phi.get(m, nu, beta);
         }
@@ -161,21 +198,28 @@ void ComputeDuDt<Dim>::apply(
     }
   }
 
-  tnsr::aB<DataVector, Dim> pi_2_up{DataVector(n_pts, 0.)};
+  tnsr::aB<DataVector, Dim>& pi_2_up =
+      get<::Tags::TempaB<0, Dim, Frame::Inertial, DataVector>>(buffer);
   for (size_t nu = 0; nu < Dim + 1; ++nu) {
     for (size_t alpha = 0; alpha < Dim + 1; ++alpha) {
-      for (size_t beta = 0; beta < Dim + 1; ++beta) {
+      pi_2_up.get(nu, alpha) =
+          inverse_spacetime_metric.get(alpha, 0) * pi.get(nu, 0);
+      for (size_t beta = 1; beta < Dim + 1; ++beta) {
         pi_2_up.get(nu, alpha) +=
             inverse_spacetime_metric.get(alpha, beta) * pi.get(nu, beta);
       }
     }
   }
 
-  tnsr::abC<DataVector, Dim> christoffel_first_kind_3_up{DataVector(n_pts, 0.)};
+  tnsr::abC<DataVector, Dim>& christoffel_first_kind_3_up =
+      get<::Tags::TempabC<0, Dim, Frame::Inertial, DataVector>>(buffer);
   for (size_t mu = 0; mu < Dim + 1; ++mu) {
     for (size_t nu = 0; nu < Dim + 1; ++nu) {
       for (size_t alpha = 0; alpha < Dim + 1; ++alpha) {
-        for (size_t beta = 0; beta < Dim + 1; ++beta) {
+        christoffel_first_kind_3_up.get(mu, nu, alpha) =
+            inverse_spacetime_metric.get(alpha, 0) *
+            christoffel_first_kind.get(mu, nu, 0);
+        for (size_t beta = 1; beta < Dim + 1; ++beta) {
           christoffel_first_kind_3_up.get(mu, nu, alpha) +=
               inverse_spacetime_metric.get(alpha, beta) *
               christoffel_first_kind.get(mu, nu, beta);
@@ -184,44 +228,55 @@ void ComputeDuDt<Dim>::apply(
     }
   }
 
-  tnsr::a<DataVector, Dim> pi_dot_normal_spacetime_vector{
-      DataVector(n_pts, 0.)};
-  for (size_t nu = 0; nu < Dim + 1; ++nu) {
-    for (size_t mu = 0; mu < Dim + 1; ++mu) {
+  tnsr::a<DataVector, Dim>& pi_dot_normal_spacetime_vector =
+      get<::Tags::Tempa<0, Dim, Frame::Inertial, DataVector>>(buffer);
+  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    pi_dot_normal_spacetime_vector.get(mu) =
+        get<0>(normal_spacetime_vector) * pi.get(0, mu);
+    for (size_t nu = 1; nu < Dim + 1; ++nu) {
       pi_dot_normal_spacetime_vector.get(mu) +=
           normal_spacetime_vector.get(nu) * pi.get(nu, mu);
     }
   }
 
-  DataVector pi_contract_two_normal_spacetime_vectors{DataVector(n_pts, 0.)};
-  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+  DataVector& pi_contract_two_normal_spacetime_vectors =
+      get(get<::Tags::TempScalar<1>>(buffer));
+  pi_contract_two_normal_spacetime_vectors =
+      get<0>(normal_spacetime_vector) * get<0>(pi_dot_normal_spacetime_vector);
+  for (size_t mu = 1; mu < Dim + 1; ++mu) {
     pi_contract_two_normal_spacetime_vectors +=
         normal_spacetime_vector.get(mu) *
         pi_dot_normal_spacetime_vector.get(mu);
   }
 
-  tnsr::ia<DataVector, Dim> phi_dot_normal_spacetime_vector{
-      DataVector(n_pts, 0.)};
+  tnsr::ia<DataVector, Dim>& phi_dot_normal_spacetime_vector =
+      get<::Tags::Tempia<0, Dim, Frame::Inertial, DataVector>>(buffer);
   for (size_t n = 0; n < Dim; ++n) {
     for (size_t nu = 0; nu < Dim + 1; ++nu) {
-      for (size_t mu = 0; mu < Dim + 1; ++mu) {
+      phi_dot_normal_spacetime_vector.get(n, nu) =
+          get<0>(normal_spacetime_vector) * phi.get(n, 0, nu);
+      for (size_t mu = 1; mu < Dim + 1; ++mu) {
         phi_dot_normal_spacetime_vector.get(n, nu) +=
             normal_spacetime_vector.get(mu) * phi.get(n, mu, nu);
       }
     }
   }
 
-  tnsr::a<DataVector, Dim> phi_contract_two_normal_spacetime_vectors{
-      DataVector(n_pts, 0.)};
+  tnsr::i<DataVector, Dim>& phi_contract_two_normal_spacetime_vectors =
+      get<::Tags::Tempi<0, Dim, Frame::Inertial, DataVector>>(buffer);
   for (size_t n = 0; n < Dim; ++n) {
-    for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    phi_contract_two_normal_spacetime_vectors.get(n) =
+        get<0>(normal_spacetime_vector) *
+        phi_dot_normal_spacetime_vector.get(n, 0);
+    for (size_t mu = 1; mu < Dim + 1; ++mu) {
       phi_contract_two_normal_spacetime_vectors.get(n) +=
           normal_spacetime_vector.get(mu) *
           phi_dot_normal_spacetime_vector.get(n, mu);
     }
   }
 
-  tnsr::iaa<DataVector, Dim> three_index_constraint{DataVector(n_pts, 0.)};
+  tnsr::iaa<DataVector, Dim>& three_index_constraint =
+      get<::Tags::Tempiaa<0, Dim, Frame::Inertial, DataVector>>(buffer);
   for (size_t n = 0; n < Dim; ++n) {
     for (size_t mu = 0; mu < Dim + 1; ++mu) {
       for (size_t nu = mu; nu < Dim + 1; ++nu) {
@@ -231,25 +286,32 @@ void ComputeDuDt<Dim>::apply(
     }
   }
 
-  tnsr::a<DataVector, Dim> one_index_constraint{DataVector(n_pts, 0.)};
+  tnsr::a<DataVector, Dim>& one_index_constraint =
+      get<::Tags::Tempa<1, Dim, Frame::Inertial, DataVector>>(buffer);
   for (size_t nu = 0; nu < Dim + 1; ++nu) {
     one_index_constraint.get(nu) =
         gauge_function.get(nu) + trace_christoffel.get(nu);
   }
 
-  DataVector normal_dot_one_index_constraint{DataVector(n_pts, 0.)};
-  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+  DataVector& normal_dot_one_index_constraint =
+      get(get<::Tags::TempScalar<2>>(buffer));
+  normal_dot_one_index_constraint =
+      get<0>(normal_spacetime_vector) * get<0>(one_index_constraint);
+  for (size_t mu = 1; mu < Dim + 1; ++mu) {
     normal_dot_one_index_constraint +=
         normal_spacetime_vector.get(mu) * one_index_constraint.get(mu);
   }
 
-  const DataVector gamma1p1 = 1.0 + gamma1.get();
+  get(get<::Tags::TempScalar<3>>(buffer)) = 1.0 + gamma1.get();
+  const DataVector& gamma1p1 = get(get<::Tags::TempScalar<3>>(buffer));
 
-  tnsr::aa<DataVector, Dim> shift_dot_three_index_constraint{
-      DataVector(n_pts, 0.)};
-  for (size_t m = 0; m < Dim; ++m) {
-    for (size_t mu = 0; mu < Dim + 1; ++mu) {
-      for (size_t nu = mu; nu < Dim + 1; ++nu) {
+  tnsr::aa<DataVector, Dim>& shift_dot_three_index_constraint =
+      get<::Tags::Tempaa<0, Dim, Frame::Inertial, DataVector>>(buffer);
+  for (size_t mu = 0; mu < Dim + 1; ++mu) {
+    for (size_t nu = mu; nu < Dim + 1; ++nu) {
+      shift_dot_three_index_constraint.get(mu, nu) =
+          get<0>(shift) * three_index_constraint.get(0, mu, nu);
+      for (size_t m = 1; m < Dim; ++m) {
         shift_dot_three_index_constraint.get(mu, nu) +=
             shift.get(m) * three_index_constraint.get(m, mu, nu);
       }
@@ -491,10 +553,11 @@ void UpwindFlux<Dim>::operator()(
   const auto weighted_evolved_fields =
       evolved_fields_from_characteristic_fields(
           gamma2_avg,
-          get<Tags::UPsi<Dim, Frame::Inertial>>(weighted_char_fields),
-          get<Tags::UZero<Dim, Frame::Inertial>>(weighted_char_fields),
-          get<Tags::UPlus<Dim, Frame::Inertial>>(weighted_char_fields),
-          get<Tags::UMinus<Dim, Frame::Inertial>>(weighted_char_fields),
+          get<Tags::VSpacetimeMetric<Dim, Frame::Inertial>>(
+              weighted_char_fields),
+          get<Tags::VZero<Dim, Frame::Inertial>>(weighted_char_fields),
+          get<Tags::VPlus<Dim, Frame::Inertial>>(weighted_char_fields),
+          get<Tags::VMinus<Dim, Frame::Inertial>>(weighted_char_fields),
           interface_unit_normal_int);
 
   *psi_normal_dot_numerical_flux =
