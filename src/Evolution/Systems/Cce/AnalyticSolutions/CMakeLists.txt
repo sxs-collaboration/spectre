@@ -4,6 +4,7 @@
 set(LIBRARY CceAnalyticSolutions)
 
 set(LIBRARY_SOURCES
+  BouncingBlackHole.cpp
   SphericalMetricData.cpp
   WorldtubeData.cpp
   )

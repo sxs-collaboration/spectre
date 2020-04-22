@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(Actions)
+add_subdirectory(AnalyticSolutions)
 
 set(LIBRARY "Test_Cce")
 
