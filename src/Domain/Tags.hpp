@@ -17,6 +17,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
+#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Direction.hpp"
@@ -140,12 +141,15 @@ template <class MapTag, class SourceCoordsTag>
 struct MappedCoordinates
     : Coordinates<MapTag::dim, typename MapTag::target_frame>,
       db::ComputeTag {
+  using base = Coordinates<MapTag::dim, typename MapTag::target_frame>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
   static constexpr auto function(
+      const gsl::not_null<return_type*> target_coords,
       const db::const_item_type<MapTag>& element_map,
       const db::const_item_type<SourceCoordsTag>& source_coords) noexcept {
-    return element_map(source_coords);
+    *target_coords = element_map(source_coords);
   }
-  using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -175,12 +179,44 @@ struct InverseJacobianCompute
       db::ComputeTag {
   using base = InverseJacobian<MapTag::dim, typename MapTag::source_frame,
                                typename MapTag::target_frame>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
   static constexpr auto function(
+      const gsl::not_null<return_type*> inv_jacobian,
       const db::const_item_type<MapTag>& element_map,
       const db::const_item_type<SourceCoordsTag>& source_coords) noexcept {
-    return element_map.inv_jacobian(source_coords);
+    *inv_jacobian = element_map.inv_jacobian(source_coords);
   }
-  using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// \brief The determinant of the inverse Jacobian from the source frame to the
+/// target frame.
+template <typename SourceFrame, typename TargetFrame>
+struct DetInvJacobian : db::SimpleTag {
+  using type = Scalar<DataVector>;
+  static std::string name() noexcept {
+    return "DetInvJacobian(" + get_output(SourceFrame{}) + "," +
+           get_output(TargetFrame{}) + ")";
+  }
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// Computes the determinant of the inverse Jacobian.
+template <size_t Dim, typename SourceFrame, typename TargetFrame>
+struct DetInvJacobianCompute : db::ComputeTag,
+                               DetInvJacobian<SourceFrame, TargetFrame> {
+  using base = DetInvJacobian<SourceFrame, TargetFrame>;
+  using return_type = typename base::type;
+  using argument_tags =
+      tmpl::list<InverseJacobian<Dim, SourceFrame, TargetFrame>>;
+  static void function(const gsl::not_null<return_type*> det_inv_jac,
+                       const ::InverseJacobian<DataVector, Dim, SourceFrame,
+                                               TargetFrame>& inv_jac) noexcept {
+    determinant(det_inv_jac, inv_jac);
+  }
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -195,13 +231,13 @@ template <size_t VolumeDim>
 struct InternalDirections : db::ComputeTag {
   static constexpr size_t volume_dim = VolumeDim;
   static std::string name() noexcept { return "InternalDirections"; }
+  using return_type = std::unordered_set<::Direction<VolumeDim>>;
   using argument_tags = tmpl::list<Element<VolumeDim>>;
-  static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
-    std::unordered_set<::Direction<VolumeDim>> result;
+  static void function(const gsl::not_null<return_type*> directions,
+                       const ::Element<VolumeDim>& element) noexcept {
     for (const auto& direction_neighbors : element.neighbors()) {
-      result.insert(direction_neighbors.first);
+      directions->insert(direction_neighbors.first);
     }
-    return result;
   }
 };
 
@@ -214,9 +250,11 @@ template <size_t VolumeDim>
 struct BoundaryDirectionsInterior : db::ComputeTag {
   static constexpr size_t volume_dim = VolumeDim;
   static std::string name() noexcept { return "BoundaryDirectionsInterior"; }
+  using return_type = std::unordered_set<::Direction<VolumeDim>>;
   using argument_tags = tmpl::list<Element<VolumeDim>>;
-  static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
-    return element.external_boundaries();
+  static void function(const gsl::not_null<return_type*> directions,
+                       const ::Element<VolumeDim>& element) noexcept {
+    *directions = element.external_boundaries();
   }
 };
 
@@ -229,9 +267,11 @@ template <size_t VolumeDim>
 struct BoundaryDirectionsExterior : db::ComputeTag {
   static constexpr size_t volume_dim = VolumeDim;
   static std::string name() noexcept { return "BoundaryDirectionsExterior"; }
+  using return_type = std::unordered_set<::Direction<VolumeDim>>;
   using argument_tags = tmpl::list<Element<VolumeDim>>;
-  static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
-    return element.external_boundaries();
+  static constexpr auto function(const gsl::not_null<return_type*> directions,
+                                 const ::Element<VolumeDim>& element) noexcept {
+    *directions = element.external_boundaries();
   }
 };
 

@@ -15,21 +15,31 @@
 #include "Domain/Mesh.hpp"                   // IWYU pragma: keep
 #include "Domain/Side.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/Gsl.hpp"
 
 template <size_t VolumeDim>
-tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
+void logical_coordinates(
+    const gsl::not_null<tnsr::I<DataVector, VolumeDim, Frame::Logical>*>
+        logical_coords,
     const Mesh<VolumeDim>& mesh) noexcept {
-  tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_x(
-      mesh.number_of_grid_points());
+  destructive_resize_components(logical_coords, mesh.number_of_grid_points());
   for (size_t d = 0; d < VolumeDim; ++d) {
     const auto& collocation_points_in_this_dim =
         Spectral::collocation_points(mesh.slice_through(d));
     for (IndexIterator<VolumeDim> index(mesh.extents()); index; ++index) {
-      logical_x.get(d)[index.collapsed_index()] =
+      logical_coords->get(d)[index.collapsed_index()] =
           collocation_points_in_this_dim[index()[d]];
     }
   }
-  return logical_x;
+}
+
+template <size_t VolumeDim>
+tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
+    const Mesh<VolumeDim>& mesh) noexcept {
+  tnsr::I<DataVector, VolumeDim, Frame::Logical> result{};
+  logical_coordinates(make_not_null(&result), mesh);
+  return result;
 }
 
 template <size_t VolumeDim>
@@ -77,6 +87,15 @@ template tnsr::I<DataVector, 1, Frame::Logical> logical_coordinates(
 template tnsr::I<DataVector, 2, Frame::Logical> logical_coordinates(
     const Mesh<2>&) noexcept;
 template tnsr::I<DataVector, 3, Frame::Logical> logical_coordinates(
+    const Mesh<3>&) noexcept;
+template void logical_coordinates(
+    const gsl::not_null<tnsr::I<DataVector, 1, Frame::Logical>*>,
+    const Mesh<1>&) noexcept;
+template void logical_coordinates(
+    const gsl::not_null<tnsr::I<DataVector, 2, Frame::Logical>*>,
+    const Mesh<2>&) noexcept;
+template void logical_coordinates(
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Logical>*>,
     const Mesh<3>&) noexcept;
 
 template tnsr::I<DataVector, 2, Frame::Logical> interface_logical_coordinates(

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace detail {
 template <typename Symm, typename Index, typename = std::nullptr_t>
@@ -15,7 +16,7 @@ struct DeterminantImpl;
 template <typename Symm, typename Index>
 struct DeterminantImpl<Symm, Index, Requires<Index::dim == 1>> {
   template <typename T>
-  static typename T::type apply(const T& tensor) {
+  static typename T::type apply(const T& tensor) noexcept {
     return get<0, 0>(tensor);
   }
 };
@@ -23,7 +24,7 @@ struct DeterminantImpl<Symm, Index, Requires<Index::dim == 1>> {
 template <typename Symm, typename Index>
 struct DeterminantImpl<Symm, Index, Requires<Index::dim == 2>> {
   template <typename T>
-  static typename T::type apply(const T& tensor) {
+  static typename T::type apply(const T& tensor) noexcept {
     const auto& t00 = get<0, 0>(tensor);
     const auto& t01 = get<0, 1>(tensor);
     const auto& t10 = get<1, 0>(tensor);
@@ -35,7 +36,7 @@ struct DeterminantImpl<Symm, Index, Requires<Index::dim == 2>> {
 template <typename Index>
 struct DeterminantImpl<Symmetry<2, 1>, Index, Requires<Index::dim == 3>> {
   template <typename T>
-  static typename T::type apply(const T& tensor) {
+  static typename T::type apply(const T& tensor) noexcept {
     const auto& t00 = get<0, 0>(tensor);
     const auto& t01 = get<0, 1>(tensor);
     const auto& t02 = get<0, 2>(tensor);
@@ -53,7 +54,7 @@ struct DeterminantImpl<Symmetry<2, 1>, Index, Requires<Index::dim == 3>> {
 template <typename Index>
 struct DeterminantImpl<Symmetry<1, 1>, Index, Requires<Index::dim == 3>> {
   template <typename T>
-  static typename T::type apply(const T& tensor) {
+  static typename T::type apply(const T& tensor) noexcept {
     const auto& t00 = get<0, 0>(tensor);
     const auto& t01 = get<0, 1>(tensor);
     const auto& t02 = get<0, 2>(tensor);
@@ -68,7 +69,7 @@ struct DeterminantImpl<Symmetry<1, 1>, Index, Requires<Index::dim == 3>> {
 template <typename Index>
 struct DeterminantImpl<Symmetry<2, 1>, Index, Requires<Index::dim == 4>> {
   template <typename T>
-  static typename T::type apply(const T& tensor) {
+  static typename T::type apply(const T& tensor) noexcept {
     const auto& t00 = get<0, 0>(tensor);
     const auto& t01 = get<0, 1>(tensor);
     const auto& t02 = get<0, 2>(tensor);
@@ -101,7 +102,7 @@ struct DeterminantImpl<Symmetry<2, 1>, Index, Requires<Index::dim == 4>> {
 template <typename Index>
 struct DeterminantImpl<Symmetry<1, 1>, Index, Requires<Index::dim == 4>> {
   template <typename T>
-  static typename T::type apply(const T& tensor) {
+  static typename T::type apply(const T& tensor) noexcept {
     const auto& t00 = get<0, 0>(tensor);
     const auto& t01 = get<0, 1>(tensor);
     const auto& t02 = get<0, 2>(tensor);
@@ -126,22 +127,32 @@ struct DeterminantImpl<Symmetry<1, 1>, Index, Requires<Index::dim == 4>> {
 };
 }  // namespace detail
 
+//@{
 /*!
  * \ingroup TensorGroup
  * \brief Computes the determinant of a rank-2 Tensor `tensor`.
  *
- * \returns The determinant of `tensor`.
  * \requires That `tensor` be a rank-2 Tensor, with both indices sharing the
  *           same dimension and type.
  */
 template <typename T, typename Symm, typename Index0, typename Index1>
-Scalar<T> determinant(
-    const Tensor<T, Symm, index_list<Index0, Index1>>& tensor) {
+void determinant(
+    const gsl::not_null<Scalar<T>*> det_tensor,
+    const Tensor<T, Symm, index_list<Index0, Index1>>& tensor) noexcept {
   static_assert(Index0::dim == Index1::dim,
                 "Cannot take the determinant of a Tensor whose Indices are not "
                 "of the same dimensionality.");
   static_assert(Index0::index_type == Index1::index_type,
                 "Taking the determinant of a mixed Spatial and Spacetime index "
                 "Tensor is not allowed since it's not clear what that means.");
-  return Scalar<T>{detail::DeterminantImpl<Symm, Index0>::apply(tensor)};
+  get(*det_tensor) = detail::DeterminantImpl<Symm, Index0>::apply(tensor);
 }
+
+template <typename T, typename Symm, typename Index0, typename Index1>
+Scalar<T> determinant(
+    const Tensor<T, Symm, index_list<Index0, Index1>>& tensor) noexcept {
+  Scalar<T> result{};
+  determinant(make_not_null(&result), tensor);
+  return result;
+}
+//@}

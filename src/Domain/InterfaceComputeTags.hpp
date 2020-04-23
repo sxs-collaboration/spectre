@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
+#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/SliceVariables.hpp"
 #include "DataStructures/Tensor/Slice.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
@@ -206,15 +207,18 @@ struct InterfaceCompute<DirectionsTag, Direction<VolumeDim>>
       Tags::Interface<DirectionsTag, Direction<VolumeDim>> {
   static std::string name() noexcept { return "Interface"; }
   using tag = Direction<VolumeDim>;
-  static constexpr auto function(
-      const std::unordered_set<::Direction<VolumeDim>>& directions) noexcept {
-    std::unordered_map<::Direction<VolumeDim>, ::Direction<VolumeDim>> result;
-    for (const auto& d : directions) {
-      result.emplace(d, d);
-    }
-    return result;
-  }
+  using return_type =
+      std::unordered_map<::Direction<VolumeDim>, ::Direction<VolumeDim>>;
   using argument_tags = tmpl::list<DirectionsTag>;
+  static constexpr auto function(
+      const gsl::not_null<
+          std::unordered_map<::Direction<VolumeDim>, ::Direction<VolumeDim>>*>
+          result,
+      const std::unordered_set<::Direction<VolumeDim>>& directions) noexcept {
+    for (const auto& d : directions) {
+      result->insert_or_assign(d, d);
+    }
+  }
 };
 /// \endcond
 
@@ -225,13 +229,15 @@ struct InterfaceCompute<DirectionsTag, Direction<VolumeDim>>
 /// retrievable as Tags::Interface<Dirs, Mesh<VolumeDim>>` from the DataBox.
 template <size_t VolumeDim>
 struct InterfaceMesh : db::ComputeTag, Tags::Mesh<VolumeDim - 1> {
+  using base = Tags::Mesh<VolumeDim - 1>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<Direction<VolumeDim>, Mesh<VolumeDim>>;
   static constexpr auto function(
+      const gsl::not_null<return_type*> mesh,
       const ::Direction<VolumeDim>& direction,
       const ::Mesh<VolumeDim>& volume_mesh) noexcept {
-    return volume_mesh.slice_away(direction.dimension());
+    *mesh = volume_mesh.slice_away(direction.dimension());
   }
-  using base = Tags::Mesh<VolumeDim - 1>;
-  using argument_tags = tmpl::list<Direction<VolumeDim>, Mesh<VolumeDim>>;
   using volume_tags = tmpl::list<Mesh<VolumeDim>>;
 };
 
@@ -243,14 +249,19 @@ struct InterfaceMesh : db::ComputeTag, Tags::Mesh<VolumeDim - 1> {
 template <size_t VolumeDim, bool MovingMesh = false>
 struct BoundaryCoordinates : db::ComputeTag,
                              Tags::Coordinates<VolumeDim, Frame::Inertial> {
-  static constexpr auto function(
+  using base = Tags::Coordinates<VolumeDim, Frame::Inertial>;
+  using return_type = typename base::type;
+  static void function(
+      const gsl::not_null<return_type*> boundary_coords,
       const ::Direction<VolumeDim>& direction,
       const ::Mesh<VolumeDim - 1>& interface_mesh,
       const ::ElementMap<VolumeDim, Frame::Inertial>& map) noexcept {
-    return map(interface_logical_coordinates(interface_mesh, direction));
+    *boundary_coords =
+        map(interface_logical_coordinates(interface_mesh, direction));
   }
 
-  static constexpr auto function(
+  static void function(
+      const gsl::not_null<return_type*> boundary_coords,
       const ::Direction<VolumeDim>& direction,
       const ::Mesh<VolumeDim - 1>& interface_mesh,
       const ::ElementMap<VolumeDim, ::Frame::Grid>& logical_to_grid_map,
@@ -261,15 +272,13 @@ struct BoundaryCoordinates : db::ComputeTag,
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) noexcept {
-    auto boundary_coords =
+    *boundary_coords =
         grid_to_inertial_map(logical_to_grid_map(interface_logical_coordinates(
                                  interface_mesh, direction)),
                              time, functions_of_time);
-    return boundary_coords;
   }
 
   static std::string name() noexcept { return "BoundaryCoordinates"; }
-  using base = Tags::Coordinates<VolumeDim, Frame::Inertial>;
   using argument_tags = tmpl::conditional_t<
       MovingMesh,
       tmpl::list<Direction<VolumeDim>, Mesh<VolumeDim - 1>,

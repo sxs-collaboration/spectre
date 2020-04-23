@@ -20,6 +20,7 @@
 #include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Tags.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -41,8 +42,6 @@ class Mesh;
  * \ingroup ComputationalDomainGroup
  * \brief Compute the outward grid normal on a face of an Element
  *
- * \returns outward grid-frame one-form holding the normal
- *
  * \details
  * Computes the grid-frame normal by taking the logical-frame unit
  * one-form in the given Direction and mapping it to the grid frame
@@ -52,7 +51,8 @@ class Mesh;
  * \snippet Test_FaceNormal.cpp face_normal_example
  */
 template <size_t VolumeDim, typename TargetFrame>
-tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
+void unnormalized_face_normal(
+    gsl::not_null<tnsr::i<DataVector, VolumeDim, TargetFrame>*> result,
     const Mesh<VolumeDim - 1>& interface_mesh,
     const ElementMap<VolumeDim, TargetFrame>& map,
     const Direction<VolumeDim>& direction) noexcept;
@@ -60,8 +60,35 @@ tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
 template <size_t VolumeDim, typename TargetFrame>
 tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
     const Mesh<VolumeDim - 1>& interface_mesh,
+    const ElementMap<VolumeDim, TargetFrame>& map,
+    const Direction<VolumeDim>& direction) noexcept;
+
+template <size_t VolumeDim, typename TargetFrame>
+void unnormalized_face_normal(
+    gsl::not_null<tnsr::i<DataVector, VolumeDim, TargetFrame>*> result,
+    const Mesh<VolumeDim - 1>& interface_mesh,
     const domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>&
         map,
+    const Direction<VolumeDim>& direction) noexcept;
+
+template <size_t VolumeDim, typename TargetFrame>
+tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
+    const Mesh<VolumeDim - 1>& interface_mesh,
+    const domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>&
+        map,
+    const Direction<VolumeDim>& direction) noexcept;
+
+template <size_t VolumeDim>
+void unnormalized_face_normal(
+    gsl::not_null<tnsr::i<DataVector, VolumeDim, Frame::Inertial>*> result,
+    const Mesh<VolumeDim - 1>& interface_mesh,
+    const ElementMap<VolumeDim, Frame::Grid>& logical_to_grid_map,
+    const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>&
+        grid_to_inertial_map,
+    double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time,
     const Direction<VolumeDim>& direction) noexcept;
 
 template <size_t VolumeDim>
@@ -92,9 +119,11 @@ template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
 struct UnnormalizedFaceNormalCompute
     : db::ComputeTag, UnnormalizedFaceNormal<VolumeDim, Frame> {
   using base = UnnormalizedFaceNormal<VolumeDim, Frame>;
-  static constexpr tnsr::i<DataVector, VolumeDim, Frame> (*function)(
-      const ::Mesh<VolumeDim - 1>&, const ::ElementMap<VolumeDim, Frame>&,
-      const ::Direction<VolumeDim>&) = unnormalized_face_normal;
+  using return_type = typename base::type;
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<return_type*>, const ::Mesh<VolumeDim - 1>&,
+      const ::ElementMap<VolumeDim, Frame>&,
+      const ::Direction<VolumeDim>&) noexcept>(&unnormalized_face_normal);
   using argument_tags =
       tmpl::list<Mesh<VolumeDim - 1>, ElementMap<VolumeDim, Frame>,
                  Direction<VolumeDim>>;
@@ -106,14 +135,16 @@ struct UnnormalizedFaceNormalMovingMeshCompute
     : db::ComputeTag,
       UnnormalizedFaceNormal<VolumeDim, Frame::Inertial> {
   using base = UnnormalizedFaceNormal<VolumeDim, Frame::Inertial>;
-  static constexpr tnsr::i<DataVector, VolumeDim, Frame::Inertial> (*function)(
-      const ::Mesh<VolumeDim - 1>&, const ::ElementMap<VolumeDim, Frame::Grid>&,
+  using return_type = typename base::type;
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<return_type*>, const ::Mesh<VolumeDim - 1>&,
+      const ::ElementMap<VolumeDim, Frame::Grid>&,
       const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>&,
       double,
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&,
-      const ::Direction<VolumeDim>&) = unnormalized_face_normal;
+      const ::Direction<VolumeDim>&) noexcept>(&unnormalized_face_normal);
   using argument_tags =
       tmpl::list<Mesh<VolumeDim - 1>, ElementMap<VolumeDim, Frame::Grid>,
                  CoordinateMaps::Tags::CoordinateMap<VolumeDim, Frame::Grid,
@@ -144,15 +175,14 @@ struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
   static std::string name() noexcept {
     return "BoundaryDirectionsExterior<UnnormalizedFaceNormal>";
   }
-
-  static auto function(
+  using return_type = std::unordered_map<::Direction<VolumeDim>,
+                                         tnsr::i<DataVector, VolumeDim, Frame>>;
+  static void function(
+      const gsl::not_null<return_type*> normals,
       const db::const_item_type<Tags::Interface<dirs, Mesh<VolumeDim - 1>>>&
           meshes,
       const db::const_item_type<Tags::ElementMap<VolumeDim, Frame>>&
           map) noexcept {
-    std::unordered_map<::Direction<VolumeDim>,
-                       tnsr::i<DataVector, VolumeDim, Frame>>
-        normals{};
     for (const auto& direction_and_mesh : meshes) {
       const auto& direction = direction_and_mesh.first;
       const auto& mesh = direction_and_mesh.second;
@@ -160,9 +190,8 @@ struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
           unnormalized_face_normal(mesh, map, direction);
       std::transform(internal_face_normal.begin(), internal_face_normal.end(),
                      internal_face_normal.begin(), std::negate<>());
-      normals[direction] = std::move(internal_face_normal);
+      (*normals)[direction] = std::move(internal_face_normal);
     }
-    return normals;
   }
 
   using argument_tags = tmpl::list<Tags::Interface<dirs, Mesh<VolumeDim - 1>>,
@@ -182,8 +211,11 @@ struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
   static std::string name() noexcept {
     return "BoundaryDirectionsExterior<UnnormalizedFaceNormal>";
   }
-
-  static auto function(
+  using return_type =
+      std::unordered_map<::Direction<VolumeDim>,
+                         tnsr::i<DataVector, VolumeDim, Frame::Inertial>>;
+  static void function(
+      const gsl::not_null<return_type*> normals,
       const db::const_item_type<Tags::Interface<dirs, Mesh<VolumeDim - 1>>>&
           meshes,
       const ::ElementMap<VolumeDim, Frame::Grid>& logical_to_grid_map,
@@ -194,9 +226,6 @@ struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) noexcept {
-    std::unordered_map<::Direction<VolumeDim>,
-                       tnsr::i<DataVector, VolumeDim, Frame::Inertial>>
-        normals{};
     for (const auto& direction_and_mesh : meshes) {
       const auto& direction = direction_and_mesh.first;
       const auto& mesh = direction_and_mesh.second;
@@ -205,9 +234,8 @@ struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
           functions_of_time, direction);
       std::transform(internal_face_normal.begin(), internal_face_normal.end(),
                      internal_face_normal.begin(), std::negate<>());
-      normals[direction] = std::move(internal_face_normal);
+      (*normals)[direction] = std::move(internal_face_normal);
     }
-    return normals;
   }
 
   using argument_tags =
