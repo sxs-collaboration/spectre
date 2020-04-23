@@ -10,6 +10,7 @@
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Evolution/Systems/ScalarWave/Characteristics.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -46,6 +47,8 @@ struct System {
   using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
   using compute_largest_characteristic_speed =
       ComputeLargestCharacteristicSpeed;
+
+  using char_speeds_tag = Tags::CharacteristicSpeedsCompute<Dim>;
 
   template <typename Tag>
   using magnitude_tag = ::Tags::EuclideanMagnitude<Tag>;
