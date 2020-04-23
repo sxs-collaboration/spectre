@@ -14,12 +14,13 @@ if ! find ./src/ \
      -print0 \
         | xargs -0 yapf --parallel -d
 then
-    printf "\n\nFound bad formatting in python files. See diff above \n" \
-           "for details. You can run yapf on a file as:\n" \
-           "  yapf -i PYTHON_FILE.py\n" \
-           "or on the entire repository by running:\n" \
-           "  ./tools/FormatPythonCode.py\n" \
-           "in the SpECTRE root directory.\n"
+    printf '%s\n' '' '' \
+           'Found bad formatting in python files. See diff above' \
+           'for details. You can run yapf on a file as:' \
+           '  yapf -i PYTHON_FILE.py' \
+           'or on the entire repository by running:' \
+           '  ./tools/FormatPythonCode.py' \
+           'in the SpECTRE root directory.'
     exit 1
 fi
 
