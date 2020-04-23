@@ -8,6 +8,7 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -141,9 +142,12 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     const auto& inertial_coords =
         get_tag(domain::Tags::Coordinates<1, Frame::Inertial>{});
     CHECK(inertial_coords == element_map(logical_coords));
-    CHECK(get_tag(domain::Tags::InverseJacobian<1, Frame::Logical,
-                                                Frame::Inertial>{}) ==
-          element_map.inv_jacobian(logical_coords));
+    const auto& inverse_jacobian = get_tag(
+        domain::Tags::InverseJacobian<1, Frame::Logical, Frame::Inertial>{});
+    CHECK(inverse_jacobian == element_map.inv_jacobian(logical_coords));
+    const auto& det_inv_jacobian = get_tag(
+        domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>{});
+    CHECK(det_inv_jacobian == determinant(inverse_jacobian));
   }
   {
     INFO("2D");
@@ -210,9 +214,12 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     const auto& inertial_coords =
         get_tag(domain::Tags::Coordinates<2, Frame::Inertial>{});
     CHECK(inertial_coords == element_map(logical_coords));
-    CHECK(get_tag(domain::Tags::InverseJacobian<2, Frame::Logical,
-                                                Frame::Inertial>{}) ==
-          element_map.inv_jacobian(logical_coords));
+    const auto& inverse_jacobian = get_tag(
+        domain::Tags::InverseJacobian<2, Frame::Logical, Frame::Inertial>{});
+    CHECK(inverse_jacobian == element_map.inv_jacobian(logical_coords));
+    const auto& det_inv_jacobian = get_tag(
+        domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>{});
+    CHECK(det_inv_jacobian == determinant(inverse_jacobian));
   }
   {
     INFO("3D");
@@ -292,8 +299,11 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     const auto& inertial_coords =
         get_tag(domain::Tags::Coordinates<3, Frame::Inertial>{});
     CHECK(inertial_coords == element_map(logical_coords));
-    CHECK(get_tag(domain::Tags::InverseJacobian<3, Frame::Logical,
-                                                Frame::Inertial>{}) ==
-          element_map.inv_jacobian(logical_coords));
+    const auto& inverse_jacobian = get_tag(
+        domain::Tags::InverseJacobian<3, Frame::Logical, Frame::Inertial>{});
+    CHECK(inverse_jacobian == element_map.inv_jacobian(logical_coords));
+    const auto& det_inv_jacobian = get_tag(
+        domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>{});
+    CHECK(det_inv_jacobian == determinant(inverse_jacobian));
   }
 }
