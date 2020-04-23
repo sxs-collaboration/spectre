@@ -235,6 +235,63 @@ void test_transform_and_inverse_transform() noexcept {
       transform_approx);
 }
 
+template <int Spin>
+void test_interpolate_to_collocation() noexcept {
+  // generate parameters for the points to transform
+  MAKE_GENERATOR(gen);
+  UniformCustomDistribution<size_t> sdist{2, 10};
+  const size_t l_max = sdist(gen);
+  const size_t number_of_radial_points = 2;
+  UniformCustomDistribution<double> coefficient_distribution{0.1, 1.0};
+
+  SpinWeighted<ComplexModalVector, Spin> expected_modes{
+      number_of_radial_points * size_of_libsharp_coefficient_vector(l_max)};
+  TestHelpers::generate_swsh_modes<Spin>(
+      make_not_null(&expected_modes.data()), make_not_null(&gen),
+      make_not_null(&coefficient_distribution), number_of_radial_points, l_max);
+
+  const SpinWeighted<ComplexDataVector, Spin> collocation_data =
+      inverse_swsh_transform(l_max, number_of_radial_points,
+                                             expected_modes);
+  const size_t target_l_max = sdist(gen);
+
+  SpinWeighted<ComplexDataVector, Spin> resampled_collocation{
+      number_of_swsh_collocation_points(target_l_max) *
+      number_of_radial_points};
+  interpolate_to_collocation(make_not_null(&resampled_collocation),
+                             collocation_data, target_l_max, l_max,
+                             number_of_radial_points);
+  const auto resampled_goldberg_modes = libsharp_to_goldberg_modes(
+      swsh_transform(target_l_max, number_of_radial_points,
+                     resampled_collocation),
+      target_l_max);
+  const auto expected_goldberg_modes =
+      libsharp_to_goldberg_modes(expected_modes, l_max);
+  for (size_t i = 0; i < number_of_radial_points; ++i) {
+    for (size_t j = 0; j < square(std::min(l_max, target_l_max) + 1); ++j) {
+      CAPTURE(i);
+      CAPTURE(j);
+      CHECK_COMPLEX_APPROX(
+          expected_goldberg_modes.data()[i * square(l_max + 1) + j],
+          resampled_goldberg_modes.data()[i * square(target_l_max + 1) + j]);
+    }
+  }
+  if (target_l_max > l_max) {
+    for (size_t i = 0; i < number_of_radial_points; ++i) {
+      for (size_t j = square(l_max + 1); j < square(target_l_max + 1); ++j) {
+        CAPTURE(i);
+        CAPTURE(j);
+        CHECK(approx(real(resampled_goldberg_modes
+                              .data()[i * square(target_l_max + 1) + j])) ==
+              0.0);
+        CHECK(approx(imag(resampled_goldberg_modes
+                              .data()[i * square(target_l_max + 1) + j])) ==
+              0.0);
+      }
+    }
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshTransform",
                   "[Unit][NumericalAlgorithms]") {
   {
@@ -254,6 +311,12 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshTransform",
                                          0>();
     test_transform_and_inverse_transform<ComplexRepresentation::RealsThenImags,
                                          2>();
+  }
+  {
+    INFO("Testing interpolate_to_collocation");
+    test_interpolate_to_collocation<2>();
+    test_interpolate_to_collocation<0>();
+    test_interpolate_to_collocation<-1>();
   }
 }
 }  // namespace

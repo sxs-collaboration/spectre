@@ -782,5 +782,15 @@ using make_transform_list_from_derivative_tags =
         tmpl::transform<DerivativeTagList,
                         tmpl::bind<db::remove_tag_prefix, tmpl::_1>>,
         decltype(std::make_integer_sequence<int, 5>{})>::type;
+
+/// \ingroup SwshGroup
+/// \brief Convert spin-weighted spherical harmonic data to a new set of
+/// collocation points (either downsampling or upsampling)
+template <int Spin>
+void interpolate_to_collocation(
+    gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> target,
+    const SpinWeighted<ComplexDataVector, Spin>& source, size_t target_l_max,
+    size_t source_l_max, size_t number_of_radial_points) noexcept;
+
 }  // namespace Swsh
 }  // namespace Spectral

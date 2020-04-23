@@ -138,10 +138,9 @@ void check_goldberg_mode_conversion() {
   // low value to limit test time
   size_t number_of_radial_points = 2;
 
-  ComplexModalVector expected_goldberg_modes =
-      make_with_random_values<ComplexModalVector>(
-          make_not_null(&gen), make_not_null(&coefficient_distribution),
-          square(l_max + 1) * number_of_radial_points);
+  auto expected_goldberg_modes = make_with_random_values<ComplexModalVector>(
+      make_not_null(&gen), make_not_null(&coefficient_distribution),
+      square(l_max + 1) * number_of_radial_points);
 
   // set to zero all modes for l < Spin (the basis functions are zero for those
   // modes)
@@ -242,7 +241,10 @@ void check_goldberg_mode_conversion() {
               i)]);
     }
   }
-
+  const auto full_libsharp_conversion =
+      goldberg_to_libsharp_modes(goldberg_modes, l_max);
+  CHECK_ITERABLE_CUSTOM_APPROX(full_libsharp_conversion, test_modes,
+                               swsh_approx);
   const auto inverse_transform_set_from_goldberg =
       inverse_swsh_transform<Representation>(l_max, number_of_radial_points,
                                              test_modes);
