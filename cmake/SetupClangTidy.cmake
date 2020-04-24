@@ -49,8 +49,8 @@ if (CLANG_TIDY_BIN)
     module_Main
     module_Test_ConstGlobalCache
     )
-  if (TARGET pch)
-    list(APPEND MODULES_TO_DEPEND_ON pch)
+  if (TARGET SpectrePch)
+    list(APPEND MODULES_TO_DEPEND_ON SpectrePch)
   endif()
   configure_file(
     ${CMAKE_SOURCE_DIR}/tools/ClangTidyAll.sh

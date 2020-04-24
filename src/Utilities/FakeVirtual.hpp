@@ -60,7 +60,7 @@
   template <typename Classes, typename... TArgs, typename Base,                \
             typename... Args>                                                  \
   decltype(auto) fake_virtual_##function(Base* obj, Args&&... args) noexcept { \
-    /* clang-tidy: macro arg in parentheses */                                 \
+    /* NOLINTNEXTLINE(misc-macro-parentheses) */                               \
     return call_with_dynamic_type<decltype(obj->template function<TArgs...>(   \
                                       args...)), /* NOLINT */                  \
                                   Classes>(                                    \

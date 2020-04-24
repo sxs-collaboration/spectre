@@ -135,7 +135,7 @@ class SegmentId {
 
 /// \cond
 // macro that generate the pup operator for SegmentId
-PUPbytes(SegmentId)
+PUPbytes(SegmentId)  // NOLINT
 /// \endcond
 
 /// Output operator for SegmentId.
