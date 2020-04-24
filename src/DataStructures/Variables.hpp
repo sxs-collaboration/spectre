@@ -55,11 +55,11 @@ class Variables;
  * `db::SimpleTag`. In general, they should be DataBoxTags that are not compute
  * items. For example,
  *
- * \snippet TestTags.hpp simple_variables_tag
+ * \snippet Helpers/DataStructures/TestTags.hpp simple_variables_tag
  *
  * Prefix tags can also be stored and their format is:
  *
- * \snippet TestTags.hpp prefix_variables_tag
+ * \snippet Helpers/DataStructures/TestTags.hpp prefix_variables_tag
  *
  * #### Design Decisions
  *
