@@ -327,7 +327,8 @@ struct EvolutionMetavars {
       Initialization::Actions::AddComputeTags<
           tmpl::list<evolution::Tags::AnalyticCompute<
               volume_dim, initial_data_tag, analytic_solution_fields>>>,
-      GeneralizedHarmonic::Actions::InitializeGauge<volume_dim>,
+      GeneralizedHarmonic::Actions::InitializeDampedHarmonicRollonGauge<
+          volume_dim>,
       GeneralizedHarmonic::Actions::InitializeConstraints<volume_dim>,
       dg::Actions::InitializeMortars<boundary_scheme, true>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,

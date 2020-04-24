@@ -55,6 +55,7 @@ struct dt;
 /// \endcond
 
 namespace GeneralizedHarmonic {
+namespace gauges {
 namespace DampedHarmonicGauge_detail {
 // The `detail` functions below are forward-declared to enable their independent
 // testing
@@ -116,6 +117,7 @@ spacetime_deriv_of_power_log_factor_metric_lapse(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi, double g_exponent,
     int exponent) noexcept;
 }  // namespace DampedHarmonicGauge_detail
+}  // namespace gauges
 }  // namespace GeneralizedHarmonic
 
 // Wrap `wrap_spacetime_deriv_of_power_log_factor_metric_lapse` here to make its
@@ -135,7 +137,7 @@ wrap_spacetime_deriv_of_power_log_factor_metric_lapse(
     const double d_exponent) noexcept {
   const auto exponent = static_cast<int>(d_exponent);
   tnsr::a<DataType, SpatialDim, Frame> d4_powlogfac{};
-  GeneralizedHarmonic::DampedHarmonicGauge_detail::
+  GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
       spacetime_deriv_of_power_log_factor_metric_lapse(
           make_not_null(&d4_powlogfac), lapse, shift, spacetime_unit_normal,
           inverse_spatial_metric, sqrt_det_spatial_metric, dt_spatial_metric,
@@ -178,8 +180,8 @@ void test_detail_functions(const DataType& used_for_size) noexcept {
   pypp::check_with_random_values<2>(
       static_cast<Scalar<DataType> (*)(
           const tnsr::I<DataType, SpatialDim, Frame>&, const double)>(
-          &::GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
-              SpatialDim, Frame, DataType>),
+          &::GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
+              weight_function<SpatialDim, Frame, DataType>),
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "DampedHarmonic",
       "weight_function",
@@ -189,7 +191,7 @@ void test_detail_functions(const DataType& used_for_size) noexcept {
   pypp::check_with_random_values<2>(
       static_cast<tnsr::a<DataType, SpatialDim, Frame> (*)(
           const tnsr::I<DataType, SpatialDim, Frame>&, const double)>(
-          &::GeneralizedHarmonic::DampedHarmonicGauge_detail::
+          &::GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
               spacetime_deriv_of_weight_function<SpatialDim, Frame, DataType>),
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "DampedHarmonic",
@@ -198,14 +200,15 @@ void test_detail_functions(const DataType& used_for_size) noexcept {
       used_for_size);
   // roll_on_function
   pypp::check_with_random_values<1>(
-      &::GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function,
+      &::GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
+          roll_on_function,
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "DampedHarmonic",
       "roll_on_function", {{{std::numeric_limits<double>::denorm_min(), 10.}}},
       used_for_size);
   // time_deriv_of_roll_on_function
   pypp::check_with_random_values<1>(
-      &::GeneralizedHarmonic::DampedHarmonicGauge_detail::
+      &::GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
           time_deriv_of_roll_on_function,
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "DampedHarmonic",
@@ -215,7 +218,7 @@ void test_detail_functions(const DataType& used_for_size) noexcept {
   pypp::check_with_random_values<1>(
       static_cast<Scalar<DataType> (*)(const Scalar<DataType>&,
                                        const Scalar<DataType>&, const double)>(
-          &::GeneralizedHarmonic::DampedHarmonicGauge_detail::
+          &::GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
               log_factor_metric_lapse<DataType>),
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "DampedHarmonic",
@@ -230,7 +233,7 @@ void test_detail_functions(const DataType& used_for_size) noexcept {
           const tnsr::ii<DataType, SpatialDim, Frame>&,
           const tnsr::aa<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&, const double)>(
-          &::GeneralizedHarmonic::DampedHarmonicGauge_detail::
+          &::GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
               spacetime_deriv_of_log_factor_metric_lapse<SpatialDim, Frame,
                                                          DataType>),
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
@@ -266,7 +269,7 @@ wrap_DampedHarmonicHCompute(
     const double t, const double t_start, const double sigma_t,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double sigma_r) noexcept {
-  return GeneralizedHarmonic::DampedHarmonicHCompute<
+  return GeneralizedHarmonic::gauges::DampedHarmonicHCompute<
       SpatialDim, Frame>::function(gauge_h_init, lapse, shift,
                                    sqrt_det_spatial_metric, spacetime_metric, t,
                                    t_start, sigma_t, coords, sigma_r);
@@ -358,7 +361,7 @@ void test_damped_harmonic_h_function_term_1_of_4(
       GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
       make_not_null(&generator), make_not_null(&rdist), x);
   const double roll_on_HI =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_HI, sigma_t_HI);
 
   // local H_a
@@ -372,7 +375,7 @@ void test_damped_harmonic_h_function_term_1_of_4(
   // Check that locally computed H_a matches the returned one
   db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>
       gauge_h{};
-  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Inertial>(
+  GeneralizedHarmonic::gauges::damped_harmonic_h<SpatialDim, Frame::Inertial>(
       make_not_null(&gauge_h), gauge_h_init, lapse, shift,
       sqrt_det_spatial_metric, spacetime_metric, t, x, 0., 0., 0., 0, 0,
       0,  // exponents
@@ -451,10 +454,10 @@ void test_damped_harmonic_h_function_term_2_of_4(
 
   const auto log_fac_1 = log(get(sqrt_det_spatial_metric) / get(lapse));
   const double roll_on_L1 =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_L1, sigma_t_L1);
   const auto weight =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
 
   const auto h_prefac1 = amp_coef_L1 * roll_on_L1 * get(weight) *
@@ -473,7 +476,7 @@ void test_damped_harmonic_h_function_term_2_of_4(
   // Check that locally computed H_a matches the returned one
   db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>
       gauge_h{};
-  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Inertial>(
+  GeneralizedHarmonic::gauges::damped_harmonic_h<SpatialDim, Frame::Inertial>(
       make_not_null(&gauge_h), gauge_h_init, lapse, shift,
       sqrt_det_spatial_metric, spacetime_metric, t, x, amp_coef_L1, 0., 0.,
       exp_L1, 0, 0,  // exponents
@@ -550,10 +553,10 @@ void test_damped_harmonic_h_function_term_3_of_4(
   const double r_max = pdist(generator) * 0.7;
 
   const double roll_on_L2 =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_L2, sigma_t_L2);
   const auto weight =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
 
   const auto log_fac_2 = log(1. / get(lapse));
@@ -573,7 +576,7 @@ void test_damped_harmonic_h_function_term_3_of_4(
   // Check that locally computed H_a matches the returned one
   db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>
       gauge_h{};
-  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Inertial>(
+  GeneralizedHarmonic::gauges::damped_harmonic_h<SpatialDim, Frame::Inertial>(
       make_not_null(&gauge_h), gauge_h_init, lapse, shift,
       sqrt_det_spatial_metric, spacetime_metric, t, x, 0., amp_coef_L2, 0., 0,
       exp_L2, 0,  // exponents
@@ -648,10 +651,10 @@ void test_damped_harmonic_h_function_term_4_of_4(
   const double r_max = pdist(generator) * 0.7;
 
   const double roll_on_S =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_S, sigma_t_S);
   const auto weight =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
 
   const auto log_fac_1 = log(get(sqrt_det_spatial_metric) * one_over_lapse);
@@ -674,7 +677,7 @@ void test_damped_harmonic_h_function_term_4_of_4(
   // Check that locally computed H_a match returned one
   db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>
       gauge_h{};
-  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Inertial>(
+  GeneralizedHarmonic::gauges::damped_harmonic_h<SpatialDim, Frame::Inertial>(
       make_not_null(&gauge_h), gauge_h_init, lapse, shift,
       sqrt_det_spatial_metric, spacetime_metric, t, x, 0., 0., amp_coef_S, 0, 0,
       exp_S,  // exponents
@@ -737,10 +740,10 @@ void test_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
   const double sigma_t_L1 = pdist(generator) * 0.2;
   const double r_max = pdist(generator) * 0.7;
   const double roll_on_L1 =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_L1, sigma_t_L1);
   const auto weight =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
 
   const auto gauge_h_init = make_with_value<db::item_type<
@@ -748,7 +751,7 @@ void test_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
       x, 0.);
   db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>
       gauge_h{};
-  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Inertial>(
+  GeneralizedHarmonic::gauges::damped_harmonic_h<SpatialDim, Frame::Inertial>(
       make_not_null(&gauge_h), gauge_h_init, lapse, shift,
       sqrt_det_spatial_metric, spacetime_metric, t, x, amp_coef_L1, 0., 0.,
       exp_L1, 0, 0,  // exponents
@@ -861,10 +864,10 @@ void test_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
   const double sigma_t_L2 = pdist(generator) * 0.2;
   const double r_max = pdist(generator) * 0.7;
   const double roll_on_L2 =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_L2, sigma_t_L2);
   const auto weight =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
 
   const auto gauge_h_init = make_with_value<db::item_type<
@@ -872,7 +875,7 @@ void test_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
       x, 0.);
   db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>
       gauge_h{};
-  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Inertial>(
+  GeneralizedHarmonic::gauges::damped_harmonic_h<SpatialDim, Frame::Inertial>(
       make_not_null(&gauge_h), gauge_h_init, lapse, shift,
       sqrt_det_spatial_metric, spacetime_metric, t, x, 0., amp_coef_L2, 0., 0,
       exp_L2, 0,  // exponents
@@ -970,10 +973,10 @@ void test_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
   const double sigma_t_S = pdist(generator) * 0.2;
   const double r_max = pdist(generator) * 0.7;
   const double roll_on_S =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_S, sigma_t_S);
   const auto weight =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
 
   const auto gauge_h_init = make_with_value<db::item_type<
@@ -981,7 +984,7 @@ void test_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
       x, 0.);
   db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>
       gauge_h{};
-  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Inertial>(
+  GeneralizedHarmonic::gauges::damped_harmonic_h<SpatialDim, Frame::Inertial>(
       make_not_null(&gauge_h), gauge_h_init, lapse, shift,
       sqrt_det_spatial_metric, spacetime_metric, t, x, 0., 0., amp_coef_S, 0, 0,
       exp_S,  // exponents
@@ -1081,7 +1084,7 @@ wrap_SpacetimeDerivDampedHarmonicHCompute(
     const double t_start, const double sigma_t,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double sigma_r) noexcept {
-  return GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute<
+  return GeneralizedHarmonic::gauges::SpacetimeDerivDampedHarmonicHCompute<
       SpatialDim, Frame>::function(gauge_h_init, dgauge_h_init, lapse, shift,
                                    spacetime_unit_normal_one_form,
                                    sqrt_det_spatial_metric,
@@ -1208,10 +1211,11 @@ void test_deriv_damped_harmonic_h_function_term_1_of_4(
 
   // Tempering functions
   const double roll_on_HI =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_HI, sigma_t_HI);
-  const auto d0_roll_on_HI = GeneralizedHarmonic::DampedHarmonicGauge_detail::
-      time_deriv_of_roll_on_function(t, t_start_HI, sigma_t_HI);
+  const auto d0_roll_on_HI =
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
+          time_deriv_of_roll_on_function(t, t_start_HI, sigma_t_HI);
 
   // Initialize initial gauge function and its roll-off function
   const auto gauge_h_init = make_with_random_values<db::item_type<
@@ -1239,8 +1243,8 @@ void test_deriv_damped_harmonic_h_function_term_1_of_4(
   db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
       SpatialDim, Frame::Inertial>>
       d4_gauge_h{};
-  GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h<SpatialDim,
-                                                         Frame::Inertial>(
+  GeneralizedHarmonic::gauges::spacetime_deriv_damped_harmonic_h<
+      SpatialDim, Frame::Inertial>(
       make_not_null(&d4_gauge_h), gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
       inverse_spatial_metric, spacetime_metric, pi, phi, t, x, 0., 0., 0., 0, 0,
@@ -1343,9 +1347,9 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
 
   // commonly used terms
   const auto exp_fac_1 = 1. / 2.;
-  const auto log_fac_1 =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::log_factor_metric_lapse<
-          DataVector>(lapse, sqrt_det_spatial_metric, exp_fac_1);
+  const auto log_fac_1 = GeneralizedHarmonic::gauges::
+      DampedHarmonicGauge_detail::log_factor_metric_lapse<DataVector>(
+          lapse, sqrt_det_spatial_metric, exp_fac_1);
 
   // Initialize settings
   const double amp_coef_L1 = pdist(generator);
@@ -1356,14 +1360,15 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
 
   // Tempering functions
   const double roll_on_L1 =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_L1, sigma_t_L1);
-  const auto d0_roll_on_L1 = GeneralizedHarmonic::DampedHarmonicGauge_detail::
-      time_deriv_of_roll_on_function(t, t_start_L1, sigma_t_L1);
+  const auto d0_roll_on_L1 =
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
+          time_deriv_of_roll_on_function(t, t_start_L1, sigma_t_L1);
   const auto weight =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
-  auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
+  auto d4_weight = GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
       spacetime_deriv_of_weight_function<SpatialDim, Frame::Inertial,
                                          DataVector>(x, r_max);
 
@@ -1387,7 +1392,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
           get(lapse), 0.);
   {
     const auto d4_log_fac_mu1 =
-        GeneralizedHarmonic::DampedHarmonicGauge_detail ::
+        GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
                 SpatialDim, Frame::Inertial, DataVector>(
                 lapse, shift, spacetime_unit_normal, inverse_spatial_metric,
@@ -1442,8 +1447,8 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
   db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
       SpatialDim, Frame::Inertial>>
       d4_gauge_h{};
-  GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h<SpatialDim,
-                                                         Frame::Inertial>(
+  GeneralizedHarmonic::gauges::spacetime_deriv_damped_harmonic_h<
+      SpatialDim, Frame::Inertial>(
       make_not_null(&d4_gauge_h), gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
       inverse_spatial_metric, spacetime_metric, pi, phi, t, x, amp_coef_L1, 0.,
@@ -1546,9 +1551,9 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
 
   // commonly used terms
   const auto exp_fac_2 = 0.;
-  const auto log_fac_2 =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::log_factor_metric_lapse<
-          DataVector>(lapse, sqrt_det_spatial_metric, exp_fac_2);
+  const auto log_fac_2 = GeneralizedHarmonic::gauges::
+      DampedHarmonicGauge_detail::log_factor_metric_lapse<DataVector>(
+          lapse, sqrt_det_spatial_metric, exp_fac_2);
 
   // Initialize settings
   const double amp_coef_L2 = pdist(generator);
@@ -1560,14 +1565,15 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
 
   // Tempering functions
   const double roll_on_L2 =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_L2, sigma_t_L2);
-  const auto d0_roll_on_L2 = GeneralizedHarmonic::DampedHarmonicGauge_detail::
-      time_deriv_of_roll_on_function(t, t_start_L2, sigma_t_L2);
+  const auto d0_roll_on_L2 =
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
+          time_deriv_of_roll_on_function(t, t_start_L2, sigma_t_L2);
   const auto weight =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
-  auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
+  auto d4_weight = GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
       spacetime_deriv_of_weight_function<SpatialDim, Frame::Inertial,
                                          DataVector>(x, r_max);
 
@@ -1591,7 +1597,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
           get(lapse), 0.);
   {
     const auto d4_log_fac_mu2 =
-        GeneralizedHarmonic::DampedHarmonicGauge_detail ::
+        GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
                 SpatialDim, Frame::Inertial, DataVector>(
                 lapse, shift, spacetime_unit_normal, inverse_spatial_metric,
@@ -1646,8 +1652,8 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
   db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
       SpatialDim, Frame::Inertial>>
       d4_gauge_h{};
-  GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h<SpatialDim,
-                                                         Frame::Inertial>(
+  GeneralizedHarmonic::gauges::spacetime_deriv_damped_harmonic_h<
+      SpatialDim, Frame::Inertial>(
       make_not_null(&d4_gauge_h), gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
       inverse_spatial_metric, spacetime_metric, pi, phi, t, x, 0., amp_coef_L2,
@@ -1754,9 +1760,9 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
   // commonly used terms
   const auto exp_fac_1 = 1. / 2.;
   const auto one_over_lapse = 1. / get(lapse);
-  const auto log_fac_1 =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::log_factor_metric_lapse<
-          DataVector>(lapse, sqrt_det_spatial_metric, exp_fac_1);
+  const auto log_fac_1 = GeneralizedHarmonic::gauges::
+      DampedHarmonicGauge_detail::log_factor_metric_lapse<DataVector>(
+          lapse, sqrt_det_spatial_metric, exp_fac_1);
 
   // Initialize settings
   const double amp_coef_S = pdist(generator);
@@ -1767,14 +1773,15 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
 
   // Tempering functions
   const double roll_on_S =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_S, sigma_t_S);
-  const auto d0_roll_on_S = GeneralizedHarmonic::DampedHarmonicGauge_detail::
-      time_deriv_of_roll_on_function(t, t_start_S, sigma_t_S);
+  const auto d0_roll_on_S =
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
+          time_deriv_of_roll_on_function(t, t_start_S, sigma_t_S);
   const auto weight =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
-  auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
+  auto d4_weight = GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
       spacetime_deriv_of_weight_function<SpatialDim, Frame::Inertial,
                                          DataVector>(x, r_max);
 
@@ -1796,7 +1803,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
           get(lapse), 0.);
   {
     const auto d4_log_fac_muS =
-        GeneralizedHarmonic::DampedHarmonicGauge_detail ::
+        GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
                 SpatialDim, Frame::Inertial, DataVector>(
                 lapse, shift, spacetime_unit_normal, inverse_spatial_metric,
@@ -1874,8 +1881,8 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
   db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
       SpatialDim, Frame::Inertial>>
       d4_gauge_h{};
-  GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h<SpatialDim,
-                                                         Frame::Inertial>(
+  GeneralizedHarmonic::gauges::spacetime_deriv_damped_harmonic_h<
+      SpatialDim, Frame::Inertial>(
       make_not_null(&d4_gauge_h), gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
       inverse_spatial_metric, spacetime_metric, pi, phi, t, x, 0., 0.,
@@ -1975,8 +1982,8 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
   db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
       SpatialDim, Frame::Inertial>>
       d4_gauge_h{};
-  GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h<SpatialDim,
-                                                         Frame::Inertial>(
+  GeneralizedHarmonic::gauges::spacetime_deriv_damped_harmonic_h<
+      SpatialDim, Frame::Inertial>(
       make_not_null(&d4_gauge_h), gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
       inverse_spatial_metric, spacetime_metric, pi, phi, t, x, amp_coef_L1, 0.,
@@ -1987,14 +1994,15 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
 
   // Tempering functions
   const double roll_on_L1 =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_L1, sigma_t_L1);
-  const auto d0_roll_on_L1 = GeneralizedHarmonic::DampedHarmonicGauge_detail::
-      time_deriv_of_roll_on_function(t, t_start_L1, sigma_t_L1);
+  const auto d0_roll_on_L1 =
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
+          time_deriv_of_roll_on_function(t, t_start_L1, sigma_t_L1);
   const auto weight =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
-  auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
+  auto d4_weight = GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
       spacetime_deriv_of_weight_function<SpatialDim, Frame::Inertial,
                                          DataVector>(x, r_max);
 
@@ -2113,10 +2121,9 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
 
   // commonly used terms
   const auto exp_fac_1 = 1. / 2.;
-  const auto log_fac_1 =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::log_factor_metric_lapse<
-          DataVector>(lapse_ab_initio, sqrt_det_spatial_metric_ab_initio,
-                      exp_fac_1);
+  const auto log_fac_1 = GeneralizedHarmonic::gauges::
+      DampedHarmonicGauge_detail::log_factor_metric_lapse<DataVector>(
+          lapse_ab_initio, sqrt_det_spatial_metric_ab_initio, exp_fac_1);
 
   // compute GR dependent terms
   // coeffs that enter gauge source function
@@ -2139,7 +2146,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
           get(lapse), 0.);
   {
     const auto d4_log_fac_mu1 =
-        GeneralizedHarmonic::DampedHarmonicGauge_detail ::
+        GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
                 SpatialDim, Frame::Inertial, DataVector>(
                 lapse_ab_initio, shift_ab_initio,
@@ -2275,8 +2282,8 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
   db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
       SpatialDim, Frame::Inertial>>
       d4_gauge_h{};
-  GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h<SpatialDim,
-                                                         Frame::Inertial>(
+  GeneralizedHarmonic::gauges::spacetime_deriv_damped_harmonic_h<
+      SpatialDim, Frame::Inertial>(
       make_not_null(&d4_gauge_h), gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
       inverse_spatial_metric, spacetime_metric, pi, phi, t, x, 0., amp_coef_L2,
@@ -2287,14 +2294,15 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
 
   // Tempering functions
   const double roll_on_L2 =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_L2, sigma_t_L2);
-  const auto d0_roll_on_L2 = GeneralizedHarmonic::DampedHarmonicGauge_detail::
-      time_deriv_of_roll_on_function(t, t_start_L2, sigma_t_L2);
+  const auto d0_roll_on_L2 =
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
+          time_deriv_of_roll_on_function(t, t_start_L2, sigma_t_L2);
   const auto weight =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
-  auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
+  auto d4_weight = GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
       spacetime_deriv_of_weight_function<SpatialDim, Frame::Inertial,
                                          DataVector>(x, r_max);
 
@@ -2413,10 +2421,9 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
 
   // commonly used terms
   const auto exp_fac_2 = 0.;
-  const auto log_fac_2 =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::log_factor_metric_lapse<
-          DataVector>(lapse_ab_initio, sqrt_det_spatial_metric_ab_initio,
-                      exp_fac_2);
+  const auto log_fac_2 = GeneralizedHarmonic::gauges::
+      DampedHarmonicGauge_detail::log_factor_metric_lapse<DataVector>(
+          lapse_ab_initio, sqrt_det_spatial_metric_ab_initio, exp_fac_2);
 
   // coeffs that enter gauge source function
   const auto mu_L2 =
@@ -2438,7 +2445,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
           get(lapse_ab_initio), 0.);
   {
     const auto d4_log_fac_mu2 =
-        GeneralizedHarmonic::DampedHarmonicGauge_detail ::
+        GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
                 SpatialDim, Frame::Inertial, DataVector>(
                 lapse_ab_initio, shift_ab_initio,
@@ -2576,8 +2583,8 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
   db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
       SpatialDim, Frame::Inertial>>
       d4_gauge_h{};
-  GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h<SpatialDim,
-                                                         Frame::Inertial>(
+  GeneralizedHarmonic::gauges::spacetime_deriv_damped_harmonic_h<
+      SpatialDim, Frame::Inertial>(
       make_not_null(&d4_gauge_h), gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
       inverse_spatial_metric, spacetime_metric, pi, phi, t, x, 0., 0.,
@@ -2588,14 +2595,15 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
 
   // Tempering functions
   const double roll_on_S =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_S, sigma_t_S);
-  const auto d0_roll_on_S = GeneralizedHarmonic::DampedHarmonicGauge_detail::
-      time_deriv_of_roll_on_function(t, t_start_S, sigma_t_S);
+  const auto d0_roll_on_S =
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
+          time_deriv_of_roll_on_function(t, t_start_S, sigma_t_S);
   const auto weight =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
+      GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
-  auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
+  auto d4_weight = GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
       spacetime_deriv_of_weight_function<SpatialDim, Frame::Inertial,
                                          DataVector>(x, r_max);
 
@@ -2714,10 +2722,9 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
   // commonly used terms
   const auto exp_fac_1 = 1. / 2.;
   const auto one_over_lapse = 1. / get(lapse_ab_initio);
-  const auto log_fac_1 =
-      GeneralizedHarmonic::DampedHarmonicGauge_detail::log_factor_metric_lapse<
-          DataVector>(lapse_ab_initio, sqrt_det_spatial_metric_ab_initio,
-                      exp_fac_1);
+  const auto log_fac_1 = GeneralizedHarmonic::gauges::
+      DampedHarmonicGauge_detail::log_factor_metric_lapse<DataVector>(
+          lapse_ab_initio, sqrt_det_spatial_metric_ab_initio, exp_fac_1);
 
   // coeffs that enter gauge source function
   const auto mu_S =
@@ -2737,7 +2744,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
           get(lapse_ab_initio), 0.);
   {
     const auto d4_log_fac_muS =
-        GeneralizedHarmonic::DampedHarmonicGauge_detail ::
+        GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
                 SpatialDim, Frame::Inertial, DataVector>(
                 lapse_ab_initio, shift_ab_initio,
@@ -2934,10 +2941,10 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
   //
   // First, check that the names are correct
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::DampedHarmonicHCompute<3, Frame::Inertial>>(
+      GeneralizedHarmonic::gauges::DampedHarmonicHCompute<3, Frame::Inertial>>(
       "GaugeH");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute<
+      GeneralizedHarmonic::gauges::SpacetimeDerivDampedHarmonicHCompute<
           3, Frame::Inertial>>("SpacetimeDerivGaugeH");
 
   const auto box = db::create<
@@ -2959,8 +2966,9 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
           GeneralizedHarmonic::Tags::GaugeHSpatialWeightDecayWidth<
               Frame::Inertial>>,
       db::AddComputeTags<
-          GeneralizedHarmonic::DampedHarmonicHCompute<3, Frame::Inertial>,
-          GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute<
+          GeneralizedHarmonic::gauges::DampedHarmonicHCompute<3,
+                                                              Frame::Inertial>,
+          GeneralizedHarmonic::gauges::SpacetimeDerivDampedHarmonicHCompute<
               3, Frame::Inertial>>>(gauge_h_init, d4_gauge_h_init, lapse, shift,
                                     spacetime_unit_normal_one_form,
                                     sqrt_det_spatial_metric,
