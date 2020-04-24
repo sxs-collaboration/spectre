@@ -338,6 +338,15 @@ void test() noexcept {
             runner, self_id)),
         expected_logical_to_inertial_inv_jacobian);
 
+    const Scalar<DataVector> expected_logical_to_inertial_det_inv_jacobian =
+        determinant(expected_logical_to_inertial_inv_jacobian);
+    CHECK_ITERABLE_APPROX(
+        (ActionTesting::get_databox_tag<
+            component,
+            domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(
+            runner, self_id)),
+        expected_logical_to_inertial_det_inv_jacobian);
+
     const auto expected_coords_mesh_velocity_jacobians =
         grid_to_inertial_map.coords_frame_velocity_jacobians(
             ActionTesting::get_databox_tag<
@@ -455,6 +464,15 @@ void test() noexcept {
               runner, self_id)[i]
               .data());
     }
+
+    const Scalar<DataVector> expected_logical_to_inertial_det_inv_jacobian =
+        determinant(expected_logical_to_inertial_inv_jacobian);
+    CHECK_ITERABLE_APPROX(
+        (ActionTesting::get_databox_tag<
+            component,
+            domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(
+            runner, self_id)),
+        expected_logical_to_inertial_det_inv_jacobian);
 
     CHECK_FALSE(static_cast<bool>(
         ActionTesting::get_databox_tag<component,

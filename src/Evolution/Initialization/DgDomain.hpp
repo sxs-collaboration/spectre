@@ -65,10 +65,11 @@ namespace Initialization {
  *   - `domain::Tags::CoordinatesMeshVelocityAndJacobiansCompute<
  *      CoordinateMap<Dim, Frame::Grid, Frame::Inertial>>`
  *   - `domain::Tags::Coordinates<Dim, Frame::Logical>`
- *   - `domain::Tags::Coordinates<Dim, Frame::Frid>`
+ *   - `domain::Tags::Coordinates<Dim, Frame::Grid>`
  *   - `domain::Tags::Coordinates<Dim, Frame::Inertial>`
  *   - `domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Grid>`
  *   - `domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>`
+ *   - `domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>`
  *   - `domain::Tags::MeshVelocity<Dim, Frame::Inertial>`
  *   - `domain::Tags::DivMeshVelocity`
  *   - `domain::Tags::MinimumGridSpacing<Dim, Frame::Inertial>>`
@@ -118,6 +119,8 @@ struct Domain {
 
         ::domain::Tags::InertialFromGridCoordinatesCompute<Dim>,
         ::domain::Tags::ElementToInertialInverseJacobian<Dim>,
+        ::domain::Tags::DetInvJacobianCompute<Dim, Frame::Logical,
+                                              Frame::Inertial>,
         ::domain::Tags::InertialMeshVelocityCompute<Dim>,
         evolution::domain::Tags::DivMeshVelocityCompute<Dim>,
         // Compute tags for other mesh quantities

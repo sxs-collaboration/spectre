@@ -55,6 +55,7 @@ namespace Actions {
  *   - `Tags::Coordinates<Dim, Frame::Inertial>`
  *   - `Tags::InverseJacobianCompute<
  *   Tags::ElementMap<Dim>, Tags::Coordinates<Dim, Frame::Logical>>`
+ *   - `Tags::DetInvJacobianCompute<Dim, Frame::Logical, Frame::Inertial>`
  *   - `Tags::MinimumGridSpacing<Dim, Frame::Inertial>>`
  * - Removes: nothing
  * - Modifies: nothing
@@ -88,6 +89,8 @@ struct InitializeDomain {
         domain ::Tags::InverseJacobianCompute<
             domain ::Tags::ElementMap<Dim>,
             domain::Tags::Coordinates<Dim, Frame::Logical>>,
+        domain::Tags::DetInvJacobianCompute<Dim, Frame::Logical,
+                                            Frame::Inertial>,
         domain::Tags::MinimumGridSpacing<Dim, Frame::Inertial>>>;
 
     const auto& initial_extents =

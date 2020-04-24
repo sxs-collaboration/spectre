@@ -12,8 +12,6 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
-#include "Domain/ElementMap.hpp"
 #include "Domain/Tags.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
@@ -115,26 +113,21 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
 
   using argument_tags =
       tmpl::list<ObservationValueTag, domain::Tags::Mesh<VolumeDim>,
-                 domain::Tags::ElementMap<VolumeDim, Frame::Inertial>,
-                 domain::Tags::Coordinates<VolumeDim, Frame::Logical>,
+                 domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>,
                  Tensors...>;
 
   template <typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
   void operator()(
       const db::const_item_type<ObservationValueTag>& observation_value,
-      const Mesh<VolumeDim>& mesh,
-      const ElementMap<VolumeDim, Frame::Inertial>& element_map,
-      const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coordinates,
+      const Mesh<VolumeDim>& mesh, const Scalar<DataVector> det_inv_jacobian,
       const db::const_item_type<Tensors>&... tensors,
       Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
       const ParallelComponent* const /*meta*/) const noexcept {
     // Determinant of Jacobian is needed because integral is performed in
-    // logical coords. Currently not initialized in the Metavariables
-    // as of PR #2048 (https://github.com/sxs-collaboration/spectre/pull/2048)
-    const DataVector det_jacobian =
-        get(determinant(element_map.jacobian(logical_coordinates)));
+    // logical coords.
+    const DataVector det_jacobian = 1.0 / get(det_inv_jacobian);
     const double local_volume = definite_integral(det_jacobian, mesh);
 
     std::vector<double> local_volume_integrals{};
