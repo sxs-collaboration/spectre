@@ -44,8 +44,7 @@ RUN apt-get update -y \
                           libclang-5.0-dev wget libncurses-dev \
                           lcov cppcheck \
                           libboost-dev libboost-program-options-dev \
-                          libboost-python-dev libboost-thread-dev \
-                          libboost-tools-dev libssl-dev \
+                          libboost-thread-dev libboost-tools-dev libssl-dev \
                           libbenchmark-dev
 
 # Add clang 8 and 9
@@ -74,12 +73,12 @@ RUN apt-get install -y ccache doxygen
 # version of it in order to avoid formatting differences between versions.
 # `futures` is needed for `yapf` parallelization on Python 2.
 RUN apt-get install -y python-pip python3-pip \
-    && pip2 install numpy scipy h5py \
-    && pip3 install numpy scipy h5py \
-    && pip2 install coverxygen beautifulsoup4 pybtex \
-    && pip3 install coverxygen beautifulsoup4 pybtex \
-    && pip2 install yapf==0.29.0 futures \
-    && pip3 install yapf==0.29.0
+    && pip2 --no-cache-dir install numpy scipy h5py \
+    && pip3 --no-cache-dir install numpy scipy h5py \
+    && pip2 --no-cache-dir install coverxygen beautifulsoup4 pybtex \
+    && pip3 --no-cache-dir install coverxygen beautifulsoup4 pybtex \
+    && pip2 --no-cache-dir install yapf==0.29.0 futures \
+    && pip3 --no-cache-dir install yapf==0.29.0
 
 # Add ruby gems and install coveralls using gem
 RUN apt-get update -y \
@@ -177,14 +176,27 @@ RUN ln -s $(which clang++-5.0) /usr/local/bin/clang++ \
     && ln -s $(which clang-5.0) /usr/local/bin/clang \
     && ln -s $(which clang-format-5.0) /usr/local/bin/clang-format \
     && ln -s $(which clang-tidy-5.0) /usr/local/bin/clang-tidy
-RUN git clone https://github.com/UIUC-PPL/charm \
+# Build charm with both GCC and clang.
+#
+# We check out only a specific branch in order to reduce the repo size.
+#
+# We remove the `doc` and `example` directories since these aren't useful to us
+# in the container and we want to reduce the size of the container. We do NOT
+# remove the `tmp` directories inside the Charm++ build directories because
+# Charm++ stores non-temporary files (such as headers) that are needed when
+# building with Charm++ in the `tmp` directories.
+#
+# We do not build  with debug symbols and build with O2 to reduce build size.
+RUN git clone --single-branch --branch ${CHARM_GIT_TAG} --depth 1 \
+      https://github.com/UIUC-PPL/charm \
     && cd /work/charm \
     && git checkout ${CHARM_GIT_TAG} \
-    && ./build charm++ multicore-linux64 gcc ${PARALLEL_MAKE_ARG} -g -O0  \
-    && ./build charm++ multicore-linux64 clang ${PARALLEL_MAKE_ARG} -g -O0 \
+    && ./build charm++ multicore-linux64 gcc ${PARALLEL_MAKE_ARG} -g0 -O2  \
+    && ./build charm++ multicore-linux64 clang ${PARALLEL_MAKE_ARG} -g0 -O2 \
     && wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/Charm/v6.8.patch \
     && git apply /work/charm/v6.8.patch \
-    && rm /work/charm/v6.8.patch
+    && rm /work/charm/v6.8.patch \
+    && rm -r /work/charm/doc /work/charm/examples
 
 # - Set the environment variable SPECTRE_CONTAINER so we can check if we are
 #   inside a container (0 is true in bash)
@@ -212,3 +224,6 @@ RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz \
     && /work/texlive/bin/x86_64-linux/tlmgr install bibtex
 ENV PATH="${PATH}:/work/texlive/bin/x86_64-linux"
 WORKDIR /work
+
+# Remove the apt-get cache in order to reduce image size
+RUN apt-get -y clean
