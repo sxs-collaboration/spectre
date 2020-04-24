@@ -71,9 +71,7 @@ struct PrepareSolve {
            const db::item_type<operator_applied_to_fields_tag>&
                operator_applied_to_fields,
            const db::item_type<fields_tag>& fields) noexcept {
-          // We have not started iterating yet, so we initialize the current
-          // iteration ID such that the _next_ iteration ID is zero.
-          *iteration_id = std::numeric_limits<size_t>::max();
+          *iteration_id = 0;
           *operand = source - operator_applied_to_fields;
           *initial_fields = fields;
           *basis_history = db::item_type<basis_history_tag>{};
@@ -152,20 +150,7 @@ struct PrepareStep {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    using orthogonalization_iteration_id_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-                           LinearSolver::Tags::IterationId<OptionsGroup>>;
-
-    db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>,
-               orthogonalization_iteration_id_tag>(
-        make_not_null(&box),
-        [](const gsl::not_null<size_t*> iteration_id,
-           const gsl::not_null<size_t*> orthogonalization_iteration_id,
-           const size_t& next_iteration_id) noexcept {
-          *iteration_id = next_iteration_id;
-          *orthogonalization_iteration_id = 0;
-        },
-        get<::Tags::Next<LinearSolver::Tags::IterationId<OptionsGroup>>>(box));
+    // Nothing to do before applying the linear operator to the operand
     return {std::move(box)};
   }
 };
@@ -189,20 +174,19 @@ struct PerformStep {
         db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
     using operator_tag =
         db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
+    using orthogonalization_iteration_id_tag =
+        db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
+                           LinearSolver::Tags::IterationId<OptionsGroup>>;
     using basis_history_tag =
         LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
 
-    ASSERT(get<LinearSolver::Tags::IterationId<OptionsGroup>>(box) !=
-               std::numeric_limits<size_t>::max(),
-           "'" + option_name<OptionsGroup>() +
-               "' iteration ID is at initial state. Did you forget to "
-               "invoke 'PrepareStep'?");
-
-    db::mutate<operand_tag>(
+    db::mutate<operand_tag, orthogonalization_iteration_id_tag>(
         make_not_null(&box),
         [](const gsl::not_null<db::item_type<operand_tag>*> operand,
+           const gsl::not_null<size_t*> orthogonalization_iteration_id,
            const db::const_item_type<operator_tag>& operator_action) noexcept {
           *operand = db::item_type<operand_tag>(operator_action);
+          *orthogonalization_iteration_id = 0;
         },
         get<operator_tag>(box));
 
@@ -258,7 +242,7 @@ struct OrthogonalizeOperand {
                 basis_history) noexcept {
           *operand -= orthogonalization *
                       gsl::at(basis_history, *orthogonalization_iteration_id);
-          (*orthogonalization_iteration_id)++;
+          ++(*orthogonalization_iteration_id);
         },
         get<basis_history_tag>(box));
 
@@ -312,6 +296,8 @@ struct NormalizeOperandAndUpdateField {
                db::tag_is_retrievable_v<operand_tag, DataBox> and
                db::tag_is_retrievable_v<basis_history_tag, DataBox> and
                db::tag_is_retrievable_v<
+                   LinearSolver::Tags::IterationId<OptionsGroup>, DataBox> and
+               db::tag_is_retrievable_v<
                    LinearSolver::Tags::HasConverged<OptionsGroup>, DataBox>> =
           nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
@@ -320,6 +306,7 @@ struct NormalizeOperandAndUpdateField {
                     const DenseVector<double>& minres,
                     const Convergence::HasConverged& has_converged) noexcept {
     db::mutate<operand_tag, basis_history_tag, fields_tag,
+               LinearSolver::Tags::IterationId<OptionsGroup>,
                LinearSolver::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [normalization, &minres, &has_converged](
@@ -327,6 +314,7 @@ struct NormalizeOperandAndUpdateField {
             const gsl::not_null<db::item_type<basis_history_tag>*>
                 basis_history,
             const gsl::not_null<db::item_type<fields_tag>*> field,
+            const gsl::not_null<size_t*> iteration_id,
             const gsl::not_null<Convergence::HasConverged*> local_has_converged,
             const db::const_item_type<initial_fields_tag>&
                 initial_field) noexcept {
@@ -336,6 +324,7 @@ struct NormalizeOperandAndUpdateField {
           for (size_t i = 0; i < minres.size(); i++) {
             *field += minres[i] * gsl::at(*basis_history, i);
           }
+          ++(*iteration_id);
           *local_has_converged = has_converged;
         },
         get<initial_fields_tag>(box));

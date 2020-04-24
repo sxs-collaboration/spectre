@@ -197,10 +197,10 @@ struct Metavariables {
                                 Parallel::Actions::TerminatePhase>>,
                  Parallel::PhaseActions<
                      Phase, Phase::Solve,
-                     tmpl::list<typename linear_solver::prepare_step,
-                                Actions::RunEventsAndTriggers,
+                     tmpl::list<Actions::RunEventsAndTriggers,
                                 LinearSolver::Actions::TerminateIfConverged<
                                     typename linear_solver::options_group>,
+                                typename linear_solver::prepare_step,
                                 build_linear_operator_actions,
                                 typename linear_solver::perform_step>>>>;
 
