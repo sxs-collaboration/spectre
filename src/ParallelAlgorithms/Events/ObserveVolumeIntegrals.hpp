@@ -120,7 +120,7 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
             typename ParallelComponent>
   void operator()(
       const db::const_item_type<ObservationValueTag>& observation_value,
-      const Mesh<VolumeDim>& mesh, const Scalar<DataVector> det_inv_jacobian,
+      const Mesh<VolumeDim>& mesh, const Scalar<DataVector>& det_inv_jacobian,
       const db::const_item_type<Tensors>&... tensors,
       Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
