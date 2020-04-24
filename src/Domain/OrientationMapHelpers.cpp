@@ -294,4 +294,68 @@ std::vector<size_t> oriented_offset_on_slice(
       neighbor_second_axis_is_aligned, neighbor_axes_are_transposed);
 }
 
+template <typename T>
+void orient_each_component(
+    const gsl::not_null<gsl::span<T>*> oriented_variables,
+    const gsl::span<const T>& variables, const size_t num_pts,
+    const std::vector<size_t>& oriented_offset) noexcept {
+  const size_t num_components = variables.size() / num_pts;
+  ASSERT(oriented_variables->size() == variables.size(),
+         "The number of oriented variables, "
+             << oriented_variables->size() / num_pts
+             << ", must be equal to the number of variables, "
+             << variables.size() / num_pts);
+  for (size_t component_index = 0; component_index < num_components;
+       ++component_index) {
+    const size_t offset = component_index * num_pts;
+    for (size_t s = 0; s < num_pts; ++s) {
+      gsl::at((*oriented_variables), offset + oriented_offset[s]) =
+          gsl::at(variables, offset + s);
+    }
+  }
+}
+
+template void orient_each_component(
+    const gsl::not_null<gsl::span<double>*> oriented_variables,
+    const gsl::span<const double>& variables, const size_t num_pts,
+    const std::vector<size_t>& oriented_offset) noexcept;
+template void orient_each_component(
+    const gsl::not_null<gsl::span<std::complex<double>>*> oriented_variables,
+    const gsl::span<const std::complex<double>>& variables,
+    const size_t num_pts, const std::vector<size_t>& oriented_offset) noexcept;
 }  // namespace OrientationMapHelpers_detail
+
+template <size_t VolumeDim>
+std::vector<double> orient_variables(
+    const std::vector<double>& variables, const Index<VolumeDim>& extents,
+    const OrientationMap<VolumeDim>& orientation_of_neighbor) noexcept {
+  // Skip work (aside from a copy) if neighbor is aligned
+  if (orientation_of_neighbor.is_aligned()) {
+    return variables;
+  }
+
+  const size_t number_of_grid_points = extents.product();
+  ASSERT(variables.size() % number_of_grid_points == 0,
+         "The size of the variables must be divisible by the number of grid "
+         "points. Number of grid points: "
+             << number_of_grid_points << " size: " << variables.size());
+  std::vector<double> oriented_variables(variables.size());
+  const auto oriented_offset = OrientationMapHelpers_detail::oriented_offset(
+      extents, orientation_of_neighbor);
+  auto oriented_vars_view = gsl::make_span(oriented_variables);
+  OrientationMapHelpers_detail::orient_each_component(
+      make_not_null(&oriented_vars_view), gsl::make_span(variables),
+      number_of_grid_points, oriented_offset);
+
+  return oriented_variables;
+}
+
+template std::vector<double> orient_variables<1>(
+    const std::vector<double>& variables, const Index<1>& extents,
+    const OrientationMap<1>& orientation_of_neighbor) noexcept;
+template std::vector<double> orient_variables<2>(
+    const std::vector<double>& variables, const Index<2>& extents,
+    const OrientationMap<2>& orientation_of_neighbor) noexcept;
+template std::vector<double> orient_variables<3>(
+    const std::vector<double>& variables, const Index<3>& extents,
+    const OrientationMap<3>& orientation_of_neighbor) noexcept;

@@ -108,6 +108,8 @@ class Variables<tmpl::list<Tags...>> {
       typename tmpl::front<tags_list>::type::type::value_type,
       typename tmpl::front<tags_list>::type::type>;
   using value_type = typename vector_type::value_type;
+  using pointer = value_type*;
+  using const_pointer = const value_type*;
   using allocator_type = std::allocator<value_type>;
   using pointer_type =
       PointerVector<value_type, blaze_unaligned, blaze_unpadded,
@@ -211,8 +213,8 @@ class Variables<tmpl::list<Tags...>> {
 
   //{@
   /// Access pointer to underlying data
-  value_type* data() noexcept { return variable_data_.data(); }
-  const value_type* data() const noexcept { return variable_data_.data(); }
+  pointer data() noexcept { return variable_data_.data(); }
+  const_pointer data() const noexcept { return variable_data_.data(); }
   //@}
 
   /// \cond HIDDEN_SYMBOLS
