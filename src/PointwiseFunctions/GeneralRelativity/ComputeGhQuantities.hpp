@@ -240,6 +240,24 @@ tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
 //@}
 
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes the spacetime derivative of the spacetime metric,
+ * \f$\partial_a g_{bc}\f$
+ *
+ * \f{align*}{
+ * \partial_t g_{ab}&=-\alpha \Pi_{ab} + \beta^i \Phi_{iab} \\
+ * \partial_i g_{ab}&=\Phi_{iab}
+ * \f}
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+void spacetime_derivative_of_spacetime_metric(
+    gsl::not_null<tnsr::abb<DataType, SpatialDim, Frame>*> da_spacetime_metric,
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+
 // @{
 /*!
  * \ingroup GeneralRelativityGroup
