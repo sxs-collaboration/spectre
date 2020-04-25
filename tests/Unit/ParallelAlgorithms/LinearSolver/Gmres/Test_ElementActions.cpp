@@ -16,6 +16,7 @@
 #include "DataStructures/DenseVector.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "ParallelAlgorithms/Actions/SetData.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/ElementActions.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/LinearSolver/Gmres/InitializeElement.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
@@ -35,9 +36,13 @@ struct VectorTag : db::SimpleTag {
 };
 
 using fields_tag = VectorTag;
+using operator_applied_to_fields_tag =
+    db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
 using initial_fields_tag =
     db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
 using operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
+using operator_applied_to_operand_tag =
+    db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
 using orthogonalization_iteration_id_tag =
     db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
                        LinearSolver::Tags::IterationId<DummyOptionsGroup>>;
@@ -51,15 +56,9 @@ struct ElementArray {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<
-              tmpl::list<VectorTag, operand_tag,
-                         LinearSolver::Tags::IterationId<DummyOptionsGroup>,
-                         initial_fields_tag, orthogonalization_iteration_id_tag,
-                         basis_history_tag,
-                         LinearSolver::Tags::HasConverged<DummyOptionsGroup>>,
-              tmpl::list<::Tags::NextCompute<
-                  LinearSolver::Tags::IterationId<DummyOptionsGroup>>>>>>,
-
+          tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<VectorTag>>,
+                     LinearSolver::gmres_detail::InitializeElement<
+                         fields_tag, DummyOptionsGroup>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing,
                              tmpl::list<LinearSolver::gmres_detail::PrepareStep<
@@ -81,18 +80,23 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
 
   // Setup mock element array
   ActionTesting::emplace_component_and_initialize<element_array>(
-      make_not_null(&runner), 0,
-      {DenseVector<double>(3, 0.), DenseVector<double>(3, 2.),
-       std::numeric_limits<size_t>::max(), DenseVector<double>(3, -1.),
-       size_t{0},
-       std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
-                                        DenseVector<double>(3, 1.5)},
-       Convergence::HasConverged{}});
+      make_not_null(&runner), 0, {DenseVector<double>(3, 0.)});
+  ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
 
   // DataBox shortcuts
   const auto get_tag = [&runner](auto tag_v) -> decltype(auto) {
     using tag = std::decay_t<decltype(tag_v)>;
     return ActionTesting::get_databox_tag<element_array, tag>(runner, 0);
+  };
+  const auto tag_is_retrievable = [&runner](auto tag_v) {
+    using tag = std::decay_t<decltype(tag_v)>;
+    return ActionTesting::tag_is_retrievable<element_array, tag>(runner, 0);
+  };
+  const auto set_tag = [&runner](auto tag_v, const auto& value) {
+    using tag = std::decay_t<decltype(tag_v)>;
+    ActionTesting::simple_action<element_array,
+                                 ::Actions::SetData<tmpl::list<tag>>>(
+        make_not_null(&runner), 0, value);
   };
 
   ActionTesting::set_phase(make_not_null(&runner),
@@ -103,7 +107,27 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
   // `Test_GmresAlgorithm.cpp` and
   // `Test_DistributedGmresAlgorithm.cpp`.
 
+  {
+    INFO("InitializeElement");
+    CHECK(get_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}) ==
+          std::numeric_limits<size_t>::max());
+    tmpl::for_each<
+        tmpl::list<initial_fields_tag, operator_applied_to_fields_tag,
+                   operand_tag, operator_applied_to_operand_tag,
+                   orthogonalization_iteration_id_tag, basis_history_tag>>(
+        [&tag_is_retrievable](auto tag_v) {
+          using tag = tmpl::type_from<decltype(tag_v)>;
+          CAPTURE(db::tag_name<tag>());
+          CHECK(tag_is_retrievable(tag{}));
+        });
+    CHECK_FALSE(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
+  }
+
   SECTION("NormalizeInitialOperand") {
+    set_tag(operand_tag{}, DenseVector<double>(3, 2.));
+    set_tag(basis_history_tag{},
+            std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
+                                             DenseVector<double>(3, 1.5)});
     ActionTesting::simple_action<
         element_array, LinearSolver::gmres_detail::NormalizeInitialOperand<
                            fields_tag, DummyOptionsGroup>>(
@@ -124,6 +148,11 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
     CHECK(get_tag(orthogonalization_iteration_id_tag{}) == 0);
   }
   SECTION("NormalizeOperandAndUpdateField") {
+    set_tag(initial_fields_tag{}, DenseVector<double>(3, -1.));
+    set_tag(operand_tag{}, DenseVector<double>(3, 2.));
+    set_tag(basis_history_tag{},
+            std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
+                                             DenseVector<double>(3, 1.5)});
     ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
     ActionTesting::simple_action<
         element_array,

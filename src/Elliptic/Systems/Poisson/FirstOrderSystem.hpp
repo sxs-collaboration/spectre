@@ -15,18 +15,8 @@
 #include "Elliptic/Systems/Poisson/Geometry.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
-
-/// \cond
-namespace LinearSolver {
-namespace Tags {
-template <typename>
-struct Operand;
-}  // namespace Tags
-}  // namespace LinearSolver
-/// \endcond
 
 namespace Poisson {
 
@@ -93,14 +83,6 @@ struct FirstOrderSystem {
   using auxiliary_fields = tmpl::list<field_gradient>;
   using fields_tag =
       ::Tags::Variables<tmpl::append<primal_fields, auxiliary_fields>>;
-
-  // The variables to compute bulk contributions and fluxes for.
-  using variables_tag =
-      db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
-  using primal_variables =
-      db::wrap_tags_in<LinearSolver::Tags::Operand, primal_fields>;
-  using auxiliary_variables =
-      db::wrap_tags_in<LinearSolver::Tags::Operand, auxiliary_fields>;
 
   using fluxes =
       tmpl::conditional_t<BackgroundGeometry == Geometry::Euclidean,

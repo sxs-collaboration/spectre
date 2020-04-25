@@ -72,22 +72,5 @@ void auxiliary_fluxes(
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
 
-// Instantiate derivative templates
-template <size_t Dim>
-using variables_tag = typename Elasticity::FirstOrderSystem<Dim>::variables_tag;
-template <size_t Dim>
-using fluxes_tags_list = db::get_variables_tags_list<db::add_tag_prefix<
-    ::Tags::Flux, variables_tag<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
-
-#define INSTANTIATE_DERIVS(_, data)                                            \
-  template Variables<db::wrap_tags_in<Tags::div, fluxes_tags_list<DIM(data)>>> \
-  divergence<fluxes_tags_list<DIM(data)>, DIM(data), Frame::Inertial>(         \
-      const Variables<fluxes_tags_list<DIM(data)>>&, const Mesh<DIM(data)>&,   \
-      const InverseJacobian<DataVector, DIM(data), Frame::Logical,             \
-                            Frame::Inertial>&) noexcept;
-
-GENERATE_INSTANTIATIONS(INSTANTIATE_DERIVS, (2, 3))
-
 #undef INSTANTIATE
-#undef INSTANTIATE_DERIVS
 #undef DIM

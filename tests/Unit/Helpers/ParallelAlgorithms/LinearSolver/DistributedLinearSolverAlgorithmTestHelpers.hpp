@@ -151,8 +151,10 @@ using operator_applied_to_operand_tag =
 // an input file.
 
 // Forward declare to keep these actions in the order they are used
+template <typename OperandTag>
 struct CollectOperatorAction;
 
+template <typename OperandTag>
 struct ComputeOperatorAction {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
@@ -166,21 +168,21 @@ struct ComputeOperatorAction {
       const ActionList /*meta*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ParallelComponent* const /*meta*/) noexcept {
-    const auto& operator_matrices = get<LinearOperator>(cache);
+    const auto& operator_matrices = get<LinearOperator>(box);
     const auto number_of_elements = operator_matrices.size();
     const auto& linear_operator = gsl::at(operator_matrices, array_index);
     const auto number_of_grid_points = linear_operator.columns();
-    const auto& operand = get<operand_tag>(box);
+    const auto& operand = get<OperandTag>(box);
 
-    db::item_type<fields_tag> operator_applied_to_operand{
+    db::item_type<OperandTag> operator_applied_to_operand{
         number_of_grid_points * number_of_elements};
     dgemv_('N', linear_operator.rows(), linear_operator.columns(), 1,
            linear_operator.data(), linear_operator.spacing(), operand.data(), 1,
            0, operator_applied_to_operand.data(), 1);
 
-    Parallel::contribute_to_reduction<CollectOperatorAction>(
+    Parallel::contribute_to_reduction<CollectOperatorAction<OperandTag>>(
         Parallel::ReductionData<
-            Parallel::ReductionDatum<db::item_type<fields_tag>, funcl::Plus<>>>{
+            Parallel::ReductionDatum<db::item_type<OperandTag>, funcl::Plus<>>>{
             operator_applied_to_operand},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
         Parallel::get_parallel_component<ParallelComponent>(cache));
@@ -191,28 +193,38 @@ struct ComputeOperatorAction {
   }
 };
 
+template <typename OperandTag>
 struct CollectOperatorAction {
-  template <
-      typename ParallelComponent, typename DbTagsList, typename Metavariables,
-      Requires<tmpl::list_contains_v<DbTagsList, ScalarFieldTag>> = nullptr>
+  using local_operator_applied_to_operand_tag =
+      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, OperandTag>;
+
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ScalarFieldOperandTag,
+            Requires<tmpl::list_contains_v<
+                DbTagsList, local_operator_applied_to_operand_tag>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const int array_index,
-                    const db::item_type<fields_tag>& Ap_global_data) noexcept {
+                    const Variables<tmpl::list<ScalarFieldOperandTag>>&
+                        Ap_global_data) noexcept {
     // This could be generalized to work on the Variables instead of the
     // Scalar, but it's only for the purpose of this test.
-    const auto number_of_grid_points = get<LinearOperator>(cache)[0].columns();
-    const auto& Ap_global = get<ScalarFieldTag>(Ap_global_data).get();
+    const auto number_of_grid_points = get<LinearOperator>(box)[0].columns();
+    const auto& Ap_global = get<ScalarFieldOperandTag>(Ap_global_data).get();
     DataVector Ap_local{number_of_grid_points};
     std::copy(Ap_global.begin() +
                   array_index * static_cast<int>(number_of_grid_points),
               Ap_global.begin() +
                   (array_index + 1) * static_cast<int>(number_of_grid_points),
               Ap_local.begin());
-    db::mutate<LinearSolver::Tags::OperatorAppliedTo<
-        LinearSolver::Tags::Operand<ScalarFieldTag>>>(
+    db::mutate<local_operator_applied_to_operand_tag>(
         make_not_null(&box),
-        [&Ap_local](auto Ap) noexcept { *Ap = Scalar<DataVector>(Ap_local); });
+        [&Ap_local, &number_of_grid_points](auto Ap) noexcept {
+          *Ap = db::item_type<local_operator_applied_to_operand_tag>{
+              number_of_grid_points};
+          get(get<LinearSolver::Tags::OperatorAppliedTo<ScalarFieldOperandTag>>(
+              *Ap)) = Ap_local;
+        });
     // Proceed with algorithm
     Parallel::get_parallel_component<ParallelComponent>(cache)[array_index]
         .perform_algorithm(true);
@@ -227,7 +239,7 @@ struct TestResult {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const int array_index,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
@@ -240,7 +252,7 @@ struct TestResult {
     SPECTRE_PARALLEL_REQUIRE(has_converged.reason() ==
                              Convergence::Reason::AbsoluteResidual);
     const auto& expected_result =
-        gsl::at(get<ExpectedResult>(cache), array_index);
+        gsl::at(get<ExpectedResult>(box), array_index);
     const auto& result = get<ScalarFieldTag>(box).get();
     for (size_t i = 0; i < expected_result.size(); i++) {
       SPECTRE_PARALLEL_REQUIRE(result[i] == approx(expected_result[i]));
@@ -254,25 +266,17 @@ struct InitializeElement {
             typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const int array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    const auto& source = gsl::at(get<Source>(cache), array_index);
+    const auto& source = gsl::at(get<Source>(box), array_index);
     const size_t num_points = source.size();
 
     return std::make_tuple(
         ::Initialization::merge_into_databox<
-            InitializeElement,
-            db::AddSimpleTags<fields_tag, sources_tag,
-                              operator_applied_to_fields_tag, operand_tag,
-                              operator_applied_to_operand_tag>>(
+            InitializeElement, db::AddSimpleTags<fields_tag, sources_tag>>(
             std::move(box), db::item_type<fields_tag>{num_points, 0.},
-            db::item_type<sources_tag>{source},
-            db::item_type<operator_applied_to_fields_tag>{num_points, 0.},
-            db::item_type<operand_tag>{
-                num_points, std::numeric_limits<double>::signaling_NaN()},
-            db::item_type<operator_applied_to_operand_tag>{
-                num_points, std::numeric_limits<double>::signaling_NaN()}));
+            db::item_type<sources_tag>{source}));
   }
 };
 
@@ -286,6 +290,7 @@ struct ElementArray {
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<InitializeElement,
                      typename linear_solver::initialize_element,
+                     ComputeOperatorAction<fields_tag>,
                      typename linear_solver::prepare_solve,
                      Parallel::Actions::TerminatePhase>>,
 
@@ -295,7 +300,7 @@ struct ElementArray {
           tmpl::list<LinearSolver::Actions::TerminateIfConverged<
                          typename linear_solver::options_group>,
                      typename linear_solver::prepare_step,
-                     ComputeOperatorAction,
+                     ComputeOperatorAction<operand_tag>,
                      typename linear_solver::perform_step>>,
 
       Parallel::PhaseActions<

@@ -8,7 +8,7 @@ set(LIBRARY "Test_EllipticDG")
 set(LIBRARY_SOURCES
   Test_ImposeBoundaryConditions.cpp
   Test_ImposeInhomogeneousBoundaryConditionsOnSource.cpp
-  Test_InitializeFluxes.cpp
+  Test_InitializeFirstOrderOperator.cpp
   )
 
 add_test_library(
