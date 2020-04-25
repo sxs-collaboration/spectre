@@ -34,6 +34,11 @@ namespace Weno_detail {
 // This interface is intended for use in limiters that check the troubled-cell
 // indicator independently for each tensor component. These limiters generally
 // need to limit only a subset of the tensor components.
+//
+// When calling `simple_weno_impl`,
+// - `interpolator_buffer` may be empty
+// - `modified_neighbor_solution_buffer` should contain one DataVector for each
+//   neighboring element (i.e. for each entry in `neighbor_data`)
 template <typename Tag, size_t VolumeDim, typename PackagedData>
 void simple_weno_impl(
     const gsl::not_null<std::unordered_map<
@@ -52,6 +57,13 @@ void simple_weno_impl(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data) noexcept {
+  ASSERT(modified_neighbor_solution_buffer->size() == neighbor_data.size(),
+         "modified_neighbor_solution_buffer->size() = "
+         << modified_neighbor_solution_buffer->size()
+         << "\nneighbor_data.size() = " << neighbor_data.size()
+         << "\nmodified_neighbor_solution_buffer was incorrectly initialized "
+            "before calling simple_weno_impl.");
+
   // Compute the modified neighbor solutions.
   // First extrapolate neighbor data onto local grid points, then shift the
   // extrapolated data so its mean matches the local mean.
@@ -94,6 +106,11 @@ void simple_weno_impl(
 //
 // This interface is intended for use in limiters that check the troubled-cell
 // indicator for the whole cell, and apply the limiter to all fields.
+//
+// When calling `simple_weno_impl`,
+// - `interpolator_buffer` may be empty
+// - `modified_neighbor_solution_buffer` should contain one DataVector for each
+//   neighboring element (i.e. for each entry in `neighbor_data`)
 template <typename Tag, size_t VolumeDim, typename PackagedData>
 void simple_weno_impl(
     const gsl::not_null<std::unordered_map<

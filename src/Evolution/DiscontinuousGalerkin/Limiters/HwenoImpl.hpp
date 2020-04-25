@@ -521,6 +521,10 @@ void solve_constrained_fit(
  * p-refinement; this is checked by some assertions. The implementation is
  * untested for grids where elements are curved, and it should not be expected
  * to work in these cases.
+ *
+ * When calling `hweno_impl`, `modified_neighbor_solution_buffer` should contain
+ * one DataVector for each neighboring element (i.e. for each entry in
+ * `neighbor_data`).
  */
 template <typename Tag, size_t VolumeDim, typename PackagedData>
 void hweno_impl(
@@ -535,6 +539,13 @@ void hweno_impl(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data) noexcept {
+  ASSERT(modified_neighbor_solution_buffer->size() == neighbor_data.size(),
+         "modified_neighbor_solution_buffer->size() = "
+         << modified_neighbor_solution_buffer->size()
+         << "\nneighbor_data.size() = " << neighbor_data.size()
+         << "\nmodified_neighbor_solution_buffer was incorrectly initialized "
+            "before calling hweno_impl.");
+
   alg::for_each(neighbor_data, [&element, &
                                 mesh ](const auto& neighbor_and_data) noexcept {
     ASSERT(Weno_detail::check_element_has_one_similar_neighbor_in_direction(
