@@ -5,9 +5,14 @@
 
 #include <array>
 #include <cstddef>
+#include <memory>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
-#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
@@ -31,7 +36,16 @@ class Frustum;
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 class CoordinateMap;
+
+namespace FunctionsOfTime {
+class FunctionOfTime;
+}  // namespace FunctionsOfTime
 }  // namespace domain
+
+namespace Frame {
+struct Inertial;
+struct Logical;
+}  // namespace Frame
 /// \endcond
 
 namespace domain {
@@ -202,12 +216,20 @@ class BinaryCompactObject : public DomainCreator<3> {
     static type default_value() { return true; }
   };
 
+  struct TimeDependence {
+    using type =
+        std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>;
+    static constexpr OptionString help = {
+        "The time dependence of the moving mesh domain."};
+    static type default_value() noexcept;
+  };
+
   using options =
       tmpl::list<InnerRadiusObjectA, OuterRadiusObjectA, XCoordObjectA,
                  ExciseInteriorA, InnerRadiusObjectB, OuterRadiusObjectB,
                  XCoordObjectB, ExciseInteriorB, RadiusOuterCube,
                  RadiusOuterSphere, InitialRefinement, InitialGridPoints,
-                 UseEquiangularMap, UseProjectiveMap>;
+                 UseEquiangularMap, UseProjectiveMap, TimeDependence>;
 
   static constexpr OptionString help{
       "The BinaryCompactObject domain is a general domain for two compact \n"
@@ -241,6 +263,8 @@ class BinaryCompactObject : public DomainCreator<3> {
       typename InitialGridPoints::type initial_grid_points_per_dim,
       typename UseEquiangularMap::type use_equiangular_map,
       typename UseProjectiveMap::type use_projective_map = true,
+      std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+          time_dependence = nullptr,
       const OptionContext& context = {});
 
   BinaryCompactObject() = default;
@@ -256,6 +280,10 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   std::vector<std::array<size_t, 3>> initial_refinement_levels() const
       noexcept override;
+
+  auto functions_of_time() const noexcept -> std::unordered_map<
+      std::string,
+      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
 
  private:
   typename InnerRadiusObjectA::type inner_radius_object_A_{};
@@ -276,6 +304,8 @@ class BinaryCompactObject : public DomainCreator<3> {
   double translation_{};
   double length_inner_cube_{};
   double length_outer_cube_{};
+  std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+      time_dependence_;
 };
 }  // namespace creators
 }  // namespace domain
