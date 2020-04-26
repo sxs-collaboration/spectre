@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -58,7 +59,11 @@ void test_domain_construction(
 // Test that two neighboring Blocks abut each other.
 template <size_t VolumeDim>
 void test_physical_separation(
-    const std::vector<Block<VolumeDim>>& blocks) noexcept;
+    const std::vector<Block<VolumeDim>>& blocks,
+    double time = std::numeric_limits<double>::signaling_NaN(),
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time = {}) noexcept;
 
 // Fraction of the logical volume of a block covered by an element
 // The sum of this over all the elements of a block should be one
