@@ -17,7 +17,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Fluxes", "[Unit][GrMhd]") {
       "Evolution/Systems/GrMhd/ValenciaDivClean"};
 
   pypp::check_with_random_values<1>(
-      &grmhd::ValenciaDivClean::ComputeFluxes::apply, "TestFunctions",
+      &grmhd::ValenciaDivClean::ComputeFluxes::apply, "Fluxes",
       {"tilde_d_flux", "tilde_tau_flux", "tilde_s_flux", "tilde_b_flux",
        "tilde_phi_flux"},
       {{{0.0, 1.0}}}, DataVector{5});

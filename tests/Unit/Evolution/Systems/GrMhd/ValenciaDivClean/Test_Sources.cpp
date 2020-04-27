@@ -17,7 +17,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Sources", "[Unit][GrMhd]") {
       "Evolution/Systems/GrMhd/ValenciaDivClean"};
 
   pypp::check_with_random_values<1>(
-      &grmhd::ValenciaDivClean::ComputeSources::apply, "TestFunctions",
+      &grmhd::ValenciaDivClean::ComputeSources::apply, "Sources",
       {"source_tilde_tau", "source_tilde_s", "source_tilde_b",
        "source_tilde_phi"},
       {{{0.0, 1.0}}}, DataVector{5});
