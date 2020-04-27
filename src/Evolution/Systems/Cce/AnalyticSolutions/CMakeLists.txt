@@ -4,7 +4,8 @@
 set(LIBRARY CceAnalyticSolutions)
 
 set(LIBRARY_SOURCES
-   WorldtubeData.cpp
+  SphericalMetricData.cpp
+  WorldtubeData.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
