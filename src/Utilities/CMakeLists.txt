@@ -78,6 +78,7 @@ spectre_target_headers(
   Tuple.hpp
   TypeTraits.hpp
   VectorAlgebra.hpp
+  WrapText.hpp
   )
 
 add_subdirectory(TypeTraits)
