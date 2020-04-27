@@ -1,13 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY CceAnalyticSolutions)
+set(LIBRARY "CceAnalyticSolutionsHelpers")
 
 set(LIBRARY_SOURCES
-  BouncingBlackHole.cpp
-  LinearizedBondiSachs.cpp
-  SphericalMetricData.cpp
-  WorldtubeData.cpp
+  AnalyticDataHelpers.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
@@ -15,13 +12,7 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  Cce
   DataStructures
-  ErrorHandling
-  GeneralizedHarmonic
-  GeneralRelativity
-  IO
-  Options
-  Spectral
   Utilities
   )
-
