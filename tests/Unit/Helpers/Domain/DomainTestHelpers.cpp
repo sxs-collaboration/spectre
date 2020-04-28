@@ -6,7 +6,12 @@
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <ios>
+#include <limits>
+#include <memory>
+#include <string>
+#include <type_traits>
 #include <unordered_map>
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
@@ -20,6 +25,7 @@
 #include "Domain/DirectionMap.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"        // IWYU pragma: keep
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/InitialElementIds.hpp"
 #include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/OrientationMap.hpp"
@@ -251,8 +257,12 @@ tnsr::I<double, VolumeDim, Frame::Logical> point_in_neighbor_frame(
 // the abutting faces of the Blocks in the Frame::Inertial frame using the
 // CoordinateMaps of each block.
 template <size_t VolumeDim>
-double physical_separation(const Block<VolumeDim>& block1,
-                           const Block<VolumeDim>& block2) noexcept {
+double physical_separation(
+    const Block<VolumeDim>& block1, const Block<VolumeDim>& block2,
+    double time = std::numeric_limits<double>::signaling_NaN(),
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time = {}) noexcept {
   double max_separation = 0;
   const auto direction = find_direction_to_neighbor(block1, block2);
   const auto orientation = find_neighbor_orientation(block1, block2);
@@ -277,18 +287,35 @@ double physical_separation(const Block<VolumeDim>& block1,
         << " and block2 has: " << block2.is_time_dependent());
   }
   if (block1.is_time_dependent()) {
-    ERROR(
-        "Time-dependent maps are currently not supported in "
-        "physical_separation function.");
-  }
-
-  const auto& map1 = block1.stationary_map();
-  const auto& map2 = block2.stationary_map();
-  for (size_t i = 0; i < two_to_the(VolumeDim - 1); i++) {
-    for (size_t j = 0; j < VolumeDim; j++) {
-      max_separation = std::max(
-          max_separation, std::abs(map1(gsl::at(shared_points1, i)).get(j) -
-                                   map2(gsl::at(shared_points2, i)).get(j)));
+    const auto& map1_logical_to_grid = block1.moving_mesh_logical_to_grid_map();
+    const auto& map1_grid_to_inertial =
+        block1.moving_mesh_grid_to_inertial_map();
+    const auto& map2_logical_to_grid = block2.moving_mesh_logical_to_grid_map();
+    const auto& map2_grid_to_inertial =
+        block2.moving_mesh_grid_to_inertial_map();
+    for (size_t i = 0; i < two_to_the(VolumeDim - 1); i++) {
+      for (size_t j = 0; j < VolumeDim; j++) {
+        max_separation = std::max(
+            max_separation,
+            std::abs(map1_grid_to_inertial(
+                         map1_logical_to_grid(gsl::at(shared_points1, i)), time,
+                         functions_of_time)
+                         .get(j) -
+                     map2_grid_to_inertial(
+                         map2_logical_to_grid(gsl::at(shared_points2, i)), time,
+                         functions_of_time)
+                         .get(j)));
+      }
+    }
+  } else {
+    const auto& map1 = block1.stationary_map();
+    const auto& map2 = block2.stationary_map();
+    for (size_t i = 0; i < two_to_the(VolumeDim - 1); i++) {
+      for (size_t j = 0; j < VolumeDim; j++) {
+        max_separation = std::max(
+            max_separation, std::abs(map1(gsl::at(shared_points1, i)).get(j) -
+                                     map2(gsl::at(shared_points2, i)).get(j)));
+      }
     }
   }
   return max_separation;
@@ -383,12 +410,16 @@ void test_domain_construction(
 
 template <size_t VolumeDim>
 void test_physical_separation(
-    const std::vector<Block<VolumeDim>>& blocks) noexcept {
+    const std::vector<Block<VolumeDim>>& blocks, double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) noexcept {
   double tolerance = 1e-10;
   for (size_t i = 0; i < blocks.size() - 1; i++) {
     for (size_t j = i + 1; j < blocks.size(); j++) {
       if (domain::blocks_are_neighbors(blocks[i], blocks[j])) {
-        CHECK(domain::physical_separation(blocks[i], blocks[j]) < tolerance);
+        CHECK(domain::physical_separation(blocks[i], blocks[j], time,
+                                          functions_of_time) < tolerance);
       }
     }
   }
@@ -453,15 +484,19 @@ tnsr::i<DataType, SpatialDim> unit_basis_form(
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                 \
-  template boost::rational<size_t> fraction_of_block_volume( \
-      const ElementId<DIM(data)>& element_id) noexcept;      \
-  template void test_initial_domain(                         \
-      const Domain<DIM(data)>& domain,                       \
-      const std::vector<std::array<size_t, DIM(data)>>&      \
-          initial_refinement_levels) noexcept;               \
-  template void test_physical_separation(                    \
-      const std::vector<Block<DIM(data)>>& blocks) noexcept;
+#define INSTANTIATE(_, data)                                          \
+  template boost::rational<size_t> fraction_of_block_volume(          \
+      const ElementId<DIM(data)>& element_id) noexcept;               \
+  template void test_initial_domain(                                  \
+      const Domain<DIM(data)>& domain,                                \
+      const std::vector<std::array<size_t, DIM(data)>>&               \
+          initial_refinement_levels) noexcept;                        \
+  template void test_physical_separation(                             \
+      const std::vector<Block<DIM(data)>>& blocks, const double time, \
+      const std::unordered_map<                                       \
+          std::string,                                                \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&  \
+          functions_of_time) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

@@ -8,6 +8,9 @@
 #include <iterator>
 #include <memory>
 #include <pup.h>
+#include <string>
+#include <unordered_map>
+#include <utility>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Block.hpp"          // IWYU pragma: keep
@@ -20,6 +23,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -48,6 +52,8 @@ BinaryCompactObject::BinaryCompactObject(
     typename InitialGridPoints::type initial_grid_points_per_dim,
     typename UseEquiangularMap::type use_equiangular_map,
     typename UseProjectiveMap::type use_projective_map,
+    std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+        time_dependence,
     const OptionContext& context)
     // clang-tidy: trivially copyable
     : inner_radius_object_A_(std::move(inner_radius_object_A)),        // NOLINT
@@ -65,8 +71,8 @@ BinaryCompactObject::BinaryCompactObject(
       initial_grid_points_per_dim_(                                    // NOLINT
           std::move(initial_grid_points_per_dim)),                     // NOLINT
       use_equiangular_map_(std::move(use_equiangular_map)),            // NOLINT
-      use_projective_map_(std::move(use_projective_map))               // NOLINT
-{
+      use_projective_map_(std::move(use_projective_map)),              // NOLINT
+      time_dependence_(std::move(time_dependence)) {
   // Determination of parameters for domain construction:
   translation_ = 0.5 * (xcoord_object_B_ + xcoord_object_A_);
   length_inner_cube_ = abs(xcoord_object_A_ - xcoord_object_B_);
@@ -101,6 +107,10 @@ BinaryCompactObject::BinaryCompactObject(
     projective_scale_factor_ = length_inner_cube_ / length_outer_cube_;
   } else {
     projective_scale_factor_ = 1.0;
+  }
+  if (time_dependence_ == nullptr) {
+    time_dependence_ =
+        std::make_unique<domain::creators::time_dependence::None<3>>();
   }
 }
 
@@ -204,10 +214,29 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
               translation_B));
     }
   }
-
-  return Domain<3>{std::move(maps),
+  Domain<3> domain{std::move(maps),
                    corners_for_biradially_layered_domains(
                        2, 2, not excise_interior_A_, not excise_interior_B_)};
+  if (not time_dependence_->is_none()) {
+    size_t number_of_blocks = 44;
+    if (not excise_interior_A_) {
+      number_of_blocks++;
+    }
+    if (not excise_interior_B_) {
+      number_of_blocks++;
+    }
+    for (size_t block = 0; block < number_of_blocks; ++block) {
+      domain.inject_time_dependent_map_for_block(
+          block,
+          std::move(time_dependence_->block_maps(number_of_blocks)[block]));
+    }
+  }
+  return domain;
+}
+
+std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+BinaryCompactObject::TimeDependence::default_value() noexcept {
+  return std::make_unique<domain::creators::time_dependence::None<3>>();
 }
 
 std::vector<std::array<size_t, 3>> BinaryCompactObject::initial_extents() const
@@ -234,5 +263,14 @@ BinaryCompactObject::initial_refinement_levels() const noexcept {
   return {number_of_blocks, make_array<3>(initial_refinement_)};
 }
 
+std::unordered_map<std::string,
+                   std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+BinaryCompactObject::functions_of_time() const noexcept {
+  if (time_dependence_->is_none()) {
+    return {};
+  } else {
+    return time_dependence_->functions_of_time();
+  }
+}
 }  // namespace creators
 }  // namespace domain
