@@ -235,6 +235,9 @@ struct CollectOperatorAction {
 // Checks for the correct solution after the algorithm has terminated.
 template <typename OptionsGroup>
 struct TestResult {
+  using const_global_cache_tags =
+      tmpl::list<ExpectedResult, helpers::ExpectedConvergenceReason>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
@@ -250,8 +253,8 @@ struct TestResult {
     const auto& has_converged =
         get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
     SPECTRE_PARALLEL_REQUIRE(has_converged);
-    SPECTRE_PARALLEL_REQUIRE(has_converged.reason() ==
-                             Convergence::Reason::AbsoluteResidual);
+    SPECTRE_PARALLEL_REQUIRE(
+        has_converged.reason() == get<helpers::ExpectedConvergenceReason>(box));
     const auto& expected_result =
         gsl::at(get<ExpectedResult>(box), array_index);
     const auto& result = get<ScalarFieldTag>(box).get();

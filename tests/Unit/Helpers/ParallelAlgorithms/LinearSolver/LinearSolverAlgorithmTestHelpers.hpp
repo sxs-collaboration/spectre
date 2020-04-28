@@ -26,6 +26,7 @@
 #include "IO/Observer/RegisterObservers.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -61,6 +62,11 @@ struct InitialGuess {
 struct ExpectedResult {
   static constexpr OptionString help = "The solution x in the equation Ax=b";
   using type = DenseVector<double>;
+};
+struct ExpectedConvergenceReason {
+  static std::string name() noexcept { return "ConvergenceReason"; }
+  static constexpr OptionString help = "The expected convergence reason";
+  using type = Convergence::Reason;
 };
 }  // namespace OptionTags
 
@@ -108,6 +114,16 @@ struct ExpectedResult : db::SimpleTag {
   }
 };
 
+struct ExpectedConvergenceReason : db::SimpleTag {
+  using type = Convergence::Reason;
+  using option_tags = tmpl::list<OptionTags::ExpectedConvergenceReason>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const type& option_value) noexcept {
+    return option_value;
+  }
+};
+
 // The vector `x` we want to solve for
 struct VectorTag : db::SimpleTag {
   using type = DenseVector<double>;
@@ -145,6 +161,9 @@ struct ComputeOperatorAction {
 // Checks for the correct solution after the algorithm has terminated.
 template <typename OptionsGroup>
 struct TestResult {
+  using const_global_cache_tags =
+      tmpl::list<ExpectedResult, ExpectedConvergenceReason>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
@@ -161,7 +180,7 @@ struct TestResult {
         get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
     SPECTRE_PARALLEL_REQUIRE(has_converged);
     SPECTRE_PARALLEL_REQUIRE(has_converged.reason() ==
-                             Convergence::Reason::AbsoluteResidual);
+                             get<ExpectedConvergenceReason>(box));
     const auto& result = get<VectorTag>(box);
     const auto& expected_result = get<ExpectedResult>(box);
     for (size_t i = 0; i < expected_result.size(); i++) {
