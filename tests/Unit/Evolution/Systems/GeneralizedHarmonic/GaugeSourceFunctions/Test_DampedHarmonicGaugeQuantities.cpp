@@ -2987,114 +2987,107 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
 }  // namespace
 
 SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.GeneralizedHarmonic.Gauge.DampedHarmonic.details",
+    "Unit.Evolution.Systems.GeneralizedHarmonic.Gauge.DampedHarmonic",
     "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{""};
   const DataVector used_for_size(4);
 
   test_options<Frame::Inertial>();
 
-  test_detail_functions<1, Frame::Inertial>(used_for_size);
-  test_detail_functions<2, Frame::Inertial>(used_for_size);
-  test_detail_functions<3, Frame::Inertial>(used_for_size);
+  {
+    INFO("Details");
+    test_detail_functions<1, Frame::Inertial>(used_for_size);
+    test_detail_functions<2, Frame::Inertial>(used_for_size);
+    test_detail_functions<3, Frame::Inertial>(used_for_size);
 
-  test_detail_functions<1, Frame::Inertial>(1.);
-  test_detail_functions<2, Frame::Inertial>(1.);
-  test_detail_functions<3, Frame::Inertial>(1.);
-}
+    test_detail_functions<1, Frame::Inertial>(1.);
+    test_detail_functions<2, Frame::Inertial>(1.);
+    test_detail_functions<3, Frame::Inertial>(1.);
+  }
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.GeneralizedHarmonic.Gauge.DampedHarmonic.H",
-    "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{""};
-  const DataVector used_for_size(4);
+  {
+    INFO("Compute source function");
+    // Compare with Python implementation
+    test_damped_harmonic_h_function<1, Frame::Inertial>(used_for_size);
+    test_damped_harmonic_h_function<2, Frame::Inertial>(used_for_size);
+    test_damped_harmonic_h_function<3, Frame::Inertial>(used_for_size);
 
-  // Compare with Python implementation
-  test_damped_harmonic_h_function<1, Frame::Inertial>(used_for_size);
-  test_damped_harmonic_h_function<2, Frame::Inertial>(used_for_size);
-  test_damped_harmonic_h_function<3, Frame::Inertial>(used_for_size);
+    // Piece-wise tests with random tensors
+    const size_t grid_size = 8;
+    const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
+    const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
 
-  // Piece-wise tests with random tensors
-  const size_t grid_size = 8;
-  const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
-  const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
+    MAKE_GENERATOR(generator);
+    test_damped_harmonic_h_function_term_1_of_4(grid_size, lower_bound,
+                                                upper_bound, generator);
+    test_damped_harmonic_h_function_term_2_of_4(grid_size, lower_bound,
+                                                upper_bound, generator);
+    test_damped_harmonic_h_function_term_3_of_4(grid_size, lower_bound,
+                                                upper_bound, generator);
+    test_damped_harmonic_h_function_term_4_of_4(grid_size, lower_bound,
+                                                upper_bound, generator);
+  }
 
-  MAKE_GENERATOR(generator);
-  test_damped_harmonic_h_function_term_1_of_4(grid_size, lower_bound,
-                                              upper_bound, generator);
-  test_damped_harmonic_h_function_term_2_of_4(grid_size, lower_bound,
-                                              upper_bound, generator);
-  test_damped_harmonic_h_function_term_3_of_4(grid_size, lower_bound,
-                                              upper_bound, generator);
-  test_damped_harmonic_h_function_term_4_of_4(grid_size, lower_bound,
-                                              upper_bound, generator);
-}
+  {
+    INFO("Spacetime derivative of source function");
+    // Compare with Python implementation
+    test_deriv_damped_harmonic_h_function<1, Frame::Inertial>(used_for_size);
+    test_deriv_damped_harmonic_h_function<2, Frame::Inertial>(used_for_size);
+    test_deriv_damped_harmonic_h_function<3, Frame::Inertial>(used_for_size);
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.GeneralizedHarmonic.Gauge.DampedHarmonic.D4H",
-    "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{""};
-  const DataVector used_for_size(4);
+    // Piece-wise tests with random tensors
+    const size_t grid_size = 8;
+    const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
+    const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
 
-  // Compare with Python implementation
-  test_deriv_damped_harmonic_h_function<1, Frame::Inertial>(used_for_size);
-  test_deriv_damped_harmonic_h_function<2, Frame::Inertial>(used_for_size);
-  test_deriv_damped_harmonic_h_function<3, Frame::Inertial>(used_for_size);
+    MAKE_GENERATOR(generator);
+    test_deriv_damped_harmonic_h_function_term_1_of_4(grid_size, lower_bound,
+                                                      upper_bound, generator);
+    test_deriv_damped_harmonic_h_function_term_2_of_4(grid_size, lower_bound,
+                                                      upper_bound, generator);
+    test_deriv_damped_harmonic_h_function_term_3_of_4(grid_size, lower_bound,
+                                                      upper_bound, generator);
+    test_deriv_damped_harmonic_h_function_term_4_of_4(grid_size, lower_bound,
+                                                      upper_bound, generator);
+  }
 
-  // Piece-wise tests with random tensors
-  const size_t grid_size = 8;
-  const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
-  const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
+  {
+    INFO("Analytic");
+    const size_t grid_size = 8;
+    const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
+    const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
+    MAKE_GENERATOR(generator);
 
-  MAKE_GENERATOR(generator);
-  test_deriv_damped_harmonic_h_function_term_1_of_4(grid_size, lower_bound,
-                                                    upper_bound, generator);
-  test_deriv_damped_harmonic_h_function_term_2_of_4(grid_size, lower_bound,
-                                                    upper_bound, generator);
-  test_deriv_damped_harmonic_h_function_term_3_of_4(grid_size, lower_bound,
-                                                    upper_bound, generator);
-  test_deriv_damped_harmonic_h_function_term_4_of_4(grid_size, lower_bound,
-                                                    upper_bound, generator);
-}
+    // Analytic spacetime tests
+    const double mass = 2.;
+    const std::array<double, 3> spin{{0., 0., 0.}};
+    const std::array<double, 3> center{{0.2, -0.3, 0.5}};
+    const gr::Solutions::KerrSchild solution(mass, spin, center);
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.GeneralizedHarmonic.Gauge.DampedHarmonic.Analytic",
-    "[Unit][Evolution]") {
-  const size_t grid_size = 8;
-  const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
-  const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
-  MAKE_GENERATOR(generator);
+    test_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
+        solution, grid_size, lower_bound, upper_bound, generator);
+    test_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
+        solution, grid_size, lower_bound, upper_bound, generator);
+    test_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
+        solution, grid_size, lower_bound, upper_bound, generator);
 
-  // Analytic spacetime tests
-  const double mass = 2.;
-  const std::array<double, 3> spin{{0., 0., 0.}};
-  const std::array<double, 3> center{{0.2, -0.3, 0.5}};
-  const gr::Solutions::KerrSchild solution(mass, spin, center);
+    test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
+        solution, grid_size, lower_bound, upper_bound, generator);
+    test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
+        solution, grid_size, lower_bound, upper_bound, generator);
+    test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
+        solution, grid_size, lower_bound, upper_bound, generator);
+  }
 
-  test_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
-      solution, grid_size, lower_bound, upper_bound, generator);
-  test_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
-      solution, grid_size, lower_bound, upper_bound, generator);
-  test_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
-      solution, grid_size, lower_bound, upper_bound, generator);
+  {
+    INFO("Compute tags");
+    const size_t grid_size = 8;
+    const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
+    const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
+    MAKE_GENERATOR(generator);
 
-  test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
-      solution, grid_size, lower_bound, upper_bound, generator);
-  test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
-      solution, grid_size, lower_bound, upper_bound, generator);
-  test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
-      solution, grid_size, lower_bound, upper_bound, generator);
-}
-
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.GeneralizedHarmonic.Gauge.DampedHarmonic.CompTags",
-    "[Unit][Evolution]") {
-  const size_t grid_size = 8;
-  const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
-  const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
-  MAKE_GENERATOR(generator);
-
-  // ComputeTag tests
-  test_damped_harmonic_compute_tags(grid_size, lower_bound, upper_bound,
-                                    generator);
+    // ComputeTag tests
+    test_damped_harmonic_compute_tags(grid_size, lower_bound, upper_bound,
+                                      generator);
+  }
 }
