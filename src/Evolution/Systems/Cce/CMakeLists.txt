@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory(AnalyticSolutions)
+
 set(LIBRARY Cce)
 
 set(LIBRARY_SOURCES
