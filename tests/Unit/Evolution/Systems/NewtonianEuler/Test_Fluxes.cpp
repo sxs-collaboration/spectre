@@ -14,11 +14,11 @@ namespace {
 
 template <size_t Dim>
 void test_fluxes(const DataVector& used_for_size) {
-  pypp::check_with_random_values<4>(
-      &NewtonianEuler::ComputeFluxes<Dim>::apply, "TestFunctions",
-      {"mass_density_cons_flux", "momentum_density_flux",
-       "energy_density_flux"},
-      {{{-1.0, 1.0}, {-1.0, 1.0}, {-1.0, 1.0}, {-1.0, 1.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(
+      &NewtonianEuler::ComputeFluxes<Dim>::apply, "TimeDerivative",
+      {"mass_density_cons_flux_impl", "momentum_density_flux_impl",
+       "energy_density_flux_impl"},
+      {{{-1.0, 1.0}}}, used_for_size);
 }
 
 }  // namespace

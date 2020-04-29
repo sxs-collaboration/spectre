@@ -13,6 +13,7 @@
 #include "Evolution/Systems/NewtonianEuler/PrimitiveFromConservative.hpp"
 #include "Evolution/Systems/NewtonianEuler/Sources.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
+#include "Evolution/Systems/NewtonianEuler/TimeDerivative.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -28,33 +29,36 @@ struct System {
   static constexpr size_t thermodynamic_dim =
       EquationOfStateType::thermodynamic_dim;
 
+  using variables_tag = ::Tags::Variables<tmpl::list<
+      Tags::MassDensityCons, Tags::MomentumDensity<Dim>, Tags::EnergyDensity>>;
+  using flux_variables =
+      tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<Dim>,
+                 Tags::EnergyDensity>;
+  using gradient_variables = tmpl::list<>;
+  using sourced_variables =
+      typename InitialDataType::source_term_type::sourced_variables;
   // Compute item for pressure not currently implemented in SpECTRE,
   // so its simple tag is passed along with the primitive variables.
   using primitive_variables_tag = ::Tags::Variables<tmpl::list<
       Tags::MassDensity<DataVector>, Tags::Velocity<DataVector, Dim>,
       Tags::SpecificInternalEnergy<DataVector>, Tags::Pressure<DataVector>>>;
 
-  using variables_tag = ::Tags::Variables<tmpl::list<
-      Tags::MassDensityCons, Tags::MomentumDensity<Dim>, Tags::EnergyDensity>>;
+  using compute_volume_time_derivative = TimeDerivative<Dim, InitialDataType>;
+  using volume_fluxes = ComputeFluxes<Dim>;
+  using volume_sources = ComputeSources<InitialDataType>;
 
-  template <typename Tag>
-  using magnitude_tag = ::Tags::EuclideanMagnitude<Tag>;
+
+  using conservative_from_primitive = ConservativeFromPrimitive<Dim>;
+  using primitive_from_conservative =
+      PrimitiveFromConservative<Dim, thermodynamic_dim>;
 
   using char_speeds_compute_tag = Tags::CharacteristicSpeedsCompute<Dim>;
   using char_speeds_tag = Tags::CharacteristicSpeeds<Dim>;
   using compute_largest_characteristic_speed =
       ComputeLargestCharacteristicSpeed<Dim>;
 
-  using conservative_from_primitive = ConservativeFromPrimitive<Dim>;
-  using primitive_from_conservative =
-      PrimitiveFromConservative<Dim, thermodynamic_dim>;
-
-  using volume_fluxes = ComputeFluxes<Dim>;
-
-  using volume_sources = ComputeSources<InitialDataType>;
-
-  using sourced_variables =
-      typename InitialDataType::source_term_type::sourced_variables;
+  template <typename Tag>
+  using magnitude_tag = ::Tags::EuclideanMagnitude<Tag>;
 };
 
 }  // namespace NewtonianEuler
