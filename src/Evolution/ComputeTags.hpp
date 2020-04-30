@@ -40,5 +40,29 @@ struct AnalyticCompute
             inertial_coords, time, AnalyticFieldsTagList{})));
   }
 };
+
+/*!
+ * \brief Use the `AnalyticDataTag` to compute the analytic data for the
+ * tags in `AnalyticFieldsTagList`.
+ */
+template <size_t Dim, typename AnalyticDataTag, typename AnalyticFieldsTagList>
+struct AnalyticDataCompute
+    : db::add_tag_prefix<::Tags::Analytic,
+                         ::Tags::Variables<AnalyticFieldsTagList>>,
+      db::ComputeTag {
+  using base = db::add_tag_prefix<::Tags::Analytic,
+                                  ::Tags::Variables<AnalyticFieldsTagList>>;
+  using argument_tags =
+      tmpl::list<AnalyticDataTag,
+                 domain::Tags::Coordinates<Dim, Frame::Inertial>>;
+  static db::const_item_type<base> function(
+      const db::const_item_type<AnalyticDataTag>& analytic_data_computer,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>&
+          inertial_coords) noexcept {
+    return db::const_item_type<base>(
+        variables_from_tagged_tuple(analytic_data_computer.variables(
+            inertial_coords, AnalyticFieldsTagList{})));
+  }
+};
 }  // namespace Tags
 }  // namespace evolution
