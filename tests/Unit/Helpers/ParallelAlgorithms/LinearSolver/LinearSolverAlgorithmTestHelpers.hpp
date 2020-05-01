@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "AlgorithmArray.hpp"
+#include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -19,8 +20,13 @@
 #include "DataStructures/DenseVector.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "IO/Observer/Actions.hpp"
+#include "IO/Observer/Helpers.hpp"
+#include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/RegisterObservers.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -56,6 +62,11 @@ struct InitialGuess {
 struct ExpectedResult {
   static constexpr OptionString help = "The solution x in the equation Ax=b";
   using type = DenseVector<double>;
+};
+struct ExpectedConvergenceReason {
+  static std::string name() noexcept { return "ConvergenceReason"; }
+  static constexpr OptionString help = "The expected convergence reason";
+  using type = Convergence::Reason;
 };
 }  // namespace OptionTags
 
@@ -103,14 +114,22 @@ struct ExpectedResult : db::SimpleTag {
   }
 };
 
+struct ExpectedConvergenceReason : db::SimpleTag {
+  using type = Convergence::Reason;
+  using option_tags = tmpl::list<OptionTags::ExpectedConvergenceReason>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const type& option_value) noexcept {
+    return option_value;
+  }
+};
+
 // The vector `x` we want to solve for
 struct VectorTag : db::SimpleTag {
   using type = DenseVector<double>;
 };
 
 using fields_tag = VectorTag;
-using operand_tag = LinearSolver::Tags::Operand<fields_tag>;
-using operator_tag = LinearSolver::Tags::OperatorAppliedTo<operand_tag>;
 
 template <typename OperandTag>
 struct ComputeOperatorAction {
@@ -142,6 +161,9 @@ struct ComputeOperatorAction {
 // Checks for the correct solution after the algorithm has terminated.
 template <typename OptionsGroup>
 struct TestResult {
+  using const_global_cache_tags =
+      tmpl::list<ExpectedResult, ExpectedConvergenceReason>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
@@ -158,7 +180,7 @@ struct TestResult {
         get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
     SPECTRE_PARALLEL_REQUIRE(has_converged);
     SPECTRE_PARALLEL_REQUIRE(has_converged.reason() ==
-                             Convergence::Reason::AbsoluteResidual);
+                             get<ExpectedConvergenceReason>(box));
     const auto& result = get<VectorTag>(box);
     const auto& expected_result = get<ExpectedResult>(box);
     for (size_t i = 0; i < expected_result.size(); i++) {
@@ -182,7 +204,7 @@ struct InitializeElement {
             db::AddSimpleTags<VectorTag, ::Tags::FixedSource<VectorTag>>>(
             std::move(box), get<InitialGuess>(box), get<Source>(box)));
   }
-};  // namespace
+};
 
 template <typename Metavariables>
 struct ElementArray {
@@ -200,16 +222,24 @@ struct ElementArray {
           tmpl::list<InitializeElement,
                      typename linear_solver::initialize_element,
                      ComputeOperatorAction<fields_tag>,
+                     Parallel::Actions::TerminatePhase>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase,
+          Metavariables::Phase::RegisterWithObserver,
+          tmpl::list<observers::Actions::RegisterWithObservers<
+                         observers::RegisterObservers<
+                             LinearSolver::Tags::IterationId<
+                                 typename linear_solver::options_group>,
+                             typename Metavariables::element_observation_type>>,
                      typename linear_solver::prepare_solve,
                      Parallel::Actions::TerminatePhase>>,
-
       Parallel::PhaseActions<
           typename Metavariables::Phase,
           Metavariables::Phase::PerformLinearSolve,
           tmpl::list<LinearSolver::Actions::TerminateIfConverged<
                          typename linear_solver::options_group>,
                      typename linear_solver::prepare_step,
-                     ComputeOperatorAction<operand_tag>,
+                     ComputeOperatorAction<typename linear_solver::operand_tag>,
                      typename linear_solver::perform_step>>,
 
       Parallel::PhaseActions<
@@ -288,5 +318,44 @@ struct OutputCleaner {
     local_component.start_phase(next_phase);
   }
 };
+
+enum class Phase {
+  Initialization,
+  RegisterWithObserver,
+  PerformLinearSolve,
+  TestResult,
+  CleanOutput,
+  Exit
+};
+
+template <typename Metavariables>
+Phase determine_next_phase(const Phase& current_phase,
+                           const Parallel::CProxy_ConstGlobalCache<
+                               Metavariables>& /*cache_proxy*/) noexcept {
+  switch (current_phase) {
+    case Phase::Initialization:
+      return Phase::RegisterWithObserver;
+    case Phase::RegisterWithObserver:
+      return Phase::PerformLinearSolve;
+    case Phase::PerformLinearSolve:
+      return Phase::TestResult;
+    case Phase::TestResult:
+      return Phase::CleanOutput;
+    default:
+      return Phase::Exit;
+  }
+}
+
+template <typename Metavariables>
+using component_list = tmpl::push_back<
+    typename Metavariables::linear_solver::component_list,
+    ElementArray<Metavariables>, observers::Observer<Metavariables>,
+    observers::ObserverWriter<Metavariables>, OutputCleaner<Metavariables>>;
+
+struct element_observation_type {};
+
+template <typename Metavariables>
+using observed_reduction_data_tags = observers::collect_reduction_data_tags<
+    tmpl::list<typename Metavariables::linear_solver>>;
 
 }  // namespace LinearSolverAlgorithmTestHelpers

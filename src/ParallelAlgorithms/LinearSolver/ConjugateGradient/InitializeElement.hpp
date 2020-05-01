@@ -47,16 +47,13 @@ struct InitializeElement {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using compute_tags = db::AddComputeTags<
-        ::Tags::NextCompute<LinearSolver::Tags::IterationId<OptionsGroup>>>;
     return std::make_tuple(
         ::Initialization::merge_into_databox<
             InitializeElement,
             db::AddSimpleTags<LinearSolver::Tags::IterationId<OptionsGroup>,
                               operator_applied_to_fields_tag, operand_tag,
                               operator_applied_to_operand_tag, residual_tag,
-                              LinearSolver::Tags::HasConverged<OptionsGroup>>,
-            compute_tags>(
+                              LinearSolver::Tags::HasConverged<OptionsGroup>>>(
             std::move(box),
             // The `PrepareSolve` action populates these tags with initial
             // values, except for `operator_applied_to_fields_tag` which is

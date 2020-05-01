@@ -66,6 +66,10 @@ struct Gmres {
   using fields_tag = FieldsTag;
   using options_group = OptionsGroup;
 
+  /// Apply the linear operator to this tag in each iteration
+  using operand_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
+
   /*!
    * \brief The parallel components used by the GMRES linear solver
    */

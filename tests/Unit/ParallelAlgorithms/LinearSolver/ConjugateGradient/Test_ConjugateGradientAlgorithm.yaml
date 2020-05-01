@@ -16,3 +16,5 @@ SerialCg:
     AbsoluteResidual: 1e-14
     RelativeResidual: 0
   Verbosity: Verbose
+
+ConvergenceReason: AbsoluteResidual

@@ -70,9 +70,7 @@ struct PrepareSolve {
            const db::item_type<source_tag>& source,
            const db::item_type<operator_applied_to_fields_tag>&
                operator_applied_to_fields) noexcept {
-          // We have not started iterating yet, so we initialize the current
-          // iteration ID such that the _next_ iteration ID is zero.
-          *iteration_id = std::numeric_limits<size_t>::max();
+          *iteration_id = 0;
           *operand = source - operator_applied_to_fields;
           *residual = *operand;
         },
@@ -134,13 +132,7 @@ struct PrepareStep {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>>(
-        make_not_null(&box),
-        [](const gsl::not_null<size_t*> iteration_id,
-           const size_t next_iteration_id) noexcept {
-          *iteration_id = next_iteration_id;
-        },
-        get<::Tags::Next<LinearSolver::Tags::IterationId<OptionsGroup>>>(box));
+    // Nothing to do before applying the linear operator to the operand
     return {std::move(box)};
   }
 };
@@ -164,11 +156,6 @@ struct PerformStep {
         db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
     using operator_tag =
         db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
-
-    ASSERT(get<LinearSolver::Tags::IterationId<OptionsGroup>>(box) !=
-               std::numeric_limits<size_t>::max(),
-           "Linear solve iteration ID is at initial state. Did you forget to "
-           "invoke 'PrepareStep'?");
 
     // At this point Ap must have been computed in a previous action
     // We compute the inner product <p,p> w.r.t A. This requires a global
@@ -258,18 +245,23 @@ struct UpdateOperand {
       Requires<db::tag_is_retrievable_v<fields_tag, DataBox> and
                db::tag_is_retrievable_v<
                    LinearSolver::Tags::HasConverged<OptionsGroup>, DataBox> and
+               db::tag_is_retrievable_v<
+                   LinearSolver::Tags::IterationId<OptionsGroup>, DataBox> and
                db::tag_is_retrievable_v<residual_tag, DataBox>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const double res_ratio,
                     const Convergence::HasConverged& has_converged) noexcept {
-    db::mutate<operand_tag, LinearSolver::Tags::HasConverged<OptionsGroup>>(
+    db::mutate<operand_tag, LinearSolver::Tags::IterationId<OptionsGroup>,
+               LinearSolver::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [res_ratio, &has_converged](
             const gsl::not_null<db::item_type<operand_tag>*> p,
+            const gsl::not_null<size_t*> iteration_id,
             const gsl::not_null<Convergence::HasConverged*> local_has_converged,
             const db::const_item_type<residual_tag>& r) noexcept {
           *p = r + res_ratio * *p;
+          ++(*iteration_id);
           *local_has_converged = has_converged;
         },
         get<residual_tag>(box));

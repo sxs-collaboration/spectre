@@ -25,6 +25,10 @@
 #include "DataStructures/Variables.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
+#include "IO/Observer/Actions.hpp"
+#include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/RegisterObservers.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
@@ -44,7 +48,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare db::DataBox
+namespace helpers = LinearSolverAlgorithmTestHelpers;
 
 namespace DistributedLinearSolverAlgorithmTestHelpers {
 
@@ -139,9 +143,6 @@ using fields_tag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
 using sources_tag = db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
 using operator_applied_to_fields_tag =
     db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
-using operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
-using operator_applied_to_operand_tag =
-    db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
 
 // In the following `ComputeOperatorAction` and `CollectOperatorAction` actions
 // we compute A(p)=sum_elements(A_element(p_element)) in a global reduction and
@@ -234,6 +235,9 @@ struct CollectOperatorAction {
 // Checks for the correct solution after the algorithm has terminated.
 template <typename OptionsGroup>
 struct TestResult {
+  using const_global_cache_tags =
+      tmpl::list<ExpectedResult, helpers::ExpectedConvergenceReason>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
@@ -249,8 +253,8 @@ struct TestResult {
     const auto& has_converged =
         get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
     SPECTRE_PARALLEL_REQUIRE(has_converged);
-    SPECTRE_PARALLEL_REQUIRE(has_converged.reason() ==
-                             Convergence::Reason::AbsoluteResidual);
+    SPECTRE_PARALLEL_REQUIRE(
+        has_converged.reason() == get<helpers::ExpectedConvergenceReason>(box));
     const auto& expected_result =
         gsl::at(get<ExpectedResult>(box), array_index);
     const auto& result = get<ScalarFieldTag>(box).get();
@@ -291,16 +295,24 @@ struct ElementArray {
           tmpl::list<InitializeElement,
                      typename linear_solver::initialize_element,
                      ComputeOperatorAction<fields_tag>,
+                     Parallel::Actions::TerminatePhase>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase,
+          Metavariables::Phase::RegisterWithObserver,
+          tmpl::list<observers::Actions::RegisterWithObservers<
+                         observers::RegisterObservers<
+                             LinearSolver::Tags::IterationId<
+                                 typename linear_solver::options_group>,
+                             typename Metavariables::element_observation_type>>,
                      typename linear_solver::prepare_solve,
                      Parallel::Actions::TerminatePhase>>,
-
       Parallel::PhaseActions<
           typename Metavariables::Phase,
           Metavariables::Phase::PerformLinearSolve,
           tmpl::list<LinearSolver::Actions::TerminateIfConverged<
                          typename linear_solver::options_group>,
                      typename linear_solver::prepare_step,
-                     ComputeOperatorAction<operand_tag>,
+                     ComputeOperatorAction<typename linear_solver::operand_tag>,
                      typename linear_solver::perform_step>>,
 
       Parallel::PhaseActions<
@@ -339,5 +351,13 @@ struct ElementArray {
     local_component.start_phase(next_phase);
   }
 };
+
+template <typename Metavariables>
+using component_list =
+    tmpl::push_back<typename Metavariables::linear_solver::component_list,
+                    ElementArray<Metavariables>,
+                    observers::Observer<Metavariables>,
+                    observers::ObserverWriter<Metavariables>,
+                    helpers::OutputCleaner<Metavariables>>;
 
 }  // namespace DistributedLinearSolverAlgorithmTestHelpers

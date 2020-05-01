@@ -20,15 +20,20 @@ class er;
 namespace Convergence {
 
 /*!
- * \brief Determine whether the \p criteria are met.
+ * \brief Determine whether the `criteria` are met.
  *
- * \note This function assumes the \p iteration_id is that of the next, but
- * not yet performed step. For instance, a `MaxIteration` criterion of 1 will
- * match if the \p iteration_id is 1 or higher, since the first iteration
- * (with id 0) has been completed. At this point, also the \p residual_magnitude
- * reflects the state of the algorithm after completion of the first iteration.
- * The `initial_residual_magnitude` always refers to the state before the first
- * iteration has begun.
+ * \note This function assumes the `iteration_id` is that of the latest
+ * completed step and that it is zero-indexed, where zero indicates the initial
+ * state of the algorithm. Therefore, the `MaxIteration` criterion will match if
+ * the `iteration_id` is equal or higher. For example, a `MaxIteration` of 0
+ * means the algorithm should run no iterations, so it matches if the
+ * `iteration_id` is 0 or higher since that's the initial state before any
+ * steps have been performed. A `MaxIteration` of 1 matches if the
+ * `iteration_id` is 1 or higher since one iteration is complete. At this point,
+ * also the `residual_magnitude` reflects the state of the algorithm after
+ * completion of the first iteration. The `initial_residual_magnitude` always
+ * refers to the state before the first iteration has begun, i.e. where the
+ * `iteration_id` is zero.
  *
  * \returns a `Convergence::Reason` if the criteria are met, or
  * `boost::none` otherwise.

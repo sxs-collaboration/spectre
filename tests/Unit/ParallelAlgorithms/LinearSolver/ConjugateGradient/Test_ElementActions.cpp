@@ -123,15 +123,8 @@ SPECTRE_TEST_CASE(
         Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.});
     CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
   }
-  SECTION("PrepareStep") {
-    ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
-    CHECK(get_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}) == 0);
-    CHECK(
-        get_tag(
-            Tags::Next<LinearSolver::Tags::IterationId<DummyOptionsGroup>>{}) ==
-        1);
-  }
   SECTION("UpdateOperand") {
+    set_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}, size_t{0});
     set_tag(operand_tag{}, DenseVector<double>(3, 2.));
     set_tag(residual_tag{}, DenseVector<double>(3, 1.));
     ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
@@ -142,6 +135,7 @@ SPECTRE_TEST_CASE(
         Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.});
     CHECK(get_tag(LinearSolver::Tags::Operand<VectorTag>{}) ==
           DenseVector<double>(3, 5.));
+    CHECK(get_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}) == 1);
     CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
   }
 }

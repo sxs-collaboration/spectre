@@ -138,16 +138,8 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
     CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
     CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
   }
-  SECTION("PrepareStep") {
-    ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
-    CHECK(get_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}) == 0);
-    CHECK(
-        get_tag(
-            Tags::Next<LinearSolver::Tags::IterationId<DummyOptionsGroup>>{}) ==
-        1);
-    CHECK(get_tag(orthogonalization_iteration_id_tag{}) == 0);
-  }
   SECTION("NormalizeOperandAndUpdateField") {
+    set_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}, size_t{2});
     set_tag(initial_fields_tag{}, DenseVector<double>(3, -1.));
     set_tag(operand_tag{}, DenseVector<double>(3, 2.));
     set_tag(basis_history_tag{},
@@ -165,6 +157,7 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
     CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
     // minres * basis_history - initial = 2 * 0.5 + 4 * 1.5 - 1 = 6
     CHECK_ITERABLE_APPROX(get_tag(VectorTag{}), DenseVector<double>(3, 6.));
+    CHECK(get_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}) == 3);
     CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
   }
 }

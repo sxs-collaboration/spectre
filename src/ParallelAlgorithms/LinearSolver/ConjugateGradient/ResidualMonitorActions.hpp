@@ -91,13 +91,21 @@ struct InitializeResidual {
     const auto& has_converged =
         db::get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
 
+    // Do some logging
+    if (UNLIKELY(static_cast<int>(
+                     get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
+                 static_cast<int>(::Verbosity::Verbose))) {
+      Parallel::printf("Linear solver '" + option_name<OptionsGroup>() +
+                           "' initialized with residual: %e\n",
+                       get<residual_magnitude_tag>(box));
+    }
     if (UNLIKELY(has_converged and
                  static_cast<int>(
                      get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
                      static_cast<int>(::Verbosity::Quiet))) {
-      Parallel::printf(
-          "The linear solver has converged without any iterations: %s\n",
-          has_converged);
+      Parallel::printf("The linear solver '" + option_name<OptionsGroup>() +
+                           "' has converged without any iterations: %s\n",
+                       has_converged);
     }
 
     Parallel::simple_action<InitializeHasConverged<FieldsTag, OptionsGroup>>(
@@ -180,19 +188,19 @@ struct UpdateResidual {
     if (UNLIKELY(static_cast<int>(
                      get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
                  static_cast<int>(::Verbosity::Verbose))) {
-      Parallel::printf(
-          "Linear solver iteration %zu done. Remaining residual: %e\n",
-          get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
-          get<residual_magnitude_tag>(box));
+      Parallel::printf("Linear solver '" + option_name<OptionsGroup>() +
+                           "' iteration %zu done. Remaining residual: %e\n",
+                       get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
+                       get<residual_magnitude_tag>(box));
     }
     if (UNLIKELY(has_converged and
                  static_cast<int>(
                      get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
                      static_cast<int>(::Verbosity::Quiet))) {
-      Parallel::printf(
-          "The linear solver has converged in %zu iterations: %s\n",
-          get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
-          has_converged);
+      Parallel::printf("The linear solver '" + option_name<OptionsGroup>() +
+                           "' has converged in %zu iterations: %s\n",
+                       get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
+                       has_converged);
     }
 
     Parallel::simple_action<UpdateOperand<FieldsTag, OptionsGroup>>(

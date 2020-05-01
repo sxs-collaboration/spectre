@@ -94,6 +94,13 @@ struct InitializeResidualMagnitude {
         db::get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
 
     // Do some logging
+    if (UNLIKELY(static_cast<int>(
+                     get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
+                 static_cast<int>(::Verbosity::Verbose))) {
+      Parallel::printf("Linear solver '" + option_name<OptionsGroup>() +
+                           "' initialized with residual: %e\n",
+                       residual_magnitude);
+    }
     if (UNLIKELY(has_converged and
                  static_cast<int>(
                      get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=

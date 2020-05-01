@@ -6,10 +6,7 @@
 #include <vector>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"  // IWYU pragma: keep
-#include "IO/Observer/Helpers.hpp"            // IWYU pragma: keep
-#include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
@@ -25,48 +22,20 @@ struct SerialGmres {
 };
 
 struct Metavariables {
+  static constexpr const char* const help{
+      "Test the GMRES linear solver algorithm"};
+
   using linear_solver =
       LinearSolver::Gmres<Metavariables, helpers::fields_tag, SerialGmres>;
 
-  using component_list =
-      tmpl::append<tmpl::list<helpers::ElementArray<Metavariables>,
-                              observers::ObserverWriter<Metavariables>,
-                              helpers::OutputCleaner<Metavariables>>,
-                   typename linear_solver::component_list>;
-
+  using component_list = helpers::component_list<Metavariables>;
+  using element_observation_type = helpers::element_observation_type;
   using observed_reduction_data_tags =
-      observers::collect_reduction_data_tags<tmpl::list<linear_solver>>;
-
-  static constexpr const char* const help{
-      "Test the GMRES linear solver algorithm"};
+      helpers::observed_reduction_data_tags<Metavariables>;
   static constexpr bool ignore_unrecognized_command_line_options = false;
-
-  enum class Phase {
-    Initialization,
-    RegisterWithObserver,
-    PerformLinearSolve,
-    TestResult,
-    CleanOutput,
-    Exit
-  };
-
-  static Phase determine_next_phase(
-      const Phase& current_phase,
-      const Parallel::CProxy_ConstGlobalCache<
-          Metavariables>& /*cache_proxy*/) noexcept {
-    switch (current_phase) {
-      case Phase::Initialization:
-        return Phase::RegisterWithObserver;
-      case Phase::RegisterWithObserver:
-        return Phase::PerformLinearSolve;
-      case Phase::PerformLinearSolve:
-        return Phase::TestResult;
-      case Phase::TestResult:
-        return Phase::CleanOutput;
-      default:
-        return Phase::Exit;
-    }
-  }
+  using Phase = helpers::Phase;
+  static constexpr auto determine_next_phase =
+      helpers::determine_next_phase<Metavariables>;
 };
 
 }  // namespace

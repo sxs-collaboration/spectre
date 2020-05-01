@@ -100,6 +100,25 @@ struct Residual : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
 };
 
+/// Compute the residual \f$r=b - Ax\f$ from the `SourceTag` \f$b\f$ and the
+/// `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, FieldsTag>`
+/// \f$Ax\f$.
+template <typename FieldsTag, typename SourceTag>
+struct ResidualCompute : db::add_tag_prefix<Residual, FieldsTag>,
+                         db::ComputeTag {
+  using base = db::add_tag_prefix<Residual, FieldsTag>;
+  using argument_tags =
+      tmpl::list<SourceTag, db::add_tag_prefix<OperatorAppliedTo, FieldsTag>>;
+  using return_type = typename base::type;
+  static void function(
+      const gsl::not_null<return_type*> residual,
+      const db::const_item_type<SourceTag>& source,
+      const db::item_type<db::add_tag_prefix<OperatorAppliedTo, FieldsTag>>&
+          operator_applied_to_fields) noexcept {
+    *residual = source - operator_applied_to_fields;
+  }
+};
+
 template <typename Tag>
 struct Initial : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept {
