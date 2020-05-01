@@ -11,7 +11,6 @@
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -41,13 +40,19 @@ DataType gauge_wave_deriv_h(const tnsr::I<DataType, Dim>& x, const double t,
 namespace gr {
 namespace Solutions {
 template <size_t Dim>
-GaugeWave<Dim>::GaugeWave(const double amplitude,
-                          const double wavelength) noexcept
+GaugeWave<Dim>::GaugeWave(const double amplitude, const double wavelength,
+                          const OptionContext& context)
     : amplitude_(amplitude), wavelength_(wavelength) {
-  ASSERT(amplitude > 0.0,
-         "Amplitude must be non-negative. Given amplitude: " << amplitude_);
-  ASSERT(wavelength > 0.0,
-         "Wavelength must be non-negative. Given wavelength: " << wavelength_);
+  if (abs(amplitude) >= 1.0) {
+    PARSE_ERROR(context,
+                "Amplitude must be less than one. Given amplitude: "
+                << amplitude_);
+  }
+  if (wavelength <= 0.0) {
+    PARSE_ERROR(context,
+                "Wavelength must be non-negative. Given wavelength: "
+                << wavelength_);
+  }
 }
 
 template <size_t Dim>

@@ -88,8 +88,8 @@ namespace Solutions {
  * \f}
  *
  * The following are input file options that can be specified:
- *  - Amplitude (default: 1.)
- *  - Wavelength (default: 1.)
+ *  - Amplitude
+ *  - Wavelength
  */
 template <size_t Dim>
 class GaugeWave : public MarkAsAnalyticSolution {
@@ -101,20 +101,20 @@ class GaugeWave : public MarkAsAnalyticSolution {
   struct Amplitude {
     using type = double;
     static constexpr OptionString help = {"Amplitude of the gauge wave"};
-    static type default_value() noexcept { return 1.; }
-    static type lower_bound() noexcept { return 0.; }
+    static type upper_bound() noexcept { return 1.; }
+    static type lower_bound() noexcept { return -1.; }
   };
   struct Wavelength {
     using type = double;
     static constexpr OptionString help = {"Wavelength of the gauge wave"};
-    static type default_value() noexcept { return 1.; }
     static type lower_bound() noexcept { return 0.; }
   };
 
   using options = tmpl::list<Amplitude, Wavelength>;
   static constexpr OptionString help{"Gauge wave in flat spacetime"};
 
-  GaugeWave(double amplitude, double wavelength) noexcept;
+  GaugeWave(double amplitude, double wavelength,
+            const OptionContext& context = {});
 
   GaugeWave() = default;
   GaugeWave(const GaugeWave& /*rhs*/) = default;
