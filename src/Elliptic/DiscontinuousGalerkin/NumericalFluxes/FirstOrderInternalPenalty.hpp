@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -31,9 +32,29 @@ struct Normalized;
 }  // namespace Tags
 /// \endcond
 
-namespace elliptic {
-namespace dg {
-namespace NumericalFluxes {
+/// Numerical fluxes for elliptic systems
+namespace elliptic::dg::NumericalFluxes {
+
+/*!
+ * \brief The penalty factor in internal penalty fluxes
+ *
+ * The penalty factor is computed as
+ *
+ * \f{equation}
+ * \sigma = C \frac{N_\text{points}^2}{h}
+ * \f}
+ *
+ * where \f$N_\text{points} = 1 + N_p\f$ is the number of points (or one plus
+ * the polynomial degree) and \f$h\f$ is a measure of the element size. Both
+ * quantities are taken perpendicular to the face of the DG element that the
+ * penalty is being computed on. \f$C\f$ is the *penalty parameter*.
+ *
+ * \see `elliptic::dg::NumericalFluxes::FirstOrderInternalPenalty` for details
+ */
+DataVector penalty(const DataVector& element_size, const size_t num_points,
+                   const double penalty_parameter) noexcept {
+  return penalty_parameter * square(num_points) / element_size;
+}
 
 /*!
  * \ingroup DiscontinuousGalerkinGroup
@@ -129,7 +150,18 @@ namespace NumericalFluxes {
  * polynomial degree plus 1), \f$h\f$ is a measure of the element size in
  * inertial coordinates (both measured perpendicular to the interface under
  * consideration) and \f$C\geq 1\f$ is a free parameter (see e.g.
- * \cite HesthavenWarburton, section 7.2).
+ * \cite HesthavenWarburton, section 7.2). For the element size we choose
+ * \f$h=\frac{J_\mathrm{volume}}{J_\mathrm{face}}\f$, i.e. the ratio of Jacobi
+ * determinants from logical to inertial coordinates in the element volume and
+ * on the element face, both evaluated on the face (see \cite Vincent2019qpd).
+ * Since both \f$N_\mathrm{points}\f$ and \f$h\f$ can be different on either
+ * side of the element boundary we take the maximum of \f$N_\mathrm{points}\f$
+ * and the pointwise minimum of \f$h\f$ across the element boundary as is done
+ * in \cite Vincent2019qpd. Note that we use the number of points
+ * \f$N_\mathrm{points}\f$ where \cite Vincent2019qpd uses the polynomial degree
+ * \f$N_\mathrm{points} - 1\f$ because we found unstable configurations on
+ * curved meshes when using the polynomial degree. Optimizing the penalty on
+ * curved meshes is subject to further investigation.
  */
 template <size_t Dim, typename FluxesComputerTag, typename FieldTagsList,
           typename AuxiliaryFieldTagsList>
@@ -144,6 +176,14 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
  private:
   using fluxes_computer_tag = FluxesComputerTag;
   using FluxesComputer = typename fluxes_computer_tag::type;
+
+  struct PerpendicularNumPoints : db::SimpleTag {
+    using type = size_t;
+  };
+
+  struct ElementSize : db::SimpleTag {
+    using type = Scalar<DataVector>;
+  };
 
   template <typename Tag>
   struct NormalDotDivFlux : db::PrefixTag, db::SimpleTag {
@@ -160,20 +200,11 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
  public:
   struct PenaltyParameter {
     using type = double;
-    // Currently this is used as the full prefactor `sigma` to the penalty term.
-    // This means it needs to be chosen large enough so that the scheme is
-    // stable everywhere. A good estimate is the the largest
-    // `sigma > N_points^2 / h` (see class documentation) over all elements in
-    // the domain. Choosing `sigma` the same everywhere means it is an
-    // overestimate on non-uniform meshes where elements are large or polynomial
-    // degrees are small, but this only affects the conditioning of the scheme,
-    // i.e. it will converge slower but to the same solution. When it becomes
-    // possible to communicate non-tensors (the element size and the number of
-    // collocation points on either side of the mortar), this option will be
-    // changed to be just the free parameter `C` multiplying `N_points^2 / h`.
-    // This will improve conditioning on non-uniform meshes.
     static constexpr OptionString help = {
-        "The prefactor to the penalty term of the flux."};
+        "The prefactor to the penalty term of the flux. Values closer to one "
+        "lead to better-conditioned problems, but on curved meshes the penalty "
+        "parameter may need to be increased to keep the problem well-defined."};
+    static type lower_bound() noexcept { return 1.; }
   };
   using options = tmpl::list<PenaltyParameter>;
   static constexpr OptionString help = {
@@ -190,20 +221,23 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
   using variables_tags = tmpl::list<FieldTags..., AuxiliaryFieldTags...>;
 
   using argument_tags = tmpl::push_front<
-      typename FluxesComputer::argument_tags,
+      typename FluxesComputer::argument_tags, domain::Tags::Mesh<Dim>,
+      domain::Tags::Direction<Dim>,
+      ::Tags::Magnitude<domain::Tags::UnnormalizedFaceNormal<Dim>>,
       ::Tags::NormalDotFlux<AuxiliaryFieldTags>...,
       ::Tags::div<::Tags::Flux<AuxiliaryFieldTags, tmpl::size_t<Dim>,
                                Frame::Inertial>>...,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>,
       fluxes_computer_tag>;
   using volume_tags =
-      tmpl::push_front<get_volume_tags<FluxesComputer>, fluxes_computer_tag>;
+      tmpl::push_front<get_volume_tags<FluxesComputer>, domain::Tags::Mesh<Dim>,
+                       fluxes_computer_tag>;
 
   using package_field_tags =
       tmpl::list<::Tags::NormalDotFlux<AuxiliaryFieldTags>...,
                  NormalDotDivFlux<AuxiliaryFieldTags>...,
-                 NormalDotNormalDotFlux<AuxiliaryFieldTags>...>;
-  using package_extra_tags = tmpl::list<>;
+                 NormalDotNormalDotFlux<AuxiliaryFieldTags>..., ElementSize>;
+  using package_extra_tags = tmpl::list<PerpendicularNumPoints>;
 
   template <typename... FluxesArgs>
   void package_data(
@@ -213,6 +247,10 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
           AuxiliaryFieldTags>>*>... packaged_n_dot_div_aux_fluxes,
       const gsl::not_null<db::item_type<NormalDotNormalDotFlux<
           AuxiliaryFieldTags>>*>... packaged_n_dot_principal_n_dot_aux_fluxes,
+      const gsl::not_null<Scalar<DataVector>*> element_size,
+      const gsl::not_null<size_t*> perpendicular_num_points,
+      const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction,
+      const Scalar<DataVector>& face_normal_magnitude,
       const db::item_type<::Tags::NormalDotFlux<
           AuxiliaryFieldTags>>&... normal_dot_auxiliary_field_fluxes,
       const typename ::Tags::div<
@@ -221,6 +259,8 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal,
       const FluxesComputer& fluxes_computer,
       const FluxesArgs&... fluxes_args) const noexcept {
+    *perpendicular_num_points = volume_mesh.extents(direction.dimension());
+    get(*element_size) = 2. / get(face_normal_magnitude);
     auto principal_div_aux_field_fluxes = make_with_value<Variables<tmpl::list<
         ::Tags::Flux<FieldTags, tmpl::size_t<Dim>, Frame::Inertial>...>>>(
         interface_unit_normal, std::numeric_limits<double>::signaling_NaN());
@@ -277,15 +317,21 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
           AuxiliaryFieldTags>>&... normal_dot_div_auxiliary_flux_interiors,
       const db::item_type<NormalDotNormalDotFlux<
           AuxiliaryFieldTags>>&... ndot_ndot_aux_flux_interiors,
+      const Scalar<DataVector>& element_size_interior,
+      const size_t perpendicular_num_points_interior,
       const db::item_type<::Tags::NormalDotFlux<
           AuxiliaryFieldTags>>&... minus_normal_dot_auxiliary_flux_exteriors,
       const db::item_type<NormalDotDivFlux<
           AuxiliaryFieldTags>>&... minus_normal_dot_div_aux_flux_exteriors,
       const db::item_type<NormalDotDivFlux<
-          AuxiliaryFieldTags>>&... ndot_ndot_aux_flux_exteriors) const
-      noexcept {
-    // Need polynomial degrees and element size to compute this dynamically
-    const double penalty = penalty_parameter_;
+          AuxiliaryFieldTags>>&... ndot_ndot_aux_flux_exteriors,
+      const Scalar<DataVector>& element_size_exterior,
+      const size_t perpendicular_num_points_exterior) const noexcept {
+    const auto penalty = ::elliptic::dg::NumericalFluxes::penalty(
+        min(get(element_size_interior), get(element_size_exterior)),
+        std::max(perpendicular_num_points_interior,
+                 perpendicular_num_points_exterior),
+        penalty_parameter_);
 
     const auto assemble_numerical_fluxes = [&penalty](
         const auto numerical_flux_for_field,
@@ -340,11 +386,14 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
       const gsl::not_null<db::item_type<::Tags::NormalDotNumericalFlux<
           AuxiliaryFieldTags>>*>... numerical_flux_for_auxiliary_fields,
       const typename FieldTags::type&... dirichlet_fields,
+      const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal,
+      const Scalar<DataVector>& face_normal_magnitude,
       const FluxesComputer& fluxes_computer,
       const FluxesArgs&... fluxes_args) const noexcept {
-    // Need polynomial degrees and element size to compute this dynamically
-    const double penalty = penalty_parameter_;
+    const auto penalty = ::elliptic::dg::NumericalFluxes::penalty(
+        2. / get(face_normal_magnitude),
+        volume_mesh.extents(direction.dimension()), penalty_parameter_);
 
     // Compute n.F_v(u)
     auto dirichlet_auxiliary_field_fluxes =
@@ -403,6 +452,4 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
   double penalty_parameter_ = std::numeric_limits<double>::signaling_NaN();
 };
 
-}  // namespace NumericalFluxes
-}  // namespace dg
-}  // namespace elliptic
+}  // namespace elliptic::dg::NumericalFluxes

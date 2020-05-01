@@ -4,6 +4,10 @@
 import numpy as np
 
 
+def penalty(element_size, perpendicular_num_points, penalty_parameter):
+    return penalty_parameter * perpendicular_num_points**2 / element_size
+
+
 def average(int, ext):
     return 0.5 * (int + ext)
 
@@ -23,8 +27,12 @@ def flux_for_auxiliary_field(field, fluxes_argument, dim):
 def normal_dot_numerical_flux_for_field(n_dot_aux_flux_int, n_dot_aux_flux_ext,
                                         div_aux_flux_int, div_aux_flux_ext,
                                         fluxes_argument, penalty_parameter,
+                                        face_normal_magnitude_int,
+                                        face_normal_magnitude_ext,
                                         face_normal_int):
-    sigma = penalty_parameter
+    sigma = penalty(
+        np.minimum(2. / face_normal_magnitude_int,
+                   2. / face_normal_magnitude_ext), 4, penalty_parameter)
     return np.dot(
         face_normal_int,
         average(flux_for_field(div_aux_flux_int, fluxes_argument),
@@ -35,7 +43,8 @@ def normal_dot_numerical_flux_for_field(n_dot_aux_flux_int, n_dot_aux_flux_ext,
 
 def normal_dot_numerical_flux_for_auxiliary_field(
     n_dot_aux_flux_int, minus_n_dot_aux_flux_ext, div_aux_flux_int,
-    div_aux_flux_ext, fluxes_argument, penalty_parameter, face_normal_int):
+    div_aux_flux_ext, fluxes_argument, penalty_parameter,
+    face_normal_magnitude_int, face_normal_magnitude_ext, face_normal_int):
     # `minus_n_dot_aux_flux_ext` is from the element on the other side of the
     # interface, so it is _minus_ the same quantity if it was computed with the
     # normal from this element (assuming normals don't depend on the dynamic
@@ -45,8 +54,10 @@ def normal_dot_numerical_flux_for_auxiliary_field(
 
 
 def normal_dot_dirichlet_flux_for_field(dirichlet_field, fluxes_argument,
-                                        penalty_parameter, face_normal, dim):
-    sigma = penalty_parameter
+                                        penalty_parameter,
+                                        face_normal_magnitude, face_normal,
+                                        dim):
+    sigma = penalty(2. / face_normal_magnitude, 3, penalty_parameter)
     return 2. * sigma * np.dot(
         face_normal,
         flux_for_field(
@@ -71,6 +82,7 @@ def normal_dot_dirichlet_flux_for_field_3d(*args, **kwargs):
 def normal_dot_dirichlet_flux_for_auxiliary_field(dirichlet_field,
                                                   fluxes_argument,
                                                   penalty_parameter,
+                                                  face_normal_magnitude,
                                                   face_normal, dim):
     return np.dot(
         face_normal,

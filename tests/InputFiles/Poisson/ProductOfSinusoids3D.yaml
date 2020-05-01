@@ -21,7 +21,7 @@ DomainCreator:
 
 NumericalFlux:
   InternalPenalty:
-    PenaltyParameter: 2.5464790894703255 # p^2 / h
+    PenaltyParameter: 1.
 
 Observers:
   VolumeFileName: "PoissonProductOfSinusoids3DVolume"
