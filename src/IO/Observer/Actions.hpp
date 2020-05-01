@@ -168,10 +168,11 @@ struct RegisterSenderWithSelf {
       db::mutate<observers::Tags::ReductionArrayComponentIds>(
           make_not_null(&box), [&component_id](
                                    const auto array_component_ids) noexcept {
-            ASSERT(array_component_ids->count(component_id) == 0,
-                   "Trying to insert a component_id more than once for "
-                   "reduction. This means an element is registering itself "
-                   "with the observers more than once.");
+            // It's ok to register an element more than once for reduction. The
+            // `component_id` is identical, so the `array_component_ids` will
+            // not contain the element multiple times, but the `observation_id`
+            // should have a different `observation_type_hash` for each
+            // registration event.
             array_component_ids->insert(component_id);
           });
       const auto my_proc = static_cast<size_t>(Parallel::my_proc());
