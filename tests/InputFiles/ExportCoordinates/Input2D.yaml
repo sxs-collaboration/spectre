@@ -7,12 +7,29 @@
 #   ExportCoordinates2DVolume0.h5
 
 DomainCreator:
-  Disk:
-    InnerRadius: 1.
-    OuterRadius: 3.
-    InitialRefinement: 1
-    InitialGridPoints: [3, 3]
-    UseEquiangularMap: true
+  Rectangle:
+    LowerBound: [-0.5, -0.5]
+    UpperBound: [0.5, 0.5]
+    IsPeriodicIn: [false, false]
+    InitialRefinement: [2, 2]
+    InitialGridPoints: [5, 5]
+    TimeDependence:
+      UniformTranslation:
+        InitialTime: 0.0
+        Velocity: [0.5, 0.0]
+        FunctionOfTimeNames: ["TranslationX", "TranslationY"]
+
+# To export a time-independent mesh, replace `? PastTime: 1.0` with `Always:`
+EventsAndTriggers:
+  ? PastTime: 1.0
+  : - Completion
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.01
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 1
 
 Observers:
   VolumeFileName: "ExportCoordinates2DVolume"

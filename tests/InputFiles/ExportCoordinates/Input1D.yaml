@@ -13,6 +13,23 @@ DomainCreator:
     IsPeriodicIn: [false]
     InitialRefinement: [1]
     InitialGridPoints: [3]
+    TimeDependence:
+      UniformTranslation:
+        InitialTime: 0.0
+        Velocity: [0.5]
+        FunctionOfTimeNames: ["TranslationX"]
+
+# To export a time-independent mesh, replace `? PastTime: 1.0` with `Always:`
+EventsAndTriggers:
+  ? PastTime: 1.0
+  : - Completion
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.01
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 1
 
 Observers:
   VolumeFileName: "ExportCoordinates1DVolume"
