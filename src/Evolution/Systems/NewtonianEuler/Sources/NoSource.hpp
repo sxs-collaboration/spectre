@@ -5,6 +5,12 @@
 
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace PUP {
+class er;
+}  // namespace PUP
+/// \endcond
+
 namespace NewtonianEuler {
 namespace Sources {
 
