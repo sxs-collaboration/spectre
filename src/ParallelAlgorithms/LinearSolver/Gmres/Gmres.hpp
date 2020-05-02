@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/ElementActions.hpp"
@@ -122,6 +123,9 @@ struct Gmres {
    */
   using initialize_element =
       gmres_detail::InitializeElement<FieldsTag, OptionsGroup>;
+
+  using register_element =
+      observers::Actions::RegisterWithObservers<observe_detail::Registration>;
 
   /*!
    * \brief Reset the linear solver to its initial state.

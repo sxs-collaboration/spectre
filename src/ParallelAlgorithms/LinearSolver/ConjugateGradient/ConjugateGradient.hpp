@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "IO/Observer/Actions.hpp"
+#include "IO/Observer/Helpers.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/InitializeElement.hpp"
@@ -107,6 +109,9 @@ struct ConjugateGradient {
    */
   using initialize_element =
       cg_detail::InitializeElement<FieldsTag, OptionsGroup>;
+
+  using register_element =
+      observers::Actions::RegisterWithObservers<observe_detail::Registration>;
 
   /*!
    * \brief Reset the linear solver to its initial state.
