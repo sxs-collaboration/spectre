@@ -62,6 +62,9 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
       LinearSolver::Tags::ConvergenceCriteria<TestOptionsGroup>>(
       "ConvergenceCriteria(TestLinearSolver)");
   TestHelpers::db::test_simple_tag<
+      LinearSolver::Tags::Iterations<TestOptionsGroup>>(
+      "Iterations(TestLinearSolver)");
+  TestHelpers::db::test_simple_tag<
       LinearSolver::Tags::Verbosity<TestOptionsGroup>>(
       "Verbosity(TestLinearSolver)");
 
@@ -98,6 +101,29 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
     CHECK(db::get<LinearSolver::Tags::HasConverged<TestOptionsGroup>>(box));
     CHECK(db::get<LinearSolver::Tags::HasConverged<TestOptionsGroup>>(box)
               .reason() == Convergence::Reason::AbsoluteResidual);
+  }
+
+  {
+    INFO("HasConvergedByIterationsCompute - not converged");
+    const auto box = db::create<
+        db::AddSimpleTags<LinearSolver::Tags::Iterations<TestOptionsGroup>,
+                          LinearSolver::Tags::IterationId<TestOptionsGroup>>,
+        db::AddComputeTags<LinearSolver::Tags::HasConvergedByIterationsCompute<
+            TestOptionsGroup>>>(2_st, 1_st);
+    CHECK_FALSE(
+        db::get<LinearSolver::Tags::HasConverged<TestOptionsGroup>>(box));
+  }
+
+  {
+    INFO("HasConvergedByIterationsCompute - has converged");
+    const auto box = db::create<
+        db::AddSimpleTags<LinearSolver::Tags::Iterations<TestOptionsGroup>,
+                          LinearSolver::Tags::IterationId<TestOptionsGroup>>,
+        db::AddComputeTags<LinearSolver::Tags::HasConvergedByIterationsCompute<
+            TestOptionsGroup>>>(2_st, 2_st);
+    CHECK(db::get<LinearSolver::Tags::HasConverged<TestOptionsGroup>>(box));
+    CHECK(db::get<LinearSolver::Tags::HasConverged<TestOptionsGroup>>(box)
+              .reason() == Convergence::Reason::MaxIterations);
   }
 
   {
