@@ -47,13 +47,16 @@ struct ElementInitInterpPoints {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
+    // It appears that clang-tidy is unhappy with 'if constexpr',
+    // hence the directives below.
     if constexpr (tmpl::list_contains_v<
+                      // NOLINTNEXTLINE clang-tidy wants extra braces.
                       DbTags, intrp::Tags::InterpPointInfo<Metavariables>>) {
       ERROR(
           "Found 'intrp::Tags::InterpPointInfo<Metavariables>' in DataBox, but "
           "it should not be there because ElementInitInterpPoints adds it.");
       return std::forward_as_tuple(std::move(box));
-    } else {
+    } else {  // NOLINT clang-tidy thinks 'if' and 'else' not indented the same
       using point_info_type = tuples::tagged_tuple_from_typelist<
           db::wrap_tags_in<Tags::point_info_detail::WrappedPointInfoTag,
                            typename Metavariables::interpolation_target_tags,

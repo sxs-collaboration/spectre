@@ -85,8 +85,6 @@ struct MockMetavariables {
   };
   using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
-  using interpolator_source_vars =
-      typename InterpolationTargetA::vars_to_interpolate_to_target;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA,
                                                InterpolationTargetB>;
 
@@ -150,11 +148,11 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
           runner, 0);
 
   CHECK(get<intrp::Vars::PointInfoTag<metavars::InterpolationTargetA,
-                                      metavars::volume_dim>>(
-            init_point_infos) == point_info_type{});
+                                      metavars::volume_dim>>(init_point_infos)
+            .empty());
   CHECK(get<intrp::Vars::PointInfoTag<metavars::InterpolationTargetB,
-                                      metavars::volume_dim>>(
-            init_point_infos) == point_info_type{});
+                                      metavars::volume_dim>>(init_point_infos)
+            .empty());
 
   // Now invoke the only Registration action (InterpolationTargetSendPoints).
   ActionTesting::next_action<target_component_a>(make_not_null(&runner), 0);
