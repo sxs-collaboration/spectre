@@ -36,6 +36,23 @@ struct ComputeSomethingOnInterface {
 };
 /// [interface_invokable_example]
 
+struct ComputeWithTemplateParameters {
+  using argument_tags = tmpl::list<SomeNumber>;
+  template <typename Arg>
+  static double apply(const Arg& arg) noexcept {
+    return arg;
+  }
+};
+
+struct ComputeWithVoidReturnType {
+  using argument_tags = tmpl::list<SomeNumber>;
+  template <typename Arg>
+  static void apply(const Arg& arg,
+                    const gsl::not_null<double*> result) noexcept {
+    *result += arg;
+  }
+};
+
 template <size_t Dim, typename DirectionsTag>
 void test_interface_apply(
     const Element<Dim>& element,
@@ -97,6 +114,31 @@ void test_interface_apply(
       interface_apply<DirectionsTag, ComputeSomethingOnInterface>(box, 2.);
   /// [interface_apply_example_stateless]
   CHECK(computed_numbers_with_struct == computed_number_on_interfaces);
+
+  {
+    // Test an invokable with template parameters
+    const auto computed_numbers =
+        interface_apply<DirectionsTag, ComputeWithTemplateParameters>(box);
+    for (const auto& direction_and_expected_number : number_on_interfaces) {
+      CHECK(computed_numbers.at(direction_and_expected_number.first) ==
+            direction_and_expected_number.second);
+    }
+  }
+  {
+    // Test an invokable with `void` return value
+    size_t face_count = 0;
+    interface_apply<DirectionsTag, tmpl::list<>, tmpl::list<>>(
+        [&face_count]() noexcept { face_count += 1; }, box);
+    CHECK(face_count == expected_result_on_interfaces.size());
+    double sum = 0;
+    interface_apply<DirectionsTag, ComputeWithVoidReturnType>(
+        box, make_not_null(&sum));
+    double expected_sum = 0;
+    for (const auto& direction_and_number : number_on_interfaces) {
+      expected_sum += direction_and_number.second;
+    }
+    CHECK(sum == expected_sum);
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.InterfaceHelpers", "[Unit][Domain]") {

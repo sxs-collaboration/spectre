@@ -11,6 +11,7 @@
 #include "Domain/Direction.hpp"
 #include "Domain/Tags.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 namespace InterfaceHelpers_detail {
 
@@ -76,29 +77,152 @@ struct unmap_interface_args<false> {
   }
 };
 
-template <typename DirectionsTag, typename VolumeTags,
-          typename InterfaceInvokable, typename DbTagsList,
-          typename... ArgumentTags, typename... ExtraArgs>
-SPECTRE_ALWAYS_INLINE constexpr auto interface_apply_impl(
-    InterfaceInvokable&& interface_invokable,
-    const db::DataBox<DbTagsList>& box, tmpl::list<ArgumentTags...> /*meta*/,
-    ExtraArgs&&... extra_args) noexcept {
-  using interface_return_type = std::decay_t<decltype(interface_invokable(
-      std::declval<db::const_item_type<ArgumentTags, DbTagsList>>()...,
-      std::declval<ExtraArgs&&>()...))>;
-  constexpr size_t volume_dim = DirectionsTag::volume_dim;
-  DirectionMap<volume_dim, interface_return_type> result{};
-  for (const auto& direction : get<DirectionsTag>(box)) {
-    auto interface_value = interface_invokable(
-        unmap_interface_args<tmpl::list_contains_v<VolumeTags, ArgumentTags>>::
-            apply(direction,
-                  get<tmpl::type_from<make_interface_tag_impl<
-                      ArgumentTags, DirectionsTag, VolumeTags>>>(box))...,
-        extra_args...);
-    result.insert({direction, std::move(interface_value)});
+CREATE_IS_CALLABLE(apply)
+CREATE_IS_CALLABLE_V(apply)
+
+template <bool HasStaticApply, typename InterfaceReturnType,
+          typename DirectionsTag, typename VolumeTagsList,
+          typename... ArgumentTags>
+struct DispatchInterfaceInvokable;
+
+template <typename InterfaceReturnType, typename DirectionsTag,
+          typename VolumeTagsList, typename... ArgumentTags>
+struct DispatchInterfaceInvokable<true, InterfaceReturnType, DirectionsTag,
+                                  VolumeTagsList, ArgumentTags...> {
+  template <typename InterfaceInvokable, typename DbTagsList,
+            typename... ExtraArgs>
+  static constexpr auto apply(InterfaceInvokable&& /*interface_invokable*/,
+                              const db::DataBox<DbTagsList>& box,
+                              ExtraArgs&&... extra_args) noexcept {
+    DirectionMap<DirectionsTag::volume_dim, InterfaceReturnType> result{};
+    for (const auto& direction : get<DirectionsTag>(box)) {
+      auto interface_value = InterfaceInvokable::apply(
+          unmap_interface_args<
+              tmpl::list_contains_v<VolumeTagsList, ArgumentTags>>::
+              apply(direction,
+                    get<tmpl::type_from<make_interface_tag_impl<
+                        ArgumentTags, DirectionsTag, VolumeTagsList>>>(box))...,
+          extra_args...);
+      result.insert({direction, std::move(interface_value)});
+    }
+    return result;
   }
-  return result;
-}
+};
+
+template <typename DirectionsTag, typename VolumeTagsList,
+          typename... ArgumentTags>
+struct DispatchInterfaceInvokable<true, void, DirectionsTag, VolumeTagsList,
+                                  ArgumentTags...> {
+  template <typename InterfaceInvokable, typename DbTagsList,
+            typename... ExtraArgs>
+  static constexpr void apply(InterfaceInvokable&& /*interface_invokable*/,
+                              const db::DataBox<DbTagsList>& box,
+                              ExtraArgs&&... extra_args) noexcept {
+    for (const auto& direction : get<DirectionsTag>(box)) {
+      InterfaceInvokable::apply(
+          unmap_interface_args<
+              tmpl::list_contains_v<VolumeTagsList, ArgumentTags>>::
+              apply(direction,
+                    get<tmpl::type_from<make_interface_tag_impl<
+                        ArgumentTags, DirectionsTag, VolumeTagsList>>>(box))...,
+          extra_args...);
+    }
+  }
+};
+
+template <typename InterfaceReturnType, typename DirectionsTag,
+          typename VolumeTagsList, typename... ArgumentTags>
+struct DispatchInterfaceInvokable<false, InterfaceReturnType, DirectionsTag,
+                                  VolumeTagsList, ArgumentTags...> {
+  template <typename InterfaceInvokable, typename DbTagsList,
+            typename... ExtraArgs>
+  static constexpr auto apply(InterfaceInvokable&& interface_invokable,
+                              const db::DataBox<DbTagsList>& box,
+                              ExtraArgs&&... extra_args) noexcept {
+    DirectionMap<DirectionsTag::volume_dim, InterfaceReturnType> result{};
+    for (const auto& direction : get<DirectionsTag>(box)) {
+      auto interface_value = interface_invokable(
+          unmap_interface_args<
+              tmpl::list_contains_v<VolumeTagsList, ArgumentTags>>::
+              apply(direction,
+                    get<tmpl::type_from<make_interface_tag_impl<
+                        ArgumentTags, DirectionsTag, VolumeTagsList>>>(box))...,
+          extra_args...);
+      result.insert({direction, std::move(interface_value)});
+    }
+    return result;
+  }
+};
+
+template <typename DirectionsTag, typename VolumeTagsList,
+          typename... ArgumentTags>
+struct DispatchInterfaceInvokable<false, void, DirectionsTag, VolumeTagsList,
+                                  ArgumentTags...> {
+  template <typename InterfaceInvokable, typename DbTagsList,
+            typename... ExtraArgs>
+  static constexpr void apply(InterfaceInvokable&& interface_invokable,
+                              const db::DataBox<DbTagsList>& box,
+                              ExtraArgs&&... extra_args) noexcept {
+    for (const auto& direction : get<DirectionsTag>(box)) {
+      interface_invokable(
+          unmap_interface_args<
+              tmpl::list_contains_v<VolumeTagsList, ArgumentTags>>::
+              apply(direction,
+                    get<tmpl::type_from<make_interface_tag_impl<
+                        ArgumentTags, DirectionsTag, VolumeTagsList>>>(box))...,
+          extra_args...);
+    }
+  }
+};
+
+template <typename DirectionsTag, typename ArgumentTags, typename VolumeTags>
+struct InterfaceApplyImpl;
+
+template <typename DirectionsTag, typename VolumeTagsList,
+          typename... ArgumentTags>
+struct InterfaceApplyImpl<DirectionsTag, tmpl::list<ArgumentTags...>,
+                          VolumeTagsList> {
+  static constexpr size_t volume_dim = DirectionsTag::volume_dim;
+
+  template <typename InterfaceInvokable, typename DbTagsList,
+            typename... ExtraArgs,
+            Requires<is_apply_callable_v<
+                InterfaceInvokable,
+                const db::const_item_type<ArgumentTags, DbTagsList>&...,
+                ExtraArgs...>> = nullptr>
+  static constexpr auto apply(InterfaceInvokable&& interface_invokable,
+                              const db::DataBox<DbTagsList>& box,
+                              ExtraArgs&&... extra_args) noexcept {
+    using interface_return_type =
+        std::decay_t<decltype(InterfaceInvokable::apply(
+            std::declval<db::const_item_type<ArgumentTags, DbTagsList>>()...,
+            std::declval<ExtraArgs&&>()...))>;
+    return DispatchInterfaceInvokable<true, interface_return_type,
+                                      DirectionsTag, VolumeTagsList,
+                                      ArgumentTags...>::
+        apply(std::forward<InterfaceInvokable>(interface_invokable), box,
+              std::forward<ExtraArgs>(extra_args)...);
+  }
+
+  template <typename InterfaceInvokable, typename DbTagsList,
+            typename... ExtraArgs,
+            Requires<not is_apply_callable_v<
+                InterfaceInvokable,
+                const db::const_item_type<ArgumentTags, DbTagsList>&...,
+                ExtraArgs...>> = nullptr>
+  static constexpr auto apply(InterfaceInvokable&& interface_invokable,
+                              const db::DataBox<DbTagsList>& box,
+                              ExtraArgs&&... extra_args) noexcept {
+    using interface_return_type = std::decay_t<decltype(interface_invokable(
+        std::declval<db::const_item_type<ArgumentTags, DbTagsList>>()...,
+        std::declval<ExtraArgs&&>()...))>;
+    return DispatchInterfaceInvokable<false, interface_return_type,
+                                      DirectionsTag, VolumeTagsList,
+                                      ArgumentTags...>::
+        apply(std::forward<InterfaceInvokable>(interface_invokable), box,
+              std::forward<ExtraArgs>(extra_args)...);
+  }
+};
 
 }  // namespace InterfaceHelpers_detail
 
@@ -138,10 +262,10 @@ template <typename DirectionsTag, typename ArgumentTags, typename VolumeTags,
 SPECTRE_ALWAYS_INLINE constexpr auto interface_apply(
     InterfaceInvokable&& interface_invokable,
     const db::DataBox<DbTagsList>& box, ExtraArgs&&... extra_args) noexcept {
-  return InterfaceHelpers_detail::interface_apply_impl<DirectionsTag,
-                                                       VolumeTags>(
-      std::forward<InterfaceInvokable>(interface_invokable), box,
-      ArgumentTags{}, std::forward<ExtraArgs>(extra_args)...);
+  return InterfaceHelpers_detail::
+      InterfaceApplyImpl<DirectionsTag, ArgumentTags, VolumeTags>::apply(
+          std::forward<InterfaceInvokable>(interface_invokable), box,
+          std::forward<ExtraArgs>(extra_args)...);
 }
 
 template <typename DirectionsTag, typename InterfaceInvokable,
@@ -150,9 +274,8 @@ template <typename DirectionsTag, typename InterfaceInvokable,
           typename ArgumentTags = typename InterfaceInvokable::argument_tags>
 SPECTRE_ALWAYS_INLINE constexpr auto interface_apply(
     const db::DataBox<DbTagsList>& box, ExtraArgs&&... extra_args) noexcept {
-  return InterfaceHelpers_detail::interface_apply_impl<
-      DirectionsTag, get_volume_tags<InterfaceInvokable>>(
-      &InterfaceInvokable::apply, box, ArgumentTags{},
-      std::forward<ExtraArgs>(extra_args)...);
+  return interface_apply<DirectionsTag, ArgumentTags,
+                         get_volume_tags<InterfaceInvokable>>(
+      InterfaceInvokable{}, box, std::forward<ExtraArgs>(extra_args)...);
 }
 // @}
