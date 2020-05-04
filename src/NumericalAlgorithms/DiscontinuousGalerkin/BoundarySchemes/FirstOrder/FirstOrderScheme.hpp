@@ -29,28 +29,23 @@ namespace FirstOrderScheme {
 
 namespace detail {
 
-template <size_t Dim, typename VariablesTag, typename NumericalFluxComputerTag,
-          typename NumericalFlux =
-              db::const_item_type<NumericalFluxComputerTag>,
-          typename ArgsTagsList = typename NumericalFlux::argument_tags>
-struct boundary_data_computer_impl;
-
-template <size_t Dim, typename VariablesTag, typename NumericalFluxComputerTag,
-          typename NumericalFlux, typename... ArgsTags>
-struct boundary_data_computer_impl<Dim, VariablesTag, NumericalFluxComputerTag,
-                                   NumericalFlux, tmpl::list<ArgsTags...>> {
+template <size_t Dim, typename VariablesTag, typename NumericalFluxComputerTag>
+struct boundary_data_computer_impl {
+  using NumericalFlux = db::const_item_type<NumericalFluxComputerTag>;
   using n_dot_fluxes_tag =
       db::add_tag_prefix<::Tags::NormalDotFlux, VariablesTag>;
   using argument_tags =
-      tmpl::list<NumericalFluxComputerTag, domain::Tags::Mesh<Dim - 1>,
-                 n_dot_fluxes_tag, ArgsTags...>;
-  using volume_tags = tmpl::append<tmpl::list<NumericalFluxComputerTag>,
-                                   get_volume_tags<NumericalFlux>>;
+      tmpl::push_front<typename NumericalFlux::argument_tags,
+                       NumericalFluxComputerTag, domain::Tags::Mesh<Dim - 1>,
+                       n_dot_fluxes_tag>;
+  using volume_tags = tmpl::push_front<get_volume_tags<NumericalFlux>,
+                                       NumericalFluxComputerTag>;
+  template <typename... Args>
   static auto apply(
       const NumericalFlux& numerical_flux_computer,
       const Mesh<Dim - 1>& face_mesh,
       const db::const_item_type<n_dot_fluxes_tag>& normal_dot_fluxes,
-      const db::const_item_type<ArgsTags>&... args) noexcept {
+      const Args&... args) noexcept {
     return dg::FirstOrderScheme::package_boundary_data(
         numerical_flux_computer, face_mesh, normal_dot_fluxes, args...);
   }
