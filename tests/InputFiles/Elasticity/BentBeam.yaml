@@ -1,0 +1,48 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: SolveElasticBentBeam2D
+# Check: parse;execute
+# ExpectedOutput:
+#   ElasticBentBeam2DReductions.h5
+#   ElasticBentBeam2DVolume0.h5
+
+AnalyticSolution:
+  BentBeam:
+    Length: 2.
+    Height: 1.
+    BendingMoment: 1.
+    Material:
+      # Iron
+      BulkModulus: 79.36507936507935
+      ShearModulus: 38.75968992248062
+
+DomainCreator:
+  Rectangle:
+    LowerBound: [-1., -0.5]
+    UpperBound: [1., 0.5]
+    IsPeriodicIn: [false, false]
+    InitialRefinement: [2, 1]
+    InitialGridPoints: [3, 3]
+
+NumericalFlux:
+  InternalPenalty:
+    PenaltyParameter: 20.
+
+Observers:
+  VolumeFileName: "ElasticBentBeam2DVolume"
+  ReductionFileName: "ElasticBentBeam2DReductions"
+
+LinearSolver:
+  GMRES:
+    ConvergenceCriteria:
+      MaxIterations: 1
+      AbsoluteResidual: 0.
+      RelativeResidual: 0.
+    Verbosity: Verbose
+
+EventsAndTriggers:
+  ? EveryNIterations:
+      N: 1
+  : - ObserveErrorNorms
+    - ObserveFields
