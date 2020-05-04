@@ -15,13 +15,11 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"           // IWYU pragma: keep
 #include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
-#include "Parallel/PupStlCpp11.hpp"               // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 // IWYU pragma: no_forward_declare Tensor
 
-namespace ScalarWave {
-namespace Solutions {
+namespace ScalarWave::Solutions {
 
 RegularSphericalWave::RegularSphericalWave(
     std::unique_ptr<MathFunction<1>> profile) noexcept
@@ -111,5 +109,4 @@ RegularSphericalWave::variables(
 
 void RegularSphericalWave::pup(PUP::er& p) noexcept { p | profile_; }
 
-}  // namespace Solutions
-}  // namespace ScalarWave
+}  // namespace ScalarWave::Solutions

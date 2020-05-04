@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(Charm 6.8.0 EXACT REQUIRED)
+find_package(Charm 6.10.2 EXACT REQUIRED)
 
 spectre_include_directories("${CHARM_INCLUDE_DIRS}")
 set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -L${CHARM_LIBRARIES}")
@@ -24,7 +24,7 @@ endif(NOT TARGET Charmxx)
 
 # SpECTRE must be linked with Charm++'s script charmc. In turn, charmc
 # will call your normal compiler, set at charm++ installation time internally.
-# Note: The -pthread is necessary with Charm v6.8 to get linking working
+# Note: The -pthread is necessary with Charm v6.10 to get linking working
 #       with GCC
 string(
     REGEX REPLACE "<CMAKE_CXX_COMPILER>"

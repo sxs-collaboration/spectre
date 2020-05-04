@@ -15,7 +15,6 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"  // IWYU pragma: keep
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ConstantExpressions.hpp"

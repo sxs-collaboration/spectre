@@ -30,8 +30,6 @@
 
 // IWYU pragma: no_include <pup.h>
 
-// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
-
 namespace {
 constexpr size_t dim = 1;
 using frame = Frame::Grid;

@@ -15,7 +15,7 @@ installation_on_clusters "Installation on clusters" page.
 * [GCC](https://gcc.gnu.org/) 7.0 or later,
 [Clang](https://clang.llvm.org/) 5.0 or later, or AppleClang 6.0 or later
 * [CMake](https://cmake.org/) 3.8.0 or later
-* [Charm++](http://charm.cs.illinois.edu/) 6.8 or newer (must be compiled from source)
+* [Charm++](http://charm.cs.illinois.edu/) 6.10.2
 * [Git](https://git-scm.com/)
 * BLAS (e.g. [OpenBLAS](http://www.openblas.net))
 * [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.5
@@ -109,7 +109,7 @@ To build with the docker image:
 5. Build SpECTRE with
 ```
    cmake -D CMAKE_Fortran_COMPILER=gfortran-8 \
-         -D CHARM_ROOT=/work/charm/multicore-linux64-gcc SPECTRE_ROOT
+         -D CHARM_ROOT=/work/charm/multicore-linux-x86_64-gcc SPECTRE_ROOT
 ```
    then
    `make -jN`
@@ -153,7 +153,7 @@ Notes:
     cmake -D CMAKE_CXX_COMPILER=clang++ \
           -D CMAKE_C_COMPILER=clang \
           -D CMAKE_Fortran_COMPILER=gfortran-8 \
-          -D CHARM_ROOT=/work/charm/multicore-linux64-clang SPECTRE_ROOT
+          -D CHARM_ROOT=/work/charm/multicore-linux-x86_64-clang SPECTRE_ROOT
 ```
   * To compile the Python bindings, add the option
     `-D BUILD_PYTHON_BINDINGS=ON` to the `cmake` command (see
@@ -201,7 +201,7 @@ To use Singularity you must:
 6. To build SpECTRE run
 ```
    cmake -D CMAKE_Fortran_COMPILER=gfortran-8 \
-         -D CHARM_ROOT=/work/charm/multicore-linux64-gcc SPECTRE_ROOT
+         -D CHARM_ROOT=/work/charm/multicore-linux-x86_64-gcc SPECTRE_ROOT
 ```
    followed by
    `make -jN` where `N` is the number of cores to build on in parallel.
@@ -222,7 +222,7 @@ Notes:
     cmake -D CMAKE_CXX_COMPILER=clang++ \
           -D CMAKE_C_COMPILER=clang \
           -D CMAKE_Fortran_COMPILER=gfortran-8 \
-          -D CHARM_ROOT=/work/charm/multicore-linux64-clang SPECTRE_ROOT
+          -D CHARM_ROOT=/work/charm/multicore-linux-x86_64-clang SPECTRE_ROOT
 ```
 
 ## Using Spack to set up a SpECTRE environment
@@ -292,7 +292,7 @@ Follow these steps:
   * Clone [Charm++](http://charm.cs.illinois.edu/software) into `CHARM_DIR`,
     again a directory of your choice.
   * In `CHARM_DIR`, run
-    `git checkout v6.8.0` to switch to a supported, stable release of Charm++.
+    `git checkout v6.10.2` to switch to a supported, stable release of Charm++.
   * Charm++ is compiled by running
     `./build charm++ ARCH OPTIONS`.
     To figure out the correct target architecture and options, you can simply
@@ -302,9 +302,6 @@ Follow these steps:
     The Charm++ build will be located in a new directory,
     `CHARM_DIR/ARCH_OPTS`, whose name may (or may not) have some of the options
     appended to the architecture.
-  * The SpECTRE repo contains a patch that must be applied to Charm++ *after*
-    Charm++ has been compiled. While still in `CHARM_DIR`, apply this patch by
-    running `git apply SPECTRE_ROOT/support/Charm/v6.8.patch`.
   * On macOS 10.12 it is necessary to patch the STL implementation. Insert
     \code
     #ifndef _MACH_PORT_T
@@ -331,7 +328,7 @@ Follow these steps:
 * For more details on building Charm++, see the directions
   [here](http://charm.cs.illinois.edu/manuals/html/charm++/A.html)
   The correct target is `charm++` and, for a personal machine, the
-  correct target architecture is likely to be `multicore-linux64`
+  correct target architecture is likely to be `multicore-linux-x86_64`
   (or `multicore-darwin-x86_64` on macOS).
   On an HPC system, the correct Charm++ target architecture depends on the
   machine's inter-node communication architecture. We will be providing specific

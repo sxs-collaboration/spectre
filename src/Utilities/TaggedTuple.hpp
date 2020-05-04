@@ -11,7 +11,6 @@
 #include <string>
 #include <utility>
 
-#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"

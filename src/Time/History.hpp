@@ -9,7 +9,6 @@
 #include <tuple>
 #include <utility>
 
-#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep  // p | deque, tuple
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 

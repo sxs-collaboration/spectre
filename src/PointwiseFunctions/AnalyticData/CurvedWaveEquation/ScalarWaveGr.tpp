@@ -9,7 +9,6 @@
 
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 

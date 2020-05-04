@@ -5,7 +5,6 @@
 
 #include <pup.h>  // IWYU pragma: keep
 
-#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 

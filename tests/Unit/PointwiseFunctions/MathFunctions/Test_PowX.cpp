@@ -10,7 +10,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "Utilities/ConstantExpressions.hpp"

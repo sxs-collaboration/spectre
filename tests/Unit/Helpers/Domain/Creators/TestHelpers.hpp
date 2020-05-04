@@ -36,6 +36,7 @@ void test_functions_of_time(
         using FunctionOfTimeType = std::decay_t<decltype(function_of_time)>;
         const bool in_functions_of_time =
             functions_of_time.find(name) != functions_of_time.end();
+        // NOLINTNEXTLINE(bugprone-infinite-loop) false positive
         CHECK(in_functions_of_time);
         if (in_functions_of_time) {
           const auto* function_from_creator =

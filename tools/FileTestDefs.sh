@@ -192,6 +192,7 @@ long_lines() {
               '.travis.yml$' \
               'CMakeLists.txt$' \
               'Doxyfile.in$' \
+              'containers/Dockerfile.buildenv$' \
               'containers/Dockerfile.travis$' \
               'docs/DevGuide/Travis.md' \
               'docs/MainSite/Main.md' \

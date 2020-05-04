@@ -425,21 +425,6 @@ struct RegisterReceiveData : RegistrationHelper {
       return;  // LCOV_EXCL_LINE
     }
     done_registration = true;
-    register_with_charm_helper(
-        std::integral_constant<
-            bool, (not Parallel::is_group_proxy<cproxy>::value and
-                   not Parallel::is_node_group_proxy<cproxy>::value)>{});
-  }
-
-  std::string name() const noexcept override {
-    return get_template_parameters_as_string<RegisterReceiveData>();
-  }
-
-  static bool registrar;
-
- private:
-  void register_with_charm_helper(std::true_type /*not is_group*/) const
-      noexcept {
     ckindex::template idx_receive_data<ReceiveTag>(
         static_cast<void (algorithm::*)(
             const typename ReceiveTag::temporal_id&,
@@ -447,14 +432,12 @@ struct RegisterReceiveData : RegistrationHelper {
                 typename ReceiveTag::type::mapped_type>&,
             bool)>(nullptr));
   }
-  void register_with_charm_helper(std::false_type /*is_group*/) const noexcept {
-    ckindex::template idx_receive_data<ReceiveTag>(
-        static_cast<void (algorithm::*)(
-            const typename ReceiveTag::temporal_id&,
-            const typename std::decay<
-                typename ReceiveTag::type::mapped_type::value_type>::type&)>(
-            nullptr));
+
+  std::string name() const noexcept override {
+    return get_template_parameters_as_string<RegisterReceiveData>();
   }
+
+  static bool registrar;
 };
 
 /*!

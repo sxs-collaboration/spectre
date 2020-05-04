@@ -16,7 +16,7 @@ module ConstGlobalCache {
             typename Metavariables::component_list,
             tmpl::bind<tmpl::type_,
                        tmpl::bind<Parallel::proxy_from_parallel_component,
-                                  tmpl::_1>>>>&,
+                                  tmpl::_1>>>>,
         const CkCallback&);
   }
   }

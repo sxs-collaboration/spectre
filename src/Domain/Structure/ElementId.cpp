@@ -7,7 +7,6 @@
 #include <limits>
 #include <ostream>
 
-#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -102,8 +101,8 @@ size_t hash_value(const ElementId<VolumeDim>& id) noexcept {
 namespace std {  // NOLINT
 template <size_t VolumeDim>
 size_t hash<ElementId<VolumeDim>>::operator()(
-    const ElementId<VolumeDim>& c) const noexcept {
-  return hash_value(c);
+    const ElementId<VolumeDim>& id) const noexcept {
+  return hash_value(id);
 }
 }  // namespace std
 // LCOV_EXCL_STOP

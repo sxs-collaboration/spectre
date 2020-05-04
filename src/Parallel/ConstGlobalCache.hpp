@@ -165,7 +165,7 @@ class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
 
   /// Entry method to set the ParallelComponents (should only be called once)
   void set_parallel_components(
-      tuples::tagged_tuple_from_typelist<parallel_component_tag_list>&
+      tuples::tagged_tuple_from_typelist<parallel_component_tag_list>&&
           parallel_components,
       const CkCallback& callback) noexcept;
 
@@ -193,15 +193,15 @@ class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
               ParallelComponentTag>>&;  // NOLINT
 
   tuples::tagged_tuple_from_typelist<get_const_global_cache_tags<Metavariables>>
-      const_global_cache_;
+      const_global_cache_{};
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
-      parallel_components_;
+      parallel_components_{};
   bool parallel_components_have_been_set_{false};
 };
 
 template <typename Metavariables>
 void ConstGlobalCache<Metavariables>::set_parallel_components(
-    tuples::tagged_tuple_from_typelist<parallel_component_tag_list>&
+    tuples::tagged_tuple_from_typelist<parallel_component_tag_list>&&
         parallel_components,
     const CkCallback& callback) noexcept {
   ASSERT(!parallel_components_have_been_set_,

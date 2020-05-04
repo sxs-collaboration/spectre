@@ -21,7 +21,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Options/ParseOptions.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"

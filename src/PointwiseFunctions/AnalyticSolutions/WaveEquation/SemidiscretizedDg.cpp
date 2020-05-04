@@ -12,15 +12,13 @@
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace ScalarWave {
-namespace Solutions {
+namespace ScalarWave::Solutions {
 SemidiscretizedDg::SemidiscretizedDg(
     const int harmonic, const std::array<double, 4>& amplitudes) noexcept
     : harmonic_(harmonic), amplitudes_(amplitudes) {}
@@ -157,5 +155,4 @@ void SemidiscretizedDg::pup(PUP::er& p) noexcept {
   p | harmonic_;
   p | amplitudes_;
 }
-}  // namespace Solutions
-}  // namespace ScalarWave
+}  // namespace ScalarWave::Solutions

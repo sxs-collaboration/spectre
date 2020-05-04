@@ -15,7 +15,6 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"

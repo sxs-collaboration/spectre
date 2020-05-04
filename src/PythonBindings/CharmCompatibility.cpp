@@ -55,6 +55,12 @@ void CmiAbort(const char* msg) {
   fprintf(stderr, "%s", msg);
   abort();
 }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-noreturn"
+void realCkExit(int exitcode) { exit(exitcode); }
+#pragma GCC diagnostic pop
+
 namespace formaline {
 std::vector<char> get_archive() noexcept {
   return {'N', 'o', 't', ' ', 's', 'u', 'p', 'p', 'o', 'r', 't', 'e', 'd'};

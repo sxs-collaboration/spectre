@@ -132,7 +132,7 @@ class NearTimes : public Trigger<TriggerRegistrars> {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept {
+  void pup(PUP::er& p) noexcept override {
     p | times_;
     p | range_;
     p | unit_;
@@ -157,7 +157,7 @@ struct create_from_yaml<Triggers::NearTimes_enums::Unit> {
   using type = Triggers::NearTimes_enums::Unit;
   template <typename Metavariables>
   static type create(const Option& options) {
-    const std::string unit = options.parse_as<std::string>();
+    const auto unit = options.parse_as<std::string>();
     if (unit == "Time") {
       return type::Time;
     } else if (unit == "Step") {
@@ -175,7 +175,7 @@ struct create_from_yaml<typename Triggers::NearTimes_enums::Direction> {
   using type = Triggers::NearTimes_enums::Direction;
   template <typename Metavariables>
   static type create(const Option& options) {
-    const std::string unit = options.parse_as<std::string>();
+    const auto unit = options.parse_as<std::string>();
     if (unit == "Before") {
       return type::Before;
     } else if (unit == "After") {

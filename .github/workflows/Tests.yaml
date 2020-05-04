@@ -114,7 +114,7 @@ jobs:
           -D CMAKE_C_COMPILER=clang
           -D CMAKE_CXX_COMPILER=clang++
           -D CMAKE_Fortran_COMPILER=gfortran-8
-          -D CHARM_ROOT=/work/charm/multicore-linux64-clang
+          -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D OVERRIDE_ARCH=x86-64
           -D USE_CCACHE=OFF
@@ -150,7 +150,7 @@ jobs:
           -D CMAKE_C_COMPILER=clang
           -D CMAKE_CXX_COMPILER=clang++
           -D CMAKE_Fortran_COMPILER=gfortran-8
-          -D CHARM_ROOT=/work/charm/multicore-linux64-clang
+          -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang
           -D CMAKE_BUILD_TYPE=Debug
           -D DEBUG_SYMBOLS=OFF
           -D BUILD_PYTHON_BINDINGS=ON
@@ -370,7 +370,7 @@ jobs:
           -D CMAKE_Fortran_COMPILER=${FC}
           -D CMAKE_CXX_FLAGS="${CXXFLAGS} ${{ matrix.EXTRA_CXX_FLAGS }}"
           -D OVERRIDE_ARCH=x86-64
-          -D CHARM_ROOT=/work/charm/multicore-linux64-${CHARM_CC}
+          -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-${CHARM_CC}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D DEBUG_SYMBOLS=OFF
           -D RUN_TESTS_IN_TEST_EXECUTABLES=OFF

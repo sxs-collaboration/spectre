@@ -289,8 +289,8 @@ class YlmSpherepack {
   }
 
   /// Returns the average of \f$f(\theta,\phi)\f$ over \f$(\theta,\phi)\f$.
-  SPECTRE_ALWAYS_INLINE static double average(const DataVector& spectral_coefs)
-      noexcept {
+  SPECTRE_ALWAYS_INLINE static double average(
+      const DataVector& spectral_coefs) noexcept {
     // The factor of sqrt(8) is because of the normalization of
     // SPHEREPACK's coefficients.  All other coefficients average to zero.
     return spectral_coefs[0] / sqrt(8.0);

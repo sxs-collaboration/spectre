@@ -6,11 +6,9 @@
 #include <algorithm>
 #include <pup.h>
 
-#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
-namespace intrp {
-namespace OptionHolders {
+namespace intrp::OptionHolders {
 KerrHorizon::KerrHorizon(size_t l_max_in, std::array<double, 3> center_in,
                          double mass_in,
                          std::array<double, 3> dimensionless_spin_in,
@@ -48,5 +46,4 @@ bool operator!=(const KerrHorizon& lhs, const KerrHorizon& rhs) noexcept {
   return not(lhs == rhs);
 }
 
-}  // namespace OptionHolders
-}  // namespace intrp
+}  // namespace intrp::OptionHolders

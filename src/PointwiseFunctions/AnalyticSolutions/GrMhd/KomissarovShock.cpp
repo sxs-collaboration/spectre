@@ -8,7 +8,6 @@
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
-#include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/Hydro/LorentzFactor.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -44,8 +43,7 @@ tnsr::I<DataType, 3> compute_piecewise_vector(
 }  // namespace
 
 /// \cond
-namespace grmhd {
-namespace Solutions {
+namespace grmhd::Solutions {
 
 KomissarovShock::KomissarovShock(
     const double adiabatic_index, const double left_rest_mass_density,
@@ -216,6 +214,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
 #undef TAG
 #undef INSTANTIATE_SCALARS
 #undef INSTANTIATE_VECTORS
-}  // namespace Solutions
-}  // namespace grmhd
+}  // namespace grmhd::Solutions
 /// \endcond

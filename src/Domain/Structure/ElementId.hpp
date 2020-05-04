@@ -121,7 +121,7 @@ size_t hash_value(const ElementId<VolumeDim>& id) noexcept;
 namespace std {  // NOLINT
 template <size_t VolumeDim>
 struct hash<ElementId<VolumeDim>> {
-  size_t operator()(const ElementId<VolumeDim>& c) const noexcept;
+  size_t operator()(const ElementId<VolumeDim>& id) const noexcept;
 };
 }  // namespace std
 

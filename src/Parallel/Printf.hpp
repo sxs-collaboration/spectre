@@ -101,9 +101,14 @@ inline void call_printer(Printer&& printer, const std::string& format,
  */
 template <typename... Args>
 inline void printf(const std::string& format, Args&&... args) {
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
-  detail::call_printer([](auto... a) noexcept { CkPrintf(a...); }, format,
-                       std::forward<Args>(args)...);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#pragma GCC diagnostic ignored "-Wformat-security"
+  detail::call_printer(
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+      [](auto... a) noexcept { CkPrintf(a...); }, format,
+      std::forward<Args>(args)...);
+#pragma GCC diagnostic pop
 }
 
 /*!
@@ -114,7 +119,13 @@ inline void printf(const std::string& format, Args&&... args) {
  */
 template <typename... Args>
 inline void printf_error(const std::string& format, Args&&... args) {
-  detail::call_printer([](auto... a) noexcept { CkError(a...); }, format,
-                       std::forward<Args>(args)...);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#pragma GCC diagnostic ignored "-Wformat-security"
+  detail::call_printer(
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+      [](auto... a) noexcept { CkError(a...); }, format,
+      std::forward<Args>(args)...);
+#pragma GCC diagnostic pop
 }
 }  // namespace Parallel

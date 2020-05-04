@@ -36,7 +36,6 @@
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/MakeVector.hpp"
 

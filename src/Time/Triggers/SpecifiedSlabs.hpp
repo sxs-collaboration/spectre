@@ -66,7 +66,7 @@ class SpecifiedSlabs : public Trigger<TriggerRegistrars> {
   }
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) noexcept override {  // NOLINT
     p | slabs_;
   }
 

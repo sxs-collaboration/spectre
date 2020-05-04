@@ -35,7 +35,7 @@ RUN apt-get update -y \
                           gcc-8 g++-8 gfortran-8 \
                           gcc-9 g++-9 gfortran-9 \
                           gcc-10 g++-10 gfortran-10 \
-                          gdb git cmake autoconf \
+                          gdb git cmake autoconf automake \
                           libopenblas-dev liblapack-dev \
                           libhdf5-dev hdf5-tools \
                           libgsl0-dev \
@@ -210,6 +210,14 @@ RUN git clone --single-branch --branch ${CHARM_GIT_TAG} --depth 1 \
     && git apply /work/charm/v6.8.patch \
     && rm /work/charm/v6.8.patch \
     && rm -r /work/charm/doc /work/charm/examples
+RUN git clone https://github.com/UIUC-PPL/charm charm_6_10_2 \
+    && cd /work/charm_6_10_2 \
+    && git checkout v6.10.2 \
+    && ./build charm++ multicore-linux-x86_64 gcc ${PARALLEL_MAKE_ARG} -g -O0 \
+    && ./build LIBS multicore-linux-x86_64 gcc ${PARALLEL_MAKE_ARG} -g -O0 \
+    && ./build charm++ multicore-linux-x86_64 clang ${PARALLEL_MAKE_ARG} -g -O0 \
+    && ./build LIBS multicore-linux-x86_64 clang ${PARALLEL_MAKE_ARG} -g -O0 \
+    && rm -r /work/charm_6_10_2/doc /work/charm_6_10_2/examples
 
 # - Set the environment variable SPECTRE_CONTAINER so we can check if we are
 #   inside a container (0 is true in bash)

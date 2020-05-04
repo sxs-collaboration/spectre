@@ -6,7 +6,6 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "Time/TimeSteppers/RungeKutta4.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 

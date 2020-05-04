@@ -14,7 +14,6 @@
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Time.hpp"
 
-// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 // IWYU pragma: no_include "Utilities/Rational.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.SimpleTimes", "[Unit][Time]") {

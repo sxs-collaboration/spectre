@@ -297,7 +297,7 @@ class Wedge3D {
   // clang-tidy: google runtime references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
-  static bool is_identity() noexcept { return false; }
+  static constexpr bool is_identity() noexcept { return false; }
 
  private:
   // factors out calculation of z needed for mapping and jacobian
