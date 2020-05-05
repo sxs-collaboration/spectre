@@ -39,6 +39,14 @@ namespace Solutions {
  * `Cce::Tags::News`, and `WorldtubeData::prepare_solution()`.
  */
 struct SphericalMetricData : public WorldtubeData {
+
+  WRAPPED_PUPable_abstract(SphericalMetricData);  // NOLINT
+
+  SphericalMetricData() noexcept = default;
+
+  explicit SphericalMetricData(const double extraction_radius) noexcept
+      : WorldtubeData{extraction_radius} {}
+
   /*!
    * Computes and returns by pointer the Jacobian
    * \f$\partial x_{\mathrm{spherical}}^j / \partial
@@ -55,6 +63,8 @@ struct SphericalMetricData : public WorldtubeData {
   void dr_inverse_jacobian(
       gsl::not_null<CartesianiSphericalJ*> dr_inverse_jacobian,
       size_t l_max) const noexcept;
+
+  void pup(PUP::er& p) noexcept override;
 
  protected:
   using WorldtubeData::variables_impl;
@@ -118,7 +128,7 @@ struct SphericalMetricData : public WorldtubeData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           spherical_metric,
-      double time) const noexcept = 0;
+      size_t l_max, double time) const noexcept = 0;
 
   /// Must be overriden in the derived class; should compute the first radial
   /// derivative of the spacetime metric of the analytic solution in spherical
@@ -127,7 +137,7 @@ struct SphericalMetricData : public WorldtubeData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           dr_spherical_metric,
-      double time) const noexcept = 0;
+      size_t l_max, double time) const noexcept = 0;
 
   /// Must be overriden in the derived class; should compute the first time
   /// derivative of the spacetime metric of the analytic solution in spherical
@@ -136,7 +146,7 @@ struct SphericalMetricData : public WorldtubeData {
       gsl::not_null<
           tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>*>
           dt_spherical_metric,
-      double time) const noexcept = 0;
+      size_t l_max, double time) const noexcept = 0;
 };
 
 }  // namespace Solutions
