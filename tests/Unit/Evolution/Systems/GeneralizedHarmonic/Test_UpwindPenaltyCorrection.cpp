@@ -20,9 +20,11 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/TestHelpers.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -79,6 +81,10 @@ void upwind_penalty_boundary_correction(
 template <size_t Dim>
 void check_upwind_penalty_boundary_correction(
     const size_t num_pts_per_dim) noexcept {
+  static_assert(
+      tt::assert_conforms_to<GeneralizedHarmonic::UpwindPenaltyCorrection<Dim>,
+                             dg::protocols::NumericalFlux>);
+
   pypp::check_with_random_values<1>(
       &upwind_penalty_boundary_correction<Dim>, "UpwindPenaltyCorrection",
       {"spacetime_metric_upwind_penalty_correction",

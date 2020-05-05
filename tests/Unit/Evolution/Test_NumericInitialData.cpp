@@ -7,7 +7,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Evolution/NumericInitialData.hpp"
 #include "Evolution/Protocols.hpp"
-#include "Helpers/Utilities/ProtocolTestHelpers.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 namespace {
 
@@ -24,10 +24,8 @@ struct System {
 };
 
 // Test that the system's numeric initial data conforms to the protocol
-static_assert(
-    test_protocol_conformance<evolution::NumericInitialData<System>,
-                              evolution::protocols::NumericInitialData>,
-    "Failed testing protocol conformance");
+static_assert(tt::assert_conforms_to<evolution::NumericInitialData<System>,
+                                     evolution::protocols::NumericInitialData>);
 
 // Test that the `import_fields` extracted from the system are correct
 static_assert(std::is_same_v<

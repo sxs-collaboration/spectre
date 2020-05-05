@@ -18,10 +18,10 @@
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/TestHelpers.hpp"
-#include "Helpers/Utilities/ProtocolTestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 namespace {
 
@@ -190,10 +190,9 @@ void apply_hllc(
 
 template <size_t Dim, typename Frame>
 void test_flux(const DataVector& used_for_size) noexcept {
-  static_assert(test_protocol_conformance<
-                    NewtonianEuler::NumericalFluxes::Hllc<Dim, Frame>,
-                    dg::protocols::NumericalFlux>,
-                "Failed testing protocol conformance");
+  static_assert(
+      tt::assert_conforms_to<NewtonianEuler::NumericalFluxes::Hllc<Dim, Frame>,
+                             dg::protocols::NumericalFlux>);
 
   pypp::check_with_random_values<9>(
       &apply_hllc<Dim, Frame>,

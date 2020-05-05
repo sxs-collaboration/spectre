@@ -3,50 +3,30 @@
 
 #pragma once
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits.hpp"
-#include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
-#include "Utilities/TypeTraits/CreateIsCallable.hpp"
-#include "Utilities/TypeTraits/IsCallable.hpp"
 
 namespace dg {
 /// \ref protocols related to Discontinuous Galerkin functionality
 namespace protocols {
 
 namespace detail {
-CREATE_HAS_TYPE_ALIAS(variables_tags)
-CREATE_HAS_TYPE_ALIAS_V(variables_tags)
-CREATE_HAS_TYPE_ALIAS(argument_tags)
-CREATE_HAS_TYPE_ALIAS_V(argument_tags)
-CREATE_HAS_TYPE_ALIAS(package_field_tags)
-CREATE_HAS_TYPE_ALIAS_V(package_field_tags)
-CREATE_HAS_TYPE_ALIAS(package_extra_tags)
-CREATE_HAS_TYPE_ALIAS_V(package_extra_tags)
-
 template <typename NumericalFluxType, typename VariablesTags,
           typename PackageFieldTags, typename PackageExtraTags>
-struct IsNumericalFluxCallableImpl;
+struct TestCallOperatorImpl;
 
 template <typename NumericalFluxType, typename... VariablesTags,
           typename... PackageFieldTags, typename... PackageExtraTags>
-struct IsNumericalFluxCallableImpl<
-    NumericalFluxType, tmpl::list<VariablesTags...>,
-    tmpl::list<PackageFieldTags...>, tmpl::list<PackageExtraTags...>>
-    : tt::is_callable_t<NumericalFluxType,
-                        gsl::not_null<db::item_type<VariablesTags>*>...,
-                        db::const_item_type<PackageFieldTags>...,
-                        db::const_item_type<PackageExtraTags>...,
-                        db::const_item_type<PackageFieldTags>...,
-                        db::const_item_type<PackageExtraTags>...> {};
-
-template <typename NumericalFluxType>
-struct IsNumericalFluxCallable
-    : IsNumericalFluxCallableImpl<
-          NumericalFluxType, typename NumericalFluxType::variables_tags,
-          typename NumericalFluxType::package_field_tags,
-          typename NumericalFluxType::package_extra_tags> {};
+struct TestCallOperatorImpl<NumericalFluxType, tmpl::list<VariablesTags...>,
+                            tmpl::list<PackageFieldTags...>,
+                            tmpl::list<PackageExtraTags...>> {
+  using type = decltype(std::declval<NumericalFluxType>()(
+      std::declval<gsl::not_null<db::item_type<VariablesTags>*>>()...,
+      std::declval<db::const_item_type<PackageFieldTags>>()...,
+      std::declval<db::const_item_type<PackageExtraTags>>()...,
+      std::declval<db::const_item_type<PackageFieldTags>>()...,
+      std::declval<db::const_item_type<PackageExtraTags>>()...));
+};
 }  // namespace detail
 
 /*!
@@ -107,16 +87,24 @@ struct IsNumericalFluxCallable
  * is independent of the system variables and therefore \f$n_i^\mathrm{ext} =
  * -n_i^\mathrm{int}\f$.
  */
-template <typename ConformingType>
-using NumericalFlux = std::conditional_t<
-    tmpl2::flat_all_v<detail::has_variables_tags_v<ConformingType>,
-                      detail::has_argument_tags_v<ConformingType>,
-                      detail::has_package_field_tags_v<ConformingType>,
-                      detail::has_package_extra_tags_v<ConformingType>>,
+struct NumericalFlux {
+  template <typename ConformingType>
+  struct test {
+    using variables_tags = typename ConformingType::variables_tags;
+    using argument_tags = typename ConformingType::argument_tags;
+    using package_field_tags = typename ConformingType::package_field_tags;
+    using package_extra_tags = typename ConformingType::package_extra_tags;
     // We can't currently check that the package_data function is callable
     // because the `argument_tags` may contain base tags and we can't resolve
     // their types.
-    detail::IsNumericalFluxCallable<ConformingType>, std::false_type>;
+    static_assert(
+        std::is_same_v<typename detail::TestCallOperatorImpl<
+                           ConformingType, variables_tags, package_field_tags,
+                           package_extra_tags>::type,
+                       void>,
+        "The 'operator()' must return 'void'.");
+  };
+};
 
 }  // namespace protocols
 }  // namespace dg

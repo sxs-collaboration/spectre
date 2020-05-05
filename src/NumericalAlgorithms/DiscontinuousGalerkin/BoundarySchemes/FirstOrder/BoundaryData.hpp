@@ -20,9 +20,8 @@ namespace FirstOrderScheme {
 namespace detail {
 template <typename NumericalFluxType>
 struct BoundaryDataImpl {
-  static_assert(tt::conforms_to_v<NumericalFluxType, protocols::NumericalFlux>,
-                "The 'NumericalFluxType' must conform to the "
-                "'dg::protocols::NumericalFlux'.");
+  static_assert(
+      tt::assert_conforms_to<NumericalFluxType, protocols::NumericalFlux>);
   using type = dg::SimpleBoundaryData<
       tmpl::remove_duplicates<tmpl::append<
           db::wrap_tags_in<::Tags::NormalDotFlux,

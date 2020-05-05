@@ -23,11 +23,13 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/DataStructures/RandomUnitNormal.hpp"
 #include "Helpers/NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/TestHelpers.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 namespace CurvedScalarWave {
 namespace CurvedScalarWave_detail {
@@ -45,6 +47,9 @@ namespace {
 // Test CSW upwind flux using random fields
 template <size_t Dim>
 void test_upwind_flux_random() noexcept {
+  static_assert(tt::assert_conforms_to<CurvedScalarWave::UpwindFlux<Dim>,
+                                       dg::protocols::NumericalFlux>);
+
   const DataVector used_for_size{5,
                                  std::numeric_limits<double>::signaling_NaN()};
 

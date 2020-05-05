@@ -15,9 +15,11 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/TestHelpers.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -70,6 +72,9 @@ void upwind_penalty_flux(
 
 template <size_t Dim>
 void check_upwind_penalty_flux(const size_t num_pts_per_dim) noexcept {
+  static_assert(tt::assert_conforms_to<ScalarWave::UpwindPenaltyCorrection<Dim>,
+                                       dg::protocols::NumericalFlux>);
+
   pypp::check_with_random_values<1>(
       &upwind_penalty_flux<Dim>, "UpwindPenaltyCorrection",
       {"pi_upwind_penalty_correction", "phi_upwind_penalty_correction",

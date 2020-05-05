@@ -5,7 +5,6 @@
 
 #include <string>
 
-#include "Helpers/Utilities/ProtocolTestHelpers.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
@@ -15,17 +14,22 @@ namespace {
 
 /// [named_protocol]
 namespace protocols {
-namespace detail {
-CREATE_IS_CALLABLE(name)
-}  // namespace detail
 /*!
  * \brief Has a name.
  *
  * Requires the class has these member functions:
  * - `name`: Returns the name of the object as a `std::string`.
  */
-template <typename ConformingType>
-using Named = detail::is_name_callable_r<std::string, ConformingType>;
+struct Named {
+  template <typename ConformingType>
+  struct test {
+    // Try calling the `ConformingType::name` member function
+    using name_return_type = decltype(std::declval<ConformingType>().name());
+    // Check the return type of the `name` member function
+    static_assert(std::is_same_v<name_return_type, std::string>,
+                  "The 'name' function must return a 'std::string'.");
+  };
+};
 }  // namespace protocols
 /// [named_protocol]
 
@@ -50,8 +54,7 @@ class Person : public tt::ConformsTo<protocols::Named> {
 template <typename NamedThing>
 std::string greet(const NamedThing& named_thing) {
   // Make sure the template parameter conforms to the protocol
-  static_assert(tt::conforms_to_v<NamedThing, protocols::Named>,
-                "NamedThing must be Named.");
+  static_assert(tt::assert_conforms_to<NamedThing, protocols::Named>);
   // Now we can rely on the interface that the protocol defines
   return "Hello, " + named_thing.name() + "!";
 }
@@ -80,9 +83,15 @@ SPECTRE_TEST_CASE("Unit.Utilities.ProtocolHelpers", "[Utilities][Unit]") {
 
 // Test tt::conforms_to metafunction
 /// [conforms_to]
-static_assert(tt::conforms_to_v<Person, protocols::Named>,
-              "The class does not conform to the protocol.");
+// SFINAE-friendly version:
+constexpr bool person_class_is_named =
+    tt::conforms_to_v<Person, protocols::Named>;
+// Assert-friendly version with more diagnostics:
+static_assert(tt::assert_conforms_to<Person, protocols::Named>);
 /// [conforms_to]
+static_assert(person_class_is_named,
+              "The 'Person' class does not conform to the 'Named' protocol.");
+
 namespace {
 struct NotNamed {};
 class DerivedNonConformingClass : private Person {};
@@ -100,36 +109,31 @@ static_assert(tt::conforms_to_v<DerivedConformingClass, protocols::Named>,
 namespace {
 namespace protocols {
 /// [named_antipattern]
-// Don't do this. Protocols should be _unary_ type traits.
-template <typename ConformingType, typename NameType>
-using NamedAntipattern =
+// Don't do this. Protocols should not have template parameters.
+template <typename NameType>
+struct NamedAntipattern {
+  template <typename ConformingType>
+  struct test {
     // Check that the `name` function exists _and_ its return type
-    detail::is_name_callable_r<NameType, ConformingType>;
+    using name_return_type = decltype(std::declval<ConformingType>().name());
+    static_assert(std::is_same_v<name_return_type, NameType>,
+                  "The 'name' function must return a 'NameType'.");
+  };
+};
 /// [named_antipattern]
-// Just making sure the protocol works correctly, even though this is an
-// antipattern
-static_assert(NamedAntipattern<Person, std::string>::value,
-              "Failed testing is_conforming_v");
-static_assert(not NamedAntipattern<Person, int>::value,
-              "Failed testing is_conforming_v");
 /// [named_with_type]
 // Instead, do this.
-namespace detail {
-CREATE_HAS_TYPE_ALIAS(NameType)
-CREATE_HAS_TYPE_ALIAS_V(NameType)
-// Lazily evaluated so we can use `ConformingType::NameType`
-template <typename ConformingType>
-struct IsNameCallableWithType
-    : is_name_callable_r_t<typename ConformingType::NameType, ConformingType> {
+struct NamedWithType {
+  template <typename ConformingType>
+  struct test {
+    // Use the `ConformingType::NameType` to check the return type of the `name`
+    // function.
+    using name_type = typename ConformingType::NameType;
+    using name_return_type = decltype(std::declval<ConformingType>().name());
+    static_assert(std::is_same_v<name_return_type, name_type>,
+                  "The 'name' function must return a 'NameType'.");
+  };
 };
-}  // namespace detail
-template <typename ConformingType>
-using NamedWithType =
-    // First check the class has a `NameType`, then use it to check the return
-    // type of the `name` function.
-    std::conditional_t<detail::has_NameType_v<ConformingType>,
-                       detail::IsNameCallableWithType<ConformingType>,
-                       std::false_type>;
 /// [named_with_type]
 }  // namespace protocols
 /// [person_with_name_type]
@@ -138,29 +142,16 @@ struct PersonWithNameType : tt::ConformsTo<protocols::NamedWithType> {
   std::string name() const;
 };
 /// [person_with_name_type]
-// Make sure the protocol is implemented correctly
-static_assert(not protocols::NamedWithType<Person>::value,
-              "Failed testing is_conforming_v");
-static_assert(protocols::NamedWithType<PersonWithNameType>::value,
-              "Failed testing is_conforming_v");
 /// [example_check_name_type]
-static_assert(tt::conforms_to_v<PersonWithNameType, protocols::NamedWithType>,
-              "The class does not conform to the protocol.");
+static_assert(
+    tt::assert_conforms_to<PersonWithNameType, protocols::NamedWithType>);
 static_assert(
     std::is_same_v<typename PersonWithNameType::NameType, std::string>,
     "The `NameType` isn't a `std::string`!");
 /// [example_check_name_type]
 }  // namespace
 
-// Give an example how a protocol author should test a new protocol
-/// [testing_a_protocol]
-static_assert(protocols::Named<Person>::value, "Failed testing the protocol");
-static_assert(not protocols::Named<NotNamed>::value,
-              "Failed testing the protocol");
-/// [testing_a_protocol]
-
 // Give an example how protocol consumers should test protocol conformance
 /// [test_protocol_conformance]
-static_assert(test_protocol_conformance<Person, protocols::Named>,
-              "Failed testing protocol conformance");
+static_assert(tt::assert_conforms_to<Person, protocols::Named>);
 /// [test_protocol_conformance]

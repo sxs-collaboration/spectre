@@ -3,15 +3,9 @@
 
 #pragma once
 
-#include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
-
 namespace evolution {
 /// \ref protocols related to evolution systems
 namespace protocols {
-
-namespace detail {
-CREATE_HAS_TYPE_ALIAS(import_fields)
-}  // namespace detail
 
 /*!
  * \ingroup ProtocolsGroup
@@ -26,8 +20,12 @@ CREATE_HAS_TYPE_ALIAS(import_fields)
  *
  * \snippet Evolution/Test_Protocols.cpp conforming_type_example
  */
-template <typename ConformingType>
-using NumericInitialData = detail::has_import_fields<ConformingType>;
+struct NumericInitialData {
+  template <typename ConformingType>
+  struct test {
+    using import_fields = typename ConformingType::import_fields;
+  };
+};
 
 }  // namespace protocols
 }  // namespace evolution
