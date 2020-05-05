@@ -87,16 +87,6 @@ void test_interface_apply(
   /// [interface_apply_example]
 
   // Test volume base tag
-  // GCC <= 8 can't handle the recursive template instantiations for base tags
-  // in `db::DataBox_detail::storage_type_impl` that occur when instantiating
-  // the `interface_apply` overload for a _stateless_ invokable here, i.e. the
-  // one that is _not_ SFINAE-selected in the function call below. The template
-  // parameter substitutions `InterfaceInvokable=tmpl::list<SomeNumber,
-  // VolumeArgumentBase>` and `DbTagsList=tmpl::list<VolumeArgumentBase>` is
-  // made, which fails the SFINAE-selection but still tries to (unsuccessfully)
-  // instantiate `storage_type_impl` for the `DbTagsList` and the
-  // `VolumeArgumentBase` tag.
-#if defined(__clang__) || (defined(__GNUC__) && __GNUC__ > 8)
   const auto computed_numbers_with_base_tag =
       interface_apply<DirectionsTag, tmpl::list<SomeNumber, VolumeArgumentBase>,
                       tmpl::list<VolumeArgumentBase>>(
@@ -106,7 +96,6 @@ void test_interface_apply(
           },
           box, 2.);
   CHECK(computed_numbers_with_base_tag == computed_number_on_interfaces);
-#endif  // defined(__clang__) || (defined(__GNUC__) && __GNUC__ > 8)
 
   // Test overload that takes a stateless invokable
   /// [interface_apply_example_stateless]

@@ -268,12 +268,21 @@ SPECTRE_ALWAYS_INLINE constexpr auto interface_apply(
           std::forward<ExtraArgs>(extra_args)...);
 }
 
+// The `box` argument to this function overload is not constrained to
+// `db::DataBox` to work around an issue with GCC <= 8.
+//
+// Details on the issue:
+//
+// GCC <= 8 tries to instantiate the `db::DataBox<DbTagsList>` template even
+// when this function overload is _not_ SFINAE-selected. In that case the
+// template parameter substitution for `DbTagsList` may contain base tags that
+// causes errors with the `db::DataBox` template instantiation.
 template <typename DirectionsTag, typename InterfaceInvokable,
-          typename DbTagsList, typename... ExtraArgs,
+          typename DataBoxType, typename... ExtraArgs,
           // Needed to disambiguate the overloads
           typename ArgumentTags = typename InterfaceInvokable::argument_tags>
 SPECTRE_ALWAYS_INLINE constexpr auto interface_apply(
-    const db::DataBox<DbTagsList>& box, ExtraArgs&&... extra_args) noexcept {
+    const DataBoxType& box, ExtraArgs&&... extra_args) noexcept {
   return interface_apply<DirectionsTag, ArgumentTags,
                          get_volume_tags<InterfaceInvokable>>(
       InterfaceInvokable{}, box, std::forward<ExtraArgs>(extra_args)...);
