@@ -229,7 +229,8 @@ struct Gmres {
       LinearOperator&& linear_operator, const SourceType& source,
       const VarsType& initial_guess,
       Preconditioner&& preconditioner = IdentityPreconditioner<VarsType>{},
-      IterationCallback&& = NoIterationCallback{}) const noexcept;
+      IterationCallback&& iteration_callback = NoIterationCallback{}) const
+      noexcept;
 
  private:
   Convergence::Criteria convergence_criteria_{};
