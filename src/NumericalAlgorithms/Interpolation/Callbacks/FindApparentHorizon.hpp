@@ -91,7 +91,7 @@ struct FindApparentHorizon {
     const auto& indices_of_invalid_pts =
         db::get<Tags::IndicesOfInvalidInterpPoints<TemporalId>>(*box);
     if (indices_of_invalid_pts.count(temporal_id) > 0 and
-        indices_of_invalid_pts.at(temporal_id).size() > 0) {
+        not indices_of_invalid_pts.at(temporal_id).empty()) {
       ERROR("FindApparentHorizon: Found points that are not in any block");
     }
 
