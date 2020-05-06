@@ -24,6 +24,15 @@ BentBeam::BentBeam(double length, double height, double bending_moment,
       bending_moment_(bending_moment),
       constitutive_relation_(std::move(constitutive_relation)) {}
 
+BentBeam::BentBeam(double length, double height, double bending_moment,
+                   double bulk_modulus, double shear_modulus) noexcept
+    : length_(length),
+      height_(height),
+      bending_moment_(bending_moment),
+      constitutive_relation_(
+          Elasticity::ConstitutiveRelations::IsotropicHomogeneous<2>{
+              bulk_modulus, shear_modulus}) {}
+
 tuples::TaggedTuple<Tags::Displacement<2>> BentBeam::variables(
     const tnsr::I<DataVector, 2>& x,
     tmpl::list<Tags::Displacement<2>> /*meta*/) const noexcept {

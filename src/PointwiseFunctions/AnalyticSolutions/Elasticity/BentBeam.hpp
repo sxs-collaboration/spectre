@@ -68,6 +68,7 @@ namespace Solutions {
  */
 class BentBeam {
  public:
+  static constexpr size_t volume_dim = 2;
   using constitutive_relation_type =
       Elasticity::ConstitutiveRelations::IsotropicHomogeneous<2>;
 
@@ -108,6 +109,9 @@ class BentBeam {
 
   BentBeam(double length, double height, double bending_moment,
            constitutive_relation_type constitutive_relation) noexcept;
+
+  BentBeam(double length, double height, double bending_moment,
+           double bulk_modulus, double shear_modulus) noexcept;
 
   const constitutive_relation_type& constitutive_relation() const noexcept {
     return constitutive_relation_;

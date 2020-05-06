@@ -13,5 +13,5 @@ set(LIBRARY_SOURCES
   ${LIBRARY}
   "PointwiseFunctions/Elasticity/"
   "${LIBRARY_SOURCES}"
-  "Utilities"
+  "PotentialEnergy;ElasticitySolutions;Utilities"
   )
