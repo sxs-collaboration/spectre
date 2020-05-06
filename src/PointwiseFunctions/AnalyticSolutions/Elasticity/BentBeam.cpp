@@ -59,6 +59,11 @@ tuples::TaggedTuple<Tags::Stress<2>> BentBeam::variables(
   return {std::move(result)};
 }
 
+double BentBeam::potential_energy() const {
+  return 6. * length_ * square(bending_moment_) /
+         (cube(height_) * constitutive_relation_.youngs_modulus());
+}
+
 tuples::TaggedTuple<::Tags::FixedSource<Tags::Displacement<2>>>
 BentBeam::variables(
     const tnsr::I<DataVector, 2>& x,

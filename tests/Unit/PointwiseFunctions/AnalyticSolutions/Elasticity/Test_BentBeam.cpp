@@ -54,6 +54,10 @@ struct BentBeamProxy : Elasticity::Solutions::BentBeam {
       const tnsr::I<DataVector, 2>& x) const noexcept {
     return Elasticity::Solutions::BentBeam::variables(x, source_tags{});
   }
+
+  double potential_energy() const noexcept {
+    return Elasticity::Solutions::BentBeam::potential_energy();
+  }
 };
 
 }  // namespace
@@ -104,6 +108,7 @@ SPECTRE_TEST_CASE(
   get<1, 0>(expected_stress) = DataVector{0., 0.};
   get<1, 1>(expected_stress) = DataVector{0., 0.};
   CHECK_VARIABLES_APPROX(solution_vars, expected_vars);
+  CHECK_ITERABLE_APPROX(solution.potential_energy(), 0.075);
 
   pypp::check_with_random_values<
       1, tmpl::list<Elasticity::Tags::Displacement<2>,

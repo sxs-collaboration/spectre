@@ -113,6 +113,9 @@ class BentBeam {
     return constitutive_relation_;
   }
 
+  /// Return potential energy integrated over the whole domain
+  double potential_energy() const;
+
   // @{
   /// Retrieve variable at coordinates `x`
   auto variables(const tnsr::I<DataVector, 2>& x,
