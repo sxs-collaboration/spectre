@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <complex>
 #include <type_traits>
 
 #include "Utilities/ForceInline.hpp"
