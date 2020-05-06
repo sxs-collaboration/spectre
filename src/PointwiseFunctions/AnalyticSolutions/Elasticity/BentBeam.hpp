@@ -29,11 +29,11 @@ namespace Solutions {
  * \brief A state of pure bending of an elastic beam in 2D
  *
  * \details This solution describes a 2D slice through an elastic beam of length
- * \f$L\f$ and height \f$H\f$ that is subject to a bending moment \f$M=\int
- * T^{xx}y\mathrm{d}y\f$ (see e.g. \cite ThorneBlandford2017, Eq. 11.41c for a
- * bending moment in 1D). The beam material is characterized by an isotropic and
- * homogeneous constitutive relation \f$Y^{ijkl}\f$ in the plane-stress
- * approximation (see
+ * \f$L\f$ and height \f$H\f$, centered around (0, 0), that is subject to a
+ * bending moment \f$M=\int T^{xx}y\mathrm{d}y\f$ (see e.g.
+ * \cite ThorneBlandford2017, Eq. 11.41c for a bending moment in 1D). The beam
+ * material is characterized by an isotropic and homogeneous constitutive
+ * relation \f$Y^{ijkl}\f$ in the plane-stress approximation (see
  * `Elasticity::ConstitutiveRelations::IsotropicHomogeneous`). In this scenario,
  * no body-forces \f$f_\mathrm{ext}^j\f$ act on the material, so the
  * \ref Elasticity equations reduce to \f$\nabla_i T^{ij}=0\f$, but the bending
