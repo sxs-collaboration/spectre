@@ -265,6 +265,14 @@ void WorldtubeData::variables_impl(
                    get<1>(dr_cartesian_coordinates) * get<1>(d_lapse) +
                    get<2>(dr_cartesian_coordinates) * get<2>(d_lapse);
 }
+
+void WorldtubeData::pup(PUP::er& p) noexcept {
+  p | extraction_radius_;
+  if(p.isUnpacking()) {
+    intermediate_cache_ = IntermediateCacheTuple{};
+  }
+}
+
 /// \endcond
 }  // namespace Solutions
 }  // namespace Cce

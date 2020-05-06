@@ -23,6 +23,10 @@
 namespace Cce {
 namespace Solutions {
 
+/// \cond
+class BouncingBlackHole;
+/// \endcond
+
 /*!
  * \brief Abstract base class for analytic worldtube data for verifying the CCE
  * system.
@@ -59,7 +63,7 @@ namespace Solutions {
  * calculations.
  */
 struct WorldtubeData : public PUP::able {
-  using creatable_classes = tmpl::list<>;
+  using creatable_classes = tmpl::list<BouncingBlackHole>;
 
   /// The set of available tags provided by the analytic solution
   using tags = tmpl::list<
@@ -78,6 +82,13 @@ struct WorldtubeData : public PUP::able {
       Tags::Dr<gr::Tags::Lapse<DataVector>>, Tags::News>;
 
   WRAPPED_PUPable_abstract(WorldtubeData);  // NOLINT
+
+  // clang doesn't manage to use = default correctly in this case
+  // NOLINTNEXTLINE(hicpp-use-equals-default)
+  WorldtubeData() noexcept {};
+
+  explicit WorldtubeData(const double extraction_radius) noexcept
+      : extraction_radius_{extraction_radius} {}
 
   virtual std::unique_ptr<WorldtubeData> get_clone() const noexcept = 0;
 
@@ -98,6 +109,8 @@ struct WorldtubeData : public PUP::able {
     prepare_solution(output_l_max, time);
     return {cache_or_compute<Tags>(output_l_max, time)...};
   }
+
+  void pup(PUP::er& p) noexcept override;
 
  protected:
   template <typename Tag>

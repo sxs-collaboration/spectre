@@ -143,6 +143,14 @@ using abC = Tensor<
         Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
           IndexType Index = IndexType::Spacetime>
+using aaB = Tensor<
+    DataType, tmpl::integral_list<std::int32_t, 2, 2, 1>,
+    index_list<
+        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr, Index>,
+        Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
+          IndexType Index = IndexType::Spacetime>
 using aBc = Tensor<
     DataType, tmpl::integral_list<std::int32_t, 3, 2, 1>,
     index_list<
