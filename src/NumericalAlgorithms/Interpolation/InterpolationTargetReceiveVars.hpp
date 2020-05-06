@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "NumericalAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -70,10 +71,11 @@ namespace Actions {
 template <typename InterpolationTargetTag>
 struct InterpolationTargetReceiveVars {
   /// For requirements on Metavariables, see InterpolationTarget
-  template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex, typename TemporalId,
-            Requires<tmpl::list_contains_v<
-                DbTags, Tags::TemporalIds<TemporalId>>> = nullptr>
+  template <
+      typename ParallelComponent, typename DbTags, typename Metavariables,
+      typename ArrayIndex, typename TemporalId,
+      Requires<tmpl::list_contains_v<DbTags, Tags::TemporalIds<TemporalId>>> =
+          nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
       Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -110,7 +112,7 @@ struct InterpolationTargetReceiveVars {
                 InterpolationTarget<Metavariables, InterpolationTargetTag>>(
                 cache);
             Parallel::simple_action<
-                typename InterpolationTargetTag::compute_target_points>(
+                SendPointsToInterpolator<InterpolationTargetTag>>(
                 my_proxy, temporal_ids.front());
           }
         }

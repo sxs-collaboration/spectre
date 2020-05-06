@@ -71,6 +71,39 @@ struct CompletedTemporalIds;
 
 namespace {
 
+// In the test, we don't care what SendPointsToInterpolator actually does;
+// we care only that SendPointsToInterpolator is called with the
+// correct arguments.
+template <typename InterpolationTargetTag>
+struct MockSendPointsToInterpolator {
+  template <
+      typename ParallelComponent, typename DbTags, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<
+          DbTags, intrp::Tags::TemporalIds<
+                      typename Metavariables::temporal_id::type>>> = nullptr>
+  static void apply(
+      db::DataBox<DbTags>& box,
+      Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
+    using temporal_id_type = typename Metavariables::temporal_id::type;
+    Slab slab(0.0, 1.0);
+    CHECK(temporal_id == TimeStepId(true, 0, Time(slab, Rational(14, 15))));
+    // Increment IndicesOfFilledInterpPoints so we can check later
+    // whether this function was called.  This isn't the usual usage
+    // of IndicesOfFilledInterpPoints; this is done only for the test.
+    db::mutate<intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
+        make_not_null(&box),
+        [&temporal_id](
+            const gsl::not_null<db::item_type<
+                intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>*>
+                indices) noexcept {
+          (*indices)[temporal_id].insert((*indices)[temporal_id].size() + 1);
+        });
+  }
+};
+
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
   using metavariables = Metavariables;
@@ -91,6 +124,10 @@ struct mock_interpolation_target {
               typename InterpolationTargetTag::compute_items_on_target>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
+  using replace_these_simple_actions = tmpl::list<
+      intrp::Actions::SendPointsToInterpolator<InterpolationTargetTag>>;
+  using with_these_simple_actions =
+      tmpl::list<MockSendPointsToInterpolator<InterpolationTargetTag>>;
 };
 
 template <typename InterpolationTargetTag>
@@ -118,34 +155,11 @@ struct MockCleanUpInterpolator {
   }
 };
 
+// In the test, MockComputeTargetPoints is used only for the
+// is_sequential typedef; normally compute_target_points has a
+// points() function, but that function isn't called or needed in the test.
 struct MockComputeTargetPoints {
   using is_sequential = std::true_type;
-  template <
-      typename ParallelComponent, typename DbTags, typename Metavariables,
-      typename ArrayIndex,
-      Requires<tmpl::list_contains_v<
-          DbTags, intrp::Tags::TemporalIds<
-                      typename Metavariables::temporal_id::type>>> = nullptr>
-  static void apply(
-      db::DataBox<DbTags>& box,
-      Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/,
-      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
-    using temporal_id_type = typename Metavariables::temporal_id::type;
-    Slab slab(0.0, 1.0);
-    CHECK(temporal_id == TimeStepId(true, 0, Time(slab, Rational(14, 15))));
-    // Increment IndicesOfFilledInterpPoints so we can check later
-    // whether this function was called.  This isn't the usual usage
-    // of IndicesOfFilledInterpPoints; this is done only for the test.
-    db::mutate<intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
-        make_not_null(&box),
-        [&temporal_id](
-            const gsl::not_null<db::item_type<
-                intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>*>
-                indices) noexcept {
-          (*indices)[temporal_id].insert((*indices)[temporal_id].size() + 1);
-        });
-  }
 };
 
 // Simple DataBoxItems to test.
@@ -481,8 +495,8 @@ void test_interpolation_target_receive_vars() noexcept {
               intrp::Tags::CompletedTemporalIds<temporal_id_type>>(runner, 0)
               .front() == first_temporal_id);
 
-    // Check that MockComputeTargetPoints was not yet called.
-    // MockComputeTargetPoints sets a (fake) value of
+    // Check that MockSendPointsToInterpolator was not yet called.
+    // MockSendPointsToInterpolator sets a (fake) value of
     // IndicesOfFilledInterpPoints for the express purpose of this
     // check.
     const auto& indices_to_check = ActionTesting::get_databox_tag<
@@ -490,13 +504,13 @@ void test_interpolation_target_receive_vars() noexcept {
         intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(runner, 0);
     CHECK(indices_to_check.find(second_temporal_id) == indices_to_check.end());
 
-    // And there is yet one more simple action, compute_target_points,
+    // And there is yet one more simple action, SendPointsToInterpolator,
     // which here we mock just to check that it is called.
     ActionTesting::invoke_queued_simple_action<target_component>(
         make_not_null(&runner), 0);
 
-    // Check that MockComputeTargetPoints was called.
-    // MockComputeTargetPoints sets a (fake) value of
+    // Check that MockSendPointsToInterpolator was called.
+    // MockSendPointsToInterpolator sets a (fake) value of
     // IndicesOfFilledInterpPoints for the express purpose of this check.
     CHECK(ActionTesting::get_databox_tag<
               target_component,
