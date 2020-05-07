@@ -31,8 +31,11 @@ Domain<VolumeDim>::Domain(
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
     const std::vector<PairOfFaces>& identifications) noexcept {
-  ASSERT(maps.size() == corners_of_all_blocks.size(),
-         "Must pass same number of maps as block corner sets.");
+  ASSERT(
+      maps.size() == corners_of_all_blocks.size(),
+      "Must pass same number of maps as block corner sets, but maps.size() == "
+          << maps.size() << " and corners_of_all_blocks.size() == "
+          << corners_of_all_blocks.size());
   std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>
       neighbors_of_all_blocks;
   set_internal_boundaries<VolumeDim>(corners_of_all_blocks,

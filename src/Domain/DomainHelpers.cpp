@@ -118,7 +118,7 @@ size_t find_block_id_of_external_face(
 template <size_t VolumeDim>
 std::array<size_t, two_to_the(VolumeDim - 1)> get_common_local_corners(
     const std::array<size_t, two_to_the(VolumeDim)>& block_global_corners,
-    const std::vector<size_t> block_global_common_corners) noexcept {
+    const std::vector<size_t>& block_global_common_corners) noexcept {
   std::array<size_t, two_to_the(VolumeDim - 1)> result{{0}};
   size_t i = 0;
   for (const auto global_id : block_global_common_corners) {
@@ -1074,7 +1074,7 @@ std::ostream& operator<<(std::ostream& os,
 
 template <>
 ShellWedges create_from_yaml<ShellWedges>::create<void>(const Option& options) {
-  const std::string which_wedges = options.parse_as<std::string>();
+  const auto which_wedges = options.parse_as<std::string>();
   if (which_wedges == "All") {
     return ShellWedges::All;
   } else if (which_wedges == "FourOnEquator") {
