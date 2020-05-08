@@ -216,7 +216,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: [gcc-7, gcc-8, gcc-9, clang-5.0, clang-8, clang-9]
+        compiler: [gcc-7,
+                   gcc-8,
+                   gcc-9,
+                   clang-6.0,
+                   clang-8,
+                   clang-9,
+                   clang-10
+                   ]
         build_type: [Debug, Release]
         use_pch: [OFF, ON]
 
@@ -245,10 +252,16 @@ jobs:
             compiler: gcc-9
           - use_pch: OFF
             build_type: Debug
-            compiler: clang-5.0
+            compiler: gcc-10
+          - use_pch: OFF
+            build_type: Debug
+            compiler: clang-6.0
           - use_pch: OFF
             build_type: Debug
             compiler: clang-8
+          - use_pch: OFF
+            build_type: Debug
+            compiler: clang-10
         include:
           # Prevent random failures of Debug builds.
           # See issue https://github.com/sxs-collaboration/spectre/issues/1807
@@ -263,6 +276,7 @@ jobs:
             # bindings enabled.
             ASAN: ON
             BUILD_PYTHON_BINDINGS: OFF
+            MEMORY_ALLOCATOR: JEMALLOC
           # Test with Python 2 so that we retain backwards compatibility. We
           # keep track of Python versions on supercomputers in this issue:
           # https://github.com/sxs-collaboration/spectre/issues/442
@@ -276,6 +290,7 @@ jobs:
             build_type: Debug
             BUILD_PYTHON_BINDINGS: OFF
             BUILD_SHARED_LIBS: ON
+            MEMORY_ALLOCATOR: JEMALLOC
 
     container:
       image: sxscollaboration/spectrebuildenv:latest
@@ -334,6 +349,7 @@ jobs:
           BUILD_SHARED_LIBS=${{ matrix.BUILD_SHARED_LIBS }}
           PYTHON_EXECUTABLE=${{ matrix.PYTHON_EXECUTABLE }}
           ASAN=${{ matrix.ASAN }}
+          MEMORY_ALLOCATOR=${{ matrix.MEMORY_ALLOCATOR }}
           UBSAN_UNDEFINED=${{ matrix.UBSAN_UNDEFINED }}
           UBSAN_INTEGER=${{ matrix.UBSAN_INTEGER }}
           USE_PCH=${{ matrix.use_pch }}
@@ -359,6 +375,7 @@ jobs:
           -D ASAN=${ASAN:-'OFF'}
           -D UBSAN_UNDEFINED=${UBSAN_UNDEFINED:-'OFF'}
           -D UBSAN_INTEGER=${UBSAN_INTEGER:-'OFF'}
+          -D MEMORY_ALLOCATOR=${MEMORY_ALLOCATOR:-'SYSTEM'}
           --warn-uninitialized
           $GITHUB_WORKSPACE 2>&1 | tee CMakeOutput.txt 2>&1
 
