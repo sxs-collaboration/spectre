@@ -12,13 +12,13 @@ from PointwiseFunctions.GeneralRelativity.ComputeSpacetimeQuantities import (
     spacetime_normal_vector)
 
 
-def weight_function(coords, r_max):
+def spatial_weight_function(coords, r_max):
     r2 = np.sum([coords[i]**2 for i in range(len(coords))])
     return np.exp(-r2 / r_max / r_max)
 
 
-def spacetime_deriv_weight_function(coords, r_max):
-    W = weight_function(coords, r_max)
+def spacetime_deriv_spatial_weight_function(coords, r_max):
+    W = spatial_weight_function(coords, r_max)
     DW = np.zeros(len(coords) + 1)
     DW[1:] = -2. * W / r_max / r_max * coords
     return DW
@@ -91,7 +91,7 @@ def damped_harmonic_gauge_source_function(gauge_h_init, lapse, shift,
     log_sqrtg_over_lapse = log_fac(lapse, sqrt_det_spatial_metric, 0.5)
     log_one_over_lapse = log_fac(lapse, sqrt_det_spatial_metric, 0.)
     R = roll_on_function(time, t_start, sigma_t)
-    W = weight_function(coords, r_max)
+    W = spatial_weight_function(coords, r_max)
     muL1 = R * W * log_sqrtg_over_lapse**4
     muL2 = R * W * log_one_over_lapse**4
     muS = muL1
@@ -124,7 +124,7 @@ def spacetime_deriv_damped_harmonic_gauge_source_function(
     log_one_over_lapse_pow5 = log_one_over_lapse * log_one_over_lapse_pow4
 
     R = roll_on_function(time, t_start, sigma_t)
-    W = weight_function(coords, r_max)
+    W = spatial_weight_function(coords, r_max)
 
     muL1 = R * W * log_sqrtg_over_lapse_pow4
     muS_over_N = muL1 / lapse
@@ -132,7 +132,7 @@ def spacetime_deriv_damped_harmonic_gauge_source_function(
     mu1 = muL1 * log_sqrtg_over_lapse
     mu2 = R * W * log_one_over_lapse_pow5
 
-    d4_W = spacetime_deriv_weight_function(coords, r_max)
+    d4_W = spacetime_deriv_spatial_weight_function(coords, r_max)
     d0_R = time_deriv_roll_on_function(time, t_start, sigma_t)
     d4_RW = R * d4_W
     d4_RW[0] += W * d0_R

@@ -32,23 +32,14 @@ namespace DampedHarmonicGauge_detail {
 // This function can be written with an extra factor inside the exponent in
 // literature, e.g. \cite Deppe2018uye. We absorb that in \f$\sigma_r\f$.
 template <size_t SpatialDim, typename Frame, typename DataType>
-void weight_function(const gsl::not_null<Scalar<DataType>*> weight,
-                     const tnsr::I<DataType, SpatialDim, Frame>& coords,
-                     const double sigma_r) noexcept {
+void spatial_weight_function(const gsl::not_null<Scalar<DataType>*> weight,
+                             const tnsr::I<DataType, SpatialDim, Frame>& coords,
+                             const double sigma_r) noexcept {
   if (UNLIKELY(get_size(get(*weight)) != get_size(get<0>(coords)))) {
     *weight = Scalar<DataType>(get_size(get<0>(coords)));
   }
   const auto r_squared = dot_product(coords, coords);
-  get(*weight) = exp(-get(r_squared) / pow<2>(sigma_r));
-}
-
-template <size_t SpatialDim, typename Frame, typename DataType>
-Scalar<DataType> weight_function(
-    const tnsr::I<DataType, SpatialDim, Frame>& coords,
-    const double sigma_r) noexcept {
-  Scalar<DataType> weight{};
-  weight_function(make_not_null(&weight), coords, sigma_r);
-  return weight;
+  get(*weight) = exp(-get(r_squared) / square(sigma_r));
 }
 
 // Spacetime derivatives of the spatial weight function that enters the
@@ -58,30 +49,20 @@ Scalar<DataType> weight_function(
 // \partial_a W(x^i)= \partial_a \exp(- (r/\sigma_r)^2)
 //                  = (-2 * x^i / \sigma_r^2) * exp(-(r/\sigma_r)^2)
 template <size_t SpatialDim, typename Frame, typename DataType>
-void spacetime_deriv_of_weight_function(
+void spacetime_deriv_of_spatial_weight_function(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> d4_weight,
-    const tnsr::I<DataType, SpatialDim, Frame>& coords,
-    const double sigma_r) noexcept {
+    const tnsr::I<DataType, SpatialDim, Frame>& coords, const double sigma_r,
+    const Scalar<DataType>& spatial_weight_function) noexcept {
   if (UNLIKELY(get_size(get<0>(*d4_weight)) != get_size(get<0>(coords)))) {
     *d4_weight = tnsr::a<DataType, SpatialDim, Frame>(get_size(get<0>(coords)));
   }
-  const DataType pre_factor =
-      get(weight_function(coords, sigma_r)) * (-2. / pow<2>(sigma_r));
+  // use 0th component to avoid allocations
+  get<0>(*d4_weight) = get(spatial_weight_function) * (-2. / square(sigma_r));
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    d4_weight->get(1 + i) = get<0>(*d4_weight) * coords.get(i);
+  }
   // time derivative of weight function is zero
   get<0>(*d4_weight) = 0.;
-  for (size_t i = 0; i < SpatialDim; ++i) {
-    d4_weight->get(1 + i) = pre_factor * coords.get(i);
-  }
-}
-
-template <size_t SpatialDim, typename Frame, typename DataType>
-tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_weight_function(
-    const tnsr::I<DataType, SpatialDim, Frame>& coords,
-    const double sigma_r) noexcept {
-  tnsr::a<DataType, SpatialDim, Frame> d4_weight{};
-  spacetime_deriv_of_weight_function(make_not_null(&d4_weight), coords,
-                                     sigma_r);
-  return d4_weight;
 }
 
 // Roll-on function for the damped harmonic gauge.
@@ -372,7 +353,8 @@ void damped_harmonic_h(
       time, t_start_L2, sigma_t_L2);
   const double roll_on_S =
       DampedHarmonicGauge_detail::roll_on_function(time, t_start_S, sigma_t_S);
-  DampedHarmonicGauge_detail::weight_function<SpatialDim, Frame, DataVector>(
+  DampedHarmonicGauge_detail::spatial_weight_function<SpatialDim, Frame,
+                                                      DataVector>(
       make_not_null(&weight), coords, sigma_r);
 
   get(mu_L1) =
@@ -545,7 +527,8 @@ void spacetime_deriv_damped_harmonic_h(
       time, t_start_L2, sigma_t_L2);
   const auto roll_on_S =
       DampedHarmonicGauge_detail::roll_on_function(time, t_start_S, sigma_t_S);
-  DampedHarmonicGauge_detail::weight_function<SpatialDim, Frame, DataVector>(
+  DampedHarmonicGauge_detail::spatial_weight_function<SpatialDim, Frame,
+                                                      DataVector>(
       make_not_null(&weight), coords, sigma_r);
 
   // coeffs that enter gauge source function
@@ -576,9 +559,9 @@ void spacetime_deriv_damped_harmonic_h(
           time, t_start_L2, sigma_t_L2);
 
   // Calc \f$ \partial_a [R W] \f$
-  DampedHarmonicGauge_detail::spacetime_deriv_of_weight_function<
-      SpatialDim, Frame, DataVector>(make_not_null(&d4_weight), coords,
-                                     sigma_r);
+  DampedHarmonicGauge_detail::spacetime_deriv_of_spatial_weight_function<
+      SpatialDim, Frame, DataVector>(make_not_null(&d4_weight), coords, sigma_r,
+                                     weight);
   d4_RW_L1 = d4_weight;
   d4_RW_S = d4_weight;
   d4_RW_L2 = d4_weight;
@@ -728,23 +711,17 @@ void spacetime_deriv_damped_harmonic_h(
 #define DTYPE_SCAL(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                  \
-  template void DampedHarmonicGauge_detail::weight_function(                  \
+  template void DampedHarmonicGauge_detail::spatial_weight_function(          \
       const gsl::not_null<Scalar<DTYPE(data)>*> weight,                       \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& coords,             \
       const double sigma_r) noexcept;                                         \
-  template Scalar<DTYPE(data)> DampedHarmonicGauge_detail::weight_function(   \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& coords,             \
-      const double sigma_r) noexcept;                                         \
   template void                                                               \
-  DampedHarmonicGauge_detail::spacetime_deriv_of_weight_function(             \
+  DampedHarmonicGauge_detail::spacetime_deriv_of_spatial_weight_function(     \
       const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>      \
           d4_weight,                                                          \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& coords,             \
-      const double sigma_r) noexcept;                                         \
-  template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                       \
-  DampedHarmonicGauge_detail::spacetime_deriv_of_weight_function(             \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& coords,             \
-      const double sigma_r) noexcept;                                         \
+      const double sigma_r,                                                   \
+      const Scalar<DTYPE(data)>& weight_function) noexcept;                   \
   template void                                                               \
   DampedHarmonicGauge_detail::spacetime_deriv_of_log_factor_metric_lapse(     \
       const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>      \
