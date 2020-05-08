@@ -38,6 +38,19 @@ tuples::TaggedTuple<Tags::Displacement<2>> BentBeam::variables(
              square(length_) / 4.)}}}};
 }
 
+tuples::TaggedTuple<Tags::Strain<2>> BentBeam::variables(
+    const tnsr::I<DataVector, 2>& x, tmpl::list<Tags::Strain<2>> /*meta*/) const
+    noexcept {
+  const double youngs_modulus = constitutive_relation_.youngs_modulus();
+  const double poisson_ratio = constitutive_relation_.poisson_ratio();
+  const double prefactor =
+      12. * bending_moment_ / (youngs_modulus * cube(height_));
+  auto result = make_with_value<tnsr::ii<DataVector, 2>>(x, 0.);
+  get<0, 0>(result) = -prefactor * get<1>(x);
+  get<1, 1>(result) = prefactor * poisson_ratio * get<1>(x);
+  return {std::move(result)};
+}
+
 tuples::TaggedTuple<Tags::Stress<2>> BentBeam::variables(
     const tnsr::I<DataVector, 2>& x, tmpl::list<Tags::Stress<2>> /*meta*/) const
     noexcept {
