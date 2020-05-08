@@ -110,7 +110,7 @@ template <typename Frame>
 struct Radius : db::ComputeTag {
   static std::string name() noexcept { return "Radius"; }
   using return_type = DataVector;
-  static void function(const gsl::not_null<DataVector*> radius,
+  static void function(gsl::not_null<DataVector*> radius,
                        const ::Strahlkorper<Frame>& strahlkorper) noexcept;
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };

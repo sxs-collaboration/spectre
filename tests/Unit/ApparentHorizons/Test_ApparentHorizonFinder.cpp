@@ -116,7 +116,7 @@ struct TestSchwarzschildHorizon {
     const auto& inv_metric =
         get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>(box);
     CHECK(strahlkorper.ylm_spherepack().physical_size() ==
-          get<0,0>(inv_metric).size());
+          get<0, 0>(inv_metric).size());
 
     ++test_schwarzschild_horizon_called;
   }
@@ -152,7 +152,7 @@ struct TestKerrHorizon {
     const auto& inv_metric =
         get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>(box);
     CHECK(strahlkorper.ylm_spherepack().physical_size() ==
-          get<0,0>(inv_metric).size());
+          get<0, 0>(inv_metric).size());
 
     ++test_kerr_horizon_called;
   }
@@ -211,7 +211,7 @@ struct MockMetavariables {
                  GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
                  GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>;
   using interpolation_target_tags = tmpl::list<AhA>;
-  using temporal_id  = ::Tags::TimeStepId;
+  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using component_list =
       tmpl::list<mock_interpolation_target<MockMetavariables, AhA>,
@@ -269,8 +269,13 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Registration);
 
+  // Find horizon at two temporal_ids.  The horizon find at the second
+  // temporal_id will use the same volume data and will use the initial guess
+  // from the first horizon find, so it will take zero iterations.  Having two
+  // temporal_ids tests some logic in the interpolator.
   Slab slab(0.0, 1.0);
-  TimeStepId temporal_id(true, 0, Time(slab, 0));
+  const TimeStepId first_temporal_id(true, 0, Time(slab, Rational(13, 15)));
+  const TimeStepId second_temporal_id(true, 0, Time(slab, Rational(14, 15)));
 
   // Create element_ids.
   std::vector<ElementId<3>> element_ids{};
@@ -292,11 +297,12 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   // Tell the InterpolationTargets that we want to interpolate at
-  // temporal_id.
+  // two temporal_ids.
   ActionTesting::simple_action<
       target_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                             typename metavars::AhA>>(
-      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
+      make_not_null(&runner), 0,
+      std::vector<TimeStepId>{first_temporal_id, second_temporal_id});
 
   // Create volume data and send it to the interpolator.
   for (const auto& element_id : element_ids) {
@@ -352,7 +358,11 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
     // Call the InterpolatorReceiveVolumeData action on each element_id.
     ActionTesting::simple_action<interp_component,
                                  intrp::Actions::InterpolatorReceiveVolumeData>(
-        make_not_null(&runner), 0, temporal_id, element_id, mesh,
+        make_not_null(&runner), 0, first_temporal_id, element_id, mesh,
+        output_vars);
+    ActionTesting::simple_action<interp_component,
+                                 intrp::Actions::InterpolatorReceiveVolumeData>(
+        make_not_null(&runner), 0, second_temporal_id, element_id, mesh,
         std::move(output_vars));
   }
 
@@ -371,8 +381,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                                            fake_array_index);
   }
 
-  // Make sure function was called.
-  CHECK(*test_horizon_called == 1);
+  // Make sure function was called twice.
+  CHECK(*test_horizon_called == 2);
 }
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",

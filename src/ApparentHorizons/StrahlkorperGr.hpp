@@ -150,7 +150,7 @@ Scalar<DataVector> expansion(
  */
 template <typename Frame>
 void extrinsic_curvature(
-    const gsl::not_null<tnsr::ii<DataVector, 3, Frame>*> result,
+    gsl::not_null<tnsr::ii<DataVector, 3, Frame>*> result,
     const tnsr::ii<DataVector, 3, Frame>& grad_normal,
     const tnsr::i<DataVector, 3, Frame>& unit_normal_one_form,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector) noexcept;
