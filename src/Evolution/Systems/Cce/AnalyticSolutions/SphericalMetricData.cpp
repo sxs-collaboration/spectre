@@ -63,6 +63,11 @@ void SphericalMetricData::variables_impl(
           intermediate_jacobian.get(i, 0) * intermediate_jacobian.get(j, 0) *
           get<1, 1>(intermediate_spherical_metric);
       for (size_t k = 1; k < 3; ++k) {
+        spacetime_metric->get(i + 1, j + 1) +=
+            (intermediate_jacobian.get(i, k) * intermediate_jacobian.get(j, 0) +
+             intermediate_jacobian.get(i, 0) *
+                 intermediate_jacobian.get(j, k)) *
+            intermediate_spherical_metric.get(k + 1, 1);
         for (size_t l = 1; l < 3; ++l) {
           spacetime_metric->get(i + 1, j + 1) +=
               intermediate_jacobian.get(i, k) *
@@ -113,6 +118,11 @@ void SphericalMetricData::variables_impl(
           intermediate_jacobian.get(i, 0) * intermediate_jacobian.get(j, 0) *
           get<1, 1>(intermediate_dt_spherical_metric);
       for (size_t k = 1; k < 3; ++k) {
+        dt_spacetime_metric->get(i + 1, j + 1) +=
+            (intermediate_jacobian.get(i, k) * intermediate_jacobian.get(j, 0) +
+             intermediate_jacobian.get(i, 0) *
+                 intermediate_jacobian.get(j, k)) *
+            intermediate_dt_spherical_metric.get(k + 1, 1);
         for (size_t l = 1; l < 3; ++l) {
           dt_spacetime_metric->get(i + 1, j + 1) +=
               intermediate_jacobian.get(i, k) *
@@ -196,9 +206,15 @@ void SphericalMetricData::variables_impl(
               get<1, 1>(intermediate_spherical_metric);
       for (size_t k = 1; k < 3; ++k) {
         intermediate_dr_cartesian_metric.get(i + 1, j + 1) +=
-            intermediate_jacobian.get(i, 0) * intermediate_jacobian.get(j, k) *
-                intermediate_dr_spherical_metric.get(1, k + 1) +
-            (intermediate_dr_jacobian.get(i, 0) *
+            (intermediate_jacobian.get(i, k) * intermediate_jacobian.get(j, 0) +
+             intermediate_jacobian.get(i, 0) *
+                 intermediate_jacobian.get(j, k)) *
+                intermediate_dr_spherical_metric.get(k + 1, 1) +
+            (intermediate_dr_jacobian.get(i, k) *
+                 intermediate_jacobian.get(j, 0) +
+             intermediate_jacobian.get(i, k) *
+                 intermediate_dr_jacobian.get(j, 0) +
+             intermediate_dr_jacobian.get(i, 0) *
                  intermediate_jacobian.get(j, k) +
              intermediate_jacobian.get(i, 0) *
                  intermediate_dr_jacobian.get(j, k)) *
