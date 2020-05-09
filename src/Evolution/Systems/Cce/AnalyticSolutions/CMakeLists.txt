@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   BouncingBlackHole.cpp
   LinearizedBondiSachs.cpp
   SphericalMetricData.cpp
+  TeukolskyWave.cpp
   WorldtubeData.cpp
   )
 
