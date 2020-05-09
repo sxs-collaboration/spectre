@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   CubicScale.cpp
   None.cpp
   RegisterDerivedWithCharm.cpp
+  UniformRotationAboutZAxis.cpp
   UniformTranslation.cpp
   )
 
