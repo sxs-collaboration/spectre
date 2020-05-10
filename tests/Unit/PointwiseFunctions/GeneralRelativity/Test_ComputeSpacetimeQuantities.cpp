@@ -225,9 +225,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
   TestHelpers::db::test_compute_tag<
       gr::Tags::DerivativesOfSpacetimeMetricCompute<3, Frame::Inertial>>(
       "DerivativesOfSpacetimeMetric");
-  TestHelpers::db::test_compute_tag<
-      gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>>(
-      "DerivSpacetimeMetric");
 
   // Second, put the compute items into a data box and check that they
   // put the correct results
@@ -349,10 +346,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
           expected_lapse, dt_lapse, deriv_lapse, expected_shift, dt_shift,
           deriv_shift, expected_spatial_metric, dt_spatial_metric,
           deriv_spatial_metric);
-  tnsr::iaa<DataVector, 3, Frame::Inertial> expected_deriv_spacetime_metric{};
-  gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>::function(
-      make_not_null(&expected_deriv_spacetime_metric),
-      expected_derivatives_of_spacetime_metric);
 
   const auto third_box = db::create<
       db::AddSimpleTags<
@@ -369,14 +362,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
           ::Tags::dt<gr::Tags::Lapse<DataVector>>,
           ::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>>,
       db::AddComputeTags<
-          gr::Tags::DerivativesOfSpacetimeMetricCompute<3, Frame::Inertial>,
-          gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>>>(
+          gr::Tags::DerivativesOfSpacetimeMetricCompute<3, Frame::Inertial>>>(
       expected_spatial_metric, expected_lapse, expected_shift,
       deriv_spatial_metric, deriv_lapse, deriv_shift, dt_spatial_metric,
       dt_lapse, dt_shift);
   CHECK(db::get<gr::Tags::DerivativesOfSpacetimeMetric<3, Frame::Inertial,
                                                        DataVector>>(
             third_box) == expected_derivatives_of_spacetime_metric);
-  CHECK(db::get<gr::Tags::DerivSpacetimeMetric<3, Frame::Inertial, DataVector>>(
-            third_box) == expected_deriv_spacetime_metric);
 }

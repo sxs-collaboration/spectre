@@ -55,17 +55,6 @@ struct Lapse : db::SimpleTag {
 /*!
  * \brief Spacetime derivatives of the spacetime metric
  *
- * \details Spatial derivatives of the spacetime metric
- * \f$\partial_i \psi_{bc}\f$ assembled from the spatial
- * derivatives of evolved 3+1 variables.
- */
-template <size_t Dim, typename Frame, typename DataType>
-struct DerivSpacetimeMetric : db::SimpleTag {
-  using type = tnsr::iaa<DataType, Dim, Frame>;
-};
-/*!
- * \brief Spacetime derivatives of the spacetime metric
- *
  * \details Spacetime derivatives of the spacetime metric
  * \f$\partial_a \psi_{bc}\f$ assembled from the spatial and temporal
  * derivatives of evolved 3+1 variables.

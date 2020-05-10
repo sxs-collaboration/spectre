@@ -501,44 +501,6 @@ struct DerivativesOfSpacetimeMetricCompute
 };
 
 /*!
- * \brief Compute item to get spatial derivative of spacetime metric from
- * spatial metric, lapse, shift, and their space and time derivatives.
- *
- * \details Extracts spatial derivatives from spacetime derivatives computed
- * with `derivatives_of_spacetime_metric()`. Can be retrieved using
- * `gr::Tags::SpacetimeMetric` wrapped in `Tags::deriv`.
- */
-template <size_t SpatialDim, typename Frame>
-struct DerivSpacetimeMetricCompute
-    : gr::Tags::DerivSpacetimeMetric<SpatialDim, Frame, DataVector>,
-      db::ComputeTag {
-  using argument_tags = tmpl::list<
-      gr::Tags::DerivativesOfSpacetimeMetric<SpatialDim, Frame, DataVector>>;
-
-  using return_type = tnsr::iaa<DataVector, SpatialDim, Frame>;
-
-  static constexpr auto function(
-      const gsl::not_null<tnsr::iaa<DataVector, SpatialDim, Frame>*>
-          deriv_spacetime_metric,
-      const tnsr::abb<DataVector, SpatialDim, Frame>&
-          spacetime_deriv_of_spacetime_metric) noexcept {
-    destructive_resize_components(
-        deriv_spacetime_metric,
-        spacetime_deriv_of_spacetime_metric.begin()->size());
-    for (size_t i = 0; i < SpatialDim; ++i) {
-      for (size_t a = 0; a < SpatialDim + 1; ++a) {
-        for (size_t b = a; b < SpatialDim + 1; ++b) {
-          deriv_spacetime_metric->get(i, a, b) =
-              spacetime_deriv_of_spacetime_metric.get(i + 1, a, b);
-        }
-      }
-    }
-  }
-
-  using base = gr::Tags::DerivSpacetimeMetric<SpatialDim, Frame, DataVector>;
-};
-
-/*!
  * \brief Compute item to get the square root of the determinant of the spatial
  * metric \f$\sqrt{g}\f$ via `gr::Tags::DetAndInverseSpatialMetric`.
  *
