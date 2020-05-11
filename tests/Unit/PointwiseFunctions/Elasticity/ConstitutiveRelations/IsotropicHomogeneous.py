@@ -28,3 +28,7 @@ def youngs_modulus(bulk_modulus, shear_modulus):
 def poisson_ratio(bulk_modulus, shear_modulus):
     return (3. * bulk_modulus - 2. * shear_modulus) / \
         (6. * bulk_modulus + 2. * shear_modulus)
+
+
+def lame_parameter(bulk_modulus, shear_modulus):
+    return bulk_modulus - 2 / 3. * shear_modulus
