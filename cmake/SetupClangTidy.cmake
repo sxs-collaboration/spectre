@@ -13,13 +13,30 @@
 # -cert-err58-cpp: many static variables we use do not throw, and if they do
 #                  we want to terminate anyway
 # -google-default-arguments: defaulting virtual functions in CoordinateMap
+# -modernize-use-trailing-return-type: this wants everything to use trailing
+#                                      return type syntax, which is silly.
+# -cert-oop54-cpp: checks for incorrectly implemented self-assignment checks.
+#                  However, it's broken.
+# -misc-definitions-in-headers: thinks constexpr variables in header files
+#                               cause ODR violations
+# -modernize-use-nodiscard: while it would be great to do this, changing
+#                           the entire source tree is something we don't have
+#                           the resources for.
+# -hicpp-*: redundant with other checks
+# -cppcoreguidelines-macro-usage: sometimes macros are the right answer.
+# -cppcoreguidelines-avoid-magic-numbers: too many inconvenient positives
+#                                         for us to deal with
+# -modernize-use-nodiscard: should be used, but requires possibly a lot of code
+#                           changes that we don't have the resources for
+# -cppcoreguidelines-non-private-member-variables-in-classes:
+#         public and protected member variables are fine
 #
 # Notes:
 # misc-move-const-arg: we keep this check because even though this gives
 #                      a lot of annoying warnings about moving trivially
 #                      copyable types, it warns about moving const objects,
 #                      which can have severe performance impacts.
-set(CLANG_TIDY_IGNORE_CHECKS "*,-cppcoreguidelines-no-malloc,-llvm-header-guard,-google-runtime-int,-readability-else-after-return,-misc-noexcept-move-constructor,-misc-unconventional-assign-operator,-cppcoreguidelines-c-copy-assignment-signature,-modernize-raw-string-literal,-hicpp-noexcept-move,-hicpp-no-assembler,-android-*,-cert-err58-cpp,-google-default-arguments,-fuchsia-*,-performance-noexcept-move-constructor")
+set(CLANG_TIDY_IGNORE_CHECKS "*,-cppcoreguidelines-no-malloc,-llvm-header-guard,-google-runtime-int,-readability-else-after-return,-misc-noexcept-move-constructor,-misc-unconventional-assign-operator,-cppcoreguidelines-c-copy-assignment-signature,-modernize-raw-string-literal,-hicpp-*,-android-*,-cert-err58-cpp,-google-default-arguments,-fuchsia-*,-performance-noexcept-move-constructor,-modernize-use-trailing-return-type,-cert-oop54-cpp,-misc-definitions-in-headers,-cppcoreguidelines-macro-usage,-cppcoreguidelines-avoid-magic-numbers,-modernize-use-nodiscard,-readability-magic-numbers,-bugprone-exception-escape,-cert-msc32-c,-misc-non-private-member-variables-in-classes,-cppcoreguidelines-avoid-c-arrays,-cppcoreguidelines-non-private-member-variables-in-classes,-cert-msc51-cpp,-bugprone-macro-parentheses")
 
 if(NOT CLANG_TIDY_ROOT)
   # Need to set to empty to avoid warnings with --warn-uninitialized

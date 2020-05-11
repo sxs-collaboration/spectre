@@ -424,6 +424,7 @@ class Variables<tmpl::list<Tags...>> {
   template <class FriendTags>
   friend class Variables;
 
+  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   std::unique_ptr<value_type[], decltype(&free)> variable_data_impl_{nullptr,
                                                                      &free};
   size_t size_ = 0;

@@ -81,6 +81,7 @@ class SliceIterator {
  */
 template <size_t VolumeDim>
 auto volume_and_slice_indices(const Index<VolumeDim>& extents) noexcept
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     -> std::pair<std::unique_ptr<std::pair<size_t, size_t>[], decltype(&free)>,
                  std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
                                       gsl::span<std::pair<size_t, size_t>>>,

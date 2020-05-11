@@ -128,6 +128,7 @@ struct StepFunction {
 }  // namespace blaze
 
 template <typename VT, bool TF>
+// NOLINTNEXTLINE(readability-const-return-type)
 BLAZE_ALWAYS_INLINE decltype(auto) step_function(
     const blaze::DenseVector<VT, TF>& vec) noexcept {
   return map(~vec, blaze::StepFunction{});
@@ -399,6 +400,7 @@ struct PointerVector
   PointerVector& operator=(std::initializer_list<Type> list);
 
   template <typename Other, size_t N>
+  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   PointerVector& operator=(const Other (&array)[N]);
 
   template <typename VT>
@@ -604,6 +606,7 @@ template <typename Type, AlignmentFlag_t AF, PaddingFlag_t PF, bool TF,
 template <typename Other, size_t N>
 inline PointerVector<Type, AF, PF, TF, ExprResultType>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator=(
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     const Other (&array)[N]) {
   ASSERT(size_ == N, "Invalid array size");
   for (size_t i = 0UL; i < N; ++i) {

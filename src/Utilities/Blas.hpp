@@ -122,9 +122,12 @@ inline void dgemm_<true>(const char& TRANSA, const char& TRANSB,
              'C' == TRANSB or 'c' == TRANSB,
          "TRANSB must be upper or lower case N, T, or C. See the BLAS "
          "documentation for help.");
-  const auto m = gsl::narrow_cast<int>(M), n = gsl::narrow_cast<int>(N),
-             k = gsl::narrow_cast<int>(K), lda = gsl::narrow_cast<int>(LDA),
-             ldb = gsl::narrow_cast<int>(LDB), ldc = gsl::narrow_cast<int>(LDC);
+  const auto m = gsl::narrow_cast<int>(M);
+  const auto n = gsl::narrow_cast<int>(N);
+  const auto k = gsl::narrow_cast<int>(K);
+  const auto lda = gsl::narrow_cast<int>(LDA);
+  const auto ldb = gsl::narrow_cast<int>(LDB);
+  const auto ldc = gsl::narrow_cast<int>(LDC);
   libxsmm_dgemm(&TRANSA, &TRANSB, &m, &n, &k, &ALPHA, A, &lda, B, &ldb, &BETA,
                 C, &ldc);
 }

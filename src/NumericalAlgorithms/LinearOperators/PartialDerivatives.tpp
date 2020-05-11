@@ -63,7 +63,8 @@ void partial_derivatives_impl(
       Variables<DerivativeTags>::number_of_independent_components;
   double* pdu = du->data();
   const size_t num_grid_points = du->number_of_grid_points();
-  DataVector lhs{}, logical_du{};
+  DataVector lhs{};
+  DataVector logical_du{};
 
   std::array<std::array<size_t, Dim>, Dim> indices{};
   for (size_t deriv_index = 0; deriv_index < Dim; ++deriv_index) {
@@ -192,6 +193,7 @@ void partial_derivatives(
   // Using malloc instead of new is faster because we do not need to zero the
   // data.
   // clang-tidy: cppcoreguidelines-no-malloc
+  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   std::unique_ptr<double[], decltype(&free)> logical_derivs_data(
       static_cast<double*>(
           malloc(Dim * u.number_of_grid_points() *  // NOLINT
