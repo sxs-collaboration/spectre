@@ -202,8 +202,6 @@ DIRECTORY_GRAPH        = NO
 
 DOT_IMAGE_FORMAT       = png
 
-DOT_PATH               = @DOXYGEN_DOT_PATH@
-
 MAX_DOT_GRAPH_DEPTH    = 0
 
 GENERATE_LEGEND        = NO
