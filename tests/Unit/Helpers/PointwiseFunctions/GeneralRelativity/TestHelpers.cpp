@@ -9,8 +9,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace TestHelpers {
-namespace gr {
+namespace TestHelpers::gr {
 template <typename DataType>
 Scalar<DataType> random_lapse(const gsl::not_null<std::mt19937*> generator,
                               const DataType& used_for_size) noexcept {
@@ -28,12 +27,12 @@ tnsr::I<DataType, Dim> random_shift(
       generator, make_not_null(&distribution), used_for_size);
 }
 
-template <size_t Dim, typename DataType>
-tnsr::ii<DataType, Dim> random_spatial_metric(
+template <size_t Dim, typename DataType, typename Fr>
+tnsr::ii<DataType, Dim, Fr> random_spatial_metric(
     const gsl::not_null<std::mt19937*> generator,
     const DataType& used_for_size) noexcept {
   std::uniform_real_distribution<> distribution(-0.05, 0.05);
-  auto spatial_metric = make_with_random_values<tnsr::ii<DataType, Dim>>(
+  auto spatial_metric = make_with_random_values<tnsr::ii<DataType, Dim, Fr>>(
       generator, make_not_null(&distribution), used_for_size);
   for (size_t d = 0; d < Dim; ++d) {
     spatial_metric.get(d, d) += 1.0;
@@ -65,5 +64,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_TENSORS, (double, DataVector), (1, 2, 3))
 #undef INSTANTIATE_TENSORS
 #undef DIM
 #undef DTYPE
-}  // namespace gr
-}  // namespace TestHelpers
+}  // namespace TestHelpers::gr

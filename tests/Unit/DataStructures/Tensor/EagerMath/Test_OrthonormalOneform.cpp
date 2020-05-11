@@ -20,24 +20,12 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/DataStructures/RandomUnitNormal.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
+#include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace {
-
-template <typename DataType, size_t Dim, typename Frame>
-tnsr::ii<DataType, Dim, Frame> random_spatial_metric(
-    const gsl::not_null<std::mt19937*> generator,
-    const DataType& used_for_size) noexcept {
-  std::uniform_real_distribution<> distribution(-0.05, 0.05);
-  auto spatial_metric = make_with_random_values<tnsr::ii<DataType, Dim, Frame>>(
-      generator, make_not_null(&distribution), used_for_size);
-  for (size_t d = 0; d < Dim; ++d) {
-    spatial_metric.get(d, d) += 1.0;
-  }
-  return spatial_metric;
-}
 
 template <size_t Dim>
 struct TestOrthonormalForms {
@@ -114,7 +102,8 @@ void check_orthonormal_forms(const DataType& used_for_size) noexcept {
   const TestOrthonormalForms<Dim> test;
 
   const auto spatial_metric =
-      random_spatial_metric<DataType, Dim, Frame>(&generator, used_for_size);
+      TestHelpers::gr::random_spatial_metric<Dim, DataType, Frame>(
+          &generator, used_for_size);
   const auto inv_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
   const auto unit_vector = random_unit_normal(&generator, spatial_metric);

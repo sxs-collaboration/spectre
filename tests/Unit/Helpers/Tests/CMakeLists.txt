@@ -6,6 +6,7 @@ set(LIBRARY "Test_Helpers")
 set(LIBRARY_SOURCES
   Test_MakeWithRandomValues.cpp
   Test_RandomUnitNormal.cpp
+  Test_MakeRandomVectorInMagnitudeRange.cpp
   )
 
 add_test_library(

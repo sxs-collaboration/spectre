@@ -13,29 +13,18 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/DataStructures/RandomUnitNormal.hpp"
+#include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace {
 
-template <typename DataType, size_t Dim>
-tnsr::ii<DataType, Dim> random_spatial_metric(
-    const gsl::not_null<std::mt19937*> generator,
-    const DataType& used_for_size) noexcept {
-  std::uniform_real_distribution<> distribution(-0.05, 0.05);
-  auto spatial_metric = make_with_random_values<tnsr::ii<DataType, Dim>>(
-      generator, make_not_null(&distribution), used_for_size);
-  for (size_t d = 0; d < Dim; ++d) {
-    spatial_metric.get(d, d) += 1.0;
-  }
-  return spatial_metric;
-}
-
 template <size_t Dim, typename DataType>
 void test_random_unit_normal(const gsl::not_null<std::mt19937*> generator,
                              const DataType& used_for_size) noexcept {
   const auto spatial_metric =
-      random_spatial_metric<DataType, Dim>(generator, used_for_size);
+      TestHelpers::gr::random_spatial_metric<Dim, DataType>(generator,
+                                                            used_for_size);
   const auto unit_normal = random_unit_normal(generator, spatial_metric);
   const auto expected_magnitude =
       make_with_value<Scalar<DataType>>(used_for_size, 1.0);
