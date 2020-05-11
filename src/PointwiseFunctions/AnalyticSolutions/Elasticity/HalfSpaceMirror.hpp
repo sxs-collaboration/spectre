@@ -41,8 +41,8 @@ namespace Solutions {
  * T^{xy} &= T^{yy} = 0 \text{.}
  * \f}
  *
- * as a Neumann boundary condition. The implementation here matches with
- * Eqs. 11.93 and 11.97 in \cite ThorneBlandford2017.
+ * as a Neumann boundary condition. The implementation used here matches with
+ * Eqs. 11 and 12 in \cite Lovelace2007tn.
  */
 
 class HalfSpaceMirror {

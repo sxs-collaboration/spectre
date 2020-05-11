@@ -23,71 +23,7 @@
 namespace Elasticity {
 namespace Solutions {
 
-double alpha(const double k, const double shear_modulus,
-             const double beam_width, const double applied_force) {
-  return 1 / (4. * M_PI * shear_modulus) * exp(-square(k * beam_width / 2.)) *
-         applied_force;
-}
-
-double integrand_displacement_w(const double k, const double w, const double z,
-                                const double shear_modulus,
-                                const double poisson_ratio,
-                                const double beam_width,
-                                const double applied_force) noexcept {
-  return (-1 + 2. * poisson_ratio + k * z) * exp(-k * z) *
-         gsl_sf_bessel_J1(w * k) *
-         alpha(k, shear_modulus, beam_width, applied_force);
-}
-
-double integrand_displacement_z(const double k, const double w, const double z,
-                                const double shear_modulus,
-                                const double poisson_ratio,
-                                const double beam_width,
-                                const double applied_force) noexcept {
-  return (2 - 2. * poisson_ratio + k * z) * exp(-k * z) *
-         gsl_sf_bessel_J0(w * k) *
-         alpha(k, shear_modulus, beam_width, applied_force);
-}
-
-double integrand_displacement_w_dw(const double k, const double w,
-                                   const double z, const double shear_modulus,
-                                   const double poisson_ratio,
-                                   const double beam_width,
-                                   const double applied_force) noexcept {
-  return (-1 + 2. * poisson_ratio + k * z) * exp(-k * z) * k *
-         (gsl_sf_bessel_J0(w * k) - gsl_sf_bessel_Jn(2, w * k)) / 2. *
-         alpha(k, shear_modulus, beam_width, applied_force);
-}
-
-double integrand_displacement_w_dz(const double k, const double w,
-                                   const double z, const double shear_modulus,
-                                   const double poisson_ratio,
-                                   const double beam_width,
-                                   const double applied_force) noexcept {
-  return (2 - 2. * poisson_ratio - k * z) * k * exp(-k * z) *
-         gsl_sf_bessel_J1(w * k) *
-         alpha(k, shear_modulus, beam_width, applied_force);
-}
-
-double integrand_displacement_z_dw(const double k, const double w,
-                                   const double z, const double shear_modulus,
-                                   const double poisson_ratio,
-                                   const double beam_width,
-                                   const double applied_force) noexcept {
-  return (2 - 2. * poisson_ratio + k * z) * exp(-k * z) * k *
-         (-gsl_sf_bessel_J1(w * k)) *
-         alpha(k, shear_modulus, beam_width, applied_force);
-}
-
-double integrand_displacement_z_dz(const double k, const double w,
-                                   const double z, const double shear_modulus,
-                                   const double poisson_ratio,
-                                   const double beam_width,
-                                   const double applied_force) noexcept {
-  return (-1 + 2. * poisson_ratio - k * z) * k * exp(-k * z) *
-         gsl_sf_bessel_J0(w * k) *
-         alpha(k, shear_modulus, beam_width, applied_force);
-}
+static constexpr size_t dim = HalfSpaceMirror::dim;
 
 HalfSpaceMirror::HalfSpaceMirror(
     double beam_width, double applied_force,
@@ -115,8 +51,8 @@ tuples::TaggedTuple<Tags::Displacement<dim>> HalfSpaceMirror::variables(
     const tnsr::I<DataVector, dim>& x,
     tmpl::list<Tags::Displacement<dim>> /*meta*/) const noexcept {
   const double shear_modulus = constitutive_relation_.shear_modulus();
-  const double poisson_ratio = constitutive_relation_.poisson_ratio();
-  auto result = make_with_value<tnsr::I<DataVector, 3>>(x, 0.);
+  const double lame_parameter = constitutive_relation_.lame_parameter();
+  auto result = make_with_value<tnsr::I<DataVector, dim>>(x, 0.);
   const auto w = sqrt(square(get<0>(x)) + square(get<1>(x))) +
                  std::numeric_limits<double>::epsilon();
   double cos_phi;
@@ -133,10 +69,14 @@ tuples::TaggedTuple<Tags::Displacement<dim>> HalfSpaceMirror::variables(
     z = get<2>(x)[i];
     r = w[i];
     auto result_w = integration(
-        [&r, &z, &shear_modulus, &poisson_ratio, this](const double k) {
-          return integrand_displacement_w(k, r, z, shear_modulus, poisson_ratio,
-                                          this->beam_width_,
-                                          this->applied_force_);
+        [&r, &z, &shear_modulus, &lame_parameter, this](const double k) {
+          return applied_force_ / (2. * shear_modulus) *
+                 gsl_sf_bessel_J1(k * r) * exp(-k * z) *
+                 (1 -
+                  (lame_parameter + 2. * shear_modulus) /
+                      (lame_parameter + shear_modulus) +
+                  k * z) *
+                 1 / (2. * M_PI) * exp(-square(k * beam_width_ / 2.));
         },
         lower_boundary, absolute_tolerance_);
 
@@ -158,10 +98,12 @@ tuples::TaggedTuple<Tags::Displacement<dim>> HalfSpaceMirror::variables(
     get<1>(result)[i] = result_w * sin_phi;
 
     auto result_z = integration(
-        [&r, &z, &shear_modulus, &poisson_ratio, this](const double k) {
-          return integrand_displacement_z(k, r, z, shear_modulus, poisson_ratio,
-                                          this->beam_width_,
-                                          this->applied_force_);
+        [&r, &z, &shear_modulus, &lame_parameter, this](const double k) {
+          return applied_force_ / (2. * shear_modulus) *
+                 gsl_sf_bessel_J0(k * r) * exp(-k * z) *
+                 (1 + shear_modulus / (lame_parameter + shear_modulus) +
+                  k * z) *
+                 1 / (2. * M_PI) * exp(-square(k * beam_width_ / 2.));
         },
         lower_boundary, absolute_tolerance_);
     get<2>(result)[i] = result_z;
@@ -173,8 +115,8 @@ tuples::TaggedTuple<Tags::Strain<dim>> HalfSpaceMirror::variables(
     const tnsr::I<DataVector, dim>& x,
     tmpl::list<Tags::Strain<dim>> /*meta*/) const noexcept {
   const double shear_modulus = constitutive_relation_.shear_modulus();
-  const double poisson_ratio = constitutive_relation_.poisson_ratio();
-  auto result = make_with_value<tnsr::ii<DataVector, 3>>(x, 0.);
+  const double lame_parameter = constitutive_relation_.lame_parameter();
+  auto strain = make_with_value<tnsr::ii<DataVector, dim>>(x, 0.);
   const auto w = sqrt(square(get<0>(x)) + square(get<1>(x))) +
                  std::numeric_limits<double>::epsilon();
   double cos_phi;
@@ -190,69 +132,71 @@ tuples::TaggedTuple<Tags::Strain<dim>> HalfSpaceMirror::variables(
   for (size_t i = 0; i < num_points; i++) {
     r = w[i];
     z = get<2>(x)[i];
-    auto result_xiw_dw = integration(
-        [&r, &z, &shear_modulus, &poisson_ratio, this](const double k) {
-          return integrand_displacement_w_dw(k, r, z, shear_modulus,
-                                             poisson_ratio, this->beam_width_,
-                                             this->applied_force_);
+    auto theta = integration(
+        [&r, &z, &shear_modulus, &lame_parameter, this](const double k) {
+          return applied_force_ / (2. * shear_modulus) * k *
+                 gsl_sf_bessel_J0(k * r) *
+                 (-2. * shear_modulus / (lame_parameter + shear_modulus)) *
+                 exp(-k * z) * 1 / (2. * M_PI) *
+                 exp(-square(k * beam_width_ / 2.));
         },
         lower_boundary, absolute_tolerance_);
 
-    auto result_xiw_dz = integration(
-        [&r, &z, &shear_modulus, &poisson_ratio, this](const double k) {
-          return integrand_displacement_w_dz(k, r, z, shear_modulus,
-                                             poisson_ratio, this->beam_width_,
-                                             this->applied_force_);
+    auto strain_rz = integration(
+        [&r, &z, &shear_modulus, this](const double k) {
+          return -applied_force_ / (2. * shear_modulus) * k *
+                 gsl_sf_bessel_J1(k * r) * (k * z) * exp(-k * z) * 1 /
+                 (2. * M_PI) * exp(-square(k * beam_width_ / 2.));
         },
         lower_boundary, absolute_tolerance_);
 
-    auto result_xiz_dw = integration(
-        [&r, &z, &shear_modulus, &poisson_ratio, this](const double k) {
-          return integrand_displacement_z_dw(k, r, z, shear_modulus,
-                                             poisson_ratio, this->beam_width_,
-                                             this->applied_force_);
+    auto strain_zz = integration(
+        [&r, &z, &shear_modulus, &lame_parameter, this](const double k) {
+          return applied_force_ / (2. * shear_modulus) * k *
+                 gsl_sf_bessel_J0(k * r) * exp(-k * z) *
+                 (-shear_modulus / (lame_parameter + shear_modulus) - k * z) *
+                 1 / (2. * M_PI) * exp(-square(k * beam_width_ / 2.));
         },
         lower_boundary, absolute_tolerance_);
 
-    auto result_xiz_dz = integration(
-        [&r, &z, &shear_modulus, &poisson_ratio, this](const double k) {
-          return integrand_displacement_z_dz(k, r, z, shear_modulus,
-                                             poisson_ratio, this->beam_width_,
-                                             this->applied_force_);
-        },
-        lower_boundary, absolute_tolerance_);
-
-    double xi_w_over_w;
+    double strain_rr;
+    double strain_pp;
     if (w[i] <= 1e-13) {
       cos_phi = 0.;
       sin_phi = 0.;
-      xi_w_over_w = result_xiw_dw;
+      strain_rr = 0.5 * (theta - strain_zz);
+      strain_pp = strain_rr;
     } else {
-      cos_phi = get<0>(x)[i] / w[i];
-      sin_phi = get<1>(x)[i] / w[i];
-      auto result_w = integration(
-          [&r, &z, &shear_modulus, &poisson_ratio, this](const double k) {
-            return integrand_displacement_w(k, r, z, shear_modulus,
-                                            poisson_ratio, this->beam_width_,
-                                            this->applied_force_);
+      auto displacement_w = integration(
+          [&r, &z, &shear_modulus, &lame_parameter, this](const double k) {
+            return applied_force_ / (2. * shear_modulus) *
+                   gsl_sf_bessel_J1(k * r) * exp(-k * z) *
+                   (1 -
+                    (lame_parameter + 2. * shear_modulus) /
+                        (lame_parameter + shear_modulus) +
+                    k * z) *
+                   1 / (2. * M_PI) * exp(-square(k * beam_width_ / 2.));
           },
           lower_boundary, absolute_tolerance_);
 
-      xi_w_over_w = result_w / w[i];
+      cos_phi = get<0>(x)[i] / w[i];
+      sin_phi = get<1>(x)[i] / w[i];
+      strain_pp = displacement_w / w[i];
+      strain_rr = theta - strain_pp - strain_zz;
     }
-    get<0, 0>(result)[i] =
-        xi_w_over_w + square(cos_phi) * (result_xiw_dw - xi_w_over_w);
-    get<0, 1>(result)[i] = cos_phi * sin_phi * (result_xiw_dw - xi_w_over_w);
-    get<0, 2>(result)[i] = cos_phi * (result_xiw_dz + result_xiz_dw) / 2.;
-    get<1, 1>(result)[i] =
-        xi_w_over_w + square(sin_phi) * (result_xiw_dw - xi_w_over_w);
-    get<1, 2>(result)[i] = sin_phi * (result_xiw_dz + result_xiz_dw) / 2.;
-    get<1, 0>(result)[i] = get<0, 1>(result)[i];
-    get<2, 0>(result)[i] = get<0, 2>(result)[i];
-    get<2, 1>(result)[i] = get<1, 2>(result)[i];
-    get<2, 2>(result)[i] = result_xiz_dz;
+    get<0, 0>(strain)[i] =
+        strain_pp + square(cos_phi) * (strain_rr - strain_pp);
+    get<0, 1>(strain)[i] = cos_phi * sin_phi * (strain_rr - strain_pp);
+    get<0, 2>(strain)[i] = cos_phi * strain_rz;
+    get<1, 1>(strain)[i] =
+        strain_pp + square(sin_phi) * (strain_rr - strain_pp);
+    get<1, 2>(strain)[i] = sin_phi * strain_rz;
+    get<1, 0>(strain)[i] = get<0, 1>(strain)[i];
+    get<2, 0>(strain)[i] = get<0, 2>(strain)[i];
+    get<2, 1>(strain)[i] = get<1, 2>(strain)[i];
+    get<2, 2>(strain)[i] = strain_zz;
   }
-  return {std::move(result)};
+  return {std::move(strain)};
 }
 
 tuples::TaggedTuple<::Tags::FixedSource<Tags::Displacement<dim>>>

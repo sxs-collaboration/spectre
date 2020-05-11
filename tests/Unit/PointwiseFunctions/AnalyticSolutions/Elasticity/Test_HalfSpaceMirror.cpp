@@ -61,6 +61,7 @@ struct HalfSpaceMirrorProxy : Elasticity::Solutions::HalfSpaceMirror {
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.Elasticity.HalfSpaceMirror",
     "[PointwiseFunctions][Unit][Elasticity]") {
+  const size_t dim = Elasticity::Solutions::HalfSpaceMirror::dim;
   const Elasticity::Solutions::HalfSpaceMirror check_solution{
       0.177, 1.0,
       Elasticity::ConstitutiveRelations::IsotropicHomogeneous<3>{
@@ -79,23 +80,24 @@ SPECTRE_TEST_CASE(
   CHECK(created_solution == check_solution);
   test_serialization(check_solution);
 
-  pypp::SetupLocalPythonEnvironment local_python_env{
-      "PointwiseFunctions/AnalyticSolutions/Elasticity"};
-  const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<3>
+  pypp::SetupLocalPythonEnvironment local_python_env{"PointwiseFunctions"};
+  const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<dim>
       constitutive_relation{36.36363636363637, 30.76923076923077};
   const HalfSpaceMirrorProxy solution{0.177, 1.0, constitutive_relation, 50,
                                       1.e-13};
   pypp::check_with_random_values<1,
-                                 tmpl::list<Elasticity::Tags::Displacement<3>,
-                                            Elasticity::Tags::Strain<3>>>(
-      &HalfSpaceMirrorProxy::field_variables, solution, "HalfSpaceMirror",
+                                 tmpl::list<Elasticity::Tags::Displacement<dim>,
+                                            Elasticity::Tags::Strain<dim>>>(
+      &HalfSpaceMirrorProxy::field_variables, solution,
+      "AnalyticSolutions.Elasticity.HalfSpaceMirror",
       {"displacement", "strain"}, {{{0., 5.}}},
       std::make_tuple(0.177, 1.0, 36.36363636363637, 30.76923076923077),
       DataVector(5));
   pypp::check_with_random_values<
-      1, tmpl::list<Tags::FixedSource<Elasticity::Tags::Displacement<3>>>>(
-      &HalfSpaceMirrorProxy::source_variables, solution, "HalfSpaceMirror",
-      {"source"}, {{{0., 5.}}}, std::make_tuple(), DataVector(5));
+      1, tmpl::list<Tags::FixedSource<Elasticity::Tags::Displacement<dim>>>>(
+      &HalfSpaceMirrorProxy::source_variables, solution,
+      "AnalyticSolutions.Elasticity.HalfSpaceMirror", {"source"}, {{{0., 5.}}},
+      std::make_tuple(), DataVector(5));
 
   {
     INFO("Test elasticity system with half-space mirror");
