@@ -41,15 +41,14 @@ template <size_t Dim>
 auto add_scalar_to_tensor_components(
     const tnsr::i<DataVector, Dim, Frame::Inertial>& input,
     double constant) noexcept {
-  const tnsr::i<DataVector, Dim, Frame::Inertial> copy_of_input =
-      [&input, &constant ]() noexcept {
-    auto local_copy_of_input = input;
-    for (size_t i = 0; i < Dim; ++i) {
-      local_copy_of_input.get(i) += constant;
-    }
-    return local_copy_of_input;
-  }
-  ();
+  tnsr::i<DataVector, Dim, Frame::Inertial> copy_of_input =
+      [&input, &constant]() noexcept {
+        auto local_copy_of_input = input;
+        for (size_t i = 0; i < Dim; ++i) {
+          local_copy_of_input.get(i) += constant;
+        }
+        return local_copy_of_input;
+      }();
   return copy_of_input;
 }
 template <size_t Dim>

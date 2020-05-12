@@ -1408,7 +1408,7 @@ bool MockDistributedObject<Component>::is_ready_impl(
               std::as_const(box), std::as_const(inboxes), *const_global_cache,
               std::as_const(array_index));
         },
-        [](std::false_type /*has_is_ready*/, auto) { return true; });
+        [](std::false_type /*has_is_ready*/, auto /*meta*/) { return true; });
 
     next_action_is_ready =
         check_if_ready(Parallel::Algorithm_detail::is_is_ready_callable_t<

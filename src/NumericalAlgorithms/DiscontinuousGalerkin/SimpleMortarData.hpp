@@ -81,7 +81,7 @@ SimpleMortarData<TemporalId, LocalVars, RemoteVars>::extract() noexcept {
          "Tried to extract boundary data, but do not have "
              << (local_data_ ? "remote" : remote_data_ ? "local" : "any")
              << " data.");
-  const auto result =
+  auto result =
       std::make_pair(std::move(*local_data_), std::move(*remote_data_));
   local_data_ = boost::none;
   remote_data_ = boost::none;
