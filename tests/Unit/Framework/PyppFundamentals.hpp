@@ -228,7 +228,7 @@ struct ToPyObject<ComplexDataVector, std::nullptr_t> {
     for (size_t i = 0; i < t.size(); ++i) {
       // clang-tidy: Do not use pointer arithmetic
       // clang-tidy: Do not use reinterpret cast
-      const auto data =
+      auto* const data =
           static_cast<std::complex<double>*>(PyArray_GETPTR1(  // NOLINT
               reinterpret_cast<PyArrayObject*>(npy_array),     // NOLINT
               static_cast<long>(i)));
@@ -415,7 +415,7 @@ struct FromPyObject<DataVector, std::nullptr_t> {
     DataVector t(static_cast<size_t>(PyArray_Size(p)));  // NOLINT
     for (size_t i = 0; i < t.size(); ++i) {
       // clang-tidy: pointer arithmetic. (Expanded from macro)
-      const auto value = static_cast<const double*>(
+      const auto* const value = static_cast<const double*>(
           PyArray_GETPTR1(npy_array, static_cast<long>(i)));  // NOLINT
       if (value == nullptr) {
         throw std::runtime_error{"Failed to get argument from PyArray."};
@@ -451,7 +451,7 @@ struct FromPyObject<ComplexDataVector, std::nullptr_t> {
     ComplexDataVector t(static_cast<size_t>(PyArray_Size(p)));  // NOLINT
     for (size_t i = 0; i < t.size(); ++i) {
       // clang-tidy: pointer arithmetic. (Expanded from macro)
-      const auto value = static_cast<const std::complex<double>*>(
+      const auto* value = static_cast<const std::complex<double>*>(
           PyArray_GETPTR1(npy_array, static_cast<long>(i)));  // NOLINT
       if (value == nullptr) {
         throw std::runtime_error{"Failed to get argument from PyArray."};
@@ -506,9 +506,10 @@ T tensor_conversion_impl(PyObject* p) {
                              std::to_string(T::rank()) + ")"};
   }
 
-  const auto npy_array_dims = PyArray_DIMS(npy_array);
+  const auto* npy_array_dims = PyArray_DIMS(npy_array);
   constexpr auto t_array_dims = T::index_dims();
   for (size_t i = 0; i < T::rank(); ++i) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     if (npy_array_dims[i] != static_cast<long>(gsl::at(t_array_dims, i))) {
       throw std::runtime_error{
           "Mismatch between number of components of ndarray and Tensor in " +
