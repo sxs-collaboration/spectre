@@ -199,6 +199,35 @@ tuples::TaggedTuple<Tags::Strain<dim>> HalfSpaceMirror::variables(
   return {std::move(strain)};
 }
 
+Scalar<DataVector> HalfSpaceMirror::pointwise_isotropic_energy(
+    const tnsr::I<DataVector, dim>& x) const noexcept {
+  const double shear_modulus = constitutive_relation_.shear_modulus();
+  const double lame_parameter = constitutive_relation_.lame_parameter();
+  Scalar<DataVector> pointwise_potential =
+      make_with_value<Scalar<DataVector>>(x, 0.);
+  auto strain = get<::Elasticity::Tags::Strain<dim>>(
+      variables(x, tmpl::list<::Elasticity::Tags::Strain<dim>>{}));
+  double strain_square;
+  double theta;
+  const size_t num_points = get<0>(x).size();
+  for (size_t i = 0; i < num_points; i++) {
+    theta = 0;
+    theta += get<0, 0>(strain)[i];
+    theta += get<1, 1>(strain)[i];
+    theta += get<2, 2>(strain)[i];
+    strain_square = 0;
+    strain_square += square(get<0, 0>(strain)[i]);
+    strain_square += square(get<1, 1>(strain)[i]);
+    strain_square += square(get<2, 2>(strain)[i]);
+    strain_square += 2. * square(get<0, 1>(strain)[i]);
+    strain_square += 2. * square(get<0, 2>(strain)[i]);
+    strain_square += 2. * square(get<1, 2>(strain)[i]);
+    get(pointwise_potential)[i] =
+        lame_parameter / 2. * square(theta) + shear_modulus * strain_square;
+  }
+  return pointwise_potential;
+}
+
 tuples::TaggedTuple<::Tags::FixedSource<Tags::Displacement<dim>>>
 HalfSpaceMirror::variables(
     const tnsr::I<DataVector, dim>& x,

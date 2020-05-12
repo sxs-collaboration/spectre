@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cmath>
+#include <random>
 #include <string>
 #include <tuple>
 
@@ -30,6 +31,7 @@
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/FirstOrderEllipticSolutionsTestHelpers.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Elasticity/HalfSpaceMirror.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
+#include "PointwiseFunctions/Elasticity/PotentialEnergy.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -118,4 +120,25 @@ SPECTRE_TEST_CASE(
         solution, fluxes_computer, coord_map, 1.e4, 1.,
         std::make_tuple(constitutive_relation, inertial_coords));
   };
+
+  {
+    INFO("Test pointwise energy of half-space mirror");
+    // Generate random coordinate data
+    MAKE_GENERATOR(generator);
+    std::uniform_real_distribution<> dist(0., 1.);
+    const auto nn_generator = make_not_null(&generator);
+    const auto nn_dist = make_not_null(&dist);
+    const DataVector used_for_size{10};
+    const auto random_inertial_coords =
+        make_with_random_values<tnsr::I<DataVector, dim>>(nn_generator, nn_dist,
+                                                          used_for_size);
+    typename ::Elasticity::Tags::Strain<dim>::type random_strain =
+        get<::Elasticity::Tags::Strain<dim>>(
+            solution.variables(random_inertial_coords,
+                               tmpl::list<::Elasticity::Tags::Strain<dim>>{}));
+    auto random_energy = ::Elasticity::evaluate_potential_energy<dim>(
+        random_strain, random_inertial_coords, constitutive_relation);
+    CHECK_ITERABLE_APPROX(random_energy, solution.pointwise_isotropic_energy(
+                                             random_inertial_coords));
+  }
 }

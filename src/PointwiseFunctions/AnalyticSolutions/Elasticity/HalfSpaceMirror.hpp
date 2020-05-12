@@ -107,6 +107,9 @@ class HalfSpaceMirror {
     return constitutive_relation_;
   }
 
+  Scalar<DataVector> pointwise_isotropic_energy(
+      const tnsr::I<DataVector, dim>& x) const noexcept;
+
   // @{
   /// Retrieve variable at coordinates `x`
   auto variables(const tnsr::I<DataVector, dim>& x,
