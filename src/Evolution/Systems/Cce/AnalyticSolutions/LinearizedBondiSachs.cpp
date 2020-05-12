@@ -20,8 +20,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Cce {
-namespace Solutions {
+namespace Cce::Solutions {
 
 /// \cond
 LinearizedBondiSachs::LinearizedBondiSachs(
@@ -511,5 +510,4 @@ void LinearizedBondiSachs::pup(PUP::er& p) noexcept {
 
 PUP::able::PUP_ID LinearizedBondiSachs::my_PUP_ID = 0;
 /// \endcond
-}  // namespace Solutions
-}  // namespace Cce
+}  // namespace Cce::Solutions

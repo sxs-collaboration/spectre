@@ -225,6 +225,7 @@ class CoefficientsMetadata {
     };
 
     /// advance the iterator by one position (postfix)
+    // NOLINTNEXTLINE(readability-const-return-type)
     const CoefficientsIndexIterator operator++(int) noexcept {
       auto pre_increment = *this;
       ++*this;
@@ -247,6 +248,7 @@ class CoefficientsMetadata {
     }
 
     /// retreat the iterator by one position (postfix)
+    // NOLINTNEXTLINE(readability-const-return-type)
     const CoefficientsIndexIterator operator--(int) noexcept {
       auto pre_decrement = *this;
       --*this;

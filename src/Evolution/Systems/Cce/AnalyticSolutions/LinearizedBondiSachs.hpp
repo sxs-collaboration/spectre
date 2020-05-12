@@ -74,7 +74,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
   explicit LinearizedBondiSachs(CkMigrateMessage* /*unused*/) noexcept {}
 
   // clang doesn't manage to use = default correctly in this case
-  // NOLINTNEXTLINE(hicpp-use-equals-default)
+  // NOLINTNEXTLINE(modernize-use-equals-default)
   LinearizedBondiSachs() noexcept {}
 
   LinearizedBondiSachs(const std::vector<std::complex<double>>& mode_constants,

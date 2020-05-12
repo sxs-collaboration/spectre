@@ -15,9 +15,7 @@
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-namespace Cce {
-namespace Solutions {
-namespace TestHelpers {
+namespace Cce::Solutions::TestHelpers {
 
 tuples::TaggedTuple<Tags::BondiBeta, Tags::BondiU, Tags::BondiW, Tags::BondiJ>
 extract_bondi_scalars_from_cartesian_metric(
@@ -275,6 +273,4 @@ extract_dr_bondi_scalars_from_cartesian_metric(
                                 (get<2, 3>(inverse_spherical_metric)));
   return {dr_bondi_beta, dr_bondi_u, dr_bondi_w, dr_bondi_j};
 }
-}  // namespace TestHelpers
-}  // namespace Solutions
-}  // namespace Cce
+}  // namespace Cce::Solutions::TestHelpers

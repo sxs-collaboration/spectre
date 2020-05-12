@@ -23,8 +23,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Cce {
-namespace Solutions {
+namespace Cce::Solutions {
 
 /// \cond
 
@@ -317,5 +316,4 @@ void SphericalMetricData::dr_inverse_jacobian(
 void SphericalMetricData::pup(PUP::er& p) noexcept { WorldtubeData::pup(p); }
 
 /// \endcond
-}  // namespace Solutions
-}  // namespace Cce
+}  // namespace Cce::Solutions

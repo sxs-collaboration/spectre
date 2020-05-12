@@ -51,6 +51,7 @@ SPECTRE_ALWAYS_INLINE constexpr size_t get_nth_bit(const size_t i,
 /// \ingroup ConstantExpressionsGroup
 /// \brief Compute the square of `x`
 template <typename T>
+// NOLINTNEXTLINE(readability-const-return-type)
 SPECTRE_ALWAYS_INLINE constexpr decltype(auto) square(const T& x) {
   return x * x;
 }

@@ -27,8 +27,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace Cce {
-namespace Solutions {
+namespace Cce::Solutions {
 
 namespace {
 template <int Spin>
@@ -384,5 +383,4 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearizedBondiSachs",
   }
 }
 }  // namespace
-}  // namespace Solutions
-}  // namespace Cce
+}  // namespace Cce::Solutions

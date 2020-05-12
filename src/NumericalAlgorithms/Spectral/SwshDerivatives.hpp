@@ -225,12 +225,11 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
   template <ComplexRepresentation FriendRepresentation,
             typename... DerivativeKinds, typename... ArgumentTypes,
             size_t... Is>
-  // NOLINTNEXTLINE(readability-redundant-declaratioon)
-  friend void angular_derivatives_impl(const std::tuple<ArgumentTypes...>&,
-                                       size_t, size_t,
-                                       std::index_sequence<Is...>,
-                                       tmpl::list<DerivativeKinds...>,
-                                       std::bool_constant<true>) noexcept;
+  // NOLINTNEXTLINE(readability-redundant-declaration)
+  friend void angular_derivatives_impl(
+      const std::tuple<ArgumentTypes...>&, size_t, size_t,
+      std::index_sequence<Is...>, tmpl::list<DerivativeKinds...>,
+      std::bool_constant<true>) noexcept;
 
  private:
   // note inputs reordered to accommodate the alternative tag-free functions
