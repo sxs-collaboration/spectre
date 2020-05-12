@@ -6,10 +6,11 @@ add_subdirectory(GaugeSourceFunctions)
 set(LIBRARY GeneralizedHarmonic)
 
 set(LIBRARY_SOURCES
-    Characteristics.cpp
-    Constraints.cpp
-    Equations.cpp
-    )
+  Characteristics.cpp
+  Constraints.cpp
+  Equations.cpp
+  UpwindPenaltyCorrection.cpp
+  )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 

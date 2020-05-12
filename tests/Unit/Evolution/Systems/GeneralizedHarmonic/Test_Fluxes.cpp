@@ -5,30 +5,43 @@
 
 #include <cstddef>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
-#include "Framework/CheckWithRandomValues.hpp"
-#include "Framework/SetupLocalPythonEnvironment.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare Variables
 
 namespace {
-template <size_t Dim, typename DataType>
-void test_gh_fluxes(const DataType& used_for_size) {
-  pypp::check_with_random_values<1>(
-      &GeneralizedHarmonic::ComputeNormalDotFluxes<Dim>::apply, "TestFunctions",
-      {"spacetime_metric_normal_dot_flux", "pi_normal_dot_flux",
-       "phi_dot_flux"},
-      {{{-1.0, 1.0}}}, used_for_size);
+template <size_t Dim>
+void test() {
+  constexpr size_t num_points = 5;
+  const tnsr::aa<DataVector, Dim> spacetime_metric{num_points};
+  tnsr::aa<DataVector, Dim> normal_dot_flux_spacetime_metric{num_points};
+  tnsr::aa<DataVector, Dim> normal_dot_flux_pi{num_points};
+  tnsr::iaa<DataVector, Dim> normal_dot_flux_phi{num_points};
+
+  GeneralizedHarmonic::ComputeNormalDotFluxes<Dim>::apply(
+      make_not_null(&normal_dot_flux_spacetime_metric),
+      make_not_null(&normal_dot_flux_pi), make_not_null(&normal_dot_flux_phi),
+      spacetime_metric);
+
+  const DataVector zero{num_points, 0.};
+  for (size_t storage_index = 0;
+       storage_index < normal_dot_flux_spacetime_metric.size();
+       ++storage_index) {
+    CHECK(normal_dot_flux_spacetime_metric[storage_index] == zero);
+    CHECK(normal_dot_flux_pi[storage_index] == zero);
+  }
+
+  for (size_t storage_index = 0;
+       storage_index < normal_dot_flux_phi.size();
+       ++storage_index) {
+    CHECK(normal_dot_flux_phi[storage_index] == zero);
+  }
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.NormalDotFluxes",
                   "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
-      "Evolution/Systems/GeneralizedHarmonic/"};
-
-  GENERATE_UNINITIALIZED_DATAVECTOR;
-  CHECK_FOR_DATAVECTORS(test_gh_fluxes, (1, 2, 3));
+  test<1>();
+  test<2>();
+  test<3>();
 }

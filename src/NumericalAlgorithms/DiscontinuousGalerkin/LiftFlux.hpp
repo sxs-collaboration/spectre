@@ -51,8 +51,9 @@ auto lift_flux(Variables<tmpl::list<FluxTags...>> flux,
   // RHS of the equal sign (e.g. `du/dt=Source - div Flux - boundary corr`),
   // while the magnitude of the normal vector above accounts for the ratios of
   // spatial metrics and Jacobians.
-  lift_factor *= -0.5 * (extent_perpendicular_to_boundary *
-                         (extent_perpendicular_to_boundary - 1));
+  lift_factor *=
+      -0.5 * static_cast<double>((extent_perpendicular_to_boundary *
+                                  (extent_perpendicular_to_boundary - 1)));
 
   Variables<tmpl::list<db::remove_tag_prefix<FluxTags>...>> lifted_data(
       std::move(flux));
