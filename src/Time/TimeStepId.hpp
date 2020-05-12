@@ -33,7 +33,6 @@ class TimeStepId {
       : time_runs_forward_(time_runs_forward),
         slab_number_(slab_number),
         step_time_(time),
-        substep_(0),
         substep_time_(time) {
     canonicalize();
   }

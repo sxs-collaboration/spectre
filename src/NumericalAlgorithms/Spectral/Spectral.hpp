@@ -92,12 +92,16 @@ std::ostream& operator<<(std::ostream& os,
 namespace detail {
 constexpr size_t minimum_number_of_points(
     const Basis /*basis*/, const Quadrature quadrature) noexcept {
+  // NOLINTNEXTLINE(bugprone-branch-clone)
   if (quadrature == Quadrature::Gauss) {
     return 1;
+    // NOLINTNEXTLINE(bugprone-branch-clone)
   } else if (quadrature == Quadrature::GaussLobatto) {
     return 2;
+    // NOLINTNEXTLINE(bugprone-branch-clone)
   } else if (quadrature == Quadrature::CellCentered) {
     return 1;
+    // NOLINTNEXTLINE(bugprone-branch-clone)
   } else if (quadrature == Quadrature::FaceCentered) {
     return 2;
   }

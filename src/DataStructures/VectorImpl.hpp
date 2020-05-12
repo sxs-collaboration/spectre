@@ -202,6 +202,7 @@ class VectorImpl
   destructive_resize(const size_t new_size) noexcept {
     if (UNLIKELY(size() != new_size)) {
       if (owning_) {
+        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
         owned_data_ = std::unique_ptr<value_type[], decltype(&free)>{
             new_size > 0 ? static_cast<value_type*>(
                                malloc(new_size * sizeof(value_type)))
@@ -222,6 +223,7 @@ class VectorImpl
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  protected:
+  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   std::unique_ptr<value_type[], decltype(&free)> owned_data_{nullptr, &free};
   bool owning_{true};
 
@@ -323,6 +325,7 @@ VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
                 "assigning to.");
   if (owning_ and (~expression).size() != size()) {
     owned_data_.reset(static_cast<value_type*>(
+        // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
         malloc((~expression).size() * sizeof(value_type))));
     reset_pointer_vector((~expression).size());
   } else if (not owning_) {

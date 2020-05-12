@@ -7,11 +7,15 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
+#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -126,16 +130,8 @@ void ComputeDuDt<Dim>::apply(
     const tnsr::ijaa<DataVector, Dim>& d_phi, const Scalar<DataVector>& gamma0,
     const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2,
     const tnsr::a<DataVector, Dim>& gauge_function,
-    const tnsr::ab<DataVector, Dim>& spacetime_deriv_gauge_function,
-    const Scalar<DataVector>& lapse, const tnsr::I<DataVector, Dim>& shift,
-    const tnsr::II<DataVector, Dim>& inverse_spatial_metric,
-    const tnsr::AA<DataVector, Dim>& inverse_spacetime_metric,
-    const tnsr::a<DataVector, Dim>& trace_christoffel,
-    const tnsr::abb<DataVector, Dim>& christoffel_first_kind,
-    const tnsr::Abb<DataVector, Dim>& christoffel_second_kind,
-    const tnsr::A<DataVector, Dim>& normal_spacetime_vector,
-    const tnsr::a<DataVector, Dim>& normal_spacetime_one_form) {
-  const size_t n_pts = shift.begin()->size();
+    const tnsr::ab<DataVector, Dim>& spacetime_deriv_gauge_function) {
+  const size_t n_pts = spacetime_metric[0].size();
 
   // Scalar: TempScalar<0> = gamma12
   //         TempScalar<1> = pi_contract_two_normal_spacetime_vectors
@@ -151,19 +147,85 @@ void ComputeDuDt<Dim>::apply(
   // Iaa: phi_1_up
   // ibC: phi_3_up
   // abC: christoffel_first_kind_3_up
-  Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
-                       ::Tags::TempScalar<2>, ::Tags::TempScalar<3>,
-                       ::Tags::Tempa<0, Dim, Frame::Inertial, DataVector>,
-                       ::Tags::Tempa<1, Dim, Frame::Inertial, DataVector>,
-                       ::Tags::Tempi<0, Dim, Frame::Inertial, DataVector>,
-                       ::Tags::Tempaa<0, Dim, Frame::Inertial, DataVector>,
-                       ::Tags::Tempia<0, Dim, Frame::Inertial, DataVector>,
-                       ::Tags::TempaB<0, Dim, Frame::Inertial, DataVector>,
-                       ::Tags::Tempiaa<0, Dim, Frame::Inertial, DataVector>,
-                       ::Tags::TempIaa<0, Dim, Frame::Inertial, DataVector>,
-                       ::Tags::TempiaB<0, Dim, Frame::Inertial, DataVector>,
-                       ::Tags::TempabC<0, Dim, Frame::Inertial, DataVector>>>
+  Variables<tmpl::list<
+      ::Tags::TempScalar<0>, ::Tags::TempScalar<1>, ::Tags::TempScalar<2>,
+      ::Tags::TempScalar<3>, ::Tags::Tempa<0, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempa<1, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempi<0, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempaa<0, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempia<0, Dim, Frame::Inertial, DataVector>,
+      ::Tags::TempaB<0, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempiaa<0, Dim, Frame::Inertial, DataVector>,
+      ::Tags::TempIaa<0, Dim, Frame::Inertial, DataVector>,
+      ::Tags::TempiaB<0, Dim, Frame::Inertial, DataVector>,
+      ::Tags::TempabC<0, Dim, Frame::Inertial, DataVector>,
+      gr::Tags::Lapse<DataVector>,
+      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
+      gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>,
+      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
+      gr::Tags::DetSpatialMetric<DataVector>,
+      gr::Tags::InverseSpacetimeMetric<Dim, Frame::Inertial, DataVector>,
+      gr::Tags::SpacetimeChristoffelFirstKind<Dim, Frame::Inertial, DataVector>,
+      gr::Tags::SpacetimeChristoffelSecondKind<Dim, Frame::Inertial,
+                                               DataVector>,
+      gr::Tags::TraceSpacetimeChristoffelFirstKind<Dim, Frame::Inertial,
+                                                   DataVector>,
+      gr::Tags::SpacetimeNormalVector<Dim, Frame::Inertial, DataVector>,
+      gr::Tags::SpacetimeNormalOneForm<Dim, Frame::Inertial, DataVector>,
+      gr::Tags::DerivativesOfSpacetimeMetric<Dim, Frame::Inertial, DataVector>>>
       buffer(n_pts);
+
+  auto& lapse = get<gr::Tags::Lapse<DataVector>>(buffer);
+  auto& shift = get<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>(buffer);
+  auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>>(buffer);
+  auto& inverse_spatial_metric =
+      get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>(
+          buffer);
+  auto& det_spatial_metric =
+      get<gr::Tags::DetSpatialMetric<DataVector>>(buffer);
+  auto& inverse_spacetime_metric =
+      get<gr::Tags::InverseSpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
+          buffer);
+  auto& christoffel_first_kind =
+      get<gr::Tags::SpacetimeChristoffelFirstKind<Dim, Frame::Inertial,
+                                                  DataVector>>(buffer);
+  auto& christoffel_second_kind =
+      get<gr::Tags::SpacetimeChristoffelSecondKind<Dim, Frame::Inertial,
+                                                   DataVector>>(buffer);
+  auto& trace_christoffel =
+      get<gr::Tags::TraceSpacetimeChristoffelFirstKind<Dim, Frame::Inertial,
+                                                       DataVector>>(buffer);
+  auto& normal_spacetime_vector =
+      get<gr::Tags::SpacetimeNormalVector<Dim, Frame::Inertial, DataVector>>(
+          buffer);
+  auto& normal_spacetime_one_form =
+      get<gr::Tags::SpacetimeNormalOneForm<Dim, Frame::Inertial, DataVector>>(
+          buffer);
+  auto& da_spacetime_metric = get<
+      gr::Tags::DerivativesOfSpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
+      buffer);
+
+  gr::spatial_metric(make_not_null(&spatial_metric), spacetime_metric);
+  determinant_and_inverse(make_not_null(&det_spatial_metric),
+                          make_not_null(&inverse_spatial_metric),
+                          spatial_metric);
+  gr::shift(make_not_null(&shift), spacetime_metric, inverse_spatial_metric);
+  gr::lapse(make_not_null(&lapse), shift, spacetime_metric);
+  gr::inverse_spacetime_metric(make_not_null(&inverse_spacetime_metric), lapse,
+                               shift, inverse_spatial_metric);
+  GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
+      make_not_null(&da_spacetime_metric), lapse, shift, pi, phi);
+  gr::christoffel_first_kind(make_not_null(&christoffel_first_kind),
+                             da_spacetime_metric);
+  raise_or_lower_first_index(make_not_null(&christoffel_second_kind),
+                             christoffel_first_kind, inverse_spacetime_metric);
+  trace_last_indices(make_not_null(&trace_christoffel), christoffel_first_kind,
+                     inverse_spacetime_metric);
+  gr::spacetime_normal_vector(make_not_null(&normal_spacetime_vector), lapse,
+                              shift);
+  gr::spacetime_normal_one_form(make_not_null(&normal_spacetime_one_form),
+                                lapse);
 
   get(get<::Tags::TempScalar<0>>(buffer)) = gamma1.get() * gamma2.get();
   const DataVector& gamma12 = get(get<::Tags::TempScalar<0>>(buffer));

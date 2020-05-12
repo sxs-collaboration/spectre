@@ -16,6 +16,7 @@
 namespace cpp17 {
 namespace detail {
 template <typename T, size_t Size, size_t... Is>
+// NOLINTNEXTLINE(modernize-avoid-c-arrays)
 std::array<T, Size> convert_to_array(const T (&t)[Size],
                                      std::index_sequence<Is...> /*meta*/) {
   return {{t[Is]...}};
@@ -83,6 +84,7 @@ struct array {
   constexpr value_type* data() noexcept { return data_; }
   constexpr const value_type* data() const noexcept { return data_; }
 
+  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   value_type data_[Size > 0 ? Size : 1];
 };
 namespace detail {

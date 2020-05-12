@@ -169,7 +169,7 @@ inline void pup(PUP::er& p, std::unique_ptr<T>& t) {  // NOLINT
   bool is_nullptr = nullptr == t;
   p | is_nullptr;
   if (not is_nullptr) {
-    T* t1;
+    T* t1 = nullptr;
     if (p.isUnpacking()) {
       // clang-tidy: use gsl::owner for owning memory
       t1 = new T;  // NOLINT

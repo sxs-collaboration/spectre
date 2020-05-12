@@ -236,9 +236,7 @@ void verify_time_independent_einstein_solution(
   GeneralizedHarmonic::ComputeDuDt<3>::apply(
       make_not_null(&dt_psi), make_not_null(&dt_pi), make_not_null(&dt_phi),
       psi, pi, phi, d_psi, d_pi, d_phi, gamma0, gamma1, gamma2, gauge_function,
-      d4_H, lapse, shift, upper_spatial_metric, upper_psi,
-      trace_christoffel_first_kind, christoffel_first_kind,
-      christoffel_second_kind, normal_vector, normal_one_form);
+      d4_H);
 
   // Make sure the RHS is zero.
   CHECK_ITERABLE_CUSTOM_APPROX(

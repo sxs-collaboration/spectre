@@ -189,7 +189,8 @@ void BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::pup(
   const size_t cache_size = PUP_stl_container_size(p, coupling_cache_);
   if (p.isUnpacking()) {
     for (size_t entry_num = 0; entry_num < cache_size; ++entry_num) {
-      size_t local_index, remote_index;
+      size_t local_index = 0;
+      size_t remote_index = 0;
       CouplingResult cache_value;
       p | local_index;
       p | remote_index;

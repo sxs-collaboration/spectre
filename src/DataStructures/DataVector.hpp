@@ -60,7 +60,7 @@ VECTOR_BLAZE_TRAIT_SPECIALIZE_ARITHMETIC_TRAITS(DataVector);
 VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS(DataVector);
 }  // namespace blaze
 
-SPECTRE_ALWAYS_INLINE decltype(auto) fabs(const DataVector& t) noexcept {
+SPECTRE_ALWAYS_INLINE auto fabs(const DataVector& t) noexcept {
   return abs(~t);
 }
 
