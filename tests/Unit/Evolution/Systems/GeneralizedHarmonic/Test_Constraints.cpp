@@ -8,6 +8,7 @@
 #include <limits>
 #include <memory>
 #include <pup.h>
+#include <random>
 #include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -29,6 +30,7 @@
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
@@ -767,7 +769,8 @@ void test_constraint_compute_items(
   const auto trace_christoffel_first_kind =
       trace_last_indices(christoffel_first_kind, inverse_spatial_metric);
 
-  // Compute derivatives d_phi, d_pi, and d_gauge_function numerically
+  // Compute derivatives d_spacetime_metric, d_phi, d_pi, and d_gauge_function
+  // numerically
   // First, prepare
   using VariablesTags =
       tmpl::list<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
@@ -805,15 +808,16 @@ void test_constraint_compute_items(
       get<Tags::deriv<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>,
                       tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
 
-  // Compute other derivatives
-  const auto derivatives_of_spacetime_metric =
-      gr::derivatives_of_spacetime_metric(
-          lapse, time_deriv_lapse, deriv_lapse, shift, time_deriv_shift,
-          deriv_shift, spatial_metric, time_deriv_spatial_metric,
-          deriv_spatial_metric);
-  tnsr::iaa<DataVector, 3, Frame::Inertial> deriv_spacetime_metric{};
-  gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>::function(
-      make_not_null(&deriv_spacetime_metric), derivatives_of_spacetime_metric);
+  // The spatial derivative of the spacetime metric is needed to evaluate
+  // the three-index constraint. Here, we choose random values for this tensor,
+  // so that the constraint is deliberately nonzero.
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> dist(-1., 1.);
+  const auto nn_generator = make_not_null(&generator);
+  const auto nn_dist = make_not_null(&dist);
+  const auto& deriv_spacetime_metric =
+      make_with_random_values<tnsr::iaa<DataVector, 3, Frame::Inertial>>(
+          nn_generator, nn_dist, get<0, 0>(pi));
 
   auto time_deriv_gauge_source =
       make_with_value<tnsr::a<DataVector, 3, Frame::Inertial>>(x, 0.);
@@ -847,6 +851,9 @@ void test_constraint_compute_items(
           ::Tags::deriv<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>,
                         tmpl::size_t<3>, Frame::Inertial>,
           ::Tags::dt<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>>,
+          ::Tags::deriv<
+              gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
+              tmpl::size_t<3>, Frame::Inertial>,
           ::Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
                         tmpl::size_t<3>, Frame::Inertial>,
           ::Tags::deriv<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
@@ -880,8 +887,6 @@ void test_constraint_compute_items(
               3, Frame::Inertial>,
           GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<
               3, Frame::Inertial>,
-          gr::Tags::DerivativesOfSpacetimeMetricCompute<3, Frame::Inertial>,
-          gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>,
           GeneralizedHarmonic::Tags::FourIndexConstraintCompute<
               3, Frame::Inertial>,
           GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<
@@ -894,8 +899,8 @@ void test_constraint_compute_items(
                                                              Frame::Inertial>>>(
       x, spatial_metric, lapse, shift, deriv_spatial_metric, deriv_lapse,
       deriv_shift, time_deriv_spatial_metric, time_deriv_lapse,
-      time_deriv_shift, deriv_gauge_source, time_deriv_gauge_source, deriv_phi,
-      deriv_pi);
+      time_deriv_shift, deriv_gauge_source, time_deriv_gauge_source,
+      deriv_spacetime_metric, deriv_phi, deriv_pi);
 
   // Compute tested quantities locally
   Scalar<DataVector> gamma0{};

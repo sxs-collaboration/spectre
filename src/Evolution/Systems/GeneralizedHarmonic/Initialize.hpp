@@ -107,7 +107,6 @@ struct InitializeGhAnd3Plus1Variables {
         GeneralizedHarmonic::Tags::TimeDerivLapseCompute<Dim, frame>,
         GeneralizedHarmonic::Tags::TimeDerivShiftCompute<Dim, frame>,
         gr::Tags::DerivativesOfSpacetimeMetricCompute<Dim, frame>,
-        gr::Tags::DerivSpacetimeMetricCompute<Dim, frame>,
         GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<Dim, frame>,
         gr::Tags::SpacetimeChristoffelFirstKindCompute<Dim, frame, DataVector>,
         gr::Tags::SpacetimeChristoffelSecondKindCompute<Dim, frame, DataVector>,

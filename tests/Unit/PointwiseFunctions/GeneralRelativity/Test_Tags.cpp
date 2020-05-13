@@ -31,8 +31,6 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<gr::Tags::Shift<Dim, Frame, Type>>("Shift");
   TestHelpers::db::test_simple_tag<gr::Tags::Lapse<Type>>("Lapse");
   TestHelpers::db::test_simple_tag<
-      gr::Tags::DerivSpacetimeMetric<Dim, Frame, Type>>("DerivSpacetimeMetric");
-  TestHelpers::db::test_simple_tag<
       gr::Tags::DerivativesOfSpacetimeMetric<Dim, Frame, Type>>(
       "DerivativesOfSpacetimeMetric");
   TestHelpers::db::test_simple_tag<

@@ -1113,7 +1113,8 @@ template <size_t SpatialDim, typename Frame>
 struct ThreeIndexConstraintCompute : ThreeIndexConstraint<SpatialDim, Frame>,
                                      db::ComputeTag {
   using argument_tags =
-      tmpl::list<gr::Tags::DerivSpacetimeMetric<SpatialDim, Frame>,
+      tmpl::list<::Tags::deriv<gr::Tags::SpacetimeMetric<SpatialDim, Frame>,
+                               tmpl::size_t<SpatialDim>, Frame>,
                  Phi<SpatialDim, Frame>>;
 
   using return_type = tnsr::iaa<DataVector, SpatialDim, Frame>;
