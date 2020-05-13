@@ -63,6 +63,12 @@ static_assert(
         tmpl::list<Templated<int>>>,
     "Failed testing list_difference");
 
+static_assert(
+    std::is_same_v<
+        tmpl::list_difference<tmpl::list<>, tmpl::list<Templated<double>>>,
+        tmpl::list<>>,
+    "Failed testing list_difference");
+
 static_assert(tmpl::position_of_first_v<
                   tmpl::list<char, int, double, char, float>, char> == 0,
               "Failed testing `tmpl::position_of_first`");
