@@ -106,27 +106,32 @@ struct InsertInterpolationScriData {
       db::mutate_apply<detail::InsertIntoInterpolationManagerImpl<Tag>>(
           make_not_null(&box));
 
+      const auto& time_span_deque =
+          db::get<Tags::InterpolationManager<ComplexDataVector, Tag>>(box)
+              .get_u_bondi_ranges();
+
+      const double this_time = time_span_deque.back().first;
+      double time_delta_estimate = db::get<::Tags::TimeStep>(box).value();
+      if(time_span_deque.size() > 1) {
+        time_delta_estimate =
+            this_time - time_span_deque[time_span_deque.size() - 2].first;
+      }
+
       // insert the target times into the interpolator.
       db::mutate<Tags::InterpolationManager<ComplexDataVector, Tag>>(
           make_not_null(&box),
-          [](const gsl::not_null<
-                 ScriPlusInterpolationManager<ComplexDataVector, Tag>*>
-                 interpolation_manager,
-             const TimeStepId& time_id, const TimeStepId& next_time_id,
-             const size_t number_of_interpolated_times) noexcept {
-            const double time_of_current_step = time_id.substep_time().value();
-            const double time_of_next_step =
-                next_time_id.substep_time().value();
+          [&this_time, &time_delta_estimate](
+              const gsl::not_null<
+                  ScriPlusInterpolationManager<ComplexDataVector, Tag>*>
+                  interpolation_manager,
+              const size_t number_of_interpolated_times) noexcept {
             for (size_t i = 0; i < number_of_interpolated_times; ++i) {
               interpolation_manager->insert_target_time(
-                  time_of_current_step +
-                  (time_of_next_step - time_of_current_step) *
-                      static_cast<double>(i) /
+                  this_time +
+                  time_delta_estimate * static_cast<double>(i) /
                       static_cast<double>(number_of_interpolated_times));
             }
           },
-          db::get<::Tags::TimeStepId>(box),
-          db::get<::Tags::Next<::Tags::TimeStepId>>(box),
           db::get<InitializationTags::ScriOutputDensity>(box));
     }
     return std::forward_as_tuple(std::move(box));
