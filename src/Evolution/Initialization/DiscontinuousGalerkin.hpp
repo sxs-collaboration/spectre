@@ -91,7 +91,34 @@ struct DiscontinuousGalerkin {
         db::AddSimpleTags<interface_tag<normal_dot_fluxes_tag>,
                           interior_boundary_tag<normal_dot_fluxes_tag>,
                           external_boundary_tag<normal_dot_fluxes_tag>>;
-    using compute_tags = db::AddComputeTags<>;
+
+    template <typename Tag>
+    using interface_compute_tag =
+        domain::Tags::InterfaceCompute<domain::Tags::InternalDirections<dim>,
+                                       Tag>;
+
+    template <typename Tag>
+    using boundary_interior_compute_tag = domain::Tags::InterfaceCompute<
+        domain::Tags::BoundaryDirectionsInterior<dim>, Tag>;
+
+    template <typename Tag>
+    using boundary_exterior_compute_tag = domain::Tags::InterfaceCompute<
+        domain::Tags::BoundaryDirectionsExterior<dim>, Tag>;
+
+    using char_speed_tag =
+        domain::Tags::CharSpeedCompute<typename LocalSystem::char_speeds_tag,
+                                       dim>;
+
+    using compute_tags = db::AddComputeTags<
+        domain::Tags::Slice<domain::Tags::InternalDirections<dim>,
+                            domain::Tags::MeshVelocity<dim>>,
+        interface_compute_tag<char_speed_tag>,
+        domain::Tags::Slice<domain::Tags::BoundaryDirectionsInterior<dim>,
+                            domain::Tags::MeshVelocity<dim>>,
+        boundary_interior_compute_tag<char_speed_tag>,
+        domain::Tags::Slice<domain::Tags::BoundaryDirectionsExterior<dim>,
+                            domain::Tags::MeshVelocity<dim>>,
+        boundary_exterior_compute_tag<char_speed_tag>>;
 
     template <typename TagsList>
     static auto initialize(db::DataBox<TagsList>&& box) noexcept {

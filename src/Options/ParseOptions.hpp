@@ -43,8 +43,9 @@
 // this file.  (Or explicitly instantiated in cpp files, which can
 // include this file.)
 
+// clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
 inline Option::Option(YAML::Node node, OptionContext context) noexcept
-    // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
     : node_(std::make_unique<YAML::Node>(std::move(node))),
       context_(std::move(context)) {  // NOLINT
   context_.line = node.Mark().line;
@@ -64,6 +65,7 @@ inline void Option::append_context(const std::string& context) noexcept {
   context_.append(context);
 }
 
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
 inline void Option::set_node(YAML::Node node) noexcept {
   // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
   *node_ = std::move(node);  // NOLINT
