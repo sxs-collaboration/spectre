@@ -63,7 +63,7 @@ struct ScriPlusInterpolationManager {
                << " and provided data is of size: " << to_interpolate.size());
     u_bondi_values_.push_back(u_bondi);
     to_interpolate_values_.push_back(to_interpolate);
-    u_bondi_ranges_.push_back(std::make_pair(min(u_bondi), max(u_bondi)));
+    u_bondi_ranges_.emplace_back(min(u_bondi), max(u_bondi));
   }
 
   /// \brief Request a target time to be interpolated to when enough data has

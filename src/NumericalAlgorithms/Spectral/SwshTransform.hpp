@@ -450,7 +450,7 @@ struct SwshTransform<tmpl::list<TransformTags...>, Representation> {
   // file and friend requirements
   template <ComplexRepresentation FriendRepresentation, int FriendSpin,
             typename... CoefficientThenCollocationTypes, size_t... Is>
-  // NOLINTNEXTLINE(readability-redundant-declaratioon)
+  // NOLINTNEXTLINE(readability-redundant-declaration)
   friend void detail::swsh_transform_impl(
       size_t, size_t, std::index_sequence<Is...>,
       gsl::not_null<SpinWeighted<ComplexModalVector, FriendSpin>*>,
@@ -536,7 +536,7 @@ struct InverseSwshTransform<tmpl::list<TransformTags...>, Representation> {
   // file and friend requirements
   template <ComplexRepresentation FriendRepresentation, int FriendSpin,
             typename... CollocationThenCoefficientTypes, size_t... Is>
-  // NOLINTNEXTLINE(readability-redundant-declaratioon)
+  // NOLINTNEXTLINE(readability-redundant-declaration)
   friend void detail::inverse_swsh_transform_impl(
       size_t, size_t, std::index_sequence<Is...>,
       gsl::not_null<SpinWeighted<ComplexDataVector, FriendSpin>*>,

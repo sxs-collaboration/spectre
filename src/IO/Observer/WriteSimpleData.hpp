@@ -42,7 +42,7 @@ struct WriteSimpleData {
                     const std::vector<double>& data_row,
                     const std::string& subfile_name) noexcept {
     Parallel::lock(node_lock);
-    CmiNodeLock file_lock;
+    CmiNodeLock file_lock = nullptr;
     db::mutate<Tags::H5FileLock>(
         make_not_null(&box), [&file_lock](const gsl::not_null<CmiNodeLock*>
                                               in_file_lock) noexcept {
