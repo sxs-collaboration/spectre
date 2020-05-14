@@ -254,10 +254,11 @@ void CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi2>>::apply(
       -0.5 * get(boundary_r) *
       (-exp_2_beta_at_scri * (conj(ethbar_dy_q_at_scri) +
                               eth_r_divided_by_r_view * conj(dy_q_at_scri)) +
-       get(boundary_r) * (ethbar_dy_dy_u_at_scri +
-                          conj(eth_r_divided_by_r_view) * dy_dy_u_at_scri +
-                          conj(ethbar_dy_dy_u_at_scri) +
-                          eth_r_divided_by_r_view * conj(dy_dy_u_at_scri)) +
+       get(boundary_r) *
+           (ethbar_dy_dy_u_at_scri +
+            2.0 * conj(eth_r_divided_by_r_view) * dy_dy_u_at_scri +
+            conj(ethbar_dy_dy_u_at_scri) +
+            2.0 * eth_r_divided_by_r_view * conj(dy_dy_u_at_scri)) +
        2.0 * get(boundary_r) *
            (dy_j_at_scri *
                 (conj(eth_dy_u_at_scri) +
@@ -313,7 +314,7 @@ void CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi1>>::apply(
   // extra -1/sqrt(2) factor to agree with SXS tetrad normalization
   get(*psi_1) = -0.5 * square(get(boundary_r)) *
                 (6.0 * (eth_dy_dy_beta_at_scri +
-                        eth_r_divided_by_r_view * dy_dy_beta_at_scri) -
+                        2.0 * eth_r_divided_by_r_view * dy_dy_beta_at_scri) -
                  dy_j_at_scri * conj(dy_q_at_scri) - dy_dy_q_at_scri);
 }
 

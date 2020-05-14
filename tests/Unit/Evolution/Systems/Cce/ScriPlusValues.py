@@ -36,9 +36,9 @@ def psi_2(exp_2_beta, dy_bondi_q, ethbar_dy_bondi_q, dy_bondi_u,
         exp_2_beta * (-2.0 * boundary_r) *
         (np.conj(ethbar_dy_bondi_q) + eth_r_divided_by_r * np.conj(dy_bondi_q))
         + 2.0 * boundary_r**2 *
-        (np.conj(ethbar_dy_dy_bondi_u) +
-         eth_r_divided_by_r * np.conj(dy_dy_bondi_u) + ethbar_dy_dy_bondi_u +
-         np.conj(eth_r_divided_by_r) * dy_dy_bondi_u) +
+        (np.conj(ethbar_dy_dy_bondi_u) + 2.0 * eth_r_divided_by_r *
+         np.conj(dy_dy_bondi_u) + ethbar_dy_dy_bondi_u +
+         2.0 * np.conj(eth_r_divided_by_r) * dy_dy_bondi_u) +
         (-2.0 * boundary_r * dy_bondi_j) *
         (-2.0 * boundary_r *
          (np.conj(eth_dy_bondi_u) + np.conj(eth_r_divided_by_r * dy_bondi_u) +
@@ -49,7 +49,7 @@ def psi_1(dy_dy_bondi_beta, eth_dy_dy_bondi_beta, dy_bondi_j, dy_bondi_q,
           dy_dy_bondi_q, boundary_r, eth_r_divided_by_r):
     return 0.125 * (
         -12.0 * (2.0 * boundary_r**2) *
-        (eth_dy_dy_bondi_beta + eth_r_divided_by_r * dy_dy_bondi_beta) +
+        (eth_dy_dy_bondi_beta + 2.0 * eth_r_divided_by_r * dy_dy_bondi_beta) +
         (-2.0 * boundary_r * dy_bondi_j) *
         (-2.0 * boundary_r * np.conj(dy_bondi_q)) + 2.0 *
         (2.0 * boundary_r**2 * dy_dy_bondi_q))
