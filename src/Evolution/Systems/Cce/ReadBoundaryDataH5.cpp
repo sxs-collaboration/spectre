@@ -12,6 +12,7 @@
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/Numeric.hpp"
 
 namespace Cce {
@@ -201,6 +202,7 @@ bool SpecWorldtubeH5BufferUpdater::time_is_outside_range(
 
 void SpecWorldtubeH5BufferUpdater::pup(PUP::er& p) noexcept {
   p | time_buffer_;
+  p | radial_derivatives_need_renormalization_;
   p | filename_;
   p | l_max_;
   p | extraction_radius_;
@@ -219,7 +221,7 @@ void SpecWorldtubeH5BufferUpdater::update_buffer(
                                                square(computation_l_max + 1))) {
     ERROR("Incorrect storage size for the data to be loaded in.");
   }
-  auto cols = alg::iota(std::vector<size_t>(number_of_columns - 1), 1u);
+  auto cols = alg::iota(std::vector<size_t>(number_of_columns - 1), 1_st);
   const Matrix data_matrix = read_data.get_data_subset(
       cols, time_span_start, time_span_end - time_span_start);
 
@@ -476,7 +478,8 @@ void ReducedWorldtubeDataManager::pup(PUP::er& p) noexcept {
 }
 
 /// \cond
-PUP::able::PUP_ID Cce::SpecWorldtubeH5BufferUpdater::my_PUP_ID = 0;
-PUP::able::PUP_ID Cce::ReducedSpecWorldtubeH5BufferUpdater::my_PUP_ID = 0;
+PUP::able::PUP_ID SpecWorldtubeH5BufferUpdater::my_PUP_ID = 0;
+PUP::able::PUP_ID ReducedSpecWorldtubeH5BufferUpdater::my_PUP_ID = 0;
 /// \endcond
 }  // namespace Cce
+

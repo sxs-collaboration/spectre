@@ -21,6 +21,8 @@
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
 #include "Helpers/Evolution/Systems/Cce/WriteToWorldtubeH5.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/LinearSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
@@ -30,11 +32,10 @@
 
 namespace Cce {
 
-namespace {
-template <typename AnalyticSolution>
 class DummyBufferUpdater : public WorldtubeBufferUpdater {
  public:
-  DummyBufferUpdater(DataVector time_buffer, const AnalyticSolution& solution,
+  DummyBufferUpdater(DataVector time_buffer,
+                     const gr::Solutions::KerrSchild& solution,
                      const double extraction_radius,
                      const double coordinate_amplitude,
                      const double coordinate_frequency, const size_t l_max,
@@ -47,8 +48,7 @@ class DummyBufferUpdater : public WorldtubeBufferUpdater {
         l_max_{l_max},
         apply_normalization_bug_{apply_normalization_bug} {}
 
-  WRAPPED_PUPable_decl_template(              // NOLINT
-      DummyBufferUpdater<AnalyticSolution>);  // NOLINT
+  WRAPPED_PUPable_decl_template(DummyBufferUpdater);  // NOLINT
 
   explicit DummyBufferUpdater(CkMigrateMessage* /*unused*/) noexcept
       : extraction_radius_{1.0},
@@ -161,6 +161,16 @@ class DummyBufferUpdater : public WorldtubeBufferUpdater {
 
   DataVector& get_time_buffer() noexcept override { return time_buffer_; }
 
+  void pup(PUP::er& p) noexcept override {
+    p | time_buffer_;
+    p | solution_;
+    p | extraction_radius_;
+    p | coordinate_amplitude_;
+    p | coordinate_frequency_;
+    p | l_max_;
+    p | apply_normalization_bug_;
+  }
+
  private:
   template <typename... Structure>
   void update_tensor_buffer_with_tensor_at_time_index(
@@ -177,7 +187,7 @@ class DummyBufferUpdater : public WorldtubeBufferUpdater {
   }
 
   DataVector time_buffer_;
-  AnalyticSolution solution_;
+  gr::Solutions::KerrSchild solution_;
   double extraction_radius_;
   double coordinate_amplitude_;
   double coordinate_frequency_;
@@ -185,11 +195,10 @@ class DummyBufferUpdater : public WorldtubeBufferUpdater {
   bool apply_normalization_bug_ = false;
 };
 
-template <typename AnalyticSolution>
 class ReducedDummyBufferUpdater : public ReducedWorldtubeBufferUpdater {
  public:
   ReducedDummyBufferUpdater(DataVector time_buffer,
-                            const AnalyticSolution& solution,
+                            const gr::Solutions::KerrSchild& solution,
                             const double extraction_radius,
                             const double coordinate_amplitude,
                             const double coordinate_frequency,
@@ -202,8 +211,7 @@ class ReducedDummyBufferUpdater : public ReducedWorldtubeBufferUpdater {
         coordinate_frequency_{coordinate_frequency},
         l_max_{l_max} {}
 
-  WRAPPED_PUPable_decl_template(                     // NOLINT
-      ReducedDummyBufferUpdater<AnalyticSolution>);  // NOLINT
+  WRAPPED_PUPable_decl_template(ReducedDummyBufferUpdater);  // NOLINT
 
   explicit ReducedDummyBufferUpdater(CkMigrateMessage* /*unused*/) noexcept {}
 
@@ -270,26 +278,25 @@ class ReducedDummyBufferUpdater : public ReducedWorldtubeBufferUpdater {
           extraction_radius_, l_max);
       tmpl::for_each<
           tmpl::transform<detail::reduced_cce_input_tags,
-                          tmpl::bind<db::remove_tag_prefix, tmpl::_1>>>([
-        this, &boundary_box, &buffers, &time_index, &time_span_end,
-        &time_span_start, &l_max
-      ](auto tag_v) noexcept {
-        using tag = typename decltype(tag_v)::type;
-        this->update_buffer_with_scalar_at_time_index(
-            make_not_null(
-                &get<Spectral::Swsh::Tags::SwshTransform<tag>>(*buffers)),
-            Spectral::Swsh::libsharp_to_goldberg_modes(
-                Spectral::Swsh::swsh_transform(
-                    l_max, 1,
-                    get(db::get<Tags::BoundaryValue<tag>>(boundary_box))),
-                l_max),
-            time_index, *time_span_end - *time_span_start);
-      });
+                          tmpl::bind<db::remove_tag_prefix, tmpl::_1>>>(
+          [this, &boundary_box, &buffers, &time_index, &time_span_end,
+           &time_span_start, &l_max](auto tag_v) noexcept {
+            using tag = typename decltype(tag_v)::type;
+            this->update_buffer_with_scalar_at_time_index(
+                make_not_null(
+                    &get<Spectral::Swsh::Tags::SwshTransform<tag>>(*buffers)),
+                Spectral::Swsh::libsharp_to_goldberg_modes(
+                    Spectral::Swsh::swsh_transform(
+                        l_max, 1,
+                        get(db::get<Tags::BoundaryValue<tag>>(boundary_box))),
+                    l_max),
+                time_index, *time_span_end - *time_span_start);
+          });
     }
     return time_buffer_[*time_span_end - interpolator_length + 1];
   }
-  std::unique_ptr<ReducedWorldtubeBufferUpdater> get_clone() const
-      noexcept override {
+  std::unique_ptr<ReducedWorldtubeBufferUpdater> get_clone()
+      const noexcept override {
     return std::make_unique<ReducedDummyBufferUpdater>(*this);
   }
 
@@ -306,6 +313,15 @@ class ReducedDummyBufferUpdater : public ReducedWorldtubeBufferUpdater {
 
   DataVector& get_time_buffer() noexcept override { return time_buffer_; }
 
+  void pup(PUP::er& p) noexcept override {
+    p | time_buffer_;
+    p | solution_;
+    p | extraction_radius_;
+    p | coordinate_amplitude_;
+    p | coordinate_frequency_;
+    p | l_max_;
+  }
+
  private:
   template <int Spin>
   void update_buffer_with_scalar_at_time_index(
@@ -320,23 +336,19 @@ class ReducedDummyBufferUpdater : public ReducedWorldtubeBufferUpdater {
   }
 
   DataVector time_buffer_;
-  AnalyticSolution solution_;
+  gr::Solutions::KerrSchild solution_;
   double extraction_radius_ = 1.0;
   double coordinate_amplitude_ = 0.0;
   double coordinate_frequency_ = 0.0;
   size_t l_max_ = 0;
 };
 
-template <>
-PUP::able::PUP_ID
-    Cce::DummyBufferUpdater<gr::Solutions::KerrSchild>::my_PUP_ID = 0;
+PUP::able::PUP_ID Cce::DummyBufferUpdater::my_PUP_ID = 0;
+PUP::able::PUP_ID Cce::ReducedDummyBufferUpdater::my_PUP_ID = 0;
 
-template <>
-PUP::able::PUP_ID
-    Cce::ReducedDummyBufferUpdater<gr::Solutions::KerrSchild>::my_PUP_ID = 0;
+namespace {
 
-template <typename DataManager, template <typename> class DummyUpdater,
-          typename Generator>
+template <typename DataManager, typename DummyUpdater, typename Generator>
 void test_data_manager_with_dummy_buffer_updater(
     const gsl::not_null<Generator*> gen,
     const bool apply_normalization_bug = false) noexcept {
@@ -368,16 +380,14 @@ void test_data_manager_with_dummy_buffer_updater(
   DataManager boundary_data_manager;
   if (not apply_normalization_bug) {
     boundary_data_manager = DataManager{
-        std::make_unique<DummyUpdater<gr::Solutions::KerrSchild>>(
-            time_buffer, solution, extraction_radius, amplitude, frequency,
-            l_max),
+        std::make_unique<DummyUpdater>(time_buffer, solution, extraction_radius,
+                                       amplitude, frequency, l_max),
         l_max, buffer_size,
         std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u)};
   } else {
     boundary_data_manager = DataManager{
-        std::make_unique<DummyUpdater<gr::Solutions::KerrSchild>>(
-            time_buffer, solution, extraction_radius, amplitude, frequency,
-            l_max, true),
+        std::make_unique<DummyUpdater>(time_buffer, solution, extraction_radius,
+                                       amplitude, frequency, l_max, true),
         l_max, buffer_size,
         std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u)};
   }
@@ -482,12 +492,24 @@ void test_spec_worldtube_buffer_updater(
 
   // request an appropriate buffer
   SpecWorldtubeH5BufferUpdater buffer_updater{filename};
+  auto serialized_and_deserialized_updater =
+      serialize_and_deserialize(buffer_updater);
   size_t time_span_start = 0;
   size_t time_span_end = 0;
   buffer_updater.update_buffers_for_time(
       make_not_null(&coefficients_buffers_from_file),
       make_not_null(&time_span_start), make_not_null(&time_span_end),
       target_time, l_max, interpolator_length, buffer_size);
+
+  Variables<detail::cce_input_tags> coefficients_buffers_from_serialized{
+      (buffer_size + 2 * interpolator_length) * square(l_max + 1)};
+  size_t time_span_start_from_serialized = 0;
+  size_t time_span_end_from_serialized = 0;
+  serialized_and_deserialized_updater.update_buffers_for_time(
+      make_not_null(&coefficients_buffers_from_serialized),
+      make_not_null(&time_span_start_from_serialized),
+      make_not_null(&time_span_end_from_serialized), target_time, l_max,
+      interpolator_length, buffer_size);
 
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
@@ -498,23 +520,32 @@ void test_spec_worldtube_buffer_updater(
   for (size_t i = 0; i < time_buffer.size(); ++i) {
     CHECK(time_buffer[i] == approx(target_time - 1.5 + 0.1 * i));
   }
+  const auto& time_buffer_from_serialized =
+      serialized_and_deserialized_updater.get_time_buffer();
+  for (size_t i = 0; i < time_buffer.size(); ++i) {
+    CHECK(time_buffer_from_serialized[i] ==
+          approx(target_time - 1.5 + 0.1 * i));
+  }
 
-  const DummyBufferUpdater<gr::Solutions::KerrSchild> dummy_buffer_updater{
+  const DummyBufferUpdater dummy_buffer_updater{
       time_buffer, solution, extraction_radius, amplitude, frequency, l_max};
   dummy_buffer_updater.update_buffers_for_time(
       make_not_null(&expected_coefficients_buffers),
       make_not_null(&time_span_start), make_not_null(&time_span_end),
       target_time, l_max, interpolator_length, buffer_size);
   // check that the data in the buffer matches the expected analytic data.
-  tmpl::for_each<detail::cce_input_tags>([
-    &expected_coefficients_buffers, &coefficients_buffers_from_file
-  ](auto tag_v) noexcept {
-    using tag = typename decltype(tag_v)::type;
-    INFO(db::tag_name<tag>());
-    const auto& test_lhs = get<tag>(expected_coefficients_buffers);
-    const auto& test_rhs = get<tag>(coefficients_buffers_from_file);
-    CHECK_ITERABLE_APPROX(test_lhs, test_rhs);
-  });
+  tmpl::for_each<detail::cce_input_tags>(
+      [&expected_coefficients_buffers, &coefficients_buffers_from_file,
+       &coefficients_buffers_from_serialized](auto tag_v) noexcept {
+        using tag = typename decltype(tag_v)::type;
+        INFO(db::tag_name<tag>());
+        const auto& test_lhs = get<tag>(expected_coefficients_buffers);
+        const auto& test_rhs = get<tag>(coefficients_buffers_from_file);
+        CHECK_ITERABLE_APPROX(test_lhs, test_rhs);
+        const auto& test_rhs_from_serialized =
+            get<tag>(coefficients_buffers_from_serialized);
+        CHECK_ITERABLE_APPROX(test_lhs, test_rhs_from_serialized);
+      });
 }
 
 template <typename Generator>
@@ -643,12 +674,26 @@ void test_reduced_spec_worldtube_buffer_updater(
   }
   // request an appropriate buffer
   ReducedSpecWorldtubeH5BufferUpdater buffer_updater{filename};
+  auto serialized_and_deserialized_updater =
+      serialize_and_deserialize(buffer_updater);
   size_t time_span_start = 0;
   size_t time_span_end = 0;
   buffer_updater.update_buffers_for_time(
       make_not_null(&coefficients_buffers_from_file),
       make_not_null(&time_span_start), make_not_null(&time_span_end),
       target_time, computation_l_max, interpolator_length, buffer_size);
+
+  Variables<detail::reduced_cce_input_tags>
+      coefficients_buffers_from_serialized{
+          (buffer_size + 2 * interpolator_length) *
+          square(computation_l_max + 1)};
+  size_t time_span_start_from_serialized = 0;
+  size_t time_span_end_from_serialized = 0;
+  serialized_and_deserialized_updater.update_buffers_for_time(
+      make_not_null(&coefficients_buffers_from_serialized),
+      make_not_null(&time_span_start_from_serialized),
+      make_not_null(&time_span_end_from_serialized), target_time,
+      computation_l_max, interpolator_length, buffer_size);
 
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
@@ -659,10 +704,16 @@ void test_reduced_spec_worldtube_buffer_updater(
   for (size_t i = 0; i < time_buffer.size(); ++i) {
     CHECK(time_buffer[i] == approx(target_time - .15 + 0.01 * i));
   }
+  const auto& time_buffer_from_serialized =
+      serialized_and_deserialized_updater.get_time_buffer();
+  for (size_t i = 0; i < time_buffer.size(); ++i) {
+    CHECK(time_buffer_from_serialized[i] ==
+          approx(target_time - .15 + 0.01 * i));
+  }
 
-  const ReducedDummyBufferUpdater<gr::Solutions::KerrSchild>
-      dummy_buffer_updater{time_buffer, solution,  extraction_radius,
-                           amplitude,   frequency, computation_l_max};
+  const ReducedDummyBufferUpdater dummy_buffer_updater{
+      time_buffer, solution,  extraction_radius,
+      amplitude,   frequency, computation_l_max};
   dummy_buffer_updater.update_buffers_for_time(
       make_not_null(&expected_coefficients_buffers),
       make_not_null(&time_span_start), make_not_null(&time_span_end),
@@ -680,12 +731,16 @@ void test_reduced_spec_worldtube_buffer_updater(
   // check that the data in the buffer matches the expected analytic data.
   tmpl::for_each<detail::reduced_cce_input_tags>(
       [&expected_coefficients_buffers, &coefficients_buffers_from_file,
-       &modal_approx](auto tag_v) {
+       &coefficients_buffers_from_serialized, &modal_approx](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         INFO(db::tag_name<tag>());
         const auto& test_lhs = get<tag>(expected_coefficients_buffers);
         const auto& test_rhs = get<tag>(coefficients_buffers_from_file);
         CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs, modal_approx);
+        const auto& test_rhs_from_serialized =
+            get<tag>(coefficients_buffers_from_serialized);
+        CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs_from_serialized,
+                                     modal_approx);
       });
 }
 }  // namespace
@@ -696,18 +751,28 @@ void test_reduced_spec_worldtube_buffer_updater(
 // [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
                   "[Unit][Cce]") {
+  Parallel::register_derived_classes_with_charm<Cce::WorldtubeBufferUpdater>();
+  Parallel::register_derived_classes_with_charm<
+      Cce::ReducedWorldtubeBufferUpdater>();
+  Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>();
   MAKE_GENERATOR(gen);
-  test_spec_worldtube_buffer_updater(make_not_null(&gen));
-  test_reduced_spec_worldtube_buffer_updater(make_not_null(&gen));
-  test_data_manager_with_dummy_buffer_updater<WorldtubeDataManager,
-                                              DummyBufferUpdater>(
-      make_not_null(&gen));
-  // with normalization bug applied:
-  test_data_manager_with_dummy_buffer_updater<WorldtubeDataManager,
-                                              DummyBufferUpdater>(
-      make_not_null(&gen), true);
-  test_data_manager_with_dummy_buffer_updater<ReducedWorldtubeDataManager,
-                                              ReducedDummyBufferUpdater>(
-      make_not_null(&gen));
+  {
+    INFO("Testing buffer updaters");
+    test_spec_worldtube_buffer_updater(make_not_null(&gen));
+    test_reduced_spec_worldtube_buffer_updater(make_not_null(&gen));
+  }
+  {
+    INFO("Testing data managers");
+    test_data_manager_with_dummy_buffer_updater<WorldtubeDataManager,
+                                                DummyBufferUpdater>(
+        make_not_null(&gen));
+    // with normalization bug applied:
+    test_data_manager_with_dummy_buffer_updater<WorldtubeDataManager,
+                                                DummyBufferUpdater>(
+        make_not_null(&gen), true);
+    test_data_manager_with_dummy_buffer_updater<ReducedWorldtubeDataManager,
+                                                ReducedDummyBufferUpdater>(
+        make_not_null(&gen));
+  }
 }
 }  // namespace Cce
