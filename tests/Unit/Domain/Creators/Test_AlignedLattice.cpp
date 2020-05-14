@@ -132,6 +132,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
                         {{72.0, 91.0}, {{6, 7}}}, {{70.0, 92.0}, {{2, 3}}},
                         {{71.0, 92.0}, {{2, 3}}}, {{72.0, 92.0}, {{6, 7}}}};
     const auto domain = refined_domain->create_domain();
+    test_initial_domain(domain, refined_domain->initial_refinement_levels());
+
     const auto& blocks = domain.blocks();
     const auto extents = refined_domain->initial_extents();
     REQUIRE(blocks.size() == extents.size());
@@ -153,8 +155,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
 
   {
     // Expected domain refinement:
-    // 25 25 36
-    // 25 35 36
+    // 25 25 46
+    // 25 35 46
     // 25 XX 35
     const auto refined_domain =
         TestHelpers::test_factory_creation<DomainCreator<2>>(
@@ -169,17 +171,19 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
             "    Refinement: [3, 5]\n"
             "  - LowerCornerIndex: [2, 1]\n"
             "    UpperCornerIndex: [3, 3]\n"
-            "    Refinement: [3, 6]");
+            "    Refinement: [4, 6]");
     std::unordered_set<
         std::pair<std::vector<double>, std::array<size_t, 2>>,
         boost::hash<std::pair<std::vector<double>, std::array<size_t, 2>>>>
         expected_blocks{{{70.0, 90.0}, {{2, 5}}}, {{72.0, 90.0}, {{3, 5}}},
                         {{70.0, 91.0}, {{2, 5}}}, {{71.0, 91.0}, {{3, 5}}},
-                        {{72.0, 91.0}, {{3, 6}}}, {{70.0, 92.0}, {{2, 5}}},
-                        {{71.0, 92.0}, {{2, 5}}}, {{72.0, 92.0}, {{3, 6}}}};
+                        {{72.0, 91.0}, {{4, 6}}}, {{70.0, 92.0}, {{2, 5}}},
+                        {{71.0, 92.0}, {{2, 5}}}, {{72.0, 92.0}, {{4, 6}}}};
     const auto domain = refined_domain->create_domain();
-    const auto& blocks = domain.blocks();
     const auto refinement_levels = refined_domain->initial_refinement_levels();
+    test_initial_domain(domain, refinement_levels);
+
+    const auto& blocks = domain.blocks();
     REQUIRE(blocks.size() == refinement_levels.size());
     for (size_t i = 0; i < blocks.size(); ++i) {
       const auto location =

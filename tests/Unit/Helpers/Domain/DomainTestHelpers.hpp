@@ -72,8 +72,8 @@ boost::rational<size_t> fraction_of_block_volume(
     const ElementId<VolumeDim>& element_id) noexcept;
 
 // Test that the Elements of the initial domain are connected and cover the
-// computational domain, as well as that neighboring Elements  are at the same
-// refinement level.
+// computational domain, as well as that neighboring Elements' refinement
+// levels do not differ too much.
 template <size_t VolumeDim>
 void test_initial_domain(const Domain<VolumeDim>& domain,
                          const std::vector<std::array<size_t, VolumeDim>>&
