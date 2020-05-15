@@ -156,8 +156,7 @@ struct BoundaryComputeAndSendToEvolution<GhWorldtubeBoundary<Metavariables>,
                 GhWorldtubeBoundary<Metavariables>, EvolutionComponent>>(
                 Parallel::get_parallel_component<
                     GhWorldtubeBoundary<Metavariables>>(cache),
-                get<0>(*gh_data), get<1>(*gh_data), get<2>(*gh_data),
-                get<3>(*gh_data));
+                get<0>(*gh_data), get<1>(*gh_data));
           }
         });
   }
@@ -174,19 +173,22 @@ struct SendToEvolution<GhWorldtubeBoundary<Metavariables>, EvolutionComponent> {
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, const TimeStepId& time,
-                    const tnsr::aa<DataVector, 3>& spacetime_metric,
-                    const tnsr::iaa<DataVector, 3>& phi,
-                    const tnsr::aa<DataVector, 3>& pi) noexcept {
+                    const InterfaceManagers::GhInterfaceManager::gh_variables&
+                        gh_variables) noexcept {
     create_bondi_boundary_data(
-        make_not_null(&box), phi, pi, spacetime_metric,
+        make_not_null(&box),
+        get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(gh_variables),
+        get<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(gh_variables),
+        get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
+            gh_variables),
         db::get<InitializationTags::ExtractionRadius>(box),
         db::get<Tags::LMax>(box));
     Parallel::receive_data<Cce::ReceiveTags::BoundaryData<
-      typename Metavariables::cce_boundary_communication_tags>>(
-          Parallel::get_parallel_component<EvolutionComponent>(cache), time,
-          db::get<::Tags::Variables<
-          typename Metavariables::cce_boundary_communication_tags>>(box),
-          true);
+        typename Metavariables::cce_boundary_communication_tags>>(
+        Parallel::get_parallel_component<EvolutionComponent>(cache), time,
+        db::get<::Tags::Variables<
+            typename Metavariables::cce_boundary_communication_tags>>(box),
+        true);
   }
 };
 /// \endcond

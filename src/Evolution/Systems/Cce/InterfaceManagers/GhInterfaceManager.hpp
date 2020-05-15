@@ -9,8 +9,10 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/TimeStepId.hpp"
 
 namespace Cce {
@@ -49,6 +51,11 @@ class GhLockstep;
  */
 class GhInterfaceManager : public PUP::able {
  public:
+  using gh_variables = Variables<
+   tmpl::list<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
+              GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>,
+              GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>>;
+
   using creatable_classes = tmpl::list<GhLockstep>;
 
   WRAPPED_PUPable_abstract(GhInterfaceManager);  // NOLINT
@@ -59,6 +66,7 @@ class GhInterfaceManager : public PUP::able {
                               tnsr::aa<DataVector, 3> spacetime_metric,
                               tnsr::iaa<DataVector, 3> phi,
                               tnsr::aa<DataVector, 3> pi,
+                              TimeStepId next_time_id,
                               tnsr::aa<DataVector, 3> dt_spacetime_metric,
                               tnsr::iaa<DataVector, 3> dt_phi,
                               tnsr::aa<DataVector, 3> dt_pi) noexcept = 0;
@@ -66,9 +74,7 @@ class GhInterfaceManager : public PUP::able {
   virtual void request_gh_data(const TimeStepId&) noexcept = 0;
 
   virtual auto retrieve_and_remove_first_ready_gh_data() noexcept
-      -> boost::optional<
-          std::tuple<TimeStepId, tnsr::aa<DataVector, 3>,
-                     tnsr::iaa<DataVector, 3>, tnsr::aa<DataVector, 3>>> = 0;
+      -> boost::optional<std::tuple<TimeStepId, gh_variables>> = 0;
 
   virtual size_t number_of_pending_requests() const noexcept = 0;
 

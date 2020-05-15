@@ -15,8 +15,10 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Literals.hpp"
@@ -30,8 +32,8 @@ void test_gh_lockstep_interface_manager(
   UniformCustomDistribution<double> value_dist{-5.0, 5.0};
   UniformCustomDistribution<size_t> timestep_dist{1, 5};
 
-  std::vector<std::tuple<TimeStepId, tnsr::aa<DataVector, 3>,
-                         tnsr::iaa<DataVector, 3>, tnsr::aa<DataVector, 3>>>
+  std::vector<std::tuple<TimeStepId,
+                         InterfaceManagers::GhInterfaceManager::gh_variables>>
       expected_gh_data(7);
   size_t running_total = 0;
   InterfaceManagers::GhLockstep interface_manager{};
@@ -61,7 +63,13 @@ void test_gh_lockstep_interface_manager(
     fill_with_random_values(make_not_null(&pi), gen,
                             make_not_null(&value_dist));
     interface_manager.insert_gh_data(time_id, spacetime_metric, phi, pi);
-    expected_gh_data[i] = std::make_tuple(time_id, spacetime_metric, phi, pi);
+    InterfaceManagers::GhInterfaceManager::gh_variables vars{
+        get<0, 0>(spacetime_metric).size()};
+    get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(vars) =
+        spacetime_metric;
+    get<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(vars) = pi;
+    get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(vars) = phi;
+    expected_gh_data[i] = std::make_tuple(time_id, std::move(vars));
     running_total += timestep_dist(*gen);
   }
 
@@ -81,10 +89,6 @@ void test_gh_lockstep_interface_manager(
               get<0>(expected_gh_data[vector_index]));
         CHECK(get<1>(*retrieved_data) ==
               get<1>(expected_gh_data[vector_index]));
-        CHECK(get<2>(*retrieved_data) ==
-              get<2>(expected_gh_data[vector_index]));
-        CHECK(get<3>(*retrieved_data) ==
-              get<3>(expected_gh_data[vector_index]));
 
         CHECK(local_interface_manager->number_of_pending_requests() == 0);
         CHECK(local_interface_manager->number_of_gh_times() ==
@@ -123,7 +127,7 @@ void test_gh_lockstep_interface_manager(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.GhInterfaceManager",
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.GhLockstep",
                   "[Unit][Cce]") {
   MAKE_GENERATOR(gen);
   test_gh_lockstep_interface_manager(make_not_null(&gen));
