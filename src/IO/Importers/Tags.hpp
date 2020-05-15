@@ -178,7 +178,6 @@ struct FunctionOfTimeFile : db::SimpleTag {
   using type = std::string;
   using option_tags = tmpl::list<::importers::OptionTags::FunctionOfTimeFile>;
   static constexpr bool pass_metavariables = false;
-  template <typename Metavariables>
   static std::string create_from_options(
       const std::string& function_of_time_file) noexcept {
     return function_of_time_file;
@@ -200,7 +199,6 @@ struct FunctionOfTimeNameMap : db::SimpleTag {
   using option_tags =
       tmpl::list<::importers::OptionTags::FunctionOfTimeNameMap>;
   static constexpr bool pass_metavariables = false;
-  template <typename Metavariables>
   static std::map<std::string, std::string> create_from_options(
       const std::map<std::string, std::string>& dataset_names) noexcept {
     return dataset_names;
