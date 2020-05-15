@@ -25,6 +25,7 @@
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -196,7 +197,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
   ActionTesting::emplace_component<worldtube_component>(
       &runner, 0,
       Tags::GhInterfaceManager::create_from_options<test_metavariables>(
-          std::make_unique<GhLockstepInterfaceManager>()));
+          std::make_unique<InterfaceManagers::GhLockstep>()));
 
   // this should run the initializations
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);

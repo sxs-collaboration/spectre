@@ -7,7 +7,7 @@ add_subdirectory(AnalyticSolutions)
 set(LIBRARY "Test_Cce")
 
 set(LIBRARY_SOURCES
-  InterfaceManagers/Test_GhLockstepInterfaceManager.cpp
+  InterfaceManagers/Test_GhLockstep.cpp
   Test_BoundaryData.cpp
   Test_Equations.cpp
   Test_GaugeTransformBoundaryData.cpp

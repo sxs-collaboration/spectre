@@ -13,8 +13,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/Cce/InterfaceManagers/GhLockstepInterfaceManager.hpp"
-#include "Evolution/Systems/Cce/InterfaceManagers/WorldtubeInterfaceManager.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Time/Time.hpp"
@@ -34,7 +34,7 @@ void test_gh_lockstep_interface_manager(
                          tnsr::iaa<DataVector, 3>, tnsr::aa<DataVector, 3>>>
       expected_gh_data(7);
   size_t running_total = 0;
-  GhLockstepInterfaceManager interface_manager{};
+  InterfaceManagers::GhLockstep interface_manager{};
   tnsr::aa<DataVector, 3> spacetime_metric{5_st};
   tnsr::iaa<DataVector, 3> phi{5_st};
   tnsr::aa<DataVector, 3> pi{5_st};
@@ -66,10 +66,11 @@ void test_gh_lockstep_interface_manager(
   }
 
   const auto check_data_retrieval_against_vector =
-      [&expected_gh_data](const gsl::not_null<GhWorldtubeInterfaceManager*>
-                              local_interface_manager,
-                          const size_t expected_number_of_gh_times,
-                          const size_t vector_index) noexcept {
+      [&expected_gh_data](
+          const gsl::not_null<InterfaceManagers::GhInterfaceManager*>
+              local_interface_manager,
+          const size_t expected_number_of_gh_times,
+          const size_t vector_index) noexcept {
         CHECK(local_interface_manager->number_of_pending_requests() == 0);
         CHECK(local_interface_manager->number_of_gh_times() ==
               expected_number_of_gh_times);
@@ -122,7 +123,7 @@ void test_gh_lockstep_interface_manager(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.WorldtubeInterfaceManager",
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.GhInterfaceManager",
                   "[Unit][Cce]") {
   MAKE_GENERATOR(gen);
   test_gh_lockstep_interface_manager(make_not_null(&gen));

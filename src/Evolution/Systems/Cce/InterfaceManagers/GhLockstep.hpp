@@ -10,15 +10,15 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/Cce/InterfaceManagers/WorldtubeInterfaceManager.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/TimeStepId.hpp"
 
-namespace Cce {
+namespace Cce::InterfaceManagers {
 
 /*!
- * \brief Simple implementation of a `GhWorldtubeInterfaceManager` that only
+ * \brief Simple implementation of a `GhInterfaceManager` that only
  * provides boundary data on matching `TimeStepId`s
  *
  * \details This version of the interface manager assumes that the CCE system
@@ -34,22 +34,20 @@ namespace Cce {
  * outcome will likely be that CCE will fail to evolve and the boundary data
  * will be continually inserted into a rapidly expanding inbox.
  */
-class GhLockstepInterfaceManager : public GhWorldtubeInterfaceManager {
+class GhLockstep : public GhInterfaceManager {
  public:
-
   static constexpr OptionString help{
-    "Pass data between GH and CCE systems on matching timesteps only."};
+      "Pass data between GH and CCE systems on matching timesteps only."};
 
   using options = tmpl::list<>;
 
-  GhLockstepInterfaceManager() = default;
+  GhLockstep() = default;
 
-  explicit GhLockstepInterfaceManager(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit GhLockstep(CkMigrateMessage* /*unused*/) noexcept {}
 
-  WRAPPED_PUPable_decl_template(GhLockstepInterfaceManager);  // NOLINT
+  WRAPPED_PUPable_decl_template(GhLockstep);  // NOLINT
 
-  std::unique_ptr<GhWorldtubeInterfaceManager> get_clone() const
-      noexcept override;
+  std::unique_ptr<GhInterfaceManager> get_clone() const noexcept override;
 
   /// \brief Store a provided data set in a `std::deque`.
   ///
@@ -93,4 +91,4 @@ class GhLockstepInterfaceManager : public GhWorldtubeInterfaceManager {
       provided_data_;
 };
 
-}  // namespace Cce
+}  // namespace Cce::InterfaceManagers

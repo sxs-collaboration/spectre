@@ -13,6 +13,7 @@
 #include "Evolution/Systems/Cce/Actions/InitializeWorldtubeBoundary.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -128,7 +129,7 @@ void test_gh_initialization() noexcept {
   ActionTesting::emplace_component<component>(
       &runner, 0,
       Tags::GhInterfaceManager::create_from_options<GhMetavariables>(
-          std::make_unique<GhLockstepInterfaceManager>()));
+          std::make_unique<InterfaceManagers::GhLockstep>()));
 
   // this should run the initialization
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
@@ -140,7 +141,7 @@ void test_gh_initialization() noexcept {
       ActionTesting::get_databox_tag<component, Tags::GhInterfaceManager>(
           runner, 0);
   CHECK(std::is_same_v<decltype(interface_manager),
-                       const GhWorldtubeInterfaceManager&>);
+                       const InterfaceManagers::GhInterfaceManager&>);
 
   // check that the Variables is in the expected state (here we just make sure
   // it has the right size - it shouldn't have been written to yet)

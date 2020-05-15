@@ -11,7 +11,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/Actions/BoundaryComputeAndSendToEvolution.hpp"
-#include "Evolution/Systems/Cce/InterfaceManagers/WorldtubeInterfaceManager.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -29,12 +29,13 @@ namespace Actions {
 /*!
  * \ingroup ActionsGroup
  * \brief Stores the boundary data from the GH evolution in the
- * `Cce::GhWorldtubeInterfaceManager`, and sends to the `EvolutionComponent`
- * (template argument) if the data fulfills a prior request.
+ * `Cce::InterfaceManagers::GhInterfaceManager`, and sends to the
+ * `EvolutionComponent` (template argument) if the data fulfills a prior
+ * request.
  *
  * \details If the new data fulfills a prior request submitted to the
- * `Cce::GhWorldtubeInterfaceManager`, this will dispatch the result to
- * `Cce::Actions::SendToEvolution<GhWorldtubeBoundary<Metavariables>,
+ * `Cce::InterfaceManagers::GhInterfaceManager`, this will dispatch the result
+ * to `Cce::Actions::SendToEvolution<GhWorldtubeBoundary<Metavariables>,
  * EvolutionComponent>` for sending the processed boundary data to
  * the `EvolutionComponent`.
  *
@@ -64,9 +65,9 @@ struct ReceiveGhWorldtubeData {
     db::mutate<Tags::GhInterfaceManager>(
         make_not_null(&box),
         [&spacetime_metric, &phi, &pi, &dt_spacetime_metric, &dt_phi, &dt_pi,
-         &time, &cache](
-            const gsl::not_null<std::unique_ptr<GhWorldtubeInterfaceManager>*>
-                interface_manager) noexcept {
+         &time, &cache](const gsl::not_null<
+                        std::unique_ptr<InterfaceManagers::GhInterfaceManager>*>
+                            interface_manager) noexcept {
           (*interface_manager)
               ->insert_gh_data(time, spacetime_metric, phi, pi,
                                dt_spacetime_metric, dt_phi, dt_pi);
