@@ -20,8 +20,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace Elasticity {
-namespace Solutions {
+namespace Elasticity::Solutions {
 
 static constexpr size_t dim = HalfSpaceMirror::dim;
 
@@ -55,16 +54,16 @@ tuples::TaggedTuple<Tags::Displacement<dim>> HalfSpaceMirror::variables(
   auto result = make_with_value<tnsr::I<DataVector, dim>>(x, 0.);
   const auto w = sqrt(square(get<0>(x)) + square(get<1>(x))) +
                  std::numeric_limits<double>::epsilon();
-  double cos_phi;
-  double sin_phi;
+  double cos_phi = std::numeric_limits<double>::signaling_NaN();
+  double sin_phi = std::numeric_limits<double>::signaling_NaN();
 
   const integration::GslQuadAdaptive<
       integration::GslIntegralType::UpperBoundaryInfinite>
       integration{no_intervals_};
   const double lower_boundary = 0.;
   const size_t num_points = get<0>(x).size();
-  double z;
-  double r;
+  double z = std::numeric_limits<double>::signaling_NaN();
+  double r = std::numeric_limits<double>::signaling_NaN();
   for (size_t i = 0; i < num_points; i++) {
     z = get<2>(x)[i];
     r = w[i];
@@ -119,16 +118,16 @@ tuples::TaggedTuple<Tags::Strain<dim>> HalfSpaceMirror::variables(
   auto strain = make_with_value<tnsr::ii<DataVector, dim>>(x, 0.);
   const auto w = sqrt(square(get<0>(x)) + square(get<1>(x))) +
                  std::numeric_limits<double>::epsilon();
-  double cos_phi;
-  double sin_phi;
+  double cos_phi = std::numeric_limits<double>::signaling_NaN();
+  double sin_phi = std::numeric_limits<double>::signaling_NaN();
 
   const integration::GslQuadAdaptive<
       integration::GslIntegralType::UpperBoundaryInfinite>
       integration{no_intervals_};
   const double lower_boundary = 0.;
   const size_t num_points = get<0>(x).size();
-  double r;
-  double z;
+  double r = std::numeric_limits<double>::signaling_NaN();
+  double z = std::numeric_limits<double>::signaling_NaN();
   for (size_t i = 0; i < num_points; i++) {
     r = w[i];
     z = get<2>(x)[i];
@@ -159,8 +158,8 @@ tuples::TaggedTuple<Tags::Strain<dim>> HalfSpaceMirror::variables(
         },
         lower_boundary, absolute_tolerance_);
 
-    double strain_rr;
-    double strain_pp;
+    double strain_rr = std::numeric_limits<double>::signaling_NaN();
+    double strain_pp = std::numeric_limits<double>::signaling_NaN();
     if (w[i] <= 1e-13) {
       cos_phi = 0.;
       sin_phi = 0.;
@@ -207,8 +206,8 @@ Scalar<DataVector> HalfSpaceMirror::pointwise_isotropic_energy(
       make_with_value<Scalar<DataVector>>(x, 0.);
   auto strain = get<::Elasticity::Tags::Strain<dim>>(
       variables(x, tmpl::list<::Elasticity::Tags::Strain<dim>>{}));
-  double strain_square;
-  double theta;
+  double strain_square = std::numeric_limits<double>::signaling_NaN();
+  double theta = std::numeric_limits<double>::signaling_NaN();
   const size_t num_points = get<0>(x).size();
   for (size_t i = 0; i < num_points; i++) {
     theta = 0;
@@ -231,17 +230,23 @@ Scalar<DataVector> HalfSpaceMirror::pointwise_isotropic_energy(
 tuples::TaggedTuple<::Tags::FixedSource<Tags::Displacement<dim>>>
 HalfSpaceMirror::variables(
     const tnsr::I<DataVector, dim>& x,
-    tmpl::list<::Tags::FixedSource<Tags::Displacement<dim>>> /*meta*/) const
-    noexcept {
+    tmpl::list<
+        ::Tags::FixedSource<Tags::Displacement<dim>>> /*meta*/) noexcept {
   return {make_with_value<tnsr::I<DataVector, dim>>(x, 0.)};
 }
 
 tuples::TaggedTuple<::Tags::Initial<Tags::Displacement<dim>>>
 HalfSpaceMirror::variables(
     const tnsr::I<DataVector, dim>& x,
-    tmpl::list<::Tags::Initial<Tags::Displacement<dim>>> /*meta*/) const
-    noexcept {
+    tmpl::list<::Tags::Initial<Tags::Displacement<dim>>> /*meta*/) noexcept {
   return {make_with_value<tnsr::I<DataVector, dim>>(x, 0.)};
+}
+
+tuples::TaggedTuple<::Tags::Initial<Tags::Strain<dim>>>
+HalfSpaceMirror::variables(
+    const tnsr::I<DataVector, dim>& x,
+    tmpl::list<::Tags::Initial<Tags::Strain<dim>>> /*meta*/) noexcept {
+  return {make_with_value<tnsr::ii<DataVector, dim>>(x, 0.)};
 }
 
 void HalfSpaceMirror::pup(PUP::er& p) noexcept {
@@ -262,5 +267,4 @@ bool operator!=(const HalfSpaceMirror& lhs,
   return not(lhs == rhs);
 }
 
-}  // namespace Solutions
-}  // namespace Elasticity
+}  // namespace Elasticity::Solutions

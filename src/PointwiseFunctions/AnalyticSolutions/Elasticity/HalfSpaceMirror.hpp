@@ -24,8 +24,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace Elasticity {
-namespace Solutions {
+namespace Elasticity::Solutions {
 /*!
  * \brief The solution for a deformed half-space mirror.
  *
@@ -124,22 +123,23 @@ class HalfSpaceMirror {
                  tmpl::list<Tags::Stress<dim>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<Tags::Stress<dim>>;
 
-  auto variables(
+  static auto variables(
       const tnsr::I<DataVector, dim>& x,
-      tmpl::list<::Tags::FixedSource<Tags::Displacement<dim>>> /*meta*/) const
-      noexcept
+      tmpl::list<
+          ::Tags::FixedSource<Tags::Displacement<dim>>> /*meta*/) noexcept
       -> tuples::TaggedTuple<::Tags::FixedSource<Tags::Displacement<dim>>>;
   // @}
 
   /// Initial guess for variables
-  auto variables(
+  static auto variables(
       const tnsr::I<DataVector, dim>& x,
-      tmpl::list<::Tags::Initial<Tags::Displacement<dim>>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<::Tags::Initial<Tags::Displacement<dim>>>;
+      tmpl::list<::Tags::Initial<Tags::Displacement<dim>>> /*meta*/) noexcept
+      -> tuples::TaggedTuple<::Tags::Initial<Tags::Displacement<dim>>>;
 
-  auto variables(const tnsr::I<DataVector, dim>& x,
-                 tmpl::list<::Tags::Initial<Tags::Strain<dim>>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<::Tags::Initial<Tags::Strain<dim>>>;
+  static auto variables(
+      const tnsr::I<DataVector, dim>& x,
+      tmpl::list<::Tags::Initial<Tags::Strain<dim>>> /*meta*/) noexcept
+      -> tuples::TaggedTuple<::Tags::Initial<Tags::Strain<dim>>>;
 
   /// Retrieve a collection of variables at coordinates `x`
   template <typename... Tags>
@@ -167,5 +167,4 @@ class HalfSpaceMirror {
 bool operator!=(const HalfSpaceMirror& lhs,
                 const HalfSpaceMirror& rhs) noexcept;
 
-}  // namespace Solutions
-}  // namespace Elasticity
+}  // namespace Elasticity::Solutions

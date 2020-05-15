@@ -70,7 +70,7 @@ SPECTRE_TEST_CASE(
           // Iron: E=72, nu=0.17
           36.36363636363637, 30.76923076923077},
       50, 1.e-13};
-  const Elasticity::Solutions::HalfSpaceMirror created_solution =
+  const auto created_solution =
       TestHelpers::test_creation<Elasticity::Solutions::HalfSpaceMirror>(
           "BeamWidth: 0.177\n"
           "AppliedForce: 1.0\n"
