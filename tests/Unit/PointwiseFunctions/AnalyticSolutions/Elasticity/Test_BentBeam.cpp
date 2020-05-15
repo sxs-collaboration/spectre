@@ -70,7 +70,7 @@ SPECTRE_TEST_CASE(
       // Iron: E=100, nu=0.29
       Elasticity::ConstitutiveRelations::IsotropicHomogeneous<2>{
           79.36507936507935, 38.75968992248062}};
-  const Elasticity::Solutions::BentBeam created_solution =
+  const auto created_solution =
       TestHelpers::test_creation<Elasticity::Solutions::BentBeam>(
           "Length: 5.\n"
           "Height: 1.\n"

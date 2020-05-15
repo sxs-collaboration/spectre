@@ -39,8 +39,7 @@ class DataVector;
  * describes the elastic properties of the material (see
  * `Elasticity::ConstitutiveRelations::ConstitutiveRelation`).
  */
-namespace Elasticity {
-namespace Tags {
+namespace Elasticity::Tags {
 
 /*!
  * \brief The material displacement field \f$\boldsymbol{u}(x)\f$
@@ -93,5 +92,4 @@ struct FluxesComputer : elliptic::Tags::FluxesComputer<FluxesComputerType> {
   }
 };
 
-}  // namespace Tags
-}  // namespace Elasticity
+}  // namespace Elasticity::Tags

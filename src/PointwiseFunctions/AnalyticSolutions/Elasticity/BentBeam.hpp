@@ -23,8 +23,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace Elasticity {
-namespace Solutions {
+namespace Elasticity::Solutions {
 /*!
  * \brief A state of pure bending of an elastic beam in 2D
  *
@@ -134,10 +133,9 @@ class BentBeam {
                  tmpl::list<Tags::Stress<2>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<Tags::Stress<2>>;
 
-  auto variables(
+  static auto variables(
       const tnsr::I<DataVector, 2>& x,
-      tmpl::list<::Tags::FixedSource<Tags::Displacement<2>>> /*meta*/) const
-      noexcept
+      tmpl::list<::Tags::FixedSource<Tags::Displacement<2>>> /*meta*/) noexcept
       -> tuples::TaggedTuple<::Tags::FixedSource<Tags::Displacement<2>>>;
   // @}
 
@@ -166,5 +164,4 @@ class BentBeam {
 
 bool operator!=(const BentBeam& lhs, const BentBeam& rhs) noexcept;
 
-}  // namespace Solutions
-}  // namespace Elasticity
+}  // namespace Elasticity::Solutions
