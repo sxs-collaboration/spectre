@@ -383,7 +383,7 @@ template <size_t VolumeDim>
 FaceCornerIterator<VolumeDim>::FaceCornerIterator(
     Direction<VolumeDim> direction) noexcept
     : direction_(std::move(direction)),
-      index_(direction.side() == Side::Upper
+      index_(direction_.side() == Side::Upper
                  ? two_to_the(direction_.dimension())
                  : 0) {
   for (size_t i = 0; i < VolumeDim; ++i) {

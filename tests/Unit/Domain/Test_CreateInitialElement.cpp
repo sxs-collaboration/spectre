@@ -44,51 +44,36 @@ void test_create_initial_element(
 }
 
 void test_h_refinement() noexcept {
+  const auto make_check = [](const ElementId<3>& self_id,
+                             const Direction<3>& neighbor_direction) noexcept {
+    return [self_id, neighbor_direction](
+               const OrientationMap<3>& neighbor_orientation,
+               const std::array<size_t, 3>& neighbor_refinement,
+               const std::unordered_set<ElementId<3>>&
+                   expected_neighbors) noexcept {
+      CAPTURE(neighbor_orientation);
+      CAPTURE(neighbor_refinement);
+      const Block<3> self_block(
+          domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+              domain::CoordinateMaps::Identity<3>{}),
+          0, {{neighbor_direction, {1, neighbor_orientation}}});
+      const std::vector<std::array<size_t, 3>> refinement_levels{
+          {{1, 1, 1}}, neighbor_refinement};
+
+      const auto refined_neighbors =
+          domain::Initialization::create_initial_element(self_id, self_block,
+                                                         refinement_levels)
+              .neighbors()
+              .at(neighbor_direction)
+              .ids();
+      CHECK(refined_neighbors == expected_neighbors);
+    };
+  };
+
   const auto check_upper =
-      [](const OrientationMap<3>& neighbor_orientation,
-         const std::array<size_t, 3>& neighbor_refinement,
-         const std::unordered_set<ElementId<3>>& expected_neighbors) noexcept {
-    CAPTURE(neighbor_orientation);
-    CAPTURE(neighbor_refinement);
-    const ElementId<3> self_id(0, {{{1, 1}, {1, 0}, {1, 1}}});
-    const Block<3> self_block(
-        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-            domain::CoordinateMaps::Identity<3>{}),
-        0, {{Direction<3>::upper_xi(), {1, neighbor_orientation}}});
-    const std::vector<std::array<size_t, 3>> refinement_levels{
-        {{1, 1, 1}}, neighbor_refinement};
-
-    const auto refined_neighbors =
-        domain::Initialization::create_initial_element(self_id, self_block,
-                                                       refinement_levels)
-            .neighbors()
-            .at(Direction<3>::upper_xi())
-            .ids();
-    CHECK(refined_neighbors == expected_neighbors);
-  };
-
+      make_check({0, {{{1, 1}, {1, 0}, {1, 1}}}}, Direction<3>::upper_xi());
   const auto check_lower =
-      [](const OrientationMap<3>& neighbor_orientation,
-         const std::array<size_t, 3>& neighbor_refinement,
-         const std::unordered_set<ElementId<3>>& expected_neighbors) noexcept {
-    CAPTURE(neighbor_orientation);
-    CAPTURE(neighbor_refinement);
-    const ElementId<3> self_id(0, {{{1, 0}, {1, 0}, {1, 1}}});
-    const Block<3> self_block(
-        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-            domain::CoordinateMaps::Identity<3>{}),
-        0, {{Direction<3>::lower_xi(), {1, neighbor_orientation}}});
-    const std::vector<std::array<size_t, 3>> refinement_levels{
-        {{1, 1, 1}}, neighbor_refinement};
-
-    const auto refined_neighbors =
-        domain::Initialization::create_initial_element(self_id, self_block,
-                                                       refinement_levels)
-            .neighbors()
-            .at(Direction<3>::lower_xi())
-            .ids();
-    CHECK(refined_neighbors == expected_neighbors);
-  };
+      make_check({0, {{{1, 0}, {1, 0}, {1, 1}}}}, Direction<3>::lower_xi());
 
   const OrientationMap<3> aligned{};
   const OrientationMap<3> rotated{
@@ -373,6 +358,38 @@ void test_h_refinement() noexcept {
   check_lower(
       reflected, {{2, 2, 0}},
       {{1, {{{2, 0}, {2, 3}, {0, 0}}}}, {1, {{{2, 0}, {2, 2}, {0, 0}}}}});
+
+  // Larger perpendicular refinement
+  const auto check_perpendicular_refinement_upper =
+      make_check({0, {{{3, 7}, {0, 0}, {0, 0}}}}, Direction<3>::upper_xi());
+  const auto check_perpendicular_refinement_lower =
+      make_check({0, {{{3, 0}, {0, 0}, {0, 0}}}}, Direction<3>::lower_xi());
+
+  check_perpendicular_refinement_upper(aligned, {{1, 0, 0}},
+                                       {{1, {{{1, 0}, {0, 0}, {0, 0}}}}});
+  check_perpendicular_refinement_lower(aligned, {{1, 0, 0}},
+                                       {{1, {{{1, 1}, {0, 0}, {0, 0}}}}});
+  check_perpendicular_refinement_upper(rotated, {{0, 0, 1}},
+                                       {{1, {{{0, 0}, {0, 0}, {1, 0}}}}});
+  check_perpendicular_refinement_lower(rotated, {{0, 0, 1}},
+                                       {{1, {{{0, 0}, {0, 0}, {1, 1}}}}});
+  check_perpendicular_refinement_upper(reflected, {{1, 0, 0}},
+                                       {{1, {{{1, 1}, {0, 0}, {0, 0}}}}});
+  check_perpendicular_refinement_lower(reflected, {{1, 0, 0}},
+                                       {{1, {{{1, 0}, {0, 0}, {0, 0}}}}});
+
+  check_perpendicular_refinement_upper(aligned, {{5, 0, 0}},
+                                       {{1, {{{5, 0}, {0, 0}, {0, 0}}}}});
+  check_perpendicular_refinement_lower(aligned, {{5, 0, 0}},
+                                       {{1, {{{5, 31}, {0, 0}, {0, 0}}}}});
+  check_perpendicular_refinement_upper(rotated, {{0, 0, 5}},
+                                       {{1, {{{0, 0}, {0, 0}, {5, 0}}}}});
+  check_perpendicular_refinement_lower(rotated, {{0, 0, 5}},
+                                       {{1, {{{0, 0}, {0, 0}, {5, 31}}}}});
+  check_perpendicular_refinement_upper(reflected, {{5, 0, 0}},
+                                       {{1, {{{5, 31}, {0, 0}, {0, 0}}}}});
+  check_perpendicular_refinement_lower(reflected, {{5, 0, 0}},
+                                       {{1, {{{5, 0}, {0, 0}, {0, 0}}}}});
 }
 }  // namespace
 

@@ -22,8 +22,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
-namespace domain {
-namespace Initialization {
+namespace domain::Initialization {
 template <size_t VolumeDim>
 Element<VolumeDim> create_initial_element(
     const ElementId<VolumeDim>& element_id, const Block<VolumeDim>& block,
@@ -52,6 +51,11 @@ Element<VolumeDim> create_initial_element(
     // the neighbor if necessary.
     auto neighbor_is_refined = make_array<VolumeDim>(false);
     for (size_t d = 0; d < VolumeDim; ++d) {
+      // The refinement difference perpendicular to the interface is
+      // not restricted.
+      if (d == direction_in_neighbor.dimension()) {
+        continue;
+      }
       switch (static_cast<int>(gsl::at(refinement_of_neighbor, d)) -
               static_cast<int>(gsl::at(segment_ids_of_unrefined_neighbor, d)
                                    .refinement_level())) {
@@ -74,20 +78,23 @@ Element<VolumeDim> create_initial_element(
       }
     }
 
-    // Refinement in the dimension perpendicular to the interface
-    // never causes additional neighbors, even if the neighboring
-    // elements are smaller.
+    // Set the segment in the perpendicular dimension to the segment
+    // of the neighboring elements, which must be at one end of the
+    // interval.  This sort of refinement never produces multiple
+    // neighbors, so we do not set neighbor_is_refined[...].
     {
       auto& perpendicular_segment = gsl::at(segment_ids_of_unrefined_neighbor,
                                             direction_in_neighbor.dimension());
-      auto& perpendicular_refinement =
-          gsl::at(neighbor_is_refined, direction_in_neighbor.dimension());
-      if (perpendicular_refinement) {
+      const size_t neighbor_refinement =
+          gsl::at(refinement_of_neighbor, direction_in_neighbor.dimension());
+      // direction_in_neighbor points into the element, so we want the
+      // segment on the side it is pointing away from.
+      if (direction_in_neighbor.side() == Side::Upper) {
+        perpendicular_segment = SegmentId(neighbor_refinement, 0);
+      } else {
         perpendicular_segment =
-            perpendicular_segment.id_of_child(direction_in_neighbor.side());
-        perpendicular_refinement = false;
+            SegmentId(neighbor_refinement, two_to_the(neighbor_refinement) - 1);
       }
-      perpendicular_segment = perpendicular_segment.id_if_flipped();
     }
 
     // Consider all possible neighbors by looping over all elements of
@@ -97,7 +104,7 @@ Element<VolumeDim> create_initial_element(
     // and consider any Upper neighbors invalid.
     std::unordered_set<ElementId<VolumeDim>> neighbor_ids;
     for (IndexIterator<VolumeDim> index(Index<VolumeDim>(2)); index; ++index) {
-      std::array<SegmentId, VolumeDim> segment_ids_of_neighbor;
+      std::array<SegmentId, VolumeDim> segment_ids_of_neighbor{};
       for (size_t d = 0; d < VolumeDim; ++d) {
         const auto& unrefined_segment =
             gsl::at(segment_ids_of_unrefined_neighbor, d);
@@ -168,8 +175,7 @@ Element<VolumeDim> create_initial_element(
   return Element<VolumeDim>(ElementId<VolumeDim>(element_id),
                             std::move(neighbors_of_element));
 }
-}  // namespace Initialization
-}  // namespace domain
+}  // namespace domain::Initialization
 
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

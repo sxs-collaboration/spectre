@@ -143,17 +143,14 @@ void test_domain_connectivity(
 template <size_t AllowedDifference>
 SPECTRE_ALWAYS_INLINE void check_if_levels_are_within(
     const size_t level_1, const size_t level_2) noexcept {
+  // clang-tidy complains about a catch-internal do {} while (false) loop.
+  // NOLINTNEXTLINE(bugprone-infinite-loop)
   CHECK(level_1 <= level_2 + AllowedDifference);
+  // NOLINTNEXTLINE(bugprone-infinite-loop)
   CHECK(level_2 <= level_1 + AllowedDifference);
 }
 
-template <>
-SPECTRE_ALWAYS_INLINE void check_if_levels_are_within<0>(
-    const size_t level_1, const size_t level_2) noexcept {
-  CHECK(level_1 == level_2);
-}
-
-template <size_t AllowedDifference, size_t VolumeDim>
+template <size_t AllowedTangentialDifference, size_t VolumeDim>
 void test_refinement_levels_of_neighbors(
     const std::unordered_map<ElementId<VolumeDim>, Element<VolumeDim>>&
         elements) noexcept {
@@ -164,6 +161,11 @@ void test_refinement_levels_of_neighbors(
       const auto& neighbors = direction_neighbors.second;
       const auto& orientation = neighbors.orientation();
       for (size_t d = 0; d < VolumeDim; ++d) {
+        // No restriction on perpendicular refinement.
+        if (d == direction_neighbors.first.dimension()) {
+          continue;
+        }
+
         const size_t my_dim_in_neighbor = orientation(d);
         const size_t my_level =
             gsl::at(element_id.segment_ids(), d).refinement_level();
@@ -171,8 +173,8 @@ void test_refinement_levels_of_neighbors(
           const size_t neighbor_level =
               gsl::at(neighbor_id.segment_ids(), my_dim_in_neighbor)
                   .refinement_level();
-          check_if_levels_are_within<AllowedDifference>(my_level,
-                                                        neighbor_level);
+          check_if_levels_are_within<AllowedTangentialDifference>(
+              my_level, neighbor_level);
         }
       }
     }
@@ -451,7 +453,7 @@ void test_initial_domain(const Domain<VolumeDim>& domain,
                          initial_refinement_levels));
   }
   domain::test_domain_connectivity(domain, elements);
-  domain::test_refinement_levels_of_neighbors<0>(elements);
+  domain::test_refinement_levels_of_neighbors<1>(elements);
 }
 
 template <typename DataType, size_t SpatialDim>
