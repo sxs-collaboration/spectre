@@ -39,14 +39,37 @@ InitializeDampedHarmonic<Dim>::impl(
     const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
         inverse_jacobian) noexcept {
-  const auto spatial_metric = gr::spatial_metric(spacetime_metric);
-  const auto inverse_spatial_metric =
-      determinant_and_inverse(spatial_metric).second;
-  const auto shift = gr::shift(spacetime_metric, inverse_spatial_metric);
-  const auto lapse = gr::lapse(shift, spacetime_metric);
-  const auto inverse_spacetime_metric =
-      gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
-  tnsr::abb<DataVector, Dim, Frame::Inertial> da_spacetime_metric{};
+  Variables<tmpl::list<
+      gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>,
+      gr::Tags::DetSpatialMetric<DataVector>,
+      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
+      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
+      gr::Tags::Lapse<DataVector>,
+      gr::Tags::InverseSpacetimeMetric<Dim, Frame::Inertial, DataVector>,
+      gr::Tags::DerivativesOfSpacetimeMetric<Dim, Frame::Inertial, DataVector>>>
+      temps{mesh.number_of_grid_points()};
+  auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>>(temps);
+  auto& inverse_spatial_metric =
+      get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>(
+          temps);
+  auto& shift = get<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>(temps);
+  auto& lapse = get<gr::Tags::Lapse<DataVector>>(temps);
+  auto& inverse_spacetime_metric =
+      get<gr::Tags::InverseSpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
+          temps);
+  auto& da_spacetime_metric = get<
+      gr::Tags::DerivativesOfSpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
+      temps);
+
+  gr::spatial_metric(make_not_null(&spatial_metric), spacetime_metric);
+  determinant_and_inverse(
+      make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(temps)),
+      make_not_null(&inverse_spatial_metric), spatial_metric);
+  gr::shift(make_not_null(&shift), spacetime_metric, inverse_spatial_metric);
+  gr::lapse(make_not_null(&lapse), shift, spacetime_metric);
+  gr::inverse_spacetime_metric(make_not_null(&inverse_spacetime_metric), lapse,
+                               shift, inverse_spatial_metric);
   GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
       make_not_null(&da_spacetime_metric), lapse, shift, pi, phi);
   // H_a=-Gamma_a
@@ -73,7 +96,9 @@ InitializeDampedHarmonic<Dim>::impl(
   get<GeneralizedHarmonic::Tags::InitialGaugeH<Dim, frame>>(
       initial_gauge_h_vars) = initial_gauge_h;
   // compute spacetime derivatives of InitialGaugeH
-  tnsr::ab<DataVector, Dim, Frame::Inertial> initial_d4_gauge_h{};
+  auto initial_d4_gauge_h =
+      make_with_value<tnsr::ab<DataVector, Dim, Frame::Inertial>>(
+          initial_gauge_h, 0.);
   GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<Dim, frame>::function(
       make_not_null(&initial_d4_gauge_h), std::move(dt_initial_gauge_source),
       get<::Tags::deriv<GeneralizedHarmonic::Tags::InitialGaugeH<Dim, frame>,
