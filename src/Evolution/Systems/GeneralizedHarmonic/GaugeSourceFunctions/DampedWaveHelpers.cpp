@@ -25,9 +25,7 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 void spatial_weight_function(const gsl::not_null<Scalar<DataType>*> weight,
                              const tnsr::I<DataType, SpatialDim, Frame>& coords,
                              const double sigma_r) noexcept {
-  if (UNLIKELY(get_size(get(*weight)) != get_size(get<0>(coords)))) {
-    *weight = Scalar<DataType>(get_size(get<0>(coords)));
-  }
+  destructive_resize_components(weight, get_size(get<0>(coords)));
   const auto r_squared = dot_product(coords, coords);
   get(*weight) = exp(-get(r_squared) / pow<2>(sigma_r));
 }
@@ -37,9 +35,7 @@ void spacetime_deriv_of_spatial_weight_function(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> d4_weight,
     const tnsr::I<DataType, SpatialDim, Frame>& coords, const double sigma_r,
     const Scalar<DataType>& weight_function) noexcept {
-  if (UNLIKELY(get_size(get<0>(*d4_weight)) != get_size(get<0>(coords)))) {
-    *d4_weight = tnsr::a<DataType, SpatialDim, Frame>(get_size(get<0>(coords)));
-  }
+  destructive_resize_components(d4_weight, get_size(get<0>(coords)));
   // use 0th component to avoid allocations
   get<0>(*d4_weight) = get(weight_function) * (-2. / pow<2>(sigma_r));
   for (size_t i = 0; i < SpatialDim; ++i) {
@@ -54,9 +50,7 @@ void log_factor_metric_lapse(const gsl::not_null<Scalar<DataType>*> logfac,
                              const Scalar<DataType>& lapse,
                              const Scalar<DataType>& sqrt_det_spatial_metric,
                              const double exponent) noexcept {
-  if (UNLIKELY(get_size(get(*logfac)) != get_size(get(lapse)))) {
-    *logfac = Scalar<DataType>(get_size(get(lapse)));
-  }
+  destructive_resize_components(logfac, get_size(get(lapse)));
   // branching below is to avoid using pow for performance reasons
   if (exponent == 0.) {
     get(*logfac) = -log(get(lapse));
@@ -73,7 +67,7 @@ Scalar<DataType> log_factor_metric_lapse(
     const Scalar<DataType>& lapse,
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const double exponent) noexcept {
-  Scalar<DataType> logfac{};
+  Scalar<DataType> logfac{get_size(get(lapse))};
   log_factor_metric_lapse(make_not_null(&logfac), lapse,
                           sqrt_det_spatial_metric, exponent);
   return logfac;
@@ -91,9 +85,7 @@ void spacetime_deriv_of_log_factor_metric_lapse(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const double exponent) noexcept {
-  if (UNLIKELY(get_size(get<0>(*d4_logfac)) != get_size(get(lapse)))) {
-    *d4_logfac = tnsr::a<DataType, SpatialDim, Frame>(get_size(get(lapse)));
-  }
+  destructive_resize_components(d4_logfac, get_size(get(lapse)));
   // Use a TempBuffer to reduce total number of allocations. This is especially
   // important in a multithreaded environment.
   TempBuffer<tmpl::list<::Tags::Tempa<0, SpatialDim, Frame, DataType>,
@@ -147,7 +139,7 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_log_factor_metric_lapse(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const double exponent) noexcept {
-  tnsr::a<DataType, SpatialDim, Frame> d4_logfac{};
+  tnsr::a<DataType, SpatialDim, Frame> d4_logfac{get_size(get(lapse))};
   spacetime_deriv_of_log_factor_metric_lapse(
       make_not_null(&d4_logfac), lapse, shift, spacetime_unit_normal,
       inverse_spatial_metric, sqrt_det_spatial_metric, dt_spatial_metric, pi,
@@ -167,9 +159,7 @@ void spacetime_deriv_of_power_log_factor_metric_lapse(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi, const double g_exponent,
     const int exponent) noexcept {
-  if (UNLIKELY(get_size(get<0>(*d4_powlogfac)) != get_size(get(lapse)))) {
-    *d4_powlogfac = tnsr::a<DataType, SpatialDim, Frame>(get_size(get(lapse)));
-  }
+  destructive_resize_components(d4_powlogfac, get_size(get(lapse)));
   // Use a TempBuffer to reduce total number of allocations. This is especially
   // important in a multithreaded environment.
   TempBuffer<tmpl::list<::Tags::Tempa<0, SpatialDim, Frame, DataType>,
@@ -217,7 +207,7 @@ spacetime_deriv_of_power_log_factor_metric_lapse(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi, const double g_exponent,
     const int exponent) noexcept {
-  tnsr::a<DataType, SpatialDim, Frame> d4_powlogfac{};
+  tnsr::a<DataType, SpatialDim, Frame> d4_powlogfac{get_size(get(lapse))};
   spacetime_deriv_of_power_log_factor_metric_lapse(
       make_not_null(&d4_powlogfac), lapse, shift, spacetime_unit_normal,
       inverse_spatial_metric, sqrt_det_spatial_metric, dt_spatial_metric, pi,
