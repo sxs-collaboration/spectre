@@ -41,9 +41,9 @@ class History {
   using size_type = size_t;
 
   History() = default;
-  History(const History&) = delete;
+  History(const History&) = default;
   History(History&&) = default;
-  History& operator=(const History&) = delete;
+  History& operator=(const History&) = default;
   History& operator=(History&&) = default;
   ~History() = default;
 
