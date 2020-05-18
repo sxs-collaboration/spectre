@@ -21,12 +21,12 @@ std::unique_ptr<GhInterfaceManager> GhLockstep::get_clone() const noexcept {
 }
 
 void GhLockstep::insert_gh_data(
-    TimeStepId time_id, tnsr::aa<DataVector, 3> spacetime_metric,
-    tnsr::iaa<DataVector, 3> phi, tnsr::aa<DataVector, 3> pi,
+    TimeStepId time_id, const tnsr::aa<DataVector, 3>& spacetime_metric,
+    const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
     TimeStepId /*next_time_id*/,
-    const tnsr::aa<DataVector, 3> /*dt_spacetime_metric*/,
-    const tnsr::iaa<DataVector, 3> /*dt_phi*/,
-    const tnsr::aa<DataVector, 3> /*dt_pi*/) noexcept {
+    const tnsr::aa<DataVector, 3>& /*dt_spacetime_metric*/,
+    const tnsr::iaa<DataVector, 3>& /*dt_phi*/,
+    const tnsr::aa<DataVector, 3>& /*dt_pi*/) noexcept {
   // NOLINTNEXTLINE(performance-move-const-arg)
   gh_variables input_gh_variables{get<0, 0>(spacetime_metric).size()};
   get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
@@ -35,6 +35,7 @@ void GhLockstep::insert_gh_data(
       pi;
   get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
       input_gh_variables) = phi;
+  // NOLINTNEXTLINE(performance-move-const-arg)
   provided_data_.emplace_back(std::move(time_id),
                               std::move(input_gh_variables));
 }

@@ -19,6 +19,7 @@ namespace Cce {
 namespace InterfaceManagers {
 
 /// \cond
+class GhLocalTimeStepping;
 class GhLockstep;
 /// \endcond
 
@@ -56,20 +57,19 @@ class GhInterfaceManager : public PUP::able {
               GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>,
               GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>>;
 
-  using creatable_classes = tmpl::list<GhLockstep>;
+  using creatable_classes = tmpl::list<GhLocalTimeStepping, GhLockstep>;
 
   WRAPPED_PUPable_abstract(GhInterfaceManager);  // NOLINT
 
   virtual std::unique_ptr<GhInterfaceManager> get_clone() const noexcept = 0;
 
-  virtual void insert_gh_data(TimeStepId time_id,
-                              tnsr::aa<DataVector, 3> spacetime_metric,
-                              tnsr::iaa<DataVector, 3> phi,
-                              tnsr::aa<DataVector, 3> pi,
-                              TimeStepId next_time_id,
-                              tnsr::aa<DataVector, 3> dt_spacetime_metric,
-                              tnsr::iaa<DataVector, 3> dt_phi,
-                              tnsr::aa<DataVector, 3> dt_pi) noexcept = 0;
+  virtual void insert_gh_data(
+      TimeStepId time_id, const tnsr::aa<DataVector, 3>& spacetime_metric,
+      const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
+      TimeStepId next_time_id,
+      const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
+      const tnsr::iaa<DataVector, 3>& dt_phi,
+      const tnsr::aa<DataVector, 3>& dt_pi) noexcept = 0;
 
   virtual void request_gh_data(const TimeStepId&) noexcept = 0;
 

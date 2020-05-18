@@ -12,6 +12,7 @@
 #include "Evolution/Systems/Cce/Initialize/NoIncomingRadiation.hpp"
 #include "Evolution/Systems/Cce/Initialize/ZeroNonSmooth.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhLocalTimeStepping.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
