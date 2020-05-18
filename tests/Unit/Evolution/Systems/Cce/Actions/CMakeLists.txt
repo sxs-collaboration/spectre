@@ -23,7 +23,7 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/Cce/Actions/"
   "${LIBRARY_SOURCES}"
-  "Cce"
+  "Cce;Interpolation"
   )
 
 add_dependencies(

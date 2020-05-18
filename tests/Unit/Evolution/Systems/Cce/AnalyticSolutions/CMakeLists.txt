@@ -5,6 +5,7 @@ set(LIBRARY "Test_Cce_AnalyticSolutions")
 
 set(LIBRARY_SOURCES
   Test_BouncingBlackHole.cpp
+  Test_LinearizedBondiSachs.cpp
   )
 
 add_test_library(
@@ -12,4 +13,15 @@ add_test_library(
   "Evolution/Systems/Cce/AnalyticSolutions/"
   "${LIBRARY_SOURCES}"
   "CceAnalyticSolutions"
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PUBLIC
+  Cce
+  DataStructures
+  GeneralizedHarmonic
+  GeneralRelativity
+  Utilities
+  CceAnalyticSolutionsHelpers
   )

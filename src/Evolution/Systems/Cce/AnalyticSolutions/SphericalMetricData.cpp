@@ -23,8 +23,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Cce {
-namespace Solutions {
+namespace Cce::Solutions {
 
 /// \cond
 
@@ -47,7 +46,7 @@ void SphericalMetricData::variables_impl(
       get<Tags::detail::InverseCartesianToSphericalJacobian>(
           intermediate_variables);
 
-  spherical_metric(make_not_null(&intermediate_spherical_metric), time);
+  spherical_metric(make_not_null(&intermediate_spherical_metric), l_max, time);
   inverse_jacobian(make_not_null(&intermediate_jacobian), l_max);
 
   get<0, 0>(*spacetime_metric) = get<0, 0>(intermediate_spherical_metric);
@@ -95,7 +94,8 @@ void SphericalMetricData::variables_impl(
       get<Tags::detail::InverseCartesianToSphericalJacobian>(
           intermediate_variables);
 
-  dt_spherical_metric(make_not_null(&intermediate_dt_spherical_metric), time);
+  dt_spherical_metric(make_not_null(&intermediate_dt_spherical_metric), l_max,
+                      time);
   inverse_jacobian(make_not_null(&intermediate_jacobian), l_max);
 
   get<0, 0>(*dt_spacetime_metric) = get<0, 0>(intermediate_dt_spherical_metric);
@@ -164,8 +164,9 @@ void SphericalMetricData::variables_impl(
   auto& intermediate_dr_jacobian =
       get<Tags::Dr<Tags::detail::InverseCartesianToSphericalJacobian>>(
           intermediate_variables);
-  spherical_metric(make_not_null(&intermediate_spherical_metric), time);
-  dr_spherical_metric(make_not_null(&intermediate_dr_spherical_metric), time);
+  spherical_metric(make_not_null(&intermediate_spherical_metric), l_max, time);
+  dr_spherical_metric(make_not_null(&intermediate_dr_spherical_metric), l_max,
+                      time);
   inverse_jacobian(make_not_null(&intermediate_jacobian), l_max);
   dr_inverse_jacobian(make_not_null(&intermediate_dr_jacobian), l_max);
 
@@ -312,6 +313,7 @@ void SphericalMetricData::dr_inverse_jacobian(
   }
 }
 
+void SphericalMetricData::pup(PUP::er& p) noexcept { WorldtubeData::pup(p); }
+
 /// \endcond
-}  // namespace Solutions
-}  // namespace Cce
+}  // namespace Cce::Solutions

@@ -84,7 +84,7 @@ struct WorldtubeData : public PUP::able {
   WRAPPED_PUPable_abstract(WorldtubeData);  // NOLINT
 
   // clang doesn't manage to use = default correctly in this case
-  // NOLINTNEXTLINE(hicpp-use-equals-default)
+  // NOLINTNEXTLINE(modernize-use-equals-default)
   WorldtubeData() noexcept {};
 
   explicit WorldtubeData(const double extraction_radius) noexcept
