@@ -240,6 +240,40 @@ class BinaryCompactObject : public DomainCreator<3> {
     static type lower_bound() noexcept { return 0; }
   };
 
+  struct UseLogarithmicMapObjectA {
+    using type = bool;
+    static constexpr OptionString help = {
+        "Use a logarithmically spaced radial grid in the part of Layer 1 "
+        "enveloping Object A (requires ExciseInteriorA == true)"};
+    static type default_value() noexcept { return false; }
+  };
+
+  struct AdditionToObjectARadialRefinementLevel {
+    using type = size_t;
+    static constexpr OptionString help = {
+        "Addition to radial refinement level in the part of Layer 1 enveloping "
+        "Object A, beyond the refinement level set by InitialRefinement."};
+    static constexpr type default_value() noexcept { return 0; }
+    static type lower_bound() noexcept { return 0; }
+  };
+
+  struct UseLogarithmicMapObjectB {
+    using type = bool;
+    static constexpr OptionString help = {
+        "Use a logarithmically spaced radial grid in the part of Layer 1 "
+        "enveloping Object B (requires ExciseInteriorB == true)"};
+    static type default_value() noexcept { return false; }
+  };
+
+  struct AdditionToObjectBRadialRefinementLevel {
+    using type = size_t;
+    static constexpr OptionString help = {
+        "Addition to radial refinement level in the part of Layer 1 enveloping "
+        "Object B, beyond the refinement level set by InitialRefinement."};
+    static constexpr type default_value() noexcept { return 0; }
+    static type lower_bound() noexcept { return 0; }
+  };
+
   struct TimeDependence {
     using type =
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>;
@@ -253,12 +287,17 @@ class BinaryCompactObject : public DomainCreator<3> {
       InnerRadiusObjectB, OuterRadiusObjectB, XCoordObjectB, ExciseInteriorB,
       RadiusOuterCube, RadiusOuterSphere, InitialRefinement, InitialGridPoints,
       UseEquiangularMap, UseProjectiveMap, UseLogarithmicMapOuterSphericalShell,
-      AdditionToOuterLayerRadialRefinementLevel, TimeDependence>;
+      AdditionToOuterLayerRadialRefinementLevel, UseLogarithmicMapObjectA,
+      AdditionToObjectARadialRefinementLevel, UseLogarithmicMapObjectB,
+      AdditionToObjectBRadialRefinementLevel, TimeDependence>;
 
   static constexpr OptionString help{
       "The BinaryCompactObject domain is a general domain for two compact "
       "objects. The user must provide the inner and outer radii of the "
-      "spherical shells surrounding each of the two compact objects A and B. "
+      "spherical shells surrounding each of the two compact objects A and "
+      "B. The radial refinement levels for these shells are (InitialRefinement "
+      "+ AdditionToObjectARadialRefinementLevel) and (InitialRefinement + "
+      "AdditionToObjectBRadialRefinementLevel), respectively.\n\n"
       "The user must also provide the radius of the sphere that "
       "circumscribes the cube containing both compact objects, and the "
       "radius of the outer boundary. The options ExciseInteriorA and "
@@ -298,6 +337,14 @@ class BinaryCompactObject : public DomainCreator<3> {
           use_logarithmic_map_outer_spherical_shell = false,
       typename AdditionToOuterLayerRadialRefinementLevel::type
           addition_to_outer_layer_radial_refinement_level = 0,
+      typename UseLogarithmicMapObjectA::type use_logarithmic_map_object_A =
+          false,
+      typename AdditionToObjectARadialRefinementLevel::type
+          addition_to_object_A_radial_refinement_level = 0,
+      typename UseLogarithmicMapObjectB::type use_logarithmic_map_object_B =
+          false,
+      typename AdditionToObjectBRadialRefinementLevel::type
+          addition_to_object_B_radial_refinement_level = 0,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
           time_dependence = nullptr,
       const OptionContext& context = {});
@@ -339,6 +386,12 @@ class BinaryCompactObject : public DomainCreator<3> {
       use_logarithmic_map_outer_spherical_shell_ = false;
   typename AdditionToOuterLayerRadialRefinementLevel::type
       addition_to_outer_layer_radial_refinement_level_{};
+  typename UseLogarithmicMapObjectA::type use_logarithmic_map_object_A_ = false;
+  typename AdditionToObjectARadialRefinementLevel::type
+      addition_to_object_A_radial_refinement_level_{};
+  typename UseLogarithmicMapObjectB::type use_logarithmic_map_object_B_ = false;
+  typename AdditionToObjectBRadialRefinementLevel::type
+      addition_to_object_B_radial_refinement_level_{};
   double projective_scale_factor_{};
   double translation_{};
   double length_inner_cube_{};
