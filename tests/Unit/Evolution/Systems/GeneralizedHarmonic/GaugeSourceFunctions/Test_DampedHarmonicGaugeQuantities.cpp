@@ -136,9 +136,6 @@ void test_detail_functions(const DataType& used_for_size) noexcept {
       {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
 }
 
-//
-//  Tests of the damped harmonic gauge source function
-//
 // Wrap `DampedHarmonicHCompute::function` here to make its time
 // argument a double, allowing for `pypp::check_with_random_values` to work.
 template <size_t SpatialDim, typename Frame>
@@ -157,29 +154,6 @@ tnsr::a<DataVector, SpatialDim, Frame> wrap_DampedHarmonicHCompute(
                                    t_start, sigma_t, coords, sigma_r);
 }
 
-// Compare with Python implementation
-template <size_t SpatialDim, typename Frame>
-void test_damped_harmonic_h_function(const DataVector& used_for_size) noexcept {
-  // H_a
-  pypp::check_with_random_values<1>(
-      static_cast<tnsr::a<DataVector, SpatialDim, Frame> (*)(
-          const tnsr::a<DataVector, SpatialDim, Frame>&,
-          const Scalar<DataVector>&,
-          const tnsr::I<DataVector, SpatialDim, Frame>&,
-          const Scalar<DataVector>&,
-          const tnsr::aa<DataVector, SpatialDim, Frame>&, const double,
-          const double, const double,
-          const tnsr::I<DataVector, SpatialDim, Frame>&, const double)>(
-          &wrap_DampedHarmonicHCompute<SpatialDim, Frame>),
-      "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
-      "DampedHarmonic",
-      "damped_harmonic_gauge_source_function",
-      {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
-}
-
-//
-//  Tests of spacetime derivatives of the damped harmonic gauge source function
-//
 // Wrap `SpacetimeDerivDampedHarmonicHCompute::function` here to make its time
 // argument a double, allowing for `pypp::check_with_random_values` to work.
 template <size_t SpatialDim, typename Frame>
@@ -206,10 +180,26 @@ wrap_SpacetimeDerivDampedHarmonicHCompute(
                                    inverse_spatial_metric, spacetime_metric, pi,
                                    phi, t, t_start, sigma_t, coords, sigma_r);
 }
+
 // Compare with Python implementation
 template <size_t SpatialDim, typename Frame>
-void test_deriv_damped_harmonic_h_function(
-    const DataVector& used_for_size) noexcept {
+void test_with_python(const DataVector& used_for_size) noexcept {
+  // H_a
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::a<DataVector, SpatialDim, Frame> (*)(
+          const tnsr::a<DataVector, SpatialDim, Frame>&,
+          const Scalar<DataVector>&,
+          const tnsr::I<DataVector, SpatialDim, Frame>&,
+          const Scalar<DataVector>&,
+          const tnsr::aa<DataVector, SpatialDim, Frame>&, const double,
+          const double, const double,
+          const tnsr::I<DataVector, SpatialDim, Frame>&, const double)>(
+          &wrap_DampedHarmonicHCompute<SpatialDim, Frame>),
+      "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
+      "DampedHarmonic",
+      "damped_harmonic_gauge_source_function",
+      {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
+
   pypp::check_with_random_values<1>(
       static_cast<tnsr::ab<DataVector, SpatialDim, Frame> (*)(
           const tnsr::a<DataVector, SpatialDim, Frame>&,
@@ -420,17 +410,9 @@ SPECTRE_TEST_CASE(
   {
     INFO("Compute source function");
     // Compare with Python implementation
-    test_damped_harmonic_h_function<1, Frame::Inertial>(used_for_size);
-    test_damped_harmonic_h_function<2, Frame::Inertial>(used_for_size);
-    test_damped_harmonic_h_function<3, Frame::Inertial>(used_for_size);
-  }
-
-  {
-    INFO("Spacetime derivative of source function");
-    // Compare with Python implementation
-    test_deriv_damped_harmonic_h_function<1, Frame::Inertial>(used_for_size);
-    test_deriv_damped_harmonic_h_function<2, Frame::Inertial>(used_for_size);
-    test_deriv_damped_harmonic_h_function<3, Frame::Inertial>(used_for_size);
+    test_with_python<1, Frame::Inertial>(used_for_size);
+    test_with_python<2, Frame::Inertial>(used_for_size);
+    test_with_python<3, Frame::Inertial>(used_for_size);
   }
 
   {
