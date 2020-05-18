@@ -394,7 +394,7 @@ void damped_harmonic_impl(
 }  // namespace
 
 template <size_t SpatialDim, typename Frame>
-void damped_harmonic(
+void damped_harmonic_rollon(
     const gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame>*> gauge_h,
     const gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame>*> d4_gauge_h,
     const tnsr::a<DataVector, SpatialDim, Frame>& gauge_h_init,
@@ -425,7 +425,7 @@ void damped_harmonic(
 }
 
 template <size_t SpatialDim, typename Frame>
-void DampedHarmonicCompute<SpatialDim, Frame>::function(
+void DampedHarmonicRollonCompute<SpatialDim, Frame>::function(
     const gsl::not_null<return_type*> h_and_d4_h,
     const db::item_type<Tags::InitialGaugeH<SpatialDim, Frame>>& gauge_h_init,
     const db::item_type<Tags::SpacetimeDerivInitialGaugeH<SpatialDim, Frame>>&
@@ -448,7 +448,7 @@ void DampedHarmonicCompute<SpatialDim, Frame>::function(
   // exp_{L1, L2, S}
   // This should be read from the input file in the future.
   constexpr int exponent = 4;
-  damped_harmonic(
+  damped_harmonic_rollon(
       make_not_null(&get<Tags::GaugeH<SpatialDim, Frame>>(*h_and_d4_h)),
       make_not_null(
           &get<Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>>(*h_and_d4_h)),
@@ -470,7 +470,7 @@ void DampedHarmonicCompute<SpatialDim, Frame>::function(
 #define DTYPE_SCAL(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE_DV_FUNC(_, data)                                           \
-  template void damped_harmonic(                                               \
+  template void damped_harmonic_rollon(                                        \
       const gsl::not_null<tnsr::a<DataVector, DIM(data), FRAME(data)>*>        \
           gauge_h,                                                             \
       const gsl::not_null<tnsr::ab<DataVector, DIM(data), FRAME(data)>*>       \
@@ -496,7 +496,7 @@ void DampedHarmonicCompute<SpatialDim, Frame>::function(
       const double sigma_t_L1, const double t_start_L2,                        \
       const double sigma_t_L2, const double t_start_S, const double sigma_t_S, \
       const double sigma_r) noexcept;                                          \
-  template class DampedHarmonicCompute<DIM(data), FRAME(data)>;
+  template class DampedHarmonicRollonCompute<DIM(data), FRAME(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_DV_FUNC, (1, 2, 3), (DataVector),
                         (Frame::Inertial))

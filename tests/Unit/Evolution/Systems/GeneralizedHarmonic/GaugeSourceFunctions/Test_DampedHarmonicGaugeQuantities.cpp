@@ -163,7 +163,7 @@ tnsr::a<DataVector, SpatialDim, Frame> wrap_DampedHarmonicHCompute(
   for (size_t i = 0; i < SpatialDim; ++i) {
     inverse_spatial_metric.get(i, i) = 1.;
   }
-  GeneralizedHarmonic::gauges::damped_harmonic(
+  GeneralizedHarmonic::gauges::damped_harmonic_rollon(
       make_not_null(&gauge_h), make_not_null(&d4_gauge_h), gauge_h_init,
       dgauge_h_init, lapse, shift, spacetime_unit_normal_one_form,
       sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi,
@@ -199,7 +199,7 @@ wrap_SpacetimeDerivDampedHarmonicHCompute(
     const double sigma_r) noexcept {
   tnsr::a<DataVector, SpatialDim, Frame> gauge_h{};
   tnsr::ab<DataVector, SpatialDim, Frame> d4_gauge_h{};
-  GeneralizedHarmonic::gauges::damped_harmonic(
+  GeneralizedHarmonic::gauges::damped_harmonic_rollon(
       make_not_null(&gauge_h), make_not_null(&d4_gauge_h), gauge_h_init,
       dgauge_h_init, lapse, shift, spacetime_unit_normal_one_form,
       sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi,
@@ -361,7 +361,6 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
   const double sigma_t_S = pdist(generator) * 0.2;
   const double r_max = pdist(generator) * 0.7;
 
-  // initial H_a and D4(H_a)
   const auto gauge_h_init =
       make_with_random_values<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
           make_not_null(&generator), make_not_null(&pdist), x);
@@ -384,8 +383,8 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
   //
   // First, check that the names are correct
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::gauges::DampedHarmonicCompute<3, Frame::Inertial>>(
-      "DampedHarmonicCompute");
+      GeneralizedHarmonic::gauges::DampedHarmonicRollonCompute<
+          3, Frame::Inertial>>("DampedHarmonicRollonCompute");
 
   const auto box = db::create<
       db::AddSimpleTags<
@@ -405,12 +404,12 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
           GeneralizedHarmonic::Tags::GaugeHRollOnTimeWindow,
           GeneralizedHarmonic::Tags::GaugeHSpatialWeightDecayWidth<
               Frame::Inertial>>,
-      db::AddComputeTags<GeneralizedHarmonic::gauges::DampedHarmonicCompute<
-          3, Frame::Inertial>>>(gauge_h_init, d4_gauge_h_init, lapse, shift,
-                                spacetime_unit_normal_one_form,
-                                sqrt_det_spatial_metric, inverse_spatial_metric,
-                                spacetime_metric, pi, phi, t, x, t_start_S,
-                                sigma_t_S, r_max);
+      db::AddComputeTags<GeneralizedHarmonic::gauges::
+                             DampedHarmonicRollonCompute<3, Frame::Inertial>>>(
+      gauge_h_init, d4_gauge_h_init, lapse, shift,
+      spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
+      inverse_spatial_metric, spacetime_metric, pi, phi, t, x, t_start_S,
+      sigma_t_S, r_max);
 
   // Verify that locally computed H_a matches the same obtained through its
   // ComputeTag from databox
