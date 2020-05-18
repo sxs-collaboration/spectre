@@ -14,6 +14,7 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
+#include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -59,7 +60,7 @@ namespace creators {
  * \image html binary_compact_object_domain.png "A BHNS domain."
  *
  * Creates a 3D Domain that represents a binary compact object solution. The
- * Domain consists of four/five nested layers of blocks; these layers are,
+ * Domain consists of 4, 5, or 6 nested layers of blocks; these layers are,
  * working from the interior toward the exterior:
  * - 0: (optionally) The block at the center of each compact object, if not
  *      excised. If present, this block is a cube. If excised, the hole left
@@ -72,20 +73,25 @@ namespace creators {
  *      object, this layer transitions from a sphere to a cube.
  * - 3: The blocks that surround each cube with a half-cube. At this layer, the
  *      two compact objects are enclosed in a single cube-shaped grid.
- * - 4: The blocks that form the outer sphere. This layer transitions back to
- *      spherical and can extend to large radial distances from the compact
- *      objects.
+ * - 4: The 10 blocks that form the first outer shell. This layer transitions
+ *      back to spherical. The gridpoints are distributed linearly with respect
+ *      to radius.
+ * - 5: The 10 blocks that form a second outer shell. This layer is
+ *      spherical, so a logarithmic map can optionally be used in this layer.
+ *      This allows the domain to extend to large radial distances from the
+ *      compact objects. This layer can be h-refined radially,
+ *      creating a layer of multiple concentric spherical shells.
+ *
  * In the code and options below, `ObjectA` and `ObjectB` refer to the two
  * compact objects, and by extension, also refer to the layers that immediately
  * surround each compact object. Note that `ObjectA` is located to the left of
  * the origin (along the negative x-axis) and `ObjectB` is located to the right
- * of the origin.
- * `enveloping cube` and `enveloping sphere` refer to the outer surfaces of
- * layers 3 and 4 respectively. Both of these surfaces are centered at the
- * origin.
- * `cutting plane` refers to the plane along which the domain divides into two
- * hemispheres. In the final coordinates, the cutting plane always intersects
- * the x-axis at the origin.
+ * of the origin. `enveloping cube` refers to the outer surface of Layer 3.
+ * `enveloping sphere` is the radius of the spherical outer boundary, which is
+ * the outer boundary of Layer 5. The `enveloping cube` and `enveloping sphere`
+ * are both centered at the origin. `cutting plane` refers to the plane along
+ * which the domain divides into two hemispheres. In the final coordinates, the
+ * cutting plane always intersects the x-axis at the origin.
  *
  * \note The x-coordinate locations of the `ObjectA` and `ObjectB` should be
  * chosen such that the center of mass is located at x=0.
@@ -216,6 +222,24 @@ class BinaryCompactObject : public DomainCreator<3> {
     static type default_value() { return true; }
   };
 
+  struct UseLogarithmicMapOuterSphericalShell {
+    using type = bool;
+    static constexpr OptionString help = {
+        "Use a logarithmically spaced radial grid in Layer 5, the outer "
+        "spherical shell that covers the wave zone."};
+    static type default_value() noexcept { return false; }
+  };
+
+  struct AdditionToOuterLayerRadialRefinementLevel {
+    using type = size_t;
+    static constexpr OptionString help = {
+        "Addition to radial refinement level in Layer 5 (the outer spherical "
+        "shell that covers that wave zone), beyond the refinement "
+        "level set by InitialRefinement."};
+    static constexpr type default_value() noexcept { return 0; }
+    static type lower_bound() noexcept { return 0; }
+  };
+
   struct TimeDependence {
     using type =
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>;
@@ -224,29 +248,36 @@ class BinaryCompactObject : public DomainCreator<3> {
     static type default_value() noexcept;
   };
 
-  using options =
-      tmpl::list<InnerRadiusObjectA, OuterRadiusObjectA, XCoordObjectA,
-                 ExciseInteriorA, InnerRadiusObjectB, OuterRadiusObjectB,
-                 XCoordObjectB, ExciseInteriorB, RadiusOuterCube,
-                 RadiusOuterSphere, InitialRefinement, InitialGridPoints,
-                 UseEquiangularMap, UseProjectiveMap, TimeDependence>;
+  using options = tmpl::list<
+      InnerRadiusObjectA, OuterRadiusObjectA, XCoordObjectA, ExciseInteriorA,
+      InnerRadiusObjectB, OuterRadiusObjectB, XCoordObjectB, ExciseInteriorB,
+      RadiusOuterCube, RadiusOuterSphere, InitialRefinement, InitialGridPoints,
+      UseEquiangularMap, UseProjectiveMap, UseLogarithmicMapOuterSphericalShell,
+      AdditionToOuterLayerRadialRefinementLevel, TimeDependence>;
 
   static constexpr OptionString help{
-      "The BinaryCompactObject domain is a general domain for two compact \n"
-      "objects. The user must provide the inner and outer radii of the \n"
-      "spherical shells surrounding each of the two compact objects A and B. \n"
-      "The user must also provide the radius of the sphere that \n"
-      "circumscribes the cube containing both compact objects, and the \n"
-      "radius of the outer boundary. The options ExciseInteriorA and \n"
-      "ExciseInteriorB determine whether the layer-zero blocks are present \n"
-      "inside each compact object. If set to `true`, the domain will not \n"
-      "contain layer zero for that object. The user specifies XCoordObjectA \n"
-      "and XCoordObjectB, the x-coordinates of the locations of the centers \n"
-      "of each compact object. In these coordinates, the location for the \n"
-      "axis of rotation is x=0. ObjectA is located on the left and ObjectB \n"
-      "is located on the right. Please make sure that your choices of \n"
-      "x-coordinate locations are such that the resulting center of mass\n"
-      "is located at zero."};
+      "The BinaryCompactObject domain is a general domain for two compact "
+      "objects. The user must provide the inner and outer radii of the "
+      "spherical shells surrounding each of the two compact objects A and B. "
+      "The user must also provide the radius of the sphere that "
+      "circumscribes the cube containing both compact objects, and the "
+      "radius of the outer boundary. The options ExciseInteriorA and "
+      "ExciseInteriorB determine whether the layer-zero blocks are present "
+      "inside each compact object. If set to `true`, the domain will not "
+      "contain layer zero for that object. The user specifies XCoordObjectA "
+      "and XCoordObjectB, the x-coordinates of the locations of the centers "
+      "of each compact object. In these coordinates, the location for the "
+      "axis of rotation is x=0. ObjectA is located on the left and ObjectB "
+      "is located on the right. Please make sure that your choices of "
+      "x-coordinate locations are such that the resulting center of mass "
+      "is located at zero.\n\n"
+      "Two radial layers join the outer cube to the spherical outer boundary. "
+      "The first of these layers transitions from sphericity == 0.0 on the "
+      "inner boundary to sphericity == 1.0 on the outer boundary. The second "
+      "has sphericity == 1 (so either linear or logarithmic mapping can be "
+      "used in the radial direction), extends to the spherical outer boundary "
+      "of the domain, and has a radial refinement level of (InitialRefinement "
+      "+ AdditionToOuterLayerRadialRefinementLevel)."};
 
   BinaryCompactObject(
       typename InnerRadiusObjectA::type inner_radius_object_A,
@@ -263,6 +294,10 @@ class BinaryCompactObject : public DomainCreator<3> {
       typename InitialGridPoints::type initial_grid_points_per_dim,
       typename UseEquiangularMap::type use_equiangular_map,
       typename UseProjectiveMap::type use_projective_map = true,
+      typename UseLogarithmicMapOuterSphericalShell::type
+          use_logarithmic_map_outer_spherical_shell = false,
+      typename AdditionToOuterLayerRadialRefinementLevel::type
+          addition_to_outer_layer_radial_refinement_level = 0,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
           time_dependence = nullptr,
       const OptionContext& context = {});
@@ -300,10 +335,15 @@ class BinaryCompactObject : public DomainCreator<3> {
   typename InitialGridPoints::type initial_grid_points_per_dim_{};
   typename UseEquiangularMap::type use_equiangular_map_ = true;
   typename UseProjectiveMap::type use_projective_map_ = true;
+  typename UseLogarithmicMapOuterSphericalShell::type
+      use_logarithmic_map_outer_spherical_shell_ = false;
+  typename AdditionToOuterLayerRadialRefinementLevel::type
+      addition_to_outer_layer_radial_refinement_level_{};
   double projective_scale_factor_{};
   double translation_{};
   double length_inner_cube_{};
   double length_outer_cube_{};
+  size_t number_of_blocks_{};
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dependence_;
 };

@@ -118,7 +118,7 @@ size_t find_block_id_of_external_face(
 template <size_t VolumeDim>
 std::array<size_t, two_to_the(VolumeDim - 1)> get_common_local_corners(
     const std::array<size_t, two_to_the(VolumeDim)>& block_global_corners,
-    const std::vector<size_t> block_global_common_corners) noexcept {
+    const std::vector<size_t>& block_global_common_corners) noexcept {
   std::array<size_t, two_to_the(VolumeDim - 1)> result{{0}};
   size_t i = 0;
   for (const auto global_id : block_global_common_corners) {
@@ -521,7 +521,7 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
 
   using Wedge3DMap = domain::CoordinateMaps::Wedge3D;
   using Halves = Wedge3DMap::WedgeHalves;
-  std::vector<Wedge3DMap> wedges{};
+  std::vector<Wedge3DMap> wedges_for_all_layers{};
 
   // Set up layers:
   const double delta_zeta = 2.0 / number_of_layers;
@@ -541,12 +541,39 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                   pow(outer_radius, 0.5 * (1.0 + global_zeta_outer))
             : inner_radius * 0.5 * (1.0 - global_zeta_outer) +
                   outer_radius * 0.5 * (1.0 + global_zeta_outer);
-    for (size_t face_j = which_wedge_index(which_wedges); face_j < 6;
-         face_j++) {
-      wedges.emplace_back(inner_radius_layer_i, outer_radius_layer_i,
-                          gsl::at(wedge_orientations, face_j), inner_sphericity,
-                          outer_sphericity, use_equiangular_map, Halves::Both,
-                          use_logarithmic_map);
+    // Generate wedges/half-wedges a layer at a time.
+    std::vector<Wedge3DMap> wedges_for_this_layer{};
+    if (not use_half_wedges) {
+      for (size_t face_j = which_wedge_index(which_wedges); face_j < 6;
+           face_j++) {
+        wedges_for_this_layer.emplace_back(
+            inner_radius_layer_i, outer_radius_layer_i,
+            gsl::at(wedge_orientations, face_j), inner_sphericity,
+            outer_sphericity, use_equiangular_map, Halves::Both,
+            use_logarithmic_map);
+      }
+    } else {
+      for (size_t i = 0; i < 4; i++) {
+        wedges_for_this_layer.emplace_back(
+            inner_radius_layer_i, outer_radius_layer_i,
+            gsl::at(wedge_orientations, i), inner_sphericity, outer_sphericity,
+            use_equiangular_map, Halves::LowerOnly, use_logarithmic_map);
+        wedges_for_this_layer.emplace_back(
+            inner_radius_layer_i, outer_radius_layer_i,
+            gsl::at(wedge_orientations, i), inner_sphericity, outer_sphericity,
+            use_equiangular_map, Halves::UpperOnly, use_logarithmic_map);
+      }
+      wedges_for_this_layer.emplace_back(
+          inner_radius_layer_i, outer_radius_layer_i,
+          gsl::at(wedge_orientations, 4), inner_sphericity, outer_sphericity,
+          use_equiangular_map, Halves::Both, use_logarithmic_map);
+      wedges_for_this_layer.emplace_back(
+          inner_radius_layer_i, outer_radius_layer_i,
+          gsl::at(wedge_orientations, 5), inner_sphericity, outer_sphericity,
+          use_equiangular_map, Halves::Both, use_logarithmic_map);
+    }
+    for (const auto& wedge : wedges_for_this_layer) {
+      wedges_for_all_layers.push_back(wedge);
     }
   }
 
@@ -563,29 +590,9 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
   const auto compression =
       domain::CoordinateMaps::EquatorialCompression{aspect_ratio};
 
-  if (use_half_wedges) {
-    std::vector<Wedge3DMap> wedges_and_half_wedges{};
-    for (size_t i = 0; i < 4; i++) {
-      wedges_and_half_wedges.emplace_back(
-          inner_radius, outer_radius, gsl::at(wedge_orientations, i),
-          inner_sphericity, outer_sphericity, use_equiangular_map,
-          Halves::LowerOnly, use_logarithmic_map);
-      wedges_and_half_wedges.emplace_back(
-          inner_radius, outer_radius, gsl::at(wedge_orientations, i),
-          inner_sphericity, outer_sphericity, use_equiangular_map,
-          Halves::UpperOnly, use_logarithmic_map);
-    }
-    wedges_and_half_wedges.push_back(wedges[4]);
-    wedges_and_half_wedges.push_back(wedges[5]);
-
-    return domain::make_vector_coordinate_map_base<Frame::Logical, TargetFrame,
-                                                   3>(
-        std::move(wedges_and_half_wedges), compression, translation);
-  }
-
   return domain::make_vector_coordinate_map_base<Frame::Logical, TargetFrame,
-                                                 3>(std::move(wedges),
-                                                    compression, translation);
+                                                 3>(
+      std::move(wedges_for_all_layers), compression, translation);
 }
 
 template <typename TargetFrame>
@@ -1067,7 +1074,7 @@ std::ostream& operator<<(std::ostream& os,
 
 template <>
 ShellWedges create_from_yaml<ShellWedges>::create<void>(const Option& options) {
-  const std::string which_wedges = options.parse_as<std::string>();
+  const auto which_wedges = options.parse_as<std::string>();
   if (which_wedges == "All") {
     return ShellWedges::All;
   } else if (which_wedges == "FourOnEquator") {

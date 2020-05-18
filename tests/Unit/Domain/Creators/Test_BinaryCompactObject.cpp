@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <iterator>
 #include <limits>
@@ -15,6 +16,7 @@
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 #include "Domain/Block.hpp"                       // IWYU pragma: keep
 #include "Domain/BlockNeighbor.hpp"               // IWYU pragma: keep
@@ -28,11 +30,9 @@
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 
-namespace domain {
-namespace FunctionsOfTime {
+namespace domain::FunctionsOfTime {
 class FunctionOfTime;
-}  // namespace FunctionsOfTime
-}  // namespace domain
+}  // namespace domain::FunctionsOfTime
 
 namespace {
 using Translation = domain::CoordinateMaps::TimeDependent::Translation;
@@ -60,46 +60,81 @@ void test_binary_compact_object_construction(
 
 void test_connectivity() {
   // ObjectA:
-  const double inner_radius_objectA = 0.5;
-  const double outer_radius_objectA = 1.0;
-  const double xcoord_objectA = -3.0;
+  constexpr double inner_radius_objectA = 0.5;
+  constexpr double outer_radius_objectA = 1.0;
+  constexpr double xcoord_objectA = -3.0;
 
   // ObjectB:
-  const double inner_radius_objectB = 0.3;
-  const double outer_radius_objectB = 1.0;
-  const double xcoord_objectB = 3.0;
+  constexpr double inner_radius_objectB = 0.3;
+  constexpr double outer_radius_objectB = 1.0;
+  constexpr double xcoord_objectB = 3.0;
 
   // Enveloping Cube:
-  const double radius_enveloping_cube = 25.5;
-  const double radius_enveloping_sphere = 32.4;
+  constexpr double radius_enveloping_cube = 25.5;
+  constexpr double radius_enveloping_sphere = 32.4;
 
   // Misc.:
-  const size_t refinement = 2;
-  const size_t grid_points = 6;
+  constexpr size_t refinement = 2;
+  constexpr size_t grid_points = 6;
+  constexpr bool use_projective_map = true;
+
+  // Options for outer sphere
+  constexpr size_t addition_to_outer_layer_radial_refinement_level = 3;
 
   for (const bool excise_interiorA : {true, false}) {
     for (const bool excise_interiorB : {true, false}) {
       for (const bool use_equiangular_map : {true, false}) {
-        const domain::creators::BinaryCompactObject binary_compact_object{
-            inner_radius_objectA,
-            outer_radius_objectA,
-            xcoord_objectA,
-            excise_interiorA,
-            inner_radius_objectB,
-            outer_radius_objectB,
-            xcoord_objectB,
-            excise_interiorB,
-            radius_enveloping_cube,
-            radius_enveloping_sphere,
-            refinement,
-            grid_points,
-            use_equiangular_map};
-        test_binary_compact_object_construction(binary_compact_object);
+        for (const bool use_logarithmic_map_outer_spherical_shell :
+             {true, false}) {
+          const domain::creators::BinaryCompactObject binary_compact_object{
+              inner_radius_objectA,
+              outer_radius_objectA,
+              xcoord_objectA,
+              excise_interiorA,
+              inner_radius_objectB,
+              outer_radius_objectB,
+              xcoord_objectB,
+              excise_interiorB,
+              radius_enveloping_cube,
+              radius_enveloping_sphere,
+              refinement,
+              grid_points,
+              use_equiangular_map,
+              use_projective_map,
+              use_logarithmic_map_outer_spherical_shell,
+              addition_to_outer_layer_radial_refinement_level};
+          test_binary_compact_object_construction(binary_compact_object);
+
+          // Also check whether the radius of the inner boundary of Layer 5 is
+          // chosen correctly.
+          // Compute the radius of a point in the grid frame on this boundary.
+          // Block 44 is one block whose -zeta face is on this boundary.
+          const auto map{binary_compact_object.create_domain()
+                             .blocks()[44]
+                             .stationary_map()
+                             .get_clone()};
+          tnsr::I<double, 3, Frame::Logical> logical_point(
+              std::array<double, 3>{{0.0, 0.0, -1.0}});
+          const double layer_5_inner_radius = get(
+              magnitude(std::move(map)->operator()(logical_point)));
+          // The number of radial divisions in layers 4 and 5, excluding those
+          // resulting from InitialRefinement > 0.
+          const auto radial_divisions_in_outer_layers = static_cast<double>(
+              pow(2, addition_to_outer_layer_radial_refinement_level) + 1);
+          if (use_logarithmic_map_outer_spherical_shell) {
+            CHECK(layer_5_inner_radius / radius_enveloping_cube ==
+                  approx(pow(radius_enveloping_sphere / radius_enveloping_cube,
+                             1.0 / radial_divisions_in_outer_layers)));
+          } else {
+            CHECK(layer_5_inner_radius - radius_enveloping_cube ==
+                  approx((radius_enveloping_sphere - radius_enveloping_cube) /
+                         radial_divisions_in_outer_layers));
+          }
+        }
       }
-    }
   }
 }
-
+}
 void test_bbh_time_dependent_factory() {
   const auto binary_compact_object =
       TestHelpers::test_factory_creation<DomainCreator<3>>(
@@ -189,6 +224,53 @@ void test_bbh_equiangular_factory() {
           "    InitialRefinement: 2\n"
           "    InitialGridPoints: 6\n"
           "    UseEquiangularMap: true\n");
+  test_binary_compact_object_construction(
+      dynamic_cast<const domain::creators::BinaryCompactObject&>(
+          *binary_compact_object));
+}
+
+void test_bbh_2_outer_radial_refinements_linear_map_factory() {
+  const auto binary_compact_object =
+      TestHelpers::test_factory_creation<DomainCreator<3>>(
+          "  BinaryCompactObject:\n"
+          "    InnerRadiusObjectA: 0.2\n"
+          "    OuterRadiusObjectA: 1.0\n"
+          "    XCoordObjectA: -2.0\n"
+          "    ExciseInteriorA: true\n"
+          "    InnerRadiusObjectB: 1.0\n"
+          "    OuterRadiusObjectB: 2.0\n"
+          "    XCoordObjectB: 3.0\n"
+          "    ExciseInteriorB: true\n"
+          "    RadiusOuterCube: 22.0\n"
+          "    RadiusOuterSphere: 25.0\n"
+          "    InitialRefinement: 2\n"
+          "    InitialGridPoints: 6\n"
+          "    UseEquiangularMap: true\n"
+          "    AdditionToOuterLayerRadialRefinementLevel: 2\n");
+  test_binary_compact_object_construction(
+      dynamic_cast<const domain::creators::BinaryCompactObject&>(
+          *binary_compact_object));
+}
+
+void test_bbh_3_outer_radial_refinements_log_map_factory() {
+  const auto binary_compact_object =
+      TestHelpers::test_factory_creation<DomainCreator<3>>(
+          "  BinaryCompactObject:\n"
+          "    InnerRadiusObjectA: 0.2\n"
+          "    OuterRadiusObjectA: 1.0\n"
+          "    XCoordObjectA: -2.0\n"
+          "    ExciseInteriorA: true\n"
+          "    InnerRadiusObjectB: 1.0\n"
+          "    OuterRadiusObjectB: 2.0\n"
+          "    XCoordObjectB: 3.0\n"
+          "    ExciseInteriorB: true\n"
+          "    RadiusOuterCube: 22.0\n"
+          "    RadiusOuterSphere: 25.0\n"
+          "    InitialRefinement: 2\n"
+          "    InitialGridPoints: 6\n"
+          "    UseEquiangularMap: true\n"
+          "    UseLogarithmicMapOuterSphericalShell: true\n"
+          "    AdditionToOuterLayerRadialRefinementLevel: 3");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
           *binary_compact_object));
@@ -350,10 +432,13 @@ void test_nsbh_equidistant_factory() {
 }  // namespace
 
 // Test times out sometimes, increase timeout to make it pass reliably.
-// [[TimeOut, 10]]
+// [[TimeOut, 20]]
 SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject.FactoryTests",
                   "[Domain][Unit]") {
   test_connectivity();
+  test_bbh_time_dependent_factory();
+  test_bbh_2_outer_radial_refinements_linear_map_factory();
+  test_bbh_3_outer_radial_refinements_log_map_factory();
   test_bbh_time_dependent_factory();
   test_bbh_equiangular_factory();
   test_bbh_equidistant_factory();
