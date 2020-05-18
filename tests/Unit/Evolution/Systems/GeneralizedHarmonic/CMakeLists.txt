@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_Characteristics.cpp
   Test_Constraints.cpp
   Test_DuDt.cpp
+  Test_DuDtTempTags.cpp
   Test_Fluxes.cpp
   Test_Tags.cpp
   Test_UpwindPenaltyCorrection.cpp
