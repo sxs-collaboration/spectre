@@ -17,14 +17,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/CoordinateMaps/Affine.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/ProductMaps.hpp"
-#include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/LogicalCoordinates.hpp"
-#include "Domain/Mesh.hpp"
-#include "Domain/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedHarmonic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedWaveHelpers.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
@@ -33,27 +25,11 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/ParseOptions.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Tags.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
-
-/// \cond
-namespace Tags {
-template <typename Tag>
-struct dt;
-}  // namespace Tags
-/// \endcond
 
 namespace GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail {
 // The return-by-value implementations of spatial_weight_function and
@@ -88,9 +64,6 @@ double time_deriv_of_roll_on_function(double time, double t_start,
 }  // namespace GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail
 
 namespace {
-using Affine = domain::CoordinateMaps::Affine;
-using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-
 template <typename Frame>
 void test_options() noexcept {
   Options<tmpl::list<
@@ -253,165 +226,6 @@ void test_with_python(const DataVector& used_for_size) noexcept {
         used_for_size, 1.e-11);
   }
 }
-
-//
-//  Test ComputeTags
-//
-void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
-                                       const std::array<double, 3>& lower_bound,
-                                       const std::array<double, 3>& upper_bound,
-                                       std::mt19937 generator) noexcept {
-  // Initialize random number generation
-  std::uniform_real_distribution<> pdist(0.1, 1.);
-  std::uniform_int_distribution<> idist(2, 7);
-
-  // Setup grid
-  const size_t SpatialDim = 3;
-  Mesh<SpatialDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto};
-
-  const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
-
-  // Setup coordinates
-  const auto x_logical = logical_coordinates(mesh);
-  const auto x = coord_map(x_logical);
-  // Arbitrary time for time-independent solution.
-  const double t = pdist(generator) * 0.4;
-
-  // Randomized 3 + 1 quantities
-  // Note: Ranges from which random numbers are drawn to populate 3+1 tensors
-  //       below were chosen to not throw FPEs (by trial & error).
-  std::uniform_real_distribution<> dist(0.9, 1.);
-  const DataVector& used_for_size = get<0>(x);
-  const auto lapse = make_with_random_values<Scalar<DataVector>>(
-      make_not_null(&generator), make_not_null(&dist), used_for_size);
-  const auto dt_lapse = make_with_random_values<Scalar<DataVector>>(
-      make_not_null(&generator), make_not_null(&dist), used_for_size);
-  const auto d_lapse =
-      make_with_random_values<tnsr::i<DataVector, SpatialDim, Frame::Inertial>>(
-          make_not_null(&generator), make_not_null(&dist), used_for_size);
-  const auto shift =
-      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(
-          make_not_null(&generator), make_not_null(&dist), used_for_size);
-  const auto dt_shift =
-      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(
-          make_not_null(&generator), make_not_null(&dist), used_for_size);
-  const auto d_shift = make_with_random_values<
-      tnsr::iJ<DataVector, SpatialDim, Frame::Inertial>>(
-      make_not_null(&generator), make_not_null(&dist), used_for_size);
-  auto spatial_metric =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
-  get<0, 0>(spatial_metric) = get<1, 1>(spatial_metric) =
-      get<2, 2>(spatial_metric) = 1.;
-  std::uniform_real_distribution<> dist2(0., 0.12);
-  const auto dspatial_metric = make_with_random_values<
-      tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
-      make_not_null(&generator), make_not_null(&dist2), used_for_size);
-  for (size_t i = 0; i < SpatialDim; ++i) {
-    for (size_t j = 0; j < SpatialDim; ++j) {
-      spatial_metric.get(i, j) += dspatial_metric.get(i, j);
-    }
-  }
-  const auto dt_spatial_metric = make_with_random_values<
-      tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
-      make_not_null(&generator), make_not_null(&dist2), used_for_size);
-  const auto d_spatial_metric = make_with_random_values<
-      tnsr::ijj<DataVector, SpatialDim, Frame::Inertial>>(
-      make_not_null(&generator), make_not_null(&dist2), used_for_size);
-
-  // Get ingredients
-  const auto spacetime_metric =
-      gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
-          lapse);
-  const auto spacetime_unit_normal =
-      gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
-          lapse, shift);
-  const auto det_and_inv = determinant_and_inverse(spatial_metric);
-  const auto& det_spatial_metric = det_and_inv.first;
-  const auto& inverse_spatial_metric = det_and_inv.second;
-  const auto inverse_spacetime_metric =
-      gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
-          lapse, shift, inverse_spatial_metric);
-  Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
-  const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
-                                            spatial_metric, d_spatial_metric);
-  const auto pi = GeneralizedHarmonic::pi(
-      lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric, phi);
-  const auto d4_spacetime_metric = gr::derivatives_of_spacetime_metric(
-      lapse, dt_lapse, d_lapse, shift, dt_shift, d_shift, spatial_metric,
-      dt_spatial_metric, d_spatial_metric);
-
-  // Initialize settings
-  const double t_start = pdist(generator) * 0.1;
-  const double sigma_t = pdist(generator) * 0.2;
-  const double r_max = pdist(generator) * 0.7;
-
-  const auto gauge_h_init =
-      make_with_random_values<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
-          make_not_null(&generator), make_not_null(&pdist), x);
-  const auto d4_gauge_h_init = make_with_random_values<
-      tnsr::ab<DataVector, SpatialDim, Frame::Inertial>>(
-      make_not_null(&generator), make_not_null(&pdist), x);
-  // local H_a
-  const auto gauge_h_expected = wrap_DampedHarmonicHCompute(
-      gauge_h_init, lapse, shift, sqrt_det_spatial_metric, spacetime_metric, t,
-      t_start, sigma_t, x, r_max);
-  // local D4(H_a)
-  const auto d4_gauge_h_expected = wrap_SpacetimeDerivDampedHarmonicHCompute(
-      gauge_h_init, d4_gauge_h_init, lapse, shift,
-      spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
-      inverse_spatial_metric, spacetime_metric, pi, phi, t, t_start, sigma_t, x,
-      r_max);
-
-  //
-  // Check that compute items work correctly in the DataBox
-  //
-  // First, check that the names are correct
-  TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::gauges::DampedHarmonicRollonCompute<
-          3, Frame::Inertial>>("DampedHarmonicRollonCompute");
-
-  const auto box = db::create<
-      db::AddSimpleTags<
-          GeneralizedHarmonic::Tags::InitialGaugeH<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<
-              3, Frame::Inertial>,
-          gr::Tags::Lapse<DataVector>,
-          gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-          gr::Tags::SpacetimeNormalOneForm<3, Frame::Inertial, DataVector>,
-          gr::Tags::SqrtDetSpatialMetric<DataVector>,
-          gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
-          gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-          GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>, ::Tags::Time,
-          domain::Tags::Coordinates<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::GaugeHRollOnStartTime,
-          GeneralizedHarmonic::Tags::GaugeHRollOnTimeWindow,
-          GeneralizedHarmonic::Tags::GaugeHSpatialWeightDecayWidth<
-              Frame::Inertial>>,
-      db::AddComputeTags<GeneralizedHarmonic::gauges::
-                             DampedHarmonicRollonCompute<3, Frame::Inertial>>>(
-      gauge_h_init, d4_gauge_h_init, lapse, shift,
-      spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
-      inverse_spatial_metric, spacetime_metric, pi, phi, t, x, t_start, sigma_t,
-      r_max);
-
-  // Verify that locally computed H_a matches the same obtained through its
-  // ComputeTag from databox
-  CHECK(db::get<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>>(box) ==
-        gauge_h_expected);
-  CHECK(
-      db::get<
-          GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<3, Frame::Inertial>>(
-          box) == d4_gauge_h_expected);
-}
 }  // namespace
 
 SPECTRE_TEST_CASE(
@@ -439,17 +253,5 @@ SPECTRE_TEST_CASE(
     test_with_python<1, Frame::Inertial>(used_for_size);
     test_with_python<2, Frame::Inertial>(used_for_size);
     test_with_python<3, Frame::Inertial>(used_for_size);
-  }
-
-  {
-    INFO("Compute tags");
-    const size_t grid_size = 8;
-    const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
-    const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
-    MAKE_GENERATOR(generator);
-
-    // ComputeTag tests
-    test_damped_harmonic_compute_tags(grid_size, lower_bound, upper_bound,
-                                      generator);
   }
 }
