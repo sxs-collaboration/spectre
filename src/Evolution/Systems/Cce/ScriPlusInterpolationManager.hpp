@@ -63,7 +63,7 @@ struct ScriPlusInterpolationManager {
                << " and provided data is of size: " << to_interpolate.size());
     u_bondi_values_.push_back(u_bondi);
     to_interpolate_values_.push_back(to_interpolate);
-    u_bondi_ranges_.push_back(std::make_pair(min(u_bondi), max(u_bondi)));
+    u_bondi_ranges_.emplace_back(min(u_bondi), max(u_bondi));
   }
 
   /// \brief Request a target time to be interpolated to when enough data has
@@ -92,6 +92,11 @@ struct ScriPlusInterpolationManager {
   /// the next target time, indicating that the caller should wait until more
   /// data has been provided before interpolating.
   bool first_time_is_ready_to_interpolate() const noexcept;
+
+  const std::deque<std::pair<double, double>>& get_u_bondi_ranges() const
+      noexcept {
+    return u_bondi_ranges_;
+  }
 
   /// \brief Interpolate to the first target time in the queue, returning both
   /// the time and the interpolated data at that time.
@@ -352,6 +357,11 @@ struct ScriPlusInterpolationManager<
            interpolation_manager_rhs_.first_time_is_ready_to_interpolate();
   }
 
+  const std::deque<std::pair<double, double>>& get_u_bondi_ranges() const
+      noexcept {
+    return interpolation_manager_lhs_.get_u_bondi_ranges();
+  }
+
   /// \brief Interpolate to the first target time in the queue, returning both
   /// the time and the interpolated-and-multiplied data at that time.
   ///
@@ -480,6 +490,11 @@ struct ScriPlusInterpolationManager<VectorTypeToInterpolate, Tags::Du<Tag>> {
   /// data has been provided before interpolating.
   bool first_time_is_ready_to_interpolate() const noexcept {
     return argument_interpolation_manager_.first_time_is_ready_to_interpolate();
+  }
+
+  const std::deque<std::pair<double, double>>& get_u_bondi_ranges() const
+      noexcept {
+    return argument_interpolation_manager_.get_u_bondi_ranges();
   }
 
   /// \brief Interpolate to the first target time in the queue, returning both

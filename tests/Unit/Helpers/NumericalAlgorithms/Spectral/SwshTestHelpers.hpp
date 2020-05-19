@@ -72,7 +72,7 @@ void generate_swsh_modes(const gsl::not_null<ComplexModalVector*> to_fill,
                          const size_t l_max) noexcept {
   fill_with_random_values(to_fill, generator, distribution);
 
-  auto spherical_harmonic_lm =
+  auto* spherical_harmonic_lm =
       cached_coefficients_metadata(l_max).get_sharp_alm_info();
   for (size_t i = 0; i < number_of_radial_points; i++) {
     // adjust the m = 0 modes for the reality conditions in libsharp
@@ -128,7 +128,7 @@ void swsh_collocation_from_coefficients_and_basis_func(
     const BasisFunction basis_function) noexcept {
   auto& spherical_harmonic_collocation =
       cached_collocation_metadata<Representation>(l_max);
-  auto spherical_harmonic_lm =
+  auto* spherical_harmonic_lm =
       cached_coefficients_metadata(l_max).get_sharp_alm_info();
 
   *collocation_data = 0.0;

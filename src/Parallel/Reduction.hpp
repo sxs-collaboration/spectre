@@ -120,6 +120,7 @@ struct ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
   // clang-tidy: non-const reference
   void pup(PUP::er& p) noexcept { p | data_; }  // NOLINT
 
+  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   std::unique_ptr<char[]> packed() noexcept;
 
   size_t size() noexcept;
@@ -180,9 +181,11 @@ CkReductionMsg* ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
 
 template <class... Ts, class... InvokeCombines, class... InvokeFinals,
           class... InvokeFinalExtraArgsIndices>
+// NOLINTNEXTLINE(modernize-avoid-c-arrays)
 std::unique_ptr<char[]> ReductionData<
     ReductionDatum<Ts, InvokeCombines, InvokeFinals,
                    InvokeFinalExtraArgsIndices>...>::packed() noexcept {
+  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   auto result = std::make_unique<char[]>(size());
   PUP::toMem packer(result.get());
   packer | *this;

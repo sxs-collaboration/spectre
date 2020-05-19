@@ -27,6 +27,7 @@
 #include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -49,11 +50,11 @@ using swsh_volume_tags_to_compute = tmpl::list<Tags::BondiJ>;
 
 template <typename Metavariables>
 struct mock_characteristic_evolution {
-  using simple_tags = tmpl::push_back<db::AddSimpleTags<
+  using simple_tags = db::AddSimpleTags<
       ::Tags::Variables<real_boundary_tags_to_compute>,
       ::Tags::Variables<tmpl::append<swsh_boundary_tags_to_generate,
                                      swsh_boundary_tags_to_compute>>,
-      ::Tags::Variables<swsh_volume_tags_to_compute>>>;
+      ::Tags::Variables<swsh_volume_tags_to_compute>, ::Tags::TimeStepId>;
 
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
@@ -107,6 +108,7 @@ SPECTRE_TEST_CASE(
   Variables<swsh_volume_tags_to_compute> swsh_volume_variables{
       Spectral::Swsh::number_of_swsh_collocation_points(l_max) *
       number_of_radial_points};
+  TimeStepId time_step_id{true, 0, Time{Slab{1.0, 2.0}, {1, 2}}};
 
   tmpl::for_each<swsh_boundary_tags_to_generate>([&swsh_variables, &gen,
                                                   &coefficient_distribution,
@@ -128,12 +130,15 @@ SPECTRE_TEST_CASE(
   });
 
   ActionTesting::emplace_component_and_initialize<component>(
-      &runner, 0, {real_variables, swsh_variables, swsh_volume_variables});
-  auto expected_box = db::create<
-      tmpl::append<component::simple_tags,
-                   db::AddSimpleTags<Tags::LMax, Tags::NumberOfRadialPoints>>>(
-      std::move(real_variables), std::move(swsh_variables),
-      std::move(swsh_volume_variables), l_max, number_of_radial_points);
+      &runner, 0,
+      {real_variables, swsh_variables, swsh_volume_variables, time_step_id});
+
+  auto expected_box =
+      db::create<tmpl::push_back<component::simple_tags, Tags::LMax,
+                                 Tags::NumberOfRadialPoints>>(
+          std::move(real_variables), std::move(swsh_variables),
+          std::move(swsh_volume_variables), time_step_id, l_max,
+          number_of_radial_points);
 
   runner.set_phase(metavariables::Phase::Testing);
   // apply the `InitializeFirstHypersurface` action
@@ -152,7 +157,7 @@ SPECTRE_TEST_CASE(
       Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
       Tags::CauchyCartesianCoords>>(make_not_null(&expected_box));
   db::mutate_apply<InitializeScriPlusValue<Tags::InertialRetardedTime>>(
-      make_not_null(&expected_box));
+      make_not_null(&expected_box), 1.5);
 
   tmpl::for_each<
       tmpl::append<real_boundary_tags_to_compute, swsh_boundary_tags_to_compute,
