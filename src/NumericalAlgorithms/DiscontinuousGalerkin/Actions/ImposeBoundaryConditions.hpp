@@ -4,6 +4,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <tuple>
 #include <utility>
@@ -33,11 +34,24 @@ struct Magnitude;
 
 namespace dg {
 namespace Actions {
+namespace BoundaryConditions_detail {
+template <size_t VolumeDim, size_t NumberOfCharSpeeds>
+double min_characteristic_speed(
+    const std::array<DataVector, NumberOfCharSpeeds>& char_speeds) noexcept {
+  std::array<double, NumberOfCharSpeeds> min_speeds{};
+  for (size_t i = 0; i < NumberOfCharSpeeds; ++i) {
+    gsl::at(min_speeds, i) = min(char_speeds.at(i));
+  }
+  return *std::min_element(min_speeds.begin(), min_speeds.end());
+}
+}  // namespace BoundaryConditions_detail
 /// \ingroup ActionsGroup
 /// \ingroup DiscontinuousGalerkinGroup
 /// \brief Packages data on external boundaries for calculating numerical flux.
 /// Computes contributions on the interior side from the volume, and imposes
-/// Dirichlet boundary conditions on the exterior side.
+/// Dirichlet boundary conditions on the exterior side. Optionally, instead do
+/// nothing if all characteristic speeds are outgoing and the system is
+/// nonconservative.
 ///
 /// With:
 /// - External<Tag> =
@@ -49,6 +63,9 @@ namespace Actions {
 /// - DataBox:
 ///   - Tags::Time
 ///   - External<Tags::BoundaryCoordinates<volume_dim>>,
+///   - domain::Tags::Interface<
+///         domain::Tags::BoundaryDirectionsInterior<VolumeDim>,
+///         typename system::char_speeds_tag>
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -57,7 +74,8 @@ namespace Actions {
 ///      - External<typename system::variables_tag>
 ///
 /// \see ReceiveDataForFluxes
-template <typename Metavariables>
+template <typename Metavariables,
+          bool ApplyUnlessOnlyOutgoingCharSpeeds = false>
 struct ImposeDirichletBoundaryConditions {
  private:
   // BoundaryConditionMethod and BcSelector are used to select exactly how to
@@ -122,10 +140,20 @@ struct ImposeDirichletBoundaryConditions {
                typename system::variables_tag>>*>
                external_bdry_vars,
            const double time, const auto& boundary_condition,
-           const auto& boundary_coords) noexcept {
+           const auto& boundary_coords,
+           const auto& boundary_char_speeds) noexcept {
           for (auto& external_direction_and_vars : *external_bdry_vars) {
             auto& direction = external_direction_and_vars.first;
             auto& vars = external_direction_and_vars.second;
+
+            if (ApplyUnlessOnlyOutgoingCharSpeeds) {
+              // Do nothing if char speeds are all outgoing (i.e., all positive)
+              const auto& char_speeds = boundary_char_speeds.at(direction);
+              if (BoundaryConditions_detail::min_characteristic_speed<
+                      VolumeDim>(char_speeds) >= 0.) {
+                continue;
+              }
+            }
             vars.assign_subset(boundary_condition.variables(
                 boundary_coords.at(direction), time,
                 typename system::variables_tag::type::tags_list{}));
@@ -135,7 +163,10 @@ struct ImposeDirichletBoundaryConditions {
         get<typename Metavariables::boundary_condition_tag>(cache),
         db::get<domain::Tags::Interface<
             domain::Tags::BoundaryDirectionsExterior<VolumeDim>,
-            domain::Tags::Coordinates<VolumeDim, Frame::Inertial>>>(box));
+            domain::Tags::Coordinates<VolumeDim, Frame::Inertial>>>(box),
+        db::get<domain::Tags::Interface<
+            domain::Tags::BoundaryDirectionsInterior<VolumeDim>,
+            typename system::char_speeds_tag>>(box));
 
     return std::forward_as_tuple(std::move(box));
   }

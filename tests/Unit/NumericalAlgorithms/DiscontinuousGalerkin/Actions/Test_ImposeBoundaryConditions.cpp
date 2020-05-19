@@ -39,6 +39,10 @@ struct PrimitiveVar : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+struct CharSpeeds : db::SimpleTag {
+  using type = std::array<DataVector, 1>;
+};
+
 // Only analytic Dirichlet boundary conditions are supported right now,
 // so this is `MarkedAsAnalyticSolution`.
 struct BoundaryCondition : MarkAsAnalyticSolution {
@@ -70,6 +74,7 @@ struct System {
       HasPrimitiveAndConservativeVars;
 
   using variables_tag = Tags::Variables<tmpl::list<Var>>;
+  using char_speeds_tag = CharSpeeds;
 
   struct conservative_from_primitive {
     using return_tags = tmpl::list<Var>;
@@ -86,7 +91,7 @@ using exterior_bdry_vars_tag =
     domain::Tags::Interface<domain::Tags::BoundaryDirectionsExterior<Dim>,
                             Tags::Variables<tmpl::list<Var>>>;
 
-template <typename Metavariables>
+template <typename Metavariables, bool TestOnlyOutgoing>
 struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
@@ -101,29 +106,37 @@ struct component {
               domain::Tags::Interface<
                   domain::Tags::BoundaryDirectionsExterior<Dim>,
                   domain::Tags::Coordinates<Dim, Frame::Inertial>>,
-              exterior_bdry_vars_tag>>>>,
+              exterior_bdry_vars_tag,
+              domain::Tags::Interface<
+                  domain::Tags::BoundaryDirectionsInterior<Dim>,
+                  typename metavariables::system::char_speeds_tag>>>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<
-              dg::Actions::ImposeDirichletBoundaryConditions<Metavariables>>>>;
+          tmpl::list<dg::Actions::ImposeDirichletBoundaryConditions<
+              Metavariables, TestOnlyOutgoing>>>>;
 };
 
-template <bool HasPrimitiveAndConservativeVars>
+template <bool HasPrimitiveAndConservativeVars, bool TestOnlyOutgoing>
 struct Metavariables {
   using system = System<HasPrimitiveAndConservativeVars>;
-  using component_list = tmpl::list<component<Metavariables>>;
+  using component_list = tmpl::list<component<Metavariables, TestOnlyOutgoing>>;
 
   using boundary_condition_tag = BoundaryConditionTag;
   enum class Phase { Initialization, Testing, Exit };
 };
 
-template <bool HasConservativeAndPrimitiveVars>
+template <bool HasConservativeAndPrimitiveVars, bool TestOnlyOutgoing,
+          bool AllCharSpeedsAreOutgoing>
 void run_test() {
-  using metavariables = Metavariables<HasConservativeAndPrimitiveVars>;
-  using my_component = component<metavariables>;
+  using metavariables =
+      Metavariables<HasConservativeAndPrimitiveVars, TestOnlyOutgoing>;
+  using my_component = component<metavariables, TestOnlyOutgoing>;
   // Just making up two "external" directions
   const auto external_directions = {Direction<2>::lower_eta(),
                                     Direction<2>::upper_xi()};
+
+  // Initial boundary data, used only if TestOnlyOutgoing
+  const Scalar<DataVector> initial_bdry_data({{{4.0, 8.0, 12.0}}});
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{{BoundaryCondition{}}};
   {
@@ -139,9 +152,40 @@ void run_test() {
       exterior_bdry_vars[direction].initialize(3);
     }
 
-    ActionTesting::emplace_component_and_initialize<my_component>(
-        &runner, 0,
-        {1.2, std::move(external_bdry_coords), std::move(exterior_bdry_vars)});
+    // If we're testing that the boundary condition does nothing if only
+    // incoming char fields, then initialize the boundary data to something
+    // other than signaling NaNs
+    if (TestOnlyOutgoing and not HasConservativeAndPrimitiveVars) {
+      for (const auto& direction : external_directions) {
+        get(get<Var>(exterior_bdry_vars[direction])) = get(initial_bdry_data);
+      }
+    }
+
+    std::array<DataVector, 1> char_speeds{{{1.0, -1.0, 2.0}}};
+    db::item_type<domain::Tags::Interface<
+        domain::Tags::BoundaryDirectionsInterior<Dim>,
+        typename metavariables::system::char_speeds_tag>>
+        internal_bdry_char_speeds{{{Direction<2>::lower_eta(), char_speeds},
+                                   {Direction<2>::upper_xi(), char_speeds}}};
+    std::array<DataVector, 1> char_speeds_only_outgoing{{{1.0, 3.0, 2.0}}};
+    db::item_type<domain::Tags::Interface<
+        domain::Tags::BoundaryDirectionsInterior<Dim>,
+        typename metavariables::system::char_speeds_tag>>
+        internal_bdry_char_speeds_only_outgoing{
+            {{Direction<2>::lower_eta(), char_speeds_only_outgoing},
+             {Direction<2>::upper_xi(), char_speeds_only_outgoing}}};
+
+    if (AllCharSpeedsAreOutgoing) {
+      ActionTesting::emplace_component_and_initialize<my_component>(
+          &runner, 0,
+          {1.2, std::move(external_bdry_coords), std::move(exterior_bdry_vars),
+           std::move(internal_bdry_char_speeds_only_outgoing)});
+    } else {
+      ActionTesting::emplace_component_and_initialize<my_component>(
+          &runner, 0,
+          {1.2, std::move(external_bdry_coords), std::move(exterior_bdry_vars),
+           std::move(internal_bdry_char_speeds)});
+    }
   }
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Testing);
@@ -156,10 +200,19 @@ void run_test() {
   for (const auto& direction : external_directions) {
     expected_vars[direction].initialize(3);
   }
-  get<Var>(expected_vars[Direction<2>::lower_eta()]) =
-      Scalar<DataVector>({{{30., 40., 50.}}});
-  get<Var>(expected_vars[Direction<2>::upper_xi()]) =
-      Scalar<DataVector>({{{30., 40., 50.}}});
+
+  if (TestOnlyOutgoing and not HasConservativeAndPrimitiveVars and
+      AllCharSpeedsAreOutgoing) {
+    get(get<Var>(expected_vars[Direction<2>::lower_eta()])) =
+        get(initial_bdry_data);
+    get(get<Var>(expected_vars[Direction<2>::upper_xi()])) =
+        get(initial_bdry_data);
+  } else {
+    get<Var>(expected_vars[Direction<2>::lower_eta()]) =
+        Scalar<DataVector>({{{30., 40., 50.}}});
+    get<Var>(expected_vars[Direction<2>::upper_xi()]) =
+        Scalar<DataVector>({{{30., 40., 50.}}});
+  }
   CHECK(external_vars == expected_vars);
 }
 
@@ -167,6 +220,15 @@ void run_test() {
 
 SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.BoundaryConditions",
                   "[Unit][NumericalAlgorithms][Actions]") {
-  run_test<false>();
-  run_test<true>();
+  // The three booleans control, from left to right:
+  //     i) true if the system is conservative
+  //    ii) true if testing the version of the boundary condition that does
+  //        nothing if all char speeds are outgoing
+  //   iii) true if all char speeds are outgoing
+  run_test<false, false, false>();
+  run_test<true, false, false>();
+  run_test<false, true, false>();
+  run_test<true, true, false>();
+  run_test<false, true, true>();
+  run_test<true, true, true>();
 }
