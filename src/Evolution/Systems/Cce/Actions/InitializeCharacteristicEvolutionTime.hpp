@@ -55,8 +55,8 @@ namespace Actions {
  */
 struct InitializeCharacteristicEvolutionTime {
   using initialization_tags = tmpl::list<InitializationTags::TargetStepSize>;
-  using const_global_cache_tags = tmpl::list<::Tags::TimeStepper<TimeStepper>,
-                                             Tags::StartTime, Tags::EndTime>;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::TimeStepper<TimeStepper>, Tags::StartTime>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,

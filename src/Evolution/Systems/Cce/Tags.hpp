@@ -336,6 +336,8 @@ struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
   using type = WorldtubeDataManager;
 };
 
+struct EndTime : db::BaseTag {};
+
 /// The Weyl scalar \f$\Psi_0\f$
 struct Psi0 : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 2>>;

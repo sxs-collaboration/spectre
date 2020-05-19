@@ -181,7 +181,6 @@ SPECTRE_TEST_CASE(
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       {l_max, number_of_radial_points,
        std::make_unique<::TimeSteppers::RungeKutta3>(), start_time,
-       start_time + target_step_size,
        std::make_unique<InitializeJ::InverseCubic>()}};
 
   ActionTesting::set_phase(make_not_null(&runner),

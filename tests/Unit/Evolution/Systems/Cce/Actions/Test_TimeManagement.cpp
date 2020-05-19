@@ -33,7 +33,8 @@ struct mock_characteristic_evolution {
   using replace_these_simple_actions = tmpl::list<>;
   using with_these_simple_actions = tmpl::list<>;
 
-  using simple_tags = db::AddSimpleTags<::Tags::TimeStepId, Tags::EndTime>;
+  using simple_tags =
+      db::AddSimpleTags<::Tags::TimeStepId, Tags::EndTimeFromFile>;
   using compute_tags = db::AddComputeTags<>;
 
   using initialize_action_list =
@@ -78,10 +79,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.TimeManagement",
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   CHECK_FALSE(ActionTesting::get_terminate<component>(runner, 0));
 
-  auto& box =
-      ActionTesting::get_databox<component,
-                                 tmpl::list<::Tags::TimeStepId, Tags::EndTime>>(
-          make_not_null(&runner), 0);
+  auto& box = ActionTesting::get_databox<
+      component, tmpl::list<::Tags::TimeStepId, Tags::EndTimeFromFile>>(
+      make_not_null(&runner), 0);
   db::mutate<::Tags::TimeStepId>(
       make_not_null(&box), [](const gsl::not_null<TimeStepId*> time_step_id) {
         *time_step_id = TimeStepId{true, 0, Time{{1.5, 2.5}, {3, 4}}};

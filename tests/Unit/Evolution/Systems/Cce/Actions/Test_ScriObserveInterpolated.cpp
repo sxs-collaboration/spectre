@@ -187,13 +187,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
   const std::string filename = "ScriObserveInterpolatedTest_CceVolumeOutput";
 
   const double start_time = 0.0;
-  const double end_time = 100.0;
   const double target_step_size = 0.1;
   const size_t scri_interpolation_size = 3;
 
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       {filename, l_max, number_of_radial_points,
-       std::make_unique<::TimeSteppers::RungeKutta3>(), start_time, end_time,
+       std::make_unique<::TimeSteppers::RungeKutta3>(), start_time,
        scri_output_density, observation_l_max}};
 
   runner.set_phase(test_metavariables::Phase::Initialization);
