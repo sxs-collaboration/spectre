@@ -30,9 +30,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Prefixes",
   /// [dt_name]
   TestHelpers::db::test_prefix_tag<Tags::dt<Tag>>("dt(Tag)");
   /// [dt_name]
-  /// [analytic_name]
-  TestHelpers::db::test_prefix_tag<Tags::Analytic<Tag>>("Analytic(Tag)");
-  /// [analytic_name]
   using Dim = tmpl::size_t<2>;
   using Frame = Frame::Inertial;
   using VariablesTag = Tags::Variables<tmpl::list<TensorTag>>;

@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <string>
 
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/ElementId.hpp"
@@ -15,6 +14,7 @@
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

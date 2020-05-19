@@ -7,13 +7,13 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/ComputeTags.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -24,9 +24,9 @@ struct FieldTag : db::SimpleTag {
 };
 
 struct AnalyticSolution {
-  tuples::TaggedTuple<FieldTag> variables(
+  static tuples::TaggedTuple<FieldTag> variables(
       const tnsr::I<DataVector, 1>& x, const double t,
-      const tmpl::list<FieldTag> /*meta*/) const noexcept {
+      const tmpl::list<FieldTag> /*meta*/) noexcept {
     return {Scalar<DataVector>{t * get<0>(x)}};
   }
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT

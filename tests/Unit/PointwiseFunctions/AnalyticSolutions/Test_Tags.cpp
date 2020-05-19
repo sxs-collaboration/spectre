@@ -25,4 +25,8 @@ SPECTRE_TEST_CASE("Unit.AnalyticSolutions.Tags", "[Unit][PointwiseFunctions]") {
       "BoundaryConditionBase");
   TestHelpers::db::test_simple_tag<Tags::BoundaryCondition<DummyType>>(
       "BoundaryCondition");
+  /// [analytic_name]
+  TestHelpers::db::test_prefix_tag<Tags::Analytic<DummyTag>>(
+      "Analytic(DummyTag)");
+  /// [analytic_name]
 }

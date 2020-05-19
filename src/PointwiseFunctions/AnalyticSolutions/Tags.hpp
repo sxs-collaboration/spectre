@@ -73,4 +73,14 @@ struct BoundaryCondition : BoundaryConditionBase, db::SimpleTag {
     return boundary_condition;
   }
 };
+
+/// \ingroup DataBoxTagsGroup
+/// \brief Prefix indicating the analytic solution value for a quantity
+///
+/// \snippet AnalyticSolutions/Test_Tags.cpp analytic_name
+template <typename Tag>
+struct Analytic : db::PrefixTag, db::SimpleTag {
+  using type = typename Tag::type;
+  using tag = Tag;
+};
 }  // namespace Tags
