@@ -83,4 +83,13 @@ struct Analytic : db::PrefixTag, db::SimpleTag {
   using type = typename Tag::type;
   using tag = Tag;
 };
+
+/*!
+ * \brief Prefix indicating the error of a value represented by `Tag`
+ */
+template <typename Tag>
+struct Error : db::PrefixTag, db::SimpleTag {
+  using type = typename Tag::type;
+  using tag = Tag;
+};
 }  // namespace Tags

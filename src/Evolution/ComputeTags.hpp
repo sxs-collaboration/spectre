@@ -40,5 +40,47 @@ struct AnalyticCompute
             inertial_coords, time, AnalyticFieldsTagList{})));
   }
 };
+
+// @{
+/*!
+ * \brief For each `Tag` in `TagsList`, compute its difference from the
+ * analytic solution.
+ */
+template <size_t VolumeDim, typename AnalyticSolutionTag, typename TagsList>
+struct ErrorsCompute
+    : db::add_tag_prefix<::Tags::Error, ::Tags::Variables<TagsList>>,
+      db::ComputeTag {
+  using base = db::add_tag_prefix<::Tags::Error, ::Tags::Variables<TagsList>>;
+  using return_type = tmpl::type_from<base>;
+
+  using argument_tags = tmpl::append<
+      tmpl::list<AnalyticSolutionTag,
+                 domain::Tags::Coordinates<VolumeDim, Frame::Inertial>,
+                 ::Tags::Time>,
+      TagsList>;
+
+  template <typename AnalyticSolution, typename... ErrorTags,
+            typename... FieldTypes>
+  static constexpr void function(
+      const gsl::not_null<Variables<tmpl::list<ErrorTags...>>*> errors,
+      const AnalyticSolution& analytic_solution_computer,
+      const tnsr::I<DataVector, VolumeDim, Frame::Inertial>& inertial_coords,
+      const double time, const FieldTypes&... fields) noexcept {
+    *errors = return_type{get<0>(inertial_coords).size()};
+    const auto helper = [](const auto error, const auto& field) noexcept {
+      for (size_t i = 0; i < field.size(); ++i) {
+        (*error)[i] = field[i];
+      }
+    };
+    EXPAND_PACK_LEFT_TO_RIGHT(
+        helper(make_not_null(&get<ErrorTags>(*errors)), fields));
+
+    const auto analytic =
+        variables_from_tagged_tuple(analytic_solution_computer.variables(
+            inertial_coords, time, TagsList{}));
+    *errors -= analytic;
+  }
+};
+// @}
 }  // namespace Tags
 }  // namespace evolution
