@@ -14,8 +14,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace Elasticity {
-namespace Solutions {
+namespace Elasticity::Solutions {
 
 BentBeam::BentBeam(double length, double height, double bending_moment,
                    constitutive_relation_type constitutive_relation) noexcept
@@ -59,10 +58,15 @@ tuples::TaggedTuple<Tags::Stress<2>> BentBeam::variables(
   return {std::move(result)};
 }
 
+double BentBeam::potential_energy() const {
+  return 6. * length_ * square(bending_moment_) /
+         (cube(height_) * constitutive_relation_.youngs_modulus());
+}
+
 tuples::TaggedTuple<::Tags::FixedSource<Tags::Displacement<2>>>
 BentBeam::variables(
     const tnsr::I<DataVector, 2>& x,
-    tmpl::list<::Tags::FixedSource<Tags::Displacement<2>>> /*meta*/) const
+    tmpl::list<::Tags::FixedSource<Tags::Displacement<2>>> /*meta*/)
     noexcept {
   return {make_with_value<tnsr::I<DataVector, 2>>(x, 0.)};
 }
@@ -84,5 +88,4 @@ bool operator!=(const BentBeam& lhs, const BentBeam& rhs) noexcept {
   return not(lhs == rhs);
 }
 
-}  // namespace Solutions
-}  // namespace Elasticity
+}  // namespace Elasticity::Solutions

@@ -23,17 +23,16 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace Elasticity {
-namespace Solutions {
+namespace Elasticity::Solutions {
 /*!
  * \brief A state of pure bending of an elastic beam in 2D
  *
  * \details This solution describes a 2D slice through an elastic beam of length
- * \f$L\f$ and height \f$H\f$ that is subject to a bending moment \f$M=\int
- * T^{xx}y\mathrm{d}y\f$ (see e.g. \cite ThorneBlandford2017, Eq. 11.41c for a
- * bending moment in 1D). The beam material is characterized by an isotropic and
- * homogeneous constitutive relation \f$Y^{ijkl}\f$ in the plane-stress
- * approximation (see
+ * \f$L\f$ and height \f$H\f$, centered around (0, 0), that is subject to a
+ * bending moment \f$M=\int T^{xx}y\mathrm{d}y\f$ (see e.g.
+ * \cite ThorneBlandford2017, Eq. 11.41c for a bending moment in 1D). The beam
+ * material is characterized by an isotropic and homogeneous constitutive
+ * relation \f$Y^{ijkl}\f$ in the plane-stress approximation (see
  * `Elasticity::ConstitutiveRelations::IsotropicHomogeneous`). In this scenario,
  * no body-forces \f$f_\mathrm{ext}^j\f$ act on the material, so the
  * \ref Elasticity equations reduce to \f$\nabla_i T^{ij}=0\f$, but the bending
@@ -63,11 +62,18 @@ namespace Solutions {
  * \f{align}
  * S_{xx} &= -\frac{12 M}{EH^3} y \\
  * S_{yy} &= \frac{12 M}{EH^3} \nu y \\
- * S_{xy} &= S_{yx} = 0 \text{.}
+ * S_{xy} &= S_{yx} = 0
  * \f}
+ *
+ * and the potential energy stored in the entire infinitesimal slice is
+ *
+ * \f[
+ * \int_{-L/2}^{L/2} \int_{-H/2}^{H/2} U dy\,dx = \frac{6M^2}{EH^3}L \text{.}
+ * \f]
  */
 class BentBeam {
  public:
+  static constexpr size_t volume_dim = 2;
   using constitutive_relation_type =
       Elasticity::ConstitutiveRelations::IsotropicHomogeneous<2>;
 
@@ -113,6 +119,9 @@ class BentBeam {
     return constitutive_relation_;
   }
 
+  /// Return potential energy integrated over the whole beam material
+  double potential_energy() const;
+
   // @{
   /// Retrieve variable at coordinates `x`
   auto variables(const tnsr::I<DataVector, 2>& x,
@@ -127,10 +136,9 @@ class BentBeam {
                  tmpl::list<Tags::Stress<2>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<Tags::Stress<2>>;
 
-  auto variables(
+  static auto variables(
       const tnsr::I<DataVector, 2>& x,
-      tmpl::list<::Tags::FixedSource<Tags::Displacement<2>>> /*meta*/) const
-      noexcept
+      tmpl::list<::Tags::FixedSource<Tags::Displacement<2>>> /*meta*/) noexcept
       -> tuples::TaggedTuple<::Tags::FixedSource<Tags::Displacement<2>>>;
   // @}
 
@@ -159,5 +167,4 @@ class BentBeam {
 
 bool operator!=(const BentBeam& lhs, const BentBeam& rhs) noexcept;
 
-}  // namespace Solutions
-}  // namespace Elasticity
+}  // namespace Elasticity::Solutions
