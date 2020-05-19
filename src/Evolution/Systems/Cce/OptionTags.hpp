@@ -8,8 +8,8 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
-#include "Evolution/Systems/Cce/InterfaceManagers/GhLockstepInterfaceManager.hpp"
-#include "Evolution/Systems/Cce/InterfaceManagers/WorldtubeInterfaceManager.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Options/Options.hpp"
@@ -122,7 +122,7 @@ struct H5Interpolator {
 };
 
 struct GhInterfaceManager {
-  using type = std::unique_ptr<GhWorldtubeInterfaceManager>;
+  using type = std::unique_ptr<InterfaceManagers::GhInterfaceManager>;
   static constexpr OptionString help{
       "Class to manage worldtube data from a GH system."};
   using group = Cce;
@@ -320,13 +320,14 @@ struct EndTime : db::SimpleTag {
 };
 
 struct GhInterfaceManager : db::SimpleTag {
-  using type = std::unique_ptr<GhWorldtubeInterfaceManager>;
+  using type = std::unique_ptr<InterfaceManagers::GhInterfaceManager>;
   using option_tags = tmpl::list<OptionTags::GhInterfaceManager>;
 
   template <typename Metavariables>
-  static std::unique_ptr<::Cce::GhWorldtubeInterfaceManager>
-  create_from_options(const std::unique_ptr<::Cce::GhWorldtubeInterfaceManager>&
-                          interface_manager) noexcept {
+  static std::unique_ptr<InterfaceManagers::GhInterfaceManager>
+  create_from_options(
+      const std::unique_ptr<InterfaceManagers::GhInterfaceManager>&
+          interface_manager) noexcept {
     return interface_manager->get_clone();
   }
 };

@@ -11,7 +11,7 @@
 #include "ErrorHandling/Error.hpp"
 #include "Evolution/Systems/Cce/Actions/ReceiveWorldtubeData.hpp"
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
-#include "Evolution/Systems/Cce/InterfaceManagers/WorldtubeInterfaceManager.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
 #include "Evolution/Systems/Cce/ReceiveTags.hpp"
@@ -112,12 +112,12 @@ struct BoundaryComputeAndSendToEvolution<H5WorldtubeBoundary<Metavariables>,
 /*!
  * \ingroup ActionsGroup
  * \brief Submits a request for CCE boundary data at the specified `time` to the
- * `Cce::GhWorldtubeInterfaceManager`, and sends the data to the
+ * `Cce::InterfaceManagers::GhInterfaceManager`, and sends the data to the
  * `EvolutionComponent` (template argument) if it is ready.
  *
- * \details This uses the `Cce::GhWorldtubeInterfaceManager` to perform all of
- * the work of managing the buffer of data sent from the GH system and
- * interpolating if necessary and supported. This dispatches then to
+ * \details This uses the `Cce::InterfaceManagers::GhInterfaceManager` to
+ * perform all of the work of managing the buffer of data sent from the GH
+ * system and interpolating if necessary and supported. This dispatches then to
  * `Cce::Actions::SendToEvolution<GhWorldtubeBoundary<Metavariables>,
  * EvolutionComponent>` if the boundary data is ready, otherwise
  * simply submits the request and waits for data to become available via
@@ -145,9 +145,9 @@ struct BoundaryComputeAndSendToEvolution<GhWorldtubeBoundary<Metavariables>,
                     const TimeStepId& time) noexcept {
     db::mutate<Tags::GhInterfaceManager>(
         make_not_null(&box),
-        [&time, &cache](
-            const gsl::not_null<std::unique_ptr<GhWorldtubeInterfaceManager>*>
-                interface_manager) noexcept {
+        [&time, &cache](const gsl::not_null<
+                        std::unique_ptr<InterfaceManagers::GhInterfaceManager>*>
+                            interface_manager) noexcept {
           (*interface_manager)->request_gh_data(time);
           const auto gh_data =
               (*interface_manager)->retrieve_and_remove_first_ready_gh_data();

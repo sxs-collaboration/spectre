@@ -14,8 +14,10 @@
 #include "Time/TimeStepId.hpp"
 
 namespace Cce {
+namespace InterfaceManagers {
+
 /// \cond
-class GhLockstepInterfaceManager;
+class GhLockstep;
 /// \endcond
 
 /*!
@@ -24,35 +26,34 @@ class GhLockstepInterfaceManager;
  *
  * \details The functions that are required to be overriden in the derived
  * classes are:
- * - `GhWorldtubeInterfaceManager::get_clone()`: should return a
- * `std::unique_ptr<GhWorldtubeInterfaceManager>` with cloned state.
- * - `GhWorldtubeInterfaceManager::insert_gh_data()`: should store the portions
+ * - `GhInterfaceManager::get_clone()`: should return a
+ * `std::unique_ptr<GhInterfaceManager>` with cloned state.
+ * - `GhInterfaceManager::insert_gh_data()`: should store the portions
  * of the provided generalized harmonic data that are required to provide useful
  * boundary values for the CCE evolution at requested timesteps.
- * - `GhWorldtubeInterfaceManager::request_gh_data()`: should register requests
+ * - `GhInterfaceManager::request_gh_data()`: should register requests
  * from the CCE evolution for boundary data.
- * - `GhWorldtubeInterfaceManager::retrieve_and_remove_first_ready_gh_data()`:
- * should return a `boost::optional<std::tuple<TimeStepId, tnsr::aa<DataVector,
- * 3>, tnsr::iaa<DataVector, 3>, tnsr::aa<DataVector, 3>>>` containing the
- * boundary data associated with the oldest requested timestep if enough data
- * has been supplied via `insert_gh_data()` to determine the boundary data.
- * Otherwise, return a `boost::none` to indicate that the CCE system must
- * continue waiting for generalized harmonic input.
- * - `GhWorldtubeInterfaceManager::number_of_pending_requests()`: should return
+ * - `GhInterfaceManager::retrieve_and_remove_first_ready_gh_data()`:
+ * should return a `boost::optional<std::tuple<TimeStepId,
+ * tnsr::aa<DataVector, 3>, tnsr::iaa<DataVector, 3>, tnsr::aa<DataVector, 3>>>`
+ * containing the boundary data associated with the oldest requested timestep if
+ * enough data has been supplied via `insert_gh_data()` to determine the
+ * boundary data. Otherwise, return a `boost::none` to indicate that the CCE
+ * system must continue waiting for generalized harmonic input.
+ * - `GhInterfaceManager::number_of_pending_requests()`: should return
  * the number of requests that have been registered to the class that do not yet
  * been retrieved via `retrieve_and_remove_first_ready_gh_data()`.
- * - `GhWorldtubeInterfaceManager::number_of_gh_times()`: should return the
+ * - `GhInterfaceManager::number_of_gh_times()`: should return the
  * number of time steps sent to `insert_gh_data()` that have not yet been
  * retrieved via `retrieve_and_remove_first_ready_gh_data()`.
  */
-class GhWorldtubeInterfaceManager : public PUP::able {
+class GhInterfaceManager : public PUP::able {
  public:
-  using creatable_classes = tmpl::list<GhLockstepInterfaceManager>;
+  using creatable_classes = tmpl::list<GhLockstep>;
 
-  WRAPPED_PUPable_abstract(GhWorldtubeInterfaceManager);  // NOLINT
+  WRAPPED_PUPable_abstract(GhInterfaceManager);  // NOLINT
 
-  virtual std::unique_ptr<GhWorldtubeInterfaceManager> get_clone() const
-      noexcept = 0;
+  virtual std::unique_ptr<GhInterfaceManager> get_clone() const noexcept = 0;
 
   virtual void insert_gh_data(TimeStepId time_id,
                               tnsr::aa<DataVector, 3> spacetime_metric,
@@ -74,4 +75,5 @@ class GhWorldtubeInterfaceManager : public PUP::able {
   virtual size_t number_of_gh_times() const noexcept = 0;
 };
 
+}  // namespace InterfaceManagers
 }  // namespace Cce

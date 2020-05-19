@@ -11,7 +11,8 @@
 #include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
 #include "Evolution/Systems/Cce/Initialize/NoIncomingRadiation.hpp"
 #include "Evolution/Systems/Cce/Initialize/ZeroNonSmooth.hpp"
-#include "Evolution/Systems/Cce/InterfaceManagers/WorldtubeInterfaceManager.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
 #include "Framework/TestCreation.hpp"
@@ -66,10 +67,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
             "4") == 4_st);
 
   auto option_created_lockstep_interface_manager = TestHelpers::test_creation<
-      std::unique_ptr<Cce::GhWorldtubeInterfaceManager>,
-      Cce::OptionTags::GhInterfaceManager>("GhLockstepInterfaceManager");
-  CHECK(std::is_same_v<decltype(option_created_lockstep_interface_manager),
-                       std::unique_ptr<Cce::GhWorldtubeInterfaceManager>>);
+      std::unique_ptr<Cce::InterfaceManagers::GhInterfaceManager>,
+      Cce::OptionTags::GhInterfaceManager>("GhLockstep");
+  CHECK(std::is_same_v<
+        decltype(option_created_lockstep_interface_manager),
+        std::unique_ptr<Cce::InterfaceManagers::GhInterfaceManager>>);
 
   CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::ScriOutputDensity>(
             "6") == 6_st);
