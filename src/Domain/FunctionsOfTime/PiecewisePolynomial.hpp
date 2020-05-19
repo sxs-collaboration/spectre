@@ -36,8 +36,9 @@ class PiecewisePolynomial : public FunctionOfTime {
 
   auto get_clone() const noexcept -> std::unique_ptr<FunctionOfTime> override;
 
-  // NOLINTNEXTLINE(google-runtime-references)
-  WRAPPED_PUPable_decl_template(PiecewisePolynomial<MaxDeriv>);
+  // clang-tidy: google-runtime-references
+  // clang-tidy: cppcoreguidelines-owning-memory,-warnings-as-errors
+  WRAPPED_PUPable_decl_template(PiecewisePolynomial<MaxDeriv>);  // NOLINT
 
   /// Returns the function at an arbitrary time `t`.
   std::array<DataVector, 1> func(double t) const noexcept override {

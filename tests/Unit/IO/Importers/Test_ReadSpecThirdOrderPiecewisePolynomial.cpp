@@ -40,9 +40,7 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using simple_tags = tmpl::list<importers::Tags::FunctionOfTimeFile,
-                                 importers::Tags::FunctionOfTimeNameMap,
-                                 ::domain::Tags::FunctionsOfTime>;
+  using simple_tags = tmpl::list<::domain::Tags::FunctionsOfTime>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -132,7 +130,10 @@ SPECTRE_TEST_CASE("Unit.IO.ReadSpecThirdOrderPiecewisePolynomial",
       "/" + expected_names[1], rotation_legend, version_number);
   rotation_file.append(test_rotation);
 
-  MockRuntimeSystem runner{{}};
+  MockRuntimeSystem runner{
+      {std::string{test_filename}, std::map<std::string, std::string>{
+                                       {"ExpansionFactor", "ExpansionFactor"},
+                                       {"RotationAngle", "RotationAngle"}}}};
   std::unordered_map<std::string,
                      std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
       initial_functions_of_time{};
@@ -147,12 +148,7 @@ SPECTRE_TEST_CASE("Unit.IO.ReadSpecThirdOrderPiecewisePolynomial",
           0.0, initial_coefficients);
 
   ActionTesting::emplace_component_and_initialize<component<Metavariables>>(
-      &runner, self_id,
-      {std::string{test_filename},
-       std::map<std::string, std::string>{
-           {"ExpansionFactor", "ExpansionFactor"},
-           {"RotationAngle", "RotationAngle"}},
-       std::move(initial_functions_of_time)});
+      &runner, self_id, {std::move(initial_functions_of_time)});
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
@@ -232,7 +228,9 @@ SPECTRE_TEST_CASE(
       "/RotationAngle", rotation_legend, version_number);
   rotation_file.append(test_rotation);
 
-  MockRuntimeSystem runner{{}};
+  MockRuntimeSystem runner{
+      {std::string{test_filename},
+       std::map<std::string, std::string>{{"RotationAngle", "RotationAngle"}}}};
   std::unordered_map<std::string,
                      std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
       initial_functions_of_time{};
@@ -244,11 +242,7 @@ SPECTRE_TEST_CASE(
           0.0, initial_coefficients);
 
   ActionTesting::emplace_component_and_initialize<component<Metavariables>>(
-      &runner, self_id,
-      {std::string{test_filename},
-       std::map<std::string, std::string>{
-           {"RotationAngle", "RotationAngle"}},
-       std::move(initial_functions_of_time)});
+      &runner, self_id, {std::move(initial_functions_of_time)});
 
   runner.set_phase(Metavariables::Phase::Testing);
   runner.next_action<component<Metavariables>>(self_id);

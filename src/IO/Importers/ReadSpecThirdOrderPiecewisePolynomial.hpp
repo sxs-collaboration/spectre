@@ -60,6 +60,9 @@ namespace Actions {
 /// component and its derivatives, etc.
 ///
 struct ReadSpecThirdOrderPiecewisePolynomial {
+  using const_global_cache_tags =
+       tmpl::list<importers::Tags::FunctionOfTimeFile,
+                  importers::Tags::FunctionOfTimeNameMap>;
   template <
       typename DbTagsList, typename... InboxTags, typename Metavariables,
       typename ArrayIndex, typename ActionList, typename ParallelComponent,
