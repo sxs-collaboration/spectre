@@ -102,7 +102,7 @@ class Rotation<2> {
 
   void pup(PUP::er& p) noexcept;  // NOLINT
 
-  bool is_identity() const noexcept { return false; }
+  static bool is_identity() noexcept { return false; }
 
  private:
   friend bool operator==(const Rotation<2>& lhs,

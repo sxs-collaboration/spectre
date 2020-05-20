@@ -12,6 +12,8 @@ set(LIBRARY_SOURCES
   Test_InitializeInterpolationTarget.cpp
   Test_InitializeInterpolator.cpp
   Test_InterpolateEvent.cpp
+  Test_InterpolateToTarget.cpp
+  Test_InterpolateWithoutInterpComponent.cpp
   Test_InterpolationTargetApparentHorizon.cpp
   Test_InterpolationTargetKerrHorizon.cpp
   Test_InterpolationTargetLineSegment.cpp

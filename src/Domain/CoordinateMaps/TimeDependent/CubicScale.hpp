@@ -149,7 +149,7 @@ class CubicScale {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
-  bool is_identity() const noexcept { return false; }
+  static bool is_identity() noexcept { return false; }
 
  private:
   template <size_t LocalDim>
