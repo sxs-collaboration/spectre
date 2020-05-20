@@ -232,12 +232,9 @@ struct EvolutionMetavars {
 
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
   // metavariables
-  using const_global_cache_tags = tmpl::list<
-      initial_data_tag, normal_dot_numerical_flux, time_stepper_tag,
-      GeneralizedHarmonic::Tags::GaugeHRollOnStartTime,
-      GeneralizedHarmonic::Tags::GaugeHRollOnTimeWindow,
-      GeneralizedHarmonic::Tags::GaugeHSpatialWeightDecayWidth<frame>,
-      Tags::EventsAndTriggers<events, triggers>>;
+  using const_global_cache_tags =
+      tmpl::list<initial_data_tag, normal_dot_numerical_flux, time_stepper_tag,
+                 Tags::EventsAndTriggers<events, triggers>>;
 
   struct ObservationType {};
   using element_observation_type = ObservationType;
