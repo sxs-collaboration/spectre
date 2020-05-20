@@ -36,6 +36,8 @@ namespace Cce::InterfaceManagers {
  */
 class GhLockstep : public GhInterfaceManager {
  public:
+  using GhInterfaceManager::gh_variables;
+
   static constexpr OptionString help{
       "Pass data between GH and CCE systems on matching timesteps only."};
 
@@ -55,12 +57,13 @@ class GhLockstep : public GhInterfaceManager {
   /// harmonic variables `spacetime_metric`, `phi`, and `pi` are used. The
   /// remaining variables are accepted to comply with the more general abstract
   /// interface.
-  void insert_gh_data(TimeStepId time_id,
-                      tnsr::aa<DataVector, 3> spacetime_metric,
-                      tnsr::iaa<DataVector, 3> phi, tnsr::aa<DataVector, 3> pi,
-                      tnsr::aa<DataVector, 3> dt_spacetime_metric = {},
-                      tnsr::iaa<DataVector, 3> dt_phi = {},
-                      tnsr::aa<DataVector, 3> dt_pi = {}) noexcept override;
+  void insert_gh_data(
+      TimeStepId time_id, const tnsr::aa<DataVector, 3>& spacetime_metric,
+      const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
+      TimeStepId next_time_id = {},
+      const tnsr::aa<DataVector, 3>& dt_spacetime_metric = {},
+      const tnsr::iaa<DataVector, 3>& dt_phi = {},
+      const tnsr::aa<DataVector, 3>& dt_pi = {}) noexcept override;
 
   /// \brief Requests are ignored by this implementation, so this is a no-op.
   void request_gh_data(const TimeStepId& /*time_id*/) noexcept override {}
@@ -68,9 +71,8 @@ class GhLockstep : public GhInterfaceManager {
   /// \brief Return a `boost::optional<std::tuple>` of the least recently
   /// submitted generalized harmonic boundary data if any exists and removes it
   /// from the internal `std::deque`, otherwise returns `boost::none`.
-  auto retrieve_and_remove_first_ready_gh_data() noexcept -> boost::optional<
-      std::tuple<TimeStepId, tnsr::aa<DataVector, 3>, tnsr::iaa<DataVector, 3>,
-                 tnsr::aa<DataVector, 3>>> override;
+  auto retrieve_and_remove_first_ready_gh_data() noexcept
+      -> boost::optional<std::tuple<TimeStepId, gh_variables>> override;
 
   /// \brief This class ignores requests to ensure a one-way communication
   /// pattern, so the number of requests is always 0.
@@ -86,9 +88,7 @@ class GhLockstep : public GhInterfaceManager {
   void pup(PUP::er& p) noexcept override;
 
  private:
-  std::deque<std::tuple<TimeStepId, tnsr::aa<DataVector, 3>,
-                        tnsr::iaa<DataVector, 3>, tnsr::aa<DataVector, 3>>>
-      provided_data_;
+  std::deque<std::tuple<TimeStepId, gh_variables>> provided_data_;
 };
 
 }  // namespace Cce::InterfaceManagers

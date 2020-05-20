@@ -9,7 +9,9 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/TimeStepId.hpp"
 
 namespace Cce::InterfaceManagers {
@@ -19,19 +21,27 @@ std::unique_ptr<GhInterfaceManager> GhLockstep::get_clone() const noexcept {
 }
 
 void GhLockstep::insert_gh_data(
-    TimeStepId time_id, tnsr::aa<DataVector, 3> spacetime_metric,
-    tnsr::iaa<DataVector, 3> phi, tnsr::aa<DataVector, 3> pi,
-    const tnsr::aa<DataVector, 3> /*dt_spacetime_metric*/,
-    const tnsr::iaa<DataVector, 3> /*dt_phi*/,
-    const tnsr::aa<DataVector, 3> /*dt_pi*/) noexcept {
+    TimeStepId time_id, const tnsr::aa<DataVector, 3>& spacetime_metric,
+    const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
+    TimeStepId /*next_time_id*/,
+    const tnsr::aa<DataVector, 3>& /*dt_spacetime_metric*/,
+    const tnsr::iaa<DataVector, 3>& /*dt_phi*/,
+    const tnsr::aa<DataVector, 3>& /*dt_pi*/) noexcept {
   // NOLINTNEXTLINE(performance-move-const-arg)
-  provided_data_.emplace_back(std::move(time_id), std::move(spacetime_metric),
-                              std::move(phi), std::move(pi));
+  gh_variables input_gh_variables{get<0, 0>(spacetime_metric).size()};
+  get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
+      input_gh_variables) = spacetime_metric;
+  get<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(input_gh_variables) =
+      pi;
+  get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
+      input_gh_variables) = phi;
+  // NOLINTNEXTLINE(performance-move-const-arg)
+  provided_data_.emplace_back(std::move(time_id),
+                              std::move(input_gh_variables));
 }
 
-boost::optional<std::tuple<TimeStepId, tnsr::aa<DataVector, 3>,
-                           tnsr::iaa<DataVector, 3>, tnsr::aa<DataVector, 3>>>
-GhLockstep::retrieve_and_remove_first_ready_gh_data() noexcept {
+auto GhLockstep::retrieve_and_remove_first_ready_gh_data() noexcept
+    -> boost::optional<std::tuple<TimeStepId, gh_variables>> {
   if (provided_data_.empty()) {
     return boost::none;
   }

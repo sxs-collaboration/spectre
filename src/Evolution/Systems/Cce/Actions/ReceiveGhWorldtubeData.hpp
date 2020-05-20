@@ -57,6 +57,7 @@ struct ReceiveGhWorldtubeData {
       const ArrayIndex& /*array_index*/, const TimeStepId& time,
       const tnsr::aa<DataVector, 3>& spacetime_metric,
       const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
+      const TimeStepId& next_time = TimeStepId{},
       const tnsr::aa<DataVector, 3>& dt_spacetime_metric =
           tnsr::aa<DataVector, 3>{},
       const tnsr::iaa<DataVector, 3>& dt_phi = tnsr::iaa<DataVector, 3>{},
@@ -65,11 +66,12 @@ struct ReceiveGhWorldtubeData {
     db::mutate<Tags::GhInterfaceManager>(
         make_not_null(&box),
         [&spacetime_metric, &phi, &pi, &dt_spacetime_metric, &dt_phi, &dt_pi,
-         &time, &cache](const gsl::not_null<
-                        std::unique_ptr<InterfaceManagers::GhInterfaceManager>*>
-                            interface_manager) noexcept {
+         &next_time, &time,
+         &cache](const gsl::not_null<
+                 std::unique_ptr<InterfaceManagers::GhInterfaceManager>*>
+                     interface_manager) noexcept {
           (*interface_manager)
-              ->insert_gh_data(time, spacetime_metric, phi, pi,
+              ->insert_gh_data(time, spacetime_metric, phi, pi, next_time,
                                dt_spacetime_metric, dt_phi, dt_pi);
           const auto gh_data =
               (*interface_manager)->retrieve_and_remove_first_ready_gh_data();
@@ -78,8 +80,7 @@ struct ReceiveGhWorldtubeData {
                 GhWorldtubeBoundary<Metavariables>, EvolutionComponent>>(
                 Parallel::get_parallel_component<
                     GhWorldtubeBoundary<Metavariables>>(cache),
-                get<0>(*gh_data), get<1>(*gh_data), get<2>(*gh_data),
-                get<3>(*gh_data));
+                get<0>(*gh_data), get<1>(*gh_data));
           }
         });
   }

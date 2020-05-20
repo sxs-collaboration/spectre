@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   Initialize/InverseCubic.cpp
   Initialize/NoIncomingRadiation.cpp
   Initialize/ZeroNonSmooth.cpp
+  InterfaceManagers/GhLocalTimeStepping.cpp
   InterfaceManagers/GhLockstep.cpp
   LinearOperators.cpp
   LinearSolve.cpp
