@@ -58,6 +58,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<Cce::Tags::BondiR>("R");
   TestHelpers::db::test_simple_tag<Cce::Tags::H5WorldtubeBoundaryDataManager>(
       "H5WorldtubeBoundaryDataManager");
+  TestHelpers::db::test_simple_tag<Cce::Tags::AnalyticBoundaryDataManager>(
+      "AnalyticBoundaryDataManager");
 
   auto box =
       db::create<db::AddSimpleTags<Cce::Tags::H5WorldtubeBoundaryDataManager>>(

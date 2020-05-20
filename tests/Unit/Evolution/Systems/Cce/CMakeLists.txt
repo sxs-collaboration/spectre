@@ -9,6 +9,7 @@ set(LIBRARY "Test_Cce")
 set(LIBRARY_SOURCES
   InterfaceManagers/Test_GhLocalTimeStepping.cpp
   InterfaceManagers/Test_GhLockstep.cpp
+  Test_AnalyticBoundaryDataManager.cpp
   Test_BoundaryData.cpp
   Test_Equations.cpp
   Test_GaugeTransformBoundaryData.cpp
