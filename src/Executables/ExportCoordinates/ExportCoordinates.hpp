@@ -80,13 +80,23 @@ struct ExportCoordinates {
     // Collect volume data
     // Remove tensor types, only storing individual components
     std::vector<TensorComponent> components;
-    components.reserve(Dim);
+    components.reserve(Dim + 1);
     for (size_t d = 0; d < Dim; d++) {
       components.emplace_back(element_name + "InertialCoordinates_" +
                                   inertial_coordinates.component_name(
                                       inertial_coordinates.get_tensor_index(d)),
                               inertial_coordinates.get(d));
     }
+    // Also output the determinant of the inverse jacobian, which measures
+    // the expansion and compression of the grid
+    const auto& det_inv_jac =
+        db::get<domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(
+            box);
+    components.emplace_back(
+        element_name +
+            db::tag_name<domain::Tags::DetInvJacobian<Frame::Logical,
+                                                      Frame::Inertial>>(),
+        get(det_inv_jac));
     // Send data to volume observer
     auto& local_observer =
         *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
@@ -119,7 +129,9 @@ struct Metavariables {
   static constexpr OptionString help{
       "Export the inertial coordinates of the Domain specified in the input "
       "file. The output can be used to compute initial data externally, for "
-      "instance."};
+      "instance. Also outputs the determinant of the inverse jacobian as a "
+      "diagnostic of Domain quality: values far from unity indicate "
+      "compression or expansion of the grid."};
 
   enum class Phase { Initialization, RegisterWithObserver, Export, Exit };
 
