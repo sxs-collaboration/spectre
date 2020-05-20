@@ -54,6 +54,12 @@ BinaryCompactObject::BinaryCompactObject(
         use_logarithmic_map_outer_spherical_shell,
     typename AdditionToOuterLayerRadialRefinementLevel::type
         addition_to_outer_layer_radial_refinement_level,
+    typename UseLogarithmicMapObjectA::type use_logarithmic_map_object_A,
+    typename AdditionToObjectARadialRefinementLevel::type
+        addition_to_object_A_radial_refinement_level,
+    typename UseLogarithmicMapObjectB::type use_logarithmic_map_object_B,
+    typename AdditionToObjectBRadialRefinementLevel::type
+        addition_to_object_B_radial_refinement_level,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
         time_dependence,
     const OptionContext& context)
@@ -78,6 +84,14 @@ BinaryCompactObject::BinaryCompactObject(
           std::move(use_logarithmic_map_outer_spherical_shell)),  // NOLINT
       addition_to_outer_layer_radial_refinement_level_(
           addition_to_outer_layer_radial_refinement_level),  // NOLINT
+      use_logarithmic_map_object_A_(
+          std::move(use_logarithmic_map_object_A)),  // NOLINT
+      addition_to_object_A_radial_refinement_level_(
+          addition_to_object_A_radial_refinement_level),  // NOLINT
+      use_logarithmic_map_object_B_(
+          std::move(use_logarithmic_map_object_B)),  // NOLINT
+      addition_to_object_B_radial_refinement_level_(
+          addition_to_object_B_radial_refinement_level),  // NOLINT
       time_dependence_(std::move(time_dependence)) {
   // Determination of parameters for domain construction:
   translation_ = 0.5 * (xcoord_object_B_ + xcoord_object_A_);
@@ -118,6 +132,22 @@ BinaryCompactObject::BinaryCompactObject(
     time_dependence_ =
         std::make_unique<domain::creators::time_dependence::None<3>>();
   }
+  if (use_logarithmic_map_object_A_ and not excise_interior_A_) {
+    PARSE_ERROR(
+        context,
+        "excise_interior_A must be true if use_logarithmic_map_object_A is "
+        "true; that is, using a logarithmically spaced radial grid in the part "
+        "of Layer 1 enveloping Object A requires excising the interior of "
+        "Object A");
+  }
+  if (use_logarithmic_map_object_B_ and not excise_interior_B_) {
+    PARSE_ERROR(
+        context,
+        "excise_interior_B must be true if use_logarithmic_map_object_B is "
+        "true; that is, using a logarithmically spaced radial grid in the part "
+        "of Layer 1 enveloping Object B requires excising the interior of "
+        "Object B");
+  }
 
   // Calculate number of blocks
   // Layers 1, 2, 3, 4, and 5 have 12, 12, 10, 10, and 10 blocks, respectively,
@@ -144,13 +174,15 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
   // ObjectA/B is on the left/right, respectively.
   Maps maps_center_A = wedge_coordinate_maps<Frame::Inertial>(
       inner_radius_object_A_, outer_radius_object_A_, inner_sphericity_A, 1.0,
-      use_equiangular_map_, xcoord_object_A_, false);
+      use_equiangular_map_, xcoord_object_A_, false, 1.0,
+      use_logarithmic_map_object_A_);
   Maps maps_cube_A = wedge_coordinate_maps<Frame::Inertial>(
       outer_radius_object_A_, sqrt(3.0) * 0.5 * length_inner_cube_, 1.0, 0.0,
       use_equiangular_map_, xcoord_object_A_, false);
   Maps maps_center_B = wedge_coordinate_maps<Frame::Inertial>(
       inner_radius_object_B_, outer_radius_object_B_, inner_sphericity_B, 1.0,
-      use_equiangular_map_, xcoord_object_B_, false);
+      use_equiangular_map_, xcoord_object_B_, false, 1.0,
+      use_logarithmic_map_object_B_);
   Maps maps_cube_B = wedge_coordinate_maps<Frame::Inertial>(
       outer_radius_object_B_, sqrt(3.0) * 0.5 * length_inner_cube_, 1.0, 0.0,
       use_equiangular_map_, xcoord_object_B_, false);
@@ -289,6 +321,28 @@ std::vector<std::array<size_t, 3>>
 BinaryCompactObject::initial_refinement_levels() const noexcept {
   std::vector<std::array<size_t, 3>> initial_levels{
       number_of_blocks_, make_array<3>(initial_refinement_)};
+  // Increase the radial refinement level of the blocks corresponding to the
+  // part of Layer 1 enveloping object A (block 0 through block 5, inclusive)
+  if (addition_to_object_A_radial_refinement_level_ > 0) {
+    for (size_t block = 0; block < 6; ++block) {
+      // Refine in the radial direction, which is direction 2
+      // (i.e. the zeta direction)
+      gsl::at(initial_levels[block], 2) +=
+          addition_to_object_A_radial_refinement_level_;
+    }
+  }
+
+  // Increase the radial refinement level of the blocks corresponding to the
+  // part of Layer 1 enveloping object B (block 12 through block 17, inclusive).
+  if (addition_to_object_B_radial_refinement_level_ > 0) {
+    for (size_t block = 12; block < 18; ++block) {
+      // Refine in the radial direction, which is direction 2
+      // (i.e. the zeta direction)
+      gsl::at(initial_levels[block], 2) +=
+          addition_to_object_B_radial_refinement_level_;
+    }
+  }
+
   // Increase the radial refinement of the blocks corresponding to the outer
   // spherical shell (with sphericity == 1 throughout) to achieve the desired
   // number of radial refinements. The outer layer consists of 10 blocks,

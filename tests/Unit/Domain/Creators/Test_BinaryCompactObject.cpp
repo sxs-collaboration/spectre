@@ -245,6 +245,7 @@ void test_bbh_2_outer_radial_refinements_linear_map_factory() {
           "    RadiusOuterSphere: 25.0\n"
           "    InitialRefinement: 2\n"
           "    InitialGridPoints: 6\n"
+          "    AdditionToObjectBRadialRefinementLevel: 2\n"
           "    UseEquiangularMap: true\n"
           "    AdditionToOuterLayerRadialRefinementLevel: 2\n");
   test_binary_compact_object_construction(
@@ -269,7 +270,9 @@ void test_bbh_3_outer_radial_refinements_log_map_factory() {
           "    InitialRefinement: 2\n"
           "    InitialGridPoints: 6\n"
           "    UseEquiangularMap: true\n"
-          "    UseLogarithmicMapOuterSphericalShell: true\n"
+          "    UseLogarithmicMapObjectA: true\n"
+          "    AdditionToObjectARadialRefinementLevel: 3\n"
+          "    UseLogarithmicMapObjectB: true\n"
           "    AdditionToOuterLayerRadialRefinementLevel: 3");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
