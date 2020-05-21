@@ -42,15 +42,15 @@ struct PrimitiveVar : db::SimpleTag {
 // Only analytic Dirichlet boundary conditions are supported right now,
 // so this is `MarkedAsAnalyticSolution`.
 struct BoundaryCondition : MarkAsAnalyticSolution {
-  tuples::TaggedTuple<Var> variables(const tnsr::I<DataVector, Dim>& /*x*/,
-                                     double /*t*/,
-                                     tmpl::list<Var> /*meta*/) const noexcept {
+  static tuples::TaggedTuple<Var> variables(
+      const tnsr::I<DataVector, Dim>& /*x*/, double /*t*/,
+      tmpl::list<Var> /*meta*/) noexcept {
     return tuples::TaggedTuple<Var>{Scalar<DataVector>{{{{30., 40., 50.}}}}};
   }
 
-  tuples::TaggedTuple<PrimitiveVar> variables(
+  static tuples::TaggedTuple<PrimitiveVar> variables(
       const tnsr::I<DataVector, Dim>& /*x*/, double /*t*/,
-      tmpl::list<PrimitiveVar> /*meta*/) const noexcept {
+      tmpl::list<PrimitiveVar> /*meta*/) noexcept {
     return tuples::TaggedTuple<PrimitiveVar>{
         Scalar<DataVector>{{{{15., 20., 25.}}}}};
   }
