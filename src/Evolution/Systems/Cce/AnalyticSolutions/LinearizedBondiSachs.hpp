@@ -351,8 +351,9 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    * \f$\beta = 0\f$ in this solution)
    *
    * \f{align*}{
-   * ds^2 =& - ((1 + r W) - r^2 h_{A B} U^A U^B) du^2 - 2  du dr \\
-   * &- 2 r^2 h_{A B} U^B du dx^A + r^2 h_{A B} dx^A dx^B,
+   * ds^2 =& - ((1 + r W) - r^2 h_{A B} U^A U^B) (dt - dr)^2
+   * - 2  (dt - dr) dr \\
+   * &- 2 r^2 h_{A B} U^B (dt - dr) dx^A + r^2 h_{A B} dx^A dx^B,
    * \f}
    *
    * where indices with capital letters refer to angular coordinates and the
@@ -360,11 +361,14 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    * gives the metric components,
    *
    * \f{align*}{
-   * g_{u u} &= -\left(1 + r W
-   * - r^2 \Re\left(\bar J U^2 + K U \bar U\right)\right)\ \
-   * g_{u r} &= -1\\
-   * g_{u \theta} &= r^2 \Re\left(K U + J \bar U\right)\\
-   * g_{u \phi} &= r^2 \Im\left(K U + J \bar U\right)\\
+   * g_{t t} &= -\left(1 + r W
+   * - r^2 \Re\left(\bar J U^2 + K U \bar U\right)\right)\\
+   * g_{t r} &= -1 - g_{t t}\\
+   * g_{r r} &= 2 + g_{t t}\\
+   * g_{t \theta} &= r^2 \Re\left(K U + J \bar U\right)\\
+   * g_{t \phi} &= r^2 \Im\left(K U + J \bar U\right)\\
+   * g_{r \theta} &= -g_{t \theta}\\
+   * g_{r \phi} &= -g_{t \phi}\\
    * g_{\theta \theta} &= r^2 \Re\left(J + K\right)\\
    * g_{\theta \phi} &= r^2 \Im\left(J\right)\\
    * g_{\phi \phi} &= r^2 \Re\left(K - J\right),
@@ -390,9 +394,9 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    * \f{align*}{
    * \partial_r g_{a b} dx^a dx^b =& - (W + r \partial_r W
    * - 2 r h_{A B} U^A U^B - r^2 (\partial_r h_{A B}) U^A U^B
-   * - 2 r^2 h_{A B} U^A \partial_r U^B) du^2 \\
+   * - 2 r^2 h_{A B} U^A \partial_r U^B) (dt - dr)^2 \\
    * &- (4 r h_{A B} U^B + 2 r^2 ((\partial_r h_{A B}) U^B
-   * + h_{AB} \partial_r U^B) ) du dx^A
+   * + h_{AB} \partial_r U^B) ) (dt - dr) dx^A
    * + (2 r h_{A B} + r^2 \partial_r h_{A B}) dx^A dx^B,
    * \f}
    *
@@ -401,13 +405,17 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    * gives the metric components,
    *
    * \f{align*}{
-   * \partial_r g_{u u} &= -\left( W + r \partial_r W
+   * \partial_r g_{t t} &= -\left( W + r \partial_r W
    *  - 2 r \Re\left(\bar J U^2 + K U \bar U\right)
    * - r^2 \partial_r \Re\left(\bar J U^2 + K U \bar U\right)\right) \\
-   * \partial_r g_{u \theta} &= 2 r \Re\left(K U + J \bar U\right)
+   * \partial_r g_{t r} &= -\partial_r g_{t t}\\
+   * \partial_r g_{t \theta} &= 2 r \Re\left(K U + J \bar U\right)
    *   + r^2 \partial_r \Re\left(K U + J \bar U\right) \\
-   * \partial_r g_{u \phi} &= 2r \Im\left(K U + J \bar U\right)
+   * \partial_r g_{t \phi} &= 2r \Im\left(K U + J \bar U\right)
    *   + r^2 \partial_r \Im\left(K U + J \bar U\right) \\
+   * \partial_r g_{r r} &= \partial_r g_{t t}\\
+   * \partial_r g_{r \theta} &= -\partial_r g_{t \theta}\\
+   * \partial_r g_{r \phi} &= -\partial_r g_{t \phi}\\
    * \partial_r g_{\theta \theta} &= 2 r \Re\left(J + K\right)
    *   + r^2 \Re\left(\partial_r J + \partial_r K\right) \\
    * \partial_r g_{\theta \phi} &= 2 r \Im\left(J\right)
@@ -437,8 +445,8 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    * \f{align*}{
    * \partial_t g_{a b} dx^a dx^b =& - (r \partial_u W
    * - r^2 \partial_u h_{A B} U^A U^B
-   * - 2 r^2 h_{A B} U^B \partial_u U^A) du^2 \\
-   * &- 2 r^2 (\partial_u h_{A B} U^B + h_{A B} \partial_u U^B) du dx^A
+   * - 2 r^2 h_{A B} U^B \partial_u U^A) (dt - dr)^2 \\
+   * &- 2 r^2 (\partial_u h_{A B} U^B + h_{A B} \partial_u U^B) (dt - dr) dx^A
    * + r^2 \partial_u h_{A B} dx^A dx^B,
    * \f}
    *
@@ -447,10 +455,14 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    * gives the metric components,
    *
    * \f{align*}{
-   * \partial_t g_{u u} &= -\left(r \partial_u W
+   * \partial_t g_{t t} &= -\left(r \partial_u W
    * - r^2 \partial_u \Re\left(\bar J U^2 + K U \bar U\right)\right)\\
-   * \partial_t g_{u \theta} &= r^2 \partial_u \Re\left(K U + J \bar U\right)\\
-   * \partial_t g_{u \phi} &= r^2 \partial_u \Im\left(K U + J \bar U\right)\\
+   * \partial_t g_{t r} &= -\partial_t g_{t t}\\
+   * \partial_t g_{t \theta} &= r^2 \partial_u \Re\left(K U + J \bar U\right)\\
+   * \partial_t g_{t \phi} &= r^2 \partial_u \Im\left(K U + J \bar U\right)\\
+   * \partial_t g_{r r} &= \partial_t g_{t t}\\
+   * \partial_t g_{r \theta} &= -\partial_t g_{t \theta}\\
+   * \partial_t g_{r \phi} &= -\partial_t g_{t \phi}\\
    * \partial_t g_{\theta \theta} &= r^2 \Re\left(\partial_u J
    *  + \partial_u K\right)\\
    * \partial_t g_{\theta \phi} &= r^2 \Im\left(\partial_u J\right)\\
