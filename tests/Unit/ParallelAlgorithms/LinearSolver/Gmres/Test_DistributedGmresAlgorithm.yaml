@@ -1,6 +1,17 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+# The test problem being solved here is a DG-discretized 1D Poisson equation
+# -u''(x) = f(x) on the interval [0, pi] with source f(x)=sin(x) and homogeneous
+# Dirichlet boundary conditions such that the solution is u(x)=sin(x) as well.
+#
+# Details:
+# - Domain decomposition: 2 elements with 3 LGL grid-points each
+# - "Primal" DG formulation (no auxiliary variable)
+# - Not multiplied by mass matrix so the operator is not symmetric
+# - Mass-lumping: inverse mass matrix is approximated by diagonal
+# - Internal penalty flux with sigma = 1.5 * (N_points - 1)^2 / h
+
 NumberOfElements: 2
 
 LinearOperator:
