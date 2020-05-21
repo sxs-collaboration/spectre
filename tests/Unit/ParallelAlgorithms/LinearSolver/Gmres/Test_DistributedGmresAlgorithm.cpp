@@ -28,8 +28,8 @@ struct Metavariables {
       "Test the GMRES linear solver algorithm on multiple elements"};
 
   using linear_solver =
-      LinearSolver::Gmres<Metavariables, helpers_distributed::fields_tag,
-                          ParallelGmres>;
+      LinearSolver::gmres::Gmres<Metavariables, helpers_distributed::fields_tag,
+                                 ParallelGmres>;
 
   using component_list = helpers_distributed::component_list<Metavariables>;
   using observed_reduction_data_tags =

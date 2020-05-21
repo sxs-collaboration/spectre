@@ -25,20 +25,17 @@ namespace tuples {
 template <typename...>
 class TaggedTuple;
 }  // namespace tuples
-namespace LinearSolver {
-namespace gmres_detail {
+namespace LinearSolver::gmres::detail {
 template <typename FieldsTag, typename OptionsGroup>
 struct NormalizeInitialOperand;
 template <typename FieldsTag, typename OptionsGroup>
 struct OrthogonalizeOperand;
 template <typename FieldsTag, typename OptionsGroup>
 struct NormalizeOperandAndUpdateField;
-}  // namespace gmres_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::gmres::detail
 /// \endcond
 
-namespace LinearSolver {
-namespace gmres_detail {
+namespace LinearSolver::gmres::detail {
 
 template <typename FieldsTag, typename OptionsGroup, typename BroadcastTarget>
 struct InitializeResidualMagnitude {
@@ -279,5 +276,4 @@ struct StoreFinalOrthogonalization {
   }
 };
 
-}  // namespace gmres_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::gmres::detail

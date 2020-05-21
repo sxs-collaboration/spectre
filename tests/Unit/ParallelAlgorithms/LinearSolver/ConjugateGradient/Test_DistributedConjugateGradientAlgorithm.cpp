@@ -28,7 +28,7 @@ struct Metavariables {
       "Test the conjugate gradient linear solver algorithm on multiple "
       "elements"};
 
-  using linear_solver = LinearSolver::ConjugateGradient<
+  using linear_solver = LinearSolver::cg::ConjugateGradient<
       Metavariables, typename helpers_distributed::fields_tag, ParallelCg>;
 
   using component_list = helpers_distributed::component_list<Metavariables>;

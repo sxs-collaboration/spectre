@@ -26,8 +26,8 @@ struct Metavariables {
       "Test the conjugate gradient linear solver algorithm"};
 
   using linear_solver =
-      LinearSolver::ConjugateGradient<Metavariables, helpers::fields_tag,
-                                      SerialCg>;
+      LinearSolver::cg::ConjugateGradient<Metavariables, helpers::fields_tag,
+                                          SerialCg>;
 
   using component_list = helpers::component_list<Metavariables>;
   using observed_reduction_data_tags =

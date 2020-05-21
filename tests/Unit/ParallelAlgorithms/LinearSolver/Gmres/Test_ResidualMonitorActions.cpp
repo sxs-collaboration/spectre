@@ -42,16 +42,14 @@ namespace Parallel {
 template <typename Metavariables>
 class ConstGlobalCache;
 }  // namespace Parallel
-namespace LinearSolver {
-namespace gmres_detail {
+namespace LinearSolver::gmres::detail {
 template <typename FieldsTag, typename OptionsGroup>
 struct NormalizeInitialOperand;
 template <typename FieldsTag, typename OptionsGroup>
 struct OrthogonalizeOperand;
 template <typename FieldsTag, typename OptionsGroup>
 struct NormalizeOperandAndUpdateField;
-}  // namespace gmres_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::gmres::detail
 
 namespace helpers = ResidualMonitorActionsTestHelpers;
 
@@ -89,19 +87,19 @@ using check_tags = tmpl::list<CheckValueTag, CheckVectorTag, CheckConvergedTag>;
 template <typename Metavariables>
 struct MockResidualMonitor {
   using component_being_mocked =
-      LinearSolver::gmres_detail::ResidualMonitor<Metavariables, fields_tag,
-                                                  TestLinearSolver>;
+      LinearSolver::gmres::detail::ResidualMonitor<Metavariables, fields_tag,
+                                                   TestLinearSolver>;
   using metavariables = Metavariables;
   // We represent the singleton as an array with only one element for the action
   // testing framework
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tags =
-      typename LinearSolver::gmres_detail::ResidualMonitor<
+      typename LinearSolver::gmres::detail::ResidualMonitor<
           Metavariables, fields_tag, TestLinearSolver>::const_global_cache_tags;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<LinearSolver::gmres_detail::InitializeResidualMonitor<
+      tmpl::list<LinearSolver::gmres::detail::InitializeResidualMonitor<
           fields_tag, TestLinearSolver>>>>;
 };
 
@@ -180,11 +178,11 @@ struct MockElementArray {
       tmpl::list<ActionTesting::InitializeDataBox<check_tags>>>>;
 
   using replace_these_simple_actions =
-      tmpl::list<LinearSolver::gmres_detail::NormalizeInitialOperand<
+      tmpl::list<LinearSolver::gmres::detail::NormalizeInitialOperand<
                      fields_tag, TestLinearSolver>,
-                 LinearSolver::gmres_detail::OrthogonalizeOperand<
+                 LinearSolver::gmres::detail::OrthogonalizeOperand<
                      fields_tag, TestLinearSolver>,
-                 LinearSolver::gmres_detail::NormalizeOperandAndUpdateField<
+                 LinearSolver::gmres::detail::NormalizeOperandAndUpdateField<
                      fields_tag, TestLinearSolver>>;
   using with_these_simple_actions =
       tmpl::list<MockNormalizeInitialOperand, MockOrthogonalizeOperand,
@@ -249,7 +247,7 @@ SPECTRE_TEST_CASE(
   SECTION("InitializeResidualMagnitude") {
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::InitializeResidualMagnitude<
+        LinearSolver::gmres::detail::InitializeResidualMagnitude<
             fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 2.);
     ActionTesting::invoke_queued_threaded_action<observer_writer>(
@@ -284,7 +282,7 @@ SPECTRE_TEST_CASE(
   SECTION("InitializeResidualMagnitudeAndConverge") {
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::InitializeResidualMagnitude<
+        LinearSolver::gmres::detail::InitializeResidualMagnitude<
             fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 0.);
     ActionTesting::invoke_queued_simple_action<element_array>(
@@ -308,13 +306,13 @@ SPECTRE_TEST_CASE(
   SECTION("StoreOrthogonalization") {
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::InitializeResidualMagnitude<
+        LinearSolver::gmres::detail::InitializeResidualMagnitude<
             fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 1.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::gmres_detail::StoreOrthogonalization<
+        residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 2.);
     ActionTesting::invoke_queued_simple_action<element_array>(
@@ -332,7 +330,7 @@ SPECTRE_TEST_CASE(
   SECTION("StoreFinalOrthogonalization") {
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::InitializeResidualMagnitude<
+        LinearSolver::gmres::detail::InitializeResidualMagnitude<
             fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 2.);
     ActionTesting::invoke_queued_threaded_action<observer_writer>(
@@ -340,7 +338,7 @@ SPECTRE_TEST_CASE(
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::gmres_detail::StoreOrthogonalization<
+        residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 3.);
     ActionTesting::invoke_queued_simple_action<element_array>(
@@ -354,7 +352,7 @@ SPECTRE_TEST_CASE(
     CHECK(get_residual_monitor_tag(orthogonalization_iteration_id_tag{}) == 1);
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::StoreFinalOrthogonalization<
+        LinearSolver::gmres::detail::StoreFinalOrthogonalization<
             fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 4.);
     ActionTesting::invoke_queued_threaded_action<observer_writer>(
@@ -402,20 +400,20 @@ SPECTRE_TEST_CASE(
   SECTION("ConvergeByAbsoluteResidual") {
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::InitializeResidualMagnitude<
+        LinearSolver::gmres::detail::InitializeResidualMagnitude<
             fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 2.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::gmres_detail::StoreOrthogonalization<
+        residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 1.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::StoreFinalOrthogonalization<
+        LinearSolver::gmres::detail::StoreFinalOrthogonalization<
             fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 0.);
     ActionTesting::invoke_queued_simple_action<element_array>(
@@ -446,40 +444,40 @@ SPECTRE_TEST_CASE(
   SECTION("ConvergeByMaxIterations") {
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::InitializeResidualMagnitude<
+        LinearSolver::gmres::detail::InitializeResidualMagnitude<
             fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 1.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     // Perform 2 mock iterations
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::gmres_detail::StoreOrthogonalization<
+        residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 1.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::StoreFinalOrthogonalization<
+        LinearSolver::gmres::detail::StoreFinalOrthogonalization<
             fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 4.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::gmres_detail::StoreOrthogonalization<
+        residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 3.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::gmres_detail::StoreOrthogonalization<
+        residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 4.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::StoreFinalOrthogonalization<
+        LinearSolver::gmres::detail::StoreFinalOrthogonalization<
             fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 25.);
     ActionTesting::invoke_queued_simple_action<element_array>(
@@ -509,20 +507,20 @@ SPECTRE_TEST_CASE(
   SECTION("ConvergeByRelativeResidual") {
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::InitializeResidualMagnitude<
+        LinearSolver::gmres::detail::InitializeResidualMagnitude<
             fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 2.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::gmres_detail::StoreOrthogonalization<
+        residual_monitor, LinearSolver::gmres::detail::StoreOrthogonalization<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 3.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
         residual_monitor,
-        LinearSolver::gmres_detail::StoreFinalOrthogonalization<
+        LinearSolver::gmres::detail::StoreFinalOrthogonalization<
             fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 1.);
     ActionTesting::invoke_queued_simple_action<element_array>(

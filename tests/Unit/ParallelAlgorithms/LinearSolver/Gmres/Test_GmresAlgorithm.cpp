@@ -26,7 +26,8 @@ struct Metavariables {
       "Test the GMRES linear solver algorithm"};
 
   using linear_solver =
-      LinearSolver::Gmres<Metavariables, helpers::fields_tag, SerialGmres>;
+      LinearSolver::gmres::Gmres<Metavariables, helpers::fields_tag,
+                                 SerialGmres>;
 
   using component_list = helpers::component_list<Metavariables>;
   using observed_reduction_data_tags =

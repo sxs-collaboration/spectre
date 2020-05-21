@@ -28,16 +28,13 @@ namespace tuples {
 template <typename...>
 class TaggedTuple;
 }  // namespace tuples
-namespace LinearSolver {
-namespace cg_detail {
+namespace LinearSolver::cg::detail {
 template <typename Metavariables, typename FieldsTag, typename OptionsGroup>
 struct ResidualMonitor;
-}  // namespace cg_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::cg::detail
 /// \endcond
 
-namespace LinearSolver {
-namespace cg_detail {
+namespace LinearSolver::cg::detail {
 
 template <typename FieldsTag, typename OptionsGroup>
 struct PrepareSolve {
@@ -79,8 +76,8 @@ struct PrepareSolve {
     // Perform global reduction to compute initial residual magnitude square for
     // residual monitor
     const auto& residual = get<residual_tag>(box);
-    Parallel::contribute_to_reduction<cg_detail::InitializeResidual<
-        FieldsTag, OptionsGroup, ParallelComponent>>(
+    Parallel::contribute_to_reduction<
+        InitializeResidual<FieldsTag, OptionsGroup, ParallelComponent>>(
         Parallel::ReductionData<
             Parallel::ReductionDatum<double, funcl::Plus<>>>{
             inner_product(residual, residual)},
@@ -272,5 +269,4 @@ struct UpdateOperand {
   }
 };
 
-}  // namespace cg_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::cg::detail

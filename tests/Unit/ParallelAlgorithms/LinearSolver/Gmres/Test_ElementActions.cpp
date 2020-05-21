@@ -57,12 +57,12 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<VectorTag>>,
-                     LinearSolver::gmres_detail::InitializeElement<
+                     LinearSolver::gmres::detail::InitializeElement<
                          fields_tag, DummyOptionsGroup>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing,
-                             tmpl::list<LinearSolver::gmres_detail::PrepareStep<
-                                 fields_tag, DummyOptionsGroup>>>>;
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          tmpl::list<LinearSolver::gmres::detail::PrepareStep<
+              fields_tag, DummyOptionsGroup>>>>;
 };
 
 struct Metavariables {
@@ -129,7 +129,7 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
             std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
                                              DenseVector<double>(3, 1.5)});
     ActionTesting::simple_action<
-        element_array, LinearSolver::gmres_detail::NormalizeInitialOperand<
+        element_array, LinearSolver::gmres::detail::NormalizeInitialOperand<
                            fields_tag, DummyOptionsGroup>>(
         make_not_null(&runner), 0, 4.,
         Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.});
@@ -148,7 +148,7 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Gmres.ElementActions",
     ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
     ActionTesting::simple_action<
         element_array,
-        LinearSolver::gmres_detail::NormalizeOperandAndUpdateField<
+        LinearSolver::gmres::detail::NormalizeOperandAndUpdateField<
             fields_tag, DummyOptionsGroup>>(
         make_not_null(&runner), 0, 4., DenseVector<double>{2., 4.},
         Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.});
