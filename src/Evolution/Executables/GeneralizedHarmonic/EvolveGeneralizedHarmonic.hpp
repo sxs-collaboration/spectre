@@ -27,12 +27,16 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
+#include "Evolution/NumericInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/InitializeDampedHarmonic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Initialize.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/UpwindPenaltyCorrection.hpp"
+#include "Evolution/TypeTraits.hpp"
+#include "IO/Importers/ElementActions.hpp"
+#include "IO/Importers/VolumeDataReader.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -118,15 +122,21 @@ class CProxy_ConstGlobalCache;
 }  // namespace Parallel
 /// \endcond
 
+template <typename InitialData, typename BoundaryConditions>
 struct EvolutionMetavars {
   static constexpr int volume_dim = 3;
   using frame = Frame::Inertial;
   using system = GeneralizedHarmonic::System<volume_dim>;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
-  using initial_data_tag = Tags::AnalyticSolution<
-      GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>>;
-  using boundary_condition_tag = initial_data_tag;
+  using initial_data = InitialData;
+  using boundary_conditions = BoundaryConditions;
+  // Only Dirichlet boundary conditions imposed by an analytic solution are
+  // supported right now.
+  using analytic_solution = boundary_conditions;
+  using analytic_solution_tag = Tags::AnalyticSolution<boundary_conditions>;
+  using boundary_condition_tag = analytic_solution_tag;
+
   using normal_dot_numerical_flux = Tags::NumericalFlux<
       GeneralizedHarmonic::UpwindPenaltyCorrection<volume_dim>>;
 
@@ -233,14 +243,14 @@ struct EvolutionMetavars {
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
   // metavariables
   using const_global_cache_tags =
-      tmpl::list<initial_data_tag, normal_dot_numerical_flux, time_stepper_tag,
-                 Tags::EventsAndTriggers<events, triggers>>;
+      tmpl::list<analytic_solution_tag, normal_dot_numerical_flux,
+                 time_stepper_tag, Tags::EventsAndTriggers<events, triggers>>;
 
   struct ObservationType {};
   using element_observation_type = ObservationType;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-      tmpl::push_back<Event<observation_events>::creatable_classes,
+      tmpl::push_back<typename Event<observation_events>::creatable_classes,
                       typename AhA::post_horizon_find_callback>>;
 
   using step_actions = tmpl::flatten<tmpl::list<
@@ -268,6 +278,9 @@ struct EvolutionMetavars {
 
   enum class Phase {
     Initialization,
+    RegisterWithVolumeDataReader,
+    ImportInitialData,
+    InitializeInitialDataDependentQuantities,
     InitializeTimeStepperHistory,
     Register,
     Evolve,
@@ -278,8 +291,10 @@ struct EvolutionMetavars {
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       evolution::dg::Initialization::Domain<volume_dim>,
       Initialization::Actions::NonconservativeSystem,
-      evolution::Initialization::Actions::SetVariables<
-          domain::Tags::Coordinates<volume_dim, Frame::Logical>>,
+      std::conditional_t<
+          evolution::is_numeric_initial_data_v<initial_data>, tmpl::list<>,
+          evolution::Initialization::Actions::SetVariables<
+              domain::Tags::Coordinates<volume_dim, Frame::Logical>>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       dg::Actions::InitializeInterfaces<
@@ -319,42 +334,61 @@ struct EvolutionMetavars {
           true, true>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<evolution::Tags::AnalyticCompute<
-              volume_dim, initial_data_tag, analytic_solution_fields>>>,
-      GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
-          volume_dim>,
-      GeneralizedHarmonic::Actions::InitializeConstraints<volume_dim>,
+              volume_dim, analytic_solution_tag, analytic_solution_fields>>>,
       dg::Actions::InitializeMortars<boundary_scheme, true>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
-  using component_list = tmpl::list<
+  using initialize_initial_data_dependent_quantities_actions = tmpl::list<
+      GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
+          volume_dim>,
+      GeneralizedHarmonic::Actions::InitializeConstraints<volume_dim>,
+      Parallel::Actions::TerminatePhase>;
+
+  using component_list = tmpl::flatten<tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       intrp::Interpolator<EvolutionMetavars>,
       intrp::InterpolationTarget<EvolutionMetavars, AhA>,
+      std::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
+                         importers::VolumeDataReader<EvolutionMetavars>,
+                         tmpl::list<>>,
       DgElementArray<
           EvolutionMetavars,
-          tmpl::list<
+          tmpl::flatten<tmpl::list<
               Parallel::PhaseActions<Phase, Phase::Initialization,
                                      initialization_actions>,
-
+              std::conditional_t<
+                  evolution::is_numeric_initial_data_v<initial_data>,
+                  Parallel::PhaseActions<
+                      Phase, Phase::RegisterWithVolumeDataReader,
+                      tmpl::list<
+                          importers::Actions::RegisterWithVolumeDataReader,
+                          Parallel::Actions::TerminatePhase>>,
+                  tmpl::list<>>,
+              Parallel::PhaseActions<
+                  Phase, Phase::InitializeInitialDataDependentQuantities,
+                  initialize_initial_data_dependent_quantities_actions>,
               Parallel::PhaseActions<
                   Phase, Phase::InitializeTimeStepperHistory,
                   SelfStart::self_start_procedure<step_actions>>,
-
               Parallel::PhaseActions<
                   Phase, Phase::Register,
                   tmpl::flatten<tmpl::list<
-                             intrp::Actions::RegisterElementWithInterpolator,
-                             observers::Actions::RegisterWithObservers<
-                                 observers::RegisterObservers<
-                                     Tags::Time, element_observation_type>>,
-                             Parallel::Actions::TerminatePhase>>>,
+                      intrp::Actions::RegisterElementWithInterpolator,
+                      observers::Actions::RegisterWithObservers<
+                          observers::RegisterObservers<
+                              Tags::Time, element_observation_type>>,
+                      Parallel::Actions::TerminatePhase>>>,
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,
                   tmpl::list<Actions::RunEventsAndTriggers,
-                             Actions::ChangeSlabSize,
-                             step_actions, Actions::AdvanceTime>>>>>;
+                             Actions::ChangeSlabSize, step_actions,
+                             Actions::AdvanceTime>>>>,
+          std::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
+                             ImportNumericInitialData<
+                                 Phase, Phase::ImportInitialData, initial_data>,
+                             ImportNoInitialData>>>>;
 
   static constexpr OptionString help{
       "Evolve a generalized harmonic analytic solution.\n\n"
@@ -367,6 +401,14 @@ struct EvolutionMetavars {
           EvolutionMetavars>& /*cache_proxy*/) noexcept {
     switch (current_phase) {
       case Phase::Initialization:
+        return evolution::is_numeric_initial_data_v<initial_data>
+                   ? Phase::RegisterWithVolumeDataReader
+                   : Phase::InitializeInitialDataDependentQuantities;
+      case Phase::RegisterWithVolumeDataReader:
+        return Phase::ImportInitialData;
+      case Phase::ImportInitialData:
+        return Phase::InitializeInitialDataDependentQuantities;
+      case Phase::InitializeInitialDataDependentQuantities:
         return Phase::InitializeTimeStepperHistory;
       case Phase::InitializeTimeStepperHistory:
         return Phase::Register;

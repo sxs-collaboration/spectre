@@ -22,6 +22,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -38,16 +39,18 @@ struct PrimitiveVar : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
-struct BoundaryCondition {
-  tuples::TaggedTuple<Var> variables(const tnsr::I<DataVector, Dim>& /*x*/,
-                                     double /*t*/,
-                                     tmpl::list<Var> /*meta*/) const noexcept {
+// Only analytic Dirichlet boundary conditions are supported right now,
+// so this is `MarkedAsAnalyticSolution`.
+struct BoundaryCondition : MarkAsAnalyticSolution {
+  static tuples::TaggedTuple<Var> variables(
+      const tnsr::I<DataVector, Dim>& /*x*/, double /*t*/,
+      tmpl::list<Var> /*meta*/) noexcept {
     return tuples::TaggedTuple<Var>{Scalar<DataVector>{{{{30., 40., 50.}}}}};
   }
 
-  tuples::TaggedTuple<PrimitiveVar> variables(
+  static tuples::TaggedTuple<PrimitiveVar> variables(
       const tnsr::I<DataVector, Dim>& /*x*/, double /*t*/,
-      tmpl::list<PrimitiveVar> /*meta*/) const noexcept {
+      tmpl::list<PrimitiveVar> /*meta*/) noexcept {
     return tuples::TaggedTuple<PrimitiveVar>{
         Scalar<DataVector>{{{{15., 20., 25.}}}}};
   }
@@ -111,7 +114,6 @@ struct Metavariables {
   using component_list = tmpl::list<component<Metavariables>>;
 
   using boundary_condition_tag = BoundaryConditionTag;
-  using initial_data_tag = boundary_condition_tag;
   enum class Phase { Initialization, Testing, Exit };
 };
 
