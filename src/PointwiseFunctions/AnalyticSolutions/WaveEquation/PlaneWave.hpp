@@ -54,6 +54,7 @@ namespace Solutions {
 template <size_t Dim>
 class PlaneWave : public MarkAsAnalyticSolution {
  public:
+  static constexpr size_t volume_dim = Dim;
   struct WaveVector {
     using type = std::array<double, Dim>;
     static constexpr OptionString help = {

@@ -65,6 +65,7 @@ namespace Solutions {
  */
 class RegularSphericalWave : public MarkAsAnalyticSolution {
  public:
+  static constexpr size_t volume_dim = 3;
   struct Profile {
     using type = std::unique_ptr<MathFunction<1>>;
     static constexpr OptionString help = {
