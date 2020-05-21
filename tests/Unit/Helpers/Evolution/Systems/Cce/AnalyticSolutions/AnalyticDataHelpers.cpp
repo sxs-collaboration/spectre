@@ -273,4 +273,5 @@ extract_dr_bondi_scalars_from_cartesian_metric(
                                 (get<2, 3>(inverse_spherical_metric)));
   return {dr_bondi_beta, dr_bondi_u, dr_bondi_w, dr_bondi_j};
 }
+
 }  // namespace Cce::Solutions::TestHelpers

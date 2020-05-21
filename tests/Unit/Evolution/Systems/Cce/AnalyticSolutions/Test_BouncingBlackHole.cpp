@@ -15,6 +15,7 @@
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/Evolution/Systems/Cce/AnalyticSolutions/AnalyticDataHelpers.hpp"
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
@@ -298,99 +299,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.BouncingBlackHole",
     CHECK(approx(val) == extraction_radius);
   }
 
-  // check the 3+1 quantities are computed correctly in the abstract base class
-  // `WorldtubeData`
-  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(boundary_tuple);
-  const auto& shift =
-      get<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(boundary_tuple);
-  const auto& spatial_metric =
-      get<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>(
-          boundary_tuple);
-
-  const auto expected_spatial_metric =
-      gr::spatial_metric(mapped_schwarzschild_metric);
-  const auto expected_inverse_spatial_metric =
-      determinant_and_inverse(expected_spatial_metric).second;
-  const auto expected_shift =
-      gr::shift(mapped_schwarzschild_metric, expected_inverse_spatial_metric);
-  const auto expected_lapse =
-      gr::lapse(expected_shift, mapped_schwarzschild_metric);
-  CHECK_ITERABLE_APPROX(spatial_metric, expected_spatial_metric);
-  CHECK_ITERABLE_APPROX(shift, expected_shift);
-  CHECK_ITERABLE_APPROX(lapse, expected_lapse);
-
-  const auto& pi =
-      get<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(boundary_tuple);
-  const auto dt_spacetime_metric_from_pi =
-      GeneralizedHarmonic::time_derivative_of_spacetime_metric(
-          expected_lapse, expected_shift, pi, d_spacetime_metric);
-  CHECK_ITERABLE_APPROX(dt_spacetime_metric, dt_spacetime_metric_from_pi);
-
-  const auto& dt_lapse =
-      get<::Tags::dt<gr::Tags::Lapse<DataVector>>>(boundary_tuple);
-  const auto& dt_shift =
-      get<::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>(
-          boundary_tuple);
-  const auto& dt_spatial_metric = get<
-      ::Tags::dt<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>(
-      boundary_tuple);
-  const auto expected_dt_spatial_metric =
-      GeneralizedHarmonic::time_deriv_of_spatial_metric(
-          expected_lapse, expected_shift, d_spacetime_metric, pi);
-  const auto expected_spacetime_unit_normal =
-      gr::spacetime_normal_vector(expected_lapse, expected_shift);
-  const auto expected_dt_lapse = GeneralizedHarmonic::time_deriv_of_lapse(
-      expected_lapse, expected_shift, expected_spacetime_unit_normal,
-      d_spacetime_metric, pi);
-  const auto expected_dt_shift = GeneralizedHarmonic::time_deriv_of_shift(
-      expected_lapse, expected_shift, expected_inverse_spatial_metric,
-      expected_spacetime_unit_normal, d_spacetime_metric, pi);
-  CHECK_ITERABLE_APPROX(dt_lapse, expected_dt_lapse);
-  CHECK_ITERABLE_APPROX(dt_shift, expected_dt_shift);
-  CHECK_ITERABLE_APPROX(dt_spatial_metric, expected_dt_spatial_metric);
-
-  const auto& dr_lapse =
-      get<Tags::Dr<gr::Tags::Lapse<DataVector>>>(boundary_tuple);
-  const auto& dr_shift =
-      get<Tags::Dr<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>(
-          boundary_tuple);
-  const auto& dr_spatial_metric =
-      get<Tags::Dr<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>(
-          boundary_tuple);
-  const auto expected_spatial_derivative_of_lapse =
-      GeneralizedHarmonic::spatial_deriv_of_lapse(
-          expected_lapse, expected_spacetime_unit_normal, d_spacetime_metric);
-  const auto expected_inverse_spacetime_metric = gr::inverse_spacetime_metric(
-      expected_lapse, expected_shift, expected_inverse_spatial_metric);
-  const auto expected_spatial_derivative_of_shift =
-      GeneralizedHarmonic::spatial_deriv_of_shift(
-          expected_lapse, expected_inverse_spacetime_metric,
-          expected_spacetime_unit_normal, d_spacetime_metric);
-  DataVector expected_buffer =
-      get<0>(dr_cartesian_coordinates) *
-          get<0>(expected_spatial_derivative_of_lapse) +
-      get<1>(dr_cartesian_coordinates) *
-          get<1>(expected_spatial_derivative_of_lapse) +
-      get<2>(dr_cartesian_coordinates) *
-          get<2>(expected_spatial_derivative_of_lapse);
-  CHECK_ITERABLE_APPROX(expected_buffer, get(dr_lapse));
-  for (size_t i = 0; i < 3; ++i) {
-    expected_buffer = get<0>(dr_cartesian_coordinates) *
-                          expected_spatial_derivative_of_shift.get(0, i) +
-                      get<1>(dr_cartesian_coordinates) *
-                          expected_spatial_derivative_of_shift.get(1, i) +
-                      get<2>(dr_cartesian_coordinates) *
-                          expected_spatial_derivative_of_shift.get(2, i);
-    CHECK_ITERABLE_APPROX(expected_buffer, dr_shift.get(i));
-    for (size_t j = i; j < 3; ++j) {
-      expected_buffer = get<0>(dr_cartesian_coordinates) *
-                            d_spacetime_metric.get(0, i + 1, j + 1) +
-                        get<1>(dr_cartesian_coordinates) *
-                            d_spacetime_metric.get(1, i + 1, j + 1) +
-                        get<2>(dr_cartesian_coordinates) *
-                            d_spacetime_metric.get(2, i + 1, j + 1);
-      CHECK_ITERABLE_APPROX(expected_buffer, dr_spatial_metric.get(i, j));
-    }
-  }
+  Solutions::TestHelpers::check_adm_metric_quantities(
+      boundary_tuple, mapped_schwarzschild_metric, dt_spacetime_metric,
+      d_spacetime_metric);
 }
 }  // namespace Cce
