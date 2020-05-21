@@ -214,6 +214,7 @@ struct WriteReductionData {
                     std::vector<std::string>&& reduction_names,
                     Parallel::ReductionData<ReductionDatums...>&&
                         in_reduction_data) noexcept {
+    // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
     CmiNodeLock file_lock;
     bool write_to_disk = false;
     std::vector<std::string> legend{};

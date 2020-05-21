@@ -335,6 +335,7 @@ std::pair<Convergence::HasConverged, VarsType> Gmres<VarsType>::operator()(
                               i);
     }
   }
+  // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
   return {std::move(has_converged), std::move(result)};
 }
 

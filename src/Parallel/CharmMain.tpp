@@ -111,11 +111,11 @@ void register_init_node_and_proc() noexcept {
   done_registration = true;
   // We explicitly register custom reducer functions first.
   _registerInitCall(register_custom_reducer_functions, 1);
-  for (auto& init_node_func : charm_init_node_funcs) {
+  for (const auto& init_node_func : charm_init_node_funcs) {
     _registerInitCall(*init_node_func, 1);
   }
 
-  for (auto& init_proc_func : charm_init_proc_funcs) {
+  for (const auto& init_proc_func : charm_init_proc_funcs) {
     _registerInitCall(*init_proc_func, 0);
   }
 }

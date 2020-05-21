@@ -101,6 +101,7 @@ inline void call_printer(Printer&& printer, const std::string& format,
  */
 template <typename... Args>
 inline void printf(const std::string& format, Args&&... args) {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
   detail::call_printer([](auto... a) noexcept { CkPrintf(a...); }, format,
                        std::forward<Args>(args)...);
 }
