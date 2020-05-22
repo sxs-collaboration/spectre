@@ -45,13 +45,15 @@ double min_characteristic_speed(
   return *std::min_element(min_speeds.begin(), min_speeds.end());
 }
 }  // namespace BoundaryConditions_detail
+
 /// \ingroup ActionsGroup
 /// \ingroup DiscontinuousGalerkinGroup
 /// \brief Packages data on external boundaries for calculating numerical flux.
 /// Computes contributions on the interior side from the volume, and imposes
 /// Dirichlet boundary conditions on the exterior side. Optionally, instead do
-/// nothing if all characteristic speeds are outgoing and the system is
-/// nonconservative.
+/// nothing if all characteristic speeds (specifically, the characteristic
+/// speeds computed numerically on the interior side of the external boundary)
+/// are outgoing and the system is nonconservative.
 ///
 /// With:
 /// - External<Tag> =
@@ -74,8 +76,7 @@ double min_characteristic_speed(
 ///      - External<typename system::variables_tag>
 ///
 /// \see ReceiveDataForFluxes
-template <typename Metavariables,
-          bool ApplyUnlessOnlyOutgoingCharSpeeds = false>
+template <typename Metavariables, bool SkipBCWhenCharSpeedsAllOutgoing = false>
 struct ImposeDirichletBoundaryConditions {
  private:
   // BoundaryConditionMethod and BcSelector are used to select exactly how to
@@ -146,7 +147,7 @@ struct ImposeDirichletBoundaryConditions {
             auto& direction = external_direction_and_vars.first;
             auto& vars = external_direction_and_vars.second;
 
-            if (ApplyUnlessOnlyOutgoingCharSpeeds) {
+            if (SkipBCWhenCharSpeedsAllOutgoing) {
               // Do nothing if char speeds are all outgoing (i.e., all positive)
               const auto& char_speeds = boundary_char_speeds.at(direction);
               if (BoundaryConditions_detail::min_characteristic_speed<
