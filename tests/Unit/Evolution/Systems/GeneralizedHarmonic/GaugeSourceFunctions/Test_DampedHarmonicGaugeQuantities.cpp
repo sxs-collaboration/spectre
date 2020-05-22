@@ -117,7 +117,7 @@ void test_options() noexcept {
 }
 
 template <size_t SpatialDim, typename Frame, typename DataType>
-void test_detail_functions(const DataType& used_for_size) noexcept {
+void test_rollon_function(const DataType& used_for_size) noexcept {
   // roll_on_function
   pypp::check_with_random_values<1>(
       &::GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail::
@@ -136,9 +136,6 @@ void test_detail_functions(const DataType& used_for_size) noexcept {
       {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
 }
 
-//
-//  Tests of the damped harmonic gauge source function
-//
 // Wrap `DampedHarmonicHCompute::function` here to make its time
 // argument a double, allowing for `pypp::check_with_random_values` to work.
 template <size_t SpatialDim, typename Frame>
@@ -151,35 +148,36 @@ tnsr::a<DataVector, SpatialDim, Frame> wrap_DampedHarmonicHCompute(
     const double t, const double t_start, const double sigma_t,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double sigma_r) noexcept {
-  return GeneralizedHarmonic::gauges::DampedHarmonicHCompute<
-      SpatialDim, Frame>::function(gauge_h_init, lapse, shift,
-                                   sqrt_det_spatial_metric, spacetime_metric, t,
-                                   t_start, sigma_t, coords, sigma_r);
+  tnsr::a<DataVector, SpatialDim, Frame> gauge_h{};
+  tnsr::ab<DataVector, SpatialDim, Frame> d4_gauge_h{};
+  const auto dgauge_h_init =
+      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame>>(lapse, 0.);
+  const auto spacetime_unit_normal_one_form =
+      gr::spacetime_normal_one_form<SpatialDim, Frame, DataVector>(lapse);
+  const auto pi =
+      make_with_value<tnsr::aa<DataVector, SpatialDim, Frame>>(lapse, 0.);
+  const auto phi =
+      make_with_value<tnsr::iaa<DataVector, SpatialDim, Frame>>(lapse, 0.);
+  auto inverse_spatial_metric =
+      make_with_value<tnsr::II<DataVector, SpatialDim, Frame>>(lapse, 0.);
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    inverse_spatial_metric.get(i, i) = 1.;
+  }
+  GeneralizedHarmonic::gauges::damped_harmonic(
+      make_not_null(&gauge_h), make_not_null(&d4_gauge_h), gauge_h_init,
+      dgauge_h_init, lapse, shift, spacetime_unit_normal_one_form,
+      sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi,
+      phi, t, coords, 1., 1.,
+      1.,                // amp_coef_{L1, L2, S}
+      4, 4, 4,           // exp_{L1, L2, S}
+      t_start, sigma_t,  // _h_init
+      t_start, sigma_t,  // _L1
+      t_start, sigma_t,  // _L2
+      t_start, sigma_t,  // _S
+      sigma_r);
+  return gauge_h;
 }
 
-// Compare with Python implementation
-template <size_t SpatialDim, typename Frame>
-void test_damped_harmonic_h_function(const DataVector& used_for_size) noexcept {
-  // H_a
-  pypp::check_with_random_values<1>(
-      static_cast<tnsr::a<DataVector, SpatialDim, Frame> (*)(
-          const tnsr::a<DataVector, SpatialDim, Frame>&,
-          const Scalar<DataVector>&,
-          const tnsr::I<DataVector, SpatialDim, Frame>&,
-          const Scalar<DataVector>&,
-          const tnsr::aa<DataVector, SpatialDim, Frame>&, const double,
-          const double, const double,
-          const tnsr::I<DataVector, SpatialDim, Frame>&, const double)>(
-          &wrap_DampedHarmonicHCompute<SpatialDim, Frame>),
-      "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
-      "DampedHarmonic",
-      "damped_harmonic_gauge_source_function",
-      {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
-}
-
-//
-//  Tests of spacetime derivatives of the damped harmonic gauge source function
-//
 // Wrap `SpacetimeDerivDampedHarmonicHCompute::function` here to make its time
 // argument a double, allowing for `pypp::check_with_random_values` to work.
 template <size_t SpatialDim, typename Frame>
@@ -199,36 +197,69 @@ wrap_SpacetimeDerivDampedHarmonicHCompute(
     const double t_start, const double sigma_t,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double sigma_r) noexcept {
-  return GeneralizedHarmonic::gauges::SpacetimeDerivDampedHarmonicHCompute<
-      SpatialDim, Frame>::function(gauge_h_init, dgauge_h_init, lapse, shift,
-                                   spacetime_unit_normal_one_form,
-                                   sqrt_det_spatial_metric,
-                                   inverse_spatial_metric, spacetime_metric, pi,
-                                   phi, t, t_start, sigma_t, coords, sigma_r);
+  tnsr::a<DataVector, SpatialDim, Frame> gauge_h{};
+  tnsr::ab<DataVector, SpatialDim, Frame> d4_gauge_h{};
+  GeneralizedHarmonic::gauges::damped_harmonic(
+      make_not_null(&gauge_h), make_not_null(&d4_gauge_h), gauge_h_init,
+      dgauge_h_init, lapse, shift, spacetime_unit_normal_one_form,
+      sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi,
+      phi, t, coords, 1., 1.,
+      1.,                // amp_coef_{L1, L2, S}
+      4, 4, 4,           // exp_{L1, L2, S}
+      t_start, sigma_t,  // _h_init
+      t_start, sigma_t,  // _L1
+      t_start, sigma_t,  // _L2
+      t_start, sigma_t,  // _S
+      sigma_r);
+  return d4_gauge_h;
 }
+
 // Compare with Python implementation
 template <size_t SpatialDim, typename Frame>
-void test_deriv_damped_harmonic_h_function(
-    const DataVector& used_for_size) noexcept {
-  pypp::check_with_random_values<1>(
-      static_cast<tnsr::ab<DataVector, SpatialDim, Frame> (*)(
-          const tnsr::a<DataVector, SpatialDim, Frame>&,
-          const tnsr::ab<DataVector, SpatialDim, Frame>&,
-          const Scalar<DataVector>&,
-          const tnsr::I<DataVector, SpatialDim, Frame>&,
-          const tnsr::a<DataVector, SpatialDim, Frame>&,
-          const Scalar<DataVector>&,
-          const tnsr::II<DataVector, SpatialDim, Frame>&,
-          const tnsr::aa<DataVector, SpatialDim, Frame>&,
-          const tnsr::aa<DataVector, SpatialDim, Frame>&,
-          const tnsr::iaa<DataVector, SpatialDim, Frame>&, const double,
-          const double, const double,
-          const tnsr::I<DataVector, SpatialDim, Frame>&, const double)>(
-          &wrap_SpacetimeDerivDampedHarmonicHCompute<SpatialDim, Frame>),
-      "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
-      "DampedHarmonic",
-      "spacetime_deriv_damped_harmonic_gauge_source_function", {{{0.1, 10.}}},
-      used_for_size, 1.e-11);
+void test_with_python(const DataVector& used_for_size) noexcept {
+  INFO("Test with python");
+  CAPTURE(SpatialDim);
+  CAPTURE(Frame{});
+  // H_a
+  {
+    INFO("H_a");
+    pypp::check_with_random_values<1>(
+        static_cast<tnsr::a<DataVector, SpatialDim, Frame> (*)(
+            const tnsr::a<DataVector, SpatialDim, Frame>&,
+            const Scalar<DataVector>&,
+            const tnsr::I<DataVector, SpatialDim, Frame>&,
+            const Scalar<DataVector>&,
+            const tnsr::aa<DataVector, SpatialDim, Frame>&, const double,
+            const double, const double,
+            const tnsr::I<DataVector, SpatialDim, Frame>&, const double)>(
+            &wrap_DampedHarmonicHCompute<SpatialDim, Frame>),
+        "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
+        "DampedHarmonic",
+        "damped_harmonic_gauge_source_function",
+        {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
+  }
+  {
+    INFO("d4 H_a");
+    pypp::check_with_random_values<1>(
+        static_cast<tnsr::ab<DataVector, SpatialDim, Frame> (*)(
+            const tnsr::a<DataVector, SpatialDim, Frame>&,
+            const tnsr::ab<DataVector, SpatialDim, Frame>&,
+            const Scalar<DataVector>&,
+            const tnsr::I<DataVector, SpatialDim, Frame>&,
+            const tnsr::a<DataVector, SpatialDim, Frame>&,
+            const Scalar<DataVector>&,
+            const tnsr::II<DataVector, SpatialDim, Frame>&,
+            const tnsr::aa<DataVector, SpatialDim, Frame>&,
+            const tnsr::aa<DataVector, SpatialDim, Frame>&,
+            const tnsr::iaa<DataVector, SpatialDim, Frame>&, const double,
+            const double, const double,
+            const tnsr::I<DataVector, SpatialDim, Frame>&, const double)>(
+            &wrap_SpacetimeDerivDampedHarmonicHCompute<SpatialDim, Frame>),
+        "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
+        "DampedHarmonic",
+        "spacetime_deriv_damped_harmonic_gauge_source_function", {{{0.1, 10.}}},
+        used_for_size, 1.e-11);
+  }
 }
 
 //
@@ -353,11 +384,8 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
   //
   // First, check that the names are correct
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::gauges::DampedHarmonicHCompute<3, Frame::Inertial>>(
-      "GaugeH");
-  TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::gauges::SpacetimeDerivDampedHarmonicHCompute<
-          3, Frame::Inertial>>("SpacetimeDerivGaugeH");
+      GeneralizedHarmonic::gauges::DampedHarmonicCompute<3, Frame::Inertial>>(
+      "DampedHarmonicCompute");
 
   const auto box = db::create<
       db::AddSimpleTags<
@@ -377,15 +405,12 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
           GeneralizedHarmonic::Tags::GaugeHRollOnTimeWindow,
           GeneralizedHarmonic::Tags::GaugeHSpatialWeightDecayWidth<
               Frame::Inertial>>,
-      db::AddComputeTags<
-          GeneralizedHarmonic::gauges::DampedHarmonicHCompute<3,
-                                                              Frame::Inertial>,
-          GeneralizedHarmonic::gauges::SpacetimeDerivDampedHarmonicHCompute<
-              3, Frame::Inertial>>>(gauge_h_init, d4_gauge_h_init, lapse, shift,
-                                    spacetime_unit_normal_one_form,
-                                    sqrt_det_spatial_metric,
-                                    inverse_spatial_metric, spacetime_metric,
-                                    pi, phi, t, x, t_start_S, sigma_t_S, r_max);
+      db::AddComputeTags<GeneralizedHarmonic::gauges::DampedHarmonicCompute<
+          3, Frame::Inertial>>>(gauge_h_init, d4_gauge_h_init, lapse, shift,
+                                spacetime_unit_normal_one_form,
+                                sqrt_det_spatial_metric, inverse_spatial_metric,
+                                spacetime_metric, pi, phi, t, x, t_start_S,
+                                sigma_t_S, r_max);
 
   // Verify that locally computed H_a matches the same obtained through its
   // ComputeTag from databox
@@ -407,30 +432,22 @@ SPECTRE_TEST_CASE(
   test_options<Frame::Inertial>();
 
   {
-    INFO("Details");
-    test_detail_functions<1, Frame::Inertial>(used_for_size);
-    test_detail_functions<2, Frame::Inertial>(used_for_size);
-    test_detail_functions<3, Frame::Inertial>(used_for_size);
+    INFO("Test rollon function");
+    test_rollon_function<1, Frame::Inertial>(used_for_size);
+    test_rollon_function<2, Frame::Inertial>(used_for_size);
+    test_rollon_function<3, Frame::Inertial>(used_for_size);
 
-    test_detail_functions<1, Frame::Inertial>(1.);
-    test_detail_functions<2, Frame::Inertial>(1.);
-    test_detail_functions<3, Frame::Inertial>(1.);
+    test_rollon_function<1, Frame::Inertial>(1.);
+    test_rollon_function<2, Frame::Inertial>(1.);
+    test_rollon_function<3, Frame::Inertial>(1.);
   }
 
   {
     INFO("Compute source function");
     // Compare with Python implementation
-    test_damped_harmonic_h_function<1, Frame::Inertial>(used_for_size);
-    test_damped_harmonic_h_function<2, Frame::Inertial>(used_for_size);
-    test_damped_harmonic_h_function<3, Frame::Inertial>(used_for_size);
-  }
-
-  {
-    INFO("Spacetime derivative of source function");
-    // Compare with Python implementation
-    test_deriv_damped_harmonic_h_function<1, Frame::Inertial>(used_for_size);
-    test_deriv_damped_harmonic_h_function<2, Frame::Inertial>(used_for_size);
-    test_deriv_damped_harmonic_h_function<3, Frame::Inertial>(used_for_size);
+    test_with_python<1, Frame::Inertial>(used_for_size);
+    test_with_python<2, Frame::Inertial>(used_for_size);
+    test_with_python<3, Frame::Inertial>(used_for_size);
   }
 
   {
