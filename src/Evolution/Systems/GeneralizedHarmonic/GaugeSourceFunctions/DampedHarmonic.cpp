@@ -55,12 +55,13 @@ double time_deriv_of_roll_on_function(const double time, const double t_start,
 }
 }  // namespace DampedHarmonicGauge_detail
 
-template <size_t SpatialDim, typename Frame>
-void damped_harmonic(
+namespace {
+template <bool UseRollon, size_t SpatialDim, typename Frame>
+void damped_harmonic_impl(
     const gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame>*> gauge_h,
     const gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame>*> d4_gauge_h,
-    const tnsr::a<DataVector, SpatialDim, Frame>& gauge_h_init,
-    const tnsr::ab<DataVector, SpatialDim, Frame>& dgauge_h_init,
+    const tnsr::a<DataVector, SpatialDim, Frame>* gauge_h_init,
+    const tnsr::ab<DataVector, SpatialDim, Frame>* dgauge_h_init,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame>& shift,
     const tnsr::a<DataVector, SpatialDim, Frame>&
@@ -79,6 +80,15 @@ void damped_harmonic(
     const double sigma_r) noexcept {
   destructive_resize_components(gauge_h, get(lapse).size());
   destructive_resize_components(d4_gauge_h, get(lapse).size());
+
+  if constexpr (UseRollon) {
+    ASSERT(gauge_h_init != nullptr,
+           "Cannot call damped_harmonic_impl with UseRollon enabled and "
+           "gauge_h_init being nullptr");
+    ASSERT(dgauge_h_init != nullptr,
+           "Cannot call damped_harmonic_impl with UseRollon enabled and "
+           "dgauge_h_init being nullptr");
+  }
 
   // Use a TempBuffer to reduce total number of allocations. This is especially
   // important in a multithreaded environment.
@@ -206,8 +216,12 @@ void damped_harmonic(
 
   // Calculate H_a
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
-    gauge_h->get(a) = (1. - roll_on_h_init) * gauge_h_init.get(a) +
-                      get(prefac) * spacetime_unit_normal_one_form.get(a);
+    if constexpr (UseRollon) {
+      gauge_h->get(a) = (1. - roll_on_h_init) * gauge_h_init->get(a) +
+                        get(prefac) * spacetime_unit_normal_one_form.get(a);
+    } else {
+      gauge_h->get(a) = get(prefac) * spacetime_unit_normal_one_form.get(a);
+    }
     for (size_t i = 0; i < SpatialDim; ++i) {
       gauge_h->get(a) -=
           get(mu_S_over_lapse) * spacetime_metric.get(a, i + 1) * shift.get(i);
@@ -326,13 +340,15 @@ void damped_harmonic(
       d0_spatial_metric, d3_spatial_metric);
 
   // Calc \f$ \partial_a T1 \f$
-  for (size_t b = 0; b < SpatialDim + 1; ++b) {
-    dT1.get(0, b) = -gauge_h_init.get(b) * d0_roll_on_h_init;
-    for (size_t a = 0; a < SpatialDim + 1; ++a) {
-      if (a != 0) {
-        dT1.get(a, b) = (1. - roll_on_h_init) * dgauge_h_init.get(a, b);
-      } else {
-        dT1.get(a, b) += (1. - roll_on_h_init) * dgauge_h_init.get(a, b);
+  if constexpr (UseRollon) {
+    for (size_t b = 0; b < SpatialDim + 1; ++b) {
+      dT1.get(0, b) = -gauge_h_init->get(b) * d0_roll_on_h_init;
+      for (size_t a = 0; a < SpatialDim + 1; ++a) {
+        if (a != 0) {
+          dT1.get(a, b) = (1. - roll_on_h_init) * dgauge_h_init->get(a, b);
+        } else {
+          dT1.get(a, b) += (1. - roll_on_h_init) * dgauge_h_init->get(a, b);
+        }
       }
     }
   }
@@ -367,13 +383,49 @@ void damped_harmonic(
   // Calc \f$ \partial_a H_b = dT1_{ab} + dT2_{ab} + dT3_{ab} \f$
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
-      d4_gauge_h->get(a, b) = dT1.get(a, b) + dT2.get(a, b) + dT3.get(a, b);
+      if constexpr (UseRollon) {
+        d4_gauge_h->get(a, b) = dT1.get(a, b) + dT2.get(a, b) + dT3.get(a, b);
+      } else {
+        d4_gauge_h->get(a, b) = dT2.get(a, b) + dT3.get(a, b);
+      }
     }
   }
 }
+}  // namespace
 
 template <size_t SpatialDim, typename Frame>
-void DampedHarmonicCompute<SpatialDim, Frame>::function(
+void damped_harmonic_rollon(
+    const gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame>*> gauge_h,
+    const gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame>*> d4_gauge_h,
+    const tnsr::a<DataVector, SpatialDim, Frame>& gauge_h_init,
+    const tnsr::ab<DataVector, SpatialDim, Frame>& dgauge_h_init,
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, SpatialDim, Frame>& shift,
+    const tnsr::a<DataVector, SpatialDim, Frame>&
+        spacetime_unit_normal_one_form,
+    const Scalar<DataVector>& sqrt_det_spatial_metric,
+    const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
+    const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
+    const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, const double time,
+    const tnsr::I<DataVector, SpatialDim, Frame>& coords,
+    const double amp_coef_L1, const double amp_coef_L2, const double amp_coef_S,
+    const int exp_L1, const int exp_L2, const int exp_S,
+    const double t_start_h_init, const double sigma_t_h_init,
+    const double t_start_L1, const double sigma_t_L1, const double t_start_L2,
+    const double sigma_t_L2, const double t_start_S, const double sigma_t_S,
+    const double sigma_r) noexcept {
+  damped_harmonic_impl<true>(
+      gauge_h, d4_gauge_h, &gauge_h_init, &dgauge_h_init, lapse, shift,
+      spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
+      inverse_spatial_metric, spacetime_metric, pi, phi, time, coords,
+      amp_coef_L1, amp_coef_L2, amp_coef_S, exp_L1, exp_L2, exp_S,
+      t_start_h_init, sigma_t_h_init, t_start_L1, sigma_t_L1, t_start_L2,
+      sigma_t_L2, t_start_S, sigma_t_S, sigma_r);
+}
+
+template <size_t SpatialDim, typename Frame>
+void DampedHarmonicRollonCompute<SpatialDim, Frame>::function(
     const gsl::not_null<return_type*> h_and_d4_h,
     const db::item_type<Tags::InitialGaugeH<SpatialDim, Frame>>& gauge_h_init,
     const db::item_type<Tags::SpacetimeDerivInitialGaugeH<SpatialDim, Frame>>&
@@ -396,7 +448,7 @@ void DampedHarmonicCompute<SpatialDim, Frame>::function(
   // exp_{L1, L2, S}
   // This should be read from the input file in the future.
   constexpr int exponent = 4;
-  damped_harmonic(
+  damped_harmonic_rollon(
       make_not_null(&get<Tags::GaugeH<SpatialDim, Frame>>(*h_and_d4_h)),
       make_not_null(
           &get<Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>>(*h_and_d4_h)),
@@ -418,7 +470,7 @@ void DampedHarmonicCompute<SpatialDim, Frame>::function(
 #define DTYPE_SCAL(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE_DV_FUNC(_, data)                                           \
-  template void damped_harmonic(                                               \
+  template void damped_harmonic_rollon(                                        \
       const gsl::not_null<tnsr::a<DataVector, DIM(data), FRAME(data)>*>        \
           gauge_h,                                                             \
       const gsl::not_null<tnsr::ab<DataVector, DIM(data), FRAME(data)>*>       \
@@ -444,7 +496,7 @@ void DampedHarmonicCompute<SpatialDim, Frame>::function(
       const double sigma_t_L1, const double t_start_L2,                        \
       const double sigma_t_L2, const double t_start_S, const double sigma_t_S, \
       const double sigma_r) noexcept;                                          \
-  template class DampedHarmonicCompute<DIM(data), FRAME(data)>;
+  template class DampedHarmonicRollonCompute<DIM(data), FRAME(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_DV_FUNC, (1, 2, 3), (DataVector),
                         (Frame::Inertial))

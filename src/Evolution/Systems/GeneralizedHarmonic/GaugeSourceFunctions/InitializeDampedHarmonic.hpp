@@ -64,7 +64,7 @@ struct InitializeDampedHarmonic {
 
     // Add gauge tags
     using compute_tags = db::AddComputeTags<
-        GeneralizedHarmonic::gauges::DampedHarmonicCompute<Dim, frame>>;
+        GeneralizedHarmonic::gauges::DampedHarmonicRollonCompute<Dim, frame>>;
 
     // Finally, insert gauge related quantities to the box
     return std::make_tuple(

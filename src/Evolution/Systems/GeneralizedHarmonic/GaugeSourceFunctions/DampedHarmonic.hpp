@@ -158,7 +158,7 @@ namespace gauges {
  * \f}
  */
 template <size_t SpatialDim, typename Frame>
-void damped_harmonic(
+void damped_harmonic_rollon(
     gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame>*> gauge_h,
     gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame>*> d4_gauge_h,
     const tnsr::a<DataVector, SpatialDim, Frame>& gauge_h_init,
@@ -191,8 +191,8 @@ void damped_harmonic(
  * \see damped_harmonic()
  */
 template <size_t SpatialDim, typename Frame>
-struct DampedHarmonicCompute : db::ComputeTag {
-  static std::string name() noexcept { return "DampedHarmonicCompute"; }
+struct DampedHarmonicRollonCompute : db::ComputeTag {
+  static std::string name() noexcept { return "DampedHarmonicRollonCompute"; }
   using argument_tags = tmpl::list<
     Tags::InitialGaugeH<SpatialDim, Frame>,
     Tags::SpacetimeDerivInitialGaugeH<SpatialDim, Frame>,
