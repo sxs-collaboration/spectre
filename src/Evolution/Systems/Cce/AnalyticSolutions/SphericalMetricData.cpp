@@ -63,6 +63,11 @@ void SphericalMetricData::variables_impl(
           intermediate_jacobian.get(i, 0) * intermediate_jacobian.get(j, 0) *
           get<1, 1>(intermediate_spherical_metric);
       for (size_t k = 1; k < 3; ++k) {
+        spacetime_metric->get(i + 1, j + 1) +=
+            (intermediate_jacobian.get(i, k) * intermediate_jacobian.get(j, 0) +
+             intermediate_jacobian.get(i, 0) *
+                 intermediate_jacobian.get(j, k)) *
+            intermediate_spherical_metric.get(k + 1, 1);
         for (size_t l = 1; l < 3; ++l) {
           spacetime_metric->get(i + 1, j + 1) +=
               intermediate_jacobian.get(i, k) *
@@ -113,6 +118,11 @@ void SphericalMetricData::variables_impl(
           intermediate_jacobian.get(i, 0) * intermediate_jacobian.get(j, 0) *
           get<1, 1>(intermediate_dt_spherical_metric);
       for (size_t k = 1; k < 3; ++k) {
+        dt_spacetime_metric->get(i + 1, j + 1) +=
+            (intermediate_jacobian.get(i, k) * intermediate_jacobian.get(j, 0) +
+             intermediate_jacobian.get(i, 0) *
+                 intermediate_jacobian.get(j, k)) *
+            intermediate_dt_spherical_metric.get(k + 1, 1);
         for (size_t l = 1; l < 3; ++l) {
           dt_spacetime_metric->get(i + 1, j + 1) +=
               intermediate_jacobian.get(i, k) *
@@ -196,9 +206,15 @@ void SphericalMetricData::variables_impl(
               get<1, 1>(intermediate_spherical_metric);
       for (size_t k = 1; k < 3; ++k) {
         intermediate_dr_cartesian_metric.get(i + 1, j + 1) +=
-            intermediate_jacobian.get(i, 0) * intermediate_jacobian.get(j, k) *
-                intermediate_dr_spherical_metric.get(1, k + 1) +
-            (intermediate_dr_jacobian.get(i, 0) *
+            (intermediate_jacobian.get(i, k) * intermediate_jacobian.get(j, 0) +
+             intermediate_jacobian.get(i, 0) *
+                 intermediate_jacobian.get(j, k)) *
+                intermediate_dr_spherical_metric.get(k + 1, 1) +
+            (intermediate_dr_jacobian.get(i, k) *
+                 intermediate_jacobian.get(j, 0) +
+             intermediate_jacobian.get(i, k) *
+                 intermediate_dr_jacobian.get(j, 0) +
+             intermediate_dr_jacobian.get(i, 0) *
                  intermediate_jacobian.get(j, k) +
              intermediate_jacobian.get(i, 0) *
                  intermediate_dr_jacobian.get(j, k)) *
@@ -282,6 +298,37 @@ void SphericalMetricData::inverse_jacobian(
   }
 }
 
+void SphericalMetricData::jacobian(
+    const gsl::not_null<SphericaliCartesianJ*> jacobian,
+    const size_t l_max) const noexcept {
+  const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
+      Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
+  for (const auto& collocation_point : collocation) {
+    // dx/dr   dy/dr  dz/dr
+    get<0, 0>(*jacobian)[collocation_point.offset] =
+        sin(collocation_point.theta) * cos(collocation_point.phi);
+    get<0, 1>(*jacobian)[collocation_point.offset] =
+        sin(collocation_point.theta) * sin(collocation_point.phi);
+    get<0, 2>(*jacobian)[collocation_point.offset] =
+        cos(collocation_point.theta);
+    // dx/dtheta   dy/dtheta  dz/dtheta
+    get<1, 0>(*jacobian)[collocation_point.offset] =
+        extraction_radius_ * cos(collocation_point.theta) *
+        cos(collocation_point.phi);
+    get<1, 1>(*jacobian)[collocation_point.offset] =
+        extraction_radius_ * cos(collocation_point.theta) *
+        sin(collocation_point.phi);
+    get<1, 2>(*jacobian)[collocation_point.offset] =
+        -extraction_radius_ * sin(collocation_point.theta);
+    // (1/sin(theta)) { dx/dphi,   dy/dphi,  dz/dphi }
+    get<2, 0>(*jacobian)[collocation_point.offset] =
+        -extraction_radius_ * sin(collocation_point.phi);
+    get<2, 1>(*jacobian)[collocation_point.offset] =
+        extraction_radius_ * cos(collocation_point.phi);
+    get<2, 2>(*jacobian)[collocation_point.offset] = 0.0;
+  }
+}
+
 void SphericalMetricData::dr_inverse_jacobian(
     const gsl::not_null<CartesianiSphericalJ*> dr_inverse_jacobian,
     const size_t l_max) const noexcept {
@@ -310,6 +357,32 @@ void SphericalMetricData::dr_inverse_jacobian(
     get<2, 1>(*dr_inverse_jacobian)[collocation_point.offset] =
         sin(collocation_point.theta) / square(extraction_radius_);
     get<2, 2>(*dr_inverse_jacobian)[collocation_point.offset] = 0.0;
+  }
+}
+
+void SphericalMetricData::dr_jacobian(
+    const gsl::not_null<SphericaliCartesianJ*> dr_jacobian,
+    const size_t l_max) noexcept {
+  const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
+      Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
+  for (const auto& collocation_point : collocation) {
+    // dx/dr   dy/dr  dz/dr
+    get<0, 0>(*dr_jacobian)[collocation_point.offset] = 0.0;
+    get<0, 1>(*dr_jacobian)[collocation_point.offset] = 0.0;
+    get<0, 2>(*dr_jacobian)[collocation_point.offset] = 0.0;
+    // dx/dtheta   dy/dtheta  dz/dtheta
+    get<1, 0>(*dr_jacobian)[collocation_point.offset] =
+        cos(collocation_point.theta) * cos(collocation_point.phi);
+    get<1, 1>(*dr_jacobian)[collocation_point.offset] =
+        cos(collocation_point.theta) * sin(collocation_point.phi);
+    get<1, 2>(*dr_jacobian)[collocation_point.offset] =
+        -sin(collocation_point.theta);
+    // (1/sin(theta)) { dx/dphi,   dy/dphi,  dz/dphi }
+    get<2, 0>(*dr_jacobian)[collocation_point.offset] =
+        -sin(collocation_point.phi);
+    get<2, 1>(*dr_jacobian)[collocation_point.offset] =
+        cos(collocation_point.phi);
+    get<2, 2>(*dr_jacobian)[collocation_point.offset] = 0.0;
   }
 }
 
