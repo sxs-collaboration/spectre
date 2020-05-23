@@ -87,6 +87,9 @@ struct System {
   };
 };
 
+using interior_bdry_vars_tag =
+    domain::Tags::Interface<domain::Tags::BoundaryDirectionsInterior<Dim>,
+                            Tags::Variables<tmpl::list<Var>>>;
 using exterior_bdry_vars_tag =
     domain::Tags::Interface<domain::Tags::BoundaryDirectionsExterior<Dim>,
                             Tags::Variables<tmpl::list<Var>>>;
@@ -106,7 +109,7 @@ struct component {
               domain::Tags::Interface<
                   domain::Tags::BoundaryDirectionsExterior<Dim>,
                   domain::Tags::Coordinates<Dim, Frame::Inertial>>,
-              exterior_bdry_vars_tag,
+              interior_bdry_vars_tag, exterior_bdry_vars_tag,
               domain::Tags::Interface<
                   domain::Tags::BoundaryDirectionsInterior<Dim>,
                   typename metavariables::system::char_speeds_tag>>>>>,
@@ -137,6 +140,7 @@ void run_test() {
 
   // Initial boundary data, used only if TestOnlyOutgoing
   const Scalar<DataVector> initial_bdry_data({{{4.0, 8.0, 12.0}}});
+  const Scalar<DataVector> initial_bdry_data_interior({{{12.0, 8.0, 4.0}}});
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{{BoundaryCondition{}}};
   {
@@ -148,7 +152,9 @@ void run_test() {
         external_bdry_coords{{{Direction<2>::lower_eta(), arbitrary_coords},
                               {Direction<2>::upper_xi(), arbitrary_coords}}};
     db::item_type<exterior_bdry_vars_tag> exterior_bdry_vars;
+    db::item_type<interior_bdry_vars_tag> interior_bdry_vars;
     for (const auto& direction : external_directions) {
+      interior_bdry_vars[direction].initialize(3);
       exterior_bdry_vars[direction].initialize(3);
     }
 
@@ -157,6 +163,8 @@ void run_test() {
     // other than signaling NaNs
     if (TestOnlyOutgoing and not HasConservativeAndPrimitiveVars) {
       for (const auto& direction : external_directions) {
+        get(get<Var>(interior_bdry_vars[direction])) =
+            get(initial_bdry_data_interior);
         get(get<Var>(exterior_bdry_vars[direction])) = get(initial_bdry_data);
       }
     }
@@ -178,12 +186,14 @@ void run_test() {
     if (AllCharSpeedsAreOutgoing) {
       ActionTesting::emplace_component_and_initialize<my_component>(
           &runner, 0,
-          {1.2, std::move(external_bdry_coords), std::move(exterior_bdry_vars),
+          {1.2, std::move(external_bdry_coords), std::move(interior_bdry_vars),
+           std::move(exterior_bdry_vars),
            std::move(internal_bdry_char_speeds_only_outgoing)});
     } else {
       ActionTesting::emplace_component_and_initialize<my_component>(
           &runner, 0,
-          {1.2, std::move(external_bdry_coords), std::move(exterior_bdry_vars),
+          {1.2, std::move(external_bdry_coords), std::move(interior_bdry_vars),
+           std::move(exterior_bdry_vars),
            std::move(internal_bdry_char_speeds)});
     }
   }
@@ -204,9 +214,9 @@ void run_test() {
   if (TestOnlyOutgoing and not HasConservativeAndPrimitiveVars and
       AllCharSpeedsAreOutgoing) {
     get(get<Var>(expected_vars[Direction<2>::lower_eta()])) =
-        get(initial_bdry_data);
+        get(initial_bdry_data_interior);
     get(get<Var>(expected_vars[Direction<2>::upper_xi()])) =
-        get(initial_bdry_data);
+        get(initial_bdry_data_interior);
   } else {
     get<Var>(expected_vars[Direction<2>::lower_eta()]) =
         Scalar<DataVector>({{{30., 40., 50.}}});

@@ -141,8 +141,8 @@ struct ImposeDirichletBoundaryConditions {
                typename system::variables_tag>>*>
                external_bdry_vars,
            const double time, const auto& boundary_condition,
-           const auto& boundary_coords,
-           const auto& boundary_char_speeds) noexcept {
+           const auto& boundary_coords, const auto& boundary_char_speeds,
+           const auto& boundary_vars) noexcept {
           for (auto& external_direction_and_vars : *external_bdry_vars) {
             auto& direction = external_direction_and_vars.first;
             auto& vars = external_direction_and_vars.second;
@@ -152,6 +152,11 @@ struct ImposeDirichletBoundaryConditions {
               const auto& char_speeds = boundary_char_speeds.at(direction);
               if (BoundaryConditions_detail::min_characteristic_speed<
                       VolumeDim>(char_speeds) >= 0.) {
+                for (auto& interior_direction_and_vars : boundary_vars) {
+                  if (interior_direction_and_vars.first == direction) {
+                    vars = interior_direction_and_vars.second;
+                  }
+                }
                 continue;
               }
             }
@@ -167,7 +172,11 @@ struct ImposeDirichletBoundaryConditions {
             domain::Tags::Coordinates<VolumeDim, Frame::Inertial>>>(box),
         db::get<domain::Tags::Interface<
             domain::Tags::BoundaryDirectionsInterior<VolumeDim>,
-            typename system::char_speeds_tag>>(box));
+            typename system::char_speeds_tag>>(box),
+        db::get<domain::Tags::Interface<
+            domain::Tags::BoundaryDirectionsInterior<VolumeDim>,
+            typename Tags::Variables<
+                typename system::variables_tag::type::tags_list>>>(box));
 
     return std::forward_as_tuple(std::move(box));
   }
