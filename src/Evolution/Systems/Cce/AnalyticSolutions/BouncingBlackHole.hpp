@@ -69,7 +69,8 @@ struct BouncingBlackHole : public WorldtubeData {
   explicit BouncingBlackHole(CkMigrateMessage* /*unused*/) noexcept {}
 
   // clang doesn't manage to use = default correctly in this case
-  BouncingBlackHole() noexcept {}  // NOLINT
+  // NOLINTNEXTLINE(modernize-use-equals-default)
+  BouncingBlackHole() noexcept {};
 
   BouncingBlackHole(double amplitude, double extraction_radius, double mass,
                     double period) noexcept;
