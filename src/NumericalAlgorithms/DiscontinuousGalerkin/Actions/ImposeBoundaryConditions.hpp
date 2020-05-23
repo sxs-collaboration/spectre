@@ -76,7 +76,7 @@ double min_characteristic_speed(
 ///      - External<typename system::variables_tag>
 ///
 /// \see ReceiveDataForFluxes
-template <typename Metavariables, bool SkipBCWhenCharSpeedsAllOutgoing = false>
+template <typename Metavariables, bool SkipBcWhenCharSpeedsAllOutgoing = false>
 struct ImposeDirichletBoundaryConditions {
  private:
   // BoundaryConditionMethod and BcSelector are used to select exactly how to
@@ -147,7 +147,7 @@ struct ImposeDirichletBoundaryConditions {
             auto& direction = external_direction_and_vars.first;
             auto& vars = external_direction_and_vars.second;
 
-            if (SkipBCWhenCharSpeedsAllOutgoing) {
+            if (SkipBcWhenCharSpeedsAllOutgoing) {
               // Do nothing if char speeds are all outgoing (i.e., all positive)
               const auto& char_speeds = boundary_char_speeds.at(direction);
               if (BoundaryConditions_detail::min_characteristic_speed<
