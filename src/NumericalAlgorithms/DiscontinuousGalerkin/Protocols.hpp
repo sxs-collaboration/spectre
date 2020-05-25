@@ -21,11 +21,11 @@ struct TestCallOperatorImpl<NumericalFluxType, tmpl::list<VariablesTags...>,
                             tmpl::list<PackageFieldTags...>,
                             tmpl::list<PackageExtraTags...>> {
   using type = decltype(std::declval<NumericalFluxType>()(
-      std::declval<gsl::not_null<db::item_type<VariablesTags>*>>()...,
-      std::declval<db::const_item_type<PackageFieldTags>>()...,
-      std::declval<db::const_item_type<PackageExtraTags>>()...,
-      std::declval<db::const_item_type<PackageFieldTags>>()...,
-      std::declval<db::const_item_type<PackageExtraTags>>()...));
+      std::declval<gsl::not_null<tmpl::type_from<VariablesTags>*>>()...,
+      std::declval<tmpl::type_from<PackageFieldTags>>()...,
+      std::declval<tmpl::type_from<PackageExtraTags>>()...,
+      std::declval<tmpl::type_from<PackageFieldTags>>()...,
+      std::declval<tmpl::type_from<PackageExtraTags>>()...));
 };
 }  // namespace detail
 
