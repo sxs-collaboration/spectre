@@ -11,11 +11,7 @@
 #include <memory>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-
-/// \cond
-template <size_t Dim>
-class MathFunction;
-/// \endcond
+#include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 
 namespace MathFunctions {
 
@@ -25,7 +21,8 @@ template <size_t Dim>
 class TensorProduct {
  public:
   TensorProduct(double scale,
-                std::array<std::unique_ptr<MathFunction<1>>, Dim>&& functions);
+                std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>,
+                           Dim>&& functions);
 
   TensorProduct(const TensorProduct&) = delete;
   TensorProduct(TensorProduct&&) = default;
@@ -47,6 +44,6 @@ class TensorProduct {
 
  private:
   double scale_{1.0};
-  std::array<std::unique_ptr<MathFunction<1>>, Dim> functions_;
+  std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, Dim> functions_;
 };
 }  // namespace MathFunctions

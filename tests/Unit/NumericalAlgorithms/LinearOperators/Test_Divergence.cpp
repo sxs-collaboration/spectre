@@ -124,7 +124,8 @@ using two_fluxes = tmpl::list<Flux1<Dim, Frame>, Flux2<Dim, Frame>>;
 template <size_t Dim, typename Frame = Frame::Inertial>
 void test_divergence_impl(
     const Mesh<Dim>& mesh,
-    std::array<std::unique_ptr<MathFunction<1>>, Dim> functions) noexcept {
+    std::array<std::unique_ptr<MathFunction<1, Frame>>, Dim>
+        functions) noexcept {
   const auto coordinate_map = make_affine_map<Dim>();
   const size_t num_grid_points = mesh.number_of_grid_points();
   const auto xi = logical_coordinates(mesh);
@@ -178,19 +179,22 @@ void test_divergence() noexcept {
                         Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
   for (size_t a = 0; a < 5; ++a) {
-    std::array<std::unique_ptr<MathFunction<1>>, 1> functions_1d{
-        {std::make_unique<MathFunctions::PowX>(a)}};
+    std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 1>
+        functions_1d{
+            {std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(a)}};
     test_divergence_impl(mesh_1d, std::move(functions_1d));
     for (size_t b = 0; b < 4; ++b) {
-      std::array<std::unique_ptr<MathFunction<1>>, 2> functions_2d{
-          {std::make_unique<MathFunctions::PowX>(a),
-           std::make_unique<MathFunctions::PowX>(b)}};
+      std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 2>
+          functions_2d{
+              {std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(a),
+               std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(b)}};
       test_divergence_impl(mesh_2d, std::move(functions_2d));
       for (size_t c = 0; c < 3; ++c) {
-        std::array<std::unique_ptr<MathFunction<1>>, 3> functions_3d{
-            {std::make_unique<MathFunctions::PowX>(a),
-             std::make_unique<MathFunctions::PowX>(b),
-             std::make_unique<MathFunctions::PowX>(c)}};
+        std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 3>
+            functions_3d{
+                {std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(a),
+                 std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(b),
+                 std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(c)}};
         test_divergence_impl(mesh_3d, std::move(functions_3d));
       }
     }
@@ -209,7 +213,8 @@ struct MapTag : db::SimpleTag {
 template <size_t Dim, typename Frame = Frame::Inertial>
 void test_divergence_compute_item_impl(
     const Mesh<Dim>& mesh,
-    std::array<std::unique_ptr<MathFunction<1>>, Dim> functions) noexcept {
+    std::array<std::unique_ptr<MathFunction<1, Frame>>, Dim>
+        functions) noexcept {
   const auto coordinate_map = make_affine_map<Dim>();
   using map_tag = MapTag<std::decay_t<decltype(coordinate_map)>>;
   using inv_jac_tag = domain::Tags::InverseJacobianCompute<
@@ -279,19 +284,22 @@ void test_divergence_compute() noexcept {
                         Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
   for (size_t a = 0; a < 5; ++a) {
-    std::array<std::unique_ptr<MathFunction<1>>, 1> functions_1d{
-        {std::make_unique<MathFunctions::PowX>(a)}};
+    std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 1>
+        functions_1d{
+            {std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(a)}};
     test_divergence_compute_item_impl(mesh_1d, std::move(functions_1d));
     for (size_t b = 0; b < 4; ++b) {
-      std::array<std::unique_ptr<MathFunction<1>>, 2> functions_2d{
-          {std::make_unique<MathFunctions::PowX>(a),
-           std::make_unique<MathFunctions::PowX>(b)}};
+      std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 2>
+          functions_2d{
+              {std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(a),
+               std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(b)}};
       test_divergence_compute_item_impl(mesh_2d, std::move(functions_2d));
       for (size_t c = 0; c < 3; ++c) {
-        std::array<std::unique_ptr<MathFunction<1>>, 3> functions_3d{
-            {std::make_unique<MathFunctions::PowX>(a),
-             std::make_unique<MathFunctions::PowX>(b),
-             std::make_unique<MathFunctions::PowX>(c)}};
+        std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 3>
+            functions_3d{
+                {std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(a),
+                 std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(b),
+                 std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(c)}};
         test_divergence_compute_item_impl(mesh_3d, std::move(functions_3d));
       }
     }

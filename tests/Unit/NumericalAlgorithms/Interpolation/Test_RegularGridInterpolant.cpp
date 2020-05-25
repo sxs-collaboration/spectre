@@ -123,9 +123,11 @@ void test_regular_interpolation(const Mesh<Dim>& source_mesh,
     // interpolate to arbitrary points, and then check that the
     // values at arbitrary points match this solution.
     // We choose polynomials so that interpolation is exact on an LGL grid.
-    std::array<std::unique_ptr<MathFunction<1>>, Dim> functions;
+    std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, Dim>
+        functions;
     for (size_t d = 0; d < Dim; ++d) {
-      gsl::at(functions, d) = std::make_unique<MathFunctions::PowX>(iter()[d]);
+      gsl::at(functions, d) =
+          std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(iter()[d]);
     }
     MathFunctions::TensorProduct<Dim> f(1.0, std::move(functions));
 
@@ -209,10 +211,12 @@ void test_regular_interpolation_override(
         source_mesh, target_mesh, override_target_mesh_with_1d_coords);
 
     // Test only the highest-order polynomial x^a y^b z^c on the source mesh.
-    std::array<std::unique_ptr<MathFunction<1>>, Dim> functions;
+    std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, Dim>
+        functions;
     for (size_t d = 0; d < Dim; ++d) {
       gsl::at(functions, d) =
-          std::make_unique<MathFunctions::PowX>(source_mesh.extents(d) - 1);
+          std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(
+              source_mesh.extents(d) - 1);
     }
     MathFunctions::TensorProduct<Dim> f(1.0, std::move(functions));
 

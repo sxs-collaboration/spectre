@@ -217,12 +217,13 @@ auto make_affine_map<3>() noexcept {
 }
 
 template <dg::Formulation DgFormulation, size_t Dim>
-void test(
-    const Mesh<Dim>& mesh,
-    std::array<std::unique_ptr<MathFunction<1>>, Dim> functions) noexcept {
-  using flux_tags =
-      tmpl::list<Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>,
-                 Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
+void test(const Mesh<Dim>& mesh,
+          std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, Dim>
+              functions) noexcept {
+  using flux_tags = tmpl::list<
+      db::add_tag_prefix<Tags::Flux, Var1, tmpl::size_t<Dim>, Frame::Inertial>,
+      db::add_tag_prefix<Tags::Flux, Var2<Dim>, tmpl::size_t<Dim>,
+                         Frame::Inertial>>;
   using Flux1 = tmpl::at_c<flux_tags, 0>;
   using Flux2 = tmpl::at_c<flux_tags, 1>;
 
@@ -317,18 +318,24 @@ SPECTRE_TEST_CASE("Unit.Evolution.ConservativeDuDt", "[Unit][Evolution]") {
   const Mesh<1> mesh_1d{num_points, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
   test<dg::Formulation::StrongInertial>(
-      mesh_1d, {{std::make_unique<MathFunctions::PowX>(num_points - 1)}});
+      mesh_1d, {{std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(
+                   num_points - 1)}});
 
   const Mesh<2> mesh_2d{num_points, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
   test<dg::Formulation::StrongInertial>(
-      mesh_2d, {{std::make_unique<MathFunctions::PowX>(num_points - 1),
-                 std::make_unique<MathFunctions::PowX>(num_points - 1)}});
+      mesh_2d, {{std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(
+                     num_points - 1),
+                 std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(
+                     num_points - 1)}});
 
   const Mesh<3> mesh_3d{num_points, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
   test<dg::Formulation::StrongInertial>(
-      mesh_3d, {{std::make_unique<MathFunctions::PowX>(num_points - 1),
-                 std::make_unique<MathFunctions::PowX>(num_points - 1),
-                 std::make_unique<MathFunctions::PowX>(num_points - 1)}});
+      mesh_3d, {{std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(
+                     num_points - 1),
+                 std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(
+                     num_points - 1),
+                 std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(
+                     num_points - 1)}});
 }

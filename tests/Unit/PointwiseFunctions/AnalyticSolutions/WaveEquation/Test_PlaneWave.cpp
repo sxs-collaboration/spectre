@@ -142,14 +142,16 @@ void test_1d() {
   const DataVector u(
       {kx * (x1 - center_x) - omega * t, kx * (x2 - center_x) - omega * t});
   const ScalarWave::Solutions::PlaneWave<1> pw(
-      {{kx}}, {{center_x}}, std::make_unique<MathFunctions::PowX>(3));
+      {{kx}}, {{center_x}},
+      std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(3));
   check_solution<1>(
       cube(u), -3.0 * omega * square(u), 6.0 * square(omega) * u,
       3.0 * kx * square(u),
       std::array<DataVector, 2>{{-6.0 * omega * kx * u, 6.0 * square(kx) * u}},
       pw, x, t);
 
-  Parallel::register_derived_classes_with_charm<MathFunction<1>>();
+  Parallel::register_derived_classes_with_charm<
+      MathFunction<1, Frame::Inertial>>();
   const auto deserialized_pw = serialize_and_deserialize(pw);
   check_solution<1>(
       cube(u), -3.0 * omega * square(u), 6.0 * square(omega) * u,
@@ -190,7 +192,7 @@ void test_2d() {
                       kx * (x2 - center_x) + ky * (y2 - center_y) - omega * t});
   const ScalarWave::Solutions::PlaneWave<2> pw(
       {{kx, ky}}, {{center_x, center_y}},
-      std::make_unique<MathFunctions::PowX>(3));
+      std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(3));
   check_solution<1>(
       cube(u), -3.0 * omega * square(u), 6.0 * square(omega) * u,
       3.0 * kx * square(u),
@@ -203,7 +205,8 @@ void test_2d() {
           {-6.0 * omega * ky * u, 6.0 * kx * ky * u, 6.0 * square(ky) * u}},
       pw, x, t);
 
-  Parallel::register_derived_classes_with_charm<MathFunction<1>>();
+  Parallel::register_derived_classes_with_charm<
+      MathFunction<1, Frame::Inertial>>();
   const auto deserialized_pw = serialize_and_deserialize(pw);
   check_solution<1>(
       cube(u), -3.0 * omega * square(u), 6.0 * square(omega) * u,
@@ -256,7 +259,7 @@ void test_3d() {
                           kz * (z2 - center_z) - omega * t});
   const ScalarWave::Solutions::PlaneWave<3> pw(
       {{kx, ky, kz}}, {{center_x, center_y, center_z}},
-      std::make_unique<MathFunctions::PowX>(3));
+      std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(3));
   check_solution<1>(
       cube(u), -3.0 * omega * square(u), 6.0 * square(omega) * u,
       3.0 * kx * square(u),
@@ -275,7 +278,8 @@ void test_3d() {
                                  6.0 * ky * kz * u, 6.0 * square(kz) * u}},
       pw, x, t);
 
-  Parallel::register_derived_classes_with_charm<MathFunction<1>>();
+  Parallel::register_derived_classes_with_charm<
+      MathFunction<1, Frame::Inertial>>();
   const auto deserialized_pw = serialize_and_deserialize(pw);
   check_solution<1>(
       cube(u), -3.0 * omega * square(u), 6.0 * square(omega) * u,

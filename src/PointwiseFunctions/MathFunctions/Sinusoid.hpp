@@ -18,6 +18,8 @@ class DataVector;
 /// \endcond
 
 namespace MathFunctions {
+template <size_t VolumeDim, typename Fr>
+class Sinusoid;
 
 /*!
  *  \ingroup MathFunctionsGroup
@@ -25,7 +27,8 @@ namespace MathFunctions {
  *
  *  \details Input file options are: Amplitude, Phase, and Wavenumber
  */
-class Sinusoid : public MathFunction<1> {
+template <typename Fr>
+class Sinusoid<1, Fr> : public MathFunction<1, Fr> {
  public:
   struct Amplitude {
     using type = double;
@@ -56,7 +59,8 @@ class Sinusoid : public MathFunction<1> {
   Sinusoid(Sinusoid&& /*rhs*/) noexcept = default;
   Sinusoid& operator=(Sinusoid&& /*rhs*/) noexcept = default;
 
-  WRAPPED_PUPable_decl_template(Sinusoid); //NOLINT
+  WRAPPED_PUPable_decl_base_template(SINGLE_ARG(MathFunction<1, Fr>),
+                                     Sinusoid);  // NOLINT
 
   explicit Sinusoid(CkMigrateMessage* /*unused*/) noexcept {}
 
@@ -76,7 +80,14 @@ class Sinusoid : public MathFunction<1> {
   void pup(PUP::er& p) override;  // NOLINT
 
  private:
-  friend bool operator==(const Sinusoid& lhs, const Sinusoid& rhs) noexcept;
+  friend bool operator==(const Sinusoid& lhs, const Sinusoid& rhs) noexcept {
+    return lhs.amplitude_ == rhs.amplitude_ and
+           lhs.wavenumber_ == rhs.wavenumber_ and lhs.phase_ == rhs.phase_;
+  }
+  double amplitude_{};
+  double wavenumber_{};
+  double phase_{};
+
   template <typename T>
   T apply_call_operator(const T& x) const noexcept;
   template <typename T>
@@ -85,12 +96,16 @@ class Sinusoid : public MathFunction<1> {
   T apply_second_deriv(const T& x) const noexcept;
   template <typename T>
   T apply_third_deriv(const T& x) const noexcept;
-
-  double amplitude_{};
-  double wavenumber_{};
-  double phase_{};
 };
 
-bool operator!=(const Sinusoid& lhs, const Sinusoid& rhs) noexcept;
-
+template <typename Fr>
+bool operator!=(const Sinusoid<1, Fr>& lhs,
+                const Sinusoid<1, Fr>& rhs) noexcept {
+  return not(lhs == rhs);
+}
 }  // namespace MathFunctions
+
+/// \cond
+template <typename Fr>
+PUP::able::PUP_ID MathFunctions::Sinusoid<1, Fr>::my_PUP_ID = 0;  // NOLINT
+/// \endcond

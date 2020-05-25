@@ -35,7 +35,7 @@
 // IWYU pragma: no_forward_declare Tags::deriv
 
 class DataVector;
-template <size_t VolumeDim>
+template <size_t VolumeDim, typename Fr>
 class MathFunction;
 
 namespace {
@@ -134,7 +134,8 @@ tnsr::ii<T, VolumeDim> expected_second_derivs(
 template <size_t VolumeDim>
 void test_tensor_product(
     const Mesh<VolumeDim>& mesh, const double scale,
-    std::array<std::unique_ptr<MathFunction<1>>, VolumeDim>&& functions,
+    std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, VolumeDim>&&
+        functions,
     const std::array<size_t, VolumeDim>& powers) noexcept {
   const auto coordinate_map = make_affine_map<VolumeDim>();
   const auto x = coordinate_map(logical_coordinates(mesh));
@@ -147,7 +148,7 @@ void test_tensor_product(
   tnsr::I<double, VolumeDim> point{2.2};
   for (size_t d = 0; d < VolumeDim; ++d) {
     point.get(d) += d * 1.7;
-  }
+  };
   CHECK_ITERABLE_APPROX(f(point), expected_value(point, powers, scale));
   CHECK_ITERABLE_APPROX(f.first_derivatives(point),
                         expected_first_derivs(point, powers, scale));
@@ -172,7 +173,7 @@ using TwoVars = tmpl::list<Var1, Var2<VolumeDim>>;
 template <size_t VolumeDim>
 void test_with_numerical_derivatives(
     const Mesh<VolumeDim>& mesh, const double scale,
-    std::array<std::unique_ptr<MathFunction<1>>, VolumeDim>&&
+    std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, VolumeDim>&&
         functions) noexcept {
   const auto coordinate_map = make_affine_map<VolumeDim>();
   Variables<TwoVars<VolumeDim>> u(mesh.number_of_grid_points());
@@ -205,24 +206,26 @@ void test_with_numerical_derivatives(
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.TensorProduct",
                   "[PointwiseFunctions][Unit]") {
   for (size_t a = 0; a < 5; ++a) {
-    std::array<std::unique_ptr<MathFunction<1>>, 1> functions{
-        {std::make_unique<MathFunctions::PowX>(a)}};
+    std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 1> functions{
+        {std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(a)}};
     test_tensor_product(Mesh<1>{4, Spectral::Basis::Legendre,
                                 Spectral::Quadrature::GaussLobatto},
                         1.5, std::move(functions), {{a}});
     for (size_t b = 0; b < 4; ++b) {
-      std::array<std::unique_ptr<MathFunction<1>>, 2> functions_2d{
-          {std::make_unique<MathFunctions::PowX>(a),
-           std::make_unique<MathFunctions::PowX>(b)}};
+      std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 2>
+          functions_2d{
+              {std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(a),
+               std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(b)}};
       test_tensor_product(Mesh<2>{{{4, 3}},
                                   Spectral::Basis::Legendre,
                                   Spectral::Quadrature::GaussLobatto},
                           2.5, std::move(functions_2d), {{a, b}});
       for (size_t c = 0; c < 3; ++c) {
-        std::array<std::unique_ptr<MathFunction<1>>, 3> functions_3d{
-            {std::make_unique<MathFunctions::PowX>(a),
-             std::make_unique<MathFunctions::PowX>(b),
-             std::make_unique<MathFunctions::PowX>(c)}};
+        std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 3>
+            functions_3d{
+                {std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(a),
+                 std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(b),
+                 std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(c)}};
         test_tensor_product(Mesh<3>{{{4, 3, 5}},
                                     Spectral::Basis::Legendre,
                                     Spectral::Quadrature::GaussLobatto},
@@ -231,17 +234,20 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.TensorProduct",
     }
   }
 
-  std::array<std::unique_ptr<MathFunction<1>>, 1> sinusoid{
-      {std::make_unique<MathFunctions::Sinusoid>(1.0, 1.0, -1.0)}};
+  std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 1> sinusoid{
+      {std::make_unique<MathFunctions::Sinusoid<1, Frame::Inertial>>(1.0, 1.0,
+                                                                     -1.0)}};
 
   test_with_numerical_derivatives(
       Mesh<1>{8, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
       1.5, std::move(sinusoid));
 
-  std::array<std::unique_ptr<MathFunction<1>>, 3> generic_3d{
-      {std::make_unique<MathFunctions::Sinusoid>(1.0, 1.0, -1.0),
-       std::make_unique<MathFunctions::Gaussian>(1.0, 1.0, 0.4),
-       std::make_unique<MathFunctions::PowX>(2)}};
+  std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, 3> generic_3d{
+      {std::make_unique<MathFunctions::Sinusoid<1, Frame::Inertial>>(1.0, 1.0,
+                                                                     -1.0),
+       std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(1.0, 1.0,
+                                                                     0.4),
+       std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(2)}};
 
   test_with_numerical_derivatives(
       Mesh<3>{8, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},

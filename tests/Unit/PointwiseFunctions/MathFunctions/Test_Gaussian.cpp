@@ -5,83 +5,100 @@
 
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <random>
 
 #include "DataStructures/DataVector.hpp"
+#include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/PointwiseFunctions/MathFunctions/TestHelpers.hpp"
+#include "Parallel/PupStlCpp11.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
-#include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
 
-template <size_t VolumeDim>
+template <size_t VolumeDim, typename Fr>
 class MathFunction;
 
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian",
-                  "[PointwiseFunctions][Unit]") {
+namespace Frame {
+struct Grid;
+struct Inertial;
+}  // namespace Frame
+
+namespace {
+template <size_t VolumeDim, typename DataType, typename Fr>
+void test_gaussian_random(const DataType& used_for_size) noexcept {
+  Parallel::register_derived_classes_with_charm<
+      MathFunctions::Gaussian<VolumeDim, Fr>>();
+
+  // Generate the amplitude and width
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
   std::uniform_real_distribution<> positive_dis(0, 1);
 
+  const double amplitude = positive_dis(gen);
   // If the width is too small then the terms in the second derivative
   // can become very large and fail the test due to rounding errors.
   const double width = positive_dis(gen) + 0.5;
-  CAPTURE_PRECISE(width);
-  const double amplitude = positive_dis(gen);
-  CAPTURE_PRECISE(amplitude);
-  const double center = real_dis(gen);
-  CAPTURE_PRECISE(center);
-  const MathFunctions::Gaussian gauss{amplitude, width, center};
 
-  // Check some random points
-  for (size_t i = 0; i < 100; ++i) {
-    const double point = real_dis(gen);
-    const double mapped_point =
-        amplitude * exp(-square((point - center) / width));
-    CHECK(gauss(point) == approx(mapped_point));
-    CHECK(gauss.first_deriv(point) ==
-          approx(-2. * (point - center) / square(width) * mapped_point));
-    CHECK(gauss.second_deriv(point) ==
-          approx((4. * square(point - center) / pow<4>(width) -
-                  2. / square(width)) *
-                 mapped_point));
-    CHECK(gauss.third_deriv(point) ==
-          approx(-4. * (point - center) *
-                 (2. * square((point - center) / width) - 3.) / pow<4>(width) *
-                 mapped_point));
+  // Generate the center
+  std::array<double, VolumeDim> center{};
+  for (size_t i = 0; i < VolumeDim; ++i) {
+    gsl::at(center, i) = real_dis(gen);
   }
 
-  const DataVector one{1., 1.};
-  const auto mapped_point = amplitude * exp(-square((one - center) / width));
-  const auto first_deriv = -2. * (one - center) / square(width) * mapped_point;
-  const auto second_deriv =
-      (4. * square(one - center) / pow<4>(width) - 2. / square(width)) *
-      mapped_point;
-  const auto third_deriv = -4. * (one - center) *
-                           (2. * square((one - center) / width) - 3.) /
-                           pow<4>(width) * mapped_point;
-  CHECK_ITERABLE_APPROX(gauss(one), mapped_point);
-  CHECK_ITERABLE_APPROX(gauss.first_deriv(one), first_deriv);
-  CHECK_ITERABLE_APPROX(gauss.second_deriv(one), second_deriv);
-  CHECK_ITERABLE_APPROX(gauss.third_deriv(one), third_deriv);
+  MathFunctions::Gaussian<VolumeDim, Fr> gauss{amplitude, width, center};
 
-  test_serialization(gauss);
-  test_serialization_via_base<MathFunction<1>, MathFunctions::Gaussian>(
-      amplitude, width, center);
-  // test operator !=
-  const MathFunctions::Gaussian gauss2{amplitude, width, center - 1.0};
-  CHECK(gauss != gauss2);
+  TestHelpers::MathFunctions::check(std::move(gauss), "gaussian", used_for_size,
+                                    {{{-1.0, 1.0}}}, amplitude, width, center);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian",
+                  "[PointwiseFunctions][Unit]") {
+  const DataVector dv{5};
+
+  pypp::SetupLocalPythonEnvironment{"PointwiseFunctions/MathFunctions/Python"};
+
+  using VolumeDims = tmpl::integral_list<size_t, 1, 2, 3>;
+  using Frames = tmpl::list<Frame::Grid, Frame::Inertial>;
+
+  tmpl::for_each<VolumeDims>([&dv](auto dim_v) {
+    using VolumeDim = typename decltype(dim_v)::type;
+    tmpl::for_each<Frames>([&dv](auto frame_v) {
+      using Fr = typename decltype(frame_v)::type;
+      test_gaussian_random<VolumeDim::value, DataVector, Fr>(dv);
+      test_gaussian_random<VolumeDim::value, double, Fr>(
+          std::numeric_limits<double>::signaling_NaN());
+    });
+  });
 }
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian.Factory",
                   "[PointwiseFunctions][Unit]") {
-  TestHelpers::test_factory_creation<MathFunction<1>>(
+  TestHelpers::test_factory_creation<MathFunction<1, Frame::Inertial>>(
       "Gaussian:\n"
       "  Amplitude: 3\n"
       "  Width: 2\n"
       "  Center: -9");
-  // Catch requires us to have at least one CHECK in each test
-  // The Unit.PointwiseFunctions.MathFunctions.Gaussian.Factory does not need to
-  // check anything
-  CHECK(true);
+
+  const double amplitude_3d{4.0};
+  const double width_3d{1.5};
+  const std::array<double, 3> center_3d{{1.1, -2.2, 3.3}};
+  const MathFunctions::Gaussian<3, Frame::Inertial> gauss_3d{
+      amplitude_3d, width_3d, center_3d};
+  const auto created_gauss =
+      TestHelpers::test_creation<MathFunctions::Gaussian<3, Frame::Inertial>>(
+          "Amplitude: 4.0\n"
+          "Width: 1.5\n"
+          "Center: [1.1, -2.2, 3.3]");
+  CHECK(created_gauss == gauss_3d);
+  const auto created_gauss_mathfunction =
+      TestHelpers::test_factory_creation<MathFunction<3, Frame::Inertial>>(
+          "Gaussian:\n"
+          "  Amplitude: 4.0\n"
+          "  Width: 1.5\n"
+          "  Center: [1.1, -2.2, 3.3]");
 }

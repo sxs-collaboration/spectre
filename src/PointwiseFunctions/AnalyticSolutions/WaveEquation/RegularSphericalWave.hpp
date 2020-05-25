@@ -29,7 +29,7 @@ namespace Tags {
 template <typename Tag>
 struct dt;
 }  // namespace Tags
-template <size_t VolumeDim>
+template <size_t VolumeDim, typename Fr>
 class MathFunction;
 namespace PUP {
 class er;
@@ -67,7 +67,7 @@ class RegularSphericalWave : public MarkAsAnalyticSolution {
  public:
   static constexpr size_t volume_dim = 3;
   struct Profile {
-    using type = std::unique_ptr<MathFunction<1>>;
+    using type = std::unique_ptr<MathFunction<1, Frame::Inertial>>;
     static constexpr OptionString help = {
         "The radial profile of the spherical wave."};
   };
@@ -80,7 +80,7 @@ class RegularSphericalWave : public MarkAsAnalyticSolution {
 
   RegularSphericalWave() = default;
   explicit RegularSphericalWave(
-      std::unique_ptr<MathFunction<1>> profile) noexcept;
+      std::unique_ptr<MathFunction<1, Frame::Inertial>> profile) noexcept;
   RegularSphericalWave(const RegularSphericalWave&) noexcept = delete;
   RegularSphericalWave& operator=(const RegularSphericalWave&) noexcept =
       delete;
@@ -105,7 +105,7 @@ class RegularSphericalWave : public MarkAsAnalyticSolution {
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
-  std::unique_ptr<MathFunction<1>> profile_;
+  std::unique_ptr<MathFunction<1, Frame::Inertial>> profile_;
 };
 }  // namespace Solutions
 }  // namespace ScalarWave

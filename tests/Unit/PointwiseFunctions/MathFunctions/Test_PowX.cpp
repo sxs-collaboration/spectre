@@ -6,100 +6,62 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <limits>
+#include <random>
 
 #include "DataStructures/DataVector.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/PointwiseFunctions/MathFunctions/TestHelpers.hpp"
+#include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
-#include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 
-template <size_t VolumeDim> class MathFunction;
+template <size_t VolumeDim, typename Fr>
+class MathFunction;
+
+namespace Frame {
+struct Grid;
+struct Inertial;
+}  // namespace Frame
+
+namespace {
+template <size_t VolumeDim, typename DataType, typename Fr>
+void test_pow_x_random(const DataType& used_for_size) noexcept {
+  Parallel::register_derived_classes_with_charm<
+      MathFunctions::PowX<VolumeDim, Fr>>();
+
+  for (int power = -5; power < 6; ++power) {
+    MathFunctions::PowX<VolumeDim, Fr> pow_x{power};
+    TestHelpers::MathFunctions::check(std::move(pow_x), "pow_x", used_for_size,
+                                      {{{-5.0, 5.0}}},
+                                      static_cast<double>(power));
+  }
+}
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.PowX",
                   "[PointwiseFunctions][Unit]") {
-  const std::array<double, 3> test_values{{-1.4, 2.5, 0.}};
+  const DataVector dv{5};
 
-  // Check i = 0, i = 1 and i = 2 cases seperately
-  {
-    MathFunctions::PowX power(0);
-    for (size_t j = 0; j < 3; ++j) {
-      const auto value = gsl::at(test_values, j);
-      CHECK(power(value) == 1.);
-      CHECK(power.first_deriv(value) == 0.);
-      CHECK(power.second_deriv(value) == 0.);
-      CHECK(power.third_deriv(value) == 0.);
-    }
-  }
+  pypp::SetupLocalPythonEnvironment{"PointwiseFunctions/MathFunctions/Python"};
 
-  {
-    MathFunctions::PowX power(1);
-    for (size_t j = 0; j < 3; ++j) {
-      const auto value = gsl::at(test_values, j);
-      CHECK(power(value) == approx(value));
-      CHECK(power.first_deriv(value) == 1.);
-      CHECK(power.second_deriv(value) == 0.);
-      CHECK(power.third_deriv(value) == 0.);
-    }
-  }
-
-  {
-    MathFunctions::PowX power(2);
-    for (size_t j = 0; j < 3; ++j) {
-      const auto value = gsl::at(test_values, j);
-      CHECK(power(value) == approx(square(value)));
-      CHECK(power.first_deriv(value) == approx(2. * value));
-      CHECK(power.second_deriv(value) == 2.);
-      CHECK(power.third_deriv(value) == 0.);
-    }
-  }
-
-  // Check several more powers
-  for (int i = 3; i < 5; ++i) {
-    MathFunctions::PowX power(i);
-    for (size_t j = 0; j < 3; ++j) {
-      const auto value = gsl::at(test_values, j);
-      CHECK(power(value) == approx(std::pow(value, i)));
-      CHECK(power.first_deriv(value) == approx(i * std::pow(value, i - 1)));
-      CHECK(power.second_deriv(value) ==
-            approx(i * (i - 1) * std::pow(value, i - 2)));
-      CHECK(power.third_deriv(value) ==
-            approx(i * (i - 1) * (i - 2) * std::pow(value, i - 3)));
-    }
-  }
-  // Check negative powers
-  for (int i = -5; i < -2; ++i) {
-    MathFunctions::PowX power(i);
-    // Don't check x=0 with a negative power
-    for (size_t j = 0; j < 2; ++j) {
-      const auto value = gsl::at(test_values, j);
-      CHECK(power(value) == approx(std::pow(value, i)));
-      CHECK(power.first_deriv(value) == approx(i * std::pow(value, i - 1)));
-      CHECK(power.second_deriv(value) ==
-            approx(i * (i - 1) * std::pow(value, i - 2)));
-      CHECK(power.third_deriv(value) ==
-            approx(i * (i - 1) * (i - 2) * std::pow(value, i - 3)));
-    }
-  }
-
-  MathFunctions::PowX power(3);
-  const DataVector test_dv{2, 1.4};
-  CHECK(power(test_dv) == pow(test_dv, 3));
-  CHECK(power.first_deriv(test_dv) == 3 * pow(test_dv, 2));
-  CHECK(power.second_deriv(test_dv) == 6 * test_dv);
-  CHECK(power.third_deriv(test_dv) == 6.);
-
-  test_serialization(power);
-  test_serialization_via_base<MathFunction<1>, MathFunctions::PowX>(3);
-  // test operator !=
-  const MathFunctions::PowX power2{-3};
-  CHECK(power != power2);
+  using Frames = tmpl::list<Frame::Grid, Frame::Inertial>;
+  tmpl::for_each<Frames>([&dv](auto frame_v) {
+    using Fr = typename decltype(frame_v)::type;
+    test_pow_x_random<1, DataVector, Fr>(dv);
+    test_pow_x_random<1, double, Fr>(
+        std::numeric_limits<double>::signaling_NaN());
+  });
 }
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.PowX.Factory",
                   "[PointwiseFunctions][Unit]") {
-  TestHelpers::test_factory_creation<MathFunction<1>>("PowX:\n    Power: 3");
+  TestHelpers::test_factory_creation<MathFunction<1, Frame::Inertial>>(
+      "PowX:\n    Power: 3");
+  TestHelpers::test_factory_creation<MathFunction<1, Frame::Inertial>>(
+      "PowX:\n    Power: 3");
   // Catch requires us to have at least one CHECK in each test
   // The Unit.PointwiseFunctions.MathFunctions.PowX.Factory does not need to
   // check anything

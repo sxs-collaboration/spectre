@@ -18,12 +18,15 @@ class DataVector;
 /// \endcond
 
 namespace MathFunctions {
+template <size_t VolumeDim, typename Fr>
+class PowX;
 
 /*!
  * \ingroup MathFunctionsGroup
  * \brief Power of X \f$f(x)=x^X\f$
  */
-class PowX : public MathFunction<1> {
+template <typename Fr>
+class PowX<1, Fr> : public MathFunction<1, Fr> {
  public:
   struct Power {
     using type = int;
@@ -42,7 +45,8 @@ class PowX : public MathFunction<1> {
   PowX(PowX&& /*rhs*/) noexcept = default;
   PowX& operator=(PowX&& /*rhs*/) noexcept = default;
 
-  WRAPPED_PUPable_decl_template(PowX);  // NOLINT
+  WRAPPED_PUPable_decl_base_template(SINGLE_ARG(MathFunction<1, Fr>),
+                                     PowX);  // NOLINT
 
   explicit PowX(int power) noexcept;
 
@@ -64,7 +68,11 @@ class PowX : public MathFunction<1> {
   void pup(PUP::er& p) override;  // NOLINT
 
  private:
-  friend bool operator==(const PowX& lhs, const PowX& rhs) noexcept;
+  double power_{};
+  friend bool operator==(const PowX& lhs, const PowX& rhs) noexcept {
+    return lhs.power_ == rhs.power_;
+  }
+
   template <typename T>
   T apply_call_operator(const T& x) const noexcept;
   template <typename T>
@@ -73,10 +81,15 @@ class PowX : public MathFunction<1> {
   T apply_second_deriv(const T& x) const noexcept;
   template <typename T>
   T apply_third_deriv(const T& x) const noexcept;
-
-  double power_{};
 };
 
-bool operator!=(const PowX& lhs, const PowX& rhs) noexcept;
-
+template <typename Fr>
+bool operator!=(const PowX<1, Fr>& lhs, const PowX<1, Fr>& rhs) noexcept {
+  return not(lhs == rhs);
+}
 }  // namespace MathFunctions
+
+/// \cond
+template <typename Fr>
+PUP::able::PUP_ID MathFunctions::PowX<1, Fr>::my_PUP_ID = 0;  // NOLINT
+/// \endcond
