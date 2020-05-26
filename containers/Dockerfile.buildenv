@@ -47,15 +47,19 @@ RUN apt-get update -y \
                           libboost-thread-dev libboost-tools-dev libssl-dev \
                           libbenchmark-dev
 
-# Update is needed to get libc++ correctly
-# Install jemalloc
+# Install libc++ and jemalloc
+# The second `apt-get update` is to ensure that anything that depends on
+# libc++-dev is properly found. This was an issue on older versions of Ubuntu
+# but might be fixed in the package manager now. To minimize changes, we are
+# leaving the update call in for now.
 RUN apt-get update -y \
     && apt-get install -y libc++-dev libc++1 libc++abi-dev \
     && apt-get update -y \
     && apt-get install -y libjemalloc2 libjemalloc-dev
 
 # Install ccache to cache compilations for reduced compile time, and Doxygen
-RUN apt-get install -y ccache doxygen
+RUN apt-get update -y \
+    && apt-get install -y ccache doxygen
 
 # Install Python packages
 # We only install packages that are needed by the build system (e.g. to compile
@@ -190,7 +194,7 @@ RUN git clone --single-branch --branch ${CHARM_GIT_TAG} --depth 1 \
 #   inside a container (0 is true in bash)
 # - The singularity containers work better if the locale is set properly
 ENV SPECTRE_CONTAINER 0
-RUN apt-get update \
+RUN apt-get update -y \
     && apt-get install -y locales language-pack-fi language-pack-en \
     && export LANGUAGE=en_US.UTF-8 \
     && export LANG=en_US.UTF-8 \
