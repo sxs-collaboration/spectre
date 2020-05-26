@@ -23,9 +23,9 @@ struct CentralFlux : tt::ConformsTo<dg::protocols::NumericalFlux> {
   using argument_tags = tmpl::list<::Tags::NormalDotFlux<FieldTag>>;
   using package_field_tags = tmpl::list<::Tags::NormalDotFlux<FieldTag>>;
   using package_extra_tags = tmpl::list<>;
-  void package_data(
+  static void package_data(
       const gsl::not_null<Scalar<DataVector>*> packaged_normal_dot_flux,
-      const Scalar<DataVector>& normal_dot_flux) const noexcept {
+      const Scalar<DataVector>& normal_dot_flux) noexcept {
     *packaged_normal_dot_flux = normal_dot_flux;
   }
   void operator()(const gsl::not_null<Scalar<DataVector>*> numerical_flux,

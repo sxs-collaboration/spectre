@@ -75,8 +75,9 @@ struct RefinementTestsNumericalFlux
   using argument_tags = tmpl::list<SomeField>;
   using package_field_tags = tmpl::list<SomeField>;
   using package_extra_tags = tmpl::list<>;
-  void package_data(const gsl::not_null<Scalar<DataVector>*> packaged_field,
-                    const Scalar<DataVector>& field) const noexcept {
+  static void package_data(
+      const gsl::not_null<Scalar<DataVector>*> packaged_field,
+      const Scalar<DataVector>& field) noexcept {
     *packaged_field = field;
   }
   void operator()(const gsl::not_null<Scalar<DataVector>*> numerical_flux,
