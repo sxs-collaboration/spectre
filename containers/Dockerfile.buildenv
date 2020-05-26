@@ -158,6 +158,27 @@ RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.7.tar.gz -O bla
     && cd ../.. \
     && rm -rf yaml-cpp*
 
+# Install include-what-you-use
+# We specify the CMAKE_PREFIX_PATH to make sure that CMake finds the LLVM libs
+# from the specific LLVM version that IWYU expects. Without this help, CMake
+# can pick up one of the other LLVM libs from the various clang versions that
+# are installed in our container.
+RUN apt-get update -y \
+    && apt-get install -y libclang-10-dev
+WORKDIR /work
+RUN wget https://github.com/include-what-you-use/include-what-you-use/archive/clang_10.tar.gz \
+    && tar -xzf clang_10.tar.gz \
+    && rm clang_10.tar.gz \
+    && mkdir /work/include-what-you-use-clang_10/build \
+    && cd /work/include-what-you-use-clang_10/build \
+    && cmake -D CMAKE_CXX_COMPILER=clang++-10 \
+        -D CMAKE_C_COMPILER=clang-10 \
+        -D CMAKE_PREFIX_PATH=/usr/lib/llvm-10 .. \
+    && make $PARALLEL_MAKE_ARG \
+    && make install \
+    && cd /work \
+    && rm -rf /work/include-what-you-use-clang_10
+
 # Download and build the Charm++ version used by SpECTRE
 # We build both Clang and GCC versions of Charm++ so that all our tests can
 # use the same build environment.
