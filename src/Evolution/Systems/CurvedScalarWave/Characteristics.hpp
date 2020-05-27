@@ -18,7 +18,6 @@
 namespace CurvedScalarWave {
 // @{
 /*!
- * \ingroup CurvedScalarWave
  * \brief Compute the characteristic speeds for the scalar wave system in curved
  * spacetime.
  *
@@ -84,7 +83,6 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<SpatialDim>,
 
 // @{
 /*!
- * \ingroup CurvedScalarWave
  * \brief Computes characteristic fields from evolved fields
  *
  * \ref CharacteristicFieldsCompute and
@@ -183,7 +181,6 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<SpatialDim>,
 
 // @{
 /*!
- * \ingroup CurvedScalarWave
  * \brief For expressions used here to compute evolved fields from
  * characteristic ones, see \ref CharacteristicFieldsCompute.
  */
@@ -231,7 +228,6 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
 // @}
 
 /*!
- * \ingroup CurvedScalarWave
  * \brief Computes the largest magnitude of the characteristic speeds.
  */
 template <size_t SpatialDim>
