@@ -7,6 +7,8 @@
   { symbol: ["std::abs", private, "<cmath>", public]},
   { symbol: ["abs", private, "<cmath>", public]},
   { symbol: ["std::hash", private, "<functional>", public]},
+  { symbol: ["std::pair", private, "<utility>", public]},
+  { symbol: ["pair", private, "<utility>", public]},
 
   { include: ["<bits/exception.h>", private,
               "<exception>", public]},
