@@ -242,7 +242,7 @@ struct InterfaceMesh : db::ComputeTag, Tags::Mesh<VolumeDim - 1> {
 };
 
 /// \ingroup DataBoxTagsGroup
-/// \ingroup ComputationDomainGroup
+/// \ingroup ComputationalDomainGroup
 /// Computes the coordinates in the frame `Frame` on the faces defined by
 /// `Direction`. Intended to be prefixed by a `Tags::InterfaceCompute` to
 /// define the directions on which to compute the coordinates.

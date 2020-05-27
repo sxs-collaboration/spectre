@@ -19,7 +19,7 @@ namespace Cce {
 namespace Actions {
 
 /*!
- * \ingroup Actions
+ * \ingroup ActionsGroup
  * \brief Takes the boundary data needed to perform the CCE linear solves as
  * arguments and puts them in the \ref DataBoxGroup, updating the
  * `Cce::Tags::BoundaryTime` accordingly.

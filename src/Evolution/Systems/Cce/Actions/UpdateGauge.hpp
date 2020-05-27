@@ -18,7 +18,7 @@ namespace Cce {
 namespace Actions {
 
 /*!
- * \ingroup Actions
+ * \ingroup ActionsGroup
  * \brief Updates all of the gauge quantities associated with the additional
  * regularity-preserving gauge transformation on the boundaries for a new set of
  * Cauchy coordinates.

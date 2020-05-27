@@ -21,7 +21,7 @@ namespace Cce {
 namespace Actions {
 
 /*!
- * \ingroup Actions
+ * \ingroup ActionsGroup
  * \brief Calculates the Bondi quantities that are required for any of the
  * `CalculateScriPlusValue` mutators.
  *

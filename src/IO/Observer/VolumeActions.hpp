@@ -40,7 +40,7 @@ struct ContributeVolumeDataToWriter;
 /// \endcond
 
 /*!
- * \ingroup ObserverGroup
+ * \ingroup ObserversGroup
  * \brief Send volume tensor data to the observer.
  *
  * The caller of this Action (which is to be invoked on the Observer parallel
@@ -121,7 +121,7 @@ struct ContributeVolumeData {
 };
 
 /*!
- * \ingroup ObserverGroup
+ * \ingroup ObserversGroup
  * \brief Move data to the observer writer for writing to disk.
  */
 struct ContributeVolumeDataToWriter {
@@ -188,7 +188,7 @@ struct ContributeVolumeDataToWriter {
 
 namespace ThreadedActions {
 /*!
- * \ingroup ObserverGroup
+ * \ingroup ObserversGroup
  * \brief Writes volume data at the `observation_id` to disk.
  */
 struct WriteVolumeData {

@@ -63,7 +63,7 @@ struct InsertIntoInterpolationManagerImpl<::Tags::Multiplies<LhsTag, RhsTag>> {
 }  // namespace detail
 
 /*!
- * \ingroup ActionGroup
+ * \ingroup ActionsGroup
  * \brief Places the data from the current hypersurface necessary to compute
  * `Tag` in the `ScriPlusInterpolationManager` associated with the `Tag`.
  *

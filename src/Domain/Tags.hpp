@@ -220,7 +220,7 @@ struct DetInvJacobianCompute : db::ComputeTag,
 };
 
 /// \ingroup DataBoxTagsGroup
-/// \ingroup DomainGroup
+/// \ingroup ComputationalDomainGroup
 /// Base tag for boundary data needed for updating the variables.
 struct VariablesBoundaryData : db::BaseTag {};
 

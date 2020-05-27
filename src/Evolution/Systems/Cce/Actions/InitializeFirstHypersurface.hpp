@@ -19,7 +19,7 @@ namespace Cce {
 namespace Actions {
 
 /*!
- * \ingroup Actions
+ * \ingroup ActionsGroup
  * \brief Given initial boundary data for \f$J\f$ and \f$\partial_r J\f$,
  * computes the initial hypersurface quantities \f$J\f$ and gauge values.
  *
