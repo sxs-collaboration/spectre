@@ -25,7 +25,7 @@ namespace detail {
 template <typename IntegrandType>
 double integrand(const double x, void* const params) {
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-  const auto function = reinterpret_cast<IntegrandType*>(params);
+  auto* const function = reinterpret_cast<IntegrandType*>(params);
   return (*function)(x);
 }
 
@@ -128,8 +128,8 @@ class GslQuadAdaptive<GslIntegralType::StandardGaussKronrod>
   double operator()(IntegrandType&& integrand, const double lower_boundary,
                     const double upper_boundary, const double tolerance_abs,
                     const int key, const double tolerance_rel = 0.) const {
-    double result;
-    double error;
+    double result = std::numeric_limits<double>::signaling_NaN();
+    double error = std::numeric_limits<double>::signaling_NaN();
     detail::disable_gsl_error_handling();
     const int status_code = gsl_integration_qag(
         gsl_integrand(std::forward<IntegrandType>(integrand)), lower_boundary,
@@ -158,8 +158,8 @@ class GslQuadAdaptive<GslIntegralType::IntegrableSingularitiesPresent>
   double operator()(IntegrandType&& integrand, const double lower_boundary,
                     const double upper_boundary, const double tolerance_abs,
                     const double tolerance_rel = 0.) const {
-    double result;
-    double error;
+    double result = std::numeric_limits<double>::signaling_NaN();
+    double error = std::numeric_limits<double>::signaling_NaN();
     detail::disable_gsl_error_handling();
     const int status_code = gsl_integration_qags(
         gsl_integrand(std::forward<IntegrandType>(integrand)), lower_boundary,
@@ -187,8 +187,8 @@ class GslQuadAdaptive<GslIntegralType::IntegrableSingularitiesKnown>
                     const std::vector<double>& points,
                     const double tolerance_abs,
                     const double tolerance_rel = 0.) const {
-    double result;
-    double error;
+    double result = std::numeric_limits<double>::signaling_NaN();
+    double error = std::numeric_limits<double>::signaling_NaN();
     detail::disable_gsl_error_handling();
     // The const_cast is necessary because GSL has a weird interface where
     // the number of singularities does not change, but it doesn't take
@@ -225,8 +225,8 @@ class GslQuadAdaptive<GslIntegralType::InfiniteInterval>
   template <typename IntegrandType>
   double operator()(IntegrandType&& integrand, const double tolerance_abs,
                     const double tolerance_rel = 0.) const {
-    double result;
-    double error;
+    double result = std::numeric_limits<double>::signaling_NaN();
+    double error = std::numeric_limits<double>::signaling_NaN();
     detail::disable_gsl_error_handling();
     const int status_code = gsl_integration_qagi(
         gsl_integrand(std::forward<IntegrandType>(integrand)), tolerance_abs,
@@ -253,8 +253,8 @@ class GslQuadAdaptive<GslIntegralType::UpperBoundaryInfinite>
   double operator()(IntegrandType&& integrand, const double lower_boundary,
                     const double tolerance_abs,
                     const double tolerance_rel = 0.) const {
-    double result;
-    double error;
+    double result = std::numeric_limits<double>::signaling_NaN();
+    double error = std::numeric_limits<double>::signaling_NaN();
     detail::disable_gsl_error_handling();
     const int status_code = gsl_integration_qagiu(
         gsl_integrand(std::forward<IntegrandType>(integrand)), lower_boundary,
@@ -281,8 +281,8 @@ class GslQuadAdaptive<GslIntegralType::LowerBoundaryInfinite>
   double operator()(IntegrandType&& integrand, const double upper_boundary,
                     const double tolerance_abs,
                     const double tolerance_rel = 0.) const {
-    double result;
-    double error;
+    double result = std::numeric_limits<double>::signaling_NaN();
+    double error = std::numeric_limits<double>::signaling_NaN();
     detail::disable_gsl_error_handling();
     const int status_code = gsl_integration_qagil(
         gsl_integrand(std::forward<IntegrandType>(integrand)), upper_boundary,
