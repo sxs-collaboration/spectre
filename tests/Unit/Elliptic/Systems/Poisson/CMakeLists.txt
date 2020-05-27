@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory(DgSchemes)
+
 set(LIBRARY "Test_Poisson")
 
 set(LIBRARY_SOURCES
