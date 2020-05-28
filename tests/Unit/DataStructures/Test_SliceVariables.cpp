@@ -130,34 +130,45 @@ void test_variables_add_slice_to_data() noexcept {
     add_slice_to_data(make_not_null(&vars), slice, extents, 1, 1);
   }
 
-  // The slice0_vals should have been added to the second half of each of the
-  // three vectors in the tensor. The slice1_vals should have been added to
+  {
+    // Test using add_slice_to_data with prefixed Variables
+    const auto slice_extents = extents.slice_away(0);
+    Variables<tmpl::list<
+        TestHelpers::Tags::Prefix0<TestHelpers::Tags::Vector<VectorType>>>>
+        slice(slice_extents.product(), 0.);
+    get<TestHelpers::Tags::Prefix0<TestHelpers::Tags::Vector<VectorType>>>(
+        slice) = Tensor{{{slice1_vals[0], slice1_vals[1], slice1_vals[2]}}};
+    add_slice_to_data(make_not_null(&vars), slice, extents, 0, 2);
+  }
+
+  // The slice0_vals should have been added twice to the second half of each of
+  // the three vectors in the tensor. The slice1_vals should have been added to
   // entries 2 and 6 in each vector.
   // clang-format off
   const Tensor expected{
       {{{orig_vals[0].at(0),
          orig_vals[0].at(1),
-         orig_vals[0].at(2) + slice1_vals[0].at(0),
+         orig_vals[0].at(2) + 2. * slice1_vals[0].at(0),
          orig_vals[0].at(3),
          orig_vals[0].at(4) + slice0_vals[0].at(0),
          orig_vals[0].at(5) + slice0_vals[0].at(1),
-         orig_vals[0].at(6) + slice0_vals[0].at(2) + slice1_vals[0].at(1),
+         orig_vals[0].at(6) + slice0_vals[0].at(2) + 2. * slice1_vals[0].at(1),
          orig_vals[0].at(7) + slice0_vals[0].at(3)},
         {orig_vals[1].at(0),
          orig_vals[1].at(1),
-         orig_vals[1].at(2) + slice1_vals[1].at(0),
+         orig_vals[1].at(2) + 2. * slice1_vals[1].at(0),
          orig_vals[1].at(3),
          orig_vals[1].at(4) + slice0_vals[1].at(0),
          orig_vals[1].at(5) + slice0_vals[1].at(1),
-         orig_vals[1].at(6) + slice0_vals[1].at(2) + slice1_vals[1].at(1),
+         orig_vals[1].at(6) + slice0_vals[1].at(2) + 2. * slice1_vals[1].at(1),
          orig_vals[1].at(7) + slice0_vals[1].at(3)},
         {orig_vals[2].at(0),
          orig_vals[2].at(1),
-         orig_vals[2].at(2) + slice1_vals[2].at(0),
+         orig_vals[2].at(2) + 2. * slice1_vals[2].at(0),
          orig_vals[2].at(3),
          orig_vals[2].at(4) + slice0_vals[2].at(0),
          orig_vals[2].at(5) + slice0_vals[2].at(1),
-         orig_vals[2].at(6) + slice0_vals[2].at(2) + slice1_vals[2].at(1),
+         orig_vals[2].at(6) + slice0_vals[2].at(2) + 2. * slice1_vals[2].at(1),
          orig_vals[2].at(7) + slice0_vals[2].at(3)}}}};
   // clang-format on
 

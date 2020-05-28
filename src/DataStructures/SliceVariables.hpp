@@ -78,13 +78,15 @@ Variables<TagsList> data_on_slice(const Variables<TagsList>& vars,
  *
  * \see data_on_slice
  */
-template <std::size_t VolumeDim, typename TagsList>
-void add_slice_to_data(const gsl::not_null<Variables<TagsList>*> volume_vars,
-                       const Variables<TagsList>& vars_on_slice,
-                       const Index<VolumeDim>& extents, const size_t sliced_dim,
-                       const size_t fixed_index) noexcept {
+template <std::size_t VolumeDim, typename VolumeTagsList,
+          typename SliceTagsList>
+void add_slice_to_data(
+    const gsl::not_null<Variables<VolumeTagsList>*> volume_vars,
+    const Variables<SliceTagsList>& vars_on_slice,
+    const Index<VolumeDim>& extents, const size_t sliced_dim,
+    const size_t fixed_index) noexcept {
   constexpr const size_t number_of_independent_components =
-      Variables<TagsList>::number_of_independent_components;
+      Variables<VolumeTagsList>::number_of_independent_components;
   const size_t volume_grid_points = extents.product();
   const size_t slice_grid_points = extents.slice_away(sliced_dim).product();
   ASSERT(volume_vars->number_of_grid_points() == volume_grid_points,
@@ -95,7 +97,7 @@ void add_slice_to_data(const gsl::not_null<Variables<TagsList>*> volume_vars,
          "vars_on_slice has wrong number of grid points.  Expected "
              << slice_grid_points << ", got "
              << vars_on_slice.number_of_grid_points());
-  using value_type = typename Variables<TagsList>::value_type;
+  using value_type = typename Variables<VolumeTagsList>::value_type;
   value_type* const volume_data = volume_vars->data();
   const value_type* const slice_data = vars_on_slice.data();
   for (SliceIterator si(extents, sliced_dim, fixed_index); si; ++si) {
