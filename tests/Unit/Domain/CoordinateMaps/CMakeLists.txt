@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_Affine.cpp
   Test_BulgedCube.cpp
   Test_CoordinateMap.cpp
+  Test_CylindricalEndcap.cpp
   Test_DiscreteRotation.cpp
   Test_EquatorialCompression.cpp
   Test_Equiangular.cpp
