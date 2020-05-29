@@ -530,6 +530,88 @@ void test_suite_for_map_on_sphere(
 
 /*!
  * \ingroup TestingFrameworkGroup
+ * \brief Given a Map `map`, tests the map functions, including map inverse,
+ * jacobian, and inverse jacobian, for a series of points.
+ * These points are chosen in a right cylinder with cylindrical radius 1
+ * and I1-axis extending from -1 to +1. The
+ * map is expected to be valid on the boundary of that cylinder as well as
+ * in its interior.
+ * This test works only in 3 dimensions.
+ */
+template <typename Map>
+void test_suite_for_map_on_cylinder(const Map& map) noexcept {
+  static_assert(Map::dim == 3, "Works only for a 3d map");
+
+  // Set up random number generator
+  MAKE_GENERATOR(gen);
+
+  std::uniform_real_distribution<> radius_dis(0.0, 1.0);
+  std::uniform_real_distribution<> phi_dis(0.0, 2.0 * M_PI);
+  std::uniform_real_distribution<> height_dis(-1.0, 1.0);
+
+  const double height = height_dis(gen);
+  CAPTURE_PRECISE(height);
+  const double phi = phi_dis(gen);
+  CAPTURE_PRECISE(phi);
+  const double radius = radius_dis(gen);
+  CAPTURE_PRECISE(radius);
+
+  const std::array<double, 3> random_point{
+      {radius * cos(phi), radius * sin(phi), height}};
+
+  const std::array<double, 3> random_bdry_point_rho{
+      {cos(phi), sin(phi), height}};
+
+  const std::array<double, 3> random_bdry_point_z{
+      {radius * cos(phi), radius * sin(phi), height > 0.5 ? 1.0 : -1.0}};
+
+  const std::array<double, 3> random_bdry_point_corner{
+      {cos(phi), sin(phi), height > 0.5 ? 1.0 : -1.0}};
+
+  // This point is on the axis.
+  const std::array<double, 3> random_inner_bdry_point_or_origin{
+      {0.0, 0.0, height}};
+
+  const auto test_helper = [
+    &random_bdry_point_rho, &random_bdry_point_z, &random_bdry_point_corner,
+    &random_inner_bdry_point_or_origin, &random_point
+  ](const auto& map_to_test) noexcept {
+    test_serialization(map_to_test);
+    CHECK_FALSE(map_to_test != map_to_test);
+
+    test_coordinate_map_argument_types(map_to_test,
+                                       random_inner_bdry_point_or_origin);
+    test_jacobian(map_to_test, random_inner_bdry_point_or_origin);
+    test_inv_jacobian(map_to_test, random_inner_bdry_point_or_origin);
+    test_inverse_map(map_to_test, random_inner_bdry_point_or_origin);
+
+    test_coordinate_map_argument_types(map_to_test, random_point);
+    test_jacobian(map_to_test, random_point);
+    test_inv_jacobian(map_to_test, random_point);
+    test_inverse_map(map_to_test, random_point);
+
+    test_jacobian(map_to_test, random_bdry_point_rho);
+    test_inv_jacobian(map_to_test, random_bdry_point_rho);
+    test_inverse_map(map_to_test, random_bdry_point_rho);
+
+    test_jacobian(map_to_test, random_bdry_point_z);
+    test_inv_jacobian(map_to_test, random_bdry_point_z);
+    test_inverse_map(map_to_test, random_bdry_point_z);
+
+    test_jacobian(map_to_test, random_bdry_point_corner);
+    test_inv_jacobian(map_to_test, random_bdry_point_corner);
+    test_inverse_map(map_to_test, random_bdry_point_corner);
+  };
+  test_helper(map);
+  const auto map2 = serialize_and_deserialize(map);
+  check_if_maps_are_equal(
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map),
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
+  test_helper(map2);
+}
+
+/*!
+ * \ingroup TestingFrameworkGroup
  * \brief An iterator for looping through all possible orientations
  * of the n-dim cube.
  */
