@@ -281,16 +281,16 @@ class YlmSpherepack {
 
   /// Adds a constant (i.e. \f$f(\theta,\phi)\f$ += \f$c\f$) to the function
   /// given by the spectral coefficients, by modifying the coefficients.
-  SPECTRE_ALWAYS_INLINE void add_constant(
-      const gsl::not_null<DataVector*> spectral_coefs, const double c) const
-      noexcept {
+  SPECTRE_ALWAYS_INLINE static void add_constant(
+      const gsl::not_null<DataVector*> spectral_coefs,
+      const double c) noexcept {
     // The factor of sqrt(8) is because of the normalization of
     // SPHEREPACK's coefficients.
     (*spectral_coefs)[0] += sqrt(8.0) * c;
   }
 
   /// Returns the average of \f$f(\theta,\phi)\f$ over \f$(\theta,\phi)\f$.
-  SPECTRE_ALWAYS_INLINE double average(const DataVector& spectral_coefs) const
+  SPECTRE_ALWAYS_INLINE static double average(const DataVector& spectral_coefs)
       noexcept {
     // The factor of sqrt(8) is because of the normalization of
     // SPHEREPACK's coefficients.  All other coefficients average to zero.

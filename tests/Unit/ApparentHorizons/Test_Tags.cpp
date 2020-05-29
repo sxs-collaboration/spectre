@@ -30,7 +30,8 @@ namespace {
 // a given average radius and a given center.
 auto create_strahlkorper_y11(const double y11_amplitude, const double radius,
                              const std::array<double, 3>& center) {
-  const size_t l_max = 4, m_max = 4;
+  static const size_t l_max = 4;
+  static const size_t m_max = 4;
 
   Strahlkorper<Frame::Inertial> strahlkorper_sphere(l_max, m_max, radius,
                                                     center);
