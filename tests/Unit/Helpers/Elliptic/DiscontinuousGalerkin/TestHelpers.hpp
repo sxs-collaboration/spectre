@@ -16,18 +16,19 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/Element.hpp"
-#include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
-#include "Domain/IndexToSliceAt.hpp"
-#include "Domain/Mesh.hpp"
+#include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/IndexToSliceAt.hpp"
+#include "Domain/SurfaceJacobian.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
 #include "Elliptic/FirstOrderOperator.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/Tuple.hpp"
@@ -103,9 +104,10 @@ struct TestTag : db::SimpleTag {
  *
  * \snippet Helpers/Elliptic/Systems/Poisson/DgSchemes.cpp boundary_scheme
  */
-template <typename System, typename TagsList, typename PackageFluxesArgs,
-          typename PackageSourcesArgs, typename PackageBoundaryData,
-          typename ApplyBoundaryContribution, size_t Dim = System::volume_dim,
+template <typename System, bool MassiveOperator, typename TagsList,
+          typename PackageFluxesArgs, typename PackageSourcesArgs,
+          typename PackageBoundaryData, typename ApplyBoundaryContribution,
+          size_t Dim = System::volume_dim,
           typename PrimalFields = typename System::primal_fields,
           typename AuxiliaryFields = typename System::auxiliary_fields,
           typename FluxesComputer = typename System::fluxes,
@@ -153,7 +155,16 @@ apply_first_order_dg_operator(
       package_sources_args(element_id, dg_element));
 
   // Compute bulk contribution in central element
-  ::elliptic::first_order_operator(make_not_null(&result), div_fluxes, sources);
+  if constexpr (MassiveOperator) {
+    const auto jac =
+        dg_element.element_map.jacobian(logical_coordinates(dg_element.mesh));
+    const auto det_jac = determinant(jac);
+    ::elliptic::first_order_operator_massive(make_not_null(&result), div_fluxes,
+                                             sources, dg_element.mesh, det_jac);
+  } else {
+    ::elliptic::first_order_operator(make_not_null(&result), div_fluxes,
+                                     sources);
+  }
 
   // Setup mortars
   const auto mortars = create_mortars(element_id, dg_elements);
@@ -187,6 +198,8 @@ apply_first_order_dg_operator(
     for (size_t d = 0; d < volume_dim; d++) {
       face_normal.get(d) /= get(magnitude_of_face_normal);
     }
+    const auto surface_jacobian = domain::surface_jacobian(
+        dg_element.element_map, face_mesh, direction, magnitude_of_face_normal);
 
     // Compute normal dot fluxes
     const auto fluxes_on_face = data_on_slice(fluxes, dg_element.mesh.extents(),
@@ -199,18 +212,17 @@ apply_first_order_dg_operator(
         div_fluxes, dg_element.mesh.extents(), dimension, slice_index);
 
     // Assemble local boundary data
+    const auto fluxes_args_on_face =
+        package_fluxes_args(element_id, dg_element, direction);
     auto local_boundary_data = package_boundary_data(
-        face_mesh, face_normal, normal_dot_fluxes, div_fluxes_on_face);
+        dg_element.mesh, direction, face_normal, magnitude_of_face_normal,
+        normal_dot_fluxes, div_fluxes_on_face, fluxes_args_on_face);
     if (::dg::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
       local_boundary_data = local_boundary_data.project_to_mortar(
           face_mesh, mortar_mesh, mortar_size);
     }
 
     // Assemble remote boundary data
-    auto remote_face_normal = face_normal;
-    for (size_t d = 0; d < volume_dim; d++) {
-      remote_face_normal.get(d) *= -1.;
-    }
     std::decay_t<decltype(local_boundary_data)> remote_boundary_data;
     if (neighbor_id == ElementId<volume_dim>::external_boundary_id()) {
       // On exterior ("ghost") faces, manufacture boundary data that represent
@@ -226,14 +238,19 @@ apply_first_order_dg_operator(
                                                   AuxiliaryFields>(
                 ghost_vars, fluxes_computer, fluxes_args...);
           },
-          package_fluxes_args(element_id, dg_element, direction));
+          fluxes_args_on_face);
+      auto remote_face_normal = face_normal;
+      for (size_t d = 0; d < volume_dim; d++) {
+        remote_face_normal.get(d) *= -1.;
+      }
       const auto ghost_normal_dot_fluxes =
           normal_dot_flux<TagsList>(remote_face_normal, ghost_fluxes);
       remote_boundary_data = package_boundary_data(
-          face_mesh, remote_face_normal, ghost_normal_dot_fluxes,
+          dg_element.mesh, direction.opposite(), remote_face_normal,
+          magnitude_of_face_normal, ghost_normal_dot_fluxes,
           // Using the div_fluxes from the interior here is fine for Dirichlet
           // boundaries
-          div_fluxes_on_face);
+          div_fluxes_on_face, fluxes_args_on_face);
     } else {
       // On internal boundaries, get neighbor data from all_variables
       const auto& neighbor_orientation =
@@ -241,14 +258,25 @@ apply_first_order_dg_operator(
       const auto direction_from_neighbor =
           neighbor_orientation(direction.opposite());
       const auto& neighbor = dg_elements.at(neighbor_id);
+      const auto neighbor_face_mesh =
+          neighbor.mesh.slice_away(direction_from_neighbor.dimension());
+      const auto neighbor_mortars = create_mortars(neighbor_id, dg_elements);
+      const auto& neighbor_mortar = neighbor_mortars.at(
+          std::make_pair(direction_from_neighbor, element_id));
+      const auto& neighbor_mortar_mesh = neighbor_mortar.first;
+      const auto& neighbor_mortar_size = neighbor_mortar.second;
+      ASSERT(neighbor_mortar_mesh == mortar_mesh,
+             "Mismatch between neighboring mortar meshes");
       const auto& remote_vars = all_variables.at(neighbor_id);
+      const auto fluxes_args_on_remote_face =
+          package_fluxes_args(neighbor_id, neighbor, direction_from_neighbor);
       const auto remote_fluxes = std::apply(
           [&remote_vars, &fluxes_computer](const auto&... fluxes_args) {
             return ::elliptic::first_order_fluxes<volume_dim, PrimalFields,
                                                   AuxiliaryFields>(
                 remote_vars, fluxes_computer, fluxes_args...);
           },
-          package_fluxes_args(neighbor_id, neighbor, direction_from_neighbor));
+          fluxes_args_on_remote_face);
       const auto remote_div_fluxes_on_face = data_on_slice(
           divergence(remote_fluxes, neighbor.mesh, neighbor.inv_jacobian),
           neighbor.mesh.extents(), direction_from_neighbor.dimension(),
@@ -257,18 +285,27 @@ apply_first_order_dg_operator(
           remote_fluxes, neighbor.mesh.extents(),
           direction_from_neighbor.dimension(),
           index_to_slice_at(neighbor.mesh.extents(), direction_from_neighbor));
+      auto remote_face_normal = unnormalized_face_normal(
+          neighbor_face_mesh, neighbor.element_map, direction_from_neighbor);
+      const auto remote_face_normal_magnitude = magnitude(remote_face_normal);
+      for (size_t d = 0; d < volume_dim; d++) {
+        remote_face_normal.get(d) /= get(remote_face_normal_magnitude);
+      }
       auto remote_normal_dot_fluxes =
           normal_dot_flux<TagsList>(remote_face_normal, remote_fluxes_on_face);
       remote_boundary_data = package_boundary_data(
-          face_mesh, remote_face_normal, remote_normal_dot_fluxes,
-          remote_div_fluxes_on_face);
-      if (::dg::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
+          neighbor.mesh, direction_from_neighbor, remote_face_normal,
+          remote_face_normal_magnitude, remote_normal_dot_fluxes,
+          remote_div_fluxes_on_face, fluxes_args_on_remote_face);
+      if (::dg::needs_projection(neighbor_face_mesh, neighbor_mortar_mesh,
+                                 neighbor_mortar_size)) {
         remote_boundary_data = remote_boundary_data.project_to_mortar(
-            face_mesh, mortar_mesh, mortar_size);
+            neighbor_face_mesh, neighbor_mortar_mesh, neighbor_mortar_size);
       }
       if (not neighbor_orientation.is_aligned()) {
-        remote_boundary_data.orient_on_slice(mortar_mesh.extents(), dimension,
-                                             neighbor_orientation);
+        remote_boundary_data.orient_on_slice(
+            neighbor_mortar_mesh.extents(), direction_from_neighbor.dimension(),
+            neighbor_orientation.inverse_map());
       }
     }
 
@@ -276,7 +313,7 @@ apply_first_order_dg_operator(
     apply_boundary_contribution(
         make_not_null(&result), std::move(local_boundary_data),
         std::move(remote_boundary_data), magnitude_of_face_normal,
-        dg_element.mesh, mortar_id, mortar_mesh, mortar_size);
+        surface_jacobian, dg_element.mesh, mortar_id, mortar_mesh, mortar_size);
   }
   return result;
 }

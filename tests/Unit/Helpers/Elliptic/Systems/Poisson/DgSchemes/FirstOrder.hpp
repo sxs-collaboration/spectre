@@ -14,7 +14,7 @@ struct DomainCreator;
 
 namespace TestHelpers::Poisson::dg {
 
-template <size_t Dim>
+template <bool MassiveOperator, size_t Dim>
 Matrix first_order_operator_matrix(const DomainCreator<Dim>& domain_creator,
                                    double penalty_parameter);
 
