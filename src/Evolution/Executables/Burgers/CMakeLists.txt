@@ -3,6 +3,7 @@
 
 set(LIBS_TO_LINK
   Burgers
+  BurgersAnalyticData
   BurgersSolutions
   DiscontinuousGalerkin
   DomainCreators
