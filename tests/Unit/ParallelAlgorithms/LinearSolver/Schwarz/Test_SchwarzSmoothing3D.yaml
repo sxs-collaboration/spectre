@@ -1,0 +1,44 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+AnalyticSolution:
+  ProductOfSinusoids:
+    WaveNumbers: [1, 1, 1]
+
+DomainCreator:
+  Brick:
+    LowerBound: [0, 0, 0]
+    UpperBound: [3.141592653589793, 3.141592653589793, 3.141592653589793]
+    IsPeriodicIn: [false, false, false]
+    InitialRefinement: [1, 1, 1]
+    InitialGridPoints: [4, 4, 4]
+
+NumericalFlux:
+  InternalPenalty:
+    PenaltyParameter: 1.
+
+ErrorTolerance: 2.e-1
+
+SchwarzSmoother:
+  MaxOverlap: 2
+  Iterations: 10
+  Verbosity: Verbose
+  SubdomainSolver:
+    ConvergenceCriteria:
+      MaxIterations: 1000
+      RelativeResidual: 1.e-8
+      AbsoluteResidual: 1.e-10
+    Verbosity: Verbose
+    Restart: 0
+
+Observers:
+  VolumeFileName: "Test_SchwarzSmoothing_Volume"
+  ReductionFileName: "Test_SchwarzSmoothing_Reductions"
+
+EventsAndTriggers:
+  ? EveryNIterations:
+      N: 1
+  : - ObserveErrorNorms:
+        SubfileName: ErrorNorms
+    - ObserveFields:
+        SubfileName: VolumeData

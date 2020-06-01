@@ -199,6 +199,7 @@ template <size_t Dim, typename OptionsGroup>
 struct SummedIntrudingOverlapWeights : db::ComputeTag {
   static std::string name() noexcept { return "SummedIntrudingOverlapWeights"; }
   using return_type = Scalar<DataVector>;
+  using type = return_type;
   using argument_tags =
       tmpl::list<domain::Tags::Interface<domain::Tags::InternalDirections<Dim>,
                                          Weight<OptionsGroup>>,
