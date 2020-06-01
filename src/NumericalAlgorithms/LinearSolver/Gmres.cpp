@@ -13,8 +13,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace LinearSolver {
-namespace gmres_detail {
+namespace LinearSolver::gmres::detail {
 
 namespace {
 
@@ -90,5 +89,4 @@ DenseVector<double> minimal_residual_vector(
   return minres;
 }
 
-}  // namespace gmres_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::gmres::detail

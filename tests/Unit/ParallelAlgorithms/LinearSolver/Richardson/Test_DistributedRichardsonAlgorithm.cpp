@@ -6,30 +6,31 @@
 #include <vector>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Helpers/ParallelAlgorithms/LinearSolver/DistributedLinearSolverAlgorithmTestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
-#include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
+#include "ParallelAlgorithms/LinearSolver/Richardson/Richardson.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace helpers = LinearSolverAlgorithmTestHelpers;
+namespace helpers_distributed = DistributedLinearSolverAlgorithmTestHelpers;
 
 namespace {
 
-struct SerialGmres {
+struct ParallelRichardson {
   static constexpr OptionString help =
       "Options for the iterative linear solver";
 };
 
 struct Metavariables {
   static constexpr const char* const help{
-      "Test the GMRES linear solver algorithm"};
+      "Test the Richardson linear solver algorithm on multiple elements"};
 
-  using linear_solver =
-      LinearSolver::gmres::Gmres<Metavariables, helpers::fields_tag,
-                                 SerialGmres>;
+  using linear_solver = LinearSolver::Richardson::Richardson<
+      typename helpers_distributed::fields_tag, ParallelRichardson>;
 
-  using component_list = helpers::component_list<Metavariables>;
+  using component_list = helpers_distributed::component_list<Metavariables>;
   using observed_reduction_data_tags =
       helpers::observed_reduction_data_tags<Metavariables>;
   static constexpr bool ignore_unrecognized_command_line_options = false;

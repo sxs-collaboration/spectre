@@ -23,19 +23,16 @@ namespace tuples {
 template <typename...>
 class TaggedTuple;
 }  // namespace tuples
-namespace LinearSolver {
-namespace gmres_detail {
+namespace LinearSolver::gmres::detail {
 template <typename FieldsTag, typename OptionsGroup>
 struct InitializeResidualMonitor;
-}  // namespace gmres_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::gmres::detail
 namespace Convergence {
 struct Criteria;
 }  // namespace Convergence
 /// \endcond
 
-namespace LinearSolver {
-namespace gmres_detail {
+namespace LinearSolver::gmres::detail {
 
 template <typename Metavariables, typename FieldsTag, typename OptionsGroup>
 struct ResidualMonitor {
@@ -114,5 +111,4 @@ struct InitializeResidualMonitor {
   }
 };
 
-}  // namespace gmres_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::gmres::detail

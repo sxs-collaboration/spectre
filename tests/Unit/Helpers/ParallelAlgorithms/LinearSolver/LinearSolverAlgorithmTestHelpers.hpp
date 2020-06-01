@@ -226,11 +226,7 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase,
           Metavariables::Phase::RegisterWithObserver,
-          tmpl::list<observers::Actions::RegisterWithObservers<
-                         observers::RegisterObservers<
-                             LinearSolver::Tags::IterationId<
-                                 typename linear_solver::options_group>,
-                             typename Metavariables::element_observation_type>>,
+          tmpl::list<typename linear_solver::register_element,
                      typename linear_solver::prepare_solve,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
@@ -351,8 +347,6 @@ using component_list = tmpl::push_back<
     typename Metavariables::linear_solver::component_list,
     ElementArray<Metavariables>, observers::Observer<Metavariables>,
     observers::ObserverWriter<Metavariables>, OutputCleaner<Metavariables>>;
-
-struct element_observation_type {};
 
 template <typename Metavariables>
 using observed_reduction_data_tags = observers::collect_reduction_data_tags<

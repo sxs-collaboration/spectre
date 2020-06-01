@@ -25,16 +25,13 @@ namespace tuples {
 template <typename...>
 class TaggedTuple;
 }  // namespace tuples
-namespace LinearSolver {
-namespace cg_detail {
+namespace LinearSolver::cg::detail {
 template <typename FieldsTag, typename OptionsGroup>
 struct InitializeResidualMonitor;
-}  // namespace cg_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::cg::detail
 /// \endcond
 
-namespace LinearSolver {
-namespace cg_detail {
+namespace LinearSolver::cg::detail {
 
 template <typename Metavariables, typename FieldsTag, typename OptionsGroup>
 struct ResidualMonitor {
@@ -107,5 +104,4 @@ struct InitializeResidualMonitor {
   }
 };
 
-}  // namespace cg_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::cg::detail

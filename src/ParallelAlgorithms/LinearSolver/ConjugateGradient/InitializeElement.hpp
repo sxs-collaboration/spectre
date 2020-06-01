@@ -21,8 +21,7 @@ class TaggedTuple;
 }  // namespace tuples
 /// \endcond
 
-namespace LinearSolver {
-namespace cg_detail {
+namespace LinearSolver::cg::detail {
 
 template <typename FieldsTag, typename OptionsGroup>
 struct InitializeElement {
@@ -68,5 +67,4 @@ struct InitializeElement {
   }
 };
 
-}  // namespace cg_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::cg::detail

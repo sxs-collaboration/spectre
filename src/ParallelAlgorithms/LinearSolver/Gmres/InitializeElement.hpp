@@ -20,8 +20,7 @@ class TaggedTuple;
 }  // namespace tuples
 /// \endcond
 
-namespace LinearSolver {
-namespace gmres_detail {
+namespace LinearSolver::gmres::detail {
 
 template <typename FieldsTag, typename OptionsGroup>
 struct InitializeElement {
@@ -75,5 +74,4 @@ struct InitializeElement {
   }
 };
 
-}  // namespace gmres_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::gmres::detail

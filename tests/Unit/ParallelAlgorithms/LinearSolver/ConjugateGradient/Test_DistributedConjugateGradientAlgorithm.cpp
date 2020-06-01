@@ -28,11 +28,10 @@ struct Metavariables {
       "Test the conjugate gradient linear solver algorithm on multiple "
       "elements"};
 
-  using linear_solver = LinearSolver::ConjugateGradient<
+  using linear_solver = LinearSolver::cg::ConjugateGradient<
       Metavariables, typename helpers_distributed::fields_tag, ParallelCg>;
 
   using component_list = helpers_distributed::component_list<Metavariables>;
-  using element_observation_type = helpers::element_observation_type;
   using observed_reduction_data_tags =
       helpers::observed_reduction_data_tags<Metavariables>;
   static constexpr bool ignore_unrecognized_command_line_options = false;

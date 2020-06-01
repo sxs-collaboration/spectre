@@ -64,5 +64,7 @@ function(add_linear_solver_algorithm_test TEST_NAME)
     ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
 endfunction()
 
+add_subdirectory(AsynchronousSolvers)
 add_subdirectory(ConjugateGradient)
 add_subdirectory(Gmres)
+add_subdirectory(Richardson)

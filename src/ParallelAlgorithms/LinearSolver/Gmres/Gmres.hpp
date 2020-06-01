@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/ElementActions.hpp"
@@ -10,7 +11,10 @@
 #include "ParallelAlgorithms/LinearSolver/Gmres/ResidualMonitor.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace LinearSolver {
+/// Items related to the GMRES linear solver
+///
+/// \see `LinearSolver::gmres::Gmres`
+namespace LinearSolver::gmres {
 
 /*!
  * \ingroup LinearSolverGroup
@@ -39,7 +43,7 @@ namespace LinearSolver {
  * reductions are performed to find a vector that is orthogonal to those used in
  * previous steps, the number of reductions increases linearly with iterations.
  * No restarting mechanism is currently implemented. The actions are implemented
- * in the `gmres_detail` namespace and constitute the full algorithm in the
+ * in the `gmres::detail` namespace and constitute the full algorithm in the
  * following order:
  * 1. `PerformStep` (on elements): Start an Arnoldi orthogonalization by
  * computing the inner product between \f$A(q)\f$ and the first of the
@@ -74,7 +78,7 @@ struct Gmres {
    * \brief The parallel components used by the GMRES linear solver
    */
   using component_list = tmpl::list<
-      gmres_detail::ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>;
+      detail::ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>;
 
   /*!
    * \brief Initialize the tags used by the GMRES linear solver.
@@ -120,8 +124,10 @@ struct Gmres {
    * not need to be initialized until it is computed for the first time in the
    * first step of the algorithm.
    */
-  using initialize_element =
-      gmres_detail::InitializeElement<FieldsTag, OptionsGroup>;
+  using initialize_element = detail::InitializeElement<FieldsTag, OptionsGroup>;
+
+  using register_element =
+      observers::Actions::RegisterWithObservers<observe_detail::Registration>;
 
   /*!
    * \brief Reset the linear solver to its initial state.
@@ -154,7 +160,7 @@ struct Gmres {
    *
    * \see `initialize_element`
    */
-  using prepare_solve = gmres_detail::PrepareSolve<FieldsTag, OptionsGroup>;
+  using prepare_solve = detail::PrepareSolve<FieldsTag, OptionsGroup>;
 
   // Compile-time interface for observers
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
@@ -171,7 +177,7 @@ struct Gmres {
    *   * `Tags::Next<LinearSolver::Tags::IterationId>`
    *   * `orthogonalization_iteration_id_tag`
    */
-  using prepare_step = gmres_detail::PrepareStep<FieldsTag, OptionsGroup>;
+  using prepare_step = detail::PrepareStep<FieldsTag, OptionsGroup>;
 
   /*!
    * \brief Perform an iteration of the GMRES linear solver.
@@ -198,7 +204,7 @@ struct Gmres {
    *   * `basis_history_tag`
    *   * `LinearSolver::Tags::HasConverged`
    */
-  using perform_step = gmres_detail::PerformStep<FieldsTag, OptionsGroup>;
+  using perform_step = detail::PerformStep<FieldsTag, OptionsGroup>;
 };
 
-}  // namespace LinearSolver
+}  // namespace LinearSolver::gmres

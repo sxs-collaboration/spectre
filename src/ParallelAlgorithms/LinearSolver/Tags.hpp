@@ -28,6 +28,8 @@ namespace LinearSolver {
 namespace Tags {
 template <typename OptionsGroup>
 struct ConvergenceCriteria;
+template <typename OptionsGroup>
+struct Iterations;
 }  // namespace Tags
 }  // namespace LinearSolver
 /// \endcond
@@ -234,7 +236,7 @@ struct HasConverged : db::SimpleTag {
   using type = Convergence::HasConverged;
 };
 
-/*
+/*!
  * \brief Employs the `LinearSolver::Tags::ConvergenceCriteria` to
  * determine the linear solver has converged.
  */
@@ -262,6 +264,21 @@ struct HasConvergedCompute : LinearSolver::Tags::HasConverged<OptionsGroup>,
   }
 };
 
+/// Employs the `LinearSolver::Tags::Iterations` to determine the linear solver
+/// has converged once it has completed a fixed number of iterations.
+template <typename OptionsGroup>
+struct HasConvergedByIterationsCompute
+    : LinearSolver::Tags::HasConverged<OptionsGroup>,
+      db::ComputeTag {
+  using argument_tags =
+      tmpl::list<LinearSolver::Tags::Iterations<OptionsGroup>,
+                 LinearSolver::Tags::IterationId<OptionsGroup>>;
+  static Convergence::HasConverged function(
+      const size_t iterations, const size_t iteration_id) noexcept {
+    return {{iterations, 0., 0.}, iteration_id, 1., 1.};
+  }
+};
+
 }  // namespace Tags
 
 /*!
@@ -275,6 +292,13 @@ struct ConvergenceCriteria {
   static constexpr OptionString help =
       "Determine convergence of the linear solve";
   using type = Convergence::Criteria;
+  using group = OptionsGroup;
+};
+
+template <typename OptionsGroup>
+struct Iterations {
+  static constexpr OptionString help = "Number of iterations to run the solver";
+  using type = size_t;
   using group = OptionsGroup;
 };
 
@@ -322,6 +346,22 @@ struct ConvergenceCriteria : db::SimpleTag {
   static Convergence::Criteria create_from_options(
       const Convergence::Criteria& convergence_criteria) noexcept {
     return convergence_criteria;
+  }
+};
+
+/// A fixed number of iterations to run the linear solver
+template <typename OptionsGroup>
+struct Iterations : db::SimpleTag {
+  static std::string name() noexcept {
+    return "Iterations(" + option_name<OptionsGroup>() + ")";
+  }
+  using type = size_t;
+
+  static constexpr bool pass_metavariables = false;
+  using option_tags =
+      tmpl::list<LinearSolver::OptionTags::Iterations<OptionsGroup>>;
+  static size_t create_from_options(const size_t iterations) noexcept {
+    return iterations;
   }
 };
 

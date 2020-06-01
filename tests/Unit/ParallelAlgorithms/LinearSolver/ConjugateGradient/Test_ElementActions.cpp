@@ -50,11 +50,11 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<VectorTag>>,
-                     LinearSolver::cg_detail::InitializeElement<
+                     LinearSolver::cg::detail::InitializeElement<
                          fields_tag, DummyOptionsGroup>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing,
-                             tmpl::list<LinearSolver::cg_detail::PrepareStep<
+                             tmpl::list<LinearSolver::cg::detail::PrepareStep<
                                  fields_tag, DummyOptionsGroup>>>>;
 };
 
@@ -117,7 +117,7 @@ SPECTRE_TEST_CASE(
 
   SECTION("InitializeHasConverged") {
     ActionTesting::simple_action<
-        element_array, LinearSolver::cg_detail::InitializeHasConverged<
+        element_array, LinearSolver::cg::detail::InitializeHasConverged<
                            fields_tag, DummyOptionsGroup>>(
         make_not_null(&runner), 0,
         Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.});
@@ -130,7 +130,7 @@ SPECTRE_TEST_CASE(
     ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
     ActionTesting::simple_action<
         element_array,
-        LinearSolver::cg_detail::UpdateOperand<fields_tag, DummyOptionsGroup>>(
+        LinearSolver::cg::detail::UpdateOperand<fields_tag, DummyOptionsGroup>>(
         make_not_null(&runner), 0, 2.,
         Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.});
     CHECK(get_tag(LinearSolver::Tags::Operand<VectorTag>{}) ==

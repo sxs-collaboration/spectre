@@ -39,16 +39,14 @@ namespace Parallel {
 template <typename Metavariables>
 class ConstGlobalCache;
 }  // namespace Parallel
-namespace LinearSolver {
-namespace cg_detail {
+namespace LinearSolver::cg::detail {
 template <typename FieldsTag, typename OptionsGroup>
 struct InitializeHasConverged;
 template <typename FieldsTag, typename OptionsGroup>
 struct UpdateFieldValues;
 template <typename FieldsTag, typename OptionsGroup>
 struct UpdateOperand;
-}  // namespace cg_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::cg::detail
 
 namespace helpers = ResidualMonitorActionsTestHelpers;
 
@@ -81,19 +79,19 @@ using check_tags = tmpl::list<CheckValueTag, CheckConvergedTag>;
 template <typename Metavariables>
 struct MockResidualMonitor {
   using component_being_mocked =
-      LinearSolver::cg_detail::ResidualMonitor<Metavariables, fields_tag,
-                                               TestLinearSolver>;
+      LinearSolver::cg::detail::ResidualMonitor<Metavariables, fields_tag,
+                                                TestLinearSolver>;
   using metavariables = Metavariables;
   // We represent the singleton as an array with only one element for the action
   // testing framework
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tags =
-      typename LinearSolver::cg_detail::ResidualMonitor<
+      typename LinearSolver::cg::detail::ResidualMonitor<
           Metavariables, fields_tag, TestLinearSolver>::const_global_cache_tags;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<LinearSolver::cg_detail::InitializeResidualMonitor<
+      tmpl::list<LinearSolver::cg::detail::InitializeResidualMonitor<
           fields_tag, TestLinearSolver>>>>;
 };
 
@@ -164,10 +162,10 @@ struct MockElementArray {
       tmpl::list<ActionTesting::InitializeDataBox<check_tags>>>>;
 
   using replace_these_simple_actions = tmpl::list<
-      LinearSolver::cg_detail::InitializeHasConverged<fields_tag,
-                                                      TestLinearSolver>,
-      LinearSolver::cg_detail::UpdateFieldValues<fields_tag, TestLinearSolver>,
-      LinearSolver::cg_detail::UpdateOperand<fields_tag, TestLinearSolver>>;
+      LinearSolver::cg::detail::InitializeHasConverged<fields_tag,
+                                                       TestLinearSolver>,
+      LinearSolver::cg::detail::UpdateFieldValues<fields_tag, TestLinearSolver>,
+      LinearSolver::cg::detail::UpdateOperand<fields_tag, TestLinearSolver>>;
   using with_these_simple_actions =
       tmpl::list<MockInitializeHasConverged, MockUpdateFieldValues,
                  MockUpdateOperand>;
@@ -229,7 +227,7 @@ SPECTRE_TEST_CASE(
 
   SECTION("InitializeResidual") {
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::cg_detail::InitializeResidual<
+        residual_monitor, LinearSolver::cg::detail::InitializeResidual<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 4.);
     ActionTesting::invoke_queued_threaded_action<observer_writer>(
@@ -261,7 +259,7 @@ SPECTRE_TEST_CASE(
 
   SECTION("InitializeResidualAndConverge") {
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::cg_detail::InitializeResidual<
+        residual_monitor, LinearSolver::cg::detail::InitializeResidual<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 0.);
     ActionTesting::invoke_queued_simple_action<element_array>(
@@ -279,13 +277,13 @@ SPECTRE_TEST_CASE(
 
   SECTION("ComputeAlpha") {
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::cg_detail::InitializeResidual<
+        residual_monitor, LinearSolver::cg::detail::InitializeResidual<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 1.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::cg_detail::ComputeAlpha<
+        residual_monitor, LinearSolver::cg::detail::ComputeAlpha<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 2.);
     ActionTesting::invoke_queued_simple_action<element_array>(
@@ -300,7 +298,7 @@ SPECTRE_TEST_CASE(
 
   SECTION("UpdateResidual") {
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::cg_detail::InitializeResidual<
+        residual_monitor, LinearSolver::cg::detail::InitializeResidual<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 9.);
     ActionTesting::invoke_queued_threaded_action<observer_writer>(
@@ -308,7 +306,7 @@ SPECTRE_TEST_CASE(
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::cg_detail::UpdateResidual<
+        residual_monitor, LinearSolver::cg::detail::UpdateResidual<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 4.);
     ActionTesting::invoke_queued_simple_action<element_array>(
@@ -343,13 +341,13 @@ SPECTRE_TEST_CASE(
 
   SECTION("ConvergeByAbsoluteResidual") {
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::cg_detail::InitializeResidual<
+        residual_monitor, LinearSolver::cg::detail::InitializeResidual<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 1.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::cg_detail::UpdateResidual<
+        residual_monitor, LinearSolver::cg::detail::UpdateResidual<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 0.);
     ActionTesting::invoke_queued_simple_action<element_array>(
@@ -373,20 +371,20 @@ SPECTRE_TEST_CASE(
 
   SECTION("ConvergeByMaxIterations") {
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::cg_detail::InitializeResidual<
+        residual_monitor, LinearSolver::cg::detail::InitializeResidual<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 1.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     // Perform 2 mock iterations
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::cg_detail::UpdateResidual<
+        residual_monitor, LinearSolver::cg::detail::UpdateResidual<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 1.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::cg_detail::UpdateResidual<
+        residual_monitor, LinearSolver::cg::detail::UpdateResidual<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 1.);
     ActionTesting::invoke_queued_simple_action<element_array>(
@@ -410,13 +408,13 @@ SPECTRE_TEST_CASE(
 
   SECTION("ConvergeByRelativeResidual") {
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::cg_detail::InitializeResidual<
+        residual_monitor, LinearSolver::cg::detail::InitializeResidual<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 1.);
     ActionTesting::invoke_queued_simple_action<element_array>(
         make_not_null(&runner), 0);
     ActionTesting::simple_action<
-        residual_monitor, LinearSolver::cg_detail::UpdateResidual<
+        residual_monitor, LinearSolver::cg::detail::UpdateResidual<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 0.25);
     ActionTesting::invoke_queued_simple_action<element_array>(

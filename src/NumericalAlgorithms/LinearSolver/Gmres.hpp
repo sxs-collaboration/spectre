@@ -19,7 +19,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace LinearSolver {
-namespace gmres_detail {
+namespace gmres::detail {
 
 // Perform an Arnoldi orthogonalization to find a new `operand` that is
 // orthogonal to all vectors in `basis_history`. Appends a new column to the
@@ -72,7 +72,7 @@ DenseVector<double> minimal_residual_vector(
     const DenseMatrix<double>& orthogonalization_history,
     const DenseVector<double>& residual_history) noexcept;
 
-}  // namespace gmres_detail
+}  // namespace gmres::detail
 
 namespace Serial {
 
@@ -229,7 +229,8 @@ struct Gmres {
       LinearOperator&& linear_operator, const SourceType& source,
       const VarsType& initial_guess,
       Preconditioner&& preconditioner = IdentityPreconditioner<VarsType>{},
-      IterationCallback&& = NoIterationCallback{}) const noexcept;
+      IterationCallback&& iteration_callback = NoIterationCallback{}) const
+      noexcept;
 
  private:
   Convergence::Criteria convergence_criteria_{};
@@ -301,11 +302,11 @@ std::pair<Convergence::HasConverged, VarsType> Gmres<VarsType>::operator()(
           linear_operator(use_preconditioner ? preconditioned_basis_history_[k]
                                              : basis_history_[k]);
       // Find a new orthogonal basis vector of the Krylov subspace
-      gmres_detail::arnoldi_orthogonalize(
+      gmres::detail::arnoldi_orthogonalize(
           make_not_null(&operand), make_not_null(&orthogonalization_history_),
           basis_history_, k);
       // Least-squares solve for the minimal residual
-      gmres_detail::solve_minimal_residual(
+      gmres::detail::solve_minimal_residual(
           make_not_null(&orthogonalization_history_),
           make_not_null(&residual_history_),
           make_not_null(&givens_sine_history_),
@@ -323,7 +324,7 @@ std::pair<Convergence::HasConverged, VarsType> Gmres<VarsType>::operator()(
     }
     // Find the vector w.r.t. the constructed orthogonal basis of the Krylov
     // subspace that minimizes the residual
-    const auto minres = gmres_detail::minimal_residual_vector(
+    const auto minres = gmres::detail::minimal_residual_vector(
         orthogonalization_history_, residual_history_);
     // Construct the solution from the orthogonal basis and the minimal residual
     // vector
@@ -334,6 +335,7 @@ std::pair<Convergence::HasConverged, VarsType> Gmres<VarsType>::operator()(
                               i);
     }
   }
+  // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
   return {std::move(has_converged), std::move(result)};
 }
 

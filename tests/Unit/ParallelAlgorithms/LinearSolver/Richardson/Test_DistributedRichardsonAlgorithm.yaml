@@ -36,14 +36,12 @@ ExpectedResult:
   - [ 0.9928055333486292,  0.7235793356729758, -0.0363482510397858]
 
 Observers:
-  VolumeFileName: "Test_DistributedConjugateGradientAlgorithm_Volume"
-  ReductionFileName: "Test_DistributedConjugateGradientAlgorithm_Reductions"
+  VolumeFileName: "Test_DistributedRichardsonAlgorithm_Volume"
+  ReductionFileName: "Test_DistributedRichardsonAlgorithm_Reductions"
 
-ParallelCg:
-  ConvergenceCriteria:
-    MaxIterations: 3
-    AbsoluteResidual: 1e-14
-    RelativeResidual: 0
+ParallelRichardson:
+  Iterations: 199
+  RelaxationParameter: 0.2916330767929102
   Verbosity: Verbose
 
-ConvergenceReason: AbsoluteResidual
+ConvergenceReason: MaxIterations

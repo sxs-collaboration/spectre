@@ -299,11 +299,7 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase,
           Metavariables::Phase::RegisterWithObserver,
-          tmpl::list<observers::Actions::RegisterWithObservers<
-                         observers::RegisterObservers<
-                             LinearSolver::Tags::IterationId<
-                                 typename linear_solver::options_group>,
-                             typename Metavariables::element_observation_type>>,
+          tmpl::list<typename linear_solver::register_element,
                      typename linear_solver::prepare_solve,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<

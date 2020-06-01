@@ -9,25 +9,25 @@
 #include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
-#include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
+#include "ParallelAlgorithms/LinearSolver/Richardson/Richardson.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace helpers = LinearSolverAlgorithmTestHelpers;
 
 namespace {
 
-struct SerialGmres {
+struct SerialRichardson {
   static constexpr OptionString help =
       "Options for the iterative linear solver";
 };
 
 struct Metavariables {
   static constexpr const char* const help{
-      "Test the GMRES linear solver algorithm"};
+      "Test the Richardson linear solver algorithm"};
 
   using linear_solver =
-      LinearSolver::gmres::Gmres<Metavariables, helpers::fields_tag,
-                                 SerialGmres>;
+      LinearSolver::Richardson::Richardson<helpers::fields_tag,
+                                           SerialRichardson>;
 
   using component_list = helpers::component_list<Metavariables>;
   using observed_reduction_data_tags =

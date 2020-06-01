@@ -3,13 +3,18 @@
 
 #pragma once
 
+#include "IO/Observer/Actions.hpp"
+#include "IO/Observer/Helpers.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/InitializeElement.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitor.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace LinearSolver {
+/// Items related to the conjugate gradient linear solver
+///
+/// \see `LinearSolver::cg::ConjugateGradient`
+namespace LinearSolver::cg {
 
 /*!
  * \ingroup LinearSolverGroup
@@ -36,7 +41,7 @@ namespace LinearSolver {
  * the solution and update the operand \f$p\f$ in the process. This requires
  * two reductions over all elements that are received by a `ResidualMonitor`
  * singleton parallel component, processed, and then broadcast back to all
- * elements. The actions are implemented in the `cg_detail` namespace and
+ * elements. The actions are implemented in the `cg::detail` namespace and
  * constitute the full algorithm in the following order:
  * 1. `PerformStep` (on elements): Compute the inner product \f$\langle p,
  * A(p)\rangle\f$ and reduce.
@@ -66,7 +71,7 @@ struct ConjugateGradient {
    * \brief The parallel components used by the conjugate gradient linear solver
    */
   using component_list = tmpl::list<
-      cg_detail::ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>;
+      detail::ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>;
 
   /*!
    * \brief Initialize the tags used by the conjugate gradient linear solver.
@@ -105,8 +110,10 @@ struct ConjugateGradient {
    * not need to be initialized until it is computed for the first time in the
    * first step of the algorithm.
    */
-  using initialize_element =
-      cg_detail::InitializeElement<FieldsTag, OptionsGroup>;
+  using initialize_element = detail::InitializeElement<FieldsTag, OptionsGroup>;
+
+  using register_element =
+      observers::Actions::RegisterWithObservers<observe_detail::Registration>;
 
   /*!
    * \brief Reset the linear solver to its initial state.
@@ -128,7 +135,7 @@ struct ConjugateGradient {
    *
    * \see `initialize_element`
    */
-  using prepare_solve = cg_detail::PrepareSolve<FieldsTag, OptionsGroup>;
+  using prepare_solve = detail::PrepareSolve<FieldsTag, OptionsGroup>;
 
   // Compile-time interface for observers
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
@@ -144,7 +151,7 @@ struct ConjugateGradient {
    *   * `LinearSolver::Tags::IterationId`
    *   * `Tags::Next<LinearSolver::Tags::IterationId>`
    */
-  using prepare_step = cg_detail::PrepareStep<FieldsTag, OptionsGroup>;
+  using prepare_step = detail::PrepareStep<FieldsTag, OptionsGroup>;
 
   /*!
    * \brief Perform an iteration of the conjugate gradient linear solver.
@@ -167,7 +174,7 @@ struct ConjugateGradient {
    *   * `residual_tag`
    *   * `LinearSolver::Tags::HasConverged`
    */
-  using perform_step = cg_detail::PerformStep<FieldsTag, OptionsGroup>;
+  using perform_step = detail::PerformStep<FieldsTag, OptionsGroup>;
 };
 
-}  // namespace LinearSolver
+}  // namespace LinearSolver::cg

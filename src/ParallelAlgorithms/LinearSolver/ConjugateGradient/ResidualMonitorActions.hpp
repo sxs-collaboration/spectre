@@ -26,20 +26,17 @@ namespace tuples {
 template <typename...>
 class TaggedTuple;
 }  // namespace tuples
-namespace LinearSolver {
-namespace cg_detail {
+namespace LinearSolver::cg::detail {
 template <typename FieldsTag, typename OptionsGroup>
 struct InitializeHasConverged;
 template <typename FieldsTag, typename OptionsGroup>
 struct UpdateFieldValues;
 template <typename FieldsTag, typename OptionsGroup>
 struct UpdateOperand;
-}  // namespace cg_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::cg::detail
 /// \endcond
 
-namespace LinearSolver {
-namespace cg_detail {
+namespace LinearSolver::cg::detail {
 
 template <typename FieldsTag, typename OptionsGroup, typename BroadcastTarget>
 struct InitializeResidual {
@@ -209,5 +206,4 @@ struct UpdateResidual {
   }
 };
 
-}  // namespace cg_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::cg::detail

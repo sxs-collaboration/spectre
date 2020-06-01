@@ -25,16 +25,13 @@ namespace tuples {
 template <typename...>
 class TaggedTuple;
 }  // namespace tuples
-namespace LinearSolver {
-namespace gmres_detail {
+namespace LinearSolver::gmres::detail {
 template <typename Metavariables, typename FieldsTag, typename OptionsGroup>
 struct ResidualMonitor;
-}  // namespace gmres_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::gmres::detail
 /// \endcond
 
-namespace LinearSolver {
-namespace gmres_detail {
+namespace LinearSolver::gmres::detail {
 
 template <typename FieldsTag, typename OptionsGroup>
 struct PrepareSolve {
@@ -79,7 +76,7 @@ struct PrepareSolve {
         get<source_tag>(box), get<operator_applied_to_fields_tag>(box),
         get<fields_tag>(box));
 
-    Parallel::contribute_to_reduction<gmres_detail::InitializeResidualMagnitude<
+    Parallel::contribute_to_reduction<InitializeResidualMagnitude<
         FieldsTag, OptionsGroup, ParallelComponent>>(
         Parallel::ReductionData<
             Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Sqrt<>>>{
@@ -335,5 +332,4 @@ struct NormalizeOperandAndUpdateField {
   }
 };
 
-}  // namespace gmres_detail
-}  // namespace LinearSolver
+}  // namespace LinearSolver::gmres::detail
