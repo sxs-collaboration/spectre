@@ -72,15 +72,6 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<
       GeneralizedHarmonic::Tags::ConstraintEnergy<Dim, Frame>>(
       "ConstraintEnergy");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::GaugeHRollOnStartTime>(
-      "GaugeHRollOnStartTime");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::GaugeHRollOnTimeWindow>(
-      "GaugeHRollOnTimeWindow");
-  TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::GaugeHSpatialWeightDecayWidth<Frame>>(
-      "GaugeHSpatialWeightDecayWidth");
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Tags",

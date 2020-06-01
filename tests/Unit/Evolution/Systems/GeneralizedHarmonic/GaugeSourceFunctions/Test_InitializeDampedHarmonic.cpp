@@ -29,6 +29,8 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Options/Options.hpp"
+#include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -191,11 +193,37 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
       expected_d4_gauge_h);
 }
 
+void test_options() noexcept {
+  Options<tmpl::list<GeneralizedHarmonic::gauges::Actions::OptionTags::
+                         DampedHarmonicRollOnStart,
+                     GeneralizedHarmonic::gauges::Actions::OptionTags::
+                         DampedHarmonicRollOnWindow,
+                     GeneralizedHarmonic::gauges::Actions::OptionTags::
+                         DampedHarmonicSpatialDecayWidth<Frame::Inertial>>>
+      opts("");
+  opts.parse(
+      "EvolutionSystem:\n"
+      "  GeneralizedHarmonic:\n"
+      "    Gauge:\n"
+      "      RollOnStartTime : 0.\n"
+      "      RollOnTimeWindow : 100.\n"
+      "      SpatialDecayWidth : 50.\n");
+  CHECK(opts.template get<GeneralizedHarmonic::gauges::Actions::OptionTags::
+                              DampedHarmonicRollOnStart>() == 0.);
+  CHECK(opts.template get<GeneralizedHarmonic::gauges::Actions::OptionTags::
+                              DampedHarmonicRollOnWindow>() == 100.);
+  CHECK(opts.template get<
+            GeneralizedHarmonic::gauges::Actions::OptionTags::
+                DampedHarmonicSpatialDecayWidth<Frame::Inertial>>() == 50.);
+}
+
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GH.Gauge.InitializeDampedHarmonic",
                   "[Unit][Evolution][Actions]") {
   MAKE_GENERATOR(generator);
   test<1>(make_not_null(&generator));
   test<2>(make_not_null(&generator));
   test<3>(make_not_null(&generator));
+
+  test_options();
 }
 }  // namespace

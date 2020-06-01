@@ -403,42 +403,6 @@ void damped_harmonic_rollon(
       rollon_start_time, rollon_width, sigma_r);
 }
 
-template <size_t SpatialDim, typename Frame>
-void DampedHarmonicRollonCompute<SpatialDim, Frame>::function(
-    const gsl::not_null<return_type*> h_and_d4_h,
-    const db::item_type<Tags::InitialGaugeH<SpatialDim, Frame>>& gauge_h_init,
-    const db::item_type<Tags::SpacetimeDerivInitialGaugeH<SpatialDim, Frame>>&
-        dgauge_h_init,
-    const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, SpatialDim, Frame>& shift,
-    const tnsr::a<DataVector, SpatialDim, Frame>&
-        spacetime_unit_normal_one_form,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
-    const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
-    const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, const double time,
-    const double rollon_start_time, const double rollon_width,
-    const tnsr::I<DataVector, SpatialDim, Frame>& coords,
-    const double sigma_r) noexcept {
-  if (UNLIKELY(h_and_d4_h->number_of_grid_points() != get(lapse).size())) {
-    h_and_d4_h->initialize(get(lapse).size());
-  }
-  // exp_{L1, L2, S}
-  // This should be read from the input file in the future.
-  constexpr int exponent = 4;
-  damped_harmonic_rollon(
-      make_not_null(&get<Tags::GaugeH<SpatialDim, Frame>>(*h_and_d4_h)),
-      make_not_null(
-          &get<Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>>(*h_and_d4_h)),
-      gauge_h_init, dgauge_h_init, lapse, shift, spacetime_unit_normal_one_form,
-      sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi,
-      phi, time, coords, 1., 1.,
-      1.,                            // amp_coef_{L1, L2, S}
-      exponent, exponent, exponent,  // exp_{L1, L2, S}
-      rollon_start_time, rollon_width, sigma_r);
-}
-
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
@@ -467,8 +431,7 @@ void DampedHarmonicRollonCompute<SpatialDim, Frame>::function(
       const double amp_coef_L1, const double amp_coef_L2,                   \
       const double amp_coef_S, const int exp_L1, const int exp_L2,          \
       const int exp_S, const double rollon_start_time,                      \
-      const double rollon_width, const double sigma_r) noexcept;            \
-  template class DampedHarmonicRollonCompute<DIM(data), FRAME(data)>;
+      const double rollon_width, const double sigma_r) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_DV_FUNC, (1, 2, 3), (DataVector),
                         (Frame::Inertial))

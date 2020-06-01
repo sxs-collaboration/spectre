@@ -178,50 +178,5 @@ void damped_harmonic_rollon(
     double rollon_start_time, double rollon_width,
     // weight function
     double sigma_r) noexcept;
-
-/*!
- * \brief Compute tag for the damped harmonic gauge source function and its
- * spacetime derivative.
- *
- * \see damped_harmonic()
- */
-template <size_t SpatialDim, typename Frame>
-struct DampedHarmonicRollonCompute : db::ComputeTag {
-  static std::string name() noexcept { return "DampedHarmonicRollonCompute"; }
-  using argument_tags = tmpl::list<
-    Tags::InitialGaugeH<SpatialDim, Frame>,
-    Tags::SpacetimeDerivInitialGaugeH<SpatialDim, Frame>,
-    ::gr::Tags::Lapse<DataVector>,
-    ::gr::Tags::Shift<SpatialDim, Frame, DataVector>,
-    ::gr::Tags::SpacetimeNormalOneForm<SpatialDim, Frame, DataVector>,
-    ::gr::Tags::SqrtDetSpatialMetric<DataVector>,
-    ::gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
-    ::gr::Tags::SpacetimeMetric<SpatialDim, Frame, DataVector>,
-    Tags::Pi<SpatialDim, Frame>, Tags::Phi<SpatialDim, Frame>, ::Tags::Time,
-    Tags::GaugeHRollOnStartTime, Tags::GaugeHRollOnTimeWindow,
-    domain::Tags::Coordinates<SpatialDim, Frame>,
-    Tags::GaugeHSpatialWeightDecayWidth<Frame>>;
-  using return_type =
-      Variables<tmpl::list<Tags::GaugeH<SpatialDim, Frame>,
-                           Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>>>;
-
-  static void function(
-      gsl::not_null<return_type*> h_and_d4_h,
-      const db::item_type<Tags::InitialGaugeH<SpatialDim, Frame>>& gauge_h_init,
-      const db::item_type<Tags::SpacetimeDerivInitialGaugeH<SpatialDim, Frame>>&
-      dgauge_h_init,
-      const Scalar<DataVector>& lapse,
-      const tnsr::I<DataVector, SpatialDim, Frame>& shift,
-      const tnsr::a<DataVector, SpatialDim, Frame>&
-      spacetime_unit_normal_one_form,
-      const Scalar<DataVector>& sqrt_det_spatial_metric,
-      const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
-      const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
-      const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, double time,
-      double rollon_start_time, double rollon_width,
-      const tnsr::I<DataVector, SpatialDim, Frame>& coords,
-      double sigma_r) noexcept;
-};
 }  // namespace gauges
 }  // namespace GeneralizedHarmonic
