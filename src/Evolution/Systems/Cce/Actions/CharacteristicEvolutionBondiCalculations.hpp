@@ -21,7 +21,7 @@ namespace Cce {
 namespace Actions {
 
 /*!
- * \ingroup ActionGroup
+ * \ingroup ActionsGroup
  * \brief Prepare the input quantities in the \ref DataBoxGroup for the
  * evaluation of the hypersurface integral used to compute `BondiTag`.
  *
@@ -49,7 +49,7 @@ struct CalculateIntegrandInputsForTag {
 };
 
 /*!
- * \ingroup ActionGroup
+ * \ingroup ActionsGroup
  * \brief Perform all of the computations for dependencies of the hypersurface
  * equations that do not themselves depend on any hypersurface integrations.
  *

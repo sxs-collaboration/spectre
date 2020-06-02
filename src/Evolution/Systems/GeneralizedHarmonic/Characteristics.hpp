@@ -29,7 +29,6 @@ struct Normalized;
 namespace GeneralizedHarmonic {
 // @{
 /*!
- * \ingroup GeneralizedHarmonic
  * \brief Compute the characteristic speeds for the generalized harmonic system.
  *
  * Computes the speeds as described in "A New Generalized Harmonic
@@ -94,7 +93,6 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim, Frame>,
 
 // @{
 /*!
- * \ingroup GeneralizedHarmonic
  * \brief Computes characteristic fields from evolved fields
  *
  * \ref CharacteristicFieldsCompute and
@@ -187,7 +185,6 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim, Frame>,
 
 // @{
 /*!
- * \ingroup GeneralizedHarmonic
  * \brief For expressions used here to compute evolved fields from
  * characteristic ones, see \ref CharacteristicFieldsCompute.
  */
@@ -240,7 +237,6 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
 // @}
 
 /*!
- * \ingroup GeneralizedHarmonic
  * \brief Computes the largest magnitude of the characteristic speeds.
  */
 template <size_t Dim, typename Frame>

@@ -226,7 +226,7 @@ struct InterfaceCompute<DirectionsTag, Direction<VolumeDim>>
 /// \ingroup ComputationalDomainGroup
 /// Computes the `VolumeDim-1` dimensional mesh on an interface from the volume
 /// mesh. `Tags::InterfaceCompute<Dirs, InterfaceMesh<VolumeDim>>` is
-/// retrievable as Tags::Interface<Dirs, Mesh<VolumeDim>>` from the DataBox.
+/// retrievable as `Tags::Interface<Dirs, Mesh<VolumeDim>>` from the DataBox.
 template <size_t VolumeDim>
 struct InterfaceMesh : db::ComputeTag, Tags::Mesh<VolumeDim - 1> {
   using base = Tags::Mesh<VolumeDim - 1>;
@@ -242,7 +242,7 @@ struct InterfaceMesh : db::ComputeTag, Tags::Mesh<VolumeDim - 1> {
 };
 
 /// \ingroup DataBoxTagsGroup
-/// \ingroup ComputationDomainGroup
+/// \ingroup ComputationalDomainGroup
 /// Computes the coordinates in the frame `Frame` on the faces defined by
 /// `Direction`. Intended to be prefixed by a `Tags::InterfaceCompute` to
 /// define the directions on which to compute the coordinates.

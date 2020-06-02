@@ -19,7 +19,7 @@ namespace Cce {
 namespace Actions {
 
 /*!
- * \ingroup ActionGroup
+ * \ingroup ActionsGroup
  * \brief Filters the spherical volume data stored in `BondiTag` according to
  * the filter parameters in the `Parallel::ConstGlobalCache`.
  *

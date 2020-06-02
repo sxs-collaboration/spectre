@@ -17,7 +17,7 @@ namespace Cce {
 namespace Actions {
 
 /*!
- * \ingroup ActionGroup
+ * \ingroup ActionsGroup
  * \brief Terminates if the current `::Tags::TimeStepId` has time value later or
  * equal to `Tags::EndTime`.
  *

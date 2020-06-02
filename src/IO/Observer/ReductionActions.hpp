@@ -50,7 +50,7 @@ struct ContributeReductionDataToWriter;
 /// \endcond
 
 /*!
- * \ingroup ObserverGroup
+ * \ingroup ObserversGroup
  * \brief Send reduction data to the observer group.
  *
  * Once everything at a specific `ObservationId` has been contributed to the
@@ -155,7 +155,7 @@ struct ContributeReductionData {
 
 namespace ThreadedActions {
 /*!
- * \ingroup ObserverGroup
+ * \ingroup ObserversGroup
  * \brief Collect the reduction data from the Observer group on the
  * ObserverWriter nodegroup before sending to node 0 for writing to disk.
  *

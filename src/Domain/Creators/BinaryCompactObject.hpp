@@ -53,7 +53,7 @@ namespace domain {
 namespace creators {
 
 /*!
- * \ingroup DomainCreatorsGroup
+ * \ingroup ComputationalDomainGroup
  *
  * \brief A general domain for two compact objects.
  *
