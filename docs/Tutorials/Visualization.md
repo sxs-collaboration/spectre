@@ -12,7 +12,7 @@ SpECTRE source files for evolution executables are located in
 as defined in the `CMakeLists.txt` file located in the same directory as the
 source file. For example, to compile the executable that evolves a scalar wave
 using a three-dimensional domain, one runs the command:
-`make EvolveScalarWave3D`, which then results in an executable of the same name
+`make EvolvePlaneWave3D`, which then results in an executable of the same name
 in the `bin` directory of the user's build directory.
 
 ### Running an Evolution Executable
@@ -25,7 +25,7 @@ which the user can then modify as desired. Copy the executable and YAML file
 to a directory of your choice. The YAML file is then passed as an argument to
 the executable using the flag `--input-file`. For example, for a scalar wave
 evolution, run the command:
-`./EvolveScalarWave3D --input-file Input3DPeriodic.yaml`.
+`./EvolvePlaneWave3D --input-file Input3DPeriodic.yaml`.
 By default, the example input files do not produce any output. This can be
 changed by modifying the options passed to `EventsAndTriggers`:
 
@@ -33,7 +33,9 @@ changed by modifying the options passed to `EventsAndTriggers`:
 
 This will observe the norms of the errors in the system every three
 slabs starting with slab five and the volume data of Psi at the start
-of slabs 0 and 100.  A successful observation will result in the
+of slabs 0 and 100. Be sure to keep the Completion event, as without
+it the executable will run indefinitely. In this case, it will terminate
+after 100 slabs. A successful observation will result in the
 creation of H5 files whose names can be specified in the YAML file
 under the options `VolumeFileName` and `ReductionFileName`. One volume
 data file will be produced from each Charm++ node that is used to run

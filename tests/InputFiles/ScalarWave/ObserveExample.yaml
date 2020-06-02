@@ -58,10 +58,10 @@ EventsAndTriggers:
       Slabs: [0, 100]
   : - ObserveFields:
         VariablesToObserve: ["Psi"]
-# [observe_event_trigger]
   ? SpecifiedSlabs:
-      Slabs: [10]
+      Slabs: [100]
   : - Completion
+# [observe_event_trigger]
 
 Observers:
   VolumeFileName: "ObserveExample1DPlaneWavePeriodicVolume"
