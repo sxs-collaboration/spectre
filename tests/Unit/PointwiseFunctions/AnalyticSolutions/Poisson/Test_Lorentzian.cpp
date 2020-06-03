@@ -95,7 +95,8 @@ SPECTRE_TEST_CASE(
         coord_map{
             {{-1., 1., -0.5, 0.5}, {-1., 1., -0.5, 0.5}, {-1., 1., -0.5, 0.5}}};
     FirstOrderEllipticSolutionsTestHelpers::verify_smooth_solution<system>(
-        solution, fluxes_computer, coord_map, 5.e1, 1.2);
+        solution, fluxes_computer, coord_map, 5.e1, 1.2,
+        [](const auto&... /*unused*/) noexcept { return std::tuple<>{}; });
   }
 
   {

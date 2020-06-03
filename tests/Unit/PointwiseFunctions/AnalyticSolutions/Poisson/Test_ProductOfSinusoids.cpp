@@ -100,7 +100,8 @@ SPECTRE_TEST_CASE(
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap>
         coord_map{{-1., 1., 0., M_PI}};
     FirstOrderEllipticSolutionsTestHelpers::verify_smooth_solution<system>(
-        solution, fluxes_computer, coord_map, 1.e5, 3.);
+        solution, fluxes_computer, coord_map, 1.e5, 3.,
+        [](const auto&... /*unused*/) noexcept { return std::tuple<>{}; });
   }
   {
     INFO("2D");
@@ -114,7 +115,8 @@ SPECTRE_TEST_CASE(
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap2D>
         coord_map{{{-1., 1., 0., M_PI}, {-1., 1., 0., M_PI}}};
     FirstOrderEllipticSolutionsTestHelpers::verify_smooth_solution<system>(
-        solution, fluxes_computer, coord_map, 1.e5, 3.);
+        solution, fluxes_computer, coord_map, 1.e5, 3.,
+        [](const auto&... /*unused*/) noexcept { return std::tuple<>{}; });
   }
   {
     INFO("3D");
@@ -129,6 +131,7 @@ SPECTRE_TEST_CASE(
         coord_map{
             {{-1., 1., 0., M_PI}, {-1., 1., 0., M_PI}, {-1., 1., 0., M_PI}}};
     FirstOrderEllipticSolutionsTestHelpers::verify_smooth_solution<system>(
-        solution, fluxes_computer, coord_map, 1.e5, 3.);
+        solution, fluxes_computer, coord_map, 1.e5, 3.,
+        [](const auto&... /*unused*/) noexcept { return std::tuple<>{}; });
   }
 }
