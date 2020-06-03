@@ -4,6 +4,7 @@
 #pragma once
 
 #include <gsl/gsl_integration.h>
+#include <limits>
 #include <memory>
 #include <vector>
 

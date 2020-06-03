@@ -5,11 +5,12 @@ set(LIBRARY "Test_ElasticitySolutions")
 
 set(LIBRARY_SOURCES
   Test_BentBeam.cpp
+  Test_HalfSpaceMirror.cpp
   )
 
 add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/Elasticity/"
   "${LIBRARY_SOURCES}"
-  "ElasticitySolutions;Utilities"
+  "ElasticitySolutions;Utilities;Integration"
   )
