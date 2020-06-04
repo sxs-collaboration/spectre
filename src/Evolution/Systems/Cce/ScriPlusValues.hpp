@@ -11,6 +11,15 @@
 
 namespace Cce {
 
+/// The tags that are needed to be interpolated at scri+ for the available
+/// observation tags.
+using scri_plus_interpolation_set =
+    tmpl::list<Tags::News, Tags::ScriPlus<Tags::Strain>,
+               Tags::ScriPlus<Tags::Psi3>, Tags::ScriPlus<Tags::Psi2>,
+               Tags::ScriPlus<Tags::Psi1>, Tags::ScriPlus<Tags::Psi0>,
+               Tags::Du<Tags::TimeIntegral<Tags::ScriPlus<Tags::Psi4>>>,
+               Tags::EthInertialRetardedTime>;
+
 template <typename Tag>
 struct CalculateScriPlusValue;
 
