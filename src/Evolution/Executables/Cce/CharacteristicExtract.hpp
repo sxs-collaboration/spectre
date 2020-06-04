@@ -56,22 +56,22 @@ struct EvolutionMetavars {
 
   using scri_values_to_observe =
       tmpl::list<Cce::Tags::News, Cce::Tags::ScriPlus<Cce::Tags::Strain>,
-                 Cce::Tags::ScriPlus<Cce::Tags::Psi0>,
-                 Cce::Tags::ScriPlus<Cce::Tags::Psi1>,
-                 Cce::Tags::ScriPlus<Cce::Tags::Psi2>,
                  Cce::Tags::ScriPlus<Cce::Tags::Psi3>,
-                 Tags::Multiplies<Cce::Tags::Du<Cce::Tags::TimeIntegral<
-                                      Cce::Tags::ScriPlus<Cce::Tags::Psi4>>>,
-                                  Cce::Tags::ScriPlusFactor<Cce::Tags::Psi4>>>;
+                 Cce::Tags::ScriPlus<Cce::Tags::Psi2>,
+                 Cce::Tags::ScriPlus<Cce::Tags::Psi1>,
+                 Cce::Tags::ScriPlus<Cce::Tags::Psi0>,
+                 Cce::Tags::Du<Cce::Tags::TimeIntegral<
+                     Cce::Tags::ScriPlus<Cce::Tags::Psi4>>>,
+                 Cce::Tags::EthInertialRetardedTime>;
 
   using cce_scri_tags =
       tmpl::list<Cce::Tags::News, Cce::Tags::ScriPlus<Cce::Tags::Strain>,
-                 Cce::Tags::ScriPlus<Cce::Tags::Psi0>,
-                 Cce::Tags::ScriPlus<Cce::Tags::Psi1>,
-                 Cce::Tags::ScriPlus<Cce::Tags::Psi2>,
                  Cce::Tags::ScriPlus<Cce::Tags::Psi3>,
+                 Cce::Tags::ScriPlus<Cce::Tags::Psi2>,
+                 Cce::Tags::ScriPlus<Cce::Tags::Psi1>,
+                 Cce::Tags::ScriPlus<Cce::Tags::Psi0>,
                  Cce::Tags::TimeIntegral<Cce::Tags::ScriPlus<Cce::Tags::Psi4>>,
-                 Cce::Tags::ScriPlusFactor<Cce::Tags::Psi4>>;
+                 Cce::Tags::EthInertialRetardedTime>;
   using cce_integrand_tags = tmpl::flatten<tmpl::transform<
       Cce::bondi_hypersurface_step_tags,
       tmpl::bind<Cce::integrand_terms_to_compute_for_bondi_variable,

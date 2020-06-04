@@ -59,13 +59,6 @@ void pypp_test_scri_plus_computation_steps() noexcept {
   pypp::check_with_random_values<1>(
       &WrapScriPlusComputation<
           l_max, number_of_radial_points,
-          CalculateScriPlusValue<Tags::ScriPlusFactor<Tags::Psi4>>>::apply,
-      "ScriPlusValues", {"constant_factor_psi_4"}, {{{0.1, 1.0}}},
-      DataVector{Spectral::Swsh::number_of_swsh_collocation_points(l_max)});
-
-  pypp::check_with_random_values<1>(
-      &WrapScriPlusComputation<
-          l_max, number_of_radial_points,
           CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi3>>>::apply,
       "ScriPlusValues", {"psi_3"}, {{{0.1, 1.0}}},
       DataVector{Spectral::Swsh::number_of_swsh_collocation_points(l_max)});

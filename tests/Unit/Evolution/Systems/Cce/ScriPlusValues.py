@@ -11,12 +11,8 @@ def news(dy_du_bondi_j, beta, eth_beta, eth_eth_beta, boundary_r):
 
 def time_integral_psi_4(exp_2_beta, dy_bondi_u, eth_dy_bondi_u, dy_du_bondi_j,
                         boundary_r, eth_r_divided_by_r):
-    return (boundary_r / exp_2_beta) * np.conj(
+    return 2.0 * (boundary_r / exp_2_beta) * np.conj(
         eth_dy_bondi_u + eth_r_divided_by_r * dy_bondi_u + dy_du_bondi_j)
-
-
-def constant_factor_psi_4(exp_2_beta):
-    return 2.0 / exp_2_beta
 
 
 def psi_3(exp_2_beta, eth_beta, eth_ethbar_beta, ethbar_eth_ethbar_beta,
