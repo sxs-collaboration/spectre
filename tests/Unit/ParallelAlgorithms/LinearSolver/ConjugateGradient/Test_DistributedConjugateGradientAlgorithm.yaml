@@ -11,7 +11,13 @@
 # - Multiplied by mass matrix and no mass-lumping
 # - Internal penalty flux with sigma = 1.5 * (N_points - 1)^2 / h
 
-NumberOfElements: 2
+DomainCreator:
+  Interval:
+    LowerBound: [0]
+    UpperBound: [3.141592653589793]
+    IsPeriodicIn: [false]
+    InitialRefinement: [1]
+    InitialGridPoints: [3]
 
 LinearOperator:
   - [[ 5.305164769729845,  0.848826363156775, -0.742723067762178],

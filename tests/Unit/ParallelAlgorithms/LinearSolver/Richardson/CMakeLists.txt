@@ -15,4 +15,4 @@ add_test_library(
   )
 
 add_linear_solver_algorithm_test("RichardsonAlgorithm")
-add_linear_solver_algorithm_test("DistributedRichardsonAlgorithm")
+add_distributed_linear_solver_algorithm_test("DistributedRichardsonAlgorithm")

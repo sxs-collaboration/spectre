@@ -21,4 +21,5 @@ add_dependencies(
   )
 
 add_linear_solver_algorithm_test("ConjugateGradientAlgorithm")
-add_linear_solver_algorithm_test("DistributedConjugateGradientAlgorithm")
+add_distributed_linear_solver_algorithm_test(
+  "DistributedConjugateGradientAlgorithm")

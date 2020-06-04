@@ -65,6 +65,16 @@ function(add_linear_solver_algorithm_test TEST_NAME)
     ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
 endfunction()
 
+function(add_distributed_linear_solver_algorithm_test TEST_NAME)
+  add_linear_solver_algorithm_test(${TEST_NAME})
+  target_link_libraries(
+    Test_${TEST_NAME}
+    PRIVATE
+    Domain
+    DomainCreators
+    )
+endfunction()
+
 add_subdirectory(AsynchronousSolvers)
 add_subdirectory(ConjugateGradient)
 add_subdirectory(Gmres)

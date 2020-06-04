@@ -23,6 +23,8 @@
 #include "DataStructures/DenseVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
@@ -39,6 +41,8 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
+#include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
@@ -49,35 +53,12 @@
 
 namespace helpers = LinearSolverAlgorithmTestHelpers;
 
+/// Functionality to test parallel linear solvers on multiple elements
 namespace DistributedLinearSolverAlgorithmTestHelpers {
 
 namespace OptionTags {
-struct NumberOfElements {
-  static constexpr Options::String help =
-      "The number of elements to distribute work on.";
-  using type = size_t;
-};
-}  // namespace OptionTags
-
-/// [array_allocation_tag]
-namespace Initialization {
-namespace Tags {
-struct NumberOfElements : db::SimpleTag {
-  using type = int;
-  using option_tags = tmpl::list<OptionTags::NumberOfElements>;
-
-  static constexpr bool pass_metavariables = false;
-  static int create_from_options(const size_t number_of_elements) noexcept {
-    return number_of_elements;
-  }
-};
-}  // namespace Tags
-}  // namespace Initialization
-/// [array_allocation_tag]
-
-namespace OptionTags {
 // This option expects a list of N matrices that each have N*M rows and M
-// columns, where N is the `NumberOfElements` and M is a nonzero integer.
+// columns, where N is the number of elements and M is a nonzero integer.
 // Therefore, this option specifies a (N*M,N*M) matrix that has its columns
 // split over all elements. In a context where the linear operator represents a
 // DG discretization, M is the number of collocation points per element.
@@ -143,6 +124,14 @@ using sources_tag = db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
 using operator_applied_to_fields_tag =
     db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
 
+// We are working on a one-dimension domain where each element corresponds to an
+// entry of the vectors provided in the input file. This function translates the
+// element to an index into these vectors. We assume the domain is composed of a
+// single block.
+size_t get_index(const ElementId<1>& element_id) noexcept {
+  return element_id.segment_ids()[0].index();
+}
+
 // In the following `ComputeOperatorAction` and `CollectOperatorAction` actions
 // we compute A(p)=sum_elements(A_element(p_element)) in a global reduction and
 // then broadcast the global A(p) back to the elements so that they can extract
@@ -156,6 +145,8 @@ struct CollectOperatorAction;
 
 template <typename OperandTag>
 struct ComputeOperatorAction {
+  using const_global_cache_tags = tmpl::list<LinearOperator>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
@@ -163,14 +154,15 @@ struct ComputeOperatorAction {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& cache,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
-      const int array_index,
+      const ElementId<1>& element_id,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ActionList /*meta*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ParallelComponent* const /*meta*/) noexcept {
+    const size_t element_index = get_index(element_id);
     const auto& operator_matrices = get<LinearOperator>(box);
     const auto number_of_elements = operator_matrices.size();
-    const auto& linear_operator = gsl::at(operator_matrices, array_index);
+    const auto& linear_operator = gsl::at(operator_matrices, element_index);
     const auto number_of_grid_points = linear_operator.columns();
     const auto& operand = get<OperandTag>(box);
 
@@ -184,7 +176,7 @@ struct ComputeOperatorAction {
         Parallel::ReductionData<
             Parallel::ReductionDatum<typename OperandTag::type, funcl::Plus<>>>{
             operator_applied_to_operand},
-        Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
+        Parallel::get_parallel_component<ParallelComponent>(cache)[element_id],
         Parallel::get_parallel_component<ParallelComponent>(cache));
 
     // Terminate algorithm for now. The reduction will be broadcast to the
@@ -204,18 +196,19 @@ struct CollectOperatorAction {
                 DbTagsList, local_operator_applied_to_operand_tag>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
                     const Parallel::GlobalCache<Metavariables>& cache,
-                    const int array_index,
+                    const ElementId<1>& element_id,
                     const Variables<tmpl::list<ScalarFieldOperandTag>>&
                         Ap_global_data) noexcept {
+    const size_t element_index = get_index(element_id);
     // This could be generalized to work on the Variables instead of the
     // Scalar, but it's only for the purpose of this test.
     const auto number_of_grid_points = get<LinearOperator>(box)[0].columns();
     const auto& Ap_global = get<ScalarFieldOperandTag>(Ap_global_data).get();
     DataVector Ap_local{number_of_grid_points};
     std::copy(Ap_global.begin() +
-                  array_index * static_cast<int>(number_of_grid_points),
+                  static_cast<int>(element_index * number_of_grid_points),
               Ap_global.begin() +
-                  (array_index + 1) * static_cast<int>(number_of_grid_points),
+                  static_cast<int>((element_index + 1) * number_of_grid_points),
               Ap_local.begin());
     db::mutate<local_operator_applied_to_operand_tag>(
         make_not_null(&box),
@@ -226,7 +219,7 @@ struct CollectOperatorAction {
               *Ap)) = Ap_local;
         });
     // Proceed with algorithm
-    Parallel::get_parallel_component<ParallelComponent>(cache)[array_index]
+    Parallel::get_parallel_component<ParallelComponent>(cache)[element_id]
         .perform_algorithm(true);
   }
 };
@@ -244,18 +237,19 @@ struct TestResult {
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
-      const int array_index,
+      const ElementId<1>& element_id,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ActionList /*meta*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ParallelComponent* const /*meta*/) noexcept {
+    const size_t element_index = get_index(element_id);
     const auto& has_converged =
         get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
     SPECTRE_PARALLEL_REQUIRE(has_converged);
     SPECTRE_PARALLEL_REQUIRE(has_converged.reason() ==
                              get<helpers::ExpectedConvergenceReason>(box));
     const auto& expected_result =
-        gsl::at(get<ExpectedResult>(box), array_index);
+        gsl::at(get<ExpectedResult>(box), element_index);
     const auto& result = get<ScalarFieldTag>(box).get();
     for (size_t i = 0; i < expected_result.size(); i++) {
       SPECTRE_PARALLEL_REQUIRE(result[i] == approx(expected_result[i]));
@@ -265,14 +259,17 @@ struct TestResult {
 };
 
 struct InitializeElement {
+  using const_global_cache_tags = tmpl::list<Source>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const int array_index, const ActionList /*meta*/,
+                    const ElementId<1>& element_id, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    const auto& source = gsl::at(get<Source>(box), array_index);
+    const size_t element_index = get_index(element_id);
+    const auto& source = gsl::at(get<Source>(box), element_index);
     const size_t num_points = source.size();
 
     return std::make_tuple(
@@ -304,70 +301,55 @@ using run_preconditioner =
 
 }  // namespace detail
 
+template <typename Metavariables,
+          typename LinearSolverType = typename Metavariables::linear_solver,
+          typename PreconditionerType = typename Metavariables::preconditioner>
+using initialization_actions =
+    tmpl::list<dg::Actions::InitializeDomain<1>, InitializeElement,
+               typename LinearSolverType::initialize_element,
+               ComputeOperatorAction<fields_tag>,
+               helpers::detail::init_preconditioner<PreconditionerType>,
+               Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+
+template <typename Metavariables,
+          typename LinearSolverType = typename Metavariables::linear_solver,
+          typename PreconditionerType = typename Metavariables::preconditioner>
+using register_actions =
+    tmpl::list<typename LinearSolverType::register_element,
+               helpers::detail::register_preconditioner<PreconditionerType>,
+               Parallel::Actions::TerminatePhase>;
+
+template <typename Metavariables,
+          typename LinearSolverType = typename Metavariables::linear_solver,
+          typename PreconditionerType = typename Metavariables::preconditioner>
+using solve_actions = tmpl::list<
+    typename LinearSolverType::template solve<tmpl::list<
+        detail::run_preconditioner<PreconditionerType>,
+        ComputeOperatorAction<typename LinearSolverType::operand_tag>>>,
+    Parallel::Actions::TerminatePhase>;
+
+template <typename Metavariables,
+          typename LinearSolverType = typename Metavariables::linear_solver,
+          typename PreconditionerType = typename Metavariables::preconditioner>
+using test_actions =
+    tmpl::list<TestResult<typename LinearSolverType::options_group>>;
+
 template <typename Metavariables>
-struct ElementArray {
-  using chare_type = Parallel::Algorithms::Array;
-  using metavariables = Metavariables;
-  using linear_solver = typename Metavariables::linear_solver;
-  using preconditioner = typename Metavariables::preconditioner;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<InitializeElement,
-                     typename linear_solver::initialize_element,
-                     ComputeOperatorAction<fields_tag>,
-                     helpers::detail::init_preconditioner<preconditioner>,
-                     Parallel::Actions::TerminatePhase>>,
-      Parallel::PhaseActions<
-          typename Metavariables::Phase,
-          Metavariables::Phase::RegisterWithObserver,
-          tmpl::list<typename linear_solver::register_element,
-                     helpers::detail::register_preconditioner<preconditioner>,
-                     Parallel::Actions::TerminatePhase>>,
-      Parallel::PhaseActions<
-          typename Metavariables::Phase,
-          Metavariables::Phase::PerformLinearSolve,
-          tmpl::list<
-              typename linear_solver::template solve<tmpl::list<
-                  detail::run_preconditioner<preconditioner>,
-                  ComputeOperatorAction<typename linear_solver::operand_tag>>>,
-              Parallel::Actions::TerminatePhase>>,
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::TestResult,
-          tmpl::list<TestResult<typename linear_solver::options_group>>>>;
-  using array_allocation_tags =
-      tmpl::list<Initialization::Tags::NumberOfElements>;
-  using initialization_tags = Parallel::get_initialization_tags<
-      Parallel::get_initialization_actions_list<phase_dependent_action_list>,
-      array_allocation_tags>;
-  using const_global_cache_tags =
-      tmpl::list<LinearOperator, Source, ExpectedResult>;
-  using array_index = int;
-
-  static void allocate_array(
-      Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
-      const tuples::tagged_tuple_from_typelist<initialization_tags>&
-          initialization_items) noexcept {
-    auto& array_proxy = Parallel::get_parallel_component<ElementArray>(
-        *(global_cache.ckLocalBranch()));
-    for (int i = 0, which_proc = 0,
-             number_of_procs = Parallel::number_of_procs();
-         i < get<Initialization::Tags::NumberOfElements>(initialization_items);
-         i++) {
-      array_proxy[i].insert(global_cache, initialization_items, which_proc);
-      which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
-    }
-    array_proxy.doneInserting();
-  }
-
-  static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
-    auto& local_component = Parallel::get_parallel_component<ElementArray>(
-        *(global_cache.ckLocalBranch()));
-    local_component.start_phase(next_phase);
-  }
-};
+using ElementArray = elliptic::DgElementArray<
+    Metavariables,
+    tmpl::list<
+        Parallel::PhaseActions<typename Metavariables::Phase,
+                               Metavariables::Phase::Initialization,
+                               initialization_actions<Metavariables>>,
+        Parallel::PhaseActions<typename Metavariables::Phase,
+                               Metavariables::Phase::RegisterWithObserver,
+                               register_actions<Metavariables>>,
+        Parallel::PhaseActions<typename Metavariables::Phase,
+                               Metavariables::Phase::PerformLinearSolve,
+                               solve_actions<Metavariables>>,
+        Parallel::PhaseActions<typename Metavariables::Phase,
+                               Metavariables::Phase::TestResult,
+                               test_actions<Metavariables>>>>;
 
 template <typename Metavariables>
 using component_list =
