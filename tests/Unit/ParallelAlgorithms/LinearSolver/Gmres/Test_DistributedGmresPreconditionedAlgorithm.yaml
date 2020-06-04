@@ -13,7 +13,13 @@
 # - The operator is symmetric, which helps the Richardson preconditioner
 #   converge.
 
-NumberOfElements: 2
+DomainCreator:
+  Interval:
+    LowerBound: [0]
+    UpperBound: [3.141592653589793]
+    IsPeriodicIn: [false]
+    InitialRefinement: [1]
+    InitialGridPoints: [3]
 
 LinearOperator:
   - [[ 5.305164769729845,  0.848826363156775, -0.742723067762178],

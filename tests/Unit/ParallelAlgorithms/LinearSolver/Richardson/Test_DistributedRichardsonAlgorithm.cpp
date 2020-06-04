@@ -5,6 +5,7 @@
 
 #include <vector>
 
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/DistributedLinearSolverAlgorithmTestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
@@ -26,16 +27,17 @@ struct ParallelRichardson {
 struct Metavariables {
   static constexpr const char* const help{
       "Test the Richardson linear solver algorithm on multiple elements"};
+  static constexpr size_t volume_dim = 1;
 
   using linear_solver = LinearSolver::Richardson::Richardson<
       typename helpers_distributed::fields_tag, ParallelRichardson>;
   using preconditioner = void;
 
+  using Phase = helpers::Phase;
   using component_list = helpers_distributed::component_list<Metavariables>;
   using observed_reduction_data_tags =
       helpers::observed_reduction_data_tags<Metavariables>;
   static constexpr bool ignore_unrecognized_command_line_options = false;
-  using Phase = helpers::Phase;
   static constexpr auto determine_next_phase =
       helpers::determine_next_phase<Metavariables>;
 };
@@ -43,7 +45,7 @@ struct Metavariables {
 }  // namespace
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling};
+    &setup_error_handling, &domain::creators::register_derived_with_charm};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 

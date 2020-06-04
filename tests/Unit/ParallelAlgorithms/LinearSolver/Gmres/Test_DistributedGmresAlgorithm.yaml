@@ -12,7 +12,13 @@
 # - Mass-lumping: inverse mass matrix is approximated by diagonal
 # - Internal penalty flux with sigma = 1.5 * (N_points - 1)^2 / h
 
-NumberOfElements: 2
+DomainCreator:
+  Interval:
+    LowerBound: [0]
+    UpperBound: [3.141592653589793]
+    IsPeriodicIn: [false]
+    InitialRefinement: [1]
+    InitialGridPoints: [3]
 
 LinearOperator:
   - [[20.26423672846756 ,  3.242277876554809, -2.836993141985458],
