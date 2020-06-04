@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -31,6 +32,7 @@ void test_simple_tags() noexcept {
       "InitialRefinementLevels");
   TestHelpers::db::test_simple_tag<Tags::Element<Dim>>("Element");
   TestHelpers::db::test_simple_tag<Tags::Mesh<Dim>>("Mesh");
+  TestHelpers::db::test_simple_tag<Tags::Extents<Dim>>("Extents");
   TestHelpers::db::test_simple_tag<Tags::ElementMap<Dim>>(
       "ElementMap(Inertial)");
   TestHelpers::db::test_simple_tag<Tags::ElementMap<Dim, Frame::Grid>>(

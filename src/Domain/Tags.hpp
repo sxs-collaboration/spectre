@@ -17,6 +17,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
@@ -105,6 +106,14 @@ struct Element : db::SimpleTag {
 template <size_t VolumeDim>
 struct Mesh : db::SimpleTag {
   using type = ::Mesh<VolumeDim>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// \brief The number of grid points in each dimension
+template <size_t Dim>
+struct Extents : db::SimpleTag {
+  using type = ::Index<Dim>;
 };
 
 /// \ingroup DataBoxTagsGroup
