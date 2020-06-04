@@ -15,3 +15,12 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "DataStructures;Domain;DomainStructure;LinearSolver;ParallelSchwarz;Spectral"
   )
+
+add_distributed_linear_solver_algorithm_test("DistributedSchwarzAlgorithm")
+target_link_libraries(
+  Test_DistributedSchwarzAlgorithm
+  PRIVATE
+  Domain
+  DomainStructure
+  ParallelSchwarz
+)
