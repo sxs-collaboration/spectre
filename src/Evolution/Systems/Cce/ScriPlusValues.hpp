@@ -409,6 +409,21 @@ struct CalculateScriPlusValue<::Tags::dt<Tags::InertialRetardedTime>> {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta) noexcept;
 };
 
+/// Determines the angular derivative of the asymptotic inertial time, useful
+/// for asymptotic coordinate transformations.
+template <>
+struct CalculateScriPlusValue<Tags::EthInertialRetardedTime> {
+  using return_tags = tmpl::list<Tags::EthInertialRetardedTime>;
+  using argument_tags =
+      tmpl::list<Tags::ComplexInertialRetardedTime, Tags::LMax>;
+
+  static void apply(
+      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
+          eth_inertial_time,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& inertial_time,
+      size_t l_max) noexcept;
+};
+
 /// Initialize the \f$\mathcal I^+\f$ value `Tag` for the first hypersurface.
 template <typename Tag>
 struct InitializeScriPlusValue;

@@ -363,6 +363,15 @@ void CalculateScriPlusValue<Tags::ScriPlus<Tags::Strain>>::apply(
       conj(-2.0 * get(boundary_r) * dy_j_at_scri + get(eth_eth_retarded_time));
 }
 
+void CalculateScriPlusValue<Tags::EthInertialRetardedTime>::apply(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
+        eth_inertial_time,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& inertial_time,
+    const size_t l_max) noexcept {
+  Spectral::Swsh::angular_derivatives<tmpl::list<Spectral::Swsh::Tags::Eth>>(
+      l_max, 1, make_not_null(&get(*eth_inertial_time)), get(inertial_time));
+}
+
 void CalculateScriPlusValue<::Tags::dt<Tags::InertialRetardedTime>>::apply(
     const gsl::not_null<Scalar<DataVector>*> dt_inertial_time,
     const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta) noexcept {
