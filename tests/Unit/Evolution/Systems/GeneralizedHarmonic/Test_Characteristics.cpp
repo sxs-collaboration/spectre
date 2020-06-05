@@ -166,10 +166,9 @@ typename Tag::type field_with_tag(
     const tnsr::aa<DataVector, Dim, Frame>& pi,
     const tnsr::iaa<DataVector, Dim, Frame>& phi,
     const tnsr::i<DataVector, Dim, Frame>& normal_one_form) {
-  return get<Tag>(
-      GeneralizedHarmonic::CharacteristicFieldsCompute<Dim, Frame>::function(
-          gamma_2, inverse_spatial_metric, spacetime_metric, pi, phi,
-          normal_one_form));
+  return get<Tag>(GeneralizedHarmonic::characteristic_fields(
+      gamma_2, inverse_spatial_metric, spacetime_metric, pi, phi,
+      normal_one_form));
 }
 
 template <size_t Dim, typename Frame>
@@ -318,10 +317,9 @@ void test_characteristic_fields_analytic(
   }
 
   // Check that locally computed fields match returned ones
-  const auto uvars = GeneralizedHarmonic::CharacteristicFieldsCompute<
-      spatial_dim, Frame::Inertial>::function(gamma_2, inverse_spatial_metric,
-                                              spacetime_metric, pi, phi,
-                                              unit_normal_one_form);
+  const auto uvars = GeneralizedHarmonic::characteristic_fields(
+      gamma_2, inverse_spatial_metric, spacetime_metric, pi, phi,
+      unit_normal_one_form);
 
   const auto& upsi_from_func =
       get<GeneralizedHarmonic::Tags::VSpacetimeMetric<spatial_dim,
@@ -353,9 +351,8 @@ typename Tag::type evol_field_with_tag(
     const tnsr::aa<DataVector, Dim, Frame>& u_minus,
     const tnsr::i<DataVector, Dim, Frame>& normal_one_form) {
   return get<Tag>(
-      GeneralizedHarmonic::EvolvedFieldsFromCharacteristicFieldsCompute<
-          Dim, Frame>::function(gamma_2, u_psi, u_zero, u_plus, u_minus,
-                                normal_one_form));
+      GeneralizedHarmonic::evolved_fields_from_characteristic_fields(
+          gamma_2, u_psi, u_zero, u_plus, u_minus, normal_one_form));
 }
 
 template <size_t Dim, typename Frame>
@@ -490,9 +487,8 @@ void test_evolved_from_characteristic_fields_analytic(
     }
   }
   const auto ffields =
-      GeneralizedHarmonic::EvolvedFieldsFromCharacteristicFieldsCompute<
-          spatial_dim, Frame::Inertial>::function(gamma_2, upsi, uzero, uplus,
-                                                  uminus, unit_normal_one_form);
+      GeneralizedHarmonic::evolved_fields_from_characteristic_fields(
+          gamma_2, upsi, uzero, uplus, uminus, unit_normal_one_form);
   const auto& psi_from_func =
       get<gr::Tags::SpacetimeMetric<spatial_dim, Frame::Inertial>>(ffields);
   const auto& pi_from_func =
@@ -569,16 +565,11 @@ void check_max_char_speed(const DataVector& used_for_size) noexcept {
   // vector will point along the maximum speed direction)
   const double check_maximum = 1.0 + 1e-12;
 
-  double trial_failure_rate;
-  if (Dim == 1) {
-    // The correct value is actually 0.0, but we don't want to take
-    // the logarithm of 0.
-    trial_failure_rate = 0.1;
-  } else if (Dim == 2) {
-    trial_failure_rate = 1.0 - 2.0 * acos(check_minimum) / M_PI;
-  } else {
-    trial_failure_rate = check_minimum;
-  }
+  const double trial_failure_rate =
+      Dim == 1
+          ? 0.1  // correct value is 0.0, but cannot take log of that
+          : (Dim == 2 ? 1.0 - 2.0 * acos(check_minimum) / M_PI : check_minimum);
+
   const size_t trials =
       static_cast<size_t>(log(failure_tolerance) / log(trial_failure_rate)) + 1;
 
