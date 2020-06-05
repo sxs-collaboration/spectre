@@ -40,6 +40,24 @@ class Domain {
   explicit Domain(std::vector<Block<VolumeDim>> blocks) noexcept;
 
   /*!
+   * Create a Domain using CoordinateMaps to encode the Orientations.
+   * This constructor does not support periodic boundary conditions.
+   *
+   * \details A constructor that does not require the user to provide a corner
+   * numbering scheme. Constructs a global corner numbering for each pair
+   * of abutting Blocks from their maps alone. The numbering is used to
+   * set up the corresponding Orientation, and then is discarded; the
+   * next pair of blocks uses a new global corner numbering, and so on,
+   * until all pairs of abutting Blocks have had their Orientations
+   * determined. For more information on setting up domains, see the
+   * [domain creation tutorial](\ref tutorial_domain_creation).
+   *
+   */
+  Domain(std::vector<std::unique_ptr<domain::CoordinateMapBase<
+             Frame::Logical, Frame::Inertial, VolumeDim>>>
+             maps) noexcept;
+
+  /*!
    * Create a Domain using a corner numbering scheme to encode the Orientations,
    * with an optional parameter that encodes periodic boundary conditions.
    *

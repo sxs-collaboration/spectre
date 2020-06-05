@@ -43,7 +43,7 @@ void test_periodic_same_block() noexcept {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
       {{0, 1, 2, 3, 4, 5, 6, 7}}, {{8, 9, 10, 11, 0, 1, 2, 3}}};
   std::vector<DirectionMap<3, BlockNeighbor<3>>> neighbors_of_all_blocks;
-  set_internal_boundaries<3>(corners_of_all_blocks, &neighbors_of_all_blocks);
+  set_internal_boundaries<3>(&neighbors_of_all_blocks, corners_of_all_blocks);
 
   const OrientationMap<3> aligned{};
   CHECK(neighbors_of_all_blocks[0][Direction<3>::lower_zeta()].orientation() ==
@@ -70,7 +70,7 @@ void test_periodic_different_blocks() noexcept {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
       {{0, 1, 2, 3, 4, 5, 6, 7}}, {{8, 9, 10, 11, 0, 1, 2, 3}}};
   std::vector<DirectionMap<3, BlockNeighbor<3>>> neighbors_of_all_blocks;
-  set_internal_boundaries<3>(corners_of_all_blocks, &neighbors_of_all_blocks);
+  set_internal_boundaries<3>(&neighbors_of_all_blocks, corners_of_all_blocks);
 
   const OrientationMap<3> aligned{};
   CHECK(neighbors_of_all_blocks[0][Direction<3>::lower_zeta()].orientation() ==

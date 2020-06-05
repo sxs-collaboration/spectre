@@ -43,6 +43,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -60,6 +61,8 @@ void test_shell_construction(
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
     const double aspect_ratio = 1.0, const bool use_logarithmic_map = false,
     const ShellWedges which_wedges = ShellWedges::All) {
+  Parallel::register_classes_in_list<
+      typename domain::creators::Shell::maps_list>();
   const auto domain = shell.create_domain();
   const OrientationMap<3> aligned_orientation{};
   const OrientationMap<3> quarter_turn_ccw_about_zeta(
@@ -196,15 +199,30 @@ void test_shell_construction(
     }
     test_domain_construction(domain, expected_block_neighbors,
                              expected_external_boundaries, vector_of_maps);
+    const auto vector_of_maps_copy = clone_unique_ptrs(vector_of_maps);
+
+    Domain<3> domain_no_corners(std::move(vector_of_maps));
+
+    test_domain_construction(domain_no_corners, expected_block_neighbors,
+                             expected_external_boundaries, vector_of_maps_copy);
+    test_initial_domain(domain_no_corners, shell.initial_refinement_levels());
+    test_serialization(domain_no_corners);
+
   } else {
     const auto compression =
         CoordinateMaps::EquatorialCompression{aspect_ratio};
+    // Set up translation map:
+    using Identity2D = domain::CoordinateMaps::Identity<2>;
+    using Affine = domain::CoordinateMaps::Affine;
+    const auto translation =
+        domain::CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(
+            Affine{-1.0, 1.0, -1.0, 1.0}, Identity2D{});
     auto vector_of_maps = make_vector(
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{}, 1.0,
                        1.0, use_equiangular_map, Halves::Both,
                        use_logarithmic_map},
-            compression),
+            compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{inner_radius, outer_radius,
                        OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -212,7 +230,7 @@ void test_shell_construction(
                             Direction<3>::lower_zeta()}}},
                        1.0, 1.0, use_equiangular_map, Halves::Both,
                        use_logarithmic_map},
-            compression),
+            compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
                 inner_radius, outer_radius,
@@ -221,7 +239,7 @@ void test_shell_construction(
                      Direction<3>::lower_eta()}}},
                 1.0, 1.0, use_equiangular_map, Halves::Both,
                 use_logarithmic_map},
-            compression),
+            compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
                 inner_radius, outer_radius,
@@ -230,7 +248,7 @@ void test_shell_construction(
                      Direction<3>::upper_eta()}}},
                 1.0, 1.0, use_equiangular_map, Halves::Both,
                 use_logarithmic_map},
-            compression),
+            compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
                 inner_radius, outer_radius,
@@ -239,7 +257,7 @@ void test_shell_construction(
                      Direction<3>::upper_eta()}}},
                 1.0, 1.0, use_equiangular_map, Halves::Both,
                 use_logarithmic_map},
-            compression),
+            compression, translation),
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Wedge3DMap{
                 inner_radius, outer_radius,
@@ -248,7 +266,7 @@ void test_shell_construction(
                      Direction<3>::upper_eta()}}},
                 1.0, 1.0, use_equiangular_map, Halves::Both,
                 use_logarithmic_map},
-            compression));
+            compression, translation));
     if (UNLIKELY(which_wedges == ShellWedges::FourOnEquator)) {
       vector_of_maps.erase(vector_of_maps.begin(), vector_of_maps.begin() + 2);
     } else if (UNLIKELY(which_wedges == ShellWedges::OneAlongMinusX)) {
@@ -256,12 +274,17 @@ void test_shell_construction(
     }
     test_domain_construction(domain, expected_block_neighbors,
                              expected_external_boundaries, vector_of_maps);
+
+    const auto vector_of_maps_copy = clone_unique_ptrs(vector_of_maps);
+    Domain<3> domain_no_corners(std::move(vector_of_maps));
+    test_domain_construction(domain_no_corners, expected_block_neighbors,
+                             expected_external_boundaries, vector_of_maps_copy);
+
+    test_initial_domain(domain_no_corners, shell.initial_refinement_levels());
+    test_serialization(domain_no_corners);
   }
 
   test_initial_domain(domain, shell.initial_refinement_levels());
-
-  Parallel::register_classes_in_list<
-      typename domain::creators::Shell::maps_list>();
   test_serialization(domain);
 }
 
@@ -526,7 +549,7 @@ void test_radial_block_layers(const double inner_radius,
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell", "[Domain][Unit]") {
   test_shell_boundaries();
   test_shell_factory_equiangular();
   test_shell_factory_equidistant();

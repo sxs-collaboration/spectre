@@ -51,15 +51,29 @@ struct PairOfFaces {
 
 /// \ingroup ComputationalDomainGroup
 /// Sets up the BlockNeighbors using the corner numbering scheme
-/// to deduce the correct neighbors and orientations. Does not set
-/// up periodic boundary conditions.
+/// provided by the user to deduce the correct neighbors and
+/// orientations. Does not set up periodic boundary conditions.
 template <size_t VolumeDim>
 void set_internal_boundaries(
-    const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
-        corners_of_all_blocks,
-    gsl::not_null<
+    const gsl::not_null<
         std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
-        neighbors_of_all_blocks) noexcept;
+        neighbors_of_all_blocks,
+    const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
+        corners_of_all_blocks) noexcept;
+
+/// \ingroup ComputationalDomainGroup
+/// Sets up the BlockNeighbors using the corner numbering scheme
+/// implied by the maps provided by the user to deduce the correct
+/// neighbors and orientations.
+/// \warning Does not set up periodic boundary conditions.
+template <size_t VolumeDim>
+void set_internal_boundaries(
+    const gsl::not_null<
+        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
+        neighbors_of_all_blocks,
+    const std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>&
+        maps) noexcept;
 
 /// \ingroup ComputationalDomainGroup
 /// Sets up additional BlockNeighbors corresponding to any
