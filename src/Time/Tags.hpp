@@ -60,8 +60,10 @@ struct SubstepTime : db::SimpleTag {
 /// \see SubstepTime
 struct SubstepTimeCompute : SubstepTime, db::ComputeTag {
   using base = SubstepTime;
-  static auto function(const ::TimeStepId& id) noexcept {
-    return id.substep_time();
+  using return_type = typename base::type;
+  static void function(const gsl::not_null<return_type*> substep_time,
+                       const ::TimeStepId& id) noexcept {
+    *substep_time = id.substep_time();
   }
   using argument_tags = tmpl::list<TimeStepId>;
 };
