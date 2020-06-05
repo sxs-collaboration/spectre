@@ -20,6 +20,7 @@
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
@@ -167,8 +168,12 @@ template <typename MagnitudeSquareTag,
 struct MagnitudeCompute
     : db::add_tag_prefix<Magnitude, db::remove_tag_prefix<MagnitudeSquareTag>>,
       db::ComputeTag {
-  static constexpr double function(const double magnitude_square) noexcept {
-    return sqrt(magnitude_square);
+  using base =
+      db::add_tag_prefix<Magnitude, db::remove_tag_prefix<MagnitudeSquareTag>>;
+  using return_type = double;
+  static void function(const gsl::not_null<double*> magnitude,
+                       const double magnitude_square) noexcept {
+    *magnitude = sqrt(magnitude_square);
   }
   using argument_tags = tmpl::list<MagnitudeSquareTag>;
 };
@@ -251,16 +256,19 @@ struct HasConvergedCompute : LinearSolver::Tags::HasConverged<OptionsGroup>,
       db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
 
  public:
+  using base = LinearSolver::Tags::HasConverged<OptionsGroup>;
+  using return_type = typename base::type;
   using argument_tags =
       tmpl::list<LinearSolver::Tags::ConvergenceCriteria<OptionsGroup>,
                  LinearSolver::Tags::IterationId<OptionsGroup>,
                  residual_magnitude_tag, initial_residual_magnitude_tag>;
-  static Convergence::HasConverged function(
-      const Convergence::Criteria& convergence_criteria,
-      const size_t iteration_id, const double residual_magnitude,
-      const double initial_residual_magnitude) noexcept {
-    return {convergence_criteria, iteration_id, residual_magnitude,
-            initial_residual_magnitude};
+  static void function(const gsl::not_null<return_type*> has_converged,
+                       const Convergence::Criteria& convergence_criteria,
+                       const size_t iteration_id,
+                       const double residual_magnitude,
+                       const double initial_residual_magnitude) noexcept {
+    *has_converged = {convergence_criteria, iteration_id, residual_magnitude,
+                      initial_residual_magnitude};
   }
 };
 
@@ -270,12 +278,15 @@ template <typename OptionsGroup>
 struct HasConvergedByIterationsCompute
     : LinearSolver::Tags::HasConverged<OptionsGroup>,
       db::ComputeTag {
+  using base = LinearSolver::Tags::HasConverged<OptionsGroup>;
+  using return_type = typename base::type;
   using argument_tags =
       tmpl::list<LinearSolver::Tags::Iterations<OptionsGroup>,
                  LinearSolver::Tags::IterationId<OptionsGroup>>;
-  static Convergence::HasConverged function(
-      const size_t iterations, const size_t iteration_id) noexcept {
-    return {{iterations, 0., 0.}, iteration_id, 1., 1.};
+  static void function(const gsl::not_null<return_type*> has_converged,
+                       const size_t iterations,
+                       const size_t iteration_id) noexcept {
+    *has_converged = {{iterations, 0., 0.}, iteration_id, 1., 1.};
   }
 };
 
@@ -388,10 +399,13 @@ namespace Tags {
 template <typename OptionsGroup>
 struct NextCompute<LinearSolver::Tags::IterationId<OptionsGroup>>
     : Next<LinearSolver::Tags::IterationId<OptionsGroup>>, db::ComputeTag {
+  using base = Next<LinearSolver::Tags::IterationId<OptionsGroup>>;
+  using return_type = typename base::type;
   using argument_tags =
       tmpl::list<LinearSolver::Tags::IterationId<OptionsGroup>>;
-  static size_t function(const size_t iteration_id) noexcept {
-    return iteration_id + 1;
+  static void function(const gsl::not_null<return_type*> next_iteration_id,
+                       const size_t iteration_id) noexcept {
+    *next_iteration_id = iteration_id + 1;
   }
 };
 
