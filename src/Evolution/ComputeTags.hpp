@@ -27,17 +27,19 @@ struct AnalyticCompute
       db::ComputeTag {
   using base = db::add_tag_prefix<::Tags::Analytic,
                                   ::Tags::Variables<AnalyticFieldsTagList>>;
+  using return_type = typename base::type;
   using argument_tags =
       tmpl::list<AnalyticSolutionTag,
                  domain::Tags::Coordinates<Dim, Frame::Inertial>, ::Tags::Time>;
-  static db::const_item_type<base> function(
+  static void function(
+      const gsl::not_null<return_type*> analytic_solution,
       const db::const_item_type<AnalyticSolutionTag>&
           analytic_solution_computer,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
       const double time) noexcept {
-    return db::const_item_type<base>(
+    *analytic_solution =
         variables_from_tagged_tuple(analytic_solution_computer.variables(
-            inertial_coords, time, AnalyticFieldsTagList{})));
+            inertial_coords, time, AnalyticFieldsTagList{}));
   }
 };
 }  // namespace Tags
