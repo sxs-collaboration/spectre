@@ -54,6 +54,7 @@ Scalar<DataType> dot_product(
  */
 template <typename DataType, typename Index>
 void dot_product(
+    // NOLINTNEXTLINE(readability-avoid-const-params-in-decls) false positive
     const gsl::not_null<Scalar<DataType>*> dot_product,
     const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector_a,
     const Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index>>>&

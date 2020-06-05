@@ -12,8 +12,10 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
+// @{
 /*!
  * \ingroup TensorGroup
  * \brief Compute the Euclidean magnitude of a rank-1 tensor
@@ -27,6 +29,16 @@ Scalar<DataType> magnitude(
     const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector) noexcept {
   return Scalar<DataType>{sqrt(get(dot_product(vector, vector)))};
 }
+
+template <typename DataType, typename Index>
+void magnitude(
+    const gsl::not_null<Scalar<DataType>*> magnitude,
+    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector) noexcept {
+  destructive_resize_components(magnitude, get_size(get<0>(vector)));
+  dot_product(magnitude, vector, vector);
+  get(*magnitude) = sqrt(get(*magnitude));
+}
+// @}
 
 // @{
 /*!
@@ -60,6 +72,7 @@ void magnitude(
 }
 // @}
 
+// @{
 /// \ingroup TensorGroup
 /// \brief Compute square root of the Euclidean magnitude of a rank-0 tensor
 ///
@@ -69,6 +82,14 @@ template <typename DataType>
 Scalar<DataType> sqrt_magnitude(const Scalar<DataType>& input) noexcept {
   return Scalar<DataType>{sqrt(abs(get(input)))};
 }
+
+template <typename DataType>
+void sqrt_magnitude(const gsl::not_null<Scalar<DataType>*> sqrt_magnitude,
+                    const Scalar<DataType>& input) noexcept {
+  destructive_resize_components(sqrt_magnitude, get_size(get(input)));
+  get(*sqrt_magnitude) = sqrt(abs(get(input)));
+}
+// @}
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
@@ -93,8 +114,10 @@ struct Magnitude : db::PrefixTag, db::SimpleTag {
 template <typename Tag>
 struct EuclideanMagnitude : Magnitude<Tag>, db::ComputeTag {
   using base = Magnitude<Tag>;
-  static constexpr Scalar<DataVector> (*function)(
-      const db::const_item_type<Tag>&) = magnitude;
+  using return_type = typename base::type;
+  static constexpr auto function =
+      static_cast<void (*)(const gsl::not_null<return_type*>,
+                           const typename Tag::type&) noexcept>(&magnitude);
   using argument_tags = tmpl::list<Tag>;
 };
 
@@ -106,9 +129,10 @@ struct EuclideanMagnitude : Magnitude<Tag>, db::ComputeTag {
 template <typename Tag, typename MetricTag>
 struct NonEuclideanMagnitude : Magnitude<Tag>, db::ComputeTag {
   using base = Magnitude<Tag>;
-  static constexpr Scalar<DataVector> (*function)(
-      const db::const_item_type<Tag>&,
-      const db::const_item_type<MetricTag>&) = magnitude;
+  using return_type = typename base::type;
+  static constexpr auto function = static_cast<void (*)(
+      const gsl::not_null<return_type*>, const typename Tag::type&,
+      const typename MetricTag::type&) noexcept>(&magnitude);
   using argument_tags = tmpl::list<Tag, MetricTag>;
 };
 
@@ -134,15 +158,16 @@ struct Normalized : db::PrefixTag, db::SimpleTag {
 template <typename Tag>
 struct NormalizedCompute : Normalized<Tag>, db::ComputeTag {
   using base = Normalized<Tag>;
-  static constexpr auto function(
-      const db::const_item_type<Tag>&
-          vector_in,  // Compute items need to take const references
-      const db::const_item_type<Magnitude<Tag>>& magnitude) noexcept {
-    auto vector = vector_in;
-    for (size_t d = 0; d < vector.index_dim(0); ++d) {
-      vector.get(d) /= get(magnitude);
+  using return_type = typename base::type;
+  static void function(
+      const gsl::not_null<return_type*> normalized_vector,
+      const typename Tag::type& vector_in,
+      const typename Magnitude<Tag>::type& magnitude) noexcept {
+    destructive_resize_components(normalized_vector, get_size(get(magnitude)));
+    *normalized_vector = vector_in;
+    for (size_t d = 0; d < normalized_vector->index_dim(0); ++d) {
+      normalized_vector->get(d) /= get(magnitude);
     }
-    return vector;
   }
   using argument_tags = tmpl::list<Tag, Magnitude<Tag>>;
 };
@@ -157,8 +182,10 @@ struct Sqrt : db::ComputeTag {
   static std::string name() noexcept {
     return "Sqrt(" + db::tag_name<Tag>() + ")";
   }
-  static constexpr Scalar<DataVector> (*function)(
-      const db::const_item_type<Tag>&) = sqrt_magnitude;
+  using return_type = Scalar<DataVector>;
+  static constexpr auto function = static_cast<void (*)(
+      const gsl::not_null<return_type*>, const typename Tag::type&) noexcept>(
+      &sqrt_magnitude);
   using argument_tags = tmpl::list<Tag>;
 };
 }  // namespace Tags

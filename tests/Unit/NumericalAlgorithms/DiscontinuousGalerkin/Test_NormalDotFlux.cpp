@@ -121,8 +121,9 @@ Scalar<double> generate_f_dot_n(const size_t normal_seed,
   double magnitude_normal = 0.;
   double unnormalized_f_dot_n = 0.;
   for (size_t i = 0; i < Dim; ++i) {
-    magnitude_normal += square(normal_seed + i + 2);
-    unnormalized_f_dot_n += (normal_seed + i + 2) * (flux_seed + i + 3);
+    magnitude_normal += square(static_cast<double>(normal_seed + i) + 2.);
+    unnormalized_f_dot_n += (static_cast<double>(normal_seed + i) + 2.) *
+                            (static_cast<double>(flux_seed + i) + 3.);
   }
   magnitude_normal = sqrt(magnitude_normal);
 
@@ -184,23 +185,23 @@ void check_compute_item() {
     }
   }
 
-  // Doing this through a DataBox would require a full element to be
-  // set up.
   using magnitude_normal_tag = Tags::EuclideanMagnitude<
       domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>;
-  const auto magnitude_normal = magnitude_normal_tag::function(normal);
   using normalized_normal_tag =
       Tags::NormalizedCompute<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>;
-  const auto normalized_normal =
-      normalized_normal_tag::function(normal, magnitude_normal);
   using compute_n_dot_f =
       Tags::NormalDotFluxCompute<variables_tag<Dim, Frame>, Dim, Frame>;
+  const auto box = db::create<
+      db::AddSimpleTags<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>,
+                        flux_tag<Dim, Frame>>,
+      db::AddComputeTags<magnitude_normal_tag, normalized_normal_tag,
+                         compute_n_dot_f>>(normal, fluxes);
   static_assert(
       std::is_same_v<typename compute_n_dot_f::argument_tags,
                      tmpl::list<flux_tag<Dim, Frame>,
                                 typename normalized_normal_tag::base>>,
       "Wrong argument tags");
-  const auto result = compute_n_dot_f::function(fluxes, normalized_normal);
+  const auto& result = get<typename compute_n_dot_f::base>(box);
 
   static_assert(
       std::is_base_of_v<
