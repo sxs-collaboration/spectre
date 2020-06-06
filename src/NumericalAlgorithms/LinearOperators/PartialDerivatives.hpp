@@ -215,11 +215,17 @@ struct DerivCompute
   using deriv_frame = typename tmpl::back<inv_jac_indices>::Frame;
 
  public:
-  static constexpr ::Variables<db::wrap_tags_in<
-      Tags::deriv, DerivTags, tmpl::size_t<Dim>, deriv_frame>> (*function)(
-      const ::Variables<typename db::const_item_type<VariablesTag>::tags_list>&,
-      const ::Mesh<Dim>&,
-      const ::InverseJacobian<DataVector, Dim, Frame::Logical, deriv_frame>&) =
+  using base = db::add_tag_prefix<
+      deriv, db::variables_tag_with_tags_list<VariablesTag, DerivTags>,
+      tmpl::size_t<tmpl::back<
+          typename db::const_item_type<InverseJacobianTag>::index_list>::dim>,
+      typename tmpl::back<
+          typename db::const_item_type<InverseJacobianTag>::index_list>::Frame>;
+  using return_type = typename base::type;
+  static constexpr void (*function)(
+      gsl::not_null<return_type*>, const typename VariablesTag::type&,
+      const Mesh<Dim>&,
+      const InverseJacobian<DataVector, Dim, Frame::Logical, deriv_frame>&) =
       partial_derivatives<DerivTags,
                           typename db::const_item_type<VariablesTag>::tags_list,
                           Dim, deriv_frame>;
