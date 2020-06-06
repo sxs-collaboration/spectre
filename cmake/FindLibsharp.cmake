@@ -15,7 +15,7 @@ endif()
 
 # find the libsharp include directory
 find_path(LIBSHARP_INCLUDE_DIRS sharp_cxx.h
-    PATH_SUFFIXES include
+    PATH_SUFFIXES include include/libsharp
     HINTS ${LIBSHARP_ROOT}/include/)
 
 find_library(LIBSHARP_LIBFFTPACK
