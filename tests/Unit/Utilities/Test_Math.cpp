@@ -10,6 +10,22 @@
 #include "Utilities/Math.hpp"
 #include "Utilities/TypeTraits.hpp"
 
+namespace {
+template <size_t N>
+void test_smoothstep() {
+  CAPTURE(N);
+  CHECK(smoothstep<N>(0., 1., 0.) == approx(0.));
+  CHECK(smoothstep<N>(0., 1., 0.5) == approx(0.5));
+  CHECK(smoothstep<N>(0., 1., 1.) == approx(1.));
+  CHECK_ITERABLE_APPROX(
+      smoothstep<N>(0., 1., DataVector({-1., 0., 0.5, 1., 2.})),
+      DataVector({0., 0., 0.5, 1., 1.}));
+  CHECK_ITERABLE_APPROX(
+      smoothstep<N>(-1., 1., DataVector({-2., -1., 0., 1., 2.})),
+      DataVector({0., 0., 0.5, 1., 1.}));
+}
+}  // namespace
+
 SPECTRE_TEST_CASE("Unit.Utilities.Math", "[Unit][Utilities]") {
   {
     INFO("Test number_of_digits");
@@ -36,6 +52,14 @@ SPECTRE_TEST_CASE("Unit.Utilities.Math", "[Unit][Utilities]") {
     CHECK_ITERABLE_APPROX(
         evaluate_polynomial(poly_variable_coeffs, DataVector({0., 0.5, 1.})),
         DataVector({1., 1., 3.}));
+  }
+
+  {
+    INFO("Test smoothstep");
+    test_smoothstep<0>();
+    test_smoothstep<1>();
+    test_smoothstep<2>();
+    test_smoothstep<3>();
   }
 
   {

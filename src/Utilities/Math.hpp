@@ -3,7 +3,9 @@
 
 #pragma once
 
+#include <array>
 #include <cmath>
+#include <cstddef>
 #include <numeric>
 #include <type_traits>
 #include <vector>
@@ -67,6 +69,59 @@ DataType evaluate_polynomial(const CoeffsIterable& coeffs,
 template <typename T, Requires<std::is_arithmetic<T>::value> = nullptr>
 constexpr T step_function(const T& arg) noexcept {
   return static_cast<T>((arg >= static_cast<T>(0)) ? 1 : 0);
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Smoothly interpolates from 0 to 1 between `lower_edge` and
+ * `upper_edge` with a Hermite polynomial of degree `2 * N + 1`.
+ *
+ * The smoothstep function is
+ *
+ * \f{align*}
+ * S_N(x) = \begin{cases}
+ * 0 &\quad \text{for} \quad x\leq x_0 \\
+ * \tilde{S}_N((x - x_0) / (x_1 - x_0))
+ * &\quad \text{for} \quad x_0 \leq x\leq x_1 \\
+ * 1 &\quad \text{for} \quad x_1\leq x \\
+ * \end{cases}
+ * \f}
+ *
+ * where \f$x_0\f$ is `lower_edge`, \f$x_1\f$ is `upper_edge`, and, up to
+ * \f$N=3\f$,
+ *
+ * \f{align*}
+ * \tilde{S}_0(x) &= x \\
+ * \tilde{S}_1(x) &= 3x^2 - 2x^3 \\
+ * \tilde{S}_2(x) &= 10x^3 - 15x^4 + 6x^5 \\
+ * \tilde{S}_3(x) &= 35x^4 - 84x^5 + 70x^6 - 20x^7
+ * \text{.}
+ * \f}
+ */
+template <size_t N, typename DataType>
+DataType smoothstep(const double lower_edge, const double upper_edge,
+                    const DataType& arg) noexcept {
+  ASSERT(lower_edge < upper_edge,
+         "Requires lower_edge < upper_edge, but lower_edge="
+             << lower_edge << " and upper_edge=" << upper_edge);
+  using std::clamp;
+  return evaluate_polynomial(
+      []() noexcept -> std::array<double, 2 * N + 2> {
+        static_assert(N <= 3,
+                      "The smoothstep function is currently only implemented "
+                      "for N <= 3.");
+        if constexpr (N == 0) {
+          return {0., 1};
+        } else if constexpr (N == 1) {
+          return {0., 0., 3., -2};
+        } else if constexpr (N == 2) {
+          return {0., 0., 0., 10., -15., 6.};
+        } else if constexpr (N == 3) {
+          return {0., 0., 0., 0., 35., -84., 70., -20.};
+        }
+      }(),
+      static_cast<DataType>(
+          clamp((arg - lower_edge) / (upper_edge - lower_edge), 0., 1.)));
 }
 
 /// \ingroup UtilitiesGroup
