@@ -83,10 +83,12 @@ class GhLocalTimeStepping : public GhInterfaceManager {
                       const tnsr::aa<DataVector, 3>& spacetime_metric,
                       const tnsr::iaa<DataVector, 3>& phi,
                       const tnsr::aa<DataVector, 3>& pi,
-                      TimeStepId next_time_id,
                       const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
                       const tnsr::iaa<DataVector, 3>& dt_phi,
                       const tnsr::aa<DataVector, 3>& dt_pi) noexcept override;
+
+  void insert_next_gh_time(TimeStepId time_id,
+                           TimeStepId next_time_id) noexcept override;
 
   /// \brief Store the next time step that will be required by the CCE system to
   /// proceed with the evolution.
@@ -124,7 +126,9 @@ class GhLocalTimeStepping : public GhInterfaceManager {
 
   size_t order_ = 3;
 
-  std::deque<std::tuple<TimeStepId, gh_variables, TimeStepId, dt_gh_variables>>
+  std::deque<
+      std::tuple<TimeStepId, boost::optional<gh_variables>,
+                 boost::optional<TimeStepId>, boost::optional<dt_gh_variables>>>
       pre_history_;
   std::deque<TimeStepId> requests_;
 

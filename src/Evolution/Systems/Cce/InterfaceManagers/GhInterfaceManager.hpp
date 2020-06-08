@@ -66,10 +66,12 @@ class GhInterfaceManager : public PUP::able {
   virtual void insert_gh_data(
       TimeStepId time_id, const tnsr::aa<DataVector, 3>& spacetime_metric,
       const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
-      TimeStepId next_time_id,
       const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
       const tnsr::iaa<DataVector, 3>& dt_phi,
       const tnsr::aa<DataVector, 3>& dt_pi) noexcept = 0;
+
+  virtual void insert_next_gh_time(TimeStepId time_id,
+                                   TimeStepId next_time_id) noexcept = 0;
 
   virtual void request_gh_data(const TimeStepId&) noexcept = 0;
 

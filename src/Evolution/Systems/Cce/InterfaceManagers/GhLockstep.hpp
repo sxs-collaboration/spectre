@@ -60,10 +60,14 @@ class GhLockstep : public GhInterfaceManager {
   void insert_gh_data(
       TimeStepId time_id, const tnsr::aa<DataVector, 3>& spacetime_metric,
       const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
-      TimeStepId next_time_id = {},
       const tnsr::aa<DataVector, 3>& dt_spacetime_metric = {},
       const tnsr::iaa<DataVector, 3>& dt_phi = {},
       const tnsr::aa<DataVector, 3>& dt_pi = {}) noexcept override;
+
+  /// \brief next time information is ignored by this implementation, so this is
+  /// a no-op.
+  void insert_next_gh_time(TimeStepId /*time_id*/,
+                           TimeStepId /*next_time_id*/) noexcept override {}
 
   /// \brief Requests are ignored by this implementation, so this is a no-op.
   void request_gh_data(const TimeStepId& /*time_id*/) noexcept override {}
