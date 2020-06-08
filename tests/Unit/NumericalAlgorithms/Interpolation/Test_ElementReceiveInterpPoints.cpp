@@ -64,8 +64,7 @@ struct mock_interpolation_target {
           typename Metavariables::Phase, Metavariables::Phase::Registration,
           tmpl::list<
               intrp::Actions::InterpolationTargetSendTimeIndepPointsToElements<
-                  InterpolationTargetTag, typename mock_element<Metavariables>::
-                                              phase_dependent_action_list>>>>;
+                  InterpolationTargetTag>>>>;
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
 };
@@ -76,12 +75,14 @@ struct MockMetavariables {
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         ::intrp::TargetPoints::LineSegment<InterpolationTargetA, 3>;
+    using interpolating_component = mock_element<MockMetavariables>;
   };
   struct InterpolationTargetB {
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         ::intrp::TargetPoints::LineSegment<InterpolationTargetB, 3>;
+    using interpolating_component = mock_element<MockMetavariables>;
   };
   using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;

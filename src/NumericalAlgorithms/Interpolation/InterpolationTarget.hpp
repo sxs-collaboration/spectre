@@ -9,11 +9,13 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
+#include "NumericalAlgorithms/Interpolation/Actions/InterpolationTargetSendPoints.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 /// \cond
 namespace intrp {
@@ -94,6 +96,19 @@ namespace intrp {
 ///      Domain will be filled with this value. If this variable is not defined,
 ///      then the `apply` function must check for invalid points,
 ///      and should typically exit with an error message if it finds any.
+/// - should_interpolate (optional):
+///      A template function that takes as a single argument a const reference
+///      to the \ref DataBoxGroup, and returns a `bool`: `true` if the
+///      element should interpolate in the current state, `false` otherwise.
+///      Often, this will examine the `temporal_id` to determine whether to
+///      interpolate, but it may examine any part of the \ref DataBoxGroup.
+///      If omitted, the behavior is as if the `should_interpolate` function
+///      always returns true. This function is called using the DG element's
+///      \ref DataBoxGroup and is only used if `InterpolateToTarget` is
+///      in the element's action list.
+/// - interpolating_component (used only if not `is_sequential`):
+///      A type alias for the component that will be interpolating to the
+///      interpolation target.
 ///
 /// `Metavariables` must contain the following type aliases:
 /// - interpolator_source_vars:
@@ -141,9 +156,24 @@ struct InterpolationTarget {
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Register,
-          tmpl::list<::observers::Actions::RegisterSingletonWithObserverWriter<
-                         RegistrationHelper>,
-                     Parallel::Actions::TerminatePhase>>>;
+          tmpl::list<
+              tmpl::conditional_t<
+                  InterpolationTargetTag::compute_target_points::is_sequential::
+                      value,
+                  tmpl::list<>,
+                  tmpl::list<
+                      Actions::InterpolationTargetSendTimeIndepPointsToElements<
+                          InterpolationTargetTag>>>,
+              tmpl::conditional_t<
+                  std::is_same_v<
+                      typename InterpolationTargetTag::
+                          post_interpolation_callback::observation_types,
+                      tmpl::list<>>,
+                  tmpl::list<Parallel::Actions::TerminatePhase>,
+                  tmpl::list<
+                      ::observers::Actions::RegisterSingletonWithObserverWriter<
+                          RegistrationHelper>,
+                      Parallel::Actions::TerminatePhase>>>>>;
 
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
