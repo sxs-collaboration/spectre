@@ -116,5 +116,5 @@ volume_and_slice_indices(const Index<VolumeDim>& extents) noexcept {
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef DIM
-#undef INSTANTIATE
+#undef INSTANTIATION
 /// \endcond
