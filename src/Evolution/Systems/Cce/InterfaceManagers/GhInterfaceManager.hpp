@@ -9,6 +9,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhInterpolationStrategies.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -81,6 +82,8 @@ class GhInterfaceManager : public PUP::able {
   virtual size_t number_of_pending_requests() const noexcept = 0;
 
   virtual size_t number_of_gh_times() const noexcept = 0;
+
+  virtual InterpolationStrategy get_interpolation_strategy() const noexcept = 0;
 };
 
 }  // namespace InterfaceManagers

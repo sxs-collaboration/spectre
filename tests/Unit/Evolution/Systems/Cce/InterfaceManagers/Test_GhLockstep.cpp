@@ -37,6 +37,8 @@ void test_gh_lockstep_interface_manager(
       expected_gh_data(7);
   size_t running_total = 0;
   InterfaceManagers::GhLockstep interface_manager{};
+  CHECK(interface_manager.get_interpolation_strategy() ==
+        InterfaceManagers::InterpolationStrategy::EverySubstep);
   tnsr::aa<DataVector, 3> spacetime_metric{5_st};
   tnsr::iaa<DataVector, 3> phi{5_st};
   tnsr::aa<DataVector, 3> pi{5_st};

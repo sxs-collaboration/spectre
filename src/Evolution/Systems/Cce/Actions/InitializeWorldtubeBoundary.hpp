@@ -137,7 +137,8 @@ struct InitializeGhWorldtubeBoundary {
 
   using const_global_cache_tags =
       tmpl::list<Tags::LMax, InitializationTags::ExtractionRadius,
-                 Tags::NoEndTime, Tags::SpecifiedStartTime>;
+                 Tags::NoEndTime, Tags::SpecifiedStartTime,
+                 Tags::InterfaceManagerInterpolationStrategy>;
 
   template <class Metavariables>
   using gh_boundary_manager_simple_tags = db::AddSimpleTags<

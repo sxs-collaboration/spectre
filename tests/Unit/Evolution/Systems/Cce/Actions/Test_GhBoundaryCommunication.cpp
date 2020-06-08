@@ -176,6 +176,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
       tuples::tagged_tuple_from_typelist<
           Parallel::get_const_global_cache_tags<test_metavariables>>{
           l_max, extraction_radius, end_time, start_time,
+          InterfaceManagers::InterpolationStrategy::EveryStep,
           number_of_radial_points,
           std::make_unique<::TimeSteppers::DormandPrince5>()}};
 
