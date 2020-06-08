@@ -10,6 +10,7 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/InterpolationTargetVarsFromElement.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTarget.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Interpolation/PointInfoTag.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -30,6 +31,9 @@ namespace Actions {
 /// \brief Interpolates and sends points to an InterpolationTarget.
 ///
 /// This is invoked on DgElementArray.
+/// This action should be used only if the elements are using global
+/// timestepping. An alternative strategy involving dense output must be devised
+/// for interpolation during local timestepping
 ///
 /// Uses:
 /// - DataBox:
@@ -37,6 +41,8 @@ namespace Actions {
 ///   - `Tags::Mesh<Metavariables::volume_dim>`
 ///   - Variables tagged by
 ///     InterpolationTargetTag::vars_to_interpolate_to_target
+///   - any box tags used by the `should_interpolate` function of
+///     `InterpolationTargetTag`
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -53,6 +59,13 @@ struct InterpolateToTarget {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
+    // Exit early if we should not interpolate in the current state
+    if constexpr (InterpolationTarget_detail::is_should_interpolate_callable_v<
+                      InterpolationTargetTag, db::DataBox<DbTags>&>) {
+      if (not InterpolationTargetTag::should_interpolate(box)) {
+        return std::forward_as_tuple(std::move(box));
+      }
+    }
     static constexpr size_t dim = Metavariables::volume_dim;
 
     // Get element logical coordinates.

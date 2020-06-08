@@ -77,23 +77,63 @@ struct initialize_elements_and_queue_simple_actions {
     for (const auto& element_id : element_ids) {
       ActionTesting::next_action<elem_component>(make_not_null(&runner),
                                                  element_id);
+      if (Metavariables::has_should_interpolate and
+          not Metavariables::should_interpolate_value) {
+        CHECK(ActionTesting::is_simple_action_queue_empty<
+              InterpolateOnElementTestHelpers::mock_interpolation_target<
+                  Metavariables, typename Metavariables::InterpolationTargetA>>(
+            runner, 0));
+      }
     }
   }
 };
 
-template <bool HaveComputeItemsOnSource, bool AddComputeItemToBox>
+template <bool HaveComputeItemsOnSource, bool ShouldInterpolate,
+          bool HasShouldInterpolateLocal>
+struct InterpolationTargetAImpl;
+
+template <bool HaveComputeItemsOnSource, bool ShouldInterpolate>
+struct InterpolationTargetAImpl<HaveComputeItemsOnSource, ShouldInterpolate,
+                                true> {
+  using vars_to_interpolate_to_target = tmpl::list<
+      tmpl::conditional_t<HaveComputeItemsOnSource,
+                          InterpolateOnElementTestHelpers::Tags::MultiplyByTwo,
+                          InterpolateOnElementTestHelpers::Tags::TestSolution>>;
+  using compute_items_on_source = tmpl::conditional_t<
+      HaveComputeItemsOnSource,
+      tmpl::list<InterpolateOnElementTestHelpers::Tags::MultiplyByTwoCompute>,
+      tmpl::list<>>;
+  template <typename DbTagList>
+  static bool should_interpolate(
+      const db::DataBox<DbTagList>& /*box*/) noexcept {
+    return ShouldInterpolate;
+  }
+};
+
+template <bool HaveComputeItemsOnSource, bool ShouldInterpolate>
+struct InterpolationTargetAImpl<HaveComputeItemsOnSource, ShouldInterpolate,
+                                false> {
+  using vars_to_interpolate_to_target = tmpl::list<
+      tmpl::conditional_t<HaveComputeItemsOnSource,
+                          InterpolateOnElementTestHelpers::Tags::MultiplyByTwo,
+                          InterpolateOnElementTestHelpers::Tags::TestSolution>>;
+  using compute_items_on_source = tmpl::conditional_t<
+      HaveComputeItemsOnSource,
+      tmpl::list<InterpolateOnElementTestHelpers::Tags::MultiplyByTwoCompute>,
+      tmpl::list<>>;
+};
+
+template <bool HaveComputeItemsOnSource, bool AddComputeItemToBox,
+          bool HasShouldInterpolateFunction, bool ShouldInterpolate>
 struct MockMetavariables {
   static constexpr bool add_compute_item_to_box = AddComputeItemToBox;
-  struct InterpolationTargetA {
-    using vars_to_interpolate_to_target = tmpl::list<tmpl::conditional_t<
-        HaveComputeItemsOnSource,
-        InterpolateOnElementTestHelpers::Tags::MultiplyByTwo,
-        InterpolateOnElementTestHelpers::Tags::TestSolution>>;
-    using compute_items_on_source = tmpl::conditional_t<
-        HaveComputeItemsOnSource,
-        tmpl::list<InterpolateOnElementTestHelpers::Tags::MultiplyByTwoCompute>,
-        tmpl::list<>>;
-  };
+  static constexpr bool should_interpolate_value = ShouldInterpolate;
+  static constexpr bool has_should_interpolate = HasShouldInterpolateFunction;
+
+  using InterpolationTargetA =
+      InterpolationTargetAImpl<HaveComputeItemsOnSource, ShouldInterpolate,
+                               HasShouldInterpolateFunction>;
+
   using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
@@ -117,10 +157,20 @@ void run_test() noexcept {
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateToTarget",
                   "[Unit]") {
-  run_test<MockMetavariables<false,false>>();
-  run_test<MockMetavariables<true,true>>();
-  run_test<MockMetavariables<true,false>>();
-  run_test<MockMetavariables<false,true>>();
+  // should interpolate:
+  run_test<MockMetavariables<false, false, true, true>>();
+  run_test<MockMetavariables<true, true, true, true>>();
+  run_test<MockMetavariables<true, false, true, true>>();
+  run_test<MockMetavariables<false, true, true, true>>();
+  // should not interpolate:
+  run_test<MockMetavariables<false, false, true, false>>();
+  run_test<MockMetavariables<true, true, true, false>>();
+  run_test<MockMetavariables<true, false, true, false>>();
+  run_test<MockMetavariables<false, true, true, false>>();
+  // no should_interpolate function:
+  run_test<MockMetavariables<false, false, false, false>>();
+  run_test<MockMetavariables<true, true, false, false>>();
+  run_test<MockMetavariables<true, false, false, false>>();
+  run_test<MockMetavariables<false, true, false, false>>();
 }
-
 }  // namespace
