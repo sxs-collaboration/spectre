@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
-
 #include <cstddef>
 #include <memory>
 #include <string>
