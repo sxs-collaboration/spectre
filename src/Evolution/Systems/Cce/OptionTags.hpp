@@ -197,7 +197,7 @@ struct ExtractionRadius : db::SimpleTag {
   using type = double;
   using option_tags = tmpl::list<OptionTags::ExtractionRadius>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static double create_from_options(const double extraction_radius) noexcept {
     return extraction_radius;
   }
@@ -278,7 +278,15 @@ struct RadialFilterHalfPower : db::SimpleTag {
   }
 };
 
-struct StartTime : db::SimpleTag {
+/// \brief Represents the start time of a bounded CCE evolution, determined
+/// either from option specification or from the file
+///
+/// \details If no start time is specified in the input file (so the option
+/// `OptionTags::StartTime` is set to the default
+/// `-std::numeric_limits<double>::%infinity()`), this will find the start time
+/// from the provided H5 file. If `OptionTags::StartTime` takes any other value,
+/// it will be used directly as the start time for the CCE evolution instead.
+struct StartTimeFromFile : Tags::StartTime, db::SimpleTag {
   using type = double;
   using option_tags =
       tmpl::list<OptionTags::StartTime, OptionTags::BoundaryDataFilename>;
@@ -291,6 +299,18 @@ struct StartTime : db::SimpleTag {
       const auto& time_buffer = h5_boundary_updater.get_time_buffer();
       start_time = time_buffer[0];
     }
+    return start_time;
+  }
+};
+
+/// \brief Represents the start time of a bounded CCE evolution that must be
+/// supplied in the input file (for e.g. analytic tests).
+struct SpecifiedStartTime : Tags::StartTime, db::SimpleTag {
+  using type = double;
+  using option_tags = tmpl::list<OptionTags::StartTime>;
+
+  static constexpr bool pass_metavariables = false;
+  static double create_from_options(const double start_time) noexcept {
     return start_time;
   }
 };
@@ -349,7 +369,7 @@ struct GhInterfaceManager : db::SimpleTag {
   using type = std::unique_ptr<InterfaceManagers::GhInterfaceManager>;
   using option_tags = tmpl::list<OptionTags::GhInterfaceManager>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static std::unique_ptr<InterfaceManagers::GhInterfaceManager>
   create_from_options(
       const std::unique_ptr<InterfaceManagers::GhInterfaceManager>&

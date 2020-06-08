@@ -176,8 +176,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
   const size_t buffer_size = 5;
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       {l_max, Tags::EndTimeFromFile::create_from_options(end_time, filename),
-       number_of_radial_points, std::make_unique<::TimeSteppers::RungeKutta3>(),
-       start_time}};
+       start_time, number_of_radial_points,
+       std::make_unique<::TimeSteppers::RungeKutta3>()}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            test_metavariables::Phase::Initialization);

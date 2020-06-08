@@ -49,7 +49,8 @@ struct InitializeH5WorldtubeBoundary {
   using initialization_tags =
       tmpl::list<InitializationTags::H5WorldtubeBoundaryDataManager>;
 
-  using const_global_cache_tags = tmpl::list<Tags::LMax, Tags::EndTimeFromFile>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::LMax, Tags::EndTimeFromFile, Tags::StartTimeFromFile>;
 
   template <class Metavariables>
   using h5_boundary_manager_simple_tags = db::AddSimpleTags<
@@ -136,7 +137,7 @@ struct InitializeGhWorldtubeBoundary {
 
   using const_global_cache_tags =
       tmpl::list<Tags::LMax, InitializationTags::ExtractionRadius,
-                 Tags::NoEndTime>;
+                 Tags::NoEndTime, Tags::SpecifiedStartTime>;
 
   template <class Metavariables>
   using gh_boundary_manager_simple_tags = db::AddSimpleTags<
