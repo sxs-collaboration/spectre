@@ -175,9 +175,11 @@ make_volume_data_and_mesh(const DomainCreator& domain_creator,
 
 // This is the main test; Takes a functor as an argument so that
 // different tests can call it to do slightly different things.
-template <typename Metavariables, typename elem_component, typename Functor>
+template <typename Metavariables, typename elem_component, typename Functor,
+          typename... ConstGlobalCacheTypes>
 void test_interpolate_on_element(
-    Functor initialize_elements_and_queue_simple_actions) noexcept {
+    Functor initialize_elements_and_queue_simple_actions,
+    ConstGlobalCacheTypes... const_global_cache_items) noexcept {
   using metavars = Metavariables;
   using target_component =
       mock_interpolation_target<metavars,
@@ -222,7 +224,10 @@ void test_interpolate_on_element(
   }();
 
   // Emplace target component.
-  ActionTesting::MockRuntimeSystem<metavars> runner{{}};
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      tuples::tagged_tuple_from_typelist<
+          Parallel::get_const_global_cache_tags<metavars>>{
+          std::move(const_global_cache_items)...}};
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Initialization);
   ActionTesting::emplace_component_and_initialize<target_component>(

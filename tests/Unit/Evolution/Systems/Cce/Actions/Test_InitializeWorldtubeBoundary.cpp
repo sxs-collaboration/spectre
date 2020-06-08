@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "DataStructures/Variables.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeWorldtubeBoundary.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
