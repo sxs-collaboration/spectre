@@ -138,7 +138,7 @@ struct GhWorldtubeBoundary {
           global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::Evolve) {
-      Parallel::get_parallel_component<H5WorldtubeBoundary>(local_cache)
+      Parallel::get_parallel_component<GhWorldtubeBoundary>(local_cache)
           .start_phase(next_phase);
     }
   }
