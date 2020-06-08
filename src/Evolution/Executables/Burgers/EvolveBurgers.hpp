@@ -56,6 +56,9 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "PointwiseFunctions/AnalyticData/Burgers/Sinusoid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/AnalyticSolutions/Burgers/Bump.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/AnalyticSolutions/Burgers/Linear.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Step.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"                // IWYU pragma: keep
@@ -88,6 +91,7 @@ class CProxy_ConstGlobalCache;
 }  // namespace Parallel
 /// \endcond
 
+template <typename InitialData>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = 1;
   using system = Burgers::System;
@@ -95,7 +99,17 @@ struct EvolutionMetavars {
       dg::Formulation::StrongInertial;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
-  using initial_data_tag = Tags::AnalyticSolution<Burgers::Solutions::Step>;
+
+  using initial_data = InitialData;
+  static_assert(
+      evolution::is_analytic_data_v<initial_data> xor
+          evolution::is_analytic_solution_v<initial_data>,
+      "initial_data must be either an analytic_data or an analytic_solution");
+  using initial_data_tag =
+      tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
+                          Tags::AnalyticSolution<initial_data>,
+                          Tags::AnalyticData<initial_data>>;
+
   using boundary_condition_tag = initial_data_tag;
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
@@ -134,13 +148,17 @@ struct EvolutionMetavars {
   // public for use by the Charm++ registration code
   using observe_fields =
       db::get_variables_tags_list<typename system::variables_tag>;
-  using analytic_solution_fields = observe_fields;
-  using events =
-      tmpl::list<dg::Events::Registrars::ObserveFields<
-                     1, Tags::Time, observe_fields, analytic_solution_fields>,
-                 dg::Events::Registrars::ObserveErrorNorms<
-                     Tags::Time, analytic_solution_fields>,
-                 Events::Registrars::ChangeSlabSize<slab_choosers>>;
+  using analytic_solution_fields =
+      tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
+                          observe_fields, tmpl::list<>>;
+  using events = tmpl::flatten<tmpl::list<
+      tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
+                          dg::Events::Registrars::ObserveErrorNorms<
+                              Tags::Time, analytic_solution_fields>,
+                          tmpl::list<>>,
+      dg::Events::Registrars::ObserveFields<1, Tags::Time, observe_fields,
+                                            analytic_solution_fields>,
+      Events::Registrars::ChangeSlabSize<slab_choosers>>>;
   using triggers = Triggers::time_triggers;
 
   using const_global_cache_tags =
@@ -150,8 +168,8 @@ struct EvolutionMetavars {
   struct ObservationType {};
   using element_observation_type = ObservationType;
 
-  using observed_reduction_data_tags =
-      observers::collect_reduction_data_tags<Event<events>::creatable_classes>;
+  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
+      typename Event<events>::creatable_classes>;
 
   using step_actions = tmpl::flatten<tmpl::list<
       Actions::ComputeVolumeFluxes,
@@ -161,7 +179,10 @@ struct EvolutionMetavars {
       Actions::ComputeTimeDerivative<
           evolution::dg::ConservativeDuDt<Burgers::System, dg_formulation>>,
       evolution::Actions::AddMeshVelocitySourceTerms,
-      dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
+      tmpl::conditional_t<
+          evolution::is_analytic_solution_v<initial_data>,
+          dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
+          tmpl::list<>>,
       dg::Actions::CollectDataForFluxes<
           boundary_scheme,
           domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
@@ -196,9 +217,12 @@ struct EvolutionMetavars {
           dg::Initialization::slice_tags_to_exterior<>,
           dg::Initialization::face_compute_tags<>,
           dg::Initialization::exterior_compute_tags<>, true, true>,
-      Initialization::Actions::AddComputeTags<
-          tmpl::list<evolution::Tags::AnalyticCompute<
-              1, initial_data_tag, analytic_solution_fields>>>,
+      tmpl::conditional_t<
+          evolution::is_analytic_solution_v<initial_data>,
+          Initialization::Actions::AddComputeTags<
+              tmpl::list<evolution::Tags::AnalyticCompute<
+                  1, initial_data_tag, analytic_solution_fields>>>,
+          tmpl::list<>>,
       dg::Actions::InitializeMortars<boundary_scheme>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::Minmod<1>,

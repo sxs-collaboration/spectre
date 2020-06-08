@@ -7,6 +7,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -86,7 +87,7 @@ namespace AnalyticData {
        return np.asarray(results)
  * \endcode
  */
-class Sinusoid {
+class Sinusoid : public MarkAsAnalyticData {
  public:
   using options = tmpl::list<>;
   static constexpr OptionString help{
