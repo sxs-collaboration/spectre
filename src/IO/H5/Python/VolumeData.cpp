@@ -6,6 +6,7 @@
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
 
 namespace py = pybind11;
@@ -17,6 +18,7 @@ void bind_h5vol(py::module& m) {  // NOLINT
       .def_static("extension", &h5::VolumeData::extension)
       .def("get_header", &h5::VolumeData::get_header)
       .def("get_version", &h5::VolumeData::get_version)
+      .def("write_volume_data", &h5::VolumeData::write_volume_data)
       .def("list_observation_ids", &h5::VolumeData::list_observation_ids)
       .def("get_observation_value", &h5::VolumeData::get_observation_value,
            py::arg("observation_id"))

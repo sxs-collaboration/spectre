@@ -11,7 +11,7 @@ import os
 class TestGenerateXdmf(unittest.TestCase):
     def test_generate_xdmf(self):
         data_file_prefix = os.path.join(spectre_informer.unit_test_path(),
-                                        'IO', 'VolTestData')
+                                        'Visualization/Python', 'VolTestData')
         output_filename = 'Test_GenerateXdmf_output'
         if os.path.isfile(output_filename + '.xmf'):
             os.remove(output_filename + '.xmf')
