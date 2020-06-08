@@ -1,0 +1,214 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveGhCceKerrSchild
+# Check: parse;execute
+# Timeout: 12
+# ExpectedOutput:
+#   GhKerrSchildReductionData.h5
+#   GhKerrSchildVolumeData0.h5
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.01
+  # The initial slab size does not currently get updated in CCE,
+  # so should be chosen to be sufficiently large.
+  InitialSlabSize: 0.05
+  StepChoosers:
+    - Increase:
+        Factor: 2
+    - ElementSizeCfl:
+        SafetyFactor: 0.8
+    - ErrorControl:
+        AbsoluteTolerance: 1e-8
+        RelativeTolerance: 1e-6
+        MaxFactor: 2
+        MinFactor: 0.25
+        SafetyFactor: 0.9
+  StepController:
+    BinaryFraction
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 3
+
+PhaseChangeAndTriggers:
+
+Cce:
+  Evolution:
+    TimeStepper:
+      AdamsBashforthN:
+        Order: 3
+    StepChoosers:
+      - Constant: 0.01
+      - Increase:
+          Factor: 2
+      - ErrorControl(SwshVars):
+          AbsoluteTolerance: 1e-8
+          RelativeTolerance: 1e-6
+          MaxFactor: 2
+          MinFactor: 0.25
+          SafetyFactor: 0.9
+      - ErrorControl(CoordVars):
+          AbsoluteTolerance: 1e-8
+          RelativeTolerance: 1e-7
+          MaxFactor: 2
+          MinFactor: 0.25
+          SafetyFactor: 0.9
+    StepController:
+      BinaryFraction
+
+  LMax: 16
+  ExtractionRadius: 48.0
+  NumberOfRadialPoints: 12
+  ObservationLMax: 8
+
+  InitializeJ:
+    InverseCubic
+
+  StartTime: 0.0
+
+  Filtering:
+    RadialFilterHalfPower: 24
+    RadialFilterAlpha: 35.0
+    FilterLMax: 14
+
+  GhInterfaceManager:
+    BoundaryInterpolator:
+      BarycentricRationalSpanInterpolator:
+        MinOrder: 3
+        MaxOrder: 3
+
+  ScriInterpOrder: 5
+  ScriOutputDensity: 1
+
+ApparentHorizons:
+  AhA:
+    InitialGuess:
+      Lmax: 4
+      Radius: 2.2
+      Center: [0.0, 0.0, 0.0]
+    FastFlow:
+      Flow: Fast
+      Alpha: 1.0
+      Beta: 0.5
+      AbsTol: 1e-12
+      TruncationTol: 1e-2
+      DivergenceTol: 1.2
+      DivergenceIter: 5
+      MaxIts: 100
+    Verbosity: Verbose
+
+DomainCreator:
+    Shell:
+      InnerRadius: 1.9
+      OuterRadius: 50.0
+      InitialRefinement: 0
+      InitialGridPoints: [5, 5]
+      RadialPartitioning: []
+      RadialDistribution: [Logarithmic]
+      UseEquiangularMap: true
+      AspectRatio: 1.0
+      WhichWedges: All
+      TimeDependence: None
+      BoundaryConditions:
+        InnerBoundary: DirichletAnalytic
+        OuterBoundary: DirichletAnalytic
+
+AnalyticSolution:
+  KerrSchild:
+    Mass: 1.0
+    Spin: [0.0, 0.0, 0.0]
+    Center: [0.0, 0.0, 0.0]
+
+EvolutionSystem:
+  GeneralizedHarmonic:
+    # The parameter choices here come from our experience with the Spectral
+    # Einstein Code (SpEC). They should be suitable for evolutions of a
+    # perturbation of a Kerr-Schild black hole.
+    DhGaugeParameters:
+      RollOnStartTime: 100000.0
+      RollOnTimeWindow: 100.0
+      SpatialDecayWidth: 50.0
+      Amplitudes: [1.0, 1.0, 1.0]
+      Exponents: [4, 4, 4]
+    DampingFunctionGamma0:
+      GaussianPlusConstant:
+        Constant: 0.001
+        Amplitude: 3.0
+        Width: 11.313708499
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma1:
+      GaussianPlusConstant:
+        Constant: -1.0
+        Amplitude: 0.0
+        Width: 11.313708499
+        Center: [0.0, 0.0, 0.0]
+    DampingFunctionGamma2:
+      GaussianPlusConstant:
+        Constant: 0.001
+        Amplitude: 1.0
+        Width: 11.313708499
+        Center: [0.0, 0.0, 0.0]
+
+SpatialDiscretization:
+  BoundaryCorrection:
+    UpwindPenalty
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+
+EventsAndDenseTriggers:
+  ? Times:
+      EvenlySpaced:
+        Interval: 0.05
+        Offset: 0.0
+  : - CceWorldtubeTarget
+
+EventsAndTriggers:
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 2
+        Offset: 0
+  : - ObserveErrorNorms:
+        SubfileName: Errors
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 5
+        Offset: 0
+  : - ObserveFields:
+        SubfileName: VolumeData
+        VariablesToObserve:
+          - SpacetimeMetric
+          - Pi
+          - Phi
+          - PointwiseL2Norm(GaugeConstraint)
+          - PointwiseL2Norm(ThreeIndexConstraint)
+          - PointwiseL2Norm(FourIndexConstraint)
+        InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double]
+  ? Slabs:
+      Specified:
+        Values: [2]
+  : - Completion
+
+Observers:
+  VolumeFileName: "GhKerrSchildVolumeData"
+  ReductionFileName: "GhKerrSchildReductionData"
+
+InterpolationTargets:
+# The lmax here must match the Cce Lmax,
+# These must match each other,
+# and the Mass must be 1/2 * the Cce ExtractionRadius
+  CceWorldtubeTarget:
+        Lmax: 16
+        Center: [0.0, 0.0, 0.0]
+        DimensionlessSpin: [0.0, 0.0, 0.0]
+        Mass: 24.0
+        ThetaVariesFastest: false
+  SelfStartCceWorldtubeTarget:
+        Lmax: 16
+        Center: [0.0, 0.0, 0.0]
+        DimensionlessSpin: [0.0, 0.0, 0.0]
+        Mass: 24.0
+        ThetaVariesFastest: false

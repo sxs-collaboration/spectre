@@ -23,6 +23,28 @@ function(add_generalized_harmonic_executable_without_horizon
     )
 endfunction(add_generalized_harmonic_executable_without_horizon)
 
+function(add_generalized_harmonic_cce_executable_without_horizon
+  EXECUTABLE_NAME INITIAL_DATA BOUNDARY_CONDITIONS LIBS_TO_LINK)
+  add_spectre_parallel_executable(
+    "EvolveGhCce${EXECUTABLE_NAME}"
+    EvolveGeneralizedHarmonicCceWithoutHorizon
+    Evolution/Executables/GeneralizedHarmonic
+    "EvolutionMetavars<${INITIAL_DATA}, ${BOUNDARY_CONDITIONS}>"
+    "${LIBS_TO_LINK}"
+    )
+endfunction(add_generalized_harmonic_cce_executable_without_horizon)
+
+function(add_generalized_harmonic_cce_executable_with_horizon
+  EXECUTABLE_NAME INITIAL_DATA BOUNDARY_CONDITIONS LIBS_TO_LINK)
+  add_spectre_parallel_executable(
+    "EvolveGhCce${EXECUTABLE_NAME}"
+    EvolveGeneralizedHarmonicCceWithHorizon
+    Evolution/Executables/GeneralizedHarmonic
+    "EvolutionMetavars<${INITIAL_DATA}, ${BOUNDARY_CONDITIONS}>"
+    "${LIBS_TO_LINK}"
+    )
+endfunction(add_generalized_harmonic_cce_executable_with_horizon)
+
 set(LIBS_TO_LINK
   CoordinateMaps
   DiscontinuousGalerkin
@@ -43,6 +65,7 @@ set(LIBS_TO_LINK
   Options
   Parallel
   PhaseControl
+  Spectral
   Time
   Utilities
   )
@@ -61,6 +84,20 @@ add_generalized_harmonic_executable_with_horizon(
   "${LIBS_TO_LINK};ApparentHorizons;GeneralRelativitySolutions;Importers"
 )
 
+add_generalized_harmonic_cce_executable_with_horizon(
+  KerrSchild
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>
+  "${LIBS_TO_LINK};Cce;GeneralRelativitySolutions"
+)
+
+add_generalized_harmonic_cce_executable_with_horizon(
+  KerrSchildNumericInitialData
+  evolution::NumericInitialData
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>
+  "${LIBS_TO_LINK};Cce;GeneralRelativitySolutions;Importers"
+)
+
 add_generalized_harmonic_executable_without_horizon(
   GaugeWave
   GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<3>>
@@ -75,3 +112,16 @@ add_generalized_harmonic_executable_without_horizon(
   "${LIBS_TO_LINK};GeneralRelativitySolutions;Importers"
 )
 
+add_generalized_harmonic_cce_executable_without_horizon(
+  GaugeWave
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<3>>
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<3>>
+  "${LIBS_TO_LINK};Cce;GeneralRelativitySolutions"
+)
+
+add_generalized_harmonic_cce_executable_without_horizon(
+  GaugeWaveNumericInitialData
+  evolution::NumericInitialData
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::GaugeWave<3>>
+  "${LIBS_TO_LINK};Cce;GeneralRelativitySolutions;Importers"
+)

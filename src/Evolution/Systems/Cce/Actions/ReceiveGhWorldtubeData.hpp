@@ -53,7 +53,7 @@ struct ReceiveGhWorldtubeData {
       db::DataBox<tmpl::list<DbTags...>>& box,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
-      const tmpl::conditional_t<DuringSelfStart, TimeStepId&, double> time,
+      const tmpl::conditional_t<DuringSelfStart, TimeStepId, double> time,
       const tnsr::aa<DataVector, 3>& spacetime_metric,
       const tnsr::iaa<DataVector, 3>& phi,
       const tnsr::aa<DataVector, 3>& pi) noexcept {
