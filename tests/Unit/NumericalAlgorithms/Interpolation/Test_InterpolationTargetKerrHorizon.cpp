@@ -39,16 +39,16 @@ struct MockMetavariables {
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
 
-  using component_list = tmpl::list<
-      InterpTargetTestHelpers::mock_interpolation_target<MockMetavariables,
-                                                         InterpolationTargetA>,
-      InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
+  using component_list =
+      tmpl::list<InterpTargetTestHelpers::mock_interpolation_target<
+                     MockMetavariables, InterpolationTargetA>,
+                 InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
   enum class Phase { Initialization, Testing, Exit };
 };
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.KerrHorizon",
-                  "[Unit]") {
+void test_interpolation_target_kerr_horizon(
+    const bool theta_varies_fastest) noexcept {
   // Constants used in this test.
   // We use l_max=18 to get enough points that the surface is
   // represented to roundoff error; for smaller l_max we would need to
@@ -60,8 +60,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.KerrHorizon",
   const std::array<double, 3> dimless_spin = {{0.2, 0.3, 0.4}};
 
   // Options for KerrHorizon
-  intrp::OptionHolders::KerrHorizon kerr_horizon_opts(l_max, center, mass,
-                                                      dimless_spin);
+  intrp::OptionHolders::KerrHorizon kerr_horizon_opts(
+      l_max, center, mass, dimless_spin, theta_varies_fastest);
 
   // Test creation of options
   const auto created_opts =
@@ -75,8 +75,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.KerrHorizon",
   const auto domain_creator =
       domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
 
-  const auto expected_block_coord_holders =
-      [&domain_creator, &mass, &center, &dimless_spin ]() noexcept {
+  const auto expected_block_coord_holders = [&domain_creator, &mass, &center,
+                                             &dimless_spin,
+                                             &theta_varies_fastest]() noexcept {
     // How many points are supposed to be in a Strahlkorper,
     // reproduced here by hand for the test.
     const size_t n_theta = l_max + 1;
@@ -91,12 +92,11 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.KerrHorizon",
       gaqd_(static_cast<int>(n_theta), thetas.data(), unused_weights.data(),
             work.data(), static_cast<int>(n_theta + 1), &err);
       return thetas;
-    }
-    ();
+    }();
 
     // Radius as function of theta, phi
-    const auto radius =
-        [&mass, &dimless_spin ](const double theta, const double phi) noexcept {
+    const auto radius = [&mass, &dimless_spin](const double theta,
+                                               const double phi) noexcept {
       // Recoding kerr_horizon_radius in a different way for the test.
       const std::array<double, 3> spin_a = {{mass * dimless_spin[0],
                                              mass * dimless_spin[1],
@@ -115,24 +115,42 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.KerrHorizon",
     const double two_pi_over_n_phi = 2.0 * M_PI / n_phi;
     tnsr::I<DataVector, 3, Frame::Inertial> points(n_theta * n_phi);
     size_t s = 0;
-    for (size_t i_phi = 0; i_phi < n_phi; ++i_phi) {
-      const double phi = two_pi_over_n_phi * i_phi;
+    if (theta_varies_fastest) {
+      for (size_t i_phi = 0; i_phi < n_phi; ++i_phi) {
+        const double phi = two_pi_over_n_phi * i_phi;
+        for (size_t i_theta = 0; i_theta < n_theta; ++i_theta) {
+          const double theta = theta_points[i_theta];
+          const double r = radius(theta, phi);
+          points.get(0)[s] = r * sin(theta) * cos(phi) + center[0];
+          points.get(1)[s] = r * sin(theta) * sin(phi) + center[1],
+          points.get(2)[s] = r * cos(theta) + center[2];
+          ++s;
+        }
+      }
+    } else {
       for (size_t i_theta = 0; i_theta < n_theta; ++i_theta) {
-        const double theta = theta_points[i_theta];
-        const double r = radius(theta, phi);
-        points.get(0)[s] = r * sin(theta) * cos(phi) + center[0];
-        points.get(1)[s] = r * sin(theta) * sin(phi) + center[1],
-        points.get(2)[s] = r * cos(theta) + center[2];
-        ++s;
+        for (size_t i_phi = 0; i_phi < n_phi; ++i_phi) {
+          const double phi = two_pi_over_n_phi * i_phi;
+          const double theta = theta_points[i_theta];
+          const double r = radius(theta, phi);
+          points.get(0)[s] = r * sin(theta) * cos(phi) + center[0];
+          points.get(1)[s] = r * sin(theta) * sin(phi) + center[1],
+          points.get(2)[s] = r * cos(theta) + center[2];
+          ++s;
+        }
       }
     }
     return block_logical_coordinates(domain_creator.create_domain(), points);
-  }
-  ();
+  }();
 
   InterpTargetTestHelpers::test_interpolation_target<
       MockMetavariables,
       intrp::Tags::KerrHorizon<MockMetavariables::InterpolationTargetA>>(
-      domain_creator, kerr_horizon_opts,
-      expected_block_coord_holders);
+      domain_creator, kerr_horizon_opts, expected_block_coord_holders);
+}
+
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.KerrHorizon",
+                  "[Unit]") {
+  test_interpolation_target_kerr_horizon(true);
+  test_interpolation_target_kerr_horizon(false);
 }

@@ -13,6 +13,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Transpose.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
@@ -42,6 +43,13 @@ namespace intrp {
 namespace OptionHolders {
 /// A surface that conforms to the horizon of a Kerr black hole in
 /// Kerr-Schild coordinates.
+///
+/// \details In addition to the parameters for the Kerr black hole, this holder
+/// contains the `Lmax` which encodes the angular resolution of the spherical
+/// harmonic basis and `ThetaVariesFastest` which encodes the collocation
+/// ordering. For example, the apparent horizon finder relies on spherepack
+/// routines that require `true` for `ThetaVariesFastest`, and using this
+/// surface for a CCE worldtube requires `false` for `ThetaVariesFastest`.
 struct KerrHorizon {
   struct Lmax {
     using type = size_t;
@@ -60,13 +68,21 @@ struct KerrHorizon {
     using type = std::array<double, 3>;
     static constexpr OptionString help = {"Dimensionless spin of black hole"};
   };
-  using options = tmpl::list<Lmax, Center, Mass, DimensionlessSpin>;
+  struct ThetaVariesFastest {
+    using type = bool;
+    static type default_value() noexcept { return true; }
+    static constexpr OptionString help = {
+        "Chooses theta,phi ordering in 2d array"};
+  };
+  using options =
+      tmpl::list<Lmax, Center, Mass, DimensionlessSpin, ThetaVariesFastest>;
   static constexpr OptionString help = {
       "A Strahlkorper conforming to the horizon (in Kerr-Schild coordinates)"
       " of a Kerr black hole with a specified center, mass, and spin."};
 
   KerrHorizon(size_t l_max_in, std::array<double, 3> center_in, double mass_in,
               std::array<double, 3> dimensionless_spin_in,
+              bool theta_varies_fastest_in = true,
               const OptionContext& context = {});
 
   KerrHorizon() = default;
@@ -83,6 +99,7 @@ struct KerrHorizon {
   std::array<double, 3> center{};
   double mass{};
   std::array<double, 3> dimensionless_spin{};
+  bool theta_varies_fastest_memory_layout{};
 };
 
 bool operator==(const KerrHorizon& lhs, const KerrHorizon& rhs) noexcept;
@@ -144,16 +161,17 @@ struct KerrHorizon {
   static auto initialize(
       db::DataBox<DbTags>&& box,
       const Parallel::GlobalCache<Metavariables>& cache) noexcept {
-    const auto& options =
+    const auto& kerr_horizon =
         Parallel::get<Tags::KerrHorizon<InterpolationTargetTag>>(cache);
 
     // Make a Strahlkorper with the correct shape.
     ::Strahlkorper<Frame> strahlkorper(
-        options.l_max, options.l_max,
+        kerr_horizon.l_max, kerr_horizon.l_max,
         get(gr::Solutions::kerr_horizon_radius(
-            ::YlmSpherepack(options.l_max, options.l_max).theta_phi_points(),
-            options.mass, options.dimensionless_spin)),
-        options.center);
+            ::YlmSpherepack(kerr_horizon.l_max, kerr_horizon.l_max)
+                .theta_phi_points(),
+            kerr_horizon.mass, kerr_horizon.dimensionless_spin)),
+        kerr_horizon.center);
 
     // Put Strahlkorper and its ComputeItems into a new DataBox.
     return db::create_from<
@@ -172,7 +190,25 @@ struct KerrHorizon {
     // the code that transforms coordinates from the Strahlkorper Frame
     // to Frame::Inertial will go here.  That transformation
     // may depend on `temporal_id`.
-    return db::get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box);
+    const auto& kerr_horizon =
+        db::get<Tags::KerrHorizon<InterpolationTargetTag>>(box);
+    if (kerr_horizon.theta_varies_fastest_memory_layout) {
+      return db::get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box);
+    } else {
+      const auto& strahlkorper =
+          db::get<StrahlkorperTags::Strahlkorper<::Frame::Inertial>>(box);
+      const auto& coords =
+          db::get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box);
+      const auto physical_extents =
+          strahlkorper.ylm_spherepack().physical_extents();
+      auto transposed_coords =
+          tnsr::I<DataVector, 3, ::Frame::Inertial>(get<0>(coords).size());
+      for (size_t i = 0; i < 3; ++i) {
+        transpose(make_not_null(&transposed_coords.get(i)), coords.get(i),
+                  physical_extents[0], physical_extents[1]);
+      }
+      return transposed_coords;
+    }
   }
   template <typename Metavariables, typename DbTags>
   static tnsr::I<DataVector, 3, ::Frame::Inertial> points(
