@@ -8,4 +8,5 @@ spectre_target_headers(
   Callbacks.hpp
   FindApparentHorizon.hpp
   ObserveTimeSeriesOnSurface.hpp
+  SendGhWorldtubeData.hpp
   )

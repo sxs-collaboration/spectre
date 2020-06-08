@@ -28,6 +28,7 @@ set(LIBRARY_SOURCES
   Test_ObserveTimeSeriesOnSurface.cpp
   Test_ParallelInterpolator.cpp
   Test_RegularGridInterpolant.cpp
+  Test_SendGhWorldtubeData.cpp
   Test_SpanInterpolators.cpp
   Test_Tags.cpp
   )
