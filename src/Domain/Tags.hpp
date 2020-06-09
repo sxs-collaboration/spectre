@@ -192,6 +192,31 @@ struct InverseJacobianCompute
   }
 };
 
+template <size_t Dim, typename SourceFrame, typename TargetFrame>
+struct Jacobian : db::SimpleTag {
+  static std::string name() noexcept {
+    return "Jacobian(" + get_output(SourceFrame{}) + "," +
+           get_output(TargetFrame{}) + ")";
+  }
+  using type = ::Jacobian<DataVector, Dim, SourceFrame, TargetFrame>;
+};
+
+template <typename MapTag, typename SourceCoordsTag>
+struct JacobianCompute : Jacobian<MapTag::dim, typename MapTag::source_frame,
+                                  typename MapTag::target_frame>,
+                         db::ComputeTag {
+  using base = Jacobian<MapTag::dim, typename MapTag::source_frame,
+                        typename MapTag::target_frame>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
+  static constexpr auto function(
+      const gsl::not_null<return_type*> jacobian,
+      const db::const_item_type<MapTag>& element_map,
+      const db::const_item_type<SourceCoordsTag>& source_coords) noexcept {
+    *jacobian = element_map.jacobian(source_coords);
+  }
+};
+
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// \brief The determinant of the inverse Jacobian from the source frame to the
@@ -201,6 +226,15 @@ struct DetInvJacobian : db::SimpleTag {
   using type = Scalar<DataVector>;
   static std::string name() noexcept {
     return "DetInvJacobian(" + get_output(SourceFrame{}) + "," +
+           get_output(TargetFrame{}) + ")";
+  }
+};
+
+template <typename SourceFrame, typename TargetFrame>
+struct DetJacobian : db::SimpleTag {
+  using type = Scalar<DataVector>;
+  static std::string name() noexcept {
+    return "DetJacobian(" + get_output(SourceFrame{}) + "," +
            get_output(TargetFrame{}) + ")";
   }
 };
@@ -219,6 +253,19 @@ struct DetInvJacobianCompute : db::ComputeTag,
                        const ::InverseJacobian<DataVector, Dim, SourceFrame,
                                                TargetFrame>& inv_jac) noexcept {
     determinant(det_inv_jac, inv_jac);
+  }
+};
+
+template <size_t Dim, typename SourceFrame, typename TargetFrame>
+struct DetJacobianCompute : db::ComputeTag,
+                            DetJacobian<SourceFrame, TargetFrame> {
+  using base = DetJacobian<SourceFrame, TargetFrame>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<Jacobian<Dim, SourceFrame, TargetFrame>>;
+  static void function(const gsl::not_null<return_type*> det_jac,
+                       const ::Jacobian<DataVector, Dim, SourceFrame,
+                                        TargetFrame>& jac) noexcept {
+    determinant(det_jac, jac);
   }
 };
 
