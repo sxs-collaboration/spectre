@@ -15,10 +15,10 @@ KerrHorizon::KerrHorizon(size_t l_max_in, std::array<double, 3> center_in,
                          const bool theta_varies_fastest_in,
                          const OptionContext& context)
     : l_max(l_max_in),
-      center(std::move(center_in)),  // NOLINT
+      center(center_in),
       mass(mass_in),
-      dimensionless_spin(std::move(dimensionless_spin_in)),
-      theta_varies_fastest_memory_layout{theta_varies_fastest_in} {  // NOLINT
+      dimensionless_spin(dimensionless_spin_in),
+      theta_varies_fastest_memory_layout{theta_varies_fastest_in} {
   // above NOLINTs for std::move of trivially copyable type.
   if (mass <= 0.0) {
     // Check here, rather than put a lower_bound on the Tag, because
