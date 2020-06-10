@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhInterpolationStrategies.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
