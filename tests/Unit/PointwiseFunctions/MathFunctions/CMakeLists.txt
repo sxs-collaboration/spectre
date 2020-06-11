@@ -4,9 +4,11 @@
 set(LIBRARY "Test_MathFunctions")
 
 set(LIBRARY_SOURCES
+  Test_Constant.cpp
   Test_Gaussian.cpp
   Test_PowX.cpp
   Test_Sinusoid.cpp
+  Test_Sum.cpp
   Test_TensorProduct.cpp
   )
 

@@ -4,6 +4,22 @@
 import numpy as np
 
 
+def constant_call_operator(coords, value):
+    return value
+
+
+def constant_first_deriv(coords, value):
+    return np.zeros(coords.size)
+
+
+def constant_second_deriv(coords, value):
+    return np.zeros((coords.size, coords.size))
+
+
+def constant_third_deriv(coords, value):
+    return np.zeros((coords.size, coords.size, coords.size))
+
+
 def centered_coordinates(coords, center):
     return coords - center
 
@@ -95,3 +111,65 @@ def pow_x_third_deriv(coords, power):
     else:
         return np.array([[(power - 2.0) * (power - 1.0) * power *
                           np.power(coords, power - 3.0)]])
+
+
+def sum_call_operator(coords, amplitude_A, width_A, center_A, amplitude_B,
+                      width_B, center_B):
+    return gaussian_call_operator(coords, amplitude_A, width_A,
+                                  center_A) + gaussian_call_operator(
+                                      coords, amplitude_B, width_B, center_B)
+
+
+def sum_first_deriv(coords, amplitude_A, width_A, center_A, amplitude_B,
+                    width_B, center_B):
+    return gaussian_first_deriv(coords, amplitude_A, width_A,
+                                center_A) + gaussian_first_deriv(
+                                    coords, amplitude_B, width_B, center_B)
+
+
+def sum_second_deriv(coords, amplitude_A, width_A, center_A, amplitude_B,
+                     width_B, center_B):
+    return gaussian_second_deriv(coords, amplitude_A, width_A,
+                                 center_A) + gaussian_second_deriv(
+                                     coords, amplitude_B, width_B, center_B)
+
+
+def sum_third_deriv(coords, amplitude_A, width_A, center_A, amplitude_B,
+                    width_B, center_B):
+    return gaussian_third_deriv(coords, amplitude_A, width_A,
+                                center_A) + gaussian_third_deriv(
+                                    coords, amplitude_B, width_B, center_B)
+
+
+def sum_of_sum_call_operator(coords, amplitude_A, width_A, center_A,
+                             amplitude_B, width_B, center_B, amplitude_C,
+                             width_C, center_C):
+    return gaussian_call_operator(
+        coords, amplitude_A, width_A, center_A) + gaussian_call_operator(
+            coords, amplitude_B, width_B, center_B) + gaussian_call_operator(
+                coords, amplitude_C, width_C, center_C)
+
+
+def sum_of_sum_first_deriv(coords, amplitude_A, width_A, center_A, amplitude_B,
+                           width_B, center_B, amplitude_C, width_C, center_C):
+    return gaussian_first_deriv(
+        coords, amplitude_A, width_A, center_A) + gaussian_first_deriv(
+            coords, amplitude_B, width_B, center_B) + gaussian_first_deriv(
+                coords, amplitude_C, width_C, center_C)
+
+
+def sum_of_sum_second_deriv(coords, amplitude_A, width_A, center_A,
+                            amplitude_B, width_B, center_B, amplitude_C,
+                            width_C, center_C):
+    return gaussian_second_deriv(
+        coords, amplitude_A, width_A, center_A) + gaussian_second_deriv(
+            coords, amplitude_B, width_B, center_B) + gaussian_second_deriv(
+                coords, amplitude_C, width_C, center_C)
+
+
+def sum_of_sum_third_deriv(coords, amplitude_A, width_A, center_A, amplitude_B,
+                           width_B, center_B, amplitude_C, width_C, center_C):
+    return gaussian_third_deriv(
+        coords, amplitude_A, width_A, center_A) + gaussian_third_deriv(
+            coords, amplitude_B, width_B, center_B) + gaussian_third_deriv(
+                coords, amplitude_C, width_C, center_C)

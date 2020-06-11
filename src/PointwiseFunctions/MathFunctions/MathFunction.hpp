@@ -17,11 +17,15 @@
 /// Holds classes implementing MathFunction (functions \f$R^n \to R\f$).
 namespace MathFunctions {
 template <size_t VolumeDim, typename Fr>
+class Constant;
+template <size_t VolumeDim, typename Fr>
 class Gaussian;
 template <size_t VolumeDim, typename Fr>
 class PowX;
 template <size_t VolumeDim, typename Fr>
 class Sinusoid;
+template <size_t VolumeDim, typename Fr>
+class Sum;
 }  // namespace MathFunctions
 
 /*!
@@ -39,7 +43,9 @@ class MathFunction;
 template <size_t VolumeDim, typename Fr>
 class MathFunction : public PUP::able {
  public:
-  using creatable_classes = tmpl::list<MathFunctions::Gaussian<VolumeDim, Fr>>;
+  using creatable_classes = tmpl::list<MathFunctions::Constant<VolumeDim, Fr>,
+                                       MathFunctions::Gaussian<VolumeDim, Fr>,
+                                       MathFunctions::Sum<VolumeDim, Fr>>;
   constexpr static size_t volume_dim = VolumeDim;
   using frame = Fr;
 
@@ -95,8 +101,9 @@ template <typename Fr>
 class MathFunction<1, Fr> : public PUP::able {
  public:
   using creatable_classes =
-      tmpl::list<MathFunctions::Gaussian<1, Fr>, MathFunctions::PowX<1, Fr>,
-                 MathFunctions::Sinusoid<1, Fr>>;
+      tmpl::list<MathFunctions::Constant<1, Fr>, MathFunctions::Gaussian<1, Fr>,
+                 MathFunctions::PowX<1, Fr>, MathFunctions::Sinusoid<1, Fr>,
+                 MathFunctions::Sum<1, Fr>>;
   constexpr static size_t volume_dim = 1;
   using frame = Fr;
 
@@ -169,6 +176,8 @@ class MathFunction<1, Fr> : public PUP::able {
   }
 };
 
+#include "PointwiseFunctions/MathFunctions/Constant.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
+#include "PointwiseFunctions/MathFunctions/Sum.hpp"
