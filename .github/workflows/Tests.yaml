@@ -75,10 +75,15 @@ jobs:
           cd $GITHUB_WORKSPACE
           ./tools/CheckFiles.sh
 
-  # Lint the code that changed in a pull request with clang-tidy.
+  # Lint with clang-tidy. We check only code that changed relative to
+  # `sxs-collaboration/spectre/develop`.
   clang_tidy:
     name: Clang-tidy
-    if: github.event_name == 'pull_request'
+    if: >
+      (github.event_name == 'pull_request'
+       && github.repository =='sxs-collaboration/spectre'
+       && github.base_ref == 'develop')
+      || github.ref != 'refs/heads/develop'
     runs-on: ubuntu-latest
     container:
       image: sxscollaboration/spectrebuildenv:latest
@@ -88,19 +93,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Fetch upstream/develop
-        # We only want to check files that have changed in this pull request,
-        # so we fetch its base branch and pass it to `clang-tidy-hash`.
-        # Typically, it is the `sxs-collaboration/spectre/develop` branch.
+      - name: Fetch sxs-collaboration/spectre/develop
         run: >
           cd $GITHUB_WORKSPACE
 
           git remote add upstream
-          https://github.com/${{ github.repository }}.git
+          https://github.com/sxs-collaboration/spectre.git
 
           git remote -v
 
-          git fetch upstream ${{ github.base_ref }}
+          git fetch upstream develop
       - name: Configure with cmake
         working-directory: /work
         run: >
@@ -120,7 +122,7 @@ jobs:
       - name: Check clang-tidy
         working-directory: /work/build
         run: |
-          make clang-tidy-hash HASH=upstream/${{ github.base_ref }}
+          make clang-tidy-hash HASH=upstream/develop
 
   # Build the documentation and check for problems, then upload as a workflow
   # artifact.
