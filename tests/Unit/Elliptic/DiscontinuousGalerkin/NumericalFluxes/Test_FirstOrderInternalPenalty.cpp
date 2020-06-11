@@ -14,10 +14,10 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/Elliptic/DiscontinuousGalerkin/NumericalFluxes/TestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/TestHelpers.hpp"
-#include "Helpers/Utilities/ProtocolTestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/NumericalFluxHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 namespace {
 
@@ -117,12 +117,11 @@ void apply_ip_dirichlet_flux(
 
 template <size_t Dim>
 void test_equations(const DataVector& used_for_size) {
-  static_assert(test_protocol_conformance<
-                    elliptic::dg::NumericalFluxes::FirstOrderInternalPenalty<
-                        Dim, FluxesComputerTag<Dim>, tmpl::list<ScalarFieldTag>,
-                        tmpl::list<AuxiliaryFieldTag<Dim>>>,
-                    ::dg::protocols::NumericalFlux>,
-                "Failed testing protocol conformance");
+  static_assert(tt::assert_conforms_to<
+                elliptic::dg::NumericalFluxes::FirstOrderInternalPenalty<
+                    Dim, FluxesComputerTag<Dim>, tmpl::list<ScalarFieldTag>,
+                    tmpl::list<AuxiliaryFieldTag<Dim>>>,
+                ::dg::protocols::NumericalFlux>);
 
   pypp::check_with_random_values<1>(
       &apply_ip_flux<Dim>, "FirstOrderInternalPenalty",

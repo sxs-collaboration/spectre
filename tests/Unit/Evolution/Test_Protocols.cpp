@@ -20,14 +20,8 @@ struct ValidNumericInitialData
   using import_fields = tmpl::list<FieldTag>;
 };
 // [conforming_type_example]
-struct InvalidNumericInitialData
-    : tt::ConformsTo<evolution::protocols::NumericInitialData> {};
 
-static_assert(
-    evolution::protocols::NumericInitialData<ValidNumericInitialData>::value,
-    "Failed testing protocol");
-static_assert(not evolution::protocols::NumericInitialData<
-                  InvalidNumericInitialData>::value,
-              "Failed testing protocol");
+static_assert(tt::assert_conforms_to<ValidNumericInitialData,
+                                     evolution::protocols::NumericInitialData>);
 
 }  // namespace

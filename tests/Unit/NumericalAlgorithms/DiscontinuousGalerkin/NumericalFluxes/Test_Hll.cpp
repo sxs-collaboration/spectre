@@ -14,10 +14,10 @@
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/TestHelpers.hpp"
-#include "Helpers/Utilities/ProtocolTestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/Hll.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -111,10 +111,9 @@ void apply_hll_flux(
 template <size_t Dim>
 void test_hll_flux(const DataVector& used_for_size) noexcept {
   static_assert(
-      test_protocol_conformance<
+      tt::assert_conforms_to<
           dg::NumericalFluxes::Hll<TestHelpers::NumericalFluxes::System<Dim>>,
-          dg::protocols::NumericalFlux>,
-      "Failed testing protocol conformance");
+          dg::protocols::NumericalFlux>);
 
   pypp::check_with_random_values<16>(
       &apply_hll_flux<Dim>, "TestFunctions",

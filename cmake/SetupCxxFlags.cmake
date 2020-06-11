@@ -2,10 +2,6 @@
 # See LICENSE.txt for details.
 
 option(DEBUG_SYMBOLS "Add -g to CMAKE_CXX_FLAGS if ON, -g0 if OFF." ON)
-option(SPECTRE_ALWAYS_CHECK_PROTOCOL_CONFORMANCE
-  "Rigorously check protocol conformance instead of deferring to unit tests. \
-May significantly increase compile time."
-  OFF)
 
 option(OVERRIDE_ARCH "The architecture to use. Default is native." OFF)
 
@@ -60,18 +56,3 @@ set_property(TARGET SpectreFlags
   APPEND PROPERTY
   INTERFACE_COMPILE_DEFINITIONS
   $<$<COMPILE_LANGUAGE:CXX>:BOOST_MULTI_ARRAY_TYPES_RG071801_HPP>)
-
-# Also enable rigorous protocol conformance checks in debug builds. If we find
-# that debug builds increase in compile time significantly we can disable this.
-if (${SPECTRE_ALWAYS_CHECK_PROTOCOL_CONFORMANCE}
-    OR "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-  if (${SPECTRE_ALWAYS_CHECK_PROTOCOL_CONFORMANCE})
-    message(STATUS "Enable rigorous protocol conformance checks")
-  else()
-    message(STATUS "Enable rigorous protocol conformance checks in Debug build")
-  endif()
-  set_property(TARGET SpectreFlags
-    APPEND PROPERTY
-    INTERFACE_COMPILE_DEFINITIONS
-    $<$<COMPILE_LANGUAGE:CXX>:SPECTRE_ALWAYS_CHECK_PROTOCOL_CONFORMANCE>)
-endif()

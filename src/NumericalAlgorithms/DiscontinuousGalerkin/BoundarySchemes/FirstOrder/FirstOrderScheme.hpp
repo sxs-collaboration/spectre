@@ -80,9 +80,7 @@ struct FirstOrderScheme {
       db::add_tag_prefix<TemporalIdTag::template step_prefix, variables_tag>;
 
   static_assert(
-      tt::conforms_to_v<NumericalFlux, dg::protocols::NumericalFlux>,
-      "The type held by the 'NumericalFluxComputerTag' must conform to the "
-      "'dg::protocols::NumericalFlux'.");
+      tt::assert_conforms_to<NumericalFlux, dg::protocols::NumericalFlux>);
   // We need the `VariablesTag` as an explicit template parameter only because
   // it may be prefixed.
   static_assert(std::is_same_v<typename NumericalFlux::variables_tags,

@@ -19,9 +19,8 @@ from the [Swift documentation](https://docs.swift.org/swift-book/LanguageGuide/P
 > of a protocol is said to conform to that protocol.
 
 You should define a protocol when you need a template parameter to conform to an
-interface. Protocols are implemented as unary type traits. Here is an example of
-a protocol that is adapted from the
-[Swift documentation](https://docs.swift.org/swift-book/LanguageGuide/Protocols.html):
+interface. Here is an example of a protocol that is adapted from the [Swift
+documentation](https://docs.swift.org/swift-book/LanguageGuide/Protocols.html):
 
 \snippet Utilities/Test_ProtocolHelpers.cpp named_protocol
 
@@ -34,15 +33,11 @@ The class indicates it conforms to the protocol by (publicly) inheriting from
 `tt::ConformsTo<TheProtocol>`.
 
 Once you have defined a protocol, you can check if a class conforms to it using
-the `tt::conforms_to` metafunction:
+the `tt::assert_conforms_to` or `tt::conforms_to` metafunctions:
 
 \snippet Utilities/Test_ProtocolHelpers.cpp conforms_to
 
-Note that checking for protocol conformance is cheap, because the
-`tt::conforms_to` metafunction only checks if the class _indicates_ it conforms
-to the protocol via the above inheritance. The rigorous test whether the class
-actually fullfills all of the protocol's requirements is deferred to its unit
-tests (see \ref protocols_testing_conformance). Therefore you may freely use
+Note that checking for protocol conformance is cheap, so you may freely use
 protocol conformance checks in your code.
 
 This is how you can write code that relies on the interface defined by the
@@ -57,10 +52,16 @@ has explicitly defined (and documented!) the interface they expect. And the
 developer who consumes the protocol by writing classes that conform to it knows
 exactly what needs to be implemented.
 
-Note that the `tt::conforms_to` metafunction is SFINAE-friendly, so you can also
-use it like this:
+Note that the `tt::conforms_to` metafunction is SFINAE-friendly, so you can use
+it like this:
 
 \snippet Utilities/Test_ProtocolHelpers.cpp protocol_sfinae
+
+The `tt::conforms_to` metafunction only checks if the class _indicates_ it
+conforms to the protocol. Where SFINAE-friendliness is not necessary prefer the
+`tt::assert_conforms_to` metafunction that triggers static asserts with
+diagnostic messages to understand why the class does not conform to the
+protocol.
 
 We typically define protocols in a file named `Protocols.hpp` and within a
 `protocols` namespace, similar to how we write \ref DataBoxTagsGroup "tags" in a
@@ -69,43 +70,46 @@ directory associated with the code that depends on classes conforming to the
 protocols. For example, the protocol `Named` in the example above would be
 placed in directory that also has the `greet` function.
 
-# Protocol users: Testing protocol conformance {#protocols_testing_conformance}
+# Protocol users: Conforming to a protocol {#protocols_conforming}
 
-Any class that indicates it conforms to the protocol must test that it actually
-does using the `test_protocol_conformance` metafunction from
-`tests/Unit/ProtocolTestHelpers.hpp`:
+To indicate a class conforms to a protocol it (publicly) inherits from
+`tt::ConformsTo<TheProtocol>`. The class must fulfill all requirements defined
+by the protocol. The requirements are listed in the protocol's documentation.
+
+Any class that indicates it conforms to a protocol must have a unit test to
+check that it actually does. You can use the `tt::assert_conforms_to`
+metafunction for the test:
 
 \snippet Utilities/Test_ProtocolHelpers.cpp test_protocol_conformance
 
-# Protocol authors: Protocols must be unary type traits {#protocols_author}
+# Protocol authors: Writing a protocol {#protocols_author}
 
-When you author a new protocol, keep in mind that protocols must be unary type
-traits. This means they take a single template parameter (typically named
-`ConformingType`) and inherit from `std::true_type` or `std::false_type`
-depending on whether the `ConformingType` fullfills the protocol's requirements.
-Make sure to implement the protocol in a SFINAE-friendly way. You may find the
-macros in `Utilities/TypeTraits.hpp` useful. For example, we use
-`CREATE_IS_CALLABLE` in the protocols above for testing the existence and return
-type of a member function.
+To author a new protocol you implement a class that provides a `test`
+metafunction and detailed documentation. The `test` metafunction takes a single
+template parameter (typically named `ConformingType`) and checks that it
+conforms to the requirements laid out in the protocol's documentation. Its
+purpose is to provide diagnostic messages as compiler errors to understand why a
+type fails to conform to the protocol. You can use `static_assert`s or trigger
+standard compiler errors where appropriate. See the protocols defined above for
+examples.
 
-Occasionally, you might be tempted to add additional template parameters to the
-protocol. In those situations, make the additional parameters part of your
-protocol instead. The reason for this guideline is that protocols
-will always be used as unary type traits when inheriting from
-`tt::ConformsTo<Protocol>`. Therefore, any template parameters of the protocol
-must also be template parameters of their conforming classes, which means the
-protocol can just check them.
-
-For example, we could be tempted to follow this antipattern:
+Occasionally, you might be tempted to add template parameters to a protocol. In
+those situations, add requirements to the protocol instead and retrieve the
+parameters from the conforming class. The reason for this guideline is that
+conforming classes will always inherit from `tt::ConformsTo<Protocol>`.
+Therefore, any template parameters of the protocol must also be template
+parameters of their conforming classes, which means the protocol can just
+require and retrieve them. For example, we could be tempted to follow this
+antipattern:
 
 \snippet Utilities/Test_ProtocolHelpers.cpp named_antipattern
 
-However, instead of making the protocol a non-unary template we should add a
+However, instead of adding template parameters to the protocol we should add a
 requirement to it:
 
 \snippet Utilities/Test_ProtocolHelpers.cpp named_with_type
 
-Classes would need to specify the additional template parameters for any
+Classes would need to specify the template parameters for any
 protocols they conform to anyway, if the protocols had any. So they might as
 well expose them:
 
@@ -118,25 +122,11 @@ further checks about the types if we wanted to:
 
 # Protocol authors: Testing a protocol {#protocols_testing}
 
-We are currently testing protocol conformance as part of our unit tests, so
-that the global `tt::conforms_to` convenience metafunction only needs to check
-if a type inherits off the protocol, but doesn't need to check the protocol's
-(possibly fairly expensive) implementation. This is primarily to keep compile
-times low, and may be reconsidered when transitioning to C++ "concepts". Full
-protocol conformance is tested in the `test_protocol_conformance` metafunction
-mentioned above.
-
-To make sure their protocol functions correctly, protocol authors must test
-its implementation in a unit test (e.g. in a `Test_Protocols.hpp`):
-
-\snippet Utilities/Test_ProtocolHelpers.cpp testing_a_protocol
-
-They should make sure to test the implementation with classes that conform to
-the protocol, and others that don't. This means the test will always include an
-example implementation of a class that conforms to the protocol, and the
-protocol author should add it to the documentation of the protocol through a
-Doxygen snippet. This gives users a convenient way to see how the author intends
-their interface to be implemented.
+Protocol authors should provide a unit test for their protocol that includes an
+example implementation of a class that conforms to it. The protocol author
+should add this example to the documentation of the protocol through a Doxygen
+snippet. This gives users a convenient way to see how the author intends their
+interface to be implemented.
 
 # Protocols and C++20 "Constraints and concepts" {#protocols_and_constraints}
 

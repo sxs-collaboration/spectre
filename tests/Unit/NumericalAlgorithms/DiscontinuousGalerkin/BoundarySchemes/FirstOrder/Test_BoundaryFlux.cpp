@@ -16,7 +16,6 @@
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "Helpers/Utilities/ProtocolTestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/BoundaryData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/BoundaryFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -61,8 +60,7 @@ struct NumericalFlux : tt::ConformsTo<dg::protocols::NumericalFlux> {
 };
 
 static_assert(
-    test_protocol_conformance<NumericalFlux, dg::protocols::NumericalFlux>,
-    "Failed testing protocol conformance");
+    tt::assert_conforms_to<NumericalFlux, dg::protocols::NumericalFlux>);
 
 // A flux used in earlier versions of this test (see history of
 // tests/Unit/NumericalAlgorithms/DiscontinuousGalerkin/Test_MortarHelpers.cpp),
@@ -77,8 +75,9 @@ struct RefinementTestsNumericalFlux
   using argument_tags = tmpl::list<SomeField>;
   using package_field_tags = tmpl::list<SomeField>;
   using package_extra_tags = tmpl::list<>;
-  void package_data(const gsl::not_null<Scalar<DataVector>*> packaged_field,
-                    const Scalar<DataVector>& field) const noexcept {
+  static void package_data(
+      const gsl::not_null<Scalar<DataVector>*> packaged_field,
+      const Scalar<DataVector>& field) noexcept {
     *packaged_field = field;
   }
   void operator()(const gsl::not_null<Scalar<DataVector>*> numerical_flux,
@@ -90,9 +89,8 @@ struct RefinementTestsNumericalFlux
   }
 };
 
-static_assert(test_protocol_conformance<RefinementTestsNumericalFlux,
-                                        dg::protocols::NumericalFlux>,
-              "Failed testing protocol conformance");
+static_assert(tt::assert_conforms_to<RefinementTestsNumericalFlux,
+                                     dg::protocols::NumericalFlux>);
 
 // Helper function to compare a simple setup to the Python implementation
 template <size_t Dim, size_t NumPointsPerDim, typename NumericalFluxType>

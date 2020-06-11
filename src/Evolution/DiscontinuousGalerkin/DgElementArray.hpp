@@ -45,8 +45,8 @@ struct ImportNoInitialData {};
  */
 template <typename PhaseType, PhaseType ImportPhase, typename InitialData>
 struct ImportNumericInitialData {
-  static_assert(
-      tt::conforms_to_v<InitialData, evolution::protocols::NumericInitialData>);
+  static_assert(tt::assert_conforms_to<
+                InitialData, evolution::protocols::NumericInitialData>);
 };
 
 namespace DgElementArray_detail {
