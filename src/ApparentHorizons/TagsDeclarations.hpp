@@ -35,10 +35,7 @@ template <typename Frame>
 struct EuclideanAreaElement;
 template <typename IntegrandTag, typename Frame>
 struct EuclideanSurfaceIntegral;
-template <typename Frame>
-struct Area;
-template <typename Frame>
-struct AreaCompute;
+
 }  // namespace StrahlkorperTags
 
 namespace StrahlkorperGr {
@@ -47,5 +44,11 @@ template <typename Frame>
 struct AreaElement;
 template <typename IntegrandTag, typename Frame>
 struct SurfaceIntegral;
+struct Area;
+template <typename Frame>
+struct AreaCompute;
+struct IrreducibleMass;
+template <typename Frame>
+struct IrreducibleMassCompute;
 }  // namespace Tags
 }  // namespace StrahlkorperGr

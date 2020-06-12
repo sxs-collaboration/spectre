@@ -361,6 +361,21 @@ struct AreaCompute : Area, db::ComputeTag {
   using argument_tags =
       tmpl::list<StrahlkorperTags::Strahlkorper<Frame>, AreaElement<Frame>>;
 };
+/// The Irreducible (areal) mass of an apparent horizon
+struct IrreducibleMass : db::SimpleTag {
+  using type = double;
+};
+/// Computes the Irreducible mass of an apparent horizon from its area
+template <typename Frame>
+struct IrreducibleMassCompute : IrreducibleMass, db::ComputeTag {
+  using base = IrreducibleMass;
+  using return_type = double;
+  static void function(const gsl::not_null<double*> result,
+                       const double area) noexcept {
+    *result = ::StrahlkorperGr::irreducible_mass(area);
+  }
 
+  using argument_tags = tmpl::list<Area>;
+};
 }  // namespace Tags
 }  // namespace StrahlkorperGr
