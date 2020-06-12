@@ -19,6 +19,7 @@ spectre_target_sources(
   LogicalCoordinates.cpp
   MinimumGridSpacing.cpp
   SizeOfElement.cpp
+  SurfaceJacobian.cpp
   Tags.cpp
   TagsTimeDependent.cpp
   )
