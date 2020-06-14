@@ -24,7 +24,7 @@
   { symbol: ["PUP::er", private, "<pup.h>", public]},
 
   { include: ["<catch.hpp>", public,
-              "\"tests/Unit/TestingFramework.hpp\"", public]},
+              "\"Framework/TestingFramework.hpp\"", public]},
 
   { include: ["<type_traits>", public,
               "\"Utilities/TypeTraits.hpp\"", public]},
