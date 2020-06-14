@@ -3,16 +3,14 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <limits>
 #include <type_traits>
-#include <utility>
 
-#include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TypeTraits.hpp"
 
 /// Type trait to check if a type looks like a fraction (specifically,
 /// if it has numerator and denominator methods)
@@ -80,14 +78,13 @@ class ContinuedFraction {
   }
 
  private:
-  template <typename U, Requires<is_fraction_v<U>> = nullptr>
+  template <typename U>
   static value_type ifloor(const U& x) noexcept {
-    return static_cast<value_type>(x.numerator() / x.denominator());
-  }
-
-  template <typename U, Requires<not is_fraction_v<U>> = nullptr>
-  static value_type ifloor(const U& x) noexcept {
-    return static_cast<value_type>(std::floor(x));
+    if constexpr (is_fraction_v<U>) {
+      return static_cast<value_type>(x.numerator() / x.denominator());
+    } else {
+      return static_cast<value_type>(std::floor(x));
+    }
   }
 
   value_type term_;
@@ -157,7 +154,8 @@ Fraction simplest_fraction_in_interval(const T1& end1,
       if (++cf2) {
         ++term2;
       }
-      result.insert(gsl::narrow<Term_t>(std::min(term1, term2)));
+      using std::min;
+      result.insert(gsl::narrow<Term_t>(min(term1, term2)));
       return result.value();
     }
     result.insert(gsl::narrow<Term_t>(term1));
