@@ -53,7 +53,17 @@ class ContinuedFraction {
   using value_type = typename value_type_helper<T>::type;
 
   explicit ContinuedFraction(const T& value) noexcept
-      : term_(ifloor(value)), remainder_(value - term_) {}
+      : term_(ifloor(value)),
+        remainder_(value - term_),
+        error_([this, &value]() noexcept {
+          using std::abs;
+          using std::max;
+          // For any non-fundamental type, epsilon() returns a
+          // default-constructed value, which should be zero for
+          // fractions.
+          return max(abs(value), abs(remainder_)) *
+                 std::numeric_limits<T>::epsilon();
+        }()) {}
 
   /// Obtain the current element in the expansion
   value_type operator*() const noexcept { return term_; }
@@ -67,11 +77,13 @@ class ContinuedFraction {
 
   /// Advance to the next element in the expansion
   ContinuedFraction& operator++() noexcept {
-    if (remainder_ == 0 or (error_ /= square(remainder_)) > 1) {
+    // Terminate when remainder_ is consistent with zero.
+    if (remainder_ == 0 or error_ > remainder_) {
       done_ = true;
       return *this;
     }
     remainder_ = 1 / remainder_;
+    error_ *= square(remainder_);
     term_ = ifloor(remainder_);
     remainder_ -= term_;
     return *this;
@@ -89,10 +101,8 @@ class ContinuedFraction {
 
   value_type term_;
   T remainder_;
-  // Estimate of error in the term.  For any non-fundamental type
-  // epsilon() returns a default-constructed value, which should be
-  // zero for fractions.
-  T error_{std::numeric_limits<T>::epsilon()};
+  // Estimate of error in the term.
+  T error_;
   bool done_{false};
 };
 
