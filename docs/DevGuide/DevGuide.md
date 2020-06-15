@@ -70,3 +70,4 @@ Assumes a thorough familiarity and fluency in SpECTRE's usage of TMP.
 Explanations for TMP concepts and patterns known to the greater C++ community
 can be found here.
 - \subpage sfinae "SFINAE"
+- \subpage brigand "The Brigand TMP library"

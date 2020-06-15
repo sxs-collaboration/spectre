@@ -61,7 +61,7 @@ all of these dependencies.
 * BLAS (e.g. [OpenBLAS](http://www.openblas.net))
 * [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.8
 * [Boost](http://www.boost.org/) 1.60.0 or later
-* [Brigand](https://github.com/edouarda/brigand)
+* [Brigand](https://github.com/edouarda/brigand) at commit 1c398e4f1e817ab195e4cd6fbb03c18cb386eea3 (late 2020) or later
 * [Catch](https://github.com/catchorg/Catch2) 2.8.0 or later, but not 3.x as SpECTRE doesn't support v3 yet (If installing from source, it is easiest to use single-header installation)
 * [GSL](https://www.gnu.org/software/gsl/)
 * [HDF5](https://support.hdfgroup.org/HDF5/) (non-mpi version on macOS)
