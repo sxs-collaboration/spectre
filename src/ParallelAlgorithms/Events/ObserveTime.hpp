@@ -4,26 +4,22 @@
 #pragma once
 
 #include <cstddef>
-#include <functional>
-#include <optional>
 #include <pup.h>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Domain/Tags.hpp"
-#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "IO/Observer/ReductionActions.hpp"   // IWYU pragma: keep
-#include "IO/Observer/TypeOfObservation.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/ArrayIndex.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Parallel/GlobalCache.hpp"
+#include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -31,10 +27,8 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Numeric.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
 namespace Frame {
@@ -72,6 +66,10 @@ class ObserveErrorNorms;  // IWYU pragma: keep
  *   \f$\operatorname{RMS}\left(\sqrt{\sum_{\text{independent components}}\left[
  *   \text{value} - \text{analytic solution}\right]^2}\right)\f$
  *   over all points
+ *
+ * \warning Currently, only one reduction observation event can be
+ * triggered at a given observation value.  Causing multiple events to run at
+ * once will produce unpredictable results.
  */
 template <typename ObservationValueTag, typename... Tensors,
           typename EventRegistrars>
@@ -94,24 +92,16 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
       Parallel::ReductionData>;
 
  public:
-  /// The name of the subfile inside the HDF5 file
-  struct SubfileName {
-    using type = std::string;
-    static constexpr Options::String help = {
-        "The name of the subfile inside the HDF5 file without an extension and "
-        "without a preceding '/'."};
-  };
-
   /// \cond
   explicit ObserveErrorNorms(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveErrorNorms);  // NOLINT
   /// \endcond
 
-  using options = tmpl::list<SubfileName>;
-  static constexpr Options::String help =
+  using options = tmpl::list<>;
+  static constexpr OptionString help =
       "Observe the RMS errors in the tensors compared to their analytic\n"
-      "solution (if one is available).\n"
+      "solution.\n"
       "\n"
       "Writes reduction quantities:\n"
       " * ObservationValueTag\n"
@@ -123,57 +113,38 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
       "run at once will produce unpredictable results.";
 
   ObserveErrorNorms() = default;
-  explicit ObserveErrorNorms(const std::string& subfile_name) noexcept;
 
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
 
-  using argument_tags = tmpl::list<ObservationValueTag, Tensors...,
-                                   ::Tags::AnalyticSolutionsBase>;
+  using argument_tags =
+      tmpl::list<ObservationValueTag, Tensors..., ::Tags::Analytic<Tensors>...>;
 
-  template <typename OptionalAnalyticSolutions, typename Metavariables,
-            typename ArrayIndex, typename ParallelComponent>
-  void operator()(const typename ObservationValueTag::type& observation_value,
-                  const typename Tensors::type&... tensors,
-                  const OptionalAnalyticSolutions& optional_analytic_solutions,
-                  Parallel::GlobalCache<Metavariables>& cache,
-                  const ArrayIndex& array_index,
-                  const ParallelComponent* const /*meta*/) const noexcept {
-    if constexpr (tt::is_a_v<std::optional, OptionalAnalyticSolutions>) {
-      if (not optional_analytic_solutions.has_value()) {
-        // Nothing to do if we don't have analytic solutions. We may generalize
-        // this event to observe norms of other quantities.
-        return;
-      }
-    }
-    const auto& analytic_solutions =
-        [&optional_analytic_solutions]() noexcept -> decltype(auto) {
-      // If we generalize this event to do observations of non-solution
-      // quantities then we can return a std::optional<std::reference_wrapper>
-      // here (using std::cref).
-      if constexpr (tt::is_a_v<std::optional, OptionalAnalyticSolutions>) {
-        return *optional_analytic_solutions;
-      } else {
-        return optional_analytic_solutions;
-      }
-    }();
-
+  template <typename Metavariables, typename ArrayIndex,
+            typename ParallelComponent>
+  void operator()(
+      const db::const_item_type<ObservationValueTag>& observation_value,
+      const db::const_item_type<Tensors>&... tensors,
+      const db::const_item_type<::Tags::Analytic<Tensors>>&... analytic_tensors,
+      Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/,
+      const ParallelComponent* const /*meta*/) const noexcept {
     tuples::TaggedTuple<LocalSquareError<Tensors>...> local_square_errors;
-    const auto record_errors = [&local_square_errors, &analytic_solutions](
-                                   const auto tensor_tag_v,
-                                   const auto& tensor) noexcept {
+    const auto record_errors = [&local_square_errors](
+        const auto tensor_tag_v, const auto& tensor,
+        const auto& analytic_tensor) noexcept {
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
       double local_square_error = 0.0;
       for (size_t i = 0; i < tensor.size(); ++i) {
-        const auto error = tensor[i] - get<::Tags::Analytic<tensor_tag>>(
-                                           analytic_solutions)[i];
+        const auto error = tensor[i] - analytic_tensor[i];
         local_square_error += alg::accumulate(square(error), 0.0);
       }
       get<LocalSquareError<tensor_tag>>(local_square_errors) =
           local_square_error;
       return 0;
     };
-    expand_pack(record_errors(tmpl::type_<Tensors>{}, tensors)...);
+    expand_pack(
+        record_errors(tmpl::type_<Tensors>{}, tensors, analytic_tensors)...);
     const size_t num_points = get_first_argument(tensors...).begin()->size();
 
     // Send data to reduction observer
@@ -181,14 +152,12 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
         *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
              cache)
              .ckLocalBranch();
-    Parallel::simple_action<observers::Actions::ContributeReductionData<
-        observers::ThreadedActions::WriteReductionData>>(
+    Parallel::simple_action<observers::Actions::ContributeReductionData>(
         local_observer,
-        observers::ObservationId(observation_value, subfile_path_ + ".dat"),
-        observers::ArrayComponentId{
-            std::add_pointer_t<ParallelComponent>{nullptr},
-            Parallel::ArrayIndex<ArrayIndex>(array_index)},
-        subfile_path_,
+        observers::ObservationId(
+            observation_value,
+            typename Metavariables::element_observation_type{}),
+        std::string{"/element_data"},
         std::vector<std::string>{db::tag_name<ObservationValueTag>(),
                                  "NumberOfPoints",
                                  ("Error(" + db::tag_name<Tensors>() + ")")...},
@@ -196,30 +165,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
             static_cast<double>(observation_value), num_points,
             std::move(get<LocalSquareError<Tensors>>(local_square_errors))...});
   }
-
-  using observation_registration_tags = tmpl::list<>;
-  std::pair<observers::TypeOfObservation, observers::ObservationKey>
-  get_observation_type_and_key_for_registration() const noexcept {
-    return {observers::TypeOfObservation::Reduction,
-            observers::ObservationKey(subfile_path_ + ".dat")};
-  }
-
-  // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) override {
-    Event<EventRegistrars>::pup(p);
-    p | subfile_path_;
-  }
-
- private:
-  std::string subfile_path_;
 };
-
-template <typename ObservationValueTag, typename... Tensors,
-          typename EventRegistrars>
-ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
-                  EventRegistrars>::ObserveErrorNorms(const std::string&
-                                                          subfile_name) noexcept
-    : subfile_path_("/" + subfile_name) {}
 
 /// \cond
 template <typename ObservationValueTag, typename... Tensors,
