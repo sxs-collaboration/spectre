@@ -61,12 +61,9 @@ struct PrepareSolve {
     db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>, operand_tag,
                residual_tag>(
         make_not_null(&box),
-        [](const gsl::not_null<size_t*> iteration_id,
-           const gsl::not_null<db::item_type<operand_tag>*> operand,
-           const gsl::not_null<db::item_type<residual_tag>*> residual,
-           const db::item_type<source_tag>& source,
-           const db::item_type<operator_applied_to_fields_tag>&
-               operator_applied_to_fields) noexcept {
+        [](const gsl::not_null<size_t*> iteration_id, const auto operand,
+           const auto residual, const auto& source,
+           const auto& operator_applied_to_fields) noexcept {
           *iteration_id = 0;
           *operand = source - operator_applied_to_fields;
           *residual = *operand;
@@ -202,18 +199,17 @@ struct UpdateFieldValues {
     // Received global reduction result, proceed with conjugate gradient.
     db::mutate<residual_tag, fields_tag>(
         make_not_null(&box),
-        [alpha](const gsl::not_null<db::item_type<residual_tag>*> r,
-                const gsl::not_null<db::item_type<fields_tag>*> x,
-                const db::const_item_type<operand_tag>& p,
-                const db::const_item_type<operator_tag>& Ap) noexcept {
-          *x += alpha * p;
-          *r -= alpha * Ap;
+        [alpha](const auto residual, const auto fields, const auto& operand,
+                const auto& operator_applied_to_operand) noexcept {
+          *fields += alpha * operand;
+          *residual -= alpha * operator_applied_to_operand;
         },
         get<operand_tag>(box), get<operator_tag>(box));
 
     // Compute new residual norm in a second global reduction
-    const auto& r = get<residual_tag>(box);
-    const double local_residual_magnitude_square = inner_product(r, r);
+    const auto& residual = get<residual_tag>(box);
+    const double local_residual_magnitude_square =
+        inner_product(residual, residual);
 
     Parallel::contribute_to_reduction<
         UpdateResidual<FieldsTag, OptionsGroup, ParallelComponent>>(
@@ -253,11 +249,10 @@ struct UpdateOperand {
                LinearSolver::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [res_ratio, &has_converged](
-            const gsl::not_null<db::item_type<operand_tag>*> p,
-            const gsl::not_null<size_t*> iteration_id,
+            const auto operand, const gsl::not_null<size_t*> iteration_id,
             const gsl::not_null<Convergence::HasConverged*> local_has_converged,
-            const db::const_item_type<residual_tag>& r) noexcept {
-          *p = r + res_ratio * *p;
+            const auto& residual) noexcept {
+          *operand = residual + res_ratio * *operand;
           ++(*iteration_id);
           *local_has_converged = has_converged;
         },

@@ -61,15 +61,10 @@ struct PrepareSolve {
     db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>, operand_tag,
                initial_fields_tag, basis_history_tag>(
         make_not_null(&box),
-        [](const gsl::not_null<size_t*> iteration_id,
-           const gsl::not_null<db::item_type<operand_tag>*> operand,
-           const gsl::not_null<db::item_type<initial_fields_tag>*>
-               initial_fields,
-           const gsl::not_null<db::item_type<basis_history_tag>*> basis_history,
-           const db::item_type<source_tag>& source,
-           const db::item_type<operator_applied_to_fields_tag>&
-               operator_applied_to_fields,
-           const db::item_type<fields_tag>& fields) noexcept {
+        [](const gsl::not_null<size_t*> iteration_id, const auto operand,
+           const auto initial_fields, const auto basis_history,
+           const auto& source, const auto& operator_applied_to_fields,
+           const auto& fields) noexcept {
           *iteration_id = 0;
           *operand = source - operator_applied_to_fields;
           *initial_fields = fields;
@@ -95,9 +90,7 @@ struct PrepareSolve {
 
       db::mutate<preconditioned_basis_history_tag>(
           make_not_null(&box),
-          [](const gsl::not_null<
-              db::item_type<preconditioned_basis_history_tag>*>
-                 preconditioned_basis_history) noexcept {
+          [](const auto preconditioned_basis_history) noexcept {
             *preconditioned_basis_history =
                 db::item_type<preconditioned_basis_history_tag>{};
           });
@@ -137,13 +130,10 @@ struct NormalizeInitialOperand {
                     const Convergence::HasConverged& has_converged) noexcept {
     db::mutate<operand_tag, basis_history_tag,
                LinearSolver::Tags::HasConverged<OptionsGroup>>(
-        make_not_null(&box),
-        [residual_magnitude, &has_converged](
-            const gsl::not_null<db::item_type<operand_tag>*> operand,
-            const gsl::not_null<db::item_type<basis_history_tag>*>
-                basis_history,
-            const gsl::not_null<Convergence::HasConverged*>
-                local_has_converged) noexcept {
+        make_not_null(&box), [residual_magnitude, &has_converged](
+                                 const auto operand, const auto basis_history,
+                                 const gsl::not_null<Convergence::HasConverged*>
+                                     local_has_converged) noexcept {
           *operand /= residual_magnitude;
           basis_history->push_back(*operand);
           *local_has_converged = has_converged;
@@ -239,9 +229,9 @@ struct PerformStep {
 
     db::mutate<operand_tag, orthogonalization_iteration_id_tag>(
         make_not_null(&box),
-        [](const gsl::not_null<db::item_type<operand_tag>*> operand,
+        [](const auto operand,
            const gsl::not_null<size_t*> orthogonalization_iteration_id,
-           const db::const_item_type<operator_tag>& operator_action) noexcept {
+           const auto& operator_action) noexcept {
           *operand = db::item_type<operand_tag>(operator_action);
           *orthogonalization_iteration_id = 0;
         },
@@ -294,10 +284,9 @@ struct OrthogonalizeOperand {
     db::mutate<operand_tag, orthogonalization_iteration_id_tag>(
         make_not_null(&box),
         [orthogonalization](
-            const gsl::not_null<db::item_type<operand_tag>*> operand,
+            const auto operand,
             const gsl::not_null<size_t*> orthogonalization_iteration_id,
-            const db::const_item_type<basis_history_tag>&
-                basis_history) noexcept {
+            const auto& basis_history) noexcept {
           *operand -= orthogonalization *
                       gsl::at(basis_history, *orthogonalization_iteration_id);
           ++(*orthogonalization_iteration_id);
@@ -374,15 +363,11 @@ struct NormalizeOperandAndUpdateField {
                LinearSolver::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [normalization, &minres, &has_converged](
-            const gsl::not_null<db::item_type<operand_tag>*> operand,
-            const gsl::not_null<db::item_type<basis_history_tag>*>
-                basis_history,
-            const gsl::not_null<db::item_type<fields_tag>*> field,
+            const auto operand, const auto basis_history, const auto field,
             const gsl::not_null<size_t*> iteration_id,
             const gsl::not_null<Convergence::HasConverged*> local_has_converged,
-            const db::const_item_type<initial_fields_tag>& initial_field,
-            const db::item_type<preconditioned_basis_history_tag>&
-                preconditioned_basis_history) noexcept {
+            const auto& initial_field,
+            const auto& preconditioned_basis_history) noexcept {
           // Avoid an FPE if the new operand norm is exactly zero. In that case
           // the problem is solved and the algorithm will terminate (see
           // Proposition 9.3 in \cite Saad2003). Since there will be no next

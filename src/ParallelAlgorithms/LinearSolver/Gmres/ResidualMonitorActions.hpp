@@ -141,8 +141,7 @@ struct StoreOrthogonalization {
                orthogonalization_iteration_id_tag>(
         make_not_null(&box),
         [orthogonalization](
-            const gsl::not_null<db::item_type<orthogonalization_history_tag>*>
-                orthogonalization_history,
+            const auto orthogonalization_history,
             const gsl::not_null<size_t*> orthogonalization_iteration_id,
             const size_t& iteration_id) noexcept {
           (*orthogonalization_history)(*orthogonalization_iteration_id,

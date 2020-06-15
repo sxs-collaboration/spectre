@@ -184,7 +184,7 @@ struct PrepareSolve {
         make_not_null(&box),
         [](const gsl::not_null<size_t*> iteration_id,
            const gsl::not_null<double*> residual_magnitude_square,
-           const db::const_item_type<residual_tag>& residual) noexcept {
+           const auto& residual) noexcept {
           *iteration_id = 0;
           *residual_magnitude_square = inner_product(residual, residual);
         },
@@ -224,7 +224,7 @@ struct CompleteStep {
         make_not_null(&box),
         [](const gsl::not_null<double*> residual_magnitude_square,
            const gsl::not_null<size_t*> iteration_id,
-           const db::const_item_type<residual_tag>& residual) noexcept {
+           const auto& residual) noexcept {
           *residual_magnitude_square = inner_product(residual, residual);
           ++(*iteration_id);
         },
