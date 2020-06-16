@@ -40,19 +40,19 @@ namespace dg {
 namespace Events {
 template <typename ObservationValueTag, typename Tensors,
           typename EventRegistrars>
-class ObserveErrorNorms;
+class ObserveTime;
 
 namespace Registrars {
 template <typename ObservationValueTag, typename Tensors>
-using ObserveErrorNorms =
-    ::Registration::Registrar<Events::ObserveErrorNorms, ObservationValueTag,
+using ObserveTime =
+    ::Registration::Registrar<Events::ObserveTime, ObservationValueTag,
                               Tensors>;
 }  // namespace Registrars
 
 template <typename ObservationValueTag, typename Tensors,
           typename EventRegistrars = tmpl::list<
-              Registrars::ObserveErrorNorms<ObservationValueTag, Tensors>>>
-class ObserveErrorNorms;  // IWYU pragma: keep
+              Registrars::ObserveTime<ObservationValueTag, Tensors>>>
+class ObserveTime;  // IWYU pragma: keep
 
 /*!
  * \ingroup DiscontinuousGalerkinGroup
@@ -73,7 +73,7 @@ class ObserveErrorNorms;  // IWYU pragma: keep
  */
 template <typename ObservationValueTag, typename... Tensors,
           typename EventRegistrars>
-class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
+class ObserveTime<ObservationValueTag, tmpl::list<Tensors...>,
                         EventRegistrars> : public Event<EventRegistrars> {
  private:
   template <typename Tag>
@@ -93,9 +93,9 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
 
  public:
   /// \cond
-  explicit ObserveErrorNorms(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit ObserveTime(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
-  WRAPPED_PUPable_decl_template(ObserveErrorNorms);  // NOLINT
+  WRAPPED_PUPable_decl_template(ObserveTime);  // NOLINT
   /// \endcond
 
   using options = tmpl::list<>;
@@ -112,7 +112,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
       "triggered at a given observation value.  Causing multiple events to\n"
       "run at once will produce unpredictable results.";
 
-  ObserveErrorNorms() = default;
+  ObserveTime() = default;
 
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
@@ -152,7 +152,8 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
         *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
              cache)
              .ckLocalBranch();
-    Parallel::simple_action<observers::Actions::ContributeReductionData>(
+    Parallel::simple_action<observers::Actions::ContributeReductionData<
+        observers::ThreadedActions::PrintReductionData>>(
         local_observer,
         observers::ObservationId(
             observation_value,
@@ -170,7 +171,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
 /// \cond
 template <typename ObservationValueTag, typename... Tensors,
           typename EventRegistrars>
-PUP::able::PUP_ID ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
+PUP::able::PUP_ID ObserveTime<ObservationValueTag, tmpl::list<Tensors...>,
                                     EventRegistrars>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Events
