@@ -379,7 +379,7 @@ class DataBox<tmpl::list<Tags...>>
 
   /// A list of all the compute item tags, excluding their subitems
   using compute_item_tags =
-      tmpl::filter<tags_list, db::is_compute_item<tmpl::_1>>;
+      tmpl::filter<tags_list, db::is_compute_tag<tmpl::_1>>;
 
   /// A list of all the compute items, including subitems from the compute items
   using compute_with_subitems_tags =
@@ -580,12 +580,12 @@ class DataBox<tmpl::list<Tags...>>
       tmpl::list<Subtags...> /*meta*/) noexcept;
 
   template <typename ComputeItem,
-            Requires<not db::is_compute_item_v<ComputeItem>> = nullptr>
+            Requires<not db::is_compute_tag_v<ComputeItem>> = nullptr>
   constexpr void add_reset_compute_item_to_box(tmpl::list<> /*meta*/) noexcept {
   }
 
   template <typename ComputeItem, typename... ComputeItemArgumentsTags,
-            Requires<db::is_compute_item_v<ComputeItem>> = nullptr>
+            Requires<db::is_compute_tag_v<ComputeItem>> = nullptr>
   constexpr void add_reset_compute_item_to_box(
       tmpl::list<ComputeItemArgumentsTags...> /*meta*/) noexcept;
 
@@ -656,7 +656,7 @@ struct get_argument_list_impl<true> {
 /// then it returns tmpl::list<>
 template <class Tag>
 using get_argument_list = typename get_argument_list_impl<
-    ::db::is_compute_item_v<Tag>>::template f<Tag>;
+    ::db::is_compute_tag_v<Tag>>::template f<Tag>;
 }  // namespace DataBox_detail
 
 template <typename... Tags>
@@ -946,7 +946,7 @@ void DataBox<tmpl::list<Tags...>>::pup_impl(
 // Classes and functions necessary for db::mutate to work
 template <typename... Tags>
 template <typename ComputeItem, typename... ComputeItemArgumentsTags,
-          Requires<db::is_compute_item_v<ComputeItem>>>
+          Requires<db::is_compute_tag_v<ComputeItem>>>
 SPECTRE_ALWAYS_INLINE constexpr void
 DataBox<tmpl::list<Tags...>>::add_reset_compute_item_to_box(
     tmpl::list<ComputeItemArgumentsTags...> /*meta*/) noexcept {
@@ -991,7 +991,7 @@ db::DataBox<tmpl::list<Tags...>>::mutate_subitem_tags_in_box(
           make_not_null(&get_deferred<tag>().mutate()));
     });
 
-  EXPAND_PACK_LEFT_TO_RIGHT(helper(Subtags{}, is_compute_item<ParentTag>{}));
+  EXPAND_PACK_LEFT_TO_RIGHT(helper(Subtags{}, is_compute_tag<ParentTag>{}));
 }
 
 /*!
@@ -1199,11 +1199,11 @@ SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
   static_assert(tt::is_a_v<tmpl::list, AddSimpleTags>,
                 "AddSimpleTags must be a tmpl::list");
   static_assert(
-      not tmpl::any<AddSimpleTags, is_compute_item<tmpl::_1>>::value,
+      not tmpl::any<AddSimpleTags, is_compute_tag<tmpl::_1>>::value,
       "Cannot add any ComputeTags in the AddSimpleTags list, must use the "
       "AddComputeTags list.");
   static_assert(
-      tmpl::all<AddComputeTags, is_compute_item<tmpl::_1>>::value,
+      tmpl::all<AddComputeTags, is_compute_tag<tmpl::_1>>::value,
       "Cannot add any SimpleTags in the AddComputeTags list, must use the "
       "AddSimpleTags list.");
 
@@ -1241,7 +1241,7 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
 
   // 2. Expand simple remove tags and compute remove tags
   using compute_tags_to_remove =
-      tmpl::filter<remove_tags, db::is_compute_item<tmpl::_1>>;
+      tmpl::filter<remove_tags, db::is_compute_tag<tmpl::_1>>;
   using compute_tags_to_remove_with_subitems =
       DataBox_detail::expand_subitems_from_list<old_box_tags,
                                                 compute_tags_to_remove>;
@@ -1742,7 +1742,7 @@ SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
  * \brief Get all the Tags that are compute items from the `TagList`
  */
 template <class TagList>
-using get_compute_items = tmpl::filter<TagList, db::is_compute_item<tmpl::_1>>;
+using get_compute_items = tmpl::filter<TagList, db::is_compute_tag<tmpl::_1>>;
 
 /*!
  * \ingroup DataBoxGroup
@@ -1750,8 +1750,7 @@ using get_compute_items = tmpl::filter<TagList, db::is_compute_item<tmpl::_1>>;
  */
 template <class TagList>
 using get_items =
-    tmpl::filter<TagList,
-                 tmpl::not_<tmpl::bind<db::is_compute_item, tmpl::_1>>>;
+    tmpl::filter<TagList, tmpl::not_<tmpl::bind<db::is_compute_tag, tmpl::_1>>>;
 
 namespace DataBox_detail {
 template <class ItemsList, class ComputeItemsList>

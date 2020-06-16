@@ -26,19 +26,19 @@ struct tag_name_impl;
 
 template <typename Tag, typename = std::nullptr_t, typename = std::void_t<>>
 struct tag_name_impl2 {
-  static_assert(not is_compute_item_v<Tag>,
+  static_assert(not is_compute_tag_v<Tag>,
                 "Compute tags must have a name function or a base alias.");
   static std::string name() noexcept { return pretty_type::short_name<Tag>(); }
 };
 
 template <typename Tag>
-struct tag_name_impl2<Tag, Requires<is_compute_item_v<Tag>>,
+struct tag_name_impl2<Tag, Requires<is_compute_tag_v<Tag>>,
                       std::void_t<typename Tag::base>>
     : tag_name_impl<typename Tag::base> {};
 
 template <typename Tag>
 struct tag_name_impl2<Tag, Requires<std::is_base_of_v<db::PrefixTag, Tag> and
-                                    not is_compute_item_v<Tag>>> {
+                                    not is_compute_tag_v<Tag>>> {
   static std::string name() noexcept {
     return pretty_type::short_name<Tag>() + "(" +
            tag_name_impl<typename Tag::tag>::name() + ")";

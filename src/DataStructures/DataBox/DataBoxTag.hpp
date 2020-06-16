@@ -142,12 +142,12 @@ struct storage_type_impl {
   using type = typename dispatch_storage_type<
       is_base_tag_v<Tag>
           ? 4
-          : (is_compute_item_v<Tag>and has_return_type_member_v<Tag>)
+          : (is_compute_tag_v<Tag>and has_return_type_member_v<Tag>)
                 ? 3
-                : is_compute_item_v<Tag> ? 2
-                                         : std::is_base_of_v<db::SimpleTag, Tag>
-                                               ? 1
-                                               : 0>::template f<TagList, Tag>;
+                : is_compute_tag_v<Tag> ? 2
+                                        : std::is_base_of_v<db::SimpleTag, Tag>
+                                              ? 1
+                                              : 0>::template f<TagList, Tag>;
 };
 
 template <>
@@ -220,7 +220,7 @@ using storage_type = typename storage_type_impl<TagList, Tag>::type;
 
 template <typename TagList, typename Tag>
 struct item_type_impl {
-  static_assert(not is_compute_item_v<Tag>,
+  static_assert(not is_compute_tag_v<Tag>,
                 "Can't call item_type on a compute item because compute items "
                 "cannot be modified.  You probably wanted const_item_type.");
   using type = DataBox_detail::storage_type<Tag, TagList>;

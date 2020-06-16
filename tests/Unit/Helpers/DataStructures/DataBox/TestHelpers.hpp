@@ -24,7 +24,7 @@ CREATE_IS_CALLABLE_V(name)
 template <typename Tag>
 void check_tag_name(const std::string& expected_name) {
   CHECK(::db::tag_name<Tag>() == expected_name);
-  if (is_name_callable_v<Tag> and not ::db::is_compute_item_v<Tag>) {
+  if (is_name_callable_v<Tag> and not ::db::is_compute_tag_v<Tag>) {
     INFO("Do not define name for Tag '" << ::db::tag_name<Tag>() << "',");
     INFO("as it will automatically be generated with that name.");
     CHECK(::db::tag_name<Tag>() != pretty_type::short_name<Tag>());
@@ -42,7 +42,7 @@ void test_base_tag(const std::string& expected_name) {
 
 template <typename Tag>
 void test_compute_tag(const std::string& expected_name) {
-  static_assert(::db::is_compute_item_v<Tag>,
+  static_assert(::db::is_compute_tag_v<Tag>,
                 "A compute tag must be derived from db::ComputeTag");
   detail::check_tag_name<Tag>(expected_name);
 }
