@@ -8,7 +8,14 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace gsl {
@@ -485,4 +492,213 @@ void constraint_energy(
     double three_index_constraint_multiplier = 1.0,
     double four_index_constraint_multiplier = 1.0) noexcept;
 // @}
+
+namespace Tags {
+/*!
+ * \brief Compute item to get the gauge constraint for the
+ * generalized harmonic evolution system.
+ *
+ * \details See `gauge_constraint()`. Can be retrieved using
+ * `GeneralizedHarmonic::Tags::GaugeConstraint`.
+ */
+template <size_t SpatialDim, typename Frame>
+struct GaugeConstraintCompute : GaugeConstraint<SpatialDim, Frame>,
+                                db::ComputeTag {
+  using argument_tags = tmpl::list<
+      GaugeH<SpatialDim, Frame>,
+      gr::Tags::SpacetimeNormalOneForm<SpatialDim, Frame, DataVector>,
+      gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
+      gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
+      gr::Tags::InverseSpacetimeMetric<SpatialDim, Frame, DataVector>,
+      Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>>;
+
+  using return_type = tnsr::a<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame>*>,
+      const tnsr::a<DataVector, SpatialDim, Frame>&,
+      const tnsr::a<DataVector, SpatialDim, Frame>&,
+      const tnsr::A<DataVector, SpatialDim, Frame>&,
+      const tnsr::II<DataVector, SpatialDim, Frame>&,
+      const tnsr::AA<DataVector, SpatialDim, Frame>&,
+      const tnsr::aa<DataVector, SpatialDim, Frame>&,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &gauge_constraint<SpatialDim, Frame, DataVector>);
+
+  using base = GaugeConstraint<SpatialDim, Frame>;
+};
+
+/*!
+ * \brief Compute item to get the F-constraint for the
+ * generalized harmonic evolution system.
+ *
+ * \details See `f_constraint()`. Can be retrieved using
+ * `GeneralizedHarmonic::Tags::FConstraint`.
+ */
+template <size_t SpatialDim, typename Frame>
+struct FConstraintCompute : FConstraint<SpatialDim, Frame>, db::ComputeTag {
+  using argument_tags = tmpl::list<
+      GaugeH<SpatialDim, Frame>,
+      ::Tags::deriv<GaugeH<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
+      gr::Tags::SpacetimeNormalOneForm<SpatialDim, Frame, DataVector>,
+      gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
+      gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
+      gr::Tags::InverseSpacetimeMetric<SpatialDim, Frame, DataVector>,
+      Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>,
+      ::Tags::deriv<Pi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
+      ::Tags::deriv<Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
+      ConstraintGamma2, ThreeIndexConstraint<SpatialDim, Frame>>;
+
+  using return_type = tnsr::a<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame>*>,
+      const tnsr::a<DataVector, SpatialDim, Frame>&,
+      const tnsr::ia<DataVector, SpatialDim, Frame>&,
+      const tnsr::a<DataVector, SpatialDim, Frame>&,
+      const tnsr::A<DataVector, SpatialDim, Frame>&,
+      const tnsr::II<DataVector, SpatialDim, Frame>&,
+      const tnsr::AA<DataVector, SpatialDim, Frame>&,
+      const tnsr::aa<DataVector, SpatialDim, Frame>&,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&,
+      const tnsr::ijaa<DataVector, SpatialDim, Frame>&,
+      const Scalar<DataVector>&,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &f_constraint<SpatialDim, Frame, DataVector>);
+
+  using base = FConstraint<SpatialDim, Frame>;
+};
+
+/*!
+ * \brief Compute item to get the two-index constraint for the
+ * generalized harmonic evolution system.
+ *
+ * \details See `two_index_constraint()`. Can be retrieved using
+ * `GeneralizedHarmonic::Tags::TwoIndexConstraint`.
+ */
+template <size_t SpatialDim, typename Frame>
+struct TwoIndexConstraintCompute : TwoIndexConstraint<SpatialDim, Frame>,
+                                   db::ComputeTag {
+  using argument_tags = tmpl::list<
+      ::Tags::deriv<GaugeH<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
+      gr::Tags::SpacetimeNormalOneForm<SpatialDim, Frame, DataVector>,
+      gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
+      gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
+      gr::Tags::InverseSpacetimeMetric<SpatialDim, Frame, DataVector>,
+      Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>,
+      ::Tags::deriv<Pi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
+      ::Tags::deriv<Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
+      ConstraintGamma2, ThreeIndexConstraint<SpatialDim, Frame>>;
+
+  using return_type = tnsr::ia<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::ia<DataVector, SpatialDim, Frame>*>,
+      const tnsr::ia<DataVector, SpatialDim, Frame>&,
+      const tnsr::a<DataVector, SpatialDim, Frame>&,
+      const tnsr::A<DataVector, SpatialDim, Frame>&,
+      const tnsr::II<DataVector, SpatialDim, Frame>&,
+      const tnsr::AA<DataVector, SpatialDim, Frame>&,
+      const tnsr::aa<DataVector, SpatialDim, Frame>&,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&,
+      const tnsr::ijaa<DataVector, SpatialDim, Frame>&,
+      const Scalar<DataVector>&,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &two_index_constraint<SpatialDim, Frame, DataVector>);
+
+  using base = TwoIndexConstraint<SpatialDim, Frame>;
+};
+
+/*!
+ * \brief Compute item to get the three-index constraint for the
+ * generalized harmonic evolution system.
+ *
+ * \details See `three_index_constraint()`. Can be retrieved using
+ * `GeneralizedHarmonic::Tags::ThreeIndexConstraint`.
+ */
+template <size_t SpatialDim, typename Frame>
+struct ThreeIndexConstraintCompute : ThreeIndexConstraint<SpatialDim, Frame>,
+                                     db::ComputeTag {
+  using argument_tags =
+      tmpl::list<::Tags::deriv<gr::Tags::SpacetimeMetric<SpatialDim, Frame>,
+                               tmpl::size_t<SpatialDim>, Frame>,
+                 Phi<SpatialDim, Frame>>;
+
+  using return_type = tnsr::iaa<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::iaa<DataVector, SpatialDim, Frame>*>,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &three_index_constraint<SpatialDim, Frame, DataVector>);
+
+  using base = ThreeIndexConstraint<SpatialDim, Frame>;
+};
+
+/*!
+ * \brief Compute item to get the four-index constraint for the
+ * generalized harmonic evolution system.
+ *
+ * \details See `four_index_constraint()`. Can be retrieved using
+ * `GeneralizedHarmonic::Tags::FourIndexConstraint`.
+ */
+template <size_t SpatialDim, typename Frame>
+struct FourIndexConstraintCompute : FourIndexConstraint<SpatialDim, Frame>,
+                                    db::ComputeTag {
+  using argument_tags = tmpl::list<
+      ::Tags::deriv<Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>>;
+
+  using return_type = tnsr::iaa<DataVector, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::iaa<DataVector, SpatialDim, Frame>*>,
+      const tnsr::ijaa<DataVector, SpatialDim, Frame>&) noexcept>(
+      &four_index_constraint<SpatialDim, Frame, DataVector>);
+
+  using base = FourIndexConstraint<SpatialDim, Frame>;
+};
+
+/*!
+ * \brief Compute item to get combined energy in all constraints for the
+ * generalized harmonic evolution system.
+ *
+ * \details See `constraint_energy()`. Can be retrieved using
+ * `GeneralizedHarmonic::Tags::ConstraintEnergy`.
+ */
+template <size_t SpatialDim, typename Frame>
+struct ConstraintEnergyCompute : ConstraintEnergy<SpatialDim, Frame>,
+                                 db::ComputeTag {
+  using argument_tags =
+      tmpl::list<GaugeConstraint<SpatialDim, Frame>,
+                 FConstraint<SpatialDim, Frame>,
+                 TwoIndexConstraint<SpatialDim, Frame>,
+                 ThreeIndexConstraint<SpatialDim, Frame>,
+                 FourIndexConstraint<SpatialDim, Frame>,
+                 gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
+                 gr::Tags::DetSpatialMetric<DataVector>>;
+
+  using return_type = Scalar<DataVector>;
+
+  static constexpr auto function(
+      const gsl::not_null<Scalar<DataVector>*> energy,
+      const tnsr::a<DataVector, SpatialDim, Frame>& gauge_constraint,
+      const tnsr::a<DataVector, SpatialDim, Frame>& f_constraint,
+      const tnsr::ia<DataVector, SpatialDim, Frame>& two_index_constraint,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>& three_index_constraint,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>& four_index_constraint,
+      const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
+      const Scalar<DataVector>& spatial_metric_determinant) noexcept {
+    destructive_resize_components(energy,
+                                  get(spatial_metric_determinant).size());
+    constraint_energy<SpatialDim, Frame, DataVector>(
+        energy, gauge_constraint, f_constraint, two_index_constraint,
+        three_index_constraint, four_index_constraint, inverse_spatial_metric,
+        spatial_metric_determinant);
+  }
+
+  using base = ConstraintEnergy<SpatialDim, Frame>;
+};
+}  // namespace Tags
 }  // namespace GeneralizedHarmonic

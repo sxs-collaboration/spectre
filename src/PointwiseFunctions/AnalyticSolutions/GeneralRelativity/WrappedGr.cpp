@@ -9,7 +9,8 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 // IWYU pragma: no_forward_declare ::Tags::deriv

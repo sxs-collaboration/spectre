@@ -5,7 +5,6 @@ set(LIBRARY GeneralRelativity)
 
 set(LIBRARY_SOURCES
     Christoffel.cpp
-    ComputeGhQuantities.cpp
     DerivativesOfSpacetimeMetric.cpp
     ExtrinsicCurvature.cpp
     IndexManipulation.cpp
@@ -29,3 +28,5 @@ target_link_libraries(
   PUBLIC DataStructures
   INTERFACE ErrorHandling
   )
+
+add_subdirectory(GeneralizedHarmonic)

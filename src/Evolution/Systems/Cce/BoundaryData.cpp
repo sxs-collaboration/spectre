@@ -13,7 +13,6 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Math.hpp"
 

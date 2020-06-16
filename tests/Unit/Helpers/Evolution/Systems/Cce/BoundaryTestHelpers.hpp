@@ -15,7 +15,8 @@
 #include "Helpers/Evolution/Systems/Cce/WriteToWorldtubeH5.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
@@ -115,7 +116,7 @@ void create_fake_time_varying_gh_nodal_data(
   GeneralizedHarmonic::phi(phi, lapse, d_lapse, shift, d_shift, spatial_metric,
                            d_spatial_metric);
   GeneralizedHarmonic::pi(pi, lapse, dt_lapse, shift, dt_shift, spatial_metric,
-                           dt_spatial_metric, *phi);
+                          dt_spatial_metric, *phi);
 }
 
 template <typename AnalyticSolution>
