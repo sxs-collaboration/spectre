@@ -249,7 +249,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   ///        each dimension of logical coordinates.
   /// \param orientation_map The orientation of the neighbor
   void package_data(gsl::not_null<PackagedData*> packaged_data,
-                    const db::const_item_type<Tags>&... tensors,
+                    const typename Tags::type&... tensors,
                     const Mesh<VolumeDim>& mesh,
                     const std::array<double, VolumeDim>& element_size,
                     const OrientationMap<VolumeDim>& orientation_map) const

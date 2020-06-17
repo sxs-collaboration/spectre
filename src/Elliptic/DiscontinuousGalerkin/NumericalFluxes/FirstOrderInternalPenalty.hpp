@@ -143,7 +143,7 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
     : tt::ConformsTo<::dg::protocols::NumericalFlux> {
  private:
   using fluxes_computer_tag = FluxesComputerTag;
-  using FluxesComputer = db::const_item_type<fluxes_computer_tag>;
+  using FluxesComputer = typename fluxes_computer_tag::type;
 
   template <typename Tag>
   struct NormalDotDivFlux : db::PrefixTag, db::SimpleTag {
@@ -215,9 +215,9 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
           AuxiliaryFieldTags>>*>... packaged_n_dot_principal_n_dot_aux_fluxes,
       const db::item_type<::Tags::NormalDotFlux<
           AuxiliaryFieldTags>>&... normal_dot_auxiliary_field_fluxes,
-      const db::const_item_type<::Tags::div<
+      const typename ::Tags::div<
           ::Tags::Flux<AuxiliaryFieldTags, tmpl::size_t<Dim>,
-                       Frame::Inertial>>>&... div_auxiliary_field_fluxes,
+                       Frame::Inertial>>::type&... div_auxiliary_field_fluxes,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal,
       const FluxesComputer& fluxes_computer,
       const FluxesArgs&... fluxes_args) const noexcept {
@@ -339,7 +339,7 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
           FieldTags>>*>... numerical_flux_for_fields,
       const gsl::not_null<db::item_type<::Tags::NormalDotNumericalFlux<
           AuxiliaryFieldTags>>*>... numerical_flux_for_auxiliary_fields,
-      const db::const_item_type<FieldTags>&... dirichlet_fields,
+      const typename FieldTags::type&... dirichlet_fields,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal,
       const FluxesComputer& fluxes_computer,
       const FluxesArgs&... fluxes_args) const noexcept {

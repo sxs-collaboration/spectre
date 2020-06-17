@@ -101,12 +101,8 @@ struct ImposeHomogeneousDirichletBoundaryConditions {
     db::mutate<domain::Tags::Interface<
         domain::Tags::BoundaryDirectionsExterior<Dim>, VariablesTag>>(
         make_not_null(&box),
-        [](const gsl::not_null<db::item_type<domain::Tags::Interface<
-               domain::Tags::BoundaryDirectionsExterior<Dim>, VariablesTag>>*>
-               exterior_boundary_vars,
-           const db::const_item_type<domain::Tags::Interface<
-               domain::Tags::BoundaryDirectionsInterior<Dim>, VariablesTag>>&
-               interior_vars) noexcept {
+        [](const auto exterior_boundary_vars,
+           const auto& interior_vars) noexcept {
           for (auto& exterior_direction_and_vars : *exterior_boundary_vars) {
             auto& direction = exterior_direction_and_vars.first;
             homogeneous_dirichlet_boundary_conditions<DirichletTags>(

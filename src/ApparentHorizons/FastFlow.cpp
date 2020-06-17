@@ -63,8 +63,7 @@ namespace {
 template <typename Frame>
 DataVector fast_flow_weight(
     const Scalar<DataVector>& one_form_magnitude,
-    const db::const_item_type<StrahlkorperTags::Rhat<Frame>>& r_hat,
-    const db::const_item_type<StrahlkorperTags::Radius<Frame>>& radius,
+    const tnsr::i<DataVector, 3, Frame>& r_hat, const DataVector& radius,
     const tnsr::II<DataVector, 3, Frame>& inverse_surface_metric) noexcept {
   // Form Euclidean surface metric
   auto flat_metric =
@@ -258,7 +257,9 @@ FastFlow::iterate_horizon_finder(
   for (auto cit = SpherepackIterator(current_strahlkorper->l_max(),
                                      current_strahlkorper->l_max());
        cit; ++cit) {
-    coefs[cit()] -= flow_A / (1.0 + flow_B * cit.l() * (cit.l() + 1)) *
+    coefs[cit()] -= flow_A /
+                    (1.0 + flow_B * static_cast<double>(cit.l()) *
+                               (static_cast<double>(cit.l()) + 1)) *
                     residual_on_surface[cit()];
   }
   *current_strahlkorper = Strahlkorper<Frame>(coefs, *current_strahlkorper);
@@ -341,7 +342,7 @@ bool operator==(const FastFlow& lhs, const FastFlow& rhs) noexcept {
 template <>
 FastFlow::FlowType create_from_yaml<FastFlow::FlowType>::create<void>(
     const Option& options) {
-  const std::string flow_type_read = options.parse_as<std::string>();
+  const auto flow_type_read = options.parse_as<std::string>();
   if ("Jacobi" == flow_type_read) {
     return FastFlow::FlowType::Jacobi;
   } else if ("Curvature" == flow_type_read) {

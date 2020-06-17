@@ -60,7 +60,7 @@ class EveryNIterations : public Trigger<TriggerRegistrars> {
 
   using argument_tags = tmpl::list<IterationId>;
 
-  bool operator()(const db::const_item_type<IterationId>& iteration_id) const
+  bool operator()(const typename IterationId::type& iteration_id) const
       noexcept {
     const auto step_number = static_cast<uint64_t>(iteration_id);
     return step_number >= offset_ and (step_number - offset_) % interval_ == 0;

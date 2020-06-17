@@ -140,6 +140,7 @@ struct Component {
 };
 
 struct Metavariables {
+  static constexpr size_t volume_dim = 1;
   using system = ScalarWave::System<1>;
   using component_list = tmpl::list<Component<Metavariables>>;
   using temporal_id = Tags::TimeStepId;
@@ -217,10 +218,10 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
             make_not_null(&runner), id);
         db::mutate<system::variables_tag>(
             make_not_null(&box),
-            [&solution, &time](
-                const gsl::not_null<EvolvedVariables*> vars,
-                const db::const_item_type<domain::Tags::Coordinates<
-                    1, Frame::Inertial>>& coords) noexcept {
+            [
+              &solution, &time
+            ](const gsl::not_null<EvolvedVariables*> vars,
+              const tnsr::I<DataVector, 1, Frame::Inertial>& coords) noexcept {
               vars->assign_subset(solution.variables(
                   coords, time, system::variables_tag::tags_list{}));
             },
@@ -252,7 +253,7 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
       ActionTesting::get_databox_tag<
           component, domain::Tags::Coordinates<1, Frame::Inertial>>(runner,
                                                                     self_id),
-      db::const_item_type<system::variables_tag>(
+      EvolvedVariables(
           ActionTesting::get_databox_tag<
               component, db::add_tag_prefix<Tags::dt, system::variables_tag>>(
               runner, self_id))};

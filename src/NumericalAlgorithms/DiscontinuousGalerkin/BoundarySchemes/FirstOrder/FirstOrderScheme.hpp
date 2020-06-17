@@ -31,7 +31,7 @@ namespace detail {
 
 template <size_t Dim, typename VariablesTag, typename NumericalFluxComputerTag>
 struct boundary_data_computer_impl {
-  using NumericalFlux = db::const_item_type<NumericalFluxComputerTag>;
+  using NumericalFlux = typename NumericalFluxComputerTag::type;
   using n_dot_fluxes_tag =
       db::add_tag_prefix<::Tags::NormalDotFlux, VariablesTag>;
   using argument_tags =
@@ -41,11 +41,10 @@ struct boundary_data_computer_impl {
   using volume_tags = tmpl::push_front<get_volume_tags<NumericalFlux>,
                                        NumericalFluxComputerTag>;
   template <typename... Args>
-  static auto apply(
-      const NumericalFlux& numerical_flux_computer,
-      const Mesh<Dim - 1>& face_mesh,
-      const db::const_item_type<n_dot_fluxes_tag>& normal_dot_fluxes,
-      const Args&... args) noexcept {
+  static auto apply(const NumericalFlux& numerical_flux_computer,
+                    const Mesh<Dim - 1>& face_mesh,
+                    const typename n_dot_fluxes_tag::type& normal_dot_fluxes,
+                    const Args&... args) noexcept {
     return dg::FirstOrderScheme::package_boundary_data(
         numerical_flux_computer, face_mesh, normal_dot_fluxes, args...);
   }
@@ -68,7 +67,7 @@ struct FirstOrderScheme {
   static constexpr size_t volume_dim = Dim;
   using variables_tag = VariablesTag;
   using numerical_flux_computer_tag = NumericalFluxComputerTag;
-  using NumericalFlux = db::const_item_type<NumericalFluxComputerTag>;
+  using NumericalFlux = typename NumericalFluxComputerTag::type;
   using temporal_id_tag = TemporalIdTag;
   using receive_temporal_id_tag = temporal_id_tag;
   using dt_variables_tag =
@@ -88,9 +87,8 @@ struct FirstOrderScheme {
       detail::boundary_data_computer_impl<Dim, VariablesTag,
                                           NumericalFluxComputerTag>;
 
-  using mortar_data_tag =
-      Tags::SimpleMortarData<db::const_item_type<TemporalIdTag>, BoundaryData,
-                             BoundaryData>;
+  using mortar_data_tag = Tags::SimpleMortarData<typename TemporalIdTag::type,
+                                                 BoundaryData, BoundaryData>;
 
   // Only a shortcut
   using magnitude_of_face_normal_tag =
@@ -113,17 +111,12 @@ struct FirstOrderScheme {
       const gsl::not_null<db::item_type<::Tags::Mortars<mortar_data_tag, Dim>>*>
           all_mortar_data,
       const Mesh<Dim>& volume_mesh,
-      const db::const_item_type<
-          ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>>& mortar_meshes,
-      const db::const_item_type<
-          ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>& mortar_sizes,
+      const MortarMap<Dim, Mesh<Dim - 1>>& mortar_meshes,
+      const MortarMap<Dim, MortarSize<Dim - 1>>& mortar_sizes,
       const NumericalFlux& normal_dot_numerical_flux_computer,
-      const db::const_item_type<domain::Tags::Interface<
-          domain::Tags::InternalDirections<Dim>, magnitude_of_face_normal_tag>>&
+      const std::unordered_map<Direction<Dim>, Scalar<DataVector>>&
           face_normal_magnitudes_internal,
-      const db::const_item_type<
-          domain::Tags::Interface<domain::Tags::BoundaryDirectionsInterior<Dim>,
-                                  magnitude_of_face_normal_tag>>&
+      const std::unordered_map<Direction<Dim>, Scalar<DataVector>>&
           face_normal_magnitudes_boundary) noexcept {
     // Iterate over all mortars
     for (auto& mortar_id_and_data : *all_mortar_data) {

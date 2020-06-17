@@ -96,29 +96,23 @@ struct ComputeM1HydroCoupling<tmpl::list<NeutrinoSpecies...>> {
                  gr::Tags::SpatialMetric<3>, gr::Tags::SqrtDetSpatialMetric<>>;
 
   static void apply(
-      const gsl::not_null<db::const_item_type<
-          Tags::M1HydroCouplingNormal<NeutrinoSpecies>>*>... source_n,
-      const gsl::not_null<db::const_item_type<Tags::M1HydroCouplingSpatial<
-          Frame::Inertial, NeutrinoSpecies>>*>... source_i,
-      const db::const_item_type<
-          Tags::GreyEmissivity<NeutrinoSpecies>>&... emissivity,
-      const db::const_item_type<
-          Tags::GreyAbsorptionOpacity<NeutrinoSpecies>>&... absorption_opacity,
-      const db::const_item_type<
-          Tags::GreyScatteringOpacity<NeutrinoSpecies>>&... scattering_opacity,
-      const db::const_item_type<Tags::TildeJ<NeutrinoSpecies>>&... tilde_j,
-      const db::const_item_type<
-          Tags::TildeHNormal<NeutrinoSpecies>>&... tilde_hn,
-      const db::const_item_type<
-          Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>>&... tilde_hi,
-      const db::const_item_type<hydro::Tags::SpatialVelocity<DataVector, 3>>&
-          spatial_velocity,
-      const db::const_item_type<hydro::Tags::LorentzFactor<DataVector>>&
-          lorentz_factor,
-      const db::const_item_type<gr::Tags::Lapse<>>& lapse,
+      const gsl::not_null<typename Tags::M1HydroCouplingNormal<
+          NeutrinoSpecies>::type*>... source_n,
+      const gsl::not_null<typename Tags::M1HydroCouplingSpatial<
+          Frame::Inertial, NeutrinoSpecies>::type*>... source_i,
+      const typename Tags::GreyEmissivity<NeutrinoSpecies>::type&... emissivity,
+      const typename Tags::GreyAbsorptionOpacity<
+          NeutrinoSpecies>::type&... absorption_opacity,
+      const typename Tags::GreyScatteringOpacity<
+          NeutrinoSpecies>::type&... scattering_opacity,
+      const typename Tags::TildeJ<NeutrinoSpecies>::type&... tilde_j,
+      const typename Tags::TildeHNormal<NeutrinoSpecies>::type&... tilde_hn,
+      const typename Tags::TildeHSpatial<Frame::Inertial,
+                                         NeutrinoSpecies>::type&... tilde_hi,
+      const tnsr::I<DataVector, 3>& spatial_velocity,
+      const Scalar<DataVector>& lorentz_factor, const Scalar<DataVector>& lapse,
       const tnsr::ii<DataVector, 3>& spatial_metric,
-      const db::const_item_type<gr::Tags::SqrtDetSpatialMetric<>>&
-          sqrt_det_spatial_metric) noexcept {
+      const Scalar<DataVector>& sqrt_det_spatial_metric) noexcept {
     EXPAND_PACK_LEFT_TO_RIGHT(detail::compute_m1_hydro_coupling_impl(
         source_n, source_i, emissivity, absorption_opacity, scattering_opacity,
         tilde_j, tilde_hn, tilde_hi, spatial_velocity, lorentz_factor, lapse,

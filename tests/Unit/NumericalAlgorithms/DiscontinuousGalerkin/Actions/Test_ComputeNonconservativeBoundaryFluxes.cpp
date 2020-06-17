@@ -134,6 +134,7 @@ struct component {
 };
 
 struct Metavariables {
+  static constexpr size_t volume_dim = 2;
   using system = System;
   using component_list = tmpl::list<component<Metavariables>>;
   enum class Phase { Initialization, Testing, Exit };

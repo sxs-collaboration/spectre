@@ -13,7 +13,6 @@
 #include "ApparentHorizons/Tags.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
@@ -84,8 +83,7 @@ void test_radius_and_derivs() {
   CHECK_ITERABLE_APPROX(strahlkorper_radius, expected_radius);
 
   // Test derivative of radius
-  db::const_item_type<StrahlkorperTags::DxRadius<Frame::Inertial>>
-      expected_dx_radius(n_pts);
+  tnsr::i<DataVector, 3> expected_dx_radius(n_pts);
   for (size_t s = 0; s < n_pts; ++s) {
     // Analytic solution Mark Scheel computed in Mathematica
     const double theta = theta_phi[0][s];
@@ -111,8 +109,7 @@ void test_radius_and_derivs() {
   CHECK_ITERABLE_APPROX(strahlkorper_dx_radius, expected_dx_radius);
 
   // Test second derivatives.
-  db::const_item_type<StrahlkorperTags::D2xRadius<Frame::Inertial>>
-      expected_d2x_radius(n_pts);
+  tnsr::ii<DataVector, 3> expected_d2x_radius(n_pts);
   for (size_t s = 0; s < n_pts; ++s) {
     // Messy analytic solution Mark Scheel computed in Mathematica
     const double theta = theta_phi[0][s];
@@ -177,7 +174,7 @@ void test_normals() {
 
   // Test surface_tangents
 
-  db::const_item_type<StrahlkorperTags::Tangents<Frame::Inertial>>
+  StrahlkorperTags::aliases ::Jacobian<Frame::Inertial>
       expected_surface_tangents(n_pts);
   const double amp = -sqrt(3.0 / 8.0 / M_PI) * y11_amplitude;
 
@@ -212,8 +209,7 @@ void test_normals() {
   CHECK_ITERABLE_APPROX(surface_tangents, expected_surface_tangents);
 
   // Test surface_cartesian_coordinates
-  db::const_item_type<StrahlkorperTags::CartesianCoords<Frame::Inertial>>
-      expected_cart_coords(n_pts);
+  tnsr::I<DataVector, 3> expected_cart_coords(n_pts);
 
   {
     const DataVector temp = radius + amp * sin_phi * sin_theta;
@@ -226,8 +222,7 @@ void test_normals() {
   CHECK_ITERABLE_APPROX(expected_cart_coords, cart_coords);
 
   // Test surface_normal_one_form
-  db::const_item_type<StrahlkorperTags::NormalOneForm<Frame::Inertial>>
-      expected_normal_one_form(n_pts);
+  tnsr::i<DataVector, 3> expected_normal_one_form(n_pts);
   {
     const auto& r = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
     const DataVector one_over_r = 1.0 / r;

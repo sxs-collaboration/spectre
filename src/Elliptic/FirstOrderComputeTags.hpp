@@ -37,7 +37,7 @@ struct FirstOrderFluxesCompute
   using return_type = db::item_type<base>;
   template <typename... FluxesArgs>
   static void function(const gsl::not_null<return_type*> fluxes,
-                       const db::const_item_type<VariablesTag>& vars,
+                       const typename VariablesTag::type& vars,
                        const FluxesComputer& fluxes_computer,
                        const FluxesArgs&... fluxes_args) noexcept {
     *fluxes = return_type{vars.number_of_grid_points()};
@@ -58,7 +58,7 @@ struct FirstOrderSourcesCompute
   using return_type = db::item_type<base>;
   template <typename... SourcesArgs>
   static void function(const gsl::not_null<return_type*> sources,
-                       const db::const_item_type<VariablesTag>& vars,
+                       const typename VariablesTag::type& vars,
                        const SourcesArgs&... sources_args) noexcept {
     *sources = return_type{vars.number_of_grid_points()};
     elliptic::first_order_sources<PrimalVariables, AuxiliaryVariables,

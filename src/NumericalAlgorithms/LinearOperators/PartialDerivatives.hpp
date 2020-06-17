@@ -54,12 +54,11 @@ template <typename Tag, typename Dim, typename Frame, typename = std::nullptr_t>
 struct deriv;
 
 template <typename Tag, typename Dim, typename Frame>
-struct deriv<Tag, Dim, Frame,
-             Requires<tt::is_a_v<Tensor, db::const_item_type<Tag>>>>
+struct deriv<Tag, Dim, Frame, Requires<tt::is_a_v<Tensor, typename Tag::type>>>
     : db::PrefixTag, db::SimpleTag {
   using type =
-      TensorMetafunctions::prepend_spatial_index<db::const_item_type<Tag>,
-                                                 Dim::value, UpLo::Lo, Frame>;
+      TensorMetafunctions::prepend_spatial_index<typename Tag::type, Dim::value,
+                                                 UpLo::Lo, Frame>;
   using tag = Tag;
   static std::string name() noexcept {
     return "deriv(" + db::tag_name<Tag>() + ")";
@@ -67,9 +66,9 @@ struct deriv<Tag, Dim, Frame,
 };
 template <typename Tag, typename Dim, typename Frame>
 struct deriv<Tag, Dim, Frame,
-             Requires<tt::is_a_v<::Variables, db::const_item_type<Tag>>>>
+             Requires<tt::is_a_v<::Variables, typename Tag::type>>>
     : db::PrefixTag, db::SimpleTag {
-  using type = db::const_item_type<Tag>;
+  using type = typename Tag::type;
   using tag = Tag;
   static std::string name() noexcept {
     return "deriv(" + db::tag_name<Tag>() + ")";
@@ -92,10 +91,10 @@ struct spacetime_deriv;
 
 template <typename Tag, typename Dim, typename Frame>
 struct spacetime_deriv<Tag, Dim, Frame,
-                       Requires<tt::is_a_v<Tensor, db::const_item_type<Tag>>>>
+                       Requires<tt::is_a_v<Tensor, typename Tag::type>>>
     : db::PrefixTag, db::SimpleTag {
   using type =
-      TensorMetafunctions::prepend_spacetime_index<db::const_item_type<Tag>,
+      TensorMetafunctions::prepend_spacetime_index<typename Tag::type,
                                                    Dim::value, UpLo::Lo, Frame>;
   using tag = Tag;
   static std::string name() noexcept {
@@ -103,11 +102,10 @@ struct spacetime_deriv<Tag, Dim, Frame,
   }
 };
 template <typename Tag, typename Dim, typename Frame>
-struct spacetime_deriv<
-    Tag, Dim, Frame,
-    Requires<tt::is_a_v<::Variables, db::const_item_type<Tag>>>>
+struct spacetime_deriv<Tag, Dim, Frame,
+                       Requires<tt::is_a_v<::Variables, typename Tag::type>>>
     : db::PrefixTag, db::SimpleTag {
-  using type = db::const_item_type<Tag>;
+  using type = typename Tag::type;
   using tag = Tag;
   static std::string name() noexcept {
     return "spacetime_deriv(" + db::tag_name<Tag>() + ")";
@@ -198,36 +196,33 @@ namespace Tags {
  * DerivTags>` prefixed with `Tags::deriv`.
  */
 template <typename VariablesTag, typename InverseJacobianTag,
-          typename DerivTags =
-              typename db::const_item_type<VariablesTag>::tags_list>
+          typename DerivTags = typename VariablesTag::type::tags_list>
 struct DerivCompute
     : db::add_tag_prefix<
           deriv, db::variables_tag_with_tags_list<VariablesTag, DerivTags>,
-          tmpl::size_t<tmpl::back<typename db::const_item_type<
-              InverseJacobianTag>::index_list>::dim>,
-          typename tmpl::back<typename db::const_item_type<
-              InverseJacobianTag>::index_list>::Frame>,
+          tmpl::size_t<
+              tmpl::back<typename InverseJacobianTag::type::index_list>::dim>,
+          typename tmpl::back<
+              typename InverseJacobianTag::type::index_list>::Frame>,
       db::ComputeTag {
  private:
-  using inv_jac_indices =
-      typename db::const_item_type<InverseJacobianTag>::index_list;
+  using inv_jac_indices = typename InverseJacobianTag::type::index_list;
   static constexpr auto Dim = tmpl::back<inv_jac_indices>::dim;
   using deriv_frame = typename tmpl::back<inv_jac_indices>::Frame;
 
  public:
   using base = db::add_tag_prefix<
       deriv, db::variables_tag_with_tags_list<VariablesTag, DerivTags>,
-      tmpl::size_t<tmpl::back<
-          typename db::const_item_type<InverseJacobianTag>::index_list>::dim>,
+      tmpl::size_t<
+          tmpl::back<typename InverseJacobianTag::type::index_list>::dim>,
       typename tmpl::back<
-          typename db::const_item_type<InverseJacobianTag>::index_list>::Frame>;
+          typename InverseJacobianTag::type::index_list>::Frame>;
   using return_type = typename base::type;
   static constexpr void (*function)(
       gsl::not_null<return_type*>, const typename VariablesTag::type&,
       const Mesh<Dim>&,
       const InverseJacobian<DataVector, Dim, Frame::Logical, deriv_frame>&) =
-      partial_derivatives<DerivTags,
-                          typename db::const_item_type<VariablesTag>::tags_list,
+      partial_derivatives<DerivTags, typename VariablesTag::type::tags_list,
                           Dim, deriv_frame>;
   using argument_tags =
       tmpl::list<VariablesTag, domain::Tags::Mesh<Dim>, InverseJacobianTag>;

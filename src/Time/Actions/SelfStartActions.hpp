@@ -103,11 +103,8 @@ namespace Tags {
 /// tuple to avoid putting duplicate tensors into the DataBox.
 template <typename Tag>
 struct InitialValue : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
-    return "InitialValue(" + db::tag_name<Tag>() + ")";
-  }
   using tag = Tag;
-  using type = std::tuple<db::const_item_type<Tag>>;
+  using type = std::tuple<typename Tag::type>;
 };
 }  // namespace Tags
 
@@ -303,11 +300,10 @@ struct CheckForOrderIncrease {
     if (done_with_order) {
       db::mutate<::Tags::Next<::Tags::TimeStepId>>(
           make_not_null(&box),
-          [
-          ](const gsl::not_null<
-                db::item_type<::Tags::Next<::Tags::TimeStepId>>*> next_time_id,
-            const db::const_item_type<::Tags::TimeStepId>&
-                current_time_id) noexcept {
+          [](const gsl::not_null<
+                 db::item_type<::Tags::Next<::Tags::TimeStepId>>*>
+                 next_time_id,
+             const ::TimeStepId& current_time_id) noexcept {
             const Slab slab = current_time_id.step_time().slab();
             *next_time_id =
                 TimeStepId(current_time_id.time_runs_forward(),
@@ -370,8 +366,7 @@ struct StartNextOrderIfReady {
         db::mutate<Tag>(
             make_not_null(&box),
             [](const gsl::not_null<db::item_type<Tag>*> value,
-               const db::const_item_type<Tags::InitialValue<Tag>>&
-                   initial_value) noexcept {
+               const std::tuple<typename Tag::type>& initial_value) noexcept {
               *value = get<0>(initial_value);
             },
             db::get<Tags::InitialValue<Tag>>(box));
@@ -421,7 +416,7 @@ struct Cleanup {
     db::mutate<::Tags::TimeStep>(
         make_not_null(&box),
         [](const gsl::not_null<db::item_type<::Tags::TimeStep>*> time_step,
-           const db::const_item_type<initial_step_tag>& initial_step) noexcept {
+           const std::tuple<::TimeDelta>& initial_step) noexcept {
           *time_step = get<0>(initial_step);
         },
         db::get<initial_step_tag>(box));

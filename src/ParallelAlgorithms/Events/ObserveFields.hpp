@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -164,15 +163,15 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
 
   template <typename Metavariables, typename ParallelComponent>
   void operator()(
-      const db::const_item_type<ObservationValueTag>& observation_value,
+      const typename ObservationValueTag::type& observation_value,
       const Mesh<VolumeDim>& mesh,
       const tnsr::I<DataVector, VolumeDim, Frame::Inertial>&
           inertial_coordinates,
-      const db::const_item_type<
-          AnalyticSolutionTensors>&... analytic_solution_tensors,
-      const db::const_item_type<
-          ::Tags::Analytic<AnalyticSolutionTensors>>&... analytic_solutions,
-      const db::const_item_type<NonSolutionTensors>&... non_solution_tensors,
+      const typename AnalyticSolutionTensors::
+          type&... analytic_solution_tensors,
+      const typename ::Tags::Analytic<
+          AnalyticSolutionTensors>::type&... analytic_solutions,
+      const typename NonSolutionTensors::type&... non_solution_tensors,
       Parallel::ConstGlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
       const ParallelComponent* const /*meta*/) const noexcept {
@@ -187,8 +186,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     components.reserve(alg::accumulate(
         std::initializer_list<size_t>{
             inertial_coordinates.size(),
-            2 * db::const_item_type<AnalyticSolutionTensors>::size()...,
-            db::const_item_type<NonSolutionTensors>::size()...},
+            2 * AnalyticSolutionTensors::type::size()...,
+            NonSolutionTensors::type::size()...},
         0_st));
 
     const auto record_tensor_components = [ this, &components, &element_name ](

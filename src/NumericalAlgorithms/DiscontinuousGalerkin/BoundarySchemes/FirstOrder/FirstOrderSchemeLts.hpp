@@ -28,8 +28,7 @@ namespace detail {
 
 template <size_t Dim, typename VariablesTag, typename NumericalFluxComputerTag,
           typename BoundaryData,
-          typename NumericalFlux =
-              db::const_item_type<NumericalFluxComputerTag>,
+          typename NumericalFlux = typename NumericalFluxComputerTag::type,
           typename ArgsTagsList = typename NumericalFlux::argument_tags>
 struct boundary_data_computer_lts_impl;
 
@@ -46,11 +45,10 @@ struct boundary_data_computer_lts_impl<Dim, VariablesTag,
                                    magnitude_of_face_normal_tag, ArgsTags...>;
   using volume_tags = tmpl::append<tmpl::list<NumericalFluxComputerTag>,
                                    get_volume_tags<NumericalFlux>>;
-  static auto apply(
-      const NumericalFlux& numerical_flux_computer,
-      const db::const_item_type<n_dot_fluxes_tag>& normal_dot_fluxes,
-      const Scalar<DataVector>& face_normal_magnitude,
-      const db::const_item_type<ArgsTags>&... args) noexcept {
+  static auto apply(const NumericalFlux& numerical_flux_computer,
+                    const typename n_dot_fluxes_tag::type& normal_dot_fluxes,
+                    const Scalar<DataVector>& face_normal_magnitude,
+                    const typename ArgsTags::type&... args) noexcept {
     BoundaryData boundary_data{normal_dot_fluxes.number_of_grid_points()};
     boundary_data.field_data.assign_subset(normal_dot_fluxes);
     dg::NumericalFluxes::package_data(make_not_null(&boundary_data),
@@ -87,7 +85,7 @@ struct FirstOrderSchemeLts {
   static constexpr size_t volume_dim = Dim;
   using variables_tag = VariablesTag;
   using numerical_flux_computer_tag = NumericalFluxComputerTag;
-  using NumericalFlux = db::const_item_type<NumericalFluxComputerTag>;
+  using NumericalFlux = typename NumericalFluxComputerTag::type;
   using temporal_id_tag = TemporalIdTag;
   using receive_temporal_id_tag = ::Tags::Next<temporal_id_tag>;
   using time_stepper_tag = TimeStepperTag;
@@ -101,9 +99,8 @@ struct FirstOrderSchemeLts {
   using boundary_data_computer = detail::boundary_data_computer_lts_impl<
       volume_dim, variables_tag, numerical_flux_computer_tag, BoundaryData>;
 
-  using mortar_data_tag =
-      Tags::BoundaryHistory<BoundaryData, BoundaryData,
-                            db::const_item_type<variables_tag>>;
+  using mortar_data_tag = Tags::BoundaryHistory<BoundaryData, BoundaryData,
+                                                typename variables_tag::type>;
 
   using return_tags =
       tmpl::list<variables_tag, ::Tags::Mortars<mortar_data_tag, Dim>>;
@@ -118,13 +115,13 @@ struct FirstOrderSchemeLts {
       const gsl::not_null<db::item_type<::Tags::Mortars<mortar_data_tag, Dim>>*>
           all_mortar_data,
       const Mesh<Dim>& volume_mesh,
-      const db::const_item_type<
-          ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>>& mortar_meshes,
-      const db::const_item_type<
-          ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>& mortar_sizes,
+      const typename ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>::type&
+          mortar_meshes,
+      const typename ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>::type&
+          mortar_sizes,
       const NumericalFlux& normal_dot_numerical_flux_computer,
-      const db::const_item_type<time_stepper_tag>& time_stepper,
-      const db::const_item_type<Tags::TimeStep>& time_step) noexcept {
+      const typename time_stepper_tag::type::element_type& time_stepper,
+      const TimeDelta& time_step) noexcept {
     // Iterate over all mortars
     for (auto& mortar_id_and_data : *all_mortar_data) {
       // Retrieve mortar data

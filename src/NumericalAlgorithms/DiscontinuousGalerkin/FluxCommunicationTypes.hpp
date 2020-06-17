@@ -51,9 +51,9 @@ struct FluxCommunicationTypes {
 
   /// The type of the local data stored on the mortar.  Contains the
   /// packaged data and the local flux.
-  using LocalMortarData = Variables<tmpl::remove_duplicates<tmpl::append<
-      typename db::const_item_type<normal_dot_fluxes_tag>::tags_list,
-      typename PackagedData::tags_list>>>;
+  using LocalMortarData = Variables<tmpl::remove_duplicates<
+      tmpl::append<typename normal_dot_fluxes_tag::type::tags_list,
+                   typename PackagedData::tags_list>>>;
 
   /// The type of the data needed for the local part of the flux
   /// numerical flux computations.  Contains the PackagedData, the
@@ -78,26 +78,23 @@ struct FluxCommunicationTypes {
  public:
   /// The DataBox tag for the data stored on the mortars for global
   /// stepping.
-  using simple_mortar_data_tag =
-      BasedMortars<domain::Tags::VariablesBoundaryData,
-                   Tags::SimpleMortarData<
-                       db::const_item_type<typename Metavariables::temporal_id>,
-                       LocalData, PackagedData>,
-                   volume_dim>;
+  using simple_mortar_data_tag = BasedMortars<
+      domain::Tags::VariablesBoundaryData,
+      Tags::SimpleMortarData<typename Metavariables::temporal_id::type,
+                             LocalData, PackagedData>,
+      volume_dim>;
 
   /// The DataBox tag for the data stored on the mortars for local
   /// stepping.
   using local_time_stepping_mortar_data_tag =
       BasedMortars<domain::Tags::VariablesBoundaryData,
-                   Tags::BoundaryHistory<
-                       LocalData, PackagedData,
-                       db::const_item_type<typename system::variables_tag>>,
+                   Tags::BoundaryHistory<LocalData, PackagedData,
+                                         typename system::variables_tag::type>,
                    volume_dim>;
 
   /// The inbox tag for flux communication.
   struct FluxesTag : public Parallel::InboxInserters::Map<FluxesTag> {
-    using temporal_id =
-        db::const_item_type<typename Metavariables::temporal_id>;
+    using temporal_id = typename Metavariables::temporal_id::type;
     using type = std::map<
         temporal_id,
         FixedHashMap<maximum_number_of_neighbors(volume_dim),

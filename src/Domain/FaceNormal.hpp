@@ -177,12 +177,10 @@ struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
   }
   using return_type = std::unordered_map<::Direction<VolumeDim>,
                                          tnsr::i<DataVector, VolumeDim, Frame>>;
-  static void function(
-      const gsl::not_null<return_type*> normals,
-      const db::const_item_type<Tags::Interface<dirs, Mesh<VolumeDim - 1>>>&
-          meshes,
-      const db::const_item_type<Tags::ElementMap<VolumeDim, Frame>>&
-          map) noexcept {
+  static void function(const gsl::not_null<return_type*> normals,
+                       const std::unordered_map<::Direction<VolumeDim>,
+                                                ::Mesh<VolumeDim - 1>>& meshes,
+                       const ::ElementMap<VolumeDim, Frame>& map) noexcept {
     for (const auto& direction_and_mesh : meshes) {
       const auto& direction = direction_and_mesh.first;
       const auto& mesh = direction_and_mesh.second;
@@ -216,7 +214,7 @@ struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
                          tnsr::i<DataVector, VolumeDim, Frame::Inertial>>;
   static void function(
       const gsl::not_null<return_type*> normals,
-      const db::const_item_type<Tags::Interface<dirs, Mesh<VolumeDim - 1>>>&
+      const std::unordered_map<::Direction<VolumeDim>, ::Mesh<VolumeDim - 1>>&
           meshes,
       const ::ElementMap<VolumeDim, Frame::Grid>& logical_to_grid_map,
       const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>&

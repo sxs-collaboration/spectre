@@ -47,24 +47,23 @@ struct div;
 
 /// \cond
 template <typename Tag>
-struct div<Tag, Requires<tt::is_a_v<Tensor, db::const_item_type<Tag>>>>
+struct div<Tag, Requires<tt::is_a_v<Tensor, typename Tag::type>>>
     : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept {
     return "div(" + db::tag_name<Tag>() + ")";
   }
   using tag = Tag;
-  using type =
-      TensorMetafunctions::remove_first_index<db::const_item_type<Tag>>;
+  using type = TensorMetafunctions::remove_first_index<typename Tag::type>;
 };
 
 template <typename Tag>
-struct div<Tag, Requires<tt::is_a_v<::Variables, db::const_item_type<Tag>>>>
+struct div<Tag, Requires<tt::is_a_v<::Variables, typename Tag::type>>>
     : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept {
     return "div(" + db::tag_name<Tag>() + ")";
   }
   using tag = Tag;
-  using type = db::const_item_type<Tag>;
+  using type = typename Tag::type;
 };
 /// \endcond
 }  // namespace Tags
@@ -134,8 +133,7 @@ namespace Tags {
 template <typename Tag, typename InverseJacobianTag>
 struct DivVariablesCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
  private:
-  using inv_jac_indices =
-      typename db::const_item_type<InverseJacobianTag>::index_list;
+  using inv_jac_indices = typename InverseJacobianTag::type::index_list;
   static constexpr auto dim = tmpl::back<inv_jac_indices>::dim;
   static_assert(std::is_same_v<typename tmpl::front<inv_jac_indices>::Frame,
                                Frame::Logical>,
@@ -147,7 +145,7 @@ struct DivVariablesCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
   static constexpr void (*function)(const gsl::not_null<return_type*>,
                                     const typename Tag::type&, const Mesh<dim>&,
                                     const typename InverseJacobianTag::type&) =
-      divergence<typename db::const_item_type<Tag>::tags_list, dim,
+      divergence<typename Tag::type::tags_list, dim,
                  typename tmpl::back<inv_jac_indices>::Frame>;
   using argument_tags =
       tmpl::list<Tag, domain::Tags::Mesh<dim>, InverseJacobianTag>;
@@ -160,8 +158,7 @@ struct DivVariablesCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
 template <typename Tag, typename InverseJacobianTag>
 struct DivVectorCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
  private:
-  using inv_jac_indices =
-      typename db::const_item_type<InverseJacobianTag>::index_list;
+  using inv_jac_indices = typename InverseJacobianTag::type::index_list;
   static constexpr auto dim = tmpl::back<inv_jac_indices>::dim;
   static_assert(std::is_same_v<typename tmpl::front<inv_jac_indices>::Frame,
                                Frame::Logical>,

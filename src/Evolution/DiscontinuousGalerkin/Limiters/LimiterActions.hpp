@@ -30,7 +30,7 @@ struct LimiterCommunicationTag : public Parallel::InboxInserters::Map<
                                      LimiterCommunicationTag<Metavariables>> {
   static constexpr size_t volume_dim = Metavariables::system::volume_dim;
   using packaged_data_t = typename Metavariables::limiter::type::PackagedData;
-  using temporal_id = db::const_item_type<typename Metavariables::temporal_id>;
+  using temporal_id = typename Metavariables::temporal_id::type;
   using type =
       std::map<temporal_id,
                std::unordered_map<

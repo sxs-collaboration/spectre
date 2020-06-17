@@ -93,6 +93,7 @@ struct ComponentWithTemplateSpecifiedVariables {
 
 struct Metavariables {
   using system = System;
+  using time_stepper_tag = Tags::TimeStepper<TimeStepper>;
   using component_list =
       tmpl::list<Component<Metavariables>,
                  ComponentWithTemplateSpecifiedVariables<Metavariables>>;
@@ -162,7 +163,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
 
     runner.next_action<component>(0);
     runner.next_action<component_with_template_specified_variables>(0);
-    auto& box = ActionTesting::get_databox<component, simple_tags>(runner, 0);
+    const auto& box =
+        ActionTesting::get_databox<component, simple_tags>(runner, 0);
     auto& alternative_box = ActionTesting::get_databox<
         component_with_template_specified_variables,
         typename component_with_template_specified_variables::simple_tags>(

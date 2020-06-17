@@ -73,18 +73,18 @@ struct ComputeFluxes {
                  gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>>;
 
   static void apply(
-      const gsl::not_null<db::const_item_type<
-          ::Tags::Flux<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>,
-                       tmpl::size_t<3>, Frame::Inertial>>*>... tilde_e_flux,
-      const gsl::not_null<db::const_item_type<
-          ::Tags::Flux<Tags::TildeS<Frame::Inertial, NeutrinoSpecies>,
-                       tmpl::size_t<3>, Frame::Inertial>>*>... tilde_s_flux,
-      const db::const_item_type<
-          Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>&... tilde_e,
-      const db::const_item_type<
-          Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>&... tilde_s,
-      const db::const_item_type<
-          Tags::TildeP<Frame::Inertial, NeutrinoSpecies>>&... tilde_p,
+      const gsl::not_null<typename ::Tags::Flux<
+          Tags::TildeE<Frame::Inertial, NeutrinoSpecies>, tmpl::size_t<3>,
+          Frame::Inertial>::type*>... tilde_e_flux,
+      const gsl::not_null<typename ::Tags::Flux<
+          Tags::TildeS<Frame::Inertial, NeutrinoSpecies>, tmpl::size_t<3>,
+          Frame::Inertial>::type*>... tilde_s_flux,
+      const typename Tags::TildeE<Frame::Inertial,
+                                  NeutrinoSpecies>::type&... tilde_e,
+      const typename Tags::TildeS<Frame::Inertial,
+                                  NeutrinoSpecies>::type&... tilde_s,
+      const typename Tags::TildeP<Frame::Inertial,
+                                  NeutrinoSpecies>::type&... tilde_p,
       const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,

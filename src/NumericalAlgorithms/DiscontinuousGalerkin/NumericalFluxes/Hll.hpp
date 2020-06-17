@@ -101,10 +101,9 @@ struct Hll : tt::ConformsTo<dg::protocols::NumericalFlux> {
         const gsl::not_null<Scalar<DataVector>*> packaged_largest_ingoing_speed,
         const gsl::not_null<Scalar<DataVector>*>
             packaged_largest_outgoing_speed,
-        const db::const_item_type<NormalDotFluxTags>&... n_dot_f_to_package,
-        const db::const_item_type<VariablesTags>&... u_to_package,
-        const db::const_item_type<char_speeds_tag>&
-            characteristic_speeds) noexcept {
+        const typename NormalDotFluxTags::type&... n_dot_f_to_package,
+        const typename VariablesTags::type&... u_to_package,
+        const typename char_speeds_tag::type& characteristic_speeds) noexcept {
       expand_pack((*packaged_u = u_to_package)...);
       expand_pack((*packaged_n_dot_f = n_dot_f_to_package)...);
 
@@ -147,27 +146,22 @@ struct Hll : tt::ConformsTo<dg::protocols::NumericalFlux> {
     static void function(
         const gsl::not_null<
             db::item_type<NormalDotNumericalFluxTags>*>... n_dot_numerical_f,
-        const db::const_item_type<NormalDotFluxTags>&... n_dot_f_interior,
-        const db::const_item_type<VariablesTags>&... u_interior,
-        const db::const_item_type<LargestIngoingSpeed>&
-            largest_ingoing_speed_interior,
-        const db::const_item_type<LargestOutgoingSpeed>&
+        const typename NormalDotFluxTags::type&... n_dot_f_interior,
+        const typename VariablesTags::type&... u_interior,
+        const Scalar<DataVector>& largest_ingoing_speed_interior,
+        const typename LargestOutgoingSpeed::type&
             largest_outgoing_speed_interior,
-        const db::const_item_type<NormalDotFluxTags>&... minus_n_dot_f_exterior,
-        const db::const_item_type<VariablesTags>&... u_exterior,
+        const typename NormalDotFluxTags::type&... minus_n_dot_f_exterior,
+        const typename VariablesTags::type&... u_exterior,
         // names are inverted w.r.t. interior data. See package_data()
-        const db::const_item_type<LargestIngoingSpeed>&
+        const typename LargestIngoingSpeed::type&
             minus_largest_outgoing_speed_exterior,
-        const db::const_item_type<LargestOutgoingSpeed>&
+        const typename LargestOutgoingSpeed::type&
             minus_largest_ingoing_speed_exterior) noexcept {
-      auto largest_ingoing_speed =
-          make_with_value<db::const_item_type<LargestIngoingSpeed>>(
-              largest_ingoing_speed_interior,
-              std::numeric_limits<double>::signaling_NaN());
-      auto largest_outgoing_speed =
-          make_with_value<db::const_item_type<LargestOutgoingSpeed>>(
-              largest_outgoing_speed_interior,
-              std::numeric_limits<double>::signaling_NaN());
+      const auto number_of_grid_points =
+          get(largest_ingoing_speed_interior).size();
+      auto largest_ingoing_speed = Scalar<DataVector>{number_of_grid_points};
+      auto largest_outgoing_speed = Scalar<DataVector>{number_of_grid_points};
       for (size_t s = 0; s < largest_ingoing_speed.begin()->size(); ++s) {
         get(largest_ingoing_speed)[s] =
             std::min({get(largest_ingoing_speed_interior)[s],

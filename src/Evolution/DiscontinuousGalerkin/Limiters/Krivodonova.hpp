@@ -504,7 +504,7 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
 
   /// \brief Package data for sending to neighbor elements.
   void package_data(gsl::not_null<PackagedData*> packaged_data,
-                    const db::const_item_type<Tags>&... tensors,
+                    const typename Tags::type&... tensors,
                     const Mesh<VolumeDim>& mesh,
                     const OrientationMap<VolumeDim>& orientation_map) const
       noexcept;
@@ -551,7 +551,7 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
   char fill_variables_tag_with_spectral_coeffs(
       gsl::not_null<Variables<tmpl::list<::Tags::Modal<Tags>...>>*>
           modal_coeffs,
-      const db::const_item_type<Tag>& nodal_tensor, const Mesh<Dim>& mesh) const
+      const typename Tag::type& nodal_tensor, const Mesh<Dim>& mesh) const
       noexcept;
 
   std::array<double,
@@ -582,7 +582,7 @@ Krivodonova<VolumeDim, tmpl::list<Tags...>>::Krivodonova(
 template <size_t VolumeDim, typename... Tags>
 void Krivodonova<VolumeDim, tmpl::list<Tags...>>::package_data(
     const gsl::not_null<PackagedData*> packaged_data,
-    const db::const_item_type<Tags>&... tensors, const Mesh<VolumeDim>& mesh,
+    const typename Tags::type&... tensors, const Mesh<VolumeDim>& mesh,
     const OrientationMap<VolumeDim>& orientation_map) const noexcept {
   if (UNLIKELY(disable_for_debugging_)) {
     // Do not initialize packaged_data
@@ -966,8 +966,8 @@ char Krivodonova<VolumeDim, tmpl::list<Tags...>>::
     fill_variables_tag_with_spectral_coeffs(
         const gsl::not_null<Variables<tmpl::list<::Tags::Modal<Tags>...>>*>
             modal_coeffs,
-        const db::const_item_type<Tag>& nodal_tensor,
-        const Mesh<Dim>& mesh) const noexcept {
+        const typename Tag::type& nodal_tensor, const Mesh<Dim>& mesh) const
+    noexcept {
   auto& coeffs_tensor = get<::Tags::Modal<Tag>>(*modal_coeffs);
   auto tensor_it = nodal_tensor.begin();
   for (auto coeffs_it = coeffs_tensor.begin(); coeffs_it != coeffs_tensor.end();

@@ -179,7 +179,7 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
 
   /// \brief Package data for sending to neighbor elements
   void package_data(gsl::not_null<PackagedData*> packaged_data,
-                    const db::const_item_type<Tags>&... tensors,
+                    const typename Tags::type&... tensors,
                     const Mesh<VolumeDim>& mesh,
                     const std::array<double, VolumeDim>& element_size,
                     const OrientationMap<VolumeDim>& orientation_map) const
@@ -234,7 +234,7 @@ void Weno<VolumeDim, tmpl::list<Tags...>>::pup(PUP::er& p) noexcept {
 template <size_t VolumeDim, typename... Tags>
 void Weno<VolumeDim, tmpl::list<Tags...>>::package_data(
     const gsl::not_null<PackagedData*> packaged_data,
-    const db::const_item_type<Tags>&... tensors, const Mesh<VolumeDim>& mesh,
+    const typename Tags::type&... tensors, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
     const OrientationMap<VolumeDim>& orientation_map) const noexcept {
   // By always initializing the PackagedData Variables member, we avoid an
