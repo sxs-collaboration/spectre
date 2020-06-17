@@ -42,7 +42,8 @@ auto lift_flux(Variables<tmpl::list<FluxTags...>> flux,
                Scalar<DataVector> magnitude_of_face_normal) noexcept
     -> Variables<tmpl::list<db::remove_tag_prefix<FluxTags>...>> {
   auto lift_factor = std::move(get(magnitude_of_face_normal));
-  // The LGL weights are:
+  // For an Nth degree basis (i.e., one with N+1 basis functions), the LGL
+  // weights are:
   //   w_i = 2 / ((N + 1) * N * (P_{N}(xi_i))^2)
   // and so at the end points (xi = +/- 1) we get:
   //   w_0 = 2 / ((N + 1) * N)
