@@ -9,6 +9,7 @@
 #include <boost/functional/hash.hpp>
 #include <cstdlib>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <pup.h>
 #include <type_traits>
@@ -76,7 +77,7 @@ bool limit_one_tensor(
         compute_effective_neighbor_means<Tag>(i, element, neighbor_data);
 
     DataVector& u = (*tensor)[i];
-    double u_mean;
+    double u_mean = std::numeric_limits<double>::signaling_NaN();
     std::array<double, VolumeDim> u_limited_slopes{};
     const bool reduce_slopes = minmod_limited_slopes(
         u_lin_buffer, buffer, make_not_null(&u_mean),
