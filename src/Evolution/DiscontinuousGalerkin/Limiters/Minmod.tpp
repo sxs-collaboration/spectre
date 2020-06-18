@@ -126,8 +126,8 @@ void Minmod<VolumeDim, tmpl::list<Tags...>>::package_data(
     return;
   }
 
-  const auto wrap_compute_means =
-      [&mesh, &packaged_data ](auto tag, const auto tensor) noexcept {
+  const auto wrap_compute_means = [&mesh, &packaged_data](
+                                      auto tag, const auto tensor) noexcept {
     for (size_t i = 0; i < tensor.size(); ++i) {
       // Compute the mean using the local orientation of the tensor and mesh:
       // this avoids the work of reorienting the tensor while giving the same
@@ -161,10 +161,10 @@ bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
   Minmod_detail::BufferWrapper<VolumeDim> buffer(mesh);
 
   bool limiter_activated = false;
-  const auto wrap_limit_one_tensor = [
-    this, &limiter_activated, &element, &mesh, &logical_coords, &element_size,
-    &neighbor_data, &u_lin_buffer, &buffer
-  ](auto tag, const auto tensor) noexcept {
+  const auto wrap_limit_one_tensor = [this, &limiter_activated, &element, &mesh,
+                                      &logical_coords, &element_size,
+                                      &neighbor_data, &u_lin_buffer, &buffer](
+                                         auto tag, const auto tensor) noexcept {
     limiter_activated =
         Minmod_detail::limit_one_tensor<VolumeDim, decltype(tag)>(
             &u_lin_buffer, &buffer, tensor, minmod_type_, tvb_constant_, mesh,

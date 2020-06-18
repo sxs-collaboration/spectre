@@ -68,16 +68,16 @@ std::unordered_map<
 make_neighbor_data_from_neighbor_vars(
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const VariablesMap<VolumeDim>& neighbor_vars) noexcept {
-  const auto make_tuple_of_means = [&mesh](
-      const Variables<tmpl::list<VectorTag<VolumeDim>>>&
-          vars_to_average) noexcept {
-    tuples::TaggedTuple<::Tags::Mean<VectorTag<VolumeDim>>> result;
-    for (size_t d = 0; d < VolumeDim; ++d) {
-      get<::Tags::Mean<VectorTag<VolumeDim>>>(result).get(d) =
-          mean_value(get<VectorTag<VolumeDim>>(vars_to_average).get(d), mesh);
-    }
-    return result;
-  };
+  const auto make_tuple_of_means =
+      [&mesh](const Variables<tmpl::list<VectorTag<VolumeDim>>>&
+                  vars_to_average) noexcept {
+        tuples::TaggedTuple<::Tags::Mean<VectorTag<VolumeDim>>> result;
+        for (size_t d = 0; d < VolumeDim; ++d) {
+          get<::Tags::Mean<VectorTag<VolumeDim>>>(result).get(d) = mean_value(
+              get<VectorTag<VolumeDim>>(vars_to_average).get(d), mesh);
+        }
+        return result;
+      };
 
   std::unordered_map<
       std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
@@ -150,14 +150,13 @@ void test_simple_weno_work(
   }
 
   // WENO should preserve the mean, so expected means = initial means
-  const auto expected_vector_means = [&local_data, &mesh ]() noexcept {
+  const auto expected_vector_means = [&local_data, &mesh]() noexcept {
     std::array<double, VolumeDim> means{};
     for (size_t d = 0; d < VolumeDim; ++d) {
       gsl::at(means, d) = mean_value(local_data.get(d), mesh);
     }
     return means;
-  }
-  ();
+  }();
 
   auto vector_to_limit = local_data;
   const double neighbor_linear_weight = 0.001;
@@ -205,52 +204,53 @@ void test_simple_weno_1d(const std::unordered_set<Direction<1>>&
   // Functions to produce dummy data on each element
   const auto make_center_tensor =
       [](const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
-    const auto& x = get<0>(coords);
-    return tnsr::I<DataVector, 1>{{{0.4 * x - 0.1 * square(x)}}};
-  };
+        const auto& x = get<0>(coords);
+        return tnsr::I<DataVector, 1>{{{0.4 * x - 0.1 * square(x)}}};
+      };
   const auto make_lower_xi_vars =
       [](const tnsr::I<DataVector, 1, Frame::Logical>& coords,
          const double offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + offset;
-    Variables<tmpl::list<VectorTag<1>>> vars(x.size());
-    get<0>(get<VectorTag<1>>(vars)) = -0.1 + 0.3 * x - 0.1 * square(x);
-    return vars;
-  };
+        const auto x = get<0>(coords) + offset;
+        Variables<tmpl::list<VectorTag<1>>> vars(x.size());
+        get<0>(get<VectorTag<1>>(vars)) = -0.1 + 0.3 * x - 0.1 * square(x);
+        return vars;
+      };
   const auto make_upper_xi_vars =
       [](const tnsr::I<DataVector, 1, Frame::Logical>& coords,
          const double offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + offset;
-    Variables<tmpl::list<VectorTag<1>>> vars(x.size());
-    get<0>(get<VectorTag<1>>(vars)) = 0.6 * x - 0.3 * square(x);
-    return vars;
-  };
+        const auto x = get<0>(coords) + offset;
+        Variables<tmpl::list<VectorTag<1>>> vars(x.size());
+        get<0>(get<VectorTag<1>>(vars)) = 0.6 * x - 0.3 * square(x);
+        return vars;
+      };
 
   const auto local_data = make_center_tensor(logical_coords);
   VariablesMap<1> neighbor_vars{};
   VariablesMap<1> neighbor_modified_vars{};
 
-  const auto shift_vars_to_local_means = [&mesh, &local_data ](
-      const Variables<tmpl::list<VectorTag<1>>>& input) noexcept {
-    auto result = input;
-    auto& v = get<VectorTag<1>>(result);
-    get<0>(v) +=
-        mean_value(get<0>(local_data), mesh) - mean_value(get<0>(v), mesh);
-    return result;
-  };
+  const auto shift_vars_to_local_means =
+      [&mesh,
+       &local_data](const Variables<tmpl::list<VectorTag<1>>>& input) noexcept {
+        auto result = input;
+        auto& v = get<VectorTag<1>>(result);
+        get<0>(v) +=
+            mean_value(get<0>(local_data), mesh) - mean_value(get<0>(v), mesh);
+        return result;
+      };
 
   const auto make_neighbor_vars =
-      [
-        &logical_coords, &directions_of_external_boundaries, &neighbor_vars,
-        &neighbor_modified_vars, &shift_vars_to_local_means
-      ](const std::pair<Direction<1>, ElementId<1>>& neighbor,
-        const auto make_vars) noexcept {
-    if (directions_of_external_boundaries.count(neighbor.first) == 0) {
-      const double offset = (neighbor.first.side() == Side::Lower ? -2.0 : 2.0);
-      neighbor_vars[neighbor] = make_vars(logical_coords, offset);
-      neighbor_modified_vars[neighbor] =
-          shift_vars_to_local_means(make_vars(logical_coords));
-    }
-  };
+      [&logical_coords, &directions_of_external_boundaries, &neighbor_vars,
+       &neighbor_modified_vars, &shift_vars_to_local_means](
+          const std::pair<Direction<1>, ElementId<1>>& neighbor,
+          const auto make_vars) noexcept {
+        if (directions_of_external_boundaries.count(neighbor.first) == 0) {
+          const double offset =
+              (neighbor.first.side() == Side::Lower ? -2.0 : 2.0);
+          neighbor_vars[neighbor] = make_vars(logical_coords, offset);
+          neighbor_modified_vars[neighbor] =
+              shift_vars_to_local_means(make_vars(logical_coords));
+        }
+      };
 
   make_neighbor_vars(std::make_pair(Direction<1>::lower_xi(), ElementId<1>(1)),
                      make_lower_xi_vars);
@@ -277,80 +277,82 @@ void test_simple_weno_2d(const std::unordered_set<Direction<2>>&
 
   const auto make_center_tensor =
       [](const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
-    const auto& x = get<0>(coords);
-    const auto& y = get<1>(coords);
-    return tnsr::I<DataVector, 2>{
-        {{x + 2.5 * y, 0.1 + 0.2 * x - 0.4 * y + 0.3 * square(x) * square(y)}}};
-  };
+        const auto& x = get<0>(coords);
+        const auto& y = get<1>(coords);
+        return tnsr::I<DataVector, 2>{
+            {{x + 2.5 * y,
+              0.1 + 0.2 * x - 0.4 * y + 0.3 * square(x) * square(y)}}};
+      };
   const auto make_lower_xi_vars =
       [](const tnsr::I<DataVector, 2, Frame::Logical>& coords,
          const double xi_offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + xi_offset;
-    const auto& y = get<1>(coords);
-    Variables<tmpl::list<VectorTag<2>>> vars(x.size());
-    get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
-    get<1>(get<VectorTag<2>>(vars)) = 3.0 + 0.2 * y;
-    return vars;
-  };
+        const auto x = get<0>(coords) + xi_offset;
+        const auto& y = get<1>(coords);
+        Variables<tmpl::list<VectorTag<2>>> vars(x.size());
+        get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
+        get<1>(get<VectorTag<2>>(vars)) = 3.0 + 0.2 * y;
+        return vars;
+      };
   const auto make_upper_xi_vars =
       [](const tnsr::I<DataVector, 2, Frame::Logical>& coords,
          const double xi_offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + xi_offset;
-    const auto& y = get<1>(coords);
-    Variables<tmpl::list<VectorTag<2>>> vars(x.size());
-    get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
-    get<1>(get<VectorTag<2>>(vars)) = -2.4 + square(x);
-    return vars;
-  };
+        const auto x = get<0>(coords) + xi_offset;
+        const auto& y = get<1>(coords);
+        Variables<tmpl::list<VectorTag<2>>> vars(x.size());
+        get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
+        get<1>(get<VectorTag<2>>(vars)) = -2.4 + square(x);
+        return vars;
+      };
   const auto make_lower_eta_vars =
       [](const tnsr::I<DataVector, 2, Frame::Logical>& coords,
          const double eta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto y = get<1>(coords) + eta_offset;
-    Variables<tmpl::list<VectorTag<2>>> vars(x.size());
-    get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
-    get<1>(get<VectorTag<2>>(vars)) = 0.2 - y;
-    return vars;
-  };
+        const auto& x = get<0>(coords);
+        const auto y = get<1>(coords) + eta_offset;
+        Variables<tmpl::list<VectorTag<2>>> vars(x.size());
+        get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
+        get<1>(get<VectorTag<2>>(vars)) = 0.2 - y;
+        return vars;
+      };
   const auto make_upper_eta_vars =
       [](const tnsr::I<DataVector, 2, Frame::Logical>& coords,
          const double eta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto y = get<1>(coords) + eta_offset;
-    Variables<tmpl::list<VectorTag<2>>> vars(x.size());
-    get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
-    get<1>(get<VectorTag<2>>(vars)) = 0.4 + 0.3 * x * square(y);
-    return vars;
-  };
+        const auto& x = get<0>(coords);
+        const auto y = get<1>(coords) + eta_offset;
+        Variables<tmpl::list<VectorTag<2>>> vars(x.size());
+        get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
+        get<1>(get<VectorTag<2>>(vars)) = 0.4 + 0.3 * x * square(y);
+        return vars;
+      };
 
   const auto local_data = make_center_tensor(logical_coords);
   VariablesMap<2> neighbor_vars{};
   VariablesMap<2> neighbor_modified_vars{};
 
-  const auto shift_vars_to_local_means = [&mesh, &local_data ](
-      const Variables<tmpl::list<VectorTag<2>>>& input) noexcept {
-    auto result = input;
-    auto& v = get<VectorTag<2>>(result);
-    get<0>(v) +=
-        mean_value(get<0>(local_data), mesh) - mean_value(get<0>(v), mesh);
-    get<1>(v) +=
-        mean_value(get<1>(local_data), mesh) - mean_value(get<1>(v), mesh);
-    return result;
-  };
+  const auto shift_vars_to_local_means =
+      [&mesh,
+       &local_data](const Variables<tmpl::list<VectorTag<2>>>& input) noexcept {
+        auto result = input;
+        auto& v = get<VectorTag<2>>(result);
+        get<0>(v) +=
+            mean_value(get<0>(local_data), mesh) - mean_value(get<0>(v), mesh);
+        get<1>(v) +=
+            mean_value(get<1>(local_data), mesh) - mean_value(get<1>(v), mesh);
+        return result;
+      };
 
   const auto make_neighbor_vars =
-      [
-        &logical_coords, &directions_of_external_boundaries, &neighbor_vars,
-        &neighbor_modified_vars, &shift_vars_to_local_means
-      ](const std::pair<Direction<2>, ElementId<2>>& neighbor,
-        const auto make_vars) noexcept {
-    if (directions_of_external_boundaries.count(neighbor.first) == 0) {
-      const double offset = (neighbor.first.side() == Side::Lower ? -2.0 : 2.0);
-      neighbor_vars[neighbor] = make_vars(logical_coords, offset);
-      neighbor_modified_vars[neighbor] =
-          shift_vars_to_local_means(make_vars(logical_coords));
-    }
-  };
+      [&logical_coords, &directions_of_external_boundaries, &neighbor_vars,
+       &neighbor_modified_vars, &shift_vars_to_local_means](
+          const std::pair<Direction<2>, ElementId<2>>& neighbor,
+          const auto make_vars) noexcept {
+        if (directions_of_external_boundaries.count(neighbor.first) == 0) {
+          const double offset =
+              (neighbor.first.side() == Side::Lower ? -2.0 : 2.0);
+          neighbor_vars[neighbor] = make_vars(logical_coords, offset);
+          neighbor_modified_vars[neighbor] =
+              shift_vars_to_local_means(make_vars(logical_coords));
+        }
+      };
 
   make_neighbor_vars(std::make_pair(Direction<2>::lower_xi(), ElementId<2>(1)),
                      make_lower_xi_vars);
@@ -383,115 +385,116 @@ void test_simple_weno_3d(const std::unordered_set<Direction<3>>&
 
   const auto make_center_tensor =
       [](const tnsr::I<DataVector, 3, Frame::Logical>& coords) noexcept {
-    const auto& x = get<0>(coords);
-    const auto& y = get<1>(coords);
-    const auto& z = get<2>(coords);
-    return tnsr::I<DataVector, 3>{
-        {{0.4 * x * y * z + square(z), z, x + square(y) + cube(z)}}};
-  };
+        const auto& x = get<0>(coords);
+        const auto& y = get<1>(coords);
+        const auto& z = get<2>(coords);
+        return tnsr::I<DataVector, 3>{
+            {{0.4 * x * y * z + square(z), z, x + square(y) + cube(z)}}};
+      };
   const auto make_lower_xi_vars =
       [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
          const double xi_offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + xi_offset;
-    const auto& y = get<1>(coords);
-    const auto& z = get<2>(coords);
-    Variables<tmpl::list<VectorTag<3>>> vars(x.size());
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = 0.8 * z + 0.3 * x * y;
-    get<2>(get<VectorTag<3>>(vars)) = x + y;
-    return vars;
-  };
+        const auto x = get<0>(coords) + xi_offset;
+        const auto& y = get<1>(coords);
+        const auto& z = get<2>(coords);
+        Variables<tmpl::list<VectorTag<3>>> vars(x.size());
+        get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
+        get<1>(get<VectorTag<3>>(vars)) = 0.8 * z + 0.3 * x * y;
+        get<2>(get<VectorTag<3>>(vars)) = x + y;
+        return vars;
+      };
   const auto make_upper_xi_vars =
       [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
          const double xi_offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + xi_offset;
-    const auto& y = get<1>(coords);
-    const auto& z = get<2>(coords);
-    Variables<tmpl::list<VectorTag<3>>> vars(x.size());
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = z + 0.1 * square(x);
-    get<2>(get<VectorTag<3>>(vars)) = y + square(x) * z;
-    return vars;
-  };
+        const auto x = get<0>(coords) + xi_offset;
+        const auto& y = get<1>(coords);
+        const auto& z = get<2>(coords);
+        Variables<tmpl::list<VectorTag<3>>> vars(x.size());
+        get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
+        get<1>(get<VectorTag<3>>(vars)) = z + 0.1 * square(x);
+        get<2>(get<VectorTag<3>>(vars)) = y + square(x) * z;
+        return vars;
+      };
   const auto make_lower_eta_vars =
       [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
          const double eta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto y = get<1>(coords) + eta_offset;
-    const auto& z = get<2>(coords);
-    Variables<tmpl::list<VectorTag<3>>> vars(x.size());
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = -0.1 * y + z;
-    get<2>(get<VectorTag<3>>(vars)) = -square(z);
-    return vars;
-  };
+        const auto& x = get<0>(coords);
+        const auto y = get<1>(coords) + eta_offset;
+        const auto& z = get<2>(coords);
+        Variables<tmpl::list<VectorTag<3>>> vars(x.size());
+        get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
+        get<1>(get<VectorTag<3>>(vars)) = -0.1 * y + z;
+        get<2>(get<VectorTag<3>>(vars)) = -square(z);
+        return vars;
+      };
   const auto make_upper_eta_vars =
       [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
          const double eta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto y = get<1>(coords) + eta_offset;
-    const auto& z = get<2>(coords);
-    Variables<tmpl::list<VectorTag<3>>> vars(x.size());
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = z + 0.4 * x * cube(z);
-    get<2>(get<VectorTag<3>>(vars)) = y * z + square(y) + cube(z);
-    return vars;
-  };
+        const auto& x = get<0>(coords);
+        const auto y = get<1>(coords) + eta_offset;
+        const auto& z = get<2>(coords);
+        Variables<tmpl::list<VectorTag<3>>> vars(x.size());
+        get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
+        get<1>(get<VectorTag<3>>(vars)) = z + 0.4 * x * cube(z);
+        get<2>(get<VectorTag<3>>(vars)) = y * z + square(y) + cube(z);
+        return vars;
+      };
   const auto make_lower_zeta_vars =
       [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
          const double zeta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto& y = get<1>(coords);
-    const auto z = get<2>(coords) + zeta_offset;
-    Variables<tmpl::list<VectorTag<3>>> vars(x.size());
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = 0.9 * z - 2. * x * z;
-    get<2>(get<VectorTag<3>>(vars)) = y + cube(z);
-    return vars;
-  };
+        const auto& x = get<0>(coords);
+        const auto& y = get<1>(coords);
+        const auto z = get<2>(coords) + zeta_offset;
+        Variables<tmpl::list<VectorTag<3>>> vars(x.size());
+        get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
+        get<1>(get<VectorTag<3>>(vars)) = 0.9 * z - 2. * x * z;
+        get<2>(get<VectorTag<3>>(vars)) = y + cube(z);
+        return vars;
+      };
   const auto make_upper_zeta_vars =
       [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
          const double zeta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto& y = get<1>(coords);
-    const auto z = get<2>(coords) + zeta_offset;
-    Variables<tmpl::list<VectorTag<3>>> vars(x.size());
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = 1.3 * square(y) * square(z);
-    get<2>(get<VectorTag<3>>(vars)) = -x * y * z + square(y);
-    return vars;
-  };
+        const auto& x = get<0>(coords);
+        const auto& y = get<1>(coords);
+        const auto z = get<2>(coords) + zeta_offset;
+        Variables<tmpl::list<VectorTag<3>>> vars(x.size());
+        get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
+        get<1>(get<VectorTag<3>>(vars)) = 1.3 * square(y) * square(z);
+        get<2>(get<VectorTag<3>>(vars)) = -x * y * z + square(y);
+        return vars;
+      };
 
   const auto local_data = make_center_tensor(logical_coords);
   VariablesMap<3> neighbor_vars{};
   VariablesMap<3> neighbor_modified_vars{};
 
-  const auto shift_vars_to_local_means = [&mesh, &local_data ](
-      const Variables<tmpl::list<VectorTag<3>>>& input) noexcept {
-    auto result = input;
-    auto& v = get<VectorTag<3>>(result);
-    get<0>(v) +=
-        mean_value(get<0>(local_data), mesh) - mean_value(get<0>(v), mesh);
-    get<1>(v) +=
-        mean_value(get<1>(local_data), mesh) - mean_value(get<1>(v), mesh);
-    get<2>(v) +=
-        mean_value(get<2>(local_data), mesh) - mean_value(get<2>(v), mesh);
-    return result;
-  };
+  const auto shift_vars_to_local_means =
+      [&mesh,
+       &local_data](const Variables<tmpl::list<VectorTag<3>>>& input) noexcept {
+        auto result = input;
+        auto& v = get<VectorTag<3>>(result);
+        get<0>(v) +=
+            mean_value(get<0>(local_data), mesh) - mean_value(get<0>(v), mesh);
+        get<1>(v) +=
+            mean_value(get<1>(local_data), mesh) - mean_value(get<1>(v), mesh);
+        get<2>(v) +=
+            mean_value(get<2>(local_data), mesh) - mean_value(get<2>(v), mesh);
+        return result;
+      };
 
   const auto make_neighbor_vars =
-      [
-        &logical_coords, &directions_of_external_boundaries, &neighbor_vars,
-        &neighbor_modified_vars, &shift_vars_to_local_means
-      ](const std::pair<Direction<3>, ElementId<3>>& neighbor,
-        const auto make_vars) noexcept {
-    if (directions_of_external_boundaries.count(neighbor.first) == 0) {
-      const double offset = (neighbor.first.side() == Side::Lower ? -2.0 : 2.0);
-      neighbor_vars[neighbor] = make_vars(logical_coords, offset);
-      neighbor_modified_vars[neighbor] =
-          shift_vars_to_local_means(make_vars(logical_coords));
-    }
-  };
+      [&logical_coords, &directions_of_external_boundaries, &neighbor_vars,
+       &neighbor_modified_vars, &shift_vars_to_local_means](
+          const std::pair<Direction<3>, ElementId<3>>& neighbor,
+          const auto make_vars) noexcept {
+        if (directions_of_external_boundaries.count(neighbor.first) == 0) {
+          const double offset =
+              (neighbor.first.side() == Side::Lower ? -2.0 : 2.0);
+          neighbor_vars[neighbor] = make_vars(logical_coords, offset);
+          neighbor_modified_vars[neighbor] =
+              shift_vars_to_local_means(make_vars(logical_coords));
+        }
+      };
 
   make_neighbor_vars(std::make_pair(Direction<3>::lower_xi(), ElementId<3>(1)),
                      make_lower_xi_vars);

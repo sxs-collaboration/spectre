@@ -49,8 +49,8 @@ BufferWrapper<VolumeDim>::BufferWrapper(const Mesh<VolumeDim>& mesh) noexcept
           ::volume_and_slice_indices(mesh.extents())),
       volume_and_slice_indices(volume_and_slice_buffer_and_indices_.second) {
   const size_t half_number_boundary_points = alg::accumulate(
-      alg::iota(std::array<size_t, VolumeDim>{{}}, 0_st),
-      0_st, [&mesh](const size_t state, const size_t d) noexcept {
+      alg::iota(std::array<size_t, VolumeDim>{{}}, 0_st), 0_st,
+      [&mesh](const size_t state, const size_t d) noexcept {
         return state + mesh.slice_away(d).number_of_grid_points();
       });
   contiguous_boundary_buffer_.reset(static_cast<double*>(

@@ -86,9 +86,10 @@ void test_tci_on_linear_function(const size_t number_of_grid_points) noexcept {
 
   // Lambda takes tvb_scale = tvb_constant * h^2, to facilitate specifying
   // critical threshold values for testing
-  const auto test_tci = [&mesh, &element ](
-      const bool expected, const DataVector& input, const double left_mean,
-      const double right_mean, const double tvb_scale) noexcept {
+  const auto test_tci = [&mesh, &element](
+                            const bool expected, const DataVector& input,
+                            const double left_mean, const double right_mean,
+                            const double tvb_scale) noexcept {
     const double h = 1.2;
     const double tvb_constant = tvb_scale / square(h);
     const auto element_size = make_array<1>(h);
@@ -102,8 +103,7 @@ void test_tci_on_linear_function(const size_t number_of_grid_points) noexcept {
   const DataVector input = [&mesh]() noexcept {
     const auto x = get<0>(logical_coordinates(mesh));
     return DataVector{1.6 + 0.2 * x};
-  }
-  ();
+  }();
 
   // Test trigger due to left, right neighbors
   test_tci(false, input, 1.35, 1.85, 0.0);
@@ -134,9 +134,10 @@ void test_tci_on_quadratic_function(
 
   // Lambda takes tvb_scale = tvb_constant * h^2, to facilitate specifying
   // critical threshold values for testing
-  const auto test_tci = [&mesh, &element ](
-      const bool expected, const DataVector& input, const double left_mean,
-      const double right_mean, const double tvb_scale) noexcept {
+  const auto test_tci = [&mesh, &element](
+                            const bool expected, const DataVector& input,
+                            const double left_mean, const double right_mean,
+                            const double tvb_scale) noexcept {
     const double h = 1.2;
     const double tvb_constant = tvb_scale / square(h);
     const auto element_size = make_array<1>(h);
@@ -151,8 +152,7 @@ void test_tci_on_quadratic_function(
   const DataVector input = [&mesh]() noexcept {
     const auto x = get<0>(logical_coordinates(mesh));
     return DataVector{1.45 + 0.2 * x + 0.15 * square(x)};
-  }
-  ();
+  }();
 
   // Test trigger due to left, right neighbors
   test_tci(false, input, 1.15, 1.85, 0.0);
@@ -171,8 +171,7 @@ void test_tci_on_quadratic_function(
   const DataVector input2 = [&mesh]() noexcept {
     const auto x = get<0>(logical_coordinates(mesh));
     return DataVector{1.4 + 0.1 * x + 0.3 * square(x)};
-  }
-  ();
+  }();
 
   // Because left-to-mean and mean-to-right slopes have different signs,
   // any TCI call with TVB=0 should trigger
@@ -207,8 +206,7 @@ void test_tci_at_boundary(const size_t number_of_grid_points) noexcept {
   const auto input = [&mesh]() noexcept {
     const auto coords = logical_coordinates(mesh);
     return DataVector{1.2 * get<0>(coords)};
-  }
-  ();
+  }();
 
   // Test with element that has external lower-xi boundary
   const auto element_at_lower_xi_boundary =
@@ -242,10 +240,11 @@ void test_tci_with_different_size_neighbor(
   const double dx = 1.0;
   const auto element_size = make_array<1>(dx);
 
-  const auto test_tci = [&tvb_constant, &element, &mesh, &element_size ](
-      const bool expected_detection, const DataVector& local_input,
-      const double left, const double right, const double left_size,
-      const double right_size) noexcept {
+  const auto test_tci = [&tvb_constant, &element, &mesh, &element_size](
+                            const bool expected_detection,
+                            const DataVector& local_input, const double left,
+                            const double right, const double left_size,
+                            const double right_size) noexcept {
     test_tci_detection(expected_detection, tvb_constant, local_input, mesh,
                        element, element_size, make_two_neighbors(left, right),
                        make_two_neighbors(left_size, right_size));
@@ -256,8 +255,7 @@ void test_tci_with_different_size_neighbor(
   const auto input = [&mesh]() noexcept {
     const auto coords = logical_coordinates(mesh);
     return DataVector{2.0 + 1.2 * get<0>(coords)};
-  }
-  ();
+  }();
 
   // Establish baseline using evenly-sized elements
   test_tci(false, input, 0.8 - eps, 3.2 + eps, dx, dx);
@@ -306,22 +304,22 @@ void test_tvb_minmod_tci_2d() noexcept {
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<2>(2.0);
 
-  const auto test_tci = [&tvb_constant, &element, &mesh, &element_size ](
-      const bool expected_detection, const DataVector& local_input,
-      const std::array<double, 4>& neighbor_means) noexcept {
-    test_tci_detection(expected_detection, tvb_constant, local_input, mesh,
-                       element, element_size,
-                       make_four_neighbors(neighbor_means),
-                       make_four_neighbors(make_array<4>(2.0)));
-  };
+  const auto test_tci =
+      [&tvb_constant, &element, &mesh, &element_size](
+          const bool expected_detection, const DataVector& local_input,
+          const std::array<double, 4>& neighbor_means) noexcept {
+        test_tci_detection(expected_detection, tvb_constant, local_input, mesh,
+                           element, element_size,
+                           make_four_neighbors(neighbor_means),
+                           make_four_neighbors(make_array<4>(2.0)));
+      };
 
   const auto input = [&mesh]() noexcept {
     const auto coords = logical_coordinates(mesh);
     const auto& x = get<0>(coords);
     const auto& y = get<1>(coords);
     return DataVector{3.0 + x + 2.0 * y + 0.1 * x * y};
-  }
-  ();
+  }();
 
   // Case with no activation
   test_tci(false, input, {{1.9, 4.2, -0.5, 5.6}});
@@ -349,14 +347,15 @@ void test_tvb_minmod_tci_3d() noexcept {
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<3>(2.0);
 
-  const auto test_tci = [&tvb_constant, &element, &mesh, &element_size ](
-      const bool expected_detection, const DataVector& local_input,
-      const std::array<double, 6>& neighbor_means) noexcept {
-    test_tci_detection(expected_detection, tvb_constant, local_input, mesh,
-                       element, element_size,
-                       make_six_neighbors(neighbor_means),
-                       make_six_neighbors(make_array<6>(2.0)));
-  };
+  const auto test_tci =
+      [&tvb_constant, &element, &mesh, &element_size](
+          const bool expected_detection, const DataVector& local_input,
+          const std::array<double, 6>& neighbor_means) noexcept {
+        test_tci_detection(expected_detection, tvb_constant, local_input, mesh,
+                           element, element_size,
+                           make_six_neighbors(neighbor_means),
+                           make_six_neighbors(make_array<6>(2.0)));
+      };
 
   const auto input = [&mesh]() noexcept {
     const auto coords = logical_coordinates(mesh);
@@ -365,8 +364,7 @@ void test_tvb_minmod_tci_3d() noexcept {
     const auto& z = get<2>(coords);
     return DataVector{2.0 - 1.6 * x + 0.4 * y + 0.4 * z + 0.1 * x * y -
                       0.1 * x * z - 0.2 * y * z};
-  }
-  ();
+  }();
 
   // Case with no activation
   test_tci(false, input, {{3.8, -0.1, 1.5, 2.7, 1.2, 2.5}});

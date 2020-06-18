@@ -108,22 +108,22 @@ Matrix compute_indicator_matrix(
   const std::array<
       double, Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>
       weights_for_derivatives = [&derivative_weight]() noexcept {
-    auto weights = make_array<
-        Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(1.);
-    if (derivative_weight ==
-        Limiters::Weno_detail::DerivativeWeight::PowTwoEll) {
-      for (size_t l = 0; l < weights.size(); ++l) {
-        gsl::at(weights, l) = pow(2., 2. * l - 1.);
-      }
-    } else if (derivative_weight == Limiters::Weno_detail::DerivativeWeight::
-                                        PowTwoEllOverEllFactorial) {
-      for (size_t l = 0; l < weights.size(); ++l) {
-        gsl::at(weights, l) = 0.5 * square(pow(2., l) / factorial(l));
-      }
-    }
-    return weights;
-  }
-  ();
+        auto weights = make_array<
+            Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(1.);
+        if (derivative_weight ==
+            Limiters::Weno_detail::DerivativeWeight::PowTwoEll) {
+          for (size_t l = 0; l < weights.size(); ++l) {
+            gsl::at(weights, l) = pow(2., 2. * l - 1.);
+          }
+        } else if (derivative_weight ==
+                   Limiters::Weno_detail::DerivativeWeight::
+                       PowTwoEllOverEllFactorial) {
+          for (size_t l = 0; l < weights.size(); ++l) {
+            gsl::at(weights, l) = 0.5 * square(pow(2., l) / factorial(l));
+          }
+        }
+        return weights;
+      }();
 
   for (IndexIterator<VolumeDim> m(mesh.extents()); m; ++m) {
     if (m.collapsed_index() == 0) {
@@ -195,7 +195,7 @@ double oscillation_indicator(const DerivativeWeight derivative_weight,
   const auto cache = make_static_cache<CacheEnumeration<
       DerivativeWeight, DerivativeWeight::Unity, DerivativeWeight::PowTwoEll,
       DerivativeWeight::PowTwoEllOverEllFactorial>>(
-      [&mesh](const DerivativeWeight dw) noexcept->Matrix {
+      [&mesh](const DerivativeWeight dw) noexcept -> Matrix {
         return compute_indicator_matrix(dw, mesh);
       });
   const Matrix indicator_matrix = cache(derivative_weight);

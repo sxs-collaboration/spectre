@@ -57,12 +57,13 @@ void simple_weno_impl(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data) noexcept {
-  ASSERT(modified_neighbor_solution_buffer->size() == neighbor_data.size(),
-         "modified_neighbor_solution_buffer->size() = "
-         << modified_neighbor_solution_buffer->size()
-         << "\nneighbor_data.size() = " << neighbor_data.size()
-         << "\nmodified_neighbor_solution_buffer was incorrectly initialized "
-            "before calling simple_weno_impl.");
+  ASSERT(
+      modified_neighbor_solution_buffer->size() == neighbor_data.size(),
+      "modified_neighbor_solution_buffer->size() = "
+          << modified_neighbor_solution_buffer->size()
+          << "\nneighbor_data.size() = " << neighbor_data.size()
+          << "\nmodified_neighbor_solution_buffer was incorrectly initialized "
+             "before calling simple_weno_impl.");
 
   // Compute the modified neighbor solutions.
   // First extrapolate neighbor data onto local grid points, then shift the

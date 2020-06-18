@@ -251,8 +251,8 @@ void Weno<VolumeDim, tmpl::list<Tags...>>::package_data(
     return;
   }
 
-  const auto wrap_compute_means =
-      [&mesh, &packaged_data ](auto tag, const auto tensor) noexcept {
+  const auto wrap_compute_means = [&mesh, &packaged_data](
+                                      auto tag, const auto tensor) noexcept {
     for (size_t i = 0; i < tensor.size(); ++i) {
       // Compute the mean using the local orientation of the tensor and mesh.
       get<::Tags::Mean<decltype(tag)>>(packaged_data->means)[i] =
@@ -356,42 +356,42 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
 
     bool some_component_was_limited = false;
 
-    const auto wrap_minmod_tci_and_simple_weno_impl = [
-      this, &some_component_was_limited, &tci_buffer, &interpolator_buffer,
-      &modified_neighbor_solution_buffer, &mesh, &element, &element_size,
-      &neighbor_data, &effective_neighbor_sizes
-    ](auto tag, const auto tensor) noexcept {
-      for (size_t tensor_storage_index = 0;
-           tensor_storage_index < tensor->size(); ++tensor_storage_index) {
-        // Check TCI
-        const auto effective_neighbor_means =
-            Minmod_detail::compute_effective_neighbor_means<decltype(tag)>(
-                tensor_storage_index, element, neighbor_data);
-        const bool component_needs_limiting = Tci::tvb_minmod_indicator(
-            make_not_null(&tci_buffer), tvb_constant_,
-            (*tensor)[tensor_storage_index], mesh, element, element_size,
-            effective_neighbor_means, effective_neighbor_sizes);
+    const auto wrap_minmod_tci_and_simple_weno_impl =
+        [this, &some_component_was_limited, &tci_buffer, &interpolator_buffer,
+         &modified_neighbor_solution_buffer, &mesh, &element, &element_size,
+         &neighbor_data,
+         &effective_neighbor_sizes](auto tag, const auto tensor) noexcept {
+          for (size_t tensor_storage_index = 0;
+               tensor_storage_index < tensor->size(); ++tensor_storage_index) {
+            // Check TCI
+            const auto effective_neighbor_means =
+                Minmod_detail::compute_effective_neighbor_means<decltype(tag)>(
+                    tensor_storage_index, element, neighbor_data);
+            const bool component_needs_limiting = Tci::tvb_minmod_indicator(
+                make_not_null(&tci_buffer), tvb_constant_,
+                (*tensor)[tensor_storage_index], mesh, element, element_size,
+                effective_neighbor_means, effective_neighbor_sizes);
 
-        if (component_needs_limiting) {
-          if (modified_neighbor_solution_buffer.empty()) {
-            // Allocate the neighbor solution buffers only if the limiter is
-            // triggered. This reduces allocation when no limiting occurs.
-            for (const auto& neighbor_and_data : neighbor_data) {
-              const auto& neighbor = neighbor_and_data.first;
-              modified_neighbor_solution_buffer.insert(make_pair(
-                  neighbor, DataVector(mesh.number_of_grid_points())));
+            if (component_needs_limiting) {
+              if (modified_neighbor_solution_buffer.empty()) {
+                // Allocate the neighbor solution buffers only if the limiter is
+                // triggered. This reduces allocation when no limiting occurs.
+                for (const auto& neighbor_and_data : neighbor_data) {
+                  const auto& neighbor = neighbor_and_data.first;
+                  modified_neighbor_solution_buffer.insert(make_pair(
+                      neighbor, DataVector(mesh.number_of_grid_points())));
+                }
+              }
+              Weno_detail::simple_weno_impl<decltype(tag)>(
+                  make_not_null(&interpolator_buffer),
+                  make_not_null(&modified_neighbor_solution_buffer), tensor,
+                  neighbor_linear_weight_, tensor_storage_index, mesh, element,
+                  neighbor_data);
+              some_component_was_limited = true;
             }
           }
-          Weno_detail::simple_weno_impl<decltype(tag)>(
-              make_not_null(&interpolator_buffer),
-              make_not_null(&modified_neighbor_solution_buffer), tensor,
-              neighbor_linear_weight_, tensor_storage_index, mesh, element,
-              neighbor_data);
-          some_component_was_limited = true;
-        }
-      }
-      return '0';
-    };
+          return '0';
+        };
     expand_pack(wrap_minmod_tci_and_simple_weno_impl(Tags{}, tensors)...);
     return some_component_was_limited;  // cell_is_troubled
   } else {

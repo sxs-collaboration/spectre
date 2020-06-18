@@ -81,7 +81,8 @@ Matrix volume_interpolation_matrix(
   // direction is identity). This function undoes the optimization by returning
   // elements of an identity matrix if an empty matrix is found.
   const auto matrix_element = [&interpolation_matrices_1d](
-      const size_t dim, const size_t r, const size_t s) noexcept {
+                                  const size_t dim, const size_t r,
+                                  const size_t s) noexcept {
     const auto& matrix = gsl::at(interpolation_matrices_1d, dim);
     if (matrix.rows() * matrix.columns() == 0) {
       return (r == s) ? 1. : 0.;
@@ -125,15 +126,14 @@ Matrix inverse_a_matrix(
   Matrix a(number_of_grid_points, number_of_grid_points, 0.);
 
   // Loop only over directions where there is a neighbor
-  const std::vector<Direction<VolumeDim>>
-      directions_with_neighbors = [&element]() noexcept {
-    std::vector<Direction<VolumeDim>> result;
-    for (const auto& dir_and_neighbors : element.neighbors()) {
-      result.push_back(dir_and_neighbors.first);
-    }
-    return result;
-  }
-  ();
+  const std::vector<Direction<VolumeDim>> directions_with_neighbors =
+      [&element]() noexcept {
+        std::vector<Direction<VolumeDim>> result;
+        for (const auto& dir_and_neighbors : element.neighbors()) {
+          result.push_back(dir_and_neighbors.first);
+        }
+        return result;
+      }();
 
   // Sanity check that directions_to_exclude is consistent with the element
   ASSERT(
@@ -189,15 +189,14 @@ ConstrainedFitCache<VolumeDim>::ConstrainedFitCache(
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh) noexcept
     : quadrature_weights(volume_quadrature_weights(mesh)) {
   // Cache will only store quantities for directions that have neighbors.
-  const std::vector<Direction<VolumeDim>>
-      directions_with_neighbors = [&element]() noexcept {
-    std::vector<Direction<VolumeDim>> result;
-    for (const auto& dir_and_neighbors : element.neighbors()) {
-      result.push_back(dir_and_neighbors.first);
-    }
-    return result;
-  }
-  ();
+  const std::vector<Direction<VolumeDim>> directions_with_neighbors =
+      [&element]() noexcept {
+        std::vector<Direction<VolumeDim>> result;
+        for (const auto& dir_and_neighbors : element.neighbors()) {
+          result.push_back(dir_and_neighbors.first);
+        }
+        return result;
+      }();
 
   for (const auto& dir : directions_with_neighbors) {
     interpolation_matrices[dir] =
@@ -307,8 +306,7 @@ const ConstrainedFitCache<VolumeDim>& constrained_fit_cache(
       }
     }
     return static_cast<size_t>(bits.to_ulong());
-  }
-  ();
+  }();
   ASSERT(index_from_boundary_types >= 0 and
              index_from_boundary_types < sizeof...(Is),
          "Got index_from_boundary_types = "

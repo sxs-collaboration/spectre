@@ -160,14 +160,13 @@ void test_package_data_work(
   weno.package_data(make_not_null(&packaged_data), input_scalar, input_vector,
                     mesh, element_size, orientation_map);
 
-  const Variables<TagList> oriented_vars =
-      [&mesh, &input_scalar, &input_vector, &orientation_map ]() noexcept {
+  const Variables<TagList> oriented_vars = [&mesh, &input_scalar, &input_vector,
+                                            &orientation_map]() noexcept {
     Variables<TagList> input_vars(mesh.number_of_grid_points());
     get<ScalarTag>(input_vars) = input_scalar;
     get<VectorTag<VolumeDim>>(input_vars) = input_vector;
     return orient_variables(input_vars, mesh.extents(), orientation_map);
-  }
-  ();
+  }();
   CHECK(packaged_data.volume_data == oriented_vars);
   CHECK(packaged_data.mesh == orientation_map(mesh));
   CHECK(packaged_data.element_size ==
@@ -285,20 +284,20 @@ make_neighbor_data_from_neighbor_vars(
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
     const VariablesMap<VolumeDim>& neighbor_vars) noexcept {
-  const auto make_tuple_of_means = [&mesh](
-      const Variables<tmpl::list<ScalarTag, VectorTag<VolumeDim>>>&
-          vars_to_average) noexcept {
-    tuples::TaggedTuple<::Tags::Mean<ScalarTag>,
-                        ::Tags::Mean<VectorTag<VolumeDim>>>
-        result;
-    get(get<::Tags::Mean<ScalarTag>>(result)) =
-        mean_value(get(get<ScalarTag>(vars_to_average)), mesh);
-    for (size_t d = 0; d < VolumeDim; ++d) {
-      get<::Tags::Mean<VectorTag<VolumeDim>>>(result).get(d) =
-          mean_value(get<VectorTag<VolumeDim>>(vars_to_average).get(d), mesh);
-    }
-    return result;
-  };
+  const auto make_tuple_of_means =
+      [&mesh](const Variables<tmpl::list<ScalarTag, VectorTag<VolumeDim>>>&
+                  vars_to_average) noexcept {
+        tuples::TaggedTuple<::Tags::Mean<ScalarTag>,
+                            ::Tags::Mean<VectorTag<VolumeDim>>>
+            result;
+        get(get<::Tags::Mean<ScalarTag>>(result)) =
+            mean_value(get(get<ScalarTag>(vars_to_average)), mesh);
+        for (size_t d = 0; d < VolumeDim; ++d) {
+          get<::Tags::Mean<VectorTag<VolumeDim>>>(result).get(d) = mean_value(
+              get<VectorTag<VolumeDim>>(vars_to_average).get(d), mesh);
+        }
+        return result;
+      };
 
   std::unordered_map<
       std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,

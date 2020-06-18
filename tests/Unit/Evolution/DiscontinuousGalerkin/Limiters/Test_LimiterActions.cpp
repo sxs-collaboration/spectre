@@ -199,10 +199,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
          Scalar<DataVector>(mesh.number_of_grid_points(), 1234.)});
   }
 
-  const auto emplace_neighbor = [&mesh, &self_id, &coordmap, &runner ](
-      const ElementId<2>& id, const Direction<2>& direction,
-      const OrientationMap<2>& orientation,
-      const Scalar<DataVector>& var) noexcept {
+  const auto emplace_neighbor = [&mesh, &self_id, &coordmap, &runner](
+                                    const ElementId<2>& id,
+                                    const Direction<2>& direction,
+                                    const OrientationMap<2>& orientation,
+                                    const Scalar<DataVector>& var) noexcept {
     const Element<2> element(id, {{direction, {{self_id}, orientation}}});
     auto map = ElementMap<2, Frame::Inertial>(id, coordmap->get_clone());
     ActionTesting::emplace_component_and_initialize<my_component>(
@@ -228,8 +229,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
   {
     CHECK(runner.nonempty_inboxes<my_component, limiter_comm_tag>() ==
           std::unordered_set<ElementId<2>>{west_id, east_id, south_id});
-    const auto check_sent_data = [&runner, &self_id ](
-        const ElementId<2>& id, const Direction<2>& direction) noexcept {
+    const auto check_sent_data = [&runner, &self_id](
+                                     const ElementId<2>& id,
+                                     const Direction<2>& direction) noexcept {
       const auto& inboxes = runner.inboxes<my_component>();
       const auto& inbox = tuples::get<limiter_comm_tag>(inboxes.at(id));
       CHECK(inbox.size() == 1);
@@ -255,10 +257,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
   // ApplyLimiter::is_ready reports true, so here we check that the inbox is
   // correctly filled with information from neighbors.
   {
-    const auto check_inbox = [&runner, &self_id ](
-        const ElementId<2>& id, const Direction<2>& direction,
-        const double expected_mean_data,
-        const Mesh<2>& expected_mesh) noexcept {
+    const auto check_inbox = [&runner, &self_id](
+                                 const ElementId<2>& id,
+                                 const Direction<2>& direction,
+                                 const double expected_mean_data,
+                                 const Mesh<2>& expected_mesh) noexcept {
       const auto received_package =
           tuples::get<limiter_comm_tag>(
               runner.inboxes<my_component>().at(self_id))

@@ -33,12 +33,11 @@ bool minmod_limited_slopes(
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
-  const double tvb_scale = [&tvb_constant, &element_size ]() noexcept {
+  const double tvb_scale = [&tvb_constant, &element_size]() noexcept {
     const double max_h =
         *std::max_element(element_size.begin(), element_size.end());
     return tvb_constant * square(max_h);
-  }
-  ();
+  }();
 
   // Results from SpECTRE paper (https://arxiv.org/abs/1609.00098) used a
   // max_slope_factor a factor of 2.0 too small, so that LambdaPi1 behaved
@@ -48,14 +47,13 @@ bool minmod_limited_slopes(
 
   *u_mean = mean_value(u, mesh);
 
-  const auto difference_to_neighbor = [
-    &u_mean, &element, &element_size, &effective_neighbor_means, &
-    effective_neighbor_sizes
-  ](const size_t dim, const Side& side) noexcept {
-    return effective_difference_to_neighbor(*u_mean, element, element_size, dim,
-                                            side, effective_neighbor_means,
-                                            effective_neighbor_sizes);
-  };
+  const auto difference_to_neighbor =
+      [&u_mean, &element, &element_size, &effective_neighbor_means,
+       &effective_neighbor_sizes](const size_t dim, const Side& side) noexcept {
+        return effective_difference_to_neighbor(
+            *u_mean, element, element_size, dim, side, effective_neighbor_means,
+            effective_neighbor_sizes);
+      };
 
   // The LambdaPiN limiter calls a simple troubled-cell indicator to avoid
   // limiting solutions that appear smooth:

@@ -25,22 +25,20 @@ bool tvb_minmod_indicator(
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
-  const double tvb_scale = [&tvb_constant, &element_size ]() noexcept {
+  const double tvb_scale = [&tvb_constant, &element_size]() noexcept {
     const double max_h =
         *std::max_element(element_size.begin(), element_size.end());
     return tvb_constant * square(max_h);
-  }
-  ();
+  }();
   const double u_mean = mean_value(u, mesh);
 
-  const auto difference_to_neighbor = [
-    &u_mean, &element, &element_size, &effective_neighbor_means, &
-    effective_neighbor_sizes
-  ](const size_t dim, const Side& side) noexcept {
-    return Minmod_detail::effective_difference_to_neighbor(
-        u_mean, element, element_size, dim, side, effective_neighbor_means,
-        effective_neighbor_sizes);
-  };
+  const auto difference_to_neighbor =
+      [&u_mean, &element, &element_size, &effective_neighbor_means,
+       &effective_neighbor_sizes](const size_t dim, const Side& side) noexcept {
+        return Minmod_detail::effective_difference_to_neighbor(
+            u_mean, element, element_size, dim, side, effective_neighbor_means,
+            effective_neighbor_sizes);
+      };
 
   for (size_t d = 0; d < VolumeDim; ++d) {
     auto& boundary_buffers_d = gsl::at(buffer->boundary_buffers, d);
