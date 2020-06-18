@@ -31,8 +31,7 @@ struct hash;
 }  // namespace boost
 /// \endcond
 
-namespace Limiters {
-namespace Minmod_detail {
+namespace Limiters::Minmod_detail {
 
 // Encodes the return status of the tvb_corrected_minmod function.
 struct MinmodResult {
@@ -158,5 +157,4 @@ double effective_difference_to_neighbor(
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept;
 
-}  // namespace Minmod_detail
-}  // namespace Limiters
+}  // namespace Limiters::Minmod_detail

@@ -17,8 +17,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/Numeric.hpp"
 
-namespace Limiters {
-namespace Minmod_detail {
+namespace Limiters::Minmod_detail {
 
 MinmodResult tvb_corrected_minmod(const double a, const double b,
                                   const double c,
@@ -104,5 +103,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef INSTANTIATE
 
-}  // namespace Minmod_detail
-}  // namespace Limiters
+}  // namespace Limiters::Minmod_detail

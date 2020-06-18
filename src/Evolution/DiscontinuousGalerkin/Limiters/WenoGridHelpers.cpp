@@ -13,8 +13,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace Limiters {
-namespace Weno_detail {
+namespace Limiters::Weno_detail {
 
 template <size_t VolumeDim>
 bool check_element_has_one_similar_neighbor_in_direction(
@@ -119,5 +118,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef INSTANTIATE
 
-}  // namespace Weno_detail
-}  // namespace Limiters
+}  // namespace Limiters::Weno_detail

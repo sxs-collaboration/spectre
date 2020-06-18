@@ -39,8 +39,7 @@ template <size_t>
 class Mesh;
 /// \endcond
 
-namespace Limiters {
-namespace Weno_detail {
+namespace Limiters::Weno_detail {
 
 // Caching class that holds various precomputed terms used in the constrained-
 // fit algebra on each element.
@@ -578,5 +577,4 @@ void hweno_impl(
   }
 }
 
-}  // namespace Weno_detail
-}  // namespace Limiters
+}  // namespace Limiters::Weno_detail

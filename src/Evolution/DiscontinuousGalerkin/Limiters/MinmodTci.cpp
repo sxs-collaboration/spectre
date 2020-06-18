@@ -14,8 +14,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace Limiters {
-namespace Tci {
+namespace Limiters::Tci {
 
 template <size_t VolumeDim>
 bool tvb_minmod_indicator(
@@ -88,5 +87,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef INSTANTIATE
 
-}  // namespace Tci
-}  // namespace Limiters
+}  // namespace Limiters::Tci

@@ -26,8 +26,7 @@
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace Limiters {
-namespace Weno_detail {
+namespace Limiters::Weno_detail {
 
 // Compute the Simple WENO solution for one tensor component
 //
@@ -139,5 +138,4 @@ void simple_weno_impl(
   }
 }
 
-}  // namespace Weno_detail
-}  // namespace Limiters
+}  // namespace Limiters::Weno_detail

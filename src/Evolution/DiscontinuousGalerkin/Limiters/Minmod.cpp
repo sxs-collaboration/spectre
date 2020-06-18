@@ -18,8 +18,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
-namespace Limiters {
-namespace Minmod_detail {
+namespace Limiters::Minmod_detail {
 
 template <size_t VolumeDim>
 bool minmod_limited_slopes(
@@ -144,5 +143,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef INSTANTIATE
 
-}  // namespace Minmod_detail
-}  // namespace Limiters
+}  // namespace Limiters::Minmod_detail

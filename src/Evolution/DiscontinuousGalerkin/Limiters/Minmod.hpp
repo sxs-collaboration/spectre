@@ -54,8 +54,7 @@ class BufferWrapper;
 }  // namespace Minmod_detail
 }  // namespace Limiters
 
-namespace domain {
-namespace Tags {
+namespace domain::Tags {
 template <size_t Dim, typename Frame>
 struct Coordinates;
 template <size_t VolumeDim>
@@ -64,8 +63,7 @@ template <size_t VolumeDim>
 struct Mesh;
 template <size_t VolumeDim>
 struct SizeOfElement;
-}  // namespace Tags
-}  // namespace domain
+}  // namespace domain::Tags
 /// \endcond
 
 namespace Limiters {

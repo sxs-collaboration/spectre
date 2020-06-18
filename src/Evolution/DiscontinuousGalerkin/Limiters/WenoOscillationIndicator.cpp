@@ -165,8 +165,7 @@ Matrix compute_indicator_matrix(
 
 }  // namespace
 
-namespace Limiters {
-namespace Weno_detail {
+namespace Limiters::Weno_detail {
 
 std::ostream& operator<<(std::ostream& os,
                          DerivativeWeight derivative_weight) noexcept {
@@ -241,5 +240,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef INSTANTIATE
 
-}  // namespace Weno_detail
-}  // namespace Limiters
+}  // namespace Limiters::Weno_detail
