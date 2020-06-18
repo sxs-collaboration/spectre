@@ -70,7 +70,7 @@ template <typename Generator, typename T, typename... Ranges>
 class StaticCache {
  public:
   template <typename Gen>
-  // NOLINTNEXTLINE(misc-forwarding-reference-overload)
+  // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
   explicit StaticCache(Gen&& generator) noexcept
       : generator_{std::forward<Gen>(generator)} {}
 
