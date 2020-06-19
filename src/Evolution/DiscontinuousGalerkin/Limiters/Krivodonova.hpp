@@ -483,7 +483,7 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
   Krivodonova& operator=(Krivodonova&&) = default;
   ~Krivodonova() = default;
 
-  // NOLINTNEXTLINE(google-runtime-reference)
+  // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept;
 
   bool operator==(const Krivodonova& rhs) const noexcept;

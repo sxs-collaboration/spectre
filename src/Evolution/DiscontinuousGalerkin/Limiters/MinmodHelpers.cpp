@@ -53,8 +53,8 @@ BufferWrapper<VolumeDim>::BufferWrapper(const Mesh<VolumeDim>& mesh) noexcept
         return state + mesh.slice_away(d).number_of_grid_points();
       });
   contiguous_boundary_buffer_.reset(static_cast<double*>(
-      // clang-tidy incorrectly thinks this is a 0-byte malloc
-      // NOLINTNEXTLINE(clang-analyzer-unix.API)
+      // clang-tidy fails to see we are assigning to an owning unique_ptr
+      // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
       malloc(sizeof(double) * half_number_boundary_points)));
   size_t alloc_offset = 0;
   for (size_t d = 0; d < VolumeDim; ++d) {

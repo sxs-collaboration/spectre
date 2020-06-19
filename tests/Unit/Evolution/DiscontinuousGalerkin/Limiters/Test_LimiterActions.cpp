@@ -69,6 +69,10 @@ class DummyLimiterForTest {
     Mesh<2> mesh_;
   };
   using package_argument_tags = tmpl::list<Var, domain::Tags::Mesh<2>>;
+  // We ignore clang-tidy and instead match the interface of the "real"
+  // limiter implementations, where the package_data function will generally
+  // not be static.
+  // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
   void package_data(const gsl::not_null<PackagedData*> packaged_data,
                     const Scalar<DataVector>& var, const Mesh<2>& mesh,
                     const OrientationMap<2>& orientation_map) const noexcept {
