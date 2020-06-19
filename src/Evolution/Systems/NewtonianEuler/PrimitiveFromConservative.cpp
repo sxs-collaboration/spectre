@@ -10,7 +10,6 @@
 #include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Overloader.hpp"
 
 // IWYU pragma: no_include <array>
 
@@ -43,17 +42,12 @@ void PrimitiveFromConservative<Dim, ThermodynamicDim>::apply(
   get(*specific_internal_energy) -=
       (0.5 * get(dot_product(*velocity, *velocity)));
 
-  *pressure = make_overloader(
-      [&mass_density_cons](const EquationsOfState::EquationOfState<false, 1>&
-                               the_equation_of_state) noexcept {
-        return the_equation_of_state.pressure_from_density(mass_density_cons);
-      },
-      [&mass_density_cons, &specific_internal_energy ](
-          const EquationsOfState::EquationOfState<false, 2>&
-              the_equation_of_state) noexcept {
-        return the_equation_of_state.pressure_from_density_and_energy(
-            mass_density_cons, *specific_internal_energy);
-      })(equation_of_state);
+  if constexpr (ThermodynamicDim == 1) {
+    *pressure = equation_of_state.pressure_from_density(mass_density_cons);
+  } else if constexpr (ThermodynamicDim == 2) {
+    *pressure = equation_of_state.pressure_from_density_and_energy(
+        mass_density_cons, *specific_internal_energy);
+  }
 }
 
 }  // namespace NewtonianEuler

@@ -29,7 +29,6 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Overloader.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -215,27 +214,21 @@ void test_left_and_right_eigenvectors_impl(
         equation_of_state) noexcept {
   Scalar<double> pressure{};
   Scalar<double> kappa_over_density{};
-  make_overloader(
-      [&density, &pressure, &
-       kappa_over_density ](const EquationsOfState::EquationOfState<false, 1>&
-                                the_equation_of_state) noexcept {
-        pressure = the_equation_of_state.pressure_from_density(density);
-        kappa_over_density = Scalar<double>{
-            {{get(the_equation_of_state
-                      .kappa_times_p_over_rho_squared_from_density(density)) *
-              get(density) / get(pressure)}}};
-      },
-      [&density, &specific_internal_energy, &pressure, &
-       kappa_over_density ](const EquationsOfState::EquationOfState<false, 2>&
-                                the_equation_of_state) noexcept {
-        pressure = the_equation_of_state.pressure_from_density_and_energy(
-            density, specific_internal_energy);
-        kappa_over_density = Scalar<double>{
-            {{get(the_equation_of_state
-                      .kappa_times_p_over_rho_squared_from_density_and_energy(
-                          density, specific_internal_energy)) *
-              get(density) / get(pressure)}}};
-      })(equation_of_state);
+  if constexpr (ThermodynamicDim == 1) {
+    pressure = equation_of_state.pressure_from_density(density);
+    kappa_over_density = Scalar<double>{
+        {{get(equation_of_state.kappa_times_p_over_rho_squared_from_density(
+              density)) *
+          get(density) / get(pressure)}}};
+  } else if constexpr (ThermodynamicDim == 2) {
+    pressure = equation_of_state.pressure_from_density_and_energy(
+        density, specific_internal_energy);
+    kappa_over_density = Scalar<double>{
+        {{get(equation_of_state
+                  .kappa_times_p_over_rho_squared_from_density_and_energy(
+                      density, specific_internal_energy)) *
+          get(density) / get(pressure)}}};
+  }
 
   const Scalar<double> v_squared{{{get(dot_product(velocity, velocity))}}};
 
