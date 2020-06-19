@@ -18,9 +18,7 @@
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 
 /// \cond
-namespace grmhd {
-namespace ValenciaDivClean {
-namespace PrimitiveRecoverySchemes {
+namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
 
 template <size_t ThermodynamicDim>
 boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
@@ -172,9 +170,7 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
                 relative_tolerance_ * (current_pressure + previous_pressure);
   }  // while loop
 }
-}  // namespace PrimitiveRecoverySchemes
-}  // namespace ValenciaDivClean
-}  // namespace grmhd
+}  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
 
 #define THERMODIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATION(_, data)                                                 \

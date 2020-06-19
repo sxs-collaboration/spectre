@@ -83,8 +83,7 @@ void compute_characteristic_speeds(
 }
 }  // namespace
 
-namespace grmhd {
-namespace ValenciaDivClean {
+namespace grmhd::ValenciaDivClean {
 template <size_t ThermodynamicDim>
 void characteristic_speeds(
     const gsl::not_null<std::array<DataVector, 9>*> char_speeds,
@@ -240,6 +239,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
 
 #undef GET_DIM
 #undef INSTANTIATION
-}  // namespace ValenciaDivClean
-}  // namespace grmhd
+}  // namespace grmhd::ValenciaDivClean
 /// \endcond

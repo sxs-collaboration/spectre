@@ -27,14 +27,10 @@
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 // IWYU pragma: no_forward_declare Tensor
 
-namespace grmhd {
-namespace ValenciaDivClean {
-namespace PrimitiveRecoverySchemes {
+namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
 class NewmanHamlin;
 class PalenzuelaEtAl;
-}  // namespace PrimitiveRecoverySchemes
-}  // namespace ValenciaDivClean
-}  // namespace grmhd
+}  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
 
 namespace {
 

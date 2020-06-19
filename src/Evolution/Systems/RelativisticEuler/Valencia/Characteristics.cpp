@@ -18,8 +18,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
-namespace RelativisticEuler {
-namespace Valencia {
+namespace RelativisticEuler::Valencia {
 
 template <size_t Dim>
 void characteristic_speeds(
@@ -343,8 +342,7 @@ Matrix left_eigenvectors(const Scalar<double>& rest_mass_density,
   return result;
 }
 
-}  // namespace Valencia
-}  // namespace RelativisticEuler
+}  // namespace RelativisticEuler::Valencia
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

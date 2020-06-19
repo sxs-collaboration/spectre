@@ -33,8 +33,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
-namespace grmhd {
-namespace ValenciaDivClean {
+namespace grmhd::ValenciaDivClean {
 
 template <typename OrderedListOfPrimitiveRecoverySchemes,
           size_t ThermodynamicDim>
@@ -173,8 +172,7 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
   *specific_enthalpy = hydro::relativistic_specific_enthalpy(
       *rest_mass_density, *specific_internal_energy, *pressure);
 }
-}  // namespace ValenciaDivClean
-}  // namespace grmhd
+}  // namespace grmhd::ValenciaDivClean
 
 #define RECOVERY(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define THERMODIM(data) BOOST_PP_TUPLE_ELEM(1, data)

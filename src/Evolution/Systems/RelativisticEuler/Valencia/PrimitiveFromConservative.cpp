@@ -19,8 +19,7 @@
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 
 /// \cond
-namespace RelativisticEuler {
-namespace Valencia {
+namespace RelativisticEuler::Valencia {
 
 namespace {
 
@@ -154,6 +153,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 #undef INSTANTIATION
 #undef THERMODIM
 #undef DIM
-}  // namespace Valencia
-}  // namespace RelativisticEuler
+}  // namespace RelativisticEuler::Valencia
 /// \endcond

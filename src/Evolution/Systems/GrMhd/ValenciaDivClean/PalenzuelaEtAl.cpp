@@ -6,6 +6,7 @@
 #include <boost/none.hpp>
 #include <cmath>
 #include <exception>
+#include <limits>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
@@ -16,9 +17,7 @@
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 
 /// \cond
-namespace grmhd {
-namespace ValenciaDivClean {
-namespace PrimitiveRecoverySchemes {
+namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
 
 namespace {
 
@@ -117,7 +116,8 @@ boost::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
                                     magnetic_field_squared,
                                     rest_mass_density_times_lorentz_factor,
                                     equation_of_state};
-  double specific_enthalpy_times_lorentz_factor;
+  double specific_enthalpy_times_lorentz_factor =
+      std::numeric_limits<double>::signaling_NaN();
   try {
     specific_enthalpy_times_lorentz_factor =
         // NOLINTNEXTLINE(clang-analyzer-core)
@@ -147,9 +147,7 @@ boost::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
                                specific_enthalpy_times_lorentz_factor *
                                    rest_mass_density_times_lorentz_factor};
 }
-}  // namespace PrimitiveRecoverySchemes
-}  // namespace ValenciaDivClean
-}  // namespace grmhd
+}  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
 
 #define THERMODIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATION(_, data)                                                 \
