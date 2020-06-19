@@ -20,7 +20,6 @@
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "Utilities/Overloader.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include <array>
@@ -55,33 +54,22 @@ void test_primitive_from_conservative_random(
       TestHelpers::gr::random_spatial_metric<3>(generator, used_for_size);
   const auto expected_spatial_velocity = TestHelpers::hydro::random_velocity(
       generator, expected_lorentz_factor, spatial_metric);
-  const auto expected_specific_internal_energy = make_overloader(
-      [&expected_rest_mass_density](
-          const EquationsOfState::EquationOfState<true, 1>&
-              the_equation_of_state) noexcept {
-        return the_equation_of_state.specific_internal_energy_from_density(
+  Scalar<DataVector> expected_specific_internal_energy{};
+  Scalar<DataVector> expected_pressure{};
+  if constexpr (ThermodynamicDim == 1) {
+    expected_specific_internal_energy =
+        equation_of_state.specific_internal_energy_from_density(
             expected_rest_mass_density);
-      },
-      [&generator,
-       &used_for_size ](const EquationsOfState::EquationOfState<true, 2>&
-                        /*the_equation_of_state*/) noexcept {
-        // note this call assumes an ideal fluid
-        return TestHelpers::hydro::random_specific_internal_energy(
-            generator, used_for_size);
-      })(equation_of_state);
-  const auto expected_pressure = make_overloader(
-      [&expected_rest_mass_density](
-          const EquationsOfState::EquationOfState<true, 1>&
-              the_equation_of_state) noexcept {
-        return the_equation_of_state.pressure_from_density(
-            expected_rest_mass_density);
-      },
-      [&expected_rest_mass_density, &expected_specific_internal_energy ](
-          const EquationsOfState::EquationOfState<true, 2>&
-              the_equation_of_state) noexcept {
-        return the_equation_of_state.pressure_from_density_and_energy(
-            expected_rest_mass_density, expected_specific_internal_energy);
-      })(equation_of_state);
+    expected_pressure =
+        equation_of_state.pressure_from_density(expected_rest_mass_density);
+  } else if constexpr (ThermodynamicDim == 2) {
+    // note this call assumes an ideal fluid
+    expected_specific_internal_energy =
+        TestHelpers::hydro::random_specific_internal_energy(generator,
+                                                            used_for_size);
+    expected_pressure = equation_of_state.pressure_from_density_and_energy(
+        expected_rest_mass_density, expected_specific_internal_energy);
+  }
 
   const auto expected_specific_enthalpy = hydro::relativistic_specific_enthalpy(
       expected_rest_mass_density, expected_specific_internal_energy,

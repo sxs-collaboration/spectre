@@ -14,7 +14,6 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Overloader.hpp"
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 
@@ -137,20 +136,15 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
       return boost::none;
     }
 
-    current_pressure = get(make_overloader(
-        [&current_rest_mass_density](
-            const EquationsOfState::EquationOfState<true, 1>&
-                the_equation_of_state) noexcept {
-          return the_equation_of_state.pressure_from_density(
-              Scalar<double>(current_rest_mass_density));
-        },
-        [&current_rest_mass_density, &current_specific_enthalpy ](
-            const EquationsOfState::EquationOfState<true, 2>&
-                the_equation_of_state) noexcept {
-          return the_equation_of_state.pressure_from_density_and_enthalpy(
+    if constexpr (ThermodynamicDim == 1) {
+      current_pressure = get(equation_of_state.pressure_from_density(
+          Scalar<double>(current_rest_mass_density)));
+    } else if constexpr (ThermodynamicDim == 2) {
+      current_pressure =
+          get(equation_of_state.pressure_from_density_and_enthalpy(
               Scalar<double>(current_rest_mass_density),
-              Scalar<double>(current_specific_enthalpy));
-        })(equation_of_state));
+              Scalar<double>(current_specific_enthalpy)));
+    }
 
     gsl::at(aitken_pressure, valid_entries_in_aitken_pressure++) =
         current_pressure;

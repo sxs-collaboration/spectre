@@ -12,7 +12,6 @@
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/Overloader.hpp"
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 
@@ -70,20 +69,16 @@ class FunctionOfX {
         rest_mass_density_times_lorentz_factor_ / current_lorentz_factor;
     const double current_specific_internal_energy =
         specific_internal_energy(x, current_lorentz_factor);
-    const double current_pressure = get(make_overloader(
-        [&current_rest_mass_density](
-            const EquationsOfState::EquationOfState<true, 1>&
-                the_equation_of_state) noexcept {
-          return the_equation_of_state.pressure_from_density(
-              Scalar<double>(current_rest_mass_density));
-        },
-        [&current_rest_mass_density, &current_specific_internal_energy ](
-            const EquationsOfState::EquationOfState<true, 2>&
-                the_equation_of_state) noexcept {
-          return the_equation_of_state.pressure_from_density_and_energy(
+    double current_pressure = std::numeric_limits<double>::signaling_NaN();
+    if constexpr (ThermodynamicDim == 1) {
+      current_pressure = get(equation_of_state_.pressure_from_density(
+          Scalar<double>(current_rest_mass_density)));
+    } else if constexpr (ThermodynamicDim == 2) {
+      current_pressure =
+          get(equation_of_state_.pressure_from_density_and_energy(
               Scalar<double>(current_rest_mass_density),
-              Scalar<double>(current_specific_internal_energy));
-        })(equation_of_state_));
+              Scalar<double>(current_specific_internal_energy)));
+    }
 
     return x - (1.0 + current_specific_internal_energy +
                 current_pressure / current_rest_mass_density) *
@@ -136,21 +131,17 @@ boost::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
       f_of_x.lorentz_factor(specific_enthalpy_times_lorentz_factor);
   const double rest_mass_density =
       rest_mass_density_times_lorentz_factor / lorentz_factor;
-  const double specific_internal_energy = f_of_x.specific_internal_energy(
-      specific_enthalpy_times_lorentz_factor, lorentz_factor);
-  const double pressure = get(make_overloader(
-      [&rest_mass_density](const EquationsOfState::EquationOfState<true, 1>&
-                               the_equation_of_state) noexcept {
-        return the_equation_of_state.pressure_from_density(
-            Scalar<double>(rest_mass_density));
-      },
-      [&rest_mass_density, &specific_internal_energy ](
-          const EquationsOfState::EquationOfState<true, 2>&
-              the_equation_of_state) noexcept {
-        return the_equation_of_state.pressure_from_density_and_energy(
-            Scalar<double>(rest_mass_density),
-            Scalar<double>(specific_internal_energy));
-      })(equation_of_state));
+  double pressure = std::numeric_limits<double>::signaling_NaN();
+  if constexpr (ThermodynamicDim == 1) {
+    pressure = get(equation_of_state.pressure_from_density(
+        Scalar<double>(rest_mass_density)));
+  } else if constexpr (ThermodynamicDim == 2) {
+    const double specific_internal_energy = f_of_x.specific_internal_energy(
+        specific_enthalpy_times_lorentz_factor, lorentz_factor);
+    pressure = get(equation_of_state.pressure_from_density_and_energy(
+        Scalar<double>(rest_mass_density),
+        Scalar<double>(specific_internal_energy)));
+  }
 
   return PrimitiveRecoveryData{rest_mass_density, lorentz_factor, pressure,
                                specific_enthalpy_times_lorentz_factor *

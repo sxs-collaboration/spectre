@@ -16,7 +16,6 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Overloader.hpp"
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 // IWYU pragma: no_forward_declare Tensor
@@ -167,26 +166,19 @@ void characteristic_speeds(
 
   Scalar<DataVector>& sound_speed_squared =
       get<hydro::Tags::SoundSpeedSquared<DataVector>>(temp_tensors);
-  make_overloader(
-      [&rest_mass_density, &
-       sound_speed_squared ](const EquationsOfState::EquationOfState<true, 1>&
-                                 the_equation_of_state) noexcept {
-        get(sound_speed_squared) =
-            get(the_equation_of_state.chi_from_density(rest_mass_density)) +
-            get(the_equation_of_state
-                    .kappa_times_p_over_rho_squared_from_density(
-                        rest_mass_density));
-      },
-      [&rest_mass_density, &specific_internal_energy, &
-       sound_speed_squared ](const EquationsOfState::EquationOfState<true, 2>&
-                                 the_equation_of_state) noexcept {
-        get(sound_speed_squared) =
-            get(the_equation_of_state.chi_from_density_and_energy(
-                rest_mass_density, specific_internal_energy)) +
-            get(the_equation_of_state
-                    .kappa_times_p_over_rho_squared_from_density_and_energy(
-                        rest_mass_density, specific_internal_energy));
-      })(equation_of_state);
+  if constexpr (ThermodynamicDim == 1) {
+    get(sound_speed_squared) =
+        get(equation_of_state.chi_from_density(rest_mass_density)) +
+        get(equation_of_state.kappa_times_p_over_rho_squared_from_density(
+            rest_mass_density));
+  } else if constexpr (ThermodynamicDim == 2) {
+    get(sound_speed_squared) =
+        get(equation_of_state.chi_from_density_and_energy(
+            rest_mass_density, specific_internal_energy)) +
+        get(equation_of_state
+                .kappa_times_p_over_rho_squared_from_density_and_energy(
+                    rest_mass_density, specific_internal_energy));
+  }
   get(sound_speed_squared) /= get(specific_enthalpy);
 
   compute_characteristic_speeds(char_speeds, lapse, shift, spatial_velocity,
