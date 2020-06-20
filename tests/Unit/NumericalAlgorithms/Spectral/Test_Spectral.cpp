@@ -446,6 +446,58 @@ void test_spectral_quantities_for_mesh() {
                                          Spectral::Quadrature::GaussLobatto>(
       mesh2d.slice_through(1));
 }
+
+void test_gauss_points_boundary_interpolation_and_lifting() noexcept {
+  const auto max_poly_deg = [](const size_t num_pts) noexcept {
+    return num_pts - 1;
+  };
+  constexpr Spectral::Basis BasisType = Spectral::Basis::Legendre;
+  constexpr Spectral::Quadrature QuadratureType = Spectral::Quadrature::Gauss;
+
+  DataVector interpolated_u_lower(1, 0.);
+  DataVector interpolated_u_upper(1, 0.);
+  for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
+       n < Spectral::maximum_number_of_points<BasisType>; n++) {
+    CAPTURE(n);
+    const auto& collocation_pts =
+        Spectral::collocation_points<BasisType, QuadratureType>(n);
+    Mesh<1> local_mesh{n, BasisType, QuadratureType};
+    const std::pair<Matrix, Matrix>& boundary_interp_matrices =
+        Spectral::boundary_interpolation_matrices(local_mesh);
+    const std::pair<DataVector, DataVector>& lifting_terms =
+        Spectral::boundary_lifting_term(local_mesh);
+    const DataVector& quad_weights = Spectral::quadrature_weights(local_mesh);
+    for (size_t p = 0; p <= max_poly_deg(n); p++) {
+      CAPTURE(p);
+      const DataVector u = unit_polynomial(p, collocation_pts);
+
+      dgemv_('n', 1, n, 1., boundary_interp_matrices.first.data(),
+             boundary_interp_matrices.first.spacing(), u.data(), 1, 0.,
+             interpolated_u_lower.data(), 1);
+      CHECK_ITERABLE_APPROX(unit_polynomial(p, DataVector{-1.0}),
+                            interpolated_u_lower);
+      dgemv_('n', 1, n, 1., boundary_interp_matrices.second.data(),
+             boundary_interp_matrices.second.spacing(), u.data(), 1, 0.,
+             interpolated_u_upper.data(), 1);
+      CHECK_ITERABLE_APPROX(unit_polynomial(p, DataVector{1.0}),
+                            interpolated_u_upper);
+
+      DataVector lift_lagrange_lower(u.size());
+      for (size_t i = 0; i < lift_lagrange_lower.size(); ++i) {
+        lift_lagrange_lower[i] = boundary_interp_matrices.first(0, i);
+      }
+      CHECK_ITERABLE_APPROX(DataVector{lift_lagrange_lower / quad_weights},
+                            lifting_terms.first);
+
+      DataVector lift_lagrange_upper(u.size());
+      for (size_t i = 0; i < lift_lagrange_upper.size(); ++i) {
+        lift_lagrange_upper[i] = boundary_interp_matrices.second(0, i);
+      }
+      CHECK_ITERABLE_APPROX(DataVector{lift_lagrange_upper / quad_weights},
+                            lifting_terms.second);
+    }
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral",
@@ -457,4 +509,5 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral",
   test_exact_quadrature();
   test_quadrature_weights();
   test_spectral_quantities_for_mesh();
+  test_gauss_points_boundary_interpolation_and_lifting();
 }

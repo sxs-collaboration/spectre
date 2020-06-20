@@ -419,6 +419,50 @@ template <typename T>
 Matrix interpolation_matrix(const Mesh<1>& mesh,
                             const T& target_points) noexcept;
 
+// @{
+/*!
+ * \brief Matrices that interpolate to the lower and upper boundaries of the
+ * element.
+ *
+ * Assumes that the logical coordinates are \f$[-1, 1]\f$. The first element of
+ * the pair interpolates to \f$\xi=-1\f$ and the second to \f$\xi=1\f$. These
+ * are just the Lagrange interpolating polynomials evaluated at \f$\xi=\pm1\f$.
+ * For Gauss-Lobatto points the only non-zero element is at the boundaries
+ * and is one and so is not implemented.
+ *
+ * \warning This can only be called with Gauss points.
+ */
+const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
+    const Mesh<1>& mesh) noexcept;
+
+template <Basis BasisType, Quadrature QuadratureType>
+const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
+    size_t num_points) noexcept;
+// @}
+
+// @{
+/*!
+ * \brief Terms used during the lifting portion of a discontinuous Galerkin
+ * scheme when using Gauss points.
+ *
+ * Assumes that the logical coordinates are \f$[-1, 1]\f$. The first element of
+ * the pair is the Lagrange polyonmials evaluated at \f$\xi=-1\f$ divided by the
+ * weights and the second at \f$\xi=1\f$. Specifically,
+ *
+ * \f{align*}{
+ * \frac{\ell_j(\xi=\pm1)}{w_j}
+ * \f}
+ *
+ * \warning This can only be called with Gauss points.
+ */
+const std::pair<DataVector, DataVector>& boundary_lifting_term(
+    const Mesh<1>& mesh) noexcept;
+
+template <Basis BasisType, Quadrature QuadratureType>
+const std::pair<DataVector, DataVector>& boundary_lifting_term(
+    size_t num_points) noexcept;
+// @}
+
 /*!
  * \brief %Matrix used to transform from the spectral coefficients (modes) of a
  * function to its nodal coefficients. Also referred to as the _Vandermonde
