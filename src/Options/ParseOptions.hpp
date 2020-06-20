@@ -603,12 +603,26 @@ template <typename OptionList, typename Group>
          "IsPeriodicIn: [true]\n\nSee an example input file for help.");
 }
 
+namespace Options_detail {
+template <typename T, typename Metavariables, typename = std::void_t<>>
+struct get_options_list {
+  using type = typename T::template options<Metavariables>;
+};
+
+template <typename T, typename Metavariables>
+struct get_options_list<T, Metavariables, std::void_t<typename T::options>> {
+  using type = typename T::options;
+};
+}  // namespace Options_detail
+
 template <typename T>
 template <typename Metavariables>
 T create_from_yaml<T>::create(const Option& options) {
-  Options<typename T::options> parser(T::help);
+  Options<typename Options_detail::get_options_list<T, Metavariables>::type>
+      parser(T::help);
   parser.parse(options);
-  return parser.template apply<typename T::options>([&options](auto&&... args) {
+  return parser.template apply<typename Options_detail::get_options_list<
+      T, Metavariables>::type>([&options](auto&&... args) {
     return make_overloader(
         [&options](std::false_type /*option_context_no_metavars*/,
                    std::true_type /*option_context_with_metavars*/,
