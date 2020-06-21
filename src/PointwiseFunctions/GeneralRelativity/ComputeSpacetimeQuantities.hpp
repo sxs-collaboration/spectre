@@ -449,12 +449,14 @@ struct DetAndInverseSpatialMetricCompute
   using base = ::Tags::Variables<
       tmpl::list<DetSpatialMetric<DataType>,
                  InverseSpatialMetric<SpatialDim, Frame, DataType>>>;
-  static constexpr auto function = &determinant_and_inverse<
-      DetSpatialMetric<DataType>,
-      InverseSpatialMetric<SpatialDim, Frame, DataType>, DataType,
-      tmpl::integral_list<std::int32_t, 1, 1>,
-      SpatialIndex<SpatialDim, UpLo::Lo, Frame>,
-      SpatialIndex<SpatialDim, UpLo::Lo, Frame>>;
+  using return_type = typename base::type;
+  static constexpr auto function = static_cast<void (*)(
+      const gsl::not_null<return_type*>,
+      const Tensor<
+          DataType, tmpl::integral_list<std::int32_t, 1, 1>,
+          tmpl::list<SpatialIndex<SpatialDim, UpLo::Lo, Frame>,
+                     SpatialIndex<SpatialDim, UpLo::Lo, Frame>>>&) noexcept>(
+      &determinant_and_inverse);
 };
 
 /*!

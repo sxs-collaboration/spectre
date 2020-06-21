@@ -10,7 +10,9 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -30,6 +32,7 @@ Scalar<DataType> pointwise_l2_norm_square(
 }
 }  // namespace L2Norm_detail
 
+// @{
 /*!
  * \ingroup TensorGroup
  * \brief Compute point-wise Euclidean \f$L^2\f$-norm of arbitrary Tensors.
@@ -54,8 +57,15 @@ Scalar<DataType> pointwise_l2_norm(
   return Scalar<DataType>{
       sqrt(get(L2Norm_detail::pointwise_l2_norm_square(tensor)))};
 }
+template <typename DataType, typename Symm, typename IndexList>
+void pointwise_l2_norm(
+    const gsl::not_null<Scalar<DataType>*> norm,
+    const Tensor<DataType, Symm, IndexList>& tensor) noexcept {
+  destructive_resize_components(norm, get_size(tensor[0].size()));
+  get(*norm) = sqrt(get(L2Norm_detail::pointwise_l2_norm_square(tensor)));
+}
+// @}
 
-// @{
 /*!
  * \ingroup TensorGroup
  * \brief Compute Euclidean \f$L^2\f$-norm of arbitrary Tensors reduced over an
@@ -115,8 +125,10 @@ struct PointwiseL2Norm : db::SimpleTag {
 template <typename Tag>
 struct PointwiseL2NormCompute : PointwiseL2Norm<Tag>, db::ComputeTag {
   using base = PointwiseL2Norm<Tag>;
-  static constexpr db::const_item_type<PointwiseL2Norm<Tag>> (*function)(
-      const db::const_item_type<Tag>&) = pointwise_l2_norm;
+  using return_type = typename base::type;
+  static constexpr auto function = static_cast<void (*)(
+      const gsl::not_null<return_type*>, const typename Tag::type&) noexcept>(
+      &pointwise_l2_norm);
   using argument_tags = tmpl::list<Tag>;
 };
 
@@ -146,8 +158,11 @@ struct L2Norm : db::SimpleTag {
 template <typename Tag>
 struct L2NormCompute : L2Norm<Tag>, db::ComputeTag {
   using base = L2Norm<Tag>;
-  static constexpr db::const_item_type<L2Norm<Tag>> (*function)(
-      const db::const_item_type<Tag>&) = l2_norm;
+  using return_type = typename base::type;
+  static void function(const gsl::not_null<return_type*> norm,
+                       const typename Tag::type& tensor) {
+    *norm = l2_norm(tensor);
+  }
   using argument_tags = tmpl::list<Tag>;
 };
 }  // namespace Tags

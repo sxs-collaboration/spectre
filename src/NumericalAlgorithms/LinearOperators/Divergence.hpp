@@ -69,6 +69,7 @@ struct div<Tag, Requires<tt::is_a_v<::Variables, db::const_item_type<Tag>>>>
 /// \endcond
 }  // namespace Tags
 
+// @{
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the (Euclidean) divergence of fluxes
 template <typename FluxTags, size_t Dim, typename DerivativeFrame>
@@ -78,6 +79,16 @@ auto divergence(
         inverse_jacobian) noexcept
     -> Variables<db::wrap_tags_in<Tags::div, FluxTags>>;
 
+template <typename FluxTags, size_t Dim, typename DerivativeFrame>
+void divergence(
+    gsl::not_null<Variables<db::wrap_tags_in<Tags::div, FluxTags>>*>
+        divergence_of_F,
+    const Variables<FluxTags>& F, const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
+        inverse_jacobian) noexcept;
+// @}
+
+// @{
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the divergence of the vector `input`
 template <size_t Dim, typename DerivativeFrame>
@@ -86,6 +97,15 @@ Scalar<DataVector> divergence(
     const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
         inverse_jacobian) noexcept;
+
+template <size_t Dim, typename DerivativeFrame>
+void divergence(
+    gsl::not_null<Scalar<DataVector>*> div_input,
+    const tnsr::I<DataVector, Dim, DerivativeFrame>& input,
+    const Mesh<Dim>& mesh,
+    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
+        inverse_jacobian) noexcept;
+// @}
 
 namespace Tags {
 /*!
@@ -122,7 +142,11 @@ struct DivVariablesCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
                 "Must map from the logical frame.");
 
  public:
-  static constexpr auto function =
+  using base = db::add_tag_prefix<div, Tag>;
+  using return_type = typename base::type;
+  static constexpr void (*function)(const gsl::not_null<return_type*>,
+                                    const typename Tag::type&, const Mesh<dim>&,
+                                    const typename InverseJacobianTag::type&) =
       divergence<typename db::const_item_type<Tag>::tags_list, dim,
                  typename tmpl::back<inv_jac_indices>::Frame>;
   using argument_tags =
@@ -144,7 +168,11 @@ struct DivVectorCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
                 "Must map from the logical frame.");
 
  public:
-  static constexpr auto function =
+  using base = db::add_tag_prefix<div, Tag>;
+  using return_type = typename base::type;
+  static constexpr void (*function)(const gsl::not_null<return_type*>,
+                                    const typename Tag::type&, const Mesh<dim>&,
+                                    const typename InverseJacobianTag::type&) =
       divergence<dim, typename tmpl::back<inv_jac_indices>::Frame>;
   using argument_tags =
       tmpl::list<Tag, domain::Tags::Mesh<dim>, InverseJacobianTag>;

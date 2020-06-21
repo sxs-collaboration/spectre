@@ -41,6 +41,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderScheme.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/CollectDataForFluxes.hpp"
@@ -78,7 +79,8 @@ struct Component {
   using simple_tags = db::AddSimpleTags<
       Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, domain::Tags::Mesh<1>,
       domain::Tags::Element<1>, domain::Tags::ElementMap<1>, variables_tag,
-      db::add_tag_prefix<Tags::dt, variables_tag>, normal_dot_fluxes_tag,
+      db::add_tag_prefix<Tags::dt, variables_tag>,
+      ScalarWave::Tags::ConstraintGamma2, normal_dot_fluxes_tag,
       mortar_data_tag, Tags::Mortars<Tags::Next<Tags::TimeStepId>, 1>,
       Tags::Mortars<domain::Tags::Mesh<0>, 1>,
       Tags::Mortars<Tags::MortarSize<0>, 1>,
@@ -104,10 +106,11 @@ struct Component {
       inverse_jacobian,
       Tags::DerivCompute<variables_tag, inverse_jacobian,
                          typename metavariables::system::gradients_tags>,
-      ScalarWave::Tags::ConstraintGamma2Compute,
       domain::Tags::InternalDirections<1>,
       domain::Tags::Slice<domain::Tags::InternalDirections<1>,
                           typename metavariables::system::variables_tag>,
+      domain::Tags::Slice<domain::Tags::InternalDirections<1>,
+                          ScalarWave::Tags::ConstraintGamma2>,
       interface_compute_tag<domain::Tags::Direction<1>>,
       interface_compute_tag<domain::Tags::InterfaceMesh<1>>,
       interface_compute_tag<domain::Tags::UnnormalizedFaceNormalCompute<1>>,
@@ -115,7 +118,6 @@ struct Component {
           Tags::EuclideanMagnitude<domain::Tags::UnnormalizedFaceNormal<1>>>,
       interface_compute_tag<
           Tags::NormalizedCompute<domain::Tags::UnnormalizedFaceNormal<1>>>,
-      interface_compute_tag<ScalarWave::Tags::ConstraintGamma2Compute>,
       interface_compute_tag<ScalarWave::Tags::CharacteristicFieldsCompute<1>>,
       interface_compute_tag<ScalarWave::Tags::CharacteristicSpeedsCompute<1>>>;
 
@@ -198,11 +200,12 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
           mortar_meshes.insert({mortar_id, mesh.slice_away(0)});
           mortar_sizes.insert({mortar_id, {}});
         }
+        Scalar<DataVector> gamma_2{mesh.number_of_grid_points(), 0.};
 
         ActionTesting::emplace_component_and_initialize<component>(
             &runner, id,
             {current_time, next_time, mesh, element, std::move(map),
-             std::move(variables), std::move(dt_variables),
+             std::move(variables), std::move(dt_variables), std::move(gamma_2),
              std::move(normal_dot_fluxes), std::move(mortar_history),
              std::move(mortar_next_temporal_ids), std::move(mortar_meshes),
              std::move(mortar_sizes),

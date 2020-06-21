@@ -57,6 +57,10 @@ void characteristic_fields(
     const tnsr::aa<DataVector, Dim, Frame>& pi,
     const tnsr::iaa<DataVector, Dim, Frame>& phi,
     const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept {
+  const auto number_of_grid_points = get(gamma_2).size();
+  if (UNLIKELY(number_of_grid_points != char_fields->number_of_grid_points())) {
+    char_fields->initialize(number_of_grid_points);
+  }
   auto phi_dot_normal =
       make_with_value<tnsr::aa<DataVector, Dim, Frame>>(pi, 0.);
   auto unit_normal_vector =
@@ -127,6 +131,11 @@ void evolved_fields_from_characteristic_fields(
     const tnsr::aa<DataVector, Dim, Frame>& u_plus,
     const tnsr::aa<DataVector, Dim, Frame>& u_minus,
     const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept {
+  const auto number_of_grid_points = get(gamma_2).size();
+  if (UNLIKELY(number_of_grid_points !=
+               evolved_fields->number_of_grid_points())) {
+    evolved_fields->initialize(number_of_grid_points);
+  }
   // Invert Eq.(32) of Lindblom+ (2005) for Psi
   get<::gr::Tags::SpacetimeMetric<Dim, Frame, DataVector>>(*evolved_fields) =
       u_psi;

@@ -161,7 +161,7 @@ template <size_t Dim, typename Frame>
 struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim, Frame>,
                                      db::ComputeTag {
   using base = Tags::CharacteristicFields<Dim, Frame>;
-  using type = typename base::type;
+  using return_type = typename base::type;
   using argument_tags = tmpl::list<
       Tags::ConstraintGamma2,
       gr::Tags::InverseSpatialMetric<Dim, Frame, DataVector>,
@@ -169,17 +169,13 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim, Frame>,
       Tags::Phi<Dim, Frame>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>>;
 
-  static typename Tags::CharacteristicFields<Dim, Frame>::type function(
-      const Scalar<DataVector>& gamma_2,
-      const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
-      const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
-      const tnsr::aa<DataVector, Dim, Frame>& pi,
-      const tnsr::iaa<DataVector, Dim, Frame>& phi,
-      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept {
-    return characteristic_fields(gamma_2, inverse_spatial_metric,
-                                 spacetime_metric, pi, phi,
-                                 unit_normal_one_form);
-  };
+  static constexpr auto function = static_cast<void (*)(
+      const gsl::not_null<return_type*>, const Scalar<DataVector>&,
+      const tnsr::II<DataVector, Dim, Frame>&,
+      const tnsr::aa<DataVector, Dim, Frame>&,
+      const tnsr::aa<DataVector, Dim, Frame>&,
+      const tnsr::iaa<DataVector, Dim, Frame>&,
+      const tnsr::i<DataVector, Dim, Frame>&) noexcept>(&characteristic_fields);
 };
 // @}
 
@@ -215,24 +211,21 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
     : Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>,
       db::ComputeTag {
   using base = Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>;
-  using type = typename base::type;
+  using return_type = typename base::type;
   using argument_tags = tmpl::list<
       Tags::ConstraintGamma2, Tags::VSpacetimeMetric<Dim, Frame>,
       Tags::VZero<Dim, Frame>, Tags::VPlus<Dim, Frame>,
       Tags::VMinus<Dim, Frame>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>>;
 
-  static typename Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>::type
-  function(
-      const Scalar<DataVector>& gamma_2,
+  static constexpr auto function = static_cast<void (*)(
+      const gsl::not_null<return_type*>, const Scalar<DataVector>& gamma_2,
       const tnsr::aa<DataVector, Dim, Frame>& u_psi,
       const tnsr::iaa<DataVector, Dim, Frame>& u_zero,
       const tnsr::aa<DataVector, Dim, Frame>& u_plus,
       const tnsr::aa<DataVector, Dim, Frame>& u_minus,
-      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept {
-    return evolved_fields_from_characteristic_fields(
-        gamma_2, u_psi, u_zero, u_plus, u_minus, unit_normal_one_form);
-  };
+      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept>(
+      &evolved_fields_from_characteristic_fields);
 };
 // @}
 

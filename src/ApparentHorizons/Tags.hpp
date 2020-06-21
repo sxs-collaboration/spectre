@@ -253,9 +253,14 @@ struct EuclideanSurfaceIntegral : db::ComputeTag {
   static std::string name() noexcept {
     return "EuclideanSurfaceIntegral(" + db::tag_name<IntegrandTag>() + ")";
   }
-  // return type is `double` so returning by value is OK
-  static constexpr auto function =
-      ::StrahlkorperGr::surface_integral_of_scalar<Frame>;
+  using return_type = double;
+  static void function(const gsl::not_null<double*> surface_integral,
+                       const Scalar<DataVector>& euclidean_area_element,
+                       const Scalar<DataVector>& integrand,
+                       const ::Strahlkorper<Frame>& strahlkorper) noexcept {
+    *surface_integral = ::StrahlkorperGr::surface_integral_of_scalar<Frame>(
+        euclidean_area_element, integrand, strahlkorper);
+  }
   using argument_tags = tmpl::list<EuclideanAreaElement<Frame>, IntegrandTag,
                                    StrahlkorperTags::Strahlkorper<Frame>>;
 };
@@ -272,9 +277,16 @@ struct EuclideanSurfaceIntegralVector : db::ComputeTag {
     return "EuclideanSurfaceIntegralVector(" + db::tag_name<IntegrandTag>() +
            ")";
   }
-  // return type is `double` so returning by value is OK
-  static constexpr auto function =
-      ::StrahlkorperGr::euclidean_surface_integral_of_vector<Frame>;
+  using return_type = double;
+  static void function(const gsl::not_null<double*> surface_integral,
+                       const Scalar<DataVector>& euclidean_area_element,
+                       const tnsr::I<DataVector, 3, Frame>& integrand,
+                       const tnsr::i<DataVector, 3, Frame>& normal_one_form,
+                       const ::Strahlkorper<Frame>& strahlkorper) noexcept {
+    *surface_integral =
+        ::StrahlkorperGr::euclidean_surface_integral_of_vector<Frame>(
+            euclidean_area_element, integrand, normal_one_form, strahlkorper);
+  }
   using argument_tags = tmpl::list<EuclideanAreaElement<Frame>, IntegrandTag,
                                    StrahlkorperTags::NormalOneForm<Frame>,
                                    StrahlkorperTags::Strahlkorper<Frame>>;
@@ -320,8 +332,14 @@ struct SurfaceIntegral : db::ComputeTag {
   static std::string name() noexcept {
     return "SurfaceIntegral(" + db::tag_name<IntegrandTag>() + ")";
   }
-  // return type is `double` so returning by value is OK
-  static constexpr auto function = surface_integral_of_scalar<Frame>;
+  using return_type = double;
+  static void function(const gsl::not_null<double*> surface_integral,
+                       const Scalar<DataVector>& area_element,
+                       const Scalar<DataVector>& integrand,
+                       const ::Strahlkorper<Frame>& strahlkorper) noexcept {
+    *surface_integral = ::StrahlkorperGr::surface_integral_of_scalar<Frame>(
+        area_element, integrand, strahlkorper);
+  }
   using argument_tags = tmpl::list<AreaElement<Frame>, IntegrandTag,
                                    StrahlkorperTags::Strahlkorper<Frame>>;
 };
