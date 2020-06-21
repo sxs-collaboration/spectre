@@ -47,15 +47,19 @@ RUN apt-get update -y \
                           libboost-thread-dev libboost-tools-dev libssl-dev \
                           libbenchmark-dev
 
-# Update is needed to get libc++ correctly
-# Install jemalloc
+# Install libc++ and jemalloc
+# The second `apt-get update` is to ensure that anything that depends on
+# libc++-dev is properly found. This was an issue on older versions of Ubuntu
+# but might be fixed in the package manager now. To minimize changes, we are
+# leaving the update call in for now.
 RUN apt-get update -y \
     && apt-get install -y libc++-dev libc++1 libc++abi-dev \
     && apt-get update -y \
     && apt-get install -y libjemalloc2 libjemalloc-dev
 
 # Install ccache to cache compilations for reduced compile time, and Doxygen
-RUN apt-get install -y ccache doxygen
+RUN apt-get update -y \
+    && apt-get install -y ccache doxygen
 
 # Install Python packages
 # We only install packages that are needed by the build system (e.g. to compile
@@ -154,6 +158,27 @@ RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.7.tar.gz -O bla
     && cd ../.. \
     && rm -rf yaml-cpp*
 
+# Install include-what-you-use
+# We specify the CMAKE_PREFIX_PATH to make sure that CMake finds the LLVM libs
+# from the specific LLVM version that IWYU expects. Without this help, CMake
+# can pick up one of the other LLVM libs from the various clang versions that
+# are installed in our container.
+RUN apt-get update -y \
+    && apt-get install -y libclang-10-dev
+WORKDIR /work
+RUN wget https://github.com/include-what-you-use/include-what-you-use/archive/clang_10.tar.gz \
+    && tar -xzf clang_10.tar.gz \
+    && rm clang_10.tar.gz \
+    && mkdir /work/include-what-you-use-clang_10/build \
+    && cd /work/include-what-you-use-clang_10/build \
+    && cmake -D CMAKE_CXX_COMPILER=clang++-10 \
+        -D CMAKE_C_COMPILER=clang-10 \
+        -D CMAKE_PREFIX_PATH=/usr/lib/llvm-10 .. \
+    && make $PARALLEL_MAKE_ARG \
+    && make install \
+    && cd /work \
+    && rm -rf /work/include-what-you-use-clang_10
+
 # Download and build the Charm++ version used by SpECTRE
 # We build both Clang and GCC versions of Charm++ so that all our tests can
 # use the same build environment.
@@ -190,7 +215,7 @@ RUN git clone --single-branch --branch ${CHARM_GIT_TAG} --depth 1 \
 #   inside a container (0 is true in bash)
 # - The singularity containers work better if the locale is set properly
 ENV SPECTRE_CONTAINER 0
-RUN apt-get update \
+RUN apt-get update -y \
     && apt-get install -y locales language-pack-fi language-pack-en \
     && export LANGUAGE=en_US.UTF-8 \
     && export LANG=en_US.UTF-8 \

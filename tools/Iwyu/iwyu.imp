@@ -4,6 +4,7 @@
 [
   { ref: "stl.imp" },
   { ref: "boost-all.imp" },
+  { ref: "boost-custom.imp" },
 
   { include: ["@<brigand/.*>", private,
               "\"Utilities/TMPL.hpp\"", public]},
@@ -52,11 +53,6 @@
   { include: ["<sharp_lowlevel.h>", public,
               "<sharp_cxx.h>", public]},
 
-  { include: ["<boost/optional/optional.hpp>", public,
-              "<boost/optional.hpp>", public]},
-  { include: ["<boost/optional/detail/optional_relops.hpp>", public,
-              "<boost/optional.hpp>", public]},
-
   { symbol: ["db::DataBox", private,
              "\"DataStructures/DataBox/DataBox.hpp\"", public]},
   { symbol: ["Tensor", private,
@@ -89,8 +85,6 @@
               public,
               "\"NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp\"",
               public]},
-
-
 
   { include: ["<ConstGlobalCache.decl.h>", private,
               "\"Parallel/ConstGlobalCache.hpp\"", public]},

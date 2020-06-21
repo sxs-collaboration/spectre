@@ -4,7 +4,7 @@
 find_package(PythonInterp REQUIRED)
 
 execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
-  "import scipy as s; print(s.__version__); print(s.get_include());"
+  "import scipy as s; print(s.__version__); import numpy as n; print(n.get_include());"
   RESULT_VARIABLE RESULT
   OUTPUT_VARIABLE OUTPUT
   OUTPUT_STRIP_TRAILING_WHITESPACE)

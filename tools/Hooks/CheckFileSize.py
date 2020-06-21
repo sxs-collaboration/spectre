@@ -10,6 +10,12 @@ import os
 # The maximum file-size for a file to be committed in kB
 max_file_size = 200.0
 
+# Files allowed to exceed the file-size limit
+allowed_large_files = [
+    'docs/config/cppreference-doxygen-web.tag.xml',
+    'tools/Iwyu/boost-all.imp',
+]
+
 # The path to the git-binary:
 git_executable = "@GIT_EXECUTABLE@"
 
@@ -35,6 +41,8 @@ file_list = text.splitlines()
 # Check all files:
 for file_s in file_list:
     if not os.path.isfile(file_s[3:]):
+        continue
+    elif file_s[3:] in allowed_large_files:
         continue
     stat = os.stat(file_s[3:])
     if stat.st_size > (max_file_size * 1024):
