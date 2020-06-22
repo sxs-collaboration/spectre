@@ -3,11 +3,14 @@
 
 set(LIBRARY ErrorHandling)
 
-set(LIBRARY_SOURCES
-    AbortWithErrorMessage.cpp
-    FloatingPointExceptions.cpp)
+add_spectre_library(${LIBRARY})
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  AbortWithErrorMessage.cpp
+  FloatingPointExceptions.cpp
+  )
 
 spectre_target_headers(
   ${LIBRARY}
