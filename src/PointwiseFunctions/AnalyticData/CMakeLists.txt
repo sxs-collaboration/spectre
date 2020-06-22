@@ -2,5 +2,6 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(Burgers)
+add_subdirectory(CurvedWaveEquation)
 add_subdirectory(GrMhd)
 add_subdirectory(NewtonianEuler)
