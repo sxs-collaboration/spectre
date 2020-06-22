@@ -4,7 +4,7 @@
 set(LIBRARY "Test_GeneralizedHarmonicGaugeSourceFunctions")
 
 set(LIBRARY_SOURCES
-  Test_DampedHarmonicGaugeQuantities.cpp
+  Test_DampedHarmonic.cpp
   Test_DampedWaveHelpers.cpp
   Test_InitializeDampedHarmonic.cpp
   )

@@ -34,7 +34,7 @@ namespace gauges {
  * The covariant form of the source function \f$H_a\f$ is written as:
  *
  * \f{align*}
- * H_a :=  [1 - R_{H_\mathrm{init}}(t)] H_a^\mathrm{init} +
+ * H_a :=  [1 - R(t)] H_a^\mathrm{init} +
  *  [\mu_{L1} \mathrm{log}(\sqrt{g}/N) + \mu_{L2} \mathrm{log}(1/N)] t_a
  *   - \mu_S g_{ai} N^i / N
  * \f}
@@ -45,17 +45,17 @@ namespace gauges {
  * 3-slice, i.e. \f$g_{ab} = \psi_{ab} + t_a t_b\f$). The prefactors are:
  *
  * \f{align*}
- *  \mu_{L1} &= A_{L1} R_{L1}(t) W(x^i) \mathrm{log}(\sqrt{g}/N)^{e_{L1}}, \\
- *  \mu_{L2} &= A_{L2} R_{L2}(t) W(x^i) \mathrm{log}(1/N)^{e_{L2}}, \\
- *  \mu_{S} &= A_{S} R_{S}(t) W(x^i) \mathrm{log}(\sqrt{g}/N)^{e_{S}},
+ *  \mu_{L1} &= A_{L1} R(t) W(x^i) \mathrm{log}(\sqrt{g}/N)^{e_{L1}}, \\
+ *  \mu_{L2} &= A_{L2} R(t) W(x^i) \mathrm{log}(1/N)^{e_{L2}}, \\
+ *  \mu_{S} &= A_{S} R(t) W(x^i) \mathrm{log}(\sqrt{g}/N)^{e_{S}},
  * \f}
  *
- * temporal roll-on functions \f$ R_X(t)\f$ (for \f$ X = \{L1, L2, S\} \f$) are:
+ * temporal roll-on function \f$ R(t)\f$ is:
  *
  * \f{align*}
  * \begin{array}{ll}
- *     R_X(t) & = 0, & t< t_{0,X} \\
- *             & = 1 - \exp[-((t - t_{0,X})/ \sigma_t^X)^4], & t\geq t_{0,X} \\
+ *     R(t) & = 0, & t< t_{0} \\
+ *          & = 1 - \exp[-((t - t_{0})/ \sigma_t)^4], & t\geq t_{0} \\
  * \end{array}
  * \f}
  *
@@ -73,9 +73,6 @@ namespace gauges {
  * Note that for the last three terms in \f$H_a\f$ (with \f$ X = \{L1, L2, S\}
  * \f$):
  *   - Amplitude factors \f$ A_{X} \f$ are taken as input here as `amp_coef_X`
- *   - Roll-on factor \f$ R_{X} \f$ is specified completely by \f$\{ t_{0,X},
- *     \sigma_t^X\}\f$, which are taken as input here as `t_start_X` and
- *     `sigma_t_X`.
  *   - Exponents \f$ e_X\f$ are taken as input here as `exp_X`.
  *   - Spatial weight function \f$W\f$ is specified completely by
  *     \f$\sigma_r\f$, which is taken as input here as `sigma_r`.
@@ -92,7 +89,7 @@ namespace gauges {
  * where:
  *
  * \f{align*}
- * T_1 =& [1 - R_{H_\mathrm{init}}(t)] H_a^\mathrm{init}, \\
+ * T_1 =& [1 - R(t)] H_a^\mathrm{init}, \\
  * T_2 =& [\mu_{L1} \mathrm{log}(\sqrt{g}/N) + \mu_{L2} \mathrm{log}(1/N)] t_a,
  * \\
  * T_3 =& - \mu_S g_{ai} N^i / N.
@@ -102,9 +99,9 @@ namespace gauges {
  *
  * \f$\blacksquare\f$ For \f$ T_1 \f$, the derivatives are:
  * \f{align*}
- * \partial_a T_1 = (1 - R_{H_\mathrm{init}}(t))
+ * \partial_a T_1 = (1 - R(t))
  * \partial_a H_b^\mathrm{init}
- *                - H_b^\mathrm{init} \partial_a R_{H_\mathrm{init}}.
+ *                - H_b^\mathrm{init} \partial_a R.
  * \f}
  *
  * \f$\blacksquare\f$ Write \f$ T_2 \equiv (\mu_1 + \mu_2) t_b \f$. Then:
@@ -120,17 +117,17 @@ namespace gauges {
  * \partial_a t_b =& \left(-\partial_a N, 0, 0, 0\right) \\
  *
  * \partial_a \mu_1
- *  =& \partial_a [A_{L1} R_{L1}(t) W(x^i) \mathrm{log}(\sqrt{g}/N)^{e_{L1} +
+ *  =& \partial_a [A_{L1} R(t) W(x^i) \mathrm{log}(\sqrt{g}/N)^{e_{L1} +
  * 1}], \\
- *  =& A_{L1} R_{L1}(t) W(x^i) \partial_a [\mathrm{log}(\sqrt{g}/N)^{e_{L1} +
+ *  =& A_{L1} R(t) W(x^i) \partial_a [\mathrm{log}(\sqrt{g}/N)^{e_{L1} +
  * 1}] \\
- *   +& A_{L1} \mathrm{log}(\sqrt{g}/N)^{e_{L1} + 1} \partial_a [R_{L1}(t)
+ *   +& A_{L1} \mathrm{log}(\sqrt{g}/N)^{e_{L1} + 1} \partial_a [R(t)
  * W(x^i)],\\
  *
  * \partial_a \mu_2
- *  =& \partial_a [A_{L2} R_{L2}(t) W(x^i) \mathrm{log}(1/N)^{e_{L2} + 1}], \\
- *  =& A_{L2} R_{L2}(t) W(x^i) \partial_a [\mathrm{log}(1/N)^{e_{L2} + 1}] \\
- *     +& A_{L2} \mathrm{log}(1/N)^{e_{L2} + 1} \partial_a [R_{L2}(t) W(x^i)],
+ *  =& \partial_a [A_{L2} R(t) W(x^i) \mathrm{log}(1/N)^{e_{L2} + 1}], \\
+ *  =& A_{L2} R(t) W(x^i) \partial_a [\mathrm{log}(1/N)^{e_{L2} + 1}] \\
+ *     +& A_{L2} \mathrm{log}(1/N)^{e_{L2} + 1} \partial_a [R(t) W(x^i)],
  * \f}
  *
  * where \f$\partial_a [R W] = \left(\partial_0 R(t), \partial_i
@@ -149,11 +146,11 @@ namespace gauges {
  * \f{align*}
  * \partial_a(\mu_S / N) =& (1/N)\partial_a \mu_S
  *                       - \frac{\mu_S}{N^2}\partial_a N, \,\,\mathrm{and}\\
- * \partial_a \mu_S =& \partial_a [A_S R_S(t) W(x^i)
+ * \partial_a \mu_S =& \partial_a [A_S R(t) W(x^i)
  * \mathrm{log}(\sqrt{g}/N)^{e_S}], \\
- *                  =& A_S R_S(t) W(x^i) \partial_a
+ *                  =& A_S R(t) W(x^i) \partial_a
  * [\mathrm{log}(\sqrt{g}/N)^{e_S}] \\
- *                  +& A_S \mathrm{log}(\sqrt{g} / N)^{e_S} \partial_a [R_S(t)
+ *                  +& A_S \mathrm{log}(\sqrt{g} / N)^{e_S} \partial_a [R(t)
  * W(x^i)].
  * \f}
  */
@@ -178,9 +175,7 @@ void damped_harmonic_rollon(
     // exponents
     int exp_L1, int exp_L2, int exp_S,
     // roll on function parameters for lapse / shift terms
-    double t_start_h_init, double sigma_t_h_init, double t_start_L1,
-    double sigma_t_L1, double t_start_L2, double sigma_t_L2, double t_start_S,
-    double sigma_t_S,
+    double rollon_start_time, double rollon_width,
     // weight function
     double sigma_r) noexcept;
 
@@ -224,7 +219,7 @@ struct DampedHarmonicRollonCompute : db::ComputeTag {
       const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
       const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
       const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, double time,
-      double t_start, double sigma_t,
+      double rollon_start_time, double rollon_width,
       const tnsr::I<DataVector, SpatialDim, Frame>& coords,
       double sigma_r) noexcept;
 };

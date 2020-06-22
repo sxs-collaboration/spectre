@@ -31,36 +31,44 @@ def spatial_metric_from_spacetime_metric(spacetime_metric):
     return spacetime_metric[1:, 1:]
 
 
-# In the next two functions, assume that amplitude pre-factors and exponents
-# have the following values:
-#      amp_coef_{h_init, L1, L2, S} = 1., 1., 1., 1.
-#      exp_{L1, L2, S}              = 4, 4, 4
-# and that the roll-on function associated with each term has identical config:
-#      t_start, sigma_t  for {_h_init, _L1, _L2, _S}.
-def damped_harmonic_gauge_source_function(gauge_h_init, lapse, shift,
-                                          sqrt_det_spatial_metric,
-                                          spacetime_metric, time, t_start,
-                                          sigma_t, coords, r_max):
-    unit_normal_one_form = np.zeros(1 + len(shift))
-    unit_normal_one_form[0] -= lapse
+def damped_harmonic_gauge_source_function(
+    gauge_h_init, dgauge_h_init, lapse, shift, unit_normal_one_form,
+    sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi, phi,
+    time, coords, amp_coef_L1, amp_coef_L2, amp_coef_S, rollon_start_time,
+    rollon_width, sigma_r):
+
+    # We cannot pass int through pypp right now, so we hard-code exponents.
+    exp_L1 = 4
+    exp_L2 = 4
+    exp_S = 4
+
     log_sqrtg_over_lapse = log_fac(lapse, sqrt_det_spatial_metric, 0.5)
     log_one_over_lapse = log_fac(lapse, sqrt_det_spatial_metric, 0.)
-    R = roll_on_function(time, t_start, sigma_t)
-    W = spatial_weight_function(coords, r_max)
-    muL1 = R * W * log_sqrtg_over_lapse**4
-    muL2 = R * W * log_one_over_lapse**4
-    muS = muL1
+
+    R = roll_on_function(time, rollon_start_time, rollon_width)
+    W = spatial_weight_function(coords, sigma_r)
+
+    muL1 = amp_coef_L1 * R * W * log_sqrtg_over_lapse**exp_L1
+    muL2 = amp_coef_L2 * R * W * log_one_over_lapse**exp_L2
+    muS = amp_coef_S * R * W * log_sqrtg_over_lapse**exp_S
     h_pre1 = muL1 * log_sqrtg_over_lapse + muL2 * log_one_over_lapse
     h_pre2 = muS / lapse
-    return (1. - R) * gauge_h_init + h_pre1 * unit_normal_one_form - h_pre2 * \
-        np.einsum('ai,i->a', spacetime_metric[:, 1:], shift)
+    return ((1. - R) * gauge_h_init + h_pre1 * unit_normal_one_form -
+            h_pre2 * np.einsum('ai,i->a', spacetime_metric[:, 1:], shift))
 
 
 def spacetime_deriv_damped_harmonic_gauge_source_function(
     gauge_h_init, dgauge_h_init, lapse, shift, spacetime_unit_normal_one_form,
     sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi, phi,
-    time, t_start, sigma_t, coords, r_max):
+    time, coords, amp_coef_L1, amp_coef_L2, amp_coef_S, rollon_start_time,
+    rollon_width, sigma_r):
     spatial_dim = len(shift)
+
+    # We cannot pass int through pypp right now, so we hard-code exponents.
+    exp_L1 = 4
+    exp_L2 = 4
+    exp_S = 4
+
     spacetime_unit_normal = spacetime_normal_vector(lapse, shift)
     spatial_metric = spatial_metric_from_spacetime_metric(spacetime_metric)
     det_spatial_metric = sqrt_det_spatial_metric**2
@@ -78,8 +86,8 @@ def spacetime_deriv_damped_harmonic_gauge_source_function(
     log_one_over_lapse_pow4 = log_one_over_lapse**4
     log_one_over_lapse_pow5 = log_one_over_lapse * log_one_over_lapse_pow4
 
-    R = roll_on_function(time, t_start, sigma_t)
-    W = spatial_weight_function(coords, r_max)
+    R = roll_on_function(time, rollon_start_time, rollon_width)
+    W = spatial_weight_function(coords, sigma_r)
 
     muL1 = R * W * log_sqrtg_over_lapse_pow4
     muS_over_N = muL1 / lapse
@@ -87,8 +95,8 @@ def spacetime_deriv_damped_harmonic_gauge_source_function(
     mu1 = muL1 * log_sqrtg_over_lapse
     mu2 = R * W * log_one_over_lapse_pow5
 
-    d4_W = spacetime_deriv_spatial_weight_function(coords, r_max)
-    d0_R = time_deriv_roll_on_function(time, t_start, sigma_t)
+    d4_W = spacetime_deriv_spatial_weight_function(coords, sigma_r)
+    d0_R = time_deriv_roll_on_function(time, rollon_start_time, rollon_width)
     d4_RW = R * d4_W
     d4_RW[0] += W * d0_R
 
@@ -113,10 +121,10 @@ def spacetime_deriv_damped_harmonic_gauge_source_function(
     prefac0 = 2. * R * W * log_sqrtg_over_lapse_pow3
     prefac1 = 2.5 * R * W * log_sqrtg_over_lapse_pow4
     prefac2 = -5. * R * W * log_one_over_lapse_pow4 * one_over_lapse
-    d4_muL1 = log_sqrtg_over_lapse_pow4 * d4_RW +\
-        prefac0 * (d4_g / det_spatial_metric - 2. * one_over_lapse * d4_N)
-    d4_mu1 = log_sqrtg_over_lapse_pow5 * d4_RW +\
-        prefac1 * (d4_g / det_spatial_metric - 2. * one_over_lapse * d4_N)
+    d4_muL1 = log_sqrtg_over_lapse_pow4 * d4_RW + prefac0 * (
+        d4_g / det_spatial_metric - 2. * one_over_lapse * d4_N)
+    d4_mu1 = log_sqrtg_over_lapse_pow5 * d4_RW + prefac1 * (
+        d4_g / det_spatial_metric - 2. * one_over_lapse * d4_N)
     d4_mu2 = log_one_over_lapse_pow5 * d4_RW + prefac2 * d4_N
 
     d4_normal_one_form = np.einsum('a,b->ab', np.zeros(spatial_dim + 1),
@@ -133,8 +141,10 @@ def spacetime_deriv_damped_harmonic_gauge_source_function(
     dT1 = (1. - R) * dgauge_h_init
     dT1[0, :] -= d0_R * gauge_h_init
 
-    dT2 = (mu1 + mu2) * d4_normal_one_form +\
-        np.einsum('a,b->ab', d4_mu1 + d4_mu2, spacetime_unit_normal_one_form)
+    dT2 = (amp_coef_L1 * mu1 +
+           amp_coef_L2 * mu2) * d4_normal_one_form + np.einsum(
+               'a,b->ab', amp_coef_L1 * d4_mu1 + amp_coef_L2 * d4_mu2,
+               spacetime_unit_normal_one_form)
 
     dT3 = np.einsum('a,b->ab', np.zeros(spatial_dim + 1),
                     np.zeros(spatial_dim + 1))
@@ -143,4 +153,4 @@ def spacetime_deriv_damped_harmonic_gauge_source_function(
     dT3 -= muS_over_N * np.einsum('abi,i->ab', d4_psi[:, :, 1:], shift)
     dT3 -= muS_over_N * np.einsum('ai,bi->ab', d4_shift[:, 1:],
                                   spacetime_metric[:, 1:])
-    return dT1 + dT2 + dT3
+    return dT1 + dT2 + amp_coef_S * dT3
