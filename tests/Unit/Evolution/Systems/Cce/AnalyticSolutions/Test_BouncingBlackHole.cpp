@@ -19,7 +19,12 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TimeDerivativeOfSpacetimeMetric.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace Cce {
@@ -278,14 +283,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.BouncingBlackHole",
       square(get<0>(cartesian_coordinates)) +
       square(get<1>(cartesian_coordinates)) +
       square(get<2>(cartesian_coordinates));
-  for(const auto& val : radius_squared_from_coordinates) {
+  for (const auto& val : radius_squared_from_coordinates) {
     CHECK(approx(val) == square(extraction_radius));
   }
   const DataVector radius_from_coordinates =
       (get<0>(cartesian_coordinates) * get<0>(dr_cartesian_coordinates) +
        get<1>(cartesian_coordinates) * get<1>(dr_cartesian_coordinates) +
        get<2>(cartesian_coordinates) * get<2>(dr_cartesian_coordinates));
-  for(const auto& val : radius_from_coordinates) {
+  for (const auto& val : radius_from_coordinates) {
     CHECK(approx(val) == extraction_radius);
   }
 

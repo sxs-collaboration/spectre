@@ -20,7 +20,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -68,7 +68,7 @@ void test_generalized_harmonic_solution(const Args&... args) noexcept {
       x, t, typename SolutionType::template tags<DataVector>{});
 
   tmpl::for_each<typename SolutionType::template tags<DataVector>>(
-      [&vars, &wrapped_vars ](auto tag_v) noexcept {
+      [&vars, &wrapped_vars](auto tag_v) noexcept {
         using tag = typename decltype(tag_v)::type;
         CHECK(get<tag>(vars) == get<tag>(wrapped_vars));
       });

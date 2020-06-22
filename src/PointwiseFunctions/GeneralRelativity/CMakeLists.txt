@@ -6,10 +6,19 @@ set(LIBRARY GeneralRelativity)
 set(LIBRARY_SOURCES
     Christoffel.cpp
     ComputeGhQuantities.cpp
-    ComputeSpacetimeQuantities.cpp
+    DerivativesOfSpacetimeMetric.cpp
+    ExtrinsicCurvature.cpp
     IndexManipulation.cpp
+    InverseSpacetimeMetric.cpp
     KerrSchildCoords.cpp
+    Lapse.cpp
     Ricci.cpp
+    Shift.cpp
+    SpacetimeMetric.cpp
+    SpacetimeNormalOneForm.cpp
+    SpacetimeNormalVector.cpp
+    SpatialMetric.cpp
+    TimeDerivativeOfSpacetimeMetric.cpp
     WeylElectric.cpp
     )
 

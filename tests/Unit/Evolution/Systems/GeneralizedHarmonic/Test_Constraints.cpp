@@ -36,8 +36,13 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -171,8 +176,7 @@ void test_two_index_constraint_random(const DataType& used_for_size) noexcept {
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
           &GeneralizedHarmonic::two_index_constraint<SpatialDim, Frame,
                                                      DataType>),
-      "TestFunctions", "two_index_constraint", {{{-1.0, 1.0}}},
-      used_for_size);
+      "TestFunctions", "two_index_constraint", {{{-1.0, 1.0}}}, used_for_size);
 }
 
 // Test the return-by-reference two-index constraint
@@ -303,8 +307,7 @@ void test_four_index_constraint_random(const DataType& used_for_size) noexcept {
           const tnsr::ijaa<DataType, SpatialDim, Frame>&)>(
           &GeneralizedHarmonic::four_index_constraint<SpatialDim, Frame,
                                                       DataType>),
-      "TestFunctions", "four_index_constraint", {{{-1.0, 1.0}}},
-      used_for_size);
+      "TestFunctions", "four_index_constraint", {{{-1.0, 1.0}}}, used_for_size);
 }
 
 // Test the return-by-reference four-index constraint
@@ -534,8 +537,7 @@ void test_constraint_energy_random(const DataType& used_for_size) noexcept {
           const tnsr::II<DataType, SpatialDim, Frame>&, const Scalar<DataType>&,
           double, double, double, double)>(
           &GeneralizedHarmonic::constraint_energy<SpatialDim, Frame, DataType>),
-      "TestFunctions", "constraint_energy", {{{-1.0, 1.0}}},
-      used_for_size);
+      "TestFunctions", "constraint_energy", {{{-1.0, 1.0}}}, used_for_size);
 }
 
 // Test the return-by-reference constraint energy

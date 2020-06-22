@@ -30,8 +30,12 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -278,16 +282,16 @@ db::const_item_type<deriv<Tag>> space_derivative(const Solution& solution,
   db::const_item_type<deriv<Tag>> result{};
   for (auto it = result.begin(); it != result.end(); ++it) {
     const auto index = result.get_tensor_index(it);
-    *it =
-        numerical_derivative([&index, &solution, &time, &x](
-                                 const std::array<double, 1>& offset) noexcept {
+    *it = numerical_derivative(
+        [&index, &solution, &time,
+         &x](const std::array<double, 1>& offset) noexcept {
           auto position = x;
           position.get(index[0]) += offset[0];
           return std::array<double, 1>{
               {get<Tag>(solution.variables(position, time, tmpl::list<Tag>{}))
                    .get(all_but_specified_element_of(index, 0))}};
         },
-                             std::array<double, 1>{{0.0}}, 0, dx)[0];
+        std::array<double, 1>{{0.0}}, 0, dx)[0];
   }
   return result;
 }

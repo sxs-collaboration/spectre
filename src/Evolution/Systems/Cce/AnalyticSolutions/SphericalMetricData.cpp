@@ -19,7 +19,7 @@
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -30,9 +30,9 @@ namespace Cce::Solutions {
 void SphericalMetricData::variables_impl(
     const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
     const size_t l_max, const double time,
-    tmpl::type_<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial,
-                                          DataVector>> /*meta*/) const
-    noexcept {
+    tmpl::type_<
+        gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>> /*meta*/)
+    const noexcept {
   Variables<
       tmpl::list<Tags::detail::InverseCartesianToSphericalJacobian,
                  gr::Tags::SpacetimeMetric<

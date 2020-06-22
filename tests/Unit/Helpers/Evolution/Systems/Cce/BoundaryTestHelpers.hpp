@@ -16,7 +16,7 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 

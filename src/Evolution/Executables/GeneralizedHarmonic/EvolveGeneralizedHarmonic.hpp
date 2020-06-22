@@ -88,9 +88,10 @@
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
@@ -218,8 +219,7 @@ struct EvolutionMetavars {
     using post_interpolation_callback =
         intrp::callbacks::FindApparentHorizon<AhA>;
     using post_horizon_find_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA,
-                                                     AhA>;
+        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA, AhA>;
   };
   using interpolation_target_tags = tmpl::list<AhA>;
   using interpolator_source_vars =
@@ -236,9 +236,9 @@ struct EvolutionMetavars {
   using triggers = Triggers::time_triggers;
 
   // Events include the observation events and finding the horizon
-  using events = tmpl::push_back<observation_events,
-                                 intrp::Events::Registrars::Interpolate<
-                                     3, AhA, interpolator_source_vars>>;
+  using events = tmpl::push_back<
+      observation_events,
+      intrp::Events::Registrars::Interpolate<3, AhA, interpolator_source_vars>>;
 
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
   // metavariables

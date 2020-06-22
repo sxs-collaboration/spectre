@@ -10,7 +10,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 // IWYU pragma: no_forward_declare ::Tags::deriv
 
@@ -294,13 +294,11 @@ WrappedGr<SolutionType>::variables(
           Frame::Inertial>> /*meta*/,                                          \
       const IntermediateVars& intermediate_vars) const noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (gr::Solutions::GaugeWave<1>,
-                                      gr::Solutions::GaugeWave<2>,
-                                      gr::Solutions::GaugeWave<3>,
-                                      gr::Solutions::Minkowski<1>,
-                                      gr::Solutions::Minkowski<2>,
-                                      gr::Solutions::Minkowski<3>,
-                                      gr::Solutions::KerrSchild))
+GENERATE_INSTANTIATIONS(
+    INSTANTIATE, (gr::Solutions::GaugeWave<1>, gr::Solutions::GaugeWave<2>,
+                  gr::Solutions::GaugeWave<3>, gr::Solutions::Minkowski<1>,
+                  gr::Solutions::Minkowski<2>, gr::Solutions::Minkowski<3>,
+                  gr::Solutions::KerrSchild))
 
 #undef DIM
 #undef STYPE

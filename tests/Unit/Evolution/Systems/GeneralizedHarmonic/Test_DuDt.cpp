@@ -22,8 +22,14 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "Utilities/Gsl.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
