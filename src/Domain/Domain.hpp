@@ -53,9 +53,9 @@ class Domain {
    * [domain creation tutorial](\ref tutorial_domain_creation).
    *
    */
-  Domain(std::vector<std::unique_ptr<domain::CoordinateMapBase<
-             Frame::Logical, Frame::Inertial, VolumeDim>>>
-             maps) noexcept;
+  explicit Domain(std::vector<std::unique_ptr<domain::CoordinateMapBase<
+                      Frame::Logical, Frame::Inertial, VolumeDim>>>
+                      maps) noexcept;
 
   /*!
    * Create a Domain using a corner numbering scheme to encode the Orientations,
@@ -98,7 +98,7 @@ class Domain {
     return blocks_;
   }
 
-  //clang-tidy: google-runtime-references
+  // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:

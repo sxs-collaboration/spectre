@@ -154,8 +154,8 @@ class YlmSpherepack {
   /// and offset (assumed to be the same for input and output).
   void gradient(const std::array<double*, 2>& df,
                 gsl::not_null<const double*> collocation_values,
-                size_t physical_stride = 1, size_t physical_offset = 0) const
-      noexcept;
+                size_t physical_stride = 1,
+                size_t physical_offset = 0) const noexcept;
 
   /// Same as `gradient`, but takes the spectral coefficients (rather
   /// than collocation values) of the function.  This is more
@@ -185,8 +185,8 @@ class YlmSpherepack {
 
   SPECTRE_ALWAYS_INLINE void gradient_from_coefs_all_offsets(
       const std::array<double*, 2>& df,
-      gsl::not_null<const double*> spectral_coefs, size_t stride = 1) const
-      noexcept {
+      gsl::not_null<const double*> spectral_coefs,
+      size_t stride = 1) const noexcept {
     gradient_from_coefs_impl(df, spectral_coefs, stride, 0, stride, 0, true);
   }
   ///@}
@@ -238,10 +238,9 @@ class YlmSpherepack {
   DataVector scalar_laplacian(const DataVector& collocation_values,
                               size_t physical_stride = 1,
                               size_t physical_offset = 0) const noexcept;
-  DataVector scalar_laplacian_from_coefs(const DataVector& spectral_coefs,
-                                         size_t spectral_stride = 1,
-                                         size_t spectral_offset = 0) const
-      noexcept;
+  DataVector scalar_laplacian_from_coefs(
+      const DataVector& spectral_coefs, size_t spectral_stride = 1,
+      size_t spectral_offset = 0) const noexcept;
   ///@}
 
   /// Computes Pfaffian first and second derivative in physical space.
@@ -274,8 +273,8 @@ class YlmSpherepack {
   /// Returns weights \f$w_i\f$ such that \f$sum_i (c_i w_i)\f$
   /// is the definite integral, where \f$c_i\f$ are collocation values
   /// at point i.
-  SPECTRE_ALWAYS_INLINE const std::vector<double>& integration_weights() const
-      noexcept {
+  SPECTRE_ALWAYS_INLINE const std::vector<double>& integration_weights()
+      const noexcept {
     return storage_.quadrature_weights;
   }
 
@@ -312,8 +311,8 @@ class YlmSpherepack {
   void interpolate(gsl::not_null<std::vector<double>*> result,
                    gsl::not_null<const double*> collocation_values,
                    const InterpolationInfo& interpolation_info,
-                   size_t physical_stride = 1, size_t physical_offset = 0) const
-      noexcept;
+                   size_t physical_stride = 1,
+                   size_t physical_offset = 0) const noexcept;
 
   /// Same as `interpolate`, but assumes you have spectral coefficients.
   /// This is more efficient if you already have the spectral coefficients

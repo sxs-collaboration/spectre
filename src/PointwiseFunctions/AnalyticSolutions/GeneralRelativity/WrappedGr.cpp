@@ -16,8 +16,7 @@
 // IWYU pragma: no_forward_declare ::Tags::deriv
 
 /// \cond
-namespace GeneralizedHarmonic {
-namespace Solutions {
+namespace GeneralizedHarmonic::Solutions {
 // Preprocessor logic to avoid defining variables() functions for
 // tags other than the three the wrapper adds (i.e., other than
 // gr::Tags::SpacetimeMetric, GeneralizedHarmonic::Tags::Pi, and
@@ -143,8 +142,7 @@ WrappedGr<SolutionType>::variables(
   return {GeneralizedHarmonic::pi(lapse, dt_lapse, shift, dt_shift,
                                   spatial_metric, dt_spatial_metric, phi)};
 }
-}  // namespace Solutions
-}  // namespace GeneralizedHarmonic
+}  // namespace GeneralizedHarmonic::Solutions
 
 #define STYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 

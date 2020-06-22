@@ -26,8 +26,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Cce {
-namespace Solutions {
+namespace Cce::Solutions {
 
 /// \cond
 void WorldtubeData::variables_impl(
@@ -281,5 +280,4 @@ void WorldtubeData::pup(PUP::er& p) noexcept {
 }
 
 /// \endcond
-}  // namespace Solutions
-}  // namespace Cce
+}  // namespace Cce::Solutions
