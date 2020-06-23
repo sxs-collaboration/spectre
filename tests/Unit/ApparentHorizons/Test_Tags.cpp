@@ -30,7 +30,8 @@ namespace {
 // a given average radius and a given center.
 auto create_strahlkorper_y11(const double y11_amplitude, const double radius,
                              const std::array<double, 3>& center) {
-  const size_t l_max = 4, m_max = 4;
+  static const size_t l_max = 4;
+  static const size_t m_max = 4;
 
   Strahlkorper<Frame::Inertial> strahlkorper_sphere(l_max, m_max, radius,
                                                     center);
@@ -297,6 +298,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   test_radius_and_derivs();
   test_normals();
   TestHelpers::db::test_simple_tag<ah::Tags::FastFlow>("FastFlow");
+  TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::Area>("Area");
   TestHelpers::db::test_simple_tag<
       StrahlkorperTags::Strahlkorper<Frame::Inertial>>("Strahlkorper");
   TestHelpers::db::test_compute_tag<
@@ -338,4 +340,6 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   TestHelpers::db::test_compute_tag<
       StrahlkorperGr::Tags::SurfaceIntegral<SomeTag, Frame::Inertial>>(
       "SurfaceIntegral(SomeTag)");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperGr::Tags::AreaCompute<Frame::Inertial>>("Area");
 }
