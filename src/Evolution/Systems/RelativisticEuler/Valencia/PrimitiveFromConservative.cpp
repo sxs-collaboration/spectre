@@ -15,13 +15,11 @@
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Overloader.hpp"
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 
 /// \cond
-namespace RelativisticEuler {
-namespace Valencia {
+namespace RelativisticEuler::Valencia {
 
 namespace {
 
@@ -53,19 +51,14 @@ class FunctionOfZ {
     const double epsilon = W * q - z * r + square(z) / (1.0 + W);
     const double e = rho * (1.0 + epsilon);
 
-    const double pressure =
-        make_overloader(
-            [&rho](const EquationsOfState::EquationOfState<true, 1>&
-                       equation_of_state) noexcept {
-              return equation_of_state.pressure_from_density(
-                  Scalar<double>(rho));
-            },
-            [&rho, &epsilon ](const EquationsOfState::EquationOfState<true, 2>&
-                                  equation_of_state) noexcept {
-              return equation_of_state.pressure_from_density_and_energy(
-                  Scalar<double>(rho), Scalar<double>(epsilon));
-            })(equation_of_state_)
-            .get();
+    double pressure = std::numeric_limits<double>::signaling_NaN();
+    if constexpr (ThermodynamicDim == 1) {
+      pressure =
+          get(equation_of_state_.pressure_from_density(Scalar<double>(rho)));
+    } else if constexpr (ThermodynamicDim == 2) {
+      pressure = get(equation_of_state_.pressure_from_density_and_energy(
+          Scalar<double>(rho), Scalar<double>(epsilon)));
+    }
 
     const double a = pressure / e;
     const double h = (1.0 + epsilon) * (1.0 + a);
@@ -131,17 +124,12 @@ void PrimitiveFromConservative<ThermodynamicDim, Dim>::apply(
           get(tilde_d) +
       square(z) / (1.0 + get(*lorentz_factor));
 
-  *pressure = make_overloader(
-      [&rest_mass_density](const EquationsOfState::EquationOfState<true, 1>&
-                               the_equation_of_state) noexcept {
-        return the_equation_of_state.pressure_from_density(*rest_mass_density);
-      },
-      [&rest_mass_density, &specific_internal_energy ](
-          const EquationsOfState::EquationOfState<true, 2>&
-              the_equation_of_state) noexcept {
-        return the_equation_of_state.pressure_from_density_and_energy(
-            *rest_mass_density, *specific_internal_energy);
-      })(equation_of_state);
+  if constexpr (ThermodynamicDim == 1) {
+    *pressure = equation_of_state.pressure_from_density(*rest_mass_density);
+  } else if constexpr (ThermodynamicDim == 2) {
+    *pressure = equation_of_state.pressure_from_density_and_energy(
+        *rest_mass_density, *specific_internal_energy);
+  }
 
   get(*specific_enthalpy) = 1.0 + get(*specific_internal_energy) +
                             get(*pressure) / get(*rest_mass_density);
@@ -165,6 +153,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 #undef INSTANTIATION
 #undef THERMODIM
 #undef DIM
-}  // namespace Valencia
-}  // namespace RelativisticEuler
+}  // namespace RelativisticEuler::Valencia
 /// \endcond

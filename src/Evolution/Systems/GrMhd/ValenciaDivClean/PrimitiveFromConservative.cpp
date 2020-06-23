@@ -25,7 +25,6 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Overloader.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include <array>
@@ -34,8 +33,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
-namespace grmhd {
-namespace ValenciaDivClean {
+namespace grmhd::ValenciaDivClean {
 
 template <typename OrderedListOfPrimitiveRecoverySchemes,
           size_t ThermodynamicDim>
@@ -162,24 +160,19 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
             << "previous_lorentz_factor = " << get(*lorentz_factor)[s] << "\n");
     }
   }
-  *specific_internal_energy = make_overloader(
-      [&rest_mass_density](const EquationsOfState::EquationOfState<true, 1>&
-                               the_equation_of_state) noexcept {
-        return the_equation_of_state.specific_internal_energy_from_density(
+  if constexpr (ThermodynamicDim == 1) {
+    *specific_internal_energy =
+        equation_of_state.specific_internal_energy_from_density(
             *rest_mass_density);
-      },
-      [&rest_mass_density,
-       &pressure ](const EquationsOfState::EquationOfState<true, 2>&
-                       the_equation_of_state) noexcept {
-        return the_equation_of_state
-            .specific_internal_energy_from_density_and_pressure(
-                *rest_mass_density, *pressure);
-      })(equation_of_state);
+  } else if constexpr (ThermodynamicDim == 2) {
+    *specific_internal_energy =
+        equation_of_state.specific_internal_energy_from_density_and_pressure(
+            *rest_mass_density, *pressure);
+  }
   *specific_enthalpy = hydro::relativistic_specific_enthalpy(
       *rest_mass_density, *specific_internal_energy, *pressure);
 }
-}  // namespace ValenciaDivClean
-}  // namespace grmhd
+}  // namespace grmhd::ValenciaDivClean
 
 #define RECOVERY(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define THERMODIM(data) BOOST_PP_TUPLE_ELEM(1, data)

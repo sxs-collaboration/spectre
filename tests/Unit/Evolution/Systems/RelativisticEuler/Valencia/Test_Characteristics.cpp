@@ -210,158 +210,154 @@ Matrix expected_flux_jacobian(
   return jacobian;
 }
 
-template <size_t Dim>
-void test_characteristic_matrices(const double used_for_size) noexcept {
+template <size_t Dim, size_t ThermodynamicDim>
+void test_characteristic_matrices_work(
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state,
+    const double used_for_size) noexcept {
   MAKE_GENERATOR(generator);
-  const auto test_for_given_eos =
-      [&used_for_size, &generator ](const auto& equation_of_state) noexcept {
-    namespace helper = TestHelpers::hydro;
-    namespace gr_helper = TestHelpers::gr;
-    const auto nn_gen = make_not_null(&generator);
+  namespace helper = TestHelpers::hydro;
+  namespace gr_helper = TestHelpers::gr;
+  const auto nn_gen = make_not_null(&generator);
 
-    const auto spatial_metric =
-        gr_helper::random_spatial_metric<Dim>(nn_gen, used_for_size);
-    const auto det_and_inv_metric = determinant_and_inverse(spatial_metric);
-    const auto lorentz_factor =
-        helper::random_lorentz_factor(nn_gen, used_for_size);
-    const auto spatial_velocity =
-        helper::random_velocity(nn_gen, lorentz_factor, spatial_metric);
-    const auto spatial_velocity_oneform =
-        raise_or_lower_index(spatial_velocity, spatial_metric);
-    const auto spatial_velocity_squared =
-        dot_product(spatial_velocity, spatial_velocity, spatial_metric);
+  const auto spatial_metric =
+      gr_helper::random_spatial_metric<Dim>(nn_gen, used_for_size);
+  const auto det_and_inv_metric = determinant_and_inverse(spatial_metric);
+  const auto lorentz_factor =
+      helper::random_lorentz_factor(nn_gen, used_for_size);
+  const auto spatial_velocity =
+      helper::random_velocity(nn_gen, lorentz_factor, spatial_metric);
+  const auto spatial_velocity_oneform =
+      raise_or_lower_index(spatial_velocity, spatial_metric);
+  const auto spatial_velocity_squared =
+      dot_product(spatial_velocity, spatial_velocity, spatial_metric);
 
-    const auto random_normal_vector =
-        random_unit_normal(nn_gen, spatial_metric);
-    const auto random_normal =
-        raise_or_lower_index(random_normal_vector, spatial_metric);
+  const auto random_normal_vector = random_unit_normal(nn_gen, spatial_metric);
+  const auto random_normal =
+      raise_or_lower_index(random_normal_vector, spatial_metric);
 
-    // Make consistent set of thermodynamic variables, along with their
-    // derived quantities for a given equation of state.
-    const auto rest_mass_density =
-        helper::random_density(nn_gen, used_for_size);
-    Scalar<double> specific_internal_energy{};
-    Scalar<double> pressure{};
-    Scalar<double> specific_enthalpy{};
-    Scalar<double> sound_speed_squared{};
-    Scalar<double> kappa_over_density{};
-    make_overloader(
-        [
-          &rest_mass_density, &specific_internal_energy, &pressure,
-          &specific_enthalpy, &sound_speed_squared, &kappa_over_density
-        ](const EquationsOfState::EquationOfState<true, 1>& eos) noexcept {
-          specific_internal_energy =
-              eos.specific_internal_energy_from_density(rest_mass_density);
-          pressure = eos.pressure_from_density(rest_mass_density);
-          specific_enthalpy = hydro::relativistic_specific_enthalpy(
-              rest_mass_density, specific_internal_energy, pressure);
-          sound_speed_squared = hydro::sound_speed_squared(
-              rest_mass_density, specific_internal_energy, specific_enthalpy,
-              eos);
-          kappa_over_density = Scalar<double>{
-              {{get(eos.kappa_times_p_over_rho_squared_from_density(
-                    rest_mass_density)) *
-                get(rest_mass_density) / get(pressure)}}};
-        },
-        [
-          &nn_gen, &used_for_size, &rest_mass_density,
-          &specific_internal_energy, &pressure, &specific_enthalpy,
-          &sound_speed_squared, &kappa_over_density
-        ](const EquationsOfState::EquationOfState<true, 2>& eos) noexcept {
-          specific_internal_energy =
-              helper::random_specific_internal_energy(nn_gen, used_for_size);
-          pressure = eos.pressure_from_density_and_energy(
-              rest_mass_density, specific_internal_energy);
-          specific_enthalpy = hydro::relativistic_specific_enthalpy(
-              rest_mass_density, specific_internal_energy, pressure);
-          sound_speed_squared = hydro::sound_speed_squared(
-              rest_mass_density, specific_internal_energy, specific_enthalpy,
-              eos);
-          kappa_over_density = Scalar<double>{
-              {{get(eos.kappa_times_p_over_rho_squared_from_density_and_energy(
-                    rest_mass_density, specific_internal_energy)) *
-                get(rest_mass_density) / get(pressure)}}};
-        })(equation_of_state);
+  // Make consistent set of thermodynamic variables, along with their
+  // derived quantities for a given equation of state.
+  const auto rest_mass_density = helper::random_density(nn_gen, used_for_size);
+  Scalar<double> specific_internal_energy{};
+  Scalar<double> pressure{};
+  Scalar<double> specific_enthalpy{};
+  Scalar<double> sound_speed_squared{};
+  Scalar<double> kappa_over_density{};
+  if constexpr (ThermodynamicDim == 1) {
+    specific_internal_energy =
+        equation_of_state.specific_internal_energy_from_density(
+            rest_mass_density);
+    pressure = equation_of_state.pressure_from_density(rest_mass_density);
+    specific_enthalpy = hydro::relativistic_specific_enthalpy(
+        rest_mass_density, specific_internal_energy, pressure);
+    sound_speed_squared =
+        hydro::sound_speed_squared(rest_mass_density, specific_internal_energy,
+                                   specific_enthalpy, equation_of_state);
+    kappa_over_density = Scalar<double>{
+        {{get(equation_of_state.kappa_times_p_over_rho_squared_from_density(
+              rest_mass_density)) *
+          get(rest_mass_density) / get(pressure)}}};
+  } else if constexpr (ThermodynamicDim == 2) {
+    specific_internal_energy =
+        helper::random_specific_internal_energy(nn_gen, used_for_size);
+    pressure = equation_of_state.pressure_from_density_and_energy(
+        rest_mass_density, specific_internal_energy);
+    specific_enthalpy = hydro::relativistic_specific_enthalpy(
+        rest_mass_density, specific_internal_energy, pressure);
+    sound_speed_squared =
+        hydro::sound_speed_squared(rest_mass_density, specific_internal_energy,
+                                   specific_enthalpy, equation_of_state);
+    kappa_over_density = Scalar<double>{
+        {{get(equation_of_state
+                  .kappa_times_p_over_rho_squared_from_density_and_energy(
+                      rest_mass_density, specific_internal_energy)) *
+          get(rest_mass_density) / get(pressure)}}};
+  }
 
-    Matrix right_matrix = RelativisticEuler::Valencia::right_eigenvectors(
-        rest_mass_density, spatial_velocity, specific_internal_energy, pressure,
-        specific_enthalpy, kappa_over_density, sound_speed_squared,
-        lorentz_factor, spatial_metric, det_and_inv_metric.second,
-        det_and_inv_metric.first, random_normal);
+  Matrix right_matrix = RelativisticEuler::Valencia::right_eigenvectors(
+      rest_mass_density, spatial_velocity, specific_internal_energy, pressure,
+      specific_enthalpy, kappa_over_density, sound_speed_squared,
+      lorentz_factor, spatial_metric, det_and_inv_metric.second,
+      det_and_inv_metric.first, random_normal);
 
-    Matrix left_matrix = RelativisticEuler::Valencia::left_eigenvectors(
-        rest_mass_density, spatial_velocity, specific_internal_energy, pressure,
-        specific_enthalpy, kappa_over_density, sound_speed_squared,
-        lorentz_factor, spatial_metric, det_and_inv_metric.second,
-        det_and_inv_metric.first, random_normal);
+  Matrix left_matrix = RelativisticEuler::Valencia::left_eigenvectors(
+      rest_mass_density, spatial_velocity, specific_internal_energy, pressure,
+      specific_enthalpy, kappa_over_density, sound_speed_squared,
+      lorentz_factor, spatial_metric, det_and_inv_metric.second,
+      det_and_inv_metric.first, random_normal);
 
-    const auto check_identity = [](const auto& left,
-                                   const auto& right) noexcept {
-      // Very small values of the sound speed lead to large values of some left
-      // eigenvectors (e.g Seed = 3106390430), so we use a moderate tolerance.
-      Approx local_approx = Approx::custom().epsilon(1.0e-6).scale(1.0);
-      const Matrix left_times_right = left * right;
-      const Matrix right_times_left = right * left;
-      for (size_t i = 0; i < Dim + 2; ++i) {
-        for (size_t j = 0; j < Dim + 2; ++j) {
-          const double delta_ij = (i == j) ? 1.0 : 0.0;
-          CHECK(left_times_right(i, j) == local_approx(delta_ij));
-          CHECK(right_times_left(i, j) == local_approx(delta_ij));
-        }
+  const auto check_identity = [](const auto& left, const auto& right) noexcept {
+    // Very small values of the sound speed lead to large values of some left
+    // eigenvectors (e.g Seed = 3106390430), so we use a moderate tolerance.
+    Approx local_approx = Approx::custom().epsilon(1.0e-6).scale(1.0);
+    const Matrix left_times_right = left * right;
+    const Matrix right_times_left = right * left;
+    for (size_t i = 0; i < Dim + 2; ++i) {
+      for (size_t j = 0; j < Dim + 2; ++j) {
+        const double delta_ij = (i == j) ? 1.0 : 0.0;
+        CHECK(left_times_right(i, j) == local_approx(delta_ij));
+        CHECK(right_times_left(i, j) == local_approx(delta_ij));
       }
-    };
+    }
+  };
+  check_identity(left_matrix, right_matrix);
+
+  const auto check_diagonalization = [](const auto& left, const auto& right,
+                                        const auto& eigenvalues,
+                                        const auto& expected) noexcept {
+    Approx local_approx = Approx::custom().epsilon(1.0e-8).scale(1.0);
+    const Matrix flux_jacobian = right * eigenvalues * left;
+    for (size_t i = 0; i < Dim + 2; ++i) {
+      for (size_t j = 0; j < Dim + 2; ++j) {
+        CHECK(flux_jacobian(i, j) == local_approx(expected(i, j)));
+      }
+    }
+  };
+  check_diagonalization(
+      left_matrix, right_matrix,
+      matrix_of_eigenvalues(spatial_velocity, spatial_velocity_squared,
+                            sound_speed_squared, random_normal),
+      expected_flux_jacobian(spatial_velocity, spatial_velocity_oneform,
+                             lorentz_factor, specific_enthalpy,
+                             sound_speed_squared, kappa_over_density,
+                             random_normal, random_normal_vector));
+
+  // test for unit normals along coordinate axes
+  for (const auto& direction : Direction<Dim>::all_directions()) {
+    const auto normal = unit_basis_form(
+        direction, determinant_and_inverse(spatial_metric).second);
+
+    right_matrix = RelativisticEuler::Valencia::right_eigenvectors(
+        rest_mass_density, spatial_velocity, specific_internal_energy, pressure,
+        specific_enthalpy, kappa_over_density, sound_speed_squared,
+        lorentz_factor, spatial_metric, det_and_inv_metric.second,
+        det_and_inv_metric.first, normal);
+
+    left_matrix = RelativisticEuler::Valencia::left_eigenvectors(
+        rest_mass_density, spatial_velocity, specific_internal_energy, pressure,
+        specific_enthalpy, kappa_over_density, sound_speed_squared,
+        lorentz_factor, spatial_metric, det_and_inv_metric.second,
+        det_and_inv_metric.first, normal);
+
     check_identity(left_matrix, right_matrix);
-
-    const auto check_diagonalization = [](const auto& left, const auto& right,
-                                          const auto& eigenvalues,
-                                          const auto& expected) noexcept {
-      Approx local_approx = Approx::custom().epsilon(1.0e-8).scale(1.0);
-      const Matrix flux_jacobian = right * eigenvalues * left;
-      for (size_t i = 0; i < Dim + 2; ++i) {
-        for (size_t j = 0; j < Dim + 2; ++j) {
-          CHECK(flux_jacobian(i, j) == local_approx(expected(i, j)));
-        }
-      }
-    };
     check_diagonalization(
         left_matrix, right_matrix,
         matrix_of_eigenvalues(spatial_velocity, spatial_velocity_squared,
-                              sound_speed_squared, random_normal),
-        expected_flux_jacobian(spatial_velocity, spatial_velocity_oneform,
-                               lorentz_factor, specific_enthalpy,
-                               sound_speed_squared, kappa_over_density,
-                               random_normal, random_normal_vector));
+                              sound_speed_squared, normal),
+        expected_flux_jacobian(
+            spatial_velocity, spatial_velocity_oneform, lorentz_factor,
+            specific_enthalpy, sound_speed_squared, kappa_over_density, normal,
+            raise_or_lower_index(normal, det_and_inv_metric.second)));
+  }
+}
 
-    // test for unit normals along coordinate axes
-    for (const auto& direction : Direction<Dim>::all_directions()) {
-      const auto normal = unit_basis_form(
-          direction, determinant_and_inverse(spatial_metric).second);
-
-      right_matrix = RelativisticEuler::Valencia::right_eigenvectors(
-          rest_mass_density, spatial_velocity, specific_internal_energy,
-          pressure, specific_enthalpy, kappa_over_density, sound_speed_squared,
-          lorentz_factor, spatial_metric, det_and_inv_metric.second,
-          det_and_inv_metric.first, normal);
-
-      left_matrix = RelativisticEuler::Valencia::left_eigenvectors(
-          rest_mass_density, spatial_velocity, specific_internal_energy,
-          pressure, specific_enthalpy, kappa_over_density, sound_speed_squared,
-          lorentz_factor, spatial_metric, det_and_inv_metric.second,
-          det_and_inv_metric.first, normal);
-
-      check_identity(left_matrix, right_matrix);
-      check_diagonalization(
-          left_matrix, right_matrix,
-          matrix_of_eigenvalues(spatial_velocity, spatial_velocity_squared,
-                                sound_speed_squared, normal),
-          expected_flux_jacobian(
-              spatial_velocity, spatial_velocity_oneform, lorentz_factor,
-              specific_enthalpy, sound_speed_squared, kappa_over_density,
-              normal, raise_or_lower_index(normal, det_and_inv_metric.second)));
-    }
-  };
-  test_for_given_eos(EquationsOfState::IdealFluid<true>{5.0 / 3.0});
-  test_for_given_eos(EquationsOfState::PolytropicFluid<true>{0.001, 4.0 / 3.0});
+template <size_t Dim>
+void test_characteristic_matrices(const double used_for_size) noexcept {
+  test_characteristic_matrices_work<Dim>(
+      EquationsOfState::IdealFluid<true>{5.0 / 3.0}, used_for_size);
+  test_characteristic_matrices_work<Dim>(
+      EquationsOfState::PolytropicFluid<true>{0.001, 4.0 / 3.0}, used_for_size);
 }
 
 }  // namespace

@@ -13,14 +13,12 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Overloader.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
-namespace RelativisticEuler {
-namespace Valencia {
+namespace RelativisticEuler::Valencia {
 
 template <size_t Dim>
 void characteristic_speeds(
@@ -170,7 +168,7 @@ Matrix right_eigenvectors(const Scalar<double>& rest_mass_density,
   }
 
   // if Dim > 1 set degenerate eigenvectors
-  if (Dim > 1) {
+  if constexpr (Dim > 1) {
     const double two_h_w_minus_one =
         h_w_minus_one + specific_enthalpy_times_lorentz_factor;
     const auto unit_tangent_oneform =
@@ -196,26 +194,12 @@ Matrix right_eigenvectors(const Scalar<double>& rest_mass_density,
     };
     set_degenerate_eigenvector(1, unit_tangent_oneform);
 
-    if (Dim > 2) {
+    if constexpr (Dim > 2) {
       // orthonormal_oneform for two forms is defined for 3-d only
-      // so it needs to be called from a make_overloader.
-      make_overloader([](std::integral_constant<size_t, 1> /*dim*/,
-                         const auto&...) noexcept {},
-                      [](std::integral_constant<size_t, 2> /*dim*/,
-                         const auto&...) noexcept {},
-                      [&set_degenerate_eigenvector](
-                          std::integral_constant<size_t, 3> /*dim*/,
-                          const auto& the_unit_normal,
-                          const auto& the_unit_tangent_oneform,
-                          const auto& the_spatial_metric,
-                          const auto& the_det_spatial_metric) noexcept {
-                        set_degenerate_eigenvector(
-                            2, orthonormal_oneform<double, Frame::Inertial>(
-                                   the_unit_normal, the_unit_tangent_oneform,
-                                   the_spatial_metric, the_det_spatial_metric));
-                      })(std::integral_constant<size_t, Dim>{}, unit_normal,
-                         unit_tangent_oneform, spatial_metric,
-                         det_spatial_metric);
+      set_degenerate_eigenvector(
+          2, orthonormal_oneform<double, Frame::Inertial>(
+                 unit_normal, unit_tangent_oneform, spatial_metric,
+                 det_spatial_metric));
     }
   }
 
@@ -323,7 +307,7 @@ Matrix left_eigenvectors(const Scalar<double>& rest_mass_density,
   result(eigenvector_id, 1) *= -1.0;
 
   // if Dim > 1 set degenerate eigenvectors
-  if (Dim > 1) {
+  if constexpr (Dim > 1) {
     const double prefactor = -inv_specific_enthalpy / one_minus_vn_squared;
     const auto unit_tangent_oneform =
         orthonormal_oneform(unit_normal, inv_spatial_metric);
@@ -346,34 +330,19 @@ Matrix left_eigenvectors(const Scalar<double>& rest_mass_density,
     };
     set_degenerate_eigenvector(1, unit_tangent_oneform);
 
-    if (Dim > 2) {
+    if constexpr (Dim > 2) {
       // orthonormal_oneform for two forms is defined for 3-d only
-      // so it needs to be called from a make_overloader.
-      make_overloader([](std::integral_constant<size_t, 1> /*dim*/,
-                         const auto&...) noexcept {},
-                      [](std::integral_constant<size_t, 2> /*dim*/,
-                         const auto&...) noexcept {},
-                      [&set_degenerate_eigenvector](
-                          std::integral_constant<size_t, 3> /*dim*/,
-                          const auto& the_unit_normal,
-                          const auto& the_unit_tangent_oneform,
-                          const auto& the_spatial_metric,
-                          const auto& the_det_spatial_metric) noexcept {
-                        set_degenerate_eigenvector(
-                            2, orthonormal_oneform<double, Frame::Inertial>(
-                                   the_unit_normal, the_unit_tangent_oneform,
-                                   the_spatial_metric, the_det_spatial_metric));
-                      })(std::integral_constant<size_t, Dim>{}, unit_normal,
-                         unit_tangent_oneform, spatial_metric,
-                         det_spatial_metric);
+      set_degenerate_eigenvector(
+          2, orthonormal_oneform<double, Frame::Inertial>(
+                 unit_normal, unit_tangent_oneform, spatial_metric,
+                 det_spatial_metric));
     }
   }
 
   return result;
 }
 
-}  // namespace Valencia
-}  // namespace RelativisticEuler
+}  // namespace RelativisticEuler::Valencia
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

@@ -8,7 +8,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/Overloader.hpp"
 
 // IWYU pragma: no_include <array>
 
@@ -59,36 +58,25 @@ void FixToAtmosphere<Dim, ThermodynamicDim>::operator()(
       }
       lorentz_factor->get()[i] = 1.0;
       Scalar<double> atmosphere_density{density_of_atmosphere_};
-      make_overloader(
-          [
-            &atmosphere_density, &pressure, &specific_internal_energy,
-            &specific_enthalpy, &i
-          ](const EquationsOfState::EquationOfState<true, 1>&
-                the_equation_of_state) noexcept {
-            pressure->get()[i] =
-                get(the_equation_of_state.pressure_from_density(
-                    atmosphere_density));
-            specific_internal_energy->get()[i] =
-                get(the_equation_of_state.specific_internal_energy_from_density(
-                    atmosphere_density));
-            specific_enthalpy->get()[i] =
-                get(the_equation_of_state.specific_enthalpy_from_density(
-                    atmosphere_density));
-          },
-          [
-            &atmosphere_density, &pressure, &specific_internal_energy,
-            &specific_enthalpy, &i
-          ](const EquationsOfState::EquationOfState<true, 2>&
-                the_equation_of_state) noexcept {
-            Scalar<double> atmosphere_energy{0.0};
-            pressure->get()[i] =
-                get(the_equation_of_state.pressure_from_density_and_energy(
-                    atmosphere_density, atmosphere_energy));
-            specific_internal_energy->get()[i] = get(atmosphere_energy);
-            specific_enthalpy->get()[i] = get(
-                the_equation_of_state.specific_enthalpy_from_density_and_energy(
-                    atmosphere_density, atmosphere_energy));
-          })(equation_of_state);
+      if constexpr (ThermodynamicDim == 1) {
+        pressure->get()[i] =
+            get(equation_of_state.pressure_from_density(atmosphere_density));
+        specific_internal_energy->get()[i] =
+            get(equation_of_state.specific_internal_energy_from_density(
+                atmosphere_density));
+        specific_enthalpy->get()[i] =
+            get(equation_of_state.specific_enthalpy_from_density(
+                atmosphere_density));
+      } else if constexpr (ThermodynamicDim == 2) {
+        Scalar<double> atmosphere_energy{0.0};
+        pressure->get()[i] =
+            get(equation_of_state.pressure_from_density_and_energy(
+                atmosphere_density, atmosphere_energy));
+        specific_internal_energy->get()[i] = get(atmosphere_energy);
+        specific_enthalpy->get()[i] =
+            get(equation_of_state.specific_enthalpy_from_density_and_energy(
+                atmosphere_density, atmosphere_energy));
+      }
     }
   }
 }

@@ -6,20 +6,18 @@
 #include <boost/none.hpp>
 #include <cmath>
 #include <exception>
+#include <limits>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/Overloader.hpp"
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 
 /// \cond
-namespace grmhd {
-namespace ValenciaDivClean {
-namespace PrimitiveRecoverySchemes {
+namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
 
 namespace {
 
@@ -70,20 +68,16 @@ class FunctionOfX {
         rest_mass_density_times_lorentz_factor_ / current_lorentz_factor;
     const double current_specific_internal_energy =
         specific_internal_energy(x, current_lorentz_factor);
-    const double current_pressure = get(make_overloader(
-        [&current_rest_mass_density](
-            const EquationsOfState::EquationOfState<true, 1>&
-                the_equation_of_state) noexcept {
-          return the_equation_of_state.pressure_from_density(
-              Scalar<double>(current_rest_mass_density));
-        },
-        [&current_rest_mass_density, &current_specific_internal_energy ](
-            const EquationsOfState::EquationOfState<true, 2>&
-                the_equation_of_state) noexcept {
-          return the_equation_of_state.pressure_from_density_and_energy(
+    double current_pressure = std::numeric_limits<double>::signaling_NaN();
+    if constexpr (ThermodynamicDim == 1) {
+      current_pressure = get(equation_of_state_.pressure_from_density(
+          Scalar<double>(current_rest_mass_density)));
+    } else if constexpr (ThermodynamicDim == 2) {
+      current_pressure =
+          get(equation_of_state_.pressure_from_density_and_energy(
               Scalar<double>(current_rest_mass_density),
-              Scalar<double>(current_specific_internal_energy));
-        })(equation_of_state_));
+              Scalar<double>(current_specific_internal_energy)));
+    }
 
     return x - (1.0 + current_specific_internal_energy +
                 current_pressure / current_rest_mass_density) *
@@ -122,7 +116,8 @@ boost::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
                                     magnetic_field_squared,
                                     rest_mass_density_times_lorentz_factor,
                                     equation_of_state};
-  double specific_enthalpy_times_lorentz_factor;
+  double specific_enthalpy_times_lorentz_factor =
+      std::numeric_limits<double>::signaling_NaN();
   try {
     specific_enthalpy_times_lorentz_factor =
         // NOLINTNEXTLINE(clang-analyzer-core)
@@ -136,29 +131,23 @@ boost::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
       f_of_x.lorentz_factor(specific_enthalpy_times_lorentz_factor);
   const double rest_mass_density =
       rest_mass_density_times_lorentz_factor / lorentz_factor;
-  const double specific_internal_energy = f_of_x.specific_internal_energy(
-      specific_enthalpy_times_lorentz_factor, lorentz_factor);
-  const double pressure = get(make_overloader(
-      [&rest_mass_density](const EquationsOfState::EquationOfState<true, 1>&
-                               the_equation_of_state) noexcept {
-        return the_equation_of_state.pressure_from_density(
-            Scalar<double>(rest_mass_density));
-      },
-      [&rest_mass_density, &specific_internal_energy ](
-          const EquationsOfState::EquationOfState<true, 2>&
-              the_equation_of_state) noexcept {
-        return the_equation_of_state.pressure_from_density_and_energy(
-            Scalar<double>(rest_mass_density),
-            Scalar<double>(specific_internal_energy));
-      })(equation_of_state));
+  double pressure = std::numeric_limits<double>::signaling_NaN();
+  if constexpr (ThermodynamicDim == 1) {
+    pressure = get(equation_of_state.pressure_from_density(
+        Scalar<double>(rest_mass_density)));
+  } else if constexpr (ThermodynamicDim == 2) {
+    const double specific_internal_energy = f_of_x.specific_internal_energy(
+        specific_enthalpy_times_lorentz_factor, lorentz_factor);
+    pressure = get(equation_of_state.pressure_from_density_and_energy(
+        Scalar<double>(rest_mass_density),
+        Scalar<double>(specific_internal_energy)));
+  }
 
   return PrimitiveRecoveryData{rest_mass_density, lorentz_factor, pressure,
                                specific_enthalpy_times_lorentz_factor *
                                    rest_mass_density_times_lorentz_factor};
 }
-}  // namespace PrimitiveRecoverySchemes
-}  // namespace ValenciaDivClean
-}  // namespace grmhd
+}  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
 
 #define THERMODIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATION(_, data)                                                 \
