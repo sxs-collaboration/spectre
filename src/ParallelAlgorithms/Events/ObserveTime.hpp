@@ -89,8 +89,7 @@ class ObserveTime : public Event<EventRegistrars> {
         "Current time: " +
         std::to_string(static_cast<double>(observation_value));
 
-    Parallel::simple_action<observers::Actions::ContributeReductionData<
-        observers::ThreadedActions::PrintReductionData>>(
+    Parallel::simple_action<observers::Actions::ContributeStringForPrinting>(
         local_observer,
         observers::ObservationId(
             observation_value,
