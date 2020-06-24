@@ -17,8 +17,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace NewtonianEuler {
-namespace Solutions {
+namespace NewtonianEuler::Solutions {
 
 LaneEmdenStar::LaneEmdenStar(const double central_mass_density,
                              const double polytropic_constant) noexcept
@@ -157,5 +156,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 #undef DTYPE
 #undef INSTANTIATE
 
-}  // namespace Solutions
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Solutions

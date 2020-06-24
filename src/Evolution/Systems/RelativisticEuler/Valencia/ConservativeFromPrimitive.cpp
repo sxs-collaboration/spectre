@@ -14,8 +14,7 @@
 #include "Utilities/Gsl.hpp"
 
 /// \cond
-namespace RelativisticEuler {
-namespace Valencia {
+namespace RelativisticEuler::Valencia {
 
 template <size_t Dim>
 void ConservativeFromPrimitive<Dim>::apply(
@@ -67,6 +66,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef DIM
-}  // namespace Valencia
-}  // namespace RelativisticEuler
+}  // namespace RelativisticEuler::Valencia
 /// \endcond

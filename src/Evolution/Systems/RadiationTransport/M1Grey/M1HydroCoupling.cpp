@@ -33,10 +33,8 @@ struct kappaT_lapse {
 /// \endcond
 }  // namespace
 
-namespace RadiationTransport {
-namespace M1Grey {
+namespace RadiationTransport::M1Grey::detail {
 
-namespace detail {
 void compute_m1_hydro_coupling_impl(
     const gsl::not_null<Scalar<DataVector>*> source_n,
     const gsl::not_null<tnsr::i<DataVector, 3>*> source_i,
@@ -78,6 +76,4 @@ void compute_m1_hydro_coupling_impl(
   }
 }
 
-}  // namespace detail
-}  // namespace M1Grey
-}  // namespace RadiationTransport
+}  // namespace RadiationTransport::M1Grey::detail

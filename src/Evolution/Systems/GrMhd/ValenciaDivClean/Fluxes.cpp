@@ -21,8 +21,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
-namespace grmhd {
-namespace ValenciaDivClean {
+namespace grmhd::ValenciaDivClean {
 void ComputeFluxes::apply(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_d_flux,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
@@ -114,6 +113,5 @@ void ComputeFluxes::apply(
     tilde_s_flux->get(i, i) += p_star_alpha_sqrt_det_g;
   }
 }
-}  // namespace ValenciaDivClean
-}  // namespace grmhd
+}  // namespace grmhd::ValenciaDivClean
 /// \endcond

@@ -42,10 +42,8 @@ double minerbo_closure_deriv(const double zeta) noexcept {
 }
 }  // namespace
 
-namespace RadiationTransport {
-namespace M1Grey {
+namespace RadiationTransport::M1Grey::detail {
 
-namespace detail {
 void compute_closure_impl(
     const gsl::not_null<Scalar<DataVector>*> closure_factor,
     const gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
@@ -295,6 +293,4 @@ void compute_closure_impl(
   }
 }
 
-}  // namespace detail
-}  // namespace M1Grey
-}  // namespace RadiationTransport
+}  // namespace RadiationTransport::M1Grey::detail

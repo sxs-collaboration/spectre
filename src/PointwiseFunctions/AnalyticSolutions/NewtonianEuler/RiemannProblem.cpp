@@ -73,8 +73,7 @@ struct FunctionOfPressureAndData {
 }  // namespace
 
 /// \cond
-namespace NewtonianEuler {
-namespace Solutions {
+namespace NewtonianEuler::Solutions {
 
 template <size_t Dim>
 RiemannProblem<Dim>::RiemannProblem(
@@ -536,6 +535,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (1, 2, 3), (double, DataVector),
 #undef INSTANTIATE_SCALARS
 #undef INSTANTIATE_VELOCITY
 
-}  // namespace Solutions
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Solutions
 /// \endcond

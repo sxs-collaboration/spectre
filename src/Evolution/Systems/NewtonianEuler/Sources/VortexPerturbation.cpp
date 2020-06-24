@@ -21,8 +21,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
-namespace NewtonianEuler {
-namespace Sources {
+namespace NewtonianEuler::Sources {
 template <>
 void VortexPerturbation<2>::apply() const noexcept {}
 
@@ -87,6 +86,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
 
 #undef INSTANTIATE
 #undef DIM
-}  // Namespace Sources
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Sources
 /// \endcond

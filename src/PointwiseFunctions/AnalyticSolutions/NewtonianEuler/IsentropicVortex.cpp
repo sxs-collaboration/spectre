@@ -22,8 +22,7 @@
 // IWYU pragma: no_include <complex>
 
 /// \cond
-namespace NewtonianEuler {
-namespace Solutions {
+namespace NewtonianEuler::Solutions {
 
 template <size_t Dim>
 IsentropicVortex<Dim>::IsentropicVortex(
@@ -215,6 +214,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (2, 3), (double, DataVector),
 #undef INSTANTIATE_SCALARS
 #undef INSTANTIATE_VELOCITY
 
-}  // namespace Solutions
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Solutions
 /// \endcond

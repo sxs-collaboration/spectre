@@ -21,8 +21,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
-namespace grmhd {
-namespace ValenciaDivClean {
+namespace grmhd::ValenciaDivClean {
 
 void ConservativeFromPrimitive::apply(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,
@@ -102,6 +101,5 @@ void ConservativeFromPrimitive::apply(
       get(sqrt_det_spatial_metric) * get(divergence_cleaning_field);
 }
 
-}  // namespace ValenciaDivClean
-}  // namespace grmhd
+}  // namespace grmhd::ValenciaDivClean
 /// \endcond
