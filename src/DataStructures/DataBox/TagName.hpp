@@ -11,6 +11,8 @@
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
+#include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 /// \cond
 namespace db {
@@ -20,37 +22,12 @@ struct PrefixTag;
 
 namespace db {
 
-namespace DataBox_detail {
-template <typename Tag, typename = std::void_t<>>
-struct tag_name_impl;
-
-template <typename Tag, typename = std::nullptr_t, typename = std::void_t<>>
-struct tag_name_impl2 {
-  static_assert(not is_compute_item_v<Tag>,
-                "Compute tags must have a name function or a base alias.");
-  static std::string name() noexcept { return pretty_type::short_name<Tag>(); }
-};
-
-template <typename Tag>
-struct tag_name_impl2<Tag, Requires<is_compute_item_v<Tag>>,
-                      std::void_t<typename Tag::base>>
-    : tag_name_impl<typename Tag::base> {};
-
-template <typename Tag>
-struct tag_name_impl2<Tag, Requires<std::is_base_of_v<db::PrefixTag, Tag> and
-                                    not is_compute_item_v<Tag>>> {
-  static std::string name() noexcept {
-    return pretty_type::short_name<Tag>() + "(" +
-           tag_name_impl<typename Tag::tag>::name() + ")";
-  }
-};
-
-template <typename Tag, typename>
-struct tag_name_impl : tag_name_impl2<Tag> {};
-
-template <typename Tag>
-struct tag_name_impl<Tag, std::void_t<decltype(Tag::name())>> : public Tag {};
-}  // namespace DataBox_detail
+namespace detail {
+CREATE_IS_CALLABLE(name)
+CREATE_IS_CALLABLE_V(name)
+CREATE_HAS_TYPE_ALIAS(base)
+CREATE_HAS_TYPE_ALIAS_V(base)
+}  // namespace detail
 
 /*!
  * \ingroup DataBoxGroup
@@ -65,7 +42,17 @@ struct tag_name_impl<Tag, std::void_t<decltype(Tag::name())>> : public Tag {};
  */
 template <typename Tag>
 std::string tag_name() noexcept {
-  return DataBox_detail::tag_name_impl<Tag>::name();
+  if constexpr (detail::is_name_callable_v<Tag>) {
+    return Tag::name();
+  } else if constexpr (db::is_compute_tag_v<Tag>) {
+    static_assert(detail::has_base_v<Tag>,
+                  "Compute tags must have a name function or a base alias");
+    return tag_name<typename Tag::base>();
+  } else if constexpr (std::is_base_of_v<db::PrefixTag, Tag>) {
+    return pretty_type::short_name<Tag>() + "(" +
+           tag_name<typename Tag::tag>() + ")";
+  } else {
+    return pretty_type::short_name<Tag>();
+  }
 }
-
 }  // namespace db

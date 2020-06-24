@@ -134,7 +134,7 @@ template <typename DirectionsTag, typename Tag>
 struct InterfaceCompute : Interface<DirectionsTag, Tag>,
                           db::ComputeTag,
                           virtual db::PrefixTag {
-  static_assert(db::is_compute_item_v<Tag>,
+  static_assert(db::is_compute_tag_v<Tag>,
                 "Cannot use a non compute item as an interface compute item.");
   // Defining name here prevents an ambiguous function call when using base
   // tags; Both Interface<Dirs, Tag> and Interface<Dirs, Tag::base> will have a

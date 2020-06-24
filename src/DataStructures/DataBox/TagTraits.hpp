@@ -24,15 +24,15 @@ namespace db {
  * \brief Check if `Tag` derives off of db::ComputeTag
  */
 template <typename Tag, typename = std::nullptr_t>
-struct is_compute_item : std::false_type {};
+struct is_compute_tag : std::false_type {};
 /// \cond HIDDEN_SYMBOLS
 template <typename Tag>
-struct is_compute_item<Tag, Requires<std::is_base_of_v<db::ComputeTag, Tag>>>
+struct is_compute_tag<Tag, Requires<std::is_base_of_v<db::ComputeTag, Tag>>>
     : std::true_type {};
 /// \endcond
 
 template <typename Tag>
-constexpr bool is_compute_item_v = is_compute_item<Tag>::value;
+constexpr bool is_compute_tag_v = is_compute_tag<Tag>::value;
 // @}
 
 // @{
@@ -84,7 +84,7 @@ struct is_base_tag : std::false_type {};
 template <typename Tag>
 struct is_base_tag<Tag, Requires<std::is_base_of_v<db::BaseTag, Tag> and
                                  not std::is_base_of_v<db::SimpleTag, Tag> and
-                                 not is_compute_item_v<Tag>>> : std::true_type {
+                                 not is_compute_tag_v<Tag>>> : std::true_type {
 };
 /// \endcond
 
