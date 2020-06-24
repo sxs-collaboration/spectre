@@ -12,8 +12,7 @@ template <size_t>
 class Mesh;
 /// \endcond
 
-namespace Limiters {
-namespace Weno_detail {
+namespace Limiters::Weno_detail {
 
 // Denote different schemes for computing related oscillation indicators by
 // changing the relative weight given to each derivative of the input data.
@@ -44,5 +43,4 @@ double oscillation_indicator(DerivativeWeight derivative_weight,
                              const DataVector& data,
                              const Mesh<VolumeDim>& mesh) noexcept;
 
-}  // namespace Weno_detail
-}  // namespace Limiters
+}  // namespace Limiters::Weno_detail

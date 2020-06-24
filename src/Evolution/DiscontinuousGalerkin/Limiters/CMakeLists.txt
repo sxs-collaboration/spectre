@@ -3,7 +3,11 @@
 
 set(LIBRARY Limiters)
 
-set(LIBRARY_SOURCES
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
   HwenoImpl.cpp
   Minmod.cpp
   MinmodHelpers.cpp
@@ -15,7 +19,28 @@ set(LIBRARY_SOURCES
   WenoType.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  HwenoImpl.hpp
+  Krivodonova.hpp
+  LimiterActions.hpp
+  Limiters.hpp
+  Minmod.hpp
+  Minmod.tpp
+  MinmodHelpers.hpp
+  MinmodTci.hpp
+  MinmodType.hpp
+  SimpleWenoImpl.hpp
+  Tags.hpp
+  Tci.hpp
+  Weno.hpp
+  WenoGridHelpers.hpp
+  WenoHelpers.hpp
+  WenoOscillationIndicator.hpp
+  WenoType.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}
@@ -23,7 +48,7 @@ target_link_libraries(
   Boost::boost
   DataStructures
   Domain
-  Interpolation  # for WENO
+  Interpolation
   LinearOperators
   Options
   )

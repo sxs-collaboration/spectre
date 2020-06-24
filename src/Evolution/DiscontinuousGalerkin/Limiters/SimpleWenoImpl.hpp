@@ -26,8 +26,7 @@
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace Limiters {
-namespace Weno_detail {
+namespace Limiters::Weno_detail {
 
 // Compute the Simple WENO solution for one tensor component
 //
@@ -57,12 +56,13 @@ void simple_weno_impl(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data) noexcept {
-  ASSERT(modified_neighbor_solution_buffer->size() == neighbor_data.size(),
-         "modified_neighbor_solution_buffer->size() = "
-         << modified_neighbor_solution_buffer->size()
-         << "\nneighbor_data.size() = " << neighbor_data.size()
-         << "\nmodified_neighbor_solution_buffer was incorrectly initialized "
-            "before calling simple_weno_impl.");
+  ASSERT(
+      modified_neighbor_solution_buffer->size() == neighbor_data.size(),
+      "modified_neighbor_solution_buffer->size() = "
+          << modified_neighbor_solution_buffer->size()
+          << "\nneighbor_data.size() = " << neighbor_data.size()
+          << "\nmodified_neighbor_solution_buffer was incorrectly initialized "
+             "before calling simple_weno_impl.");
 
   // Compute the modified neighbor solutions.
   // First extrapolate neighbor data onto local grid points, then shift the
@@ -138,5 +138,4 @@ void simple_weno_impl(
   }
 }
 
-}  // namespace Weno_detail
-}  // namespace Limiters
+}  // namespace Limiters::Weno_detail

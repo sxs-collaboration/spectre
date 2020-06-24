@@ -23,8 +23,7 @@ struct hash;
 }  // namespace boost
 /// \endcond
 
-namespace Limiters {
-namespace Weno_detail {
+namespace Limiters::Weno_detail {
 
 // Compute the WENO weighted reconstruction of a DataVector, see e.g.,
 // Eq. 4.3 of Zhu2016. This is fairly standard, though different references can
@@ -46,5 +45,4 @@ void reconstruct_from_weighted_sum(
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_polynomials) noexcept;
 
-}  // namespace Weno_detail
-}  // namespace Limiters
+}  // namespace Limiters::Weno_detail

@@ -16,8 +16,7 @@ template <size_t>
 class Mesh;
 /// \endcond
 
-namespace Limiters {
-namespace Weno_detail {
+namespace Limiters::Weno_detail {
 
 // Check that an element has just one neighbor in a particular direction, and
 // that this neighbor has the same refinement level as the element.
@@ -61,5 +60,4 @@ std::array<DataVector, VolumeDim> local_grid_points_in_neighbor_logical_coords(
     const Element<VolumeDim>& element,
     const Direction<VolumeDim>& direction_to_neighbor) noexcept;
 
-}  // namespace Weno_detail
-}  // namespace Limiters
+}  // namespace Limiters::Weno_detail

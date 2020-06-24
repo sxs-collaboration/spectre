@@ -29,22 +29,22 @@ void test_reconstruction_1d() noexcept {
                      Spectral::Quadrature::GaussLobatto);
   const auto coords = logical_coordinates(mesh);
 
-  const auto evaluate_polynomial = [&coords](
-      const std::array<double, 5>& coeffs) noexcept {
-    const auto& x = get<0>(coords);
-    return DataVector{coeffs[0] + coeffs[1] * x + coeffs[2] * square(x) +
-                      coeffs[3] * cube(x) + coeffs[4] * pow<4>(x)};
-  };
+  const auto evaluate_polynomial =
+      [&coords](const std::array<double, 5>& coeffs) noexcept {
+        const auto& x = get<0>(coords);
+        return DataVector{coeffs[0] + coeffs[1] * x + coeffs[2] * square(x) +
+                          coeffs[3] * cube(x) + coeffs[4] * pow<4>(x)};
+      };
 
   DataVector local_data = evaluate_polynomial({{1., 2., 0., 0.5, 0.1}});
   // WENO reconstruction should preserve the mean, so expected = initial
   const double expected_local_mean = mean_value(local_data, mesh);
 
   const auto shift_data_to_local_mean =
-      [&mesh, &expected_local_mean ](const DataVector& neighbor_data) noexcept {
-    return neighbor_data + expected_local_mean -
-           mean_value(neighbor_data, mesh);
-  };
+      [&mesh, &expected_local_mean](const DataVector& neighbor_data) noexcept {
+        return neighbor_data + expected_local_mean -
+               mean_value(neighbor_data, mesh);
+      };
 
   std::unordered_map<std::pair<Direction<1>, ElementId<1>>, DataVector,
                      boost::hash<std::pair<Direction<1>, ElementId<1>>>>
@@ -73,15 +73,15 @@ void test_reconstruction_2d() noexcept {
                      Spectral::Quadrature::GaussLobatto);
   const auto coords = logical_coordinates(mesh);
 
-  const auto evaluate_polynomial = [&coords](
-      const std::array<double, 9>& coeffs) noexcept {
-    const auto& x = get<0>(coords);
-    const auto& y = get<1>(coords);
-    return DataVector{coeffs[0] + coeffs[1] * x + coeffs[2] * square(x) +
-                      y * (coeffs[3] + coeffs[4] * x + coeffs[5] * square(x)) +
-                      square(y) *
-                          (coeffs[6] + coeffs[7] * x + coeffs[8] * square(x))};
-  };
+  const auto evaluate_polynomial =
+      [&coords](const std::array<double, 9>& coeffs) noexcept {
+        const auto& x = get<0>(coords);
+        const auto& y = get<1>(coords);
+        return DataVector{
+            coeffs[0] + coeffs[1] * x + coeffs[2] * square(x) +
+            y * (coeffs[3] + coeffs[4] * x + coeffs[5] * square(x)) +
+            square(y) * (coeffs[6] + coeffs[7] * x + coeffs[8] * square(x))};
+      };
 
   DataVector local_data =
       evaluate_polynomial({{2., 1., 0., 1.5, 1., 0., 1., 0., 0.}});
@@ -89,10 +89,10 @@ void test_reconstruction_2d() noexcept {
   const double expected_local_mean = mean_value(local_data, mesh);
 
   const auto shift_data_to_local_mean =
-      [&mesh, &expected_local_mean ](const DataVector& neighbor_data) noexcept {
-    return neighbor_data + expected_local_mean -
-           mean_value(neighbor_data, mesh);
-  };
+      [&mesh, &expected_local_mean](const DataVector& neighbor_data) noexcept {
+        return neighbor_data + expected_local_mean -
+               mean_value(neighbor_data, mesh);
+      };
 
   std::unordered_map<std::pair<Direction<2>, ElementId<2>>, DataVector,
                      boost::hash<std::pair<Direction<2>, ElementId<2>>>>
@@ -132,25 +132,25 @@ void test_reconstruction_3d() noexcept {
 
   // 3D case has so many modes... so we simplify by only setting 6 of them, the
   // choice of modes to use here is arbitrary.
-  const auto evaluate_polynomial = [&coords](
-      const std::array<double, 6>& coeffs) noexcept {
-    const auto& x = get<0>(coords);
-    const auto& y = get<1>(coords);
-    const auto& z = get<2>(coords);
-    return DataVector{coeffs[0] + coeffs[1] * y + coeffs[2] * x * z +
-                      coeffs[3] * x * y * z + coeffs[4] * square(y) * z +
-                      coeffs[5] * square(x) * y * square(z)};
-  };
+  const auto evaluate_polynomial =
+      [&coords](const std::array<double, 6>& coeffs) noexcept {
+        const auto& x = get<0>(coords);
+        const auto& y = get<1>(coords);
+        const auto& z = get<2>(coords);
+        return DataVector{coeffs[0] + coeffs[1] * y + coeffs[2] * x * z +
+                          coeffs[3] * x * y * z + coeffs[4] * square(y) * z +
+                          coeffs[5] * square(x) * y * square(z)};
+      };
 
   DataVector local_data = evaluate_polynomial({{1., 0.5, 0.5, 0.2, 0.2, 0.1}});
   // WENO reconstruction should preserve the mean, so expected = initial
   const double expected_local_mean = mean_value(local_data, mesh);
 
   const auto shift_data_to_local_mean =
-      [&mesh, &expected_local_mean ](const DataVector& neighbor_data) noexcept {
-    return neighbor_data + expected_local_mean -
-           mean_value(neighbor_data, mesh);
-  };
+      [&mesh, &expected_local_mean](const DataVector& neighbor_data) noexcept {
+        return neighbor_data + expected_local_mean -
+               mean_value(neighbor_data, mesh);
+      };
 
   // We skip one neighbor, lower_eta, to simulate an external boundary
   std::unordered_map<std::pair<Direction<3>, ElementId<3>>, DataVector,

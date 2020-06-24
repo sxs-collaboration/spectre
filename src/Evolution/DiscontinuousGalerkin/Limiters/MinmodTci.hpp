@@ -32,8 +32,7 @@ struct hash;
 }  // namespace boost
 /// \endcond
 
-namespace Limiters {
-namespace Tci {
+namespace Limiters::Tci {
 
 // Implements the TVB troubled-cell indicator from Cockburn1999.
 template <size_t VolumeDim>
@@ -99,5 +98,4 @@ bool tvb_minmod_indicator(
   return some_component_needs_limiting;
 }
 
-}  // namespace Tci
-}  // namespace Limiters
+}  // namespace Limiters::Tci

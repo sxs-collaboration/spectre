@@ -141,37 +141,36 @@ void test_limiting_two_neighbors() noexcept {
   tnsr::I<DataVector, dim> nodal_vector_data_to_limit(num_pts, 0.0);
   DataVector expected(num_pts);
   const auto helper =
-      [
-        &element, &expected, &krivodonova, &mesh, &neighbor_data,
-        &package_data_lower, &package_data_upper, &nodal_scalar_data_to_limit, &
-        nodal_vector_data_to_limit
-      ](const ModalVector& upper_coeffs, const ModalVector& initial_coeffs,
-        const ModalVector& lower_coeffs,
-        const ModalVector& expected_coeffs) noexcept {
-    to_nodal_coefficients(&get(nodal_scalar_data_to_limit), initial_coeffs,
-                          mesh);
-    get(get<::Tags::Modal<ScalarTag<0>>>(
-        package_data_upper.modal_volume_data)) = upper_coeffs;
-    get(get<::Tags::Modal<ScalarTag<0>>>(
-        package_data_lower.modal_volume_data)) = lower_coeffs;
-    for (size_t i = 0; i < dim; ++i) {
-      to_nodal_coefficients(&nodal_vector_data_to_limit.get(i), initial_coeffs,
-                            mesh);
-      get<::Tags::Modal<VectorTag<dim, 0>>>(
-          package_data_upper.modal_volume_data)
-          .get(i) = upper_coeffs;
-      get<::Tags::Modal<VectorTag<dim, 0>>>(
-          package_data_lower.modal_volume_data)
-          .get(i) = lower_coeffs;
-    }
-    krivodonova(&nodal_scalar_data_to_limit, &nodal_vector_data_to_limit,
-                element, mesh, neighbor_data);
-    to_nodal_coefficients(&expected, expected_coeffs, mesh);
-    CHECK_ITERABLE_APPROX(get(nodal_scalar_data_to_limit), expected);
-    for (size_t i = 0; i < dim; ++i) {
-      CHECK_ITERABLE_APPROX(nodal_vector_data_to_limit.get(i), expected);
-    }
-  };
+      [&element, &expected, &krivodonova, &mesh, &neighbor_data,
+       &package_data_lower, &package_data_upper, &nodal_scalar_data_to_limit,
+       &nodal_vector_data_to_limit](
+          const ModalVector& upper_coeffs, const ModalVector& initial_coeffs,
+          const ModalVector& lower_coeffs,
+          const ModalVector& expected_coeffs) noexcept {
+        to_nodal_coefficients(&get(nodal_scalar_data_to_limit), initial_coeffs,
+                              mesh);
+        get(get<::Tags::Modal<ScalarTag<0>>>(
+            package_data_upper.modal_volume_data)) = upper_coeffs;
+        get(get<::Tags::Modal<ScalarTag<0>>>(
+            package_data_lower.modal_volume_data)) = lower_coeffs;
+        for (size_t i = 0; i < dim; ++i) {
+          to_nodal_coefficients(&nodal_vector_data_to_limit.get(i),
+                                initial_coeffs, mesh);
+          get<::Tags::Modal<VectorTag<dim, 0>>>(
+              package_data_upper.modal_volume_data)
+              .get(i) = upper_coeffs;
+          get<::Tags::Modal<VectorTag<dim, 0>>>(
+              package_data_lower.modal_volume_data)
+              .get(i) = lower_coeffs;
+        }
+        krivodonova(&nodal_scalar_data_to_limit, &nodal_vector_data_to_limit,
+                    element, mesh, neighbor_data);
+        to_nodal_coefficients(&expected, expected_coeffs, mesh);
+        CHECK_ITERABLE_APPROX(get(nodal_scalar_data_to_limit), expected);
+        for (size_t i = 0; i < dim; ++i) {
+          CHECK_ITERABLE_APPROX(nodal_vector_data_to_limit.get(i), expected);
+        }
+      };
 
   // Note: Throughout the tests 1.0e-18 is used anywhere that we need a positive
   // but zero coefficient, because it is below machine precision for O(1)
@@ -948,28 +947,27 @@ void run() noexcept {
   Scalar<DataVector> nodal_scalar_data_to_limit(num_pts, 0.0);
   DataVector expected(num_pts);
   const auto helper =
-      [
-        &element, &expected, &krivodonova, &mesh, &neighbor_data,
-        &package_data_lo_xi, &package_data_up_xi, &package_data_lo_eta,
-        &package_data_up_eta, &nodal_scalar_data_to_limit
-      ](const ModalVector& up_xi_coeffs, const ModalVector& up_eta_coeffs,
-        const ModalVector& initial_coeffs, const ModalVector& lo_xi_coeffs,
-        const ModalVector& lo_eta_coeffs,
-        const ModalVector& expected_coeffs) noexcept {
-    to_nodal_coefficients(&get(nodal_scalar_data_to_limit), initial_coeffs,
-                          mesh);
-    get(get<::Tags::Modal<ScalarTag<0>>>(
-        package_data_up_xi.modal_volume_data)) = up_xi_coeffs;
-    get(get<::Tags::Modal<ScalarTag<0>>>(
-        package_data_lo_xi.modal_volume_data)) = lo_xi_coeffs;
-    get(get<::Tags::Modal<ScalarTag<0>>>(
-        package_data_up_eta.modal_volume_data)) = up_eta_coeffs;
-    get(get<::Tags::Modal<ScalarTag<0>>>(
-        package_data_lo_eta.modal_volume_data)) = lo_eta_coeffs;
-    krivodonova(&nodal_scalar_data_to_limit, element, mesh, neighbor_data);
-    to_nodal_coefficients(&expected, expected_coeffs, mesh);
-    CHECK_ITERABLE_APPROX(get(nodal_scalar_data_to_limit), expected);
-  };
+      [&element, &expected, &krivodonova, &mesh, &neighbor_data,
+       &package_data_lo_xi, &package_data_up_xi, &package_data_lo_eta,
+       &package_data_up_eta, &nodal_scalar_data_to_limit](
+          const ModalVector& up_xi_coeffs, const ModalVector& up_eta_coeffs,
+          const ModalVector& initial_coeffs, const ModalVector& lo_xi_coeffs,
+          const ModalVector& lo_eta_coeffs,
+          const ModalVector& expected_coeffs) noexcept {
+        to_nodal_coefficients(&get(nodal_scalar_data_to_limit), initial_coeffs,
+                              mesh);
+        get(get<::Tags::Modal<ScalarTag<0>>>(
+            package_data_up_xi.modal_volume_data)) = up_xi_coeffs;
+        get(get<::Tags::Modal<ScalarTag<0>>>(
+            package_data_lo_xi.modal_volume_data)) = lo_xi_coeffs;
+        get(get<::Tags::Modal<ScalarTag<0>>>(
+            package_data_up_eta.modal_volume_data)) = up_eta_coeffs;
+        get(get<::Tags::Modal<ScalarTag<0>>>(
+            package_data_lo_eta.modal_volume_data)) = lo_eta_coeffs;
+        krivodonova(&nodal_scalar_data_to_limit, element, mesh, neighbor_data);
+        to_nodal_coefficients(&expected, expected_coeffs, mesh);
+        CHECK_ITERABLE_APPROX(get(nodal_scalar_data_to_limit), expected);
+      };
 
   // Map between 2D and 1D coefficients:
   // [(0,0), (1,0), (2,0), (0,1), (1,1), (2,1), (0,2), (1,2), (2,2)]
@@ -2815,62 +2813,61 @@ void run() noexcept {
   tnsr::I<DataVector, dim> nodal_vector_data_to_limit(num_pts, 0.0);
   DataVector expected(num_pts);
   const auto helper =
-      [
-        &element, &expected, &krivodonova, &mesh, &neighbor_data,
-        &package_data_lo_xi, &package_data_up_xi, &package_data_lo_eta,
-        &package_data_up_eta, &package_data_lo_zeta, &package_data_up_zeta,
-        &nodal_scalar_data_to_limit, &nodal_vector_data_to_limit
-      ](const ModalVector& up_xi_coeffs, const ModalVector& up_eta_coeffs,
-        const ModalVector& up_zeta_coeffs, const ModalVector& initial_coeffs,
-        const ModalVector& lo_xi_coeffs, const ModalVector& lo_eta_coeffs,
-        const ModalVector& lo_zeta_coeffs,
-        const ModalVector& expected_coeffs) noexcept {
-    to_nodal_coefficients(&get(nodal_scalar_data_to_limit), initial_coeffs,
-                          mesh);
-    get(get<::Tags::Modal<ScalarTag<0>>>(
-        package_data_up_xi.modal_volume_data)) = up_xi_coeffs;
-    get(get<::Tags::Modal<ScalarTag<0>>>(
-        package_data_lo_xi.modal_volume_data)) = lo_xi_coeffs;
-    get(get<::Tags::Modal<ScalarTag<0>>>(
-        package_data_up_eta.modal_volume_data)) = up_eta_coeffs;
-    get(get<::Tags::Modal<ScalarTag<0>>>(
-        package_data_lo_eta.modal_volume_data)) = lo_eta_coeffs;
-    get(get<::Tags::Modal<ScalarTag<0>>>(
-        package_data_up_zeta.modal_volume_data)) = up_zeta_coeffs;
-    get(get<::Tags::Modal<ScalarTag<0>>>(
-        package_data_lo_zeta.modal_volume_data)) = lo_zeta_coeffs;
+      [&element, &expected, &krivodonova, &mesh, &neighbor_data,
+       &package_data_lo_xi, &package_data_up_xi, &package_data_lo_eta,
+       &package_data_up_eta, &package_data_lo_zeta, &package_data_up_zeta,
+       &nodal_scalar_data_to_limit, &nodal_vector_data_to_limit](
+          const ModalVector& up_xi_coeffs, const ModalVector& up_eta_coeffs,
+          const ModalVector& up_zeta_coeffs, const ModalVector& initial_coeffs,
+          const ModalVector& lo_xi_coeffs, const ModalVector& lo_eta_coeffs,
+          const ModalVector& lo_zeta_coeffs,
+          const ModalVector& expected_coeffs) noexcept {
+        to_nodal_coefficients(&get(nodal_scalar_data_to_limit), initial_coeffs,
+                              mesh);
+        get(get<::Tags::Modal<ScalarTag<0>>>(
+            package_data_up_xi.modal_volume_data)) = up_xi_coeffs;
+        get(get<::Tags::Modal<ScalarTag<0>>>(
+            package_data_lo_xi.modal_volume_data)) = lo_xi_coeffs;
+        get(get<::Tags::Modal<ScalarTag<0>>>(
+            package_data_up_eta.modal_volume_data)) = up_eta_coeffs;
+        get(get<::Tags::Modal<ScalarTag<0>>>(
+            package_data_lo_eta.modal_volume_data)) = lo_eta_coeffs;
+        get(get<::Tags::Modal<ScalarTag<0>>>(
+            package_data_up_zeta.modal_volume_data)) = up_zeta_coeffs;
+        get(get<::Tags::Modal<ScalarTag<0>>>(
+            package_data_lo_zeta.modal_volume_data)) = lo_zeta_coeffs;
 
-    for (size_t i = 0; i < dim; ++i) {
-      to_nodal_coefficients(&nodal_vector_data_to_limit.get(i), initial_coeffs,
-                            mesh);
-      get<::Tags::Modal<VectorTag<dim, 0>>>(
-          package_data_up_xi.modal_volume_data)
-          .get(i) = up_xi_coeffs;
-      get<::Tags::Modal<VectorTag<dim, 0>>>(
-          package_data_lo_xi.modal_volume_data)
-          .get(i) = lo_xi_coeffs;
-      get<::Tags::Modal<VectorTag<dim, 0>>>(
-          package_data_up_eta.modal_volume_data)
-          .get(i) = up_eta_coeffs;
-      get<::Tags::Modal<VectorTag<dim, 0>>>(
-          package_data_lo_eta.modal_volume_data)
-          .get(i) = lo_eta_coeffs;
-      get<::Tags::Modal<VectorTag<dim, 0>>>(
-          package_data_up_zeta.modal_volume_data)
-          .get(i) = up_zeta_coeffs;
-      get<::Tags::Modal<VectorTag<dim, 0>>>(
-          package_data_lo_zeta.modal_volume_data)
-          .get(i) = lo_zeta_coeffs;
-    }
+        for (size_t i = 0; i < dim; ++i) {
+          to_nodal_coefficients(&nodal_vector_data_to_limit.get(i),
+                                initial_coeffs, mesh);
+          get<::Tags::Modal<VectorTag<dim, 0>>>(
+              package_data_up_xi.modal_volume_data)
+              .get(i) = up_xi_coeffs;
+          get<::Tags::Modal<VectorTag<dim, 0>>>(
+              package_data_lo_xi.modal_volume_data)
+              .get(i) = lo_xi_coeffs;
+          get<::Tags::Modal<VectorTag<dim, 0>>>(
+              package_data_up_eta.modal_volume_data)
+              .get(i) = up_eta_coeffs;
+          get<::Tags::Modal<VectorTag<dim, 0>>>(
+              package_data_lo_eta.modal_volume_data)
+              .get(i) = lo_eta_coeffs;
+          get<::Tags::Modal<VectorTag<dim, 0>>>(
+              package_data_up_zeta.modal_volume_data)
+              .get(i) = up_zeta_coeffs;
+          get<::Tags::Modal<VectorTag<dim, 0>>>(
+              package_data_lo_zeta.modal_volume_data)
+              .get(i) = lo_zeta_coeffs;
+        }
 
-    krivodonova(&nodal_scalar_data_to_limit, &nodal_vector_data_to_limit,
-                element, mesh, neighbor_data);
-    to_nodal_coefficients(&expected, expected_coeffs, mesh);
-    CHECK_ITERABLE_APPROX(get(nodal_scalar_data_to_limit), expected);
-    for (size_t i = 0; i < dim; ++i) {
-      CHECK_ITERABLE_APPROX(nodal_vector_data_to_limit.get(i), expected);
-    }
-  };
+        krivodonova(&nodal_scalar_data_to_limit, &nodal_vector_data_to_limit,
+                    element, mesh, neighbor_data);
+        to_nodal_coefficients(&expected, expected_coeffs, mesh);
+        CHECK_ITERABLE_APPROX(get(nodal_scalar_data_to_limit), expected);
+        for (size_t i = 0; i < dim; ++i) {
+          CHECK_ITERABLE_APPROX(nodal_vector_data_to_limit.get(i), expected);
+        }
+      };
 
   // Map between 3D and 1D coefficients:
   // [(0,0,0), (1,0,0), (2,0,0), (0,1,0), (1,1,0), (2,1,0), (0,2,0), (1,2,0),

@@ -75,29 +75,32 @@ void test_secondary_neighbors_to_exclude_from_fit() noexcept {
   get(get<::Tags::Mean<ScalarTag>>(dummy_neighbor_data[lower_eta].means)) = 3.;
   get(get<::Tags::Mean<ScalarTag>>(dummy_neighbor_data[upper_eta].means)) = 3.;
 
-  const auto check_excluded_neighbors = [&dummy_neighbor_data](
-      const double mean,
-      const std::pair<Direction<2>, ElementId<2>>& primary_neighbor,
-      const std::unordered_set<
-          std::pair<Direction<2>, ElementId<2>>,
-          boost::hash<std::pair<Direction<2>, ElementId<2>>>>&
-          expected_excluded_neighbors) noexcept {
-    const size_t tensor_index = 0;
-    const auto excluded_neighbors_vector =
-        Limiters::Weno_detail::secondary_neighbors_to_exclude_from_fit<
-            ScalarTag>(mean, tensor_index, dummy_neighbor_data,
-                       primary_neighbor);
-    // The elements of `excluded_neighbors_vector` are ordered in an undefined
-    // way, because they are filled by looping over the unordered_map of
-    // neighbor data. To provide meaningful test comparisons, we move the data
-    // into an unordered_set. (A sort would also work here, if the Direction and
-    // ElementId classes were sortable, which they aren't.)
-    const std::unordered_set<std::pair<Direction<2>, ElementId<2>>,
-                             boost::hash<std::pair<Direction<2>, ElementId<2>>>>
-        excluded_neighbors(excluded_neighbors_vector.begin(),
-                           excluded_neighbors_vector.end());
-    CHECK(excluded_neighbors == expected_excluded_neighbors);
-  };
+  const auto check_excluded_neighbors =
+      [&dummy_neighbor_data](
+          const double mean,
+          const std::pair<Direction<2>, ElementId<2>>& primary_neighbor,
+          const std::unordered_set<
+              std::pair<Direction<2>, ElementId<2>>,
+              boost::hash<std::pair<Direction<2>, ElementId<2>>>>&
+              expected_excluded_neighbors) noexcept {
+        const size_t tensor_index = 0;
+        const auto excluded_neighbors_vector =
+            Limiters::Weno_detail::secondary_neighbors_to_exclude_from_fit<
+                ScalarTag>(mean, tensor_index, dummy_neighbor_data,
+                           primary_neighbor);
+        // The elements of `excluded_neighbors_vector` are ordered in an
+        // undefined way, because they are filled by looping over the
+        // unordered_map of neighbor data. To provide meaningful test
+        // comparisons, we move the data into an unordered_set. (A sort would
+        // also work here, if the Direction and ElementId classes were sortable,
+        // which they aren't.)
+        const std::unordered_set<
+            std::pair<Direction<2>, ElementId<2>>,
+            boost::hash<std::pair<Direction<2>, ElementId<2>>>>
+            excluded_neighbors(excluded_neighbors_vector.begin(),
+                               excluded_neighbors_vector.end());
+        CHECK(excluded_neighbors == expected_excluded_neighbors);
+      };
 
   check_excluded_neighbors(0., lower_xi, {{lower_eta, upper_eta}});
   check_excluded_neighbors(0., upper_xi, {{lower_eta, upper_eta}});
@@ -129,30 +132,27 @@ void test_constrained_fit_1d() noexcept {
   const auto local_data = [&logical_coords]() noexcept {
     const auto& x = get<0>(logical_coords);
     return DataVector{1. - 0.2 * x + 0.4 * square(x)};
-  }
-  ();
+  }();
 
-  const auto lower_xi_vars = [&mesh, &logical_coords ]() noexcept {
+  const auto lower_xi_vars = [&mesh, &logical_coords]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto x = get<0>(logical_coords) - 2.;
     get(get<ScalarTag>(result)) = 4. - 0.5 * x - 0.1 * square(x);
     return result;
-  }
-  ();
+  }();
 
-  const auto upper_xi_vars = [&mesh, &logical_coords ]() noexcept {
+  const auto upper_xi_vars = [&mesh, &logical_coords]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto x = get<0>(logical_coords) + 2.;
     get(get<ScalarTag>(result)) = 1. - 0.2 * x + 0.1 * square(x);
     return result;
-  }
-  ();
+  }();
 
-  const auto make_tuple_of_means = [&mesh](
-      const Variables<TagsList>& vars) noexcept {
-    return tuples::TaggedTuple<::Tags::Mean<ScalarTag>>(
-        mean_value(get(get<ScalarTag>(vars)), mesh));
-  };
+  const auto make_tuple_of_means =
+      [&mesh](const Variables<TagsList>& vars) noexcept {
+        return tuples::TaggedTuple<::Tags::Mean<ScalarTag>>(
+            mean_value(get(get<ScalarTag>(vars)), mesh));
+      };
 
   struct PackagedData {
     tuples::TaggedTuple<::Tags::Mean<ScalarTag>> means;
@@ -201,8 +201,7 @@ void test_constrained_fit_1d() noexcept {
       const auto& x = get<0>(logical_coords);
       constexpr std::array<double, 3> c{{41. / 30., -31. / 10., -7. / 10.}};
       return DataVector{c[0] + c[1] * x + c[2] * square(x)};
-    }
-    ();
+    }();
 
     // Fit procedure has somewhat larger error scale than default
     Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.);
@@ -242,8 +241,7 @@ void test_constrained_fit_1d() noexcept {
       constexpr std::array<double, 3> c{
           {929. / 850., -124. / 425., 103. / 850.}};
       return DataVector{c[0] + c[1] * x + c[2] * square(x)};
-    }
-    ();
+    }();
 
     Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.);
     CHECK_ITERABLE_CUSTOM_APPROX(constrained_fit, expected, local_approx);
@@ -321,20 +319,18 @@ void test_constrained_fit_2d_vector() noexcept {
     return VectorTag<2>::type{{{DataVector{1. + 0.1 * x + 0.2 * y +
                                            0.1 * x * y + 0.1 * x * square(y)},
                                 DataVector(x.size(), 2.)}}};
-  }
-  ();
+  }();
 
-  const auto lower_xi_vars = [&mesh, &logical_coords ]() noexcept {
+  const auto lower_xi_vars = [&mesh, &logical_coords]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto x = get<0>(logical_coords) - 2.;
     const auto& y = get<1>(logical_coords);
     get<0>(get<VectorTag<2>>(result)) = 2. + 0.2 * x - 0.1 * y;
     get<1>(get<VectorTag<2>>(result)) = 1.;
     return result;
-  }
-  ();
+  }();
 
-  const auto upper_xi_vars = [&mesh, &logical_coords ]() noexcept {
+  const auto upper_xi_vars = [&mesh, &logical_coords]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto x = get<0>(logical_coords) + 2.;
     const auto& y = get<1>(logical_coords);
@@ -342,10 +338,9 @@ void test_constrained_fit_2d_vector() noexcept {
         1. + 1. / 3. * x + 0.25 * y - 0.05 * square(x);
     get<1>(get<VectorTag<2>>(result)) = -0.5;
     return result;
-  }
-  ();
+  }();
 
-  const auto lower_eta_vars = [&mesh, &logical_coords ]() noexcept {
+  const auto lower_eta_vars = [&mesh, &logical_coords]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto& x = get<0>(logical_coords);
     const auto y = get<1>(logical_coords) - 2.;
@@ -354,25 +349,24 @@ void test_constrained_fit_2d_vector() noexcept {
     get<1>(get<VectorTag<2>>(result)) =
         1.2 + 0.5 * x - 0.1 * square(x) - 0.2 * y + 0.1 * square(x) * square(y);
     return result;
-  }
-  ();
+  }();
 
-  const auto upper_eta_vars = [&mesh, &logical_coords ]() noexcept {
+  const auto upper_eta_vars = [&mesh, &logical_coords]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto& x = get<0>(logical_coords);
     const auto y = get<1>(logical_coords) + 2.;
     get<0>(get<VectorTag<2>>(result)) = 1. + 1. / 3. * x + 0.2 * y;
     get<1>(get<VectorTag<2>>(result)) = 0.1;
     return result;
-  }
-  ();
+  }();
 
-  const auto make_tuple_of_means = [&mesh](
-      const Variables<TagsList>& vars) noexcept {
-    return tuples::TaggedTuple<::Tags::Mean<VectorTag<2>>>(tnsr::I<double, 2>{
-        {{mean_value(get<0>(get<VectorTag<2>>(vars)), mesh),
-          mean_value(get<1>(get<VectorTag<2>>(vars)), mesh)}}});
-  };
+  const auto make_tuple_of_means =
+      [&mesh](const Variables<TagsList>& vars) noexcept {
+        return tuples::TaggedTuple<::Tags::Mean<VectorTag<2>>>(
+            tnsr::I<double, 2>{
+                {{mean_value(get<0>(get<VectorTag<2>>(vars)), mesh),
+                  mean_value(get<1>(get<VectorTag<2>>(vars)), mesh)}}});
+      };
 
   struct PackagedData {
     tuples::TaggedTuple<::Tags::Mean<VectorTag<2>>> means;
@@ -475,8 +469,7 @@ void test_constrained_fit_2d_vector() noexcept {
                 y * (d[4] + d[5] * x + d[6] * square(x) + d[7] * cube(x)) +
                 square(y) *
                     (d[8] + d[9] * x + d[10] * square(x) + d[11] * cube(x))}}}};
-    }
-    ();
+    }();
 
     // Fit procedure has somewhat larger error scale than default
     Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.);
@@ -540,8 +533,7 @@ void test_constrained_fit_2d_vector() noexcept {
                 y * (d[4] + d[5] * x + d[6] * square(x) + d[7] * cube(x)) +
                 square(y) *
                     (d[8] + d[9] * x + d[10] * square(x) + d[11] * cube(x))}}}};
-    }
-    ();
+    }();
 
     // Fit procedure has somewhat larger error scale than default
     Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.);
@@ -587,45 +579,39 @@ void test_constrained_fit_3d() noexcept {
     const auto& y = get<1>(logical_coords);
     const auto& z = get<2>(logical_coords);
     return DataVector{0.5 + 0.2 * x + 0.1 * square(y) * z};
-  }
-  ();
+  }();
 
   const auto lower_xi_vars = [&mesh]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     get(get<ScalarTag>(result)) = 1.2;
     return result;
-  }
-  ();
+  }();
 
   const auto upper_xi_vars = [&mesh]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     get(get<ScalarTag>(result)) = 4.;
     return result;
-  }
-  ();
+  }();
 
   const auto lower_eta_vars = [&mesh]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     get(get<ScalarTag>(result)) = 3.;
     return result;
-  }
-  ();
+  }();
 
   const auto upper_eta_vars = [&mesh]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     get(get<ScalarTag>(result)) = 2.5;
     return result;
-  }
-  ();
+  }();
 
   const auto lower_zeta_vars = [&mesh]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     get(get<ScalarTag>(result)) = 2.;
     return result;
-  }
-  ();
+  }();
 
-  const auto upper_zeta_vars = [&mesh, &logical_coords ]() noexcept {
+  const auto upper_zeta_vars = [&mesh, &logical_coords]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto& x = get<0>(logical_coords);
     const auto& y = get<1>(logical_coords);
@@ -633,14 +619,13 @@ void test_constrained_fit_3d() noexcept {
     get(get<ScalarTag>(result)) =
         1. + 0.25 * x + 0.1 * y * z + 0.5 * x * square(y) * z + 0.1 * cube(z);
     return result;
-  }
-  ();
+  }();
 
-  const auto make_tuple_of_means = [&mesh](
-      const Variables<TagsList>& vars) noexcept {
-    return tuples::TaggedTuple<::Tags::Mean<ScalarTag>>(
-        mean_value(get(get<ScalarTag>(vars)), mesh));
-  };
+  const auto make_tuple_of_means =
+      [&mesh](const Variables<TagsList>& vars) noexcept {
+        return tuples::TaggedTuple<::Tags::Mean<ScalarTag>>(
+            mean_value(get(get<ScalarTag>(vars)), mesh));
+      };
 
   std::unordered_map<std::pair<Direction<3>, ElementId<3>>, PackagedData,
                      boost::hash<std::pair<Direction<3>, ElementId<3>>>>
@@ -814,8 +799,7 @@ void test_constrained_fit_3d() noexcept {
           square(y) * (c[33] + c[34] * x + c[35] * square(x));
       return DataVector{term_z0 + term_z1 * z + term_z2 * square(z) +
                         term_z3 * cube(z)};
-    }
-    ();
+    }();
 
     // Fit procedure has somewhat larger error scale than default
     Approx local_approx = Approx::custom().epsilon(1e-8).scale(1.);
@@ -894,8 +878,7 @@ void test_constrained_fit_3d() noexcept {
           square(y) * (c[33] + c[34] * x + c[35] * square(x));
       return DataVector{term_z0 + term_z1 * z + term_z2 * square(z) +
                         term_z3 * cube(z)};
-    }
-    ();
+    }();
 
     // Fit procedure has somewhat larger error scale than default
     Approx local_approx = Approx::custom().epsilon(1e-8).scale(1.);
@@ -929,16 +912,17 @@ void test_hweno_work(
     Mesh<VolumeDim> mesh;
   };
 
-  const auto make_tuple_of_means = [&mesh](
-      const Variables<tmpl::list<VectorTag<VolumeDim>>>& vars) noexcept {
-    tuples::TaggedTuple<::Tags::Mean<VectorTag<VolumeDim>>> result(
-        tnsr::I<double, VolumeDim>{});
-    for (size_t i = 0; i < VolumeDim; ++i) {
-      get<::Tags::Mean<VectorTag<VolumeDim>>>(result).get(i) =
-          mean_value(get<VectorTag<VolumeDim>>(vars).get(i), mesh);
-    }
-    return result;
-  };
+  const auto make_tuple_of_means =
+      [&mesh](
+          const Variables<tmpl::list<VectorTag<VolumeDim>>>& vars) noexcept {
+        tuples::TaggedTuple<::Tags::Mean<VectorTag<VolumeDim>>> result(
+            tnsr::I<double, VolumeDim>{});
+        for (size_t i = 0; i < VolumeDim; ++i) {
+          get<::Tags::Mean<VectorTag<VolumeDim>>>(result).get(i) =
+              mean_value(get<VectorTag<VolumeDim>>(vars).get(i), mesh);
+        }
+        return result;
+      };
 
   std::unordered_map<
       std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
@@ -1020,24 +1004,21 @@ void test_hweno_impl_1d() noexcept {
   const auto local_tensor = [&logical_coords]() noexcept {
     const auto& x = get<0>(logical_coords);
     return VectorTag<1>::type{{{DataVector{1. + 2.1 * x + 0.3 * square(x)}}}};
-  }
-  ();
+  }();
 
-  const auto lower_xi_vars = [&mesh, &logical_coords ]() noexcept {
+  const auto lower_xi_vars = [&mesh, &logical_coords]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto x = get<0>(logical_coords) - 2.;
     get<0>(get<VectorTag<1>>(result)) = 4. - 0.5 * x - 0.1 * square(x);
     return result;
-  }
-  ();
+  }();
 
-  const auto upper_xi_vars = [&mesh, &logical_coords ]() noexcept {
+  const auto upper_xi_vars = [&mesh, &logical_coords]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto x = get<0>(logical_coords) + 2.;
     get<0>(get<VectorTag<1>>(result)) = 1. - 0.2 * x + 0.1 * square(x);
     return result;
-  }
-  ();
+  }();
 
   Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.);
   test_hweno_work<1>(
@@ -1078,20 +1059,18 @@ void test_hweno_impl_2d() noexcept {
     return VectorTag<2>::type{{{DataVector{1. + 0.1 * x + 0.2 * y +
                                            0.1 * x * y + 0.1 * x * square(y)},
                                 DataVector(x.size(), 2.)}}};
-  }
-  ();
+  }();
 
-  const auto lower_xi_vars = [&mesh, &logical_coords ]() noexcept {
+  const auto lower_xi_vars = [&mesh, &logical_coords]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto x = get<0>(logical_coords) - 2.;
     const auto& y = get<1>(logical_coords);
     get<0>(get<VectorTag<2>>(result)) = 2. + 0.2 * x - 0.1 * y;
     get<1>(get<VectorTag<2>>(result)) = 1.;
     return result;
-  }
-  ();
+  }();
 
-  const auto upper_xi_vars = [&mesh, &logical_coords ]() noexcept {
+  const auto upper_xi_vars = [&mesh, &logical_coords]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto x = get<0>(logical_coords) + 2.;
     const auto& y = get<1>(logical_coords);
@@ -1099,10 +1078,9 @@ void test_hweno_impl_2d() noexcept {
         1. + 1. / 3. * x + 0.25 * y - 0.05 * square(x);
     get<1>(get<VectorTag<2>>(result)) = -0.5;
     return result;
-  }
-  ();
+  }();
 
-  const auto lower_eta_vars = [&mesh, &logical_coords ]() noexcept {
+  const auto lower_eta_vars = [&mesh, &logical_coords]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto& x = get<0>(logical_coords);
     const auto y = get<1>(logical_coords) - 2.;
@@ -1111,18 +1089,16 @@ void test_hweno_impl_2d() noexcept {
     get<1>(get<VectorTag<2>>(result)) =
         1.2 + 0.5 * x - 0.1 * square(x) - 0.2 * y + 0.1 * square(x) * square(y);
     return result;
-  }
-  ();
+  }();
 
-  const auto upper_eta_vars = [&mesh, &logical_coords ]() noexcept {
+  const auto upper_eta_vars = [&mesh, &logical_coords]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
     const auto& x = get<0>(logical_coords);
     const auto y = get<1>(logical_coords) + 2.;
     get<0>(get<VectorTag<2>>(result)) = 1. + 1. / 3. * x + 0.2 * y;
     get<1>(get<VectorTag<2>>(result)) = 0.1;
     return result;
-  }
-  ();
+  }();
 
   using DirKey = std::pair<Direction<2>, ElementId<2>>;
   Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.);
@@ -1180,8 +1156,7 @@ void test_hweno_impl_3d() noexcept {
     return VectorTag<3>::type{{{DataVector{-2. + 0.2 * y * square(z)},
                                 DataVector{0.8 - 0.1 * square(x) * z},
                                 DataVector{5. + 0.5 * x * y * z}}}};
-  }
-  ();
+  }();
 
   const auto lower_xi_vars = [&mesh]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
@@ -1189,8 +1164,7 @@ void test_hweno_impl_3d() noexcept {
     get<1>(get<VectorTag<3>>(result)) = 1.;
     get<2>(get<VectorTag<3>>(result)) = 1.;
     return result;
-  }
-  ();
+  }();
 
   const auto upper_xi_vars = [&mesh]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
@@ -1198,8 +1172,7 @@ void test_hweno_impl_3d() noexcept {
     get<1>(get<VectorTag<3>>(result)) = -1.5;
     get<2>(get<VectorTag<3>>(result)) = 2.5;
     return result;
-  }
-  ();
+  }();
 
   const auto lower_eta_vars = [&mesh]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
@@ -1207,8 +1180,7 @@ void test_hweno_impl_3d() noexcept {
     get<1>(get<VectorTag<3>>(result)) = 0.1;
     get<2>(get<VectorTag<3>>(result)) = 10.3;
     return result;
-  }
-  ();
+  }();
 
   const auto upper_eta_vars = [&mesh]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
@@ -1216,8 +1188,7 @@ void test_hweno_impl_3d() noexcept {
     get<1>(get<VectorTag<3>>(result)) = 1.2;
     get<2>(get<VectorTag<3>>(result)) = -0.3;
     return result;
-  }
-  ();
+  }();
 
   const auto lower_zeta_vars = [&mesh]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
@@ -1225,8 +1196,7 @@ void test_hweno_impl_3d() noexcept {
     get<1>(get<VectorTag<3>>(result)) = 0.1;
     get<2>(get<VectorTag<3>>(result)) = 4.2;
     return result;
-  }
-  ();
+  }();
 
   const auto upper_zeta_vars = [&mesh]() noexcept {
     Variables<TagsList> result(mesh.number_of_grid_points());
@@ -1234,8 +1204,7 @@ void test_hweno_impl_3d() noexcept {
     get<1>(get<VectorTag<3>>(result)) = -0.9;
     get<2>(get<VectorTag<3>>(result)) = 1.1;
     return result;
-  }
-  ();
+  }();
 
   using DirKey = std::pair<Direction<3>, ElementId<3>>;
   Approx local_approx = Approx::custom().epsilon(1e-11).scale(1.);

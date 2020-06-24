@@ -483,7 +483,7 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
   Krivodonova& operator=(Krivodonova&&) = default;
   ~Krivodonova() = default;
 
-  // NOLINTNEXTLINE(google-runtime-reference)
+  // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept;
 
   bool operator==(const Krivodonova& rhs) const noexcept;
@@ -650,16 +650,16 @@ bool Krivodonova<VolumeDim, tmpl::list<Tags...>>::operator()(
 
   // transform back to nodal coefficients
   const auto wrap_copy_nodal_coeffs =
-      [&mesh, &coeffs_self ](auto tag, const auto tensor) noexcept {
-    auto& coeffs_tensor = get<decltype(tag)>(coeffs_self);
-    auto tensor_it = tensor->begin();
-    for (auto coeffs_it = coeffs_tensor.begin();
-         coeffs_it != coeffs_tensor.end();
-         (void)++coeffs_it, (void)++tensor_it) {
-      to_nodal_coefficients(make_not_null(&*tensor_it), *coeffs_it, mesh);
-    }
-    return '0';
-  };
+      [&mesh, &coeffs_self](auto tag, const auto tensor) noexcept {
+        auto& coeffs_tensor = get<decltype(tag)>(coeffs_self);
+        auto tensor_it = tensor->begin();
+        for (auto coeffs_it = coeffs_tensor.begin();
+             coeffs_it != coeffs_tensor.end();
+             (void)++coeffs_it, (void)++tensor_it) {
+          to_nodal_coefficients(make_not_null(&*tensor_it), *coeffs_it, mesh);
+        }
+        return '0';
+      };
   expand_pack(wrap_copy_nodal_coeffs(::Tags::Modal<Tags>{}, tensors)...);
 
   return limited_any_component;
@@ -721,9 +721,9 @@ char Krivodonova<VolumeDim, tmpl::list<Tags...>>::limit_one_tensor(
         boost::hash<std::pair<Direction<2>, ElementId<2>>>>& neighbor_data)
     const noexcept {
   using tensor_type = typename Tag::type;
-  const auto minmod = [&coeffs_self, &mesh, &neighbor_data, this ](
-      const size_t local_i, const size_t local_j,
-      const size_t local_tensor_storage_index) noexcept {
+  const auto minmod = [&coeffs_self, &mesh, &neighbor_data, this](
+                          const size_t local_i, const size_t local_j,
+                          const size_t local_tensor_storage_index) noexcept {
     const auto& self_coeffs =
         get<Tag>(*coeffs_self)[local_tensor_storage_index];
     double min_abs_coeff = std::abs(
@@ -809,9 +809,10 @@ char Krivodonova<VolumeDim, tmpl::list<Tags...>>::limit_one_tensor(
         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data)
     const noexcept {
   using tensor_type = typename Tag::type;
-  const auto minmod = [&coeffs_self, &mesh, &neighbor_data, this ](
-      const size_t local_i, const size_t local_j, const size_t local_k,
-      const size_t local_tensor_storage_index) noexcept {
+  const auto minmod = [&coeffs_self, &mesh, &neighbor_data, this](
+                          const size_t local_i, const size_t local_j,
+                          const size_t local_k,
+                          const size_t local_tensor_storage_index) noexcept {
     const auto& self_coeffs =
         get<Tag>(*coeffs_self)[local_tensor_storage_index];
     double min_abs_coeff = std::abs(self_coeffs[mesh.storage_index(

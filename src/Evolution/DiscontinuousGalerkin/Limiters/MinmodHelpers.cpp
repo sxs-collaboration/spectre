@@ -17,8 +17,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/Numeric.hpp"
 
-namespace Limiters {
-namespace Minmod_detail {
+namespace Limiters::Minmod_detail {
 
 MinmodResult tvb_corrected_minmod(const double a, const double b,
                                   const double c,
@@ -49,13 +48,13 @@ BufferWrapper<VolumeDim>::BufferWrapper(const Mesh<VolumeDim>& mesh) noexcept
           ::volume_and_slice_indices(mesh.extents())),
       volume_and_slice_indices(volume_and_slice_buffer_and_indices_.second) {
   const size_t half_number_boundary_points = alg::accumulate(
-      alg::iota(std::array<size_t, VolumeDim>{{}}, 0_st),
-      0_st, [&mesh](const size_t state, const size_t d) noexcept {
+      alg::iota(std::array<size_t, VolumeDim>{{}}, 0_st), 0_st,
+      [&mesh](const size_t state, const size_t d) noexcept {
         return state + mesh.slice_away(d).number_of_grid_points();
       });
   contiguous_boundary_buffer_.reset(static_cast<double*>(
-      // clang-tidy incorrectly thinks this is a 0-byte malloc
-      // NOLINTNEXTLINE(clang-analyzer-unix.API)
+      // clang-tidy fails to see we are assigning to an owning unique_ptr
+      // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
       malloc(sizeof(double) * half_number_boundary_points)));
   size_t alloc_offset = 0;
   for (size_t d = 0; d < VolumeDim; ++d) {
@@ -104,5 +103,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef INSTANTIATE
 
-}  // namespace Minmod_detail
-}  // namespace Limiters
+}  // namespace Limiters::Minmod_detail

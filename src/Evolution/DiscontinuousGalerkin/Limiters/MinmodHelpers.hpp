@@ -31,8 +31,7 @@ struct hash;
 }  // namespace boost
 /// \endcond
 
-namespace Limiters {
-namespace Minmod_detail {
+namespace Limiters::Minmod_detail {
 
 // Encodes the return status of the tvb_corrected_minmod function.
 struct MinmodResult {
@@ -54,7 +53,9 @@ class BufferWrapper {
   explicit BufferWrapper(const Mesh<VolumeDim>& mesh) noexcept;
 
  private:
+  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   std::unique_ptr<double[], decltype(&free)> contiguous_boundary_buffer_;
+  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   const std::pair<std::unique_ptr<std::pair<size_t, size_t>[], decltype(&free)>,
                   std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
                                        gsl::span<std::pair<size_t, size_t>>>,
@@ -86,8 +87,8 @@ DirectionMap<VolumeDim, double> compute_effective_neighbor_sizes(
     const auto& externals = element.external_boundaries();
     const bool neighbors_in_this_dir = (externals.find(dir) == externals.end());
     if (neighbors_in_this_dir) {
-      const double effective_neighbor_size =
-          [&dir, &element, &neighbor_data ]() noexcept {
+      const double effective_neighbor_size = [&dir, &element,
+                                              &neighbor_data]() noexcept {
         const size_t dim = dir.dimension();
         const auto& neighbor_ids = element.neighbors().at(dir).ids();
         double size_accumulate = 0.;
@@ -96,8 +97,7 @@ DirectionMap<VolumeDim, double> compute_effective_neighbor_sizes(
               neighbor_data.at(std::make_pair(dir, id)).element_size, dim);
         }
         return size_accumulate / neighbor_ids.size();
-      }
-      ();
+      }();
       result.insert(std::make_pair(dir, effective_neighbor_size));
     }
   }
@@ -124,17 +124,16 @@ DirectionMap<VolumeDim, double> compute_effective_neighbor_means(
     const bool neighbors_in_this_dir = (externals.find(dir) == externals.end());
     if (neighbors_in_this_dir) {
       const double effective_neighbor_mean =
-          [&dir, &element, &neighbor_data, &tensor_storage_index ]() noexcept {
-        const auto& neighbor_ids = element.neighbors().at(dir).ids();
-        double mean_accumulate = 0.0;
-        for (const auto& id : neighbor_ids) {
-          mean_accumulate += tuples::get<::Tags::Mean<Tag>>(
-              neighbor_data.at(std::make_pair(dir, id))
-                  .means)[tensor_storage_index];
-        }
-        return mean_accumulate / neighbor_ids.size();
-      }
-      ();
+          [&dir, &element, &neighbor_data, &tensor_storage_index]() noexcept {
+            const auto& neighbor_ids = element.neighbors().at(dir).ids();
+            double mean_accumulate = 0.0;
+            for (const auto& id : neighbor_ids) {
+              mean_accumulate += tuples::get<::Tags::Mean<Tag>>(
+                  neighbor_data.at(std::make_pair(dir, id))
+                      .means)[tensor_storage_index];
+            }
+            return mean_accumulate / neighbor_ids.size();
+          }();
       result.insert(std::make_pair(dir, effective_neighbor_mean));
     }
   }
@@ -160,5 +159,4 @@ double effective_difference_to_neighbor(
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept;
 
-}  // namespace Minmod_detail
-}  // namespace Limiters
+}  // namespace Limiters::Minmod_detail

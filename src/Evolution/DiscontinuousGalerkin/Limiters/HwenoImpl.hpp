@@ -39,8 +39,7 @@ template <size_t>
 class Mesh;
 /// \endcond
 
-namespace Limiters {
-namespace Weno_detail {
+namespace Limiters::Weno_detail {
 
 // Caching class that holds various precomputed terms used in the constrained-
 // fit algebra on each element.
@@ -160,13 +159,14 @@ secondary_neighbors_to_exclude_from_fit(
   }
 
   // Identify element with maximum mean difference
-  const auto mean_difference = [&tensor_index, &local_mean ](
-      const std::pair<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-                      Package>& neighbor_and_data) noexcept {
-    return fabs(
-        get<::Tags::Mean<Tag>>(neighbor_and_data.second.means)[tensor_index] -
-        local_mean);
-  };
+  const auto mean_difference =
+      [&tensor_index, &local_mean](
+          const std::pair<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+                          Package>& neighbor_and_data) noexcept {
+        return fabs(get<::Tags::Mean<Tag>>(
+                        neighbor_and_data.second.means)[tensor_index] -
+                    local_mean);
+      };
 
   double max_difference = std::numeric_limits<double>::lowest();
   std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>
@@ -269,8 +269,7 @@ DataVector b_vector(
               neighbor_tensor_component[r] * neighbor_quadrature_weights[r];
         }
         return result;
-      }
-      ();
+      }();
       b += quadrature_weights_dot_u *
            quadrature_weights_dot_interpolation_matrix;
     }
@@ -308,15 +307,14 @@ void solve_constrained_fit(
   // Because we don't support h-refinement, the direction is the only piece
   // of the neighbor information that we actually need.
   const Direction<VolumeDim> primary_direction = primary_neighbor.first;
-  const std::vector<Direction<VolumeDim>>
-      directions_to_exclude = [&neighbors_to_exclude]() noexcept {
-    std::vector<Direction<VolumeDim>> result(neighbors_to_exclude.size());
-    for (size_t i = 0; i < result.size(); ++i) {
-      result[i] = neighbors_to_exclude[i].first;
-    }
-    return result;
-  }
-  ();
+  const std::vector<Direction<VolumeDim>> directions_to_exclude =
+      [&neighbors_to_exclude]() noexcept {
+        std::vector<Direction<VolumeDim>> result(neighbors_to_exclude.size());
+        for (size_t i = 0; i < result.size(); ++i) {
+          result[i] = neighbors_to_exclude[i].first;
+        }
+        return result;
+      }();
 
   const DataVector& w = cache.quadrature_weights;
   const DirectionMap<VolumeDim, Matrix>& interp_matrices =
@@ -348,9 +346,9 @@ void solve_constrained_fit(
   // Compute Lagrange multiplier:
   // Note: we take w as an argument (instead of as a lambda capture), because
   //       some versions of Clang incorrectly warn about capturing w.
-  const double lagrange_multiplier =
-      [&number_of_points, &inverse_a_times_b, &inverse_a_times_w, &
-       u ](const DataVector& local_w) noexcept {
+  const double lagrange_multiplier = [&number_of_points, &inverse_a_times_b,
+                                      &inverse_a_times_w,
+                                      &u](const DataVector& local_w) noexcept {
     double numerator = 0.;
     double denominator = 0.;
     for (size_t s = 0; s < number_of_points; ++s) {
@@ -358,8 +356,7 @@ void solve_constrained_fit(
       denominator += local_w[s] * inverse_a_times_w[s];
     }
     return -numerator / denominator;
-  }
-  (w);
+  }(w);
 
   // Compute solution:
   *constrained_fit_result =
@@ -539,21 +536,22 @@ void hweno_impl(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data) noexcept {
-  ASSERT(modified_neighbor_solution_buffer->size() == neighbor_data.size(),
-         "modified_neighbor_solution_buffer->size() = "
-         << modified_neighbor_solution_buffer->size()
-         << "\nneighbor_data.size() = " << neighbor_data.size()
-         << "\nmodified_neighbor_solution_buffer was incorrectly initialized "
-            "before calling hweno_impl.");
+  ASSERT(
+      modified_neighbor_solution_buffer->size() == neighbor_data.size(),
+      "modified_neighbor_solution_buffer->size() = "
+          << modified_neighbor_solution_buffer->size()
+          << "\nneighbor_data.size() = " << neighbor_data.size()
+          << "\nmodified_neighbor_solution_buffer was incorrectly initialized "
+             "before calling hweno_impl.");
 
-  alg::for_each(neighbor_data, [&element, &
-                                mesh ](const auto& neighbor_and_data) noexcept {
-    ASSERT(Weno_detail::check_element_has_one_similar_neighbor_in_direction(
-               element, neighbor_and_data.first.first),
-           "Found some amount of h-refinement; this is not supported");
-    ASSERT(neighbor_and_data.second.mesh == mesh,
-           "Found some amount of p-refinement; this is not supported");
-  });
+  alg::for_each(
+      neighbor_data, [&element, &mesh](const auto& neighbor_and_data) noexcept {
+        ASSERT(Weno_detail::check_element_has_one_similar_neighbor_in_direction(
+                   element, neighbor_and_data.first.first),
+               "Found some amount of h-refinement; this is not supported");
+        ASSERT(neighbor_and_data.second.mesh == mesh,
+               "Found some amount of p-refinement; this is not supported");
+      });
 
   for (size_t tensor_index = 0; tensor_index < tensor->size(); ++tensor_index) {
     const auto& tensor_component = (*tensor)[tensor_index];
@@ -579,5 +577,4 @@ void hweno_impl(
   }
 }
 
-}  // namespace Weno_detail
-}  // namespace Limiters
+}  // namespace Limiters::Weno_detail

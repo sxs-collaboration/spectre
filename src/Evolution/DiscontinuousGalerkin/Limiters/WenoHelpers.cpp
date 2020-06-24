@@ -31,8 +31,7 @@ inline double unnormalized_nonlinear_weight(
 
 }  // namespace
 
-namespace Limiters {
-namespace Weno_detail {
+namespace Limiters::Weno_detail {
 
 template <size_t VolumeDim>
 void reconstruct_from_weighted_sum(
@@ -122,5 +121,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef INSTANTIATE
 
-}  // namespace Weno_detail
-}  // namespace Limiters
+}  // namespace Limiters::Weno_detail

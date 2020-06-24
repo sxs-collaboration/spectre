@@ -71,30 +71,31 @@ template <size_t VolumeDim>
 void check_grid_point_transform_no_href(
     const Mesh<VolumeDim>& local_mesh, const Mesh<VolumeDim>& neighbor_mesh,
     const Element<VolumeDim>& element) noexcept {
-  const auto check = [&local_mesh, &neighbor_mesh ](
-      const std::array<DataVector, VolumeDim>& transformed_coords,
-      const bool local_mesh_provides_grid_points, const size_t dim,
-      const double offset) noexcept {
-    const Mesh<VolumeDim>& source_mesh =
-        (local_mesh_provides_grid_points ? local_mesh : neighbor_mesh);
-    for (size_t i = 0; i < VolumeDim; ++i) {
-      const DataVector source_coords =
-          get<0>(logical_coordinates(source_mesh.slice_through(i)));
-      if (i == dim) {
-        // Coordinates normal to the interface
-        const DataVector expected_coords = source_coords + offset;
-        CHECK(gsl::at(transformed_coords, i) == expected_coords);
-      } else {
-        // Coordinates parallel to the interface
-        if (neighbor_mesh.slice_through(i) == local_mesh.slice_through(i)) {
-          CHECK(gsl::at(transformed_coords, i).size() == 0);
-        } else {
-          const DataVector& expected_coords = source_coords;
-          CHECK(gsl::at(transformed_coords, i) == expected_coords);
+  const auto check =
+      [&local_mesh, &neighbor_mesh](
+          const std::array<DataVector, VolumeDim>& transformed_coords,
+          const bool local_mesh_provides_grid_points, const size_t dim,
+          const double offset) noexcept {
+        const Mesh<VolumeDim>& source_mesh =
+            (local_mesh_provides_grid_points ? local_mesh : neighbor_mesh);
+        for (size_t i = 0; i < VolumeDim; ++i) {
+          const DataVector source_coords =
+              get<0>(logical_coordinates(source_mesh.slice_through(i)));
+          if (i == dim) {
+            // Coordinates normal to the interface
+            const DataVector expected_coords = source_coords + offset;
+            CHECK(gsl::at(transformed_coords, i) == expected_coords);
+          } else {
+            // Coordinates parallel to the interface
+            if (neighbor_mesh.slice_through(i) == local_mesh.slice_through(i)) {
+              CHECK(gsl::at(transformed_coords, i).size() == 0);
+            } else {
+              const DataVector& expected_coords = source_coords;
+              CHECK(gsl::at(transformed_coords, i) == expected_coords);
+            }
+          }
         }
-      }
-    }
-  };
+      };
 
   for (size_t dim = 0; dim < VolumeDim; ++dim) {
     const auto from_lower =
