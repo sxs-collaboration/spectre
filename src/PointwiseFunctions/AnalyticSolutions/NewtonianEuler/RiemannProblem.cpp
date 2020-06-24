@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
@@ -145,8 +146,8 @@ RiemannProblem<Dim>::RiemannProblem(
   const double f_max =
       f_of_p_left(p_minmax.second) + f_of_p_right(p_minmax.second) + delta_u;
 
-  double pressure_lower;
-  double pressure_upper;
+  double pressure_lower = std::numeric_limits<double>::signaling_NaN();
+  double pressure_upper = std::numeric_limits<double>::signaling_NaN();
   if (f_min > 0.0 and f_max > 0.0) {
     pressure_lower = 0.0;
     pressure_upper = p_minmax.first;
@@ -242,18 +243,17 @@ RiemannProblem<Dim>::Wave::Wave(const InitialData& data,
 template <size_t Dim>
 double RiemannProblem<Dim>::Wave::mass_density(const double x_shifted,
                                                const double t) const noexcept {
-  return (is_shock_ == true ? shock_.mass_density(x_shifted, t, data_)
-                            : rarefaction_.mass_density(x_shifted, t, data_));
+  return (is_shock_ ? shock_.mass_density(x_shifted, t, data_)
+                    : rarefaction_.mass_density(x_shifted, t, data_));
 }
 
 template <size_t Dim>
 double RiemannProblem<Dim>::Wave::normal_velocity(
     const double x_shifted, const double t, const double velocity_star) const
     noexcept {
-  return (
-      is_shock_ == true
-          ? shock_.normal_velocity(x_shifted, t, data_, velocity_star)
-          : rarefaction_.normal_velocity(x_shifted, t, data_, velocity_star));
+  return (is_shock_ ? shock_.normal_velocity(x_shifted, t, data_, velocity_star)
+                    : rarefaction_.normal_velocity(x_shifted, t, data_,
+                                                   velocity_star));
 }
 
 template <size_t Dim>
@@ -261,7 +261,7 @@ double RiemannProblem<Dim>::Wave::pressure(const double x_shifted,
                                            const double t,
                                            const double pressure_star) const
     noexcept {
-  return (is_shock_ == true
+  return (is_shock_
               ? shock_.pressure(x_shifted, t, data_, pressure_star)
               : rarefaction_.pressure(x_shifted, t, data_, pressure_star));
 }
