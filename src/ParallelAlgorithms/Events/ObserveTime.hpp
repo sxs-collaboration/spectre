@@ -50,11 +50,8 @@ class ObserveTime;  // IWYU pragma: keep
  * Add docs
  */
 template <typename ObservationValueTag, typename EventRegistrars>
-class ObserveTime<ObservationValueTag, EventRegistrars>
-    : public Event<EventRegistrars> {
+class ObserveTime : public Event<EventRegistrars> {
  private:
-  template <typename Tag>
-
   using ReductionData = Parallel::ReductionData<
       Parallel::ReductionDatum<std::string, funcl::AssertEqual<>>>;
 

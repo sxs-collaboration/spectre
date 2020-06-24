@@ -156,8 +156,7 @@ struct EvolutionMetavars {
                  dg::Events::Registrars::ObserveErrorNorms<
                      Tags::Time, analytic_solution_fields>,
                  Events::Registrars::ObserveTimeStep<EvolutionMetavars>,
-                 dg::Events::Registrars::ObserveTime<
-                     Tags::Time, analytic_solution_fields>,
+                 dg::Events::Registrars::ObserveTime<Tags::Time>,
                  Events::Registrars::ChangeSlabSize<slab_choosers>>;
   using triggers = Triggers::time_triggers;
 
