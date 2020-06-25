@@ -19,10 +19,6 @@ struct Phi;
 struct ConstraintGamma0;
 struct ConstraintGamma1;
 struct ConstraintGamma2;
-struct GaugeHRollOnStartTime;
-struct GaugeHRollOnTimeWindow;
-template <typename Frame>
-struct GaugeHSpatialWeightDecayWidth;
 template <size_t Dim, typename Frame = Frame::Inertial>
 struct InitialGaugeH;
 template <size_t Dim, typename Frame = Frame::Inertial>
@@ -65,10 +61,5 @@ struct ConstraintEnergy;
 /// \brief Input option tags for the generalized harmonic evolution system
 namespace OptionTags {
 struct Group;
-struct GaugeGroup;
-struct GaugeHRollOnStart;
-struct GaugeHRollOnWindow;
-template <typename Frame>
-struct GaugeHSpatialDecayWidth;
 }  // namespace OptionTags
 }  // namespace GeneralizedHarmonic

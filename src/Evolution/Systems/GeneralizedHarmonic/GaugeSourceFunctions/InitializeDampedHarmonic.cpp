@@ -110,6 +110,50 @@ InitializeDampedHarmonic<Dim>::impl(
                          std::move(initial_d4_gauge_h));
 }
 
+template <size_t Dim>
+template <typename Frame>
+void InitializeDampedHarmonic<Dim>::DampedHarmonicRollonCompute<Frame>::
+    function(
+        const gsl::not_null<return_type*> h_and_d4_h,
+        const db::item_type<Tags::InitialGaugeH<Dim, Frame>>& gauge_h_init,
+        const db::item_type<Tags::SpacetimeDerivInitialGaugeH<Dim, Frame>>&
+            dgauge_h_init,
+        const Scalar<DataVector>& lapse,
+        const tnsr::I<DataVector, Dim, Frame>& shift,
+        const tnsr::a<DataVector, Dim, Frame>& spacetime_unit_normal_one_form,
+        const Scalar<DataVector>& sqrt_det_spatial_metric,
+        const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+        const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
+        const tnsr::aa<DataVector, Dim, Frame>& pi,
+        const tnsr::iaa<DataVector, Dim, Frame>& phi, const double time,
+        const double rollon_start_time, const double rollon_width,
+        const tnsr::I<DataVector, Dim, Frame>& coords,
+        const double sigma_r) noexcept {
+  if (UNLIKELY(h_and_d4_h->number_of_grid_points() != get(lapse).size())) {
+    h_and_d4_h->initialize(get(lapse).size());
+  }
+  damped_harmonic_rollon(
+      make_not_null(&get<Tags::GaugeH<Dim, Frame>>(*h_and_d4_h)),
+      make_not_null(&get<Tags::SpacetimeDerivGaugeH<Dim, Frame>>(*h_and_d4_h)),
+      gauge_h_init, dgauge_h_init, lapse, shift, spacetime_unit_normal_one_form,
+      sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi,
+      phi, time, coords, 1., 1.,
+      1.,       // amp_coef_{L1, L2, S}
+      4, 4, 4,  // exp_{L1, L2, S}
+      rollon_start_time, rollon_width, sigma_r);
+}
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                \
+  template class InitializeDampedHarmonic<DIM(              \
+      data)>::DampedHarmonicRollonCompute<Frame::Inertial>; \
+  template struct InitializeDampedHarmonic<DIM(data)>;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+#undef INSTANTIATE
+#undef DIM
 }  // namespace GeneralizedHarmonic::gauges::Actions
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -122,9 +166,7 @@ InitializeDampedHarmonic<Dim>::impl(
       const Variables<variables_tags<DIM(data), Frame::Inertial>>& u,        \
       const Mesh<DIM(data)>& mesh,                                           \
       const InverseJacobian<DataVector, DIM(data), Frame::Logical,           \
-                            Frame::Inertial>& inverse_jacobian) noexcept;    \
-  template struct GeneralizedHarmonic::gauges::Actions::                     \
-      InitializeDampedHarmonic<DIM(data)>;
+                            Frame::Inertial>& inverse_jacobian) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

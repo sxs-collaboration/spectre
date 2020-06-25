@@ -62,31 +62,6 @@ double time_deriv_of_roll_on_function(double time, double t_start,
 }  // namespace GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail
 
 namespace {
-template <typename Frame>
-void test_options() noexcept {
-  Options<tmpl::list<
-      GeneralizedHarmonic::OptionTags::GaugeHRollOnStart,
-      GeneralizedHarmonic::OptionTags::GaugeHRollOnWindow,
-      GeneralizedHarmonic::OptionTags::GaugeHSpatialDecayWidth<Frame>>>
-      opts("");
-  opts.parse(
-      "EvolutionSystem:\n"
-      "  GeneralizedHarmonic:\n"
-      "    Gauge:\n"
-      "      RollOnStartTime : 0.\n"
-      "      RollOnTimeWindow : 100.\n"
-      "      SpatialDecayWidth : 50.\n");
-  CHECK(
-      opts.template get<GeneralizedHarmonic::OptionTags::GaugeHRollOnStart>() ==
-      0.);
-  CHECK(opts.template get<
-            GeneralizedHarmonic::OptionTags::GaugeHRollOnWindow>() == 100.);
-  CHECK(
-      opts.template get<
-          GeneralizedHarmonic::OptionTags::GaugeHSpatialDecayWidth<Frame>>() ==
-      50.);
-}
-
 template <size_t SpatialDim, typename Frame, typename DataType>
 void test_rollon_function(const DataType& used_for_size) noexcept {
   INFO("Test rollon function");
@@ -159,8 +134,6 @@ SPECTRE_TEST_CASE(
     "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{""};
   const DataVector used_for_size(4);
-
-  test_options<Frame::Inertial>();
 
   test_rollon_function<1, Frame::Inertial>(used_for_size);
   test_rollon_function<2, Frame::Inertial>(used_for_size);
