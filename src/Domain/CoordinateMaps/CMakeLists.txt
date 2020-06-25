@@ -3,7 +3,11 @@
 
 set(LIBRARY CoordinateMaps)
 
-set(LIBRARY_SOURCES
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
   Affine.cpp
   BulgedCube.cpp
   DiscreteRotation.cpp
@@ -13,14 +17,34 @@ set(LIBRARY_SOURCES
   Identity.cpp
   Rotation.cpp
   SpecialMobius.cpp
-  TimeDependent/CubicScale.cpp
-  TimeDependent/Rotation.cpp
-  TimeDependent/Translation.cpp
   Wedge2D.cpp
   Wedge3D.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  Affine.hpp
+  BulgedCube.hpp
+  CoordinateMap.hpp
+  CoordinateMap.tpp
+  CoordinateMapHelpers.hpp
+  DiscreteRotation.hpp
+  EquatorialCompression.hpp
+  Equiangular.hpp
+  Frustum.hpp
+  Identity.hpp
+  MapInstantiationMacros.hpp
+  ProductMaps.hpp
+  ProductMaps.tpp
+  Rotation.hpp
+  SpecialMobius.hpp
+  Tags.hpp
+  TimeDependentHelpers.hpp
+  Wedge2D.hpp
+  Wedge3D.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}
@@ -29,7 +53,8 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   FunctionsOfTime
-
   INTERFACE
   Domain  # Domain should really be PUBLIC but there are cyclic dependencies
   )
+
+add_subdirectory(TimeDependent)

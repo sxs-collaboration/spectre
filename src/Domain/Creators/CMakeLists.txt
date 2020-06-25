@@ -1,12 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-add_subdirectory(Python)
-add_subdirectory(TimeDependence)
-
 set(LIBRARY DomainCreators)
 
-set(LIBRARY_SOURCES
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
   AlignedLattice.cpp
   BinaryCompactObject.cpp
   Brick.cpp
@@ -23,14 +24,38 @@ set(LIBRARY_SOURCES
   Sphere.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  AlignedLattice.hpp
+  BinaryCompactObject.hpp
+  Brick.hpp
+  Cylinder.hpp
+  Disk.hpp
+  DomainCreator.hpp
+  FrustalCloak.hpp
+  Interval.hpp
+  Rectangle.hpp
+  RegisterDerivedWithCharm.hpp
+  RotatedBricks.hpp
+  RotatedIntervals.hpp
+  RotatedRectangles.hpp
+  Shell.hpp
+  Sphere.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}
-  PUBLIC CoordinateMaps
-  PUBLIC DataStructures
-  INTERFACE Domain
-  INTERFACE DomainTimeDependence
-  INTERFACE ErrorHandling
-  INTERFACE Options
+  PUBLIC
+  CoordinateMaps
+  DataStructures
+  INTERFACE
+  Domain
+  DomainTimeDependence
+  ErrorHandling
+  Options
   )
+
+add_subdirectory(Python)
+add_subdirectory(TimeDependence)
