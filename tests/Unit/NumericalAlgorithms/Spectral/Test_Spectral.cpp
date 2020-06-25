@@ -149,6 +149,8 @@ void test_exact_differentiation_matrices() {
 
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
 void test_linear_filter_impl() {
+  CAPTURE(BasisType);
+  CAPTURE(QuadratureType);
   for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
        n <= Spectral::maximum_number_of_points<BasisType>; n++) {
     const auto& filter_matrix =
@@ -172,26 +174,14 @@ void test_linear_filter_impl() {
 }
 
 void test_linear_filter() {
-  {
-    INFO("Legendre-Gauss");
-    test_linear_filter_impl<Spectral::Basis::Legendre,
-                            Spectral::Quadrature::Gauss>();
-  }
-  {
-    INFO("Legendre-Gauss-Lobatto");
-    test_linear_filter_impl<Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto>();
-  }
-  {
-    INFO("Chebyshev-Gauss");
-    test_linear_filter_impl<Spectral::Basis::Chebyshev,
-                            Spectral::Quadrature::Gauss>();
-  }
-  {
-    INFO("Chebyshev-Gauss-Lobatto");
-    test_linear_filter_impl<Spectral::Basis::Chebyshev,
-                            Spectral::Quadrature::GaussLobatto>();
-  }
+  test_linear_filter_impl<Spectral::Basis::Legendre,
+                          Spectral::Quadrature::Gauss>();
+  test_linear_filter_impl<Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto>();
+  test_linear_filter_impl<Spectral::Basis::Chebyshev,
+                          Spectral::Quadrature::Gauss>();
+  test_linear_filter_impl<Spectral::Basis::Chebyshev,
+                          Spectral::Quadrature::GaussLobatto>();
 }
 
 // By default, uses the default tolerance for floating-point comparisons. When
