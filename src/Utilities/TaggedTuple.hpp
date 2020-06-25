@@ -433,8 +433,8 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
 
   // C++17 Draft 23.5.3.2 Assignment
   TaggedTuple& operator=(
-      typename std::conditional<is_copy_assignable::value, TaggedTuple,
-                                tuples_detail::no_such_type>::type const&
+      tmpl::conditional_t<is_copy_assignable::value, TaggedTuple,
+                          tuples_detail::no_such_type> const&
           t) noexcept(is_nothrow_copy_assignable::value) {
     static_cast<void>(
         tuples_detail::expand_pack((get<Tags>(*this) = get<Tags>(t))...));
@@ -442,8 +442,8 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
   }
 
   TaggedTuple& operator=(
-      typename std::conditional<is_move_assignable::value, TaggedTuple,
-                                tuples_detail::no_such_type>::type&&
+      tmpl::conditional_t<is_move_assignable::value, TaggedTuple,
+                                 tuples_detail::no_such_type>&&
           t) noexcept(is_nothrow_move_assignable::value) {
     static_cast<void>(tuples_detail::expand_pack(
         (get<Tags>(*this) =

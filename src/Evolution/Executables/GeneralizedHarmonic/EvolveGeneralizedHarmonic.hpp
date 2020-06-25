@@ -291,7 +291,7 @@ struct EvolutionMetavars {
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       evolution::dg::Initialization::Domain<volume_dim>,
       Initialization::Actions::NonconservativeSystem,
-      std::conditional_t<
+      tmpl::conditional_t<
           evolution::is_numeric_initial_data_v<initial_data>, tmpl::list<>,
           evolution::Initialization::Actions::SetVariables<
               domain::Tags::Coordinates<volume_dim, Frame::Logical>>>,
@@ -350,15 +350,15 @@ struct EvolutionMetavars {
       observers::ObserverWriter<EvolutionMetavars>,
       intrp::Interpolator<EvolutionMetavars>,
       intrp::InterpolationTarget<EvolutionMetavars, AhA>,
-      std::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
-                         importers::VolumeDataReader<EvolutionMetavars>,
-                         tmpl::list<>>,
+      tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
+                          importers::VolumeDataReader<EvolutionMetavars>,
+                          tmpl::list<>>,
       DgElementArray<
           EvolutionMetavars,
           tmpl::flatten<tmpl::list<
               Parallel::PhaseActions<Phase, Phase::Initialization,
                                      initialization_actions>,
-              std::conditional_t<
+              tmpl::conditional_t<
                   evolution::is_numeric_initial_data_v<initial_data>,
                   Parallel::PhaseActions<
                       Phase, Phase::RegisterWithVolumeDataReader,
@@ -384,10 +384,11 @@ struct EvolutionMetavars {
                   tmpl::list<Actions::RunEventsAndTriggers,
                              Actions::ChangeSlabSize, step_actions,
                              Actions::AdvanceTime>>>>,
-          std::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
-                             ImportNumericInitialData<
-                                 Phase, Phase::ImportInitialData, initial_data>,
-                             ImportNoInitialData>>>>;
+          tmpl::conditional_t<
+              evolution::is_numeric_initial_data_v<initial_data>,
+              ImportNumericInitialData<Phase, Phase::ImportInitialData,
+                                       initial_data>,
+              ImportNoInitialData>>>>;
 
   static constexpr OptionString help{
       "Evolve a generalized harmonic analytic solution.\n\n"

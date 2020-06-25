@@ -57,8 +57,8 @@ struct BoundaryScheme {
   static constexpr size_t volume_dim = Dim;
   using temporal_id_tag = TemporalIdTag;
   using receive_temporal_id_tag =
-      std::conditional_t<Asynchronous, ::Tags::Next<TemporalIdTag>,
-                         temporal_id_tag>;
+      tmpl::conditional_t<Asynchronous, ::Tags::Next<TemporalIdTag>,
+                          temporal_id_tag>;
   using mortar_data_tag = MortarDataTag;
 };
 

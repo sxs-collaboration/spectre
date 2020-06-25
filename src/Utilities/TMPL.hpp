@@ -414,21 +414,6 @@ using enumerated_fold =
 }
 
 namespace brigand {
-namespace detail {
-template <typename S, typename E>
-struct remove_duplicates_helper {
-  using type = typename std::conditional<
-      std::is_same<index_of<S, E>, no_such_type_>::value, push_back<S, E>,
-      S>::type;
-};
-}
-
-template <typename List>
-using remove_duplicates =
-    fold<List, list<>, detail::remove_duplicates_helper<_state, _element>>;
-}
-
-namespace brigand {
 template <bool>
 struct conditional;
 
@@ -447,6 +432,20 @@ struct conditional<false> {
 template <bool B, typename T, typename F>
 using conditional_t = typename conditional<B>::template type<T, F>;
 }
+
+namespace brigand {
+namespace detail {
+template <typename S, typename E>
+struct remove_duplicates_helper {
+  using type = conditional_t<std::is_same_v<index_of<S, E>, no_such_type_>,
+                             push_back<S, E>, S>;
+};
+}  // namespace detail
+
+template <typename List>
+using remove_duplicates =
+    fold<List, list<>, detail::remove_duplicates_helper<_state, _element>>;
+}  // namespace brigand
 
 namespace brigand {
 template <bool>

@@ -43,6 +43,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/TMPL.hpp"
 
 #if defined(__clang__) || defined(__GNUC__)
 
@@ -331,7 +332,7 @@ class span_iterator {
   using difference_type = typename Span::index_type;
 
   using reference =
-      std::conditional_t<IsConst, const element_type_, element_type_>&;
+      tmpl::conditional_t<IsConst, const element_type_, element_type_>&;
   using pointer = std::add_pointer_t<reference>;
 
   span_iterator() = default;
