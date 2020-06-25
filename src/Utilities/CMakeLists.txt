@@ -3,7 +3,11 @@
 
 set(LIBRARY Utilities)
 
-set(LIBRARY_SOURCES
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
   FileSystem.cpp
   Formaline.cpp
   OptimizerHacks.cpp
@@ -12,21 +16,9 @@ set(LIBRARY_SOURCES
   WrapText.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
-
-target_link_libraries(
-  ${LIBRARY}
-  PUBLIC
-  Blaze
-  Boost::boost
-  Brigand
-  ErrorHandling
-  Libxsmm
-  )
-
 spectre_target_headers(
   ${LIBRARY}
-  INCLUDE_DIRECTORY "${CMAKE_SOURCE_DIR}/src"
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Algorithm.hpp
   Array.hpp
@@ -79,6 +71,16 @@ spectre_target_headers(
   TypeTraits.hpp
   VectorAlgebra.hpp
   WrapText.hpp
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PUBLIC
+  Blaze
+  Boost::boost
+  Brigand
+  ErrorHandling
+  Libxsmm
   )
 
 add_subdirectory(TypeTraits)

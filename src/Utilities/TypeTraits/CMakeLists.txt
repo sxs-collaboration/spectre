@@ -3,7 +3,7 @@
 
 spectre_target_headers(
   Utilities
-  INCLUDE_DIRECTORY "${CMAKE_SOURCE_DIR}/src"
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ArraySize.hpp
   CanBeCopyConstructed.hpp

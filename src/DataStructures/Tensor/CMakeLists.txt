@@ -22,6 +22,5 @@ spectre_target_headers(
   TypeAliases.hpp
   )
 
-
 add_subdirectory(EagerMath)
 add_subdirectory(Expressions)
