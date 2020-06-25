@@ -253,7 +253,7 @@ struct EvolutionMetavars {
       tmpl::push_back<typename Event<observation_events>::creatable_classes,
                       typename AhA::post_horizon_find_callback>>;
 
-  using step_actions = tmpl::flatten<tmpl::list<
+  using step_actions = tmpl::list<
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
           domain::Tags::InternalDirections<volume_dim>>,
       dg::Actions::CollectDataForFluxes<
@@ -274,7 +274,7 @@ struct EvolutionMetavars {
                                      Actions::MutateApply<boundary_scheme>>,
                           tmpl::list<Actions::MutateApply<boundary_scheme>,
                                      Actions::RecordTimeStepperData<>>>,
-      Actions::UpdateU<>>>;
+      Actions::UpdateU<>>;
 
   enum class Phase {
     Initialization,
@@ -374,12 +374,11 @@ struct EvolutionMetavars {
                   SelfStart::self_start_procedure<step_actions>>,
               Parallel::PhaseActions<
                   Phase, Phase::Register,
-                  tmpl::flatten<tmpl::list<
-                      intrp::Actions::RegisterElementWithInterpolator,
-                      observers::Actions::RegisterWithObservers<
-                          observers::RegisterObservers<
-                              Tags::Time, element_observation_type>>,
-                      Parallel::Actions::TerminatePhase>>>,
+                  tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
+                             observers::Actions::RegisterWithObservers<
+                                 observers::RegisterObservers<
+                                     Tags::Time, element_observation_type>>,
+                             Parallel::Actions::TerminatePhase>>,
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,
                   tmpl::list<Actions::RunEventsAndTriggers,

@@ -99,10 +99,10 @@ struct DgElementArray {
   using phase_dependent_action_list = PhaseDepActionList;
   using array_index = ElementId<volume_dim>;
 
-  using const_global_cache_tags = tmpl::flatten<tmpl::list<
-      domain::Tags::Domain<volume_dim>,
-      tmpl::type_from<DgElementArray_detail::import_numeric_data_cache_tags<
-          DgElementArray, ImportInitialData>>>>;
+  using const_global_cache_tags =
+      tmpl::list<domain::Tags::Domain<volume_dim>,
+                 typename DgElementArray_detail::import_numeric_data_cache_tags<
+                     DgElementArray, ImportInitialData>::type>;
 
   using array_allocation_tags =
       tmpl::list<domain::Tags::InitialRefinementLevels<volume_dim>>;
