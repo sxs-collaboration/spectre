@@ -1,5 +1,5 @@
-[//]: # (This is a modified version of pybind11 2.4.3.)
-[//]: # (The pybind11 2.4.3 license can be found in LICENSE.)
+[//]: # (This is a modified version of pybind11 2.5.0.)
+[//]: # (The pybind11 2.5.0 license can be found in LICENSE.)
 
 ![pybind11 logo](https://github.com/pybind/pybind11/raw/master/docs/pybind11-logo.png)
 
