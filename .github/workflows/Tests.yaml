@@ -75,8 +75,8 @@ jobs:
           cd $GITHUB_WORKSPACE
           ./tools/CheckFiles.sh
 
-  # Lint with clang-tidy. We check only code that changed relative to
-  # `sxs-collaboration/spectre/develop`.
+  # Lint with clang-tidy. We check only code that changed relative to the
+  # nearest common ancestor commit with `sxs-collaboration/spectre/develop`.
   clang_tidy:
     name: Clang-tidy
     if: >
@@ -93,6 +93,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Fetch sxs-collaboration/spectre/develop
         run: >
           cd $GITHUB_WORKSPACE
@@ -121,8 +123,13 @@ jobs:
           $GITHUB_WORKSPACE
       - name: Check clang-tidy
         working-directory: /work/build
-        run: |
-          make clang-tidy-hash HASH=upstream/develop
+        run: >
+          UPSTREAM_HASH=$(
+            cd $GITHUB_WORKSPACE && git merge-base HEAD upstream/develop)
+
+          echo "Running clang-tidy relative to: $UPSTREAM_HASH\n"
+
+          make clang-tidy-hash HASH=$UPSTREAM_HASH
 
   # Build the documentation and check for problems, then upload as a workflow
   # artifact.
