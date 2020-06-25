@@ -3,18 +3,30 @@
 
 set(LIBRARY Time)
 
-set(LIBRARY_SOURCES
-    Slab.cpp
-    Time.cpp
-    TimeStepId.cpp
-    Utilities.cpp
-    )
+add_spectre_library(${LIBRARY})
 
-add_subdirectory(StepChoosers)
-add_subdirectory(StepControllers)
-add_subdirectory(TimeSteppers)
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  Slab.cpp
+  Time.cpp
+  TimeStepId.cpp
+  Utilities.cpp
+  )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  BoundaryHistory.hpp
+  EvolutionOrdering.hpp
+  History.hpp
+  Slab.hpp
+  Tags.hpp
+  Time.hpp
+  TimeStepId.hpp
+  Utilities.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}
@@ -24,3 +36,9 @@ target_link_libraries(
   Options
   Utilities
   )
+
+add_subdirectory(Actions)
+add_subdirectory(StepChoosers)
+add_subdirectory(StepControllers)
+add_subdirectory(TimeSteppers)
+add_subdirectory(Triggers)

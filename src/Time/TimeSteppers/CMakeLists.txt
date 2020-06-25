@@ -1,11 +1,22 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(MY_LIBRARY_SOURCES
-  TimeSteppers/AdamsBashforthN.cpp
-  TimeSteppers/DormandPrince5.cpp
-  TimeSteppers/RungeKutta3.cpp
-  TimeSteppers/RungeKutta4.cpp
+spectre_target_sources(
+  Time
+  PRIVATE
+  AdamsBashforthN.cpp
+  DormandPrince5.cpp
+  RungeKutta3.cpp
+  RungeKutta4.cpp
   )
 
-set(LIBRARY_SOURCES "${LIBRARY_SOURCES};${MY_LIBRARY_SOURCES}" PARENT_SCOPE)
+spectre_target_headers(
+  Time
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  AdamsBashforthN.hpp
+  DormandPrince5.hpp
+  RungeKutta3.hpp
+  RungeKutta4.hpp
+  TimeStepper.hpp
+  )
