@@ -40,6 +40,7 @@ set(LIBRARY_SOURCES
   Test_TaggedTuple.cpp
   Test_TMPL.cpp
   Test_Tuple.cpp
+  Test_TupleSlice.cpp
   Test_VectorAlgebra.cpp
   Test_WrapText.cpp
   )
