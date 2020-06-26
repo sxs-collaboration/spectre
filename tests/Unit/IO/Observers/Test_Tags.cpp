@@ -9,27 +9,24 @@
 #include "IO/Observer/Tags.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-namespace observers {
-namespace Tags {
+namespace observers::Tags {
 SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
-  TestHelpers::db::test_simple_tag<NumberOfEvents>("NumberOfEvents");
-  TestHelpers::db::test_simple_tag<ReductionArrayComponentIds>(
-      "ReductionArrayComponentIds");
-  TestHelpers::db::test_simple_tag<VolumeArrayComponentIds>(
-      "VolumeArrayComponentIds");
+  TestHelpers::db::test_simple_tag<ObservationsRegistered>(
+      "ObservationsRegistered");
+  TestHelpers::db::test_simple_tag<ReductionsContributed>(
+      "ReductionsContributed");
+  TestHelpers::db::test_simple_tag<NodeReductionsContributedForWriting>(
+      "NodeReductionsContributedForWriting");
+  TestHelpers::db::test_simple_tag<ReductionObserversRegisteredNodes>(
+      "ReductionObserversRegisteredNodes");
+  TestHelpers::db::test_simple_tag<VolumesContributed>("VolumesContributed");
   TestHelpers::db::test_simple_tag<TensorData>("TensorData");
-  TestHelpers::db::test_simple_tag<VolumeObserversRegistered>(
-      "VolumeObserversRegistered");
-  TestHelpers::db::test_simple_tag<VolumeObserversContributed>(
-      "VolumeObserversContributed");
-  TestHelpers::db::test_simple_tag<H5FileLock>("H5FileLock");
   TestHelpers::db::test_simple_tag<ReductionData<double>>("ReductionData");
   TestHelpers::db::test_simple_tag<ReductionDataNames<double>>(
       "ReductionDataNames");
-  TestHelpers::db::test_simple_tag<ReductionObserversContributed>(
-      "ReductionObserversContributed");
-  TestHelpers::db::test_simple_tag<ReductionObserversRegistered>(
-      "ReductionObserversRegistered");
+  TestHelpers::db::test_simple_tag<H5FileLock>("H5FileLock");
+  TestHelpers::db::test_simple_tag<VolumeFileName>("VolumeFileName");
+  TestHelpers::db::test_simple_tag<ReductionFileName>("ReductionFileName");
   TestHelpers::db::test_simple_tag<ReductionObserversRegisteredNodes>(
       "ReductionObserversRegisteredNodes");
   static_assert(
@@ -41,5 +38,4 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
                      ReductionData<double, int, char>>,
       "Failed testing Observers tags");
 }
-}  // namespace Tags
-}  // namespace observers
+}  // namespace observers::Tags

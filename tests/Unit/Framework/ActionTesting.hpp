@@ -1910,9 +1910,9 @@ class MockRuntimeSystem {
   }
 
  private:
-  GlobalCache cache_;
-  Inboxes inboxes_;
-  TupleOfMockDistributedObjects local_algorithms_;
+  GlobalCache cache_{};
+  Inboxes inboxes_{};
+  TupleOfMockDistributedObjects local_algorithms_{};
 };
 
 /// Set the phase of all parallel components to `phase`

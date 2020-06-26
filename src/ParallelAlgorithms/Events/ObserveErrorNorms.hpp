@@ -12,11 +12,14 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Domain/Tags.hpp"
+#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "IO/Observer/ReductionActions.hpp"   // IWYU pragma: keep
+#include "IO/Observer/TypeOfObservation.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/ArrayIndex.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -26,6 +29,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Numeric.hpp"
+#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -65,10 +69,6 @@ class ObserveErrorNorms;  // IWYU pragma: keep
  *   \f$\operatorname{RMS}\left(\sqrt{\sum_{\text{independent components}}\left[
  *   \text{value} - \text{analytic solution}\right]^2}\right)\f$
  *   over all points
- *
- * \warning Currently, only one reduction observation event can be
- * triggered at a given observation value.  Causing multiple events to run at
- * once will produce unpredictable results.
  */
 template <typename ObservationValueTag, typename... Tensors,
           typename EventRegistrars>
@@ -91,13 +91,21 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
       Parallel::ReductionData>;
 
  public:
+  /// The name of the subfile inside the HDF5 file
+  struct SubfileName {
+    using type = std::string;
+    static constexpr OptionString help = {
+        "The name of the subfile inside the HDF5 file without an extension and "
+        "without a preceding '/'."};
+  };
+
   /// \cond
   explicit ObserveErrorNorms(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveErrorNorms);  // NOLINT
   /// \endcond
 
-  using options = tmpl::list<>;
+  using options = tmpl::list<SubfileName>;
   static constexpr OptionString help =
       "Observe the RMS errors in the tensors compared to their analytic\n"
       "solution.\n"
@@ -112,6 +120,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
       "run at once will produce unpredictable results.";
 
   ObserveErrorNorms() = default;
+  explicit ObserveErrorNorms(const std::string& subfile_name) noexcept;
 
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
@@ -126,7 +135,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
       const typename Tensors::type&... tensors,
       const typename ::Tags::Analytic<Tensors>::type&... analytic_tensors,
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/,
+      const ArrayIndex& array_index,
       const ParallelComponent* const /*meta*/) const noexcept {
     tuples::TaggedTuple<LocalSquareError<Tensors>...> local_square_errors;
     const auto record_errors = [&local_square_errors](
@@ -153,10 +162,11 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
              .ckLocalBranch();
     Parallel::simple_action<observers::Actions::ContributeReductionData>(
         local_observer,
-        observers::ObservationId(
-            observation_value,
-            typename Metavariables::element_observation_type{}),
-        std::string{"/element_data"},
+        observers::ObservationId(observation_value, subfile_path_ + ".dat"),
+        observers::ArrayComponentId{
+            std::add_pointer_t<ParallelComponent>{nullptr},
+            Parallel::ArrayIndex<ArrayIndex>(array_index)},
+        subfile_path_,
         std::vector<std::string>{db::tag_name<ObservationValueTag>(),
                                  "NumberOfPoints",
                                  ("Error(" + db::tag_name<Tensors>() + ")")...},
@@ -164,7 +174,30 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
             static_cast<double>(observation_value), num_points,
             std::move(get<LocalSquareError<Tensors>>(local_square_errors))...});
   }
+
+  using observation_registration_tags = tmpl::list<>;
+  std::pair<observers::TypeOfObservation, observers::ObservationKey>
+  get_observation_type_and_key_for_registration() const noexcept {
+    return {observers::TypeOfObservation::Reduction,
+            observers::ObservationKey(subfile_path_ + ".dat")};
+  }
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override {
+    Event<EventRegistrars>::pup(p);
+    p | subfile_path_;
+  }
+
+ private:
+  std::string subfile_path_;
 };
+
+template <typename ObservationValueTag, typename... Tensors,
+          typename EventRegistrars>
+ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
+                  EventRegistrars>::ObserveErrorNorms(const std::string&
+                                                          subfile_name) noexcept
+    : subfile_path_("/" + subfile_name) {}
 
 /// \cond
 template <typename ObservationValueTag, typename... Tensors,

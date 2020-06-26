@@ -41,7 +41,8 @@ EventsAndTriggers:
   ? EveryNSlabs:
       N: 3
       Offset: 5
-  : - ObserveErrorNorms
+  : - ObserveErrorNorms:
+        SubfileName: Errors
   ? SpecifiedSlabs:
       Slabs: [10]
   : - Completion

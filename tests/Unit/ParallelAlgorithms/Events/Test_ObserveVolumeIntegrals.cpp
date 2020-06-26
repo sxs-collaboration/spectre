@@ -28,6 +28,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
@@ -76,6 +77,7 @@ struct MockContributeReductionData {
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationId& observation_id,
+                    observers::ArrayComponentId /*sender_array_id*/,
                     const std::string& subfile_name,
                     const std::vector<std::string>& reduction_names,
                     Parallel::ReductionData<Ts...>&& reduction_data) noexcept {
@@ -259,7 +261,7 @@ void test_observe_system() noexcept {
     INFO("Testing observation for Dim = " << VolumeDim);
     test_observe<VolumeDim>(
         std::make_unique<dg::Events::ObserveVolumeIntegrals<
-            VolumeDim, ObservationTimeTag, vars_for_test>>());
+            VolumeDim, ObservationTimeTag, vars_for_test>>("volume_integrals"));
   }
   {
     INFO("Testing create/serialize for Dim = " << VolumeDim);
@@ -267,8 +269,9 @@ void test_observe_system() noexcept {
         Event<tmpl::list<dg::Events::Registrars::ObserveVolumeIntegrals<
             VolumeDim, ObservationTimeTag, vars_for_test>>>;
     Parallel::register_derived_classes_with_charm<EventType>();
-    const auto factory_event =
-        TestHelpers::test_factory_creation<EventType>("ObserveVolumeIntegrals");
+    const auto factory_event = TestHelpers::test_factory_creation<EventType>(
+        "ObserveVolumeIntegrals:\n"
+        "  SubfileName: volume_integrals");
     auto serialized_event = serialize_and_deserialize(factory_event);
     test_observe<VolumeDim>(std::move(serialized_event));
   }

@@ -33,6 +33,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
+#include "Utilities/Registration.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -82,10 +83,6 @@ class ObserveFields;  // IWYU pragma: keep
  * - Tensors listed in `Tensors` template parameter
  * - `Error(*)` = errors in `AnalyticSolutionTensors` =
  *   \f$\text{value} - \text{analytic solution}\f$
- *
- * \warning Currently, only one volume observation event can be
- * triggered at a given time.  Causing multiple events to run at once
- * will produce unpredictable results.
  */
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
           typename... AnalyticSolutionTensors, typename EventRegistrars,
@@ -104,6 +101,14 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   using coordinates_tag = domain::Tags::Coordinates<VolumeDim, Frame::Inertial>;
 
  public:
+  /// The name of the subfile inside the HDF5 file
+  struct SubfileName {
+    using type = std::string;
+    static constexpr OptionString help = {
+        "The name of the subfile inside the HDF5 file without an extension and "
+        "without a preceding '/'."};
+  };
+
   /// \cond
   explicit ObserveFields(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
@@ -119,7 +124,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     static size_t lower_bound_on_size() noexcept { return 1; }
   };
 
-  using options = tmpl::list<VariablesToObserve>;
+  using options = tmpl::list<SubfileName, VariablesToObserve>;
   static constexpr OptionString help =
       "Observe volume tensor fields.\n"
       "\n"
@@ -133,10 +138,14 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       "triggered at a given time.  Causing multiple events to run at once\n"
       "will produce unpredictable results.";
 
-  explicit ObserveFields(const std::vector<std::string>& variables_to_observe =
+  ObserveFields() = default;
+
+  explicit ObserveFields(const std::string& subfile_name,
+                         const std::vector<std::string>& variables_to_observe =
                              VariablesToObserve::default_value(),
                          const OptionContext& context = {})
-      : variables_to_observe_(variables_to_observe.begin(),
+      : subfile_path_("/" + subfile_name),
+        variables_to_observe_(variables_to_observe.begin(),
                               variables_to_observe.end()) {
     using ::operator<<;
     const std::unordered_set<std::string> valid_tensors{
@@ -235,10 +244,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
              .ckLocalBranch();
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
         local_observer,
-        observers::ObservationId(
-            observation_value,
-            typename Metavariables::element_observation_type{}),
-        std::string{"/element_data"},
+        observers::ObservationId(observation_value, subfile_path_ + ".vol"),
+        subfile_path_,
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ElementId<VolumeDim>>(array_index)),
@@ -246,13 +253,22 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         mesh.quadrature());
   }
 
+  using observation_registration_tags = tmpl::list<>;
+  std::pair<observers::TypeOfObservation, observers::ObservationKey>
+  get_observation_type_and_key_for_registration() const noexcept {
+    return {observers::TypeOfObservation::Volume,
+            observers::ObservationKey(subfile_path_ + ".vol")};
+  }
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept override {
     Event<EventRegistrars>::pup(p);
+    p | subfile_path_;
     p | variables_to_observe_;
   }
 
  private:
+  std::string subfile_path_;
   std::unordered_set<std::string> variables_to_observe_{};
 };
 

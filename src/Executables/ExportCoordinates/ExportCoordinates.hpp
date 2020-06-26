@@ -16,12 +16,11 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
-#include "IO/Observer/Actions.hpp"
+#include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
-#include "IO/Observer/RegisterObservers.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
@@ -49,15 +48,13 @@
 namespace Actions {
 template <size_t Dim>
 struct ExportCoordinates {
-  // Compile-time interface for observers
-  struct ObservationType {};
   template <typename ParallelComponent, typename DbTagsList,
             typename ArrayIndex>
-  static std::pair<observers::TypeOfObservation, observers::ObservationId>
+  static std::pair<observers::TypeOfObservation, observers::ObservationKey>
   register_info(const db::DataBox<DbTagsList>& /*box*/,
                 const ArrayIndex& /*array_index*/) noexcept {
-    return {observers::TypeOfObservation::ReductionAndVolume,
-            observers::ObservationId(0., ObservationType{})};
+    return {observers::TypeOfObservation::Volume,
+            observers::ObservationKey("ObserveCoords")};
   }
 
   template <
@@ -104,7 +101,7 @@ struct ExportCoordinates {
              cache)
              .ckLocalBranch();
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
-        local_observer, observers::ObservationId(time, ObservationType{}),
+        local_observer, observers::ObservationId(time, "ObserveCoords"),
         std::string{"/element_data"},
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},

@@ -138,6 +138,8 @@ SPECTRE_TEST_CASE("Unit.ParallelLinearSolver.Asynchronous.ElementActions",
       make_not_null(&runner), 0);
   ActionTesting::invoke_queued_simple_action<obs_writer>(make_not_null(&runner),
                                                          0);
+  ActionTesting::invoke_queued_simple_action<obs_writer>(make_not_null(&runner),
+                                                         0);
 
   ActionTesting::set_phase(make_not_null(&runner), Metavariables::Phase::Test);
 
@@ -179,6 +181,10 @@ SPECTRE_TEST_CASE("Unit.ParallelLinearSolver.Asynchronous.ElementActions",
     CHECK(get_tag(residual_magnitude_square_tag{}) == 243.);
     CHECK(get_tag(LinearSolver::Tags::HasConverged<TestSolver>{}));
     ActionTesting::invoke_queued_simple_action<obs_component>(
+        make_not_null(&runner), 0);
+    ActionTesting::invoke_queued_threaded_action<obs_writer>(
+        make_not_null(&runner), 0);
+    ActionTesting::invoke_queued_threaded_action<obs_writer>(
         make_not_null(&runner), 0);
     ActionTesting::invoke_queued_threaded_action<obs_writer>(
         make_not_null(&runner), 0);

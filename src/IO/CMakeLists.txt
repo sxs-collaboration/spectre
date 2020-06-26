@@ -26,6 +26,7 @@ target_link_libraries(
   ErrorHandling
   Hdf5
   Options
+  Spectral
   Utilities
   INTERFACE
   Domain

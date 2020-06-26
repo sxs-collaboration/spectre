@@ -28,9 +28,10 @@ class DataBox;
 template <typename EventRegistrars, typename TriggerRegistrars>
 class EventsAndTriggers {
  public:
-  using Storage =
-      std::unordered_map<std::unique_ptr<Trigger<TriggerRegistrars>>,
-                         std::vector<std::unique_ptr<Event<EventRegistrars>>>>;
+  using event_type = Event<EventRegistrars>;
+  using trigger_type = Trigger<TriggerRegistrars>;
+  using Storage = std::unordered_map<std::unique_ptr<trigger_type>,
+                                     std::vector<std::unique_ptr<event_type>>>;
 
   EventsAndTriggers() = default;
   explicit EventsAndTriggers(Storage events_and_triggers) noexcept
@@ -56,6 +57,10 @@ class EventsAndTriggers {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept {  // NOLINT
     p | events_and_triggers_;
+  }
+
+  const Storage& events_and_triggers() const noexcept {
+    return events_and_triggers_;
   }
 
  private:

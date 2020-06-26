@@ -13,16 +13,16 @@ spectre_target_headers(
   IO
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Actions.hpp
   ArrayComponentId.hpp
   Helpers.hpp
   Initialize.hpp
   ObservationId.hpp
   ObserverComponent.hpp
   ReductionActions.hpp
-  RegisterObservers.hpp
   Tags.hpp
   TypeOfObservation.hpp
   VolumeActions.hpp
   WriteSimpleData.hpp
   )
+
+add_subdirectory(Actions)

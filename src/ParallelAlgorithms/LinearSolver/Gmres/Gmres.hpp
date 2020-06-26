@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "IO/Observer/Actions.hpp"
+#include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/ElementActions.hpp"
@@ -147,8 +147,7 @@ struct Gmres {
   using initialize_element =
       detail::InitializeElement<FieldsTag, OptionsGroup, Preconditioned>;
 
-  using register_element =
-      observers::Actions::RegisterWithObservers<observe_detail::Registration>;
+  using register_element = tmpl::list<>;
 
   /*!
    * \brief Reset the linear solver to its initial state.

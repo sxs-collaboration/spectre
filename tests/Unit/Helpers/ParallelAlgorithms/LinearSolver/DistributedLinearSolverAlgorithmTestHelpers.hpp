@@ -26,9 +26,8 @@
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
-#include "IO/Observer/Actions.hpp"
+#include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
-#include "IO/Observer/RegisterObservers.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
@@ -329,6 +328,7 @@ struct ElementArray {
           typename Metavariables::Phase,
           Metavariables::Phase::RegisterWithObserver,
           tmpl::list<typename linear_solver::register_element,
+                     helpers::detail::register_preconditioner<preconditioner>,
                      typename linear_solver::prepare_solve,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<

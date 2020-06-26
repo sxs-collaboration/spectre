@@ -22,6 +22,8 @@
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "IO/Observer/Actions/RegisterEvents.hpp"
+#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
@@ -78,6 +80,7 @@ struct MockContributeReductionData {
                     Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationId& observation_id,
+                    observers::ArrayComponentId /*sender_array_id*/,
                     const std::string& subfile_name,
                     const std::vector<std::string>& reduction_names,
                     Parallel::ReductionData<Ts...>&& reduction_data) noexcept {
@@ -254,6 +257,13 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
       db::add_tag_prefix<Tags::Analytic, Tags::Variables<solution_variables>>>>(
       observation_time, vars, solutions);
 
+  const auto ids_to_register =
+      observers::get_registration_observation_type_and_key(*observe, box);
+  const observers::ObservationKey expected_observation_key_for_reg(
+      "/reduction0.dat");
+  CHECK(ids_to_register->first == observers::TypeOfObservation::Reduction);
+  CHECK(ids_to_register->second == expected_observation_key_for_reg);
+
   observe->run(box, runner.cache(), array_index,
                std::add_pointer_t<element_component>{});
 
@@ -263,7 +273,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
 
   const auto& results = MockContributeReductionData::results;
   CHECK(results.observation_id.value() == observation_time);
-  CHECK(results.subfile_name == "/element_data");
+  CHECK(results.subfile_name == "/reduction0");
   CHECK(results.reduction_names[0] == "ObservationTimeTag");
   CHECK(results.time == observation_time);
   CHECK(results.reduction_names[1] == "NumberOfPoints");
@@ -311,14 +321,15 @@ void test_system() noexcept {
   INFO(pretty_type::get_name<System>());
   test_observe<System>(
       std::make_unique<dg::Events::ObserveErrorNorms<
-          ObservationTimeTag, typename System::vars_for_test>>());
+          ObservationTimeTag, typename System::vars_for_test>>("reduction0"));
 
   INFO("create/serialize");
   using EventType = Event<tmpl::list<dg::Events::Registrars::ObserveErrorNorms<
       ObservationTimeTag, typename System::vars_for_test>>>;
   Parallel::register_derived_classes_with_charm<EventType>();
-  const auto factory_event =
-      TestHelpers::test_factory_creation<EventType>("ObserveErrorNorms");
+  const auto factory_event = TestHelpers::test_factory_creation<EventType>(
+      "ObserveErrorNorms:\n"
+      "  SubfileName: reduction0");
   auto serialized_event = serialize_and_deserialize(factory_event);
   test_observe<System>(std::move(serialized_event));
 }

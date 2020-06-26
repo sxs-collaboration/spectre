@@ -9,6 +9,8 @@ set(LIBRARY_SOURCES
   Observers/Test_ArrayComponentId.cpp
   Observers/Test_Initialize.cpp
   Observers/Test_RegisterElements.cpp
+  Observers/Test_RegisterEvents.cpp
+  Observers/Test_RegisterSingleton.cpp
   Observers/Test_Tags.cpp
   Observers/Test_ObservationId.cpp
   Observers/Test_ReductionObserver.cpp

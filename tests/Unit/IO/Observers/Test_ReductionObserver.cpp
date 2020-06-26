@@ -18,7 +18,8 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
-#include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Actions/ObserverRegistration.hpp"
+#include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Initialize.hpp"  // IWYU pragma: keep
 #include "IO/Observer/ObservationId.hpp"
@@ -37,13 +38,16 @@
 namespace helpers = TestObservers_detail;
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
-  constexpr observers::TypeOfObservation type_of_observation =
-      observers::TypeOfObservation::Reduction;
-  using metavariables = helpers::Metavariables<type_of_observation>;
+  using registration_list = tmpl::list<
+      observers::Actions::RegisterWithObservers<
+          helpers::RegisterObservers<observers::TypeOfObservation::Reduction>>,
+      Parallel::Actions::TerminatePhase>;
+
+  using metavariables = helpers::Metavariables<registration_list>;
   using obs_component = helpers::observer_component<metavariables>;
   using obs_writer = helpers::observer_writer_component<metavariables>;
   using element_comp =
-      helpers::element_component<metavariables, type_of_observation>;
+      helpers::element_component<metavariables, registration_list>;
 
   tuples::TaggedTuple<observers::Tags::ReductionFileName,
                       observers::Tags::VolumeFileName>
@@ -76,10 +80,13 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
     // on the observer component by the RegisterWithObservers action.
     ActionTesting::invoke_queued_simple_action<obs_component>(
         make_not_null(&runner), 0);
-    // Invoke the simple_action RegisterReductionContributorWithObserverWriter.
-    ActionTesting::invoke_queued_simple_action<obs_writer>(
-        make_not_null(&runner), 0);
   }
+  // Invoke the simple_action RegisterReductionContributorWithObserverWriter.
+  ActionTesting::invoke_queued_simple_action<obs_writer>(make_not_null(&runner),
+                                                         0);
+  ActionTesting::invoke_queued_simple_action<obs_writer>(make_not_null(&runner),
+                                                         0);
+
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Testing);
 
@@ -157,14 +164,16 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
           make_fake_reduction_data(array_id, time, reduction_data{});
       runner.simple_action<obs_component,
                            observers::Actions::ContributeReductionData>(
-          0,
-          observers::ObservationId{
-              time, typename TestObservers_detail::RegisterThisObsType<
-                        type_of_observation>::ElementObservationType{}},
+          0, observers::ObservationId{time, "ElementObservationType"},
+          observers::ArrayComponentId{
+              std::add_pointer_t<element_comp>{nullptr},
+              Parallel::ArrayIndex<typename element_comp::array_index>(id)},
           "/element_data", legend, std::move(reduction_data_fakes));
     }
     // Invoke the threaded action 'WriteReductionData' to write reduction data
     // to disk.
+    runner.invoke_queued_threaded_action<obs_writer>(0);
+
     runner.invoke_queued_threaded_action<obs_writer>(0);
 
     REQUIRE(file_system::check_if_file_exists(h5_file_name));

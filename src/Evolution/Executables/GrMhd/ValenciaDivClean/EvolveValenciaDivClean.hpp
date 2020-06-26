@@ -41,10 +41,9 @@
 #include "Evolution/VariableFixing/Actions.hpp"
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
-#include "IO/Observer/Actions.hpp"
+#include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
-#include "IO/Observer/RegisterObservers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderScheme.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderSchemeLts.hpp"
@@ -316,9 +315,7 @@ struct EvolutionMetavars {
           Parallel::PhaseActions<
               Phase, Phase::Register,
               tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
-                         observers::Actions::RegisterWithObservers<
-                             observers::RegisterObservers<
-                                 Tags::Time, element_observation_type>>,
+                         observers::Actions::RegisterEventsWithObservers,
                          Parallel::Actions::TerminatePhase>>,
 
           Parallel::PhaseActions<

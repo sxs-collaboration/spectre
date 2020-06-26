@@ -7,6 +7,7 @@
 
 #include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "IO/Observer/Actions/RegisterSingleton.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/InterpolationTargetSendPoints.hpp"
@@ -26,12 +27,6 @@ template <typename InterpolationTargetTag>
 struct RegisterTargetWithObserver;
 }  // namespace Actions
 }  // namespace intrp
-namespace observers {
-namespace Actions {
-template <typename InterpolationTargetTag>
-struct RegisterSingletonWithObserverWriter;
-}  // namespace Actions
-}  // namespace observers
 /// \endcond
 
 namespace intrp {
@@ -127,19 +122,14 @@ struct InterpolationTarget {
   struct RegistrationHelper {
     template <typename ParallelComponent, typename DbTagsList,
               typename ArrayIndex>
-    static std::pair<observers::TypeOfObservation, observers::ObservationId>
+    static std::pair<observers::TypeOfObservation, observers::ObservationKey>
     register_info(const db::DataBox<DbTagsList>& /*box*/,
                   const ArrayIndex& /*array_index*/) noexcept {
-      observers::ObservationId fake_initial_observation_id{
-          0.,
-          // Currently this ignores anything in
-          // post_interpolation_callback::observation_types except the first
-          // element.  This will be changed in an upcoming PR, which
-          // will modify RegisterSingletonWithObserverWriter.
-          tmpl::front<typename InterpolationTargetTag::
-                          post_interpolation_callback::observation_types>{}};
       return {observers::TypeOfObservation::Reduction,
-              fake_initial_observation_id};
+              observers::ObservationKey(
+                  pretty_type::get_name<tmpl::front<
+                      typename InterpolationTargetTag::
+                          post_interpolation_callback::observation_types>>())};
     }
   };
   using chare_type = ::Parallel::Algorithms::Singleton;

@@ -3,11 +3,16 @@
 
 #pragma once
 
+#include <limits>
+#include <string>
 #include <tuple>
+#include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
-#include "IO/Observer/Actions.hpp"
+#include "IO/Observer/Actions/RegisterWithObservers.hpp"
+#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -25,6 +30,7 @@
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -48,8 +54,8 @@ using reduction_data = Parallel::ReductionData<
 template <typename OptionsGroup>
 struct ElementObservationType {};
 
-template <typename FieldsTag, typename OptionsGroup, typename DbTagsList,
-          typename Metavariables, typename ArrayIndex>
+template <typename FieldsTag, typename OptionsGroup, typename ParallelComponent,
+          typename DbTagsList, typename Metavariables, typename ArrayIndex>
 void contribute_to_residual_observation(
     const db::DataBox<DbTagsList>& box,
     Parallel::GlobalCache<Metavariables>& cache,
@@ -69,8 +75,12 @@ void contribute_to_residual_observation(
            .ckLocalBranch();
   Parallel::simple_action<observers::Actions::ContributeReductionData>(
       local_observer,
-      observers::ObservationId(iteration_id,
-                               ElementObservationType<OptionsGroup>{}),
+      observers::ObservationId(
+          iteration_id,
+          pretty_type::get_name<ElementObservationType<OptionsGroup>>()),
+      observers::ArrayComponentId{
+          std::add_pointer_t<ParallelComponent>{nullptr},
+          Parallel::ArrayIndex<ArrayIndex>(array_index)},
       std::string{"/" + option_name<OptionsGroup>() + "Residuals"},
       std::vector<std::string>{"Iteration", "Residual"},
       reduction_data{iteration_id, residual_magnitude_square});
@@ -141,15 +151,12 @@ template <typename OptionsGroup>
 struct RegisterObservers {
   template <typename ParallelComponent, typename DbTagsList,
             typename ArrayIndex>
-  static std::pair<observers::TypeOfObservation, observers::ObservationId>
-  register_info(const db::DataBox<DbTagsList>& box,
+  static std::pair<observers::TypeOfObservation, observers::ObservationKey>
+  register_info(const db::DataBox<DbTagsList>& /*box*/,
                 const ArrayIndex& /*array_index*/) noexcept {
-    return {
-        observers::TypeOfObservation::Reduction,
-        observers::ObservationId{
-            static_cast<double>(
-                db::get<LinearSolver::Tags::IterationId<OptionsGroup>>(box)),
-            ElementObservationType<OptionsGroup>{}}};
+    return {observers::TypeOfObservation::Reduction,
+            observers::ObservationKey{
+                pretty_type::get_name<ElementObservationType<OptionsGroup>>()}};
   }
 };
 
@@ -190,8 +197,9 @@ struct PrepareSolve {
         },
         get<residual_tag>(box));
     // Observe the initial residual even if no steps are going to be performed
-    contribute_to_residual_observation<FieldsTag, OptionsGroup>(box, cache,
-                                                                array_index);
+    contribute_to_residual_observation<FieldsTag, OptionsGroup,
+                                       ParallelComponent>(box, cache,
+                                                          array_index);
     return {std::move(box)};
   }
 };
@@ -229,8 +237,9 @@ struct CompleteStep {
           ++(*iteration_id);
         },
         get<residual_tag>(box));
-    contribute_to_residual_observation<FieldsTag, OptionsGroup>(box, cache,
-                                                                array_index);
+    contribute_to_residual_observation<FieldsTag, OptionsGroup,
+                                       ParallelComponent>(box, cache,
+                                                          array_index);
     return {std::move(box)};
   }
 };
