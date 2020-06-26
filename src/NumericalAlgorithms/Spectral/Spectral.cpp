@@ -369,6 +369,80 @@ Matrix interpolation_matrix(const size_t num_points,
   return interp_matrix;
 }
 
+template <Basis BasisType, Quadrature QuadratureType>
+const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
+    const size_t num_points) noexcept {
+  static_assert(BasisType == Spectral::Basis::Legendre);
+  static_assert(
+      QuadratureType == Spectral::Quadrature::Gauss,
+      "We only compute the boundary interpolation for Gauss quadrature "
+      "since for Gauss-Lobatto you can just copy values off the volume.");
+  static const auto cache = make_static_cache<
+      CacheRange<Spectral::minimum_number_of_points<BasisType, QuadratureType>,
+                 Spectral::maximum_number_of_points<BasisType>>>(
+      [](const size_t local_num_points) noexcept {
+        return std::pair<Matrix, Matrix>{
+            interpolation_matrix<BasisType, QuadratureType>(local_num_points,
+                                                            -1.0),
+            interpolation_matrix<BasisType, QuadratureType>(local_num_points,
+                                                            1.0)};
+      });
+  return cache(num_points);
+}
+
+const std::pair<Matrix, Matrix>& boundary_interpolation_matrices(
+    const Mesh<1>& mesh) noexcept {
+  ASSERT(mesh.basis(0) == Spectral::Basis::Legendre,
+         "We only support DG with a Legendre basis.");
+  ASSERT(mesh.quadrature(0) == Spectral::Quadrature::Gauss,
+         "We only compute the boundary interpolation for Gauss quadrature "
+         "since for Gauss-Lobatto you can just copy values off the volume.");
+  return boundary_interpolation_matrices<Spectral::Basis::Legendre,
+                                         Spectral::Quadrature::Gauss>(
+      mesh.extents(0));
+}
+
+template <Basis BasisType, Quadrature QuadratureType>
+const std::pair<DataVector, DataVector>& boundary_lifting_term(
+    const size_t num_points) noexcept {
+  static_assert(BasisType == Spectral::Basis::Legendre);
+  static_assert(
+      QuadratureType == Spectral::Quadrature::Gauss,
+      "We only compute the boundary lifting for Gauss quadrature "
+      "since for Gauss-Lobatto you can just copy values off the volume.");
+  static const auto cache = make_static_cache<
+      CacheRange<Spectral::minimum_number_of_points<BasisType, QuadratureType>,
+                 Spectral::maximum_number_of_points<BasisType>>>(
+      [](const size_t local_num_points) noexcept {
+        const auto& matrices =
+            boundary_interpolation_matrices<BasisType, QuadratureType>(
+                local_num_points);
+        std::pair<DataVector, DataVector> result{DataVector{local_num_points},
+                                                 DataVector{local_num_points}};
+        for (size_t i = 0; i < local_num_points; ++i) {
+          result.first[i] = matrices.first(0, i);
+          result.second[i] = matrices.second(0, i);
+        }
+        const DataVector& quad_weights =
+            quadrature_weights<BasisType, QuadratureType>(local_num_points);
+        result.first /= quad_weights;
+        result.second /= quad_weights;
+        return result;
+      });
+  return cache(num_points);
+}
+
+const std::pair<DataVector, DataVector>& boundary_lifting_term(
+    const Mesh<1>& mesh) noexcept {
+  ASSERT(mesh.basis(0) == Spectral::Basis::Legendre,
+         "We only support DG with a Legendre basis.");
+  ASSERT(mesh.quadrature(0) == Spectral::Quadrature::Gauss,
+         "We only compute the boundary lifting for Gauss quadrature "
+         "since for Gauss-Lobatto you can just copy values off the volume.");
+  return boundary_lifting_term<Spectral::Basis::Legendre,
+                               Spectral::Quadrature::Gauss>(mesh.extents(0));
+}
+
 namespace {
 
 template <typename F>
