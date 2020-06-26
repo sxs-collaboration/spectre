@@ -24,6 +24,7 @@
 #include "Domain/CoordinateMaps/MapInstantiationMacros.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"
@@ -40,7 +41,9 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/Numeric.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 
 namespace {
 
@@ -928,6 +931,126 @@ std::vector<std::array<size_t, 8>> corners_for_biradially_layered_domains(
   return corners;
 }
 
+template <typename TargetFrame>
+std::vector<
+    std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
+cyl_wedge_coordinate_maps(
+    const double inner_radius, const double outer_radius,
+    const double lower_bound, const double upper_bound,
+    const bool use_equiangular_map,
+    const std::vector<double>& radial_partitioning,
+    const std::vector<double>& height_partitioning) noexcept {
+  using Affine = domain::CoordinateMaps::Affine;
+  using Affine3D =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using Equiangular = domain::CoordinateMaps::Equiangular;
+  using Equiangular3DPrism =
+      domain::CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
+  using Wedge2D = domain::CoordinateMaps::Wedge2D;
+  using Wedge3DPrism = domain::CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
+  std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
+      cylinder_mapping;
+  double inner_circularity{};
+  double temp_inner_radius{};
+  double temp_outer_radius{};
+  double temp_lower_bound = lower_bound;
+  double temp_upper_bound{};
+  for (size_t layer = 0; layer < 1 + height_partitioning.size(); layer++) {
+    temp_inner_radius = inner_radius;
+    if (layer != height_partitioning.size()) {
+      temp_upper_bound = height_partitioning.at(layer);
+    } else {
+      temp_upper_bound = upper_bound;
+    }
+    if (use_equiangular_map) {
+      cylinder_mapping.emplace_back(
+          domain::make_coordinate_map_base<Frame::Logical, TargetFrame>(
+              Equiangular3DPrism{
+                  Equiangular(-1.0, 1.0, -1.0 * temp_inner_radius / sqrt(2.0),
+                              temp_inner_radius / sqrt(2.0)),
+                  Equiangular(-1.0, 1.0, -1.0 * temp_inner_radius / sqrt(2.0),
+                              temp_inner_radius / sqrt(2.0)),
+                  Affine{-1.0, 1.0, temp_lower_bound, temp_upper_bound}}));
+    } else {
+      cylinder_mapping.emplace_back(
+          domain::make_coordinate_map_base<Frame::Logical, TargetFrame>(
+              Affine3D{Affine(-1.0, 1.0, -1.0 * temp_inner_radius / sqrt(2.0),
+                              temp_inner_radius / sqrt(2.0)),
+                       Affine(-1.0, 1.0, -1.0 * temp_inner_radius / sqrt(2.0),
+                              temp_inner_radius / sqrt(2.0)),
+                       Affine{-1.0, 1.0, temp_lower_bound, temp_upper_bound}}));
+    }
+    inner_circularity = 0.;
+    for (size_t shell = 0; shell < 1 + radial_partitioning.size(); shell++) {
+      if (shell != radial_partitioning.size()) {
+        temp_outer_radius = radial_partitioning.at(shell);
+      } else {
+        temp_outer_radius = outer_radius;
+      }
+      cylinder_mapping.emplace_back(domain::make_coordinate_map_base<
+                                    Frame::Logical, TargetFrame>(Wedge3DPrism{
+          Wedge2D{temp_inner_radius, temp_outer_radius, inner_circularity, 1.0,
+                  OrientationMap<2>{std::array<Direction<2>, 2>{
+                      {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
+                  use_equiangular_map},
+          Affine{-1.0, 1.0, temp_lower_bound, temp_upper_bound}}));
+      cylinder_mapping.emplace_back(domain::make_coordinate_map_base<
+                                    Frame::Logical, TargetFrame>(Wedge3DPrism{
+          Wedge2D{temp_inner_radius, temp_outer_radius, inner_circularity, 1.0,
+                  OrientationMap<2>{std::array<Direction<2>, 2>{
+                      {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
+                  use_equiangular_map},
+          Affine{-1.0, 1.0, temp_lower_bound, temp_upper_bound}}));
+      cylinder_mapping.emplace_back(domain::make_coordinate_map_base<
+                                    Frame::Logical, TargetFrame>(Wedge3DPrism{
+          Wedge2D{temp_inner_radius, temp_outer_radius, inner_circularity, 1.0,
+                  OrientationMap<2>{std::array<Direction<2>, 2>{
+                      {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
+                  use_equiangular_map},
+          Affine{-1.0, 1.0, temp_lower_bound, temp_upper_bound}}));
+      cylinder_mapping.emplace_back(domain::make_coordinate_map_base<
+                                    Frame::Logical, TargetFrame>(Wedge3DPrism{
+          Wedge2D{temp_inner_radius, temp_outer_radius, inner_circularity, 1.0,
+                  OrientationMap<2>{std::array<Direction<2>, 2>{
+                      {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
+                  use_equiangular_map},
+          Affine{-1.0, 1.0, temp_lower_bound, temp_upper_bound}}));
+      inner_circularity = 1.;
+      if (shell != radial_partitioning.size()) {
+        temp_inner_radius = radial_partitioning.at(shell);
+      }
+    }
+    if (layer != height_partitioning.size()) {
+      temp_lower_bound = height_partitioning.at(layer);
+    }
+  }
+  return cylinder_mapping;
+}
+
+std::vector<std::array<size_t, 8>> corners_for_cylindrical_layered_domains(
+    const size_t number_of_shells, const size_t number_of_discs) noexcept {
+  using BlockCorners = std::array<size_t, 8>;
+  std::vector<BlockCorners> corners;
+  const size_t n_L = 4 * (number_of_shells + 1);  // number of corners per layer
+  const BlockCorners center{{0, 1, 2, 3, n_L + 0, n_L + 1, n_L + 2, n_L + 3}};
+  const BlockCorners east{{1, 5, 3, 7, n_L + 1, n_L + 5, n_L + 3, n_L + 7}};
+  const BlockCorners north{{3, 7, 2, 6, n_L + 3, n_L + 7, n_L + 2, n_L + 6}};
+  const BlockCorners west{{2, 6, 0, 4, n_L + 2, n_L + 6, n_L + 0, n_L + 4}};
+  const BlockCorners south{{0, 4, 1, 5, n_L + 0, n_L + 4, n_L + 1, n_L + 5}};
+  for (size_t i = 0; i < number_of_discs; i++) {
+    corners.push_back(center + make_array<8>(i * n_L));
+    for (size_t j = 0; j < number_of_shells; j++) {
+      const auto offset = make_array<8>(i * n_L + 4 * j);
+      corners.push_back(east + offset);   //+x wedge
+      corners.push_back(north + offset);  //+y wedge
+      corners.push_back(west + offset);   //-x wedge
+      corners.push_back(south + offset);  //-y wedge
+    }
+  }
+  return corners;
+}
+
 template <size_t VolumeDim>
 auto indices_for_rectilinear_domains(
     const Index<VolumeDim>& domain_extents,
@@ -1220,6 +1343,22 @@ frustum_coordinate_maps(const double length_inner_cube,
                         const bool use_equiangular_map,
                         const std::array<double, 3>& origin_preimage,
                         const double projective_scale_factor) noexcept;
+template std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+cyl_wedge_coordinate_maps(
+    const double inner_radius, const double outer_radius,
+    const double lower_bound, const double upper_bound,
+    const bool use_equiangular_map,
+    const std::vector<double>& radial_partitioning,
+    const std::vector<double>& height_partitioning) noexcept;
+template std::vector<
+    std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
+cyl_wedge_coordinate_maps(
+    const double inner_radius, const double outer_radius,
+    const double lower_bound, const double upper_bound,
+    const bool use_equiangular_map,
+    const std::vector<double>& radial_partitioning,
+    const std::vector<double>& height_partitioning) noexcept;
 // Explicit instantiations
 /// \cond
 using Affine2d =

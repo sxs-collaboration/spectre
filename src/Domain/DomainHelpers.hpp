@@ -207,6 +207,38 @@ std::vector<std::array<size_t, 8>> corners_for_biradially_layered_domains(
         {1, 2, 3, 4, 5, 6, 7, 8}}) noexcept;
 
 /// \ingroup ComputationalDomainGroup
+/// These are the CoordinateMaps used in the Cylinder DomainCreator.
+///
+/// The `radial_partitioning` specifies the radial boundaries of sub-shells
+/// between `inner_radius` and `outer_radius`, while `height_partitioning`
+/// specifies the z-boundaries, splitting the cylinder into stacked
+/// 3-dimensional disks. The circularity of the shell wedges changes from 0 to 1
+/// within the innermost sub-shell.
+template <typename TargetFrame>
+auto cyl_wedge_coordinate_maps(
+    double inner_radius, double outer_radius, double lower_bound,
+    double upper_bound, bool use_equiangular_map,
+    const std::vector<double>& radial_partitioning = {},
+    const std::vector<double>& height_partitioning = {}) noexcept
+    -> std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
+
+/// \ingroup ComputationalDomainGroup
+/// \brief The corners for a cylindrical domain split into discs with radial
+/// shells.
+///
+/// Generates the corners for a Domain which is made of one or more stacked
+/// discs consisting of layers of Blocks enveloping an interior square prism.
+/// The `number_of_shells` specifies how many of these layers of Blocks to have
+/// in each disc.
+///
+/// The `number_of_discs` specifies how many discs make up the domain.
+/// The very basic cylinder with one shell and one layer serves as a base
+/// to generate the corners for subsequent shells first and discs second.
+std::vector<std::array<size_t, 8>> corners_for_cylindrical_layered_domains(
+    size_t number_of_shells, size_t number_of_discs) noexcept;
+
+/// \ingroup ComputationalDomainGroup
 /// \brief Permutes the corner numbers of an n-cube.
 ///
 /// Returns the correct ordering of global corner numbers for a rotated block
