@@ -3,7 +3,11 @@
 
 set(LIBRARY Interpolation)
 
-set(LIBRARY_SOURCES
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
   BarycentricRational.cpp
   BarycentricRationalSpanInterpolator.cpp
   CubicSpanInterpolator.cpp
@@ -18,7 +22,43 @@ set(LIBRARY_SOURCES
   SpanInterpolator.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  AddTemporalIdsToInterpolationTarget.hpp
+  BarycentricRational.hpp
+  BarycentricRationalSpanInterpolator.hpp
+  CMakeLists.txt
+  CleanUpInterpolator.hpp
+  CubicSpanInterpolator.hpp
+  CubicSpline.hpp
+  InitializeInterpolationTarget.hpp
+  InitializeInterpolator.hpp
+  Interpolate.hpp
+  InterpolatedVars.hpp
+  InterpolationTarget.hpp
+  InterpolationTargetApparentHorizon.hpp
+  InterpolationTargetDetail.hpp
+  InterpolationTargetKerrHorizon.hpp
+  InterpolationTargetLineSegment.hpp
+  InterpolationTargetReceiveVars.hpp
+  InterpolationTargetWedgeSectionTorus.hpp
+  Interpolator.hpp
+  InterpolatorReceivePoints.hpp
+  InterpolatorReceiveVolumeData.hpp
+  InterpolatorRegisterElement.hpp
+  Intrp.hpp
+  IntrpOptionHolders.hpp
+  IrregularInterpolant.hpp
+  LagrangePolynomial.hpp
+  LinearSpanInterpolator.hpp
+  PointInfoTag.hpp
+  RegularGridInterpolant.hpp
+  SpanInterpolator.hpp
+  Tags.hpp
+  TryToInterpolate.hpp
+  )
 
 add_dependencies(
   ${LIBRARY}
@@ -37,3 +77,7 @@ target_link_libraries(
   Options
   Spectral
   )
+
+add_subdirectory(Actions)
+add_subdirectory(Callbacks)
+add_subdirectory(Events)

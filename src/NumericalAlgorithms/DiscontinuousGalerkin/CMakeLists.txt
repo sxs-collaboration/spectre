@@ -3,12 +3,29 @@
 
 set(LIBRARY DiscontinuousGalerkin)
 
-set(LIBRARY_SOURCES
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
   Formulation.cpp
   MortarHelpers.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  FluxCommunicationTypes.hpp
+  Formulation.hpp
+  LiftFlux.hpp
+  MortarHelpers.hpp
+  NormalDotFlux.hpp
+  Protocols.hpp
+  SimpleBoundaryData.hpp
+  SimpleMortarData.hpp
+  Tags.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}
@@ -18,3 +35,7 @@ target_link_libraries(
   Options
   Spectral
   )
+
+add_subdirectory(Actions)
+add_subdirectory(BoundarySchemes)
+add_subdirectory(NumericalFluxes)
