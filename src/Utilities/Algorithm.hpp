@@ -320,4 +320,40 @@ decltype(auto) remove_if(Container& c, UnaryPredicate&& unary_predicate) {
   return std::remove_if(begin(c), end(c),
                         std::forward<UnaryPredicate>(unary_predicate));
 }
+
+/// Convenience wrapper around std::sort
+template <class Container>
+decltype(auto) sort(Container& c) {
+  using std::begin;
+  using std::end;
+  return std::sort(begin(c), end(c));
+}
+
+/// Convenience wrapper around std::sort
+template <class Container, class Compare>
+decltype(auto) sort(Container& c, Compare&& comp) {
+  using std::begin;
+  using std::end;
+  return std::sort(begin(c), end(c), std::forward<Compare>(comp));
+}
+
+/// Convenience wrapper around std::transform
+template <class Container, class OutputIt, class UnaryOp>
+decltype(auto) transform(const Container& c, OutputIt output_first,
+                         UnaryOp&& unary_op) {
+  using std::begin;
+  using std::end;
+  return std::transform(begin(c), end(c), output_first,
+                        std::forward<UnaryOp>(unary_op));
+}
+
+/// Convenience wrapper around std::transform
+template <class Container1, class Container2, class OutputIt, class BinaryOp>
+decltype(auto) transform(const Container1& c1, const Container2& c2,
+                         OutputIt output_first, BinaryOp&& binary_op) {
+  using std::begin;
+  using std::end;
+  return std::transform(begin(c1), end(c1), begin(c2), output_first,
+                        std::forward<BinaryOp>(binary_op));
+}
 }  // namespace alg

@@ -194,6 +194,33 @@ void test_remove() noexcept {
       str2.end());
   CHECK(str2 == "Textwithsomewhitespaces");
 }
+
+void test_sort() noexcept {
+  std::vector<int> t_orig{3, 5, 8, -1};
+  std::vector<int> t0 = t_orig;
+  std::vector<int> t0_copy = t0;
+  alg::sort(t0);
+  std::sort(t0_copy.begin(), t0_copy.end());
+  CHECK(t0 == t0_copy);
+
+  auto t1 = t_orig;
+  auto t1_copy = t1;
+  alg::sort(t1, std::greater<>{});
+  std::sort(t1_copy.begin(), t1_copy.end(), std::greater<>{});
+  CHECK(t1 == t1_copy);
+}
+
+void test_transform() noexcept {
+  std::vector<int> t0{3, 5, 8, -1};
+  std::vector<int> t1{8, 2, 7, -5};
+  std::vector<int> result(t0.size());
+  alg::transform(t0, result.begin(), [](const size_t t) { return t + 5; });
+  CHECK(result == std::vector<int>{8, 10, 13, 4});
+
+  alg::transform(t0, t1, result.begin(),
+                 [](const size_t a, const size_t b) { return a + b; });
+  CHECK(result == std::vector<int>{11, 7, 15, -6});
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.Algorithm", "[Unit][Utilities]") {
@@ -205,4 +232,6 @@ SPECTRE_TEST_CASE("Unit.Utilities.Algorithm", "[Unit][Utilities]") {
   test_for_each();
   test_min_max_element();
   test_remove();
+  test_sort();
+  test_transform();
 }
