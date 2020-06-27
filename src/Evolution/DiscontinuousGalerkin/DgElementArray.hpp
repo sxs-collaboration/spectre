@@ -47,6 +47,9 @@ template <typename PhaseType, PhaseType ImportPhase, typename InitialData>
 struct ImportNumericInitialData {
   static_assert(tt::assert_conforms_to<
                 InitialData, evolution::protocols::NumericInitialData>);
+  using phase_type = PhaseType;
+  static constexpr PhaseType import_phase = ImportPhase;
+  using initial_data = InitialData;
 };
 
 namespace DgElementArray_detail {
@@ -70,37 +73,6 @@ struct import_numeric_data_cache_tags<
   using type =
       typename read_element_data_action<DgElementArray,
                                         InitialData>::const_global_cache_tags;
-};
-
-template <typename DgElementArray, typename ImportInitialData>
-struct try_import_data {
-  template <typename Metavariables>
-  static void apply(const typename Metavariables::Phase /*next_phase*/,
-                    Parallel::CProxy_ConstGlobalCache<
-                        Metavariables>& /*global_cache*/) noexcept {}
-};
-
-template <typename DgElementArray, typename PhaseType, PhaseType ImportPhase,
-          typename InitialData>
-struct try_import_data<
-    DgElementArray,
-    ImportNumericInitialData<PhaseType, ImportPhase, InitialData>> {
-  template <typename Metavariables>
-  static void apply(
-      const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
-    static_assert(
-        std::is_same_v<PhaseType, typename Metavariables::Phase>,
-        "Make sure the 'ImportNumericInitialData' type uses a 'Phase' "
-        "that is defined in the Metavariables.");
-    if (next_phase == ImportPhase) {
-      auto& local_cache = *(global_cache.ckLocalBranch());
-      Parallel::threaded_action<
-          read_element_data_action<DgElementArray, InitialData>>(
-          Parallel::get_parallel_component<
-              importers::VolumeDataReader<Metavariables>>(local_cache));
-    }
-  }
 };
 
 }  // namespace DgElementArray_detail
@@ -127,10 +99,10 @@ struct DgElementArray {
   using phase_dependent_action_list = PhaseDepActionList;
   using array_index = ElementId<volume_dim>;
 
-  using const_global_cache_tags = tmpl::flatten<tmpl::list<
-      domain::Tags::Domain<volume_dim>,
-      tmpl::type_from<DgElementArray_detail::import_numeric_data_cache_tags<
-          DgElementArray, ImportInitialData>>>>;
+  using const_global_cache_tags =
+      tmpl::list<domain::Tags::Domain<volume_dim>,
+                 typename DgElementArray_detail::import_numeric_data_cache_tags<
+                     DgElementArray, ImportInitialData>::type>;
 
   using array_allocation_tags =
       tmpl::list<domain::Tags::InitialRefinementLevels<volume_dim>>;
@@ -151,8 +123,20 @@ struct DgElementArray {
     Parallel::get_parallel_component<DgElementArray>(local_cache)
         .start_phase(next_phase);
 
-    DgElementArray_detail::try_import_data<
-        DgElementArray, ImportInitialData>::apply(next_phase, global_cache);
+    if constexpr (not std::is_same_v<ImportInitialData, ImportNoInitialData>) {
+      static_assert(
+          std::is_same_v<typename ImportInitialData::phase_type,
+                         typename Metavariables::Phase>,
+          "Make sure the 'ImportNumericInitialData' type uses a 'Phase' "
+          "that is defined in the Metavariables.");
+      if (next_phase == ImportInitialData::import_phase) {
+        Parallel::threaded_action<
+            DgElementArray_detail::read_element_data_action<
+                DgElementArray, typename ImportInitialData::initial_data>>(
+            Parallel::get_parallel_component<
+                importers::VolumeDataReader<Metavariables>>(local_cache));
+      }
+    }
   }
 };
 

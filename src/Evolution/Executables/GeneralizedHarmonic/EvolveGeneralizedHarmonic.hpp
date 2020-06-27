@@ -253,7 +253,7 @@ struct EvolutionMetavars {
       tmpl::push_back<typename Event<observation_events>::creatable_classes,
                       typename AhA::post_horizon_find_callback>>;
 
-  using step_actions = tmpl::flatten<tmpl::list<
+  using step_actions = tmpl::list<
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
           domain::Tags::InternalDirections<volume_dim>>,
       dg::Actions::CollectDataForFluxes<
@@ -274,7 +274,7 @@ struct EvolutionMetavars {
                                      Actions::MutateApply<boundary_scheme>>,
                           tmpl::list<Actions::MutateApply<boundary_scheme>,
                                      Actions::RecordTimeStepperData<>>>,
-      Actions::UpdateU<>>>;
+      Actions::UpdateU<>>;
 
   enum class Phase {
     Initialization,
@@ -291,7 +291,7 @@ struct EvolutionMetavars {
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       evolution::dg::Initialization::Domain<volume_dim>,
       Initialization::Actions::NonconservativeSystem,
-      std::conditional_t<
+      tmpl::conditional_t<
           evolution::is_numeric_initial_data_v<initial_data>, tmpl::list<>,
           evolution::Initialization::Actions::SetVariables<
               domain::Tags::Coordinates<volume_dim, Frame::Logical>>>,
@@ -350,15 +350,15 @@ struct EvolutionMetavars {
       observers::ObserverWriter<EvolutionMetavars>,
       intrp::Interpolator<EvolutionMetavars>,
       intrp::InterpolationTarget<EvolutionMetavars, AhA>,
-      std::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
-                         importers::VolumeDataReader<EvolutionMetavars>,
-                         tmpl::list<>>,
+      tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
+                          importers::VolumeDataReader<EvolutionMetavars>,
+                          tmpl::list<>>,
       DgElementArray<
           EvolutionMetavars,
           tmpl::flatten<tmpl::list<
               Parallel::PhaseActions<Phase, Phase::Initialization,
                                      initialization_actions>,
-              std::conditional_t<
+              tmpl::conditional_t<
                   evolution::is_numeric_initial_data_v<initial_data>,
                   Parallel::PhaseActions<
                       Phase, Phase::RegisterWithVolumeDataReader,
@@ -374,21 +374,21 @@ struct EvolutionMetavars {
                   SelfStart::self_start_procedure<step_actions>>,
               Parallel::PhaseActions<
                   Phase, Phase::Register,
-                  tmpl::flatten<tmpl::list<
-                      intrp::Actions::RegisterElementWithInterpolator,
-                      observers::Actions::RegisterWithObservers<
-                          observers::RegisterObservers<
-                              Tags::Time, element_observation_type>>,
-                      Parallel::Actions::TerminatePhase>>>,
+                  tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
+                             observers::Actions::RegisterWithObservers<
+                                 observers::RegisterObservers<
+                                     Tags::Time, element_observation_type>>,
+                             Parallel::Actions::TerminatePhase>>,
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,
                   tmpl::list<Actions::RunEventsAndTriggers,
                              Actions::ChangeSlabSize, step_actions,
                              Actions::AdvanceTime>>>>,
-          std::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
-                             ImportNumericInitialData<
-                                 Phase, Phase::ImportInitialData, initial_data>,
-                             ImportNoInitialData>>>>;
+          tmpl::conditional_t<
+              evolution::is_numeric_initial_data_v<initial_data>,
+              ImportNumericInitialData<Phase, Phase::ImportInitialData,
+                                       initial_data>,
+              ImportNoInitialData>>>>;
 
   static constexpr OptionString help{
       "Evolve a generalized harmonic analytic solution.\n\n"

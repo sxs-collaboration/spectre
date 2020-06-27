@@ -103,7 +103,7 @@ template <typename Result, typename Classes, typename Base, typename Callable,
 Result call_with_dynamic_type(Base* const obj, Callable&& f) noexcept {
   using Derived = tmpl::front<Classes>;
   using DerivedPointer =
-      std::conditional_t<std::is_const<Base>::value, Derived const*, Derived*>;
+      tmpl::conditional_t<std::is_const<Base>::value, Derived const*, Derived*>;
   // If we want to allow creatable classses to return objects of
   // types derived from themselves then this will have to be changed
   // to a dynamic_cast, but we probably won't want that and this

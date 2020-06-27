@@ -22,6 +22,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/PrintHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 /// \cond
@@ -305,8 +306,8 @@ class FixedHashMapIterator {
 
   using map_optional_type = boost::optional<std::remove_const_t<ValueType>>;
   using optional_type =
-      std::conditional_t<std::is_const<ValueType>::value,
-                         const map_optional_type, map_optional_type>;
+      tmpl::conditional_t<std::is_const<ValueType>::value,
+                          const map_optional_type, map_optional_type>;
 
   SPECTRE_ALWAYS_INLINE static bool is_set(const optional_type& opt) noexcept {
     return static_cast<bool>(opt);

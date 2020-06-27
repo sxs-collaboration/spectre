@@ -55,15 +55,16 @@ struct replace_at_impl<true, S<Os...>,
                        S<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13,
                          T14, T15, T16, Ts...>,
                        I, R>
-    : replace_at_impl<((I - 16) > 16), S<Os..., T1, T2, T3, T4, T5, T6, T7, T8,
-                                         T9, T10, T11, T12, T13, T14, T15, T16>,
+    : replace_at_impl<((I - 16) > 16),
+                      S<Os..., T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11,
+                        T12, T13, T14, T15, T16>,
                       S<Ts...>, (I - 16), R> {};
 
 template <typename L, typename I, typename R>
 struct call_replace_at_impl
     : replace_at_impl<(I::value > 15), brigand::clear<L>, L, I::value + 1, R> {
 };
-}
+}  // namespace detail
 
 namespace lazy {
 template <typename L, typename I, typename R>
@@ -81,12 +82,12 @@ struct swap_at_impl {
       ::brigand::replace_at<List, Ind1, ::brigand::at<List, Ind2>>, Ind2,
       ::brigand::at<List, Ind1>>;
 };
-}
+}  // namespace detail
 
 template <typename List, typename Ind1, typename Ind2>
 using swap_at =
     typename ::brigand::detail::swap_at_impl<List, Ind1, Ind2>::type;
-}
+}  // namespace brigand
 
 namespace brigand {
 template <typename V>
@@ -115,7 +116,7 @@ template <typename T>
 struct factorial : times<T, factorial<uint64_t<T::value - 1>>> {};
 template <>
 struct factorial<uint64_t<1>> : uint64_t<1> {};
-}
+}  // namespace brigand
 
 namespace brigand {
 namespace detail {
@@ -138,7 +139,7 @@ template <typename List>
 struct permutations_impl<List, 1> {
   using type = list<List>;
 };
-}
+}  // namespace detail
 
 namespace lazy {
 template <typename List>
@@ -147,7 +148,7 @@ using permutations = detail::permutations_impl<List>;
 
 template <typename List>
 using permutations = typename lazy::permutations<List>::type;
-}
+}  // namespace brigand
 
 namespace brigand {
 namespace detail {
@@ -170,7 +171,7 @@ template <typename List>
 struct generic_permutations_impl<List, 1> {
   using type = ::brigand::list<List>;
 };
-}
+}  // namespace detail
 
 namespace lazy {
 template <typename List>
@@ -179,7 +180,7 @@ using generic_permutations = detail::generic_permutations_impl<List>;
 
 template <typename List>
 using generic_permutations = typename lazy::generic_permutations<List>::type;
-}
+}  // namespace brigand
 
 namespace brigand {
 namespace detail {
@@ -206,7 +207,7 @@ struct combinations_impl<
     typename std::enable_if<OutSize::value == size<List>::value>::type> {
   using type = typename combinations_impl_helper<List, prev<OutSize>>::type;
 };
-}
+}  // namespace detail
 
 namespace lazy {
 template <typename List, typename OutSize = uint32_t<2>>
@@ -215,14 +216,14 @@ using combinations = detail::combinations_impl<List, OutSize>;
 
 template <typename List, typename OutSize = uint32_t<2>>
 using combinations = typename lazy::combinations<List, OutSize>::type;
-}
+}  // namespace brigand
 
 namespace brigand {
 namespace detail {
 template <typename Seq, typename T>
 struct equal_members_helper
     : std::is_same<count_if<Seq, std::is_same<T, _1>>, size_t<1>> {};
-}
+}  // namespace detail
 
 template <typename List1, typename List2>
 using equal_members = and_<
@@ -230,7 +231,7 @@ using equal_members = and_<
          and_<_state, detail::equal_members_helper<pin<List2>, _element>>>,
     fold<List2, bool_<true>,
          and_<_state, detail::equal_members_helper<pin<List1>, _element>>>>;
-}
+}  // namespace brigand
 
 namespace brigand {
 namespace detail {
@@ -257,8 +258,9 @@ template <typename Functor, typename State, typename I,
           typename T2>
 struct enumerated_fold_impl<Functor, State, I, Sequence<T0, T1, T2>> {
   using type = brigand::apply<
-      Functor, brigand::apply<Functor, brigand::apply<Functor, State, T0, I>,
-                              T1, brigand::next<I>>,
+      Functor,
+      brigand::apply<Functor, brigand::apply<Functor, State, T0, I>, T1,
+                     brigand::next<I>>,
       T2, brigand::plus<I, brigand::int32_t<2>>>;
 };
 
@@ -326,12 +328,13 @@ struct enumerated_fold_impl<Functor, State, I,
           brigand::apply<
               Functor,
               brigand::apply<
-                  Functor, brigand::apply<
-                               Functor, brigand::apply<
-                                            Functor, brigand::apply<
-                                                         Functor, State, T0, I>,
-                                            T1, brigand::next<I>>,
-                               T2, brigand::plus<I, brigand::int32_t<2>>>,
+                  Functor,
+                  brigand::apply<
+                      Functor,
+                      brigand::apply<Functor,
+                                     brigand::apply<Functor, State, T0, I>, T1,
+                                     brigand::next<I>>,
+                      T2, brigand::plus<I, brigand::int32_t<2>>>,
                   T3, brigand::plus<I, brigand::int32_t<3>>>,
               T4, brigand::plus<I, brigand::int32_t<4>>>,
           T5, brigand::plus<I, brigand::int32_t<5>>>,
@@ -398,7 +401,7 @@ struct enumerated_fold_impl<Functor, State, I,
                   T6, brigand::plus<I, brigand::int32_t<6>>>,
               T7, brigand::plus<I, brigand::int32_t<7>>>,
           brigand::plus<I, brigand::int32_t<8>>, Sequence<T...>> {};
-}
+}  // namespace detail
 
 namespace lazy {
 template <typename Sequence, typename State, typename Functor,
@@ -411,22 +414,7 @@ template <typename Sequence, typename State, typename Functor,
           typename I = brigand::int32_t<0>>
 using enumerated_fold =
     typename lazy::enumerated_fold<Sequence, State, Functor, I>::type;
-}
-
-namespace brigand {
-namespace detail {
-template <typename S, typename E>
-struct remove_duplicates_helper {
-  using type = typename std::conditional<
-      std::is_same<index_of<S, E>, no_such_type_>::value, push_back<S, E>,
-      S>::type;
-};
-}
-
-template <typename List>
-using remove_duplicates =
-    fold<List, list<>, detail::remove_duplicates_helper<_state, _element>>;
-}
+}  // namespace brigand
 
 namespace brigand {
 template <bool>
@@ -446,7 +434,21 @@ struct conditional<false> {
 
 template <bool B, typename T, typename F>
 using conditional_t = typename conditional<B>::template type<T, F>;
-}
+}  // namespace brigand
+
+namespace brigand {
+namespace detail {
+template <typename S, typename E>
+struct remove_duplicates_helper {
+  using type = conditional_t<std::is_same_v<index_of<S, E>, no_such_type_>,
+                             push_back<S, E>, S>;
+};
+}  // namespace detail
+
+template <typename List>
+using remove_duplicates =
+    fold<List, list<>, detail::remove_duplicates_helper<_state, _element>>;
+}  // namespace brigand
 
 namespace brigand {
 template <bool>
@@ -466,7 +468,7 @@ struct branch_if<false> {
 
 template <bool B, typename T, typename F>
 using branch_if_t = typename branch_if<B>::template type<T, F>;
-}
+}  // namespace brigand
 
 namespace tmpl = brigand;
 
@@ -513,10 +515,9 @@ constexpr bool flat_all_v = flat_all<Bs...>::value;
  */
 template <bool... Bs>
 using flat_any = std::integral_constant<
-    bool,
-    not std::is_same<
-        value_list<bool, Bs...>,
-        value_list<bool, (static_cast<void>(Bs), false)...>>::value>;
+    bool, not std::is_same<
+              value_list<bool, Bs...>,
+              value_list<bool, (static_cast<void>(Bs), false)...>>::value>;
 
 /*!
  * \ingroup UtilitiesGroup
@@ -590,10 +591,10 @@ using list_difference =
 /// is not in `Sequence`, takes the value of the size of `Sequence`
 template <typename Sequence, typename Element>
 using position_of_first = tmpl::integral_constant<
-  std::size_t,
-  tmpl::size<Sequence>::value -
-  tmpl::size<
-    find<Sequence, std::is_same<_1, tmpl::pin<Element>>>>::value>;
+    std::size_t,
+    tmpl::size<Sequence>::value -
+        tmpl::size<
+            find<Sequence, std::is_same<_1, tmpl::pin<Element>>>>::value>;
 
 template <typename Sequence, typename Element>
 constexpr std::size_t position_of_first_v =

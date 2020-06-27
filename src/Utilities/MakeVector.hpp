@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 /*!
@@ -21,7 +22,7 @@
 template <class ValueType = void, class Arg0, class... Args>
 auto make_vector(Arg0&& arg_0, Args&&... remaining_args) {
   std::vector<
-      std::conditional_t<std::is_same_v<ValueType, void>, Arg0, ValueType>>
+      tmpl::conditional_t<std::is_same_v<ValueType, void>, Arg0, ValueType>>
       return_vector;
   return_vector.reserve(sizeof...(Args) + 1);
   return_vector.emplace_back(std::forward<Arg0>(arg_0));
