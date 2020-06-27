@@ -3,17 +3,35 @@
 
 set(LIBRARY ApparentHorizons)
 
-set(LIBRARY_SOURCES
-    FastFlow.cpp
-    SpherepackIterator.cpp
-    Strahlkorper.cpp
-    StrahlkorperGr.cpp
-    Tags.cpp
-    YlmSpherepack.cpp
-    YlmSpherepackHelper.cpp
-    )
+add_spectre_library(${LIBRARY})
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  FastFlow.cpp
+  SpherepackIterator.cpp
+  Strahlkorper.cpp
+  StrahlkorperGr.cpp
+  Tags.cpp
+  YlmSpherepack.cpp
+  YlmSpherepackHelper.cpp
+  )
+
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  ComputeItems.hpp
+  FastFlow.hpp
+  SpherepackIterator.hpp
+  Strahlkorper.hpp
+  StrahlkorperGr.hpp
+  Tags.hpp
+  TagsDeclarations.hpp
+  TagsTypeAliases.hpp
+  YlmSpherepack.hpp
+  YlmSpherepackHelper.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}

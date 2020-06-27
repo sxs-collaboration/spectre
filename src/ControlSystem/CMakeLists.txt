@@ -3,14 +3,26 @@
 
 set(LIBRARY ControlSystem)
 
-set(LIBRARY_SOURCES
-    Averager.cpp
-    Controller.cpp
-    FunctionOfTimeUpdater.cpp
-    TimescaleTuner.cpp
-   )
+add_spectre_library(${LIBRARY})
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  Averager.cpp
+  Controller.cpp
+  FunctionOfTimeUpdater.cpp
+  TimescaleTuner.cpp
+  )
+
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  Averager.hpp
+  Controller.hpp
+  FunctionOfTimeUpdater.hpp
+  TimescaleTuner.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}
