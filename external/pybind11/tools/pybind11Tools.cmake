@@ -12,30 +12,46 @@ if(NOT PYBIND11_PYTHON_VERSION)
   set(PYBIND11_PYTHON_VERSION "" CACHE STRING "Python version to use for compiling modules")
 endif()
 
-set(Python_ADDITIONAL_VERSIONS 3.8 3.7 3.6 3.5 3.4)
+set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7 3.6 3.5 3.4)
 find_package(PythonLibsNew ${PYBIND11_PYTHON_VERSION} REQUIRED)
 
 include(CheckCXXCompilerFlag)
 include(CMakeParseArguments)
 
-if(NOT PYBIND11_CPP_STANDARD AND NOT CMAKE_CXX_STANDARD)
-  if(NOT MSVC)
-    check_cxx_compiler_flag("-std=c++14" HAS_CPP14_FLAG)
+# Use the language standards abstraction if CMake supports it with the current compiler
+if(NOT CMAKE_VERSION VERSION_LESS 3.1)
+  if(NOT CMAKE_CXX_STANDARD)
+    if(CMAKE_CXX14_STANDARD_COMPILE_OPTION)
+      set(CMAKE_CXX_STANDARD 14)
+    elseif(CMAKE_CXX11_STANDARD_COMPILE_OPTION)
+      set(CMAKE_CXX_STANDARD 11)
+    endif()
+  endif()
+  if(CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  endif()
+endif()
 
-    if (HAS_CPP14_FLAG)
+# Fall back to heuristics
+if(NOT PYBIND11_CPP_STANDARD AND NOT CMAKE_CXX_STANDARD)
+  if(MSVC)
+    set(PYBIND11_CPP_STANDARD /std:c++14)
+  else()
+    check_cxx_compiler_flag("-std=c++14" HAS_CPP14_FLAG)
+    if(HAS_CPP14_FLAG)
       set(PYBIND11_CPP_STANDARD -std=c++14)
     else()
       check_cxx_compiler_flag("-std=c++11" HAS_CPP11_FLAG)
-      if (HAS_CPP11_FLAG)
+      if(HAS_CPP11_FLAG)
         set(PYBIND11_CPP_STANDARD -std=c++11)
-      else()
-        message(FATAL_ERROR "Unsupported compiler -- pybind11 requires C++11 support!")
       endif()
     endif()
-  elseif(MSVC)
-    set(PYBIND11_CPP_STANDARD /std:c++14)
   endif()
 
+  if(NOT PYBIND11_CPP_STANDARD)
+    message(FATAL_ERROR "Unsupported compiler -- pybind11 requires C++11 support!")
+  endif()
   set(PYBIND11_CPP_STANDARD ${PYBIND11_CPP_STANDARD} CACHE STRING
       "C++ standard flag, e.g. -std=c++11, -std=c++14, /std:c++14.  Defaults to C++14 mode." FORCE)
 endif()
@@ -126,17 +142,32 @@ function(pybind11_add_module target_name)
 
   if(ARG_EXCLUDE_FROM_ALL)
     set(exclude_from_all EXCLUDE_FROM_ALL)
+  else()
+    set(exclude_from_all "")
   endif()
 
   add_library(${target_name} ${lib_type} ${exclude_from_all} ${ARG_UNPARSED_ARGUMENTS})
 
   if(ARG_SYSTEM)
     set(inc_isystem SYSTEM)
+  else()
+    set(inc_isystem "")
+  endif()
+
+  set(PYBIND11_INCLUDE_DIR_SELECTED "")
+  if(PYBIND11_INCLUDE_DIR)
+    # from project CMakeLists.txt
+    set(PYBIND11_INCLUDE_DIR_SELECTED ${PYBIND11_INCLUDE_DIR})
+  elseif(pybind11_INCLUDE_DIR)
+    # from pybind11Config
+    set(PYBIND11_INCLUDE_DIR_SELECTED ${pybind11_INCLUDE_DIR})
+  else()
+    message(FATAL "No pybind11_INCLUDE_DIR available. Use "
+      "find_package(pybind11) before calling pybind11_add_module.")
   endif()
 
   target_include_directories(${target_name} ${inc_isystem}
-    PRIVATE ${PYBIND11_INCLUDE_DIR}  # from project CMakeLists.txt
-    PRIVATE ${pybind11_INCLUDE_DIR}  # from pybind11Config
+    PRIVATE ${PYBIND11_INCLUDE_DIR_SELECTED}
     PRIVATE ${PYTHON_INCLUDE_DIRS})
 
   # Python debug libraries expose slightly different objects
@@ -185,10 +216,12 @@ function(pybind11_add_module target_name)
   endif()
 
   # Make sure C++11/14 are enabled
-  if(CMAKE_VERSION VERSION_LESS 3.3)
-    target_compile_options(${target_name} PUBLIC ${PYBIND11_CPP_STANDARD})
-  else()
-    target_compile_options(${target_name} PUBLIC $<$<COMPILE_LANGUAGE:CXX>:${PYBIND11_CPP_STANDARD}>)
+  if(PYBIND11_CPP_STANDARD)
+    if(CMAKE_VERSION VERSION_LESS 3.3)
+      target_compile_options(${target_name} PUBLIC ${PYBIND11_CPP_STANDARD})
+    else()
+      target_compile_options(${target_name} PUBLIC $<$<COMPILE_LANGUAGE:CXX>:${PYBIND11_CPP_STANDARD}>)
+    endif()
   endif()
 
   if(ARG_NO_EXTRAS)
