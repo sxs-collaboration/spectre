@@ -6,7 +6,8 @@ string(
     "^${CMAKE_SOURCE_DIR}/([^/]*)/?.*$" "\\1"
     SUBDIR_OF_SOURCE_DIR ${CMAKE_BINARY_DIR}
 )
-set(PROHIBITED_SUBDIRS "cmake" "docs" "src" "tests" "tools")
+set(PROHIBITED_SUBDIRS "cmake" "containers" "docs" "external" "src"
+    "support" "tests" "tools")
 
 if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}" OR
     ${SUBDIR_OF_SOURCE_DIR} IN_LIST PROHIBITED_SUBDIRS)
