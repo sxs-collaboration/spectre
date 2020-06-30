@@ -17,7 +17,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
   endif ()
 else ()
   message(
-      WARNING "The compiler ${CMAKE_CXX_COMPILER_ID} is unsupported compiler! "
-      "Compilation has only been tested with Clang, and GCC."
+      WARNING "The compiler ${CMAKE_CXX_COMPILER_ID} is unsupported! "
+      "Compilation has only been tested with Clang and GCC."
   )
 endif ()

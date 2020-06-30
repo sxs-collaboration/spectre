@@ -62,7 +62,7 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       )
   else()
-    message(FATAL_ERROR "Unknown Check for input file: ${CHECK_TYPE}."
+    message(FATAL_ERROR "Unknown check for input file: ${CHECK_TYPE}."
       "Known checks are: execute")
   endif()
 
