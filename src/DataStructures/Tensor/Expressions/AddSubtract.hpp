@@ -71,6 +71,9 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
       "S^b_a, which doesn't make sense. The indices may also be in different "
       "frames, different types (spatial vs. spacetime) or of different "
       "dimension.");
+  static_assert(Sign == 1 or Sign == -1,
+                "Invalid Sign provided for addition or subtraction of Tensor "
+                "elements. Sign must be 1 (addition) or -1 (subtraction).");
 
   using type = typename T1::type;
   using symmetry = tmpl::transform<typename T1::symmetry, typename T2::symmetry,
@@ -82,30 +85,24 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
 
   AddSub(T1 t1, T2 t2) : t1_(std::move(t1)), t2_(std::move(t2)) {}
 
-  template <typename... LhsIndices, typename T, int U = Sign,
-            Requires<U == 1> = nullptr>
+  template <typename... LhsIndices, typename T>
   SPECTRE_ALWAYS_INLINE type
   get(const std::array<T, num_tensor_indices>& tensor_index) const {
-    return t1_.template get<LhsIndices...>(tensor_index) +
-           t2_.template get<LhsIndices...>(tensor_index);
+    if constexpr (Sign == 1) {
+      return t1_.template get<LhsIndices...>(tensor_index) +
+             t2_.template get<LhsIndices...>(tensor_index);
+    } else {
+      return t1_.template get<LhsIndices...>(tensor_index) -
+             t2_.template get<LhsIndices...>(tensor_index);
+    }
   }
 
-  template <typename... LhsIndices, typename T, int U = Sign,
-            Requires<U == -1> = nullptr>
-  SPECTRE_ALWAYS_INLINE type
-  get(const std::array<T, num_tensor_indices>& tensor_index) const {
-    return t1_.template get<LhsIndices...>(tensor_index) -
-           t2_.template get<LhsIndices...>(tensor_index);
-  }
-
-  template <int U = Sign, Requires<U == 1> = nullptr>
   SPECTRE_ALWAYS_INLINE typename T1::type operator[](size_t i) const {
-    return t1_[i] + t2_[i];
-  }
-
-  template <int U = Sign, Requires<U == -1> = nullptr>
-  SPECTRE_ALWAYS_INLINE typename T1::type operator[](size_t i) const {
-    return t1_[i] - t2_[i];
+    if constexpr (Sign == 1) {
+      return t1_[i] + t2_[i];
+    } else {
+      return t1_[i] - t2_[i];
+    }
   }
 
  private:
