@@ -16,8 +16,7 @@
 #include "NumericalAlgorithms/LinearSolver/Gmres.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace LinearSolver {
-namespace Serial {
+namespace LinearSolver::Serial {
 
 namespace {
 struct ScalarField : db::SimpleTag {
@@ -129,7 +128,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
     using Vars = Variables<tmpl::list<ScalarField>>;
     constexpr size_t num_points = 2;
     const auto linear_operator = [](const Vars& arg) noexcept {
-      auto& data = get(get<ScalarField>(arg));
+      const auto& data = get(get<ScalarField>(arg));
       Vars result{num_points};
       get(get<ScalarField>(result)) =
           DataVector{data[0] * 4. + data[1], data[0] * 3. + data[1]};
@@ -237,8 +236,39 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
       CHECK(has_converged.num_iterations() == 2);
       CHECK_ITERABLE_APPROX(solution, expected_solution);
     }
+    {
+      INFO("Richardson preconditioner");
+      std::vector<double> recorded_residuals;
+      // Run a few Richardson iterations as preconditioner.
+      // The relaxation parameter is 2 / (l_max + l_min) where l_max and l_min
+      // are the largest and smallest eigenvalues of the linear operator
+      // (see `LinearSolver::Richardson::Richardson`).
+      const double relaxation_parameter = 0.2857142857142857;
+      const auto preconditioner =
+          [&linear_operator, &relaxation_parameter](
+              const DenseVector<double>& local_source) noexcept {
+            DenseVector<double> result(local_source.size(), 0.);
+            for (size_t i = 0; i < 2; ++i) {
+              result += relaxation_parameter *
+                        (local_source - linear_operator(result));
+            }
+            return result;
+          };
+      const auto result = gmres(
+          linear_operator, source, initial_guess, preconditioner,
+          [&recorded_residuals](
+              const Convergence::HasConverged& has_converged) {
+            recorded_residuals.push_back(has_converged.residual_magnitude());
+          });
+      const auto& has_converged = result.first;
+      const auto& solution = result.second;
+      CAPTURE(recorded_residuals);
+      REQUIRE(has_converged);
+      CHECK(has_converged.reason() == Convergence::Reason::AbsoluteResidual);
+      CHECK(has_converged.num_iterations() == 1);
+      CHECK_ITERABLE_APPROX(solution, expected_solution);
+    }
   }
 }
 
-}  // namespace Serial
-}  // namespace LinearSolver
+}  // namespace LinearSolver::Serial

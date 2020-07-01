@@ -28,6 +28,7 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/Actions/Goto.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -37,7 +38,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
-#include "ParallelAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
@@ -206,12 +207,55 @@ struct InitializeElement {
   }
 };
 
+namespace detail {
+
+template <typename Preconditioner>
+struct init_preconditioner_impl {
+  using type = typename Preconditioner::initialize_element;
+};
+
+template <>
+struct init_preconditioner_impl<void> {
+  using type = tmpl::list<>;
+};
+
+template <typename Preconditioner>
+using init_preconditioner =
+    typename init_preconditioner_impl<Preconditioner>::type;
+
+template <typename Preconditioner>
+struct run_preconditioner_impl {
+  using type =
+      tmpl::list<ComputeOperatorAction<typename Preconditioner::fields_tag>,
+                 typename Preconditioner::prepare_solve,
+                 ::Actions::RepeatUntil<
+                     LinearSolver::Tags::HasConverged<
+                         typename Preconditioner::options_group>,
+                     tmpl::list<typename Preconditioner::prepare_step,
+                                ComputeOperatorAction<
+                                    typename Preconditioner::operand_tag>,
+                                typename Preconditioner::perform_step>>>;
+};
+
+template <>
+struct run_preconditioner_impl<void> {
+  using type = tmpl::list<>;
+};
+
+template <typename Preconditioner>
+using run_preconditioner =
+    typename run_preconditioner_impl<Preconditioner>::type;
+
+}  // namespace detail
+
 template <typename Metavariables>
 struct ElementArray {
   using chare_type = Parallel::Algorithms::Array;
   using array_index = int;
   using metavariables = Metavariables;
   using linear_solver = typename Metavariables::linear_solver;
+  using preconditioner = typename Metavariables::preconditioner;
+
   // In each step of the algorithm we must provide A(p). The linear solver then
   // takes care of updating x and p, as well as the internal variables r, its
   // magnitude and the iteration step number.
@@ -222,6 +266,7 @@ struct ElementArray {
           tmpl::list<InitializeElement,
                      typename linear_solver::initialize_element,
                      ComputeOperatorAction<fields_tag>,
+                     detail::init_preconditioner<preconditioner>,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase,
@@ -235,6 +280,7 @@ struct ElementArray {
           tmpl::list<LinearSolver::Actions::TerminateIfConverged<
                          typename linear_solver::options_group>,
                      typename linear_solver::prepare_step,
+                     detail::run_preconditioner<preconditioner>,
                      ComputeOperatorAction<typename linear_solver::operand_tag>,
                      typename linear_solver::perform_step>>,
 
@@ -342,14 +388,37 @@ Phase determine_next_phase(const Phase& current_phase,
   }
 }
 
+namespace detail {
+
+template <typename LinearSolver>
+struct get_component_list_impl {
+  using type = typename LinearSolver::component_list;
+};
+
+template <>
+struct get_component_list_impl<void> {
+  using type = tmpl::list<>;
+};
+
+template <typename LinearSolver>
+using get_component_list = typename get_component_list_impl<LinearSolver>::type;
+
+}  // namespace detail
+
 template <typename Metavariables>
 using component_list = tmpl::push_back<
-    typename Metavariables::linear_solver::component_list,
+    tmpl::append<
+        detail::get_component_list<typename Metavariables::linear_solver>,
+        detail::get_component_list<typename Metavariables::preconditioner>>,
     ElementArray<Metavariables>, observers::Observer<Metavariables>,
     observers::ObserverWriter<Metavariables>, OutputCleaner<Metavariables>>;
 
 template <typename Metavariables>
-using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-    tmpl::list<typename Metavariables::linear_solver>>;
+using observed_reduction_data_tags =
+    observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
+        typename Metavariables::linear_solver,
+        tmpl::conditional_t<
+            std::is_same_v<typename Metavariables::preconditioner, void>,
+            tmpl::list<>, typename Metavariables::preconditioner>>>>;
 
 }  // namespace LinearSolverAlgorithmTestHelpers

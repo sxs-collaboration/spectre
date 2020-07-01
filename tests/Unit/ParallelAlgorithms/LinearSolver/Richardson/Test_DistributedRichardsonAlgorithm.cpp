@@ -29,6 +29,7 @@ struct Metavariables {
 
   using linear_solver = LinearSolver::Richardson::Richardson<
       typename helpers_distributed::fields_tag, ParallelRichardson>;
+  using preconditioner = void;
 
   using component_list = helpers_distributed::component_list<Metavariables>;
   using observed_reduction_data_tags =

@@ -25,8 +25,18 @@ namespace LinearSolver::gmres {
  * result of the operation \f$A(p)\f$ (see \ref LinearSolverGroup). Each
  * invocation of the `perform_step` action expects that \f$A(q)\f$ has been
  * computed in a preceding action and stored in the DataBox as
- * %db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
- * db::add_tag_prefix<LinearSolver::Tags::Operand, FieldsTag>>.
+ * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>`.
+ *
+ * This linear solver supports preconditioning. Enable preconditioning by
+ * setting the `Preconditioned` template parameter to `true`. If you do, run a
+ * preconditioner (e.g. another parallel linear solver) in each step before
+ * invoking `perform_step`. The preconditioner should approximately solve the
+ * linear problem \f$A(q)=b\f$ where \f$q\f$ is the `operand_tag` and \f$b\f$ is
+ * the `preconditioner_source_tag`. Make sure the tag
+ * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>`
+ * is up-to-date with the preconditioned result before invoking `perform_step`,
+ * i.e. that it is \f$A(q)\f$ where \f$q\f$ is the preconditioner's approximate
+ * solution to \f$A(q)=b\f$.
  *
  * Note that the operand \f$q\f$ for which \f$A(q)\f$ needs to be computed is
  * not the field \f$x\f$ we are solving for but
@@ -65,13 +75,24 @@ namespace LinearSolver::gmres {
  * \see ConjugateGradient for a linear solver that is more efficient when the
  * linear operator \f$A\f$ is symmetric.
  */
-template <typename Metavariables, typename FieldsTag, typename OptionsGroup>
+template <typename Metavariables, typename FieldsTag, typename OptionsGroup,
+          bool Preconditioned>
 struct Gmres {
   using fields_tag = FieldsTag;
   using options_group = OptionsGroup;
+  static constexpr bool preconditioned = Preconditioned;
 
   /// Apply the linear operator to this tag in each iteration
-  using operand_tag =
+  using operand_tag = std::conditional_t<
+      Preconditioned,
+      db::add_tag_prefix<
+          LinearSolver::Tags::Preconditioned,
+          db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>>,
+      db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>>;
+
+  /// Invoke a linear solver on the `operand_tag` sourced by the
+  /// `preconditioner_source_tag` before applying the operator in each step
+  using preconditioner_source_tag =
       db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
 
   /*!
@@ -124,7 +145,8 @@ struct Gmres {
    * not need to be initialized until it is computed for the first time in the
    * first step of the algorithm.
    */
-  using initialize_element = detail::InitializeElement<FieldsTag, OptionsGroup>;
+  using initialize_element =
+      detail::InitializeElement<FieldsTag, OptionsGroup, Preconditioned>;
 
   using register_element =
       observers::Actions::RegisterWithObservers<observe_detail::Registration>;
@@ -160,7 +182,8 @@ struct Gmres {
    *
    * \see `initialize_element`
    */
-  using prepare_solve = detail::PrepareSolve<FieldsTag, OptionsGroup>;
+  using prepare_solve =
+      detail::PrepareSolve<FieldsTag, OptionsGroup, Preconditioned>;
 
   // Compile-time interface for observers
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
@@ -177,7 +200,8 @@ struct Gmres {
    *   * `Tags::Next<LinearSolver::Tags::IterationId>`
    *   * `orthogonalization_iteration_id_tag`
    */
-  using prepare_step = detail::PrepareStep<FieldsTag, OptionsGroup>;
+  using prepare_step =
+      detail::PrepareStep<FieldsTag, OptionsGroup, Preconditioned>;
 
   /*!
    * \brief Perform an iteration of the GMRES linear solver.
@@ -204,7 +228,8 @@ struct Gmres {
    *   * `basis_history_tag`
    *   * `LinearSolver::Tags::HasConverged`
    */
-  using perform_step = detail::PerformStep<FieldsTag, OptionsGroup>;
+  using perform_step =
+      detail::PerformStep<FieldsTag, OptionsGroup, Preconditioned>;
 };
 
 }  // namespace LinearSolver::gmres

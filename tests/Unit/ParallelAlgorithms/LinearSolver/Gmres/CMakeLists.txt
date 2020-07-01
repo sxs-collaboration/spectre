@@ -21,4 +21,6 @@ add_dependencies(
   )
 
 add_linear_solver_algorithm_test("GmresAlgorithm")
+add_linear_solver_algorithm_test("GmresPreconditionedAlgorithm")
 add_linear_solver_algorithm_test("DistributedGmresAlgorithm")
+add_linear_solver_algorithm_test("DistributedGmresPreconditionedAlgorithm")

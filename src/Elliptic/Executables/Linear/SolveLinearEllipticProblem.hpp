@@ -89,7 +89,7 @@ struct Metavariables {
   // not positive-definite for the first-order system.
   using linear_solver = LinearSolver::gmres::Gmres<
       Metavariables, typename system::fields_tag,
-      SolveLinearEllipticProblem::OptionTags::LinearSolverGroup>;
+      SolveLinearEllipticProblem::OptionTags::LinearSolverGroup, false>;
   using linear_solver_iteration_id =
       LinearSolver::Tags::IterationId<typename linear_solver::options_group>;
   // For the GMRES linear solver we need to apply the DG operator to its
