@@ -19,3 +19,8 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "Boost::boost;DataStructures;ErrorHandling"
   )
+
+spectre_add_python_bindings_test(
+  "Unit.DataStructures.Tensor.Python.TensorData"
+  Test_TensorData.py
+  "Unit;DataStructures;Tensor;Python")

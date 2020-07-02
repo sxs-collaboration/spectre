@@ -10,6 +10,7 @@ spectre_python_add_module(
   Bindings.cpp
   DataVector.cpp
   Matrix.cpp
+  Tensor/TensorData.cpp
   )
 
 spectre_python_link_libraries(
