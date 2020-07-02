@@ -42,7 +42,7 @@ struct MagnetizedFmDiskProxy : grmhd::AnalyticData::MagnetizedFmDisk {
   template <typename DataType>
   using hydro_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
+                 hydro::Tags::SpatialVelocity<DataType, 3>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
                  hydro::Tags::LorentzFactor<DataType>,
@@ -51,7 +51,7 @@ struct MagnetizedFmDiskProxy : grmhd::AnalyticData::MagnetizedFmDisk {
   template <typename DataType>
   using grmhd_variables_tags =
       tmpl::push_back<hydro_variables_tags<DataType>,
-                      hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
+                      hydro::Tags::MagneticField<DataType, 3>,
                       hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
@@ -165,11 +165,8 @@ void test_variables(const DataType& used_for_size) {
        "pressure", "lorentz_factor", "specific_enthalpy"},
       {{{-20., 20.}}}, member_variables, used_for_size, 1.0e-8);
   const auto magnetic_field =
-      get<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>(
-          another_disk.variables(
-              coords,
-              tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3,
-                                                      Frame::Inertial>>{}));
+      get<hydro::Tags::SpatialVelocity<DataType, 3>>(another_disk.variables(
+          coords, tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>>{}));
   const auto expected_magnetic_field =
       make_with_value<tnsr::I<DataType, 3>>(used_for_size, 0.0);
   CHECK_ITERABLE_APPROX(magnetic_field, expected_magnetic_field);
@@ -207,7 +204,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDisk",
 #endif
 }
 
-    // clang-format off
+// clang-format off
 // [[OutputRegex, The threshold density must be in the range \(0, 1\)]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDiskThreshUpper",
@@ -233,7 +230,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDisk",
 #endif
 }
 
-    // clang-format off
+// clang-format off
 // [[OutputRegex, The grid resolution used in the magnetic field
 // normalization must be at least 4 points.]]
 [[noreturn]] SPECTRE_TEST_CASE(

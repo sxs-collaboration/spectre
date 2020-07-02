@@ -21,8 +21,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
-namespace grmhd {
-namespace ValenciaDivClean {
+namespace grmhd::ValenciaDivClean {
 
 void ConservativeFromPrimitive::apply(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,
@@ -40,21 +39,18 @@ void ConservativeFromPrimitive::apply(
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const Scalar<DataVector>& divergence_cleaning_field) noexcept {
-  Variables<tmpl::list<
-      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
-      hydro::Tags::SpatialVelocitySquared<DataVector>,
-      hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>,
-      hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
-      hydro::Tags::MagneticFieldSquared<DataVector>>>
+  Variables<tmpl::list<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>,
+                       hydro::Tags::SpatialVelocitySquared<DataVector>,
+                       hydro::Tags::MagneticFieldOneForm<DataVector, 3>,
+                       hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
+                       hydro::Tags::MagneticFieldSquared<DataVector>>>
       temp_tensors{get(rest_mass_density).size()};
   auto& spatial_velocity_one_form =
-      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
-          temp_tensors);
+      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>>(temp_tensors);
   raise_or_lower_index(make_not_null(&spatial_velocity_one_form),
                        spatial_velocity, spatial_metric);
   auto& magnetic_field_one_form =
-      get<hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>>(
-          temp_tensors);
+      get<hydro::Tags::MagneticFieldOneForm<DataVector, 3>>(temp_tensors);
   raise_or_lower_index(make_not_null(&magnetic_field_one_form), magnetic_field,
                        spatial_metric);
   auto& magnetic_field_dot_spatial_velocity =
@@ -105,6 +101,5 @@ void ConservativeFromPrimitive::apply(
       get(sqrt_det_spatial_metric) * get(divergence_cleaning_field);
 }
 
-}  // namespace ValenciaDivClean
-}  // namespace grmhd
+}  // namespace grmhd::ValenciaDivClean
 /// \endcond

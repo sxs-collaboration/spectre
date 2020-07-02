@@ -38,7 +38,7 @@ struct BondiMichelProxy : grmhd::Solutions::BondiMichel {
   template <typename DataType>
   using hydro_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
+                 hydro::Tags::SpatialVelocity<DataType, 3>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
                  hydro::Tags::LorentzFactor<DataType>,
@@ -47,7 +47,7 @@ struct BondiMichelProxy : grmhd::Solutions::BondiMichel {
   template <typename DataType>
   using grmhd_variables_tags =
       tmpl::push_back<hydro_variables_tags<DataType>,
-                      hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
+                      hydro::Tags::MagneticField<DataType, 3>,
                       hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>

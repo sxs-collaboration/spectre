@@ -178,12 +178,10 @@ class TovStar : public MarkAsAnalyticSolution {
   const RadialSolution& radial_tov_solution() const noexcept;
 
   template <typename DataType>
-  using SpatialVelocity =
-      hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>;
+  using SpatialVelocity = hydro::Tags::SpatialVelocity<DataType, 3>;
 
   template <typename DataType>
-  using MagneticField =
-      hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>;
+  using MagneticField = hydro::Tags::MagneticField<DataType, 3>;
 
   template <typename DataType>
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<3>,

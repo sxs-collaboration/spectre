@@ -238,8 +238,8 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution {
   DataType potential(const DataType& r_sqrd,
                      const DataType& sin_theta_sqrd) const noexcept;
 
-  SPECTRE_ALWAYS_INLINE size_t index_helper(tmpl::no_such_type_ /*meta*/) const
-      noexcept {
+  SPECTRE_ALWAYS_INLINE static size_t index_helper(
+      tmpl::no_such_type_ /*meta*/) noexcept {
     return std::numeric_limits<size_t>::max();
   }
   template <typename T>

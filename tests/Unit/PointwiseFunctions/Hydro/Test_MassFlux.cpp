@@ -63,7 +63,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.MassFlux",
   Scalar<DataVector> sqrt_det_g{{{DataVector{5, 0.25}}}};
   const auto box = db::create<
       db::AddSimpleTags<Tags::RestMassDensity<DataVector>,
-                        Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+                        Tags::SpatialVelocity<DataVector, 3>,
                         Tags::LorentzFactor<DataVector>,
                         ::gr::Tags::Lapse<DataVector>,
                         ::gr::Tags::Shift<3, Frame::Inertial, DataVector>,

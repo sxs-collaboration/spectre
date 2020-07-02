@@ -21,8 +21,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
-namespace grmhd {
-namespace ValenciaDivClean {
+namespace grmhd::ValenciaDivClean {
 void ComputeFluxes::apply(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_d_flux,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
@@ -43,22 +42,20 @@ void ComputeFluxes::apply(
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const Scalar<DataVector>& lorentz_factor,
     const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field) noexcept {
-  Variables<tmpl::list<
-      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
-      hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>,
-      hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
-      hydro::Tags::MagneticFieldSquared<DataVector>, ::Tags::TempScalar<0>,
-      ::Tags::TempScalar<1>, ::Tags::TempScalar<2>>>
+  Variables<tmpl::list<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>,
+                       hydro::Tags::MagneticFieldOneForm<DataVector, 3>,
+                       hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
+                       hydro::Tags::MagneticFieldSquared<DataVector>,
+                       ::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
+                       ::Tags::TempScalar<2>>>
       temp_tensors{get<0>(shift).size()};
 
   auto& spatial_velocity_one_form =
-      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
-          temp_tensors);
+      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>>(temp_tensors);
   raise_or_lower_index(make_not_null(&spatial_velocity_one_form),
                        spatial_velocity, spatial_metric);
   auto& magnetic_field_one_form =
-      get<hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>>(
-          temp_tensors);
+      get<hydro::Tags::MagneticFieldOneForm<DataVector, 3>>(temp_tensors);
   raise_or_lower_index(make_not_null(&magnetic_field_one_form), magnetic_field,
                        spatial_metric);
   auto& magnetic_field_dot_spatial_velocity =
@@ -84,8 +81,7 @@ void ComputeFluxes::apply(
 
   // lapse b_i / W = lapse (B_i / W^2 + v_i (B^m v_m)
   tnsr::i<DataVector, 3, Frame::Inertial>& lapse_b_over_w =
-      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
-          temp_tensors);
+      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>>(temp_tensors);
   for (size_t i = 0; i < 3; ++i) {
     lapse_b_over_w.get(i) *= get(magnetic_field_dot_spatial_velocity);
     lapse_b_over_w.get(i) +=
@@ -117,6 +113,5 @@ void ComputeFluxes::apply(
     tilde_s_flux->get(i, i) += p_star_alpha_sqrt_det_g;
   }
 }
-}  // namespace ValenciaDivClean
-}  // namespace grmhd
+}  // namespace grmhd::ValenciaDivClean
 /// \endcond

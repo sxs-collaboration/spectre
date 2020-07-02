@@ -134,15 +134,15 @@ class CProxy_ConstGlobalCache;
 struct KerrHorizon {
   using tags_to_observe =
       tmpl::list<StrahlkorperTags::EuclideanSurfaceIntegralVector<
-          hydro::Tags::MassFlux<DataVector, 3, ::Frame::Inertial>,
-          ::Frame::Inertial>>;
+          hydro::Tags::MassFlux<DataVector, 3>, ::Frame::Inertial>>;
   using compute_items_on_source = tmpl::list<>;
-  using vars_to_interpolate_to_target = tmpl::list<
-      hydro::Tags::RestMassDensity<DataVector>,
-    hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
-      hydro::Tags::LorentzFactor<DataVector>, gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-      gr::Tags::SqrtDetSpatialMetric<DataVector>>;
+  using vars_to_interpolate_to_target =
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, 3>,
+                 hydro::Tags::LorentzFactor<DataVector>,
+                 gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>>;
   using compute_items_on_target = tmpl::push_front<
       tags_to_observe,
       StrahlkorperTags::EuclideanAreaElement<::Frame::Inertial>,
@@ -154,7 +154,7 @@ struct KerrHorizon {
                                                    KerrHorizon>;
 };
 
-template <typename InitialData, typename...InterpolationTargetTags>
+template <typename InitialData, typename... InterpolationTargetTags>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = 3;
   static constexpr dg::Formulation dg_formulation =
@@ -181,11 +181,11 @@ struct EvolutionMetavars {
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
   // Do not limit the divergence-cleaning field Phi
-  using limiter = Tags::Limiter<Limiters::Minmod<
-      3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
-                    grmhd::ValenciaDivClean::Tags::TildeTau,
-                    grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>,
-                    grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>>>;
+  using limiter = Tags::Limiter<
+      Limiters::Minmod<3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
+                                     grmhd::ValenciaDivClean::Tags::TildeTau,
+                                     grmhd::ValenciaDivClean::Tags::TildeS<>,
+                                     grmhd::ValenciaDivClean::Tags::TildeB<>>>>;
 
   using step_choosers_common =
       tmpl::list<StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial>,

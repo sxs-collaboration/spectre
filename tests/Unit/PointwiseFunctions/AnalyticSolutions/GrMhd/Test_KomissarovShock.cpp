@@ -141,15 +141,15 @@ void test_left_and_right_variables() noexcept {
   CHECK(get(get<hydro::Tags::Pressure<double>>(komissarov_shock.variables(
             right_x, 0., tmpl::list<hydro::Tags::Pressure<double>>{}))) ==
         55.36);
-  CHECK(get<0>(get<hydro::Tags::SpatialVelocity<double, 3, Frame::Inertial>>(
-            komissarov_shock.variables(left_x, 0.,
-                                       tmpl::list<hydro::Tags::SpatialVelocity<
-                                           double, 3, Frame::Inertial>>{}))) ==
+  CHECK(get<0>(get<hydro::Tags::SpatialVelocity<double, 3>>(
+            komissarov_shock.variables(
+                left_x, 0.,
+                tmpl::list<hydro::Tags::SpatialVelocity<double, 3>>{}))) ==
         0.8370659816473115);
-  CHECK(get<0>(get<hydro::Tags::SpatialVelocity<double, 3, Frame::Inertial>>(
-            komissarov_shock.variables(right_x, 0.,
-                                       tmpl::list<hydro::Tags::SpatialVelocity<
-                                           double, 3, Frame::Inertial>>{}))) ==
+  CHECK(get<0>(get<hydro::Tags::SpatialVelocity<double, 3>>(
+            komissarov_shock.variables(
+                right_x, 0.,
+                tmpl::list<hydro::Tags::SpatialVelocity<double, 3>>{}))) ==
         0.6202085442748952);
   CHECK(get(get<hydro::Tags::LorentzFactor<double>>(komissarov_shock.variables(
             left_x, 0., tmpl::list<hydro::Tags::LorentzFactor<double>>{}))) ==

@@ -14,8 +14,7 @@
 #include "Utilities/Gsl.hpp"
 
 /// \cond
-namespace RelativisticEuler {
-namespace Valencia {
+namespace RelativisticEuler::Valencia {
 
 template <size_t Dim>
 void ConservativeFromPrimitive<Dim>::apply(
@@ -30,13 +29,11 @@ void ConservativeFromPrimitive<Dim>::apply(
     const Scalar<DataVector>& lorentz_factor,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric) noexcept {
-  Variables<tmpl::list<
-      hydro::Tags::SpatialVelocityOneForm<DataVector, Dim, Frame::Inertial>,
-      hydro::Tags::SpatialVelocitySquared<DataVector>>>
+  Variables<tmpl::list<hydro::Tags::SpatialVelocityOneForm<DataVector, Dim>,
+                       hydro::Tags::SpatialVelocitySquared<DataVector>>>
       temp_tensors{get(rest_mass_density).size()};
-  auto& spatial_velocity_oneform = get<
-      hydro::Tags::SpatialVelocityOneForm<DataVector, Dim, Frame::Inertial>>(
-      temp_tensors);
+  auto& spatial_velocity_oneform =
+      get<hydro::Tags::SpatialVelocityOneForm<DataVector, Dim>>(temp_tensors);
   raise_or_lower_index(make_not_null(&spatial_velocity_oneform),
                        spatial_velocity, spatial_metric);
   auto& spatial_velocity_squared =
@@ -69,6 +66,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef DIM
-}  // namespace Valencia
-}  // namespace RelativisticEuler
+}  // namespace RelativisticEuler::Valencia
 /// \endcond

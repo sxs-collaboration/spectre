@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
@@ -73,8 +74,7 @@ struct FunctionOfPressureAndData {
 }  // namespace
 
 /// \cond
-namespace NewtonianEuler {
-namespace Solutions {
+namespace NewtonianEuler::Solutions {
 
 template <size_t Dim>
 RiemannProblem<Dim>::RiemannProblem(
@@ -146,8 +146,8 @@ RiemannProblem<Dim>::RiemannProblem(
   const double f_max =
       f_of_p_left(p_minmax.second) + f_of_p_right(p_minmax.second) + delta_u;
 
-  double pressure_lower;
-  double pressure_upper;
+  double pressure_lower = std::numeric_limits<double>::signaling_NaN();
+  double pressure_upper = std::numeric_limits<double>::signaling_NaN();
   if (f_min > 0.0 and f_max > 0.0) {
     pressure_lower = 0.0;
     pressure_upper = p_minmax.first;
@@ -243,18 +243,17 @@ RiemannProblem<Dim>::Wave::Wave(const InitialData& data,
 template <size_t Dim>
 double RiemannProblem<Dim>::Wave::mass_density(const double x_shifted,
                                                const double t) const noexcept {
-  return (is_shock_ == true ? shock_.mass_density(x_shifted, t, data_)
-                            : rarefaction_.mass_density(x_shifted, t, data_));
+  return (is_shock_ ? shock_.mass_density(x_shifted, t, data_)
+                    : rarefaction_.mass_density(x_shifted, t, data_));
 }
 
 template <size_t Dim>
 double RiemannProblem<Dim>::Wave::normal_velocity(
     const double x_shifted, const double t, const double velocity_star) const
     noexcept {
-  return (
-      is_shock_ == true
-          ? shock_.normal_velocity(x_shifted, t, data_, velocity_star)
-          : rarefaction_.normal_velocity(x_shifted, t, data_, velocity_star));
+  return (is_shock_ ? shock_.normal_velocity(x_shifted, t, data_, velocity_star)
+                    : rarefaction_.normal_velocity(x_shifted, t, data_,
+                                                   velocity_star));
 }
 
 template <size_t Dim>
@@ -262,7 +261,7 @@ double RiemannProblem<Dim>::Wave::pressure(const double x_shifted,
                                            const double t,
                                            const double pressure_star) const
     noexcept {
-  return (is_shock_ == true
+  return (is_shock_
               ? shock_.pressure(x_shifted, t, data_, pressure_star)
               : rarefaction_.pressure(x_shifted, t, data_, pressure_star));
 }
@@ -406,10 +405,10 @@ tuples::TaggedTuple<Tags::MassDensity<DataType>> RiemannProblem<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Inertial>>
+tuples::TaggedTuple<Tags::Velocity<DataType, Dim>>
 RiemannProblem<Dim>::variables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
-    tmpl::list<Tags::Velocity<DataType, Dim, Frame::Inertial>> /*meta*/,
+    tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/,
     const Wave& left, const Wave& right) const noexcept {
   auto velocity = make_with_value<tnsr::I<DataType, Dim, Frame::Inertial>>(
       get<0>(x_shifted), 0.0);
@@ -519,12 +518,11 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1, 2, 3), (double, DataVector),
                          Tags::SpecificInternalEnergy))
 
 #define INSTANTIATE_VELOCITY(_, data)                                        \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data),           \
-                               Frame::Inertial>>                             \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data)>>          \
       RiemannProblem<DIM(data)>::variables(                                  \
           const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& x_shifted, \
           const double t,                                                    \
-          tmpl::list<TAG(data) < DTYPE(data), DIM(data), Frame::Inertial>>,  \
+          tmpl::list<TAG(data) < DTYPE(data), DIM(data)>>,  \
           const Wave& left, const Wave& right) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (1, 2, 3), (double, DataVector),
@@ -537,6 +535,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (1, 2, 3), (double, DataVector),
 #undef INSTANTIATE_SCALARS
 #undef INSTANTIATE_VELOCITY
 
-}  // namespace Solutions
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Solutions
 /// \endcond

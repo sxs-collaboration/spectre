@@ -104,29 +104,26 @@ void characteristic_speeds(
   // - EoS calls: 2 allocations
   // - Pass temp pointer to Rel Euler: 1 allocation
   // - Return a DataVectorArray (not yet implemented): 9 allocations
-  Variables<tmpl::list<
-      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
-      hydro::Tags::SpatialVelocitySquared<DataVector>,
-      hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>,
-      hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
-      hydro::Tags::MagneticFieldSquared<DataVector>,
-      hydro::Tags::ComovingMagneticFieldSquared<DataVector>,
-      hydro::Tags::SoundSpeedSquared<DataVector>>>
+  Variables<tmpl::list<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>,
+                       hydro::Tags::SpatialVelocitySquared<DataVector>,
+                       hydro::Tags::MagneticFieldOneForm<DataVector, 3>,
+                       hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
+                       hydro::Tags::MagneticFieldSquared<DataVector>,
+                       hydro::Tags::ComovingMagneticFieldSquared<DataVector>,
+                       hydro::Tags::SoundSpeedSquared<DataVector>>>
       temp_tensors{get<0>(shift).size()};
 
   const auto& spatial_velocity_one_form =
-      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
-          temp_tensors);
+      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>>(temp_tensors);
   raise_or_lower_index(
-      make_not_null(&get<hydro::Tags::SpatialVelocityOneForm<
-                        DataVector, 3, Frame::Inertial>>(temp_tensors)),
+      make_not_null(&get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3>>(
+          temp_tensors)),
       spatial_velocity, spatial_metric);
   const auto& magnetic_field_one_form =
-      get<hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>>(
-          temp_tensors);
+      get<hydro::Tags::MagneticFieldOneForm<DataVector, 3>>(temp_tensors);
   raise_or_lower_index(
-      make_not_null(&get<hydro::Tags::MagneticFieldOneForm<
-                        DataVector, 3, Frame::Inertial>>(temp_tensors)),
+      make_not_null(
+          &get<hydro::Tags::MagneticFieldOneForm<DataVector, 3>>(temp_tensors)),
       magnetic_field, spatial_metric);
   const auto& magnetic_field_dot_spatial_velocity =
       get<hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>>(

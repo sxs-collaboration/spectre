@@ -21,8 +21,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
-namespace NewtonianEuler {
-namespace Sources {
+namespace NewtonianEuler::Sources {
 template <>
 void VortexPerturbation<2>::apply() const noexcept {}
 
@@ -53,7 +52,7 @@ void VortexPerturbation<3>::apply(
       make_not_null(&vortex_momentum_density),
       make_not_null(&vortex_energy_density),
       get<Tags::MassDensity<DataVector>>(vortex_primitives),
-      get<Tags::Velocity<DataVector, 3, Frame::Inertial>>(vortex_primitives),
+      get<Tags::Velocity<DataVector, 3>>(vortex_primitives),
       get<Tags::SpecificInternalEnergy<DataVector>>(vortex_primitives));
 
   // We save the precomputed value of dv_z/dz in source_mass_density_cons
@@ -72,7 +71,7 @@ void VortexPerturbation<3>::apply(
       (get(vortex_energy_density) +
        get(get<Tags::Pressure<DataVector>>(vortex_primitives)) +
        vortex_momentum_density.get(2) *
-           get<2>(get<Tags::Velocity<DataVector, 3, Frame::Inertial>>(
+           get<2>(get<Tags::Velocity<DataVector, 3>>(
                vortex_primitives))) *
       get(*source_mass_density_cons);
 
@@ -87,6 +86,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
 
 #undef INSTANTIATE
 #undef DIM
-}  // Namespace Sources
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::Sources
 /// \endcond
