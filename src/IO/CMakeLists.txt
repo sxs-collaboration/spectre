@@ -3,24 +3,20 @@
 
 set(LIBRARY IO)
 
-set(LIBRARY_SOURCES
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
   Connectivity.cpp
-  H5/AccessType.cpp
-  H5/Dat.cpp
-  H5/File.cpp
-  H5/Header.cpp
-  H5/Helpers.cpp
-  H5/OpenGroup.cpp
-  H5/SourceArchive.cpp
-  H5/StellarCollapseEos.cpp
-  H5/Version.cpp
-  H5/VolumeData.cpp
-  Observer/ArrayComponentId.cpp
-  Observer/ObservationId.cpp
-  Observer/TypeOfObservation.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  Connectivity.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}
@@ -33,4 +29,6 @@ target_link_libraries(
   Utilities
   )
 
-add_subdirectory(H5/Python)
+add_subdirectory(H5)
+add_subdirectory(Importers)
+add_subdirectory(Observer)

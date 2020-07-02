@@ -68,6 +68,7 @@ spectre_target_headers(
   TmplDebugging.hpp
   TmplDigraph.hpp
   Tuple.hpp
+  TupleSlice.hpp
   TypeTraits.hpp
   VectorAlgebra.hpp
   WrapText.hpp

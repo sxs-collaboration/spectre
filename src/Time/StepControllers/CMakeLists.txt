@@ -1,11 +1,22 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(MY_LIBRARY_SOURCES
-  StepControllers/BinaryFraction.cpp
-  StepControllers/FullSlab.cpp
-  StepControllers/SimpleTimes.cpp
-  StepControllers/SplitRemaining.cpp
+spectre_target_sources(
+  Time
+  PRIVATE
+  BinaryFraction.cpp
+  FullSlab.cpp
+  SimpleTimes.cpp
+  SplitRemaining.cpp
   )
 
-set(LIBRARY_SOURCES "${LIBRARY_SOURCES};${MY_LIBRARY_SOURCES}" PARENT_SCOPE)
+spectre_target_headers(
+  Time
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  BinaryFraction.hpp
+  FullSlab.hpp
+  SimpleTimes.hpp
+  SplitRemaining.hpp
+  StepController.hpp
+  )
