@@ -27,8 +27,10 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/FirstOrderEllipticSolutionsTestHelpers.hpp"
+#include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Elasticity/BentBeam.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
+#include "PointwiseFunctions/Elasticity/PotentialEnergy.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -50,6 +52,8 @@ struct BentBeamProxy : Elasticity::Solutions::BentBeam {
     return Elasticity::Solutions::BentBeam::variables(x, field_tags{});
   }
 
+  // check_with_random_values() does not allow for arguments to be static
+  // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
   tuples::tagged_tuple_from_typelist<source_tags> source_variables(
       const tnsr::I<DataVector, 2>& x) const noexcept {
     return Elasticity::Solutions::BentBeam::variables(x, source_tags{});
@@ -66,7 +70,7 @@ SPECTRE_TEST_CASE(
       // Iron: E=100, nu=0.29
       Elasticity::ConstitutiveRelations::IsotropicHomogeneous<2>{
           79.36507936507935, 38.75968992248062}};
-  const Elasticity::Solutions::BentBeam created_solution =
+  const auto created_solution =
       TestHelpers::test_creation<Elasticity::Solutions::BentBeam>(
           "Length: 5.\n"
           "Height: 1.\n"
@@ -104,6 +108,7 @@ SPECTRE_TEST_CASE(
   get<1, 0>(expected_stress) = DataVector{0., 0.};
   get<1, 1>(expected_stress) = DataVector{0., 0.};
   CHECK_VARIABLES_APPROX(solution_vars, expected_vars);
+  CHECK(solution.potential_energy() == approx(0.075));
 
   pypp::check_with_random_values<
       1, tmpl::list<Elasticity::Tags::Displacement<2>,
@@ -119,26 +124,42 @@ SPECTRE_TEST_CASE(
       "AnalyticSolutions.Elasticity.BentBeam", {"source"}, {{{-5., 5.}}},
       std::make_tuple(), DataVector(5));
 
+  using AffineMap = domain::CoordinateMaps::Affine;
+  using AffineMap2D =
+      domain::CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
+  // Since potential_energy() in BentBeam returns the energy stored in the
+  // entire beam, the coord_map has to match its dimensions.
+  const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap2D>
+      coord_map{{{-1., 1., -5. / 2., 5. / 2.}, {-1., 1., -1. / 2., 1. / 2.}}};
+  // Since the solution is a polynomial of degree 2, it should numerically
+  // solve the system equations to machine precision on 3 grid points per
+  // dimension.
+  const Mesh<2> mesh{3, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
+  const auto logical_coords = logical_coordinates(mesh);
+  const auto inertial_coords = coord_map(logical_coords);
   {
     INFO("Test elasticity system with bent beam");
-    // Verify that the solution numerically solves the system
     using system = Elasticity::FirstOrderSystem<2>;
     const typename system::fluxes fluxes_computer{};
-    using AffineMap = domain::CoordinateMaps::Affine;
-    using AffineMap2D =
-        domain::CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
-    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap2D>
-        coord_map{{{-1., 1., -2.5, 2.5}, {-1., 1., -0.5, 0.5}}};
-    // Since the solution is a polynomial of degree 2 it should numerically
-    // solve the system equations to machine precision on 3 grid points per
-    // dimension.
-    const Mesh<2> mesh{3, Spectral::Basis::Legendre,
-                       Spectral::Quadrature::GaussLobatto};
-    const auto logical_coords = logical_coordinates(mesh);
-    const auto inertial_coords = coord_map(logical_coords);
+    // Verify that the solution numerically solves the system
     FirstOrderEllipticSolutionsTestHelpers::verify_solution<system>(
         solution, fluxes_computer, mesh, coord_map,
         std::numeric_limits<double>::epsilon() * 100.,
         std::make_tuple(constitutive_relation, inertial_coords));
+  };
+
+  {
+    INFO("Test elastic potential energy of bent beam");
+    // Verify that the energy density integrated over the whole beam is correct
+    const auto jacobian = coord_map.jacobian(logical_coords);
+    const auto strain = get<Elasticity::Tags::Strain<2>>(solution.variables(
+        inertial_coords, tmpl::list<Elasticity::Tags::Strain<2>>{}));
+    const auto pointwise_energy = Elasticity::potential_energy_density(
+        strain, inertial_coords, constitutive_relation);
+    const auto det_jacobian = get(determinant(jacobian));
+    double potential_energy =
+        definite_integral(det_jacobian * get(pointwise_energy), mesh);
+    CHECK(potential_energy == approx(solution.potential_energy()));
   };
 }
