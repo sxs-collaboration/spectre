@@ -6,8 +6,10 @@
 #include <algorithm>
 #include <array>
 
+#include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 // [[OutputRegex, There are only 0 real roots]]
 [[noreturn]] SPECTRE_TEST_CASE(
@@ -42,6 +44,25 @@
 #endif
 }
 
+namespace {
+  template <typename T>
+  void test_smallest_root_greater_than_value_within_roundoff(
+      const T& used_for_size) noexcept {
+    const auto a = make_with_value<T>(used_for_size, 2.0);
+    const auto b = make_with_value<T>(used_for_size, -11.0);
+    const auto c = make_with_value<T>(used_for_size, 5.0);
+    const auto expected_root_1 = make_with_value<T>(used_for_size, 0.5);
+    const auto expected_root_2 = make_with_value<T>(used_for_size, 5.0);
+
+    auto root = smallest_root_greater_than_value_within_roundoff(a, b, c, 0.3);
+    CHECK_ITERABLE_APPROX(expected_root_1, root);
+    root = smallest_root_greater_than_value_within_roundoff(a, b, c, 0.5);
+    CHECK_ITERABLE_APPROX(expected_root_1, root);
+    root = smallest_root_greater_than_value_within_roundoff(a, b, c, 0.6);
+    CHECK_ITERABLE_APPROX(expected_root_2, root);
+  }
+}  // namespace
+
 SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.QuadraticEquation",
                   "[NumericalAlgorithms][RootFinding][Unit]") {
   // Positive root
@@ -60,4 +81,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.QuadraticEquation",
   const auto small_negative = real_roots(1e-8, -(1.0 - 1e-16), -1e-8);
   CHECK(approx(-1e-8) == small_negative[0]);
   CHECK(approx(1e8) == small_negative[1]);
+
+  test_smallest_root_greater_than_value_within_roundoff<double>(1.0);
+  test_smallest_root_greater_than_value_within_roundoff(DataVector(2));
 }
