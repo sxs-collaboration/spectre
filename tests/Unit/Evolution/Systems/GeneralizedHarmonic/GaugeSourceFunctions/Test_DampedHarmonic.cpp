@@ -113,6 +113,28 @@ void wrap_damped_harmonic_rollon(
       rollon_width, sigma_r);
 }
 
+template <size_t SpatialDim, typename Frame>
+void wrap_damped_harmonic(
+    const gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame>*> gauge_h,
+    const gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame>*> d4_gauge_h,
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, SpatialDim, Frame>& shift,
+    const tnsr::a<DataVector, SpatialDim, Frame>&
+        spacetime_unit_normal_one_form,
+    const Scalar<DataVector>& sqrt_det_spatial_metric,
+    const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
+    const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
+    const tnsr::iaa<DataVector, SpatialDim, Frame>& phi,
+    const tnsr::I<DataVector, SpatialDim, Frame>& coords,
+    const double amp_coef_L1, const double amp_coef_L2, const double amp_coef_S,
+    const double sigma_r) noexcept {
+  GeneralizedHarmonic::gauges::damped_harmonic(
+      gauge_h, d4_gauge_h, lapse, shift, spacetime_unit_normal_one_form,
+      sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi,
+      phi, coords, amp_coef_L1, amp_coef_L2, amp_coef_S, 4, 4, 4, sigma_r);
+}
+
 // Compare with Python implementation
 template <size_t SpatialDim, typename Frame>
 void test_with_python(const DataVector& used_for_size) noexcept {
@@ -121,6 +143,14 @@ void test_with_python(const DataVector& used_for_size) noexcept {
   CAPTURE(Frame{});
   pypp::check_with_random_values<1>(
       &wrap_damped_harmonic_rollon<SpatialDim, Frame>,
+      "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
+      "DampedHarmonic",
+      {"damped_harmonic_gauge_source_function_rollon",
+       "spacetime_deriv_damped_harmonic_gauge_source_function_rollon"},
+      {{{0.1, 10.}}}, used_for_size);
+
+  pypp::check_with_random_values<1>(
+      &wrap_damped_harmonic<SpatialDim, Frame>,
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "DampedHarmonic",
       {"damped_harmonic_gauge_source_function",
@@ -133,7 +163,7 @@ SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.GeneralizedHarmonic.Gauge.DampedHarmonic",
     "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{""};
-  const DataVector used_for_size(4);
+  const DataVector used_for_size(5);
 
   test_rollon_function<1, Frame::Inertial>(used_for_size);
   test_rollon_function<2, Frame::Inertial>(used_for_size);

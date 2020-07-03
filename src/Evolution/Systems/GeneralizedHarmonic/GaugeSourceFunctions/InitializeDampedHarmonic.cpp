@@ -32,7 +32,7 @@ namespace GeneralizedHarmonic::gauges::Actions {
 template <size_t Dim>
 std::tuple<tnsr::a<DataVector, Dim, Frame::Inertial>,
            tnsr::ab<DataVector, Dim, Frame::Inertial>>
-InitializeDampedHarmonic<Dim>::impl(
+InitializeDampedHarmonic<Dim>::impl_rollon(
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,

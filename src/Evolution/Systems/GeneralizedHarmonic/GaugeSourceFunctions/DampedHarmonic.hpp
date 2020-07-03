@@ -29,7 +29,11 @@ namespace gauges {
  * \brief Damped harmonic gauge source function and its spacetime derivative.
  *
  * \details The gauge condition has been taken from \cite Szilagyi2009qz and
- * \cite Deppe2018uye.
+ * \cite Deppe2018uye. We provide both a "rollon" version
+ * (`damped_harmonic_rollon`), and a "non-rollon" version (`damped_harmonic`).
+ * In the non-rollon version the rollon function \f$R(t)=1\f$.
+ *
+ * \warning Only the non-rollon version can be used with a moving mesh.
  *
  * The covariant form of the source function \f$H_a\f$ is written as:
  *
@@ -169,14 +173,28 @@ void damped_harmonic_rollon(
     const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
     const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, double time,
-    const tnsr::I<DataVector, SpatialDim, Frame>& coords,
-    // Scaling coeffs in front of each term
-    double amp_coef_L1, double amp_coef_L2, double amp_coef_S,
-    // exponents
-    int exp_L1, int exp_L2, int exp_S,
-    // roll on function parameters for lapse / shift terms
-    double rollon_start_time, double rollon_width,
-    // weight function
+    const tnsr::I<DataVector, SpatialDim, Frame>& coords, double amp_coef_L1,
+    double amp_coef_L2, double amp_coef_S, int exp_L1, int exp_L2, int exp_S,
+    double rollon_start_time, double rollon_width, double sigma_r) noexcept;
+
+/*!
+ * \copydoc damped_harmonic_rollon()
+ */
+template <size_t SpatialDim, typename Frame>
+void damped_harmonic(
+    gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame>*> gauge_h,
+    gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame>*> d4_gauge_h,
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, SpatialDim, Frame>& shift,
+    const tnsr::a<DataVector, SpatialDim, Frame>&
+        spacetime_unit_normal_one_form,
+    const Scalar<DataVector>& sqrt_det_spatial_metric,
+    const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
+    const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
+    const tnsr::iaa<DataVector, SpatialDim, Frame>& phi,
+    const tnsr::I<DataVector, SpatialDim, Frame>& coords, double amp_coef_L1,
+    double amp_coef_L2, double amp_coef_S, int exp_L1, int exp_L2, int exp_S,
     double sigma_r) noexcept;
 }  // namespace gauges
 }  // namespace GeneralizedHarmonic
