@@ -33,6 +33,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace domain {
@@ -192,11 +193,21 @@ void test_sphere_construction(
   }
   test_domain_construction(domain, expected_block_neighbors,
                            expected_external_boundaries, coord_maps);
+  const auto coord_maps_copy = clone_unique_ptrs(coord_maps);
+
+  Domain<3> domain_no_corners(std::move(coord_maps));
+
+  test_domain_construction(domain_no_corners, expected_block_neighbors,
+                           expected_external_boundaries, coord_maps_copy);
+
   test_initial_domain(domain, sphere.initial_refinement_levels());
+  test_initial_domain(domain_no_corners, sphere.initial_refinement_levels());
 
   Parallel::register_classes_in_list<
       typename domain::creators::Sphere::maps_list>();
+
   test_serialization(domain);
+  test_serialization(domain_no_corners);
 }
 
 void test_sphere_boundaries_equiangular() {

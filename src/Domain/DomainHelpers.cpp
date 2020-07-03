@@ -261,6 +261,76 @@ obtain_correspondence_between_blocks(
                                               nhbr_align);
 }
 
+template <size_t VolumeDim>
+std::vector<std::array<size_t, two_to_the(VolumeDim)>> corners_from_two_maps(
+    const std::unique_ptr<domain::CoordinateMapBase<
+        Frame::Logical, Frame::Inertial, VolumeDim>>& map1,
+    const std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>&
+        map2) noexcept {
+  std::array<size_t, two_to_the(VolumeDim)> corners_for_block1;
+  std::array<size_t, two_to_the(VolumeDim)> corners_for_block2;
+  for (VolumeCornerIterator<VolumeDim> vci{}; vci; ++vci) {
+    gsl::at(corners_for_block1, vci.local_corner_number()) =
+        vci.local_corner_number();
+  }
+  // Fill corners_for_block2 based off which corners are shared with map1.
+  for (VolumeCornerIterator<VolumeDim> vci_map2{}; vci_map2; ++vci_map2) {
+    const auto mapped_coords2 =
+        (*map2)(tnsr::I<double, VolumeDim, Frame::Logical>{
+            vci_map2.coords_of_corner()});
+
+    // Set num_unshared_corners to zero because we only need a local corner
+    // numbering scheme. This is because our algorithm treats each pair of
+    // blocks independently to create the orientation (if any) between them.
+    size_t num_unshared_corners = 0;
+    // Check each corner of map1 to see if it shares any corners with map2.
+    for (VolumeCornerIterator<VolumeDim> vci_map1{}; vci_map1; ++vci_map1) {
+      const auto mapped_coords1 =
+          (*map1)(tnsr::I<double, VolumeDim, Frame::Logical>{
+              vci_map1.coords_of_corner()});
+      double max_separation = 0.0;
+      for (size_t j = 0; j < VolumeDim; j++) {
+        max_separation =
+            std::max(max_separation,
+                     std::abs(mapped_coords2.get(j) - mapped_coords1.get(j)));
+      }
+      // If true, then the mapped_coords lie on top of one another.
+      // This corner of map2 is assigned the same number as that of map1.
+      if (max_separation < 1.0e-6) {
+        // Note: Ideally the threshold would depend on and be proportional
+        // to the map size, but for simplicity we assume that maps have sizes
+        // that are of order unity. If you are using maps that have sizes
+        // that are much smaller, this threshold (1e-6) will create situations
+        // where adjacent corners are incorrectly determined. If you are using
+        // very small maps please watch out for this.
+        gsl::at(corners_for_block2, vci_map2.local_corner_number()) =
+            vci_map1.local_corner_number();
+        break;
+      }
+      else {
+      // Otherwise, a new number is assigned to this corner.
+        gsl::at(corners_for_block2, vci_map2.local_corner_number()) =
+            two_to_the(VolumeDim) + num_unshared_corners;
+        num_unshared_corners++;
+      }
+    }
+  }
+  return {corners_for_block1, corners_for_block2};
+}
+
+template <size_t VolumeDim>
+std::pair<std::array<Direction<VolumeDim>, VolumeDim>,
+          std::array<Direction<VolumeDim>, VolumeDim>>
+obtain_correspondence_between_maps(
+    const size_t map_id1, const size_t map_id2,
+    const std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>&
+        maps) noexcept {
+  return obtain_correspondence_between_blocks<VolumeDim>(
+      0, 1, corners_from_two_maps(maps[map_id1], maps[map_id2]));
+}
+
 // Sets periodic boundary conditions for rectilinear multi-cube domains.
 //
 // For each block with an external boundary in the +i^th direction, traverses
@@ -372,11 +442,11 @@ void set_cartesian_periodic_boundaries(
 
 template <size_t VolumeDim>
 void set_internal_boundaries(
-    const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
-        corners_of_all_blocks,
     const gsl::not_null<
         std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
-        neighbors_of_all_blocks) noexcept {
+        neighbors_of_all_blocks,
+    const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
+        corners_of_all_blocks) noexcept {
   for (size_t block1_index = 0; block1_index < corners_of_all_blocks.size();
        block1_index++) {
     DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbor;
@@ -390,6 +460,38 @@ void set_internal_boundaries(
         const auto orientation_helper =
             obtain_correspondence_between_blocks<VolumeDim>(
                 block1_index, block2_index, corners_of_all_blocks);
+        neighbor.emplace(std::move((orientation_helper.first)[0]),
+                         BlockNeighbor<VolumeDim>(
+                             block2_index, OrientationMap<VolumeDim>(
+                                               orientation_helper.first,
+                                               orientation_helper.second)));
+      }
+    }
+    neighbors_of_all_blocks->push_back(neighbor);
+  }
+}
+
+template <size_t VolumeDim>
+void set_internal_boundaries(
+    const gsl::not_null<
+        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
+        neighbors_of_all_blocks,
+    const std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>&
+        maps) noexcept {
+  for (size_t block1_index = 0; block1_index < maps.size(); block1_index++) {
+    DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbor;
+    for (size_t block2_index = 0; block2_index < maps.size(); block2_index++) {
+      const auto corners_for_blocks1_and_2 =
+          corners_from_two_maps(maps[block1_index], maps[block2_index]);
+      if (block1_index != block2_index and
+          get_common_global_corners<VolumeDim>(corners_for_blocks1_and_2[0],
+                                               corners_for_blocks1_and_2[1])
+                  .size() == two_to_the(VolumeDim - 1)) {
+        const auto orientation_helper =
+            obtain_correspondence_between_blocks<VolumeDim>(
+                0, 1, corners_for_blocks1_and_2);
+
         neighbor.emplace(std::move((orientation_helper.first)[0]),
                          BlockNeighbor<VolumeDim>(
                              block2_index, OrientationMap<VolumeDim>(
@@ -1042,8 +1144,8 @@ Domain<VolumeDim> rectilinear_domain(
   }
   std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>
       neighbors_of_all_blocks;
-  set_internal_boundaries<VolumeDim>(corners_of_all_blocks,
-                                     &neighbors_of_all_blocks);
+  set_internal_boundaries<VolumeDim>(&neighbors_of_all_blocks,
+                                     corners_of_all_blocks);
   set_identified_boundaries<VolumeDim>(identifications, corners_of_all_blocks,
                                        &neighbors_of_all_blocks);
   set_cartesian_periodic_boundaries<VolumeDim>(
@@ -1162,11 +1264,17 @@ INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d), (Equiangular3d),
 
 #define INSTANTIATE(_, data)                                                   \
   template void set_internal_boundaries(                                       \
-      const std::vector<std::array<size_t, two_to_the(DIM(data))>>&            \
-          corners_of_all_blocks,                                               \
       const gsl::not_null<                                                     \
           std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>*>     \
-          neighbors_of_all_blocks) noexcept;                                   \
+          neighbors_of_all_blocks,                                             \
+      const std::vector<std::array<size_t, two_to_the(DIM(data))>>&            \
+          corners_of_all_blocks) noexcept;                                     \
+  template void set_internal_boundaries(                                       \
+      const gsl::not_null<                                                     \
+          std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>*>     \
+          neighbors_of_all_blocks,                                             \
+      const std::vector<std::unique_ptr<domain::CoordinateMapBase<             \
+          Frame::Logical, Frame::Inertial, DIM(data)>>>& maps) noexcept;       \
   template void set_identified_boundaries(                                     \
       const std::vector<PairOfFaces>& identifications,                         \
       const std::vector<std::array<size_t, two_to_the(DIM(data))>>&            \

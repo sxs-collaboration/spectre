@@ -27,6 +27,20 @@ template <size_t VolumeDim>
 Domain<VolumeDim>::Domain(
     std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>
+        maps) noexcept {
+  std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>
+      neighbors_of_all_blocks;
+  set_internal_boundaries<VolumeDim>(&neighbors_of_all_blocks, maps);
+  for (size_t i = 0; i < maps.size(); i++) {
+    blocks_.emplace_back(std::move(maps[i]), i,
+                         std::move(neighbors_of_all_blocks[i]));
+  }
+}
+
+template <size_t VolumeDim>
+Domain<VolumeDim>::Domain(
+    std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>
         maps,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
@@ -38,8 +52,8 @@ Domain<VolumeDim>::Domain(
           << corners_of_all_blocks.size());
   std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>
       neighbors_of_all_blocks;
-  set_internal_boundaries<VolumeDim>(corners_of_all_blocks,
-                                     &neighbors_of_all_blocks);
+  set_internal_boundaries<VolumeDim>(&neighbors_of_all_blocks,
+                                     corners_of_all_blocks);
   set_identified_boundaries<VolumeDim>(identifications, corners_of_all_blocks,
                                        &neighbors_of_all_blocks);
   for (size_t i = 0; i < corners_of_all_blocks.size(); i++) {
