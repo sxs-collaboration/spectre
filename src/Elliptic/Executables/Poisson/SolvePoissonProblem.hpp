@@ -58,7 +58,12 @@ namespace OptionTags {
 struct LinearSolverGroup {
   static std::string name() noexcept { return "LinearSolver"; }
   static constexpr OptionString help =
-      "Options for the iterative linear solver";
+      "The iterative Krylov-subspace linear solver";
+};
+struct GmresGroup {
+  static std::string name() noexcept { return "GMRES"; }
+  static constexpr OptionString help = "Options for the GMRES linear solver";
+  using group = LinearSolverGroup;
 };
 }  // namespace OptionTags
 }  // namespace SolvePoissonProblem
@@ -71,10 +76,7 @@ struct Metavariables {
   using initial_guess = InitialGuess;
   using boundary_conditions = BoundaryConditions;
 
-  static constexpr OptionString help{
-      "Find the solution to a Poisson problem.\n"
-      "Linear solver: GMRES\n"
-      "Numerical flux: FirstOrderInternalPenaltyFlux"};
+  static constexpr OptionString help{"Find the solution to a Poisson problem."};
 
   using fluxes_computer_tag =
       elliptic::Tags::FluxesComputer<typename system::fluxes>;
@@ -178,31 +180,28 @@ struct Metavariables {
       dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
       Actions::MutateApply<boundary_scheme>>;
 
+  using register_actions = tmpl::list<
+      observers::Actions::RegisterWithObservers<observers::RegisterObservers<
+          linear_solver_iteration_id, element_observation_type>>,
+      // We prepare the linear solve here to avoid adding an extra phase. We
+      // can't do that before registration because the `prepare_solve` action
+      // may contribute to observers.
+      typename linear_solver::prepare_solve, Parallel::Actions::TerminatePhase>;
+
+  using solve_actions = tmpl::list<Actions::RunEventsAndTriggers,
+                                   LinearSolver::Actions::TerminateIfConverged<
+                                       typename linear_solver::options_group>,
+                                   typename linear_solver::prepare_step,
+                                   build_linear_operator_actions,
+                                   typename linear_solver::perform_step>;
+
   using dg_element_array = elliptic::DgElementArray<
       Metavariables,
       tmpl::list<Parallel::PhaseActions<Phase, Phase::Initialization,
                                         initialization_actions>,
-                 Parallel::PhaseActions<
-                     Phase, Phase::RegisterWithObserver,
-                     tmpl::list<observers::Actions::RegisterWithObservers<
-                                    observers::RegisterObservers<
-                                        linear_solver_iteration_id,
-                                        element_observation_type>>,
-                                // We prepare the linear solve here to avoid
-                                // adding an extra phase. We can't do that
-                                // before registration because the
-                                // `prepare_solve` action may contribute to
-                                // observers.
-                                typename linear_solver::prepare_solve,
-                                Parallel::Actions::TerminatePhase>>,
-                 Parallel::PhaseActions<
-                     Phase, Phase::Solve,
-                     tmpl::list<Actions::RunEventsAndTriggers,
-                                LinearSolver::Actions::TerminateIfConverged<
-                                    typename linear_solver::options_group>,
-                                typename linear_solver::prepare_step,
-                                build_linear_operator_actions,
-                                typename linear_solver::perform_step>>>>;
+                 Parallel::PhaseActions<Phase, Phase::RegisterWithObserver,
+                                        register_actions>,
+                 Parallel::PhaseActions<Phase, Phase::Solve, solve_actions>>>;
 
   // Specify all parallel components that will execute actions at some point.
   using component_list = tmpl::flatten<
