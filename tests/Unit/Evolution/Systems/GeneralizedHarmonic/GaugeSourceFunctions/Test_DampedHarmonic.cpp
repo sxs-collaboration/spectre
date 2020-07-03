@@ -71,7 +71,7 @@ void test_rollon_function(const DataType& used_for_size) noexcept {
           roll_on_function,
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "DampedHarmonic",
-      "roll_on_function", {{{std::numeric_limits<double>::denorm_min(), 10.}}},
+      "roll_on_function", {{{std::numeric_limits<double>::denorm_min(), 1.}}},
       used_for_size);
   // time_deriv_of_roll_on_function
   pypp::check_with_random_values<1>(
@@ -80,7 +80,7 @@ void test_rollon_function(const DataType& used_for_size) noexcept {
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "DampedHarmonic",
       "time_deriv_roll_on_function",
-      {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
+      {{{std::numeric_limits<double>::denorm_min(), 1.}}}, used_for_size);
 }
 
 //  Tests of the damped harmonic gauge source function and its spacetime
@@ -147,7 +147,7 @@ void test_with_python(const DataVector& used_for_size) noexcept {
       "DampedHarmonic",
       {"damped_harmonic_gauge_source_function_rollon",
        "spacetime_deriv_damped_harmonic_gauge_source_function_rollon"},
-      {{{0.1, 10.}}}, used_for_size);
+      {{{0.1, 1.}}}, used_for_size);
 
   pypp::check_with_random_values<1>(
       &wrap_damped_harmonic<SpatialDim, Frame>,
@@ -155,7 +155,7 @@ void test_with_python(const DataVector& used_for_size) noexcept {
       "DampedHarmonic",
       {"damped_harmonic_gauge_source_function",
        "spacetime_deriv_damped_harmonic_gauge_source_function"},
-      {{{0.1, 10.}}}, used_for_size);
+      {{{0.1, 1.}}}, used_for_size);
 }
 }  // namespace
 
