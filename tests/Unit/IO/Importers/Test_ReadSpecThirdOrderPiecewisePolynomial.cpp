@@ -100,16 +100,51 @@ SPECTRE_TEST_CASE("Unit.IO.ReadSpecThirdOrderPiecewisePolynomial",
 
   h5::H5File<h5::AccessType::ReadWrite> test_file(test_filename);
 
-  const std::array<double, 2> expected_times{{0.0, 0.00599999974179903}};
+  constexpr size_t number_of_times = 3;
+  const std::array<double, number_of_times> expected_times{{0.0, 0.1, 0.2}};
   const std::array<std::string, 2> expected_names{
       {"ExpansionFactor", "RotationAngle"}};
 
+  std::array<DataVector, 4> initial_expansion{
+      {{{1.0}}, {{0.2}}, {{0.03}}, {{0.004}}}};
+  const std::array<DataVector, number_of_times - 1> next_expansion_third_deriv{
+      {{{0.5}}, {{0.75}}}};
+  domain::FunctionsOfTime::PiecewisePolynomial<3> expansion(expected_times[0],
+                                                            initial_expansion);
+  expansion.update(expected_times[1], next_expansion_third_deriv[0]);
+  expansion.update(expected_times[2], next_expansion_third_deriv[1]);
+  const std::array<std::array<DataVector, 3>, number_of_times - 1>&
+      expansion_func_and_2_derivs_next{
+          {expansion.func_and_2_derivs(expected_times[1]),
+           expansion.func_and_2_derivs(expected_times[2])}};
+
+  const std::array<DataVector, 4> initial_rotation{
+      {{{2.0}}, {{-0.1}}, {{-0.02}}, {{-0.003}}}};
+  const std::array<DataVector, number_of_times - 1> next_rotation_third_deriv{
+      {{{-0.5}}, {{-0.75}}}};
+  domain::FunctionsOfTime::PiecewisePolynomial<3> rotation(expected_times[0],
+                                                           initial_rotation);
+  rotation.update(expected_times[1], {{next_rotation_third_deriv[0]}});
+  rotation.update(expected_times[2], {{next_rotation_third_deriv[1]}});
+  const std::array<std::array<DataVector, 3>, number_of_times - 1>&
+      rotation_func_and_2_derivs_next{
+          {rotation.func_and_2_derivs(expected_times[1]),
+           rotation.func_and_2_derivs(expected_times[2])}};
+
   const std::vector<std::vector<double>> test_expansion{
-      {5.9999997417990300e-03, 0.0, 1.0, 3.0, 1.0, 1.0, -1.4268296756999999e-06,
-       0.0, 0.0},
-      {5.9999997417990300e-03, 5.9999997417990300e-03, 1.0, 3.0, 1.0,
-       9.9999999143902230e-01, -1.4268296756999999e-06, 0.0,
-       -3.5943676411727592e-05}};
+      {expected_times[0], expected_times[0], 1.0, 3.0, 1.0,
+       initial_expansion[0][0], initial_expansion[1][0],
+       initial_expansion[2][0], initial_expansion[3][0]},
+      {expected_times[1], expected_times[1], 1.0, 3.0, 1.0,
+       expansion_func_and_2_derivs_next[0][0][0],
+       expansion_func_and_2_derivs_next[0][1][0],
+       expansion_func_and_2_derivs_next[0][2][0],
+       next_expansion_third_deriv[0][0]},
+      {expected_times[2], expected_times[2], 1.0, 3.0, 1.0,
+       expansion_func_and_2_derivs_next[1][0][0],
+       expansion_func_and_2_derivs_next[1][1][0],
+       expansion_func_and_2_derivs_next[1][2][0],
+       next_expansion_third_deriv[1][0]}};
   const std::vector<std::string> expansion_legend{
       "Time", "TLastUpdate", "Nc",  "DerivOrder", "Version",
       "a",    "da",          "d2a", "d3a"};
@@ -118,11 +153,19 @@ SPECTRE_TEST_CASE("Unit.IO.ReadSpecThirdOrderPiecewisePolynomial",
   expansion_file.append(test_expansion);
 
   const std::vector<std::vector<double>> test_rotation{
-      {5.9999997417990300e-03, 0.0, 1.0, 3.0, 1.0, 0.0, 1.3472907726000001e-02,
-       0.0, 0.0},
-      {5.9999997417990300e-03, 5.9999997417990300e-03, 1.0, 3.0, 1.0,
-       8.0837442877282155e-05, 1.3472907726000001e-02, 0.0,
-       1.4799266358888008e-04}};
+      {expected_times[0], expected_times[0], 1.0, 3.0, 1.0,
+       initial_rotation[0][0], initial_rotation[1][0], initial_rotation[2][0],
+       initial_rotation[3][0]},
+      {expected_times[1], expected_times[1], 1.0, 3.0, 1.0,
+       rotation_func_and_2_derivs_next[0][0][0],
+       rotation_func_and_2_derivs_next[0][1][0],
+       rotation_func_and_2_derivs_next[0][2][0],
+       next_rotation_third_deriv[0][0]},
+      {expected_times[2], expected_times[2], 1.0, 3.0, 1.0,
+       rotation_func_and_2_derivs_next[1][0][0],
+       rotation_func_and_2_derivs_next[1][1][0],
+       rotation_func_and_2_derivs_next[1][2][0],
+       next_rotation_third_deriv[1][0]}};
   const std::vector<std::string> rotation_legend{
       "Time", "TLastUpdate", "Nc",    "DerivOrder", "Version",
       "Phi",  "dPhi",        "d2Phi", "d3Phi"};
@@ -162,13 +205,16 @@ SPECTRE_TEST_CASE("Unit.IO.ReadSpecThirdOrderPiecewisePolynomial",
 
   // Check that the FunctionOfTime and its derivatives have the expected
   // values
-  const std::array<std::array<double, 3>, 2> expected_expansion{
+  const std::array<std::array<double, 3>, number_of_times> expected_expansion{
       {{{test_expansion[0][5], test_expansion[0][6], test_expansion[0][7]}},
-       {{test_expansion[1][5], test_expansion[1][6], test_expansion[1][7]}}}};
-  const std::array<std::array<double, 3>, 2> expected_rotation{
+       {{test_expansion[1][5], test_expansion[1][6], test_expansion[1][7]}},
+       {{test_expansion[2][5], test_expansion[2][6], test_expansion[2][7]}}}};
+  const std::array<std::array<double, 3>, number_of_times> expected_rotation{
       {{{test_rotation[0][5], test_rotation[0][6], test_rotation[0][7]}},
-       {{test_rotation[1][5], test_rotation[1][6], test_rotation[1][7]}}}};
-  std::unordered_map<std::string, std::array<std::array<double, 3>, 2>>
+       {{test_rotation[1][5], test_rotation[1][6], test_rotation[1][7]}},
+       {{test_rotation[2][5], test_rotation[2][6], test_rotation[2][7]}}}};
+  std::unordered_map<std::string,
+                     std::array<std::array<double, 3>, number_of_times>>
       expected_functions;
   expected_functions[expected_names[0]] = expected_expansion;
   expected_functions[expected_names[1]] = expected_rotation;
@@ -182,7 +228,7 @@ SPECTRE_TEST_CASE("Unit.IO.ReadSpecThirdOrderPiecewisePolynomial",
     CHECK(std::find(expected_names.begin(), expected_names.end(), name) !=
           expected_names.end());
 
-    for (size_t i = 0; i < 2; ++i) {
+    for (size_t i = 0; i < number_of_times; ++i) {
       const auto time = gsl::at(expected_times, i);
       const auto f_and_derivs = f->func_and_2_derivs(time);
       for (size_t j = 0; j < 3; ++j) {
@@ -197,9 +243,8 @@ SPECTRE_TEST_CASE("Unit.IO.ReadSpecThirdOrderPiecewisePolynomial",
 }
 
 // [[OutputRegex, Non-monotonic time found]]
-SPECTRE_TEST_CASE(
-    "Unit.IO.ReadSpecThirdOrderPiecewisePolynomialNonmonotonic",
-    "[Unit][Evolution][Actions]") {
+SPECTRE_TEST_CASE("Unit.IO.ReadSpecThirdOrderPiecewisePolynomialNonmonotonic",
+                  "[Unit][Evolution][Actions]") {
   ERROR_TEST();
   domain::FunctionsOfTime::register_derived_with_charm();
 
