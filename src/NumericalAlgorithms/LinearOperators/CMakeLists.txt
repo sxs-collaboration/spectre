@@ -3,7 +3,11 @@
 
 set(LIBRARY LinearOperators)
 
-set(LIBRARY_SOURCES
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
   ApplyMatrices.cpp
   CoefficientTransforms.cpp
   DefiniteIntegral.cpp
@@ -14,7 +18,25 @@ set(LIBRARY_SOURCES
   MeanValue.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  ApplyMatrices.hpp
+  CoefficientTransforms.hpp
+  DefiniteIntegral.hpp
+  Divergence.hpp
+  Divergence.tpp
+  ExponentialFilter.hpp
+  FilterAction.hpp
+  IndefiniteIntegral.hpp
+  Linearize.hpp
+  MeanValue.hpp
+  PartialDerivatives.hpp
+  PartialDerivatives.tpp
+  Tags.hpp
+  Transpose.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}
@@ -24,7 +46,6 @@ target_link_libraries(
   ErrorHandling
   Options
   Spectral
-
   INTERFACE
   Domain # Domain should be PUBLIC but then there's a cyclic dependency
   )

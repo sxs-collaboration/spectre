@@ -1,28 +1,20 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY Integration)
+set(LIBRARY OdeIntegration)
 
-add_spectre_library(${LIBRARY})
-
-spectre_target_sources(
-  ${LIBRARY}
-  PRIVATE
-  GslQuadAdaptive.cpp
-  )
+add_spectre_library(${LIBRARY} INTERFACE)
 
 spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  GslQuadAdaptive.hpp
+  OdeIntegration.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
-  PUBLIC
-  ErrorHandling
-  GSL::gsl
-  Utilities
+  INTERFACE
+  Boost::boost
+  DataStructures
   )
-
