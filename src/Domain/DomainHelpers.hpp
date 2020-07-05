@@ -55,7 +55,7 @@ struct PairOfFaces {
 /// orientations. Does not set up periodic boundary conditions.
 template <size_t VolumeDim>
 void set_internal_boundaries(
-    const gsl::not_null<
+    gsl::not_null<
         std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
@@ -68,7 +68,7 @@ void set_internal_boundaries(
 /// \warning Does not set up periodic boundary conditions.
 template <size_t VolumeDim>
 void set_internal_boundaries(
-    const gsl::not_null<
+    gsl::not_null<
         std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks,
     const std::vector<std::unique_ptr<

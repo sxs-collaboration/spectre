@@ -16,8 +16,16 @@
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfLapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfShift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivativeOfSpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TimeDerivativeOfSpacetimeMetric.hpp"
 
 /// \cond
 class DataVector;
@@ -664,11 +672,11 @@ void create_bondi_boundary_data(
   db::mutate<Tags::BoundaryValue<Tags::DuRDividedByR>,
              Tags::BoundaryValue<Tags::Du<Tags::BondiR>>>(
       bondi_boundary_data,
-      [&d_r, &
-       r ](const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
-               du_r_divided_by_r,
-           const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
-               du_r) noexcept {
+      [&d_r, &r](
+          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+              du_r_divided_by_r,
+          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+              du_r) noexcept {
         get(*du_r_divided_by_r).data() =
             std::complex<double>{1.0, 0.0} * get<0>(d_r) / get(r).data();
         get(*du_r).data() = std::complex<double>{1.0, 0.0} * get<0>(d_r);

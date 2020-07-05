@@ -13,14 +13,20 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfLapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfShift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfLapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfShift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Cce {
-namespace Solutions {
+namespace Cce::Solutions {
 
 /// \cond
 void WorldtubeData::variables_impl(
@@ -44,8 +50,8 @@ void WorldtubeData::variables_impl(
 void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::i<DataVector, 3>*> dr_cartesian_coordinates,
     const size_t output_l_max, const double /*time*/,
-    tmpl::type_<Tags::Dr<Tags::CauchyCartesianCoords>> /*meta*/) const
-    noexcept {
+    tmpl::type_<Tags::Dr<Tags::CauchyCartesianCoords>> /*meta*/)
+    const noexcept {
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(output_l_max);
   for (const auto& collocation_point : collocation) {
@@ -100,9 +106,9 @@ void WorldtubeData::variables_impl(
 void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::ii<DataVector, 3>*> dt_spatial_metric,
     const size_t output_l_max, const double time,
-    tmpl::type_<::Tags::dt<gr::Tags::SpatialMetric<3, ::Frame::Inertial,
-                                                   DataVector>>> /*meta*/) const
-    noexcept {
+    tmpl::type_<::Tags::dt<
+        gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>> /*meta*/)
+    const noexcept {
   const auto& dt_spacetime_metric = cache_or_compute<
       ::Tags::dt<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>>(
       output_l_max, time);
@@ -117,9 +123,9 @@ void WorldtubeData::variables_impl(
 void WorldtubeData::variables_impl(
     const gsl::not_null<tnsr::ii<DataVector, 3>*> dr_spatial_metric,
     const size_t output_l_max, const double time,
-    tmpl::type_<Tags::Dr<gr::Tags::SpatialMetric<3, ::Frame::Inertial,
-                                                 DataVector>>> /*meta*/) const
-    noexcept {
+    tmpl::type_<Tags::Dr<
+        gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>> /*meta*/)
+    const noexcept {
   const auto& dr_cartesian_coordinates =
       cache_or_compute<Tags::Dr<Tags::CauchyCartesianCoords>>(output_l_max,
                                                               time);
@@ -215,8 +221,8 @@ void WorldtubeData::variables_impl(
 
 void WorldtubeData::variables_impl(
     const gsl::not_null<Scalar<DataVector>*> lapse, const size_t output_l_max,
-    const double time, tmpl::type_<gr::Tags::Lapse<DataVector>> /*meta*/) const
-    noexcept {
+    const double time,
+    tmpl::type_<gr::Tags::Lapse<DataVector>> /*meta*/) const noexcept {
   gr::lapse(lapse,
             cache_or_compute<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
                 output_l_max, time),
@@ -228,8 +234,8 @@ void WorldtubeData::variables_impl(
 void WorldtubeData::variables_impl(
     const gsl::not_null<Scalar<DataVector>*> dt_lapse,
     const size_t output_l_max, const double time,
-    tmpl::type_<::Tags::dt<gr::Tags::Lapse<DataVector>>> /*meta*/) const
-    noexcept {
+    tmpl::type_<::Tags::dt<gr::Tags::Lapse<DataVector>>> /*meta*/)
+    const noexcept {
   const auto& lapse =
       cache_or_compute<gr::Tags::Lapse<DataVector>>(output_l_max, time);
   const auto& shift =
@@ -246,8 +252,8 @@ void WorldtubeData::variables_impl(
 void WorldtubeData::variables_impl(
     const gsl::not_null<Scalar<DataVector>*> dr_lapse,
     const size_t output_l_max, const double time,
-    tmpl::type_<Tags::Dr<gr::Tags::Lapse<DataVector>>> /*meta*/) const
-    noexcept {
+    tmpl::type_<Tags::Dr<gr::Tags::Lapse<DataVector>>> /*meta*/)
+    const noexcept {
   const auto& lapse =
       cache_or_compute<gr::Tags::Lapse<DataVector>>(output_l_max, time);
   const auto& shift =
@@ -268,11 +274,10 @@ void WorldtubeData::variables_impl(
 
 void WorldtubeData::pup(PUP::er& p) noexcept {
   p | extraction_radius_;
-  if(p.isUnpacking()) {
+  if (p.isUnpacking()) {
     intermediate_cache_ = IntermediateCacheTuple{};
   }
 }
 
 /// \endcond
-}  // namespace Solutions
-}  // namespace Cce
+}  // namespace Cce::Solutions

@@ -9,9 +9,9 @@
 #include <utility>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "Parallel/PupStlCpp11.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
@@ -21,8 +21,7 @@
 #include "Utilities/StdHelpers.hpp"
 
 /// \cond
-namespace gr {
-namespace Solutions {
+namespace gr::Solutions {
 
 KerrSchild::KerrSchild(const double mass,
                        KerrSchild::Spin::type dimensionless_spin,
@@ -36,10 +35,9 @@ KerrSchild::KerrSchild(const double mass,
 {
   const double spin_magnitude = magnitude(dimensionless_spin_);
   if (spin_magnitude > 1.0) {
-    PARSE_ERROR(context,
-                "Spin magnitude must be < 1. Given spin: "
-                    << dimensionless_spin_ << " with magnitude "
-                    << spin_magnitude);
+    PARSE_ERROR(context, "Spin magnitude must be < 1. Given spin: "
+                             << dimensionless_spin_ << " with magnitude "
+                             << spin_magnitude);
   }
   if (mass_ < 0.0) {
     PARSE_ERROR(context, "Mass must be non-negative. Given mass: " << mass_);
@@ -106,8 +104,7 @@ void KerrSchild::IntermediateComputer<DataType>::operator()(
       std::inner_product(spin_a.begin(), spin_a.end(), spin_a.begin(), 0.);
 
   get(*half_xsq_minus_asq) =
-      0.5 * (square(get<0>(x_minus_center)) +
-             square(get<1>(x_minus_center)) +
+      0.5 * (square(get<0>(x_minus_center)) + square(get<1>(x_minus_center)) +
              square(get<2>(x_minus_center)) - a_squared);
 }
 
@@ -427,8 +424,8 @@ template <typename DataType>
 void KerrSchild::IntermediateComputer<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, 3>*> spatial_metric,
     const gsl::not_null<CachedBuffer*> cache,
-    gr::Tags::SpatialMetric<3, Frame::Inertial, DataType> /*meta*/) const
-    noexcept {
+    gr::Tags::SpatialMetric<3, Frame::Inertial, DataType> /*meta*/)
+    const noexcept {
   const auto& H = get(cache->get_var(internal_tags::H<DataType>{}));
   const auto& null_form = cache->get_var(internal_tags::null_form<DataType>{});
 
@@ -555,6 +552,5 @@ template class KerrSchild::IntermediateVars<DataVector>;
 template class KerrSchild::IntermediateVars<double>;
 template class KerrSchild::IntermediateComputer<DataVector>;
 template class KerrSchild::IntermediateComputer<double>;
-}  // namespace Solutions
-}  // namespace gr
+}  // namespace gr::Solutions
 /// \endcond

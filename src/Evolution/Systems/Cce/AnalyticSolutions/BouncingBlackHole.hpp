@@ -21,8 +21,7 @@
 class DataVector;
 /// \endcond
 
-namespace Cce {
-namespace Solutions {
+namespace Cce::Solutions {
 
 /*!
  * \brief Analytic solution representing a coordinate oscillation about a
@@ -51,7 +50,7 @@ struct BouncingBlackHole : public WorldtubeData {
   struct Mass {
     using type = double;
     static constexpr OptionString help{
-      "The mass of the Schwarzschild black hole"};
+        "The mass of the Schwarzschild black hole"};
     static type lower_bound() noexcept { return 0.0; }
     static type default_value() noexcept { return 1.0; }
   };
@@ -69,10 +68,8 @@ struct BouncingBlackHole : public WorldtubeData {
 
   explicit BouncingBlackHole(CkMigrateMessage* /*unused*/) noexcept {}
 
-
   // clang doesn't manage to use = default correctly in this case
-  // NOLINTNEXTLINE(hicpp-use-equals-default)
-  BouncingBlackHole() noexcept {};
+  BouncingBlackHole() noexcept {}  // NOLINT
 
   BouncingBlackHole(double amplitude, double extraction_radius, double mass,
                     double period) noexcept;
@@ -84,8 +81,8 @@ struct BouncingBlackHole : public WorldtubeData {
  protected:
   // The bouncing black hole solution is easily computed directly, so requires
   // no additional preparation.
-  void prepare_solution(const size_t /*l_max*/, const double /*time*/) const
-      noexcept override{};
+  void prepare_solution(const size_t /*l_max*/,
+                        const double /*time*/) const noexcept override{};
 
   using WorldtubeData::variables_impl;
 
@@ -107,11 +104,12 @@ struct BouncingBlackHole : public WorldtubeData {
    * the primed coordinates to be the coordinates for which the black hole has
    * time-dependent coordinate position.
    */
-  void variables_impl(gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
-                      size_t l_max, double time,
-                      tmpl::type_<gr::Tags::SpacetimeMetric<
-                          3, ::Frame::Inertial, DataVector>> /*meta*/) const
-      noexcept override;
+  void variables_impl(
+      gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric, size_t l_max,
+      double time,
+      tmpl::type_<
+          gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>> /*meta*/)
+      const noexcept override;
 
   /*!
    * \brief The implementation function that computes the first time derivative
@@ -169,19 +167,18 @@ struct BouncingBlackHole : public WorldtubeData {
       gsl::not_null<tnsr::iaa<DataVector, 3>*> d_spacetime_metric, size_t l_max,
       double time,
       tmpl::type_<
-          GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>> /*meta*/) const
-      noexcept override;
+          GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>> /*meta*/)
+      const noexcept override;
 
   /// The News in the bouncing black hole solution vanishes, as the oscillation
   /// comes entirely from a coordinate transform.
   void variables_impl(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> news,
-      size_t output_l_max, double time, tmpl::type_<Tags::News> /*meta*/) const
-      noexcept override;
+      size_t output_l_max, double time,
+      tmpl::type_<Tags::News> /*meta*/) const noexcept override;
 
   double amplitude_ = std::numeric_limits<double>::signaling_NaN();
   double mass_ = std::numeric_limits<double>::signaling_NaN();
   double frequency_ = std::numeric_limits<double>::signaling_NaN();
 };
-}  // namespace Solutions
-}  // namespace Cce
+}  // namespace Cce::Solutions

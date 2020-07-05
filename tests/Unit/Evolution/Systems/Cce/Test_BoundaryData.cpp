@@ -18,8 +18,9 @@
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace Cce {
@@ -582,11 +583,11 @@ void test_schwarzschild_solution(const gsl::not_null<Generator*> gen) noexcept {
   db::mutate<Tags::BoundaryValue<Tags::BondiW>,
              Tags::BoundaryValue<Tags::BondiR>>(
       make_not_null(&expected_box),
-      [&extraction_radius, &
-       mass ](const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
-                  bondi_w,
-              const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
-                  bondi_r) noexcept {
+      [&extraction_radius, &mass](
+          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+              bondi_w,
+          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+              bondi_r) noexcept {
         get(*bondi_r).data() = extraction_radius;
         get(*bondi_w).data() = -2.0 * mass / pow<2>(extraction_radius);
       });

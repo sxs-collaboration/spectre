@@ -9,14 +9,14 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 // IWYU pragma: no_forward_declare ::Tags::deriv
 
 /// \cond
-namespace GeneralizedHarmonic {
-namespace Solutions {
+namespace GeneralizedHarmonic::Solutions {
 // Preprocessor logic to avoid defining variables() functions for
 // tags other than the three the wrapper adds (i.e., other than
 // gr::Tags::SpacetimeMetric, GeneralizedHarmonic::Tags::Pi, and
@@ -142,8 +142,7 @@ WrappedGr<SolutionType>::variables(
   return {GeneralizedHarmonic::pi(lapse, dt_lapse, shift, dt_shift,
                                   spatial_metric, dt_spatial_metric, phi)};
 }
-}  // namespace Solutions
-}  // namespace GeneralizedHarmonic
+}  // namespace GeneralizedHarmonic::Solutions
 
 #define STYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
@@ -294,13 +293,11 @@ WrappedGr<SolutionType>::variables(
           Frame::Inertial>> /*meta*/,                                          \
       const IntermediateVars& intermediate_vars) const noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (gr::Solutions::GaugeWave<1>,
-                                      gr::Solutions::GaugeWave<2>,
-                                      gr::Solutions::GaugeWave<3>,
-                                      gr::Solutions::Minkowski<1>,
-                                      gr::Solutions::Minkowski<2>,
-                                      gr::Solutions::Minkowski<3>,
-                                      gr::Solutions::KerrSchild))
+GENERATE_INSTANTIATIONS(
+    INSTANTIATE, (gr::Solutions::GaugeWave<1>, gr::Solutions::GaugeWave<2>,
+                  gr::Solutions::GaugeWave<3>, gr::Solutions::Minkowski<1>,
+                  gr::Solutions::Minkowski<2>, gr::Solutions::Minkowski<3>,
+                  gr::Solutions::KerrSchild))
 
 #undef DIM
 #undef STYPE

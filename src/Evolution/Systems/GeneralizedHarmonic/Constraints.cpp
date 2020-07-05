@@ -7,6 +7,7 @@
 
 #include "DataStructures/LeviCivitaIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -940,12 +941,15 @@ void three_index_constraint(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept {
   // Declare iterators for d_spacetime_metric and phi outside the for loop,
   // because they are const but constraint is not
-  auto d_spacetime_metric_it = d_spacetime_metric.begin(), phi_it = phi.begin();
+  // clang-tidy: llvm-qualified-auto
+  auto d_spacetime_metric_it = d_spacetime_metric.begin();  // NOLINT
+  auto phi_it = phi.begin();  // NOLINT
 
-  for (auto constraint_it = (*constraint).begin();
+  for (auto constraint_it = (*constraint).begin();  // NOLINT
        constraint_it != (*constraint).end();
        ++constraint_it, (void)++d_spacetime_metric_it, (void)++phi_it) {
-    *constraint_it = *d_spacetime_metric_it - *phi_it;
+    // clang-tidy: cppcoreguidelines-pro-bounds-pointer-arithmetic
+    *constraint_it = *d_spacetime_metric_it - *phi_it;  // NOLINT
   }
 }
 

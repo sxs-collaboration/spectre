@@ -20,7 +20,7 @@
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -197,7 +197,7 @@ void test_gauge_wave(const gr::Solutions::GaugeWave<Dim>& solution,
 
   // Check that we can retrieve tags individually from the solution
   tmpl::for_each<typename GaugeWave::template tags<DataType>>(
-      [&solution, &vars, &x, &t ](auto tag_v) noexcept {
+      [&solution, &vars, &x, &t](auto tag_v) noexcept {
         using Tag = tmpl::type_from<decltype(tag_v)>;
         CHECK_ITERABLE_APPROX(get<Tag>(vars), get<Tag>(solution.variables(
                                                   x, t, tmpl::list<Tag>{})));

@@ -13,8 +13,6 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
-#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Math.hpp"
 
@@ -827,7 +825,7 @@ void bondi_w_worldtube_data(
                               get<1>(d_bondi_r);
     }
   }
-  get(*bondi_w).data() /=  get(bondi_r).data();
+  get(*bondi_w).data() /= get(bondi_r).data();
 }
 
 void bondi_j_worldtube_data(
