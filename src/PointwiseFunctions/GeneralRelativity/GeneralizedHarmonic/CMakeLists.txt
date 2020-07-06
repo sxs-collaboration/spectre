@@ -9,16 +9,16 @@ spectre_target_sources(
   GaugeSource.cpp
   Phi.cpp
   Pi.cpp
-  SpacetimeDerivativeOfSpacetimeMetric.cpp
   SpacetimeDerivOfDetSpatialMetric.cpp
   SpacetimeDerivOfNormOfShift.cpp
+  SpacetimeDerivativeOfSpacetimeMetric.cpp
   SpatialDerivOfLapse.cpp
   SpatialDerivOfShift.cpp
-  TimeDerivativeOfSpacetimeMetric.cpp
   TimeDerivOfLapse.cpp
   TimeDerivOfLowerShift.cpp
   TimeDerivOfShift.cpp
   TimeDerivOfSpatialMetric.cpp
+  TimeDerivativeOfSpacetimeMetric.cpp
   )
 
 spectre_target_headers(
@@ -31,14 +31,14 @@ spectre_target_headers(
   GaugeSource.hpp
   Phi.hpp
   Pi.hpp
-  SpacetimeDerivativeOfSpacetimeMetric.hpp
   SpacetimeDerivOfDetSpatialMetric.hpp
   SpacetimeDerivOfNormOfShift.hpp
+  SpacetimeDerivativeOfSpacetimeMetric.hpp
   SpatialDerivOfLapse.hpp
   SpatialDerivOfShift.hpp
-  TimeDerivativeOfSpacetimeMetric.hpp
   TimeDerivOfLapse.hpp
   TimeDerivOfLowerShift.hpp
   TimeDerivOfShift.hpp
   TimeDerivOfSpatialMetric.hpp
+  TimeDerivativeOfSpacetimeMetric.hpp
 )
