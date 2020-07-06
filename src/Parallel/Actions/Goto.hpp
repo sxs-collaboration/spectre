@@ -85,10 +85,10 @@ struct Goto {
 
 namespace Goto_detail {
 
-template <typename ConditionTag>
+template <typename ConditionTag, typename LabelTag>
 struct RepeatEnd;
 
-template <typename ConditionTag>
+template <typename ConditionTag, typename LabelTag>
 struct RepeatStart {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -101,12 +101,14 @@ struct RepeatStart {
       const ParallelComponent* const /*meta*/) noexcept {
     return {std::move(box), false,
             db::get<ConditionTag>(box)
-                ? tmpl::index_of<ActionList, RepeatEnd<ConditionTag>>::value + 1
+                ? tmpl::index_of<ActionList,
+                                 RepeatEnd<ConditionTag, LabelTag>>::value +
+                      1
                 : tmpl::index_of<ActionList, RepeatStart>::value + 1};
   }
 };
 
-template <typename ConditionTag>
+template <typename ConditionTag, typename LabelTag>
 struct RepeatEnd {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -117,19 +119,21 @@ struct RepeatEnd {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    return {
-        std::move(box), false,
-        db::get<ConditionTag>(box)
-            ? tmpl::index_of<ActionList, RepeatEnd>::value + 1
-            : tmpl::index_of<ActionList, RepeatStart<ConditionTag>>::value + 1};
+    return {std::move(box), false,
+            db::get<ConditionTag>(box)
+                ? tmpl::index_of<ActionList, RepeatEnd>::value + 1
+                : tmpl::index_of<ActionList,
+                                 RepeatStart<ConditionTag, LabelTag>>::value +
+                      1};
   }
 };
 
 }  // namespace Goto_detail
 
-/// Repeats the `ActionList` until `ConditionTag` is `True`.
-template <typename ConditionTag, typename ActionList>
-using RepeatUntil =
-    tmpl::flatten<tmpl::list<Goto_detail::RepeatStart<ConditionTag>, ActionList,
-                             Goto_detail::RepeatEnd<ConditionTag>>>;
+/// Repeats the `ActionList` until `ConditionTag` is `True`. The `LabelTag`
+/// identifies this particular loop.
+template <typename ConditionTag, typename ActionList, typename LabelTag>
+using RepeatUntil = tmpl::flatten<
+    tmpl::list<Goto_detail::RepeatStart<ConditionTag, LabelTag>, ActionList,
+               Goto_detail::RepeatEnd<ConditionTag, LabelTag>>>;
 }  // namespace Actions

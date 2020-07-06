@@ -223,6 +223,8 @@ template <typename Preconditioner>
 using init_preconditioner =
     typename init_preconditioner_impl<Preconditioner>::type;
 
+struct PreconditioningLoop {};
+
 template <typename Preconditioner>
 struct run_preconditioner_impl {
   using type =
@@ -234,7 +236,8 @@ struct run_preconditioner_impl {
                      tmpl::list<typename Preconditioner::prepare_step,
                                 ComputeOperatorAction<
                                     typename Preconditioner::operand_tag>,
-                                typename Preconditioner::perform_step>>>;
+                                typename Preconditioner::perform_step>,
+                     PreconditioningLoop>>;
 };
 
 template <>
