@@ -124,8 +124,8 @@ struct dispatch_to_compute_coefficients_of_derivative<
                     const size_t number_of_radial_points) noexcept {
     compute_coefficients_of_derivative<typename DerivativeTag::derivative_kind>(
         derivative_modes,
-        get<tmpl::position_of_first_v<tmpl::list<PreDerivativeTags...>,
-                                      typename DerivativeTag::derivative_of>>(
+        get<tmpl::index_of<tmpl::list<PreDerivativeTags...>,
+                           typename DerivativeTag::derivative_of>::value>(
             pre_derivative_mode_tuple),
         l_max, number_of_radial_points);
   }
@@ -161,9 +161,9 @@ struct dispatch_to_transform<
                     const size_t number_of_radial_points) noexcept {
     SwshTransform<tmpl::list<TransformTags...>, Representation>::
         apply_to_vectors(
-            get<tmpl::position_of_first_v<tmpl::list<Tags...>, TransformTags>>(
+            get<tmpl::index_of<tmpl::list<Tags...>, TransformTags>::value>(
                 *modal_tuple)...,
-            get<tmpl::position_of_first_v<tmpl::list<Tags...>, TransformTags>>(
+            get<tmpl::index_of<tmpl::list<Tags...>, TransformTags>::value>(
                 nodal_tuple)...,
             l_max, number_of_radial_points);
   }
@@ -181,9 +181,9 @@ struct dispatch_to_transform<
                     const size_t number_of_radial_points) noexcept {
     InverseSwshTransform<tmpl::list<TransformTags...>, Representation>::
         apply_to_vectors(
-            get<tmpl::position_of_first_v<tmpl::list<Tags...>, TransformTags>>(
+            get<tmpl::index_of<tmpl::list<Tags...>, TransformTags>::value>(
                 *nodal_tuple)...,
-            *get<tmpl::position_of_first_v<tmpl::list<Tags...>, TransformTags>>(
+            *get<tmpl::index_of<tmpl::list<Tags...>, TransformTags>::value>(
                 modal_tuple)...,
             l_max, number_of_radial_points);
   }
