@@ -24,6 +24,11 @@ struct Counter : db::SimpleTag {
 };
 
 template <typename Label>
+struct Flag : db::SimpleTag {
+  using type = bool;
+};
+
+template <typename Label>
 struct HasConverged : db::ComputeTag {
   using argument_tags = tmpl::list<Counter<Label>>;
   static bool function(const size_t counter) noexcept { return counter >= 2; }
@@ -89,7 +94,7 @@ struct Component {
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
               db::AddSimpleTags<Counter<Label1>, Counter<Label2>,
-                                Counter<Label3>>,
+                                Counter<Label3>, Flag<Label1>, Flag<Label2>>,
               db::AddComputeTags<HasConverged<Label1>, HasConverged<Label2>>>>>,
 
       Parallel::PhaseActions<
@@ -99,7 +104,15 @@ struct Component {
 
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::TestRepeatUntil,
-                             repeat_until_phase_action_list>>;
+                             repeat_until_phase_action_list>,
+
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::TestIf,
+          tmpl::list<
+              Actions::If<Flag<Label1>, tmpl::list<Increment<Label1>>, Label1>,
+              Actions::Unless<Flag<Label2>, tmpl::list<Increment<Label2>>,
+                              Label2>,
+              Parallel::Actions::TerminatePhase>>>;
 };
 /// [component]
 
@@ -107,7 +120,7 @@ struct Component {
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
-  enum class Phase { Initialization, TestGoto, TestRepeatUntil, Exit };
+  enum class Phase { Initialization, TestGoto, TestRepeatUntil, TestIf, Exit };
 };
 /// [metavariables]
 }  // namespace
@@ -118,7 +131,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.GotoAction", "[Unit][Parallel][Actions]") {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   MockRuntimeSystem runner{{}};
   ActionTesting::emplace_component_and_initialize<component>(
-      &runner, 0, {size_t{0}, size_t{0}, size_t{0}});
+      &runner, 0, {size_t{0}, size_t{0}, size_t{0}, true, false});
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::TestGoto);
@@ -165,5 +178,16 @@ SPECTRE_TEST_CASE("Unit.Parallel.GotoAction", "[Unit][Parallel][Actions]") {
         2);
   CHECK(ActionTesting::get_databox_tag<component, Counter<Label3>>(runner, 0) ==
         4);
+
+  // Test If and Unless
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::TestIf);
+  while (not ActionTesting::get_terminate<component>(runner, 0)) {
+    runner.next_action<component>(0);
+  }
+  CHECK(ActionTesting::get_databox_tag<component, Counter<Label1>>(runner, 0) ==
+        3);
+  CHECK(ActionTesting::get_databox_tag<component, Counter<Label2>>(runner, 0) ==
+        3);
 }
 /// [test case]

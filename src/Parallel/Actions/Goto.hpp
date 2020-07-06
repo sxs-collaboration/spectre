@@ -128,6 +128,30 @@ struct RepeatEnd {
   }
 };
 
+template <typename ConditionTag, typename LabelTag, bool Negate = false>
+struct IfStart {
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagsList>&&, bool, size_t> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    bool condition = static_cast<bool>(db::get<ConditionTag>(box));
+    if constexpr (Negate) {
+      condition = not condition;
+    }
+    return {
+        std::move(box), false,
+        condition
+            ? tmpl::index_of<ActionList,
+                             IfStart<ConditionTag, LabelTag, Negate>>::value +
+                  1
+            : tmpl::index_of<ActionList, Label<LabelTag>>::value + 1};
+  }
+};
 }  // namespace Goto_detail
 
 /// Repeats the `ActionList` until `ConditionTag` is `True`. The `LabelTag`
@@ -136,4 +160,19 @@ template <typename ConditionTag, typename ActionList, typename LabelTag>
 using RepeatUntil = tmpl::flatten<
     tmpl::list<Goto_detail::RepeatStart<ConditionTag, LabelTag>, ActionList,
                Goto_detail::RepeatEnd<ConditionTag, LabelTag>>>;
+
+/// Performs the `ActionList` if `ConditionTag` is `True`. The `LabelTag`
+/// identifies this particular statement.
+template <typename ConditionTag, typename ActionList, typename LabelTag>
+using If =
+    tmpl::flatten<tmpl::list<Goto_detail::IfStart<ConditionTag, LabelTag>,
+                             ActionList, Label<LabelTag>>>;
+
+/// Performs the `ActionList` if `ConditionTag` is `False`. The `LabelTag`
+/// identifies this particular statement.
+template <typename ConditionTag, typename ActionList, typename LabelTag>
+using Unless =
+    tmpl::flatten<tmpl::list<Goto_detail::IfStart<ConditionTag, LabelTag, true>,
+                             ActionList, Label<LabelTag>>>;
+
 }  // namespace Actions
