@@ -175,9 +175,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       tuples::tagged_tuple_from_typelist<
           Parallel::get_const_global_cache_tags<test_metavariables>>{
-          l_max, extraction_radius, number_of_radial_points,
-          std::make_unique<::TimeSteppers::RungeKutta3>(), start_time,
-          end_time}};
+          l_max, extraction_radius, end_time, start_time,
+          number_of_radial_points,
+          std::make_unique<::TimeSteppers::DormandPrince5>()}};
 
   // first prepare the input for the modal version
   const double mass = value_dist(gen);
@@ -196,7 +196,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
       &runner, 0, target_step_size, scri_plus_interpolation_order);
   ActionTesting::emplace_component<worldtube_component>(
       &runner, 0,
-      Tags::GhInterfaceManager::create_from_options<test_metavariables>(
+      Tags::GhInterfaceManager::create_from_options(
           std::make_unique<InterfaceManagers::GhLockstep>()));
 
   // this should run the initializations

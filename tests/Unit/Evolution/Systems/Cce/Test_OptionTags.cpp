@@ -32,8 +32,15 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<Cce::InitializationTags::ScriOutputDensity>(
       "ScriOutputDensity");
 
-  TestHelpers::db::test_simple_tag<Cce::Tags::StartTime>("StartTime");
-  TestHelpers::db::test_simple_tag<Cce::Tags::EndTime>("EndTime");
+  TestHelpers::db::test_simple_tag<Cce::Tags::StartTimeFromFile>(
+      "StartTimeFromFile");
+  TestHelpers::db::test_simple_tag<Cce::Tags::EndTimeFromFile>(
+      "EndTimeFromFile");
+  TestHelpers::db::test_simple_tag<Cce::Tags::NoEndTime>("NoEndTime");
+  TestHelpers::db::test_simple_tag<Cce::Tags::SpecifiedStartTime>(
+      "SpecifiedStartTime");
+  TestHelpers::db::test_simple_tag<Cce::Tags::SpecifiedEndTime>(
+      "SpecifiedEndTime");
   TestHelpers::db::test_simple_tag<Cce::Tags::InitializeJ>("InitializeJ");
 
   CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::LMax>("8") == 8_st);
@@ -97,16 +104,16 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(Cce::Tags::LMax::create_from_options(8u) == 8u);
   CHECK(Cce::Tags::NumberOfRadialPoints::create_from_options(6u) == 6u);
 
-  CHECK(Cce::Tags::StartTime::create_from_options(
+  CHECK(Cce::Tags::StartTimeFromFile::create_from_options(
             -std::numeric_limits<double>::infinity(),
             "OptionTagsTestCceR0100.h5") == 2.5);
-  CHECK(Cce::Tags::StartTime::create_from_options(
+  CHECK(Cce::Tags::StartTimeFromFile::create_from_options(
             3.3, "OptionTagsTestCceR0100.h5") == 3.3);
 
-  CHECK(Cce::Tags::EndTime::create_from_options(
+  CHECK(Cce::Tags::EndTimeFromFile::create_from_options(
             std::numeric_limits<double>::infinity(),
             "OptionTagsTestCceR0100.h5") == 5.4);
-  CHECK(Cce::Tags::EndTime::create_from_options(
+  CHECK(Cce::Tags::EndTimeFromFile::create_from_options(
             2.2, "OptionTagsTestCceR0100.h5") == 2.2);
 
   CHECK(Cce::Tags::ObservationLMax::create_from_options(5_st) == 5_st);

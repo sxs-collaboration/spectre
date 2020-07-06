@@ -146,6 +146,7 @@ struct test_metavariables {
       Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
                                        Spectral::Swsh::Tags::Eth>>>;
 
+  using const_global_cache_tags = tmpl::list<Tags::SpecifiedStartTime>;
   using cce_integrand_tags = tmpl::flatten<tmpl::transform<
       bondi_hypersurface_step_tags,
       tmpl::bind<integrand_terms_to_compute_for_bondi_variable, tmpl::_1>>>;
@@ -187,14 +188,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
   const std::string filename = "ScriObserveInterpolatedTest_CceVolumeOutput";
 
   const double start_time = 0.0;
-  const double end_time = 100.0;
   const double target_step_size = 0.1;
   const size_t scri_interpolation_size = 3;
 
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
-      {filename, l_max, number_of_radial_points,
-       std::make_unique<::TimeSteppers::RungeKutta3>(), start_time, end_time,
-       scri_output_density, observation_l_max}};
+      {start_time, filename, l_max, number_of_radial_points,
+       std::make_unique<::TimeSteppers::RungeKutta3>(), scri_output_density,
+       observation_l_max}};
 
   runner.set_phase(test_metavariables::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(

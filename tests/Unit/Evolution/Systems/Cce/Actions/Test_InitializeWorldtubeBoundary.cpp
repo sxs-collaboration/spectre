@@ -50,9 +50,12 @@ template <typename Generator>
 void test_h5_initialization(const gsl::not_null<Generator*> gen) noexcept {
   using component = mock_h5_worldtube_boundary<H5Metavariables>;
   const size_t l_max = 8;
+  const size_t end_time = 100.0;
+  const size_t start_time = 0.0;
   ActionTesting::MockRuntimeSystem<H5Metavariables> runner{
       tuples::tagged_tuple_from_typelist<
-          Parallel::get_const_global_cache_tags<H5Metavariables>>{l_max}};
+          Parallel::get_const_global_cache_tags<H5Metavariables>>{
+          l_max, end_time, start_time}};
 
   const size_t buffer_size = 8;
   const std::string filename = "InitializeWorldtubeBoundaryTest_CceR0100.h5";
@@ -123,12 +126,13 @@ void test_gh_initialization() noexcept {
   ActionTesting::MockRuntimeSystem<GhMetavariables> runner{
       tuples::tagged_tuple_from_typelist<
           Parallel::get_const_global_cache_tags<GhMetavariables>>{
-          l_max, extraction_radius}};
+          l_max, extraction_radius, std::numeric_limits<double>::infinity(),
+          0.0}};
 
   runner.set_phase(GhMetavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(
       &runner, 0,
-      Tags::GhInterfaceManager::create_from_options<GhMetavariables>(
+      Tags::GhInterfaceManager::create_from_options(
           std::make_unique<InterfaceManagers::GhLockstep>()));
 
   // this should run the initialization

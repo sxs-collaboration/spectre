@@ -197,7 +197,7 @@ struct ExtractionRadius : db::SimpleTag {
   using type = double;
   using option_tags = tmpl::list<OptionTags::ExtractionRadius>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static double create_from_options(const double extraction_radius) noexcept {
     return extraction_radius;
   }
@@ -278,7 +278,15 @@ struct RadialFilterHalfPower : db::SimpleTag {
   }
 };
 
-struct StartTime : db::SimpleTag {
+/// \brief Represents the start time of a bounded CCE evolution, determined
+/// either from option specification or from the file
+///
+/// \details If no start time is specified in the input file (so the option
+/// `OptionTags::StartTime` is set to the default
+/// `-std::numeric_limits<double>::%infinity()`), this will find the start time
+/// from the provided H5 file. If `OptionTags::StartTime` takes any other value,
+/// it will be used directly as the start time for the CCE evolution instead.
+struct StartTimeFromFile : Tags::StartTime, db::SimpleTag {
   using type = double;
   using option_tags =
       tmpl::list<OptionTags::StartTime, OptionTags::BoundaryDataFilename>;
@@ -295,14 +303,27 @@ struct StartTime : db::SimpleTag {
   }
 };
 
+/// \brief Represents the start time of a bounded CCE evolution that must be
+/// supplied in the input file (for e.g. analytic tests).
+struct SpecifiedStartTime : Tags::StartTime, db::SimpleTag {
+  using type = double;
+  using option_tags = tmpl::list<OptionTags::StartTime>;
+
+  static constexpr bool pass_metavariables = false;
+  static double create_from_options(const double start_time) noexcept {
+    return start_time;
+  }
+};
+
 /// \brief Represents the final time of a bounded CCE evolution, determined
 /// either from option specification or from the file
 ///
-/// \details If the option `OptionTags::EndTime` is set to
-/// `std::numeric_limits<double>::%infinity()`, this will find the end time from
-/// the provided H5 file. If `OptionTags::EndTime` takes any other value, it
-/// will be used directly as the end time for the CCE evolution instead.
-struct EndTime : db::SimpleTag {
+/// \details If no end time is specified in the input file (so the option
+/// `OptionTags::EndTime` is set to the default
+/// `std::numeric_limits<double>::%infinity()`), this will find the end time
+/// from the provided H5 file. If `OptionTags::EndTime` takes any other value,
+/// it will be used directly as the final time for the CCE evolution instead.
+struct EndTimeFromFile : Tags::EndTime, db::SimpleTag {
   using type = double;
   using option_tags =
       tmpl::list<OptionTags::EndTime, OptionTags::BoundaryDataFilename>;
@@ -319,11 +340,36 @@ struct EndTime : db::SimpleTag {
   }
 };
 
+/// \brief Represents the final time of a CCE evolution that should just proceed
+/// until it receives no more boundary data and becomes quiescent.
+struct NoEndTime : Tags::EndTime, db::SimpleTag {
+  using type = double;
+  using option_tags = tmpl::list<>;
+
+  static constexpr bool pass_metavariables = false;
+  static double create_from_options() noexcept {
+    return std::numeric_limits<double>::infinity();
+  }
+};
+
+/// \brief Represents the final time of a bounded CCE evolution that must be
+/// supplied in the input file (for e.g. analytic tests).
+struct SpecifiedEndTime : Tags::EndTime, db::SimpleTag {
+  using type = double;
+  using option_tags =
+      tmpl::list<OptionTags::EndTime>;
+
+  static constexpr bool pass_metavariables = false;
+  static double create_from_options(const double end_time) noexcept {
+    return end_time;
+  }
+};
+
 struct GhInterfaceManager : db::SimpleTag {
   using type = std::unique_ptr<InterfaceManagers::GhInterfaceManager>;
   using option_tags = tmpl::list<OptionTags::GhInterfaceManager>;
 
-  template <typename Metavariables>
+  static constexpr bool pass_metavariables = false;
   static std::unique_ptr<InterfaceManagers::GhInterfaceManager>
   create_from_options(
       const std::unique_ptr<InterfaceManagers::GhInterfaceManager>&

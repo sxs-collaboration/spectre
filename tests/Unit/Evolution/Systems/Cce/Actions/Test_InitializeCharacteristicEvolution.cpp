@@ -85,6 +85,8 @@ struct metavariables {
       Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
                                        Spectral::Swsh::Tags::Eth>>>;
 
+  using const_global_cache_tags = tmpl::list<Tags::SpecifiedStartTime>;
+
   using scri_values_to_observe = tmpl::list<>;
   using cce_integrand_tags = tmpl::flatten<tmpl::transform<
       bondi_hypersurface_step_tags,
@@ -148,13 +150,11 @@ SPECTRE_TEST_CASE(
   // create the test file, because on initialization the manager will need
   // to get basic data out of the file
   const double start_time = value_dist(gen);
-  const double end_time = std::numeric_limits<double>::infinity();
   const double target_step_size = 0.01 * value_dist(gen);
   const size_t scri_plus_interpolation_order = 3;
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {l_max, number_of_radial_points,
-       std::make_unique<::TimeSteppers::RungeKutta3>(), start_time,
-       Tags::EndTime::create_from_options(end_time, filename)}};
+      {start_time, l_max, number_of_radial_points,
+       std::make_unique<::TimeSteppers::RungeKutta3>()}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Initialization);
@@ -287,12 +287,6 @@ SPECTRE_TEST_CASE(
               number_of_radial_points,
           0.0};
   CHECK(swsh_derivatives_variables == expected_zeroed_swsh_derivatives);
-
-  // check the end time is consistent with what should have been written to the
-  // file
-  const auto& end_time_initialized =
-      ActionTesting::get_databox_tag<component, Tags::EndTime>(runner, 0);
-  CHECK(end_time_initialized == approx(1.4 + target_time));
 
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);

@@ -82,6 +82,9 @@ struct RequestBoundaryData {
  */
 template <typename WorldtubeBoundaryComponent, typename EvolutionComponent>
 struct RequestNextBoundaryData {
+  using const_global_cache_tags =
+      tmpl::list<typename WorldtubeBoundaryComponent::end_time_tag>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>

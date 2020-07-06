@@ -37,6 +37,7 @@ namespace Cce {
  */
 template <class Metavariables>
 struct H5WorldtubeBoundary {
+  using end_time_tag = Tags::EndTimeFromFile;
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   using initialize_action_list =
@@ -103,6 +104,7 @@ struct H5WorldtubeBoundary {
  */
 template <class Metavariables>
 struct GhWorldtubeBoundary {
+  using end_time_tag = Tags::NoEndTime;
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   using initialize_action_list =

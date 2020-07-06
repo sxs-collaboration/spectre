@@ -116,6 +116,8 @@ struct test_metavariables {
       Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
                                        Spectral::Swsh::Tags::Eth>>>;
 
+  using const_global_cache_tags = tmpl::list<Tags::SpecifiedStartTime>;
+
   using cce_integrand_tags = tmpl::flatten<tmpl::transform<
       bondi_hypersurface_step_tags,
       tmpl::bind<integrand_terms_to_compute_for_bondi_variable, tmpl::_1>>>;
@@ -166,15 +168,12 @@ SPECTRE_TEST_CASE(
 
 
   const double start_time = value_dist(gen);
-  const double end_time = start_time + 1.0;
   const double target_step_size = 0.01 * value_dist(gen);
   const size_t buffer_size = 5;
 
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
-      {l_max, number_of_radial_points,
-       std::make_unique<::TimeSteppers::RungeKutta3>(), start_time,
-       Tags::EndTime::create_from_options(end_time, "unused"),
-       scri_output_density}};
+      {start_time, l_max, number_of_radial_points,
+       std::make_unique<::TimeSteppers::RungeKutta3>(), scri_output_density}};
 
   runner.set_phase(test_metavariables::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(

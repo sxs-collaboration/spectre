@@ -103,6 +103,8 @@ struct metavariables {
       Spectral::Swsh::Tags::Derivative<Tags::GaugeOmega,
                                        Spectral::Swsh::Tags::Eth>>>;
 
+  using const_global_cache_tags = tmpl::list<Tags::SpecifiedStartTime>;
+
   using scri_values_to_observe = tmpl::list<>;
   using cce_integrand_tags = tmpl::flatten<tmpl::transform<
       bondi_hypersurface_step_tags,
@@ -179,9 +181,8 @@ SPECTRE_TEST_CASE(
   const double target_step_size = 0.01 * value_dist(gen);
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {l_max, number_of_radial_points,
-       std::make_unique<::TimeSteppers::RungeKutta3>(), start_time,
-       start_time + target_step_size,
+      {start_time, l_max, number_of_radial_points,
+       std::make_unique<::TimeSteppers::RungeKutta3>(),
        std::make_unique<InitializeJ::InverseCubic>()}};
 
   ActionTesting::set_phase(make_not_null(&runner),
