@@ -3,7 +3,11 @@
 
 set(LIBRARY GrMhdAnalyticData)
 
-set(LIBRARY_SOURCES
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
   BondiHoyleAccretion.cpp
   CylindricalBlastWave.cpp
   MagneticFieldLoop.cpp
@@ -12,7 +16,18 @@ set(LIBRARY_SOURCES
   OrszagTangVortex.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  AnalyticData.hpp
+  BondiHoyleAccretion.hpp
+  CylindricalBlastWave.hpp
+  MagneticFieldLoop.hpp
+  MagneticRotor.hpp
+  MagnetizedFmDisk.hpp
+  OrszagTangVortex.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}
