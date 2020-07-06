@@ -63,6 +63,13 @@ class WrappedGr : public SolutionType {
   using IntermediateVars = tuples::tagged_tuple_from_typelist<
       typename SolutionType::template tags<DataVector>>;
 
+  template <typename DataType>
+  using tags = tmpl::push_back<
+      typename SolutionType::template tags<DataType>,
+      gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial, DataType>,
+      GeneralizedHarmonic::Tags::Pi<volume_dim, Frame::Inertial>,
+      GeneralizedHarmonic::Tags::Phi<volume_dim, Frame::Inertial>>;
+
   template <typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
       const tnsr::I<DataVector, volume_dim>& x, double t,

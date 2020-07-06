@@ -38,16 +38,6 @@ struct dt : db::PrefixTag, db::SimpleTag {
 };
 
 /// \ingroup DataBoxTagsGroup
-/// \brief Prefix indicating the analytic solution value for a quantity
-///
-/// \snippet Test_DataBoxPrefixes.cpp analytic_name
-template <typename Tag>
-struct Analytic : db::PrefixTag, db::SimpleTag {
-  using type = db::const_item_type<Tag>;
-  using tag = Tag;
-};
-
-/// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating a flux
 ///
 /// \snippet Test_DataBoxPrefixes.cpp flux_name
