@@ -3,16 +3,31 @@
 
 set(LIBRARY GeneralRelativitySolutions)
 
-set(LIBRARY_SOURCES
-    GaugeWave.cpp
-    KerrHorizon.cpp
-    KerrSchild.cpp
-    Minkowski.cpp
-    Tov.cpp
-    WrappedGr.cpp
-    )
+add_spectre_library(${LIBRARY})
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  GaugeWave.cpp
+  KerrHorizon.cpp
+  KerrSchild.cpp
+  Minkowski.cpp
+  Tov.cpp
+  WrappedGr.cpp
+  )
+
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  GaugeWave.hpp
+  KerrHorizon.hpp
+  KerrSchild.hpp
+  Minkowski.hpp
+  Solutions.hpp
+  Tov.hpp
+  WrappedGr.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}
