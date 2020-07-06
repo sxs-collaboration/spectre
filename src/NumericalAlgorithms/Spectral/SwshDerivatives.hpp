@@ -111,11 +111,7 @@ void compute_coefficients_of_derivative(
 // `pre_derivative_mode_tuple`, and calls `compute_coefficients_of_derivative`,
 // deriving the coefficients for `DerivativeTag` and returning by pointer.
 template <typename DerivativeTag, typename PreDerivativeTagList>
-struct dispatch_to_compute_coefficients_of_derivative;
-
-template <typename DerivativeTag, typename... PreDerivativeTags>
-struct dispatch_to_compute_coefficients_of_derivative<
-    DerivativeTag, tmpl::list<PreDerivativeTags...>> {
+struct dispatch_to_compute_coefficients_of_derivative {
   template <int Spin, typename... ModalTypes>
   static void apply(const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
                         derivative_modes,
@@ -124,7 +120,7 @@ struct dispatch_to_compute_coefficients_of_derivative<
                     const size_t number_of_radial_points) noexcept {
     compute_coefficients_of_derivative<typename DerivativeTag::derivative_kind>(
         derivative_modes,
-        get<tmpl::index_of<tmpl::list<PreDerivativeTags...>,
+        get<tmpl::index_of<PreDerivativeTagList,
                            typename DerivativeTag::derivative_of>::value>(
             pre_derivative_mode_tuple),
         l_max, number_of_radial_points);
@@ -150,10 +146,9 @@ template <typename Transform, typename TagList>
 struct dispatch_to_transform;
 
 template <ComplexRepresentation Representation, typename... TransformTags,
-          typename... Tags>
+          typename TagList>
 struct dispatch_to_transform<
-    SwshTransform<tmpl::list<TransformTags...>, Representation>,
-    tmpl::list<Tags...>> {
+    SwshTransform<tmpl::list<TransformTags...>, Representation>, TagList> {
   template <typename... ModalTypes, typename... NodalTypes>
   static void apply(const gsl::not_null<std::tuple<ModalTypes...>*> modal_tuple,
                     const std::tuple<NodalTypes...>& nodal_tuple,
@@ -161,19 +156,17 @@ struct dispatch_to_transform<
                     const size_t number_of_radial_points) noexcept {
     SwshTransform<tmpl::list<TransformTags...>, Representation>::
         apply_to_vectors(
-            get<tmpl::index_of<tmpl::list<Tags...>, TransformTags>::value>(
-                *modal_tuple)...,
-            get<tmpl::index_of<tmpl::list<Tags...>, TransformTags>::value>(
-                nodal_tuple)...,
+            get<tmpl::index_of<TagList, TransformTags>::value>(*modal_tuple)...,
+            get<tmpl::index_of<TagList, TransformTags>::value>(nodal_tuple)...,
             l_max, number_of_radial_points);
   }
 };
 
 template <ComplexRepresentation Representation, typename... TransformTags,
-          typename... Tags>
+          typename TagList>
 struct dispatch_to_transform<
     InverseSwshTransform<tmpl::list<TransformTags...>, Representation>,
-    tmpl::list<Tags...>> {
+    TagList> {
   template <typename... NodalTypes, typename... ModalTypes>
   static void apply(const gsl::not_null<std::tuple<NodalTypes...>*> nodal_tuple,
                     const std::tuple<ModalTypes...>& modal_tuple,
@@ -181,10 +174,8 @@ struct dispatch_to_transform<
                     const size_t number_of_radial_points) noexcept {
     InverseSwshTransform<tmpl::list<TransformTags...>, Representation>::
         apply_to_vectors(
-            get<tmpl::index_of<tmpl::list<Tags...>, TransformTags>::value>(
-                *nodal_tuple)...,
-            *get<tmpl::index_of<tmpl::list<Tags...>, TransformTags>::value>(
-                modal_tuple)...,
+            get<tmpl::index_of<TagList, TransformTags>::value>(*nodal_tuple)...,
+            *get<tmpl::index_of<TagList, TransformTags>::value>(modal_tuple)...,
             l_max, number_of_radial_points);
   }
 };
