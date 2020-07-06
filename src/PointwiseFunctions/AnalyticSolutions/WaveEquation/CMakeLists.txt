@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY WaveEquation)
+set(LIBRARY WaveEquationSolutions)
 
 add_spectre_library(${LIBRARY})
 

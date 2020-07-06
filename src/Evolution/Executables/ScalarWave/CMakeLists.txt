@@ -14,7 +14,7 @@ set(LIBS_TO_LINK
   Time
   Options
   Utilities
-  WaveEquation
+  WaveEquationSolutions
   )
 
 function(add_scalar_wave_executable EXECUTABLE_NAME DIM INITIAL_DATA)
