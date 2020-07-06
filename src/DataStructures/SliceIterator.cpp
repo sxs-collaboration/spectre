@@ -43,11 +43,13 @@ void SliceIterator::reset() {
 }
 
 template <size_t VolumeDim>
+// NOLINTNEXTLINE(modernize-avoid-c-arrays)
 std::pair<std::unique_ptr<std::pair<size_t, size_t>[], decltype(&free)>,
           std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
                                gsl::span<std::pair<size_t, size_t>>>,
                      VolumeDim>>
 volume_and_slice_indices(const Index<VolumeDim>& extents) noexcept {
+  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   std::unique_ptr<std::pair<size_t, size_t>[], decltype(&free)> indices_buffer(
       nullptr, &free);
   // array over dim, pair over lower/upper, span<pair> over volume/boundary
@@ -66,7 +68,7 @@ volume_and_slice_indices(const Index<VolumeDim>& extents) noexcept {
          "'volume_and_slice_indices' function. Please file an issue describing "
          "the necessary steps to reproduce this error. Thank you!");
   // clang-tidy thinks we make size zero allocations. The ASSERT prevents that.
-  // NOLINTNEXTLINE(clang-analyzer-unix.API)
+  // NOLINTNEXTLINE(clang-analyzer-unix.API, cppcoreguidelines-owning-memory)
   indices_buffer.reset(static_cast<std::pair<size_t, size_t>*>(malloc(
       sizeof(std::pair<size_t, size_t>) * half_number_boundary_points * 2)));
   size_t alloc_offset = 0;
