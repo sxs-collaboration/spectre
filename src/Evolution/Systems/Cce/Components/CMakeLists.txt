@@ -1,15 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY RadiationTransport)
-
-add_spectre_library(${LIBRARY} INTERFACE)
-
 spectre_target_headers(
-  ${LIBRARY}
+  Cce
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Tags.hpp
+  CharacteristicEvolution.hpp
+  WorldtubeBoundary.hpp
   )
-
-add_subdirectory(M1Grey)

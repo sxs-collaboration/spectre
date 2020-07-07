@@ -3,13 +3,27 @@
 
 set(LIBRARY CurvedScalarWave)
 
-set(LIBRARY_SOURCES
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
   Characteristics.cpp
   Constraints.cpp
   Equations.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  Characteristics.hpp
+  Constraints.hpp
+  Equations.hpp
+  System.hpp
+  Tags.hpp
+  TagsDeclarations.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}
