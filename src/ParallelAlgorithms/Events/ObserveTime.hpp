@@ -47,7 +47,15 @@ template <typename ObservationValueTag,
 class ObserveTime;  // IWYU pragma: keep
 
 /*!
- * Add docs
+ * \ingroup DiscontinuousGalerkinGroup
+ * \brief %Prints the time of observation in the simulation.
+ *
+ * Prints reduction quantities:
+ * - `ObservationValueTag`
+ *
+ * \warning Currently, only one reduction observation event can be
+ * triggered at a given observation value.  Causing multiple events to run at
+ * once will produce unpredictable results.
  */
 template <typename ObservationValueTag, typename EventRegistrars>
 class ObserveTime : public Event<EventRegistrars> {
@@ -63,7 +71,15 @@ class ObserveTime : public Event<EventRegistrars> {
   /// \endcond
 
   using options = tmpl::list<>;
-  static constexpr OptionString help = "Help string needed";
+  static constexpr OptionString help =
+      "Prints the time of observation in the simulation.\n"
+      "\n"
+      "Writes reduction quantities:\n"
+      " * ObservationValueTag\n"
+      "\n"
+      "Warning: Currently, only one reduction observation event can be\n"
+      "triggered at a given observation value.  Causing multiple events to\n"
+      "run at once will produce unpredictable results.";
 
   ObserveTime() = default;
 
