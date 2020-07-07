@@ -39,6 +39,7 @@ SliceIterator& SliceIterator::operator++() {
 void SliceIterator::reset() {
   volume_offset_ = initial_offset_;
   slice_offset_ = 0;
+  stride_count_ = 0;
 }
 
 template <size_t VolumeDim>
