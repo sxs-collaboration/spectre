@@ -4,6 +4,7 @@
 set(LIBRARY "Test_ParallelSchwarz")
 
 set(LIBRARY_SOURCES
+  Test_ElementCenteredSubdomainData.cpp
   Test_OverlapHelpers.cpp
   )
 
@@ -11,5 +12,5 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/LinearSolver/Schwarz"
   "${LIBRARY_SOURCES}"
-  "DataStructures;DomainStructure;ParallelSchwarz"
+  "DataStructures;DomainStructure;LinearSolver;ParallelSchwarz"
   )
