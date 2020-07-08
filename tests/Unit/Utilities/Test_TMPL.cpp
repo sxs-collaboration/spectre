@@ -69,18 +69,6 @@ static_assert(
         tmpl::list<>>,
     "Failed testing list_difference");
 
-static_assert(tmpl::position_of_first_v<
-                  tmpl::list<char, int, double, char, float>, char> == 0,
-              "Failed testing `tmpl::position_of_first`");
-
-static_assert(tmpl::position_of_first_v<
-                  tmpl::list<char, int, double, char, float>, double> == 2,
-              "Failed testing `tmpl::position_of_first`");
-
-static_assert(tmpl::position_of_first_v<
-                  tmpl::list<char, int, double, char, float>, size_t> == 5,
-              "Failed testing `tmpl::position_of_first`");
-
 SPECTRE_TEST_CASE("Unit.Utilities.get_first_argument", "[Unit][Utilities]") {
   const long a0 = 5;
   const long a1 = 6;

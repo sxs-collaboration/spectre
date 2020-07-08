@@ -585,19 +585,4 @@ constexpr const bool list_contains_v = list_contains<Sequence, Item>::value;
 template <typename Sequence1, typename Sequence2>
 using list_difference =
     fold<Sequence2, Sequence1, lazy::remove<_state, _element>>;
-
-// @{
-/// The index in `Sequence` of the first item with type `Element`. If `Element`
-/// is not in `Sequence`, takes the value of the size of `Sequence`
-template <typename Sequence, typename Element>
-using position_of_first = tmpl::integral_constant<
-    std::size_t,
-    tmpl::size<Sequence>::value -
-        tmpl::size<
-            find<Sequence, std::is_same<_1, tmpl::pin<Element>>>>::value>;
-
-template <typename Sequence, typename Element>
-constexpr std::size_t position_of_first_v =
-    position_of_first<Sequence, Element>::value;
-// @}
 }  // namespace brigand
