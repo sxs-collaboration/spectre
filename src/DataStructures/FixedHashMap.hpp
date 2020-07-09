@@ -204,7 +204,11 @@ class FixedHashMap {
   using storage_type = std::array<boost::optional<value_type>, MaxSize>;
 
   SPECTRE_ALWAYS_INLINE size_type hash(const key_type& key) const noexcept {
-    return hash_is_perfect ? Hash{}(key) : Hash{}(key) % MaxSize;
+    if constexpr (hash_is_perfect) {
+      return Hash{}(key);
+    } else {
+      return Hash{}(key) % MaxSize;
+    }
   }
 
   template <bool IsInserting>
@@ -540,7 +544,7 @@ auto FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::get_data_entry(
     const Key& key) noexcept -> typename storage_type::iterator {
   const auto hashed_key = hash(key);
   auto it = data_.begin() + hashed_key;
-  if (not hash_is_perfect) {
+  if constexpr (not hash_is_perfect) {
     // First search for an existing key.
     while (not is_set(*it) or (**it).first != key) {
       if (++it == data_.end()) {
