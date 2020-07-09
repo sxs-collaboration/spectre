@@ -128,6 +128,7 @@ struct EvolutionMetavars {
   static constexpr int volume_dim = 3;
   using frame = Frame::Inertial;
   using system = GeneralizedHarmonic::System<volume_dim>;
+  static constexpr bool use_damped_harmonic_rollon = true;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
   using initial_data = InitialData;
@@ -335,13 +336,16 @@ struct EvolutionMetavars {
       Initialization::Actions::AddComputeTags<
           tmpl::list<evolution::Tags::AnalyticCompute<
               volume_dim, analytic_solution_tag, analytic_solution_fields>>>,
+      GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
+          volume_dim, use_damped_harmonic_rollon>,
+      GeneralizedHarmonic::Actions::InitializeConstraints<volume_dim>,
       dg::Actions::InitializeMortars<boundary_scheme, true>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
       GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
-          volume_dim>,
+          volume_dim, use_damped_harmonic_rollon>,
       GeneralizedHarmonic::Actions::InitializeConstraints<volume_dim>,
       Parallel::Actions::TerminatePhase>;
 

@@ -18,6 +18,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedHarmonic.hpp"
@@ -45,13 +46,25 @@ struct component {
   using array_index = size_t;
   using const_global_cache_tag_list = tmpl::list<>;
 
-  using initial_tags = tmpl::list<
-      Tags::Time, domain::Tags::Mesh<Dim>,
-      domain::Tags::Coordinates<Dim, Frame::Inertial>,
-      domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
-                                                  Frame::Inertial>,
-      domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
-      typename Metavariables::variables_tag>;
+  using initial_tags = tmpl::conditional_t<
+      metavariables::use_rollon,
+      tmpl::list<
+          Tags::Time, domain::Tags::Mesh<Dim>,
+          domain::Tags::Coordinates<Dim, Frame::Inertial>,
+          domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                      Frame::Inertial>,
+          domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
+          typename Metavariables::variables_tag>,
+      tmpl::list<
+          ::Initialization::Tags::InitialTime, domain::Tags::Mesh<Dim>,
+          domain::Tags::Coordinates<Dim, Frame::Logical>,
+          domain::Tags::Coordinates<Dim, Frame::Inertial>,
+          domain::Tags::ElementMap<Metavariables::volume_dim, Frame::Grid>,
+          domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                      Frame::Inertial>,
+          domain::Tags::FunctionsOfTime,
+          domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
+          typename Metavariables::variables_tag>>;
   using initial_compute_tags = db::AddComputeTags<::Tags::DerivCompute<
       typename Metavariables::variables_tag,
       domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
@@ -63,11 +76,12 @@ struct component {
           ActionTesting::InitializeDataBox<initial_tags, initial_compute_tags>,
           GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<Dim>,
           GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
-              Dim>>>>;
+              Dim, metavariables::use_rollon>>>>;
 };
 
-template <size_t Dim>
+template <size_t Dim, bool UseRollon>
 struct Metavariables {
+  static constexpr bool use_rollon = UseRollon;
   using evolved_vars =
       tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
                  GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>,
@@ -78,14 +92,18 @@ struct Metavariables {
   enum class Phase { Initialization, Exit };
 };
 
-template <size_t Dim>
+template <size_t Dim, bool UseRollon>
 void test(const gsl::not_null<std::mt19937*> generator) noexcept {
   CAPTURE(Dim);
-  using metavars = Metavariables<Dim>;
+  CAPTURE(UseRollon);
+  using metavars = Metavariables<Dim, UseRollon>;
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   PUPable_reg(
       SINGLE_ARG(domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                                       domain::CoordinateMaps::Identity<Dim>>));
+  PUPable_reg(
+      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Grid,
                                        domain::CoordinateMaps::Identity<Dim>>));
 
   std::uniform_real_distribution<> pdist(0.1, 1.);
@@ -96,7 +114,15 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
   const double sigma_t = pdist(*generator) * 0.2;
   const double r_max = pdist(*generator) * 0.7;
 
-  MockRuntimeSystem runner{{t_start, sigma_t, r_max}};
+  MockRuntimeSystem runner = [r_max, t_start, sigma_t]() {
+    if constexpr (UseRollon) {
+      return MockRuntimeSystem{{r_max, t_start, sigma_t}};
+    } else {
+      (void)t_start;
+      (void)sigma_t;
+      return MockRuntimeSystem{{r_max}};
+    }
+  }();
   Mesh<Dim> mesh{5, Spectral::Basis::Legendre,
                  Spectral::Quadrature::GaussLobatto};
   InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial> inv_jac{
@@ -129,13 +155,34 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
   get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial>>(evolved_vars) =
       gr::spacetime_metric(lapse, shift, spatial_metric);
 
-  const double time = 2.0;
-  ActionTesting::emplace_component_and_initialize<comp>(
-      &runner, 0,
-      {time, mesh, inertial_coords,
-       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
-           domain::CoordinateMaps::Identity<Dim>{}),
-       inv_jac, evolved_vars});
+  const double time = 0.0;
+  if constexpr (UseRollon) {
+    ActionTesting::emplace_component_and_initialize<comp>(
+        &runner, 0,
+        {time, mesh, inertial_coords,
+         domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+             domain::CoordinateMaps::Identity<Dim>{}),
+         inv_jac, evolved_vars});
+  } else {
+    tnsr::I<DataVector, Dim, Frame::Logical> logical_coords;
+    for (size_t i = 0; i < Dim; ++i) {
+      logical_coords.get(i) = inertial_coords.get(i);
+    }
+
+    ActionTesting::emplace_component_and_initialize<comp>(
+        &runner, 0,
+        {time, mesh, logical_coords, inertial_coords,
+         ElementMap<Dim, Frame::Grid>{
+             ElementId<Dim>{0},
+             domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                 domain::CoordinateMaps::Identity<Dim>{})},
+         domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+             domain::CoordinateMaps::Identity<Dim>{}),
+         std::unordered_map<
+             std::string,
+             std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{},
+         inv_jac, evolved_vars});
+  }
 
   // Invoke the InitializeGhAnd3Plus1Variables action
   ActionTesting::next_action<comp>(make_not_null(&runner), 0);
@@ -145,42 +192,75 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
   tnsr::a<DataVector, Dim, Frame::Inertial> expected_gauge_h{};
   tnsr::ab<DataVector, Dim, Frame::Inertial> expected_d4_gauge_h{};
 
-  GeneralizedHarmonic::gauges::damped_harmonic_rollon(
-      make_not_null(&expected_gauge_h), make_not_null(&expected_d4_gauge_h),
-      ActionTesting::get_databox_tag<
-          comp, GeneralizedHarmonic::Tags::InitialGaugeH<Dim, Frame::Inertial>>(
-          runner, 0),
-      ActionTesting::get_databox_tag<
-          comp, GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<
-                    Dim, Frame::Inertial>>(runner, 0),
-      ActionTesting::get_databox_tag<comp, gr::Tags::Lapse<DataVector>>(runner,
+  if constexpr (UseRollon) {
+    GeneralizedHarmonic::gauges::damped_harmonic_rollon(
+        make_not_null(&expected_gauge_h), make_not_null(&expected_d4_gauge_h),
+        ActionTesting::get_databox_tag<
+            comp,
+            GeneralizedHarmonic::Tags::InitialGaugeH<Dim, Frame::Inertial>>(
+            runner, 0),
+        ActionTesting::get_databox_tag<
+            comp, GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<
+                      Dim, Frame::Inertial>>(runner, 0),
+        ActionTesting::get_databox_tag<comp, gr::Tags::Lapse<DataVector>>(
+            runner, 0),
+        ActionTesting::get_databox_tag<comp,
+                                       gr::Tags::Shift<Dim, Frame::Inertial>>(
+            runner, 0),
+        ActionTesting::get_databox_tag<
+            comp, gr::Tags::SpacetimeNormalOneForm<Dim, Frame::Inertial>>(
+            runner, 0),
+        ActionTesting::get_databox_tag<
+            comp, gr::Tags::SqrtDetSpatialMetric<DataVector>>(runner, 0),
+        ActionTesting::get_databox_tag<
+            comp, gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial>>(runner,
                                                                         0),
-      ActionTesting::get_databox_tag<comp,
-                                     gr::Tags::Shift<Dim, Frame::Inertial>>(
-          runner, 0),
-      ActionTesting::get_databox_tag<
-          comp, gr::Tags::SpacetimeNormalOneForm<Dim, Frame::Inertial>>(runner,
+        ActionTesting::get_databox_tag<
+            comp, gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
+            runner, 0),
+        ActionTesting::get_databox_tag<
+            comp, GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>>(runner,
+                                                                       0),
+        ActionTesting::get_databox_tag<
+            comp, GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>>(runner,
                                                                         0),
-      ActionTesting::get_databox_tag<
-          comp, gr::Tags::SqrtDetSpatialMetric<DataVector>>(runner, 0),
-      ActionTesting::get_databox_tag<
-          comp, gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial>>(runner,
-                                                                      0),
-      ActionTesting::get_databox_tag<
-          comp, gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
-          runner, 0),
-      ActionTesting::get_databox_tag<
-          comp, GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>>(runner, 0),
-      ActionTesting::get_databox_tag<
-          comp, GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>>(runner,
-                                                                      0),
-      time,
-      ActionTesting::get_databox_tag<
-          comp, domain::Tags::Coordinates<Dim, Frame::Inertial>>(runner, 0),
-
-      1., 1., 1.,  // amp_coef_{L1, L2, S}
-      4, 4, 4,     // exp_{L1, L2, S}
-      t_start, sigma_t, r_max);
+        time,
+        ActionTesting::get_databox_tag<
+            comp, domain::Tags::Coordinates<Dim, Frame::Inertial>>(runner, 0),
+        1., 1., 1.,  // amp_coef_{L1, L2, S}
+        4, 4, 4,     // exp_{L1, L2, S}
+        t_start, sigma_t, r_max);
+  } else {
+    GeneralizedHarmonic::gauges::damped_harmonic(
+        make_not_null(&expected_gauge_h), make_not_null(&expected_d4_gauge_h),
+        ActionTesting::get_databox_tag<comp, gr::Tags::Lapse<DataVector>>(
+            runner, 0),
+        ActionTesting::get_databox_tag<comp,
+                                       gr::Tags::Shift<Dim, Frame::Inertial>>(
+            runner, 0),
+        ActionTesting::get_databox_tag<
+            comp, gr::Tags::SpacetimeNormalOneForm<Dim, Frame::Inertial>>(
+            runner, 0),
+        ActionTesting::get_databox_tag<
+            comp, gr::Tags::SqrtDetSpatialMetric<DataVector>>(runner, 0),
+        ActionTesting::get_databox_tag<
+            comp, gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial>>(runner,
+                                                                        0),
+        ActionTesting::get_databox_tag<
+            comp, gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
+            runner, 0),
+        ActionTesting::get_databox_tag<
+            comp, GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>>(runner,
+                                                                       0),
+        ActionTesting::get_databox_tag<
+            comp, GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>>(runner,
+                                                                        0),
+        ActionTesting::get_databox_tag<
+            comp, domain::Tags::Coordinates<Dim, Frame::Inertial>>(runner, 0),
+        1., 1., 1.,  // amp_coef_{L1, L2, S}
+        4, 4, 4,     // exp_{L1, L2, S}
+        r_max);
+  }
 
   CHECK_ITERABLE_APPROX(
       SINGLE_ARG(ActionTesting::get_databox_tag<
@@ -192,6 +272,38 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
                  comp, GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
                            Dim, Frame::Inertial>>(runner, 0)),
       expected_d4_gauge_h);
+
+  // Verify that the gauge constraint is satisfied
+  const auto& spacetime_metric = ActionTesting::get_databox_tag<
+      comp, gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(runner,
+                                                                         0);
+  const auto& pi = ActionTesting::get_databox_tag<
+      comp, GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>>(runner, 0);
+  const auto& phi = ActionTesting::get_databox_tag<
+      comp, GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>>(runner, 0);
+  const auto& gauge_h = ActionTesting::get_databox_tag<
+      comp, GeneralizedHarmonic::Tags::GaugeH<Dim, Frame::Inertial>>(runner, 0);
+  const auto inverse_spatial_metric =
+      determinant_and_inverse(gr::spatial_metric(spacetime_metric)).second;
+  const auto inverse_spacetime_metric = gr::inverse_spacetime_metric(
+      gr::lapse(shift, spacetime_metric),
+      gr::shift(spacetime_metric, inverse_spatial_metric),
+      inverse_spatial_metric);
+  const auto spacetime_unit_normal_one_form =
+      gr::spacetime_normal_one_form<Dim, Frame::Inertial>(
+          gr::lapse(shift, spacetime_metric));
+  const auto spacetime_unit_normal_vector = gr::spacetime_normal_vector(
+      gr::lapse(shift, spacetime_metric),
+      gr::shift(spacetime_metric, inverse_spatial_metric));
+  const auto gauge_constraint = GeneralizedHarmonic::gauge_constraint(
+      gauge_h, spacetime_unit_normal_one_form, spacetime_unit_normal_vector,
+      inverse_spatial_metric, inverse_spacetime_metric, pi, phi);
+  const tnsr::a<DataVector, Dim, Frame::Inertial> expected_gauge_constraint{
+      get<0>(gauge_constraint).size(), 0.};
+
+  Approx local_approx = Approx::custom().epsilon(1.e-10).scale(1.);
+  CHECK_ITERABLE_CUSTOM_APPROX(gauge_constraint, expected_gauge_constraint,
+                               local_approx);
 }
 
 void test_options() noexcept {
@@ -221,9 +333,13 @@ void test_options() noexcept {
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GH.Gauge.InitializeDampedHarmonic",
                   "[Unit][Evolution][Actions]") {
   MAKE_GENERATOR(generator);
-  test<1>(make_not_null(&generator));
-  test<2>(make_not_null(&generator));
-  test<3>(make_not_null(&generator));
+  test<1, true>(make_not_null(&generator));
+  test<2, true>(make_not_null(&generator));
+  test<3, true>(make_not_null(&generator));
+
+  test<1, false>(make_not_null(&generator));
+  test<2, false>(make_not_null(&generator));
+  test<3, false>(make_not_null(&generator));
 
   test_options();
 }

@@ -7,15 +7,25 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Mesh.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedHarmonic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/GaugeSource.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpacetimeDerivativeOfSpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfLapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfShift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfSpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivativeOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -33,10 +43,10 @@ using variables_tags =
 }  // namespace
 
 namespace GeneralizedHarmonic::gauges::Actions {
-template <size_t Dim>
+template <size_t Dim, bool UseRollon>
 std::tuple<tnsr::a<DataVector, Dim, Frame::Inertial>,
            tnsr::ab<DataVector, Dim, Frame::Inertial>>
-InitializeDampedHarmonic<Dim>::impl_rollon(
+InitializeDampedHarmonic<Dim, UseRollon>::impl_rollon(
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
@@ -114,10 +124,82 @@ InitializeDampedHarmonic<Dim>::impl_rollon(
                          std::move(initial_d4_gauge_h));
 }
 
-template <size_t Dim>
+template <size_t Dim, bool UseRollon>
+void InitializeDampedHarmonic<Dim, UseRollon>::new_pi_from_gauge_h(
+    const gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*> pi,
+    const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
+    const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
+    const double sigma_r) noexcept {
+  const auto spatial_metric = gr::spatial_metric(spacetime_metric);
+  const auto det_and_inverse_spatial_metric =
+      determinant_and_inverse(spatial_metric);
+  const auto& det_spatial_metric = det_and_inverse_spatial_metric.first;
+  const auto& inverse_spatial_metric = det_and_inverse_spatial_metric.second;
+  const Scalar<DataVector> sqrt_det_spatial_metric{
+      DataVector{sqrt(get(det_spatial_metric))}};
+  const auto shift = gr::shift(spacetime_metric, inverse_spatial_metric);
+  const auto lapse = gr::lapse(shift, spacetime_metric);
+  const auto inverse_spacetime_metric =
+      gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
+  const auto spacetime_unit_normal_one_form =
+      gr::spacetime_normal_one_form<Dim, Frame::Inertial>(lapse);
+  const auto spacetime_unit_normal_vector =
+      gr::spacetime_normal_vector(lapse, shift);
+
+  const auto d_lapse =
+      spatial_deriv_of_lapse(lapse, spacetime_unit_normal_vector, phi);
+  const auto d_shift = spatial_deriv_of_shift(
+      lapse, inverse_spacetime_metric, spacetime_unit_normal_vector, phi);
+  const auto d_spatial_metric = deriv_spatial_metric(phi);
+
+  const auto ex_curv =
+      extrinsic_curvature(spacetime_unit_normal_vector, *pi, phi);
+  const auto trace_ex_curv = trace(ex_curv, inverse_spatial_metric);
+  const auto christoffel_first = gr::christoffel_first_kind(d_spatial_metric);
+  const auto trace_christoffel_first =
+      trace_last_indices(christoffel_first, inverse_spatial_metric);
+
+  typename DampedHarmonicCompute<Frame::Inertial>::return_type
+      gauge_h_and_deriv{get(lapse).size()};
+  DampedHarmonicCompute<Frame::Inertial>::function(
+      make_not_null(&gauge_h_and_deriv), lapse, shift,
+      spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
+      inverse_spatial_metric, spacetime_metric, *pi, phi, coords, sigma_r);
+  const auto& gauge_h =
+      get<Tags::GaugeH<Dim, Frame::Inertial>>(gauge_h_and_deriv);
+
+  // Compute lapse and shift time derivatives
+  Scalar<DataVector> dt_lapse{};
+  get(dt_lapse) =
+      -get(lapse) * (get<0>(gauge_h) + get(lapse) * get(trace_ex_curv));
+  for (size_t i = 0; i < Dim; ++i) {
+    get(dt_lapse) +=
+        shift.get(i) * (d_lapse.get(i) + get(lapse) * gauge_h.get(i + 1));
+  }
+
+  tnsr::I<DataVector, Dim, Frame::Inertial> dt_shift{get(lapse).size(), 0.};
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t k = 0; k < Dim; ++k) {
+      dt_shift.get(i) += shift.get(k) * d_shift.get(k, i);
+    }
+    for (size_t j = 0; j < Dim; ++j) {
+      dt_shift.get(i) +=
+          get(lapse) * inverse_spatial_metric.get(i, j) *
+          (get(lapse) * (gauge_h.get(j + 1) + trace_christoffel_first.get(j)) -
+           d_lapse.get(j));
+    }
+  }
+
+  GeneralizedHarmonic::pi(pi, lapse, dt_lapse, shift, dt_shift, spatial_metric,
+                          time_deriv_of_spatial_metric(lapse, shift, phi, *pi),
+                          phi);
+}
+
+template <size_t Dim, bool UseRollon>
 template <typename Frame>
-void InitializeDampedHarmonic<Dim>::DampedHarmonicRollonCompute<Frame>::
-    function(
+void InitializeDampedHarmonic<Dim, UseRollon>::
+    DampedHarmonicRollonCompute<Frame>::function(
         const gsl::not_null<return_type*> h_and_d4_h,
         const db::item_type<Tags::InitialGaugeH<Dim, Frame>>& gauge_h_init,
         const db::item_type<Tags::SpacetimeDerivInitialGaugeH<Dim, Frame>>&
@@ -147,16 +229,48 @@ void InitializeDampedHarmonic<Dim>::DampedHarmonicRollonCompute<Frame>::
       rollon_start_time, rollon_width, sigma_r);
 }
 
+template <size_t Dim, bool UseRollon>
+template <typename Frame>
+void InitializeDampedHarmonic<Dim, UseRollon>::DampedHarmonicCompute<Frame>::
+    function(
+        const gsl::not_null<return_type*> h_and_d4_h,
+        const Scalar<DataVector>& lapse,
+        const tnsr::I<DataVector, Dim, Frame>& shift,
+        const tnsr::a<DataVector, Dim, Frame>& spacetime_unit_normal_one_form,
+        const Scalar<DataVector>& sqrt_det_spatial_metric,
+        const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+        const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
+        const tnsr::aa<DataVector, Dim, Frame>& pi,
+        const tnsr::iaa<DataVector, Dim, Frame>& phi,
+        const tnsr::I<DataVector, Dim, Frame>& coords,
+        const double sigma_r) noexcept {
+  if (UNLIKELY(h_and_d4_h->number_of_grid_points() != get(lapse).size())) {
+    h_and_d4_h->initialize(get(lapse).size());
+  }
+  damped_harmonic(
+      make_not_null(&get<Tags::GaugeH<Dim, Frame>>(*h_and_d4_h)),
+      make_not_null(&get<Tags::SpacetimeDerivGaugeH<Dim, Frame>>(*h_and_d4_h)),
+      lapse, shift, spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
+      inverse_spatial_metric, spacetime_metric, pi, phi, coords, 1., 1.,
+      1.,       // amp_coef_{L1, L2, S}
+      4, 4, 4,  // exp_{L1, L2, S}
+      sigma_r);
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define USE_ROLLON(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                \
-  template class InitializeDampedHarmonic<DIM(              \
-      data)>::DampedHarmonicRollonCompute<Frame::Inertial>; \
-  template struct InitializeDampedHarmonic<DIM(data)>;
+#define INSTANTIATE(_, data)                                                \
+  template class InitializeDampedHarmonic<DIM(data), USE_ROLLON(data)>::    \
+      DampedHarmonicRollonCompute<Frame::Inertial>;                         \
+  template class InitializeDampedHarmonic<                                  \
+      DIM(data), USE_ROLLON(data)>::DampedHarmonicCompute<Frame::Inertial>; \
+  template struct InitializeDampedHarmonic<DIM(data), USE_ROLLON(data)>;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (true, false))
 
 #undef INSTANTIATE
+#undef USE_ROLLON
 #undef DIM
 }  // namespace GeneralizedHarmonic::gauges::Actions
 
