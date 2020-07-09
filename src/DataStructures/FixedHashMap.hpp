@@ -575,7 +575,16 @@ template <size_t MaxSize, class Key, class ValueType, class Hash,
 bool operator==(
     const FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>& a,
     const FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>& b) noexcept {
-  return a.size_ == b.size_ and a.data_ == b.data_;
+  if (a.size_ != b.size_) {
+    return false;
+  }
+  for (const auto& key_and_value : a) {
+    const auto found_in_b = b.find(key_and_value.first);
+    if (found_in_b == b.end() or found_in_b->second != key_and_value.second) {
+      return false;
+    }
+  }
+  return true;
 }
 
 template <size_t MaxSize, class Key, class ValueType, class Hash,

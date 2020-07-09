@@ -303,7 +303,7 @@ struct RepeatedHash {
 };
 
 template <typename KeyType>
-// NOLINTNEXTLINE(google-readability-function-size)
+// NOLINTNEXTLINE(google-readability-function-size, readability-function-size)
 void test_repeated_key() {
   using CopyableKeyMapType = FixedHashMap<6, size_t, size_t, RepeatedHash>;
   using NonCopyableKeyMapType =
@@ -556,10 +556,28 @@ void test_repeated_key() {
       make_not_null(&map));
 }
 
+void test_equality() {
+  {
+    INFO("Equality should not depend on insertion order");
+    // Using a hash that is not ordered
+    using Map = FixedHashMap<2, Direction<1>, double, std::hash<Direction<1>>>;
+    const auto dir1 = Direction<1>::lower_xi();
+    const auto dir2 = Direction<1>::upper_xi();
+    Map map{};
+    map.emplace(dir1, 1.);
+    map.emplace(dir2, 2.);
+    Map same_map{};
+    same_map.emplace(dir2, 2.);
+    same_map.emplace(dir1, 1.);
+    CHECK(map == same_map);
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.DataStructures.FixedHashMap",
                   "[DataStructures][Unit]") {
   test_direction_key<4>();
   test_repeated_key<size_t>();
   test_repeated_key<NonCopyableSizeT>();
+  test_equality();
 }
 }  // namespace
