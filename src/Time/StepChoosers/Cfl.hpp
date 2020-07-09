@@ -8,7 +8,6 @@
 #include <pup.h>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
@@ -74,7 +73,8 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
   template <typename Metavariables, typename DbTags>
   double operator()(
       const double minimum_grid_spacing, const db::DataBox<DbTags>& box,
-      const db::const_item_type<Tags::TimeStepper<>, DbTags>& time_stepper,
+      const typename Metavariables::time_stepper_tag::type::element_type&
+          time_stepper,
       const double /*last_step_magnitude*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/) const
       noexcept {

@@ -26,26 +26,26 @@ struct scalar2 : db::SimpleTag {
 /// [prefix_variables_tag]
 template <class Tag>
 struct Prefix0 : db::PrefixTag, db::SimpleTag {
-  using type = db::const_item_type<Tag>;
+  using type = typename Tag::type;
   using tag = Tag;
 };
 /// [prefix_variables_tag]
 
 template <class Tag>
 struct Prefix1 : db::PrefixTag, db::SimpleTag {
-  using type = db::const_item_type<Tag>;
+  using type = typename Tag::type;
   using tag = Tag;
 };
 
 template <class Tag>
 struct Prefix2 : db::PrefixTag, db::SimpleTag {
-  using type = db::const_item_type<Tag>;
+  using type = typename Tag::type;
   using tag = Tag;
 };
 
 template <class Tag>
 struct Prefix3 : db::PrefixTag, db::SimpleTag {
-  using type = db::const_item_type<Tag>;
+  using type = typename Tag::type;
   using tag = Tag;
 };
 }  // namespace VariablesTestTags_detail

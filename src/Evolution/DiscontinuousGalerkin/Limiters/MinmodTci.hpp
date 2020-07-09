@@ -52,7 +52,7 @@ bool tvb_minmod_indicator(
 // - a variable `element_size` that is a `std::array<double, VolumeDim>`
 template <size_t VolumeDim, typename PackagedData, typename... Tags>
 bool tvb_minmod_indicator(
-    const double tvb_constant, const db::const_item_type<Tags>&... tensors,
+    const double tvb_constant, const typename Tags::type&... tensors,
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<

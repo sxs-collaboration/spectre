@@ -114,7 +114,7 @@ struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<>;
   using temporal_id = TemporalId;
-
+  using time_stepper_tag = Tags::TimeStepper<TimeStepper>;
   enum class Phase { Initialization, Testing, Exit };
 };
 
@@ -218,7 +218,7 @@ template <typename Stop, typename Whitelist, bool HasPrimitives>
 bool run_past(
     const gsl::not_null<MockRuntimeSystem<HasPrimitives>*> runner) noexcept {
   for (;;) {
-    bool done;
+    bool done = false;
     const size_t current_action = ActionTesting::get_next_action_index<
         Component<Metavariables<HasPrimitives>>>(*runner, 0);
     size_t action_to_check = current_action;

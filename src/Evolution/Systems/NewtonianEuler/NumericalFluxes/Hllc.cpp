@@ -22,8 +22,7 @@
 #include "Utilities/MakeWithValue.hpp"
 
 /// \cond
-namespace NewtonianEuler {
-namespace NumericalFluxes {
+namespace NewtonianEuler::NumericalFluxes {
 
 template <size_t Dim, typename Frame>
 void Hllc<Dim, Frame>::package_data(
@@ -48,7 +47,7 @@ void Hllc<Dim, Frame>::package_data(
     const Scalar<DataVector>& energy_density,
     const tnsr::I<DataVector, Dim, Frame>& velocity,
     const Scalar<DataVector>& pressure,
-    const db::const_item_type<char_speeds_tag>& characteristic_speeds,
+    const typename char_speeds_tag::type& characteristic_speeds,
     const tnsr::i<DataVector, Dim, Frame>& interface_unit_normal) const
     noexcept {
   *packaged_n_dot_f_mass_density = normal_dot_flux_mass_density;
@@ -218,6 +217,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Inertial))
 #undef DIM
 #undef FRAME
 #undef INSTANTIATE
-}  // namespace NumericalFluxes
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::NumericalFluxes
 /// \endcond

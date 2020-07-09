@@ -173,16 +173,15 @@ auto compute_boundary_flux_contribution(
     const typename FluxCommTypes::PackagedData& remote_data,
     const Mesh<Dim>& face_mesh, const Mesh<Dim>& mortar_mesh,
     const size_t extent_perpendicular_to_boundary,
-    const MortarSize<Dim>& mortar_size) noexcept
-    -> db::const_item_type<
-        db::remove_tag_prefix<typename FluxCommTypes::normal_dot_fluxes_tag>> {
+    const MortarSize<Dim>& mortar_size) noexcept ->
+    typename db::remove_tag_prefix<
+        typename FluxCommTypes::normal_dot_fluxes_tag>::type {
   static_assert(std::is_same_v<std::decay_t<LocalData>,
                                typename FluxCommTypes::LocalData>,
                 "Second argument must be a FluxCommTypes::LocalData");
   using variables_tag =
       db::remove_tag_prefix<typename FluxCommTypes::normal_dot_fluxes_tag>;
-  db::const_item_type<db::add_tag_prefix<Tags::NormalDotNumericalFlux,
-                                         variables_tag>>
+  typename db::add_tag_prefix<Tags::NormalDotNumericalFlux, variables_tag>::type
       normal_dot_numerical_fluxes(mortar_mesh.number_of_grid_points(), 0.0);
   MortarHelpers_detail::apply_normal_dot_numerical_flux(
       make_not_null(&normal_dot_numerical_fluxes),

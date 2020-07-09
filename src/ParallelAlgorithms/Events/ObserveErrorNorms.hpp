@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Domain/Tags.hpp"
@@ -123,9 +122,9 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
   template <typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
   void operator()(
-      const db::const_item_type<ObservationValueTag>& observation_value,
-      const db::const_item_type<Tensors>&... tensors,
-      const db::const_item_type<::Tags::Analytic<Tensors>>&... analytic_tensors,
+      const typename ObservationValueTag::type& observation_value,
+      const typename Tensors::type&... tensors,
+      const typename ::Tags::Analytic<Tensors>::type&... analytic_tensors,
       Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
       const ParallelComponent* const /*meta*/) const noexcept {

@@ -67,8 +67,8 @@ struct RecordTimeStepperData {
         make_not_null(&box),
         [](const gsl::not_null<db::item_type<history_tag>*> history,
            const TimeStepId& time_step_id,
-           const db::const_item_type<variables_tag>& vars,
-           const db::const_item_type<dt_variables_tag>& dt_vars) noexcept {
+           const typename variables_tag::type& vars,
+           const typename dt_variables_tag::type& dt_vars) noexcept {
           history->insert(time_step_id, vars, dt_vars);
         },
         db::get<Tags::TimeStepId>(box), db::get<variables_tag>(box),

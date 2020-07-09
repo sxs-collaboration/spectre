@@ -44,7 +44,7 @@ void divergence(
     using DivFluxTag = Tags::div<FluxTag>;
 
     using first_index =
-        tmpl::front<typename db::const_item_type<FluxTag>::index_list>;
+        tmpl::front<typename FluxTag::type::index_list>;
     static_assert(
         std::is_same_v<typename first_index::Frame, DerivativeFrame> and
             first_index::ul == UpLo::Up,

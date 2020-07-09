@@ -115,7 +115,7 @@ struct ResidualCompute : db::add_tag_prefix<Residual, FieldsTag>,
   using return_type = typename base::type;
   static void function(
       const gsl::not_null<return_type*> residual,
-      const db::const_item_type<SourceTag>& source,
+      const typename SourceTag::type& source,
       const db::item_type<db::add_tag_prefix<OperatorAppliedTo, FieldsTag>>&
           operator_applied_to_fields) noexcept {
     *residual = source - operator_applied_to_fields;
@@ -214,8 +214,7 @@ struct OrthogonalizationHistory : db::PrefixTag, db::SimpleTag {
  * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
  * db::add_tag_prefix<LinearSolver::Tags::Operand, Tag>>` and
  * `db::add_tag_prefix<::Tags::FixedSource, Tag>`, respectively. Therefore, each
- * basis vector is of the type `db::const_item_type<db::add_tag_prefix<Operand,
- * Tag>>`.
+ * basis vector is of the type db::add_tag_prefix<Operand, Tag>::type.
  */
 template <typename Tag>
 struct KrylovSubspaceBasis : db::PrefixTag, db::SimpleTag {
@@ -224,7 +223,7 @@ struct KrylovSubspaceBasis : db::PrefixTag, db::SimpleTag {
     // operator
     return "KrylovSubspaceBasis(" + db::tag_name<Tag>() + ")";
   }
-  using type = std::vector<db::const_item_type<Tag>>;
+  using type = std::vector<typename Tag::type>;
   using tag = Tag;
 };
 

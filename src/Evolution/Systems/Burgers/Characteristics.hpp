@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Evolution/Systems/Burgers/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -25,7 +26,7 @@ struct U;
 namespace Burgers {
 namespace Tags {
 /// Computes the characteristic speeds
-struct CharacteristicSpeedsCompute : db::ComputeTag {
+struct CharacteristicSpeedsCompute : CharacteristicSpeeds, db::ComputeTag {
   static std::string name() noexcept { return "CharacteristicSpeeds"; }
 
   using argument_tags =

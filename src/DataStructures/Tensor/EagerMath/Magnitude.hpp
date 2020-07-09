@@ -147,7 +147,7 @@ struct Normalized : db::PrefixTag, db::SimpleTag {
     return "Normalized(" + db::tag_name<Tag>() + ")";
   }
   using tag = Tag;
-  using type = db::const_item_type<Tag>;
+  using type = typename Tag::type;
 };
 
 /// \ingroup DataBoxTagsGroup

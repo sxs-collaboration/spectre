@@ -258,11 +258,9 @@ template <typename Tag>
 using deriv = Tags::deriv<Tag, tmpl::size_t<3>, Frame::Inertial>;
 
 template <typename Tag, typename Solution>
-db::const_item_type<Tag> time_derivative(const Solution& solution,
-                                         const tnsr::I<double, 3>& x,
-                                         const double time,
-                                         const double dt) noexcept {
-  db::const_item_type<Tag> result{};
+auto time_derivative(const Solution& solution, const tnsr::I<double, 3>& x,
+                     const double time, const double dt) noexcept {
+  typename Tag::type result{};
   for (auto it = result.begin(); it != result.end(); ++it) {
     const auto index = result.get_tensor_index(it);
     *it = numerical_derivative(
@@ -277,11 +275,9 @@ db::const_item_type<Tag> time_derivative(const Solution& solution,
 }
 
 template <typename Tag, typename Solution>
-db::const_item_type<deriv<Tag>> space_derivative(const Solution& solution,
-                                                 const tnsr::I<double, 3>& x,
-                                                 const double time,
-                                                 const double dx) noexcept {
-  db::const_item_type<deriv<Tag>> result{};
+auto space_derivative(const Solution& solution, const tnsr::I<double, 3>& x,
+                      const double time, const double dx) noexcept {
+  typename deriv<Tag>::type result{};
   for (auto it = result.begin(); it != result.end(); ++it) {
     const auto index = result.get_tensor_index(it);
     *it = numerical_derivative(

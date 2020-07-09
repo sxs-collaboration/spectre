@@ -33,8 +33,7 @@ struct AnalyticCompute
                  domain::Tags::Coordinates<Dim, Frame::Inertial>, ::Tags::Time>;
   static void function(
       const gsl::not_null<return_type*> analytic_solution,
-      const db::const_item_type<AnalyticSolutionTag>&
-          analytic_solution_computer,
+      const typename AnalyticSolutionTag::type& analytic_solution_computer,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
       const double time) noexcept {
     *analytic_solution =

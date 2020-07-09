@@ -187,7 +187,7 @@ struct Hllc : tt::ConformsTo<dg::protocols::NumericalFlux> {
       const Scalar<DataVector>& energy_density,
       const tnsr::I<DataVector, Dim, Frame>& velocity,
       const Scalar<DataVector>& pressure,
-      const db::const_item_type<char_speeds_tag>& characteristic_speeds,
+      const typename char_speeds_tag::type& characteristic_speeds,
       const tnsr::i<DataVector, Dim, Frame>& interface_unit_normal) const
       noexcept;
 

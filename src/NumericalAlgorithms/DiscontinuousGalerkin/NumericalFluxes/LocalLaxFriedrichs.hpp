@@ -85,10 +85,9 @@ struct LocalLaxFriedrichs : tt::ConformsTo<dg::protocols::NumericalFlux> {
             db::item_type<NormalDotFluxTags>*>... packaged_n_dot_f,
         const gsl::not_null<db::item_type<VariablesTags>*>... packaged_u,
         const gsl::not_null<Scalar<DataVector>*> packaged_max_char_speed,
-        const db::const_item_type<NormalDotFluxTags>&... n_dot_f_to_package,
-        const db::const_item_type<VariablesTags>&... u_to_package,
-        const db::const_item_type<char_speeds_tag>&
-            characteristic_speeds) noexcept {
+        const typename NormalDotFluxTags::type&... n_dot_f_to_package,
+        const typename VariablesTags::type&... u_to_package,
+        const typename char_speeds_tag::type& characteristic_speeds) noexcept {
       ASSERT(get(*packaged_max_char_speed).size() ==
                  characteristic_speeds[0].size(),
              "Size of packaged data ("
@@ -121,13 +120,12 @@ struct LocalLaxFriedrichs : tt::ConformsTo<dg::protocols::NumericalFlux> {
     static void apply(
         const gsl::not_null<
             db::item_type<NormalDotNumericalFluxTags>*>... n_dot_numerical_f,
-        const db::const_item_type<NormalDotFluxTags>&... n_dot_f_interior,
-        const db::const_item_type<VariablesTags>&... u_interior,
-        const db::const_item_type<MaxAbsCharSpeed>& max_abs_speed_interior,
-        const db::const_item_type<NormalDotFluxTags>&... minus_n_dot_f_exterior,
-        const db::const_item_type<VariablesTags>&... u_exterior,
-        const db::const_item_type<MaxAbsCharSpeed>&
-            max_abs_speed_exterior) noexcept {
+        const typename NormalDotFluxTags::type&... n_dot_f_interior,
+        const typename VariablesTags::type&... u_interior,
+        const Scalar<DataVector>& max_abs_speed_interior,
+        const typename NormalDotFluxTags::type&... minus_n_dot_f_exterior,
+        const typename VariablesTags::type&... u_exterior,
+        const Scalar<DataVector>& max_abs_speed_exterior) noexcept {
       const Scalar<DataVector> max_abs_speed(DataVector(
           max(get(max_abs_speed_interior), get(max_abs_speed_exterior))));
       const auto assemble_numerical_flux = [&max_abs_speed](

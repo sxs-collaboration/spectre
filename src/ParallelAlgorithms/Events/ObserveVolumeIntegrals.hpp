@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Tags.hpp"
@@ -118,13 +117,13 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
 
   template <typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
-  void operator()(
-      const db::const_item_type<ObservationValueTag>& observation_value,
-      const Mesh<VolumeDim>& mesh, const Scalar<DataVector>& det_inv_jacobian,
-      const db::const_item_type<Tensors>&... tensors,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/,
-      const ParallelComponent* const /*meta*/) const noexcept {
+  void operator()(const typename ObservationValueTag::type& observation_value,
+                  const Mesh<VolumeDim>& mesh,
+                  const Scalar<DataVector>& det_inv_jacobian,
+                  const typename Tensors::type&... tensors,
+                  Parallel::ConstGlobalCache<Metavariables>& cache,
+                  const ArrayIndex& /*array_index*/,
+                  const ParallelComponent* const /*meta*/) const noexcept {
     // Determinant of Jacobian is needed because integral is performed in
     // logical coords.
     const DataVector det_jacobian = 1.0 / get(det_inv_jacobian);

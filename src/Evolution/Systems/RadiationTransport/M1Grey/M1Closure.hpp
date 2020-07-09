@@ -130,27 +130,24 @@ struct ComputeM1Closure<tmpl::list<NeutrinoSpecies...>> {
                  gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>>;
 
   static void apply(
-      const gsl::not_null<db::const_item_type<
-          Tags::ClosureFactor<NeutrinoSpecies>>*>... closure_factor,
-      const gsl::not_null<db::const_item_type<
-          Tags::TildeP<Frame::Inertial, NeutrinoSpecies>>*>... tilde_p,
+      const gsl::not_null<typename Tags::ClosureFactor<
+          NeutrinoSpecies>::type*>... closure_factor,
+      const gsl::not_null<typename Tags::TildeP<
+          Frame::Inertial, NeutrinoSpecies>::type*>... tilde_p,
       const gsl::not_null<
-          db::const_item_type<Tags::TildeJ<NeutrinoSpecies>>*>... tilde_j,
-      const gsl::not_null<db::const_item_type<
-          Tags::TildeHNormal<NeutrinoSpecies>>*>... tilde_hn,
-      const gsl::not_null<db::const_item_type<
-          Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>>*>... tilde_hi,
-      const db::const_item_type<
-          Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>&... tilde_e,
-      const db::const_item_type<
-          Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>&... tilde_s,
-      const db::const_item_type<hydro::Tags::SpatialVelocity<DataVector, 3>>&
-          spatial_velocity,
-      const db::const_item_type<hydro::Tags::LorentzFactor<DataVector>>&
-          lorentz_factor,
-      const db::const_item_type<gr::Tags::SpatialMetric<3>>& spatial_metric,
-      const db::const_item_type<gr::Tags::InverseSpatialMetric<3>>&
-          inv_spatial_metric) noexcept {
+          typename Tags::TildeJ<NeutrinoSpecies>::type*>... tilde_j,
+      const gsl::not_null<
+          typename Tags::TildeHNormal<NeutrinoSpecies>::type*>... tilde_hn,
+      const gsl::not_null<typename Tags::TildeHSpatial<
+          Frame::Inertial, NeutrinoSpecies>::type*>... tilde_hi,
+      const typename Tags::TildeE<Frame::Inertial,
+                                  NeutrinoSpecies>::type&... tilde_e,
+      const typename Tags::TildeS<Frame::Inertial,
+                                  NeutrinoSpecies>::type&... tilde_s,
+      const tnsr::I<DataVector, 3>& spatial_velocity,
+      const Scalar<DataVector>& lorentz_factor,
+      const tnsr::ii<DataVector, 3>& spatial_metric,
+      const tnsr::II<DataVector, 3>& inv_spatial_metric) noexcept {
     EXPAND_PACK_LEFT_TO_RIGHT(detail::compute_closure_impl(
         closure_factor, tilde_p, tilde_j, tilde_hn, tilde_hi, tilde_e, tilde_s,
         spatial_velocity, lorentz_factor, spatial_metric, inv_spatial_metric));

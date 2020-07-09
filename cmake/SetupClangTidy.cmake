@@ -32,13 +32,14 @@
 #         public and protected member variables are fine
 # -readability-uppercase-literal-suffix: we're okay with lower case
 # -readability-const-return-type: complains about decltype(auto)
+# -bugprone-infinite-loop:  complains about Catch macros having infinite loops
 #
 # Notes:
 # misc-move-const-arg: we keep this check because even though this gives
 #                      a lot of annoying warnings about moving trivially
 #                      copyable types, it warns about moving const objects,
 #                      which can have severe performance impacts.
-set(CLANG_TIDY_IGNORE_CHECKS "*,-cppcoreguidelines-no-malloc,-llvm-header-guard,-google-runtime-int,-readability-else-after-return,-misc-noexcept-move-constructor,-misc-unconventional-assign-operator,-cppcoreguidelines-c-copy-assignment-signature,-modernize-raw-string-literal,-hicpp-*,-android-*,-cert-err58-cpp,-google-default-arguments,-fuchsia-*,-performance-noexcept-move-constructor,-modernize-use-trailing-return-type,-cert-oop54-cpp,-misc-definitions-in-headers,-cppcoreguidelines-macro-usage,-cppcoreguidelines-avoid-magic-numbers,-modernize-use-nodiscard,-readability-magic-numbers,-bugprone-exception-escape,-cert-msc32-c,-misc-non-private-member-variables-in-classes,-cppcoreguidelines-avoid-c-arrays,-cppcoreguidelines-non-private-member-variables-in-classes,-cert-msc51-cpp,-bugprone-macro-parentheses,-readability-uppercase-literal-suffix,-readability-const-return-type")
+set(CLANG_TIDY_IGNORE_CHECKS "*,-cppcoreguidelines-no-malloc,-llvm-header-guard,-google-runtime-int,-readability-else-after-return,-misc-noexcept-move-constructor,-misc-unconventional-assign-operator,-cppcoreguidelines-c-copy-assignment-signature,-modernize-raw-string-literal,-hicpp-*,-android-*,-cert-err58-cpp,-google-default-arguments,-fuchsia-*,-performance-noexcept-move-constructor,-modernize-use-trailing-return-type,-cert-oop54-cpp,-misc-definitions-in-headers,-cppcoreguidelines-macro-usage,-cppcoreguidelines-avoid-magic-numbers,-modernize-use-nodiscard,-readability-magic-numbers,-bugprone-exception-escape,-cert-msc32-c,-misc-non-private-member-variables-in-classes,-cppcoreguidelines-avoid-c-arrays,-cppcoreguidelines-non-private-member-variables-in-classes,-cert-msc51-cpp,-bugprone-macro-parentheses,-readability-uppercase-literal-suffix,-readability-const-return-type,-bugprone-infinite-loop")
 
 if(NOT CLANG_TIDY_ROOT)
   # Need to set to empty to avoid warnings with --warn-uninitialized

@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <utility>  // IWYU pragma: keep  // for std::move
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/TempBuffer.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -36,7 +35,7 @@ class CachedTempBuffer {
 
   /// Obtain a value from the buffer, computing it if necessary.
   template <typename Tag>
-  const db::const_item_type<Tag>& get_var(Tag /*meta*/) noexcept {
+  const typename Tag::type& get_var(Tag /*meta*/) noexcept {
     // This function can't be called "get" because that interferes
     // with the ADL needed to access data_.
     if (not get<Computed<Tag>>(computed_flags_)) {

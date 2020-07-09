@@ -20,13 +20,13 @@ class Tensor;
 namespace CurvedScalarWave {
 namespace CurvedScalarWave_detail {
 template <typename FieldTag>
-db::const_item_type<FieldTag> weight_char_field(
-    const db::const_item_type<FieldTag>& char_field_int,
+typename FieldTag::type weight_char_field(
+    const typename FieldTag::type& char_field_int,
     const DataVector& char_speed_int,
-    const db::const_item_type<FieldTag>& char_field_ext,
+    const typename FieldTag::type& char_field_ext,
     const DataVector& char_speed_ext) noexcept {
   const DataVector& char_speed_avg{0.5 * (char_speed_int + char_speed_ext)};
-  db::const_item_type<FieldTag> weighted_char_field = char_field_int;
+  auto weighted_char_field = char_field_int;
   auto weighted_char_field_it = weighted_char_field.begin();
   for (auto int_it = char_field_int.begin(), ext_it = char_field_ext.begin();
        int_it != char_field_int.end();
@@ -40,12 +40,15 @@ db::const_item_type<FieldTag> weight_char_field(
 }
 
 template <size_t Dim>
-db::const_item_type<Tags::CharacteristicFields<Dim>> weight_char_fields(
-    const db::const_item_type<Tags::CharacteristicFields<Dim>>& char_fields_int,
-    const db::const_item_type<Tags::CharacteristicSpeeds<Dim>>& char_speeds_int,
-    const db::const_item_type<Tags::CharacteristicFields<Dim>>& char_fields_ext,
-    const db::const_item_type<Tags::CharacteristicSpeeds<Dim>>&
-        char_speeds_ext) noexcept {
+using char_field_tags =
+    tmpl::list<Tags::VPsi, Tags::VZero<Dim>, Tags::VPlus, Tags::VMinus>;
+
+template <size_t Dim>
+Variables<char_field_tags<Dim>> weight_char_fields(
+    const Variables<char_field_tags<Dim>>& char_fields_int,
+    const std::array<DataVector, 4>& char_speeds_int,
+    const Variables<char_field_tags<Dim>>& char_fields_ext,
+    const std::array<DataVector, 4>& char_speeds_ext) noexcept {
   const auto& v_psi_int = get<Tags::VPsi>(char_fields_int);
   const auto& v_zero_int = get<Tags::VZero<Dim>>(char_fields_int);
   const auto& v_plus_int = get<Tags::VPlus>(char_fields_int);
@@ -66,9 +69,8 @@ db::const_item_type<Tags::CharacteristicFields<Dim>> weight_char_fields(
   const DataVector& char_speed_v_plus_ext{char_speeds_ext[2]};
   const DataVector& char_speed_v_minus_ext{char_speeds_ext[3]};
 
-  auto weighted_char_fields =
-      make_with_value<db::const_item_type<Tags::CharacteristicFields<Dim>>>(
-          char_speed_v_psi_int, 0.);
+  Variables<char_field_tags<Dim>> weighted_char_fields{
+      char_speeds_int[0].size()};
 
   get<Tags::VPsi>(weighted_char_fields) = weight_char_field<Tags::VPsi>(
       v_psi_int, char_speed_v_psi_int, v_psi_ext, char_speed_v_psi_ext);

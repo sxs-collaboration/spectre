@@ -79,7 +79,8 @@ struct ComputeNonconservativeBoundaryFluxes {
                          DirectionsTag>>(
         [](const gsl::not_null<db::item_type<interface_normal_dot_fluxes_tag>*>
                boundary_fluxes,
-           const db::const_item_type<DirectionsTag>& internal_directions,
+           const std::unordered_set<Direction<Metavariables::volume_dim>>&
+               internal_directions,
            const auto&... tensors) noexcept {
           for (const auto& direction : internal_directions) {
             // Prepending the type name works around an issue with gcc-6

@@ -35,12 +35,15 @@
 
 namespace CurvedScalarWave::CurvedScalarWave_detail {
 template <size_t Dim>
-db::const_item_type<Tags::CharacteristicFields<Dim>> weight_char_fields(
-    const db::const_item_type<Tags::CharacteristicFields<Dim>>& char_fields_int,
-    const db::const_item_type<Tags::CharacteristicSpeeds<Dim>>& char_speeds_int,
-    const db::const_item_type<Tags::CharacteristicFields<Dim>>& char_fields_ext,
-    const db::const_item_type<Tags::CharacteristicSpeeds<Dim>>&
-        char_speeds_ext) noexcept;
+using char_field_tags =
+    tmpl::list<Tags::VPsi, Tags::VZero<Dim>, Tags::VPlus, Tags::VMinus>;
+
+template <size_t Dim>
+Variables<char_field_tags<Dim>> weight_char_fields(
+    const Variables<char_field_tags<Dim>>& char_fields_int,
+    const std::array<DataVector, 4>& char_speeds_int,
+    const Variables<char_field_tags<Dim>>& char_fields_ext,
+    const std::array<DataVector, 4>& char_speeds_ext) noexcept;
 }  // namespace CurvedScalarWave::CurvedScalarWave_detail
 
 namespace {

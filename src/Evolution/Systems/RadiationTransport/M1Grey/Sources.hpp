@@ -92,20 +92,20 @@ struct ComputeSources {
       gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>;
 
   static void apply(
-      const gsl::not_null<db::const_item_type<
-          Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>*>... sources_tilde_e,
-      const gsl::not_null<db::const_item_type<
-          Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>*>... sources_tilde_s,
-      const db::const_item_type<
-          Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>&... tilde_e,
-      const db::const_item_type<
-          Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>&... tilde_s,
-      const db::const_item_type<
-          Tags::TildeP<Frame::Inertial, NeutrinoSpecies>>&... tilde_p,
-      const db::const_item_type<
-          Tags::M1HydroCouplingNormal<NeutrinoSpecies>>&... source_n,
-      const db::const_item_type<Tags::M1HydroCouplingSpatial<
-          Frame::Inertial, NeutrinoSpecies>>&... source_i,
+      const gsl::not_null<typename Tags::TildeE<
+          Frame::Inertial, NeutrinoSpecies>::type*>... sources_tilde_e,
+      const gsl::not_null<typename Tags::TildeS<
+          Frame::Inertial, NeutrinoSpecies>::type*>... sources_tilde_s,
+      const typename Tags::TildeE<Frame::Inertial,
+                                  NeutrinoSpecies>::type&... tilde_e,
+      const typename Tags::TildeS<Frame::Inertial,
+                                  NeutrinoSpecies>::type&... tilde_s,
+      const typename Tags::TildeP<Frame::Inertial,
+                                  NeutrinoSpecies>::type&... tilde_p,
+      const typename Tags::M1HydroCouplingNormal<
+          NeutrinoSpecies>::type&... source_n,
+      const typename Tags::M1HydroCouplingSpatial<
+          Frame::Inertial, NeutrinoSpecies>::type&... source_i,
       const Scalar<DataVector>& lapse, const tnsr::i<DataVector, 3>& d_lapse,
       const tnsr::iJ<DataVector, 3>& d_shift,
       const tnsr::ijj<DataVector, 3>& d_spatial_metric,

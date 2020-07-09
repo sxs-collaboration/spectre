@@ -106,8 +106,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
   void operator()(
       const TimeStepId& time_id,
       const db::item_type<Tags::InterpPointInfo<Metavariables>>& point_infos,
-      const Mesh<VolumeDim>& mesh,
-      const db::const_item_type<Tensors>&... tensors,
+      const Mesh<VolumeDim>& mesh, const typename Tensors::type&... tensors,
       Parallel::ConstGlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
       const ParallelComponent* const /*meta*/) const noexcept {
