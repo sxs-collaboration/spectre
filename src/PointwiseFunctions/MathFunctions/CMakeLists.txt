@@ -3,14 +3,27 @@
 
 set(LIBRARY MathFunctions)
 
-set(LIBRARY_SOURCES
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
   Gaussian.cpp
   PowX.cpp
   Sinusoid.cpp
   TensorProduct.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  Gaussian.hpp
+  MathFunction.hpp
+  PowX.hpp
+  Sinusoid.hpp
+  TensorProduct.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}

@@ -3,17 +3,28 @@
 
 set(LIBRARY Hydro)
 
-set(LIBRARY_SOURCES
-  EquationsOfState/DarkEnergyFluid.cpp
-  EquationsOfState/IdealFluid.cpp
-  EquationsOfState/PolytropicFluid.cpp
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
   LorentzFactor.cpp
   MassFlux.cpp
   SoundSpeedSquared.cpp
   SpecificEnthalpy.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  LorentzFactor.hpp
+  MassFlux.hpp
+  SoundSpeedSquared.hpp
+  SpecificEnthalpy.hpp
+  Tags.hpp
+  TagsDeclarations.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}
@@ -24,6 +35,4 @@ target_link_libraries(
   Options
   )
 
-if(BUILD_PYTHON_BINDINGS)
-  add_subdirectory(EquationsOfState/Python)
-endif()
+add_subdirectory(EquationsOfState)

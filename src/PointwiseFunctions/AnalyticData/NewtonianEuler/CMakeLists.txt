@@ -3,11 +3,21 @@
 
 set(LIBRARY NewtonianEulerAnalyticData)
 
-set(LIBRARY_SOURCES
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
   KhInstability.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  AnalyticData.hpp
+  KhInstability.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}

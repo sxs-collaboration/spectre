@@ -14,7 +14,7 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/WaveEquation/"
   "${LIBRARY_SOURCES}"
-  "WaveEquation;MathFunctions;Utilities"
+  "WaveEquationSolutions;MathFunctions;Utilities"
   )
 
 add_dependencies(

@@ -3,12 +3,25 @@
 
 set(LIBRARY CurvedWaveEquationAnalyticData)
 
-set(LIBRARY_SOURCES
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
   PlaneWave3DKerrSchild.cpp
   RegularSphericalWave3DKerrSchild.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  AnalyticData.hpp
+  PlaneWave3DKerrSchild.hpp
+  RegularSphericalWave3DKerrSchild.hpp
+  ScalarWaveGr.hpp
+  ScalarWaveGr.tpp
+  )
 
 target_link_libraries(
   ${LIBRARY}

@@ -3,14 +3,27 @@
 
 set(LIBRARY GrMhdSolutions)
 
-set(LIBRARY_SOURCES
-    AlfvenWave.cpp
-    BondiMichel.cpp
-    KomissarovShock.cpp
-    SmoothFlow.cpp
-    )
+add_spectre_library(${LIBRARY})
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  AlfvenWave.cpp
+  BondiMichel.cpp
+  KomissarovShock.cpp
+  SmoothFlow.cpp
+  )
+
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  AlfvenWave.hpp
+  BondiMichel.hpp
+  KomissarovShock.hpp
+  SmoothFlow.hpp
+  Solutions.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}
