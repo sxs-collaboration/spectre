@@ -70,7 +70,7 @@ struct BouncingBlackHole : public WorldtubeData {
 
   // clang doesn't manage to use = default correctly in this case
   // NOLINTNEXTLINE(modernize-use-equals-default)
-  BouncingBlackHole() noexcept {};
+  BouncingBlackHole() noexcept {}
 
   BouncingBlackHole(double amplitude, double extraction_radius, double mass,
                     double period) noexcept;
