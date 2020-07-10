@@ -10,11 +10,13 @@
 #include <string>
 #include <tuple>
 #include <unordered_map>
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "Framework/TestHelpers.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Parallel/PupStlCpp11.hpp"
+#include "Parallel/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Test_Classes {
@@ -74,6 +76,29 @@ SPECTRE_TEST_CASE("Unit.Serialization.PupStlCpp11", "[Serialization][Unit]") {
                                     std::vector<double>{-1, 12.3, -7, 8});
   }
   /// [example_serialize_derived]
+  {
+    // note the `serialize_and_deserialize` utilities don't work here because
+    // atomic specifically has no copy constructor -- it must be serialized
+    // directly into the target object.
+    INFO("atomic int");
+    const std::atomic<int> to_serialize{3};
+    std::atomic<int> serialization_target{234};
+    const auto serialized_data = serialize<std::atomic<int>>(to_serialize);
+    CHECK(to_serialize != serialization_target);
+    PUP::fromMem reader(serialized_data.data());
+    reader | serialization_target;
+    CHECK(serialization_target == to_serialize);
+  }
+  {
+    INFO("atomic double");
+    const std::atomic<double> to_serialize{3.4};
+    std::atomic<double> serialization_target{23.5};
+    const auto serialized_data = serialize<std::atomic<double>>(to_serialize);
+    CHECK(to_serialize != serialization_target);
+    PUP::fromMem reader(serialized_data.data());
+    reader | serialization_target;
+    CHECK(serialization_target == to_serialize);
+  }
 }
 
 /// \cond
