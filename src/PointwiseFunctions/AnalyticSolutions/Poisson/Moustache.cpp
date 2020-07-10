@@ -15,8 +15,7 @@
 #include "Utilities/Math.hpp"
 // IWYU pragma: no_forward_declare Tensor
 
-namespace Poisson {
-namespace Solutions {
+namespace Poisson::Solutions {
 
 /// \cond
 template <size_t Dim>
@@ -44,7 +43,8 @@ Moustache<1>::variables(
                              Frame::Inertial>> /*meta*/) const noexcept {
   const auto& x_d = get<0>(x);
   tnsr::i<DataVector, 1> field_gradient{
-      abs(x_d - 0.5) * evaluate_polynomial<double>({0.25, -3., 7.5, -5.}, x_d)};
+      abs(x_d - 0.5) *
+      evaluate_polynomial(std::array<double, 4>{{0.25, -3., 7.5, -5.}}, x_d)};
   return {std::move(field_gradient)};
 }
 
@@ -62,9 +62,10 @@ Moustache<2>::variables(
     const auto& x_p = x.get((d + 1) % 2);
     field_gradient.get(d) =
         sqrt(norm_square) * x_p * (1. - x_p) *
-        (evaluate_polynomial<double>({0.25, -3.5, 7.5, -5.}, x_d) +
-         evaluate_polynomial<double>({0.25, -1., 1.}, x_p) + 2. * x_d * x_p -
-         2. * x_d * square(x_p));
+        (evaluate_polynomial(std::array<double, 4>{{0.25, -3.5, 7.5, -5.}},
+                             x_d) +
+         evaluate_polynomial(std::array<double, 3>{{0.25, -1., 1.}}, x_p) +
+         2. * x_d * x_p - 2. * x_d * square(x_p));
   }
   return {std::move(field_gradient)};
 }
@@ -101,8 +102,7 @@ tuples::TaggedTuple<::Tags::FixedSource<Tags::Field>> Moustache<2>::variables(
 template <size_t Dim>
 void Moustache<Dim>::pup(PUP::er& /*p*/) noexcept {}
 
-}  // namespace Solutions
-}  // namespace Poisson
+}  // namespace Poisson::Solutions
 
 template class Poisson::Solutions::Moustache<1>;
 template class Poisson::Solutions::Moustache<2>;

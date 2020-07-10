@@ -25,6 +25,9 @@ SPECTRE_TEST_CASE("Unit.Utilities.Math", "[Unit][Utilities]") {
     const std::vector<double> poly_coeffs{1., 2.5, 0.3, 1.5};
     CHECK_ITERABLE_APPROX(evaluate_polynomial(poly_coeffs, 0.5), 2.5125);
     CHECK_ITERABLE_APPROX(
+        evaluate_polynomial(std::array<double, 4>{1., 2.5, 0.3, 1.5}, 0.5),
+        2.5125);
+    CHECK_ITERABLE_APPROX(
         evaluate_polynomial(poly_coeffs,
                             DataVector({-0.5, -0.1, 0., 0.8, 1., 12.})),
         DataVector({-0.3625, 0.7515, 1., 3.96, 5.3, 2666.2}));

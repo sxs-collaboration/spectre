@@ -41,19 +41,23 @@ SPECTRE_ALWAYS_INLINE T number_of_digits(const T number) {
  * largest power
  * \param x The polynomial variable \f$x\f$
  *
- * \tparam U The type of the polynomial coefficients \p coeffs. Can be `double`,
- * which means the coefficients are constant for all values in \p x. Can also be
- * a vector type of typically the same size as `T`, which means the coefficients
- * vary with the elements in \p x.
- * \tparam T The type of the polynomial variable \p x. Must support
- * `make_with_value<T, T>`, as well as (elementwise) addition with `U` and
- * multiplication with `T`.
+ * \tparam CoeffsIterable The type of the polynomial coefficients \p coeffs. Can
+ * be a `std::vector<double>` or `std::array<double>`, which means the
+ * coefficients are constant for all values in \p x. Each coefficient can also
+ * be a vector type of typically the same size as \p x, which means the
+ * coefficients vary with the elements in \p x.
+ * \tparam DataType The type of the polynomial variable \p x. Must support
+ * `make_with_value<DataType, DataType>`, as well as (elementwise) addition with
+ * `CoeffsIterable::value_type` and multiplication with `DataType`.
  */
-template <typename U, typename T>
-T evaluate_polynomial(const std::vector<U>& coeffs, const T& x) noexcept {
+template <typename CoeffsIterable, typename DataType>
+DataType evaluate_polynomial(const CoeffsIterable& coeffs,
+                             const DataType& x) noexcept {
   return std::accumulate(
-      coeffs.rbegin(), coeffs.rend(), make_with_value<T>(x, 0.),
-      [&x](const T& state, const U& element) { return state * x + element; });
+      coeffs.rbegin(), coeffs.rend(), make_with_value<DataType>(x, 0.),
+      [&x](const DataType& state, const auto& element) noexcept {
+        return state * x + element;
+      });
 }
 
 /// \ingroup UtilitiesGroup
