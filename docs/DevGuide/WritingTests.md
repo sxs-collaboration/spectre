@@ -77,11 +77,12 @@ All tests must start with
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/TestingFramework.hpp"
+#include "Framework/TestingFramework.hpp"
 ```
-The file `tests/Unit/TestingFramework.hpp` must always be the first include in
-the test file and must be separated from the STL includes by a blank line. All
-classes and free functions should be in an anonymous/unnamed namespace, e.g.
+The file `tests/Unit/Framework/TestingFramework.hpp` must always be the first
+include in the test file and must be separated from the STL includes by a blank
+line. All classes and free functions should be in an anonymous/unnamed
+namespace, e.g.
 ```cpp
 namespace {
 class MyFreeClass {

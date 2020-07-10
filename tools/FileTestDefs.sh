@@ -346,7 +346,7 @@ catch_approx() {
 }
 catch_approx_report() {
     echo "Found occurrences of Approx, must use approx from"
-    echo "tests/Unit/TestHelpers.hpp instead:"
+    echo "tests/Unit/Framework/TestingFramework.hpp instead:"
     pretty_grep "Approx(" "$@"
 }
 catch_approx_test() {

@@ -32,7 +32,7 @@ Stylistic Items:
   [Hungarian notation](https://en.wikipedia.org/wiki/Hungarian_notation),
   e.g. `double* pd_blah` is bad
 * Header order:
-  1. (If a test:) `tests/Unit/TestingFramework.hpp`, followed by one blank line
+  1. (If a test:) `Framework/TestingFramework.hpp`, followed by one blank line
   2. (If a cpp file with a corresponding hpp file:) hpp corresponding to cpp,
      followed by one blank line
   3. STL and externals (in alphabetical order)
