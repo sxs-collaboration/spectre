@@ -56,15 +56,15 @@ fi
 # Exclude files that are generated, out of our control, etc.
 if ! find . \
      -type f \
-     ! -path "./.git/*" \
-     ! -path "./docs/*" \
-     ! -path "./build*" \
-     ! -path '*/__pycache__/*' \
+     ! -path './.git/*' \
+     ! -path './build*' \
+     ! -path './docs/*' \
+     ! -path './external/*' \
+     ! -path '*.idea/*' \
+     ! -name '*.patch' \
      ! -name '*.pyc' \
-     ! -path "*.idea/*" \
+     ! -path '*/__pycache__/*' \
      ! -name '*~' \
-     ! -name "*.patch" \
-     ! -path "./external/*" \
      ! -name deploy_key.enc \
      -print0 \
         | run_checks "${standard_checks[@]}" "${ci_checks[@]}"

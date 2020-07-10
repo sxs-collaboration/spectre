@@ -193,10 +193,10 @@ long_lines() {
               'CMakeLists.txt$' \
               'Doxyfile.in$' \
               'containers/Dockerfile.travis$' \
-              'docs/config/MathJax.js' \
-              'docs/MainSite/Main.md' \
               'docs/DevGuide/Travis.md' \
+              'docs/MainSite/Main.md' \
               'docs/Tutorials/ParallelExecutable/Tutorials.md' \
+              'docs/config/MathJax.js' \
               'tools/Iwyu/boost-all.imp$' && \
         staged_grep '^[^#].\{80,\}' "$1" | long_lines_exclude >/dev/null
 }
@@ -286,9 +286,18 @@ standard_checks+=(carriage_returns)
 # Check for license file.
 license() {
     whitelist "$1" \
-              'cmake/FindCatch.cmake$' \
+              '.clang-format$' \
+              '.github/ISSUE_TEMPLATE.md' \
+              '.github/PULL_REQUEST_TEMPLATE.md' \
+              '.h5' \
+              '.nojekyll' \
+              '.png' \
+              '.style.yapf' \
+              '.svg' \
+              'LICENSE' \
               'cmake/CodeCoverage.cmake$' \
               'cmake/CodeCoverageDetection.cmake$' \
+              'cmake/FindCatch.cmake$' \
               'cmake/FindLIBCXX.cmake$' \
               'cmake/FindPAPI.cmake$' \
               'cmake/FindPythonModule.cmake$' \
@@ -300,17 +309,8 @@ license() {
               'docs/config/layout.xml' \
               'docs/config/MathJax.js$' \
               'external/*' \
-              'LICENSE' \
               'support/TeXLive/texlive.profile' \
-              'tools/Iwyu/boost-all.imp$' \
-              '.github/ISSUE_TEMPLATE.md' \
-              '.github/PULL_REQUEST_TEMPLATE.md' \
-              '.h5' \
-              '.nojekyll' \
-              '.png' \
-              '.svg' \
-              '.clang-format$' \
-              '.style.yapf' && \
+              'tools/Iwyu/boost-all.imp$' && \
         ! staged_grep -q "Distributed under the MIT License" "$1"
 }
 license_report() {
