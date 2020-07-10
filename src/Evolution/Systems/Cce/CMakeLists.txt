@@ -6,6 +6,7 @@ add_subdirectory(AnalyticSolutions)
 set(LIBRARY Cce)
 
 set(LIBRARY_SOURCES
+  AnalyticBoundaryDataManager.cpp
   BoundaryData.cpp
   Equations.cpp
   GaugeTransformBoundaryData.cpp

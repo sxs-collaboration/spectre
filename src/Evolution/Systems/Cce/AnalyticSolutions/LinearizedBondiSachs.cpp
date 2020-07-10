@@ -310,16 +310,16 @@ void LinearizedBondiSachs::spherical_metric(
             square(extraction_radius_) *
                 (conj(bondi_j.data()) * square(bondi_u.data()) +
                  bondi_k.data() * bondi_u.data() * conj(bondi_u.data())));
-  get<0, 1>(*spherical_metric) = -1.0;
+  get<0, 1>(*spherical_metric) = -1.0 - get<0, 0>(*spherical_metric);
   get<0, 2>(*spherical_metric) =
       square(extraction_radius_) * real(bondi_j.data() * conj(bondi_u.data()) +
                                         bondi_k.data() * bondi_u.data());
   get<0, 3>(*spherical_metric) =
       square(extraction_radius_) * imag(bondi_j.data() * conj(bondi_u.data()) +
                                         bondi_k.data() * bondi_u.data());
-  get<1, 1>(*spherical_metric) = 0.0;
-  get<1, 2>(*spherical_metric) = 0.0;
-  get<1, 3>(*spherical_metric) = 0.0;
+  get<1, 1>(*spherical_metric) = get<0, 0>(*spherical_metric) + 2.0;
+  get<1, 2>(*spherical_metric) = -get<0, 2>(*spherical_metric);
+  get<1, 3>(*spherical_metric) = -get<0, 3>(*spherical_metric);
   get<2, 2>(*spherical_metric) =
       square(extraction_radius_) * real(bondi_j.data() + bondi_k.data());
   get<2, 3>(*spherical_metric) =
@@ -381,7 +381,7 @@ void LinearizedBondiSachs::dr_spherical_metric(
       real(dr_r_squared_jbar_u_squared + dr_r_squared_k_u_ubar -
            bondi_w.data() - extraction_radius_ * dr_bondi_w.data());
 
-  get<0, 1>(*dr_spherical_metric) = 0.0;
+  get<0, 1>(*dr_spherical_metric) = -get<0, 0>(*dr_spherical_metric);
 
   const ComplexDataVector dr_r_squared_j_ubar =
       2.0 * bondi_j.data() * extraction_radius_ * conj(bondi_u.data()) +
@@ -397,9 +397,10 @@ void LinearizedBondiSachs::dr_spherical_metric(
   get<0, 3>(*dr_spherical_metric) =
       -get<0, 3>(*dr_spherical_metric) +
       imag(dr_r_squared_j_ubar + dr_r_squared_k_u);
-  get<1, 1>(*dr_spherical_metric) = 0.0;
-  get<1, 2>(*dr_spherical_metric) = 0.0;
-  get<1, 3>(*dr_spherical_metric) = 0.0;
+
+  get<1, 1>(*dr_spherical_metric) = get<0, 0>(*dr_spherical_metric) ;
+  get<1, 2>(*dr_spherical_metric) = -get<0, 2>(*dr_spherical_metric);
+  get<1, 3>(*dr_spherical_metric) = -get<0, 3>(*dr_spherical_metric);
   get<2, 2>(*dr_spherical_metric) =
       -get<2, 2>(*dr_spherical_metric) +
       2.0 * extraction_radius_ * real(bondi_j.data() + bondi_k.data()) +
@@ -461,7 +462,7 @@ void LinearizedBondiSachs::dt_spherical_metric(
       real(du_r_squared_jbar_u_squared + du_r_squared_k_u_ubar -
            extraction_radius_ * du_bondi_w.data());
 
-  get<0, 1>(*dt_spherical_metric) = 0.0;
+  get<0, 1>(*dt_spherical_metric) = -get<0, 0>(*dt_spherical_metric);
 
   const ComplexDataVector du_r_squared_j_ubar =
       square(extraction_radius_) * (du_bondi_j.data() * conj(bondi_u.data()) +
@@ -473,9 +474,9 @@ void LinearizedBondiSachs::dt_spherical_metric(
       real(du_r_squared_j_ubar + du_r_squared_k_u);
   get<0, 3>(*dt_spherical_metric) =
       imag(du_r_squared_j_ubar + du_r_squared_k_u);
-  get<1, 1>(*dt_spherical_metric) = 0.0;
-  get<1, 2>(*dt_spherical_metric) = 0.0;
-  get<1, 3>(*dt_spherical_metric) = 0.0;
+  get<1, 1>(*dt_spherical_metric) = get<0, 0>(*dt_spherical_metric);
+  get<1, 2>(*dt_spherical_metric) = -get<0, 2>(*dt_spherical_metric);
+  get<1, 3>(*dt_spherical_metric) = -get<0, 3>(*dt_spherical_metric);
   get<2, 2>(*dt_spherical_metric) =
       square(extraction_radius_) * real(du_bondi_j.data() + du_bondi_k.data());
   get<2, 3>(*dt_spherical_metric) =

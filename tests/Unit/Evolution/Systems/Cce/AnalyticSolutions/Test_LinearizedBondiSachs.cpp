@@ -69,13 +69,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearizedBondiSachs",
       {c_2a, c_3a}, extraction_radius, frequency};
   const double time = 10.0 * parameter_dist(gen);
   const auto boundary_data = boundary_solution.variables(
-      l_max, time,
-      tmpl::list<
-          Tags::Dr<Tags::CauchyCartesianCoords>,
-          gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
-          ::Tags::dt<
-              gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>,
-          GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>, Tags::News>{});
+      l_max, time, Solutions::LinearizedBondiSachs::tags{});
   const auto& spacetime_metric =
       get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
           boundary_data);
@@ -303,7 +297,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearizedBondiSachs",
     check_22_and_33_modes(dt_w_goldberg_modes, expected_dt_bondi_w_22_mode,
                           expected_dt_bondi_w_33_mode, l_max, bondi_approx);
   }
-
   // check j and its derivatives
   const auto j_goldberg_modes = Spectral::Swsh::libsharp_to_goldberg_modes(
       Spectral::Swsh::swsh_transform(l_max, 1,
@@ -379,6 +372,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearizedBondiSachs",
     check_22_and_33_modes(news_goldberg_modes, expected_news_22_mode,
                           expected_news_33_mode, l_max, bondi_approx);
   }
+  Solutions::TestHelpers::check_adm_metric_quantities(
+      boundary_data, spacetime_metric, dt_spacetime_metric, d_spacetime_metric);
 }
 }  // namespace
 }  // namespace Cce::Solutions

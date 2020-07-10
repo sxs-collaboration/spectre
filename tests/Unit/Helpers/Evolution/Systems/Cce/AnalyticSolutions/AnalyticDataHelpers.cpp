@@ -42,6 +42,12 @@ extract_bondi_scalars_from_cartesian_metric(
       }
     }
   }
+  get<0, 0>(inverse_spherical_metric) +=
+      -2.0 * get<0, 1>(inverse_spherical_metric) +
+      get<1, 1>(inverse_spherical_metric);
+  for(size_t i = 0; i < 3; ++i) {
+    inverse_spherical_metric.get(0, i) -= inverse_spherical_metric.get(1, i);
+  }
   Scalar<SpinWeighted<ComplexDataVector, 0>> bondi_beta{
       get<0, 0>(spacetime_metric).size()};
   get(bondi_beta).data() = std::complex<double>(1.0, 0.0) * 0.5 *
@@ -122,6 +128,17 @@ extract_dt_bondi_scalars_from_cartesian_metric(
         }
       }
     }
+  }
+  get<0, 0>(inverse_spherical_metric) +=
+      -2.0 * get<0, 1>(inverse_spherical_metric) +
+      get<1, 1>(inverse_spherical_metric);
+  get<0, 0>(dt_inverse_spherical_metric) +=
+      -2.0 * get<0, 1>(dt_inverse_spherical_metric) +
+      get<1, 1>(dt_inverse_spherical_metric);
+  for(size_t i = 0; i < 3; ++i) {
+    inverse_spherical_metric.get(0, i) -= inverse_spherical_metric.get(1, i);
+    dt_inverse_spherical_metric.get(0, i) -=
+        dt_inverse_spherical_metric.get(1, i);
   }
 
   // The formulas for these scalars can be determined by differentiating the
@@ -225,6 +242,18 @@ extract_dr_bondi_scalars_from_cartesian_metric(
     }
   }
 
+  get<0, 0>(inverse_spherical_metric) +=
+      -2.0 * get<0, 1>(inverse_spherical_metric) +
+      get<1, 1>(inverse_spherical_metric);
+  get<0, 0>(dr_inverse_spherical_metric) +=
+      -2.0 * get<0, 1>(dr_inverse_spherical_metric) +
+      get<1, 1>(dr_inverse_spherical_metric);
+  for (size_t i = 0; i < 3; ++i) {
+    inverse_spherical_metric.get(0, i) -= inverse_spherical_metric.get(1, i);
+    dr_inverse_spherical_metric.get(0, i) -=
+        dr_inverse_spherical_metric.get(1, i);
+  }
+
   // The formulas for these scalars can be determined by differentiating the
   // forms in `extract_bondi_scalars_from_cartesian_metric`
   Scalar<SpinWeighted<ComplexDataVector, 0>> dr_bondi_beta{
@@ -273,4 +302,5 @@ extract_dr_bondi_scalars_from_cartesian_metric(
                                 (get<2, 3>(inverse_spherical_metric)));
   return {dr_bondi_beta, dr_bondi_u, dr_bondi_w, dr_bondi_j};
 }
+
 }  // namespace Cce::Solutions::TestHelpers

@@ -16,6 +16,7 @@ namespace Cce {
 
 /// \cond
 struct WorldtubeDataManager;
+struct AnalyticBoundaryDataManager;
 template <typename ToInterpolate, typename Tag>
 struct ScriPlusInterpolationManager;
 /// \endcond
@@ -339,6 +340,12 @@ struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
 struct EndTime : db::BaseTag {};
 
 struct StartTime : db::BaseTag {};
+
+/// The manager for populating the worldtube \ref DataBoxGroup from an analytic
+/// solution `Cce::Solutions::WorldtubeData`
+struct AnalyticBoundaryDataManager : db::SimpleTag {
+  using type = ::Cce::AnalyticBoundaryDataManager;
+};
 
 /// The Weyl scalar \f$\Psi_0\f$
 struct Psi0 : db::SimpleTag {

@@ -25,6 +25,7 @@ namespace Solutions {
 
 /// \cond
 class BouncingBlackHole;
+class LinearizedBondiSachs;
 /// \endcond
 
 /*!
@@ -63,7 +64,7 @@ class BouncingBlackHole;
  * calculations.
  */
 struct WorldtubeData : public PUP::able {
-  using creatable_classes = tmpl::list<BouncingBlackHole>;
+  using creatable_classes = tmpl::list<BouncingBlackHole, LinearizedBondiSachs>;
 
   /// The set of available tags provided by the analytic solution
   using tags = tmpl::list<
@@ -102,10 +103,10 @@ struct WorldtubeData : public PUP::able {
    * Jacobian quantities as well as metric quantities and derivatives thereof.
    */
   template <typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(const size_t output_l_max,
-                                         const double time,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+  tuples::TaggedTuple<Tags...> variables(
+      // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
+      const size_t output_l_max, const double time,
+      tmpl::list<Tags...> /*meta*/) const noexcept {
     prepare_solution(output_l_max, time);
     return {cache_or_compute<Tags>(output_l_max, time)...};
   }
