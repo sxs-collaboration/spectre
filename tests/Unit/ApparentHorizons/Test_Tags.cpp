@@ -296,6 +296,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::Area>("Area");
   TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::IrreducibleMass>(
       "IrreducibleMass");
+  TestHelpers::db::test_simple_tag<StrahlkorperTags::OneOverOneFormMagnitude>(
+      "OneOverOneFormMagnitude");
   TestHelpers::db::test_simple_tag<
       StrahlkorperTags::Strahlkorper<Frame::Inertial>>("Strahlkorper");
   TestHelpers::db::test_compute_tag<
@@ -342,4 +344,13 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   TestHelpers::db::test_compute_tag<
       StrahlkorperGr::Tags::IrreducibleMassCompute<Frame::Inertial>>(
       "IrreducibleMass");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::OneOverOneFormMagnitudeCompute<
+          1, Frame::Inertial, DataVector> >("OneOverOneFormMagnitude");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::OneOverOneFormMagnitudeCompute<
+          2, Frame::Inertial, DataVector> >("OneOverOneFormMagnitude");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::OneOverOneFormMagnitudeCompute<
+          3, Frame::Inertial, DataVector> >("OneOverOneFormMagnitude");
 }

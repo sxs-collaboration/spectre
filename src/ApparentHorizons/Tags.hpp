@@ -13,6 +13,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/ForceInline.hpp"
@@ -201,6 +202,25 @@ struct NormalOneForm : db::ComputeTag {
                        const aliases::OneForm<Frame>& dx_radius,
                        const aliases::OneForm<Frame>& r_hat) noexcept;
   using argument_tags = tmpl::list<DxRadius<Frame>, Rhat<Frame>>;
+};
+
+struct OneOverOneFormMagnitude : db::SimpleTag {
+  static std::string name() noexcept { return "OneOverOneFormMagnitude"; }
+  using type = DataVector;
+};
+
+template <size_t Dim, typename Frame, typename DataType>
+struct OneOverOneFormMagnitudeCompute : db::ComputeTag,
+                                        OneOverOneFormMagnitude {
+  using base = OneOverOneFormMagnitude;
+  static DataVector
+  function(const tnsr::II<DataType, Dim, Frame> &inverse_spatial_metric,
+           const tnsr::i<DataType, Dim, Frame> &normal_one_form) noexcept {
+    return 1.0 / get(magnitude(normal_one_form, inverse_spatial_metric));
+  }
+  using argument_tags =
+      tmpl::list<gr::Tags::InverseSpatialMetric<Dim, Frame, DataType>,
+                 NormalOneForm<Frame> >;
 };
 
 /// `Tangents(i,j)` is \f$\partial x_{\rm surf}^i/\partial q^j\f$,
