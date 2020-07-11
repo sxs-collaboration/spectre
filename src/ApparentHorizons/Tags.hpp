@@ -205,7 +205,6 @@ struct NormalOneForm : db::ComputeTag {
 };
 
 struct OneOverOneFormMagnitude : db::SimpleTag {
-  static std::string name() noexcept { return "OneOverOneFormMagnitude"; }
   using type = DataVector;
 };
 
