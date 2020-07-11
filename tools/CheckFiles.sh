@@ -6,6 +6,9 @@
 # This script can be invoked with the --test argument to run its unit
 # tests instead of checking the repository.
 
+# In addition to sourcing various helper functions, source the standard file
+# checks, i.e., the file checks that are performed in the git commit hook AND
+# by CI testing.
 top_level=$(git rev-parse --show-cdup) || exit 1
 . "${top_level}tools/FileTestDefs.sh"
 
@@ -21,6 +24,7 @@ pretty_grep() {
 ci_checks=()
 
 # Check for iostream header
+# (Checked in CI only to allow local debugging-related commits)
 iostream() {
     is_c++ "$1" && grep -q '#include <iostream>' "$1"
 }
@@ -35,6 +39,7 @@ iostream_test() {
 ci_checks+=(iostream)
 
 # Check for TmplDebugging header
+# (Checked in CI only to allow local debugging-related commits)
 tmpl_debugging() {
     is_c++ "$1" && grep -q '#include "Utilities/TmplDebugging.hpp"' "$1"
 }

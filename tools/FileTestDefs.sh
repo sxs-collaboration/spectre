@@ -27,8 +27,8 @@ if grep --help 2>&1 | grep -q -e --color ; then
   color_option='--color=always'
 fi
 
-# Utility that uses grep on the staged version of the file specified by the last argument
-# does not work with multiple files as argument
+# Utility that uses grep on the staged version of the file specified by the last
+# argument does not work with multiple files as argument
 staged_grep() {
     # git show ":./path/to/file" shows the content of the file as it
     # appears in the staging area
