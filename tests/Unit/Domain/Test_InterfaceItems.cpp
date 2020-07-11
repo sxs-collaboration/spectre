@@ -28,20 +28,20 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/Element.hpp"
-#include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/LogicalCoordinates.hpp"
-#include "Domain/Mesh.hpp"
-#include "Domain/Neighbors.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
@@ -341,34 +341,35 @@ struct Compute : db::ComputeTag {
 };
 
 template <size_t N>
-auto make_interface_variables(DataVector value_xi,
-                              DataVector value_eta) noexcept {
-  const auto make = [](DataVector value) noexcept {
+auto make_interface_variables(const DataVector& value_xi,
+                              const DataVector& value_eta) noexcept {
+  const auto make = [](const DataVector& value) noexcept {
     Variables<tmpl::list<Var<N>>> v(value.size());
-    get(get<Var<N>>(v)) = std::move(value);
+    get(get<Var<N>>(v)) = value;
     return v;
   };
-  std::unordered_map<Direction<dim>, decltype(make(value_xi))> ret;
-  ret.emplace(Direction<dim>::lower_xi(), make(std::move(value_xi)));
-  ret.emplace(Direction<dim>::upper_eta(), make(std::move(value_eta)));
+  std::unordered_map<Direction<dim>, Variables<tmpl::list<Var<N>>>> ret;
+  ret.emplace(Direction<dim>::lower_xi(), make(value_xi));
+  ret.emplace(Direction<dim>::upper_eta(), make(value_eta));
   return ret;
 }
 
 template <size_t N0, size_t N1>
-auto make_interface_variables(
-    DataVector value_xi0, DataVector value_xi1,
-    DataVector value_eta0, DataVector value_eta1) noexcept {
-  const auto make = [](DataVector value0, DataVector value1) noexcept {
+auto make_interface_variables(const DataVector& value_xi0,
+                              const DataVector& value_xi1,
+                              const DataVector& value_eta0,
+                              const DataVector& value_eta1) noexcept {
+  const auto make =
+      [](const DataVector& value0, const DataVector& value1) noexcept {
     Variables<tmpl::list<Var<N0>, Var<N1>>> v(value0.size());
-    get(get<Var<N0>>(v)) = std::move(value0);
-    get(get<Var<N1>>(v)) = std::move(value1);
+    get(get<Var<N0>>(v)) = value0;
+    get(get<Var<N1>>(v)) = value1;
     return v;
   };
-  std::unordered_map<Direction<dim>, decltype(make(value_xi0, value_xi1))> ret;
-  ret.emplace(Direction<dim>::lower_xi(),
-              make(std::move(value_xi0), std::move(value_xi1)));
-  ret.emplace(Direction<dim>::upper_eta(),
-              make(std::move(value_eta0), std::move(value_eta1)));
+  std::unordered_map<Direction<dim>, Variables<tmpl::list<Var<N0>, Var<N1>>>>
+      ret;
+  ret.emplace(Direction<dim>::lower_xi(), make(value_xi0, value_xi1));
+  ret.emplace(Direction<dim>::upper_eta(), make(value_eta0, value_eta1));
   return ret;
 }
 
@@ -667,7 +668,7 @@ struct SimpleDerived : SimpleBase {
 };
 
 struct ComputeBase : db::SimpleTag {
-  std::string name() noexcept { return "ComputeBase"; }
+  static std::string name() noexcept { return "ComputeBase"; }
   using type = double;
 };
 

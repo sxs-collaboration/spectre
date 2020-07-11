@@ -14,7 +14,6 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/Mesh.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Poisson/Geometry.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"  // IWYU pragma: keep
@@ -23,6 +22,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/FirstOrderEllipticSolutionsTestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/Lorentzian.hpp"
 #include "Utilities/TMPL.hpp"
@@ -66,7 +66,7 @@ void test_solution() {
       {"source"}, {{{-5., 5.}}}, std::make_tuple(), DataVector(5));
 
   const Poisson::Solutions::Lorentzian<Dim> check_solution{};
-  const Poisson::Solutions::Lorentzian<Dim> created_solution =
+  const auto created_solution =
       TestHelpers::test_creation<Poisson::Solutions::Lorentzian<Dim>>("");
   CHECK(created_solution == check_solution);
   test_serialization(check_solution);

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 
 #include <algorithm>
 #include <ostream>

@@ -9,7 +9,7 @@
 #include <cstddef>
 #include <iosfwd>
 
-#include "Domain/Side.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 

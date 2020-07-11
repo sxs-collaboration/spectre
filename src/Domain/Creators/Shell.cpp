@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "Domain/Block.hpp"                   // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"           // IWYU pragma: keep
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
@@ -21,8 +21,7 @@ struct Logical;
 }  // namespace Frame
 /// \endcond
 
-namespace domain {
-namespace creators {
+namespace domain::creators {
 Shell::Shell(typename InnerRadius::type inner_radius,
              typename OuterRadius::type outer_radius,
              typename InitialRefinement::type initial_refinement,
@@ -83,5 +82,4 @@ std::vector<std::array<size_t, 3>> Shell::initial_refinement_levels() const
   }
   return {num_wedges, make_array<3>(initial_refinement_)};
 }
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators

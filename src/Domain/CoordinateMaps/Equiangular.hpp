@@ -81,7 +81,7 @@ class Equiangular {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
-  bool is_identity() const noexcept { return false; }
+  static bool is_identity() noexcept { return false; }
 
  private:
   friend bool operator==(const Equiangular& lhs,

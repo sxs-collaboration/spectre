@@ -15,10 +15,10 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceHelpers.hpp"
-#include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 

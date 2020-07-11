@@ -4,13 +4,12 @@
 #include "Domain/Creators/RotatedRectangles.hpp"
 
 #include "DataStructures/Index.hpp"  // for Index
-#include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 
-namespace domain {
-namespace creators {
+namespace domain::creators {
 RotatedRectangles::RotatedRectangles(
     const typename LowerBound::type lower_xy,
     const typename Midpoint::type midpoint_xy,
@@ -62,5 +61,4 @@ RotatedRectangles::initial_refinement_levels() const noexcept {
   const size_t& y_0 = initial_refinement_level_xy_[1];
   return {{{x_0, y_0}}, {{x_0, y_0}}, {{y_0, x_0}}, {{y_0, x_0}}};
 }
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators

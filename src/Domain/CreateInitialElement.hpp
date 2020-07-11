@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <vector>
 
-#include "Domain/Element.hpp"
+#include "Domain/Structure/Element.hpp"
 
 /// \cond
 template <size_t Dim>

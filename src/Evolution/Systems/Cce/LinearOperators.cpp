@@ -7,11 +7,11 @@
 #include <cstddef>
 #include <functional>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/Matrix.hpp"
-#include "Domain/Mesh.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
-#include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"

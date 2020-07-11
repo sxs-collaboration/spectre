@@ -57,7 +57,6 @@ target_link_libraries(
   PUBLIC
   Boost::boost
   DataStructures
-  Domain
   ErrorHandling
   IO
   LinearOperators

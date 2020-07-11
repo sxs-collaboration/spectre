@@ -11,12 +11,12 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
-#include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/MakeArray.hpp"
 

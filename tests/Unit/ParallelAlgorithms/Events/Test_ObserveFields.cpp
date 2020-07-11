@@ -19,8 +19,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TensorData.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/ElementId.hpp"
-#include "Domain/Mesh.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
@@ -28,6 +27,7 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
@@ -58,11 +58,9 @@ template <typename Metavariables>
 class ConstGlobalCache;
 }  // namespace Parallel
 // IWYU pragma: no_forward_declare db::DataBox
-namespace observers {
-namespace Actions {
+namespace observers::Actions {
 struct ContributeVolumeData;
-}  // namespace Actions
-}  // namespace observers
+}  // namespace observers::Actions
 
 namespace {
 
@@ -168,9 +166,9 @@ struct ScalarSystem {
       check_component("Error(Scalar)", ScalarVar{});
     }
 
-    tuples::tagged_tuple_from_typelist<vars_for_test> variables(
+    static tuples::tagged_tuple_from_typelist<vars_for_test> variables(
         const tnsr::I<DataVector, 1>& x, const double t,
-        const vars_for_test /*meta*/) const noexcept {
+        const vars_for_test /*meta*/) noexcept {
       return {Scalar<DataVector>{1.0 - t * get<0>(x)}};
     }
 
@@ -249,9 +247,9 @@ struct ComplicatedSystem {
       check_component("Error(Tensor2)_yy", TensorVar2{}, 1, 1);
     }
 
-    tuples::tagged_tuple_from_typelist<vars_for_test> variables(
+    static tuples::tagged_tuple_from_typelist<vars_for_test> variables(
         const tnsr::I<DataVector, 2>& x, const double t,
-        const vars_for_test /*meta*/) const noexcept {
+        const vars_for_test /*meta*/) noexcept {
       auto vector = make_with_value<tnsr::I<DataVector, 2>>(x, 0.0);
       auto tensor = make_with_value<tnsr::ii<DataVector, 2>>(x, 0.0);
       auto unobserved = make_with_value<Scalar<DataVector>>(x, 0.0);

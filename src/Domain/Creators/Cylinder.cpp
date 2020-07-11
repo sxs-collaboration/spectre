@@ -13,10 +13,10 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
-#include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace Frame {
@@ -24,8 +24,7 @@ struct Logical;
 struct Inertial;
 }  // namespace Frame
 
-namespace domain {
-namespace creators {
+namespace domain::creators {
 Cylinder::Cylinder(
     typename InnerRadius::type inner_radius,
     typename OuterRadius::type outer_radius,
@@ -133,5 +132,4 @@ std::vector<std::array<size_t, 3>> Cylinder::initial_refinement_levels() const
     noexcept {
   return {5, make_array<3>(initial_refinement_)};
 }
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators

@@ -11,18 +11,18 @@
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Block.hpp"          // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/RotatedIntervals.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
@@ -68,10 +68,11 @@ void test_rotated_intervals_construction(
 
 void test_rotated_intervals() {
   INFO("Rotated intervals");
-  const std::vector<std::array<size_t, 1>> grid_points{{{4}}, {{2}}},
-      refinement_level{{{0}}, {{0}}};
-  const std::array<double, 1> lower_bound{{-1.2}}, midpoint{{-0.6}},
-      upper_bound{{0.8}};
+  const std::vector<std::array<size_t, 1>> grid_points{{{4}}, {{2}}};
+  const std::vector<std::array<size_t, 1>> refinement_level{{{0}}, {{0}}};
+  const std::array<double, 1> lower_bound{{-1.2}};
+  const std::array<double, 1> midpoint{{-0.6}};
+  const std::array<double, 1> upper_bound{{0.8}};
   const OrientationMap<1> flipped{
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}};
 

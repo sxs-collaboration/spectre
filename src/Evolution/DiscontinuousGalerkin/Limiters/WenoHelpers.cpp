@@ -9,9 +9,9 @@
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
-#include "Domain/Direction.hpp"          // IWYU pragma: keep
-#include "Domain/ElementId.hpp"          // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"    // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"

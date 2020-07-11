@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
+#include "DataStructures/ApplyMatrices.hpp"
 
 #include <array>
 #include <complex>
@@ -10,7 +10,7 @@
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"
-#include "NumericalAlgorithms/LinearOperators/Transpose.hpp"
+#include "DataStructures/Transpose.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -149,11 +149,11 @@ struct Impl<std::complex<double>, 1, false> {
     // as we will typically be applying a real matrix to a complex vector. To
     // treat the complex values as an additional 'dimension' to transpose, a
     // reinterpret cast is required.
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(scratch.a, reinterpret_cast<const double* const>(data),
                  data_size, 2);
     multiply_in_first_dimension(scratch.b, &data_size, matrices[0], scratch.a);
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(make_not_null(reinterpret_cast<double*>(result.get())),
                  scratch.b, data_size, data_size / 2);
   }
@@ -212,13 +212,13 @@ struct Impl<std::complex<double>, 2, false, false> {
     // treat the complex values as an additional 'dimension' to transpose, a
     // reinterpret cast is required.
     size_t data_size = number_of_independent_components * extents.product() * 2;
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(scratch.a, reinterpret_cast<const double* const>(data),
                  data_size, 2);
     multiply_in_first_dimension(scratch.b, &data_size, matrices[0], scratch.a);
     do_transpose(scratch.a, scratch.b, data_size, rows[0]);
     multiply_in_first_dimension(scratch.b, &data_size, matrices[1], scratch.a);
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(make_not_null(reinterpret_cast<double*>(result.get())),
                  scratch.b, data_size,
                  number_of_independent_components * rows[1]);
@@ -255,11 +255,11 @@ struct Impl<std::complex<double>, 2, false, true> {
     // treat the complex values as an additional 'dimension' to transpose, a
     // reinterpret cast is required.
     size_t data_size = number_of_independent_components * extents.product() * 2;
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(scratch.b, reinterpret_cast<const double* const>(data),
                  data_size, 2);
     multiply_in_first_dimension(scratch.a, &data_size, matrices[0], scratch.b);
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(make_not_null(reinterpret_cast<double*>(result.get())),
                  scratch.a, data_size, data_size / 2);
   }
@@ -303,12 +303,12 @@ struct Impl<std::complex<double>, 2, true, false> {
     // treat the complex values as an additional 'dimension' to transpose, a
     // reinterpret cast is required.
     size_t data_size = number_of_independent_components * extents.product() * 2;
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(scratch.a, reinterpret_cast<const double* const>(data),
                  data_size, 2);
     do_transpose(scratch.b, scratch.a, data_size, rows[0]);
     multiply_in_first_dimension(scratch.a, &data_size, matrices[1], scratch.b);
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(make_not_null(reinterpret_cast<double*>(result.get())),
                  scratch.a, data_size,
                  number_of_independent_components * rows[1]);
@@ -370,7 +370,7 @@ struct Impl<std::complex<double>, 3, false, false, false> {
     // treat the complex values as an additional 'dimension' to transpose, a
     // reinterpret cast is required.
     size_t data_size = number_of_independent_components * extents.product() * 2;
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(scratch.b, reinterpret_cast<const double* const>(data),
                  data_size, 2);
     multiply_in_first_dimension(scratch.a, &data_size, matrices[0], scratch.b);
@@ -378,7 +378,7 @@ struct Impl<std::complex<double>, 3, false, false, false> {
     multiply_in_first_dimension(scratch.a, &data_size, matrices[1], scratch.b);
     do_transpose(scratch.b, scratch.a, data_size, rows[1]);
     multiply_in_first_dimension(scratch.a, &data_size, matrices[2], scratch.b);
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(make_not_null(reinterpret_cast<double*>(result.get())),
                  scratch.a, data_size,
                  number_of_independent_components * rows[2]);
@@ -424,13 +424,13 @@ struct Impl<std::complex<double>, 3, false, false, true> {
     // treat the complex values as an additional 'dimension' to transpose, a
     // reinterpret cast is required.
     size_t data_size = number_of_independent_components * extents.product() * 2;
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(scratch.b, reinterpret_cast<const double* const>(data),
                  data_size, 2);
     multiply_in_first_dimension(scratch.a, &data_size, matrices[0], scratch.b);
     do_transpose(scratch.b, scratch.a, data_size, rows[0]);
     multiply_in_first_dimension(scratch.a, &data_size, matrices[1], scratch.b);
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(make_not_null(reinterpret_cast<double*>(result.get())),
                  scratch.a, data_size,
                  number_of_independent_components * rows[1] * rows[2]);
@@ -476,13 +476,13 @@ struct Impl<std::complex<double>, 3, false, true, false> {
     // treat the complex values as an additional 'dimension' to transpose, a
     // reinterpret cast is required.
     size_t data_size = number_of_independent_components * extents.product() * 2;
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(scratch.b, reinterpret_cast<const double* const>(data),
                  data_size, 2);
     multiply_in_first_dimension(scratch.a, &data_size, matrices[0], scratch.b);
     do_transpose(scratch.b, scratch.a, data_size, rows[0] * rows[1]);
     multiply_in_first_dimension(scratch.a, &data_size, matrices[2], scratch.b);
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(make_not_null(reinterpret_cast<double*>(result.get())),
                  scratch.a, data_size,
                  number_of_independent_components * rows[2]);
@@ -519,11 +519,11 @@ struct Impl<std::complex<double>, 3, false, true, true> {
     // treat the complex values as an additional 'dimension' to transpose, a
     // reinterpret cast is required.
     size_t data_size = number_of_independent_components * extents.product() * 2;
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(scratch.a, reinterpret_cast<const double* const>(data),
                  data_size, 2);
     multiply_in_first_dimension(scratch.b, &data_size, matrices[0], scratch.a);
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(make_not_null(reinterpret_cast<double*>(result.get())),
                  scratch.b, data_size, data_size / 2);
   }
@@ -569,14 +569,14 @@ struct Impl<std::complex<double>, 3, true, false, false> {
     // treat the complex values as an additional 'dimension' to transpose, a
     // reinterpret cast is required.
     size_t data_size = number_of_independent_components * extents.product() * 2;
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(scratch.a, reinterpret_cast<const double* const>(data),
                  data_size, 2);
     do_transpose(scratch.b, scratch.a, data_size, rows[0]);
     multiply_in_first_dimension(scratch.a, &data_size, matrices[1], scratch.b);
     do_transpose(scratch.b, scratch.a, data_size, rows[1]);
     multiply_in_first_dimension(scratch.a, &data_size, matrices[2], scratch.b);
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(make_not_null(reinterpret_cast<double*>(result.get())),
                  scratch.a, data_size,
                  number_of_independent_components * rows[2]);
@@ -621,12 +621,12 @@ struct Impl<std::complex<double>, 3, true, false, true> {
     // treat the complex values as an additional 'dimension' to transpose, a
     // reinterpret cast is required.
     size_t data_size = number_of_independent_components * extents.product() * 2;
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(scratch.a, reinterpret_cast<const double* const>(data),
                  data_size, 2);
     do_transpose(scratch.b, scratch.a, data_size, rows[0]);
     multiply_in_first_dimension(scratch.a, &data_size, matrices[1], scratch.b);
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(make_not_null(reinterpret_cast<double*>(result.get())),
                  scratch.a, data_size,
                  number_of_independent_components * rows[1] * rows[2]);
@@ -671,12 +671,12 @@ struct Impl<std::complex<double>, 3, true, true, false> {
     // treat the complex values as an additional 'dimension' to transpose, a
     // reinterpret cast is required.
     size_t data_size = number_of_independent_components * extents.product() * 2;
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(scratch.a, reinterpret_cast<const double*>(data), data_size,
                  2);
     do_transpose(scratch.b, scratch.a, data_size, rows[0] * rows[1]);
     multiply_in_first_dimension(scratch.a, &data_size, matrices[2], scratch.b);
-    // NOLINTNEXTLINE(cppcoreguildelines-pro-type-reinterpret-cast)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     do_transpose(make_not_null(reinterpret_cast<double*>(result.get())),
                  scratch.a, data_size,
                  number_of_independent_components * rows[2]);

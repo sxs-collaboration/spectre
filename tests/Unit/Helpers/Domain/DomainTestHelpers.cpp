@@ -18,18 +18,18 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Domain/Block.hpp"                  // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"          // IWYU pragma: keep
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/DirectionMap.hpp"  // IWYU pragma: keep
-#include "Domain/Domain.hpp"        // IWYU pragma: keep
+#include "Domain/Domain.hpp"  // IWYU pragma: keep
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "Domain/InitialElementIds.hpp"
-#include "Domain/Neighbors.hpp"  // IWYU pragma: keep
-#include "Domain/OrientationMap.hpp"
-#include "Domain/Side.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/InitialElementIds.hpp"
+#include "Domain/Structure/Neighbors.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"

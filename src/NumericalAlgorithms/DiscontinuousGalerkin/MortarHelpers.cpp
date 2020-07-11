@@ -6,9 +6,9 @@
 #include <algorithm>  // IWYU pragma: keep // for std::max
 
 #include "DataStructures/Index.hpp"
-#include "Domain/ElementId.hpp"  // IWYU pragma: keep
-#include "Domain/OrientationMap.hpp"  // IWYU pragma: keep
-#include "Domain/Side.hpp"
+#include "Domain/Structure/ElementId.hpp"       // IWYU pragma: keep
+#include "Domain/Structure/OrientationMap.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Side.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

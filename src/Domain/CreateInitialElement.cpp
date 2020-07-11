@@ -8,14 +8,14 @@
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
-#include "Domain/Block.hpp"          // IWYU pragma: keep
-#include "Domain/Direction.hpp"
-#include "Domain/Element.hpp"
-#include "Domain/ElementId.hpp"
-#include "Domain/Neighbors.hpp"
-#include "Domain/OrientationMap.hpp"
-#include "Domain/SegmentId.hpp"
-#include "Domain/Side.hpp"
+#include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/SegmentId.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

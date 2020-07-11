@@ -5,11 +5,11 @@
 
 #include <unordered_map>
 
-#include "Domain/Direction.hpp"
-#include "Domain/DirectionMap.hpp"
-#include "Domain/Element.hpp"
-#include "Domain/ElementId.hpp"
-#include "Domain/Neighbors.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Neighbors.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/HasReceivedFromAllMortars.hpp"
 #include "Utilities/TMPL.hpp"

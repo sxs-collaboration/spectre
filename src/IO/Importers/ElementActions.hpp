@@ -6,7 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Domain/ElementId.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "IO/Importers/VolumeDataReader.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "Parallel/ConstGlobalCache.hpp"

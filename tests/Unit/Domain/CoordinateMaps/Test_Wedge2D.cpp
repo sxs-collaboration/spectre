@@ -9,8 +9,8 @@
 #include <random>
 
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"

@@ -12,10 +12,10 @@
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
-#include "Domain/Mesh.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
@@ -24,8 +24,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/VectorAlgebra.hpp"
 
-namespace Spectral {
-namespace Swsh {
+namespace Spectral::Swsh {
 template <int Spin>
 void test_angular_filtering() noexcept {
   MAKE_GENERATOR(gen);
@@ -137,5 +136,4 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshFiltering",
   test_angular_filtering<2>();
   test_radial_filtering<0>();
 }
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh

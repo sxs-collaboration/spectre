@@ -10,13 +10,13 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 #include "Domain/Block.hpp"                       // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"               // IWYU pragma: keep
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/FrustalCloak.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"

@@ -11,13 +11,13 @@
 #include <vector>
 
 #include "DataStructures/IndexIterator.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/Element.hpp"  // IWYU pragma: keep
-#include "Domain/Mesh.hpp"     // IWYU pragma: keep
-#include "Domain/Side.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/Element.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Side.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoGridHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

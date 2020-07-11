@@ -12,8 +12,8 @@
 #include "DataStructures/IdPair.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/BlockId.hpp"
-#include "Domain/ElementId.hpp"
+#include "Domain/Structure/BlockId.hpp"
+#include "Domain/Structure/ElementId.hpp"
 
 namespace intrp {
 

@@ -21,11 +21,11 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/LogicalCoordinates.hpp"
-#include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
@@ -80,7 +80,7 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
   }
 
   // EoS just needs to be a dummy place holder
-  double equation_of_state() const noexcept { return 7.0; }
+  static double equation_of_state() noexcept { return 7.0; }
 
   // clang-tidy: do not use references
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
@@ -109,7 +109,7 @@ struct SystemAnalyticData : public MarkAsAnalyticData {
   }
 
   // EoS just needs to be a dummy place holder
-  double equation_of_state() const noexcept { return 7.0; }
+  static double equation_of_state() noexcept { return 7.0; }
 
   // clang-tidy: do not use references
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT

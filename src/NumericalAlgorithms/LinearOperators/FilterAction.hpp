@@ -8,14 +8,14 @@
 #include <string>
 #include <tuple>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
-#include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
 #include "NumericalAlgorithms/LinearOperators/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"

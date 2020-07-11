@@ -6,10 +6,10 @@
 #include <cstddef>
 #include <unordered_set>
 
-#include "Domain/Element.hpp"
-#include "Domain/ElementId.hpp"
-#include "Domain/Neighbors.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 
 namespace TestHelpers {
 namespace Limiters {

@@ -5,8 +5,7 @@
 
 #include <cmath>
 
-#include "Domain/Block.hpp"          // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -15,9 +14,10 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
-#include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Utilities/MakeArray.hpp"
 
 /// \cond
@@ -27,8 +27,7 @@ struct Logical;
 }  // namespace Frame
 /// \endcond
 
-namespace domain {
-namespace creators {
+namespace domain::creators {
 Disk::Disk(typename InnerRadius::type inner_radius,
            typename OuterRadius::type outer_radius,
            typename InitialRefinement::type initial_refinement,
@@ -51,11 +50,11 @@ Domain<2> Disk::create_domain() const noexcept {
   using Equiangular2D =
       CoordinateMaps::ProductOf2Maps<Equiangular, Equiangular>;
 
-  std::array<size_t, 4> block0_corners{{1, 5, 3, 7}},  //+x wedge
-      block1_corners{{3, 7, 2, 6}},                    //+y wedge
-      block2_corners{{2, 6, 0, 4}},                    //-x wedge
-      block3_corners{{0, 4, 1, 5}},                    //-y wedge
-      block4_corners{{0, 1, 2, 3}};                    // Center square
+  std::array<size_t, 4> block0_corners{{1, 5, 3, 7}};  //+x wedge
+  std::array<size_t, 4> block1_corners{{3, 7, 2, 6}};  //+y wedge
+  std::array<size_t, 4> block2_corners{{2, 6, 0, 4}};  //-x wedge
+  std::array<size_t, 4> block3_corners{{0, 4, 1, 5}};  //-y wedge
+  std::array<size_t, 4> block4_corners{{0, 1, 2, 3}};  // Center square
 
   std::vector<std::array<size_t, 4>> corners{block0_corners, block1_corners,
                                              block2_corners, block3_corners,
@@ -111,5 +110,4 @@ std::vector<std::array<size_t, 2>> Disk::initial_refinement_levels() const
     noexcept {
   return {5, make_array<2>(initial_refinement_)};
 }
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators

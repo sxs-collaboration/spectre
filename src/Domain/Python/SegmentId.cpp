@@ -8,13 +8,12 @@
 #include <pybind11/stl.h>
 #include <string>
 
-#include "Domain/SegmentId.hpp"
+#include "Domain/Structure/SegmentId.hpp"
 #include "Utilities/GetOutput.hpp"
 
 namespace py = pybind11;
 
-namespace domain {
-namespace py_bindings {
+namespace domain::py_bindings {
 
 void bind_segment_id(py::module& m) {  // NOLINT
   // These bindings don't cover the full public interface yet. More bindings
@@ -32,5 +31,4 @@ void bind_segment_id(py::module& m) {  // NOLINT
       .def(py::self != py::self);
 }
 
-}  // namespace py_bindings
-}  // namespace domain
+}  // namespace domain::py_bindings

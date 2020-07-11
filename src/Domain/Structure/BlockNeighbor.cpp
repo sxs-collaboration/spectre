@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/BlockNeighbor.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"
 
 #include <ostream>
 

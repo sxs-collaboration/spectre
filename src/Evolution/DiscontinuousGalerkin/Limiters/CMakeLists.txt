@@ -48,7 +48,9 @@ target_link_libraries(
   Boost::boost
   DataStructures
   Domain
+  DomainStructure
   Interpolation
   LinearOperators
   Options
+  Spectral
   )

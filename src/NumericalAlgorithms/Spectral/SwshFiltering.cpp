@@ -3,14 +3,14 @@
 
 #include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/SpinWeighted.hpp"
-#include "Domain/Mesh.hpp"
-#include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
@@ -20,8 +20,7 @@
 
 // IWYU pragma: no_forward_declare SpinWeighted
 
-namespace Spectral {
-namespace Swsh {
+namespace Spectral::Swsh {
 
 template <int Spin>
 void filter_swsh_volume_quantity(
@@ -155,5 +154,4 @@ GENERATE_INSTANTIATIONS(SWSH_FILTER_INSTANTIATION, (-2, -1, 0, 1, 2))
 
 #undef GET_SPIN
 #undef SWSH_FILTER_INSTANTIATION
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh

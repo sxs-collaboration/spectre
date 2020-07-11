@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  ApplyMatrices.cpp
   Index.cpp
   IndexIterator.cpp
   LeviCivitaIterator.cpp
@@ -19,6 +20,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  ApplyMatrices.hpp
   BoostMultiArray.hpp
   CachedTempBuffer.hpp
   ComplexDataVector.hpp
@@ -43,6 +45,7 @@ spectre_target_headers(
   StripeIterator.hpp
   Tags.hpp
   TempBuffer.hpp
+  Transpose.hpp
   Variables.hpp
   VariablesTag.hpp
   VectorImpl.hpp

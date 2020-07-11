@@ -207,7 +207,7 @@ struct WriteVolumeData {
     Parallel::lock(node_lock);
     std::unordered_map<observers::ArrayComponentId, ExtentsAndTensorVolumeData>
         volume_data{};
-    CmiNodeLock file_lock;
+    CmiNodeLock file_lock = nullptr;
     db::mutate<Tags::H5FileLock, Tags::TensorData>(
         make_not_null(&box),
         [&observation_id, &file_lock, &volume_data ](
@@ -235,7 +235,7 @@ struct WriteVolumeData {
           h5file.try_insert<h5::VolumeData>(subfile_name, version_number);
       std::vector<ExtentsAndTensorVolumeData> dg_elements;
       dg_elements.reserve(volume_data.size());
-      for (auto id_and_element : volume_data) {
+      for (const auto& id_and_element : volume_data) {
         dg_elements.push_back(id_and_element.second);
       }
       // Write the data to the file

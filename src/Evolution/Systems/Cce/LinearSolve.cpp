@@ -5,12 +5,12 @@
 
 #include <cstddef>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/SpinWeighted.hpp"
-#include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
+#include "DataStructures/Transpose.hpp"
 #include "NumericalAlgorithms/LinearOperators/IndefiniteIntegral.hpp"
-#include "NumericalAlgorithms/LinearOperators/Transpose.hpp"
 #include "NumericalAlgorithms/LinearSolver/Lapack.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"

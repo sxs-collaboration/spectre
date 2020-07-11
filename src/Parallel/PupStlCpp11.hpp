@@ -107,7 +107,7 @@ inline void pup(PUP::er& p, std::unordered_set<T>& s) {  // NOLINT
 
   if (p.isUnpacking()) {
     for (size_t i = 0; i < number_elem; ++i) {
-      T element;
+      T element{};
       p | element;
       s.emplace(std::move(element));
     }

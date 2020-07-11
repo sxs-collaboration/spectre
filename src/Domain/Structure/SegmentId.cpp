@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/SegmentId.hpp"
+#include "Domain/Structure/SegmentId.hpp"
 
 #include <boost/functional/hash.hpp>
 #include <ostream>

@@ -22,10 +22,10 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/LogicalCoordinates.hpp"
-#include "Domain/Mesh.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"  // IWYU pragma: keep
@@ -95,7 +95,7 @@ struct SymmetricTensor : db::SimpleTag {
     const auto f_of_x = f(x);
     for (size_t i = 0; i < Dim; ++i) {
       for (size_t j = i; j < Dim; ++j) {  // Symmetry
-        result.get(i, j) = (i + j + 0.33) * get(f_of_x);
+        result.get(i, j) = (static_cast<double>(i + j) + 0.33) * get(f_of_x);
       }
     }
     return result;

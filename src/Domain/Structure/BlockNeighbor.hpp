@@ -9,7 +9,7 @@
 #include <cstddef>
 #include <iosfwd>
 
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 
 /// \cond
 namespace PUP {

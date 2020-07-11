@@ -9,14 +9,12 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace evolution {
-namespace domain {
-namespace Tags {
+namespace evolution::domain::Tags {
 template <size_t Dim>
 void DivMeshVelocityCompute<Dim>::function(
     const gsl::not_null<boost::optional<Scalar<DataVector>>*> div_mesh_velocity,
@@ -41,6 +39,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
 #undef DIM
-}  // namespace Tags
-}  // namespace domain
-}  // namespace evolution
+}  // namespace evolution::domain::Tags

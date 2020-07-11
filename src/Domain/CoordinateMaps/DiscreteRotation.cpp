@@ -4,15 +4,14 @@
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
-#include "Domain/Direction.hpp"
-#include "Domain/OrientationMap.hpp"
-#include "Domain/Side.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-namespace domain {
-namespace CoordinateMaps {
+namespace domain::CoordinateMaps {
 
 template <size_t VolumeDim>
 DiscreteRotation<VolumeDim>::DiscreteRotation(
@@ -104,5 +103,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
 #undef DTYPE
 #undef INSTANTIATE
 /// \endcond
-}  // namespace CoordinateMaps
-}  // namespace domain
+}  // namespace domain::CoordinateMaps

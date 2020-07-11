@@ -7,8 +7,8 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
 template <typename FluxTags, size_t Dim, typename DerivativeFrame>

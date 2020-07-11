@@ -11,8 +11,7 @@
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Block.hpp"          // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -26,11 +25,12 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
@@ -88,9 +88,10 @@ void test_rectangle_construction(
 
 void test_rectangle() {
   INFO("Rectangle");
-  const std::vector<std::array<size_t, 2>> grid_points{{{4, 6}}},
-      refinement_level{{{3, 2}}};
-  const std::array<double, 2> lower_bound{{-1.2, 3.0}}, upper_bound{{0.8, 5.0}};
+  const std::vector<std::array<size_t, 2>> grid_points{{{4, 6}}};
+  const std::vector<std::array<size_t, 2>> refinement_level{{{3, 2}}};
+  const std::array<double, 2> lower_bound{{-1.2, 3.0}};
+  const std::array<double, 2> upper_bound{{0.8, 5.0}};
   // default OrientationMap is aligned
   const OrientationMap<2> aligned_orientation{};
 

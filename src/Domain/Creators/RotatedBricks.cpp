@@ -4,13 +4,12 @@
 #include "Domain/Creators/RotatedBricks.hpp"
 
 #include "DataStructures/Index.hpp"
-#include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 
-namespace domain {
-namespace creators {
+namespace domain::creators {
 RotatedBricks::RotatedBricks(
     const typename LowerBound::type lower_xyz,
     const typename Midpoint::type midpoint_xyz,
@@ -85,5 +84,4 @@ std::vector<std::array<size_t, 3>> RotatedBricks::initial_refinement_levels()
           {{y_0, z_0, x_0}}, {{y_0, x_0, z_0}}, {{z_0, x_0, y_0}},
           {{y_0, z_0, x_0}}, {{x_0, y_0, z_0}}};
 }
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators

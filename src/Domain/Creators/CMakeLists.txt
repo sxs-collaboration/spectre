@@ -47,6 +47,8 @@ spectre_target_headers(
 
 target_link_libraries(
   ${LIBRARY}
+  PRIVATE
+  DomainStructure
   PUBLIC
   CoordinateMaps
   DataStructures

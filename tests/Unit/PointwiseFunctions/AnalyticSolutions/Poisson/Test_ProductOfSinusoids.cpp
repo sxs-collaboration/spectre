@@ -18,7 +18,6 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/Mesh.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Poisson/Geometry.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"  // IWYU pragma: keep
@@ -28,6 +27,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/FirstOrderEllipticSolutionsTestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
 #include "Utilities/TMPL.hpp"
@@ -74,7 +74,7 @@ void test_solution(const std::array<double, Dim>& wave_numbers,
       "ProductOfSinusoids", {"source"}, {{{0., 2. * M_PI}}},
       std::make_tuple(wave_numbers), DataVector(5));
 
-  Poisson::Solutions::ProductOfSinusoids<Dim> created_solution =
+  const auto created_solution =
       TestHelpers::test_creation<Poisson::Solutions::ProductOfSinusoids<Dim>>(
           "WaveNumbers: " + options);
   CHECK(created_solution == solution);

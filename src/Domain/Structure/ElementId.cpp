@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/ElementId.hpp"
+#include "Domain/Structure/ElementId.hpp"
 
 #include <boost/functional/hash.hpp>
 #include <limits>
@@ -13,9 +13,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
-
-template <size_t VolumeDim>
-constexpr size_t ElementId<VolumeDim>::volume_dim;
 
 // The `static_assert`s verify that `ElementId` satisfies the constraints
 // imposed by Charm++ to make `ElementId` able to act as an index into Charm++'s

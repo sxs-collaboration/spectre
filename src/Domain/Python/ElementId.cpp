@@ -8,14 +8,13 @@
 #include <pybind11/stl.h>
 #include <string>
 
-#include "Domain/ElementId.hpp"
-#include "Domain/SegmentId.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/SegmentId.hpp"
 #include "Utilities/GetOutput.hpp"
 
 namespace py = pybind11;
 
-namespace domain {
-namespace py_bindings {
+namespace domain::py_bindings {
 
 namespace detail {
 template <size_t Dim>
@@ -46,5 +45,4 @@ void bind_element_id(py::module& m) {  // NOLINT
   detail::bind_element_id_impl<3>(m);
 }
 
-}  // namespace py_bindings
-}  // namespace domain
+}  // namespace domain::py_bindings

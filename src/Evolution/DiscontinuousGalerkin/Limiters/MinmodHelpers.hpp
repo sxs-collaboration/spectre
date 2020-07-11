@@ -10,8 +10,8 @@
 #include <utility>
 
 #include "DataStructures/Tags.hpp"  // IWYU pragma: keep
-#include "Domain/Direction.hpp"
-#include "Domain/DirectionMap.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

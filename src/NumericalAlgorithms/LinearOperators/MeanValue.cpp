@@ -7,8 +7,8 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SliceIterator.hpp"
-#include "Domain/Mesh.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 template <>

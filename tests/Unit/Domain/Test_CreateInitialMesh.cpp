@@ -5,15 +5,14 @@
 
 #include <cstddef>
 
-#include "Domain/CreateInitialMesh.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/ElementId.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/CreateInitialMesh.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/MakeArray.hpp"
 
-namespace domain {
-namespace Initialization {
+namespace domain::Initialization {
 
 SPECTRE_TEST_CASE("Unit.Domain.CreateInitialMesh", "[Domain][Unit]") {
   {
@@ -59,5 +58,4 @@ SPECTRE_TEST_CASE("Unit.Domain.CreateInitialMesh", "[Domain][Unit]") {
   }
 }
 
-}  // namespace Initialization
-}  // namespace domain
+}  // namespace domain::Initialization

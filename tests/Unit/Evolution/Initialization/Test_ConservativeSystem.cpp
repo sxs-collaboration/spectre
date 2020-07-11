@@ -12,10 +12,10 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
@@ -35,7 +35,7 @@ struct PrimVar : db::SimpleTag {
 };
 
 struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
-  int equation_of_state() const noexcept { return 5; }
+  static int equation_of_state() noexcept { return 5; }
 
   // NOLINTNEXTLINE
   void pup(PUP::er& /*p*/) noexcept {}

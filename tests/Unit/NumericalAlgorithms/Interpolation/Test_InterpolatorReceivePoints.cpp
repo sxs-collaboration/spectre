@@ -15,10 +15,10 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/IdPair.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/BlockId.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/Structure/BlockId.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
@@ -42,12 +42,10 @@
 // IWYU pragma: no_include <boost/variant/get.hpp>
 
 /// \cond
-namespace intrp {
-namespace Actions {
+namespace intrp::Actions {
 template <typename InterpolationTargetTag>
 struct InterpolationTargetReceiveVars;
-}  // namespace Actions
-}  // namespace intrp
+}  // namespace intrp::Actions
 namespace Parallel {
 template <typename Metavariables>
 class ConstGlobalCache;
@@ -56,14 +54,12 @@ namespace db {
 template <typename TagsList>
 class DataBox;
 }  // namespace db
-namespace intrp {
-namespace Tags {
+namespace intrp::Tags {
 template <typename Metavariables>
 struct InterpolatedVarsHolders;
 template <typename Metavariables>
 struct TemporalIds;
-}  // namespace Tags
-}  // namespace intrp
+}  // namespace intrp::Tags
 namespace Tags {
 template <typename TagsList>
 struct Variables;

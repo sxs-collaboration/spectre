@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "Domain/BlockId.hpp"
+#include "Domain/Structure/BlockId.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/GetOutput.hpp"
 

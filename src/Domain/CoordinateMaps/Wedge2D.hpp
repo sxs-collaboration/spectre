@@ -12,7 +12,7 @@
 #include <limits>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
@@ -153,7 +153,7 @@ class Wedge2D {
   // clang-tidy: google runtime references
   void pup(PUP::er& p);  // NOLINT
 
-  bool is_identity() const noexcept { return false; }
+  static bool is_identity() noexcept { return false; }
 
  private:
   friend bool operator==(const Wedge2D& lhs, const Wedge2D& rhs) noexcept;

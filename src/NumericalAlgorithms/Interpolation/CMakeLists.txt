@@ -72,6 +72,7 @@ target_link_libraries(
   Blas
   Boost::boost
   Domain
+  DomainStructure
   ErrorHandling
   GSL::gsl
   Options

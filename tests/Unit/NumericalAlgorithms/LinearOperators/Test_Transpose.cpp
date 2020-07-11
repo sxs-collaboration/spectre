@@ -8,8 +8,8 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Transpose.hpp"
 #include "DataStructures/Variables.hpp"
-#include "NumericalAlgorithms/LinearOperators/Transpose.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 

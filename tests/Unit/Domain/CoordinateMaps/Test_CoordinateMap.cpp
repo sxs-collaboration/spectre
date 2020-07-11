@@ -34,10 +34,10 @@
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
-#include "Domain/Direction.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Utilities/Gsl.hpp"
@@ -210,8 +210,9 @@ void test_single_coordinate_map() {
 
     const auto expected_jac_inertial = first_rotated2d.jacobian(coord);
     Jacobian<double, 2, Frame::Logical, Frame::Grid> expected_jac_grid{};
-    REQUIRE(expected_jac_inertial.size() == expected_jac_grid.size());
-    for (size_t i = 0; i < expected_jac_inertial.size(); ++i) {
+    REQUIRE(decltype(expected_jac_inertial)::size() ==
+            decltype(expected_jac_grid)::size());
+    for (size_t i = 0; i < decltype(expected_jac_inertial)::size(); ++i) {
       expected_jac_grid[i] = expected_jac_inertial[i];
     }
     CHECK(rotated2d.jacobian(source_points) == expected_jac_grid);
@@ -219,8 +220,9 @@ void test_single_coordinate_map() {
     const auto expected_inv_jac_inertial = first_rotated2d.inv_jacobian(coord);
     InverseJacobian<double, 2, Frame::Logical, Frame::Grid>
         expected_inv_jac_grid{};
-    REQUIRE(expected_inv_jac_inertial.size() == expected_inv_jac_grid.size());
-    for (size_t i = 0; i < expected_inv_jac_inertial.size(); ++i) {
+    REQUIRE(decltype(expected_inv_jac_inertial)::size() ==
+            decltype(expected_inv_jac_grid)::size());
+    for (size_t i = 0; i < decltype(expected_inv_jac_inertial)::size(); ++i) {
       expected_inv_jac_grid[i] = expected_inv_jac_inertial[i];
     }
     CHECK(rotated2d.inv_jacobian(source_points) == expected_inv_jac_grid);
@@ -275,8 +277,9 @@ void test_single_coordinate_map() {
 
     const auto expected_jac_inertial = first_rotated3d.jacobian(coord);
     Jacobian<double, 3, Frame::Logical, Frame::Grid> expected_jac_grid{};
-    REQUIRE(expected_jac_inertial.size() == expected_jac_grid.size());
-    for (size_t i = 0; i < expected_jac_inertial.size(); ++i) {
+    REQUIRE(decltype(expected_jac_inertial)::size() ==
+            decltype(expected_jac_grid)::size());
+    for (size_t i = 0; i < decltype(expected_jac_inertial)::size(); ++i) {
       expected_jac_grid[i] = expected_jac_inertial[i];
     }
     CHECK(rotated3d.jacobian(source_points) == expected_jac_grid);
@@ -284,8 +287,9 @@ void test_single_coordinate_map() {
     const auto expected_inv_jac_inertial = first_rotated3d.inv_jacobian(coord);
     InverseJacobian<double, 3, Frame::Logical, Frame::Grid>
         expected_inv_jac_grid{};
-    REQUIRE(expected_inv_jac_inertial.size() == expected_inv_jac_grid.size());
-    for (size_t i = 0; i < expected_inv_jac_inertial.size(); ++i) {
+    REQUIRE(decltype(expected_inv_jac_inertial)::size() ==
+            decltype(expected_inv_jac_grid)::size());
+    for (size_t i = 0; i < decltype(expected_inv_jac_inertial)::size(); ++i) {
       expected_inv_jac_grid[i] = expected_inv_jac_inertial[i];
     }
     CHECK(rotated3d.inv_jacobian(source_points) == expected_inv_jac_grid);

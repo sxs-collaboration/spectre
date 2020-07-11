@@ -6,11 +6,11 @@
 #include <ostream>
 #include <pup.h>  // IWYU pragma: keep
 
-#include "Domain/BlockNeighbor.hpp"                 // IWYU pragma: keep
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
-#include "Domain/Direction.hpp"                     // IWYU pragma: keep
-#include "Domain/DirectionMap.hpp"                  // IWYU pragma: keep
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"      // IWYU pragma: keep
+#include "Domain/Structure/DirectionMap.hpp"   // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 

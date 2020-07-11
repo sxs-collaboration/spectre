@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/Side.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "ErrorHandling/Error.hpp"
 
 #include <ostream>

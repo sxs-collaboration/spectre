@@ -22,16 +22,15 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Block.hpp"
-#include "Domain/BlockId.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
-#include "Domain/InitialElementIds.hpp"
 #include "Domain/LogicalCoordinates.hpp"
-#include "Domain/Mesh.hpp"
+#include "Domain/Structure/BlockId.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
@@ -40,6 +39,7 @@
 #include "NumericalAlgorithms/Interpolation/InterpolatorReceiveVolumeData.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -59,14 +59,12 @@
 /// \cond
 // IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare Tensor
-namespace intrp {
-namespace Actions {
+namespace intrp::Actions {
 template <typename InterpolationTargetTag>
 struct AddTemporalIdsToInterpolationTarget;
 template <typename InterpolationTargetTag>
 struct InterpolationTargetReceiveVars;
-}  // namespace Actions
-}  // namespace intrp
+}  // namespace intrp::Actions
 namespace Parallel {
 template <typename Metavariables>
 class ConstGlobalCache;
@@ -75,16 +73,14 @@ namespace db {
 template <typename TagsList>
 class DataBox;
 }  // namespace db
-namespace intrp {
-namespace Tags {
+namespace intrp::Tags {
 template <typename TemporalId>
 struct InterpolatedVarsHolders;
 template <typename TemporalId>
 struct TemporalIds;
 template <typename TemporalId>
 struct VolumeVarsInfo;
-}  // namespace Tags
-}  // namespace intrp
+}  // namespace intrp::Tags
 /// \endcond
 
 namespace {

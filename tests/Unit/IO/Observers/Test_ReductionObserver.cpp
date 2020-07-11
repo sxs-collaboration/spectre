@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "DataStructures/Matrix.hpp"
-#include "Domain/ElementId.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/IO/Observers/ObserverHelpers.hpp"
 #include "IO/H5/AccessType.hpp"

@@ -9,7 +9,7 @@
 #include <cstddef>
 #include <utility>
 
-#include "Domain/Side.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"

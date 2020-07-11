@@ -7,13 +7,13 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/Mesh.hpp"
-#include "Domain/OrientationMap.hpp"
-#include "Domain/OrientationMapHelpers.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 

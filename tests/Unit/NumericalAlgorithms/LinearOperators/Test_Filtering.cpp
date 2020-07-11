@@ -8,20 +8,20 @@
 #include <cstddef>
 #include <string>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
-#include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
 #include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
 #include "NumericalAlgorithms/LinearOperators/FilterAction.hpp"
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
@@ -220,7 +220,7 @@ template <size_t Dim>
 void test_exponential_filter_creation() noexcept {
   using Filter = Filters::Exponential<0>;
 
-  const Filter filter = TestHelpers::test_creation<Filter>(
+  const auto filter = TestHelpers::test_creation<Filter>(
       "Alpha: 36\n"
       "HalfPower: 32\n");
 
