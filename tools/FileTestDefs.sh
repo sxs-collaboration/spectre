@@ -328,7 +328,7 @@ standard_checks+=(license)
 test_case() {
     is_c++ "$1" && staged_grep -q "^TEST_CASE" "$1"
 }
-test_case_reoprt() {
+test_case_report() {
     echo "Found occurrences of TEST_CASE, must use SPECTRE_TEST_CASE:"
     pretty_grep "^TEST_CASE" "$@"
 }
