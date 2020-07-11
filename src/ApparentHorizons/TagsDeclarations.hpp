@@ -35,6 +35,9 @@ template <typename Frame>
 struct EuclideanAreaElement;
 template <typename IntegrandTag, typename Frame>
 struct EuclideanSurfaceIntegral;
+struct OneOverOneFormMagnitude;
+template <size_t Dim, typename Frame, typename DataType>
+struct OneOverOneFormMagnitudeCompute;
 
 }  // namespace StrahlkorperTags
 
@@ -50,8 +53,6 @@ struct AreaCompute;
 struct IrreducibleMass;
 template <typename Frame>
 struct IrreducibleMassCompute;
-struct OneOverOneFormMagnitude;
-template <size_t Dim, typename Frame, typename DataType>
-struct OneOverOneFormMagnitudeCompute;
+
 }  // namespace Tags
 }  // namespace StrahlkorperGr
