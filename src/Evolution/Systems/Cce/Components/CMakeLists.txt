@@ -2,10 +2,9 @@
 # See LICENSE.txt for details.
 
 spectre_target_headers(
-  Evolution
+  Cce
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  DgElementArray.hpp
+  CharacteristicEvolution.hpp
+  WorldtubeBoundary.hpp
   )
-
-add_subdirectory(Limiters)

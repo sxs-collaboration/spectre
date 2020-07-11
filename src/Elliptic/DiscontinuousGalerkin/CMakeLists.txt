@@ -2,10 +2,13 @@
 # See LICENSE.txt for details.
 
 spectre_target_headers(
-  Evolution
+  Elliptic
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   DgElementArray.hpp
+  ImposeBoundaryConditions.hpp
+  ImposeInhomogeneousBoundaryConditionsOnSource.hpp
+  InitializeFirstOrderOperator.hpp
   )
 
-add_subdirectory(Limiters)
+add_subdirectory(NumericalFluxes)

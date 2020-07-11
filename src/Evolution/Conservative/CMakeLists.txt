@@ -5,7 +5,7 @@ spectre_target_headers(
   Evolution
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  DgElementArray.hpp
+  ConservativeDuDt.hpp
+  UpdateConservatives.hpp
+  UpdatePrimitives.hpp
   )
-
-add_subdirectory(Limiters)

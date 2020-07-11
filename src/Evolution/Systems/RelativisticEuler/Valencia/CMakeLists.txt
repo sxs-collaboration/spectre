@@ -3,7 +3,11 @@
 
 set(LIBRARY Valencia)
 
-set(LIBRARY_SOURCES
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
   Characteristics.cpp
   ConservativeFromPrimitive.cpp
   FixConservatives.cpp
@@ -12,7 +16,20 @@ set(LIBRARY_SOURCES
   Sources.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  Characteristics.hpp
+  ConservativeFromPrimitive.hpp
+  FixConservatives.hpp
+  Fluxes.hpp
+  PrimitiveFromConservative.hpp
+  Sources.hpp
+  System.hpp
+  Tags.hpp
+  TagsDeclarations.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}

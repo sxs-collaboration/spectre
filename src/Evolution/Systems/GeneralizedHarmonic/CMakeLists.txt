@@ -1,18 +1,33 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-add_subdirectory(GaugeSourceFunctions)
-
 set(LIBRARY GeneralizedHarmonic)
 
-set(LIBRARY_SOURCES
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
   Characteristics.cpp
   Constraints.cpp
   Equations.cpp
   UpwindPenaltyCorrection.cpp
   )
 
-add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  Characteristics.hpp
+  Constraints.hpp
+  DuDtTempTags.hpp
+  Equations.hpp
+  Initialize.hpp
+  System.hpp
+  Tags.hpp
+  TagsDeclarations.hpp
+  UpwindPenaltyCorrection.hpp
+  )
 
 target_link_libraries(
   ${LIBRARY}
@@ -22,3 +37,5 @@ target_link_libraries(
   GeneralRelativity
   Options
   )
+
+add_subdirectory(GaugeSourceFunctions)
