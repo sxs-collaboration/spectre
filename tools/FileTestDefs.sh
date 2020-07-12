@@ -224,7 +224,7 @@ standard_checks+=(long_lines)
 
 # Check for lrtslock header
 lrtslock() {
-    is_c++ "$1" && grep -q '#include <lrtslock.h>' "$1"
+    is_c++ "$1" && staged_grep -q '#include <lrtslock.h>' "$1"
 }
 lrtslock_report() {
     echo "Found lrtslock header (include converse.h instead):"
