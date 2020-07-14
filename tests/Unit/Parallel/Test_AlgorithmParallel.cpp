@@ -40,6 +40,27 @@ template <typename TagsList>
 class DataBox;
 }  // namespace db
 
+namespace AlgorithmParallel_detail {
+struct UnpackCounter {
+  UnpackCounter() = default;
+  ~UnpackCounter() = default;
+  UnpackCounter(const UnpackCounter& /*unused*/) = default;
+  UnpackCounter& operator=(const UnpackCounter& /*unused*/) = default;
+  UnpackCounter(UnpackCounter&& /*unused*/) = default;
+  UnpackCounter& operator=(UnpackCounter&& /*unused*/) = default;
+
+  explicit UnpackCounter(CkMigrateMessage* /*msg*/) noexcept {}
+
+  void pup(PUP::er& p) noexcept {  // NOLINT
+    p | counter_value;
+    if (p.isUnpacking()) {
+      ++counter_value;
+    }
+  }
+  size_t counter_value = 0;
+};
+}  // namespace AlgorithmParallel_detail
+
 namespace Tags {
 struct Int0 : db::SimpleTag {
   static std::string name() noexcept { return "Int0"; }
@@ -54,6 +75,10 @@ struct Int1 : db::SimpleTag {
 struct CountActionsCalled : db::SimpleTag {
   static std::string name() noexcept { return "CountActionsCalled"; }
   using type = int;
+};
+
+struct UnpackCounter : db::SimpleTag {
+  using type = AlgorithmParallel_detail::UnpackCounter;
 };
 
 /// [int_receive_tag]
@@ -162,9 +187,10 @@ struct Initialize {
                                  ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     return std::make_tuple(
-        db::create_from<db::RemoveTags<>,
-                        db::AddSimpleTags<Tags::CountActionsCalled>>(
-            std::move(box), 0),
+        db::create_from<
+            db::RemoveTags<>,
+            db::AddSimpleTags<Tags::CountActionsCalled, Tags::UnpackCounter>>(
+            std::move(box), 0, AlgorithmParallel_detail::UnpackCounter{}),
         true);
   }
 
@@ -223,6 +249,31 @@ struct AddIntValue10 {
         db::create_from<tmpl::list<>, tmpl::list<Tags::Int0>>(std::move(box),
                                                               10),
         terminate_algorithm);
+  }
+};
+
+struct CheckWasUnpacked {
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static auto apply(db::DataBox<DbTags>& box,
+                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    // Check to be sure the algorithm has been packed and unpacked at least a
+    // few times during the algorithm and retained functionality
+    if(Parallel::number_of_procs() > 1) {
+      // If this check fails with slightly too few unpacks counted, it may
+      // indicate that the test machine is too fast for the setting used in
+      // the balancer in the accompanying CMakeLists.txt. If that is the
+      // problem, you might solve it either by balancing even more often, or by
+      // doing more computational work during each iteration of the algorithm.
+      SPECTRE_PARALLEL_REQUIRE(db::get<Tags::UnpackCounter>(box).counter_value >
+                               5);
+    }
+    return std::make_tuple(std::move(box), true);
   }
 };
 
@@ -474,7 +525,10 @@ struct ArrayParallelComponent {
           typename Metavariables::Phase,
           Metavariables::Phase::PerformArrayAlgorithm,
           tmpl::list<ArrayActions::AddIntValue10, ArrayActions::IncrementInt0,
-                     ArrayActions::RemoveInt0, ArrayActions::SendToSingleton>>>;
+                     ArrayActions::RemoveInt0, ArrayActions::SendToSingleton>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::FinalizeArray,
+                             tmpl::list<ArrayActions::CheckWasUnpacked>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   using array_index = int;
@@ -500,7 +554,8 @@ struct ArrayParallelComponent {
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    if (next_phase == Metavariables::Phase::PerformArrayAlgorithm) {
+    if (next_phase == Metavariables::Phase::PerformArrayAlgorithm or
+        next_phase == Metavariables::Phase::FinalizeArray) {
       Parallel::get_parallel_component<ArrayParallelComponent>(local_cache)
           .perform_algorithm();
     }
@@ -555,6 +610,7 @@ struct TestMetavariables {
     Initialization,
     PerformSingletonAlgorithm,
     PerformArrayAlgorithm,
+    FinalizeArray,
     Exit
   };
   static Phase determine_next_phase(const Phase& current_phase,
@@ -567,6 +623,8 @@ struct TestMetavariables {
     } else if (current_phase == Phase::PerformSingletonAlgorithm) {
       return Phase::PerformArrayAlgorithm;
     } else if (current_phase == Phase::PerformArrayAlgorithm) {
+      return Phase::FinalizeArray;
+    } else if (current_phase == Phase::FinalizeArray) {
       return Phase::Exit;
     }
 

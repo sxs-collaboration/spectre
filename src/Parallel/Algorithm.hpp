@@ -4,6 +4,7 @@
 #pragma once
 
 #include <boost/variant/variant.hpp>
+#include <charm++.h>
 #include <converse.h>
 #include <cstddef>
 #include <exception>
@@ -25,9 +26,11 @@
 #include "Parallel/Algorithms/AlgorithmSingletonDeclarations.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/SimpleActionVisitation.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "Utilities/BoostHelpers.hpp"
@@ -44,16 +47,6 @@
 // IWYU pragma: no_include <array>  // for tuple_size
 
 // IWYU pragma: no_include "Parallel/Algorithm.hpp"  // Include... ourself?
-
-/// \cond
-namespace Parallel {
-namespace Algorithms {
-struct Nodegroup;
-struct Singleton;
-}  // namespace Algorithms
-}  // namespace Parallel
-// IWYU pragma: no_forward_declare db::DataBox
-/// \endcond
 
 namespace Parallel {
 /// \cond
@@ -182,6 +175,25 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   /// Charm++ migration constructor, used after a chare is migrated
   explicit AlgorithmImpl(CkMigrateMessage* /*msg*/) noexcept;
 
+  void pup(PUP::er& p) noexcept override {  // NOLINT
+#ifdef SPECTRE_CHARM_PROJECTIONS
+    p | non_action_time_start_;
+#endif
+    if (performing_action_) {
+      ERROR("cannot serialize while performing action!");
+    }
+    p | performing_action_;
+    p | phase_;
+    p | algorithm_step_;
+    if constexpr (Parallel::is_node_group_proxy<cproxy_type>::value) {
+      p | node_lock_;
+    }
+    p | terminate_;
+    p | box_;
+    p | inboxes_;
+    p | array_index_;
+    p | global_cache_;
+  }
   /// \cond
   ~AlgorithmImpl() override;
 
