@@ -13,6 +13,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/ForceInline.hpp"
@@ -201,6 +202,28 @@ struct NormalOneForm : db::ComputeTag {
                        const aliases::OneForm<Frame>& dx_radius,
                        const aliases::OneForm<Frame>& r_hat) noexcept;
   using argument_tags = tmpl::list<DxRadius<Frame>, Rhat<Frame>>;
+};
+/// The OneOverOneFormMagnitude is the reciprocal of the magnitude of the
+/// one-form perpendicular to the horizon
+struct OneOverOneFormMagnitude : db::SimpleTag {
+  using type = DataVector;
+};
+/// Computes the reciprocal of the magnitude of the one form perpendicular to
+/// the horizon
+template <size_t Dim, typename Frame, typename DataType>
+struct OneOverOneFormMagnitudeCompute : db::ComputeTag,
+                                        OneOverOneFormMagnitude {
+  using base = OneOverOneFormMagnitude;
+  static void function(
+      const gsl::not_null<DataVector*> one_over_magnitude,
+      const tnsr::II<DataType, Dim, Frame>& inverse_spatial_metric,
+      const tnsr::i<DataType, Dim, Frame>& normal_one_form) noexcept {
+    *one_over_magnitude =
+        1.0 / get(magnitude(normal_one_form, inverse_spatial_metric));
+  }
+  using argument_tags =
+      tmpl::list<gr::Tags::InverseSpatialMetric<Dim, Frame, DataType>,
+                 NormalOneForm<Frame>>;
 };
 
 /// `Tangents(i,j)` is \f$\partial x_{\rm surf}^i/\partial q^j\f$,
