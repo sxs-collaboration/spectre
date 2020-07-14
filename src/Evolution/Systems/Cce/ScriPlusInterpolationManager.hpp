@@ -8,6 +8,8 @@
 #include <cstddef>
 #include <deque>
 #include <memory>
+#include <pup.h>
+#include <pup_stl.h>
 #include <utility>
 #include <vector>
 
@@ -18,6 +20,7 @@
 #include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace Cce {
@@ -143,6 +146,16 @@ struct ScriPlusInterpolationManager {
     return u_bondi_ranges_.size();
   }
 
+  void pup(PUP::er& p) noexcept {  // NOLINT
+    p | u_bondi_values_;
+    p | to_interpolate_values_;
+    p | u_bondi_ranges_;
+    p | target_times_;
+    p | vector_size_;
+    p | target_number_of_points_;
+    p | interpolator_;
+  }
+
  private:
   void remove_unneeded_early_times() noexcept;
 
@@ -153,8 +166,8 @@ struct ScriPlusInterpolationManager {
   std::deque<VectorTypeToInterpolate> to_interpolate_values_;
   std::deque<std::pair<double, double>> u_bondi_ranges_;
   std::deque<double> target_times_;
-  size_t vector_size_ = 0;
-  size_t target_number_of_points_ = 0;
+  size_t vector_size_ = 0_st;
+  size_t target_number_of_points_ = 0_st;
   std::unique_ptr<intrp::SpanInterpolator> interpolator_;
 };
 
@@ -422,6 +435,11 @@ struct ScriPlusInterpolationManager<
     return interpolation_manager_lhs_.number_of_data_points();
   }
 
+  void pup(PUP::er& p) noexcept {  // NOLINT
+    p | interpolation_manager_lhs_;
+    p | interpolation_manager_rhs_;
+  }
+
  private:
   /// \cond
   ScriPlusInterpolationManager<VectorTypeToInterpolate, MultipliesLhs>
@@ -542,6 +560,10 @@ struct ScriPlusInterpolationManager<VectorTypeToInterpolate, Tags::Du<Tag>> {
   /// interpolation manager
   size_t number_of_data_points() const noexcept {
     return argument_interpolation_manager_.number_of_data_points();
+  }
+
+  void pup(PUP::er& p) noexcept {  // NOLINT
+    p | argument_interpolation_manager_;
   }
 
  private:
