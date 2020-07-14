@@ -151,6 +151,21 @@ class TestIOH5VolumeData(unittest.TestCase):
                                       expected_zcoord_tensor_data)
         h5_file.close()
 
+    def test_offset_and_length_for_grid(self):
+        h5_file = spectre_h5.H5File(file_name=self.file_name_r,
+                                    append_to_file=True)
+        vol_file = h5_file.get_vol(path="/element_data")
+        obs_id = vol_file.list_observation_ids()[0]
+        all_grid_names = vol_file.get_grid_names(observation_id=obs_id)
+        all_extents = vol_file.get_extents(observation_id=obs_id)
+        h5_file.close()
+
+        self.assertEqual(
+            spectre_h5.offset_and_length_for_grid(
+                grid_name='[B0,(L0I0,L0I0,L0I0)]',
+                all_grid_names=all_grid_names,
+                all_extents=all_extents), (0, 8))
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
