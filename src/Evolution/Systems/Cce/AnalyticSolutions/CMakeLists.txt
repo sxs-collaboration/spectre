@@ -11,6 +11,7 @@ spectre_target_sources(
   BouncingBlackHole.cpp
   LinearizedBondiSachs.cpp
   SphericalMetricData.cpp
+  TeukolskyWave.cpp
   WorldtubeData.cpp
   )
 
