@@ -179,6 +179,12 @@ struct InertialRetardedTime : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+/// Represents \f$\eth u_{\rm inertial}\f$, which is a useful quantity for
+/// asymptotic coordinate transformations.
+struct EthInertialRetardedTime : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 1>>;
+};
+
 /// Complex storage form for the asymptotically inertial retarded time, for
 /// taking spin-weighted derivatives
 struct ComplexInertialRetardedTime : db::SimpleTag {

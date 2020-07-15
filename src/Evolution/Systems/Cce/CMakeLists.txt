@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  Actions/ScriObserveInterpolated.cpp
   AnalyticBoundaryDataManager.cpp
   BoundaryData.cpp
   Equations.cpp

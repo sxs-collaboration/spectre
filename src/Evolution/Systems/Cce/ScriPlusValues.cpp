@@ -90,28 +90,11 @@ void CalculateScriPlusValue<Tags::TimeIntegral<Tags::ScriPlus<Tags::Psi4>>>::
                   number_of_angular_points);
 
   get(*integral_of_psi_4) =
-      get(boundary_r) *
+      2.0 * get(boundary_r) *
       ((conj(eth_dy_u_at_scri) +
         conj(eth_r_divided_by_r_view) * conj(dy_u_at_scri)) +
        conj(dy_du_j_at_scri)) /
       exp_2_beta_at_scri;
-}
-
-void CalculateScriPlusValue<Tags::ScriPlusFactor<Tags::Psi4>>::apply(
-    const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
-        scri_plus_factor,
-    const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta,
-    const size_t l_max, const size_t number_of_radial_points) noexcept {
-  const size_t number_of_angular_points =
-      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
-
-  const SpinWeighted<ComplexDataVector, 0> exp_2_beta_at_scri;
-  make_const_view(make_not_null(&exp_2_beta_at_scri), get(exp_2_beta),
-                  (number_of_radial_points - 1) * number_of_angular_points,
-                  number_of_angular_points);
-
-  // extra factor of 2 for tetrad matching to SXS conventions
-  get(*scri_plus_factor) = 2.0 / exp_2_beta_at_scri;
 }
 
 void CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi3>>::apply(
@@ -361,6 +344,15 @@ void CalculateScriPlusValue<Tags::ScriPlus<Tags::Strain>>::apply(
   // uses.
   get(*strain) =
       conj(-2.0 * get(boundary_r) * dy_j_at_scri + get(eth_eth_retarded_time));
+}
+
+void CalculateScriPlusValue<Tags::EthInertialRetardedTime>::apply(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
+        eth_inertial_time,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& inertial_time,
+    const size_t l_max) noexcept {
+  Spectral::Swsh::angular_derivatives<tmpl::list<Spectral::Swsh::Tags::Eth>>(
+      l_max, 1, make_not_null(&get(*eth_inertial_time)), get(inertial_time));
 }
 
 void CalculateScriPlusValue<::Tags::dt<Tags::InertialRetardedTime>>::apply(

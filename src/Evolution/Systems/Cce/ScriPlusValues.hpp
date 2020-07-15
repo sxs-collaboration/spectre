@@ -11,6 +11,15 @@
 
 namespace Cce {
 
+/// The tags that are needed to be interpolated at scri+ for the available
+/// observation tags.
+using scri_plus_interpolation_set =
+    tmpl::list<Tags::News, Tags::ScriPlus<Tags::Strain>,
+               Tags::ScriPlus<Tags::Psi3>, Tags::ScriPlus<Tags::Psi2>,
+               Tags::ScriPlus<Tags::Psi1>, Tags::ScriPlus<Tags::Psi0>,
+               Tags::Du<Tags::TimeIntegral<Tags::ScriPlus<Tags::Psi4>>>,
+               Tags::EthInertialRetardedTime>;
+
 template <typename Tag>
 struct CalculateScriPlusValue;
 
@@ -61,15 +70,21 @@ struct CalculateScriPlusValue<Tags::News> {
  * has the form
  *
  * \f{align*}{
- * \Psi_4^{(1)} = A \partial_u B,
+ * \Psi_4^{(1)} = \partial_{u_{\text{inertial}}} B,
  * \f}
  *
  * where superscripts denote orders in the expansion in powers of \f$r^{-1}\f$.
  * This mutator computes \f$B\f$:
  *
  * \f{align*}{
- * B = e^{-2 \beta^{(0)}} (\bar \eth \bar U^{(1)} + \partial_u \bar J)
+ * B = 2 e^{-2 \beta^{(0)}} (\bar \eth \bar U^{(1)} + \partial_u \bar J^{(1)})
  * \f}
+ *
+ * and the time derivative that appears the original equation obeys,
+ *
+ * \f[
+ * \partial_{u_{\text{inertial}}} = e^{-2 \beta} \partial_u
+ * \f]
  */
 template <>
 struct CalculateScriPlusValue<Tags::TimeIntegral<Tags::ScriPlus<Tags::Psi4>>> {
@@ -99,38 +114,6 @@ struct CalculateScriPlusValue<Tags::TimeIntegral<Tags::ScriPlus<Tags::Psi4>>> {
       size_t l_max, size_t number_of_radial_points) noexcept;
 };
 
-/*!
- * \brief Compute the contribution to the leading \f$\Psi_4\f$ that multiplies
- * the total time derivative
- *
- * \details The value \f$\Psi_4\f$ scales asymptotically as \f$r^{-1}\f$, and
- * has the form
- *
- * \f{align*}{
- * \Psi_4^{(1)} = A \partial_u B,
- * \f}
- *
- * where superscripts denote orders in the expansion in powers of \f$r^{-1}\f$.
- * This mutator computes \f$A\f$:
- *
- * \f{align*}{
- * A = e^{-2 \beta^{(0)}}
- * \f}
- */
-template <>
-struct CalculateScriPlusValue<Tags::ScriPlusFactor<Tags::Psi4>> {
-  using return_tags = tmpl::list<Tags::ScriPlusFactor<Tags::Psi4>>;
-  // extra typelist for more convenient testing
-  using tensor_argument_tags = tmpl::list<Tags::Exp2Beta>;
-  using argument_tags = tmpl::push_back<tensor_argument_tags, Tags::LMax,
-                                        Tags::NumberOfRadialPoints>;
-
-  static void apply(
-      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
-          scri_plus_factor,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta,
-      size_t l_max, size_t number_of_radial_points) noexcept;
-};
 
 /*!
  * \brief Computes the leading part of \f$\Psi_3\f$ near \f$\mathcal I^+\f$.
@@ -407,6 +390,21 @@ struct CalculateScriPlusValue<::Tags::dt<Tags::InertialRetardedTime>> {
   static void apply(
       gsl::not_null<Scalar<DataVector>*> dt_inertial_time,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta) noexcept;
+};
+
+/// Determines the angular derivative of the asymptotic inertial time, useful
+/// for asymptotic coordinate transformations.
+template <>
+struct CalculateScriPlusValue<Tags::EthInertialRetardedTime> {
+  using return_tags = tmpl::list<Tags::EthInertialRetardedTime>;
+  using argument_tags =
+      tmpl::list<Tags::ComplexInertialRetardedTime, Tags::LMax>;
+
+  static void apply(
+      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
+          eth_inertial_time,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& inertial_time,
+      size_t l_max) noexcept;
 };
 
 /// Initialize the \f$\mathcal I^+\f$ value `Tag` for the first hypersurface.

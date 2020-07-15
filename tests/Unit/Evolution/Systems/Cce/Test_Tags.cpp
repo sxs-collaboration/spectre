@@ -44,6 +44,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
       "InertialRetardedTime");
   TestHelpers::db::test_simple_tag<Cce::Tags::ComplexInertialRetardedTime>(
       "ComplexInertialRetardedTime");
+  TestHelpers::db::test_simple_tag<Cce::Tags::EthInertialRetardedTime>(
+      "EthInertialRetardedTime");
   TestHelpers::db::test_simple_tag<Cce::Tags::OneMinusY>("OneMinusY");
   TestHelpers::db::test_simple_tag<Cce::Tags::DuR>("DuR");
   TestHelpers::db::test_simple_tag<Cce::Tags::DuRDividedByR>("DuRDividedByR");

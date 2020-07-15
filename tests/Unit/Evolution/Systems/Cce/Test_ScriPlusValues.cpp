@@ -59,13 +59,6 @@ void pypp_test_scri_plus_computation_steps() noexcept {
   pypp::check_with_random_values<1>(
       &WrapScriPlusComputation<
           l_max, number_of_radial_points,
-          CalculateScriPlusValue<Tags::ScriPlusFactor<Tags::Psi4>>>::apply,
-      "ScriPlusValues", {"constant_factor_psi_4"}, {{{0.1, 1.0}}},
-      DataVector{Spectral::Swsh::number_of_swsh_collocation_points(l_max)});
-
-  pypp::check_with_random_values<1>(
-      &WrapScriPlusComputation<
-          l_max, number_of_radial_points,
           CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi3>>>::apply,
       "ScriPlusValues", {"psi_3"}, {{{0.1, 1.0}}},
       DataVector{Spectral::Swsh::number_of_swsh_collocation_points(l_max)});
@@ -110,10 +103,13 @@ void check_inertial_retarded_time_utilities() noexcept {
   const size_t number_of_radial_points = 5;
 
   auto time_box = db::create<db::AddSimpleTags<
-      Tags::InertialRetardedTime, Tags::ComplexInertialRetardedTime,
-      Tags::Exp2Beta, ::Tags::dt<Tags::InertialRetardedTime>>>(
+      Tags::LMax, Tags::InertialRetardedTime, Tags::ComplexInertialRetardedTime,
+      Tags::EthInertialRetardedTime, Tags::Exp2Beta,
+      ::Tags::dt<Tags::InertialRetardedTime>>>(
+           l_max,
       Scalar<DataVector>{number_of_angular_points},
       Scalar<SpinWeighted<ComplexDataVector, 0>>{number_of_angular_points},
+      Scalar<SpinWeighted<ComplexDataVector, 1>>{number_of_angular_points},
       Scalar<SpinWeighted<ComplexDataVector, 0>>{number_of_angular_points *
                                                  number_of_radial_points},
       Scalar<DataVector>{number_of_angular_points});
@@ -154,6 +150,31 @@ void check_inertial_retarded_time_utilities() noexcept {
                    .data()[i + number_of_angular_points *
                                    (number_of_radial_points - 1)]));
   }
+
+  const double random_time_delta = 0.1 * value_dist(gen);
+  const ComplexDataVector expected_retarded_time_intermediate_value =
+      std::complex<double>(1.0, 0.0) *
+      get(db::get<::Tags::dt<Tags::InertialRetardedTime>>(time_box));
+  auto expected_eth_retarded_time =
+      Spectral::Swsh::angular_derivative<Spectral::Swsh::Tags::Eth>(
+          l_max, 1,
+          SpinWeighted<ComplexDataVector, 0>(
+              expected_retarded_time_intermediate_value));
+  expected_eth_retarded_time.data() *= random_time_delta;
+  db::mutate<Tags::ComplexInertialRetardedTime>(
+      make_not_null(&time_box),
+      [&random_time_delta](
+          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+              complex_retarded_time,
+          const Scalar<DataVector>& dt_inertial_time) noexcept {
+        get(*complex_retarded_time) = std::complex<double>(1.0, 0.0) *
+                                      random_time_delta * get(dt_inertial_time);
+      },
+      db::get<::Tags::dt<Tags::InertialRetardedTime>>(time_box));
+  db::mutate_apply<CalculateScriPlusValue<Tags::EthInertialRetardedTime>>(
+      make_not_null(&time_box));
+  CHECK_ITERABLE_APPROX(expected_eth_retarded_time,
+                        get(db::get<Tags::EthInertialRetardedTime>(time_box)));
 }
 }  // namespace
 
