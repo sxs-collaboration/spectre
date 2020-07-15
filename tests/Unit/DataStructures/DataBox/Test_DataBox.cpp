@@ -48,9 +48,6 @@ std::string append_word(const std::string& text, const double value) {
   return text + ss.str();
 }
 
-auto get_tensor() { return tnsr::A<double, 3, Frame::Grid>{{{7.82, 8, 3, 9}}}; }
-}  // namespace
-
 namespace test_databox_tags {
 /// [databox_tag_example]
 struct Tag0 : db::SimpleTag {
@@ -86,12 +83,6 @@ struct ComputeFromBase : db::ComputeTag {
   static std::string name() noexcept { return "ComputeFromBase"; }
   static std::string function(const std::string& s) noexcept { return s; }
   using argument_tags = tmpl::list<Tag2Base>;
-};
-
-struct TagTensor : db::ComputeTag {
-  static std::string name() noexcept { return "TagTensor"; }
-  static constexpr auto function = get_tensor;
-  using argument_tags = tmpl::list<>;
 };
 
 /// [compute_item_tag_function]
@@ -148,7 +139,6 @@ struct PointerComputeItemMutating : db::ComputeTag {
 };
 }  // namespace test_databox_tags
 
-namespace {
 using EmptyBox = decltype(db::create<db::AddSimpleTags<>>());
 static_assert(std::is_same_v<decltype(db::create_from<db::RemoveTags<>>(
                                  std::declval<EmptyBox>())),
@@ -185,9 +175,9 @@ static_assert(
 static_assert(std::is_same<decltype(db::create_from<db::RemoveTags<>>(Box_t{})),
                            Box_t>::value,
               "Failed testing no-op create_from");
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
+void test_databox() noexcept {
+  INFO("test databox");
   const auto create_original_box = []() {
     /// [create_databox]
     auto original_box = db::create<
@@ -384,8 +374,9 @@ struct String : db::SimpleTag {
   using type = std::string;
 };
 }  // namespace ArgumentTypeTags
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.create_argument_types",
-                  "[Unit][DataStructures]") {
+
+void test_create_argument_types() noexcept {
+  INFO("test create argument types");
   std::string mutable_string = "mutable";
   const std::string const_string = "const";
   std::string move_string = "move";
@@ -405,8 +396,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.create_argument_types",
   CHECK(db::get<ArgumentTypeTags::String<3>>(box) == "const move");
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_databox",
-                  "[Unit][DataStructures]") {
+void test_get_databox() noexcept {
+  INFO("test get databox");
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2>,
@@ -424,6 +415,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_databox",
   db::apply<tmpl::list<Tags::DataBox>>(check_result_no_args, original_box);
   /// [databox_self_tag_example]
 }
+}  // namespace
 
 // [[OutputRegex, Unable to retrieve a \(compute\) item 'DataBox' from the
 // DataBox from within a call to mutate. You must pass these either through the
@@ -447,8 +439,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_databox_error",
       });
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate",
-                  "[Unit][DataStructures]") {
+namespace {
+void test_mutate() noexcept {
+  INFO("test mutate");
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2, test_databox_tags::Pointer>,
@@ -488,22 +481,24 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate",
         CHECK(**p == 3);
         *p = std::make_unique<int>(5);
       });
-  db::mutate<test_databox_tags::PointerBase>(make_not_null(&original_box), [
-  ](auto p) noexcept {
-    using DbTags = decltype(original_box)::tags_list;
-    static_assert(
-        std::is_same_v<db::item_type<test_databox_tags::PointerBase, DbTags>,
-                       std::unique_ptr<int>>,
-        "Wrong type for item_type on unique_ptr by base");
-    static_assert(std::is_same_v<decltype(p),
-                                 gsl::not_null<db::item_type<
-                                     test_databox_tags::PointerBase, DbTags>*>>,
-                  "Wrong type for mutate on unique_ptr by base");
-    CHECK(**p == 5);
-    *p = std::make_unique<int>(7);
-  });
+  db::mutate<test_databox_tags::PointerBase>(
+      make_not_null(&original_box), [](auto p) noexcept {
+        using DbTags = decltype(original_box)::tags_list;
+        static_assert(std::is_same_v<
+                          db::item_type<test_databox_tags::PointerBase, DbTags>,
+                          std::unique_ptr<int>>,
+                      "Wrong type for item_type on unique_ptr by base");
+        static_assert(
+            std::is_same_v<decltype(p),
+                           gsl::not_null<db::item_type<
+                               test_databox_tags::PointerBase, DbTags>*>>,
+            "Wrong type for mutate on unique_ptr by base");
+        CHECK(**p == 5);
+        *p = std::make_unique<int>(7);
+      });
   CHECK(db::get<test_databox_tags::Pointer>(original_box) == 7);
 }
+}  // namespace
 
 // [[OutputRegex, Unable to retrieve a \(compute\) item 'ComputeTag0' from the
 // DataBox from within a call to mutate. You must pass these either through the
@@ -566,10 +561,9 @@ struct NonCopyableFunctor {
   template <typename... Args>
   void operator()(Args&&... /*unused*/) && {}
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
-                  "[Unit][DataStructures]") {
+void test_apply() noexcept {
+  INFO("test apply");
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2, test_databox_tags::Pointer>,
@@ -678,9 +672,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
   db::apply<PointerApplyCallable>(original_box);
 }
 
-// Test the tags
-namespace {
-
 auto get_vector() { return tnsr::I<DataVector, 3, Frame::Grid>(5_st, 2.0); }
 
 struct Var1 : db::ComputeTag {
@@ -733,7 +724,6 @@ static_assert(
                                      Frame::Grid>>::type,
         tnsr::iJ<DataVector, 3, Frame::Grid>>,
     "Failed db::wrap_tags_in two_vars vector");
-}  // namespace
 
 namespace test_databox_tags {
 struct ScalarTagBase : db::BaseTag {};
@@ -851,8 +841,8 @@ struct MultiplyVariablesByTwo : db::ComputeTag {
 };
 }  // namespace test_databox_tags
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
-                  "[Unit][DataStructures]") {
+void test_variables() noexcept {
+  INFO("test variables");
   using vars_tag = Tags::Variables<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>;
   auto box =
@@ -1046,17 +1036,15 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
   check_references_match();
 }
 
-namespace {
 struct Tag1 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 struct Tag2 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables2",
-                  "[Unit][DataStructures]") {
+void test_variables2() noexcept {
+  INFO("test variables2");
   auto box =
       db::create<db::AddSimpleTags<Tags::Variables<tmpl::list<Tag1, Tag2>>>>(
           Variables<tmpl::list<Tag1, Tag2>>(1, 1.));
@@ -1068,8 +1056,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables2",
   CHECK(db::get<Tag1>(box) == Scalar<DataVector>(DataVector(1, 2.)));
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.reset_compute_items",
-                  "[Unit][DataStructures]") {
+void test_reset_compute_items() noexcept {
+  INFO("test reset compute items");
   auto box =
       db::create<db::AddSimpleTags<
                      test_databox_tags::Tag0, test_databox_tags::Tag1,
@@ -1125,8 +1113,8 @@ struct CheckReset : db::ComputeTag {
 };
 }  // namespace ExtraResetTags
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables.extra_reset",
-                  "[Unit][DataStructures]") {
+void test_variables_extra_reset() noexcept {
+  INFO("test variables extra reset");
   auto box = db::create<
       db::AddSimpleTags<ExtraResetTags::Int,
                         Tags::Variables<tmpl::list<ExtraResetTags::Var>>>,
@@ -1134,11 +1122,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables.extra_reset",
       1, Variables<tmpl::list<ExtraResetTags::Var>>(2, 3.));
   CHECK(db::get<ExtraResetTags::CheckReset>(box) == 0);
   db::mutate<ExtraResetTags::Int>(make_not_null(&box),
-                                  [](const gsl::not_null<int*>) {});
+                                  [](const gsl::not_null<int*> /*unused*/) {});
   CHECK(db::get<ExtraResetTags::CheckReset>(box) == 0);
 }
 
-namespace {
 /// [mutate_apply_struct_definition_example]
 struct TestDataboxMutateApply {
   // delete copy semantics just to make sure it works. Not necessary in general.
@@ -1166,10 +1153,9 @@ struct TestDataboxMutateApply {
   }
 };
 /// [mutate_apply_struct_definition_example]
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
-                  "[Unit][DataStructures]") {
+void test_mutate_apply() noexcept {
+  INFO("test mutate apply");
   auto box = db::create<
       db::AddSimpleTags<
           test_databox_tags::Tag0, test_databox_tags::Tag1,
@@ -1196,7 +1182,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
   CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
         (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
 
-  SECTION("Apply function or lambda") {
+  {
+    INFO("Apply function or lambda");
     /// [mutate_apply_struct_example_stateful]
     db::mutate_apply(TestDataboxMutateApply{}, make_not_null(&box));
     /// [mutate_apply_struct_example_stateful]
@@ -1284,23 +1271,25 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
           (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
   }
 
-  SECTION("Stateless struct with tags lists") {
+  {
+    INFO("Stateless struct with tags lists");
     /// [mutate_apply_struct_example_stateless]
     db::mutate_apply<TestDataboxMutateApply>(make_not_null(&box));
     /// [mutate_apply_struct_example_stateless]
     CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
     CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
-          Scalar<DataVector>(DataVector(2, 6.)));
+          Scalar<DataVector>(DataVector(2, 48.)));
     CHECK(db::get<test_databox_tags::VectorTag>(box) ==
-          (tnsr::I<DataVector, 3>{
-              {{DataVector(2, 9.), DataVector(2, 12.), DataVector(2, 15.)}}}));
+          (tnsr::I<DataVector, 3>{{{DataVector(2, 243.), DataVector(2, 768.),
+                                    DataVector(2, 1875.)}}}));
     CHECK(db::get<test_databox_tags::ScalarTag2>(box) ==
-          Scalar<DataVector>(DataVector(2, 12.)));
+          Scalar<DataVector>(DataVector(2, 96.)));
     CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
           (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
   }
 
-  SECTION("unique_ptr") {
+  {
+    INFO("unique_ptr");
     db::mutate_apply<tmpl::list<test_databox_tags::Pointer>, tmpl::list<>>(
         [](const gsl::not_null<std::unique_ptr<int>*> p) noexcept { **p = 5; },
         make_not_null(&box));
@@ -1357,7 +1346,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
   }
 }
 
-namespace {
 static_assert(
     std::is_same_v<tmpl::list<test_databox_tags::ComputeTag0,
                               test_databox_tags::ComputeTag1,
@@ -1392,9 +1380,7 @@ static_assert(
             test_databox_tags::MultiplyScalarByTwo,
             test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2>>>,
     "Failed testing db::compute_databox_type");
-}  // namespace
 
-namespace {
 void multiply_by_two_mutate(const gsl::not_null<std::vector<double>*> t,
                             const double value) {
   if (t->empty()) {
@@ -1427,7 +1413,6 @@ void mutate_variables(
   }
 }
 /// [databox_mutating_compute_item_function]
-}  // namespace
 
 namespace test_databox_tags {
 struct MutateComputeTag0 : db::ComputeTag {
@@ -1452,8 +1437,8 @@ struct MutateVariablesCompute : db::ComputeTag {
 /// [databox_mutating_compute_item_tag]
 }  // namespace test_databox_tags
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutating_compute_item",
-                  "[Unit][DataStructures]") {
+void test_mutating_compute_item() noexcept {
+  INFO("test mutating compute item");
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2>,
@@ -1574,10 +1559,12 @@ struct vector2 : db::SimpleTag {
 };
 }  // namespace DataBoxTest_detail
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice.single",
-                  "[Unit][DataStructures]") {
-  const size_t x_extents = 2, y_extents = 3, z_extents = 4,
-               vec_size = DataBoxTest_detail::vector::type::size();
+void test_data_on_slice_single() noexcept {
+  INFO("test data on slice single");
+  const size_t x_extents = 2;
+  const size_t y_extents = 3;
+  const size_t z_extents = 4;
+  const size_t vec_size = DataBoxTest_detail::vector::type::size();
   Index<3> extents(x_extents, y_extents, z_extents);
   auto box = db::create<db::AddSimpleTags<DataBoxTest_detail::vector>>([]() {
     Variables<tmpl::list<DataBoxTest_detail::vector>> vars(24, 0.);
@@ -1589,10 +1576,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice.single",
   }());
 
   Variables<tmpl::list<DataBoxTest_detail::vector>> expected_vars_sliced_in_x(
-      y_extents * z_extents, 0.),
-      expected_vars_sliced_in_y(x_extents * z_extents, 0.),
-      expected_vars_sliced_in_z(x_extents * y_extents, 0.);
-  const size_t x_offset = 1, y_offset = 2, z_offset = 1;
+      y_extents * z_extents, 0.);
+  Variables<tmpl::list<DataBoxTest_detail::vector>> expected_vars_sliced_in_y(
+      x_extents * z_extents, 0.);
+  Variables<tmpl::list<DataBoxTest_detail::vector>> expected_vars_sliced_in_z(
+      x_extents * y_extents, 0.);
+  const size_t x_offset = 1;
+  const size_t y_offset = 2;
+  const size_t z_offset = 1;
 
   for (size_t s = 0; s < expected_vars_sliced_in_x.size(); ++s) {
     // clang-tidy: do not use pointer arithmetic
@@ -1632,10 +1623,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice.single",
         expected_vars_sliced_in_z);
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice",
-                  "[Unit][DataStructures]") {
-  const size_t x_extents = 2, y_extents = 3, z_extents = 4,
-               vec_size = DataBoxTest_detail::vector::type::size();
+void test_data_on_slice() noexcept {
+  INFO("test data on slice");
+  const size_t x_extents = 2;
+  const size_t y_extents = 3;
+  const size_t z_extents = 4;
+  const size_t vec_size = DataBoxTest_detail::vector::type::size();
   Index<3> extents(x_extents, y_extents, z_extents);
   auto box = db::create<
       db::AddSimpleTags<DataBoxTest_detail::vector, DataBoxTest_detail::scalar,
@@ -1659,10 +1652,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice",
       }());
 
   Variables<tmpl::list<DataBoxTest_detail::vector>> expected_vars_sliced_in_x(
-      y_extents * z_extents, 0.),
-      expected_vars_sliced_in_y(x_extents * z_extents, 0.),
-      expected_vars_sliced_in_z(x_extents * y_extents, 0.);
-  const size_t x_offset = 1, y_offset = 2, z_offset = 1;
+      y_extents * z_extents, 0.);
+  Variables<tmpl::list<DataBoxTest_detail::vector>> expected_vars_sliced_in_y(
+      x_extents * z_extents, 0.);
+  Variables<tmpl::list<DataBoxTest_detail::vector>> expected_vars_sliced_in_z(
+      x_extents * y_extents, 0.);
+  const size_t x_offset = 1;
+  const size_t y_offset = 2;
+  const size_t z_offset = 1;
 
   for (size_t s = 0; s < expected_vars_sliced_in_x.size(); ++s) {
     // clang-tidy: do not use pointer arithmetic
@@ -1743,8 +1740,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.data_on_slice",
                   expected_vars_sliced_in_z * 10.0)));
   }
 }
+}  // namespace
 
-namespace test_subitems {
+namespace {
 // We can't use raw fundamental types as subitems because subitems
 // need to have a reference-like nature.
 template <typename T>
@@ -1813,14 +1811,13 @@ struct Second : db::SimpleTag {
 
   static constexpr size_t index = 1;
 };
-}  // namespace test_subitems
+}  // namespace
 
 namespace db {
 template <typename TagList, size_t N, bool Compute, bool DependsOnComputeItem>
-struct Subitems<TagList,
-                test_subitems::Parent<N, Compute, DependsOnComputeItem>> {
-  using type = tmpl::list<test_subitems::First<N>, test_subitems::Second<N>>;
-  using tag = test_subitems::Parent<N, Compute>;
+struct Subitems<TagList, Parent<N, Compute, DependsOnComputeItem>> {
+  using type = tmpl::list<First<N>, Second<N>>;
+  using tag = Parent<N, Compute>;
 
   template <typename Subtag, typename LocalTag = tag>
   static void create_item(
@@ -1845,58 +1842,55 @@ struct Subitems<TagList,
 };
 }  // namespace db
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Subitems",
-                  "[Unit][DataStructures]") {
-  auto box = db::create<db::AddSimpleTags<test_subitems::Parent<0>>,
-                        db::AddComputeTags<test_subitems::Parent<1, true>>>(
-      std::make_pair(
-          test_subitems::Boxed<int>(std::make_shared<int>(5)),
-          test_subitems::Boxed<double>(std::make_shared<double>(3.5))));
+namespace {
 
-  CHECK(*db::get<test_subitems::First<0>>(box) == 5);
-  CHECK(*db::get<test_subitems::First<1>>(box) == 6);
-  CHECK(*db::get<test_subitems::Second<0>>(box) == 3.5);
-  CHECK(*db::get<test_subitems::Second<1>>(box) == 7);
+void test_subitems() noexcept {
+  INFO("test subitems");
+  auto box = db::create<db::AddSimpleTags<Parent<0>>,
+                        db::AddComputeTags<Parent<1, true>>>(
+      std::make_pair(Boxed<int>(std::make_shared<int>(5)),
+                     Boxed<double>(std::make_shared<double>(3.5))));
 
-  db::mutate<test_subitems::Second<0>>(
-      make_not_null(&box), [](const gsl::not_null<test_subitems::Boxed<double>*>
-                                  x) noexcept { **x = 12.; });
+  CHECK(*db::get<First<0>>(box) == 5);
+  CHECK(*db::get<First<1>>(box) == 6);
+  CHECK(*db::get<Second<0>>(box) == 3.5);
+  CHECK(*db::get<Second<1>>(box) == 7);
 
-  CHECK(*db::get<test_subitems::First<0>>(box) == 5);
-  CHECK(*db::get<test_subitems::First<1>>(box) == 6);
-  CHECK(*db::get<test_subitems::Second<0>>(box) == 12.);
-  CHECK(*db::get<test_subitems::Second<1>>(box) == 24.);
+  db::mutate<Second<0>>(
+      make_not_null(&box),
+      [](const gsl::not_null<Boxed<double>*> x) noexcept { **x = 12.; });
+
+  CHECK(*db::get<First<0>>(box) == 5);
+  CHECK(*db::get<First<1>>(box) == 6);
+  CHECK(*db::get<Second<0>>(box) == 12.);
+  CHECK(*db::get<Second<1>>(box) == 24.);
 
   {
     const auto copy_box = serialize_and_deserialize(box);
-    CHECK(*db::get<test_subitems::First<0>>(copy_box) == 5);
-    CHECK(*db::get<test_subitems::First<1>>(copy_box) == 6);
-    CHECK(*db::get<test_subitems::Second<0>>(copy_box) == 12.);
-    CHECK(*db::get<test_subitems::Second<1>>(copy_box) == 24.);
+    CHECK(*db::get<First<0>>(copy_box) == 5);
+    CHECK(*db::get<First<1>>(copy_box) == 6);
+    CHECK(*db::get<Second<0>>(copy_box) == 12.);
+    CHECK(*db::get<Second<1>>(copy_box) == 24.);
   }
 
   static_assert(
       std::is_same_v<
           decltype(box),
-          decltype(db::create_from<db::RemoveTags<test_subitems::Parent<2>>>(
-              db::create_from<db::RemoveTags<>,
-                              db::AddSimpleTags<test_subitems::Parent<2>>>(
+          decltype(db::create_from<db::RemoveTags<Parent<2>>>(
+              db::create_from<db::RemoveTags<>, db::AddSimpleTags<Parent<2>>>(
                   std::move(box),
                   std::make_pair(
-                      test_subitems::Boxed<int>(std::make_shared<int>(5)),
-                      test_subitems::Boxed<double>(
-                          std::make_shared<double>(3.5))))))>,
+                      Boxed<int>(std::make_shared<int>(5)),
+                      Boxed<double>(std::make_shared<double>(3.5))))))>,
       "Failed testing that adding and removing a simple subitem does "
       "not change the type of the DataBox");
 
   static_assert(
       std::is_same_v<
           decltype(box),
-          decltype(db::create_from<
-                   db::RemoveTags<test_subitems::Parent<2, true, true>>>(
-              db::create_from<
-                  db::RemoveTags<>, db::AddSimpleTags<>,
-                  db::AddComputeTags<test_subitems::Parent<2, true, true>>>(
+          decltype(db::create_from<db::RemoveTags<Parent<2, true, true>>>(
+              db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
+                              db::AddComputeTags<Parent<2, true, true>>>(
                   std::move(box))))>,
       "Failed testing that adding and removing a compute subitem does "
       "not change the type of the DataBox");
@@ -1951,8 +1945,8 @@ struct ComputeTemplate : db::ComputeTag {
 /// [overload_compute_tag_template]
 }  // namespace test_databox_tags
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.OverloadComputeTags",
-                  "[Unit][DataStructures]") {
+void test_overload_compute_tags() noexcept {
+  INFO("testing overload compute tags.");
   auto box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag0Int>,
       db::AddComputeTags<
@@ -1998,33 +1992,19 @@ struct TupleTag : db::SimpleTag {
 }  // namespace
 }  // namespace TestTags
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TaggedTuple",
-                  "[Unit][DataStructures]") {
-  {
-    // Test that having a TaggedTuple inside a DataBox works properly
-    auto box = db::create<db::AddSimpleTags<TestTags::TupleTag>>(
-        tuples::TaggedTuple<TestTags::MyTag0, TestTags::MyTag1>{123, 2.3});
-    auto box2 = std::move(box);
-    CHECK(tuples::get<TestTags::MyTag0>(db::get<TestTags::TupleTag>(box2)) ==
-          123);
-    CHECK(tuples::get<TestTags::MyTag1>(db::get<TestTags::TupleTag>(box2)) ==
-          2.3);
-  }
-  {
-    // Test that having a TaggedTuple inside a DataBox works properly
-    auto box = db::create<db::AddSimpleTags<TestTags::TupleTag>>(
-        tuples::TaggedTuple<TestTags::MyTag0, TestTags::MyTag1>{123, 2.3});
-    auto box2 = std::move(box);
-    CHECK(tuples::get<TestTags::MyTag0>(db::get<TestTags::TupleTag>(box2)) ==
-          123);
-    CHECK(tuples::get<TestTags::MyTag1>(db::get<TestTags::TupleTag>(box2)) ==
-          2.3);
-  }
+void test_with_tagged_tuple() noexcept {
+  // Test that having a TaggedTuple inside a DataBox works properly
+  auto box = db::create<db::AddSimpleTags<TestTags::TupleTag>>(
+      tuples::TaggedTuple<TestTags::MyTag0, TestTags::MyTag1>{123, 2.3});
+  auto box2 = std::move(box);
+  CHECK(tuples::get<TestTags::MyTag0>(db::get<TestTags::TupleTag>(box2)) ==
+        123);
+  CHECK(tuples::get<TestTags::MyTag1>(db::get<TestTags::TupleTag>(box2)) ==
+        2.3);
 }
 
-namespace {
-// Test serialization of a DataBox with non-Subitem simple items only.
 void serialization_non_subitem_simple_items() noexcept {
+  INFO("serialization of a DataBox with non-Subitem simple items only");
   auto serialization_test_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2>>(
@@ -2060,40 +2040,36 @@ void serialization_non_subitem_simple_items() noexcept {
         &db::get<test_databox_tags::Tag2>(deserialized_serialization_test_box));
 }
 
-// Test serialization of a DataBox with Subitem and non-Subitem simple items.
 void serialization_subitems_simple_items() noexcept {
-  auto serialization_test_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_subitems::Parent<0>,
-                        test_databox_tags::Tag1, test_databox_tags::Tag2,
-                        test_subitems::Parent<1>>>(
-      3.14,
-      std::make_pair(
-          test_subitems::Boxed<int>(std::make_shared<int>(5)),
-          test_subitems::Boxed<double>(std::make_shared<double>(3.5))),
-      std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
-      std::make_pair(
-          test_subitems::Boxed<int>(std::make_shared<int>(9)),
-          test_subitems::Boxed<double>(std::make_shared<double>(-4.5))));
+  INFO("serialization of a DataBox with Subitem and non-Subitem simple items");
+  auto serialization_test_box =
+      db::create<db::AddSimpleTags<test_databox_tags::Tag0, Parent<0>,
+                                   test_databox_tags::Tag1,
+                                   test_databox_tags::Tag2, Parent<1>>>(
+          3.14,
+          std::make_pair(Boxed<int>(std::make_shared<int>(5)),
+                         Boxed<double>(std::make_shared<double>(3.5))),
+          std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
+          std::make_pair(Boxed<int>(std::make_shared<int>(9)),
+                         Boxed<double>(std::make_shared<double>(-4.5))));
   const double* before_0 =
       &db::get<test_databox_tags::Tag0>(serialization_test_box);
   const std::vector<double>* before_1 =
       &db::get<test_databox_tags::Tag1>(serialization_test_box);
   const std::string* before_2 =
       &db::get<test_databox_tags::Tag2>(serialization_test_box);
-  const std::pair<test_subitems::Boxed<int>, test_subitems::Boxed<double>>*
-      before_parent0 =
-          &db::get<test_subitems::Parent<0>>(serialization_test_box);
-  const test_subitems::Boxed<int>* before_parent0f =
-      &db::get<test_subitems::First<0>>(serialization_test_box);
-  const test_subitems::Boxed<double>* before_parent0s =
-      &db::get<test_subitems::Second<0>>(serialization_test_box);
-  const std::pair<test_subitems::Boxed<int>, test_subitems::Boxed<double>>*
-      before_parent1 =
-          &db::get<test_subitems::Parent<1>>(serialization_test_box);
-  const test_subitems::Boxed<int>* before_parent1f =
-      &db::get<test_subitems::First<1>>(serialization_test_box);
-  const test_subitems::Boxed<double>* before_parent1s =
-      &db::get<test_subitems::Second<1>>(serialization_test_box);
+  const std::pair<Boxed<int>, Boxed<double>>* before_parent0 =
+      &db::get<Parent<0>>(serialization_test_box);
+  const Boxed<int>* before_parent0f =
+      &db::get<First<0>>(serialization_test_box);
+  const Boxed<double>* before_parent0s =
+      &db::get<Second<0>>(serialization_test_box);
+  const std::pair<Boxed<int>, Boxed<double>>* before_parent1 =
+      &db::get<Parent<1>>(serialization_test_box);
+  const Boxed<int>* before_parent1f =
+      &db::get<First<1>>(serialization_test_box);
+  const Boxed<double>* before_parent1s =
+      &db::get<Second<1>>(serialization_test_box);
 
   auto deserialized_serialization_test_box =
       serialize_and_deserialize(serialization_test_box);
@@ -2103,24 +2079,19 @@ void serialization_subitems_simple_items() noexcept {
   CHECK(before_0 == &db::get<test_databox_tags::Tag0>(serialization_test_box));
   CHECK(before_0 !=
         &db::get<test_databox_tags::Tag0>(deserialized_serialization_test_box));
-  CHECK(*db::get<test_subitems::First<0>>(serialization_test_box) == 5);
-  CHECK(*db::get<test_subitems::Second<0>>(serialization_test_box) == 3.5);
-  CHECK(*db::get<test_subitems::First<0>>(
-            deserialized_serialization_test_box) == 5);
-  CHECK(*db::get<test_subitems::Second<0>>(
-            deserialized_serialization_test_box) == 3.5);
-  CHECK(before_parent0 ==
-        &db::get<test_subitems::Parent<0>>(serialization_test_box));
-  CHECK(before_parent0 != &db::get<test_subitems::Parent<0>>(
-                              deserialized_serialization_test_box));
-  CHECK(before_parent0f ==
-        &db::get<test_subitems::First<0>>(serialization_test_box));
+  CHECK(*db::get<First<0>>(serialization_test_box) == 5);
+  CHECK(*db::get<Second<0>>(serialization_test_box) == 3.5);
+  CHECK(*db::get<First<0>>(deserialized_serialization_test_box) == 5);
+  CHECK(*db::get<Second<0>>(deserialized_serialization_test_box) == 3.5);
+  CHECK(before_parent0 == &db::get<Parent<0>>(serialization_test_box));
+  CHECK(before_parent0 !=
+        &db::get<Parent<0>>(deserialized_serialization_test_box));
+  CHECK(before_parent0f == &db::get<First<0>>(serialization_test_box));
   CHECK(before_parent0f !=
-        &db::get<test_subitems::First<0>>(deserialized_serialization_test_box));
-  CHECK(before_parent0s ==
-        &db::get<test_subitems::Second<0>>(serialization_test_box));
-  CHECK(before_parent0s != &db::get<test_subitems::Second<0>>(
-                               deserialized_serialization_test_box));
+        &db::get<First<0>>(deserialized_serialization_test_box));
+  CHECK(before_parent0s == &db::get<Second<0>>(serialization_test_box));
+  CHECK(before_parent0s !=
+        &db::get<Second<0>>(deserialized_serialization_test_box));
   CHECK(db::get<test_databox_tags::Tag1>(serialization_test_box) ==
         std::vector<double>{8.7, 93.2, 84.7});
   CHECK(db::get<test_databox_tags::Tag1>(deserialized_serialization_test_box) ==
@@ -2135,24 +2106,19 @@ void serialization_subitems_simple_items() noexcept {
   CHECK(before_2 == &db::get<test_databox_tags::Tag2>(serialization_test_box));
   CHECK(before_2 !=
         &db::get<test_databox_tags::Tag2>(deserialized_serialization_test_box));
-  CHECK(*db::get<test_subitems::First<1>>(serialization_test_box) == 9);
-  CHECK(*db::get<test_subitems::Second<1>>(serialization_test_box) == -4.5);
-  CHECK(*db::get<test_subitems::First<1>>(
-            deserialized_serialization_test_box) == 9);
-  CHECK(*db::get<test_subitems::Second<1>>(
-            deserialized_serialization_test_box) == -4.5);
-  CHECK(before_parent1 ==
-        &db::get<test_subitems::Parent<1>>(serialization_test_box));
-  CHECK(before_parent1 != &db::get<test_subitems::Parent<1>>(
-                              deserialized_serialization_test_box));
-  CHECK(before_parent1f ==
-        &db::get<test_subitems::First<1>>(serialization_test_box));
+  CHECK(*db::get<First<1>>(serialization_test_box) == 9);
+  CHECK(*db::get<Second<1>>(serialization_test_box) == -4.5);
+  CHECK(*db::get<First<1>>(deserialized_serialization_test_box) == 9);
+  CHECK(*db::get<Second<1>>(deserialized_serialization_test_box) == -4.5);
+  CHECK(before_parent1 == &db::get<Parent<1>>(serialization_test_box));
+  CHECK(before_parent1 !=
+        &db::get<Parent<1>>(deserialized_serialization_test_box));
+  CHECK(before_parent1f == &db::get<First<1>>(serialization_test_box));
   CHECK(before_parent1f !=
-        &db::get<test_subitems::First<1>>(deserialized_serialization_test_box));
-  CHECK(before_parent1s ==
-        &db::get<test_subitems::Second<1>>(serialization_test_box));
-  CHECK(before_parent1s != &db::get<test_subitems::Second<1>>(
-                               deserialized_serialization_test_box));
+        &db::get<First<1>>(deserialized_serialization_test_box));
+  CHECK(before_parent1s == &db::get<Second<1>>(serialization_test_box));
+  CHECK(before_parent1s !=
+        &db::get<Second<1>>(deserialized_serialization_test_box));
 }
 
 template <int Id>
@@ -2177,58 +2143,52 @@ struct CountingTag : db::ComputeTag {
 template <size_t SecondId>
 struct CountingTagDouble : db::ComputeTag {
   static std::string name() noexcept { return "CountingTag"; }
-  static double function(const test_subitems::Boxed<double>& t) {
+  static double function(const Boxed<double>& t) {
     count++;
     return *t * 6.0;
   }
-  using argument_tags = tmpl::list<test_subitems::Second<SecondId>>;
+  using argument_tags = tmpl::list<Second<SecondId>>;
   static int count;
 };
 
 template <size_t SecondId>
 int CountingTagDouble<SecondId>::count = 0;
 
-// Test serialization of a DataBox with Subitem compute items, one is
-// evaluated before serialization, one is after.
 // clang-tidy: this function is too long. Yes, well we need to check lots
 void serialization_subitem_compute_items() noexcept {  // NOLINT
+  INFO("serialization of a DataBox with Subitem compute items");
   auto serialization_test_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, test_subitems::Parent<0>,
+      db::AddSimpleTags<test_databox_tags::Tag0, Parent<0>,
                         test_databox_tags::Tag1, test_databox_tags::Tag2,
-                        test_subitems::Parent<1>>,
+                        Parent<1>>,
       db::AddComputeTags<CountingTag<1>, test_databox_tags::ComputeTag0,
-                         test_subitems::Parent<2, true>,
-                         test_databox_tags::ComputeTag1,
-                         test_subitems::Parent<3, true, true>, CountingTag<0>,
+                         Parent<2, true>, test_databox_tags::ComputeTag1,
+                         Parent<3, true, true>, CountingTag<0>,
                          CountingTagDouble<2>, CountingTagDouble<3>>>(
       3.14,
-      std::make_pair(
-          test_subitems::Boxed<int>(std::make_shared<int>(5)),
-          test_subitems::Boxed<double>(std::make_shared<double>(3.5))),
+      std::make_pair(Boxed<int>(std::make_shared<int>(5)),
+                     Boxed<double>(std::make_shared<double>(3.5))),
       std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
-      std::make_pair(
-          test_subitems::Boxed<int>(std::make_shared<int>(9)),
-          test_subitems::Boxed<double>(std::make_shared<double>(-4.5))));
+      std::make_pair(Boxed<int>(std::make_shared<int>(9)),
+                     Boxed<double>(std::make_shared<double>(-4.5))));
   const double* before_0 =
       &db::get<test_databox_tags::Tag0>(serialization_test_box);
   const std::vector<double>* before_1 =
       &db::get<test_databox_tags::Tag1>(serialization_test_box);
   const std::string* before_2 =
       &db::get<test_databox_tags::Tag2>(serialization_test_box);
-  const std::pair<test_subitems::Boxed<int>, test_subitems::Boxed<double>>*
-      before_parent0 =
-          &db::get<test_subitems::Parent<0>>(serialization_test_box);
-  const test_subitems::Boxed<int>* before_parent0f =
-      &db::get<test_subitems::First<0>>(serialization_test_box);
-  const test_subitems::Boxed<double>* before_parent0s =
-      &db::get<test_subitems::Second<0>>(serialization_test_box);
-  const std::pair<test_subitems::Boxed<int>, test_subitems::Boxed<double>>*
-      before_parent1 =
-          &db::get<test_subitems::Parent<1>>(serialization_test_box);
-  const test_subitems::Boxed<int>* before_parent1f =
-      &db::get<test_subitems::First<1>>(serialization_test_box);
-  const test_subitems::Boxed<double>* before_parent1s =
-      &db::get<test_subitems::Second<1>>(serialization_test_box);
+  const std::pair<Boxed<int>, Boxed<double>>* before_parent0 =
+      &db::get<Parent<0>>(serialization_test_box);
+  const Boxed<int>* before_parent0f =
+      &db::get<First<0>>(serialization_test_box);
+  const Boxed<double>* before_parent0s =
+      &db::get<Second<0>>(serialization_test_box);
+  const std::pair<Boxed<int>, Boxed<double>>* before_parent1 =
+      &db::get<Parent<1>>(serialization_test_box);
+  const Boxed<int>* before_parent1f =
+      &db::get<First<1>>(serialization_test_box);
+  const Boxed<double>* before_parent1s =
+      &db::get<Second<1>>(serialization_test_box);
   CHECK(db::get<test_databox_tags::ComputeTag0>(serialization_test_box) ==
         6.28);
   const double* before_compute_tag0 =
@@ -2241,35 +2201,30 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
   CHECK(CountingFunc<0>::count == 1);
   CHECK(CountingFunc<1>::count == 0);
 
-  CHECK(test_subitems::Parent<2, true>::count == 0);
-  CHECK(test_subitems::Parent<3, true, true>::count == 0);
-  const std::pair<test_subitems::Boxed<int>, test_subitems::Boxed<double>>*
-      before_parent2 =
-          &db::get<test_subitems::Parent<2, true>>(serialization_test_box);
-  CHECK(test_subitems::Parent<2, true>::count == 1);
-  CHECK(test_subitems::Parent<3, true, true>::count == 0);
-  const test_subitems::Boxed<int>* before_parent2_first =
-      &db::get<test_subitems::First<2>>(serialization_test_box);
-  const test_subitems::Boxed<double>* before_parent2_second =
-      &db::get<test_subitems::Second<2>>(serialization_test_box);
+  CHECK(Parent<2, true>::count == 0);
+  CHECK(Parent<3, true, true>::count == 0);
+  const std::pair<Boxed<int>, Boxed<double>>* before_parent2 =
+      &db::get<Parent<2, true>>(serialization_test_box);
+  CHECK(Parent<2, true>::count == 1);
+  CHECK(Parent<3, true, true>::count == 0);
+  const Boxed<int>* before_parent2_first =
+      &db::get<First<2>>(serialization_test_box);
+  const Boxed<double>* before_parent2_second =
+      &db::get<Second<2>>(serialization_test_box);
 
   // Check we are correctly pointing into parent
-  CHECK(&*(db::get<test_subitems::Parent<2, true>>(serialization_test_box)
-               .first) ==
-        &*db::get<test_subitems::First<2>>(serialization_test_box));
-  CHECK(&*(db::get<test_subitems::Parent<2, true>>(serialization_test_box)
-               .second) ==
-        &*db::get<test_subitems::Second<2>>(serialization_test_box));
+  CHECK(&*(db::get<Parent<2, true>>(serialization_test_box).first) ==
+        &*db::get<First<2>>(serialization_test_box));
+  CHECK(&*(db::get<Parent<2, true>>(serialization_test_box).second) ==
+        &*db::get<Second<2>>(serialization_test_box));
 
-  CHECK(*(db::get<test_subitems::Parent<2, true>>(serialization_test_box)
-              .first) == 10);
-  CHECK(*(db::get<test_subitems::Parent<2, true>>(serialization_test_box)
-              .second) == -9.0);
+  CHECK(*(db::get<Parent<2, true>>(serialization_test_box).first) == 10);
+  CHECK(*(db::get<Parent<2, true>>(serialization_test_box).second) == -9.0);
 
-  CHECK(*db::get<test_subitems::First<2>>(serialization_test_box) == 10);
-  CHECK(*db::get<test_subitems::Second<2>>(serialization_test_box) == -9.0);
-  CHECK(test_subitems::Parent<2, true>::count == 1);
-  CHECK(test_subitems::Parent<3, true, true>::count == 0);
+  CHECK(*db::get<First<2>>(serialization_test_box) == 10);
+  CHECK(*db::get<Second<2>>(serialization_test_box) == -9.0);
+  CHECK(Parent<2, true>::count == 1);
+  CHECK(Parent<3, true, true>::count == 0);
 
   // Check compute items that take subitems
   CHECK(CountingTagDouble<2>::count == 0);
@@ -2288,24 +2243,19 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
   CHECK(before_0 == &db::get<test_databox_tags::Tag0>(serialization_test_box));
   CHECK(before_0 !=
         &db::get<test_databox_tags::Tag0>(deserialized_serialization_test_box));
-  CHECK(*db::get<test_subitems::First<0>>(serialization_test_box) == 5);
-  CHECK(*db::get<test_subitems::Second<0>>(serialization_test_box) == 3.5);
-  CHECK(*db::get<test_subitems::First<0>>(
-            deserialized_serialization_test_box) == 5);
-  CHECK(*db::get<test_subitems::Second<0>>(
-            deserialized_serialization_test_box) == 3.5);
-  CHECK(before_parent0 ==
-        &db::get<test_subitems::Parent<0>>(serialization_test_box));
-  CHECK(before_parent0 != &db::get<test_subitems::Parent<0>>(
-                              deserialized_serialization_test_box));
-  CHECK(before_parent0f ==
-        &db::get<test_subitems::First<0>>(serialization_test_box));
+  CHECK(*db::get<First<0>>(serialization_test_box) == 5);
+  CHECK(*db::get<Second<0>>(serialization_test_box) == 3.5);
+  CHECK(*db::get<First<0>>(deserialized_serialization_test_box) == 5);
+  CHECK(*db::get<Second<0>>(deserialized_serialization_test_box) == 3.5);
+  CHECK(before_parent0 == &db::get<Parent<0>>(serialization_test_box));
+  CHECK(before_parent0 !=
+        &db::get<Parent<0>>(deserialized_serialization_test_box));
+  CHECK(before_parent0f == &db::get<First<0>>(serialization_test_box));
   CHECK(before_parent0f !=
-        &db::get<test_subitems::First<0>>(deserialized_serialization_test_box));
-  CHECK(before_parent0s ==
-        &db::get<test_subitems::Second<0>>(serialization_test_box));
-  CHECK(before_parent0s != &db::get<test_subitems::Second<0>>(
-                               deserialized_serialization_test_box));
+        &db::get<First<0>>(deserialized_serialization_test_box));
+  CHECK(before_parent0s == &db::get<Second<0>>(serialization_test_box));
+  CHECK(before_parent0s !=
+        &db::get<Second<0>>(deserialized_serialization_test_box));
   CHECK(db::get<test_databox_tags::Tag1>(serialization_test_box) ==
         std::vector<double>{8.7, 93.2, 84.7});
   CHECK(db::get<test_databox_tags::Tag1>(deserialized_serialization_test_box) ==
@@ -2320,24 +2270,19 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
   CHECK(before_2 == &db::get<test_databox_tags::Tag2>(serialization_test_box));
   CHECK(before_2 !=
         &db::get<test_databox_tags::Tag2>(deserialized_serialization_test_box));
-  CHECK(*db::get<test_subitems::First<1>>(serialization_test_box) == 9);
-  CHECK(*db::get<test_subitems::Second<1>>(serialization_test_box) == -4.5);
-  CHECK(*db::get<test_subitems::First<1>>(
-            deserialized_serialization_test_box) == 9);
-  CHECK(*db::get<test_subitems::Second<1>>(
-            deserialized_serialization_test_box) == -4.5);
-  CHECK(before_parent1 ==
-        &db::get<test_subitems::Parent<1>>(serialization_test_box));
-  CHECK(before_parent1 != &db::get<test_subitems::Parent<1>>(
-                              deserialized_serialization_test_box));
-  CHECK(before_parent1f ==
-        &db::get<test_subitems::First<1>>(serialization_test_box));
+  CHECK(*db::get<First<1>>(serialization_test_box) == 9);
+  CHECK(*db::get<Second<1>>(serialization_test_box) == -4.5);
+  CHECK(*db::get<First<1>>(deserialized_serialization_test_box) == 9);
+  CHECK(*db::get<Second<1>>(deserialized_serialization_test_box) == -4.5);
+  CHECK(before_parent1 == &db::get<Parent<1>>(serialization_test_box));
+  CHECK(before_parent1 !=
+        &db::get<Parent<1>>(deserialized_serialization_test_box));
+  CHECK(before_parent1f == &db::get<First<1>>(serialization_test_box));
   CHECK(before_parent1f !=
-        &db::get<test_subitems::First<1>>(deserialized_serialization_test_box));
-  CHECK(before_parent1s ==
-        &db::get<test_subitems::Second<1>>(serialization_test_box));
-  CHECK(before_parent1s != &db::get<test_subitems::Second<1>>(
-                               deserialized_serialization_test_box));
+        &db::get<First<1>>(deserialized_serialization_test_box));
+  CHECK(before_parent1s == &db::get<Second<1>>(serialization_test_box));
+  CHECK(before_parent1s !=
+        &db::get<Second<1>>(deserialized_serialization_test_box));
   // Check compute items
   CHECK(db::get<test_databox_tags::ComputeTag0>(
             deserialized_serialization_test_box) == 6.28);
@@ -2370,117 +2315,88 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
   CHECK(&db::get<CountingTag<1>>(serialization_test_box) !=
         &db::get<CountingTag<1>>(deserialized_serialization_test_box));
 
-  CHECK(test_subitems::Parent<2, true>::count == 1);
-  CHECK(test_subitems::Parent<3, true, true>::count == 0);
-  CHECK(&db::get<test_subitems::Parent<2, true>>(serialization_test_box) ==
-        before_parent2);
+  CHECK(Parent<2, true>::count == 1);
+  CHECK(Parent<3, true, true>::count == 0);
+  CHECK(&db::get<Parent<2, true>>(serialization_test_box) == before_parent2);
   // Check we are correctly pointing into parent
-  CHECK(&*(db::get<test_subitems::Parent<2, true>>(serialization_test_box)
-               .first) ==
-        &*db::get<test_subitems::First<2>>(serialization_test_box));
-  CHECK(&*(db::get<test_subitems::Parent<2, true>>(serialization_test_box)
-               .second) ==
-        &*db::get<test_subitems::Second<2>>(serialization_test_box));
+  CHECK(&*(db::get<Parent<2, true>>(serialization_test_box).first) ==
+        &*db::get<First<2>>(serialization_test_box));
+  CHECK(&*(db::get<Parent<2, true>>(serialization_test_box).second) ==
+        &*db::get<Second<2>>(serialization_test_box));
   // Check that we did not reset the subitems items in the initial DataBox
-  CHECK(&db::get<test_subitems::First<2>>(serialization_test_box) ==
-        before_parent2_first);
-  CHECK(&db::get<test_subitems::Second<2>>(serialization_test_box) ==
-        before_parent2_second);
-  CHECK(*(db::get<test_subitems::Parent<2, true>>(serialization_test_box)
-              .first) == 10);
-  CHECK(*(db::get<test_subitems::Parent<2, true>>(serialization_test_box)
-              .second) == -9.0);
-  CHECK(*(db::get<test_subitems::Parent<2, true>>(
-              deserialized_serialization_test_box)
-              .first) == 10);
-  CHECK(&db::get<test_subitems::Parent<2, true>>(
-            deserialized_serialization_test_box) != before_parent2);
-  CHECK(*(db::get<test_subitems::Parent<2, true>>(
-              deserialized_serialization_test_box)
-              .second) == -9.0);
-  CHECK(*db::get<test_subitems::First<2>>(
-            deserialized_serialization_test_box) == 10);
-  CHECK(*db::get<test_subitems::Second<2>>(
-            deserialized_serialization_test_box) == -9.0);
-  CHECK(test_subitems::Parent<2, true>::count == 1);
-  CHECK(test_subitems::Parent<3, true, true>::count == 0);
-  CHECK(&db::get<test_subitems::Parent<2, true>>(
-            deserialized_serialization_test_box) != before_parent2);
+  CHECK(&db::get<First<2>>(serialization_test_box) == before_parent2_first);
+  CHECK(&db::get<Second<2>>(serialization_test_box) == before_parent2_second);
+  CHECK(*(db::get<Parent<2, true>>(serialization_test_box).first) == 10);
+  CHECK(*(db::get<Parent<2, true>>(serialization_test_box).second) == -9.0);
+  CHECK(
+      *(db::get<Parent<2, true>>(deserialized_serialization_test_box).first) ==
+      10);
+  CHECK(&db::get<Parent<2, true>>(deserialized_serialization_test_box) !=
+        before_parent2);
+  CHECK(
+      *(db::get<Parent<2, true>>(deserialized_serialization_test_box).second) ==
+      -9.0);
+  CHECK(*db::get<First<2>>(deserialized_serialization_test_box) == 10);
+  CHECK(*db::get<Second<2>>(deserialized_serialization_test_box) == -9.0);
+  CHECK(Parent<2, true>::count == 1);
+  CHECK(Parent<3, true, true>::count == 0);
+  CHECK(&db::get<Parent<2, true>>(deserialized_serialization_test_box) !=
+        before_parent2);
   // Check pointers in deserialized box
-  CHECK(&db::get<test_subitems::First<2>>(
-            deserialized_serialization_test_box) != before_parent2_first);
-  CHECK(&db::get<test_subitems::Second<2>>(
-            deserialized_serialization_test_box) != before_parent2_second);
+  CHECK(&db::get<First<2>>(deserialized_serialization_test_box) !=
+        before_parent2_first);
+  CHECK(&db::get<Second<2>>(deserialized_serialization_test_box) !=
+        before_parent2_second);
   // Check we are correctly pointing into new parent and not old
   CHECK(
-      &*(db::get<test_subitems::Parent<2, true>>(
-             deserialized_serialization_test_box)
-             .first) ==
-      &*db::get<test_subitems::First<2>>(deserialized_serialization_test_box));
+      &*(db::get<Parent<2, true>>(deserialized_serialization_test_box).first) ==
+      &*db::get<First<2>>(deserialized_serialization_test_box));
+  CHECK(&*(db::get<Parent<2, true>>(deserialized_serialization_test_box)
+               .second) ==
+        &*db::get<Second<2>>(deserialized_serialization_test_box));
   CHECK(
-      &*(db::get<test_subitems::Parent<2, true>>(
-             deserialized_serialization_test_box)
-             .second) ==
-      &*db::get<test_subitems::Second<2>>(deserialized_serialization_test_box));
-  CHECK(&*(db::get<test_subitems::Parent<2, true>>(
-               deserialized_serialization_test_box)
-               .first) !=
-        &*db::get<test_subitems::First<2>>(serialization_test_box));
-  CHECK(&*(db::get<test_subitems::Parent<2, true>>(
-               deserialized_serialization_test_box)
-               .second) !=
-        &*db::get<test_subitems::Second<2>>(serialization_test_box));
+      &*(db::get<Parent<2, true>>(deserialized_serialization_test_box).first) !=
+      &*db::get<First<2>>(serialization_test_box));
+  CHECK(&*(db::get<Parent<2, true>>(deserialized_serialization_test_box)
+               .second) != &*db::get<Second<2>>(serialization_test_box));
 
-  CHECK(*(db::get<test_subitems::Parent<3, true, true>>(serialization_test_box)
+  CHECK(*(db::get<Parent<3, true, true>>(serialization_test_box).first) == 11);
+  CHECK(Parent<2, true>::count == 1);
+  CHECK(Parent<3, true, true>::count == 1);
+  CHECK(*(db::get<Parent<3, true, true>>(serialization_test_box).second) ==
+        -18.0);
+  CHECK(Parent<2, true>::count == 1);
+  CHECK(Parent<3, true, true>::count == 1);
+  CHECK(*db::get<First<3>>(serialization_test_box) == 11);
+  CHECK(*db::get<Second<3>>(serialization_test_box) == -18.0);
+  CHECK(Parent<2, true>::count == 1);
+  CHECK(Parent<3, true, true>::count == 1);
+  CHECK(*(db::get<Parent<3, true, true>>(deserialized_serialization_test_box)
               .first) == 11);
-  CHECK(test_subitems::Parent<2, true>::count == 1);
-  CHECK(test_subitems::Parent<3, true, true>::count == 1);
-  CHECK(*(db::get<test_subitems::Parent<3, true, true>>(serialization_test_box)
+  CHECK(Parent<2, true>::count == 1);
+  CHECK(Parent<3, true, true>::count == 2);
+  CHECK(*(db::get<Parent<3, true, true>>(deserialized_serialization_test_box)
               .second) == -18.0);
-  CHECK(test_subitems::Parent<2, true>::count == 1);
-  CHECK(test_subitems::Parent<3, true, true>::count == 1);
-  CHECK(*db::get<test_subitems::First<3>>(serialization_test_box) == 11);
-  CHECK(*db::get<test_subitems::Second<3>>(serialization_test_box) == -18.0);
-  CHECK(test_subitems::Parent<2, true>::count == 1);
-  CHECK(test_subitems::Parent<3, true, true>::count == 1);
-  CHECK(*(db::get<test_subitems::Parent<3, true, true>>(
-              deserialized_serialization_test_box)
-              .first) == 11);
-  CHECK(test_subitems::Parent<2, true>::count == 1);
-  CHECK(test_subitems::Parent<3, true, true>::count == 2);
-  CHECK(*(db::get<test_subitems::Parent<3, true, true>>(
-              deserialized_serialization_test_box)
-              .second) == -18.0);
-  CHECK(*db::get<test_subitems::First<3>>(
-            deserialized_serialization_test_box) == 11);
-  CHECK(*db::get<test_subitems::Second<3>>(
-            deserialized_serialization_test_box) == -18.0);
-  CHECK(test_subitems::Parent<2, true>::count == 1);
-  CHECK(test_subitems::Parent<3, true, true>::count == 2);
+  CHECK(*db::get<First<3>>(deserialized_serialization_test_box) == 11);
+  CHECK(*db::get<Second<3>>(deserialized_serialization_test_box) == -18.0);
+  CHECK(Parent<2, true>::count == 1);
+  CHECK(Parent<3, true, true>::count == 2);
 
   // Check that all the Parent<3> related objects point to the right place
-  CHECK(
-      &*(db::get<test_subitems::Parent<3, true, true>>(
-             deserialized_serialization_test_box)
-             .first) ==
-      &*db::get<test_subitems::First<3>>(deserialized_serialization_test_box));
-  CHECK(
-      &*(db::get<test_subitems::Parent<3, true, true>>(
-             deserialized_serialization_test_box)
-             .second) ==
-      &*db::get<test_subitems::Second<3>>(deserialized_serialization_test_box));
-  CHECK(&*(db::get<test_subitems::Parent<3, true, true>>(serialization_test_box)
+  CHECK(&*(db::get<Parent<3, true, true>>(deserialized_serialization_test_box)
                .first) ==
-        &*db::get<test_subitems::First<3>>(serialization_test_box));
-  CHECK(&*(db::get<test_subitems::Parent<3, true, true>>(serialization_test_box)
+        &*db::get<First<3>>(deserialized_serialization_test_box));
+  CHECK(&*(db::get<Parent<3, true, true>>(deserialized_serialization_test_box)
                .second) ==
-        &*db::get<test_subitems::Second<3>>(serialization_test_box));
-  CHECK(
-      &*db::get<test_subitems::First<3>>(deserialized_serialization_test_box) !=
-      &*db::get<test_subitems::First<3>>(serialization_test_box));
-  CHECK(&*db::get<test_subitems::Second<3>>(
-            deserialized_serialization_test_box) !=
-        &*db::get<test_subitems::Second<3>>(serialization_test_box));
+        &*db::get<Second<3>>(deserialized_serialization_test_box));
+  CHECK(&*(db::get<Parent<3, true, true>>(serialization_test_box).first) ==
+        &*db::get<First<3>>(serialization_test_box));
+  CHECK(&*(db::get<Parent<3, true, true>>(serialization_test_box).second) ==
+        &*db::get<Second<3>>(serialization_test_box));
+  CHECK(&*db::get<First<3>>(deserialized_serialization_test_box) !=
+        &*db::get<First<3>>(serialization_test_box));
+  CHECK(&*db::get<Second<3>>(deserialized_serialization_test_box) !=
+        &*db::get<Second<3>>(serialization_test_box));
 
   // Check compute items that depend on the subitems
   CHECK(CountingTagDouble<2>::count == 1);
@@ -2502,30 +2418,26 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
   CHECK(CountingTagDouble<3>::count == 2);
 
   // Mutate subitems 1 in deserialized to see that changes propagate correctly
-  db::mutate<test_subitems::Second<1>>(
+  db::mutate<Second<1>>(
       make_not_null(&serialization_test_box),
-      [](const gsl::not_null<test_subitems::Boxed<double>*> x) noexcept {
-        **x = 12.;
-      });
-  CHECK(test_subitems::Parent<2, true>::count == 1);
+      [](const gsl::not_null<Boxed<double>*> x) noexcept { **x = 12.; });
+  CHECK(Parent<2, true>::count == 1);
   CHECK(CountingTagDouble<2>::count == 1);
   CHECK(db::get<CountingTagDouble<2>>(serialization_test_box) == 24.0 * 6.0);
-  CHECK(test_subitems::Parent<2, true>::count == 2);
+  CHECK(Parent<2, true>::count == 2);
   CHECK(CountingTagDouble<2>::count == 2);
   CHECK(CountingTagDouble<3>::count == 2);
   CHECK(db::get<CountingTagDouble<3>>(serialization_test_box) == 48.0 * 6.0);
   CHECK(CountingTagDouble<3>::count == 3);
 
-  db::mutate<test_subitems::Second<1>>(
+  db::mutate<Second<1>>(
       make_not_null(&deserialized_serialization_test_box),
-      [](const gsl::not_null<test_subitems::Boxed<double>*> x) noexcept {
-        **x = -7.;
-      });
-  CHECK(test_subitems::Parent<2, true>::count == 2);
+      [](const gsl::not_null<Boxed<double>*> x) noexcept { **x = -7.; });
+  CHECK(Parent<2, true>::count == 2);
   CHECK(CountingTagDouble<2>::count == 2);
   CHECK(db::get<CountingTagDouble<2>>(deserialized_serialization_test_box) ==
         -14.0 * 6.0);
-  CHECK(test_subitems::Parent<2, true>::count == 3);
+  CHECK(Parent<2, true>::count == 3);
   CHECK(CountingTagDouble<2>::count == 3);
   CHECK(CountingTagDouble<3>::count == 3);
   CHECK(db::get<CountingTagDouble<3>>(deserialized_serialization_test_box) ==
@@ -2533,10 +2445,10 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
   CHECK(CountingTagDouble<3>::count == 4);
 
   // Check things didn't get modified in the original DataBox
-  CHECK(test_subitems::Parent<2, true>::count == 3);
+  CHECK(Parent<2, true>::count == 3);
   CHECK(CountingTagDouble<2>::count == 3);
   CHECK(db::get<CountingTagDouble<2>>(serialization_test_box) == 24.0 * 6.0);
-  CHECK(test_subitems::Parent<2, true>::count == 3);
+  CHECK(Parent<2, true>::count == 3);
   CHECK(CountingTagDouble<2>::count == 3);
   CHECK(CountingTagDouble<3>::count == 4);
   CHECK(db::get<CountingTagDouble<3>>(serialization_test_box) == 48.0 * 6.0);
@@ -2546,12 +2458,12 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
   CountingFunc<1>::count = 0;
   CountingTagDouble<2>::count = 0;
   CountingTagDouble<3>::count = 0;
-  test_subitems::Parent<2, true>::count = 0;
-  test_subitems::Parent<3, true, true>::count = 0;
+  Parent<2, true>::count = 0;
+  Parent<3, true, true>::count = 0;
 }
 
-// Test serialization of a DataBox with compute items depending on base tags
 void serialization_compute_items_of_base_tags() noexcept {
+  INFO("serialization of a DataBox with compute items depending on base tags");
   auto original_box =
       db::create<db::AddSimpleTags<test_databox_tags::Tag2>,
                  db::AddComputeTags<test_databox_tags::ComputeFromBase>>(
@@ -2566,6 +2478,7 @@ void serialization_compute_items_of_base_tags() noexcept {
 }
 
 void serialization_of_pointers() noexcept {
+  INFO("Serialization of pointers");
   const auto box = db::create<
       db::AddSimpleTags<test_databox_tags::Pointer>,
       db::AddComputeTags<test_databox_tags::PointerComputeItem,
@@ -2583,13 +2496,32 @@ void serialization_of_pointers() noexcept {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Serialization",
-                  "[Unit][DataStructures]") {
+void test_serialization() noexcept {
   serialization_non_subitem_simple_items();
   serialization_subitems_simple_items();
   serialization_subitem_compute_items();
   serialization_compute_items_of_base_tags();
   serialization_of_pointers();
+}
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
+  test_databox();
+  test_create_argument_types();
+  test_get_databox();
+  test_mutate();
+  test_apply();
+  test_variables();
+  test_variables2();
+  test_reset_compute_items();
+  test_variables_extra_reset();
+  test_mutate_apply();
+  test_mutating_compute_item();
+  test_data_on_slice_single();
+  test_data_on_slice();
+  test_subitems();
+  test_overload_compute_tags();
+  test_with_tagged_tuple();
+  test_serialization();
 }
 
 // Test`tag_is_retrievable_v`
