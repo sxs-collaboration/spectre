@@ -9,7 +9,7 @@ spectre_setup_modules() {
 
 spectre_unload_modules() {
     module unload gcc/7.3.0
-    module unload blaze/3.5
+    module unload blaze/3.7
     module unload boost/1.65.0-gcc-6.4.0
     module unload brigand/master
     module unload catch/2.1.2
@@ -23,7 +23,7 @@ spectre_unload_modules() {
     module unload cmake/3.9.4
     module unload doxygen/1.8.13
     module unload git/2.8.4
-    module unload llvm/5.0.1
+    module unload llvm/10.0.0
     module unload charm/6.8.0-smp
     module unload python/anaconda2-4.1.1
     module unload pybind11/2.4.3
@@ -31,7 +31,7 @@ spectre_unload_modules() {
 
 spectre_load_modules() {
     module load gcc/7.3.0
-    module load blaze/3.5
+    module load blaze/3.7
     module load boost/1.65.0-gcc-6.4.0
     module load brigand/master
     module load catch/2.1.2
@@ -45,7 +45,7 @@ spectre_load_modules() {
     module load cmake/3.9.4
     module load doxygen/1.8.13
     module load git/2.8.4
-    module load llvm/5.0.1
+    module load llvm/10.0.0
     module load charm/6.8.0-smp
     module load python/anaconda2-4.1.1
     module load pybind11/2.4.3
@@ -63,8 +63,7 @@ spectre_run_cmake() {
           -D CMAKE_CXX_COMPILER=clang++ \
           -D CMAKE_Fortran_COMPILER=gfortran \
           -D MEMORY_ALLOCATOR=SYSTEM \
-          -D BUILD_PYTHON_BINDINGS=on \
-          -D CMAKE_CXX_LINK_FLAGS=-lstdc++ \
+          -D BUILD_PYTHON_BINDINGS=OFF \
           "$@" \
           $SPECTRE_HOME
 }
