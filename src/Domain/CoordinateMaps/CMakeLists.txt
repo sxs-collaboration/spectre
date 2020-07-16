@@ -17,6 +17,7 @@ spectre_target_sources(
   FocallyLiftedEndcap.cpp
   FocallyLiftedMap.cpp
   FocallyLiftedMapHelpers.cpp
+  FocallyLiftedSide.cpp
   Frustum.cpp
   Identity.cpp
   Rotation.cpp
