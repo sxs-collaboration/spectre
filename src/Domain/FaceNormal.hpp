@@ -166,8 +166,7 @@ struct UnnormalizedFaceNormalMovingMeshCompute
 template <size_t VolumeDim, typename Frame>
 struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
                         UnnormalizedFaceNormalCompute<VolumeDim, Frame>>
-    : db::PrefixTag,
-      db::ComputeTag,
+    : db::ComputeTag,
       Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
                       Tags::UnnormalizedFaceNormal<VolumeDim, Frame>> {
   using dirs = BoundaryDirectionsExterior<VolumeDim>;
@@ -199,8 +198,7 @@ struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
 template <size_t VolumeDim>
 struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
                         UnnormalizedFaceNormalMovingMeshCompute<VolumeDim>>
-    : db::PrefixTag,
-      db::ComputeTag,
+    : db::ComputeTag,
       Tags::Interface<
           Tags::BoundaryDirectionsExterior<VolumeDim>,
           Tags::UnnormalizedFaceNormal<VolumeDim, Frame::Inertial>> {
