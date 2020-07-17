@@ -142,6 +142,9 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
 - ASAN
   - Whether or not to turn on the address sanitizer compile flags
     (`-fsanitize=address`) (default is `OFF`)
+- BUILD_PYTHON_BINDINGS
+  - Build python libraries to call SpECTRE C++ code from python
+    (default is `OFF`)
 - BUILD_SHARED_LIBS
   - Whether shared libraries are built instead of static libraries
     (default is `OFF`)
@@ -171,25 +174,24 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - Sets the directory where the library and executables are placed.
     By default libraries end up in `<BUILD_DIR>/lib` and executables
     in `<BUILD_DIR>/bin`.
-- ENABLE_WARNINGS
-  - Whether or not warning flags are enabled (default is `ON`)
-- UBSAN_INTEGER
-  - Whether or not to turn on the undefined behavior sanitizer
-    unsigned integer overflow flag (`-fsanitize=integer`) (default is
-    `OFF`)
-- UBSAN_UNDEFINED
-  - Whether or not to turn on the undefined behavior sanitizer
-    undefined behavior compile flags (`-fsanitize=undefined`) (default
-    is `OFF`)
-- USE_PCH
-  - Whether or not to use pre-compiled headers (default is `ON`)
-  - This needs to be turned `OFF` in order to use
-    [include-what-you-use
-    (IWYU)](https://github.com/include-what-you-use/include-what-you-use)
 - DEBUG_SYMBOLS
   - Whether or not to use debug symbols (default is `ON`)
   - Disabling debug symbols will reduce compile time and total size of the build
     directory.
+- ENABLE_WARNINGS
+  - Whether or not warning flags are enabled (default is `ON`)
+- MEMORY_ALLOCATOR
+  - Set which memory allocator to use. If there are unexplained segfaults or
+    other memory issues, it would be worth setting `MEMORY_ALLOCATOR=SYSTEM` to
+    see if that resolves the issue. It could be the case that different
+    third-party libraries accidentally end up using different allocators, which
+    is undefined behavior and will result in complete chaos.
+    (default is `JEMALLOC`)
+- SPECTRE_UNIT_TEST_TIMEOUT_FACTOR, SPECTRE_INPUT_FILE_TEST_TIMEOUT_FACTOR and
+  SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR
+  - Multiply the timeout for the respective set of tests by this factor (default
+    is `1`).
+  - This is useful to run tests on slower machines.
 - STRIP_SYMBOLS
   - Whether or not to strip all symbols (default is `OFF`)
   - If enabled strips all extraneous symbols from libraries and executables,
@@ -206,11 +208,36 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - This is useful for drastically reducing the build size in CI, but since the
     object files are replaced with empty stubs will generally cause linking
     problems if used during development.
-- SPECTRE_UNIT_TEST_TIMEOUT_FACTOR, SPECTRE_INPUT_FILE_TEST_TIMEOUT_FACTOR and
-  SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR
-  - Multiply the timeout for the respective set of tests by this factor (default
-    is `1`).
-  - This is useful to run tests on slower machines.
+- UBSAN_INTEGER
+  - Whether or not to turn on the undefined behavior sanitizer
+    [unsigned integer
+    overflow](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html) flag
+    (`-fsanitize=integer`) (default is `OFF`)
+- UBSAN_UNDEFINED
+  - Whether or not to turn on the undefined behavior sanitizer
+    [undefined
+    behavior](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html)
+    compile flags (`-fsanitize=undefined`) (default is `OFF`)
+- USE_CCACHE
+  - Use ccache to cache build output so that rebuilding parts of the source tree
+    is faster. The cache will use up space on disk, with the default being
+    around 2-5GB. If you are performing a one time build to test something
+    specific you should consider disabling ccache in order to avoid removing
+    cached files that may be useful in other builds.
+    (default is `ON`)
+- USE_FORMALINE
+  - Write the source tree into HDF5 files written to disk in order to increase
+    reproducibility of results.
+    (default is `ON`)
+- USE_LD
+  - Override the automatically chosen linker. The options are `ld`, `gold`, and
+    `lld`.
+    (default is `OFF`)
+- USE_PCH
+  - Whether or not to use pre-compiled headers (default is `ON`)
+  - This needs to be turned `OFF` in order to use
+    [include-what-you-use
+    (IWYU)](https://github.com/include-what-you-use/include-what-you-use)
 
 ## Checking Dependencies
 
