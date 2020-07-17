@@ -49,9 +49,6 @@ struct div;
 template <typename Tag>
 struct div<Tag, Requires<tt::is_a_v<Tensor, typename Tag::type>>>
     : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
-    return "div(" + db::tag_name<Tag>() + ")";
-  }
   using tag = Tag;
   using type = TensorMetafunctions::remove_first_index<typename Tag::type>;
 };
@@ -59,9 +56,6 @@ struct div<Tag, Requires<tt::is_a_v<Tensor, typename Tag::type>>>
 template <typename Tag>
 struct div<Tag, Requires<tt::is_a_v<::Variables, typename Tag::type>>>
     : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
-    return "div(" + db::tag_name<Tag>() + ")";
-  }
   using tag = Tag;
   using type = typename Tag::type;
 };

@@ -41,9 +41,6 @@ template <typename Tag>
 struct Dr : db::SimpleTag, db::PrefixTag {
   using type = typename Tag::type;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "Dr(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 // tag for the string for accessing the quantity associated with `Tag` in
@@ -52,9 +49,6 @@ template <typename Tag>
 struct InputDataSet : db::SimpleTag, db::PrefixTag {
   using type = std::string;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "InputDataSet(" + db::tag_name<Tag>() + ")";
-  }
 };
 }  // namespace detail
 }  // namespace Tags

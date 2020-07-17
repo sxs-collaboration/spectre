@@ -60,9 +60,6 @@ struct deriv<Tag, Dim, Frame, Requires<tt::is_a_v<Tensor, typename Tag::type>>>
       TensorMetafunctions::prepend_spatial_index<typename Tag::type, Dim::value,
                                                  UpLo::Lo, Frame>;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "deriv(" + db::tag_name<Tag>() + ")";
-  }
 };
 template <typename Tag, typename Dim, typename Frame>
 struct deriv<Tag, Dim, Frame,
@@ -70,9 +67,6 @@ struct deriv<Tag, Dim, Frame,
     : db::PrefixTag, db::SimpleTag {
   using type = typename Tag::type;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "deriv(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 /*!
@@ -97,9 +91,6 @@ struct spacetime_deriv<Tag, Dim, Frame,
       TensorMetafunctions::prepend_spacetime_index<typename Tag::type,
                                                    Dim::value, UpLo::Lo, Frame>;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "spacetime_deriv(" + db::tag_name<Tag>() + ")";
-  }
 };
 template <typename Tag, typename Dim, typename Frame>
 struct spacetime_deriv<Tag, Dim, Frame,
@@ -107,9 +98,6 @@ struct spacetime_deriv<Tag, Dim, Frame,
     : db::PrefixTag, db::SimpleTag {
   using type = typename Tag::type;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "spacetime_deriv(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 }  // namespace Tags

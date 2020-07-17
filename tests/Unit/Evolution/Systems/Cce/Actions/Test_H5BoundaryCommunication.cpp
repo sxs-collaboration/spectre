@@ -11,6 +11,7 @@
 
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/Actions/BoundaryComputeAndSendToEvolution.hpp"
@@ -273,7 +274,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
       [&expected_boundary_box, &runner,
        &angular_derivative_approx](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
-        INFO(tag::name());
+        INFO(db::tag_name<tag>());
         const auto& test_lhs =
             ActionTesting::get_databox_tag<evolution_component, tag>(runner, 0);
         const auto& test_rhs = db::get<tag>(expected_boundary_box);

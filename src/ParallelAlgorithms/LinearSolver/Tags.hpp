@@ -124,9 +124,6 @@ struct ResidualCompute : db::add_tag_prefix<Residual, FieldsTag>,
 
 template <typename Tag>
 struct Initial : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
-    return "Initial(" + db::tag_name<Tag>() + ")";
-  }
   using type = typename Tag::type;
   using tag = Tag;
 };
@@ -218,11 +215,8 @@ struct OrthogonalizationHistory : db::PrefixTag, db::SimpleTag {
  */
 template <typename Tag>
 struct KrylovSubspaceBasis : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
-    // No "Linear" prefix since a Krylov subspace always refers to a linear
-    // operator
-    return "KrylovSubspaceBasis(" + db::tag_name<Tag>() + ")";
-  }
+  // Use automatically generated name because a Krylov subspace always refers to
+  // a linear operator
   using type = std::vector<typename Tag::type>;
   using tag = Tag;
 };
