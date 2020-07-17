@@ -52,7 +52,7 @@ Domain<3> Sphere::create_domain() const noexcept {
 
   std::vector<
       std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
-      coord_maps = wedge_coordinate_maps<Frame::Inertial>(
+      coord_maps = sph_wedge_coordinate_maps<Frame::Inertial>(
           inner_radius_, outer_radius_, 0.0, 1.0, use_equiangular_map_);
   if (use_equiangular_map_) {
     coord_maps.emplace_back(

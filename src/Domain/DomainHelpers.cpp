@@ -603,15 +603,15 @@ size_t which_wedge_index(const ShellWedges& which_wedges) {
 template <typename TargetFrame>
 std::vector<
     std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
-wedge_coordinate_maps(const double inner_radius, const double outer_radius,
-                      const double inner_sphericity,
-                      const double outer_sphericity,
-                      const bool use_equiangular_map,
-                      const double x_coord_of_shell_center,
-                      const bool use_half_wedges, const double aspect_ratio,
-                      const bool use_logarithmic_map,
-                      const ShellWedges which_wedges,
-                      const size_t number_of_layers) noexcept {
+sph_wedge_coordinate_maps(const double inner_radius, const double outer_radius,
+                          const double inner_sphericity,
+                          const double outer_sphericity,
+                          const bool use_equiangular_map,
+                          const double x_coord_of_shell_center,
+                          const bool use_half_wedges, const double aspect_ratio,
+                          const bool use_logarithmic_map,
+                          const ShellWedges which_wedges,
+                          const size_t number_of_layers) noexcept {
   ASSERT(not use_half_wedges or which_wedges == ShellWedges::All,
          "If we are using half wedges we must also be using ShellWedges::All.");
   ASSERT(number_of_layers == 1 or inner_sphericity == outer_sphericity,
@@ -1190,26 +1190,22 @@ ShellWedges create_from_yaml<ShellWedges>::create<void>(const Option& options) {
 
 template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
-wedge_coordinate_maps(const double inner_radius, const double outer_radius,
-                      const double inner_sphericity,
-                      const double outer_sphericity,
-                      const bool use_equiangular_map,
-                      const double x_coord_of_shell_center,
-                      const bool use_wedge_halves, const double aspect_ratio,
-                      const bool use_logarithmic_map,
-                      const ShellWedges which_wedges,
-                      const size_t number_of_layers) noexcept;
+sph_wedge_coordinate_maps(
+    const double inner_radius, const double outer_radius,
+    const double inner_sphericity, const double outer_sphericity,
+    const bool use_equiangular_map, const double x_coord_of_shell_center,
+    const bool use_wedge_halves, const double aspect_ratio,
+    const bool use_logarithmic_map, const ShellWedges which_wedges,
+    const size_t number_of_layers) noexcept;
 template std::vector<
     std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
-wedge_coordinate_maps(const double inner_radius, const double outer_radius,
-                      const double inner_sphericity,
-                      const double outer_sphericity,
-                      const bool use_equiangular_map,
-                      const double x_coord_of_shell_center,
-                      const bool use_wedge_halves, const double aspect_ratio,
-                      const bool use_logarithmic_map,
-                      const ShellWedges which_wedges,
-                      const size_t number_of_layers) noexcept;
+sph_wedge_coordinate_maps(
+    const double inner_radius, const double outer_radius,
+    const double inner_sphericity, const double outer_sphericity,
+    const bool use_equiangular_map, const double x_coord_of_shell_center,
+    const bool use_wedge_halves, const double aspect_ratio,
+    const bool use_logarithmic_map, const ShellWedges which_wedges,
+    const size_t number_of_layers) noexcept;
 template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,

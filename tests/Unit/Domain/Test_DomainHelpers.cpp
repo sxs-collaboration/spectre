@@ -243,13 +243,13 @@ void test_wedge_map_generation_against_domain_helpers(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
       aspect_ratio);
-  const auto maps = wedge_coordinate_maps<Frame::Inertial>(
+  const auto maps = sph_wedge_coordinate_maps<Frame::Inertial>(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
       aspect_ratio);
   CHECK(maps.size() == expected_coord_maps.size());
   for (size_t i = 0; i < expected_coord_maps.size(); i++) {
-    check_if_maps_are_equal(*expected_coord_maps[i],*maps[i]);
+    check_if_maps_are_equal(*expected_coord_maps[i], *maps[i]);
   }
 }
 
@@ -270,7 +270,7 @@ void test_wedge_map_generation_against_domain_helpers(
   const bool use_logarithmic_map = true;
   const ShellWedges which_wedges = ShellWedges::FourOnEquator;
   const size_t number_of_layers = 3;
-  static_cast<void>(wedge_coordinate_maps<Frame::Inertial>(
+  static_cast<void>(sph_wedge_coordinate_maps<Frame::Inertial>(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
       aspect_ratio, use_logarithmic_map, which_wedges, number_of_layers));
@@ -295,7 +295,7 @@ void test_wedge_map_generation_against_domain_helpers(
   const bool use_logarithmic_map = true;
   const ShellWedges which_wedges = ShellWedges::All;
   const size_t number_of_layers = 3;
-  static_cast<void>(wedge_coordinate_maps<Frame::Inertial>(
+  static_cast<void>(sph_wedge_coordinate_maps<Frame::Inertial>(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
       aspect_ratio, use_logarithmic_map, which_wedges, number_of_layers));

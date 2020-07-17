@@ -139,15 +139,15 @@ enum class ShellWedges {
 /// The `number_of_layers` is used when the user wants to have multiple layers
 /// of Blocks in the radial direction.
 template <typename TargetFrame>
-auto wedge_coordinate_maps(double inner_radius, double outer_radius,
-                           double inner_sphericity, double outer_sphericity,
-                           bool use_equiangular_map,
-                           double x_coord_of_shell_center = 0.0,
-                           bool use_half_wedges = false,
-                           double aspect_ratio = 1.0,
-                           bool use_logarithmic_map = false,
-                           ShellWedges which_wedges = ShellWedges::All,
-                           size_t number_of_layers = 1) noexcept
+auto sph_wedge_coordinate_maps(double inner_radius, double outer_radius,
+                               double inner_sphericity, double outer_sphericity,
+                               bool use_equiangular_map,
+                               double x_coord_of_shell_center = 0.0,
+                               bool use_half_wedges = false,
+                               double aspect_ratio = 1.0,
+                               bool use_logarithmic_map = false,
+                               ShellWedges which_wedges = ShellWedges::All,
+                               size_t number_of_layers = 1) noexcept
     -> std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
 

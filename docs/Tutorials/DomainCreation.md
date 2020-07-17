@@ -25,8 +25,8 @@ also provides the jacobian of the mapping.
 
 ### Shortcuts for CoordinateMaps
 For spherical domains, Wedge3D implements the cubed-sphere map, and there
-exists the method `wedge_coordinate_maps` in Domain/DomainHelpers.hpp to quickly
-construct six of these maps at once. For rectilinear multicube domains,
+exists the method `sph_wedge_coordinate_maps` in Domain/DomainHelpers.hpp to
+quickly construct six of these maps at once. For rectilinear multicube domains,
 Affine and Equiangular map the logical cubes to cartesian cubes. The method
 `maps_for_rectilinear_domains` in DomainHelpers allows the user to obtain
 the CoordinateMaps for all of the Blocks in such a domain at once. These
@@ -43,7 +43,7 @@ of the blocks in a well-defined way. The corner numbering scheme is described
 in the \ref tutorial_orientations tutorial. For spherical domains,
 DomainHelpers has the methods `corners_for_radially_layered_domains` and
 `corners_for_biradially_layered_domains`, which provides the proper corner
-numberings for the maps obtained from the method `wedge_coordinate_maps`.
+numberings for the maps obtained from the method `sph_wedge_coordinate_maps`.
 These methods are used in the \ref domain::creators::Shell "Shell" and
 \ref domain::creators::Sphere "Sphere" DomainCreators.
 For rectilinear multicube domains, DomainHelpers has the methods

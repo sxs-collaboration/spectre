@@ -172,18 +172,18 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
 
   Maps maps;
   // ObjectA/B is on the left/right, respectively.
-  Maps maps_center_A = wedge_coordinate_maps<Frame::Inertial>(
+  Maps maps_center_A = sph_wedge_coordinate_maps<Frame::Inertial>(
       inner_radius_object_A_, outer_radius_object_A_, inner_sphericity_A, 1.0,
       use_equiangular_map_, xcoord_object_A_, false, 1.0,
       use_logarithmic_map_object_A_);
-  Maps maps_cube_A = wedge_coordinate_maps<Frame::Inertial>(
+  Maps maps_cube_A = sph_wedge_coordinate_maps<Frame::Inertial>(
       outer_radius_object_A_, sqrt(3.0) * 0.5 * length_inner_cube_, 1.0, 0.0,
       use_equiangular_map_, xcoord_object_A_, false);
-  Maps maps_center_B = wedge_coordinate_maps<Frame::Inertial>(
+  Maps maps_center_B = sph_wedge_coordinate_maps<Frame::Inertial>(
       inner_radius_object_B_, outer_radius_object_B_, inner_sphericity_B, 1.0,
       use_equiangular_map_, xcoord_object_B_, false, 1.0,
       use_logarithmic_map_object_B_);
-  Maps maps_cube_B = wedge_coordinate_maps<Frame::Inertial>(
+  Maps maps_cube_B = sph_wedge_coordinate_maps<Frame::Inertial>(
       outer_radius_object_B_, sqrt(3.0) * 0.5 * length_inner_cube_, 1.0, 0.0,
       use_equiangular_map_, xcoord_object_B_, false);
   Maps maps_frustums = frustum_coordinate_maps<Frame::Inertial>(
@@ -221,10 +221,10 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
           : inner_radius_first_outer_shell +
                 (radius_enveloping_sphere_ - inner_radius_first_outer_shell) /
                     static_cast<double>(radial_divisions_in_outer_layers);
-  Maps maps_first_outer_shell = wedge_coordinate_maps<Frame::Inertial>(
+  Maps maps_first_outer_shell = sph_wedge_coordinate_maps<Frame::Inertial>(
       inner_radius_first_outer_shell, outer_radius_first_outer_shell, 0.0, 1.0,
       use_equiangular_map_, 0.0, true, 1.0, false, ShellWedges::All, 1);
-  Maps maps_second_outer_shell = wedge_coordinate_maps<Frame::Inertial>(
+  Maps maps_second_outer_shell = sph_wedge_coordinate_maps<Frame::Inertial>(
       outer_radius_first_outer_shell, radius_enveloping_sphere_, 1.0, 1.0,
       use_equiangular_map_, 0.0, true, 1.0,
       use_logarithmic_map_outer_spherical_shell_, ShellWedges::All, 1);
@@ -346,8 +346,8 @@ BinaryCompactObject::initial_refinement_levels() const noexcept {
   // Increase the radial refinement of the blocks corresponding to the outer
   // spherical shell (with sphericity == 1 throughout) to achieve the desired
   // number of radial refinements. The outer layer consists of 10 blocks,
-  // created via wedge_coordinate_maps() with use_half_wedges == true. Because
-  // this outer layer of blocks is added last to the CoordinateMaps in
+  // created via sph_wedge_coordinate_maps() with use_half_wedges == true.
+  // Because this outer layer of blocks is added last to the CoordinateMaps in
   // create_domain(), the 10 blocks to refine are the last 10 blocks in the
   // domain--unless one or both of the interiors are not excised. (For each
   // interior not excised, there is one extra block appended to the list of
