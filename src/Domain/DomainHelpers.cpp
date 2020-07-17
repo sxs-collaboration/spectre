@@ -170,8 +170,8 @@ Direction<VolumeDim> get_direction_normal_to_face(
                               summed_point.begin(), summed_point.end(), 0.0)),
          "The face_pts passed in do not correspond to a face.");
   const auto index = static_cast<size_t>(
-      alg::find_if(
-          summed_point, [](const double x) noexcept { return x != 0; }) -
+      alg::find_if(summed_point,
+                   [](const double x) noexcept { return x != 0; }) -
       summed_point.begin());
   return Direction<VolumeDim>(
       index, summed_point[index] > 0 ? Side::Upper : Side::Lower);
@@ -307,9 +307,8 @@ std::vector<std::array<size_t, two_to_the(VolumeDim)>> corners_from_two_maps(
         gsl::at(corners_for_block2, vci_map2.local_corner_number()) =
             vci_map1.local_corner_number();
         break;
-      }
-      else {
-      // Otherwise, a new number is assigned to this corner.
+      } else {
+        // Otherwise, a new number is assigned to this corner.
         gsl::at(corners_for_block2, vci_map2.local_corner_number()) =
             two_to_the(VolumeDim) + num_unshared_corners;
         num_unshared_corners++;
@@ -1083,31 +1082,32 @@ std::array<size_t, two_to_the(VolumeDim)> discrete_rotation(
         corners_of_aligned) noexcept {
   // compute the mapped logical corners, as
   // they are the indices into the global corners.
-  const std::array<size_t, two_to_the(VolumeDim)>
-      mapped_logical_corners = [&orientation]() noexcept {
-    std::array<size_t, two_to_the(VolumeDim)> result{};
-    for (VolumeCornerIterator<VolumeDim> vci{}; vci; ++vci) {
-      const std::array<Direction<VolumeDim>, VolumeDim>
-          directions_of_logical_corner = vci.directions_of_corner();
-      std::array<Direction<VolumeDim>, VolumeDim> directions_of_mapped_corner{};
-      for (size_t i = 0; i < VolumeDim; i++) {
-        gsl::at(directions_of_mapped_corner, i) =
-            // The inverse_map is used here to match the sense of rotation
-            // used in OrientationMap's discrete_rotation.
-            orientation.inverse_map()(gsl::at(directions_of_logical_corner, i));
-      }
-      size_t mapped_corner = 0;
-      for (size_t i = 0; i < VolumeDim; i++) {
-        const auto& direction = gsl::at(directions_of_mapped_corner, i);
-        if (direction.side() == Side::Upper) {
-          mapped_corner += two_to_the(direction.dimension());
+  const std::array<size_t, two_to_the(VolumeDim)> mapped_logical_corners =
+      [&orientation]() noexcept {
+        std::array<size_t, two_to_the(VolumeDim)> result{};
+        for (VolumeCornerIterator<VolumeDim> vci{}; vci; ++vci) {
+          const std::array<Direction<VolumeDim>, VolumeDim>
+              directions_of_logical_corner = vci.directions_of_corner();
+          std::array<Direction<VolumeDim>, VolumeDim>
+              directions_of_mapped_corner{};
+          for (size_t i = 0; i < VolumeDim; i++) {
+            gsl::at(directions_of_mapped_corner, i) =
+                // The inverse_map is used here to match the sense of rotation
+                // used in OrientationMap's discrete_rotation.
+                orientation.inverse_map()(
+                    gsl::at(directions_of_logical_corner, i));
+          }
+          size_t mapped_corner = 0;
+          for (size_t i = 0; i < VolumeDim; i++) {
+            const auto& direction = gsl::at(directions_of_mapped_corner, i);
+            if (direction.side() == Side::Upper) {
+              mapped_corner += two_to_the(direction.dimension());
+            }
+          }
+          gsl::at(result, vci.local_corner_number()) = mapped_corner;
         }
-      }
-      gsl::at(result, vci.local_corner_number()) = mapped_corner;
-    }
-    return result;
-  }
-  ();
+        return result;
+      }();
 
   std::array<size_t, two_to_the(VolumeDim)> result{};
   for (size_t i = 0; i < two_to_the(VolumeDim); i++) {
