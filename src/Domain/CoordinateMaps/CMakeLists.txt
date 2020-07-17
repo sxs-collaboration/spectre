@@ -13,6 +13,7 @@ spectre_target_sources(
   DiscreteRotation.cpp
   EquatorialCompression.cpp
   Equiangular.cpp
+  FocallyLiftedMapHelpers.cpp
   Frustum.cpp
   Identity.cpp
   Rotation.cpp
@@ -33,6 +34,7 @@ spectre_target_headers(
   DiscreteRotation.hpp
   EquatorialCompression.hpp
   Equiangular.hpp
+  FocallyLiftedMapHelpers.hpp
   Frustum.hpp
   Identity.hpp
   MapInstantiationMacros.hpp
