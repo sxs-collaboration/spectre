@@ -56,41 +56,18 @@ Domain<3> Cylinder::create_domain() const noexcept {
   using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
 
   std::vector<std::array<size_t, 8>> corners{
+      {{0, 1, 2, 3, 8, 9, 10, 11}},    // Center square prism
       {{1, 5, 3, 7, 9, 13, 11, 15}},   //+x wedge
       {{3, 7, 2, 6, 11, 15, 10, 14}},  //+y wedge
       {{2, 6, 0, 4, 10, 14, 8, 12}},   //-x wedge
-      {{0, 4, 1, 5, 8, 12, 9, 13}},    //-y wedge
-      {{0, 1, 2, 3, 8, 9, 10, 11}}};   // Center square prism
+      {{0, 4, 1, 5, 8, 12, 9, 13}}};   //-y wedge
 
-  auto coord_maps =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          Wedge3DPrism{Wedge2D{inner_radius_, outer_radius_, 0.0, 1.0,
-                               OrientationMap<2>{std::array<Direction<2>, 2>{
-                                   {Direction<2>::upper_xi(),
-                                    Direction<2>::upper_eta()}}},
-                               use_equiangular_map_},
-                       Affine{-1.0, 1.0, lower_bound_, upper_bound_}},
-          Wedge3DPrism{Wedge2D{inner_radius_, outer_radius_, 0.0, 1.0,
-                               OrientationMap<2>{std::array<Direction<2>, 2>{
-                                   {Direction<2>::lower_eta(),
-                                    Direction<2>::upper_xi()}}},
-                               use_equiangular_map_},
-                       Affine{-1.0, 1.0, lower_bound_, upper_bound_}},
-          Wedge3DPrism{Wedge2D{inner_radius_, outer_radius_, 0.0, 1.0,
-                               OrientationMap<2>{std::array<Direction<2>, 2>{
-                                   {Direction<2>::lower_xi(),
-                                    Direction<2>::lower_eta()}}},
-                               use_equiangular_map_},
-                       Affine{-1.0, 1.0, lower_bound_, upper_bound_}},
-          Wedge3DPrism{Wedge2D{inner_radius_, outer_radius_, 0.0, 1.0,
-                               OrientationMap<2>{std::array<Direction<2>, 2>{
-                                   {Direction<2>::upper_eta(),
-                                    Direction<2>::lower_xi()}}},
-                               use_equiangular_map_},
-                       Affine{-1.0, 1.0, lower_bound_, upper_bound_}});
-
+  std::vector<std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+      coord_maps;
+  coord_maps.reserve(5);
   if (use_equiangular_map_) {
-    coord_maps.emplace_back(
+    coord_maps.push_back(
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Equiangular3DPrism{
                 Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
@@ -99,7 +76,7 @@ Domain<3> Cylinder::create_domain() const noexcept {
                             inner_radius_ / sqrt(2.0)),
                 Affine{-1.0, 1.0, lower_bound_, upper_bound_}}));
   } else {
-    coord_maps.emplace_back(
+    coord_maps.push_back(
         make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
                             inner_radius_ / sqrt(2.0)),
@@ -107,7 +84,36 @@ Domain<3> Cylinder::create_domain() const noexcept {
                             inner_radius_ / sqrt(2.0)),
                      Affine{-1.0, 1.0, lower_bound_, upper_bound_}}));
   }
-  return Domain<3>{
+  coord_maps.push_back(
+      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(Wedge3DPrism{
+          Wedge2D{inner_radius_, outer_radius_, 0.0, 1.0,
+                  OrientationMap<2>{std::array<Direction<2>, 2>{
+                      {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}},
+                  use_equiangular_map_},
+          Affine{-1.0, 1.0, lower_bound_, upper_bound_}}));
+  coord_maps.push_back(
+      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(Wedge3DPrism{
+          Wedge2D{inner_radius_, outer_radius_, 0.0, 1.0,
+                  OrientationMap<2>{std::array<Direction<2>, 2>{
+                      {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
+                  use_equiangular_map_},
+          Affine{-1.0, 1.0, lower_bound_, upper_bound_}}));
+  coord_maps.push_back(
+      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(Wedge3DPrism{
+          Wedge2D{inner_radius_, outer_radius_, 0.0, 1.0,
+                  OrientationMap<2>{std::array<Direction<2>, 2>{
+                      {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
+                  use_equiangular_map_},
+          Affine{-1.0, 1.0, lower_bound_, upper_bound_}}));
+  coord_maps.push_back(
+      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(Wedge3DPrism{
+          Wedge2D{inner_radius_, outer_radius_, 0.0, 1.0,
+                  OrientationMap<2>{std::array<Direction<2>, 2>{
+                      {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
+                  use_equiangular_map_},
+          Affine{-1.0, 1.0, lower_bound_, upper_bound_}}));
+
+  Domain<3> domain{
       std::move(coord_maps), corners,
       is_periodic_in_z_
           ? std::vector<PairOfFaces>{{{0, 1, 2, 3}, {8, 9, 10, 11}},
@@ -120,12 +126,12 @@ Domain<3> Cylinder::create_domain() const noexcept {
 
 std::vector<std::array<size_t, 3>> Cylinder::initial_extents() const noexcept {
   return {
-      initial_number_of_grid_points_,
-      initial_number_of_grid_points_,
-      initial_number_of_grid_points_,
-      initial_number_of_grid_points_,
       {{initial_number_of_grid_points_[1], initial_number_of_grid_points_[1],
-        initial_number_of_grid_points_[2]}}};
+        initial_number_of_grid_points_[2]}},
+      initial_number_of_grid_points_,
+      initial_number_of_grid_points_,
+      initial_number_of_grid_points_,
+      initial_number_of_grid_points_};
 }
 
 std::vector<std::array<size_t, 3>> Cylinder::initial_refinement_levels() const
