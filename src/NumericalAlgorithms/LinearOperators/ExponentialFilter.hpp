@@ -32,9 +32,10 @@ namespace Filters {
  *   \left(\frac{i}{N}\right)^{2\beta_{\mathrm{ef}}}\right]
  * \f}
  *
- * where \f$N\f$ is the basis order, \f$\alpha_{\mathrm{ef}}\f$ determines how
- * much the coefficients are rescaled, and \f$\beta_{\mathrm{ef}}\f$ (given by
- * the `HalfPower` option) determines how aggressive/broad the filter is (lower
+ * where \f$N\f$ is the basis degree (number of grid points per element per
+ * dimension minus one), \f$\alpha_{\mathrm{ef}}\f$ determines how much the
+ * coefficients are rescaled, and \f$\beta_{\mathrm{ef}}\f$ (given by the
+ * `HalfPower` option) determines how aggressive/broad the filter is (lower
  * values means filtering more coefficients). Setting
  * \f$\alpha_{\mathrm{ef}}=36\f$ results in effectively zeroing the highest
  * coefficient (in practice it gets rescaled by machine epsilon). The same
