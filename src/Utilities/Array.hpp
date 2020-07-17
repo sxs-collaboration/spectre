@@ -17,8 +17,8 @@ namespace cpp17 {
 namespace detail {
 template <typename T, size_t Size, size_t... Is>
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-std::array<T, Size> convert_to_array(const T (&t)[Size],
-                                     std::index_sequence<Is...> /*meta*/) {
+constexpr std::array<T, Size> convert_to_array(
+    const T (&t)[Size], std::index_sequence<Is...> /*meta*/) {
   return {{t[Is]...}};
 }
 }  // namespace detail
@@ -36,7 +36,7 @@ struct array {
   using difference_type = std::ptrdiff_t;
 
   // clang-tidy: mark explicit. We want implicit conversion
-  operator std::array<T, Size>() const noexcept {  // NOLINT
+  constexpr operator std::array<T, Size>() const noexcept {  // NOLINT
     return detail::convert_to_array(data_, std::make_index_sequence<Size>{});
   }
 
