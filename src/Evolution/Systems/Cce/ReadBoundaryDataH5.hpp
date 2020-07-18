@@ -95,7 +95,6 @@ using cce_input_tags = tmpl::list<
     Tags::detail::Lapse, Tags::detail::Dr<Tags::detail::Lapse>,
     ::Tags::dt<Tags::detail::Lapse>>;
 
-
 /// the full set of tensors to be extracted from the reduced form of the
 /// worldtube h5 file
 using reduced_cce_input_tags =
@@ -160,8 +159,8 @@ class WorldtubeBufferUpdater : public PUP::able {
       size_t computation_l_max, size_t interpolator_length,
       size_t buffer_depth) const noexcept = 0;
 
-  virtual std::unique_ptr<WorldtubeBufferUpdater> get_clone() const
-      noexcept = 0;
+  virtual std::unique_ptr<WorldtubeBufferUpdater> get_clone()
+      const noexcept = 0;
 
   virtual bool time_is_outside_range(double time) const noexcept = 0;
 
@@ -241,8 +240,8 @@ class SpecWorldtubeH5BufferUpdater
  private:
   void update_buffer(gsl::not_null<ComplexModalVector*> buffer_to_update,
                      const h5::Dat& read_data, size_t computation_l_max,
-                     size_t time_span_start, size_t time_span_end) const
-      noexcept;
+                     size_t time_span_start,
+                     size_t time_span_end) const noexcept;
 
   bool radial_derivatives_need_renormalization_ = false;
   double extraction_radius_ = 1.0;
@@ -289,8 +288,8 @@ class ReducedSpecWorldtubeH5BufferUpdater
       size_t computation_l_max, size_t interpolator_length,
       size_t buffer_depth) const noexcept override;
 
-  std::unique_ptr<WorldtubeBufferUpdater<reduced_cce_input_tags>>
-  get_clone() const noexcept override {
+  std::unique_ptr<WorldtubeBufferUpdater<reduced_cce_input_tags>> get_clone()
+      const noexcept override {
     return std::make_unique<ReducedSpecWorldtubeH5BufferUpdater>(filename_);
   }
 
@@ -337,8 +336,8 @@ class ReducedSpecWorldtubeH5BufferUpdater
   h5::H5File<h5::AccessType::ReadOnly> cce_data_file_;
   std::string filename_;
 
-  tuples::tagged_tuple_from_typelist<db::wrap_tags_in<
-      Tags::detail::InputDataSet, reduced_cce_input_tags>>
+  tuples::tagged_tuple_from_typelist<
+      db::wrap_tags_in<Tags::detail::InputDataSet, reduced_cce_input_tags>>
       dataset_names_;
 
   // stores all the times in the input file
@@ -364,8 +363,7 @@ class WorldtubeDataManager {
   WorldtubeDataManager() noexcept = default;
 
   WorldtubeDataManager(
-      std::unique_ptr<WorldtubeBufferUpdater<cce_input_tags>>
-          buffer_updater,
+      std::unique_ptr<WorldtubeBufferUpdater<cce_input_tags>> buffer_updater,
       const size_t l_max, const size_t buffer_depth,
       std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
       : buffer_updater_{std::move(buffer_updater)},
@@ -439,20 +437,19 @@ class WorldtubeDataManager {
                                      interpolation_time_span.first,
                                  interpolation_span_size};
 
-    auto interpolate_from_column = [
-      &time, &time_points, &buffer_span_size, &interpolation_time_span,
-      &interpolation_span_size,
-      this
-    ](auto data, const size_t column) noexcept {
-      auto interp_val = interpolator_->interpolate(
-          gsl::span<const double>(time_points.data(), time_points.size()),
-          gsl::span<const std::complex<double>>(
-              data + column * buffer_span_size +
-                  (interpolation_time_span.first - time_span_start_),
-              interpolation_span_size),
-          time);
-      return interp_val;
-    };
+    auto interpolate_from_column =
+        [&time, &time_points, &buffer_span_size, &interpolation_time_span,
+         &interpolation_span_size,
+         this](auto data, const size_t column) noexcept {
+          auto interp_val = interpolator_->interpolate(
+              gsl::span<const double>(time_points.data(), time_points.size()),
+              gsl::span<const std::complex<double>>(
+                  data + column * buffer_span_size +
+                      (interpolation_time_span.first - time_span_start_),
+                  interpolation_span_size),
+              time);
+          return interp_val;
+        };
 
     // the ComplexModalVectors should be provided from the buffer_updater_ in
     // 'Goldberg' format, so we iterate over modes and convert to libsharp
@@ -469,72 +466,73 @@ class WorldtubeDataManager {
           tmpl::for_each<
               tmpl::list<Tags::detail::SpatialMetric,
                          Tags::detail::Dr<Tags::detail::SpatialMetric>,
-                         ::Tags::dt<Tags::detail::SpatialMetric>>>([
-            this, &i, &j, &libsharp_mode, &interpolate_from_column, &
-            spin_weighted_buffer
-          ](auto tag_v) noexcept {
+                         ::Tags::dt<Tags::detail::SpatialMetric>>>(
+              [this, &i, &j, &libsharp_mode, &interpolate_from_column,
+               &spin_weighted_buffer](auto tag_v) noexcept {
+                using tag = typename decltype(tag_v)::type;
+                spin_weighted_buffer.set_data_ref(
+                    get<tag>(interpolated_coefficients_).get(i, j).data(),
+                    Spectral::Swsh::size_of_libsharp_coefficient_vector(
+                        l_max_));
+                Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
+                    libsharp_mode, make_not_null(&spin_weighted_buffer), 0,
+                    interpolate_from_column(
+                        get<tag>(coefficients_buffers_).get(i, j).data(),
+                        Spectral::Swsh::goldberg_mode_index(
+                            l_max_, libsharp_mode.l,
+                            static_cast<int>(libsharp_mode.m))),
+                    interpolate_from_column(
+                        get<tag>(coefficients_buffers_).get(i, j).data(),
+                        Spectral::Swsh::goldberg_mode_index(
+                            l_max_, libsharp_mode.l,
+                            -static_cast<int>(libsharp_mode.m))));
+              });
+        }
+        tmpl::for_each<tmpl::list<Tags::detail::Shift,
+                                  Tags::detail::Dr<Tags::detail::Shift>,
+                                  ::Tags::dt<Tags::detail::Shift>>>(
+            [this, &i, &libsharp_mode, &interpolate_from_column,
+             &spin_weighted_buffer](auto tag_v) noexcept {
+              using tag = typename decltype(tag_v)::type;
+              spin_weighted_buffer.set_data_ref(
+                  get<tag>(interpolated_coefficients_).get(i).data(),
+                  Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_));
+              Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
+                  libsharp_mode, make_not_null(&spin_weighted_buffer), 0,
+                  interpolate_from_column(
+                      get<tag>(coefficients_buffers_).get(i).data(),
+                      Spectral::Swsh::goldberg_mode_index(
+                          l_max_, libsharp_mode.l,
+                          static_cast<int>(libsharp_mode.m))),
+                  interpolate_from_column(
+                      get<tag>(coefficients_buffers_).get(i).data(),
+                      Spectral::Swsh::goldberg_mode_index(
+                          l_max_, libsharp_mode.l,
+                          -static_cast<int>(libsharp_mode.m))));
+            });
+      }
+      tmpl::for_each<
+          tmpl::list<Tags::detail::Lapse, Tags::detail::Dr<Tags::detail::Lapse>,
+                     ::Tags::dt<Tags::detail::Lapse>>>(
+          [this, &libsharp_mode, &interpolate_from_column,
+           &spin_weighted_buffer](auto tag_v) noexcept {
             using tag = typename decltype(tag_v)::type;
             spin_weighted_buffer.set_data_ref(
-                get<tag>(interpolated_coefficients_).get(i, j).data(),
+                get(get<tag>(interpolated_coefficients_)).data(),
                 Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_));
             Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
                 libsharp_mode, make_not_null(&spin_weighted_buffer), 0,
                 interpolate_from_column(
-                    get<tag>(coefficients_buffers_).get(i, j).data(),
+                    get(get<tag>(coefficients_buffers_)).data(),
                     Spectral::Swsh::goldberg_mode_index(
                         l_max_, libsharp_mode.l,
                         static_cast<int>(libsharp_mode.m))),
                 interpolate_from_column(
-                    get<tag>(coefficients_buffers_).get(i, j).data(),
+                    get(get<tag>(coefficients_buffers_)).data(),
                     Spectral::Swsh::goldberg_mode_index(
                         l_max_, libsharp_mode.l,
                         -static_cast<int>(libsharp_mode.m))));
           });
-        }
-        tmpl::for_each<tmpl::list<Tags::detail::Shift,
-                                  Tags::detail::Dr<Tags::detail::Shift>,
-                                  ::Tags::dt<Tags::detail::Shift>>>([
-          this, &i, &libsharp_mode, &interpolate_from_column, &
-          spin_weighted_buffer
-        ](auto tag_v) noexcept {
-          using tag = typename decltype(tag_v)::type;
-          spin_weighted_buffer.set_data_ref(
-              get<tag>(interpolated_coefficients_).get(i).data(),
-              Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_));
-          Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
-              libsharp_mode, make_not_null(&spin_weighted_buffer), 0,
-              interpolate_from_column(
-                  get<tag>(coefficients_buffers_).get(i).data(),
-                  Spectral::Swsh::goldberg_mode_index(
-                      l_max_, libsharp_mode.l,
-                      static_cast<int>(libsharp_mode.m))),
-              interpolate_from_column(
-                  get<tag>(coefficients_buffers_).get(i).data(),
-                  Spectral::Swsh::goldberg_mode_index(
-                      l_max_, libsharp_mode.l,
-                      -static_cast<int>(libsharp_mode.m))));
-        });
-      }
-      tmpl::for_each<
-          tmpl::list<Tags::detail::Lapse, Tags::detail::Dr<Tags::detail::Lapse>,
-                     ::Tags::dt<Tags::detail::Lapse>>>([
-        this, &libsharp_mode, &interpolate_from_column, &spin_weighted_buffer
-      ](auto tag_v) noexcept {
-        using tag = typename decltype(tag_v)::type;
-        spin_weighted_buffer.set_data_ref(
-            get(get<tag>(interpolated_coefficients_)).data(),
-            Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_));
-        Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
-            libsharp_mode, make_not_null(&spin_weighted_buffer), 0,
-            interpolate_from_column(get(get<tag>(coefficients_buffers_)).data(),
-                                    Spectral::Swsh::goldberg_mode_index(
-                                        l_max_, libsharp_mode.l,
-                                        static_cast<int>(libsharp_mode.m))),
-            interpolate_from_column(get(get<tag>(coefficients_buffers_)).data(),
-                                    Spectral::Swsh::goldberg_mode_index(
-                                        l_max_, libsharp_mode.l,
-                                        -static_cast<int>(libsharp_mode.m))));
-      });
     }
     // At this point, we have a collection of 9 tensors of libsharp
     // coefficients. This is what the boundary data calculation utility takes
@@ -610,8 +608,7 @@ class WorldtubeDataManager {
   }
 
  private:
-  std::unique_ptr<WorldtubeBufferUpdater<cce_input_tags>>
-      buffer_updater_;
+  std::unique_ptr<WorldtubeBufferUpdater<cce_input_tags>> buffer_updater_;
   mutable size_t time_span_start_ = 0;
   mutable size_t time_span_end_ = 0;
   size_t l_max_ = 0;
@@ -674,8 +671,8 @@ class ReducedWorldtubeDataManager {
    */
   template <typename TagList>
   bool populate_hypersurface_boundary_data(
-      gsl::not_null<db::DataBox<TagList>*> boundary_data_box, double time) const
-      noexcept;
+      gsl::not_null<db::DataBox<TagList>*> boundary_data_box,
+      double time) const noexcept;
 
   /// retrieves the l_max that will be supplied to the \ref DataBoxGroup in
   /// `populate_hypersurface_boundary_data()`
@@ -756,23 +753,23 @@ bool ReducedWorldtubeDataManager::populate_hypersurface_boundary_data(
   // format.
   for (const auto& libsharp_mode :
        Spectral::Swsh::cached_coefficients_metadata(l_max_)) {
-    tmpl::for_each<reduced_cce_input_tags>([
-      this, &libsharp_mode, &interpolate_from_column
-    ](auto tag_v) noexcept {
-      using tag = typename decltype(tag_v)::type;
-      Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
-          libsharp_mode,
-          make_not_null(&get(get<tag>(interpolated_coefficients_))), 0,
-          interpolate_from_column(
-              get(get<tag>(coefficients_buffers_)).data().data(),
-              Spectral::Swsh::goldberg_mode_index(
-                  l_max_, libsharp_mode.l, static_cast<int>(libsharp_mode.m))),
-          interpolate_from_column(
-              get(get<tag>(coefficients_buffers_)).data().data(),
-              Spectral::Swsh::goldberg_mode_index(
-                  l_max_, libsharp_mode.l,
-                  -static_cast<int>(libsharp_mode.m))));
-    });
+    tmpl::for_each<reduced_cce_input_tags>(
+        [this, &libsharp_mode, &interpolate_from_column](auto tag_v) noexcept {
+          using tag = typename decltype(tag_v)::type;
+          Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
+              libsharp_mode,
+              make_not_null(&get(get<tag>(interpolated_coefficients_))), 0,
+              interpolate_from_column(
+                  get(get<tag>(coefficients_buffers_)).data().data(),
+                  Spectral::Swsh::goldberg_mode_index(
+                      l_max_, libsharp_mode.l,
+                      static_cast<int>(libsharp_mode.m))),
+              interpolate_from_column(
+                  get(get<tag>(coefficients_buffers_)).data().data(),
+                  Spectral::Swsh::goldberg_mode_index(
+                      l_max_, libsharp_mode.l,
+                      -static_cast<int>(libsharp_mode.m))));
+        });
   }
   // just inverse transform the 'direct' tags
   tmpl::for_each<tmpl::transform<reduced_cce_input_tags,

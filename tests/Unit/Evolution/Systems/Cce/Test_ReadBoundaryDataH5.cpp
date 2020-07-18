@@ -30,8 +30,7 @@
 
 namespace Cce {
 
-class DummyBufferUpdater
-    : public WorldtubeBufferUpdater<cce_input_tags> {
+class DummyBufferUpdater : public WorldtubeBufferUpdater<cce_input_tags> {
  public:
   DummyBufferUpdater(DataVector time_buffer,
                      const gr::Solutions::KerrSchild& solution,
@@ -277,9 +276,8 @@ class ReducedDummyBufferUpdater
           shift_coefficients, dt_shift_coefficients, dr_shift_coefficients,
           lapse_coefficients, dt_lapse_coefficients, dr_lapse_coefficients,
           extraction_radius_, l_max);
-      tmpl::for_each<
-          tmpl::transform<reduced_cce_input_tags,
-                          tmpl::bind<db::remove_tag_prefix, tmpl::_1>>>(
+      tmpl::for_each<tmpl::transform<
+          reduced_cce_input_tags, tmpl::bind<db::remove_tag_prefix, tmpl::_1>>>(
           [this, &boundary_box, &buffers, &time_index, &time_span_end,
            &time_span_start, &l_max](auto tag_v) noexcept {
             using tag = typename decltype(tag_v)::type;
@@ -296,8 +294,8 @@ class ReducedDummyBufferUpdater
     }
     return time_buffer_[*time_span_end - interpolator_length + 1];
   }
-  std::unique_ptr<WorldtubeBufferUpdater<reduced_cce_input_tags>>
-  get_clone() const noexcept override {
+  std::unique_ptr<WorldtubeBufferUpdater<reduced_cce_input_tags>> get_clone()
+      const noexcept override {
     return std::make_unique<ReducedDummyBufferUpdater>(*this);
   }
 
@@ -688,10 +686,8 @@ void test_reduced_spec_worldtube_buffer_updater(
       make_not_null(&time_span_start), make_not_null(&time_span_end),
       target_time, computation_l_max, interpolator_length, buffer_size);
 
-  Variables<reduced_cce_input_tags>
-      coefficients_buffers_from_serialized{
-          (buffer_size + 2 * interpolator_length) *
-          square(computation_l_max + 1)};
+  Variables<reduced_cce_input_tags> coefficients_buffers_from_serialized{
+      (buffer_size + 2 * interpolator_length) * square(computation_l_max + 1)};
   size_t time_span_start_from_serialized = 0;
   size_t time_span_end_from_serialized = 0;
   serialized_and_deserialized_updater.update_buffers_for_time(
