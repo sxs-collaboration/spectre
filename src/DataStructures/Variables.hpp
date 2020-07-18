@@ -287,6 +287,10 @@ class Variables<tmpl::list<Tags...>> {
                 db::remove_all_prefixes<Tags>>...>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE Variables& operator+=(
       const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
+    static_assert(
+        (std::is_same_v<typename Tags::type, typename WrappedTags::type> and
+         ...),
+        "Tensor types do not match!");
     variable_data_ += rhs.variable_data_;
     return *this;
   }
@@ -303,6 +307,10 @@ class Variables<tmpl::list<Tags...>> {
                 db::remove_all_prefixes<Tags>>...>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE Variables& operator-=(
       const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
+    static_assert(
+        (std::is_same_v<typename Tags::type, typename WrappedTags::type> and
+         ...),
+        "Tensor types do not match!");
     variable_data_ -= rhs.variable_data_;
     return *this;
   }
@@ -330,6 +338,10 @@ class Variables<tmpl::list<Tags...>> {
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator+(
       const Variables<tmpl::list<WrappedTags...>>& lhs,
       const Variables& rhs) noexcept {
+    static_assert(
+        (std::is_same_v<typename Tags::type, typename WrappedTags::type> and
+         ...),
+        "Tensor types do not match!");
     return lhs.get_variable_data() + rhs.variable_data_;
   }
   template <typename VT, bool VF>
@@ -350,6 +362,10 @@ class Variables<tmpl::list<Tags...>> {
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator-(
       const Variables<tmpl::list<WrappedTags...>>& lhs,
       const Variables& rhs) noexcept {
+    static_assert(
+        (std::is_same_v<typename Tags::type, typename WrappedTags::type> and
+         ...),
+        "Tensor types do not match!");
     return lhs.get_variable_data() - rhs.variable_data_;
   }
   template <typename VT, bool VF>
@@ -598,6 +614,9 @@ template <typename... WrappedTags,
 Variables<tmpl::list<Tags...>>::Variables(
     const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept
     : size_(rhs.size_), number_of_grid_points_(rhs.number_of_grid_points()) {
+  static_assert(
+      (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
+      "Tensor types do not match!");
   if (size_ > 0) {
     // clang-tidy: cppcoreguidelines-no-malloc
     variable_data_impl_.reset(static_cast<value_type*>(
@@ -617,6 +636,9 @@ template <typename... WrappedTags,
                            db::remove_all_prefixes<Tags>>::value...>::value>>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
+  static_assert(
+      (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
+      "Tensor types do not match!");
   size_ = rhs.size_;
   if (number_of_grid_points_ != rhs.number_of_grid_points()) {
     number_of_grid_points_ = rhs.number_of_grid_points();
@@ -645,7 +667,11 @@ Variables<tmpl::list<Tags...>>::Variables(
       size_(rhs.size()),
       number_of_grid_points_(rhs.number_of_grid_points()),
       variable_data_(variable_data_impl_.get(), size_),
-      reference_variable_data_(std::move(rhs.reference_variable_data_)) {}
+      reference_variable_data_(std::move(rhs.reference_variable_data_)) {
+    static_assert(
+      (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
+      "Tensor types do not match!");
+}
 
 template <typename... Tags>
 template <typename... WrappedTags,
@@ -654,6 +680,9 @@ template <typename... WrappedTags,
                            db::remove_all_prefixes<Tags>>::value...>::value>>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     Variables<tmpl::list<WrappedTags...>>&& rhs) noexcept {
+  static_assert(
+      (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
+      "Tensor types do not match!");
   variable_data_impl_ = std::move(rhs.variable_data_impl_);
   size_ = rhs.size_;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
