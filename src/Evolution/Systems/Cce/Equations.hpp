@@ -7,8 +7,8 @@
 
 #include "DataStructures/SpinWeighted.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tags.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "Utilities/Gsl.hpp"
