@@ -108,6 +108,7 @@ std::pair<size_t, size_t> create_span_for_time_value(
 
 /// \cond
 class SpecWorldtubeH5BufferUpdater;
+class ReducedSpecWorldtubeH5BufferUpdater;
 /// \endcond
 
 /*!
@@ -141,14 +142,16 @@ class SpecWorldtubeH5BufferUpdater;
  *  data at. For instance, if associated with a file input, this will be the
  *  times at each of the rows of the time-series data.
  */
+template <typename BufferTags>
 class WorldtubeBufferUpdater : public PUP::able {
  public:
-  using creatable_classes = tmpl::list<SpecWorldtubeH5BufferUpdater>;
+  using creatable_classes = tmpl::list<SpecWorldtubeH5BufferUpdater,
+                                       ReducedSpecWorldtubeH5BufferUpdater>;
 
   WRAPPED_PUPable_abstract(WorldtubeBufferUpdater);  // NOLINT
 
   virtual double update_buffers_for_time(
-      gsl::not_null<Variables<detail::cce_input_tags>*> buffers,
+      gsl::not_null<Variables<BufferTags>*> buffers,
       gsl::not_null<size_t*> time_span_start,
       gsl::not_null<size_t*> time_span_end, double time,
       size_t computation_l_max, size_t interpolator_length,
@@ -170,7 +173,8 @@ class WorldtubeBufferUpdater : public PUP::able {
 
 /// A `WorldtubeBufferUpdater` specialized to the CCE input worldtube  H5 file
 /// produced by SpEC.
-class SpecWorldtubeH5BufferUpdater : public WorldtubeBufferUpdater {
+class SpecWorldtubeH5BufferUpdater
+    : public WorldtubeBufferUpdater<detail::cce_input_tags> {
  public:
   // charm needs the empty constructor
   SpecWorldtubeH5BufferUpdater() = default;
@@ -200,7 +204,8 @@ class SpecWorldtubeH5BufferUpdater : public WorldtubeBufferUpdater {
       size_t computation_l_max, size_t interpolator_length,
       size_t buffer_depth) const noexcept override;
 
-  std::unique_ptr<WorldtubeBufferUpdater> get_clone() const noexcept override;
+  std::unique_ptr<WorldtubeBufferUpdater<detail::cce_input_tags>> get_clone()
+      const noexcept override;
 
   /// The time can only be supported in the buffer update if it is between the
   /// first and last time of the input file.
@@ -251,39 +256,10 @@ class SpecWorldtubeH5BufferUpdater : public WorldtubeBufferUpdater {
   DataVector time_buffer_;
 };
 
-/// \cond
-class ReducedSpecWorldtubeH5BufferUpdater;
-/// \endcond
-
-class ReducedWorldtubeBufferUpdater : public PUP::able {
- public:
-  using creatable_classes = tmpl::list<ReducedSpecWorldtubeH5BufferUpdater>;
-
-  WRAPPED_PUPable_abstract(ReducedWorldtubeBufferUpdater);  // NOLINT
-
-  virtual double update_buffers_for_time(
-      gsl::not_null<Variables<detail::reduced_cce_input_tags>*> buffers,
-      gsl::not_null<size_t*> time_span_start,
-      gsl::not_null<size_t*> time_span_end, double time,
-      size_t computation_l_max, size_t interpolator_length,
-      size_t buffer_depth) const noexcept = 0;
-
-  virtual std::unique_ptr<ReducedWorldtubeBufferUpdater> get_clone() const
-      noexcept = 0;
-
-  virtual bool time_is_outside_range(double time) const noexcept = 0;
-
-  virtual size_t get_l_max() const noexcept = 0;
-
-  virtual double get_extraction_radius() const noexcept = 0;
-
-  virtual DataVector& get_time_buffer() noexcept = 0;
-};
-
 /// A `WorldtubeBufferUpdater` specialized to the CCE input worldtube H5 file
 /// produced by the reduced SpEC format.
 class ReducedSpecWorldtubeH5BufferUpdater
-    : public ReducedWorldtubeBufferUpdater {
+    : public WorldtubeBufferUpdater<detail::reduced_cce_input_tags> {
  public:
   // charm needs the empty constructor
   ReducedSpecWorldtubeH5BufferUpdater() = default;
@@ -310,8 +286,8 @@ class ReducedSpecWorldtubeH5BufferUpdater
       size_t computation_l_max, size_t interpolator_length,
       size_t buffer_depth) const noexcept override;
 
-  std::unique_ptr<ReducedWorldtubeBufferUpdater> get_clone() const
-      noexcept override {
+  std::unique_ptr<WorldtubeBufferUpdater<detail::reduced_cce_input_tags>>
+  get_clone() const noexcept override {
     return std::make_unique<ReducedSpecWorldtubeH5BufferUpdater>(filename_);
   }
 
@@ -338,6 +314,10 @@ class ReducedSpecWorldtubeH5BufferUpdater
   /// once there is a convenient method of producing a const view of a vector
   /// type.
   DataVector& get_time_buffer() noexcept override { return time_buffer_; }
+
+  bool radial_derivatives_need_renormalization() const noexcept override {
+    return false;
+  }
 
   /// Serialization for Charm++.
   void pup(PUP::er& p) noexcept override;
@@ -381,7 +361,8 @@ class WorldtubeDataManager {
   WorldtubeDataManager() noexcept = default;
 
   WorldtubeDataManager(
-      std::unique_ptr<WorldtubeBufferUpdater> buffer_updater,
+      std::unique_ptr<WorldtubeBufferUpdater<detail::cce_input_tags>>
+          buffer_updater,
       const size_t l_max, const size_t buffer_depth,
       std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
       : buffer_updater_{std::move(buffer_updater)},
@@ -626,7 +607,8 @@ class WorldtubeDataManager {
   }
 
  private:
-  std::unique_ptr<WorldtubeBufferUpdater> buffer_updater_;
+  std::unique_ptr<WorldtubeBufferUpdater<detail::cce_input_tags>>
+      buffer_updater_;
   mutable size_t time_span_start_ = 0;
   mutable size_t time_span_end_ = 0;
   size_t l_max_ = 0;
@@ -666,7 +648,8 @@ class ReducedWorldtubeDataManager {
   ReducedWorldtubeDataManager() = default;
 
   ReducedWorldtubeDataManager(
-      std::unique_ptr<ReducedWorldtubeBufferUpdater> buffer_updater,
+      std::unique_ptr<WorldtubeBufferUpdater<detail::reduced_cce_input_tags>>
+          buffer_updater,
       size_t l_max, size_t buffer_depth,
       std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept;
 
@@ -705,7 +688,8 @@ class ReducedWorldtubeDataManager {
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
-  std::unique_ptr<ReducedWorldtubeBufferUpdater> buffer_updater_;
+  std::unique_ptr<WorldtubeBufferUpdater<detail::reduced_cce_input_tags>>
+      buffer_updater_;
   mutable size_t time_span_start_ = 0;
   mutable size_t time_span_end_ = 0;
   size_t l_max_ = 0;

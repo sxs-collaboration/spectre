@@ -189,7 +189,7 @@ double SpecWorldtubeH5BufferUpdater::update_buffers_for_time(
                                time_buffer_.size() - 1)];
 }
 
-std::unique_ptr<WorldtubeBufferUpdater>
+std::unique_ptr<WorldtubeBufferUpdater<detail::cce_input_tags>>
 SpecWorldtubeH5BufferUpdater::get_clone() const noexcept {
   return std::make_unique<SpecWorldtubeH5BufferUpdater>(
       SpecWorldtubeH5BufferUpdater{filename_});
@@ -430,7 +430,8 @@ void ReducedSpecWorldtubeH5BufferUpdater::pup(PUP::er& p) noexcept {
 }
 
 ReducedWorldtubeDataManager::ReducedWorldtubeDataManager(
-    std::unique_ptr<ReducedWorldtubeBufferUpdater> buffer_updater,
+    std::unique_ptr<WorldtubeBufferUpdater<detail::reduced_cce_input_tags>>
+        buffer_updater,
     const size_t l_max, const size_t buffer_depth,
     std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
     : buffer_updater_{std::move(buffer_updater)},

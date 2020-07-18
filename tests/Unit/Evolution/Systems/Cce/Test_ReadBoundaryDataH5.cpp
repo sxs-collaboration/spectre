@@ -30,7 +30,8 @@
 
 namespace Cce {
 
-class DummyBufferUpdater : public WorldtubeBufferUpdater {
+class DummyBufferUpdater
+    : public WorldtubeBufferUpdater<detail::cce_input_tags> {
  public:
   DummyBufferUpdater(DataVector time_buffer,
                      const gr::Solutions::KerrSchild& solution,
@@ -138,7 +139,8 @@ class DummyBufferUpdater : public WorldtubeBufferUpdater {
     return time_buffer_[*time_span_end - interpolator_length + 1];
   }
 
-  std::unique_ptr<WorldtubeBufferUpdater> get_clone() const noexcept override {
+  std::unique_ptr<WorldtubeBufferUpdater<detail::cce_input_tags>> get_clone()
+      const noexcept override {
     return std::make_unique<DummyBufferUpdater>(*this);
   }
 
@@ -193,7 +195,8 @@ class DummyBufferUpdater : public WorldtubeBufferUpdater {
   bool apply_normalization_bug_ = false;
 };
 
-class ReducedDummyBufferUpdater : public ReducedWorldtubeBufferUpdater {
+class ReducedDummyBufferUpdater
+    : public WorldtubeBufferUpdater<detail::reduced_cce_input_tags> {
  public:
   ReducedDummyBufferUpdater(DataVector time_buffer,
                             const gr::Solutions::KerrSchild& solution,
@@ -293,8 +296,8 @@ class ReducedDummyBufferUpdater : public ReducedWorldtubeBufferUpdater {
     }
     return time_buffer_[*time_span_end - interpolator_length + 1];
   }
-  std::unique_ptr<ReducedWorldtubeBufferUpdater> get_clone()
-      const noexcept override {
+  std::unique_ptr<WorldtubeBufferUpdater<detail::reduced_cce_input_tags>>
+  get_clone() const noexcept override {
     return std::make_unique<ReducedDummyBufferUpdater>(*this);
   }
 
@@ -310,6 +313,10 @@ class ReducedDummyBufferUpdater : public ReducedWorldtubeBufferUpdater {
   }
 
   DataVector& get_time_buffer() noexcept override { return time_buffer_; }
+
+  bool radial_derivatives_need_renormalization() const noexcept override {
+    return false;
+  }
 
   void pup(PUP::er& p) noexcept override {
     p | time_buffer_;
@@ -749,9 +756,10 @@ void test_reduced_spec_worldtube_buffer_updater(
 // [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
                   "[Unit][Cce]") {
-  Parallel::register_derived_classes_with_charm<Cce::WorldtubeBufferUpdater>();
   Parallel::register_derived_classes_with_charm<
-      Cce::ReducedWorldtubeBufferUpdater>();
+      Cce::WorldtubeBufferUpdater<detail::cce_input_tags>>();
+  Parallel::register_derived_classes_with_charm<
+      Cce::WorldtubeBufferUpdater<detail::reduced_cce_input_tags>>();
   Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>();
   MAKE_GENERATOR(gen);
   {
