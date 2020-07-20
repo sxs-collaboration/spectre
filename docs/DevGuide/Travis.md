@@ -72,6 +72,9 @@ if any of the following are true:
   - A `c++` test,
     * uses `TEST_CASE` (use `SPECTRE_TEST_CASE` instead)
     * uses `Approx` (use `approx` instead)
+  - A `CMakeLists.txt` file in `src`, but not in an Executables or
+    Python-binding directory,
+    * does not list a `C++` file that is present in the directory
   - A python file is not formatted according to the `.style.yapf` file in the
     root of the repository.
 * RUN_CLANG_TIDY runs the script `.travis/RunClangTidy.sh` which runs
