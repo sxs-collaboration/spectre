@@ -56,8 +56,6 @@ class ComplexDataVector
 
   using VectorImpl<std::complex<double>, ComplexDataVector>::operator=;
   using VectorImpl<std::complex<double>, ComplexDataVector>::VectorImpl;
-
-  MAKE_MATH_ASSIGN_EXPRESSION_ARITHMETIC(ComplexDataVector)
 };
 
 namespace blaze {

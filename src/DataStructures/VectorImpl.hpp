@@ -510,19 +510,6 @@ std::ostream& operator<<(std::ostream& os,
 
 /*!
  * \ingroup DataStructuresGroup
- * \brief Defines `MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR` with all
- * assignment arithmetic operations
- *
- * \param VECTOR_TYPE The vector type (e.g. `DataVector`)
- */
-#define MAKE_MATH_ASSIGN_EXPRESSION_ARITHMETIC(VECTOR_TYPE)  \
-  MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(+=, VECTOR_TYPE) \
-  MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(-=, VECTOR_TYPE) \
-  MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(*=, VECTOR_TYPE) \
-  MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(/=, VECTOR_TYPE)
-
-/*!
- * \ingroup DataStructuresGroup
  * \brief Defines the `MakeWithValueImpl` `apply` specialization
  *
  * \details The `MakeWithValueImpl<VECTOR_TYPE, VECTOR_TYPE>` member

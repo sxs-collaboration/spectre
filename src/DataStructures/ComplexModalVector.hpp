@@ -48,9 +48,6 @@ class ComplexModalVector
 
   using VectorImpl<std::complex<double>, ComplexModalVector>::operator=;
   using VectorImpl<std::complex<double>, ComplexModalVector>::VectorImpl;
-
-  MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(+=, ComplexModalVector)
-  MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(-=, ComplexModalVector)
 };
 
 namespace blaze {

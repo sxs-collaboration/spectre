@@ -38,9 +38,6 @@ class ModalVector : public VectorImpl<double, ModalVector> {
 
   using VectorImpl<double, ModalVector>::operator=;
   using VectorImpl<double, ModalVector>::VectorImpl;
-
-  MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(+=, ModalVector)
-  MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(-=, ModalVector)
 };
 
 namespace blaze {

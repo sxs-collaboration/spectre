@@ -47,8 +47,6 @@ class DiagonalModalOperator : public VectorImpl<double, DiagonalModalOperator> {
 
   using VectorImpl<double, DiagonalModalOperator>::operator=;
   using VectorImpl<double, DiagonalModalOperator>::VectorImpl;
-
-  MAKE_MATH_ASSIGN_EXPRESSION_ARITHMETIC(DiagonalModalOperator)
 };
 
 namespace blaze {

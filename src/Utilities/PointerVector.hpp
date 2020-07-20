@@ -1330,35 +1330,3 @@ decltype(auto) pow(const PointerVector<Type, AF, PF, TF, ExprResultType>& t,
   return ReturnType(t, BlazePow<double>{static_cast<double>(exponent)});
 #endif
 }
-
-/*!
- * \brief Generates the `OP` assignment operator for the type `TYPE`
- *
- * For example, if `OP` is `+=` and `TYPE` is `DataVector` then this will add
- * `+=` for `DataVector` on the RHS, `blaze::DenseVector` on the RHS, and
- * `ElementType` (`double` for `DataVector`) on the RHS. This macro is used in
- * the cases where the new vector type inherits from `PointerVector` with a
- * custom `ExprResultType`.
- */
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION >= 6))
-#define MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(OP, TYPE)
-#else
-#define MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(OP, TYPE)             \
-  TYPE& operator OP(const TYPE& rhs) noexcept {                         \
-    /* clang-tidy: parens around OP */                                  \
-    ~*this OP ~rhs; /* NOLINT */                                        \
-    return *this;                                                       \
-  }                                                                     \
-  /* clang-tidy: parens around TYPE */                                  \
-  template <typename VT, bool VF>                                       \
-  TYPE& operator OP(const blaze::DenseVector<VT, VF>& rhs) /* NOLINT */ \
-      noexcept {                                                        \
-    ~*this OP rhs;                                                      \
-    return *this;                                                       \
-  }                                                                     \
-  /* clang-tidy: parens around TYPE */                                  \
-  TYPE& operator OP(const ElementType& rhs) noexcept { /* NOLINT */     \
-    ~*this OP rhs;                                                      \
-    return *this;                                                       \
-  }
-#endif
