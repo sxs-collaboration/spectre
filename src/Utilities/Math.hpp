@@ -3,7 +3,9 @@
 
 #pragma once
 
+#include <array>
 #include <cmath>
+#include <cstddef>
 #include <numeric>
 #include <type_traits>
 #include <vector>
@@ -41,19 +43,23 @@ SPECTRE_ALWAYS_INLINE T number_of_digits(const T number) {
  * largest power
  * \param x The polynomial variable \f$x\f$
  *
- * \tparam U The type of the polynomial coefficients \p coeffs. Can be `double`,
- * which means the coefficients are constant for all values in \p x. Can also be
- * a vector type of typically the same size as `T`, which means the coefficients
- * vary with the elements in \p x.
- * \tparam T The type of the polynomial variable \p x. Must support
- * `make_with_value<T, T>`, as well as (elementwise) addition with `U` and
- * multiplication with `T`.
+ * \tparam CoeffsIterable The type of the polynomial coefficients \p coeffs. Can
+ * be a `std::vector<double>` or `std::array<double>`, which means the
+ * coefficients are constant for all values in \p x. Each coefficient can also
+ * be a vector type of typically the same size as \p x, which means the
+ * coefficients vary with the elements in \p x.
+ * \tparam DataType The type of the polynomial variable \p x. Must support
+ * `make_with_value<DataType, DataType>`, as well as (elementwise) addition with
+ * `CoeffsIterable::value_type` and multiplication with `DataType`.
  */
-template <typename U, typename T>
-T evaluate_polynomial(const std::vector<U>& coeffs, const T& x) noexcept {
+template <typename CoeffsIterable, typename DataType>
+DataType evaluate_polynomial(const CoeffsIterable& coeffs,
+                             const DataType& x) noexcept {
   return std::accumulate(
-      coeffs.rbegin(), coeffs.rend(), make_with_value<T>(x, 0.),
-      [&x](const T& state, const U& element) { return state * x + element; });
+      coeffs.rbegin(), coeffs.rend(), make_with_value<DataType>(x, 0.),
+      [&x](const DataType& state, const auto& element) noexcept {
+        return state * x + element;
+      });
 }
 
 /// \ingroup UtilitiesGroup
@@ -63,6 +69,59 @@ T evaluate_polynomial(const std::vector<U>& coeffs, const T& x) noexcept {
 template <typename T, Requires<std::is_arithmetic<T>::value> = nullptr>
 constexpr T step_function(const T& arg) noexcept {
   return static_cast<T>((arg >= static_cast<T>(0)) ? 1 : 0);
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Smoothly interpolates from 0 to 1 between `lower_edge` and
+ * `upper_edge` with a Hermite polynomial of degree `2 * N + 1`.
+ *
+ * The smoothstep function is
+ *
+ * \f{align*}
+ * S_N(x) = \begin{cases}
+ * 0 &\quad \text{for} \quad x\leq x_0 \\
+ * \tilde{S}_N((x - x_0) / (x_1 - x_0))
+ * &\quad \text{for} \quad x_0 \leq x\leq x_1 \\
+ * 1 &\quad \text{for} \quad x_1\leq x \\
+ * \end{cases}
+ * \f}
+ *
+ * where \f$x_0\f$ is `lower_edge`, \f$x_1\f$ is `upper_edge`, and, up to
+ * \f$N=3\f$,
+ *
+ * \f{align*}
+ * \tilde{S}_0(x) &= x \\
+ * \tilde{S}_1(x) &= 3x^2 - 2x^3 \\
+ * \tilde{S}_2(x) &= 10x^3 - 15x^4 + 6x^5 \\
+ * \tilde{S}_3(x) &= 35x^4 - 84x^5 + 70x^6 - 20x^7
+ * \text{.}
+ * \f}
+ */
+template <size_t N, typename DataType>
+DataType smoothstep(const double lower_edge, const double upper_edge,
+                    const DataType& arg) noexcept {
+  ASSERT(lower_edge < upper_edge,
+         "Requires lower_edge < upper_edge, but lower_edge="
+             << lower_edge << " and upper_edge=" << upper_edge);
+  using std::clamp;
+  return evaluate_polynomial(
+      []() noexcept -> std::array<double, 2 * N + 2> {
+        static_assert(N <= 3,
+                      "The smoothstep function is currently only implemented "
+                      "for N <= 3.");
+        if constexpr (N == 0) {
+          return {0., 1};
+        } else if constexpr (N == 1) {
+          return {0., 0., 3., -2};
+        } else if constexpr (N == 2) {
+          return {0., 0., 0., 10., -15., 6.};
+        } else if constexpr (N == 3) {
+          return {0., 0., 0., 0., 35., -84., 70., -20.};
+        }
+      }(),
+      static_cast<DataType>(
+          clamp((arg - lower_edge) / (upper_edge - lower_edge), 0., 1.)));
 }
 
 /// \ingroup UtilitiesGroup
