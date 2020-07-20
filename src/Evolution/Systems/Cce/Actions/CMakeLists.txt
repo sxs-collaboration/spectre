@@ -1,6 +1,12 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+spectre_target_sources(
+  Cce
+  PRIVATE
+  ScriObserveInterpolated.cpp
+  )
+
 spectre_target_headers(
   Cce
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src

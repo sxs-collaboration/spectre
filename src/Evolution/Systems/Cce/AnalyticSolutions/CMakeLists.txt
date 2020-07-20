@@ -22,6 +22,7 @@ spectre_target_headers(
   BouncingBlackHole.hpp
   LinearizedBondiSachs.hpp
   SphericalMetricData.hpp
+  TeukolskyWave.hpp
   WorldtubeData.hpp
   )
 
