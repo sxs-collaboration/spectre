@@ -307,33 +307,27 @@ struct TensorExpression<Derived, DataType, Symm, IndexList, ArgsList<Args...>> {
   using args_list = ArgsList<Args...>;
 
   // @{
-  /// Cast down to the derived class. This is enabled by the
+  /// If Derived is a TensorExpression, it is casted down to the derived
+  /// class. This is enabled by the
   /// [CRTP](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern)
-  template <typename V = Derived,
-            Requires<not tt::is_a<Tensor, V>::value> = nullptr>
-  SPECTRE_ALWAYS_INLINE const Derived& operator~() const {
-    return static_cast<const Derived&>(*this);
-  }
-  // @}
-  // @{
-  /// If the Derived class is a Tensor return a const reference to a
-  /// TensorExpression.
   ///
-  /// Since Tensor is not derived from TensorExpression (because of
-  /// complications arising from the indices being part of the expression,
-  /// specifically Tensor may need to derive off of hundreds or thousands of
-  /// base classes, which is not feasible), return a reference to a
-  /// TensorExpression, which has a sufficient interface to evaluate the
-  /// expression.
+  /// Otherwise, it is a Tensor. Since Tensor is not derived from
+  /// TensorExpression (because of complications arising from the indices being
+  /// part of the expression, specifically Tensor may need to derive off of
+  /// hundreds or thousands of base classes, which is not feasible), return a
+  /// reference to a TensorExpression, which has a sufficient interface to
+  /// evaluate the expression.
+  ///
   /// \returns const TensorExpression<Derived, DataType, Symm, IndexList,
   /// ArgsList<Args...>>&
-  template <typename V = Derived,
-            Requires<tt::is_a<Tensor, V>::value> = nullptr>
-  SPECTRE_ALWAYS_INLINE auto operator~() const {
-    return static_cast<const TensorExpression<Derived, DataType, Symm,
-                                              IndexList, ArgsList<Args...>>&>(
-        *this);
+  SPECTRE_ALWAYS_INLINE const auto& operator~() const noexcept {
+    if constexpr (tt::is_a_v<Tensor, Derived>) {
+      return *this;
+    } else {
+      return static_cast<const Derived&>(*this);
+    }
   }
+
   // @}
 
   // @{
@@ -361,11 +355,12 @@ struct TensorExpression<Derived, DataType, Symm, IndexList, ArgsList<Args...>> {
   /// \brief return the value of type DataType with tensor index `tensor_index`
   ///
   /// \details
-  /// _Note:_ This version is selected if Derived is a Tensor
+  /// If Derived is a TensorExpression, `tensor_index` is forwarded onto the
+  /// next TensorExpression.
   ///
-  /// One big challenge with a general Tensor Expression implementation is the
-  /// ordering of the Indices on the RHS and LHS of the expression. This
-  /// algorithm implemented in ::rhs_elements_in_lhs and
+  /// Otherwise, it is a Tensor, where one big challenge with TensorExpression
+  /// implementation is the reordering of the Indices on the RHS and LHS of the
+  /// expression. This algorithm implemented in ::rhs_elements_in_lhs and
   /// ::generate_transformation handles the index sorting.
   ///
   /// Here are some examples of what the algorithm does:
@@ -405,50 +400,31 @@ struct TensorExpression<Derived, DataType, Symm, IndexList, ArgsList<Args...>> {
   /// \endverbatim
   ///
   /// \tparam LhsIndices the tensor indices on the LHS on the expression
-  /// \tparam V used for SFINAE
   /// \param tensor_index the tensor component to retrieve
   /// \return the value of the DataType of component `tensor_index`
-  template <typename... LhsIndices, typename ArrayValueType,
-            typename V = Derived,
-            Requires<tt::is_a<Tensor, V>::value> = nullptr>
+  template <typename... LhsIndices, typename ArrayValueType>
   SPECTRE_ALWAYS_INLINE type
   get(const std::array<ArrayValueType, num_tensor_indices>& tensor_index)
-      const {
-    ASSERT(t_ != nullptr,
-           "A TensorExpression that should be holding a pointer to a Tensor "
-           "is holding a nullptr.");
-    using rhs = args_list;
-    // To deal with Tensor products we need the ordering of only the subset of
-    // tensor indices present in this term
-    using lhs = rhs_elements_in_lhs<rhs, tmpl::list<LhsIndices...>>;
-    using rhs_only_with_lhs = rhs_elements_in_lhs<lhs, rhs>;
-    using transformation = generate_transformation<rhs, lhs, rhs_only_with_lhs>;
-    return t_->get(
-        ComputeCorrectTensorIndex<transformation>::apply(tensor_index));
-  }
-
-  /// \brief return the value of type DataType with tensor index `tensor_index`
-  ///
-  /// \details
-  /// _Note:_ This version is selected if Derived is a TensorExpression
-  ///
-  /// Forward the tensor_index onwards to the next TensorExpression
-  ///
-  /// \tparam LhsIndices the tensor indices on the LHS on the expression
-  /// \tparam V used for SFINAE
-  /// \param tensor_index the tensor component to retrieve
-  /// \return the value of the DataType of component `tensor_index`
-  template <typename... LhsIndices, typename ArrayValueType,
-            typename V = Derived,
-            Requires<not tt::is_a<Tensor, V>::value> = nullptr>
-  SPECTRE_ALWAYS_INLINE type
-  get(const std::array<ArrayValueType, num_tensor_indices>& tensor_index)
-      const {
-    ASSERT(t_ == nullptr,
-           "A TensorExpression that shouldn't be holding a pointer to a "
-           "Tensor is holding one.");
-    return static_cast<const Derived&>(*this).template get<LhsIndices...>(
-        tensor_index);
+      const noexcept {
+    if constexpr (tt::is_a_v<Tensor, Derived>) {
+      ASSERT(t_ != nullptr,
+             "A TensorExpression that should be holding a pointer to a Tensor "
+             "is holding a nullptr.");
+      using rhs = args_list;
+      // To deal with Tensor products we need the ordering of only the subset of
+      // tensor indices present in this term
+      using lhs = rhs_elements_in_lhs<rhs, tmpl::list<LhsIndices...>>;
+      using rhs_only_with_lhs = rhs_elements_in_lhs<lhs, rhs>;
+      using transformation =
+          generate_transformation<rhs, lhs, rhs_only_with_lhs>;
+      return t_->get(
+          ComputeCorrectTensorIndex<transformation>::apply(tensor_index));
+    } else {
+      ASSERT(t_ == nullptr,
+             "A TensorExpression that shouldn't be holding a pointer to a "
+             "Tensor is holding one.");
+      return (~*this).template get<LhsIndices...>(tensor_index);
+    }
   }
 
   /// Retrieve the i'th entry of the Tensor being held
