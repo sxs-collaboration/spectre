@@ -293,7 +293,8 @@ struct TensorExpression;
 template <typename Derived, typename DataType, typename Symm,
           typename IndexList, template <typename...> class ArgsList,
           typename... Args>
-struct TensorExpression<Derived, DataType, Symm, IndexList, ArgsList<Args...>> {
+struct TensorExpression<Derived, DataType, Symm, IndexList, ArgsList<Args...>>
+    : public Expression {
   static_assert(sizeof...(Args) == 0 or
                     sizeof...(Args) == tmpl::size<IndexList>::value,
                 "the number of Tensor indices must match the number of "

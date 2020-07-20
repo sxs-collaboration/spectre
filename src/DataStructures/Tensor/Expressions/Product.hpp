@@ -30,8 +30,7 @@ struct Product<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>>
           typename T1::type, double,
           tmpl::append<typename T1::index_list, typename T2::index_list>,
           tmpl::sort<
-              tmpl::append<typename T1::args_list, typename T2::args_list>>>,
-      public Expression {
+              tmpl::append<typename T1::args_list, typename T2::args_list>>> {
   static_assert(std::is_same<typename T1::type, typename T2::type>::value,
                 "Cannot product Tensors holding different data types.");
   using max_symm2 = tmpl::fold<typename T2::symmetry, tmpl::uint32_t<0>,

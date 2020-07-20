@@ -81,8 +81,7 @@ struct TensorContract
           typename detail::ComputeContractedType<
               Index1, Index2, T, X, Symm, IndexList, ArgsList>::index_list,
           typename detail::ComputeContractedType<
-              Index1, Index2, T, X, Symm, IndexList, ArgsList>::args_list>,
-      public Expression {
+              Index1, Index2, T, X, Symm, IndexList, ArgsList>::args_list> {
   using CI1 = tmpl::at<IndexList, Index1>;
   using CI2 = tmpl::at<IndexList, Index2>;
   static_assert(tmpl::size<Symm>::value > 1 and
