@@ -5,7 +5,7 @@
 
 #include <cstddef>
 
-#include "Domain/Element.hpp"
+#include "Domain/Structure/Element.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

@@ -26,6 +26,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   Domain
+  DomainStructure
   ErrorHandling
   Utilities
   )

@@ -1,17 +1,17 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/OrientationMapHelpers.hpp"
+#include "Domain/Structure/OrientationMapHelpers.hpp"
 
 #include <algorithm>
 #include <array>
 #include <numeric>
 
 #include "DataStructures/Index.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/OrientationMap.hpp"
-#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
-#include "Domain/Side.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/SegmentId.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Side.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -52,9 +52,9 @@ std::vector<size_t> compute_offset_permutation(
   if (neighbor_axes_are_transposed) {
     for (int i2 = 0; i2 < num_pts_2; ++i2) {
       for (int i1 = 0; i1 < num_pts_1; ++i1) {
-        // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+        // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
         oriented_offsets[static_cast<size_t>(i1 + num_pts_1 * i2)] =
-            // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+            // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
             static_cast<size_t>((i2_offset + i2_step * i2) +
                                 num_pts_2 * (i1_offset + i1_step * i1));
       }
@@ -62,9 +62,9 @@ std::vector<size_t> compute_offset_permutation(
   } else {
     for (int i2 = 0; i2 < num_pts_2; ++i2) {
       for (int i1 = 0; i1 < num_pts_1; ++i1) {
-        // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+        // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
         oriented_offsets[static_cast<size_t>(i1 + num_pts_1 * i2)] =
-            // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+            // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
             static_cast<size_t>((i1_offset + i1_step * i1) +
                                 num_pts_1 * (i2_offset + i2_step * i2));
       }
@@ -106,10 +106,10 @@ std::vector<size_t> compute_offset_permutation(
     for (int i3 = 0; i3 < num_pts_3; ++i3) {
       for (int i2 = 0; i2 < num_pts_2; ++i2) {
         for (int i1 = 0; i1 < num_pts_1; ++i1) {
-          // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+          // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
           oriented_offsets[static_cast<size_t>(i1 + num_pts_1 * i2 +
                                                num_pts_1 * num_pts_2 * i3)] =
-              // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+              // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
               static_cast<size_t>((i1_offset + i1_step * i1) +
                                   num_pts_1 * (i2_offset + i2_step * i2) +
                                   num_pts_1 * num_pts_2 *
@@ -121,10 +121,10 @@ std::vector<size_t> compute_offset_permutation(
     for (int i3 = 0; i3 < num_pts_3; ++i3) {
       for (int i2 = 0; i2 < num_pts_2; ++i2) {
         for (int i1 = 0; i1 < num_pts_1; ++i1) {
-          // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+          // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
           oriented_offsets[static_cast<size_t>(i1 + num_pts_1 * i2 +
                                                num_pts_1 * num_pts_2 * i3)] =
-              // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+              // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
               static_cast<size_t>((i3_offset + i3_step * i3) +
                                   num_pts_3 * (i1_offset + i1_step * i1) +
                                   num_pts_3 * num_pts_1 *
@@ -136,10 +136,10 @@ std::vector<size_t> compute_offset_permutation(
     for (int i3 = 0; i3 < num_pts_3; ++i3) {
       for (int i2 = 0; i2 < num_pts_2; ++i2) {
         for (int i1 = 0; i1 < num_pts_1; ++i1) {
-          // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+          // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
           oriented_offsets[static_cast<size_t>(i1 + num_pts_1 * i2 +
                                                num_pts_1 * num_pts_2 * i3)] =
-              // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+              // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
               static_cast<size_t>((i2_offset + i2_step * i2) +
                                   num_pts_2 * (i3_offset + i3_step * i3) +
                                   num_pts_2 * num_pts_3 *
@@ -153,10 +153,10 @@ std::vector<size_t> compute_offset_permutation(
     for (int i3 = 0; i3 < num_pts_3; ++i3) {
       for (int i2 = 0; i2 < num_pts_2; ++i2) {
         for (int i1 = 0; i1 < num_pts_1; ++i1) {
-          // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+          // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
           oriented_offsets[static_cast<size_t>(i1 + num_pts_1 * i2 +
                                                num_pts_1 * num_pts_2 * i3)] =
-              // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+              // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
               static_cast<size_t>((i1_offset + i1_step * i1) +
                                   num_pts_1 * (i3_offset + i3_step * i3) +
                                   num_pts_1 * num_pts_3 *
@@ -168,10 +168,10 @@ std::vector<size_t> compute_offset_permutation(
     for (int i3 = 0; i3 < num_pts_3; ++i3) {
       for (int i2 = 0; i2 < num_pts_2; ++i2) {
         for (int i1 = 0; i1 < num_pts_1; ++i1) {
-          // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+          // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
           oriented_offsets[static_cast<size_t>(i1 + num_pts_1 * i2 +
                                                num_pts_1 * num_pts_2 * i3)] =
-              // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+              // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
               static_cast<size_t>((i3_offset + i3_step * i3) +
                                   num_pts_3 * (i2_offset + i2_step * i2) +
                                   num_pts_3 * num_pts_2 *
@@ -183,10 +183,10 @@ std::vector<size_t> compute_offset_permutation(
     for (int i3 = 0; i3 < num_pts_3; ++i3) {
       for (int i2 = 0; i2 < num_pts_2; ++i2) {
         for (int i1 = 0; i1 < num_pts_1; ++i1) {
-          // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+          // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
           oriented_offsets[static_cast<size_t>(i1 + num_pts_1 * i2 +
                                                num_pts_1 * num_pts_2 * i3)] =
-              // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+              // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
               static_cast<size_t>((i2_offset + i2_step * i2) +
                                   num_pts_2 * (i1_offset + i1_step * i1) +
                                   num_pts_2 * num_pts_1 *

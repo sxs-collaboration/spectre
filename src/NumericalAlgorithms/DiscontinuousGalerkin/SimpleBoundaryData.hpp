@@ -8,7 +8,7 @@
 #include <pup.h>
 
 #include "DataStructures/Variables.hpp"
-#include "Domain/OrientationMapHelpers.hpp"
+#include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"

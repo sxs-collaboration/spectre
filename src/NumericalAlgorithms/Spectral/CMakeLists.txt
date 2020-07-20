@@ -13,6 +13,7 @@ spectre_target_sources(
   Filtering.cpp
   FiniteDifference.cpp
   Legendre.cpp
+  Mesh.cpp
   Projection.cpp
   Spectral.cpp
   SwshCoefficients.cpp
@@ -30,6 +31,7 @@ spectre_target_headers(
   HEADERS
   ComplexDataView.hpp
   Filtering.hpp
+  Mesh.hpp
   Projection.hpp
   Spectral.hpp
   SwshCoefficients.hpp
@@ -48,9 +50,6 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   Libsharp
-  INTERFACE
-  # LinearOperators should be PUBLIC but there is a cyclic dependency
-  LinearOperators
   PRIVATE
   Blas
   Boost::boost

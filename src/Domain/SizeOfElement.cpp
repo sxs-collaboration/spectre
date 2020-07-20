@@ -11,7 +11,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/ElementMap.hpp"  // IWYU pragma: keep
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "Domain/Side.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdArrayHelpers.hpp"  // IWYU pragma: keep

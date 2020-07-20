@@ -6,11 +6,11 @@
 #include <functional>
 #include <ostream>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
-#include "Domain/Mesh.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
-#include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"

@@ -7,10 +7,10 @@
 #include <cstddef>
 #include <iosfwd>
 
-#include "Domain/Direction.hpp"
-#include "Domain/Mesh.hpp"
-#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
-#include "Domain/Side.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/SegmentId.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Side.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 

@@ -17,8 +17,8 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
 
 namespace domain {

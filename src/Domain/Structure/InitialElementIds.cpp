@@ -1,12 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/InitialElementIds.hpp"
+#include "Domain/Structure/InitialElementIds.hpp"
 
 #include <iterator>
 
-#include "Domain/ElementId.hpp"
-#include "Domain/SegmentId.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/SegmentId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeArray.hpp"

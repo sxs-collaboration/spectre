@@ -7,7 +7,7 @@
 #include <pup.h>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "Domain/ElementId.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/InterpolationTargetVarsFromElement.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Interpolation/PointInfoTag.hpp"

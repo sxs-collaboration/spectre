@@ -12,8 +12,8 @@
 #include <iosfwd>
 #include <limits>
 
-#include "Domain/SegmentId.hpp"
-#include "Domain/Side.hpp"
+#include "Domain/Structure/SegmentId.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -71,11 +71,11 @@ class ElementId {
 
   size_t block_id() const noexcept {
     ASSERT(
-        alg::all_of(segment_ids_,
-                    [this](const SegmentId& current_id) noexcept {
-                      return current_id.block_id() ==
-                             segment_ids_[0].block_id();
-                    }),
+        alg::all_of(
+            segment_ids_,
+            [this](const SegmentId& current_id) noexcept {
+              return current_id.block_id() == segment_ids_[0].block_id();
+            }),
         "Not all of the `SegmentId`s inside `ElementId` have same `BlockId`.");
     return segment_ids_[0].block_id();
   }
@@ -115,7 +115,7 @@ bool operator!=(const ElementId<VolumeDim>& lhs,
 // ######################################################################
 
 template <size_t VolumeDim>
-size_t hash_value(const ElementId<VolumeDim>& c) noexcept;
+size_t hash_value(const ElementId<VolumeDim>& id) noexcept;
 
 // clang-tidy: do not modify namespace std
 namespace std {  // NOLINT

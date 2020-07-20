@@ -7,8 +7,7 @@
 #include <memory>
 #include <vector>
 
-#include "Domain/Block.hpp"          // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -17,6 +16,7 @@
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 
 /// \cond
 namespace Frame {
@@ -25,8 +25,7 @@ struct Logical;
 }  // namespace Frame
 /// \endcond
 
-namespace domain {
-namespace creators {
+namespace domain::creators {
 Interval::Interval(
     typename LowerBound::type lower_x, typename UpperBound::type upper_x,
     typename IsPeriodicIn::type is_periodic_in_x,
@@ -86,5 +85,4 @@ Interval::functions_of_time() const noexcept {
     return time_dependence_->functions_of_time();
   }
 }
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators

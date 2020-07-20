@@ -1,22 +1,21 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/CreateInitialMesh.hpp"
+#include "Domain/Structure/CreateInitialMesh.hpp"
 
 #include <array>
 #include <cstddef>
 #include <vector>
 
 #include "DataStructures/Index.hpp"
-#include "Domain/ElementId.hpp"
-#include "Domain/Mesh.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace domain {
-namespace Initialization {
+namespace domain::Initialization {
 template <size_t Dim>
 Mesh<Dim> create_initial_mesh(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
@@ -30,8 +29,7 @@ Mesh<Dim> create_initial_mesh(
   return {extents.indices(), Spectral::Basis::Legendre,
           Spectral::Quadrature::GaussLobatto};
 }
-}  // namespace Initialization
-}  // namespace domain
+}  // namespace domain::Initialization
 
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

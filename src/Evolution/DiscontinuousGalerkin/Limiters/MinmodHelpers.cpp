@@ -9,9 +9,9 @@
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/SliceIterator.hpp"
-#include "Domain/Element.hpp"  // IWYU pragma: keep
-#include "Domain/Mesh.hpp"     // IWYU pragma: keep
-#include "Domain/Side.hpp"
+#include "Domain/Structure/Element.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Side.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"

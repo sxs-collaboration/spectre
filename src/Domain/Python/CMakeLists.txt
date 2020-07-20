@@ -16,4 +16,5 @@ spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE
   Domain
+  DomainStructure
   )

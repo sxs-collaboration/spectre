@@ -8,10 +8,10 @@
 #include <type_traits>
 #include <utility>
 
-#include "Domain/BlockNeighbor.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/OrientationMap.hpp"
-#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/SegmentId.hpp"  // IWYU pragma: keep
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/GetOutput.hpp"
 

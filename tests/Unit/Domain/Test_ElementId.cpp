@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
-#include "Domain/ElementId.hpp"
-#include "Domain/InitialElementIds.hpp"
-#include "Domain/SegmentId.hpp"
-#include "Domain/Side.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/InitialElementIds.hpp"
+#include "Domain/Structure/SegmentId.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -31,7 +31,8 @@ void test_placement_new_and_hashing_impl(
   const ElementId<VolumeDim> id1(block1, segments1);
   const ElementId<VolumeDim> id2(block2, segments2);
 
-  ElementId<VolumeDim> test_id1{}, test_id2{};
+  ElementId<VolumeDim> test_id1{};
+  ElementId<VolumeDim> test_id2{};
   // Check for nondeterminacy due to previous memory state.
   std::memset(&test_id1, 0, sizeof(test_id1));
 #if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ > 7)

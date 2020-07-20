@@ -5,15 +5,14 @@
 
 #include "DataStructures/Index.hpp"
 #include "Domain/Block.hpp"                   // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"           // IWYU pragma: keep
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
-#include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 
-namespace domain {
-namespace creators {
+namespace domain::creators {
 RotatedIntervals::RotatedIntervals(
     typename LowerBound::type lower_x, typename Midpoint::type midpoint_x,
     typename UpperBound::type upper_x,
@@ -50,5 +49,4 @@ RotatedIntervals ::initial_refinement_levels() const noexcept {
   return {{{initial_refinement_level_x_[0]}},
           {{initial_refinement_level_x_[0]}}};
 }
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators

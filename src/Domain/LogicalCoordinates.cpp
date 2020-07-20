@@ -11,9 +11,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
-#include "Domain/Direction.hpp"              // IWYU pragma: keep
-#include "Domain/Mesh.hpp"                   // IWYU pragma: keep
-#include "Domain/Side.hpp"
+#include "Domain/Structure/Direction.hpp"    // IWYU pragma: keep
+#include "Domain/Structure/Side.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"

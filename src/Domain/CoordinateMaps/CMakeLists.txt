@@ -48,13 +48,13 @@ spectre_target_headers(
 
 target_link_libraries(
   ${LIBRARY}
+  PRIVATE
   PUBLIC
   Boost::boost
   DataStructures
+  DomainStructure
   ErrorHandling
   FunctionsOfTime
-  INTERFACE
-  Domain  # Domain should really be PUBLIC but there are cyclic dependencies
   )
 
 add_subdirectory(TimeDependent)

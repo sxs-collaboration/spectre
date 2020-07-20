@@ -7,8 +7,8 @@
 #include <memory>
 #include <sharp_cxx.h>
 
-#include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/Spectral/SwshSettings.hpp"
 #include "Utilities/ForceInline.hpp"

@@ -13,8 +13,8 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

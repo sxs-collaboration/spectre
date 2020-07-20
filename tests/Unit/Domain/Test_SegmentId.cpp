@@ -7,8 +7,8 @@
 #include <limits>
 #include <string>
 
-#include "Domain/SegmentId.hpp"
-#include "Domain/Side.hpp"
+#include "Domain/Structure/SegmentId.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"

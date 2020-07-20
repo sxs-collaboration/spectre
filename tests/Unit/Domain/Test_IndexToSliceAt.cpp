@@ -4,8 +4,8 @@
 #include "Framework/TestingFramework.hpp"
 
 #include "DataStructures/Index.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/IndexToSliceAt.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/IndexToSliceAt.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.IndexToSliceAt", "[Domain][Unit]") {
   const Index<2> extents{{{2, 5}}};

@@ -8,11 +8,11 @@
 #include <memory>
 #include <vector>
 
-#include "Domain/Block.hpp"          // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"                   // IWYU pragma: keep
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Utilities/MakeArray.hpp"
 
 /// \cond
@@ -26,8 +26,7 @@ class CoordinateMapBase;
 }  // namespace domain
 /// \endcond
 
-namespace domain {
-namespace creators {
+namespace domain::creators {
 FrustalCloak::FrustalCloak(
     typename InitialRefinement::type initial_refinement_level,
     typename InitialGridPoints::type initial_number_of_grid_points,
@@ -71,5 +70,4 @@ std::vector<std::array<size_t, 3>> FrustalCloak::initial_refinement_levels()
     const noexcept {
   return {10, make_array<3>(initial_refinement_level_)};
 }
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators

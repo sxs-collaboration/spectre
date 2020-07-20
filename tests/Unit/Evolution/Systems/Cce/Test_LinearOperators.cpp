@@ -7,10 +7,10 @@
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "Domain/Mesh.hpp"
 #include "Evolution/Systems/Cce/LinearOperators.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "Utilities/VectorAlgebra.hpp"
@@ -29,9 +29,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearOperators",
                                    Spectral::Quadrature::GaussLobatto>(
           number_of_radial_points));
   const size_t polynomial_order = 3;
-  const DataVector y_polynomial_coefficients =
-      make_with_random_values<DataVector>(
-          make_not_null(&generator), make_not_null(&dist), polynomial_order);
+  const auto y_polynomial_coefficients = make_with_random_values<DataVector>(
+      make_not_null(&generator), make_not_null(&dist), polynomial_order);
 
   ComplexDataVector to_differentiate{y.size(), 0.0};
   ComplexDataVector expected_derivative{y.size(), 0.0};

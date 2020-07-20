@@ -15,7 +15,6 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/Mesh.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Poisson/Geometry.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"  // IWYU pragma: keep
@@ -25,6 +24,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/FirstOrderEllipticSolutionsTestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/Moustache.hpp"
 #include "Utilities/TMPL.hpp"
@@ -67,7 +67,7 @@ void test_solution() {
       &MoustacheProxy<Dim>::source_variables, solution, "Moustache", {"source"},
       {{{0., 1.}}}, std::make_tuple(), DataVector(5));
 
-  Poisson::Solutions::Moustache<Dim> created_solution =
+  const auto created_solution =
       TestHelpers::test_creation<Poisson::Solutions::Moustache<Dim>>("");
   CHECK(created_solution == solution);
   test_serialization(solution);

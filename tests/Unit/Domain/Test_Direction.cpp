@@ -8,8 +8,8 @@
 #include <functional>
 #include <string>
 
-#include "Domain/Direction.hpp"
-#include "Domain/Side.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/GetOutput.hpp"

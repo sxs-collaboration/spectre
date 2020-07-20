@@ -8,7 +8,6 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  ApplyMatrices.cpp
   CoefficientTransforms.cpp
   DefiniteIntegral.cpp
   Divergence.cpp
@@ -22,7 +21,6 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  ApplyMatrices.hpp
   CoefficientTransforms.hpp
   DefiniteIntegral.hpp
   Divergence.hpp
@@ -35,7 +33,6 @@ spectre_target_headers(
   PartialDerivatives.hpp
   PartialDerivatives.tpp
   Tags.hpp
-  Transpose.hpp
   )
 
 target_link_libraries(
@@ -46,6 +43,8 @@ target_link_libraries(
   ErrorHandling
   Options
   Spectral
+  Utilities
   INTERFACE
-  Domain # Domain should be PUBLIC but then there's a cyclic dependency
+  Domain
+  DomainStructure
   )

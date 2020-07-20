@@ -9,7 +9,7 @@
 #include <limits>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond

@@ -16,18 +16,18 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
-#include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -376,7 +376,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain", "[Domain][Unit]") {
 [[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Domain.BadArgs", "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  // NOLINTNEXTLINE(misc-unused-raii)
+  // NOLINTNEXTLINE(bugprone-unused-raii)
   Domain<1>(
       make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
                       CoordinateMaps::Affine{-1., 1., -1., 1.}),

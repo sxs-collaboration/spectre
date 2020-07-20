@@ -15,10 +15,10 @@
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
-#include "Domain/Direction.hpp"  // IWYU pragma: keep
-#include "Domain/ElementId.hpp"  // IWYU pragma: keep
-#include "Domain/MaxNumberOfNeighbors.hpp"
+#include "DataStructures/Variables.hpp"    // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Parallel/InboxInserters.hpp"

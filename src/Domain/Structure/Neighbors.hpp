@@ -10,7 +10,7 @@
 #include <iosfwd>
 #include <unordered_set>
 
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 
 /// \cond
 namespace PUP {
@@ -40,7 +40,7 @@ class Neighbors {
   /// Default constructor for Charm++ serialization.
   Neighbors() = default;
   ~Neighbors() = default;
-  Neighbors(const Neighbors<VolumeDim>& neighbor)  = default;
+  Neighbors(const Neighbors<VolumeDim>& neighbor) = default;
   Neighbors(Neighbors<VolumeDim>&&) noexcept = default;
   Neighbors& operator=(const Neighbors& rhs) = default;
   Neighbors& operator=(Neighbors&&) noexcept = default;

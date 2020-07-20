@@ -10,9 +10,9 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
-#include "Domain/Mesh.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/StaticCache.hpp"
 
@@ -117,18 +117,21 @@ const Matrix& projection_matrix_mortar_to_element(
                  "Above-diagonal entries are zero.  Don't use them.");
           double result = 1.;
           for (size_t i = (large_index - small_index) / 2; i > 0; --i) {
-            result =
-                1 - result *
-                        ((large_index + small_index + 3 - 2 * i) *
-                         (large_index + small_index + 2 - 2 * i) *
-                         (large_index - small_index + 2 - 2 * i) *
-                         (large_index - small_index + 1 - 2 * i)) /
-                        (2 * i * (2 * large_index + 1 - 2 * i) *
-                         (large_index + 2 - 2 * i) * (large_index + 1 - 2 * i));
+            result = 1 - result *
+                             static_cast<double>(
+                                 (large_index + small_index + 3 - 2 * i) *
+                                 (large_index + small_index + 2 - 2 * i) *
+                                 (large_index - small_index + 2 - 2 * i) *
+                                 (large_index - small_index + 1 - 2 * i)) /
+                             static_cast<double>(2 * i *
+                                                 (2 * large_index + 1 - 2 * i) *
+                                                 (large_index + 2 - 2 * i) *
+                                                 (large_index + 1 - 2 * i));
           }
 
           for (size_t i = 1; i <= large_index - small_index; ++i) {
-            result *= 1. + (large_index + small_index + 1.) / i;
+            result *=
+                1. + static_cast<double>(large_index + small_index + 1) / i;
           }
           result /= pow(2., large_index + 1);
           return result;

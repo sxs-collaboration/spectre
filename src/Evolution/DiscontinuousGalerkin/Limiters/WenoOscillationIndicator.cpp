@@ -11,10 +11,10 @@
 #include "DataStructures/IndexIterator.hpp"  // IWYU pragma: keep
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/ModalVector.hpp"
-#include "Domain/Mesh.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

@@ -4,7 +4,7 @@
 #include "RegularGridInterpolant.hpp"
 
 #include "Domain/LogicalCoordinates.hpp"
-#include "Domain/Mesh.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 

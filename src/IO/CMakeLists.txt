@@ -27,6 +27,9 @@ target_link_libraries(
   Hdf5
   Options
   Utilities
+  INTERFACE
+  Domain
+  DomainStructure
   )
 
 add_subdirectory(H5)

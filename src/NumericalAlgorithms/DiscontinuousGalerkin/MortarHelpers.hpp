@@ -12,17 +12,17 @@
 #include <type_traits>
 #include <utility>  // IWYU pragma: keep // for std::forward
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/ElementId.hpp"
-#include "Domain/Mesh.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
-#include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"

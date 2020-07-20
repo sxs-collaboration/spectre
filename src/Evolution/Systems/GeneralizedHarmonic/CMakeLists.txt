@@ -36,6 +36,9 @@ target_link_libraries(
   ErrorHandling
   GeneralRelativity
   Options
+  Spectral
+  INTERFACE
+  Domain
   )
 
 add_subdirectory(GaugeSourceFunctions)

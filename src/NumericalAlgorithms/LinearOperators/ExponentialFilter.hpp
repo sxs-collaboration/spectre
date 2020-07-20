@@ -116,7 +116,7 @@ class Exponential {
 
  private:
   template <size_t LocalFilterIndex>
-  // NOLINTNEXTLINE(google-runtime-references)
+  // NOLINTNEXTLINE(readability-redundant-declaration)
   friend bool operator==(const Exponential<LocalFilterIndex>& lhs,
                          const Exponential<LocalFilterIndex>& rhs) noexcept;
 

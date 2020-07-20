@@ -13,7 +13,6 @@
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"  // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -26,11 +25,12 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/OrientationMap.hpp"
-#include "Domain/Side.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
@@ -268,8 +268,8 @@ std::vector<std::array<size_t, two_to_the(VolumeDim)>> corners_from_two_maps(
     const std::unique_ptr<
         domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>&
         map2) noexcept {
-  std::array<size_t, two_to_the(VolumeDim)> corners_for_block1;
-  std::array<size_t, two_to_the(VolumeDim)> corners_for_block2;
+  std::array<size_t, two_to_the(VolumeDim)> corners_for_block1{};
+  std::array<size_t, two_to_the(VolumeDim)> corners_for_block2{};
   for (VolumeCornerIterator<VolumeDim> vci{}; vci; ++vci) {
     gsl::at(corners_for_block1, vci.local_corner_number()) =
         vci.local_corner_number();

@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "Domain/Side.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "Utilities/GetOutput.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.Side", "[Domain][Unit]") {

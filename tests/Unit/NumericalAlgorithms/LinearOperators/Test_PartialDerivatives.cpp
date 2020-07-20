@@ -28,10 +28,10 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/LogicalCoordinates.hpp"
-#include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -130,7 +130,7 @@ void test_logical_partial_derivatives_1d(const Mesh<1>& mesh) {
     for (size_t n = 0; n < u.number_of_independent_components; ++n) {
       for (size_t s = 0; s < number_of_grid_points; ++s) {
         u.data()[s + n * number_of_grid_points]  // NOLINT
-            = (n + 1) * pow(xi[s], a);
+            = static_cast<double>(n + 1) * pow(xi[s], a);
       }
     }
 
@@ -139,7 +139,8 @@ void test_logical_partial_derivatives_1d(const Mesh<1>& mesh) {
            n < Variables<GradientTags>::number_of_independent_components; ++n) {
         for (size_t s = 0; s < number_of_grid_points; ++s) {
           const double expected =
-              (0 == a ? 0.0 : a * (n + 1) * pow(xi[s], a - 1));
+              (0 == a ? 0.0
+                      : static_cast<double>(a * (n + 1)) * pow(xi[s], a - 1));
           CHECK(du[0].data()[s + n * number_of_grid_points]  // NOLINT
                 == approx(expected));
         }
@@ -163,7 +164,8 @@ void test_logical_partial_derivatives_2d(const Mesh<2>& mesh) {
   for (size_t n = 0; n < u.number_of_independent_components; ++n) {
     for (IndexIterator<2> ii(mesh.extents()); ii; ++ii) {
       u.data()[ii.collapsed_index() + n * number_of_grid_points] =  // NOLINT
-          (n + 1) * pow(xi[ii()[0]], a) * pow(eta[ii()[1]], b);
+          static_cast<double>(n + 1) * pow(xi[ii()[0]], a) *
+          pow(eta[ii()[1]], b);
     }
   }
 
@@ -173,11 +175,11 @@ void test_logical_partial_derivatives_2d(const Mesh<2>& mesh) {
       for (IndexIterator<2> ii(mesh.extents()); ii; ++ii) {
         const double expected_dxi =
             (0 == a ? 0.0
-                    : a * (n + 1) * pow(xi[ii()[0]], a - 1) *
-                          pow(eta[ii()[1]], b));
+                    : static_cast<double>(a * (n + 1)) *
+                          pow(xi[ii()[0]], a - 1) * pow(eta[ii()[1]], b));
         const double expected_deta =
             (0 == b ? 0.0
-                    : b * (n + 1) * pow(xi[ii()[0]], a) *
+                    : static_cast<double>(b * (n + 1)) * pow(xi[ii()[0]], a) *
                           pow(eta[ii()[1]], b - 1));
         // clang-tidy: pointer arithmetic
         CHECK(du[0].data()[ii.collapsed_index() +         // NOLINT
@@ -208,8 +210,8 @@ void test_logical_partial_derivatives_3d(const Mesh<3>& mesh) {
   for (size_t n = 0; n < u.number_of_independent_components; ++n) {
     for (IndexIterator<3> ii(mesh.extents()); ii; ++ii) {
       u.data()[ii.collapsed_index() + n * number_of_grid_points] =  // NOLINT
-          (n + 1) * pow(xi[ii()[0]], a) * pow(eta[ii()[1]], b) *
-          pow(zeta[ii()[2]], c);
+          static_cast<double>(n + 1) * pow(xi[ii()[0]], a) *
+          pow(eta[ii()[1]], b) * pow(zeta[ii()[2]], c);
     }
   }
 
@@ -218,17 +220,18 @@ void test_logical_partial_derivatives_3d(const Mesh<3>& mesh) {
          n < Variables<GradientTags>::number_of_independent_components; ++n) {
       for (IndexIterator<3> ii(mesh.extents()); ii; ++ii) {
         const double expected_dxi =
-            (0 == a ? 0.0
-                    : a * (n + 1) * pow(xi[ii()[0]], a - 1) *
-                          pow(eta[ii()[1]], b) * pow(zeta[ii()[2]], c));
+            (0 == a
+                 ? 0.0
+                 : static_cast<double>(a * (n + 1)) * pow(xi[ii()[0]], a - 1) *
+                       pow(eta[ii()[1]], b) * pow(zeta[ii()[2]], c));
         const double expected_deta =
             (0 == b ? 0.0
-                    : b * (n + 1) * pow(xi[ii()[0]], a) *
+                    : static_cast<double>(b * (n + 1)) * pow(xi[ii()[0]], a) *
                           pow(eta[ii()[1]], b - 1) * pow(zeta[ii()[2]], c));
         const double expected_dzeta =
             (0 == c ? 0.0
-                    : c * (n + 1) * pow(xi[ii()[0]], a) * pow(eta[ii()[1]], b) *
-                          pow(zeta[ii()[2]], c - 1));
+                    : static_cast<double>(c * (n + 1)) * pow(xi[ii()[0]], a) *
+                          pow(eta[ii()[1]], b) * pow(zeta[ii()[2]], c - 1));
         // clang-tidy: pointer arithmetic
         CHECK(du[0].data()[ii.collapsed_index() +         // NOLINT
                            n * number_of_grid_points] ==  // NOLINT

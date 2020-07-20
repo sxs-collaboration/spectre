@@ -3,10 +3,10 @@
 
 #include "Domain/Amr/Helpers.hpp"
 
-#include "Domain/Direction.hpp"       // IWYU pragma: keep
-#include "Domain/ElementId.hpp"       // IWYU pragma: keep
-#include "Domain/OrientationMap.hpp"  // IWYU pragma: keep
-#include "Domain/SegmentId.hpp"       // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"       // IWYU pragma: keep
+#include "Domain/Structure/ElementId.hpp"       // IWYU pragma: keep
+#include "Domain/Structure/OrientationMap.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/SegmentId.hpp"       // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"

@@ -11,7 +11,7 @@
 #include <functional>
 #include <iosfwd>
 
-#include "Domain/Side.hpp"
+#include "Domain/Structure/Side.hpp"
 
 namespace PUP {
 class er;
@@ -145,16 +145,16 @@ inline Direction<VolumeDim> Direction<VolumeDim>::opposite() const noexcept {
 
 /// \cond NEVER
 template <>
-inline const std::array<Direction<1>, 2>& Direction<1>::all_directions()
-    noexcept {
+inline const std::array<Direction<1>, 2>&
+Direction<1>::all_directions() noexcept {
   const static auto directions = std::array<Direction<1>, 2>{
       {Direction<1>::upper_xi(), Direction<1>::lower_xi()}};
   return directions;
 }
 
 template <>
-inline const std::array<Direction<2>, 4>& Direction<2>::all_directions()
-    noexcept {
+inline const std::array<Direction<2>, 4>&
+Direction<2>::all_directions() noexcept {
   const static auto directions = std::array<Direction<2>, 4>{
       {Direction<2>::upper_xi(), Direction<2>::lower_xi(),
        Direction<2>::upper_eta(), Direction<2>::lower_eta()}};
@@ -162,8 +162,8 @@ inline const std::array<Direction<2>, 4>& Direction<2>::all_directions()
 }
 
 template <>
-inline const std::array<Direction<3>, 6>& Direction<3>::all_directions()
-    noexcept {
+inline const std::array<Direction<3>, 6>&
+Direction<3>::all_directions() noexcept {
   const static auto directions = std::array<Direction<3>, 6>{
       {Direction<3>::upper_xi(), Direction<3>::lower_xi(),
        Direction<3>::upper_eta(), Direction<3>::lower_eta(),

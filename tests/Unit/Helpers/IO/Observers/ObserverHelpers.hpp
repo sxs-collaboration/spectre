@@ -5,7 +5,7 @@
 
 #include <functional>
 
-#include "Domain/ElementId.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Helpers.hpp"

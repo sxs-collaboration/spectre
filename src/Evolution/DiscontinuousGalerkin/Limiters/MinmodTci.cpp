@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <array>
 
-#include "Domain/Element.hpp"  // IWYU pragma: keep
-#include "Domain/Side.hpp"
+#include "Domain/Structure/Element.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Side.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Utilities/ConstantExpressions.hpp"

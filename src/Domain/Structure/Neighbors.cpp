@@ -1,13 +1,13 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/Neighbors.hpp"
+#include "Domain/Structure/Neighbors.hpp"
 
 #include <ostream>
 #include <pup.h>  // IWYU pragma: keep
 
-#include "Domain/ElementId.hpp"  // IWYU pragma: keep
-#include "Domain/MaxNumberOfNeighbors.hpp"
+#include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"

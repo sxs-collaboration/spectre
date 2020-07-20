@@ -13,12 +13,12 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/Mesh.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/GrMhd/VerifyGrMhdSolution.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Options.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/KomissarovShock.hpp"

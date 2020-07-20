@@ -22,8 +22,7 @@ class Variables;
 namespace OrientationMapHelpers_detail {
 template <typename T>
 void orient_each_component(gsl::not_null<gsl::span<T>*> oriented_variables,
-                           const gsl::span<const T>& variables,
-                           size_t num_pts,
+                           const gsl::span<const T>& variables, size_t num_pts,
                            const std::vector<size_t>& oriented_offset) noexcept;
 
 template <size_t VolumeDim>

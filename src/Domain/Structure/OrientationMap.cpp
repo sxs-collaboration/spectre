@@ -1,12 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 
 #include <ostream>
 #include <set>
 
-#include "Domain/SegmentId.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/SegmentId.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 
@@ -39,7 +39,7 @@ OrientationMap<VolumeDim>::OrientationMap(
       is_aligned_ = false;
     }
   }
-  ASSERT(set_of_dimensions(mapped_directions).size() == VolumeDim,
+  ASSERT(set_of_dimensions(mapped_directions_).size() == VolumeDim,
          "This OrientationMap fails to map Directions one-to-one.");
 }
 

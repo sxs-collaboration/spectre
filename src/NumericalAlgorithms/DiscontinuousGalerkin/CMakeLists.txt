@@ -32,8 +32,11 @@ target_link_libraries(
   PUBLIC
   Boost::boost
   DataStructures
+  DomainStructure
   Options
   Spectral
+  INTERFACE
+  Domain
   )
 
 add_subdirectory(Actions)

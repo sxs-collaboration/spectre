@@ -30,22 +30,22 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/Direction.hpp"
-#include "Domain/Element.hpp"
-#include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/LogicalCoordinates.hpp"
-#include "Domain/Mesh.hpp"
-#include "Domain/Neighbors.hpp"
-#include "Domain/OrientationMap.hpp"
-#include "Domain/OrientationMapHelpers.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -564,8 +564,9 @@ void test_h_refinement(const Spectral::MortarSize& mortar_size) {
   {
     CHECK(runner.template nonempty_inboxes<element_array, fluxes_inbox_tag>()
               .size() == 1);
-    auto& inbox = ActionTesting::get_inbox_tag<element_array, fluxes_inbox_tag>(
-        runner, neighbor_id);
+    const auto& inbox =
+        ActionTesting::get_inbox_tag<element_array, fluxes_inbox_tag>(
+            runner, neighbor_id);
 
     const auto& received_data =
         inbox.at(time).at({Direction<2>::lower_xi(), self_id}).second;

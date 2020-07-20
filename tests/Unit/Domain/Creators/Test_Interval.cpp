@@ -11,8 +11,7 @@
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Block.hpp"          // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -22,11 +21,12 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
@@ -77,9 +77,10 @@ void test_interval_construction(
 
 void test_interval() {
   INFO("Interval");
-  const std::vector<std::array<size_t, 1>> grid_points{{{4}}},
-      refinement_level{{{3}}};
-  const std::array<double, 1> lower_bound{{-1.2}}, upper_bound{{0.8}};
+  const std::vector<std::array<size_t, 1>> grid_points{{{4}}};
+  const std::vector<std::array<size_t, 1>> refinement_level{{{3}}};
+  const std::array<double, 1> lower_bound{{-1.2}};
+  const std::array<double, 1> upper_bound{{0.8}};
   // default Orientation is aligned
   const OrientationMap<1> aligned_orientation{};
 

@@ -7,7 +7,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "Domain/ElementId.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/IO/Observers/ObserverHelpers.hpp"
 #include "IO/Observer/Actions.hpp"  // IWYU pragma: keep

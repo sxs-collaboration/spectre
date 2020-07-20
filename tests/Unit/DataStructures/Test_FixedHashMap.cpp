@@ -15,7 +15,7 @@
 #include <utility>
 
 #include "DataStructures/FixedHashMap.hpp"
-#include "Domain/Direction.hpp"
+#include "Domain/Structure/Direction.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GetOutput.hpp"

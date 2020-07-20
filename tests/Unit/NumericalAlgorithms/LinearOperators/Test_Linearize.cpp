@@ -11,15 +11,16 @@
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/StripeIterator.hpp"
-#include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Blas.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Linearize",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   // The start and end are chosen to give fast tests
-  const size_t n_start = 2, n_end = 5;
+  const size_t n_start = 2;
+  const size_t n_end = 5;
   for (size_t nx = n_start; nx < n_end; ++nx) {
     for (size_t ny = n_start; ny < n_end; ++ny) {
       for (size_t nz = n_start; nz < n_end; ++nz) {
@@ -59,7 +60,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Linearize",
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeALinearFunction",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-  const size_t n_start = 2, n_end = 5;
+  const size_t n_start = 2;
+  const size_t n_end = 5;
   for (size_t nx = n_start; nx < n_end; ++nx) {
     for (size_t ny = n_start; ny < n_end; ++ny) {
       for (size_t nz = n_start; nz < n_end; ++nz) {
@@ -86,7 +88,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeALinearFunction",
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeInOneDim",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
   // The start and end are chosen to give fast tests
-  const size_t n_start = 3, n_end = 5;
+  const size_t n_start = 3;
+  const size_t n_end = 5;
   for (size_t nx = n_start; nx < n_end; ++nx) {
     for (size_t ny = n_start; ny < n_end; ++ny) {
       for (size_t nz = n_start; nz < n_end; ++nz) {

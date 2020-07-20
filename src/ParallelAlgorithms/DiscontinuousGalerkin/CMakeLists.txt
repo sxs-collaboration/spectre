@@ -22,6 +22,8 @@ target_link_libraries(
   INTERFACE
   DataStructures
   Domain
+  DomainStructure
   ErrorHandling
+  Spectral
   Utilities
   )

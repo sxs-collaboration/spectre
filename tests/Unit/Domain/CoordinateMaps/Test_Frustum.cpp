@@ -12,7 +12,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"

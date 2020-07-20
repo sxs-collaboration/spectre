@@ -9,7 +9,7 @@
 #include <limits>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
 /// \cond
@@ -297,7 +297,7 @@ class Wedge3D {
   // clang-tidy: google runtime references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
-  bool is_identity() const noexcept { return false; }
+  static bool is_identity() noexcept { return false; }
 
  private:
   // factors out calculation of z needed for mapping and jacobian

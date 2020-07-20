@@ -10,9 +10,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/ModalVector.hpp"
-#include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Blas.hpp"
 
@@ -44,7 +44,7 @@ void test_exponential_filter(const double alpha, const unsigned half_power,
            filtered_nodal_coeffs.data(), 1);
     const ModalVector filtered_modal_coeffs =
         to_modal_coefficients(filtered_nodal_coeffs, mesh);
-    const double basis_order = num_pts - 1;
+    const double basis_order = static_cast<double>(num_pts) - 1;
     for (size_t i = 0; i < num_pts; ++i) {
       CAPTURE(i);
       if (num_pts == 1) {

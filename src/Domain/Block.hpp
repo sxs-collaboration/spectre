@@ -11,10 +11,10 @@
 #include <ostream>
 #include <unordered_set>
 
-#include "Domain/BlockNeighbor.hpp"                 // IWYU pragma: keep
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
-#include "Domain/Direction.hpp"                     // IWYU pragma: keep
-#include "Domain/DirectionMap.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"       // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"           // IWYU pragma: keep
+#include "Domain/Structure/DirectionMap.hpp"
 
 /// \cond
 namespace Frame {

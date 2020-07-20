@@ -1,12 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/Element.hpp"
+#include "Domain/Structure/Element.hpp"
 
 #include <ostream>
 #include <pup.h>  // IWYU pragma: keep
 
-#include "Domain/MaxNumberOfNeighbors.hpp"
+#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
@@ -17,14 +17,14 @@ Element<VolumeDim>::Element(ElementId<VolumeDim> id,
                             Neighbors_t neighbors) noexcept
     : id_(std::move(id)),
       neighbors_(std::move(neighbors)),
-      number_of_neighbors_([this](){
+      number_of_neighbors_([this]() {
         size_t number_of_neighbors = 0;
         for (const auto& p : neighbors_) {
           number_of_neighbors += p.second.size();
         }
         return number_of_neighbors;
       }()),
-      external_boundaries_([this](){
+      external_boundaries_([this]() {
         std::unordered_set<Direction<VolumeDim>> external_boundaries(
             Direction<VolumeDim>::all_directions().begin(),
             Direction<VolumeDim>::all_directions().end());
@@ -50,8 +50,7 @@ void Element<VolumeDim>::pup(PUP::er& p) noexcept {
 template <size_t VolumeDim>
 bool operator==(const Element<VolumeDim>& lhs,
                 const Element<VolumeDim>& rhs) noexcept {
-  return lhs.id() == rhs.id() and
-         lhs.neighbors() == rhs.neighbors() and
+  return lhs.id() == rhs.id() and lhs.neighbors() == rhs.neighbors() and
          lhs.number_of_neighbors() == rhs.number_of_neighbors() and
          lhs.external_boundaries() == rhs.external_boundaries();
 }

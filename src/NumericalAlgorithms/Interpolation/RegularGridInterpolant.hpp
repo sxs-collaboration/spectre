@@ -6,11 +6,11 @@
 #include <array>
 #include <cstddef>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"  // IWYU pragma: keep
 #include "DataStructures/Variables.hpp"
-#include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 

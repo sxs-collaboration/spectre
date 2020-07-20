@@ -16,9 +16,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
-#include "Domain/BlockId.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
-#include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -30,15 +28,17 @@
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Shell.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
-#include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
-#include "Domain/InitialElementIds.hpp"
-#include "Domain/OrientationMap.hpp"
-#include "Domain/SegmentId.hpp"
+#include "Domain/Structure/BlockId.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/InitialElementIds.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/SegmentId.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
@@ -290,7 +290,8 @@ void test_shell_construction(
 
 void test_shell_boundaries() {
   INFO("Shell boundaries");
-  const double inner_radius = 1.0, outer_radius = 2.0;
+  const double inner_radius = 1.0;
+  const double outer_radius = 2.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
 
@@ -312,7 +313,8 @@ void test_shell_factory_equiangular() {
           "  OuterRadius: 3\n"
           "  InitialRefinement: 2\n"
           "  InitialGridPoints: [2,3]\n");
-  const double inner_radius = 1.0, outer_radius = 3.0;
+  const double inner_radius = 1.0;
+  const double outer_radius = 3.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   test_shell_construction(
@@ -329,7 +331,8 @@ void test_shell_factory_equidistant() {
       "  InitialRefinement: 2\n"
       "  InitialGridPoints: [2,3]\n"
       "  UseEquiangularMap: false\n");
-  const double inner_radius = 1.0, outer_radius = 3.0;
+  const double inner_radius = 1.0;
+  const double outer_radius = 3.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   test_shell_construction(
@@ -339,7 +342,8 @@ void test_shell_factory_equidistant() {
 
 void test_shell_boundaries_aspect_ratio() {
   INFO("Shell boundaries aspect ratio");
-  const double inner_radius = 1.0, outer_radius = 2.0;
+  const double inner_radius = 1.0;
+  const double outer_radius = 2.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
   const double aspect_ratio = 1.3;
@@ -363,7 +367,8 @@ void test_shell_factory_aspect_ratio() {
       "  InitialGridPoints: [2,3]\n"
       "  UseEquiangularMap: false\n"
       "  AspectRatio: 2.0        \n");
-  const double inner_radius = 1.0, outer_radius = 3.0;
+  const double inner_radius = 1.0;
+  const double outer_radius = 3.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   const double aspect_ratio = 2.0;
@@ -375,7 +380,8 @@ void test_shell_factory_aspect_ratio() {
 
 void test_shell_boundaries_logarithmic_map() {
   INFO("Shell boundaries logarithmic map");
-  const double inner_radius = 1.0, outer_radius = 2.0;
+  const double inner_radius = 1.0;
+  const double outer_radius = 2.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
   const double aspect_ratio = 1.0;
@@ -401,7 +407,8 @@ void test_shell_factory_logarithmic_map() {
       "  UseEquiangularMap: false\n"
       "  AspectRatio: 2.0        \n"
       "  UseLogarithmicMap: true\n");
-  const double inner_radius = 1.0, outer_radius = 3.0;
+  const double inner_radius = 1.0;
+  const double outer_radius = 3.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   const double aspect_ratio = 2.0;
@@ -424,7 +431,8 @@ void test_shell_factory_wedges_four_on_equator() {
       "  AspectRatio: 2.0        \n"
       "  UseLogarithmicMap: true\n"
       "  WhichWedges: FourOnEquator\n");
-  const double inner_radius = 1.0, outer_radius = 3.0;
+  const double inner_radius = 1.0;
+  const double outer_radius = 3.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   const double aspect_ratio = 2.0;
@@ -448,7 +456,8 @@ void test_shell_factory_wedges_one_along_minus_x() {
       "  AspectRatio: 2.7        \n"
       "  UseLogarithmicMap: false\n"
       "  WhichWedges: OneAlongMinusX \n");
-  const double inner_radius = 2.0, outer_radius = 3.0;
+  const double inner_radius = 2.0;
+  const double outer_radius = 3.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   const double aspect_ratio = 2.7;

@@ -6,13 +6,12 @@
 #include <cmath>
 
 #include "DataStructures/Matrix.hpp"
-#include "Domain/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StaticCache.hpp"
 
-namespace Spectral {
-namespace filtering {
+namespace Spectral::filtering {
 Matrix exponential_filter(const Mesh<1>& mesh, const double alpha,
                           const unsigned half_power) noexcept {
   if (UNLIKELY(mesh.number_of_grid_points() == 1)) {
@@ -121,5 +120,4 @@ const Matrix& zero_lowest_modes(const Mesh<1>& mesh,
       ERROR("Cannot filter basis type: " << mesh.basis(0));
   };
 }
-}  // namespace filtering
-}  // namespace Spectral
+}  // namespace Spectral::filtering

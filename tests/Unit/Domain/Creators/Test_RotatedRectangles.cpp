@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -20,10 +19,11 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/RotatedRectangles.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
@@ -91,10 +91,12 @@ void test_rotated_rectangles_construction(
 void test_rotated_rectangles() {
   INFO("Rotated rectangles");
   const std::vector<std::array<size_t, 2>> grid_points{
-      {{4, 2}}, {{1, 2}}, {{3, 4}}, {{3, 1}}},
-      refinement_level{{{0, 1}}, {{0, 1}}, {{1, 0}}, {{1, 0}}};
-  const std::array<double, 2> lower_bound{{-1.2, -2.0}}, midpoint{{-0.6, 0.2}},
-      upper_bound{{0.8, 3.0}};
+      {{4, 2}}, {{1, 2}}, {{3, 4}}, {{3, 1}}};
+  const std::vector<std::array<size_t, 2>> refinement_level{
+      {{0, 1}}, {{0, 1}}, {{1, 0}}, {{1, 0}}};
+  const std::array<double, 2> lower_bound{{-1.2, -2.0}};
+  const std::array<double, 2> midpoint{{-0.6, 0.2}};
+  const std::array<double, 2> upper_bound{{0.8, 3.0}};
   const OrientationMap<2> half_turn{std::array<Direction<2>, 2>{
       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}};
   const OrientationMap<2> quarter_turn_cw{std::array<Direction<2>, 2>{

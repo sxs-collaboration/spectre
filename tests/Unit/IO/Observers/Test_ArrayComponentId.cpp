@@ -7,7 +7,7 @@
 #include <functional>
 #include <type_traits>
 
-#include "Domain/ElementId.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"

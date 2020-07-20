@@ -15,8 +15,8 @@
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/Side.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"

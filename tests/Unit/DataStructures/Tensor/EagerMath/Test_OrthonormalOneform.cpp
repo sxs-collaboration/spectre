@@ -14,7 +14,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/EagerMath/OrthonormalOneform.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Direction.hpp"
+#include "Domain/Structure/Direction.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"

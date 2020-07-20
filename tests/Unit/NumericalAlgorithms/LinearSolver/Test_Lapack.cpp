@@ -5,12 +5,12 @@
 
 #include <cstddef>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
 #include "NumericalAlgorithms/LinearSolver/Lapack.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -29,7 +29,7 @@ void test_square_general_matrix_linear_solve(
 
   UniformCustomDistribution<double> value_dist(0.1, 0.5);
   // the vector x
-  DataVector expected_solution_vector = make_with_random_values<DataVector>(
+  auto expected_solution_vector = make_with_random_values<DataVector>(
       generator, make_not_null(&value_dist), number_of_rhs * rows);
   // the matrix A
   Matrix operator_matrix{rows, columns};
@@ -43,7 +43,7 @@ void test_square_general_matrix_linear_solve(
   }
   CAPTURE_PRECISE(operator_matrix);
   // the vector b
-  DataVector input_vector = apply_matrices<DataVector, Matrix>(
+  auto input_vector = apply_matrices<DataVector, Matrix>(
       {{operator_matrix, Matrix{}}}, expected_solution_vector,
       Index<2>{rows, number_of_rhs});
   CAPTURE_PRECISE(input_vector);

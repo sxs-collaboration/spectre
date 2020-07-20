@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -20,10 +19,11 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/RotatedBricks.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
@@ -120,11 +120,13 @@ void test_rotated_bricks() {
   INFO("Rotated bricks");
   const std::vector<std::array<size_t, 3>> grid_points{
       {{4, 2, 5}}, {{5, 2, 1}}, {{4, 5, 3}}, {{3, 5, 1}},
-      {{2, 4, 6}}, {{6, 1, 2}}, {{3, 6, 4}}, {{1, 3, 6}}},
-      refinement_level{{{0, 1, 2}}, {{2, 1, 0}}, {{0, 2, 1}}, {{1, 2, 0}},
-                       {{1, 0, 2}}, {{2, 0, 1}}, {{1, 2, 0}}, {{0, 1, 2}}};
-  const std::array<double, 3> lower_bound{{-1.3, -3.0, 2.0}},
-      midpoint{{-0.6, 0.3, 3.2}}, upper_bound{{0.8, 3.0, 4.7}};
+      {{2, 4, 6}}, {{6, 1, 2}}, {{3, 6, 4}}, {{1, 3, 6}}};
+  const std::vector<std::array<size_t, 3>> refinement_level{
+      {{0, 1, 2}}, {{2, 1, 0}}, {{0, 2, 1}}, {{1, 2, 0}},
+      {{1, 0, 2}}, {{2, 0, 1}}, {{1, 2, 0}}, {{0, 1, 2}}};
+  const std::array<double, 3> lower_bound{{-1.3, -3.0, 2.0}};
+  const std::array<double, 3> midpoint{{-0.6, 0.3, 3.2}};
+  const std::array<double, 3> upper_bound{{0.8, 3.0, 4.7}};
   const OrientationMap<3> aligned{};
   const OrientationMap<3> rotation_F{std::array<Direction<3>, 3>{
       {Direction<3>::upper_zeta(), Direction<3>::upper_eta(),

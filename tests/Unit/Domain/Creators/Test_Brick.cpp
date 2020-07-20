@@ -11,8 +11,7 @@
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Block.hpp"          // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -26,11 +25,12 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
@@ -90,10 +90,10 @@ void test_brick_construction(
 
 void test_brick() {
   INFO("Brick");
-  const std::vector<std::array<size_t, 3>> grid_points{{{4, 6, 3}}},
-      refinement_level{{{3, 2, 4}}};
-  const std::array<double, 3> lower_bound{{-1.2, 3.0, 2.5}},
-      upper_bound{{0.8, 5.0, 3.0}};
+  const std::vector<std::array<size_t, 3>> grid_points{{{4, 6, 3}}};
+  const std::vector<std::array<size_t, 3>> refinement_level{{{3, 2, 4}}};
+  const std::array<double, 3> lower_bound{{-1.2, 3.0, 2.5}};
+  const std::array<double, 3> upper_bound{{0.8, 5.0, 3.0}};
   // Default OrientationMap is aligned.
   const OrientationMap<3> aligned_orientation{};
 

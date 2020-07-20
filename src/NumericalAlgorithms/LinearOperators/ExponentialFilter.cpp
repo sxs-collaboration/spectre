@@ -4,8 +4,8 @@
 #include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
 
 #include "DataStructures/Matrix.hpp"
-#include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StaticCache.hpp"

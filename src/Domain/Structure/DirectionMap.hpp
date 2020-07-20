@@ -6,7 +6,7 @@
 #include <pup.h>
 
 #include "DataStructures/FixedHashMap.hpp"
-#include "Domain/Direction.hpp"
+#include "Domain/Structure/Direction.hpp"
 
 /// \ingroup DataStructuresGroup
 /// \ingroup ComputationalDomainGroup

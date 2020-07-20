@@ -12,8 +12,7 @@
 #include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Block.hpp"          // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -25,10 +24,11 @@
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Sphere.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/OrientationMap.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
@@ -212,7 +212,8 @@ void test_sphere_construction(
 
 void test_sphere_boundaries_equiangular() {
   INFO("Sphere boundaries equiangular");
-  const double inner_radius = 1.0, outer_radius = 2.0;
+  const double inner_radius = 1.0;
+  const double outer_radius = 2.0;
   const size_t refinement = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
 
@@ -234,7 +235,8 @@ void test_sphere_factory_equiangular() {
       "    InitialRefinement: 2\n"
       "    InitialGridPoints: [2,3]\n"
       "    UseEquiangularMap: true\n");
-  const double inner_radius = 1.0, outer_radius = 3.0;
+  const double inner_radius = 1.0;
+  const double outer_radius = 3.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   test_sphere_construction(dynamic_cast<const creators::Sphere&>(*sphere),
@@ -245,7 +247,8 @@ void test_sphere_factory_equiangular() {
 
 void test_sphere_boundaries_equidistant() {
   INFO("Sphere boundaries equidistant");
-  const double inner_radius = 1.0, outer_radius = 2.0;
+  const double inner_radius = 1.0;
+  const double outer_radius = 2.0;
   const size_t refinement = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
 
@@ -267,7 +270,8 @@ void test_sphere_factory_equidistant() {
       "    InitialRefinement: 2\n"
       "    InitialGridPoints: [2,3]\n"
       "    UseEquiangularMap: false\n");
-  const double inner_radius = 1.0, outer_radius = 3.0;
+  const double inner_radius = 1.0;
+  const double outer_radius = 3.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   test_sphere_construction(dynamic_cast<const creators::Sphere&>(*sphere),

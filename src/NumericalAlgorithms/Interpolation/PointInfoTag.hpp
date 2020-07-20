@@ -9,7 +9,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/IdPair.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/BlockId.hpp"
+#include "Domain/Structure/BlockId.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace intrp {

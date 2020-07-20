@@ -28,9 +28,11 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   Boost::boost
-  Domain
   DataStructures
+  Domain
+  DomainStructure
   Options
+  Spectral
   Utilities
   PRIVATE
   LinearOperators

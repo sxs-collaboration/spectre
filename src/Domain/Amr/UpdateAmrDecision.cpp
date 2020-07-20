@@ -4,10 +4,10 @@
 #include "Domain/Amr/UpdateAmrDecision.hpp"
 
 #include "Domain/Amr/Helpers.hpp"
-#include "Domain/Direction.hpp"
-#include "Domain/Element.hpp"    // IWYU pragma: keep
-#include "Domain/ElementId.hpp"  // IWYU pragma: keep
-#include "Domain/Neighbors.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/Element.hpp"    // IWYU pragma: keep
+#include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Neighbors.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
