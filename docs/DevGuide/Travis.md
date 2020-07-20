@@ -48,26 +48,30 @@ indicate that a pull request should not be merged in its current state.
 * CHECK_FILES runs the script `tools/CheckFiles.sh` (which also runs the script
 `tools/FileTestDefs.sh`), and `tools/CheckPythonFormatting.sh`. The checks fail
 if any of the following are true:
-  - A `c++` file (i.e. `*.hpp`, `*.cpp`, or `*.tpp` file) contains a
-  line over 80 characters
-  - A file contains a tab character
-  - A file has white space at the end of the line
-  - A file has a carriage return character
-  - A file is missing the license line
-  - A `*.hpp` file is missing `#%pragma once`
-  - A file does not end with a newline
-  - A `c++` file includes any of the following headers
-    * `<iostream>`  (useless when running in parallel)
-    * `Utilities/TmplDebugging.hpp`  (used only for debugging)
-  - A `c++` file contains a `namespace` ending in `_details` (use `_detail`)
-  - A `c++` file contains a `struct TD` or `class TD` (used only for debugging)
-  - A `c++` file contains `std::enable_if` (use `Requires` instead)
-  - A `c++` file contains additional text after `/*!` (does not render correctly
-  in doxygen)
-  - A `c++` file contains `Ls` (use `List` instead)
-  - A `c++` test uses either:
-    * `TEST_CASE` (use `SPECTRE_TEST_CASE` instead)
-    * `Approx` (use `approx` instead)
+  - Any file,
+    * contains a line over 80 characters (We allow exceptions for certain file
+      types and inherently long strings like URLs and include lines.
+      See `tools/FileTestDefs.sh` for the full list of exceptions.)
+    * is missing the license line
+    * does not end with a newline
+    * contains a tab character
+    * contains white space at the end of a line
+    * contains a carriage return character
+  - A `c++` header file (i.e., `*.hpp` or `*.tpp`) is missing `#%pragma once`
+  - A `c++` file (i.e., `*.hpp`, `*.tpp`, or `*.cpp`) file,
+    * includes `<iostream>` (useless when running in parallel)
+    * includes `<lrtslock.h>` (use `<converse.h>` instead)
+    * includes `"Utilities/TmplDebugging.hpp"` (used only for debugging)
+    * includes any non-header `*.cpp` file
+    * contains a `namespace` ending in `_details` (use `_detail`)
+    * contains a `struct TD` or `class TD` (used only for debugging)
+    * contains `std::enable_if` (use `Requires` instead)
+    * contains `Ls` (use `List` instead)
+    * contains additional text after `/*!` (does not render correctly in
+      Doxygen)
+  - A `c++` test,
+    * uses `TEST_CASE` (use `SPECTRE_TEST_CASE` instead)
+    * uses `Approx` (use `approx` instead)
   - A python file is not formatted according to the `.style.yapf` file in the
     root of the repository.
 * RUN_CLANG_TIDY runs the script `.travis/RunClangTidy.sh` which runs

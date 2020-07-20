@@ -27,8 +27,8 @@ if grep --help 2>&1 | grep -q -e --color ; then
   color_option='--color=always'
 fi
 
-# Utility that uses grep on the staged version of the file specified by the last argument
-# does not work with multiple files as argument
+# Utility that uses grep on the staged version of the file specified by the last
+# argument does not work with multiple files as argument
 staged_grep() {
     # git show ":./path/to/file" shows the content of the file as it
     # appears in the staging area
@@ -193,10 +193,10 @@ long_lines() {
               'CMakeLists.txt$' \
               'Doxyfile.in$' \
               'containers/Dockerfile.travis$' \
-              'docs/config/MathJax.js' \
-              'docs/MainSite/Main.md' \
               'docs/DevGuide/Travis.md' \
+              'docs/MainSite/Main.md' \
               'docs/Tutorials/ParallelExecutable/Tutorials.md' \
+              'docs/config/MathJax.js' \
               'tools/Iwyu/boost-all.imp$' && \
         staged_grep '^[^#].\{80,\}' "$1" | long_lines_exclude >/dev/null
 }
@@ -224,7 +224,7 @@ standard_checks+=(long_lines)
 
 # Check for lrtslock header
 lrtslock() {
-    is_c++ "$1" && grep -q '#include <lrtslock.h>' "$1"
+    is_c++ "$1" && staged_grep -q '#include <lrtslock.h>' "$1"
 }
 lrtslock_report() {
     echo "Found lrtslock header (include converse.h instead):"
@@ -286,9 +286,18 @@ standard_checks+=(carriage_returns)
 # Check for license file.
 license() {
     whitelist "$1" \
-              'cmake/FindCatch.cmake$' \
+              '.clang-format$' \
+              '.github/ISSUE_TEMPLATE.md' \
+              '.github/PULL_REQUEST_TEMPLATE.md' \
+              '.h5' \
+              '.nojekyll' \
+              '.png' \
+              '.style.yapf' \
+              '.svg' \
+              'LICENSE' \
               'cmake/CodeCoverage.cmake$' \
               'cmake/CodeCoverageDetection.cmake$' \
+              'cmake/FindCatch.cmake$' \
               'cmake/FindLIBCXX.cmake$' \
               'cmake/FindPAPI.cmake$' \
               'cmake/FindPythonModule.cmake$' \
@@ -300,17 +309,8 @@ license() {
               'docs/config/layout.xml' \
               'docs/config/MathJax.js$' \
               'external/*' \
-              'LICENSE' \
               'support/TeXLive/texlive.profile' \
-              'tools/Iwyu/boost-all.imp$' \
-              '.github/ISSUE_TEMPLATE.md' \
-              '.github/PULL_REQUEST_TEMPLATE.md' \
-              '.h5' \
-              '.nojekyll' \
-              '.png' \
-              '.svg' \
-              '.clang-format$' \
-              '.style.yapf' && \
+              'tools/Iwyu/boost-all.imp$' && \
         ! staged_grep -q "Distributed under the MIT License" "$1"
 }
 license_report() {
@@ -328,7 +328,7 @@ standard_checks+=(license)
 test_case() {
     is_c++ "$1" && staged_grep -q "^TEST_CASE" "$1"
 }
-test_case_reoprt() {
+test_case_report() {
     echo "Found occurrences of TEST_CASE, must use SPECTRE_TEST_CASE:"
     pretty_grep "^TEST_CASE" "$@"
 }
@@ -346,7 +346,7 @@ catch_approx() {
 }
 catch_approx_report() {
     echo "Found occurrences of Approx, must use approx from"
-    echo "tests/Unit/TestHelpers.hpp instead:"
+    echo "tests/Unit/Framework/TestingFramework.hpp instead:"
     pretty_grep "Approx(" "$@"
 }
 catch_approx_test() {
