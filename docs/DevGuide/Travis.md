@@ -75,6 +75,7 @@ if any of the following are true:
   - A `CMakeLists.txt` file in `src`, but not in an Executables or
     Python-binding directory,
     * does not list a `C++` file that is present in the directory
+    * lists a `C++` file that is not present in the directory
   - A python file is not formatted according to the `.style.yapf` file in the
     root of the repository.
 * RUN_CLANG_TIDY runs the script `.travis/RunClangTidy.sh` which runs

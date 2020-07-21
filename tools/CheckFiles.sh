@@ -98,6 +98,52 @@ check_cmakelists_for_missing_cpp_test() {
 }
 ci_checks+=(check_cmakelists_for_missing_cpp)
 
+# Check CMakeLists.txt contain no spurious C++ files
+# (Checked in CI because this involves comparisons between files and may
+#  be too slow for a fluid git-hook user experience)
+#
+# Check for CMakeLists lines that are [two spaces][anything][.?pp]
+# Then we check that the filename has no slashes (this would indicate a file
+# in a subdirectory), and that the corresponding file exists.
+check_cmakelists_for_extra_cpp() {
+    local dir match matches
+    dir=$(dirname $1)
+    if [[ $1 =~ CMakeLists\.txt$ ]] && whitelist "$dir" 'docs' \
+                                                        'tests' \
+                                                        'tools' \
+                                                        'Executables' \
+                                                        'Python'; then
+        matches=$(grep -E "^  .*\.[cht]pp" $1)
+        for match in $matches; do
+            # Special case: the Informer CMakeLists includes a special C++ file
+            [[ $match == '${CMAKE_BINARY_DIR}/Informer/InfoAtCompile.cpp' ]] \
+              && continue
+            [[ $match =~ '/' ]] || [[ ! -f "${dir}/$match" ]] && return 0
+        done
+    fi
+    return 1
+}
+check_cmakelists_for_extra_cpp_report() {
+    local file dir match matches
+    echo "Found spurious C++ files in CMakeLists.txt:"
+    for file in "$@"; do
+        dir=$(dirname $file)
+        matches=$(grep -E "^  .*\.[cht]pp" $file)
+        for match in $matches; do
+            [[ $match == '${CMAKE_BINARY_DIR}/Informer/InfoAtCompile.cpp' ]] \
+              && continue
+            [[ $match =~ '/' ]] || [[ ! -f "${dir}/$match" ]] \
+              && echo "$match should be removed from $file"
+        done
+    done
+}
+check_cmakelists_for_extra_cpp_test() {
+    # This check relies on comparisons between different files, which makes
+    # it cumbersome to test. We omit the test.
+    :
+}
+ci_checks+=(check_cmakelists_for_extra_cpp)
+
 if [ "$1" = --test ] ; then
     run_tests "${ci_checks[@]}"
     exit 0
