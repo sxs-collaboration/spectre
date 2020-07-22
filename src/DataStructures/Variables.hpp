@@ -86,6 +86,7 @@ class Variables<tmpl::list<Tags...>> {
   static_assert(sizeof...(Tags) > 0,
                 "You must provide at least one tag to the Variables "
                 "for type inference");
+  static_assert(tmpl2::flat_all_v<tt::is_a_v<Tensor, typename Tags::type>...>);
 
   static_assert((tmpl2::flat_all<std::is_same_v<
                      typename Tags::type::type,
