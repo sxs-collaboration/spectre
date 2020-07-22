@@ -150,9 +150,9 @@ void cartesian_lapse_and_derivatives_from_unnormalized_spec_modes(
  * - `bondi_h_worldtube_data()`
  * - `du_j_worldtube_data()`
  */
-template <typename DataBoxTagList>
+template <typename TagList>
 void create_bondi_boundary_data_from_unnormalized_spec_modes(
-    const gsl::not_null<db::DataBox<DataBoxTagList>*> bondi_boundary_data,
+    const gsl::not_null<Variables<TagList>*> bondi_boundary_data,
     const tnsr::ii<ComplexModalVector, 3>& spatial_metric_coefficients,
     const tnsr::ii<ComplexModalVector, 3>& dt_spatial_metric_coefficients,
     const tnsr::ii<ComplexModalVector, 3>& dr_spatial_metric_coefficients,

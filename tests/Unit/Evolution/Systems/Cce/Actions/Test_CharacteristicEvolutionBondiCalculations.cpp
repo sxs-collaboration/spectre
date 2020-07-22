@@ -242,12 +242,23 @@ SPECTRE_TEST_CASE(
       Variables<typename metavariables::cce_integration_independent_tags>{
           number_of_angular_points * number_of_radial_points},
       Spectral::Swsh::SwshInterpolator{}, l_max, number_of_radial_points);
-  create_bondi_boundary_data(
-      make_not_null(&boundary_box), spatial_metric_coefficients,
-      dt_spatial_metric_coefficients, dr_spatial_metric_coefficients,
-      shift_coefficients, dt_shift_coefficients, dr_shift_coefficients,
-      lapse_coefficients, dt_lapse_coefficients, dr_lapse_coefficients,
-      extraction_radius, l_max);
+  db::mutate<boundary_variables_tag>(
+      make_not_null(&boundary_box),
+      [&spatial_metric_coefficients, &dt_spatial_metric_coefficients,
+       &dr_spatial_metric_coefficients, &shift_coefficients,
+       &dt_shift_coefficients, &dr_shift_coefficients, &lapse_coefficients,
+       &dt_lapse_coefficients, &dr_lapse_coefficients, &extraction_radius](
+          const gsl::not_null<
+              Variables<Tags::characteristic_worldtube_boundary_tags<
+                  Tags::BoundaryValue>>*>
+              boundary_variables) noexcept {
+        create_bondi_boundary_data(
+            boundary_variables, spatial_metric_coefficients,
+            dt_spatial_metric_coefficients, dr_spatial_metric_coefficients,
+            shift_coefficients, dt_shift_coefficients, dr_shift_coefficients,
+            lapse_coefficients, dt_lapse_coefficients, dr_lapse_coefficients,
+            extraction_radius, l_max);
+      });
 
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   ActionTesting::simple_action<component, TestSendToEvolution>(

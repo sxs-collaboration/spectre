@@ -120,26 +120,20 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",
   // test the boundary computation
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
-  using boundary_variables_tag = ::Tags::Variables<
-      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>;
-  auto boundary_box_from_manager =
-      db::create<db::AddSimpleTags<boundary_variables_tag>>(
-          Variables<Tags::characteristic_worldtube_boundary_tags<
-              Tags::BoundaryValue>>{number_of_angular_points});
-  auto expected_boundary_box =
-      db::create<db::AddSimpleTags<boundary_variables_tag>>(
-          Variables<Tags::characteristic_worldtube_boundary_tags<
-              Tags::BoundaryValue>>{number_of_angular_points});
+  Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
+      boundary_variables_from_manager{number_of_angular_points};
+  Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
+      expected_boundary_variables{number_of_angular_points};
 
   analytic_manager.populate_hypersurface_boundary_data(
-      make_not_null(&boundary_box_from_manager), time);
+      make_not_null(&boundary_variables_from_manager), time);
   const auto analytic_solution_gh_variables = analytic_solution.variables(
       l_max, time,
       tmpl::list<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
                  GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>,
                  GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>{});
   create_bondi_boundary_data(
-      make_not_null(&expected_boundary_box),
+      make_not_null(&expected_boundary_variables),
       get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
           analytic_solution_gh_variables),
       get<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(
@@ -149,11 +143,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",
       extraction_radius, l_max);
   tmpl::for_each<
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
-      [&boundary_box_from_manager,
-       &expected_boundary_box](auto tag_v) noexcept {
+      [&boundary_variables_from_manager,
+       &expected_boundary_variables](auto tag_v) noexcept {
         using tag = typename decltype(tag_v)::type;
-        CHECK_ITERABLE_APPROX(get<tag>(boundary_box_from_manager),
-                              get<tag>(expected_boundary_box));
+        CHECK_ITERABLE_APPROX(get<tag>(boundary_variables_from_manager),
+                              get<tag>(expected_boundary_variables));
       });
 
   Parallel::register_derived_classes_with_charm<

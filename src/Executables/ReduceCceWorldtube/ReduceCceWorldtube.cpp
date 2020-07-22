@@ -170,15 +170,10 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
   Variables<Cce::cce_input_tags> coefficients_set{
       Spectral::Swsh::size_of_libsharp_coefficient_vector(computation_l_max)};
 
-  using boundary_variables_tag =
-      Tags::Variables<Cce::Tags::characteristic_worldtube_boundary_tags<
-          Cce::Tags::BoundaryValue>>;
-
-  auto boundary_data_box =
-      db::create<db::AddSimpleTags<boundary_variables_tag>>(
-          db::item_type<boundary_variables_tag>{
-              Spectral::Swsh::number_of_swsh_collocation_points(
-                  computation_l_max)});
+  Variables<Cce::Tags::characteristic_worldtube_boundary_tags<
+      Cce::Tags::BoundaryValue>>
+      boundary_data_variables{
+          Spectral::Swsh::number_of_swsh_collocation_points(computation_l_max)};
 
   using reduced_boundary_tags =
       tmpl::list<Cce::Tags::BoundaryValue<Cce::Tags::BondiBeta>,
@@ -214,7 +209,7 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
 
     if (buffer_updater.radial_derivatives_need_renormalization()) {
       Cce::create_bondi_boundary_data_from_unnormalized_spec_modes(
-          make_not_null(&boundary_data_box),
+          make_not_null(&boundary_data_variables),
           get<Cce::Tags::detail::SpatialMetric>(coefficients_set),
           get<Tags::dt<Cce::Tags::detail::SpatialMetric>>(coefficients_set),
           get<Cce::Tags::detail::Dr<Cce::Tags::detail::SpatialMetric>>(
@@ -230,7 +225,7 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
           buffer_updater.get_extraction_radius(), computation_l_max);
     } else {
       Cce::create_bondi_boundary_data(
-          make_not_null(&boundary_data_box),
+          make_not_null(&boundary_data_variables),
           get<Cce::Tags::detail::SpatialMetric>(coefficients_set),
           get<Tags::dt<Cce::Tags::detail::SpatialMetric>>(coefficients_set),
           get<Cce::Tags::detail::Dr<Cce::Tags::detail::SpatialMetric>>(
@@ -247,7 +242,7 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
     }
     // loop over the tags that we want to dump.
     tmpl::for_each<reduced_boundary_tags>(
-        [&recorder, &boundary_data_box, &output_goldberg_mode_buffer,
+        [&recorder, &boundary_data_variables, &output_goldberg_mode_buffer,
          &output_libsharp_mode_buffer, &l_max, &computation_l_max,
          &time](auto tag_v) noexcept {
           using tag = typename decltype(tag_v)::type;
@@ -258,7 +253,7 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
               output_libsharp_mode_buffer.size());
           Spectral::Swsh::swsh_transform(
               computation_l_max, 1, make_not_null(&spin_weighted_libsharp_view),
-              get(db::get<tag>(boundary_data_box)));
+              get(get<tag>(boundary_data_variables)));
           SpinWeighted<ComplexModalVector, db::item_type<tag>::type::spin>
               spin_weighted_goldberg_view;
           spin_weighted_goldberg_view.set_data_ref(

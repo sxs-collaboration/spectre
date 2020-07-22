@@ -240,13 +240,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
 
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
-  using boundary_variables_tag = ::Tags::Variables<
-      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>;
-  auto expected_boundary_box =
-      db::create<db::AddSimpleTags<boundary_variables_tag>>(
-          db::item_type<boundary_variables_tag>{number_of_angular_points});
-  create_bondi_boundary_data(make_not_null(&expected_boundary_box), phi, pi,
-                             spacetime_metric, extraction_radius, l_max);
+  Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
+      expected_boundary_variables{number_of_angular_points};
+  create_bondi_boundary_data(make_not_null(&expected_boundary_variables), phi,
+                             pi, spacetime_metric, extraction_radius, l_max);
 
   Approx angular_derivative_approx =
       Approx::custom()
@@ -255,13 +252,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
 
   tmpl::for_each<
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
-      [&expected_boundary_box, &runner,
+      [&expected_boundary_variables, &runner,
        &angular_derivative_approx](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         INFO(tag::name());
         const auto& test_lhs =
             ActionTesting::get_databox_tag<evolution_component, tag>(runner, 0);
-        const auto& test_rhs = db::get<tag>(expected_boundary_box);
+        const auto& test_rhs = get<tag>(expected_boundary_variables);
         CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs,
                                      angular_derivative_approx);
       });

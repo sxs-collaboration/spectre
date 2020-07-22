@@ -556,11 +556,11 @@ using characteristic_worldtube_boundary_tags = db::wrap_tags_in<
 namespace detail {
 // the common step between the modal input and the Generalized harmonic input
 // that performs the final gauge processing to Bondi scalars and places them in
-// the DataBox.
-template <typename DataBoxTagList, typename BufferTagList,
+// the Variables.
+template <typename BoundaryTagList, typename BufferTagList,
           typename ComplexBufferTagList>
 void create_bondi_boundary_data(
-    const gsl::not_null<db::DataBox<DataBoxTagList>*> bondi_boundary_data,
+    const gsl::not_null<Variables<BoundaryTagList>*> bondi_boundary_data,
     const gsl::not_null<Variables<BufferTagList>*> computation_variables,
     const gsl::not_null<Variables<ComplexBufferTagList>*> derivative_buffers,
     const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
@@ -660,58 +660,50 @@ void create_bondi_boundary_data(
       cartesian_to_spherical_jacobian, phi, dt_spacetime_metric, du_null_l,
       inverse_null_metric, null_l, spacetime_metric);
 
-  auto& r = db::get<Tags::BoundaryValue<Tags::BondiR>>(*bondi_boundary_data);
-  db::mutate<Tags::BoundaryValue<Tags::BondiR>>(bondi_boundary_data, bondi_r,
-                                                null_metric);
+  auto& r = get<Tags::BoundaryValue<Tags::BondiR>>(*bondi_boundary_data);
+  bondi_r(make_not_null(&r), null_metric);
 
   auto& d_r =
       get<::Tags::spacetime_deriv<Tags::detail::RealBondiR, tmpl::size_t<3>,
                                   Frame::RadialNull>>(*computation_variables);
   d_bondi_r(make_not_null(&d_r), r, dlambda_null_metric, du_null_metric,
             inverse_null_metric, l_max);
-  db::mutate<Tags::BoundaryValue<Tags::DuRDividedByR>,
-             Tags::BoundaryValue<Tags::Du<Tags::BondiR>>>(
-      bondi_boundary_data,
-      [&d_r, &r](
-          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
-              du_r_divided_by_r,
-          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
-              du_r) noexcept {
-        get(*du_r_divided_by_r).data() =
-            std::complex<double>{1.0, 0.0} * get<0>(d_r) / get(r).data();
-        get(*du_r).data() = std::complex<double>{1.0, 0.0} * get<0>(d_r);
-      });
+  get(get<Tags::BoundaryValue<Tags::DuRDividedByR>>(*bondi_boundary_data))
+      .data() =
+      std::complex<double>(1.0, 0.0) * get<0>(d_r) / get(r).data();
+  get(get<Tags::BoundaryValue<Tags::Du<Tags::BondiR>>>(*bondi_boundary_data))
+      .data() = std::complex<double>(1.0, 0.0) * get<0>(d_r);
 
   auto& down_dyad = get<Tags::detail::DownDyad>(dyad_variables);
   auto& up_dyad = get<Tags::detail::UpDyad>(dyad_variables);
   dyads(make_not_null(&down_dyad), make_not_null(&up_dyad));
 
-  db::mutate<Tags::BoundaryValue<Tags::BondiBeta>>(bondi_boundary_data,
-                                                   beta_worldtube_data, d_r);
+  beta_worldtube_data(make_not_null(&get<Tags::BoundaryValue<Tags::BondiBeta>>(
+                          *bondi_boundary_data)),
+                      d_r);
 
-  auto& bondi_u =
-      db::get<Tags::BoundaryValue<Tags::BondiU>>(*bondi_boundary_data);
-  db::mutate<Tags::BoundaryValue<Tags::BondiU>>(
-      bondi_boundary_data, bondi_u_worldtube_data, down_dyad, d_r,
-      inverse_null_metric);
+  auto& bondi_u = get<Tags::BoundaryValue<Tags::BondiU>>(*bondi_boundary_data);
+  bondi_u_worldtube_data(make_not_null(&bondi_u), down_dyad, d_r,
+                         inverse_null_metric);
 
-  db::mutate<Tags::BoundaryValue<Tags::BondiW>>(
-      bondi_boundary_data, bondi_w_worldtube_data, d_r, inverse_null_metric, r);
+  bondi_w_worldtube_data(make_not_null(&get<Tags::BoundaryValue<Tags::BondiW>>(
+                             *bondi_boundary_data)),
+                         d_r, inverse_null_metric, r);
 
   auto& bondi_j =
-      db::get<Tags::BoundaryValue<Tags::BondiJ>>(*bondi_boundary_data);
-  db::mutate<Tags::BoundaryValue<Tags::BondiJ>>(
-      bondi_boundary_data, bondi_j_worldtube_data, null_metric, r, up_dyad);
+      get<Tags::BoundaryValue<Tags::BondiJ>>(*bondi_boundary_data);
+  bondi_j_worldtube_data(make_not_null(&bondi_j), null_metric, r, up_dyad);
 
-  auto& dr_j = db::get<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(
-      *bondi_boundary_data);
+  auto& dr_j =
+      get<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(*bondi_boundary_data);
   auto& denominator_buffer =
       get<::Tags::SpinWeighted<::Tags::TempScalar<0, ComplexDataVector>,
                                std::integral_constant<int, 0>>>(
           *derivative_buffers);
-  db::mutate<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(
-      bondi_boundary_data, dr_bondi_j, make_not_null(&denominator_buffer),
-      dlambda_null_metric, d_r, bondi_j, r, up_dyad);
+  dr_bondi_j(make_not_null(&get<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(
+                 *bondi_boundary_data)),
+             make_not_null(&denominator_buffer), dlambda_null_metric, d_r,
+             bondi_j, r, up_dyad);
 
   auto& d2lambda_r = get<
       Tags::detail::DLambda<Tags::detail::DLambda<Tags::detail::RealBondiR>>>(
@@ -728,26 +720,29 @@ void create_bondi_boundary_data(
   angular_d_dlambda_r.get(0) = -real(eth_buffer.data());
   angular_d_dlambda_r.get(1) = -imag(eth_buffer.data());
 
-  db::mutate<Tags::BoundaryValue<Tags::BondiQ>,
-             Tags::BoundaryValue<Tags::Dr<Tags::BondiU>>>(
-      bondi_boundary_data, bondi_q_worldtube_data, d2lambda_r,
-      dlambda_inverse_null_metric, d_r, down_dyad, angular_d_dlambda_r,
-      inverse_null_metric, bondi_j, r, bondi_u);
+  bondi_q_worldtube_data(
+      make_not_null(
+          &get<Tags::BoundaryValue<Tags::BondiQ>>(*bondi_boundary_data)),
+      make_not_null(&get<Tags::BoundaryValue<Tags::Dr<Tags::BondiU>>>(
+          *bondi_boundary_data)),
+      d2lambda_r, dlambda_inverse_null_metric, d_r, down_dyad,
+      angular_d_dlambda_r, inverse_null_metric, bondi_j, r, bondi_u);
 
-  db::mutate<Tags::BoundaryValue<Tags::BondiH>>(
-      bondi_boundary_data, bondi_h_worldtube_data, d_r, bondi_j, du_null_metric,
-      r, up_dyad);
+  bondi_h_worldtube_data(make_not_null(&get<Tags::BoundaryValue<Tags::BondiH>>(
+                             *bondi_boundary_data)),
+                         d_r, bondi_j, du_null_metric, r, up_dyad);
 
-  db::mutate<Tags::BoundaryValue<Tags::Du<Tags::BondiJ>>>(
-      bondi_boundary_data, du_j_worldtube_data, d_r, bondi_j, du_null_metric,
-      dlambda_null_metric, r, up_dyad);
+  du_j_worldtube_data(
+      make_not_null(&get<Tags::BoundaryValue<Tags::Du<Tags::BondiJ>>>(
+          *bondi_boundary_data)),
+      d_r, bondi_j, du_null_metric, dlambda_null_metric, r, up_dyad);
 }
 }  // namespace detail
 
 /*!
  * \brief Process the worldtube data from generalized harmonic quantities
  *  to desired Bondi quantities, placing the result in the passed
- * \ref DataBoxGroup.
+ * `Variables`.
  *
  * \details
  * The mathematics are a bit complicated for all of the coordinate
@@ -761,9 +756,9 @@ void create_bondi_boundary_data(
  *
  * Sufficient tags to provide full worldtube boundary data at a particular
  * time are set in `bondi_boundary_data`. In particular, the set of tags in
- * `Tags::characteristic_worldtube_boundary_tags` in the provided \ref
- * DataBoxGroup are assigned to the worldtube boundary values associated with
- * the input metric components.
+ * `Tags::characteristic_worldtube_boundary_tags` in the provided `Variables`
+ * are assigned to the worldtube boundary values associated with the input
+ * metric components.
  *
  * The majority of the mathematical transformations are implemented as a set of
  * individual cascaded functions below. The details of the manipulations that
@@ -793,9 +788,9 @@ void create_bondi_boundary_data(
  * - `bondi_h_worldtube_data()`
  * - `du_j_worldtube_data()`
  */
-template <typename DataBoxTagList>
+template <typename BoundaryTagList>
 void create_bondi_boundary_data(
-    const gsl::not_null<db::DataBox<DataBoxTagList>*> bondi_boundary_data,
+    const gsl::not_null<Variables<BoundaryTagList>*> bondi_boundary_data,
     const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
     const tnsr::aa<DataVector, 3>& spacetime_metric,
     const double extraction_radius, const size_t l_max) noexcept {
@@ -940,7 +935,7 @@ void create_bondi_boundary_data(
 /*!
  * \brief Process the worldtube data from modal metric components and
  * derivatives to desired Bondi quantities, placing the result in the passed
- * \ref DataBoxGroup.
+ * `Variables`.
  *
  * \details
  * The mathematics are a bit complicated for all of the coordinate
@@ -956,9 +951,9 @@ void create_bondi_boundary_data(
  *
  * Sufficient tags to provide full worldtube boundary data at a particular
  * time are set in `bondi_boundary_data`. In particular, the set of tags in
- * `Tags::characteristic_worldtube_boundary_tags` in the provided \ref
- * DataBoxGroup are assigned to the worldtube boundary values associated with
- * the input metric components.
+ * `Tags::characteristic_worldtube_boundary_tags` in the provided `Variables`
+ * are assigned to the worldtube boundary values associated with the input
+ * metric components.
  *
  * The majority of the mathematical transformations are implemented as a set of
  * individual cascaded functions below. The details of the manipulations that
@@ -990,9 +985,9 @@ void create_bondi_boundary_data(
  * - `bondi_h_worldtube_data()`
  * - `du_j_worldtube_data()`
  */
-template <typename DataBoxTagList>
+template <typename BoundaryTagList>
 void create_bondi_boundary_data(
-    const gsl::not_null<db::DataBox<DataBoxTagList>*> bondi_boundary_data,
+    const gsl::not_null<Variables<BoundaryTagList>*> bondi_boundary_data,
     const tnsr::ii<ComplexModalVector, 3>& spatial_metric_coefficients,
     const tnsr::ii<ComplexModalVector, 3>& dt_spatial_metric_coefficients,
     const tnsr::ii<ComplexModalVector, 3>& dr_spatial_metric_coefficients,

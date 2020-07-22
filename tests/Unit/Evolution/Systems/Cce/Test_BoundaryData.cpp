@@ -325,9 +325,9 @@ void test_dyad_identities(const gsl::not_null<Generator*> gen) noexcept {
   CHECK_ITERABLE_APPROX(dyad_product, two);
 }
 
-template <typename DataBoxTagList, typename AnalyticSolution>
+template <typename TagList, typename AnalyticSolution>
 void dispatch_to_gh_worldtube_computation_from_analytic(
-    const gsl::not_null<db::DataBox<DataBoxTagList>*> box,
+    const gsl::not_null<Variables<TagList>*> variables,
     const AnalyticSolution& solution, const double extraction_radius,
     const size_t l_max) noexcept {
   const size_t number_of_angular_points =
@@ -382,12 +382,12 @@ void dispatch_to_gh_worldtube_computation_from_analytic(
   const auto pi = GeneralizedHarmonic::pi(
       lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric, phi);
 
-  create_bondi_boundary_data(box, phi, pi, psi, extraction_radius, l_max);
+  create_bondi_boundary_data(variables, phi, pi, psi, extraction_radius, l_max);
 }
 
-template <typename DataBoxTagList, typename AnalyticSolution>
+template <typename TagList, typename AnalyticSolution>
 void dispatch_to_modal_worldtube_computation_from_analytic(
-    const gsl::not_null<db::DataBox<DataBoxTagList>*> box,
+    const gsl::not_null<Variables<TagList>*> variables,
     const AnalyticSolution& solution, const double extraction_radius,
     const size_t l_max) noexcept {
   const size_t number_of_angular_points =
@@ -482,7 +482,7 @@ void dispatch_to_modal_worldtube_computation_from_analytic(
       TestHelpers::tensor_to_libsharp_coefficients(dr_spatial_metric, l_max);
 
   create_bondi_boundary_data(
-      box, spatial_metric_coefficients, dt_spatial_metric_coefficients,
+      variables, spatial_metric_coefficients, dt_spatial_metric_coefficients,
       dr_spatial_metric_coefficients, shift_coefficients, dt_shift_coefficients,
       dr_shift_coefficients, lapse_coefficients, dt_lapse_coefficients,
       dr_lapse_coefficients, extraction_radius, l_max);
@@ -511,19 +511,17 @@ void test_kerr_schild_boundary_consistency(
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
-  using boundary_variables_tag = ::Tags::Variables<
-      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>;
-
-  auto gh_boundary_box = db::create<db::AddSimpleTags<boundary_variables_tag>>(
-      db::item_type<boundary_variables_tag>{number_of_angular_points});
-  auto modal_boundary_box =
-      db::create<db::AddSimpleTags<boundary_variables_tag>>(
-          db::item_type<boundary_variables_tag>{number_of_angular_points});
+  Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
+      gh_boundary_variables{number_of_angular_points};
+  Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
+      modal_boundary_variables{number_of_angular_points};
 
   dispatch_to_gh_worldtube_computation_from_analytic(
-      make_not_null(&gh_boundary_box), solution, extraction_radius, l_max);
+      make_not_null(&gh_boundary_variables), solution, extraction_radius,
+      l_max);
   dispatch_to_modal_worldtube_computation_from_analytic(
-      make_not_null(&modal_boundary_box), solution, extraction_radius, l_max);
+      make_not_null(&modal_boundary_variables), solution, extraction_radius,
+      l_max);
 
   // This can be tightened further with higher l_max above. Q, for instance, has
   // aliasing trouble
@@ -534,12 +532,12 @@ void test_kerr_schild_boundary_consistency(
 
   tmpl::for_each<
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
-      [&gh_boundary_box, &modal_boundary_box,
+      [&gh_boundary_variables, &modal_boundary_variables,
        &angular_derivative_approx](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         INFO(db::tag_name<tag>());
-        const auto& test_lhs = db::get<tag>(gh_boundary_box);
-        const auto& test_rhs = db::get<tag>(modal_boundary_box);
+        const auto& test_lhs = get<tag>(gh_boundary_variables);
+        const auto& test_rhs = get<tag>(modal_boundary_variables);
         CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs,
                                      angular_derivative_approx);
       });
@@ -564,33 +562,24 @@ void test_schwarzschild_solution(const gsl::not_null<Generator*> gen) noexcept {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
-  using boundary_variables_tag = ::Tags::Variables<
-      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>;
-
-  auto gh_boundary_box = db::create<db::AddSimpleTags<boundary_variables_tag>>(
-      db::item_type<boundary_variables_tag>{number_of_angular_points});
-  auto modal_boundary_box =
-      db::create<db::AddSimpleTags<boundary_variables_tag>>(
-          db::item_type<boundary_variables_tag>{number_of_angular_points});
-  auto expected_box = db::create<db::AddSimpleTags<boundary_variables_tag>>(
-      db::item_type<boundary_variables_tag>{number_of_angular_points, 0.0});
+  Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
+      gh_boundary_variables{number_of_angular_points};
+  Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
+      modal_boundary_variables{number_of_angular_points};
+  Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
+      expected_variables{number_of_angular_points, 0.0};
 
   dispatch_to_gh_worldtube_computation_from_analytic(
-      make_not_null(&gh_boundary_box), solution, extraction_radius, l_max);
+      make_not_null(&gh_boundary_variables), solution, extraction_radius,
+      l_max);
   dispatch_to_modal_worldtube_computation_from_analytic(
-      make_not_null(&modal_boundary_box), solution, extraction_radius, l_max);
+      make_not_null(&modal_boundary_variables), solution, extraction_radius,
+      l_max);
 
-  db::mutate<Tags::BoundaryValue<Tags::BondiW>,
-             Tags::BoundaryValue<Tags::BondiR>>(
-      make_not_null(&expected_box),
-      [&extraction_radius, &mass](
-          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
-              bondi_w,
-          const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
-              bondi_r) noexcept {
-        get(*bondi_r).data() = extraction_radius;
-        get(*bondi_w).data() = -2.0 * mass / pow<2>(extraction_radius);
-      });
+  get(get<Tags::BoundaryValue<Tags::BondiR>>(expected_variables)).data() =
+      extraction_radius;
+  get(get<Tags::BoundaryValue<Tags::BondiW>>(expected_variables)).data() =
+      -2.0 * mass / pow<2>(extraction_radius);
 
   // This can be tightened further with higher l_max above.
   Approx angular_derivative_approx =
@@ -600,16 +589,16 @@ void test_schwarzschild_solution(const gsl::not_null<Generator*> gen) noexcept {
 
   tmpl::for_each<
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
-      [&gh_boundary_box, &modal_boundary_box, &expected_box,
+      [&gh_boundary_variables, &modal_boundary_variables, &expected_variables,
        &angular_derivative_approx](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         INFO(db::tag_name<tag>());
-        const auto& test_lhs_0 = db::get<tag>(gh_boundary_box);
-        const auto& test_rhs_0 = db::get<tag>(expected_box);
+        const auto& test_lhs_0 = get<tag>(gh_boundary_variables);
+        const auto& test_rhs_0 = get<tag>(expected_variables);
         CHECK_ITERABLE_CUSTOM_APPROX(test_lhs_0, test_rhs_0,
                                      angular_derivative_approx);
-        const auto& test_lhs_1 = db::get<tag>(modal_boundary_box);
-        const auto& test_rhs_1 = db::get<tag>(expected_box);
+        const auto& test_lhs_1 = get<tag>(modal_boundary_variables);
+        const auto& test_rhs_1 = get<tag>(expected_variables);
         CHECK_ITERABLE_CUSTOM_APPROX(test_lhs_1, test_rhs_1,
                                      angular_derivative_approx);
       });
