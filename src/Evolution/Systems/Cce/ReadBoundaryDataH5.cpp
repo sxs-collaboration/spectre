@@ -117,7 +117,7 @@ SpecWorldtubeH5BufferUpdater::SpecWorldtubeH5BufferUpdater(
 }
 
 double SpecWorldtubeH5BufferUpdater::update_buffers_for_time(
-    const gsl::not_null<Variables<detail::cce_input_tags>*> buffers,
+    const gsl::not_null<Variables<cce_input_tags>*> buffers,
     const gsl::not_null<size_t*> time_span_start,
     const gsl::not_null<size_t*> time_span_end, const double time,
     const size_t computation_l_max, const size_t interpolator_length,
@@ -189,7 +189,7 @@ double SpecWorldtubeH5BufferUpdater::update_buffers_for_time(
                                time_buffer_.size() - 1)];
 }
 
-std::unique_ptr<WorldtubeBufferUpdater<detail::cce_input_tags>>
+std::unique_ptr<WorldtubeBufferUpdater<cce_input_tags>>
 SpecWorldtubeH5BufferUpdater::get_clone() const noexcept {
   return std::make_unique<SpecWorldtubeH5BufferUpdater>(
       SpecWorldtubeH5BufferUpdater{filename_});
@@ -305,7 +305,7 @@ ReducedSpecWorldtubeH5BufferUpdater::ReducedSpecWorldtubeH5BufferUpdater(
 }
 
 double ReducedSpecWorldtubeH5BufferUpdater::update_buffers_for_time(
-    const gsl::not_null<Variables<detail::reduced_cce_input_tags>*> buffers,
+    const gsl::not_null<Variables<reduced_cce_input_tags>*> buffers,
     const gsl::not_null<size_t*> time_span_start,
     const gsl::not_null<size_t*> time_span_end, const double time,
     const size_t computation_l_max, const size_t interpolator_length,
@@ -325,7 +325,7 @@ double ReducedSpecWorldtubeH5BufferUpdater::update_buffers_for_time(
   *time_span_start = new_span_pair.first;
   *time_span_end = new_span_pair.second;
   // load the desired time spans into the buffers
-  tmpl::for_each<detail::reduced_cce_input_tags>([
+  tmpl::for_each<reduced_cce_input_tags>([
     this, &buffers, &time_span_start, &time_span_end, &computation_l_max
   ](auto tag_v) noexcept {
     using tag = typename decltype(tag_v)::type;
@@ -430,7 +430,7 @@ void ReducedSpecWorldtubeH5BufferUpdater::pup(PUP::er& p) noexcept {
 }
 
 ReducedWorldtubeDataManager::ReducedWorldtubeDataManager(
-    std::unique_ptr<WorldtubeBufferUpdater<detail::reduced_cce_input_tags>>
+    std::unique_ptr<WorldtubeBufferUpdater<reduced_cce_input_tags>>
         buffer_updater,
     const size_t l_max, const size_t buffer_depth,
     std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
@@ -451,7 +451,7 @@ ReducedWorldtubeDataManager::ReducedWorldtubeDataManager(
         "too large or the specified SpanInterpolator requests too many "
         "points");
   }
-  coefficients_buffers_ = Variables<detail::reduced_cce_input_tags>{
+  coefficients_buffers_ = Variables<reduced_cce_input_tags>{
       square(l_max + 1) *
       (buffer_depth +
        2 * interpolator_->required_number_of_points_before_and_after())};
@@ -472,8 +472,8 @@ void ReducedWorldtubeDataManager::pup(PUP::er& p) noexcept {
         (buffer_depth_ +
          2 * interpolator_->required_number_of_points_before_and_after());
     coefficients_buffers_ =
-        Variables<detail::reduced_cce_input_tags>{size_of_buffer};
-    interpolated_coefficients_ = Variables<detail::reduced_cce_input_tags>{
+        Variables<reduced_cce_input_tags>{size_of_buffer};
+    interpolated_coefficients_ = Variables<reduced_cce_input_tags>{
         Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_)};
   }
 }

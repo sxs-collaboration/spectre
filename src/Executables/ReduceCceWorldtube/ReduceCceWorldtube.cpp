@@ -32,9 +32,9 @@ extern "C" void CkRegisterMainModule(void) {}
 // particular time given by `buffer_time_offset` into the `time_span` size of
 // buffer.
 void slice_buffers_to_libsharp_modes(
-    const gsl::not_null<Variables<Cce::detail::cce_input_tags>*>
+    const gsl::not_null<Variables<Cce::cce_input_tags>*>
         coefficients_set,
-    const Variables<Cce::detail::cce_input_tags>& coefficients_buffers,
+    const Variables<Cce::cce_input_tags>& coefficients_buffers,
     const size_t time_span, const size_t buffer_time_offset, const size_t l_max,
     const size_t computation_l_max) noexcept {
   SpinWeighted<ComplexModalVector, 0> spin_weighted_buffer;
@@ -166,8 +166,8 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
   const size_t size_of_buffer = square(l_max + 1) * (buffer_depth);
   const DataVector& time_buffer = buffer_updater.get_time_buffer();
 
-  Variables<Cce::detail::cce_input_tags> coefficients_buffers{size_of_buffer};
-  Variables<Cce::detail::cce_input_tags> coefficients_set{
+  Variables<Cce::cce_input_tags> coefficients_buffers{size_of_buffer};
+  Variables<Cce::cce_input_tags> coefficients_set{
       Spectral::Swsh::size_of_libsharp_coefficient_vector(computation_l_max)};
 
   using boundary_variables_tag =
