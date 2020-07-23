@@ -50,8 +50,6 @@ class DataVector : public VectorImpl<double, DataVector> {
 
   using VectorImpl<double, DataVector>::operator=;
   using VectorImpl<double, DataVector>::VectorImpl;
-
-  MAKE_MATH_ASSIGN_EXPRESSION_ARITHMETIC(DataVector)
 };
 
 // Specialize the Blaze type traits to correctly handle DataVector
