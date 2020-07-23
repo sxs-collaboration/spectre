@@ -196,10 +196,6 @@ struct ApparentHorizon {
         make_not_null(&prolonged_coords), prolonged_strahlkorper, radius,
         r_hat);
 
-    // In the future, when we add support for multiple Frames,
-    // the code that transforms coordinates from the Strahlkorper Frame
-    // to Frame::Inertial will go here.  That transformation
-    // may depend on `temporal_id`.
     return prolonged_coords;
   }
 };
