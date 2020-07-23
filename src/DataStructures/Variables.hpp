@@ -916,10 +916,19 @@ struct Subitems<
       const gsl::not_null<item_type<Subtag>*> sub_value) noexcept {
     auto& vars = get<Subtag>(*parent_value);
     // Only update the Tensor if the Variables has changed its allocation
-    if (vars.begin()->data() != sub_value->begin()->data()) {
-      for (auto vars_it = vars.begin(), sub_var_it = sub_value->begin();
-           vars_it != vars.end(); ++vars_it, ++sub_var_it) {
-        sub_var_it->set_data_ref(make_not_null(&*vars_it));
+    if constexpr (not is_any_spin_weighted_v<typename Subtag::type::type>) {
+      if (vars.begin()->data() != sub_value->begin()->data()) {
+        for (auto vars_it = vars.begin(), sub_var_it = sub_value->begin();
+             vars_it != vars.end(); ++vars_it, ++sub_var_it) {
+          sub_var_it->set_data_ref(make_not_null(&*vars_it));
+        }
+      }
+    } else {
+      if (vars.begin()->data().data() != sub_value->begin()->data().data()) {
+        for (auto vars_it = vars.begin(), sub_var_it = sub_value->begin();
+             vars_it != vars.end(); ++vars_it, ++sub_var_it) {
+          sub_var_it->set_data_ref(make_not_null(&*vars_it));
+        }
       }
     }
   }
