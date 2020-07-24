@@ -407,6 +407,12 @@ function(_check_and_print_dependencies
     TARGET ${TARGET_NAME}
     PROPERTY INTERFACE_LINK_LIBRARIES
     )
+  # The property INTERFACE_LINK_LIBRARIES contains generator expressions for
+  # private link-time dependencies. We will be handling these private
+  # dependencies explicitly below, so here we want to remove them from the list
+  # of interface dependencies. The generators have format "$<LINK_ONLY:dep>"
+  list(FILTER _INTERFACE_LIBS EXCLUDE REGEX "\\$<LINK_ONLY:.+>")
+
   unset(_MISSING_INTERFACE_LIBS)
   foreach(_INTERFACE_DEP ${TARGET_INTERFACE_DEPS})
     if(NOT ${_INTERFACE_DEP} IN_LIST _INTERFACE_LIBS)
