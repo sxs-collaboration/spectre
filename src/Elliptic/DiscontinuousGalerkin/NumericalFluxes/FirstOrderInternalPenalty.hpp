@@ -307,6 +307,16 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
         normal_dot_auxiliary_field_fluxes));
   }
 
+  template <typename PackagedData>
+  void package_zero_data(const gsl::not_null<PackagedData*> packaged_data,
+                         const size_t num_points) const noexcept {
+    packaged_data->field_data =
+        Variables<typename PackagedData::field_tags>{num_points, 0.};
+    get<PerpendicularNumPoints>(packaged_data->extra_data) = 0;
+    get(get<ElementSize>(packaged_data->field_data)) =
+        std::numeric_limits<double>::max();
+  }
+
   void operator()(
       const gsl::not_null<typename ::Tags::NormalDotNumericalFlux<
           FieldTags>::type*>... numerical_flux_for_fields,
