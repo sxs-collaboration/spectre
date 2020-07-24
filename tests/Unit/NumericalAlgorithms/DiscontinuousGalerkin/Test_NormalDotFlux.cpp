@@ -157,8 +157,8 @@ void test_with_variables() {
   }
 
   const auto result =
-      normal_dot_flux<db::get_variables_tags_list<variables_tag<Dim, Fr>>>(
-          normal, fluxes);
+      normal_dot_flux<typename variables_tag<Dim, Fr>::tags_list>(normal,
+                                                                  fluxes);
 
   CHECK_ITERABLE_APPROX(get<Tags::NormalDotFlux<Var1>>(result), expected1);
   CHECK_ITERABLE_APPROX((get<Tags::NormalDotFlux<Var2<Dim, Fr>>>(result)),

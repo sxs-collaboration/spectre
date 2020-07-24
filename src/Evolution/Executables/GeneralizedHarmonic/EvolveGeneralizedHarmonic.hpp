@@ -9,7 +9,6 @@
 #include "AlgorithmSingleton.hpp"
 #include "ApparentHorizons/ComputeItems.hpp"
 #include "ApparentHorizons/Tags.hpp"
-#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
@@ -171,8 +170,7 @@ struct EvolutionMetavars {
           volume_dim, typename system::variables_tag, normal_dot_numerical_flux,
           Tags::TimeStepId>>;
 
-  using analytic_solution_fields =
-      db::get_variables_tags_list<typename system::variables_tag>;
+  using analytic_solution_fields = typename system::variables_tag::tags_list;
   using observe_fields = tmpl::append<
       tmpl::push_back<
           analytic_solution_fields,

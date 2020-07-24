@@ -125,8 +125,7 @@ struct Metavariables {
 
   // Collect events and triggers
   // (public for use by the Charm++ registration code)
-  using observe_fields =
-      db::get_variables_tags_list<typename system::fields_tag>;
+  using observe_fields = typename system::fields_tag::tags_list;
   using analytic_solution_fields = observe_fields;
   using events =
       tmpl::list<dg::Events::Registrars::ObserveFields<

@@ -5,7 +5,6 @@
 
 #include <vector>
 
-#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
@@ -146,8 +145,7 @@ struct EvolutionMetavars {
           Tags::TimeStepId>>;
 
   // public for use by the Charm++ registration code
-  using observe_fields =
-      db::get_variables_tags_list<typename system::variables_tag>;
+  using observe_fields = typename system::variables_tag::tags_list;
   using analytic_solution_fields =
       tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
                           observe_fields, tmpl::list<>>;
