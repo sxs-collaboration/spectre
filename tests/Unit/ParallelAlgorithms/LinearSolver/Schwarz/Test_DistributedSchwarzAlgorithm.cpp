@@ -236,10 +236,10 @@ struct Metavariables {
       "Test the Schwarz linear solver algorithm"};
   static constexpr size_t volume_dim = 1;
 
-  using linear_solver =
-      LinearSolver::Schwarz::Schwarz<Metavariables,
-                                     helpers_distributed::fields_tag,
-                                     SchwarzSmoother, SubdomainOperator>;
+  using subdomain_preconditioner = void;
+  using linear_solver = LinearSolver::Schwarz::Schwarz<
+      Metavariables, helpers_distributed::fields_tag, SchwarzSmoother,
+      SubdomainOperator, subdomain_preconditioner>;
   using preconditioner = void;
 
   using Phase = helpers::Phase;

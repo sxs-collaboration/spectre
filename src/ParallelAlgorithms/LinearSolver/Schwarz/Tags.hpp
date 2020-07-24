@@ -34,6 +34,25 @@ struct SubdomainSolver {
       "Options for the linear solver on subdomains";
 };
 
+template <typename OptionsGroup>
+struct SubdomainPreconditionerGroup {
+  static std::string name() noexcept { return "SubdomainPreconditioner"; }
+  using group = OptionsGroup;
+  static constexpr Options::String help =
+      "The preconditioner for subdomain solves";
+};
+
+template <typename PreconditionerType, typename OptionsGroup>
+struct SubdomainPreconditioner {
+  // static std::string name() noexcept {
+  //   return option_name<PreconditionerType>();
+  // }
+  using type = PreconditionerType;
+  using group = OptionsGroup;  // SubdomainPreconditionerGroup<OptionsGroup>;
+  static constexpr Options::String help =
+      "Options for the subdomain solver's preconditioner";
+};
+
 }  // namespace OptionTags
 
 /// Tags related to the Schwarz solver
@@ -244,6 +263,20 @@ struct SubdomainSolver : SubdomainSolverBase<OptionsGroup>, db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   using option_tags =
       tmpl::list<OptionTags::SubdomainSolver<SolverType, OptionsGroup>>;
+  static type create_from_options(const type& value) noexcept { return value; }
+};
+
+template <typename OptionsGroup>
+struct SubdomainPreconditionerBase : db::BaseTag {};
+
+template <typename PreconditionerType, typename OptionsGroup>
+struct SubdomainPreconditioner : db::SimpleTag,
+                                 SubdomainPreconditionerBase<OptionsGroup> {
+  using type = PreconditionerType;
+
+  static constexpr bool pass_metavariables = false;
+  using option_tags = tmpl::list<
+      OptionTags::SubdomainPreconditioner<PreconditionerType, OptionsGroup>>;
   static type create_from_options(const type& value) noexcept { return value; }
 };
 

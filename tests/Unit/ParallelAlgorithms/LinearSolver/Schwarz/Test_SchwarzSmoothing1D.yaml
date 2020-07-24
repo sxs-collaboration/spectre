@@ -30,6 +30,7 @@ SchwarzSmoother:
       AbsoluteResidual: 1.e-10
     Verbosity: Verbose
     Restart: 0
+  SubdomainPreconditioner: # ExplicitInverse
 
 Observers:
   VolumeFileName: "Test_SchwarzSmoothing_Volume"

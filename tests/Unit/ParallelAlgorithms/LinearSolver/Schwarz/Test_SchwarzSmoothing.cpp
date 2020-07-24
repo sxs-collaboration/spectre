@@ -50,6 +50,7 @@
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Schwarz.hpp"
+#include "ParallelAlgorithms/LinearSolver/Schwarz/SubdomainPreconditioners/ExplicitInverse.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -198,9 +199,13 @@ struct Metavariables {
       tmpl::list<>, typename system::sources, tmpl::list<>,
       normal_dot_numerical_flux, SchwarzSmoother, tmpl::list<>,
       massive_operator>;
+  using subdomain_preconditioner =
+      LinearSolver::Schwarz::subdomain_preconditioners::ExplicitInverse<
+          volume_dim>;
   using linear_solver =
       LinearSolver::Schwarz::Schwarz<Metavariables, fields_tag, SchwarzSmoother,
-                                     subdomain_operator>;
+                                     subdomain_operator,
+                                     subdomain_preconditioner>;
   using preconditioner = void;
 
   // Set up observations

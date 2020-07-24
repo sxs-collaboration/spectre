@@ -101,7 +101,8 @@ struct SubdomainDataBufferTag : db::SimpleTag {
   using type = SubdomainDataType;
 };
 
-template <typename FieldsTag, typename OptionsGroup, typename SubdomainOperator>
+template <typename FieldsTag, typename OptionsGroup, typename SubdomainOperator,
+          typename SubdomainPreconditioner>
 struct InitializeElement {
  private:
   using fields_tag = FieldsTag;
@@ -113,13 +114,20 @@ struct InitializeElement {
   using subdomain_solver_tag =
       Tags::SubdomainSolver<LinearSolver::Serial::Gmres<SubdomainData>,
                             OptionsGroup>;
+  using subdomain_preconditioner_tag =
+      Tags::SubdomainPreconditioner<SubdomainPreconditioner, OptionsGroup>;
   template <typename Tag>
   using overlaps_tag = Tags::Overlaps<Tag, Dim, OptionsGroup>;
 
  public:
-  using initialization_tags =
-      tmpl::list<domain::Tags::InitialExtents<Dim>, subdomain_solver_tag>;
-  using initialization_tags_to_keep = tmpl::list<subdomain_solver_tag>;
+  using initialization_tags = tmpl::flatten<tmpl::list<
+      domain::Tags::InitialExtents<Dim>, subdomain_solver_tag,
+      tmpl::conditional_t<std::is_same_v<SubdomainPreconditioner, void>,
+                          tmpl::list<>, subdomain_preconditioner_tag>>>;
+  using initialization_tags_to_keep = tmpl::flatten<tmpl::list<
+      subdomain_solver_tag,
+      tmpl::conditional_t<std::is_same_v<SubdomainPreconditioner, void>,
+                          tmpl::list<>, subdomain_preconditioner_tag>>>;
   using const_global_cache_tags = tmpl::list<Tags::MaxOverlap<OptionsGroup>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -240,7 +248,8 @@ struct OverlapSolutionInboxTag
       std::unordered_map<temporal_id, OverlapMap<Dim, OverlapSolution>>;
 };
 
-template <typename FieldsTag, typename OptionsGroup, typename SubdomainOperator>
+template <typename FieldsTag, typename OptionsGroup, typename SubdomainOperator,
+          typename SubdomainPreconditioner>
 struct SolveSubdomain {
  private:
   using fields_tag = FieldsTag;
@@ -322,25 +331,21 @@ struct SolveSubdomain {
         db::get<domain::Tags::Mesh<Dim>>(box).number_of_grid_points();
     SubdomainOperator subdomain_operator{num_points};
     SubdomainData subdomain_result_buffer{num_points};
-    // Solve the subdomain problem
-    const auto& subdomain_solver =
-        get<Tags::SubdomainSolverBase<OptionsGroup>>(box);
-    auto subdomain_solve_result = subdomain_solver(
-        [&box, &subdomain_result_buffer,
-         &subdomain_operator](const SubdomainData& arg) noexcept {
-          // The subdomain operator can retrieve any information on the
-          // subdomain geometry that is available through the DataBox. The user
-          // is responsible for communicating this information across neighbors
-          // if necessary.
-          db::apply<typename SubdomainOperator::element_operator>(
-              box, arg, make_not_null(&subdomain_result_buffer),
-              make_not_null(&subdomain_operator));
-          tmpl::for_each<tmpl::list<domain::Tags::InternalDirections<Dim>,
-                                    domain::Tags::BoundaryDirectionsInterior<
-                                        Dim>>>([&box, &arg,
-                                                &subdomain_result_buffer,
-                                                &subdomain_operator](
-                                                   auto directions_v) noexcept {
+    // Construct the subdomain operator
+    const auto apply_subdomain_operator = [&box, &subdomain_result_buffer,
+                                           &subdomain_operator](
+                                              const SubdomainData&
+                                                  arg) noexcept {
+      // The subdomain operator can retrieve any information on the subdomain
+      // geometry that is available through the DataBox. The user is responsible
+      // for communicating this information across neighbors if necessary.
+      db::apply<typename SubdomainOperator::element_operator>(
+          box, arg, make_not_null(&subdomain_result_buffer),
+          make_not_null(&subdomain_operator));
+      tmpl::for_each<tmpl::list<domain::Tags::InternalDirections<Dim>,
+                                domain::Tags::BoundaryDirectionsInterior<Dim>>>(
+          [&box, &arg, &subdomain_result_buffer,
+           &subdomain_operator](auto directions_v) noexcept {
             using directions = tmpl::type_from<decltype(directions_v)>;
             using face_operator =
                 typename SubdomainOperator::template face_operator<directions>;
@@ -350,10 +355,44 @@ struct SolveSubdomain {
                 make_not_null(&subdomain_result_buffer),
                 make_not_null(&subdomain_operator));
           });
-          return subdomain_result_buffer;
-        },
-        subdomain_residual,
-        make_with_value<SubdomainData>(subdomain_residual, 0.));
+      return subdomain_result_buffer;
+    };
+    // Prepare the preconditioner
+    if constexpr (not std::is_same_v<SubdomainPreconditioner, void>) {
+      // TODO: Improve the caching mechanism of the preconditioner
+      if (db::get<Tags::SubdomainPreconditionerBase<OptionsGroup>>(box)
+              .size() == std::numeric_limits<size_t>::max()) {
+        if (UNLIKELY(static_cast<int>(
+                         get<LinearSolver::Tags::Verbosity<OptionsGroup>>(
+                             box)) >= static_cast<int>(::Verbosity::Verbose))) {
+          Parallel::printf("%s Preparing subdomain preconditioner...\n",
+                           element_id);
+        }
+        db::item_type<Tags::SubdomainPreconditionerBase<OptionsGroup>,
+                      DbTagsList>
+            preconditioner{apply_subdomain_operator, subdomain_residual};
+        db::mutate<Tags::SubdomainPreconditionerBase<OptionsGroup>>(
+            make_not_null(&box),
+            [&preconditioner](const auto stored_preconditioner) noexcept {
+              *stored_preconditioner = preconditioner;
+            });
+      }
+    }
+    // Solve the subdomain problem
+    const auto& subdomain_solver =
+        get<Tags::SubdomainSolverBase<OptionsGroup>>(box);
+    const auto& subdomain_preconditioner = [&box]() noexcept {
+      if constexpr (std::is_same_v<SubdomainPreconditioner, void>) {
+        return LinearSolver::Serial::IdentityPreconditioner<SubdomainData>{};
+        (void)box;
+      } else {
+        return db::get<Tags::SubdomainPreconditionerBase<OptionsGroup>>(box);
+      }
+    }();
+    auto subdomain_solve_result =
+        subdomain_solver(apply_subdomain_operator, subdomain_residual,
+                         make_with_value<SubdomainData>(subdomain_residual, 0.),
+                         subdomain_preconditioner);
     const auto& subdomain_solve_has_converged = subdomain_solve_result.first;
     auto& subdomain_solution = subdomain_solve_result.second;
     if (not subdomain_solve_has_converged or
