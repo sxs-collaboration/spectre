@@ -342,6 +342,24 @@ function(_add_targets_to_link_libs TARGET_DEPS TARGET_DEPS_TYPE
 endfunction(_add_targets_to_link_libs TARGET_DEPS TARGET_DEPS_TYPE
   TARGET_LINK_LIBS_COMMAND)
 
+# Queries the INTERFACE_LINK_LIBRARIES of TARGET. This is done recursively.
+function(_get_interface_link_libraries TARGET)
+  get_target_property(_INTERFACE_LIBS ${TARGET} INTERFACE_LINK_LIBRARIES)
+  set(LINK_LIBS_FOR_TARGET "")
+  foreach(_INTERFACE_LIB ${_INTERFACE_LIBS})
+    if (_INTERFACE_LIB)
+      list(APPEND LINK_LIBS_FOR_TARGET ${_INTERFACE_LIB})
+      if (TARGET ${_INTERFACE_LIB})
+        set(OUTPUT_LIST "")
+        _get_interface_link_libraries(${_INTERFACE_LIB})
+        list(APPEND LINK_LIBS_FOR_TARGET ${OUTPUT_LIST})
+      endif()
+    endif()
+  endforeach()
+  # "Return" dependencies to calling function
+  set(OUTPUT_LIST ${LINK_LIBS_FOR_TARGET} PARENT_SCOPE)
+endfunction(_get_interface_link_libraries OUTPUT_LIST TARGET)
+
 # Checks the dependencies for the target ${TARGET_NAME} and if they are
 # incorrect produces an error message with the correct dependencies.
 #
@@ -370,6 +388,19 @@ function(_check_and_print_dependencies
     LIST_OF_ALLOWED_EXTRA_TARGETS)
   cmake_parse_arguments(
     ARG "ERROR_ON_FAILURE" "" "" ${ARGN})
+
+  # We add the dependencies of allowed targets as additional allowed targets.
+  # This avoids the situation where target A is allowed, but A depends on B,
+  # and therefore every target has a dependency on B. The helper function
+  # ensures the dependencies are added recursively.
+  set(WORKING_LIST ${LIST_OF_ALLOWED_EXTRA_TARGETS})
+  foreach(_ALLOWED_EXTRA_TARGET ${LIST_OF_ALLOWED_EXTRA_TARGETS})
+    set(OUTPUT_LIST "")
+    _get_interface_link_libraries(${_ALLOWED_EXTRA_TARGET})
+    list(APPEND WORKING_LIST ${OUTPUT_LIST})
+  endforeach()
+  list(REMOVE_DUPLICATES WORKING_LIST)
+  set(LIST_OF_ALLOWED_EXTRA_TARGETS ${WORKING_LIST})
 
   get_property(
     _INTERFACE_LIBS
