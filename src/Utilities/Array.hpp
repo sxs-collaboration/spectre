@@ -16,8 +16,8 @@
 namespace cpp20 {
 namespace detail {
 template <typename T, size_t Size, size_t... Is>
-// NOLINTNEXTLINE(modernize-avoid-c-arrays)
 constexpr std::array<T, Size> convert_to_array(
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     const T (&t)[Size], std::index_sequence<Is...> /*meta*/) {
   return {{t[Is]...}};
 }
