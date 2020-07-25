@@ -14,7 +14,7 @@
 namespace detail {
 template <size_t Size>
 constexpr int find_reduced_index(
-    const cpp17::array<std::pair<int, int>, Size>& t,
+    const cpp20::array<std::pair<int, int>, Size>& t,
     const int value) noexcept {
   for (size_t i = 0; i < Size; ++i) {
     if (t[i].first == value) {
@@ -25,11 +25,11 @@ constexpr int find_reduced_index(
 }
 
 template <size_t Size>
-constexpr cpp17::array<int, Size> symmetry(
+constexpr cpp20::array<int, Size> symmetry(
     const std::array<int, Size>& input_symm) noexcept {
-  cpp17::array<int, Size> output_symm{};
+  cpp20::array<int, Size> output_symm{};
   int next_symm_entry = 1;
-  cpp17::array<std::pair<int, int>, Size> input_to_output_map{};
+  cpp20::array<std::pair<int, int>, Size> input_to_output_map{};
   size_t input_to_output_map_size = 0;
   for (size_t i = Size - 1; i < Size; --i) {
     // clang-tidy: use gsl::at
@@ -55,7 +55,7 @@ struct SymmetryImpl;
 template <size_t... Is, std::int32_t... Ss>
 struct SymmetryImpl<std::index_sequence<Is...>,
                     tmpl::integral_list<std::int32_t, Ss...>> {
-  static constexpr cpp17::array<int, sizeof...(Is)> t =
+  static constexpr cpp20::array<int, sizeof...(Is)> t =
       symmetry(std::array<int, sizeof...(Is)>{{Ss...}});
   using type = tmpl::integral_list<std::int32_t, t[Is]...>;
 };

@@ -85,8 +85,8 @@ constexpr size_t number_of_components(
 }
 
 template <typename T, typename S, size_t Size>
-constexpr void increment_tensor_index(cpp17::array<T, Size>& tensor_index,
-                                      const cpp17::array<S, Size>& dims) {
+constexpr void increment_tensor_index(cpp20::array<T, Size>& tensor_index,
+                                      const cpp20::array<S, Size>& dims) {
   for (size_t i = 0; i < Size; ++i) {
     if (++tensor_index[i] < static_cast<T>(dims[i])) {
       return;
@@ -100,8 +100,8 @@ constexpr void increment_tensor_index(cpp17::array<T, Size>& tensor_index,
 // in this function rather than in array.
 template <size_t Rank>
 constexpr size_t index_to_swap_with(
-    const cpp17::array<size_t, Rank>& tensor_index,
-    const cpp17::array<int, Rank>& sym, size_t index_to_swap_with,
+    const cpp20::array<size_t, Rank>& tensor_index,
+    const cpp20::array<int, Rank>& sym, size_t index_to_swap_with,
     const size_t current_index) noexcept {
   // If you encounter infinite loop compilation errors here you are
   // constructing very large Tensor's. If you are sure Tensor is
@@ -120,9 +120,9 @@ constexpr size_t index_to_swap_with(
 }
 
 template <size_t Size, size_t SymmSize>
-constexpr cpp17::array<size_t, Size> canonicalize_tensor_index(
-    cpp17::array<size_t, Size> tensor_index,
-    const cpp17::array<int, SymmSize>& symm) noexcept {
+constexpr cpp20::array<size_t, Size> canonicalize_tensor_index(
+    cpp20::array<size_t, Size> tensor_index,
+    const cpp20::array<int, SymmSize>& symm) noexcept {
   for (size_t i = 0; i < Size; ++i) {
     const size_t temp = tensor_index[i];
     const size_t swap = index_to_swap_with(tensor_index, symm, i, i);
@@ -134,8 +134,8 @@ constexpr cpp17::array<size_t, Size> canonicalize_tensor_index(
 
 template <size_t Rank>
 constexpr size_t compute_collapsed_index(
-    const cpp17::array<size_t, Rank>& tensor_index,
-    const cpp17::array<size_t, Rank> dims) noexcept {
+    const cpp20::array<size_t, Rank>& tensor_index,
+    const cpp20::array<size_t, Rank> dims) noexcept {
   size_t collapsed_index = 0;
   for (size_t i = Rank - 1; i < Rank; --i) {
     collapsed_index = tensor_index[i] + dims[i] * collapsed_index;
@@ -145,18 +145,18 @@ constexpr size_t compute_collapsed_index(
 
 template <typename Symm, size_t NumberOfComponents,
           Requires<tmpl::size<Symm>::value != 0> = nullptr>
-constexpr cpp17::array<size_t, NumberOfComponents> compute_collapsed_to_storage(
-    const cpp17::array<size_t, tmpl::size<Symm>::value>&
+constexpr cpp20::array<size_t, NumberOfComponents> compute_collapsed_to_storage(
+    const cpp20::array<size_t, tmpl::size<Symm>::value>&
         index_dimensions) noexcept {
-  cpp17::array<size_t, NumberOfComponents> collapsed_to_storage{};
+  cpp20::array<size_t, NumberOfComponents> collapsed_to_storage{};
   auto tensor_index =
-      convert_to_cpp17_array(make_array<tmpl::size<Symm>::value>(size_t{0}));
+      convert_to_cpp20_array(make_array<tmpl::size<Symm>::value>(size_t{0}));
   size_t count{0};
   for (auto& current_storage_index : collapsed_to_storage) {
     // Compute canonical tensor_index, which, for symmetric get_tensor_index is
     // in decreasing numerical order, e.g. (3,2) rather than (2,3).
     const auto canonical_tensor_index = canonicalize_tensor_index(
-        tensor_index, make_cpp17_array_from_list<Symm>());
+        tensor_index, make_cpp20_array_from_list<Symm>());
     // If the tensor_index was already in the canonical form, then it must be a
     // new unique entry  and we add it to collapsed_to_storage_ as a new
     // integer, thus increasing the size_. Else, the StorageIndex has already
@@ -177,27 +177,27 @@ constexpr cpp17::array<size_t, NumberOfComponents> compute_collapsed_to_storage(
 
 template <typename Symm, size_t NumberOfComponents,
           Requires<tmpl::size<Symm>::value == 0> = nullptr>
-constexpr cpp17::array<size_t, 1> compute_collapsed_to_storage(
-    const cpp17::array<
+constexpr cpp20::array<size_t, 1> compute_collapsed_to_storage(
+    const cpp20::array<
         size_t, tmpl::size<Symm>::value>& /*index_dimensions*/) noexcept {
-  return cpp17::array<size_t, 1>{{0}};
+  return cpp20::array<size_t, 1>{{0}};
 }
 
 template <typename Symm, size_t NumIndComps, size_t NumComps,
           Requires<(tmpl::size<Symm>::value > 0)> = nullptr>
-constexpr cpp17::array<cpp17::array<size_t, tmpl::size<Symm>::value>,
+constexpr cpp20::array<cpp20::array<size_t, tmpl::size<Symm>::value>,
                        NumIndComps>
 compute_storage_to_tensor(
-    const cpp17::array<size_t, NumComps>& collapsed_to_storage,
-    const cpp17::array<size_t, tmpl::size<Symm>::value>&
+    const cpp20::array<size_t, NumComps>& collapsed_to_storage,
+    const cpp20::array<size_t, tmpl::size<Symm>::value>&
         index_dimensions) noexcept {
   constexpr size_t rank = tmpl::size<Symm>::value;
-  cpp17::array<cpp17::array<size_t, rank>, NumIndComps> storage_to_tensor{};
-  cpp17::array<size_t, rank> tensor_index =
-      convert_to_cpp17_array(make_array<rank>(size_t{0}));
+  cpp20::array<cpp20::array<size_t, rank>, NumIndComps> storage_to_tensor{};
+  cpp20::array<size_t, rank> tensor_index =
+      convert_to_cpp20_array(make_array<rank>(size_t{0}));
   for (const auto& current_storage_index : collapsed_to_storage) {
     storage_to_tensor[current_storage_index] = canonicalize_tensor_index(
-        tensor_index, make_cpp17_array_from_list<Symm>());
+        tensor_index, make_cpp20_array_from_list<Symm>());
     increment_tensor_index(tensor_index, index_dimensions);
   }
   return storage_to_tensor;
@@ -205,19 +205,19 @@ compute_storage_to_tensor(
 
 template <typename Symm, size_t NumIndComps, size_t NumComps,
           Requires<(tmpl::size<Symm>::value == 0)> = nullptr>
-constexpr cpp17::array<cpp17::array<int, 1>, NumIndComps>
+constexpr cpp20::array<cpp20::array<int, 1>, NumIndComps>
 compute_storage_to_tensor(
-    const cpp17::array<size_t, NumComps>& /*collapsed_to_storage*/,
-    const cpp17::array<size_t, tmpl::size<Symm>::value>&
+    const cpp20::array<size_t, NumComps>& /*collapsed_to_storage*/,
+    const cpp20::array<size_t, tmpl::size<Symm>::value>&
     /*index_dimensions*/) noexcept {
-  return cpp17::array<cpp17::array<int, 1>, 1>{{cpp17::array<int, 1>{{0}}}};
+  return cpp20::array<cpp20::array<int, 1>, 1>{{cpp20::array<int, 1>{{0}}}};
 }
 
 template <size_t NumIndComps, typename T, size_t NumComps>
-constexpr cpp17::array<size_t, NumIndComps> compute_multiplicity(
-    const cpp17::array<T, NumComps>& collapsed_to_storage) {
-  cpp17::array<size_t, NumIndComps> multiplicity =
-      convert_to_cpp17_array(make_array<NumIndComps>(size_t{0}));
+constexpr cpp20::array<size_t, NumIndComps> compute_multiplicity(
+    const cpp20::array<T, NumComps>& collapsed_to_storage) {
+  cpp20::array<size_t, NumIndComps> multiplicity =
+      convert_to_cpp20_array(make_array<NumIndComps>(size_t{0}));
   for (const auto& current_storage_index : collapsed_to_storage) {
     ++multiplicity[current_storage_index];
   }
@@ -350,12 +350,12 @@ struct Structure {
 
   static constexpr auto collapsed_to_storage_ =
       compute_collapsed_to_storage<Symm, number_of_components()>(
-          make_cpp17_array_from_list<tmpl::conditional_t<
+          make_cpp20_array_from_list<tmpl::conditional_t<
               sizeof...(Indices) == 0, size_t, index_list>>());
   static constexpr auto storage_to_tensor_ = compute_storage_to_tensor<Symm,
                                                                        size()>(
       collapsed_to_storage_,
-      make_cpp17_array_from_list<
+      make_cpp20_array_from_list<
           tmpl::conditional_t<sizeof...(Indices) == 0, size_t, index_list>>());
   static constexpr auto multiplicity_ =
       compute_multiplicity<size()>(collapsed_to_storage_);
@@ -434,11 +434,11 @@ struct Structure {
         collapsed_to_storage,
         compute_collapsed_index(
             canonicalize_tensor_index(
-                cpp17::array<size_t, sizeof...(N)>{
+                cpp20::array<size_t, sizeof...(N)>{
                     {static_cast<size_t>(args)...}},
-                make_cpp17_array_from_list<
+                make_cpp20_array_from_list<
                     tmpl::conditional_t<0 != sizeof...(Indices), Symm, int>>()),
-            make_cpp17_array_from_list<tmpl::conditional_t<
+            make_cpp20_array_from_list<tmpl::conditional_t<
                 0 != sizeof...(Indices), index_list, size_t>>()));
   }
   /// Get storage_index
@@ -451,10 +451,10 @@ struct Structure {
         collapsed_to_storage,
         compute_collapsed_index(
             canonicalize_tensor_index(
-                convert_to_cpp17_array(tensor_index),
-                make_cpp17_array_from_list<
+                convert_to_cpp20_array(tensor_index),
+                make_cpp20_array_from_list<
                     tmpl::conditional_t<0 != sizeof...(Indices), Symm, int>>()),
-            make_cpp17_array_from_list<tmpl::conditional_t<
+            make_cpp20_array_from_list<tmpl::conditional_t<
                 0 != sizeof...(Indices), index_list, size_t>>()));
   }
 
@@ -466,9 +466,9 @@ struct Structure {
     constexpr std::size_t storage_index =
         collapsed_to_storage_[compute_collapsed_index(
             canonicalize_tensor_index(
-                cpp17::array<size_t, sizeof...(N)>{{N...}},
-                make_cpp17_array_from_list<Symm>()),
-            make_cpp17_array_from_list<index_list>())];
+                cpp20::array<size_t, sizeof...(N)>{{N...}},
+                make_cpp20_array_from_list<Symm>()),
+            make_cpp20_array_from_list<index_list>())];
     return storage_index;
   }
 

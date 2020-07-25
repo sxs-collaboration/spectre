@@ -4,11 +4,11 @@
 #include "DataStructures/LeviCivitaIterator.hpp"
 
 template <size_t Dim>
-constexpr cpp17::array<cpp17::array<size_t, Dim>, factorial(Dim)>
+constexpr cpp20::array<cpp20::array<size_t, Dim>, factorial(Dim)>
     LeviCivitaIterator<Dim>::indexes_;
 
 template <size_t Dim>
-constexpr cpp17::array<int, factorial(Dim)> LeviCivitaIterator<Dim>::signs_;
+constexpr cpp20::array<int, factorial(Dim)> LeviCivitaIterator<Dim>::signs_;
 
 // We don't expect to use the Dim==0 case, so only instantiate Dim==1,2,3,4
 template class LeviCivitaIterator<1>;
