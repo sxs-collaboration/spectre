@@ -23,6 +23,13 @@ constexpr std::array<T, Size> convert_to_array(
 }
 }  // namespace detail
 
+/// \brief A `std::array` implementation with partial C++20 support
+///
+/// \warning This is not a standard-compliant C++20 `std::array` implementation.
+/// We provide this implementation because we need the `constexpr operator==`
+/// from C++20. Note that other C++20 changes, such as the replacement of the
+/// other comparison operators in favor of `operator<=>`, are not implemented.
+/// This class can be removed when we support C++20.
 template <typename T, size_t Size>
 struct array {
   using value_type = T;
