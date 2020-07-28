@@ -163,8 +163,6 @@ void test_divergence() noexcept {
   using TensorTag = Flux1<1, Frame::Inertial>;
   using VariablesTag = Tags::Variables<tmpl::list<TensorTag>>;
   TestHelpers::db::test_prefix_tag<Tags::div<TensorTag>>("div(Flux1)");
-  TestHelpers::db::test_prefix_tag<Tags::div<VariablesTag>>(
-      "div(Variables(Flux1))");
 
   const size_t n0 =
       Spectral::maximum_number_of_points<Spectral::Basis::Legendre> / 2;
@@ -222,7 +220,7 @@ void test_divergence_compute_item_impl(
   using div_tags = db::wrap_tags_in<Tags::div, flux_tags>;
   TestHelpers::db::test_compute_tag<
       Tags::DivVariablesCompute<flux_tag, inv_jac_tag>>(
-      "div(Variables(div(Flux1),div(Flux2)))");
+      "Variables(div(Flux1),div(Flux2))");
   TestHelpers::db::test_compute_tag<
       Tags::DivVectorCompute<Flux1<Dim, Frame>, inv_jac_tag>>("div(Flux1)");
 
@@ -250,8 +248,7 @@ void test_divergence_compute_item_impl(
                      Tags::DivVectorCompute<Flux1<Dim, Frame>, inv_jac_tag>>>(
           mesh, fluxes, coordinate_map);
 
-  const auto& div_fluxes =
-      db::get<Tags::div<Tags::Variables<div_tags>>>(box);
+  const auto& div_fluxes = db::get<Tags::Variables<div_tags>>(box);
 
   CHECK(div_fluxes.size() == expected_div_fluxes.size());
   for (size_t n = 0; n < div_fluxes.size(); ++n) {

@@ -121,8 +121,7 @@ struct Gmres {
    * - `operator_tag` =
    * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>`
    * - `orthogonalization_iteration_id_tag` =
-   * `db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-   * LinearSolver::Tags::IterationId>`
+   * `LinearSolver::Tags::Orthogonalization<LinearSolver::Tags::IterationId>`
    * - `basis_history_tag` =
    * `LinearSolver::Tags::KrylovSubspaceBasis<FieldsTag>`
    *
@@ -164,8 +163,7 @@ struct Gmres {
    * - `operand_tag` =
    * `db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>`
    * - `orthogonalization_iteration_id_tag` =
-   * `db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-   * LinearSolver::Tags::IterationId>`
+   * `LinearSolver::Tags::Orthogonalization<LinearSolver::Tags::IterationId>`
    * - `basis_history_tag` =
    * `LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>`
    *
@@ -213,8 +211,7 @@ struct Gmres {
    * - `operand_tag` =
    * `db::add_tag_prefix<LinearSolver::Tags::Operand, FieldsTag>`
    * - `orthogonalization_iteration_id_tag` =
-   * `db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-   * LinearSolver::Tags::IterationId>`
+   * LinearSolver::Tags::Orthogonalization<LinearSolver::Tags::IterationId>`
    * - `basis_history_tag` =
    * `LinearSolver::Tags::KrylovSubspaceBasis<FieldsTag>`
    *

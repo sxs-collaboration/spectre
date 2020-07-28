@@ -4,7 +4,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservative.hpp"
 
 #include <boost/none.hpp>
-#include <boost/optional/optional.hpp>
+#include <boost/optional.hpp>
 #include <iomanip>
 #include <limits>
 #include <ostream>

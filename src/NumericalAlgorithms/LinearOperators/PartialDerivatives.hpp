@@ -41,8 +41,7 @@ namespace Tags {
  * \ingroup DataBoxTagsGroup
  * \brief Prefix indicating spatial derivatives
  *
- * Prefix indicating the spatial derivatives of a Tensor or that a Variables
- * contains spatial derivatives of Tensors.
+ * Prefix indicating the spatial derivatives of a Tensor.
  *
  * \tparam Tag The tag to wrap
  * \tparam Dim The volume dim as a type (e.g. `tmpl::size_t<Dim>`)
@@ -59,13 +58,6 @@ struct deriv<Tag, Dim, Frame, Requires<tt::is_a_v<Tensor, typename Tag::type>>>
   using type =
       TensorMetafunctions::prepend_spatial_index<typename Tag::type, Dim::value,
                                                  UpLo::Lo, Frame>;
-  using tag = Tag;
-};
-template <typename Tag, typename Dim, typename Frame>
-struct deriv<Tag, Dim, Frame,
-             Requires<tt::is_a_v<::Variables, typename Tag::type>>>
-    : db::PrefixTag, db::SimpleTag {
-  using type = typename Tag::type;
   using tag = Tag;
 };
 
@@ -90,13 +82,6 @@ struct spacetime_deriv<Tag, Dim, Frame,
   using type =
       TensorMetafunctions::prepend_spacetime_index<typename Tag::type,
                                                    Dim::value, UpLo::Lo, Frame>;
-  using tag = Tag;
-};
-template <typename Tag, typename Dim, typename Frame>
-struct spacetime_deriv<Tag, Dim, Frame,
-                       Requires<tt::is_a_v<::Variables, typename Tag::type>>>
-    : db::PrefixTag, db::SimpleTag {
-  using type = typename Tag::type;
   using tag = Tag;
 };
 
@@ -180,14 +165,14 @@ namespace Tags {
  * `DerivTags` template parameter. It takes a `tmpl::list` of the desired
  * tags and defaults to the full `tags_list` of the Variables.
  *
- * This tag may be retrieved via `db::variables_tag_with_tags_list<VariablesTag,
- * DerivTags>` prefixed with `Tags::deriv`.
+ * This tag may be retrieved via `::Tags::Variables<db::wrap_tags_in<deriv,
+ * DerivTags, Dim, deriv_frame>`.
  */
 template <typename VariablesTag, typename InverseJacobianTag,
           typename DerivTags = typename VariablesTag::type::tags_list>
 struct DerivCompute
     : db::add_tag_prefix<
-          deriv, db::variables_tag_with_tags_list<VariablesTag, DerivTags>,
+          deriv, ::Tags::Variables<DerivTags>,
           tmpl::size_t<
               tmpl::back<typename InverseJacobianTag::type::index_list>::dim>,
           typename tmpl::back<
@@ -200,7 +185,7 @@ struct DerivCompute
 
  public:
   using base = db::add_tag_prefix<
-      deriv, db::variables_tag_with_tags_list<VariablesTag, DerivTags>,
+      deriv, ::Tags::Variables<DerivTags>,
       tmpl::size_t<
           tmpl::back<typename InverseJacobianTag::type::index_list>::dim>,
       typename tmpl::back<

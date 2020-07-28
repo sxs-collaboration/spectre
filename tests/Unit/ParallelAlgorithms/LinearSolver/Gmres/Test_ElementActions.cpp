@@ -10,7 +10,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DenseVector.hpp"
@@ -37,20 +36,18 @@ struct VectorTag : db::SimpleTag {
 
 using fields_tag = VectorTag;
 using operator_applied_to_fields_tag =
-    db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
-using initial_fields_tag =
-    db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
-using operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
+    LinearSolver::Tags::OperatorAppliedTo<fields_tag>;
+using initial_fields_tag = LinearSolver::Tags::Initial<fields_tag>;
+using operand_tag = LinearSolver::Tags::Operand<fields_tag>;
 using preconditioned_operand_tag =
-    db::add_tag_prefix<LinearSolver::Tags::Preconditioned, operand_tag>;
+    LinearSolver::Tags::Preconditioned<operand_tag>;
 using operator_applied_to_operand_tag =
-    db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
+    LinearSolver::Tags::OperatorAppliedTo<operand_tag>;
 using operator_applied_to_preconditioned_operand_tag =
-    db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
-                       preconditioned_operand_tag>;
+    LinearSolver::Tags::OperatorAppliedTo<preconditioned_operand_tag>;
 using orthogonalization_iteration_id_tag =
-    db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-                       LinearSolver::Tags::IterationId<DummyOptionsGroup>>;
+    LinearSolver::Tags::Orthogonalization<
+        LinearSolver::Tags::IterationId<DummyOptionsGroup>>;
 using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<operand_tag>;
 using preconditioned_basis_history_tag =
     LinearSolver::Tags::KrylovSubspaceBasis<preconditioned_operand_tag>;

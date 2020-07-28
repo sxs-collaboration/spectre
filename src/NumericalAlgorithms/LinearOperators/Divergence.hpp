@@ -38,8 +38,7 @@ namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating the divergence
 ///
-/// Prefix indicating the divergence of a Tensor or that a Variables
-/// contains divergences of Tensors.
+/// Prefix indicating the divergence of a Tensor.
 ///
 /// \see Tags::DivVectorCompute Tags::DivVariablesCompute
 template <typename Tag, typename = std::nullptr_t>
@@ -51,13 +50,6 @@ struct div<Tag, Requires<tt::is_a_v<Tensor, typename Tag::type>>>
     : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
   using type = TensorMetafunctions::remove_first_index<typename Tag::type>;
-};
-
-template <typename Tag>
-struct div<Tag, Requires<tt::is_a_v<::Variables, typename Tag::type>>>
-    : db::PrefixTag, db::SimpleTag {
-  using tag = Tag;
-  using type = typename Tag::type;
 };
 /// \endcond
 }  // namespace Tags
@@ -150,7 +142,7 @@ struct DivVariablesCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
 ///
 /// This tag inherits from `db::add_tag_prefix<Tags::div, Tag>`.
 template <typename Tag, typename InverseJacobianTag>
-struct DivVectorCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
+struct DivVectorCompute : div<Tag>, db::ComputeTag {
  private:
   using inv_jac_indices = typename InverseJacobianTag::type::index_list;
   static constexpr auto dim = tmpl::back<inv_jac_indices>::dim;
@@ -159,7 +151,7 @@ struct DivVectorCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
                 "Must map from the logical frame.");
 
  public:
-  using base = db::add_tag_prefix<div, Tag>;
+  using base = div<Tag>;
   using return_type = typename base::type;
   static constexpr void (*function)(const gsl::not_null<return_type*>,
                                     const typename Tag::type&, const Mesh<dim>&,

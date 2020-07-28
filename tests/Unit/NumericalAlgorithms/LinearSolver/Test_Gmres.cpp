@@ -25,6 +25,7 @@ struct ScalarField : db::SimpleTag {
 template <typename Tag>
 struct SomePrefix : db::PrefixTag {
   using type = tmpl::type_from<Tag>;
+  using tag = Tag;
 };
 }  // namespace
 

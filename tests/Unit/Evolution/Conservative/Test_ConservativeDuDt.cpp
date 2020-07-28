@@ -220,10 +220,9 @@ template <dg::Formulation DgFormulation, size_t Dim>
 void test(
     const Mesh<Dim>& mesh,
     std::array<std::unique_ptr<MathFunction<1>>, Dim> functions) noexcept {
-  using flux_tags = tmpl::list<
-      db::add_tag_prefix<Tags::Flux, Var1, tmpl::size_t<Dim>, Frame::Inertial>,
-      db::add_tag_prefix<Tags::Flux, Var2<Dim>, tmpl::size_t<Dim>,
-                         Frame::Inertial>>;
+  using flux_tags =
+      tmpl::list<Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>,
+                 Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
   using Flux1 = tmpl::at_c<flux_tags, 0>;
   using Flux2 = tmpl::at_c<flux_tags, 1>;
 

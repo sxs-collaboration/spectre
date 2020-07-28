@@ -58,9 +58,8 @@ template <size_t Dim>
 struct ComputeDuDt {
  public:
   template <template <class> class StepPrefix>
-  using return_tags = tmpl::list<db::add_tag_prefix<StepPrefix, Pi>,
-                                 db::add_tag_prefix<StepPrefix, Phi<Dim>>,
-                                 db::add_tag_prefix<StepPrefix, Psi>>;
+  using return_tags =
+      tmpl::list<StepPrefix<Pi>, StepPrefix<Phi<Dim>>, StepPrefix<Psi>>;
 
   using argument_tags = tmpl::list<
       Pi, Phi<Dim>, ::Tags::deriv<Psi, tmpl::size_t<Dim>, Frame::Inertial>,

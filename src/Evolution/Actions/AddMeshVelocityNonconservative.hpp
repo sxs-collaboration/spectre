@@ -74,11 +74,10 @@ struct AddMeshVelocityNonconservative {
       tmpl::for_each<variables_tags>([&box, &mesh_velocity](
                                          auto variables_tag_v) noexcept {
         using variable_tag = typename decltype(variables_tag_v)::type;
-        using dt_variable_tag = db::add_tag_prefix<::Tags::dt, variable_tag>;
+        using dt_variable_tag = ::Tags::dt<variable_tag>;
         using deriv_tag =
-            db::add_tag_prefix<::Tags::deriv, variable_tag,
-                               tmpl::size_t<Metavariables::volume_dim>,
-                               Frame::Inertial>;
+            ::Tags::deriv<variable_tag, tmpl::size_t<Metavariables::volume_dim>,
+                          Frame::Inertial>;
 
         db::mutate<dt_variable_tag>(
             make_not_null(&box),

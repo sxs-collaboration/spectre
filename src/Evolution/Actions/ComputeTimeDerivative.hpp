@@ -32,20 +32,11 @@ namespace Actions {
  * \ingroup DiscontinuousGalerkinGroup
  * \brief Compute the time derivative of the system variables
  *
- * The `system::compute_time_derivative` operator is invoked with its
- * `argument_tags`. The result of this computation is stored in
- * `db::add_tag_prefix<step_prefix, variables_tag>`, where `step_prefix` is
- * retrieved from the `Metavariables::temporal_id`. For evolution systems this
- * prefix is generally `Tags::dt`.
- *
  * Uses:
  * - Metavariables:
  *   - `temporal_id::step_prefix`
- * - System:
- *   - `variables_tag`
  * - DataBox:
- *   - db::add_tag_prefix<step_prefix, variables_tag>
- *   - All elements in `compute_time_derivative::argument_tags`
+ *   - `TimeDerivativeComputer::argument_tags<step_prefix>`
  *
  * DataBox changes:
  * - Modifies:

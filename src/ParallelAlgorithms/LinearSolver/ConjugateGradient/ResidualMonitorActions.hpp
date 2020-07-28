@@ -42,14 +42,12 @@ template <typename FieldsTag, typename OptionsGroup, typename BroadcastTarget>
 struct InitializeResidual {
  private:
   using fields_tag = FieldsTag;
-  using residual_square_tag = db::add_tag_prefix<
-      LinearSolver::Tags::MagnitudeSquare,
+  using residual_square_tag = LinearSolver::Tags::MagnitudeSquare<
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-  using residual_magnitude_tag = db::add_tag_prefix<
-      LinearSolver::Tags::Magnitude,
+  using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
   using initial_residual_magnitude_tag =
-      db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
+      LinearSolver::Tags::Initial<residual_magnitude_tag>;
 
  public:
   template <typename ParallelComponent, typename DbTagsList,
@@ -115,8 +113,7 @@ template <typename FieldsTag, typename OptionsGroup, typename BroadcastTarget>
 struct ComputeAlpha {
  private:
   using fields_tag = FieldsTag;
-  using residual_square_tag = db::add_tag_prefix<
-      LinearSolver::Tags::MagnitudeSquare,
+  using residual_square_tag = LinearSolver::Tags::MagnitudeSquare<
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
 
  public:
@@ -139,11 +136,9 @@ template <typename FieldsTag, typename OptionsGroup, typename BroadcastTarget>
 struct UpdateResidual {
  private:
   using fields_tag = FieldsTag;
-  using residual_square_tag = db::add_tag_prefix<
-      LinearSolver::Tags::MagnitudeSquare,
+  using residual_square_tag = LinearSolver::Tags::MagnitudeSquare<
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-  using residual_magnitude_tag = db::add_tag_prefix<
-      LinearSolver::Tags::Magnitude,
+  using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
 
  public:

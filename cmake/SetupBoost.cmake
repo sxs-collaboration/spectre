@@ -18,22 +18,40 @@ file(APPEND
 add_interface_lib_headers(
   TARGET Boost::boost
   HEADERS
+  boost/algorithm/string.hpp
   boost/config.hpp
   boost/core/demangle.hpp
   boost/functional/hash.hpp
   boost/integer/common_factor_rt.hpp
+  boost/iterator/transform_iterator.hpp
+  boost/iterator/zip_iterator.hpp
   boost/make_shared.hpp
+  boost/math/interpolators/barycentric_rational.hpp
+  boost/math/special_functions/binomial.hpp
+  boost/math/tools/roots.hpp
   boost/multi_array.hpp
+  boost/multi_array/base.hpp
+  boost/multi_array/extent_gen.hpp
   boost/none.hpp
+  boost/numeric/odeint.hpp
+  boost/numeric/odeint/integrate/integrate_adaptive.hpp>
+  boost/numeric/odeint/stepper/controlled_runge_kutta.hpp
+  boost/numeric/odeint/stepper/dense_output_runge_kutta.hpp
+  boost/numeric/odeint/stepper/generation/make_dense_output.hpp
+  boost/numeric/odeint/stepper/runge_kutta_dopri5.hpp
   boost/optional.hpp
   boost/parameter/name.hpp
+  boost/preprocessor.hpp
+  boost/preprocessor/arithmetic/dec.hpp
   boost/preprocessor/arithmetic/inc.hpp
+  boost/preprocessor/arithmetic/sub.hpp
   boost/preprocessor/control/expr_iif.hpp
   boost/preprocessor/control/iif.hpp
   boost/preprocessor/control/while.hpp
   boost/preprocessor/list/adt.hpp
   boost/preprocessor/list/fold_left.hpp
   boost/preprocessor/list/fold_right.hpp
+  boost/preprocessor/list/for_each.hpp
   boost/preprocessor/list/for_each_product.hpp
   boost/preprocessor/list/size.hpp
   boost/preprocessor/list/to_tuple.hpp
@@ -41,8 +59,11 @@ add_interface_lib_headers(
   boost/preprocessor/logical/bitand.hpp
   boost/preprocessor/logical/bool.hpp
   boost/preprocessor/logical/compl.hpp
+  boost/preprocessor/punctuation/comma_if.hpp
   boost/preprocessor/repetition/for.hpp
+  boost/preprocessor/repetition/repeat.hpp
   boost/preprocessor/tuple/elem.hpp
+  boost/preprocessor/tuple/enum.hpp
   boost/preprocessor/tuple/reverse.hpp
   boost/preprocessor/tuple/size.hpp
   boost/preprocessor/tuple/to_list.hpp
@@ -51,7 +72,10 @@ add_interface_lib_headers(
   boost/range/combine.hpp
   boost/shared_ptr.hpp
   boost/tuple/tuple.hpp
+  boost/tuple/tuple_comparison.hpp
   boost/variant.hpp
+  boost/variant/get.hpp
+  boost/variant/variant.hpp
   )
 
 set_property(

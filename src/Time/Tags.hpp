@@ -89,11 +89,18 @@ struct HistoryEvolvedVariables;
 template <>
 struct HistoryEvolvedVariables<> : db::BaseTag {};
 
+template <typename TagsList>
+struct HistoryEvolvedVariables<::Tags::Variables<TagsList>>
+    : HistoryEvolvedVariables<>, db::SimpleTag {
+  using type =
+      TimeSteppers::History<::Variables<TagsList>,
+                            ::Variables<db::wrap_tags_in<Tags::dt, TagsList>>>;
+};
+
 template <typename Tag>
 struct HistoryEvolvedVariables : HistoryEvolvedVariables<>, db::SimpleTag {
   using type =
-      TimeSteppers::History<typename Tag::type,
-                            typename db::add_tag_prefix<Tags::dt, Tag>::type>;
+      TimeSteppers::History<typename Tag::type, typename Tags::dt<Tag>::type>;
 };
 /// \endcond
 

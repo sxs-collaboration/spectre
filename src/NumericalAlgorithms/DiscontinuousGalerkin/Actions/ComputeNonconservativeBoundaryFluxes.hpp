@@ -40,8 +40,8 @@ namespace Actions {
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies:
-///   - `Tags::Interface<
-///   DirectionsTag, db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>>`
+///   - Tags::Interface<
+///   DirectionsTag, db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>>
 template <typename DirectionsTag>
 struct ComputeNonconservativeBoundaryFluxes {
  private:

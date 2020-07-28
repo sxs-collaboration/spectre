@@ -162,11 +162,9 @@ struct Magnitude : db::PrefixTag, db::SimpleTag {
  */
 template <typename MagnitudeSquareTag,
           Requires<tt::is_a_v<MagnitudeSquare, MagnitudeSquareTag>> = nullptr>
-struct MagnitudeCompute
-    : db::add_tag_prefix<Magnitude, db::remove_tag_prefix<MagnitudeSquareTag>>,
-      db::ComputeTag {
-  using base =
-      db::add_tag_prefix<Magnitude, db::remove_tag_prefix<MagnitudeSquareTag>>;
+struct MagnitudeCompute : Magnitude<typename MagnitudeSquareTag::tag>,
+                          db::ComputeTag {
+  using base = Magnitude<typename MagnitudeSquareTag::tag>;
   using return_type = double;
   static void function(const gsl::not_null<double*> magnitude,
                        const double magnitude_square) noexcept {
@@ -248,11 +246,10 @@ template <typename FieldsTag, typename OptionsGroup>
 struct HasConvergedCompute : LinearSolver::Tags::HasConverged<OptionsGroup>,
                              db::ComputeTag {
  private:
-  using residual_magnitude_tag = db::add_tag_prefix<
-      LinearSolver::Tags::Magnitude,
+  using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
       db::add_tag_prefix<LinearSolver::Tags::Residual, FieldsTag>>;
   using initial_residual_magnitude_tag =
-      db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
+      LinearSolver::Tags::Initial<residual_magnitude_tag>;
 
  public:
   using base = LinearSolver::Tags::HasConverged<OptionsGroup>;

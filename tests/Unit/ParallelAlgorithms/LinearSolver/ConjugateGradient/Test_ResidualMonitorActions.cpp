@@ -13,7 +13,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DenseVector.hpp"
@@ -59,14 +58,10 @@ struct VectorTag : db::SimpleTag {
 };
 
 using fields_tag = VectorTag;
-using residual_square_tag = db::add_tag_prefix<
-    LinearSolver::Tags::MagnitudeSquare,
-    db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-using initial_residual_magnitude_tag = db::add_tag_prefix<
-    LinearSolver::Tags::Initial,
-    db::add_tag_prefix<
-        LinearSolver::Tags::Magnitude,
-        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>>;
+using residual_square_tag = LinearSolver::Tags::MagnitudeSquare<
+    LinearSolver::Tags::Residual<fields_tag>>;
+using initial_residual_magnitude_tag = LinearSolver::Tags::Initial<
+    LinearSolver::Tags::Magnitude<LinearSolver::Tags::Residual<fields_tag>>>;
 
 struct CheckValueTag : db::SimpleTag {
   using type = double;

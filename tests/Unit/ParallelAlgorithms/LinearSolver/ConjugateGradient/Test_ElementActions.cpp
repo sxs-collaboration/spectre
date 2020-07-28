@@ -35,10 +35,10 @@ struct VectorTag : db::SimpleTag {
 
 using fields_tag = VectorTag;
 using operator_applied_to_fields_tag =
-    db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
+    LinearSolver::Tags::OperatorAppliedTo<fields_tag>;
 using operand_tag = LinearSolver::Tags::Operand<fields_tag>;
 using operator_applied_to_operand_tag =
-    db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
+    LinearSolver::Tags::OperatorAppliedTo<operand_tag>;
 using residual_tag = LinearSolver::Tags::Residual<fields_tag>;
 
 template <typename Metavariables>

@@ -32,7 +32,7 @@ struct var_tag : db::SimpleTag {
 
 struct ComputeDuDt {
   template <template <class> class StepPrefix>
-  using return_tags = db::split_tag<db::add_tag_prefix<StepPrefix, var_tag>>;
+  using return_tags = tmpl::list<StepPrefix<var_tag>>;
   using argument_tags = tmpl::list<var_tag>;
   static void apply(const gsl::not_null<int*> dt_var, const int& var) {
     *dt_var = var * 2;

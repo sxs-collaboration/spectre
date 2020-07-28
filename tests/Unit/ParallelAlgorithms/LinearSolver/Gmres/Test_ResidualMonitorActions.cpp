@@ -13,7 +13,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DenseMatrix.hpp"
@@ -66,15 +65,13 @@ struct VectorTag : db::SimpleTag {
 constexpr bool preconditioned = true;
 
 using fields_tag = VectorTag;
-using residual_magnitude_tag = db::add_tag_prefix<
-    LinearSolver::Tags::Magnitude,
-    db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
+using residual_magnitude_tag =
+    LinearSolver::Tags::Magnitude<LinearSolver::Tags::Residual<fields_tag>>;
 using orthogonalization_iteration_id_tag =
-    db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-                       LinearSolver::Tags::IterationId<TestLinearSolver>>;
+    LinearSolver::Tags::Orthogonalization<
+        LinearSolver::Tags::IterationId<TestLinearSolver>>;
 using orthogonalization_history_tag =
-    db::add_tag_prefix<LinearSolver::Tags::OrthogonalizationHistory,
-                       fields_tag>;
+    LinearSolver::Tags::OrthogonalizationHistory<fields_tag>;
 
 struct CheckValueTag : db::SimpleTag {
   using type = double;

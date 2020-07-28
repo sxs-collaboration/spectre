@@ -209,8 +209,8 @@ struct PerformStep {
         std::conditional_t<Preconditioned, preconditioned_operand_tag,
                            operand_tag>>;
     using orthogonalization_iteration_id_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-                           LinearSolver::Tags::IterationId<OptionsGroup>>;
+        LinearSolver::Tags::Orthogonalization<
+            LinearSolver::Tags::IterationId<OptionsGroup>>;
     using basis_history_tag =
         LinearSolver::Tags::KrylovSubspaceBasis<operand_tag>;
 
@@ -260,8 +260,8 @@ struct OrthogonalizeOperand {
   using operand_tag =
       db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
   using orthogonalization_iteration_id_tag =
-      db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-                         LinearSolver::Tags::IterationId<OptionsGroup>>;
+      LinearSolver::Tags::Orthogonalization<
+          LinearSolver::Tags::IterationId<OptionsGroup>>;
   using basis_history_tag =
       LinearSolver::Tags::KrylovSubspaceBasis<operand_tag>;
 

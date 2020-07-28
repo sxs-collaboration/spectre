@@ -56,7 +56,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
 
   TestHelpers::db::test_compute_tag<evolution::Tags::AnalyticCompute<
       1, AnalyticSolutionTag, tmpl::list<FieldTag>>>(
-      "Analytic(Variables(Analytic(FieldTag)))");
+      "Variables(Analytic(FieldTag))");
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags.Errors",

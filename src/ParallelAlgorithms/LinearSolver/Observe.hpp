@@ -44,8 +44,8 @@ struct Registration {
  * \brief Contributes data from the residual monitor to the reduction observer
  *
  * With:
- * - `residual_magnitude_tag` = `db::add_tag_prefix<
- * LinearSolver::Tags::Magnitude, db::add_tag_prefix<
+ * - `residual_magnitude_tag` = `
+ * LinearSolver::Tags::Magnitude<db::add_tag_prefix<
  * LinearSolver::Tags::Residual, fields_tag>>`
  *
  * Uses:
@@ -61,8 +61,7 @@ void contribute_to_reduction_observer(
     db::DataBox<DbTagsList>& box,
     Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
   using fields_tag = FieldsTag;
-  using residual_magnitude_tag = db::add_tag_prefix<
-      LinearSolver::Tags::Magnitude,
+  using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
 
   const auto observation_id = observers::ObservationId(

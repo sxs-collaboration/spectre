@@ -79,7 +79,7 @@ struct FirstOrderScheme {
   // We need the `VariablesTag` as an explicit template parameter only because
   // it may be prefixed.
   static_assert(std::is_same_v<typename NumericalFlux::variables_tags,
-                               db::get_variables_tags_list<variables_tag>>,
+                               typename variables_tag::tags_list>,
                 "The 'VariablesTag' and the 'NumericalFluxComputerTag' must "
                 "have the same list of variables.");
 

@@ -110,21 +110,20 @@ struct ElementArray {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<
-              ActionTesting::InitializeDataBox<tmpl::list<
-                  domain::Tags::Domain<Dim>,
-                  domain::Tags::InitialRefinementLevels<Dim>,
-                  domain::Tags::InitialExtents<Dim>,
-                  db::add_tag_prefix<
-                      ::Tags::FixedSource,
-                      typename Metavariables::system::fields_tag>>>,
-              dg::Actions::InitializeDomain<Dim>,
-              dg::Actions::InitializeInterfaces<
-                  typename Metavariables::system,
-                  dg::Initialization::slice_tags_to_face<>,
-                  dg::Initialization::slice_tags_to_exterior<>,
-                  dg::Initialization::face_compute_tags<>,
-                  dg::Initialization::exterior_compute_tags<>, false>>>,
+          tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<
+                         domain::Tags::Domain<Dim>,
+                         domain::Tags::InitialRefinementLevels<Dim>,
+                         domain::Tags::InitialExtents<Dim>,
+                         db::add_tag_prefix<
+                             ::Tags::FixedSource,
+                             typename Metavariables::system::fields_tag>>>,
+                     dg::Actions::InitializeDomain<Dim>,
+                     dg::Actions::InitializeInterfaces<
+                         typename Metavariables::system,
+                         dg::Initialization::slice_tags_to_face<>,
+                         dg::Initialization::slice_tags_to_exterior<>,
+                         dg::Initialization::face_compute_tags<>,
+                         dg::Initialization::exterior_compute_tags<>, false>>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
