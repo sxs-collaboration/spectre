@@ -40,6 +40,7 @@ using PreventRapidIncrease = StepChoosers::PreventRapidIncrease<>;
 
 struct Metavariables {
   using component_list = tmpl::list<>;
+  enum class Phase { Initialization, Exit };
 };
 
 void check_case(const Frac& expected_frac,

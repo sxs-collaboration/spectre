@@ -10,8 +10,9 @@ module Main {
     entry Main(CkArgMsg* msg);
     entry void allocate_array_components_and_execute_initialization_phase();
     entry void execute_next_phase();
+    entry void request_global_sync_phases(
+        const std::unordered_set<typename Metavariables::Phase>& phase_request);
   }
-
   }
 
 }

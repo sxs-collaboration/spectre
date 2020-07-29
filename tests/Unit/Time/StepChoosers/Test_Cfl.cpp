@@ -50,6 +50,7 @@ struct Metavariables {
       static double apply(const double speed) noexcept { return speed; }
     };
   };
+  enum class Phase { Initialization, Exit };
 };
 
 double get_suggestion(const size_t stepper_order, const double safety_factor,

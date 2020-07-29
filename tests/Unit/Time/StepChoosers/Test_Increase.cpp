@@ -22,6 +22,7 @@
 namespace {
 struct Metavariables {
   using component_list = tmpl::list<>;
+  enum class Phase { Initialization, Exit };
 };
 }  // namespace
 

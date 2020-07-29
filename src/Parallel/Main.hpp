@@ -66,8 +66,14 @@ class Main : public CBase_Main<Metavariables> {
   /// initialization phase on each component
   void allocate_array_components_and_execute_initialization_phase() noexcept;
 
-  /// Determine the next phase of the simulation and execute it.
+  /// Determine the next phase of the simulation and execute it. The earliest
+  /// next requested phase will be run.
   void execute_next_phase() noexcept;
+
+  /// Request a collection of phases to execute after the next global sync
+  void request_global_sync_phases(
+      const std::unordered_set<typename Metavariables::Phase>&
+          phase_requests) noexcept;
 
  private:
   template <typename ParallelComponent>
@@ -93,6 +99,10 @@ class Main : public CBase_Main<Metavariables> {
   // the chares are created.  It is a member variable because passing
   // local state through charm callbacks is painful.
   tuples::tagged_tuple_from_typelist<option_list> options_{};
+  std::set<typename Metavariables::Phase> requested_global_sync_phases_;
+  std::optional<typename Metavariables::Phase>
+      phase_to_resume_after_sync_phases_;
+  std::optional<typename Metavariables::Phase> return_phase_;
 };
 
 // ================================================================
@@ -393,8 +403,21 @@ void Main<Metavariables>::
 
 template <typename Metavariables>
 void Main<Metavariables>::execute_next_phase() noexcept {
-  current_phase_ = Metavariables::determine_next_phase(
-      current_phase_, global_cache_proxy_);
+  if (not phase_to_resume_after_sync_phases_.has_value()) {
+    current_phase_ = Metavariables::determine_next_phase(
+        current_phase_, global_cache_proxy_);
+  } else {
+    if (requested_global_sync_phases_.size() == 0) {
+      current_phase_ = *phase_to_resume_after_sync_phases_;
+      phase_to_resume_after_sync_phases_ = std::nullopt;
+    } else {
+      // when selecting a next phase, we prioritize those that appear earlier in
+      // the enum specification (lower values when treated as integers).
+      current_phase_ = *(requested_global_sync_phases_.begin());
+      requested_global_sync_phases_.erase(
+          requested_global_sync_phases_.begin());
+    }
+  }
   if (Metavariables::Phase::Exit == current_phase_) {
     Informer::print_exit_info();
     sys::exit();
@@ -405,6 +428,15 @@ void Main<Metavariables>::execute_next_phase() noexcept {
   });
   CkStartQD(CkCallback(CkIndex_Main<Metavariables>::execute_next_phase(),
                        this->thisProxy));
+}
+
+template <typename Metavariables>
+void Main<Metavariables>::request_global_sync_phases(
+    const std::unordered_set<typename Metavariables::Phase>&
+        phase_requests) noexcept {
+  requested_global_sync_phases_.insert(phase_requests.begin(),
+                                       phase_requests.end());
+  phase_to_resume_after_sync_phases_ = current_phase_;
 }
 
 }  // namespace Parallel

@@ -33,6 +33,7 @@ namespace {
 struct Metavars {
   using const_global_cache_tags =
       tmpl::list<Tags::IntegerList, Tags::UniquePtrIntegerList>;
+  enum class Phase { Initialization, Exit };
   using component_list = tmpl::list<>;
 };
 }  // namespace
