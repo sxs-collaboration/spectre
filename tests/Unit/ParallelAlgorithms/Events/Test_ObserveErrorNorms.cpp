@@ -51,11 +51,9 @@ template <typename Metavariables>
 class ConstGlobalCache;
 }  // namespace Parallel
 // IWYU pragma: no_forward_declare db::DataBox
-namespace observers {
-namespace Actions {
+namespace observers::Actions {
 struct ContributeReductionData;
-}  // namespace Actions
-}  // namespace observers
+}  // namespace observers::Actions
 
 namespace {
 
@@ -157,9 +155,9 @@ struct ScalarSystem {
       check_tensor("Error(Scalar)", ScalarVar{});
     }
 
-    tuples::tagged_tuple_from_typelist<vars_for_test> variables(
+    static tuples::tagged_tuple_from_typelist<vars_for_test> variables(
         const tnsr::I<DataVector, 1>& x, const double t,
-        const vars_for_test /*meta*/) const noexcept {
+        const vars_for_test /*meta*/) noexcept {
       return {Scalar<DataVector>{1.0 - t * get<0>(x)}};
     }
 
@@ -197,9 +195,9 @@ struct ComplicatedSystem {
       check_tensor("Error(Tensor2)", TensorVar2{});
     }
 
-    tuples::tagged_tuple_from_typelist<vars_for_test> variables(
+    static tuples::tagged_tuple_from_typelist<vars_for_test> variables(
         const tnsr::I<DataVector, 2>& x, const double t,
-        const vars_for_test /*meta*/) const noexcept {
+        const vars_for_test /*meta*/) noexcept {
       auto vector = make_with_value<tnsr::I<DataVector, 2>>(x, 0.0);
       auto tensor = make_with_value<tnsr::ii<DataVector, 2>>(x, 0.0);
       // Arbitrary functions

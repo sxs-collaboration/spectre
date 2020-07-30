@@ -44,8 +44,10 @@ void test_variables_slice() noexcept {
     vars.data()[s] = s;  // NOLINT
   }
   Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
-      expected_vars_sliced_in_x(y_extents * z_extents, 0.),
-      expected_vars_sliced_in_y(x_extents * z_extents, 0.),
+      expected_vars_sliced_in_x(y_extents * z_extents, 0.);
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
+      expected_vars_sliced_in_y(x_extents * z_extents, 0.);
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
       expected_vars_sliced_in_z(x_extents * y_extents, 0.);
   const size_t x_offset = sdist(gen) % x_extents;
   const size_t y_offset = sdist(gen) % y_extents;

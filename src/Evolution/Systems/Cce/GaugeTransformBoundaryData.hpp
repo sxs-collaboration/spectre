@@ -25,7 +25,6 @@ namespace Cce {
 namespace Tags {
 /// \cond
 struct LMax;
-struct NumberOfRadialPoints;
 /// \endcond
 }  // namespace Tags
 

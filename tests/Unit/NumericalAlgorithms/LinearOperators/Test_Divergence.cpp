@@ -161,7 +161,6 @@ void test_divergence_impl(
 
 void test_divergence() noexcept {
   using TensorTag = Flux1<1, Frame::Inertial>;
-  using VariablesTag = Tags::Variables<tmpl::list<TensorTag>>;
   TestHelpers::db::test_prefix_tag<Tags::div<TensorTag>>("div(Flux1)");
 
   const size_t n0 =
