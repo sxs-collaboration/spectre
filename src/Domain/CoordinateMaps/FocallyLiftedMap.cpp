@@ -9,6 +9,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedEndcap.hpp"
+#include "Domain/CoordinateMaps/FocallyLiftedFlatEndcap.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedMapHelpers.hpp"
 #include "Domain/CoordinateMaps/FocallyLiftedSide.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -368,6 +369,7 @@ bool operator==(const FocallyLiftedMap<InnerMap>& lhs,
                            const FocallyLiftedMap<IMAP(data)>& rhs) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (FocallyLiftedInnerMaps::Endcap,
+                                      FocallyLiftedInnerMaps::FlatEndcap,
                                       FocallyLiftedInnerMaps::Side))
 
 #undef INSTANTIATE
@@ -385,10 +387,13 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (FocallyLiftedInnerMaps::Endcap,
   FocallyLiftedMap<IMAP(data)>::inv_jacobian(                                \
       const std::array<DTYPE(data), 3>& source_coords) const noexcept;
 
-GENERATE_INSTANTIATIONS(
-    INSTANTIATE, (FocallyLiftedInnerMaps::Endcap, FocallyLiftedInnerMaps::Side),
-    (double, DataVector, std::reference_wrapper<const double>,
-     std::reference_wrapper<const DataVector>))
+GENERATE_INSTANTIATIONS(INSTANTIATE,
+                        (FocallyLiftedInnerMaps::Endcap,
+                         FocallyLiftedInnerMaps::FlatEndcap,
+                         FocallyLiftedInnerMaps::Side),
+                        (double, DataVector,
+                         std::reference_wrapper<const double>,
+                         std::reference_wrapper<const DataVector>))
 
 #undef INSTANTIATE
 #undef DTYPE
