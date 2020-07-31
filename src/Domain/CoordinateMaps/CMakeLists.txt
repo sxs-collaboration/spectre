@@ -11,6 +11,7 @@ spectre_target_sources(
   Affine.cpp
   BulgedCube.cpp
   CylindricalEndcap.cpp
+  CylindricalFlatEndcap.cpp
   CylindricalSide.cpp
   DiscreteRotation.cpp
   EquatorialCompression.cpp
@@ -38,6 +39,7 @@ spectre_target_headers(
   CoordinateMap.tpp
   CoordinateMapHelpers.hpp
   CylindricalEndcap.hpp
+  CylindricalFlatEndcap.hpp
   CylindricalSide.hpp
   DiscreteRotation.hpp
   EquatorialCompression.hpp
