@@ -18,6 +18,7 @@ spectre_target_sources(
   Equiangular.cpp
   FocallyLiftedEndcap.cpp
   FocallyLiftedFlatEndcap.cpp
+  FocallyLiftedFlatSide.cpp
   FocallyLiftedMap.cpp
   FocallyLiftedMapHelpers.cpp
   FocallyLiftedSide.cpp
@@ -46,6 +47,7 @@ spectre_target_headers(
   Equiangular.hpp
   FocallyLiftedEndcap.hpp
   FocallyLiftedFlatEndcap.hpp
+  FocallyLiftedFlatSide.hpp
   FocallyLiftedMap.hpp
   FocallyLiftedMapHelpers.hpp
   FocallyLiftedSide.hpp
