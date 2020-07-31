@@ -41,11 +41,15 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 
 namespace {
-double multiply_by_two(const double value) { return 2.0 * value; }
-std::string append_word(const std::string& text, const double value) {
+void multiply_by_two(const gsl::not_null<double*> result, const double value) {
+  *result = 2.0 * value;
+}
+
+void append_word(const gsl::not_null<std::string*> result,
+                 const std::string& text, const double value) {
   std::stringstream ss;
   ss << value;
-  return text + ss.str();
+  *result = text + ss.str();
 }
 
 namespace test_databox_tags {
@@ -65,38 +69,71 @@ struct Tag3 : db::SimpleTag {
   using type = std::string;
 };
 
+struct Tag4 : db::SimpleTag {
+  using type = double;
+};
+
 /// [databox_compute_item_tag_example]
-struct ComputeTag0 : db::ComputeTag {
-  static std::string name() noexcept { return "ComputeTag0"; }
+struct Tag4Compute : Tag4, db::ComputeTag {
+  using base = Tag4;
+  using return_type = double;
   static constexpr auto function = multiply_by_two;
   using argument_tags = tmpl::list<Tag0>;
 };
 
-/// [databox_compute_item_tag_example]
-struct ComputeTag1 : db::ComputeTag {
-  static std::string name() noexcept { return "ComputeTag1"; }
-  static constexpr auto function = append_word;
-  using argument_tags = tmpl::list<Tag2, ComputeTag0>;
+struct Tag5 : db::SimpleTag {
+  using type = std::string;
 };
 
-struct ComputeFromBase : db::ComputeTag {
-  static std::string name() noexcept { return "ComputeFromBase"; }
-  static std::string function(const std::string& s) noexcept { return s; }
+/// [databox_compute_item_tag_example]
+struct Tag5Compute : Tag5, db::ComputeTag {
+  using base = Tag5;
+  using return_type = std::string;
+  static constexpr auto function = append_word;
+  using argument_tags = tmpl::list<Tag2, Tag4>;
+};
+
+struct Tag6 : db::SimpleTag {
+  using type = std::string;
+};
+
+struct Tag6Compute : Tag6, db::ComputeTag {
+  using base = Tag6;
+  using return_type = std::string;
+  static void function(gsl::not_null<std::string*> result,
+                       const std::string& s) noexcept {
+    *result = s;
+  }
   using argument_tags = tmpl::list<Tag2Base>;
 };
 
+struct Lambda0 : db::SimpleTag {
+  using type = double;
+};
+
 /// [compute_item_tag_function]
-struct ComputeLambda0 : db::ComputeTag {
-  static std::string name() noexcept { return "ComputeLambda0"; }
-  static constexpr double function(const double a) { return 3.0 * a; }
+struct Lambda0Compute : Lambda0, db::ComputeTag {
+  using base = Lambda0;
+  using return_type = double;
+  static constexpr void function(const gsl::not_null<double*> result,
+                                 const double a) {
+    *result = 3.0 * a;
+  }
   using argument_tags = tmpl::list<Tag0>;
 };
 /// [compute_item_tag_function]
 
+struct Lambda1 : db::SimpleTag {
+  using type = double;
+};
+
 /// [compute_item_tag_no_tags]
-struct ComputeLambda1 : db::ComputeTag {
-  static std::string name() noexcept { return "ComputeLambda1"; }
-  static constexpr double function() { return 7.0; }
+struct Lambda1Compute : Lambda1, db::ComputeTag {
+  using base = Lambda1;
+  using return_type = double;
+  static constexpr void function(const gsl::not_null<double*> result) {
+    *result = 7.0;
+  }
   using argument_tags = tmpl::list<>;
 };
 /// [compute_item_tag_no_tags]
@@ -118,24 +155,34 @@ struct Pointer : PointerBase, db::SimpleTag {
   using type = std::unique_ptr<int>;
 };
 
-struct PointerComputeItemBase : db::BaseTag {};
+struct PointerToCounterBase : db::BaseTag {};
 
-struct PointerComputeItem : PointerComputeItemBase, db::ComputeTag {
-  static std::string name() noexcept { return "PointerComputeItem"; }
-  static std::unique_ptr<int> function(const int& p) noexcept {
-    return std::make_unique<int>(p + 1);
+struct PointerToCounter : PointerToCounterBase, db::SimpleTag {
+  using type = std::unique_ptr<int>;
+};
+
+struct PointerToCounterCompute : PointerToCounter, db::ComputeTag {
+  using base = PointerToCounter;
+  using return_type = std::unique_ptr<int>;
+  static void function(const gsl::not_null<return_type*> result,
+                       const int& p) noexcept {
+    *result = std::make_unique<int>(p + 1);
   }
   using argument_tags = tmpl::list<Pointer>;
 };
 
-struct PointerComputeItemMutating : db::ComputeTag {
-  static std::string name() noexcept { return "PointerComputeItemMutating"; }
+struct PointerToSum : db::SimpleTag {
+  using type = std::unique_ptr<int>;
+};
+
+struct PointerToSumCompute : PointerToSum, db::ComputeTag {
+  using base = PointerToSum;
   using return_type = std::unique_ptr<int>;
   static void function(const gsl::not_null<return_type*> ret, const int& arg,
                        const int& same_arg) noexcept {
     *ret = std::make_unique<int>(arg + same_arg);
   }
-  using argument_tags = tmpl::list<PointerComputeItem, PointerComputeItemBase>;
+  using argument_tags = tmpl::list<PointerToCounter, PointerToCounterBase>;
 };
 }  // namespace test_databox_tags
 
@@ -148,7 +195,7 @@ static_assert(std::is_same_v<decltype(db::create_from<db::RemoveTags<>>(
 using Box_t = db::DataBox<tmpl::list<
     test_databox_tags::Tag0, test_databox_tags::Tag1, test_databox_tags::Tag2,
     test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
-    test_databox_tags::ComputeTag0, test_databox_tags::ComputeTag1>>;
+    test_databox_tags::Tag4Compute, test_databox_tags::Tag5Compute>>;
 
 static_assert(
     std::is_same<
@@ -157,19 +204,19 @@ static_assert(
         db::DataBox<
             tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag2,
                        test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
-                       test_databox_tags::ComputeTag0,
-                       test_databox_tags::ComputeTag1>>>::value,
+                       test_databox_tags::Tag4Compute,
+                       test_databox_tags::Tag5Compute>>>::value,
     "Failed testing removal of item");
 
 static_assert(
     std::is_same<
-        decltype(db::create_from<
-                 db::RemoveTags<test_databox_tags::ComputeTag1>>(Box_t{})),
+        decltype(
+            db::create_from<db::RemoveTags<test_databox_tags::Tag5>>(Box_t{})),
         db::DataBox<
             tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1,
                        test_databox_tags::Tag2,
                        test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
-                       test_databox_tags::ComputeTag0>>>::value,
+                       test_databox_tags::Tag4Compute>>>::value,
     "Failed testing removal of compute item");
 
 static_assert(std::is_same<decltype(db::create_from<db::RemoveTags<>>(Box_t{})),
@@ -183,10 +230,10 @@ void test_databox() noexcept {
     auto original_box = db::create<
         db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                           test_databox_tags::Tag2>,
-        db::AddComputeTags<test_databox_tags::ComputeTag0,
-                           test_databox_tags::ComputeTag1,
-                           test_databox_tags::ComputeLambda0,
-                           test_databox_tags::ComputeLambda1>>(
+        db::AddComputeTags<test_databox_tags::Tag4Compute,
+                           test_databox_tags::Tag5Compute,
+                           test_databox_tags::Lambda0Compute,
+                           test_databox_tags::Lambda1Compute>>(
         3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
     /// [create_databox]
     return original_box;
@@ -199,10 +246,10 @@ void test_databox() noexcept {
             const db::DataBox<db::DataBox_detail::expand_subitems<
                 tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1,
                            test_databox_tags::Tag2>,
-                tmpl::list<test_databox_tags::ComputeTag0,
-                           test_databox_tags::ComputeTag1,
-                           test_databox_tags::ComputeLambda0,
-                           test_databox_tags::ComputeLambda1>,
+                tmpl::list<test_databox_tags::Tag4Compute,
+                           test_databox_tags::Tag5Compute,
+                           test_databox_tags::Lambda0Compute,
+                           test_databox_tags::Lambda1Compute>,
                 true>>>::value,
         "Failed to create original_box");
 
@@ -211,11 +258,10 @@ void test_databox() noexcept {
     /// [using_db_get]
     CHECK(tag0 == 3.14);
     // Check retrieving chained compute item result
-    CHECK(db::get<test_databox_tags::ComputeTag1>(original_box) ==
+    CHECK(db::get<test_databox_tags::Tag5>(original_box) ==
           "My Sample String6.28"s);
-    CHECK(db::get<test_databox_tags::ComputeLambda0>(original_box) ==
-          3.0 * 3.14);
-    CHECK(db::get<test_databox_tags::ComputeLambda1>(original_box) == 7.0);
+    CHECK(db::get<test_databox_tags::Lambda0>(original_box) == 3.0 * 3.14);
+    CHECK(db::get<test_databox_tags::Lambda1>(original_box) == 7.0);
   }
   // No removal
   {
@@ -223,9 +269,8 @@ void test_databox() noexcept {
     const auto& box =
         db::create_from<db::RemoveTags<>>(std::move(original_box));
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
-    CHECK(db::get<test_databox_tags::ComputeTag1>(box) ==
-          "My Sample String6.28"s);
-    CHECK(db::get<test_databox_tags::ComputeLambda0>(box) == 3.0 * 3.14);
+    CHECK(db::get<test_databox_tags::Tag5>(box) == "My Sample String6.28"s);
+    CHECK(db::get<test_databox_tags::Lambda0>(box) == 3.0 * 3.14);
   }
   {
     /// [create_from_remove]
@@ -234,9 +279,8 @@ void test_databox() noexcept {
         std::move(original_box));
     /// [create_from_remove]
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
-    CHECK(db::get<test_databox_tags::ComputeTag1>(box) ==
-          "My Sample String6.28"s);
-    CHECK(db::get<test_databox_tags::ComputeLambda0>(box) == 3.0 * 3.14);
+    CHECK(db::get<test_databox_tags::Tag5>(box) == "My Sample String6.28"s);
+    CHECK(db::get<test_databox_tags::Lambda0>(box) == 3.0 * 3.14);
   }
   {
     /// [create_from_add_item]
@@ -249,9 +293,8 @@ void test_databox() noexcept {
     CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
-    CHECK(db::get<test_databox_tags::ComputeTag1>(box) ==
-          "My Sample String6.28"s);
-    CHECK(db::get<test_databox_tags::ComputeLambda0>(box) == 3.0 * 3.14);
+    CHECK(db::get<test_databox_tags::Tag5>(box) == "My Sample String6.28"s);
+    CHECK(db::get<test_databox_tags::Lambda0>(box) == 3.0 * 3.14);
   }
   {
     /// [create_from_add_compute_item]
@@ -261,12 +304,12 @@ void test_databox() noexcept {
         3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
     const auto& box =
         db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
-                        db::AddComputeTags<test_databox_tags::ComputeTag0>>(
+                        db::AddComputeTags<test_databox_tags::Tag4Compute>>(
             std::move(simple_box));
     /// [create_from_add_compute_item]
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
-    CHECK(db::get<test_databox_tags::ComputeTag0>(box) == 6.28);
+    CHECK(db::get<test_databox_tags::Tag4>(box) == 6.28);
   }
   {
     auto simple_box = db::create<
@@ -276,12 +319,12 @@ void test_databox() noexcept {
     const auto& box =
         db::create_from<db::RemoveTags<>,
                         db::AddSimpleTags<test_databox_tags::Tag3>,
-                        db::AddComputeTags<test_databox_tags::ComputeTag0>>(
+                        db::AddComputeTags<test_databox_tags::Tag4Compute>>(
             std::move(simple_box), "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
-    CHECK(db::get<test_databox_tags::ComputeTag0>(box) == 6.28);
+    CHECK(db::get<test_databox_tags::Tag4>(box) == 6.28);
   }
   {
     auto simple_box = db::create<
@@ -291,18 +334,18 @@ void test_databox() noexcept {
     const auto& box =
         db::create_from<db::RemoveTags<test_databox_tags::Tag1>,
                         db::AddSimpleTags<test_databox_tags::Tag3>,
-                        db::AddComputeTags<test_databox_tags::ComputeTag0>>(
+                        db::AddComputeTags<test_databox_tags::Tag4Compute>>(
             std::move(simple_box), "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
     // Check retrieving compute item result
-    CHECK(6.28 == db::get<test_databox_tags::ComputeTag0>(box));
+    CHECK(6.28 == db::get<test_databox_tags::Tag4>(box));
   }
   {
     const auto box = db::create<
         db::AddSimpleTags<test_databox_tags::Pointer>,
-        db::AddComputeTags<test_databox_tags::PointerComputeItem,
-                           test_databox_tags::PointerComputeItemMutating>>(
+        db::AddComputeTags<test_databox_tags::PointerToCounterCompute,
+                           test_databox_tags::PointerToSumCompute>>(
         std::make_unique<int>(3));
     using DbTags = decltype(box)::tags_list;
     static_assert(
@@ -326,42 +369,39 @@ void test_databox() noexcept {
     CHECK(db::get<test_databox_tags::PointerBase>(box) == 3);
 
     static_assert(
-        std::is_same_v<
-            db::const_item_type<test_databox_tags::PointerComputeItem>, int>,
+        std::is_same_v<db::const_item_type<test_databox_tags::PointerToCounter>,
+                       int>,
         "Wrong type for const_item_type on unique_ptr compute item");
     static_assert(
         std::is_same_v<
-            decltype(db::get<test_databox_tags::PointerComputeItem>(box)),
-            const db::const_item_type<test_databox_tags::PointerComputeItem>&>,
+            decltype(db::get<test_databox_tags::PointerToCounter>(box)),
+            const db::const_item_type<test_databox_tags::PointerToCounter>&>,
         "Wrong type for get on unique_ptr compute item");
-    CHECK(db::get<test_databox_tags::PointerComputeItem>(box) == 4);
+    CHECK(db::get<test_databox_tags::PointerToCounter>(box) == 4);
 
     static_assert(
         std::is_same_v<db::const_item_type<
-                           test_databox_tags::PointerComputeItemBase, DbTags>,
+                           test_databox_tags::PointerToCounterBase, DbTags>,
                        int>,
         "Wrong type for const_item_type on unique_ptr compute item by base");
     static_assert(
         std::is_same_v<
-            decltype(db::get<test_databox_tags::PointerComputeItemBase>(box)),
-            const db::const_item_type<test_databox_tags::PointerComputeItemBase,
+            decltype(db::get<test_databox_tags::PointerToCounterBase>(box)),
+            const db::const_item_type<test_databox_tags::PointerToCounterBase,
                                       DbTags>&>,
         "Wrong type for get on unique_ptr compute item by base");
-    CHECK(db::get<test_databox_tags::PointerComputeItemBase>(box) == 4);
+    CHECK(db::get<test_databox_tags::PointerToCounterBase>(box) == 4);
 
     static_assert(
-        std::is_same_v<
-            db::const_item_type<test_databox_tags::PointerComputeItemMutating>,
-            int>,
+        std::is_same_v<db::const_item_type<test_databox_tags::PointerToSum>,
+                       int>,
         "Wrong type for const_item_type on unique_ptr");
     static_assert(
         std::is_same_v<
-            decltype(
-                db::get<test_databox_tags::PointerComputeItemMutating>(box)),
-            const db::const_item_type<
-                test_databox_tags::PointerComputeItemMutating>&>,
+            decltype(db::get<test_databox_tags::PointerToSum>(box)),
+            const db::const_item_type<test_databox_tags::PointerToSum>&>,
         "Wrong type for get on unique_ptr");
-    CHECK(db::get<test_databox_tags::PointerComputeItemMutating>(box) == 8);
+    CHECK(db::get<test_databox_tags::PointerToSum>(box) == 8);
   }
 }
 
@@ -401,16 +441,15 @@ void test_get_databox() noexcept {
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2>,
-      db::AddComputeTags<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1>>(
+      db::AddComputeTags<test_databox_tags::Tag4Compute,
+                         test_databox_tags::Tag5Compute>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   CHECK(std::addressof(original_box) ==
         std::addressof(db::get<Tags::DataBox>(original_box)));
   /// [databox_self_tag_example]
   auto check_result_no_args = [](const auto& box) {
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
-    CHECK(db::get<test_databox_tags::ComputeTag1>(box) ==
-          "My Sample String6.28"s);
+    CHECK(db::get<test_databox_tags::Tag5>(box) == "My Sample String6.28"s);
   };
   db::apply<tmpl::list<Tags::DataBox>>(check_result_no_args, original_box);
   /// [databox_self_tag_example]
@@ -427,8 +466,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_databox_error",
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2>,
-      db::AddComputeTags<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1>>(
+      db::AddComputeTags<test_databox_tags::Tag4Compute,
+                         test_databox_tags::Tag5Compute>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   CHECK(std::addressof(original_box) ==
         std::addressof(db::get<Tags::DataBox>(original_box)));
@@ -445,12 +484,11 @@ void test_mutate() noexcept {
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2, test_databox_tags::Pointer>,
-      db::AddComputeTags<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1>>(
+      db::AddComputeTags<test_databox_tags::Tag4Compute,
+                         test_databox_tags::Tag5Compute>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
       std::make_unique<int>(3));
-  CHECK(approx(db::get<test_databox_tags::ComputeTag0>(original_box)) ==
-        3.14 * 2.0);
+  CHECK(approx(db::get<test_databox_tags::Tag4>(original_box)) == 3.14 * 2.0);
   /// [databox_mutate_example]
   db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
       make_not_null(&original_box),
@@ -461,12 +499,11 @@ void test_mutate() noexcept {
         *tag0 = 10.32;
         (*tag1)[0] = 837.2;
       },
-      db::get<test_databox_tags::ComputeTag0>(original_box));
+      db::get<test_databox_tags::Tag4>(original_box));
   CHECK(10.32 == db::get<test_databox_tags::Tag0>(original_box));
   CHECK(837.2 == db::get<test_databox_tags::Tag1>(original_box)[0]);
   /// [databox_mutate_example]
-  CHECK(approx(db::get<test_databox_tags::ComputeTag0>(original_box)) ==
-        10.32 * 2.0);
+  CHECK(approx(db::get<test_databox_tags::Tag4>(original_box)) == 10.32 * 2.0);
 
   db::mutate<test_databox_tags::Pointer>(
       make_not_null(&original_box), [](auto p) noexcept {
@@ -500,7 +537,7 @@ void test_mutate() noexcept {
 }
 }  // namespace
 
-// [[OutputRegex, Unable to retrieve a \(compute\) item 'ComputeTag0' from the
+// [[OutputRegex, Unable to retrieve a \(compute\) item 'Tag4' from the
 // DataBox from within a call to mutate. You must pass these either through the
 // capture list of the lambda or the constructor of a class, this restriction
 // exists to avoid complexity]]
@@ -510,14 +547,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_get",
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2>,
-      db::AddComputeTags<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1>>(
+      db::AddComputeTags<test_databox_tags::Tag4Compute,
+                         test_databox_tags::Tag5Compute>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
       make_not_null(&original_box),
       [&original_box](const gsl::not_null<double*> tag0,
                       const gsl::not_null<std::vector<double>*> tag1) {
-        db::get<test_databox_tags::ComputeTag0>(original_box);
+        db::get<test_databox_tags::Tag4>(original_box);
         *tag0 = 10.32;
         (*tag1)[0] = 837.2;
       });
@@ -532,8 +569,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_mutate",
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2>,
-      db::AddComputeTags<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1>>(
+      db::AddComputeTags<test_databox_tags::Tag4Compute,
+                         test_databox_tags::Tag5Compute>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   db::mutate<test_databox_tags::Tag0>(
       make_not_null(&original_box),
@@ -567,10 +604,10 @@ void test_apply() noexcept {
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2, test_databox_tags::Pointer>,
-      db::AddComputeTags<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1,
-                         test_databox_tags::PointerComputeItem,
-                         test_databox_tags::PointerComputeItemMutating>>(
+      db::AddComputeTags<test_databox_tags::Tag4Compute,
+                         test_databox_tags::Tag5Compute,
+                         test_databox_tags::PointerToCounterCompute,
+                         test_databox_tags::PointerToSumCompute>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
       std::make_unique<int>(3));
   auto check_result_no_args = [](const std::string& sample_string,
@@ -578,11 +615,9 @@ void test_apply() noexcept {
     CHECK(sample_string == "My Sample String"s);
     CHECK(computed_string == "My Sample String6.28"s);
   };
-  db::apply<
-      tmpl::list<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
+  db::apply<tmpl::list<test_databox_tags::Tag2, test_databox_tags::Tag5>>(
       check_result_no_args, original_box);
-  db::apply<
-      tmpl::list<test_databox_tags::Tag2Base, test_databox_tags::ComputeTag1>>(
+  db::apply<tmpl::list<test_databox_tags::Tag2Base, test_databox_tags::Tag5>>(
       check_result_no_args, original_box);
 
   /// [apply_example]
@@ -592,8 +627,7 @@ void test_apply() noexcept {
     CHECK(computed_string == "My Sample String6.28"s);
     CHECK(vector == (std::vector<double>{8.7, 93.2, 84.7}));
   };
-  db::apply<
-      tmpl::list<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
+  db::apply<tmpl::list<test_databox_tags::Tag2, test_databox_tags::Tag5>>(
       check_result_args, original_box,
       db::get<test_databox_tags::Tag1>(original_box));
   /// [apply_example]
@@ -610,19 +644,17 @@ void test_apply() noexcept {
       CHECK(vector == (std::vector<double>{8.7, 93.2, 84.7}));
     }
   };
-  db::apply<
-      tmpl::list<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
+  db::apply<tmpl::list<test_databox_tags::Tag2, test_databox_tags::Tag5>>(
       ApplyCallable{}, original_box,
       db::get<test_databox_tags::Tag1>(original_box));
   /// [apply_struct_example]
-  db::apply<
-      tmpl::list<test_databox_tags::Tag2Base, test_databox_tags::ComputeTag1>>(
+  db::apply<tmpl::list<test_databox_tags::Tag2Base, test_databox_tags::Tag5>>(
       ApplyCallable{}, original_box,
       db::get<test_databox_tags::Tag1>(original_box));
   /// [apply_stateless_struct_example]
   struct StatelessApplyCallable {
     using argument_tags =
-        tmpl::list<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>;
+        tmpl::list<test_databox_tags::Tag2, test_databox_tags::Tag5>;
     static void apply(const std::string& sample_string,
                       const std::string& computed_string,
                       const std::vector<double>& vector) noexcept {
@@ -637,11 +669,10 @@ void test_apply() noexcept {
   db::apply(StatelessApplyCallable{}, original_box,
             db::get<test_databox_tags::Tag1>(original_box));
 
-  db::apply<tmpl::list<test_databox_tags::Pointer,
-                       test_databox_tags::PointerComputeItem,
-                       test_databox_tags::PointerComputeItemMutating,
-                       test_databox_tags::PointerBase,
-                       test_databox_tags::PointerComputeItemBase>>(
+  db::apply<tmpl::list<
+      test_databox_tags::Pointer, test_databox_tags::PointerToCounter,
+      test_databox_tags::PointerToSum, test_databox_tags::PointerBase,
+      test_databox_tags::PointerToCounterBase>>(
       [](const int& simple, const int& compute, const int& compute_mutating,
          const int& simple_base, const int& compute_base) noexcept {
         CHECK(simple == 3);
@@ -653,12 +684,10 @@ void test_apply() noexcept {
       original_box);
 
   struct PointerApplyCallable {
-    using argument_tags =
-        tmpl::list<test_databox_tags::Pointer,
-                   test_databox_tags::PointerComputeItem,
-                   test_databox_tags::PointerComputeItemMutating,
-                   test_databox_tags::PointerBase,
-                   test_databox_tags::PointerComputeItemBase>;
+    using argument_tags = tmpl::list<
+        test_databox_tags::Pointer, test_databox_tags::PointerToCounter,
+        test_databox_tags::PointerToSum, test_databox_tags::PointerBase,
+        test_databox_tags::PointerToCounterBase>;
     static void apply(const int& simple, const int& compute,
                       const int& compute_mutating, const int& simple_base,
                       const int& compute_base) noexcept {
@@ -672,10 +701,16 @@ void test_apply() noexcept {
   db::apply<PointerApplyCallable>(original_box);
 }
 
-auto get_vector() { return tnsr::I<DataVector, 3, Frame::Grid>(5_st, 2.0); }
+struct Var1 : db::SimpleTag {
+  using type = tnsr::I<DataVector, 3, Frame::Grid>;
+};
 
-struct Var1 : db::ComputeTag {
-  static constexpr auto function = get_vector;
+struct Var1Compute : Var1, db::ComputeTag {
+  using base = Var1;
+  using return_type = tnsr::I<DataVector, 3, Frame::Grid>;
+  static void function(const gsl::not_null<return_type*> result) {
+    *result = tnsr::I<DataVector, 3, Frame::Grid>(5_st, 2.0);
+  }
   using argument_tags = tmpl::list<>;
 };
 
@@ -686,11 +721,8 @@ struct Var2 : db::SimpleTag {
 template <class Tag, class VolumeDim, class Frame>
 struct PrefixTag0 : db::PrefixTag, db::SimpleTag {
   using type = TensorMetafunctions::prepend_spatial_index<
-      db::const_item_type<Tag>, VolumeDim::value, UpLo::Lo, Frame>;
+      typename Tag::type, VolumeDim::value, UpLo::Lo, Frame>;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "PrefixTag0(" + tag::name() + ")";
-  }
 };
 
 using two_vars = tmpl::list<Var1, Var2>;
@@ -754,87 +786,132 @@ struct VectorTag4 : db::SimpleTag {
 }  // namespace test_databox_tags
 
 namespace {
-auto multiply_scalar_by_two(const Scalar<DataVector>& scalar) {
-  Variables<
-      tmpl::list<test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2>>
-      vars{scalar.begin()->size(), 2.0};
-  get<test_databox_tags::ScalarTag2>(vars).get() = scalar.get() * 2.0;
-  return vars;
+void multiply_scalar_by_two(
+    const gsl::not_null<Variables<tmpl::list<test_databox_tags::ScalarTag2,
+                                             test_databox_tags::VectorTag2>>*>
+        result,
+    const Scalar<DataVector>& scalar) {
+  *result = Variables<
+      tmpl::list<test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2>>{
+      scalar.begin()->size(), 2.0};
+  get<test_databox_tags::ScalarTag2>(*result).get() = scalar.get() * 2.0;
 }
 
-auto multiply_scalar_by_four(const Scalar<DataVector>& scalar) {
-  return Scalar<DataVector>(scalar.get() * 4.0);
+void multiply_scalar_by_four(const gsl::not_null<Scalar<DataVector>*> result,
+                             const Scalar<DataVector>& scalar) {
+  *result = Scalar<DataVector>(scalar.get() * 4.0);
 }
 
-auto multiply_scalar_by_three(const Scalar<DataVector>& scalar) {
-  return Scalar<DataVector>(scalar.get() * 3.0);
+void multiply_scalar_by_three(const gsl::not_null<Scalar<DataVector>*> result,
+                              const Scalar<DataVector>& scalar) {
+  *result = Scalar<DataVector>(scalar.get() * 3.0);
 }
 
-auto divide_scalar_by_three(const Scalar<DataVector>& scalar) {
-  return Scalar<DataVector>(scalar.get() / 3.0);
+void divide_scalar_by_three(const gsl::not_null<Scalar<DataVector>*> result,
+                            const Scalar<DataVector>& scalar) {
+  *result = Scalar<DataVector>(scalar.get() / 3.0);
 }
 
-auto divide_scalar_by_two(const Scalar<DataVector>& scalar) {
-  Variables<
-      tmpl::list<test_databox_tags::VectorTag3, test_databox_tags::ScalarTag3>>
-      vars{scalar.begin()->size(), 10.0};
-  get<test_databox_tags::ScalarTag3>(vars).get() = scalar.get() / 2.0;
-  return vars;
+void divide_scalar_by_two(
+    const gsl::not_null<Variables<tmpl::list<test_databox_tags::VectorTag3,
+                                             test_databox_tags::ScalarTag3>>*>
+        result,
+    const Scalar<DataVector>& scalar) {
+  *result = Variables<
+      tmpl::list<test_databox_tags::VectorTag3, test_databox_tags::ScalarTag3>>{
+      scalar.begin()->size(), 10.0};
+  get<test_databox_tags::ScalarTag3>(*result).get() = scalar.get() / 2.0;
 }
 
-auto multiply_variables_by_two(
+void multiply_variables_by_two(
+    const gsl::not_null<Variables<tmpl::list<test_databox_tags::ScalarTag4,
+                                             test_databox_tags::VectorTag4>>*>
+        result,
     const Variables<tmpl::list<test_databox_tags::ScalarTag,
                                test_databox_tags::VectorTag>>& vars) {
-  Variables<
-      tmpl::list<test_databox_tags::ScalarTag4, test_databox_tags::VectorTag4>>
-      out_vars(vars.number_of_grid_points(), 2.0);
-  get<test_databox_tags::ScalarTag4>(out_vars).get() *=
+  *result = Variables<
+      tmpl::list<test_databox_tags::ScalarTag4, test_databox_tags::VectorTag4>>(
+      vars.number_of_grid_points(), 2.0);
+  get<test_databox_tags::ScalarTag4>(*result).get() *=
       get<test_databox_tags::ScalarTag>(vars).get();
-  get<0>(get<test_databox_tags::VectorTag4>(out_vars)) *=
+  get<0>(get<test_databox_tags::VectorTag4>(*result)) *=
       get<0>(get<test_databox_tags::VectorTag>(vars));
-  get<1>(get<test_databox_tags::VectorTag4>(out_vars)) *=
+  get<1>(get<test_databox_tags::VectorTag4>(*result)) *=
       get<1>(get<test_databox_tags::VectorTag>(vars));
-  get<2>(get<test_databox_tags::VectorTag4>(out_vars)) *=
+  get<2>(get<test_databox_tags::VectorTag4>(*result)) *=
       get<2>(get<test_databox_tags::VectorTag>(vars));
-  return out_vars;
 }
 }  // namespace
 
 namespace test_databox_tags {
-struct MultiplyScalarByTwo : db::ComputeTag {
+struct MultiplyScalarByTwo : db::SimpleTag {
+  using type = Variables<
+      tmpl::list<test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2>>;
+};
+
+struct MultiplyScalarByTwoCompute : MultiplyScalarByTwo, db::ComputeTag {
+  using base = MultiplyScalarByTwo;
   using variables_tags =
       tmpl::list<test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2>;
-  static std::string name() noexcept { return "MultiplyScalarByTwo"; }
+  using return_type = Variables<variables_tags>;
   static constexpr auto function = multiply_scalar_by_two;
   using argument_tags = tmpl::list<test_databox_tags::ScalarTag>;
 };
 
-struct MultiplyScalarByFour : db::ComputeTag {
-  static std::string name() noexcept { return "MultiplyScalarByFour"; }
+struct MultiplyScalarByFour : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+struct MultiplyScalarByFourCompute : MultiplyScalarByFour, db::ComputeTag {
+  using base = MultiplyScalarByFour;
+  using return_type = Scalar<DataVector>;
   static constexpr auto function = multiply_scalar_by_four;
   using argument_tags = tmpl::list<test_databox_tags::ScalarTag2>;
 };
 
-struct MultiplyScalarByThree : db::ComputeTag {
-  static std::string name() noexcept { return "MultiplyScalarByThree"; }
+struct MultiplyScalarByThree : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+struct MultiplyScalarByThreeCompute : MultiplyScalarByThree, db::ComputeTag {
+  using base = MultiplyScalarByThree;
+  using return_type = Scalar<DataVector>;
   static constexpr auto function = multiply_scalar_by_three;
   using argument_tags = tmpl::list<test_databox_tags::MultiplyScalarByFour>;
 };
 
-struct DivideScalarByThree : db::ComputeTag {
-  static std::string name() noexcept { return "DivideScalarByThree"; }
+struct DivideScalarByThree : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+struct DivideScalarByThreeCompute : DivideScalarByThree, db::ComputeTag {
+  using base = DivideScalarByThree;
+  using return_type = Scalar<DataVector>;
   static constexpr auto function = divide_scalar_by_three;
   using argument_tags = tmpl::list<test_databox_tags::MultiplyScalarByThree>;
 };
 
-struct DivideScalarByTwo : db::ComputeTag {
-  static std::string name() noexcept { return "DivideScalarByTwo"; }
+struct DivideScalarByTwo : db::SimpleTag {
+  using type = Variables<
+      tmpl::list<test_databox_tags::VectorTag3, test_databox_tags::ScalarTag3>>;
+};
+
+struct DivideScalarByTwoCompute : DivideScalarByTwo, db::ComputeTag {
+  using base = DivideScalarByTwo;
+  using return_type = Variables<
+      tmpl::list<test_databox_tags::VectorTag3, test_databox_tags::ScalarTag3>>;
   static constexpr auto function = divide_scalar_by_two;
   using argument_tags = tmpl::list<test_databox_tags::DivideScalarByThree>;
 };
 
-struct MultiplyVariablesByTwo : db::ComputeTag {
-  static std::string name() noexcept { return "MultiplyVariablesByTwo"; }
+struct MultiplyVariablesByTwo : db::SimpleTag {
+  using type = Variables<
+      tmpl::list<test_databox_tags::ScalarTag4, test_databox_tags::VectorTag4>>;
+};
+
+struct MultiplyVariablesByTwoCompute : MultiplyVariablesByTwo, db::ComputeTag {
+  using base = MultiplyVariablesByTwo;
+  using return_type = Variables<
+      tmpl::list<test_databox_tags::ScalarTag4, test_databox_tags::VectorTag4>>;
   static constexpr auto function = multiply_variables_by_two;
   using argument_tags = tmpl::list<Tags::Variables<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>>;
@@ -845,16 +922,16 @@ void test_variables() noexcept {
   INFO("test variables");
   using vars_tag = Tags::Variables<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>;
-  auto box =
-      db::create<db::AddSimpleTags<vars_tag>,
-                 db::AddComputeTags<test_databox_tags::MultiplyScalarByTwo,
-                                    test_databox_tags::MultiplyScalarByFour,
-                                    test_databox_tags::MultiplyScalarByThree,
-                                    test_databox_tags::DivideScalarByThree,
-                                    test_databox_tags::DivideScalarByTwo,
-                                    test_databox_tags::MultiplyVariablesByTwo>>(
-          Variables<tmpl::list<test_databox_tags::ScalarTag,
-                               test_databox_tags::VectorTag>>(2, 3.));
+  auto box = db::create<
+      db::AddSimpleTags<vars_tag>,
+      db::AddComputeTags<test_databox_tags::MultiplyScalarByTwoCompute,
+                         test_databox_tags::MultiplyScalarByFourCompute,
+                         test_databox_tags::MultiplyScalarByThreeCompute,
+                         test_databox_tags::DivideScalarByThreeCompute,
+                         test_databox_tags::DivideScalarByTwoCompute,
+                         test_databox_tags::MultiplyVariablesByTwoCompute>>(
+      Variables<tmpl::list<test_databox_tags::ScalarTag,
+                           test_databox_tags::VectorTag>>(2, 3.));
   const auto check_references_match = [&box]() noexcept {
     const auto& vars_original = db::get<vars_tag>(box);
     CHECK(get(db::get<test_databox_tags::ScalarTag>(box)).data() ==
@@ -1058,20 +1135,20 @@ void test_variables2() noexcept {
 
 void test_reset_compute_items() noexcept {
   INFO("test reset compute items");
-  auto box =
-      db::create<db::AddSimpleTags<
-                     test_databox_tags::Tag0, test_databox_tags::Tag1,
-                     test_databox_tags::Tag2,
-                     Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
-                                                test_databox_tags::VectorTag>>>,
-                 db::AddComputeTags<test_databox_tags::ComputeTag0,
-                                    test_databox_tags::ComputeTag1,
-                                    test_databox_tags::MultiplyScalarByTwo,
-                                    test_databox_tags::MultiplyVariablesByTwo>>(
-          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
-          Variables<tmpl::list<test_databox_tags::ScalarTag,
-                               test_databox_tags::VectorTag>>(2, 3.));
-  CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
+  auto box = db::create<
+      db::AddSimpleTags<
+          test_databox_tags::Tag0, test_databox_tags::Tag1,
+          test_databox_tags::Tag2,
+          Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
+                                     test_databox_tags::VectorTag>>>,
+      db::AddComputeTags<test_databox_tags::Tag4Compute,
+                         test_databox_tags::Tag5Compute,
+                         test_databox_tags::MultiplyScalarByTwoCompute,
+                         test_databox_tags::MultiplyVariablesByTwoCompute>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
+      Variables<tmpl::list<test_databox_tags::ScalarTag,
+                           test_databox_tags::VectorTag>>(2, 3.));
+  CHECK(approx(db::get<test_databox_tags::Tag4>(box)) == 3.14 * 2.0);
   CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
         Scalar<DataVector>(DataVector(2, 3.)));
   CHECK(db::get<test_databox_tags::VectorTag>(box) ==
@@ -1100,14 +1177,19 @@ struct Var : db::SimpleTag {
 struct Int : db::SimpleTag {
   using type = int;
 };
-struct CheckReset : db::ComputeTag {
-  static std::string name() noexcept { return "CheckReset"; }
+struct CheckReset : db::SimpleTag {
+  using type = int;
+};
+struct CheckResetCompute : CheckReset, db::ComputeTag {
+  using base = CheckReset;
+  using return_type = int;
   static auto function(
+      const gsl::not_null<int*> result,
       const ::Variables<tmpl::list<Var>>& /*unused*/) noexcept {
     static bool first_call = true;
     CHECK(first_call);
     first_call = false;
-    return 0;
+    *result = 0;
   }
   using argument_tags = tmpl::list<Tags::Variables<tmpl::list<Var>>>;
 };
@@ -1118,7 +1200,7 @@ void test_variables_extra_reset() noexcept {
   auto box = db::create<
       db::AddSimpleTags<ExtraResetTags::Int,
                         Tags::Variables<tmpl::list<ExtraResetTags::Var>>>,
-      db::AddComputeTags<ExtraResetTags::CheckReset>>(
+      db::AddComputeTags<ExtraResetTags::CheckResetCompute>>(
       1, Variables<tmpl::list<ExtraResetTags::Var>>(2, 3.));
   CHECK(db::get<ExtraResetTags::CheckReset>(box) == 0);
   db::mutate<ExtraResetTags::Int>(make_not_null(&box),
@@ -1163,16 +1245,16 @@ void test_mutate_apply() noexcept {
           Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
                                      test_databox_tags::VectorTag>>,
           test_databox_tags::Pointer>,
-      db::AddComputeTags<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1,
-                         test_databox_tags::MultiplyScalarByTwo,
-                         test_databox_tags::PointerComputeItem,
-                         test_databox_tags::PointerComputeItemMutating>>(
+      db::AddComputeTags<test_databox_tags::Tag4Compute,
+                         test_databox_tags::Tag5Compute,
+                         test_databox_tags::MultiplyScalarByTwoCompute,
+                         test_databox_tags::PointerToCounterCompute,
+                         test_databox_tags::PointerToSumCompute>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
       Variables<tmpl::list<test_databox_tags::ScalarTag,
                            test_databox_tags::VectorTag>>(2, 3.),
       std::make_unique<int>(3));
-  CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
+  CHECK(approx(db::get<test_databox_tags::Tag4>(box)) == 3.14 * 2.0);
   CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
         Scalar<DataVector>(DataVector(2, 3.)));
   CHECK(db::get<test_databox_tags::VectorTag>(box) ==
@@ -1199,7 +1281,7 @@ void test_mutate_apply() noexcept {
     };
     db::mutate_apply(TestDataboxMutateApplyBase{}, make_not_null(&box));
 
-    CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
+    CHECK(approx(db::get<test_databox_tags::Tag4>(box)) == 3.14 * 2.0);
     CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
           Scalar<DataVector>(DataVector(2, 6.)));
     CHECK(db::get<test_databox_tags::VectorTag>(box) ==
@@ -1232,7 +1314,7 @@ void test_mutate_apply() noexcept {
           CHECK(tag2 == "My Sample String"s);
         },
         make_not_null(&box));
-    CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
+    CHECK(approx(db::get<test_databox_tags::Tag4>(box)) == 3.14 * 2.0);
     CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
           Scalar<DataVector>(DataVector(2, 12.)));
     CHECK(db::get<test_databox_tags::VectorTag>(box) ==
@@ -1259,7 +1341,7 @@ void test_mutate_apply() noexcept {
         },
         make_not_null(&box));
 
-    CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
+    CHECK(approx(db::get<test_databox_tags::Tag4>(box)) == 3.14 * 2.0);
     CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
           Scalar<DataVector>(DataVector(2, 24.)));
     CHECK(db::get<test_databox_tags::VectorTag>(box) ==
@@ -1276,7 +1358,7 @@ void test_mutate_apply() noexcept {
     /// [mutate_apply_struct_example_stateless]
     db::mutate_apply<TestDataboxMutateApply>(make_not_null(&box));
     /// [mutate_apply_struct_example_stateless]
-    CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
+    CHECK(approx(db::get<test_databox_tags::Tag4>(box)) == 3.14 * 2.0);
     CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
           Scalar<DataVector>(DataVector(2, 48.)));
     CHECK(db::get<test_databox_tags::VectorTag>(box) ==
@@ -1295,8 +1377,8 @@ void test_mutate_apply() noexcept {
         make_not_null(&box));
     db::mutate_apply<tmpl::list<>,
                      tmpl::list<test_databox_tags::Pointer,
-                                test_databox_tags::PointerComputeItem,
-                                test_databox_tags::PointerComputeItemMutating>>(
+                                test_databox_tags::PointerToCounter,
+                                test_databox_tags::PointerToSum>>(
         [](const int& simple, const int& compute,
            const int& compute_mutating) noexcept {
           CHECK(simple == 5);
@@ -1309,7 +1391,7 @@ void test_mutate_apply() noexcept {
         make_not_null(&box));
     db::mutate_apply<tmpl::list<>,
                      tmpl::list<test_databox_tags::PointerBase,
-                                test_databox_tags::PointerComputeItemBase>>(
+                                test_databox_tags::PointerToCounterBase>>(
         [](const int& simple_base, const int& compute_base) noexcept {
           CHECK(simple_base == 6);
           CHECK(compute_base == 7);
@@ -1318,9 +1400,8 @@ void test_mutate_apply() noexcept {
 
     struct PointerMutateApply {
       using return_tags = tmpl::list<test_databox_tags::Pointer>;
-      using argument_tags =
-          tmpl::list<test_databox_tags::PointerComputeItem,
-                     test_databox_tags::PointerComputeItemMutating>;
+      using argument_tags = tmpl::list<test_databox_tags::PointerToCounter,
+                                       test_databox_tags::PointerToSum>;
       static void apply(const gsl::not_null<std::unique_ptr<int>*> ret,
                         const int& compute,
                         const int& compute_mutating) noexcept {
@@ -1333,8 +1414,7 @@ void test_mutate_apply() noexcept {
 
     struct PointerMutateApplyBase {
       using return_tags = tmpl::list<test_databox_tags::PointerBase>;
-      using argument_tags =
-          tmpl::list<test_databox_tags::PointerComputeItemBase>;
+      using argument_tags = tmpl::list<test_databox_tags::PointerToCounterBase>;
       static void apply(const gsl::not_null<std::unique_ptr<int>*> ret,
                         const int& compute_base) noexcept {
         **ret = 8;
@@ -1347,20 +1427,20 @@ void test_mutate_apply() noexcept {
 }
 
 static_assert(
-    std::is_same_v<tmpl::list<test_databox_tags::ComputeTag0,
-                              test_databox_tags::ComputeTag1,
-                              test_databox_tags::MultiplyScalarByTwo>,
+    std::is_same_v<tmpl::list<test_databox_tags::Tag4Compute,
+                              test_databox_tags::Tag5Compute,
+                              test_databox_tags::MultiplyScalarByTwoCompute>,
                    db::get_compute_items<tmpl::list<
-                       test_databox_tags::Tag0, test_databox_tags::ComputeTag0,
-                       test_databox_tags::Tag1, test_databox_tags::ComputeTag1,
-                       test_databox_tags::MultiplyScalarByTwo>>>,
+                       test_databox_tags::Tag0, test_databox_tags::Tag4Compute,
+                       test_databox_tags::Tag1, test_databox_tags::Tag5Compute,
+                       test_databox_tags::MultiplyScalarByTwoCompute>>>,
     "Failed testing db::get_compute_items");
 static_assert(
     std::is_same_v<tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1>,
                    db::get_items<tmpl::list<
-                       test_databox_tags::Tag0, test_databox_tags::ComputeTag0,
-                       test_databox_tags::Tag1, test_databox_tags::ComputeTag1,
-                       test_databox_tags::MultiplyScalarByTwo>>>,
+                       test_databox_tags::Tag0, test_databox_tags::Tag4Compute,
+                       test_databox_tags::Tag1, test_databox_tags::Tag5Compute,
+                       test_databox_tags::MultiplyScalarByTwoCompute>>>,
     "Failed testing db::get_items");
 
 static_assert(
@@ -1369,15 +1449,15 @@ static_assert(
             test_databox_tags::Tag0, test_databox_tags::Tag1,
             Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
                                        test_databox_tags::VectorTag>>,
-            test_databox_tags::ComputeTag0,
-            test_databox_tags::MultiplyScalarByTwo>>,
+            test_databox_tags::Tag4Compute,
+            test_databox_tags::MultiplyScalarByTwoCompute>>,
         db::DataBox<tmpl::list<
             test_databox_tags::Tag0, test_databox_tags::Tag1,
             Tags::Variables<brigand::list<test_databox_tags::ScalarTag,
                                           test_databox_tags::VectorTag>>,
             test_databox_tags::ScalarTag, test_databox_tags::VectorTag,
-            test_databox_tags::ComputeTag0,
-            test_databox_tags::MultiplyScalarByTwo,
+            test_databox_tags::Tag4Compute,
+            test_databox_tags::MultiplyScalarByTwoCompute,
             test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2>>>,
     "Failed testing db::compute_databox_type");
 
@@ -1389,9 +1469,6 @@ void multiply_by_two_mutate(const gsl::not_null<std::vector<double>*> t,
   for (auto& p : *t) {
     p = 2.0 * value;
   }
-}
-std::vector<double> multiply_by_two_non_mutate(const double value) {
-  return std::vector<double>(10, 2.0 * value);
 }
 
 /// [databox_mutating_compute_item_function]
@@ -1415,20 +1492,25 @@ void mutate_variables(
 /// [databox_mutating_compute_item_function]
 
 namespace test_databox_tags {
-struct MutateComputeTag0 : db::ComputeTag {
+struct MutateTag0 : db::SimpleTag {
+  using type = std::vector<double>;
+};
+
+struct MutateTag0Compute : MutateTag0, db::ComputeTag {
   using return_type = std::vector<double>;
-  static std::string name() noexcept { return "MutateComputeTag0"; }
+  using base = MutateTag0;
   static constexpr auto function = multiply_by_two_mutate;
   using argument_tags = tmpl::list<Tag0>;
 };
-struct NonMutateComputeTag0 : db::ComputeTag {
-  static std::string name() noexcept { return "NonMutateComputeTag0"; }
-  static constexpr auto function = multiply_by_two_non_mutate;
-  using argument_tags = tmpl::list<Tag0>;
+
+struct MutateVariables : db::SimpleTag {
+  using type = Variables<
+      tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>;
 };
+
 /// [databox_mutating_compute_item_tag]
-struct MutateVariablesCompute : db::ComputeTag {
-  static std::string name() noexcept { return "MutateVariablesCompute"; }
+struct MutateVariablesCompute : MutateVariables, db::ComputeTag {
+  using base = MutateVariables;
   static constexpr auto function = mutate_variables;
   using return_type = Variables<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>;
@@ -1442,50 +1524,42 @@ void test_mutating_compute_item() noexcept {
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2>,
-      db::AddComputeTags<test_databox_tags::MutateComputeTag0,
-                         test_databox_tags::NonMutateComputeTag0,
+      db::AddComputeTags<test_databox_tags::MutateTag0Compute,
                          test_databox_tags::MutateVariablesCompute,
-                         test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1>>(
+                         test_databox_tags::Tag4Compute,
+                         test_databox_tags::Tag5Compute>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
   const double* const initial_data_location_mutating =
-      db::get<test_databox_tags::MutateComputeTag0>(original_box).data();
-  const double* const initial_data_location_non_mutating =
-      db::get<test_databox_tags::NonMutateComputeTag0>(original_box).data();
+      db::get<test_databox_tags::MutateTag0>(original_box).data();
   const std::array<const double* const, 4>
       initial_variables_data_location_mutate{
           {get<test_databox_tags::ScalarTag>(
-               db::get<test_databox_tags::MutateVariablesCompute>(original_box))
+               db::get<test_databox_tags::MutateVariables>(original_box))
                .get()
                .data(),
-           get<0>(get<test_databox_tags::VectorTag>(
-                      db::get<test_databox_tags::MutateVariablesCompute>(
-                          original_box)))
+           get<0>(
+               get<test_databox_tags::VectorTag>(
+                   db::get<test_databox_tags::MutateVariables>(original_box)))
                .data(),
-           get<1>(get<test_databox_tags::VectorTag>(
-                      db::get<test_databox_tags::MutateVariablesCompute>(
-                          original_box)))
+           get<1>(
+               get<test_databox_tags::VectorTag>(
+                   db::get<test_databox_tags::MutateVariables>(original_box)))
                .data(),
-           get<2>(get<test_databox_tags::VectorTag>(
-                      db::get<test_databox_tags::MutateVariablesCompute>(
-                          original_box)))
+           get<2>(
+               get<test_databox_tags::VectorTag>(
+                   db::get<test_databox_tags::MutateVariables>(original_box)))
                .data()}};
 
-  CHECK(approx(db::get<test_databox_tags::ComputeTag0>(original_box)) ==
-        3.14 * 2.0);
-  CHECK_ITERABLE_APPROX(
-      db::get<test_databox_tags::MutateComputeTag0>(original_box),
-      std::vector<double>(10, 2.0 * 3.14));
-  CHECK_ITERABLE_APPROX(
-      db::get<test_databox_tags::NonMutateComputeTag0>(original_box),
-      std::vector<double>(10, 2.0 * 3.14));
+  CHECK(approx(db::get<test_databox_tags::Tag4>(original_box)) == 3.14 * 2.0);
+  CHECK_ITERABLE_APPROX(db::get<test_databox_tags::MutateTag0>(original_box),
+                        std::vector<double>(10, 2.0 * 3.14));
   CHECK_ITERABLE_APPROX(
       get<test_databox_tags::ScalarTag>(
-          db::get<test_databox_tags::MutateVariablesCompute>(original_box)),
+          db::get<test_databox_tags::MutateVariables>(original_box)),
       Scalar<DataVector>(DataVector(10, 2.0 * 3.14)));
   CHECK_ITERABLE_APPROX(
       get<test_databox_tags::VectorTag>(
-          db::get<test_databox_tags::MutateVariablesCompute>(original_box)),
+          db::get<test_databox_tags::MutateVariables>(original_box)),
       db::item_type<test_databox_tags::VectorTag>(DataVector(10, 3.0 * 3.14)));
 
   db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
@@ -1497,52 +1571,44 @@ void test_mutating_compute_item() noexcept {
         *tag0 = 10.32;
         (*tag1)[0] = 837.2;
       },
-      db::get<test_databox_tags::ComputeTag0>(original_box));
+      db::get<test_databox_tags::Tag4>(original_box));
 
   CHECK(10.32 == db::get<test_databox_tags::Tag0>(original_box));
   CHECK(837.2 == db::get<test_databox_tags::Tag1>(original_box)[0]);
-  CHECK(approx(db::get<test_databox_tags::ComputeTag0>(original_box)) ==
-        10.32 * 2.0);
-  CHECK_ITERABLE_APPROX(
-      db::get<test_databox_tags::MutateComputeTag0>(original_box),
-      std::vector<double>(10, 2.0 * 10.32));
+  CHECK(approx(db::get<test_databox_tags::Tag4>(original_box)) == 10.32 * 2.0);
+  CHECK_ITERABLE_APPROX(db::get<test_databox_tags::MutateTag0>(original_box),
+                        std::vector<double>(10, 2.0 * 10.32));
   CHECK(initial_data_location_mutating ==
-        db::get<test_databox_tags::MutateComputeTag0>(original_box).data());
-  CHECK_ITERABLE_APPROX(
-      db::get<test_databox_tags::NonMutateComputeTag0>(original_box),
-      std::vector<double>(10, 2.0 * 10.32));
-  CHECK(initial_data_location_non_mutating !=
-        db::get<test_databox_tags::MutateComputeTag0>(original_box).data());
+        db::get<test_databox_tags::MutateTag0>(original_box).data());
   CHECK_ITERABLE_APPROX(
       get<test_databox_tags::ScalarTag>(
-          db::get<test_databox_tags::MutateVariablesCompute>(original_box)),
+          db::get<test_databox_tags::MutateVariables>(original_box)),
       Scalar<DataVector>(DataVector(10, 2.0 * 10.32)));
   CHECK_ITERABLE_APPROX(
       get<test_databox_tags::VectorTag>(
-          db::get<test_databox_tags::MutateVariablesCompute>(original_box)),
+          db::get<test_databox_tags::MutateVariables>(original_box)),
       db::item_type<test_databox_tags::VectorTag>(DataVector(10, 3.0 * 10.32)));
 
   // Check that the memory allocated by std::vector has not changed, which is
   // the key feature of mutating compute items.
-  CHECK(
-      initial_variables_data_location_mutate ==
-      (std::array<const double* const, 4>{
-          {get<test_databox_tags::ScalarTag>(
-               db::get<test_databox_tags::MutateVariablesCompute>(original_box))
-               .get()
-               .data(),
-           get<0>(get<test_databox_tags::VectorTag>(
-                      db::get<test_databox_tags::MutateVariablesCompute>(
-                          original_box)))
-               .data(),
-           get<1>(get<test_databox_tags::VectorTag>(
-                      db::get<test_databox_tags::MutateVariablesCompute>(
-                          original_box)))
-               .data(),
-           get<2>(get<test_databox_tags::VectorTag>(
-                      db::get<test_databox_tags::MutateVariablesCompute>(
-                          original_box)))
-               .data()}}));
+  CHECK(initial_variables_data_location_mutate ==
+        (std::array<const double* const, 4>{
+            {get<test_databox_tags::ScalarTag>(
+                 db::get<test_databox_tags::MutateVariables>(original_box))
+                 .get()
+                 .data(),
+             get<0>(
+                 get<test_databox_tags::VectorTag>(
+                     db::get<test_databox_tags::MutateVariables>(original_box)))
+                 .data(),
+             get<1>(
+                 get<test_databox_tags::VectorTag>(
+                     db::get<test_databox_tags::MutateVariables>(original_box)))
+                 .data(),
+             get<2>(
+                 get<test_databox_tags::VectorTag>(
+                     db::get<test_databox_tags::MutateVariables>(original_box)))
+                 .data()}}));
 }
 
 namespace DataBoxTest_detail {
@@ -1778,26 +1844,28 @@ class Boxed {
   std::shared_ptr<T> data_;
 };
 
-template <size_t N, bool Compute = false, bool DependsOnComputeItem = false>
+template <size_t N>
 struct Parent : db::SimpleTag {
   using type = std::pair<Boxed<int>, Boxed<double>>;
 };
-template <size_t N, bool DependsOnComputeItem>
-struct Parent<N, true, DependsOnComputeItem> : db::ComputeTag {
-  static std::string name() noexcept { return "Parent"; }
-  static auto function(
+template <size_t N>
+struct ParentCompute : Parent<N>, db::ComputeTag {
+  using base = Parent<N>;
+  using return_type = std::pair<Boxed<int>, Boxed<double>>;
+  static void function(
+      const gsl::not_null<return_type*> result,
       const std::pair<Boxed<int>, Boxed<double>>& arg) noexcept {
     count++;
-    return std::make_pair(
+    *result = std::make_pair(
         Boxed<int>(std::make_shared<int>(*arg.first + 1)),
         Boxed<double>(std::make_shared<double>(*arg.second * 2.)));
   }
-  using argument_tags = tmpl::list<Parent<N - 1, DependsOnComputeItem>>;
+  using argument_tags = tmpl::list<Parent<N - 1>>;
   static int count;
 };
 
-template <size_t N, bool DependsOnComputeItem>
-int Parent<N, true, DependsOnComputeItem>::count = 0;
+template <size_t N>
+int ParentCompute<N>::count = 0;
 
 template <size_t N>
 struct First : db::SimpleTag {
@@ -1814,10 +1882,36 @@ struct Second : db::SimpleTag {
 }  // namespace
 
 namespace db {
-template <typename TagList, size_t N, bool Compute, bool DependsOnComputeItem>
-struct Subitems<TagList, Parent<N, Compute, DependsOnComputeItem>> {
+template <typename TagList, size_t N>
+struct Subitems<TagList, Parent<N>> {
   using type = tmpl::list<First<N>, Second<N>>;
-  using tag = Parent<N, Compute>;
+  using tag = Parent<N>;
+
+  template <typename Subtag, typename LocalTag = tag>
+  static void create_item(
+      const gsl::not_null<item_type<LocalTag>*> parent_value,
+      const gsl::not_null<item_type<Subtag>*> sub_value) noexcept {
+    *sub_value = std::get<Subtag::index>(*parent_value);
+  }
+
+  template <typename Subtag>
+  static const_item_type<Subtag> create_compute_item(
+      const const_item_type<tag>& parent_value) noexcept {
+    // clang-tidy: do not use const_cast
+    // We need a non-const object to set up the aliasing since in the
+    // simple-item case the alias can be used to modify the original
+    // item.  That should not be allowed for compute items, but the
+    // DataBox will only allow access to a const version of the result
+    // and we ensure in the definition of Boxed that that will not
+    // allow modification of the original item.
+    return const_cast<item_type<Subtag>&>(  // NOLINT
+        std::get<Subtag::index>(parent_value));
+  }
+};
+template <typename TagList, size_t N>
+struct Subitems<TagList, ParentCompute<N>> {
+  using type = tmpl::list<First<N>, Second<N>>;
+  using tag = ParentCompute<N>;
 
   template <typename Subtag, typename LocalTag = tag>
   static void create_item(
@@ -1847,7 +1941,7 @@ namespace {
 void test_subitems() noexcept {
   INFO("test subitems");
   auto box = db::create<db::AddSimpleTags<Parent<0>>,
-                        db::AddComputeTags<Parent<1, true>>>(
+                        db::AddComputeTags<ParentCompute<1>>>(
       std::make_pair(Boxed<int>(std::make_shared<int>(5)),
                      Boxed<double>(std::make_shared<double>(3.5))));
 
@@ -1886,12 +1980,11 @@ void test_subitems() noexcept {
       "not change the type of the DataBox");
 
   static_assert(
-      std::is_same_v<
-          decltype(box),
-          decltype(db::create_from<db::RemoveTags<Parent<2, true, true>>>(
-              db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
-                              db::AddComputeTags<Parent<2, true, true>>>(
-                  std::move(box))))>,
+      std::is_same_v<decltype(box),
+                     decltype(db::create_from<db::RemoveTags<ParentCompute<2>>>(
+                         db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
+                                         db::AddComputeTags<ParentCompute<2>>>(
+                             std::move(box))))>,
       "Failed testing that adding and removing a compute subitem does "
       "not change the type of the DataBox");
 }
@@ -1900,27 +1993,51 @@ namespace test_databox_tags {
 struct Tag0Int : db::SimpleTag {
   using type = int;
 };
+
+template <typename ArgumentTag>
+struct OverloadType : db::SimpleTag {
+  using type = double;
+};
+
 /// [overload_compute_tag_type]
 template <typename ArgumentTag>
-struct OverloadType : db::ComputeTag {
-  static std::string name() noexcept { return "OverloadType"; }
+struct OverloadTypeCompute : OverloadType<ArgumentTag>, db::ComputeTag {
+  using base = OverloadType<ArgumentTag>;
+  using return_type = double;
+  static constexpr void function(const gsl::not_null<double*> result,
+                                 const int& a) noexcept {
+    *result = 5 * a;
+  }
 
-  static constexpr double function(const int& a) noexcept { return 5 * a; }
-
-  static constexpr double function(const double a) noexcept { return 3.2 * a; }
+  static constexpr void function(const gsl::not_null<double*> result,
+                                 const double a) noexcept {
+    *result = 3.2 * a;
+  }
   using argument_tags = tmpl::list<ArgumentTag>;
 };
 /// [overload_compute_tag_type]
 
+template <typename ArgumentTag0, typename ArgumentTag1 = void>
+struct OverloadNumberOfArgs : db::SimpleTag {
+  using type = double;
+};
+
 /// [overload_compute_tag_number_of_args]
 template <typename ArgumentTag0, typename ArgumentTag1 = void>
-struct OverloadNumberOfArgs : db::ComputeTag {
-  static std::string name() noexcept { return "OverloadNumberOfArgs"; }
+struct OverloadNumberOfArgsCompute
+    : OverloadNumberOfArgs<ArgumentTag0, ArgumentTag1>,
+      db::ComputeTag {
+  using base = OverloadNumberOfArgs<ArgumentTag0, ArgumentTag1>;
+  using return_type = double;
 
-  static constexpr double function(const double a) noexcept { return 3.2 * a; }
+  static constexpr void function(const gsl::not_null<double*> result,
+                                 const double a) noexcept {
+    *result = 3.2 * a;
+  }
 
-  static constexpr double function(const double a, const double b) noexcept {
-    return a * b;
+  static constexpr void function(const gsl::not_null<double*> result,
+                                 const double a, const double b) noexcept {
+    *result = a * b;
   }
 
   using argument_tags =
@@ -1930,14 +2047,21 @@ struct OverloadNumberOfArgs : db::ComputeTag {
 };
 /// [overload_compute_tag_number_of_args]
 
+template <typename ArgumentTag>
+struct Template : db::SimpleTag {
+  using type = typename ArgumentTag::type;
+};
+
 /// [overload_compute_tag_template]
 template <typename ArgumentTag>
-struct ComputeTemplate : db::ComputeTag {
-  static std::string name() noexcept { return "ComputeTemplate"; }
+struct TemplateCompute : Template<ArgumentTag>, db::ComputeTag {
+  using base = Template<ArgumentTag>;
+  using return_type = typename ArgumentTag::type;
 
   template <typename T>
-  static constexpr T function(const T& a) noexcept {
-    return 5 * a;
+  static constexpr void function(const gsl::not_null<T*> result,
+                                 const T& a) noexcept {
+    *result = 5 * a;
   }
 
   using argument_tags = tmpl::list<ArgumentTag>;
@@ -1950,14 +2074,15 @@ void test_overload_compute_tags() noexcept {
   auto box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag0Int>,
       db::AddComputeTags<
-          test_databox_tags::OverloadType<test_databox_tags::Tag0>,
-          test_databox_tags::OverloadType<test_databox_tags::Tag0Int>,
-          test_databox_tags::OverloadNumberOfArgs<test_databox_tags::Tag0>,
-          test_databox_tags::OverloadNumberOfArgs<
+          test_databox_tags::OverloadTypeCompute<test_databox_tags::Tag0>,
+          test_databox_tags::OverloadTypeCompute<test_databox_tags::Tag0Int>,
+          test_databox_tags::OverloadNumberOfArgsCompute<
+              test_databox_tags::Tag0>,
+          test_databox_tags::OverloadNumberOfArgsCompute<
               test_databox_tags::Tag0,
               test_databox_tags::OverloadType<test_databox_tags::Tag0>>,
-          test_databox_tags::ComputeTemplate<test_databox_tags::Tag0>,
-          test_databox_tags::ComputeTemplate<test_databox_tags::Tag0Int>>>(8.4,
+          test_databox_tags::TemplateCompute<test_databox_tags::Tag0>,
+          test_databox_tags::TemplateCompute<test_databox_tags::Tag0Int>>>(8.4,
                                                                            -3);
   CHECK(db::get<test_databox_tags::OverloadType<test_databox_tags::Tag0>>(
             box) == 8.4 * 3.2);
@@ -1970,10 +2095,10 @@ void test_overload_compute_tags() noexcept {
             test_databox_tags::Tag0,
             test_databox_tags::OverloadType<test_databox_tags::Tag0>>>(box) ==
         8.4 * 3.2 * 8.4);
-  CHECK(db::get<test_databox_tags::ComputeTemplate<test_databox_tags::Tag0>>(
-            box) == 8.4 * 5.0);
-  CHECK(db::get<test_databox_tags::ComputeTemplate<test_databox_tags::Tag0Int>>(
-            box) == -3 * 5);
+  CHECK(db::get<test_databox_tags::Template<test_databox_tags::Tag0>>(box) ==
+        8.4 * 5.0);
+  CHECK(db::get<test_databox_tags::Template<test_databox_tags::Tag0Int>>(box) ==
+        -3 * 5);
 }
 
 namespace TestTags {
@@ -2123,9 +2248,9 @@ void serialization_subitems_simple_items() noexcept {
 
 template <int Id>
 struct CountingFunc {
-  static double apply() {
+  static void apply(const gsl::not_null<double*> result) {
     count++;
-    return 8.2;
+    *result = 8.2;
   }
   static int count;
 };
@@ -2134,43 +2259,57 @@ template <int Id>
 int CountingFunc<Id>::count = 0;
 
 template <int Id>
-struct CountingTag : db::ComputeTag {
-  static std::string name() noexcept { return "CountingTag"; }
+struct CountingTag : db::SimpleTag {
+  using type = double;
+};
+
+template <int Id>
+struct CountingTagCompute : CountingTag<Id>, db::ComputeTag {
+  using base = CountingTag<Id>;
+  using return_type = double;
   static constexpr auto function = CountingFunc<Id>::apply;
   using argument_tags = tmpl::list<>;
 };
 
 template <size_t SecondId>
-struct CountingTagDouble : db::ComputeTag {
-  static std::string name() noexcept { return "CountingTag"; }
-  static double function(const Boxed<double>& t) {
+struct CountingTagDouble : db::SimpleTag {
+  using type = double;
+};
+
+template <size_t SecondId>
+struct CountingTagDoubleCompute : CountingTagDouble<SecondId>, db::ComputeTag {
+  using base = CountingTagDouble<SecondId>;
+  using return_type = double;
+  static void function(const gsl::not_null<double*> result,
+                       const Boxed<double>& t) {
     count++;
-    return *t * 6.0;
+    *result = *t * 6.0;
   }
   using argument_tags = tmpl::list<Second<SecondId>>;
   static int count;
 };
 
 template <size_t SecondId>
-int CountingTagDouble<SecondId>::count = 0;
+int CountingTagDoubleCompute<SecondId>::count = 0;
 
 // clang-tidy: this function is too long. Yes, well we need to check lots
 void serialization_subitem_compute_items() noexcept {  // NOLINT
   INFO("serialization of a DataBox with Subitem compute items");
-  auto serialization_test_box = db::create<
-      db::AddSimpleTags<test_databox_tags::Tag0, Parent<0>,
-                        test_databox_tags::Tag1, test_databox_tags::Tag2,
-                        Parent<1>>,
-      db::AddComputeTags<CountingTag<1>, test_databox_tags::ComputeTag0,
-                         Parent<2, true>, test_databox_tags::ComputeTag1,
-                         Parent<3, true, true>, CountingTag<0>,
-                         CountingTagDouble<2>, CountingTagDouble<3>>>(
-      3.14,
-      std::make_pair(Boxed<int>(std::make_shared<int>(5)),
-                     Boxed<double>(std::make_shared<double>(3.5))),
-      std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
-      std::make_pair(Boxed<int>(std::make_shared<int>(9)),
-                     Boxed<double>(std::make_shared<double>(-4.5))));
+  auto serialization_test_box =
+      db::create<db::AddSimpleTags<test_databox_tags::Tag0, Parent<0>,
+                                   test_databox_tags::Tag1,
+                                   test_databox_tags::Tag2, Parent<1>>,
+                 db::AddComputeTags<
+                     CountingTagCompute<1>, test_databox_tags::Tag4Compute,
+                     ParentCompute<2>, test_databox_tags::Tag5Compute,
+                     ParentCompute<3>, CountingTagCompute<0>,
+                     CountingTagDoubleCompute<2>, CountingTagDoubleCompute<3>>>(
+          3.14,
+          std::make_pair(Boxed<int>(std::make_shared<int>(5)),
+                         Boxed<double>(std::make_shared<double>(3.5))),
+          std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
+          std::make_pair(Boxed<int>(std::make_shared<int>(9)),
+                         Boxed<double>(std::make_shared<double>(-4.5))));
   const double* before_0 =
       &db::get<test_databox_tags::Tag0>(serialization_test_box);
   const std::vector<double>* before_1 =
@@ -2189,10 +2328,9 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
       &db::get<First<1>>(serialization_test_box);
   const Boxed<double>* before_parent1s =
       &db::get<Second<1>>(serialization_test_box);
-  CHECK(db::get<test_databox_tags::ComputeTag0>(serialization_test_box) ==
-        6.28);
+  CHECK(db::get<test_databox_tags::Tag4>(serialization_test_box) == 6.28);
   const double* before_compute_tag0 =
-      &db::get<test_databox_tags::ComputeTag0>(serialization_test_box);
+      &db::get<test_databox_tags::Tag4>(serialization_test_box);
   CHECK(CountingFunc<0>::count == 0);
   CHECK(CountingFunc<1>::count == 0);
   CHECK(db::get<CountingTag<0>>(serialization_test_box) == 8.2);
@@ -2201,35 +2339,35 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
   CHECK(CountingFunc<0>::count == 1);
   CHECK(CountingFunc<1>::count == 0);
 
-  CHECK(Parent<2, true>::count == 0);
-  CHECK(Parent<3, true, true>::count == 0);
+  CHECK(ParentCompute<2>::count == 0);
+  CHECK(ParentCompute<3>::count == 0);
   const std::pair<Boxed<int>, Boxed<double>>* before_parent2 =
-      &db::get<Parent<2, true>>(serialization_test_box);
-  CHECK(Parent<2, true>::count == 1);
-  CHECK(Parent<3, true, true>::count == 0);
+      &db::get<Parent<2>>(serialization_test_box);
+  CHECK(ParentCompute<2>::count == 1);
+  CHECK(ParentCompute<3>::count == 0);
   const Boxed<int>* before_parent2_first =
       &db::get<First<2>>(serialization_test_box);
   const Boxed<double>* before_parent2_second =
       &db::get<Second<2>>(serialization_test_box);
 
   // Check we are correctly pointing into parent
-  CHECK(&*(db::get<Parent<2, true>>(serialization_test_box).first) ==
+  CHECK(&*(db::get<Parent<2>>(serialization_test_box).first) ==
         &*db::get<First<2>>(serialization_test_box));
-  CHECK(&*(db::get<Parent<2, true>>(serialization_test_box).second) ==
+  CHECK(&*(db::get<Parent<2>>(serialization_test_box).second) ==
         &*db::get<Second<2>>(serialization_test_box));
 
-  CHECK(*(db::get<Parent<2, true>>(serialization_test_box).first) == 10);
-  CHECK(*(db::get<Parent<2, true>>(serialization_test_box).second) == -9.0);
+  CHECK(*(db::get<Parent<2>>(serialization_test_box).first) == 10);
+  CHECK(*(db::get<Parent<2>>(serialization_test_box).second) == -9.0);
 
   CHECK(*db::get<First<2>>(serialization_test_box) == 10);
   CHECK(*db::get<Second<2>>(serialization_test_box) == -9.0);
-  CHECK(Parent<2, true>::count == 1);
-  CHECK(Parent<3, true, true>::count == 0);
+  CHECK(ParentCompute<2>::count == 1);
+  CHECK(ParentCompute<3>::count == 0);
 
   // Check compute items that take subitems
-  CHECK(CountingTagDouble<2>::count == 0);
+  CHECK(CountingTagDoubleCompute<2>::count == 0);
   CHECK(db::get<CountingTagDouble<2>>(serialization_test_box) == -9.0 * 6.0);
-  CHECK(CountingTagDouble<2>::count == 1);
+  CHECK(CountingTagDoubleCompute<2>::count == 1);
   const double* const before_compute_tag2 =
       &db::get<CountingTagDouble<2>>(serialization_test_box);
 
@@ -2284,12 +2422,12 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
   CHECK(before_parent1s !=
         &db::get<Second<1>>(deserialized_serialization_test_box));
   // Check compute items
-  CHECK(db::get<test_databox_tags::ComputeTag0>(
-            deserialized_serialization_test_box) == 6.28);
-  CHECK(&db::get<test_databox_tags::ComputeTag0>(
+  CHECK(db::get<test_databox_tags::Tag4>(deserialized_serialization_test_box) ==
+        6.28);
+  CHECK(&db::get<test_databox_tags::Tag4>(
             deserialized_serialization_test_box) != before_compute_tag0);
-  CHECK(db::get<test_databox_tags::ComputeTag1>(
-            deserialized_serialization_test_box) == "My Sample String6.28"s);
+  CHECK(db::get<test_databox_tags::Tag5>(deserialized_serialization_test_box) ==
+        "My Sample String6.28"s);
 
   CHECK(CountingFunc<0>::count == 1);
   CHECK(CountingFunc<1>::count == 0);
@@ -2315,32 +2453,29 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
   CHECK(&db::get<CountingTag<1>>(serialization_test_box) !=
         &db::get<CountingTag<1>>(deserialized_serialization_test_box));
 
-  CHECK(Parent<2, true>::count == 1);
-  CHECK(Parent<3, true, true>::count == 0);
-  CHECK(&db::get<Parent<2, true>>(serialization_test_box) == before_parent2);
+  CHECK(ParentCompute<2>::count == 1);
+  CHECK(ParentCompute<3>::count == 0);
+  CHECK(&db::get<Parent<2>>(serialization_test_box) == before_parent2);
   // Check we are correctly pointing into parent
-  CHECK(&*(db::get<Parent<2, true>>(serialization_test_box).first) ==
+  CHECK(&*(db::get<Parent<2>>(serialization_test_box).first) ==
         &*db::get<First<2>>(serialization_test_box));
-  CHECK(&*(db::get<Parent<2, true>>(serialization_test_box).second) ==
+  CHECK(&*(db::get<Parent<2>>(serialization_test_box).second) ==
         &*db::get<Second<2>>(serialization_test_box));
   // Check that we did not reset the subitems items in the initial DataBox
   CHECK(&db::get<First<2>>(serialization_test_box) == before_parent2_first);
   CHECK(&db::get<Second<2>>(serialization_test_box) == before_parent2_second);
-  CHECK(*(db::get<Parent<2, true>>(serialization_test_box).first) == 10);
-  CHECK(*(db::get<Parent<2, true>>(serialization_test_box).second) == -9.0);
-  CHECK(
-      *(db::get<Parent<2, true>>(deserialized_serialization_test_box).first) ==
-      10);
-  CHECK(&db::get<Parent<2, true>>(deserialized_serialization_test_box) !=
+  CHECK(*(db::get<Parent<2>>(serialization_test_box).first) == 10);
+  CHECK(*(db::get<Parent<2>>(serialization_test_box).second) == -9.0);
+  CHECK(*(db::get<Parent<2>>(deserialized_serialization_test_box).first) == 10);
+  CHECK(&db::get<Parent<2>>(deserialized_serialization_test_box) !=
         before_parent2);
-  CHECK(
-      *(db::get<Parent<2, true>>(deserialized_serialization_test_box).second) ==
-      -9.0);
+  CHECK(*(db::get<Parent<2>>(deserialized_serialization_test_box).second) ==
+        -9.0);
   CHECK(*db::get<First<2>>(deserialized_serialization_test_box) == 10);
   CHECK(*db::get<Second<2>>(deserialized_serialization_test_box) == -9.0);
-  CHECK(Parent<2, true>::count == 1);
-  CHECK(Parent<3, true, true>::count == 0);
-  CHECK(&db::get<Parent<2, true>>(deserialized_serialization_test_box) !=
+  CHECK(ParentCompute<2>::count == 1);
+  CHECK(ParentCompute<3>::count == 0);
+  CHECK(&db::get<Parent<2>>(deserialized_serialization_test_box) !=
         before_parent2);
   // Check pointers in deserialized box
   CHECK(&db::get<First<2>>(deserialized_serialization_test_box) !=
@@ -2348,50 +2483,43 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
   CHECK(&db::get<Second<2>>(deserialized_serialization_test_box) !=
         before_parent2_second);
   // Check we are correctly pointing into new parent and not old
-  CHECK(
-      &*(db::get<Parent<2, true>>(deserialized_serialization_test_box).first) ==
-      &*db::get<First<2>>(deserialized_serialization_test_box));
-  CHECK(&*(db::get<Parent<2, true>>(deserialized_serialization_test_box)
-               .second) ==
+  CHECK(&*(db::get<Parent<2>>(deserialized_serialization_test_box).first) ==
+        &*db::get<First<2>>(deserialized_serialization_test_box));
+  CHECK(&*(db::get<Parent<2>>(deserialized_serialization_test_box).second) ==
         &*db::get<Second<2>>(deserialized_serialization_test_box));
-  CHECK(
-      &*(db::get<Parent<2, true>>(deserialized_serialization_test_box).first) !=
-      &*db::get<First<2>>(serialization_test_box));
-  CHECK(&*(db::get<Parent<2, true>>(deserialized_serialization_test_box)
-               .second) != &*db::get<Second<2>>(serialization_test_box));
+  CHECK(&*(db::get<Parent<2>>(deserialized_serialization_test_box).first) !=
+        &*db::get<First<2>>(serialization_test_box));
+  CHECK(&*(db::get<Parent<2>>(deserialized_serialization_test_box).second) !=
+        &*db::get<Second<2>>(serialization_test_box));
 
-  CHECK(*(db::get<Parent<3, true, true>>(serialization_test_box).first) == 11);
-  CHECK(Parent<2, true>::count == 1);
-  CHECK(Parent<3, true, true>::count == 1);
-  CHECK(*(db::get<Parent<3, true, true>>(serialization_test_box).second) ==
-        -18.0);
-  CHECK(Parent<2, true>::count == 1);
-  CHECK(Parent<3, true, true>::count == 1);
+  CHECK(*(db::get<Parent<3>>(serialization_test_box).first) == 11);
+  CHECK(ParentCompute<2>::count == 1);
+  CHECK(ParentCompute<3>::count == 1);
+  CHECK(*(db::get<Parent<3>>(serialization_test_box).second) == -18.0);
+  CHECK(ParentCompute<2>::count == 1);
+  CHECK(ParentCompute<3>::count == 1);
   CHECK(*db::get<First<3>>(serialization_test_box) == 11);
   CHECK(*db::get<Second<3>>(serialization_test_box) == -18.0);
-  CHECK(Parent<2, true>::count == 1);
-  CHECK(Parent<3, true, true>::count == 1);
-  CHECK(*(db::get<Parent<3, true, true>>(deserialized_serialization_test_box)
-              .first) == 11);
-  CHECK(Parent<2, true>::count == 1);
-  CHECK(Parent<3, true, true>::count == 2);
-  CHECK(*(db::get<Parent<3, true, true>>(deserialized_serialization_test_box)
-              .second) == -18.0);
+  CHECK(ParentCompute<2>::count == 1);
+  CHECK(ParentCompute<3>::count == 1);
+  CHECK(*(db::get<Parent<3>>(deserialized_serialization_test_box).first) == 11);
+  CHECK(ParentCompute<2>::count == 1);
+  CHECK(ParentCompute<3>::count == 2);
+  CHECK(*(db::get<Parent<3>>(deserialized_serialization_test_box).second) ==
+        -18.0);
   CHECK(*db::get<First<3>>(deserialized_serialization_test_box) == 11);
   CHECK(*db::get<Second<3>>(deserialized_serialization_test_box) == -18.0);
-  CHECK(Parent<2, true>::count == 1);
-  CHECK(Parent<3, true, true>::count == 2);
+  CHECK(ParentCompute<2>::count == 1);
+  CHECK(ParentCompute<3>::count == 2);
 
   // Check that all the Parent<3> related objects point to the right place
-  CHECK(&*(db::get<Parent<3, true, true>>(deserialized_serialization_test_box)
-               .first) ==
+  CHECK(&*(db::get<Parent<3>>(deserialized_serialization_test_box).first) ==
         &*db::get<First<3>>(deserialized_serialization_test_box));
-  CHECK(&*(db::get<Parent<3, true, true>>(deserialized_serialization_test_box)
-               .second) ==
+  CHECK(&*(db::get<Parent<3>>(deserialized_serialization_test_box).second) ==
         &*db::get<Second<3>>(deserialized_serialization_test_box));
-  CHECK(&*(db::get<Parent<3, true, true>>(serialization_test_box).first) ==
+  CHECK(&*(db::get<Parent<3>>(serialization_test_box).first) ==
         &*db::get<First<3>>(serialization_test_box));
-  CHECK(&*(db::get<Parent<3, true, true>>(serialization_test_box).second) ==
+  CHECK(&*(db::get<Parent<3>>(serialization_test_box).second) ==
         &*db::get<Second<3>>(serialization_test_box));
   CHECK(&*db::get<First<3>>(deserialized_serialization_test_box) !=
         &*db::get<First<3>>(serialization_test_box));
@@ -2399,7 +2527,7 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
         &*db::get<Second<3>>(serialization_test_box));
 
   // Check compute items that depend on the subitems
-  CHECK(CountingTagDouble<2>::count == 1);
+  CHECK(CountingTagDoubleCompute<2>::count == 1);
   CHECK(db::get<CountingTagDouble<2>>(serialization_test_box) == -9.0 * 6.0);
   CHECK(before_compute_tag2 ==
         &db::get<CountingTagDouble<2>>(serialization_test_box));
@@ -2407,88 +2535,85 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
         -9.0 * 6.0);
   CHECK(before_compute_tag2 !=
         &db::get<CountingTagDouble<2>>(deserialized_serialization_test_box));
-  CHECK(CountingTagDouble<2>::count == 1);
+  CHECK(CountingTagDoubleCompute<2>::count == 1);
 
-  CHECK(CountingTagDouble<3>::count == 0);
+  CHECK(CountingTagDoubleCompute<3>::count == 0);
   CHECK(db::get<CountingTagDouble<3>>(serialization_test_box) == -18.0 * 6.0);
   CHECK(db::get<CountingTagDouble<3>>(deserialized_serialization_test_box) ==
         -18.0 * 6.0);
   CHECK(&db::get<CountingTagDouble<3>>(serialization_test_box) !=
         &db::get<CountingTagDouble<3>>(deserialized_serialization_test_box));
-  CHECK(CountingTagDouble<3>::count == 2);
+  CHECK(CountingTagDoubleCompute<3>::count == 2);
 
   // Mutate subitems 1 in deserialized to see that changes propagate correctly
   db::mutate<Second<1>>(
       make_not_null(&serialization_test_box),
       [](const gsl::not_null<Boxed<double>*> x) noexcept { **x = 12.; });
-  CHECK(Parent<2, true>::count == 1);
-  CHECK(CountingTagDouble<2>::count == 1);
+  CHECK(ParentCompute<2>::count == 1);
+  CHECK(CountingTagDoubleCompute<2>::count == 1);
   CHECK(db::get<CountingTagDouble<2>>(serialization_test_box) == 24.0 * 6.0);
-  CHECK(Parent<2, true>::count == 2);
-  CHECK(CountingTagDouble<2>::count == 2);
-  CHECK(CountingTagDouble<3>::count == 2);
+  CHECK(ParentCompute<2>::count == 2);
+  CHECK(CountingTagDoubleCompute<2>::count == 2);
+  CHECK(CountingTagDoubleCompute<3>::count == 2);
   CHECK(db::get<CountingTagDouble<3>>(serialization_test_box) == 48.0 * 6.0);
-  CHECK(CountingTagDouble<3>::count == 3);
+  CHECK(CountingTagDoubleCompute<3>::count == 3);
 
   db::mutate<Second<1>>(
       make_not_null(&deserialized_serialization_test_box),
       [](const gsl::not_null<Boxed<double>*> x) noexcept { **x = -7.; });
-  CHECK(Parent<2, true>::count == 2);
-  CHECK(CountingTagDouble<2>::count == 2);
+  CHECK(ParentCompute<2>::count == 2);
+  CHECK(CountingTagDoubleCompute<2>::count == 2);
   CHECK(db::get<CountingTagDouble<2>>(deserialized_serialization_test_box) ==
         -14.0 * 6.0);
-  CHECK(Parent<2, true>::count == 3);
-  CHECK(CountingTagDouble<2>::count == 3);
-  CHECK(CountingTagDouble<3>::count == 3);
+  CHECK(ParentCompute<2>::count == 3);
+  CHECK(CountingTagDoubleCompute<2>::count == 3);
+  CHECK(CountingTagDoubleCompute<3>::count == 3);
   CHECK(db::get<CountingTagDouble<3>>(deserialized_serialization_test_box) ==
         -28.0 * 6.0);
-  CHECK(CountingTagDouble<3>::count == 4);
+  CHECK(CountingTagDoubleCompute<3>::count == 4);
 
   // Check things didn't get modified in the original DataBox
-  CHECK(Parent<2, true>::count == 3);
-  CHECK(CountingTagDouble<2>::count == 3);
+  CHECK(ParentCompute<2>::count == 3);
+  CHECK(CountingTagDoubleCompute<2>::count == 3);
   CHECK(db::get<CountingTagDouble<2>>(serialization_test_box) == 24.0 * 6.0);
-  CHECK(Parent<2, true>::count == 3);
-  CHECK(CountingTagDouble<2>::count == 3);
-  CHECK(CountingTagDouble<3>::count == 4);
+  CHECK(ParentCompute<2>::count == 3);
+  CHECK(CountingTagDoubleCompute<2>::count == 3);
+  CHECK(CountingTagDoubleCompute<3>::count == 4);
   CHECK(db::get<CountingTagDouble<3>>(serialization_test_box) == 48.0 * 6.0);
-  CHECK(CountingTagDouble<3>::count == 4);
+  CHECK(CountingTagDoubleCompute<3>::count == 4);
 
   CountingFunc<0>::count = 0;
   CountingFunc<1>::count = 0;
-  CountingTagDouble<2>::count = 0;
-  CountingTagDouble<3>::count = 0;
-  Parent<2, true>::count = 0;
-  Parent<3, true, true>::count = 0;
+  CountingTagDoubleCompute<2>::count = 0;
+  CountingTagDoubleCompute<3>::count = 0;
+  ParentCompute<2>::count = 0;
+  ParentCompute<3>::count = 0;
 }
 
 void serialization_compute_items_of_base_tags() noexcept {
   INFO("serialization of a DataBox with compute items depending on base tags");
   auto original_box =
       db::create<db::AddSimpleTags<test_databox_tags::Tag2>,
-                 db::AddComputeTags<test_databox_tags::ComputeFromBase>>(
+                 db::AddComputeTags<test_databox_tags::Tag6Compute>>(
           "My Sample String"s);
   CHECK(db::get<test_databox_tags::Tag2>(original_box) == "My Sample String");
-  CHECK(db::get<test_databox_tags::ComputeFromBase>(original_box) ==
-        "My Sample String");
+  CHECK(db::get<test_databox_tags::Tag6>(original_box) == "My Sample String");
   auto copied_box = serialize_and_deserialize(original_box);
   CHECK(db::get<test_databox_tags::Tag2>(copied_box) == "My Sample String");
-  CHECK(db::get<test_databox_tags::ComputeFromBase>(copied_box) ==
-        "My Sample String");
+  CHECK(db::get<test_databox_tags::Tag6>(copied_box) == "My Sample String");
 }
 
 void serialization_of_pointers() noexcept {
   INFO("Serialization of pointers");
-  const auto box = db::create<
-      db::AddSimpleTags<test_databox_tags::Pointer>,
-      db::AddComputeTags<test_databox_tags::PointerComputeItem,
-                         test_databox_tags::PointerComputeItemMutating>>(
-      std::make_unique<int>(3));
+  const auto box =
+      db::create<db::AddSimpleTags<test_databox_tags::Pointer>,
+                 db::AddComputeTags<test_databox_tags::PointerToCounterCompute,
+                                    test_databox_tags::PointerToSumCompute>>(
+          std::make_unique<int>(3));
   const auto check = [](const decltype(box)& check_box) noexcept {
     CHECK(db::get<test_databox_tags::Pointer>(check_box) == 3);
-    CHECK(db::get<test_databox_tags::PointerComputeItem>(check_box) == 4);
-    CHECK(db::get<test_databox_tags::PointerComputeItemMutating>(check_box) ==
-          8);
+    CHECK(db::get<test_databox_tags::PointerToCounter>(check_box) == 4);
+    CHECK(db::get<test_databox_tags::PointerToSum>(check_box) == 8);
   };
   check(serialize_and_deserialize(box));  // before compute items evaluated
   check(box);

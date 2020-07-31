@@ -34,6 +34,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -47,10 +48,17 @@ struct OtherDataTag : db::SimpleTag {
 };
 
 template <typename VarsTag>
-struct SomeComputeTag : db::ComputeTag {
-  static std::string name() noexcept { return "SomeComputeTag"; }
-  static size_t function(const typename VarsTag::type& vars) {
-    return vars.number_of_grid_points();
+struct SomeComputeTag : db::SimpleTag {
+  using type = size_t;
+};
+
+template <typename VarsTag>
+struct SomeComputeTagCompute : SomeComputeTag<VarsTag>, db::ComputeTag {
+  using base = SomeComputeTag<VarsTag>;
+  using return_type = size_t;
+  static void function(gsl::not_null<size_t*> result,
+                       const typename VarsTag::type& vars) {
+    *result = vars.number_of_grid_points();
   }
   using argument_tags = tmpl::list<VarsTag>;
 };
@@ -105,9 +113,10 @@ struct ElementArray {
           tmpl::list<dg::Actions::InitializeInterfaces<
               System<Dim>, dg::Initialization::slice_tags_to_face<vars_tag>,
               dg::Initialization::slice_tags_to_exterior<other_vars_tag>,
-              dg::Initialization::face_compute_tags<SomeComputeTag<vars_tag>>,
+              dg::Initialization::face_compute_tags<
+                  SomeComputeTagCompute<vars_tag>>,
               dg::Initialization::exterior_compute_tags<
-                  SomeComputeTag<other_vars_tag>>,
+                  SomeComputeTagCompute<other_vars_tag>>,
               true, use_moving_mesh>>>>;
 };
 

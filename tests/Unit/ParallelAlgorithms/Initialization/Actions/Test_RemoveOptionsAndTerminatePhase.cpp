@@ -31,15 +31,23 @@ struct InitialMass : db::SimpleTag {
   using type = double;
 };
 
-struct DummyTimeTag : db::SimpleTag {
-  static std::string name() noexcept { return "DummyTime"; }
+struct DummyTime : db::SimpleTag {
   using type = double;
 };
 
 template <typename Tag>
-struct TagMultiplyByTwo : db::ComputeTag {
-  static std::string name() noexcept { return "MultiplyByTwo"; }
-  static double function(const double t) noexcept { return t * 2.0; }
+struct MultiplyByTwo : db::SimpleTag {
+  using type = double;
+};
+
+template <typename Tag>
+struct MultiplyByTwoCompute : MultiplyByTwo<Tag>, db::ComputeTag {
+  using return_type = double;
+  using base = MultiplyByTwo<Tag>;
+  static void function(const gsl::not_null<double*> result,
+                       const double t) noexcept {
+    *result = t * 2.0;
+  }
   using argument_tags = tmpl::list<Tag>;
 };
 
@@ -58,7 +66,7 @@ struct Action0 {
     const double initial_time_value = db::get<InitialTime>(box);
     return std::make_tuple(
         Initialization::merge_into_databox<Action0,
-                                           db::AddSimpleTags<DummyTimeTag>>(
+                                           db::AddSimpleTags<DummyTime>>(
             std::move(box), 3.0 * initial_time_value));
   }
 
@@ -89,7 +97,7 @@ struct Action1 {
                     const ParallelComponent* const /*meta*/) noexcept {
     return std::make_tuple(Initialization::merge_into_databox<
                            Action1, db::AddSimpleTags<>,
-                           db::AddComputeTags<TagMultiplyByTwo<DummyTimeTag>>>(
+                           db::AddComputeTags<MultiplyByTwoCompute<DummyTime>>>(
         std::move(box)));
   }
 };
@@ -136,11 +144,10 @@ SPECTRE_TEST_CASE(
                            Metavariables::Phase::Initialization);
   CHECK(ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, InitialMass>(runner, 0));
-  CHECK(not ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner,
-                                                                       0));
+  CHECK(not ActionTesting::tag_is_retrievable<component, DummyTime>(runner, 0));
   CHECK(not ActionTesting::tag_is_retrievable<component,
-                                              TagMultiplyByTwo<DummyTimeTag>>(
-      runner, 0));
+                                              MultiplyByTwo<DummyTime>>(runner,
+                                                                        0));
   CHECK(ActionTesting::get_databox_tag<component, InitialTime>(runner, 0) ==
         initial_time);
   CHECK_FALSE(ActionTesting::get_terminate<component>(runner, 0));
@@ -148,50 +155,46 @@ SPECTRE_TEST_CASE(
   runner.next_action<component>(0);
   CHECK(ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, InitialMass>(runner, 0));
-  CHECK(ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner, 0));
+  CHECK(ActionTesting::tag_is_retrievable<component, DummyTime>(runner, 0));
   CHECK(not ActionTesting::tag_is_retrievable<component,
-                                              TagMultiplyByTwo<DummyTimeTag>>(
-      runner, 0));
+                                              MultiplyByTwo<DummyTime>>(runner,
+                                                                        0));
   CHECK(ActionTesting::get_databox_tag<component, InitialTime>(runner, 0) ==
         initial_time);
   CHECK(ActionTesting::get_databox_tag<component, InitialMass>(runner, 0) ==
         initial_mass);
-  CHECK(ActionTesting::get_databox_tag<component, DummyTimeTag>(runner, 0) ==
+  CHECK(ActionTesting::get_databox_tag<component, DummyTime>(runner, 0) ==
         3.0 * initial_time);
   CHECK_FALSE(ActionTesting::get_terminate<component>(runner, 0));
   // Runs Action1
   runner.next_action<component>(0);
   CHECK(ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, InitialMass>(runner, 0));
-  CHECK(ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner, 0));
-  CHECK(ActionTesting::tag_is_retrievable<component,
-                                          TagMultiplyByTwo<DummyTimeTag>>(
+  CHECK(ActionTesting::tag_is_retrievable<component, DummyTime>(runner, 0));
+  CHECK(ActionTesting::tag_is_retrievable<component, MultiplyByTwo<DummyTime>>(
       runner, 0));
   CHECK(ActionTesting::get_databox_tag<component, InitialTime>(runner, 0) ==
         initial_time);
   CHECK(ActionTesting::get_databox_tag<component, InitialMass>(runner, 0) ==
         initial_mass);
-  CHECK(ActionTesting::get_databox_tag<component, DummyTimeTag>(runner, 0) ==
+  CHECK(ActionTesting::get_databox_tag<component, DummyTime>(runner, 0) ==
         3.0 * initial_time);
-  CHECK(
-      ActionTesting::get_databox_tag<component, TagMultiplyByTwo<DummyTimeTag>>(
-          runner, 0) == 6.0 * initial_time);
+  CHECK(ActionTesting::get_databox_tag<component, MultiplyByTwo<DummyTime>>(
+            runner, 0) == 6.0 * initial_time);
   CHECK_FALSE(ActionTesting::get_terminate<component>(runner, 0));
   // Runs RemoveOptionsFromDataBox
   runner.next_action<component>(0);
   CHECK(
       not ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, InitialMass>(runner, 0));
-  CHECK(ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner, 0));
-  CHECK(ActionTesting::tag_is_retrievable<component,
-                                          TagMultiplyByTwo<DummyTimeTag>>(
+  CHECK(ActionTesting::tag_is_retrievable<component, DummyTime>(runner, 0));
+  CHECK(ActionTesting::tag_is_retrievable<component, MultiplyByTwo<DummyTime>>(
       runner, 0));
   CHECK(ActionTesting::get_databox_tag<component, InitialMass>(runner, 0) ==
         initial_mass);
-  CHECK(ActionTesting::get_databox_tag<component, DummyTimeTag>(runner, 0) ==
+  CHECK(ActionTesting::get_databox_tag<component, DummyTime>(runner, 0) ==
         3.0 * initial_time);
-  CHECK(
-      ActionTesting::get_databox_tag<component, TagMultiplyByTwo<DummyTimeTag>>(
-          runner, 0) == 6.0 * initial_time);
+  CHECK(ActionTesting::get_databox_tag<component, MultiplyByTwo<DummyTime>>(
+            runner, 0) == 6.0 * initial_time);
   CHECK(ActionTesting::get_terminate<component>(runner, 0));
 }

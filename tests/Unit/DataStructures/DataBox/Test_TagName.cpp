@@ -40,18 +40,6 @@ struct NamedSimpleCompute : NamedSimple, db::ComputeTag {
   using base = NamedSimple;
 };
 
-struct BaseNamedCompute : TestHelpers::db::Tags::Base, db::ComputeTag {
-  static std::string name() noexcept { return "NameOfBaseCompute"; }
-};
-
-struct NamedBaseNamedCompute : NamedBase, db::ComputeTag {
-  static std::string name() noexcept { return "NameOfNamedBaseCompute"; }
-};
-
-struct NamedBaseCompute : NamedBase, db::ComputeTag {
-  using base = NamedBase;
-};
-
 struct SimpleWithBaseNamedCompute : TestHelpers::db::Tags::SimpleWithBase,
                                     db::ComputeTag {
   static std::string name() noexcept { return "NameOfSimpleWithBaseCompute"; }
@@ -127,9 +115,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TagName",
   CHECK(db::tag_name<TestHelpers::db::Tags::Simple>() == "Simple");
   CHECK(db::tag_name<TestHelpers::db::Tags::SimpleWithBase>() ==
         "SimpleWithBase");
-  CHECK(db::tag_name<TestHelpers::db::Tags::Compute>() == "Compute");
   CHECK(db::tag_name<TestHelpers::db::Tags::SimpleCompute>() == "Simple");
-  CHECK(db::tag_name<TestHelpers::db::Tags::BaseCompute>() == "Base");
   CHECK(db::tag_name<TestHelpers::db::Tags::SimpleWithBaseCompute>() ==
         "SimpleWithBase");
   CHECK(db::tag_name<NamedSimple>() == "NameOfSimple");
@@ -141,9 +127,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TagName",
   CHECK(db::tag_name<SimpleNamedCompute>() == "NameOfSimpleCompute");
   CHECK(db::tag_name<NamedSimpleNamedCompute>() == "NameOfNamedSimpleCompute");
   CHECK(db::tag_name<NamedSimpleCompute>() == "NameOfSimple");
-  CHECK(db::tag_name<BaseNamedCompute>() == "NameOfBaseCompute");
-  CHECK(db::tag_name<NamedBaseNamedCompute>() == "NameOfNamedBaseCompute");
-  CHECK(db::tag_name<NamedBaseCompute>() == "NameOfBase");
   CHECK(db::tag_name<SimpleWithBaseNamedCompute>() ==
         "NameOfSimpleWithBaseCompute");
   CHECK(db::tag_name<NamedSimpleWithBaseNamedCompute>() ==
@@ -166,15 +149,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TagName",
   CHECK(db::tag_name<TestHelpers::db::Tags::Label<
             TestHelpers::db::Tags::SimpleWithBase>>() ==
         "Label(SimpleWithBase)");
-  CHECK(db::tag_name<
-            TestHelpers::db::Tags::Label<TestHelpers::db::Tags::Compute>>() ==
-        "Label(Compute)");
   CHECK(db::tag_name<TestHelpers::db::Tags::Label<
             TestHelpers::db::Tags::SimpleCompute>>() == "Label(Simple)");
-  CHECK(
-      db::tag_name<
-          TestHelpers::db::Tags::Label<TestHelpers::db::Tags::BaseCompute>>() ==
-      "Label(Base)");
   CHECK(db::tag_name<TestHelpers::db::Tags::Label<
             TestHelpers::db::Tags::SimpleWithBaseCompute>>() ==
         "Label(SimpleWithBase)");
@@ -195,12 +171,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TagName",
         "Label(NameOfNamedSimpleCompute)");
   CHECK(db::tag_name<TestHelpers::db::Tags::Label<NamedSimpleCompute>>() ==
         "Label(NameOfSimple)");
-  CHECK(db::tag_name<TestHelpers::db::Tags::Label<BaseNamedCompute>>() ==
-        "Label(NameOfBaseCompute)");
-  CHECK(db::tag_name<TestHelpers::db::Tags::Label<NamedBaseNamedCompute>>() ==
-        "Label(NameOfNamedBaseCompute)");
-  CHECK(db::tag_name<TestHelpers::db::Tags::Label<NamedBaseCompute>>() ==
-        "Label(NameOfBase)");
   CHECK(db::tag_name<
             TestHelpers::db::Tags::Label<SimpleWithBaseNamedCompute>>() ==
         "Label(NameOfSimpleWithBaseCompute)");
@@ -223,11 +193,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TagName",
             TestHelpers::db::Tags::Label<NamedSimpleWithNamedBaseCompute>>() ==
         "Label(NameOfSimpleWithNamedBase)");
 
-  CHECK(db::tag_name<
-            TestHelpers::db::Tags::Operator<TestHelpers::db::Tags::Simple>>() ==
-        "Operator(Simple)");
-  CHECK(db::tag_name<TestHelpers::db::Tags::LabelCompute<
-            TestHelpers::db::Tags::Simple>>() == "Label(Simple)");
   CHECK(db::tag_name<NamedLabel<TestHelpers::db::Tags::Simple>>() ==
         "NameOfLabel(Simple)");
   CHECK(db::tag_name<LabelNamedCompute<TestHelpers::db::Tags::Simple>>() ==
@@ -237,10 +202,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TagName",
   CHECK(db::tag_name<NamedLabelNamedCompute<TestHelpers::db::Tags::Simple>>() ==
         "NameOfNamedLabelCompute(Simple)");
 
-  CHECK(db::tag_name<TestHelpers::db::Tags::Operator<NamedSimple>>() ==
-        "Operator(NameOfSimple)");
-  CHECK(db::tag_name<TestHelpers::db::Tags::LabelCompute<NamedSimple>>() ==
-        "Label(NameOfSimple)");
   CHECK(db::tag_name<NamedLabel<NamedSimple>>() == "NameOfLabel(NameOfSimple)");
   CHECK(db::tag_name<LabelNamedCompute<NamedSimple>>() ==
         "NameOfLabelCompute(NameOfSimple)");
@@ -248,19 +209,4 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.TagName",
         "NameOfLabel(NameOfSimple)");
   CHECK(db::tag_name<NamedLabelNamedCompute<NamedSimple>>() ==
         "NameOfNamedLabelCompute(NameOfSimple)");
-
-  CHECK(db::tag_name<TestHelpers::db::Tags::Operator<
-            TestHelpers::db::Tags::Label<TestHelpers::db::Tags::Simple>>>() ==
-        "Operator(Label(Simple))");
-  CHECK(db::tag_name<TestHelpers::db::Tags::Operator<
-            NamedLabel<TestHelpers::db::Tags::Simple>>>() ==
-        "Operator(NameOfLabel(Simple))");
-  CHECK(
-      db::tag_name<TestHelpers::db::Tags::Label<
-          TestHelpers::db::Tags::Operator<TestHelpers::db::Tags::Simple>>>() ==
-      "Label(Operator(Simple))");
-  CHECK(
-      db::tag_name<NamedLabel<
-          TestHelpers::db::Tags::Operator<TestHelpers::db::Tags::Simple>>>() ==
-      "NameOfLabel(Operator(Simple))");
 }

@@ -30,6 +30,8 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// Holds code that is shared between multiple tests. Currently used by
 /// - Test_InterpolateToTarget
@@ -45,16 +47,16 @@ struct TestSolution : db::SimpleTag {
 struct TestTargetPoints : db::SimpleTag {
   using type = tnsr::I<DataVector, 3, Frame::Inertial>;
 };
-// ComputeItem for test.
 struct MultiplyByTwo : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
-struct MultiplyByTwoComputeItem : MultiplyByTwo, db::ComputeTag {
-  static Scalar<DataVector> function(const Scalar<DataVector>& x) noexcept {
-    auto result = make_with_value<Scalar<DataVector>>(x, 0.0);
-    get<>(result) = get<>(x) * 2.0;
-    return result;
+// Compute tag for test.
+struct MultiplyByTwoCompute : MultiplyByTwo, db::ComputeTag {
+  static void function(const gsl::not_null<Scalar<DataVector>*> result,
+                       const Scalar<DataVector>& x) noexcept {
+    get<>(*result) = get<>(x) * 2.0;
   }
+  using return_type = Scalar<DataVector>;
   using argument_tags = tmpl::list<TestSolution>;
   using base = MultiplyByTwo;
 };

@@ -41,14 +41,14 @@ struct TestSolution : db::SimpleTag {
 struct Square : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
-struct SquareComputeItem : Square, db::ComputeTag {
-  static Scalar<DataVector> function(const Scalar<DataVector>& x) noexcept {
-    auto result = make_with_value<Scalar<DataVector>>(x, 0.0);
-    get<>(result) = square(get<>(x));
-    return result;
+struct SquareCompute : Square, db::ComputeTag {
+  static void function(gsl::not_null<Scalar<DataVector>*> result,
+                       const Scalar<DataVector>& x) noexcept {
+    get(*result) = square(get(x));
   }
-  using argument_tags = tmpl::list<Tags::TestSolution>;
+  using argument_tags = tmpl::list<TestSolution>;
   using base = Square;
+  using return_type = Scalar<DataVector>;
 };
 }  // namespace Tags
 
@@ -119,7 +119,7 @@ struct mock_interpolation_target {
 struct MockMetavariables {
   struct InterpolationTargetA {
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
-    using compute_items_on_target = tmpl::list<Tags::SquareComputeItem>;
+    using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
     using compute_target_points = MockComputeTargetPoints;
     using post_interpolation_callback = MockPostInterpolationCallback;
   };

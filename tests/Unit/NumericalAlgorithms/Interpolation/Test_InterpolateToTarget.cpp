@@ -34,8 +34,7 @@ struct mock_element {
                  intrp::Tags::InterpPointInfo<Metavariables>>;
   using compute_tags = tmpl::conditional_t<
       AddComputeItemToBox,
-      tmpl::list<
-          InterpolateOnElementTestHelpers::Tags::MultiplyByTwoComputeItem>,
+      tmpl::list<InterpolateOnElementTestHelpers::Tags::MultiplyByTwoCompute>,
       tmpl::list<>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -92,8 +91,7 @@ struct MockMetavariables {
         InterpolateOnElementTestHelpers::Tags::TestSolution>>;
     using compute_items_on_source = tmpl::conditional_t<
         HaveComputeItemsOnSource,
-        tmpl::list<
-            InterpolateOnElementTestHelpers::Tags::MultiplyByTwoComputeItem>,
+        tmpl::list<InterpolateOnElementTestHelpers::Tags::MultiplyByTwoCompute>,
         tmpl::list<>>;
   };
   using temporal_id = ::Tags::TimeStepId;

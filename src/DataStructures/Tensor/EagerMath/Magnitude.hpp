@@ -95,13 +95,8 @@ namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DataStructuresGroup
 /// The magnitude of a (co)vector
-///
-/// \snippet Test_Magnitude.cpp magnitude_name
 template <typename Tag>
 struct Magnitude : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
-    return "Magnitude(" + db::tag_name<Tag>() + ")";
-  }
   using tag = Tag;
   using type = Scalar<DataVector>;
 };
@@ -139,13 +134,8 @@ struct NonEuclideanMagnitude : Magnitude<Tag>, db::ComputeTag {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DataStructuresGroup
 /// The normalized (co)vector represented by Tag
-///
-/// \snippet Test_Magnitude.cpp normalized_name
 template <typename Tag>
 struct Normalized : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
-    return "Normalized(" + db::tag_name<Tag>() + ")";
-  }
   using tag = Tag;
   using type = typename Tag::type;
 };
@@ -175,13 +165,20 @@ struct NormalizedCompute : Normalized<Tag>, db::ComputeTag {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DataStructuresGroup
 /// The square root of a scalar
-///
-/// \snippet Test_Magnitude.cpp sqrt_name
 template <typename Tag>
-struct Sqrt : db::ComputeTag {
-  static std::string name() noexcept {
-    return "Sqrt(" + db::tag_name<Tag>() + ")";
-  }
+struct Sqrt : db::PrefixTag, db::SimpleTag {
+  using tag = Tag;
+  using type = Scalar<DataVector>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup DataStructuresGroup
+/// The square root of a scalar
+///
+/// This tag inherits from `Tags::Sqrt<Tag>`
+template <typename Tag>
+struct SqrtCompute : Sqrt<Tag>, db::ComputeTag {
+  using base = Sqrt<Tag>;
   using return_type = Scalar<DataVector>;
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<return_type*>, const typename Tag::type&) noexcept>(

@@ -93,8 +93,7 @@ struct MockMetavariables {
         InterpolateOnElementTestHelpers::Tags::TestSolution>>;
     using compute_items_on_source = tmpl::conditional_t<
         HaveComputeItemsOnSource,
-        tmpl::list<
-            InterpolateOnElementTestHelpers::Tags::MultiplyByTwoComputeItem>,
+        tmpl::list<InterpolateOnElementTestHelpers::Tags::MultiplyByTwoCompute>,
         tmpl::list<>>;
   };
   using temporal_id = ::Tags::TimeStepId;

@@ -12,6 +12,7 @@
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -25,10 +26,13 @@ struct SquareNumber : db::SimpleTag {
 };
 
 struct SquareNumberCompute : SquareNumber, db::ComputeTag {
-  static double function(const double some_number) noexcept {
-    return square(some_number);
+  static void function(const gsl::not_null<double*> result,
+                       const double some_number) noexcept {
+    *result = square(some_number);
   }
   using argument_tags = tmpl::list<SomeNumber>;
+  using base = SquareNumber;
+  using return_type = double;
 };
 
 template <typename Metavariables>
