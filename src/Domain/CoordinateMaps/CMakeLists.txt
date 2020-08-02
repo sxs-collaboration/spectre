@@ -16,6 +16,7 @@ spectre_target_sources(
   EquatorialCompression.cpp
   Equiangular.cpp
   FocallyLiftedEndcap.cpp
+  FocallyLiftedFlatEndcap.cpp
   FocallyLiftedMap.cpp
   FocallyLiftedMapHelpers.cpp
   FocallyLiftedSide.cpp
@@ -42,6 +43,7 @@ spectre_target_headers(
   EquatorialCompression.hpp
   Equiangular.hpp
   FocallyLiftedEndcap.hpp
+  FocallyLiftedFlatEndcap.hpp
   FocallyLiftedMap.hpp
   FocallyLiftedMapHelpers.hpp
   FocallyLiftedSide.hpp
