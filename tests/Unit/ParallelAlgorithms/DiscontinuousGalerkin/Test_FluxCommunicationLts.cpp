@@ -199,7 +199,7 @@ void insert_neighbor(
   const Mesh<2> mesh{2, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
   const std::vector<std::array<size_t, 2>> initial_extents{
-      {{{2, 2}}, {{2, 2}}, {{2, 2}}}};
+      {{2, 2}}, {{2, 2}}, {{2, 2}}};
 
   ElementMap<2, Frame::Inertial> map(
       element.id(),
@@ -277,7 +277,7 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
   const Mesh<2> mesh{2, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
   const std::vector<std::array<size_t, 2>> initial_extents{
-      {{{2, 2}}, {{2, 2}}, {{2, 2}}}};
+      {{2, 2}}, {{2, 2}}, {{2, 2}}};
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
 
