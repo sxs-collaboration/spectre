@@ -12,6 +12,7 @@ spectre_target_sources(
   BulgedCube.cpp
   CylindricalEndcap.cpp
   CylindricalFlatEndcap.cpp
+  CylindricalFlatSide.cpp
   CylindricalSide.cpp
   DiscreteRotation.cpp
   EquatorialCompression.cpp
@@ -41,6 +42,7 @@ spectre_target_headers(
   CoordinateMapHelpers.hpp
   CylindricalEndcap.hpp
   CylindricalFlatEndcap.hpp
+  CylindricalFlatSide.hpp
   CylindricalSide.hpp
   DiscreteRotation.hpp
   EquatorialCompression.hpp
