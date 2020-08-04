@@ -223,8 +223,8 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
       INFO("Diagonal (Jacobi) preconditioner");
       // Use the inverse of the diagonal as preconditioner.
       const auto preconditioner = [](DenseVector<double> arg) noexcept {
-        arg[0] /= 4.;
-        arg[1] /= 3.;
+        arg[0] *= 0.25;
+        arg[1] *= 1. / 3.;
         return arg;
       };
       const auto result =
