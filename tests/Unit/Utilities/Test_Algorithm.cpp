@@ -22,42 +22,42 @@ constexpr bool check_swap() noexcept {
 
 constexpr bool check_iter_swap() noexcept {
   const size_t size = 6;
-  cpp17::array<size_t, size> a{};
+  cpp20::array<size_t, size> a{};
   cpp2b::iota(a.begin(), a.end(), size_t(1));
   cpp20::iter_swap(a.begin() + 1, a.begin() + 4);
 
-  cpp17::array<size_t, size> expected{{1, 5, 3, 4, 2, 6}};
+  cpp20::array<size_t, size> expected{{1, 5, 3, 4, 2, 6}};
   return a == expected;
 }
 
 constexpr bool check_reverse() noexcept {
   const size_t size = 6;
-  cpp17::array<size_t, size> a{};
+  cpp20::array<size_t, size> a{};
   cpp2b::iota(a.begin(), a.end(), size_t(1));
   cpp20::detail::reverse(a.begin(), a.end(), std::bidirectional_iterator_tag());
 
-  cpp17::array<size_t, size> expected{{6, 5, 4, 3, 2, 1}};
+  cpp20::array<size_t, size> expected{{6, 5, 4, 3, 2, 1}};
   return a == expected;
 }
 
 constexpr bool check_reverse_random_access() noexcept {
   const size_t size = 6;
-  cpp17::array<size_t, size> a{};
+  cpp20::array<size_t, size> a{};
   cpp2b::iota(a.begin(), a.end(), size_t(1));
   // a is a random_access_iterator, so the next line tests both the generic
   // cpp20::reverse() and the one for random access iterators
   cpp20::reverse(a.begin(), a.end());
 
-  cpp17::array<size_t, size> expected{{6, 5, 4, 3, 2, 1}};
+  cpp20::array<size_t, size> expected{{6, 5, 4, 3, 2, 1}};
   return a == expected;
 }
 
 constexpr bool check_next_permutation() noexcept {
   const size_t size = 6;
-  cpp17::array<size_t, size> a{{1, 2, 4, 6, 3, 5}};
+  cpp20::array<size_t, size> a{{1, 2, 4, 6, 3, 5}};
   cpp20::next_permutation(a.begin(), a.end());
 
-  cpp17::array<size_t, size> expected{{1, 2, 4, 6, 5, 3}};
+  cpp20::array<size_t, size> expected{{1, 2, 4, 6, 5, 3}};
   return a == expected;
 }
 

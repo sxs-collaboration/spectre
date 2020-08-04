@@ -10,15 +10,15 @@
 namespace {
 constexpr bool check_iota() noexcept {
   const size_t size = 6;
-  cpp17::array<size_t, size> a{};
+  cpp20::array<size_t, size> a{};
   cpp2b::iota(a.begin(), a.end(), size_t(1));
   bool check{true};
   for (size_t i = 0; i < size; ++i) {
     check = check and a[i] == i + 1;
   }
 
-  const cpp17::array<size_t, 4> inline_iota =
-      alg::iota(cpp17::array<size_t, 4>{{}}, 7_st);
+  const cpp20::array<size_t, 4> inline_iota =
+      alg::iota(cpp20::array<size_t, 4>{{}}, 7_st);
   for (size_t i = 0; i < inline_iota.size(); ++i) {
     check = check and inline_iota[i] == i + 7;
   }
@@ -26,7 +26,7 @@ constexpr bool check_iota() noexcept {
 }
 
 constexpr bool check_accumulate() noexcept {
-  cpp17::array<size_t, 6> a{};
+  cpp20::array<size_t, 6> a{};
   cpp2b::iota(a.begin(), a.end(), size_t(1));
   size_t sum = cpp2b::accumulate(a.begin(), a.end(), size_t(23));
   return sum == 44;

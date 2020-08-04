@@ -72,10 +72,10 @@ class LeviCivitaIterator {
   int sign() const noexcept { return signs_[permutation_]; };
 
  private:
-  static constexpr cpp17::array<cpp17::array<size_t, Dim>, factorial(Dim)>
+  static constexpr cpp20::array<cpp20::array<size_t, Dim>, factorial(Dim)>
   indexes() noexcept {
-    cpp17::array<cpp17::array<size_t, Dim>, factorial(Dim)> indexes{};
-    cpp17::array<size_t, Dim> index{};
+    cpp20::array<cpp20::array<size_t, Dim>, factorial(Dim)> indexes{};
+    cpp20::array<size_t, Dim> index{};
     cpp2b::iota(index.begin(), index.end(), size_t(0));
 
     indexes[0] = index;
@@ -90,8 +90,8 @@ class LeviCivitaIterator {
     return indexes;
   };
 
-  static constexpr cpp17::array<int, factorial(Dim)> signs() noexcept {
-    cpp17::array<int, factorial(Dim)> signs{};
+  static constexpr cpp20::array<int, factorial(Dim)> signs() noexcept {
+    cpp20::array<int, factorial(Dim)> signs{};
     // By construction, the sign of the first permutation is +1
     signs[0] = 1;
 
@@ -104,7 +104,7 @@ class LeviCivitaIterator {
     // (`Dim`)-digit factorial-number-system number. For more on the
     // factoradic number system, see
     // https://en.wikipedia.org/wiki/Factorial_number_system
-    auto factoradic_counter = cpp17::array<size_t, Dim>();
+    auto factoradic_counter = cpp20::array<size_t, Dim>();
     for (size_t permutation = 1; permutation < factorial(Dim); ++permutation) {
       for (size_t i = 0; i < Dim; ++i) {
         factoradic_counter[i]++;
@@ -124,12 +124,11 @@ class LeviCivitaIterator {
     return signs;
   };
 
-  // Note: here and throughout, use cpp17::array,
-  // which is constexpr (unlike std::array), to enable constexpr signs_
-  // and indexes_.
-  static constexpr cpp17::array<cpp17::array<size_t, Dim>, factorial(Dim)>
+  // Note: here and throughout, use cpp20::array, which is constexpr
+  // (unlike std::array), to enable constexpr signs_ and indexes_.
+  static constexpr cpp20::array<cpp20::array<size_t, Dim>, factorial(Dim)>
       indexes_ = indexes();
-  static constexpr cpp17::array<int, factorial(Dim)> signs_{signs()};
+  static constexpr cpp20::array<int, factorial(Dim)> signs_{signs()};
   size_t permutation_{0};
   bool valid_{true};
 };

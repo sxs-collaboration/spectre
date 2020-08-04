@@ -13,7 +13,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
-namespace cpp17 {
+namespace cpp20 {
 namespace detail {
 template <typename T, size_t Size, size_t... Is>
 constexpr std::array<T, Size> convert_to_array(
@@ -23,6 +23,13 @@ constexpr std::array<T, Size> convert_to_array(
 }
 }  // namespace detail
 
+/// \brief A `std::array` implementation with partial C++20 support
+///
+/// \warning This is not a standard-compliant C++20 `std::array` implementation.
+/// We provide this implementation because we need the `constexpr operator==`
+/// from C++20. Note that other C++20 changes, such as the replacement of the
+/// other comparison operators in favor of `operator<=>`, are not implemented.
+/// This class can be removed when we support C++20.
 template <typename T, size_t Size>
 struct array {
   using value_type = T;
@@ -188,16 +195,16 @@ inline std::ostream& operator<<(std::ostream& os,
   os << ')';
   return os;
 }
-}  // namespace cpp17
+}  // namespace cpp20
 
 namespace detail {
 template <typename List, size_t... indices,
           Requires<not tt::is_a_v<tmpl::list, tmpl::front<List>>> = nullptr>
-inline constexpr auto make_cpp17_array_from_list_helper(
+inline constexpr auto make_cpp20_array_from_list_helper(
     std::integer_sequence<size_t, indices...> /*meta*/)
-    -> cpp17::array<std::decay_t<decltype(tmpl::front<List>::value)>,
+    -> cpp20::array<std::decay_t<decltype(tmpl::front<List>::value)>,
                     tmpl::size<List>::value> {
-  return cpp17::array<std::decay_t<decltype(tmpl::front<List>::value)>,
+  return cpp20::array<std::decay_t<decltype(tmpl::front<List>::value)>,
                       tmpl::size<List>::value>{
       {tmpl::at<List, tmpl::size_t<indices>>::value...}};
 }
@@ -211,34 +218,34 @@ inline constexpr auto make_cpp17_array_from_list_helper(
 /// \return array of integral values from the typelist
 template <typename List,
           Requires<not tt::is_a_v<tmpl::list, tmpl::front<List>>> = nullptr>
-inline constexpr auto make_cpp17_array_from_list()
-    -> cpp17::array<std::decay_t<decltype(tmpl::front<List>::value)>,
+inline constexpr auto make_cpp20_array_from_list()
+    -> cpp20::array<std::decay_t<decltype(tmpl::front<List>::value)>,
                     tmpl::size<List>::value> {
-  return detail::make_cpp17_array_from_list_helper<List>(
+  return detail::make_cpp20_array_from_list_helper<List>(
       std::make_integer_sequence<size_t, tmpl::size<List>::value>{});
 }
 
 template <typename TypeForZero,
           Requires<not tt::is_a_v<tmpl::list, TypeForZero>> = nullptr>
-inline constexpr cpp17::array<std::decay_t<TypeForZero>, 0>
-make_cpp17_array_from_list() {
-  return cpp17::array<std::decay_t<TypeForZero>, 0>{{}};
+inline constexpr cpp20::array<std::decay_t<TypeForZero>, 0>
+make_cpp20_array_from_list() {
+  return cpp20::array<std::decay_t<TypeForZero>, 0>{{}};
 }
 
 namespace detail {
 template <typename T, size_t Size, size_t... Is>
-inline constexpr cpp17::array<T, Size> convert_to_cpp17_array_impl(
+inline constexpr cpp20::array<T, Size> convert_to_cpp20_array_impl(
     const std::array<T, Size>& t,
     std::index_sequence<
-        Is...> /*meta*/) noexcept(noexcept(cpp17::array<T, Size>{{t[Is]...}})) {
+        Is...> /*meta*/) noexcept(noexcept(cpp20::array<T, Size>{{t[Is]...}})) {
   return {{t[Is]...}};
 }
 }  // namespace detail
 
 template <typename T, size_t Size, size_t... Is>
-inline constexpr cpp17::array<T, Size>
-convert_to_cpp17_array(const std::array<T, Size>& t) noexcept(noexcept(
-    detail::convert_to_cpp17_array_impl(t, std::make_index_sequence<Size>{}))) {
-  return detail::convert_to_cpp17_array_impl(t,
+inline constexpr cpp20::array<T, Size>
+convert_to_cpp20_array(const std::array<T, Size>& t) noexcept(noexcept(
+    detail::convert_to_cpp20_array_impl(t, std::make_index_sequence<Size>{}))) {
+  return detail::convert_to_cpp20_array_impl(t,
                                              std::make_index_sequence<Size>{});
 }
