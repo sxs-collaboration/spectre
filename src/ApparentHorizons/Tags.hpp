@@ -226,6 +226,19 @@ struct OneOverOneFormMagnitudeCompute : db::ComputeTag,
                  NormalOneForm<Frame>>;
 };
 
+template <typename Frame>
+struct UnitNormalOneForm : db::SimpleTag {
+    using type = tnsr::i<DataVector, 3, Frame>;
+};
+
+template <typename Frame>
+struct UnitNormalOneFormCompute : UnitNormalOneForm<Frame>, db::ComputeTag {
+  static constexpr auto function = &StrahlkorperGr::unit_normal_one_form<Frame>;
+  using argument_tags =
+      tmpl::list<StrahlkorperTags::NormalOneForm<Frame>,
+                 OneOverOneFormMagnitude>;
+};
+
 /// `Tangents(i,j)` is \f$\partial x_{\rm surf}^i/\partial q^j\f$,
 /// where \f$x_{\rm surf}^i\f$ are the Cartesian coordinates of the
 /// surface (i.e. `CartesianCoords`) and are considered functions of
