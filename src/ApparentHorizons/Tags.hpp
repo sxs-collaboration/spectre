@@ -226,17 +226,17 @@ struct OneOverOneFormMagnitudeCompute : db::ComputeTag,
                  NormalOneForm<Frame>>;
 };
 
+/// unit one-form is \f$_j\f$,the normalized one-form.
 template <typename Frame>
 struct UnitNormalOneForm : db::SimpleTag {
-    using type = tnsr::i<DataVector, 3, Frame>;
+  using type = tnsr::i<DataVector, 3, Frame>;
 };
-
+/// Computes the unit one-form perpendicular to the horizon
 template <typename Frame>
 struct UnitNormalOneFormCompute : UnitNormalOneForm<Frame>, db::ComputeTag {
   static constexpr auto function = &StrahlkorperGr::unit_normal_one_form<Frame>;
-  using argument_tags =
-      tmpl::list<StrahlkorperTags::NormalOneForm<Frame>,
-                 OneOverOneFormMagnitude>;
+  using argument_tags = tmpl::list<StrahlkorperTags::NormalOneForm<Frame>,
+                                   OneOverOneFormMagnitude>;
 };
 
 /// `Tangents(i,j)` is \f$\partial x_{\rm surf}^i/\partial q^j\f$,
