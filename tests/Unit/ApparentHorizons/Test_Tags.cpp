@@ -298,7 +298,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
       "IrreducibleMass");
   TestHelpers::db::test_simple_tag<StrahlkorperTags::OneOverOneFormMagnitude>(
       "OneOverOneFormMagnitude");
-  TestHelpers::db::test_simple_tag<StrahlkorperTags::UnitNormalOneForm>(
+  TestHelpers::db::test_simple_tag<
+      StrahlkorperTags::UnitNormalOneForm<Frame::Inertial>>(
       "UnitNormalOneForm");
   TestHelpers::db::test_simple_tag<
       StrahlkorperTags::Strahlkorper<Frame::Inertial>>("Strahlkorper");
