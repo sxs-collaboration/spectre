@@ -62,12 +62,14 @@ struct TimeDependenceCompositionTag {
 template <typename TimeDependenceCompTag0, typename... TimeDependenceCompTags>
 class Composition final
     : public TimeDependence<TimeDependenceCompTag0::mesh_dim> {
- private:
+ public:
   using CoordMap = detail::generate_coordinate_map_t<tmpl::flatten<
       tmpl::list<typename TimeDependenceCompTag0::time_dependence::
                      MapForComposition::maps_list,
                  typename TimeDependenceCompTags::time_dependence::
                      MapForComposition::maps_list...>>>;
+  using maps_list = tmpl::list<CoordMap>;
+  static constexpr OptionString help = {"A composition of TimeDependences."};
 
  public:
   static constexpr size_t mesh_dim = TimeDependenceCompTag0::mesh_dim;
@@ -86,7 +88,7 @@ class Composition final
   ~Composition() override = default;
   Composition(const Composition&) = default;
   Composition& operator=(const Composition&) = default;
-  Composition( Composition&&) = default;
+  Composition(Composition&&) = default;
   Composition& operator=(Composition&&) = default;
 
   explicit Composition(
