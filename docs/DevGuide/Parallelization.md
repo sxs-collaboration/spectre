@@ -83,6 +83,10 @@ There are also several optional members:
   are ignored. Ignoring unrecognized options is generally only necessary for
   tests where arguments for the testing framework,
   [Catch](https://github.com/catchorg/Catch2/), are passed to the executable.
+- `is_required_sync_phases`: a function which takes a phase and returns a bool
+  for whether or not the phase should be executed on every component when it is
+  used as a global sync phase (see below \ref
+  dev_guide_parallelization_global_sync_phases)
 
 # Phases of an Execution {#dev_guide_parallelization_phases_of_execution}
 
@@ -127,6 +131,44 @@ reached the final time of the evolution.
 
 \warning Currently dead-locks are treated as successful termination. In the
 future checks against deadlocks will be performed before terminating.
+
+## 'periodic global sync' phases {#dev_guide_parallelization_global_sync_phases}
+
+In addition to the standard set of phases, the metavariables may define any
+number of special phases ('periodic global sync' phases) that can be entered as
+subroutines during a periodic global sync in the middle of the execution of
+another phase. The periodic global sync phases are specified normally in the
+`Phase` enum of the metavariables, but are used differently:
+- global sync phases are typically not (but can be) included in the linear
+  phase control flow specified by `determine_next_phase`.
+- global sync phases are requested either by the `Parallel::AlgorithmControl`
+  return from an iterable action or via the algorithm entry method
+  `request_sync_phase`
+Global sync phases are not executed immediately when requested, instead the
+requests are stored until the next periodic global synchronization point and
+communicated to the Main chare at that next global synchronization.
+
+The periodic global synchronization is initiated by returning from an iterable
+action an `Parallel::AlgorithmControl` struct with a member `execution_flag` set
+to `Parallel::AlgorithmExecution::SleepForSyncPhases` at a point in the
+algorithm that can be guaranteed to be a consistent state across components
+(e.g. a particular slab number).
+
+These global sync phases are intended to be used for functionality that
+requires strict guarantees of the consistency of the parallelization system
+before proceeding. Examples include (certain strategies for) load-balancing,
+checkpointing, and adaptive mesh refinement.
+
+In addition, the metavariables may optionally specify a static member function
+`is_required_sync_phase`, which takes as argument a phase intended to be used
+as a global sync phase and returns a bool indicating whether all components
+should participate in that phase if it is used as a global sync subroutine
+phase. If the function is not defined, or it returns false for a particular
+periodic global sync phase, only the components that requested the phase
+will participate; the others will continue to sleep until either a periodic
+global sync in which they participate, or the set of periodic global sync
+phases completes, returning to the original phase.
+
 
 # The Algorithm {#dev_guide_parallelization_core_algorithm}
 
@@ -444,10 +486,14 @@ iterable actions will simply return:
 \snippet Test_AlgorithmParallel.cpp return_forward_as_tuple
 
 By returning the db::DataBox as a reference in a `std::tuple` we avoid
-any unnecessary copying of the db::DataBox. The second argument is an
-optional bool, and controls whether or not the algorithm is
-terminated. If the bool is `true` then the algorithm is terminated, by
-default it is `false`. Here is an example of how to return a
+any unnecessary copying of the db::DataBox. The second argument is either an
+optional bool that controls whether or not the algorithm is
+terminated (If the bool is `true` then the algorithm is terminated, by
+default it is `false`) or a `Parallel::AlgorithmControl` that gives a more
+detailed specification for the algorithm control-flow, including flags for
+periodic global sync phases (see
+\ref dev_guide_parallelization_global_sync_phases).
+Here is an example of how to return a
 db::DataBox with the same type that is passed in and also terminate
 the algorithm:
 
