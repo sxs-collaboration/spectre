@@ -234,9 +234,14 @@ struct UnitNormalOneForm : db::SimpleTag {
 /// Computes the unit one-form perpendicular to the horizon
 template <typename Frame>
 struct UnitNormalOneFormCompute : UnitNormalOneForm<Frame>, db::ComputeTag {
-  static constexpr auto function = &StrahlkorperGr::unit_normal_one_form<Frame>;
+  using base = UnitNormalOneForm<Frame>;
+  static constexpr auto function = static_cast<void (*)(
+      const gsl::not_null<tnsr::i<DataVector, 3, Frame>*>,
+      const tnsr::i<DataVector, 3, Frame>&, const DataVector&) noexcept>(
+      &::StrahlkorperGr::unit_normal_one_form<Frame>);
   using argument_tags = tmpl::list<StrahlkorperTags::NormalOneForm<Frame>,
                                    OneOverOneFormMagnitude>;
+  using return_type = tnsr::i<DataVector, 3, Frame>;
 };
 
 /// `Tangents(i,j)` is \f$\partial x_{\rm surf}^i/\partial q^j\f$,

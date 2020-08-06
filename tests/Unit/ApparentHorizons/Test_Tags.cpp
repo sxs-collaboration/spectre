@@ -361,5 +361,5 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
       "OneOverOneFormMagnitude");
   TestHelpers::db::test_compute_tag<
       StrahlkorperTags::UnitNormalOneFormCompute<Frame::Inertial>>(
-      "UnitNormalOneFormCompute");
+      "UnitNormalOneForm");
 }
