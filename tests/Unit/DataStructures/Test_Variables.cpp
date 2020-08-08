@@ -891,11 +891,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
 
   {
     INFO("Test variables_from_tagged_tuple");
-    // The commented functions require a fix to issue #1420.
-    // test_variables_from_tagged_tuple<ComplexDataVector>();
-    // test_variables_from_tagged_tuple<ComplexModalVector>();
+    test_variables_from_tagged_tuple<ComplexDataVector>();
+    test_variables_from_tagged_tuple<ComplexModalVector>();
     test_variables_from_tagged_tuple<DataVector>();
-    // test_variables_from_tagged_tuple<ModalVector>();
+    test_variables_from_tagged_tuple<ModalVector>();
   }
 
   TestHelpers::db::test_simple_tag<Tags::TempScalar<1>>("TempTensor1");

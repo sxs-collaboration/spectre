@@ -1385,7 +1385,17 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.MakeWithValue",
     CHECK(get<1>(tensor_double) == expected_value);
   };
   check_double(1.2);
+  check_double(std::complex<double>{1.2, 1.3});
+  check_double(DataVector{5});
+  check_double(ComplexDataVector{5});
+  check_double(ModalVector{5});
+  check_double(ComplexModalVector{5});
   check_double(Tensor<double>{});
+  check_double(Tensor<std::complex<double>>{});
+  check_double(Tensor<DataVector>{5_st});
+  check_double(Tensor<ComplexDataVector>{5_st});
+  check_double(Tensor<ModalVector>{5_st});
+  check_double(Tensor<ComplexModalVector>{5_st});
 
   const auto check_real_complex_double =
       [](const auto& used_for_size) noexcept {
@@ -1398,7 +1408,18 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.MakeWithValue",
                 expected_value);
         }
       };
-  check_real_complex_double(std::complex<double>{-1.0, -1.0});
+  check_real_complex_double(1.2);
+  check_real_complex_double(std::complex<double>{1.2, 1.3});
+  check_real_complex_double(DataVector{5});
+  check_real_complex_double(ComplexDataVector{5});
+  check_real_complex_double(ModalVector{5});
+  check_real_complex_double(ComplexModalVector{5});
+  check_real_complex_double(Tensor<double>{});
+  check_real_complex_double(Tensor<std::complex<double>>{});
+  check_real_complex_double(Tensor<DataVector>{5_st});
+  check_real_complex_double(Tensor<ComplexDataVector>{5_st});
+  check_real_complex_double(Tensor<ModalVector>{5_st});
+  check_real_complex_double(Tensor<ComplexModalVector>{5_st});
 
   const auto check_complex_complex_double =
       [](const auto& used_for_size) noexcept {
@@ -1411,7 +1432,18 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.MakeWithValue",
                 expected_value);
         }
       };
-  check_complex_complex_double(std::complex<double>{-1.0, -1.0});
+  check_complex_complex_double(1.2);
+  check_complex_complex_double(std::complex<double>{1.2, 1.3});
+  check_complex_complex_double(DataVector{5});
+  check_complex_complex_double(ComplexDataVector{5});
+  check_complex_complex_double(ModalVector{5});
+  check_complex_complex_double(ComplexModalVector{5});
+  check_complex_complex_double(Tensor<double>{});
+  check_complex_complex_double(Tensor<std::complex<double>>{});
+  check_complex_complex_double(Tensor<DataVector>{5_st});
+  check_complex_complex_double(Tensor<ComplexDataVector>{5_st});
+  check_complex_complex_double(Tensor<ModalVector>{5_st});
+  check_complex_complex_double(Tensor<ComplexModalVector>{5_st});
 
   const auto check_data_vector = [](const auto& used_for_size) noexcept {
     const auto tensor =
@@ -1426,7 +1458,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.MakeWithValue",
   };
   check_data_vector(5_st);
   check_data_vector(DataVector{5});
-  check_data_vector(Scalar<DataVector>{5_st});
+  check_data_vector(ComplexDataVector{5});
+  check_data_vector(ModalVector{5});
+  check_data_vector(ComplexModalVector{5});
+  check_data_vector(Tensor<DataVector>{5_st});
+  check_data_vector(Tensor<ComplexDataVector>{5_st});
+  check_data_vector(Tensor<ModalVector>{5_st});
+  check_data_vector(Tensor<ComplexModalVector>{5_st});
 
   const auto check_complex_data_vector =
       [](const auto& used_for_size) noexcept {
@@ -1440,7 +1478,57 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.MakeWithValue",
           }
         }
       };
+  check_complex_data_vector(5_st);
   check_complex_data_vector(DataVector{5});
+  check_complex_data_vector(ComplexDataVector{5});
+  check_complex_data_vector(ModalVector{5});
+  check_complex_data_vector(ComplexModalVector{5});
+  check_complex_data_vector(Tensor<DataVector>{5_st});
+  check_complex_data_vector(Tensor<ComplexDataVector>{5_st});
+  check_complex_data_vector(Tensor<ModalVector>{5_st});
+  check_complex_data_vector(Tensor<ComplexModalVector>{5_st});
+
+  const auto check_modal_vector = [](const auto& structure) noexcept {
+    const auto tensor =
+        make_with_value<tnsr::i<ModalVector, 2>>(structure, 9.0);
+    const double expected_value = 9.0;
+    for (size_t i = 0; i < 2; ++i) {
+      REQUIRE(tensor.get(i).size() == 5);
+      for (size_t j = 0; j < 5; ++j) {
+        CHECK(tensor.get(i)[j] == expected_value);
+      }
+    }
+  };
+  check_modal_vector(5_st);
+  check_modal_vector(DataVector{5});
+  check_modal_vector(ComplexDataVector{5});
+  check_modal_vector(ModalVector{5});
+  check_modal_vector(ComplexModalVector{5});
+  check_modal_vector(Tensor<DataVector>{5_st});
+  check_modal_vector(Tensor<ComplexDataVector>{5_st});
+  check_modal_vector(Tensor<ModalVector>{5_st});
+  check_modal_vector(Tensor<ComplexModalVector>{5_st});
+
+  const auto check_complex_modal_vector = [](const auto& structure) noexcept {
+    const auto complex_tensor =
+        make_with_value<tnsr::i<ComplexModalVector, 3>>(structure, -2.0);
+    const std::complex<double> expected_value{-2.0, 0.0};
+    for (size_t i = 0; i < 3; ++i) {
+      REQUIRE(complex_tensor.get(i).size() == 5);
+      for (size_t j = 0; j < 5; ++j) {
+        CHECK(complex_tensor.get(i)[j] == expected_value);
+      }
+    }
+  };
+  check_complex_modal_vector(5_st);
+  check_complex_modal_vector(DataVector{5});
+  check_complex_modal_vector(ComplexDataVector{5});
+  check_complex_modal_vector(ModalVector{5});
+  check_complex_modal_vector(ComplexModalVector{5});
+  check_complex_modal_vector(Tensor<DataVector>{5_st});
+  check_complex_modal_vector(Tensor<ComplexDataVector>{5_st});
+  check_complex_modal_vector(Tensor<ModalVector>{5_st});
+  check_complex_modal_vector(Tensor<ComplexModalVector>{5_st});
 
   const auto check_spin_weighted_complex_data_vector =
       [](const auto& used_for_size) noexcept {
@@ -1453,6 +1541,42 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.MakeWithValue",
           CHECK(get(spin_weighted_complex).data()[j] == expected_value);
         }
       };
+  check_spin_weighted_complex_data_vector(5_st);
   check_spin_weighted_complex_data_vector(DataVector{5});
   check_spin_weighted_complex_data_vector(ComplexDataVector{5});
+  check_spin_weighted_complex_data_vector(ModalVector{5});
+  check_spin_weighted_complex_data_vector(ComplexModalVector{5});
+  check_spin_weighted_complex_data_vector(Tensor<DataVector>{5_st});
+  check_spin_weighted_complex_data_vector(Tensor<ComplexDataVector>{5_st});
+  check_spin_weighted_complex_data_vector(Tensor<ModalVector>{5_st});
+  check_spin_weighted_complex_data_vector(Tensor<ComplexModalVector>{5_st});
+  check_spin_weighted_complex_data_vector(
+      Tensor<SpinWeighted<ComplexDataVector, -1>>{5_st});
+  check_spin_weighted_complex_data_vector(
+      Tensor<SpinWeighted<ComplexModalVector, 1>>{5_st});
+
+  const auto check_spin_weighted_complex_modal_vector =
+      [](const auto& structure) noexcept {
+        const auto spin_weighted_complex =
+            make_with_value<Scalar<SpinWeighted<ComplexModalVector, 2>>>(
+                structure, -4.0);
+        const std::complex<double> expected_value{-4.0, 0.0};
+        REQUIRE(get(spin_weighted_complex).data().size() == 5);
+        for (size_t j = 0; j < 5; ++j) {
+          CHECK(get(spin_weighted_complex).data()[j] == expected_value);
+        }
+      };
+  check_spin_weighted_complex_modal_vector(5_st);
+  check_spin_weighted_complex_modal_vector(DataVector{5});
+  check_spin_weighted_complex_modal_vector(ComplexDataVector{5});
+  check_spin_weighted_complex_modal_vector(ModalVector{5});
+  check_spin_weighted_complex_modal_vector(ComplexModalVector{5});
+  check_spin_weighted_complex_modal_vector(Tensor<DataVector>{5_st});
+  check_spin_weighted_complex_modal_vector(Tensor<ComplexDataVector>{5_st});
+  check_spin_weighted_complex_modal_vector(Tensor<ModalVector>{5_st});
+  check_spin_weighted_complex_modal_vector(Tensor<ComplexModalVector>{5_st});
+  check_spin_weighted_complex_modal_vector(
+      Tensor<SpinWeighted<ComplexDataVector, -1>>{5_st});
+  check_spin_weighted_complex_modal_vector(
+      Tensor<SpinWeighted<ComplexModalVector, 1>>{5_st});
 }

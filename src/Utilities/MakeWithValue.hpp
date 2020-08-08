@@ -17,7 +17,7 @@
 /// \ingroup DataStructuresGroup
 /// Implementations of make_with_value.
 namespace MakeWithValueImpls {
-template <typename R, typename T>
+template <typename R, typename T, typename = std::nullptr_t>
 struct MakeWithValueImpl {
   template <typename ValueType>
   static SPECTRE_ALWAYS_INLINE R apply(const T& input,
