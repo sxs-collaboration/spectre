@@ -49,6 +49,11 @@ using MortarMap = std::unordered_map<MortarId<VolumeDim>, ValueType,
 /// \ingroup DiscontinuousGalerkinGroup
 /// Find a mesh for a mortar capable of representing data from either
 /// of two faces.
+///
+/// \warning Make sure the two face meshes are oriented the same, i.e.
+/// their dimensions align. This is facilitated by the `orientation`
+/// passed to `domain::Initialization::create_initial_mesh`, for
+/// example.
 template <size_t Dim>
 Mesh<Dim> mortar_mesh(const Mesh<Dim>& face_mesh1,
                       const Mesh<Dim>& face_mesh2) noexcept;
