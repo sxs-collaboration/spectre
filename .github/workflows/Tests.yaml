@@ -224,6 +224,7 @@ jobs:
     name: Unit tests
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         compiler: [gcc-7,
                    gcc-8,
