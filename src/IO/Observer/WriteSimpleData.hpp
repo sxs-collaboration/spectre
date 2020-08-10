@@ -42,7 +42,9 @@ struct WriteSimpleData {
                     const std::vector<double>& data_row,
                     const std::string& subfile_name) noexcept {
     Parallel::lock(node_lock);
-    CmiNodeLock file_lock = nullptr;
+    // Clang-tidy: CmiNodeLock changes type depending on the Charm++ build and
+    // sometimes clang-tidy doesn't like the way it is constructed
+    CmiNodeLock file_lock{};  // NOLINT
     db::mutate<Tags::H5FileLock>(
         make_not_null(&box), [&file_lock](const gsl::not_null<CmiNodeLock*>
                                               in_file_lock) noexcept {

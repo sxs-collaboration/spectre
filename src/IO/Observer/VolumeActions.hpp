@@ -207,7 +207,9 @@ struct WriteVolumeData {
     Parallel::lock(node_lock);
     std::unordered_map<observers::ArrayComponentId, ExtentsAndTensorVolumeData>
         volume_data{};
-    CmiNodeLock file_lock = nullptr;
+    // Clang-tidy: CmiNodeLock changes type depending on the Charm++ build and
+    // sometimes clang-tidy doesn't like the way it is constructed
+    CmiNodeLock file_lock{};  // NOLINT
     db::mutate<Tags::H5FileLock, Tags::TensorData>(
         make_not_null(&box),
         [&observation_id, &file_lock, &volume_data ](
