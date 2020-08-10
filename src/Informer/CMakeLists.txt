@@ -9,7 +9,7 @@ add_spectre_library(${LIBRARY})
 # InfoAtLink.cpp. These files contain placeholder strings that CMake fills in
 # (in copies of the files in the build directory) when configuring the build.
 #
-# We track the *generated* IntoAtCompile.cpp as a library source. This means
+# We track the *generated* InfoAtCompile.cpp as a library source. This means
 # that CMake must have been configured *before* checking library dependencies
 # via the CMake function check_spectre_libs_dependencies.
 #
