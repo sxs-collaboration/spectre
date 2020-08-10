@@ -28,10 +28,11 @@ namespace filtering {
  * \f}
  *
  * where \f$c_i\f$ are the zero-indexed modal coefficients, \f$N\f$ is the basis
- * order, \f$\alpha\f$ determines how much the coefficients are rescaled, and
- * \f$m\f$ determines how aggressive/broad the filter is (lower values means
- * filtering more coefficients). Setting \f$\alpha=36\f$ results in setting the
- * highest coefficient to machine precision, effectively zeroing it out.
+ * degree (number of grid points per element per dimension minus one),
+ * \f$\alpha\f$ determines how much the coefficients are rescaled, and \f$m\f$
+ * determines how aggressive/broad the filter is (lower values means filtering
+ * more coefficients). Setting \f$\alpha=36\f$ results in setting the highest
+ * coefficient to machine precision, effectively zeroing it out.
  *
  * \note The filter matrix is not cached by the function because it depends on a
  * double, an integer, and the mesh, which could make caching very memory
