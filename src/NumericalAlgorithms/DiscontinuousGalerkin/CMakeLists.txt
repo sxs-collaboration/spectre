@@ -16,7 +16,6 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  FluxCommunicationTypes.hpp
   Formulation.hpp
   LiftFlux.hpp
   MortarHelpers.hpp
