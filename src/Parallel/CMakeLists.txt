@@ -6,7 +6,13 @@ add_charm_module(Main)
 
 set(LIBRARY Parallel)
 
-add_spectre_library(${LIBRARY} INTERFACE)
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PUBLIC
+  NodeLock.cpp
+  )
 
 spectre_target_headers(
   ${LIBRARY}

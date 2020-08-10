@@ -149,10 +149,11 @@ struct threaded_action_a {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex,
             Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
-  static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const gsl::not_null<CmiNodeLock*> /*node_lock*/) noexcept {
+  static void apply(
+      db::DataBox<DbTagsList>& box,  // NOLINT
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const gsl::not_null<Parallel::NodeLock*> /*node_lock*/) noexcept {
     db::mutate<ValueTag>(make_not_null(&box), [
     ](const gsl::not_null<int*> value_box) noexcept { *value_box = 35; });
   }
@@ -165,14 +166,14 @@ struct threaded_action_b_mock {
   static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const gsl::not_null<CmiNodeLock*> node_lock,
+                    const gsl::not_null<Parallel::NodeLock*> node_lock,
                     const int tag) noexcept {
-    Parallel::lock(node_lock);
+    node_lock->lock();
     db::mutate<ValueTag>(make_not_null(&box),
                          [tag](const gsl::not_null<int*> value_box) noexcept {
                            *value_box = tag;
                          });
-    Parallel::unlock(node_lock);
+    node_lock->unlock();
   }
 };
 

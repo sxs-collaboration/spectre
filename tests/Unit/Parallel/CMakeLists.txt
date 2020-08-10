@@ -24,6 +24,7 @@ function(add_algorithm_test EXECUTABLE_NAME)
     ErrorHandling
     Informer
     Options
+    Parallel
     Utilities
     )
 
@@ -61,6 +62,7 @@ target_link_libraries(
   PRIVATE
   ErrorHandling
   Informer
+  Parallel
   )
 
 add_dependencies(test-executables Test_ConstGlobalCache)
@@ -130,6 +132,7 @@ set(LIBRARY "Test_Parallel")
 set(LIBRARY_SOURCES
   Test_ConstGlobalCacheDataBox.cpp
   Test_InboxInserters.cpp
+  Test_NodeLock.cpp
   Test_Parallel.cpp
   Test_ParallelComponentHelpers.cpp
   Test_PupStlCpp11.cpp

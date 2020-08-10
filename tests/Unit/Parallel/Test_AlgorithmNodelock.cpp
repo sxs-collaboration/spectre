@@ -163,7 +163,7 @@ struct nodegroup_threaded_receive {
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<NodeLock*> node_lock,
                     const int& id_of_array) {
-    Parallel::lock(node_lock);
+    node_lock->lock();
     db::mutate<Tags::vector_of_array_indexs, Tags::total_receives_on_node>(
         make_not_null(&box),
         [&id_of_array](const gsl::not_null<std::vector<int>*> array_indexs,
@@ -177,7 +177,7 @@ struct nodegroup_threaded_receive {
                         [](int& t) { t++; });
           ++*total_receives_on_node;
         });
-    Parallel::unlock(node_lock);
+    node_lock->unlock();
   }
 };
 

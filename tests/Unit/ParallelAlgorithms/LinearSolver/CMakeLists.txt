@@ -45,6 +45,7 @@ function(add_linear_solver_algorithm_test TEST_NAME)
     ErrorHandling
     IO
     Informer
+    Parallel
     ParallelLinearSolver
     )
 

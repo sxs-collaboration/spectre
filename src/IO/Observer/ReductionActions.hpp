@@ -208,17 +208,17 @@ struct WriteReductionData {
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const gsl::not_null<CmiNodeLock*> node_lock,
+                    const gsl::not_null<Parallel::NodeLock*> node_lock,
                     const observers::ObservationId& observation_id,
                     const std::string& subfile_name,
                     std::vector<std::string>&& reduction_names,
                     Parallel::ReductionData<ReductionDatums...>&&
                         in_reduction_data) noexcept {
-    // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
-    CmiNodeLock file_lock;
+    Parallel::NodeLock local_lock{};
+    gsl::not_null<Parallel::NodeLock*> file_lock = &local_lock;
     bool write_to_disk = false;
     std::vector<std::string> legend{};
-    Parallel::lock(node_lock);
+    node_lock->lock();
     const auto expected_calls_from_this_node =
         [&box, &observation_id ]() noexcept {
       const auto hash = observation_id.observation_type_hash();
@@ -243,21 +243,21 @@ struct WriteReductionData {
                Tags::ReductionDataNames<ReductionDatums...>,
                Tags::ReductionObserversContributed, Tags::H5FileLock>(
         make_not_null(&box),
-        [
-          &cache, &expected_calls_from_this_node,
-          &expected_calls_from_other_nodes, &file_lock, &in_reduction_data,
-          &legend, &observation_id, &reduction_names, &subfile_name,
-          &write_to_disk
-        ](const gsl::not_null<
-              db::item_type<Tags::ReductionData<ReductionDatums...>>*>
-              reduction_data,
-          const gsl::not_null<
-              std::unordered_map<ObservationId, std::vector<std::string>>*>
-              reduction_names_map,
-          const gsl::not_null<
-              std::unordered_map<observers::ObservationId, size_t>*>
-              reduction_observers_contributed,
-          const gsl::not_null<CmiNodeLock*> reduction_file_lock) noexcept {
+        [&cache, &expected_calls_from_this_node,
+         &expected_calls_from_other_nodes, &file_lock, &in_reduction_data,
+         &legend, &observation_id, &reduction_names, &subfile_name,
+         &write_to_disk](
+            const gsl::not_null<
+                db::item_type<Tags::ReductionData<ReductionDatums...>>*>
+                reduction_data,
+            const gsl::not_null<
+                std::unordered_map<ObservationId, std::vector<std::string>>*>
+                reduction_names_map,
+            const gsl::not_null<
+                std::unordered_map<observers::ObservationId, size_t>*>
+                reduction_observers_contributed,
+            const gsl::not_null<Parallel::NodeLock*>
+                reduction_file_lock) noexcept {
           auto& contribute_count =
               (*reduction_observers_contributed)[observation_id];
           const auto node_id = Parallel::my_node();
@@ -272,7 +272,7 @@ struct WriteReductionData {
             // Here this Action will be called only once, so we take
             // a shortcut and just write to disk.
             write_to_disk = true;
-            file_lock = *reduction_file_lock;
+            file_lock = reduction_file_lock;
             legend = std::move(reduction_names_map->operator[](observation_id));
             reduction_names_map->erase(observation_id);
           } else if (reduction_data->count(observation_id) == 0) {
@@ -296,7 +296,7 @@ struct WriteReductionData {
             reduction_data->erase(observation_id);
             reduction_observers_contributed->erase(observation_id);
             write_to_disk = true;
-            file_lock = *reduction_file_lock;
+            file_lock = reduction_file_lock;
             legend = std::move(reduction_names_map->operator[](observation_id));
             reduction_names_map->erase(observation_id);
           } else {
@@ -321,16 +321,16 @@ struct WriteReductionData {
             reduction_data->erase(observation_id);
           }
         });
-    Parallel::unlock(node_lock);
+    node_lock->unlock();
 
     if (write_to_disk) {
-      Parallel::lock(&file_lock);
+      file_lock->lock();
       in_reduction_data.finalize();
       WriteReductionData::write_data(
           subfile_name, std::move(legend), std::move(in_reduction_data.data()),
           Parallel::get<Tags::ReductionFileName>(cache),
           std::make_index_sequence<sizeof...(ReductionDatums)>{});
-      Parallel::unlock(&file_lock);
+      file_lock->unlock();
     }
   }
 };

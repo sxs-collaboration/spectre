@@ -53,7 +53,7 @@ struct MockWriteReductionData {
   static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const gsl::not_null<CmiNodeLock*> /*node_lock*/,
+                    const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
                     const observers::ObservationId& observation_id,
                     const std::string& subfile_name,
                     std::vector<std::string>&& reduction_names,

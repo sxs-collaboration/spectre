@@ -151,7 +151,7 @@ struct InitializeWriter {
             db::item_type<Tags::ReductionObserversRegistered>{},
             db::item_type<Tags::ReductionObserversRegisteredNodes>{},
             db::item_type<Tags::ReductionObserversContributed>{},
-            Parallel::create_lock(), db::item_type<ReductionTags>{}...,
+            Parallel::NodeLock{}, db::item_type<ReductionTags>{}...,
             db::item_type<
                 detail::reduction_data_to_reduction_names<ReductionTags>>{}...),
         true);
