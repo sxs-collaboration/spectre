@@ -64,6 +64,11 @@ target_link_libraries(
   Utilities
   )
 
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )
+
 add_subdirectory(Actions)
 add_subdirectory(AnalyticSolutions)
 add_subdirectory(Components)
