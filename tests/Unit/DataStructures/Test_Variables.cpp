@@ -239,7 +239,7 @@ void test_variables_move() noexcept {
 
   const size_t number_of_grid_points1 = sdist(gen);
   const size_t number_of_grid_points2 = sdist(gen);
-  const std::array<value_type, 2> initial_fill_values =
+  const auto initial_fill_values =
       make_with_random_values<std::array<value_type, 2>>(make_not_null(&gen),
                                                          make_not_null(&dist));
 
@@ -294,9 +294,8 @@ void test_variables_math() noexcept {
   const size_t num_points = sdist(gen);  // number of grid points
   const auto value_in_variables = make_with_random_values<value_type>(
       make_not_null(&gen), make_not_null(&dist));
-  const std::array<value_type, 3> rand_vals =
-      make_with_random_values<std::array<value_type, 3>>(make_not_null(&gen),
-                                                         make_not_null(&dist));
+  const auto rand_vals = make_with_random_values<std::array<value_type, 3>>(
+      make_not_null(&gen), make_not_null(&dist));
 
   // Test math +, -, *, /
   const TestVariablesType vars{num_points, value_in_variables};
@@ -372,7 +371,7 @@ void test_variables_math() noexcept {
         });
   };
 
-  const VectorType test_vector = make_with_random_values<VectorType>(
+  const auto test_vector = make_with_random_values<VectorType>(
       make_not_null(&gen), make_not_null(&dist), VectorType{4});
 
   // Test math assignment operators +=, -=, *=, /= with vectors
@@ -407,7 +406,7 @@ void test_variables_prefix_semantics() noexcept {
   UniformCustomDistribution<size_t> sdist{5, 20};
 
   const size_t number_of_grid_points = sdist(gen);
-  const std::array<value_type, 4> variables_vals =
+  const auto variables_vals =
       make_with_random_values<std::array<value_type, 4>>(make_not_null(&gen),
                                                          make_not_null(&dist));
 
@@ -484,9 +483,8 @@ void test_variables_prefix_math() noexcept {
   const size_t number_of_grid_points = sdist(gen);
   const auto value_in_variables = make_with_random_values<value_type>(
       make_not_null(&gen), make_not_null(&dist));
-  const std::array<value_type, 3> random_vals =
-      make_with_random_values<std::array<value_type, 3>>(make_not_null(&gen),
-                                                         make_not_null(&dist));
+  const auto random_vals = make_with_random_values<std::array<value_type, 3>>(
+      make_not_null(&gen), make_not_null(&dist));
 
   // Test arithmetic operators +, -, *, / for prefix Variables.
 
@@ -599,7 +597,7 @@ void test_variables_serialization() noexcept {
   UniformCustomDistribution<size_t> sdist{5, 20};
 
   const size_t number_of_grid_points = sdist(gen);
-  const std::array<value_type, 2> values_in_variables =
+  const auto values_in_variables =
       make_with_random_values<std::array<value_type, 2>>(make_not_null(&gen),
                                                          make_not_null(&dist));
 
@@ -622,7 +620,7 @@ void test_variables_assign_subset() noexcept {
   UniformCustomDistribution<size_t> sdist{5, 20};
 
   const size_t number_of_grid_points = sdist(gen);
-  const std::array<value_type, 4> values_in_variables =
+  const auto values_in_variables =
       make_with_random_values<std::array<value_type, 4>>(make_not_null(&gen),
                                                          make_not_null(&dist));
 
@@ -893,11 +891,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
 
   {
     INFO("Test variables_from_tagged_tuple");
-    // The commented functions require a fix to issue #1420.
-    // test_variables_from_tagged_tuple<ComplexDataVector>();
-    // test_variables_from_tagged_tuple<ComplexModalVector>();
+    test_variables_from_tagged_tuple<ComplexDataVector>();
+    test_variables_from_tagged_tuple<ComplexModalVector>();
     test_variables_from_tagged_tuple<DataVector>();
-    // test_variables_from_tagged_tuple<ModalVector>();
+    test_variables_from_tagged_tuple<ModalVector>();
   }
 
   TestHelpers::db::test_simple_tag<Tags::TempScalar<1>>("TempTensor1");
