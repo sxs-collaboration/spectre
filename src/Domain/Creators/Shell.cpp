@@ -47,7 +47,7 @@ Shell::Shell(typename InnerRadius::type inner_radius,
 Domain<3> Shell::create_domain() const noexcept {
   std::vector<
       std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
-      coord_maps = wedge_coordinate_maps<Frame::Inertial>(
+      coord_maps = sph_wedge_coordinate_maps<Frame::Inertial>(
           inner_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_, 0.0,
           false, aspect_ratio_, use_logarithmic_map_, which_wedges_,
           number_of_layers_);

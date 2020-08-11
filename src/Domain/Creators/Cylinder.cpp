@@ -3,20 +3,15 @@
 
 #include "Domain/Creators/Cylinder.hpp"
 
+#include <array>
 #include <cmath>
+#include <memory>
+#include <unordered_map>
+#include <vector>
 
-#include "Domain/CoordinateMaps/Affine.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/Equiangular.hpp"
-#include "Domain/CoordinateMaps/ProductMaps.hpp"
-#include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
-#include "Domain/Structure/Direction.hpp"
-#include "Domain/Structure/OrientationMap.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace Frame {
@@ -33,103 +28,82 @@ Cylinder::Cylinder(
     typename IsPeriodicInZ::type is_periodic_in_z,
     typename InitialRefinement::type initial_refinement,
     typename InitialGridPoints::type initial_number_of_grid_points,
-    typename UseEquiangularMap::type use_equiangular_map) noexcept
+    typename UseEquiangularMap::type use_equiangular_map,
+    typename RadialPartitioning::type radial_partitioning,
+    typename HeightPartitioning::type height_partitioning) noexcept
     // clang-tidy: trivially copyable
-    : inner_radius_(std::move(inner_radius)),          // NOLINT
-      outer_radius_(std::move(outer_radius)),          // NOLINT
-      lower_bound_(std::move(lower_bound)),            // NOLINT
-      upper_bound_(std::move(upper_bound)),            // NOLINT
-      is_periodic_in_z_(std::move(is_periodic_in_z)),  // NOLINT
-      initial_refinement_(                             // NOLINT
-          std::move(initial_refinement)),              // NOLINT
-      initial_number_of_grid_points_(                  // NOLINT
-          std::move(initial_number_of_grid_points)),   // NOLINT
-      use_equiangular_map_(use_equiangular_map) {}     // NOLINT
+    : inner_radius_(std::move(inner_radius)),                // NOLINT
+      outer_radius_(std::move(outer_radius)),                // NOLINT
+      lower_bound_(std::move(lower_bound)),                  // NOLINT
+      upper_bound_(std::move(upper_bound)),                  // NOLINT
+      is_periodic_in_z_(std::move(is_periodic_in_z)),        // NOLINT
+      initial_refinement_(                                   // NOLINT
+          std::move(initial_refinement)),                    // NOLINT
+      initial_number_of_grid_points_(                        // NOLINT
+          std::move(initial_number_of_grid_points)),         // NOLINT
+      use_equiangular_map_(use_equiangular_map),             // NOLINT
+      radial_partitioning_(std::move(radial_partitioning)),  // NOLINT
+      height_partitioning_(std::move(height_partitioning)) {}
 
 Domain<3> Cylinder::create_domain() const noexcept {
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-  using Equiangular = CoordinateMaps::Equiangular;
-  using Equiangular3DPrism =
-      CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Affine>;
-  using Wedge2D = CoordinateMaps::Wedge2D;
-  using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
-
-  std::vector<std::array<size_t, 8>> corners{
-      {{1, 5, 3, 7, 9, 13, 11, 15}},   //+x wedge
-      {{3, 7, 2, 6, 11, 15, 10, 14}},  //+y wedge
-      {{2, 6, 0, 4, 10, 14, 8, 12}},   //-x wedge
-      {{0, 4, 1, 5, 8, 12, 9, 13}},    //-y wedge
-      {{0, 1, 2, 3, 8, 9, 10, 11}}};   // Center square prism
-
-  auto coord_maps =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          Wedge3DPrism{Wedge2D{inner_radius_, outer_radius_, 0.0, 1.0,
-                               OrientationMap<2>{std::array<Direction<2>, 2>{
-                                   {Direction<2>::upper_xi(),
-                                    Direction<2>::upper_eta()}}},
-                               use_equiangular_map_},
-                       Affine{-1.0, 1.0, lower_bound_, upper_bound_}},
-          Wedge3DPrism{Wedge2D{inner_radius_, outer_radius_, 0.0, 1.0,
-                               OrientationMap<2>{std::array<Direction<2>, 2>{
-                                   {Direction<2>::lower_eta(),
-                                    Direction<2>::upper_xi()}}},
-                               use_equiangular_map_},
-                       Affine{-1.0, 1.0, lower_bound_, upper_bound_}},
-          Wedge3DPrism{Wedge2D{inner_radius_, outer_radius_, 0.0, 1.0,
-                               OrientationMap<2>{std::array<Direction<2>, 2>{
-                                   {Direction<2>::lower_xi(),
-                                    Direction<2>::lower_eta()}}},
-                               use_equiangular_map_},
-                       Affine{-1.0, 1.0, lower_bound_, upper_bound_}},
-          Wedge3DPrism{Wedge2D{inner_radius_, outer_radius_, 0.0, 1.0,
-                               OrientationMap<2>{std::array<Direction<2>, 2>{
-                                   {Direction<2>::upper_eta(),
-                                    Direction<2>::lower_xi()}}},
-                               use_equiangular_map_},
-                       Affine{-1.0, 1.0, lower_bound_, upper_bound_}});
-
-  if (use_equiangular_map_) {
-    coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-            Equiangular3DPrism{
-                Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
-                            inner_radius_ / sqrt(2.0)),
-                Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
-                            inner_radius_ / sqrt(2.0)),
-                Affine{-1.0, 1.0, lower_bound_, upper_bound_}}));
-  } else {
-    coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-            Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
-                            inner_radius_ / sqrt(2.0)),
-                     Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
-                            inner_radius_ / sqrt(2.0)),
-                     Affine{-1.0, 1.0, lower_bound_, upper_bound_}}));
+  const size_t number_of_shells = 1 + radial_partitioning_.size();
+  const size_t number_of_discs = 1 + height_partitioning_.size();
+  std::vector<PairOfFaces> pairs_of_faces{};
+  if (is_periodic_in_z_) {
+    // connect faces of end caps in the periodic z-direction
+    const size_t corners_per_layer = 4 * (number_of_shells + 1);
+    const size_t num_corners = number_of_discs * corners_per_layer;
+    PairOfFaces center{
+        {0, 1, 2, 3},
+        {num_corners + 0, num_corners + 1, num_corners + 2, num_corners + 3}};
+    pairs_of_faces.push_back(std::move(center));
+    for (size_t j = 0; j < number_of_shells; j++) {
+      PairOfFaces east{{1 + 4 * j, 5 + 4 * j, 3 + 4 * j, 7 + 4 * j},
+                       {num_corners + 4 * j + 1, num_corners + 4 * j + 5,
+                        num_corners + 4 * j + 3, num_corners + 4 * j + 7}};
+      PairOfFaces north{{3 + 4 * j, 7 + 4 * j, 2 + 4 * j, 6 + 4 * j},
+                        {num_corners + 4 * j + 3, num_corners + 4 * j + 7,
+                         num_corners + 4 * j + 2, num_corners + 4 * j + 6}};
+      PairOfFaces west{{2 + 4 * j, 6 + 4 * j, 0 + 4 * j, 4 + 4 * j},
+                       {num_corners + 4 * j + 2, num_corners + 4 * j + 6,
+                        num_corners + 4 * j + 0, num_corners + 4 * j + 4}};
+      PairOfFaces south{{0 + 4 * j, 4 + 4 * j, 1 + 4 * j, 5 + 4 * j},
+                        {num_corners + 4 * j + 0, num_corners + 4 * j + 4,
+                         num_corners + 4 * j + 1, num_corners + 4 * j + 5}};
+      pairs_of_faces.push_back(std::move(east));
+      pairs_of_faces.push_back(std::move(north));
+      pairs_of_faces.push_back(std::move(west));
+      pairs_of_faces.push_back(std::move(south));
+    }
   }
   return Domain<3>{
-      std::move(coord_maps), corners,
-      is_periodic_in_z_
-          ? std::vector<PairOfFaces>{{{0, 1, 2, 3}, {8, 9, 10, 11}},
-                                     {{1, 5, 3, 7}, {9, 13, 11, 15}},
-                                     {{4, 5, 0, 1}, {12, 13, 8, 9}},
-                                     {{4, 0, 6, 2}, {12, 8, 14, 10}},
-                                     {{2, 3, 6, 7}, {10, 11, 14, 15}}}
-          : std::vector<PairOfFaces>{}};
+      cyl_wedge_coordinate_maps<Frame::Inertial>(
+          inner_radius_, outer_radius_, lower_bound_, upper_bound_,
+          use_equiangular_map_, radial_partitioning_, height_partitioning_),
+      corners_for_cylindrical_layered_domains(number_of_shells,
+                                              number_of_discs),
+      pairs_of_faces};
 }
 
 std::vector<std::array<size_t, 3>> Cylinder::initial_extents() const noexcept {
-  return {
-      initial_number_of_grid_points_,
-      initial_number_of_grid_points_,
-      initial_number_of_grid_points_,
-      initial_number_of_grid_points_,
-      {{initial_number_of_grid_points_[1], initial_number_of_grid_points_[1],
-        initial_number_of_grid_points_[2]}}};
+  std::vector<std::array<size_t, 3>> gridpoints_vector;
+  for (size_t layer = 0; layer < 1 + height_partitioning_.size(); layer++) {
+    gridpoints_vector.push_back({{initial_number_of_grid_points_.at(1),
+                                  initial_number_of_grid_points_.at(1),
+                                  initial_number_of_grid_points_.at(2)}});
+    for (size_t shell = 0; shell < 1 + radial_partitioning_.size(); shell++) {
+      for (size_t face = 0; face < 4; face++) {
+        gridpoints_vector.push_back(initial_number_of_grid_points_);
+      }
+    }
+  }
+  return gridpoints_vector;
 }
 
 std::vector<std::array<size_t, 3>> Cylinder::initial_refinement_levels() const
     noexcept {
-  return {5, make_array<3>(initial_refinement_)};
+  return {(1 + 4 * (1 + radial_partitioning_.size())) *
+              (1 + height_partitioning_.size()),
+          make_array<3>(initial_refinement_)};
 }
 }  // namespace domain::creators

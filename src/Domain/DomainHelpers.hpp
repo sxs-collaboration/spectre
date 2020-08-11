@@ -139,15 +139,15 @@ enum class ShellWedges {
 /// The `number_of_layers` is used when the user wants to have multiple layers
 /// of Blocks in the radial direction.
 template <typename TargetFrame>
-auto wedge_coordinate_maps(double inner_radius, double outer_radius,
-                           double inner_sphericity, double outer_sphericity,
-                           bool use_equiangular_map,
-                           double x_coord_of_shell_center = 0.0,
-                           bool use_half_wedges = false,
-                           double aspect_ratio = 1.0,
-                           bool use_logarithmic_map = false,
-                           ShellWedges which_wedges = ShellWedges::All,
-                           size_t number_of_layers = 1) noexcept
+auto sph_wedge_coordinate_maps(double inner_radius, double outer_radius,
+                               double inner_sphericity, double outer_sphericity,
+                               bool use_equiangular_map,
+                               double x_coord_of_shell_center = 0.0,
+                               bool use_half_wedges = false,
+                               double aspect_ratio = 1.0,
+                               bool use_logarithmic_map = false,
+                               ShellWedges which_wedges = ShellWedges::All,
+                               size_t number_of_layers = 1) noexcept
     -> std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
 
@@ -205,6 +205,38 @@ std::vector<std::array<size_t, 8>> corners_for_biradially_layered_domains(
     bool include_central_block_lhs, bool include_central_block_rhs,
     const std::array<size_t, 8>& central_block_corners_lhs = {
         {1, 2, 3, 4, 5, 6, 7, 8}}) noexcept;
+
+/// \ingroup ComputationalDomainGroup
+/// These are the CoordinateMaps used in the Cylinder DomainCreator.
+///
+/// The `radial_partitioning` specifies the radial boundaries of sub-shells
+/// between `inner_radius` and `outer_radius`, while `height_partitioning`
+/// specifies the z-boundaries, splitting the cylinder into stacked
+/// 3-dimensional disks. The circularity of the shell wedges changes from 0 to 1
+/// within the innermost sub-shell.
+template <typename TargetFrame>
+auto cyl_wedge_coordinate_maps(
+    double inner_radius, double outer_radius, double lower_bound,
+    double upper_bound, bool use_equiangular_map,
+    const std::vector<double>& radial_partitioning = {},
+    const std::vector<double>& height_partitioning = {}) noexcept
+    -> std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
+
+/// \ingroup ComputationalDomainGroup
+/// \brief The corners for a cylindrical domain split into discs with radial
+/// shells.
+///
+/// Generates the corners for a Domain which is made of one or more stacked
+/// discs consisting of layers of Blocks enveloping an interior square prism.
+/// The `number_of_shells` specifies how many of these layers of Blocks to have
+/// in each disc.
+///
+/// The `number_of_discs` specifies how many discs make up the domain.
+/// The very basic cylinder with one shell and one layer serves as a base
+/// to generate the corners for subsequent shells first and discs second.
+std::vector<std::array<size_t, 8>> corners_for_cylindrical_layered_domains(
+    size_t number_of_shells, size_t number_of_discs) noexcept;
 
 /// \ingroup ComputationalDomainGroup
 /// \brief Permutes the corner numbers of an n-cube.

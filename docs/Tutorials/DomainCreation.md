@@ -25,8 +25,8 @@ also provides the jacobian of the mapping.
 
 ### Shortcuts for CoordinateMaps
 For spherical domains, Wedge3D implements the cubed-sphere map, and there
-exists the method `wedge_coordinate_maps` in Domain/DomainHelpers.hpp to quickly
-construct six of these maps at once. For rectilinear multicube domains,
+exists the method `sph_wedge_coordinate_maps` in Domain/DomainHelpers.hpp to
+quickly construct six of these maps at once. For rectilinear multicube domains,
 Affine and Equiangular map the logical cubes to cartesian cubes. The method
 `maps_for_rectilinear_domains` in DomainHelpers allows the user to obtain
 the CoordinateMaps for all of the Blocks in such a domain at once. These
@@ -43,7 +43,7 @@ of the blocks in a well-defined way. The corner numbering scheme is described
 in the \ref tutorial_orientations tutorial. For spherical domains,
 DomainHelpers has the methods `corners_for_radially_layered_domains` and
 `corners_for_biradially_layered_domains`, which provides the proper corner
-numberings for the maps obtained from the method `wedge_coordinate_maps`.
+numberings for the maps obtained from the method `sph_wedge_coordinate_maps`.
 These methods are used in the \ref domain::creators::Shell "Shell" and
 \ref domain::creators::Sphere "Sphere" DomainCreators.
 For rectilinear multicube domains, DomainHelpers has the methods
@@ -184,20 +184,20 @@ are:
 ```
 
 //Folding highest cube downward:
-{{53,54,69,70},{53,54,40,41}},
+{{53,54,69,70},{53,54,49,50}},
 {{53,57,69,73},{53,57,52,56}},
 {{57,58,61,62},{57,58,73,74}},
 {{54,58,70,74},{54,58,55,59}},
 
 //Folding cross cubes together:
-{{54,55,38,39},{54,41,38,25}},
+{{54,55,38,39},{54,50,38,34}},
 {{58,59,42,43},{58,62,42,46}},
-{{53,52,37,36},{53,40,37,33}},
+{{53,52,37,36},{53,49,37,33}},
 {{57,56,41,40},{57,61,41,45}},
 
 //Folding second lowest cube upward:
 {{38,42,39,43},{38,42,22,26}},
-{{33,34,37,38},{21,22,25,26}},
+{{33,34,37,38},{21,22,37,38}},
 {{36,37,40,41},{21,37,25,41}},
 {{41,42,45,46},{41,42,25,26}},
 
@@ -205,7 +205,7 @@ are:
 {{33,34,49,50},{21,22,5,6}},
 {{39,43,55,59},{22,26,6,10}},
 {{45,46,61,62},{25,26,9,10}},
-{{36,40,52,56},{21,25,5,8}},
+{{36,40,52,56},{21,25,5,9}},
 {{5,6,9,10},{69,70,73,74}}
 
 ```
