@@ -76,16 +76,16 @@ void test_characteristic_speeds() noexcept {
   const DataVector used_for_size(5);
   pypp::check_with_random_values<1>(speed_with_index<0, Dim, Frame>,
                                     "TestFunctions", "char_speed_upsi",
-                                    {{{-10.0, 10.0}}}, used_for_size);
+                                    {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(speed_with_index<1, Dim, Frame>,
                                     "TestFunctions", "char_speed_uzero",
-                                    {{{-10.0, 10.0}}}, used_for_size);
+                                    {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(speed_with_index<3, Dim, Frame>,
                                     "TestFunctions", "char_speed_uminus",
-                                    {{{-10.0, 10.0}}}, used_for_size);
+                                    {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(speed_with_index<2, Dim, Frame>,
                                     "TestFunctions", "char_speed_uplus",
-                                    {{{-10.0, 10.0}}}, used_for_size);
+                                    {{{-2.0, 2.0}}}, used_for_size);
 }
 
 // Test return-by-reference GH char speeds by comparing to Kerr-Schild
@@ -179,16 +179,16 @@ void test_characteristic_fields() noexcept {
   TestHelpers::db::test_compute_tag<
       GeneralizedHarmonic::CharacteristicFieldsCompute<Dim, Frame>>(
       "CharacteristicFields");
-  const DataVector used_for_size(20);
+  const DataVector used_for_size(5);
   // VSpacetimeMetric
   pypp::check_with_random_values<1>(
       field_with_tag<GeneralizedHarmonic::Tags::VSpacetimeMetric<Dim, Frame>,
                      Dim, Frame>,
-      "TestFunctions", "char_field_upsi", {{{-100., 100.}}}, used_for_size);
+      "TestFunctions", "char_field_upsi", {{{-2., 2.}}}, used_for_size);
   // VZero
   pypp::check_with_random_values<1>(
       field_with_tag<GeneralizedHarmonic::Tags::VZero<Dim, Frame>, Dim, Frame>,
-      "TestFunctions", "char_field_uzero", {{{-100., 100.}}}, used_for_size,
+      "TestFunctions", "char_field_uzero", {{{-2., 2.}}}, used_for_size,
       1.e-9);  // last argument loosens tolerance from
                // default of 1.0e-12 to avoid occasional
                // failures of this test, suspected from
@@ -196,7 +196,7 @@ void test_characteristic_fields() noexcept {
   // VPlus
   pypp::check_with_random_values<1>(
       field_with_tag<GeneralizedHarmonic::Tags::VPlus<Dim, Frame>, Dim, Frame>,
-      "TestFunctions", "char_field_uplus", {{{-100., 100.}}}, used_for_size,
+      "TestFunctions", "char_field_uplus", {{{-2., 2.}}}, used_for_size,
       1.e-10);  // last argument loosens tolerance from
                 // default of 1.0e-12 to avoid occasional
                 // failures of this test, suspected from
@@ -204,7 +204,7 @@ void test_characteristic_fields() noexcept {
   // VMinus
   pypp::check_with_random_values<1>(
       field_with_tag<GeneralizedHarmonic::Tags::VMinus<Dim, Frame>, Dim, Frame>,
-      "TestFunctions", "char_field_uminus", {{{-100., 100.}}}, used_for_size,
+      "TestFunctions", "char_field_uminus", {{{-2., 2.}}}, used_for_size,
       1.e-10);  // last argument loosens tolerance from
                 // default of 1.0e-12 to avoid occasional
                 // failures of this test, suspected from
@@ -364,21 +364,21 @@ void test_evolved_from_characteristic_fields() noexcept {
       GeneralizedHarmonic::EvolvedFieldsFromCharacteristicFieldsCompute<Dim,
                                                                         Frame>>(
       "EvolvedFieldsFromCharacteristicFields");
-  const DataVector used_for_size(20);
+  const DataVector used_for_size(5);
   // Psi
   pypp::check_with_random_values<1>(
       evol_field_with_tag<gr::Tags::SpacetimeMetric<Dim, Frame>, Dim, Frame>,
-      "TestFunctions", "evol_field_psi", {{{-100., 100.}}}, used_for_size);
+      "TestFunctions", "evol_field_psi", {{{-2., 2.}}}, used_for_size);
   // Pi
   pypp::check_with_random_values<1>(
       evol_field_with_tag<GeneralizedHarmonic::Tags::Pi<Dim, Frame>, Dim,
                           Frame>,
-      "TestFunctions", "evol_field_pi", {{{-100., 100.}}}, used_for_size);
+      "TestFunctions", "evol_field_pi", {{{-2., 2.}}}, used_for_size);
   // Phi
   pypp::check_with_random_values<1>(
       evol_field_with_tag<GeneralizedHarmonic::Tags::Phi<Dim, Frame>, Dim,
                           Frame>,
-      "TestFunctions", "evol_field_phi", {{{-100., 100.}}}, used_for_size);
+      "TestFunctions", "evol_field_phi", {{{-2., 2.}}}, used_for_size);
 }
 
 // Test return-by-reference GH fundamental fields by comparing to Kerr-Schild
@@ -524,7 +524,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Characteristics",
   const std::array<double, 3> center{{0.2, 0.3, 0.4}};
   const gr::Solutions::KerrSchild solution(mass, spin, center);
 
-  const size_t grid_size = 8;
+  const size_t grid_size = 2;
   const std::array<double, 3> lower_bound{{0.82, 1.22, 1.32}};
   const std::array<double, 3> upper_bound{{0.78, 1.18, 1.28}};
 
