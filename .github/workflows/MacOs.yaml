@@ -17,9 +17,11 @@ jobs:
   # Build all test executables and run unit tests on macOS
   unit_tests_macos:
     name: Unit tests on macOS
-    # Don't run on `develop` since we don't require this check to pass for PR
+    # Don't run on `develop` since we don't require this check to pass for PRs
     # be merged. See `CONTRIBUTING.md` for details.
-    if: github.ref != 'refs/heads/develop'
+    # Note: This is commented out to allow running the workflow manually on
+    # `develop` while the trigger is set to `workflow_dispatch`.
+    # if: github.ref != 'refs/heads/develop'
     runs-on: macos-latest
     env:
       # We install `openblas` instead of using the system version because we
