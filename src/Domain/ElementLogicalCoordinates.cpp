@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "ElementLogicalCoordinates.hpp"
+#include "Domain/ElementLogicalCoordinates.hpp"
 
 #include <array>
 #include <memory>

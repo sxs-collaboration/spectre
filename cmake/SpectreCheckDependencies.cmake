@@ -21,6 +21,7 @@ function(check_spectre_libs_dependencies)
       ${SPECTRE_TPLS}
       ${SPECTRE_LIBS}
       ALLOWED_EXTRA_TARGETS
+      SpectreAllocator
       SpectreFlags
       ERROR_ON_FAILURE
       )
