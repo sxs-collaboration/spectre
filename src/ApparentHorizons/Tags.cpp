@@ -16,7 +16,7 @@
 namespace StrahlkorperTags {
 
 template <typename Frame>
-void ThetaPhi<Frame>::function(
+void ThetaPhiCompute<Frame>::function(
     const gsl::not_null<aliases::ThetaPhi<Frame>*> theta_phi,
     const ::Strahlkorper<Frame>& strahlkorper) noexcept {
   auto temp = strahlkorper.ylm_spherepack().theta_phi_points();
@@ -26,8 +26,9 @@ void ThetaPhi<Frame>::function(
 }
 
 template <typename Frame>
-void Rhat<Frame>::function(const gsl::not_null<aliases::OneForm<Frame>*> r_hat,
-                           const aliases::ThetaPhi<Frame>& theta_phi) noexcept {
+void RhatCompute<Frame>::function(
+    const gsl::not_null<aliases::OneForm<Frame>*> r_hat,
+    const aliases::ThetaPhi<Frame>& theta_phi) noexcept {
   const auto& theta = get<0>(theta_phi);
   const auto& phi = get<1>(theta_phi);
 
@@ -39,7 +40,7 @@ void Rhat<Frame>::function(const gsl::not_null<aliases::OneForm<Frame>*> r_hat,
 }
 
 template <typename Frame>
-void Jacobian<Frame>::function(
+void JacobianCompute<Frame>::function(
     const gsl::not_null<aliases::Jacobian<Frame>*> jac,
     const aliases::ThetaPhi<Frame>& theta_phi) noexcept {
   const auto& theta = get<0>(theta_phi);
@@ -58,7 +59,7 @@ void Jacobian<Frame>::function(
 }
 
 template <typename Frame>
-void InvJacobian<Frame>::function(
+void InvJacobianCompute<Frame>::function(
     const gsl::not_null<aliases::InvJacobian<Frame>*> inv_jac,
     const aliases::ThetaPhi<Frame>& theta_phi) noexcept {
   const auto& theta = get<0>(theta_phi);
@@ -77,7 +78,7 @@ void InvJacobian<Frame>::function(
 }
 
 template <typename Frame>
-void InvHessian<Frame>::function(
+void InvHessianCompute<Frame>::function(
     const gsl::not_null<aliases::InvHessian<Frame>*> inv_hess,
     const aliases::ThetaPhi<Frame>& theta_phi) noexcept {
   const auto& theta = get<0>(theta_phi);
@@ -139,7 +140,7 @@ void InvHessian<Frame>::function(
 }
 
 template <typename Frame>
-void Radius<Frame>::function(
+void RadiusCompute<Frame>::function(
     const gsl::not_null<DataVector*> radius,
     const ::Strahlkorper<Frame>& strahlkorper) noexcept {
   radius->destructive_resize(strahlkorper.ylm_spherepack().physical_size());
@@ -148,7 +149,7 @@ void Radius<Frame>::function(
 }
 
 template <typename Frame>
-void CartesianCoords<Frame>::function(
+void CartesianCoordsCompute<Frame>::function(
     const gsl::not_null<aliases::Vector<Frame>*> coords,
     const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
     const aliases::OneForm<Frame>& r_hat) noexcept {
@@ -159,7 +160,7 @@ void CartesianCoords<Frame>::function(
 }
 
 template <typename Frame>
-void DxRadius<Frame>::function(
+void DxRadiusCompute<Frame>::function(
     const gsl::not_null<aliases::OneForm<Frame>*> dx_radius,
     const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
     const aliases::InvJacobian<Frame>& inv_jac) noexcept {
@@ -176,7 +177,7 @@ void DxRadius<Frame>::function(
 }
 
 template <typename Frame>
-void D2xRadius<Frame>::function(
+void D2xRadiusCompute<Frame>::function(
     const gsl::not_null<aliases::SecondDeriv<Frame>*> d2x_radius,
     const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
     const aliases::InvJacobian<Frame>& inv_jac,
@@ -217,7 +218,7 @@ void D2xRadius<Frame>::function(
 }
 
 template <typename Frame>
-void LaplacianRadius<Frame>::function(
+void LaplacianRadiusCompute<Frame>::function(
     const gsl::not_null<DataVector*> lap_radius,
     const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
     const aliases::ThetaPhi<Frame>& theta_phi) noexcept {
@@ -229,7 +230,7 @@ void LaplacianRadius<Frame>::function(
 }
 
 template <typename Frame>
-void NormalOneForm<Frame>::function(
+void NormalOneFormCompute<Frame>::function(
     const gsl::not_null<aliases::OneForm<Frame>*> one_form,
     const aliases::OneForm<Frame>& dx_radius,
     const aliases::OneForm<Frame>& r_hat) noexcept {
@@ -240,7 +241,7 @@ void NormalOneForm<Frame>::function(
 }
 
 template <typename Frame>
-void Tangents<Frame>::function(
+void TangentsCompute<Frame>::function(
     const gsl::not_null<aliases::Jacobian<Frame>*> tangents,
     const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
     const aliases::OneForm<Frame>& r_hat,
@@ -257,22 +258,16 @@ void Tangents<Frame>::function(
 }  // namespace StrahlkorperTags
 
 namespace StrahlkorperTags {
-template struct ThetaPhi<Frame::Inertial>;
-template struct Rhat<Frame::Inertial>;
-template struct Jacobian<Frame::Inertial>;
-template struct InvJacobian<Frame::Inertial>;
-template struct InvHessian<Frame::Inertial>;
-template struct Radius<Frame::Inertial>;
-template struct CartesianCoords<Frame::Inertial>;
-template struct DxRadius<Frame::Inertial>;
-template struct D2xRadius<Frame::Inertial>;
-template struct LaplacianRadius<Frame::Inertial>;
-template struct NormalOneForm<Frame::Inertial>;
-template struct Tangents<Frame::Inertial>;
+template struct ThetaPhiCompute<Frame::Inertial>;
+template struct RhatCompute<Frame::Inertial>;
+template struct JacobianCompute<Frame::Inertial>;
+template struct InvJacobianCompute<Frame::Inertial>;
+template struct InvHessianCompute<Frame::Inertial>;
+template struct RadiusCompute<Frame::Inertial>;
+template struct CartesianCoordsCompute<Frame::Inertial>;
+template struct DxRadiusCompute<Frame::Inertial>;
+template struct D2xRadiusCompute<Frame::Inertial>;
+template struct LaplacianRadiusCompute<Frame::Inertial>;
+template struct NormalOneFormCompute<Frame::Inertial>;
+template struct TangentsCompute<Frame::Inertial>;
 }  // namespace StrahlkorperTags
-
-namespace StrahlkorperGr {
-namespace Tags {
-template struct AreaElement<Frame::Inertial>;
-}  // namespace Tags
-}  // namespace StrahlkorperGr

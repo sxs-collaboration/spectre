@@ -27,11 +27,9 @@ namespace Burgers {
 namespace Tags {
 /// Computes the characteristic speeds
 struct CharacteristicSpeedsCompute : CharacteristicSpeeds, db::ComputeTag {
-  static std::string name() noexcept { return "CharacteristicSpeeds"; }
-
+  using base = CharacteristicSpeeds;
   using argument_tags =
       tmpl::list<Tags::U, domain::Tags::UnnormalizedFaceNormal<1>>;
-
   using return_type = std::array<DataVector, 1>;
   static void function(gsl::not_null<return_type*> result,
                        const Scalar<DataVector>& u,

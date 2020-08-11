@@ -42,12 +42,10 @@
 // IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
-namespace intrp {
-namespace Actions {
+namespace intrp::Actions {
 template <typename InterpolationTargetTag>
 struct CleanUpInterpolator;
-}  // namespace Actions
-}  // namespace intrp
+}  // namespace intrp::Actions
 namespace Parallel {
 template <typename Metavariables>
 class ConstGlobalCache;
@@ -56,8 +54,7 @@ namespace db {
 template <typename TagsList>
 class DataBox;
 }  // namespace db
-namespace intrp {
-namespace Tags {
+namespace intrp::Tags {
 template <typename Metavariables>
 struct IndicesOfFilledInterpPoints;
 struct NumberOfElements;
@@ -65,8 +62,7 @@ template <typename TemporalId>
 struct TemporalIds;
 template <typename TemporalId>
 struct CompletedTemporalIds;
-}  // namespace Tags
-}  // namespace intrp
+}  // namespace intrp::Tags
 /// \endcond
 
 namespace {
@@ -167,14 +163,14 @@ namespace Tags {
 struct Square : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
-struct SquareComputeItem : Square, db::ComputeTag {
-  static Scalar<DataVector> function(const Scalar<DataVector>& x) noexcept {
-    auto result = make_with_value<Scalar<DataVector>>(x, 0.0);
-    get<>(result) = square(get<>(x));
-    return result;
+struct SquareCompute : Square, db::ComputeTag {
+  static void function(gsl::not_null<Scalar<DataVector>*> result,
+                       const Scalar<DataVector>& x) noexcept {
+    get(*result) = square(get(x));
   }
   using argument_tags = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using base = Square;
+  using return_type = Scalar<DataVector>;
 };
 }  // namespace Tags
 
@@ -269,7 +265,7 @@ struct MockMetavariables {
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_target_points = MockComputeTargetPoints;
     using post_interpolation_callback = MockCallBackType;
-    using compute_items_on_target = tmpl::list<Tags::SquareComputeItem>;
+    using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;

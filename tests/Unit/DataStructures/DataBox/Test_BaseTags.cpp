@@ -34,26 +34,35 @@ struct Vector : db::SimpleTag, VectorBase<I> {
 template <int I>
 struct ArrayBase : db::BaseTag {};
 
-template <int I>
-struct Array : virtual db::SimpleTag, ArrayBase<I> {
-  using type = std::array<int, 3>;
+template <int I, size_t Size = 3>
+struct Array : db::SimpleTag, ArrayBase<I> {
+  using type = std::array<int, Size>;
 };
 /// [array_base_definitions]
 
 /// [compute_template_base_tags]
 template <int I, int VectorBaseIndex = 0, int... VectorBaseExtraIndices>
-struct ArrayComputeBase : Array<I>, db::ComputeTag {
-  static std::string name() noexcept { return "ArrayComputeBase"; }
+struct ArrayCompute : Array<I, sizeof...(VectorBaseExtraIndices) == 0
+                                   ? 3
+                                   : 2 + sizeof...(VectorBaseExtraIndices)>,
+                      db::ComputeTag {
+  using base = Array<I, sizeof...(VectorBaseExtraIndices) == 0
+                            ? 3
+                            : 2 + sizeof...(VectorBaseExtraIndices)>;
+  using return_type = typename base::type;
 
-  static std::array<int, 3> function(const std::vector<double>& t) noexcept {
-    return {{static_cast<int>(t.size()), static_cast<int>(t[0]), -8}};
+  static void function(const gsl::not_null<std::array<int, 3>*> result,
+                       const std::vector<double>& t) noexcept {
+    *result = {{static_cast<int>(t.size()), static_cast<int>(t[0]), -8}};
   }
 
   template <typename... Args>
-  static std::array<int, 2 + sizeof...(Args)> function(
+  static void function(
+      const gsl::not_null<std::array<int, 2 + sizeof...(Args)>*> result,
       const std::vector<double>& t, const Args&... args) noexcept {
-    return {{static_cast<int>(t.size()), static_cast<int>(t[0]),
-             static_cast<int>(args[0])...}};
+    static_assert(sizeof...(VectorBaseExtraIndices) == sizeof...(Args));
+    *result = {{static_cast<int>(t.size()), static_cast<int>(t[0]),
+                static_cast<int>(args[0])...}};
   }
 
   using argument_tags = tmpl::list<VectorBase<VectorBaseIndex>,
@@ -71,14 +80,14 @@ void test_non_subitems() {
   // - `get`ing a compute item by its simple tag
   /// [base_simple_and_compute_mutate]
   auto box = db::create<db::AddSimpleTags<TestTags::Vector<0>>,
-                        db::AddComputeTags<TestTags::ArrayComputeBase<0>>>(
+                        db::AddComputeTags<TestTags::ArrayCompute<0>>>(
       std::vector<double>{-10.0, 10.0});
 
   // Check retrieving simple tag Vector<0> using base tag VectorBase<0>
   CHECK(db::get<TestTags::VectorBase<0>>(box) ==
         std::vector<double>{-10.0, 10.0});
 
-  // Check retrieving compute tag ArrayComputeBase<0> using simple tag Array<0>
+  // Check retrieving compute tag ArrayCompute<0> using simple tag Array<0>
   CHECK(db::get<TestTags::Array<0>>(box) == std::array<int, 3>{{2, -10, -8}});
 
   // Check mutating Vector<0> using VectorBase<0>
@@ -88,34 +97,32 @@ void test_non_subitems() {
   CHECK(db::get<TestTags::VectorBase<0>>(box) ==
         std::vector<double>{101.8, 10.0});
 
-  // Check retrieving ArrayComputeBase<0> using base tag ArrayBase<0>.
-  // ArrayComputeBase was reset after mutating Vector<0>
+  // Check retrieving ArrayCompute<0> using base tag ArrayBase<0>.
+  // ArrayCompute was reset after mutating Vector<0>
   CHECK(db::get<TestTags::ArrayBase<0>>(box) ==
         std::array<int, 3>{{2, 101, -8}});
 
-  // Check retrieving ArrayComputeBase<0> using simple tag Array<0>.
+  // Check retrieving ArrayCompute<0> using simple tag Array<0>.
   CHECK(db::get<TestTags::Array<0>>(box) == std::array<int, 3>{{2, 101, -8}});
-  CHECK(db::get<TestTags::ArrayComputeBase<0>>(box) ==
+  CHECK(db::get<TestTags::ArrayCompute<0>>(box) ==
         std::array<int, 3>{{2, 101, -8}});
   /// [base_simple_and_compute_mutate]
 
   // - adding compute item that uses a base tag as its argument
-  auto box2 =
-      db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
-                      db::AddComputeTags<TestTags::ArrayComputeBase<1>>>(
-          std::move(box));
+  auto box2 = db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
+                              db::AddComputeTags<TestTags::ArrayCompute<1>>>(
+      std::move(box));
   CHECK(db::get<TestTags::ArrayBase<1>>(box2) ==
         std::array<int, 3>{{2, 101, -8}});
-  CHECK(db::get<TestTags::ArrayComputeBase<1>>(box2) ==
+  CHECK(db::get<TestTags::ArrayCompute<1>>(box2) ==
         std::array<int, 3>{{2, 101, -8}});
-  const auto box3 =
-      db::create_from<db::RemoveTags<TestTags::ArrayComputeBase<1>>>(
-          std::move(box2));
+  const auto box3 = db::create_from<db::RemoveTags<TestTags::ArrayCompute<1>>>(
+      std::move(box2));
   CHECK(db::get<TestTags::VectorBase<0>>(box3) ==
         std::vector<double>{101.8, 10.0});
   CHECK(db::get<TestTags::ArrayBase<0>>(box3) ==
         std::array<int, 3>{{2, 101, -8}});
-  CHECK(db::get<TestTags::ArrayComputeBase<0>>(box3) ==
+  CHECK(db::get<TestTags::ArrayCompute<0>>(box3) ==
         std::array<int, 3>{{2, 101, -8}});
 
   // - adding a new simple item and a compute item that uses it and an
@@ -127,9 +134,9 @@ void test_non_subitems() {
   auto box4 = db::create_from<
       db::RemoveTags<>,
       db::AddSimpleTags<TestTags::Vector<1>, TestTags::Vector<2>>,
-      db::AddComputeTags<TestTags::ArrayComputeBase<1, 0, 1, 2>>>(
+      db::AddComputeTags<TestTags::ArrayCompute<1, 0, 1, 2>>>(
       db::create<db::AddSimpleTags<TestTags::Vector<0>>,
-                 db::AddComputeTags<TestTags::ArrayComputeBase<0>>>(
+                 db::AddComputeTags<TestTags::ArrayCompute<0>>>(
           std::vector<double>{101.8, 10.0}),
       std::vector<double>{-7.1, 8.9}, std::vector<double>{103.1, -73.2});
   CHECK(db::get<TestTags::ArrayBase<1>>(box4) ==
@@ -156,9 +163,9 @@ void test_non_subitems() {
       db::create_from<
           db::RemoveTags<>,
           db::AddSimpleTags<TestTags::Vector<1>, TestTags::Vector<2>>,
-          db::AddComputeTags<TestTags::ArrayComputeBase<1, 0, 1, 2>>>(
+          db::AddComputeTags<TestTags::ArrayCompute<1, 0, 1, 2>>>(
           db::create<db::AddSimpleTags<TestTags::Vector<0>>,
-                     db::AddComputeTags<TestTags::ArrayComputeBase<0>>>(
+                     db::AddComputeTags<TestTags::ArrayCompute<0>>>(
               std::vector<double>{101.8, 10.0}),
           std::vector<double>{-7.1, 8.9}, std::vector<double>{408.8, -73.2}));
   /// [remove_using_base]
@@ -223,16 +230,19 @@ struct SecondBase : db::BaseTag {};
 template <size_t N>
 struct ParentBase : db::BaseTag {};
 
-template <size_t N, bool Compute = false, bool DependsOnComputeItem = false>
+template <size_t N>
 struct Parent : ParentBase<N>, db::SimpleTag {
   using type = std::pair<Boxed<int>, Boxed<double>>;
 };
-template <size_t N, bool DependsOnComputeItem>
-struct Parent<N, true, DependsOnComputeItem> : ParentBase<N>, db::ComputeTag {
-  static std::string name() noexcept { return "Parent"; }
-  static auto function(
+
+template <size_t N>
+struct ParentCompute : Parent<N>, db::ComputeTag {
+  using base = Parent<N>;
+  using return_type = std::pair<Boxed<int>, Boxed<double>>;
+  static void function(
+      const gsl::not_null<return_type*> result,
       const std::pair<Boxed<int>, Boxed<double>>& arg) noexcept {
-    return std::make_pair(
+    *result = std::make_pair(
         Boxed<int>(std::make_shared<int>(*arg.first + 1)),
         Boxed<double>(std::make_shared<double>(*arg.second * 2.)));
   }
@@ -253,27 +263,62 @@ struct Second : SecondBase<N>, db::SimpleTag {
 };
 
 template <size_t N0, size_t N1>
-struct MultiplyByTwo : db::BaseTag {};
+struct MultiplyByTwoBase : db::BaseTag {};
 
 template <size_t N0, size_t N1>
-struct ComputeMultiplyByTwo : MultiplyByTwo<N0, N1>, db::ComputeTag {
+struct MultiplyByTwo : MultiplyByTwoBase<N0, N1>, db::SimpleTag {
+  using type = double;
+};
+
+template <size_t N0, size_t N1>
+struct MultiplyByTwoCompute : MultiplyByTwo<N0, N1>, db::ComputeTag {
+  using base = MultiplyByTwo<N0, N1>;
+  using return_type = double;
   // We use a function template and auto return type solely to test that these
   // work correctly with the DataBox.
   template <typename T0, typename T1>
-  static auto function(const T0& t0, const T1& t1) noexcept {
-    return *t0 * *t1;
+  static void function(const gsl::not_null<double*> result, const T0& t0,
+                       const T1& t1) noexcept {
+    *result = *t0 * *t1;
   }
-  static std::string name() noexcept { return "MultiplyByTwo"; }
   using argument_tags = tmpl::list<First<N0>, Second<N1>>;
 };
 }  // namespace TestTags
 }  // namespace
 
 namespace db {
-template <typename TagList, size_t N, bool Compute, bool DependsOnComputeItem>
-struct Subitems<TagList, TestTags::Parent<N, Compute, DependsOnComputeItem>> {
+template <typename TagList, size_t N>
+struct Subitems<TagList, TestTags::Parent<N>> {
   using type = tmpl::list<TestTags::First<N>, TestTags::Second<N>>;
-  using tag = TestTags::Parent<N, Compute>;
+  using tag = TestTags::Parent<N>;
+
+  // The argument types to create_item are template parameters instead of
+  // gsl::not_null<item_type<tag>*> and gsl::not_null<item_type<Subtag>*> to
+  // test that the code works correctly if create_item is a function template
+  template <typename Subtag, typename T0, typename T1>
+  static void create_item(const T0 parent_value, const T1 sub_value) noexcept {
+    *sub_value = std::get<Subtag::index>(*parent_value);
+  }
+
+  // We use the template parameter T instead of item_type<tag, TagList> just to
+  // test that create_compute_time functions can be function templates too
+  template <typename Subtag, typename T>
+  static auto create_compute_item(const T& parent_value) noexcept {
+    // clang-tidy: do not use const_cast
+    // We need a non-const object to set up the aliasing since in the
+    // simple-item case the alias can be used to modify the original
+    // item.  That should not be allowed for compute items, but the
+    // DataBox will only allow access to a const version of the result
+    // and we ensure in the definition of Boxed that that will not
+    // allow modification of the original item.
+    return const_cast<item_type<Subtag, TagList>&>(  // NOLINT
+        std::get<Subtag::index>(parent_value));
+  }
+};
+template <typename TagList, size_t N>
+struct Subitems<TagList, TestTags::ParentCompute<N>> {
+  using type = tmpl::list<TestTags::First<N>, TestTags::Second<N>>;
+  using tag = TestTags::ParentCompute<N>;
 
   // The argument types to create_item are template parameters instead of
   // gsl::not_null<item_type<tag>*> and gsl::not_null<item_type<Subtag>*> to
@@ -306,7 +351,7 @@ void test_subitems_tags() {
   // - `get`ing a subitem by a base tag
   // - `get`ing a subitem of a compute item by base tag
   auto box = db::create<db::AddSimpleTags<TestTags::Parent<0>>,
-                        db::AddComputeTags<TestTags::Parent<1, true>>>(
+                        db::AddComputeTags<TestTags::ParentCompute<1>>>(
       std::make_pair(TestTags::Boxed<int>(std::make_shared<int>(5)),
                      TestTags::Boxed<double>(std::make_shared<double>(3.5))));
   CHECK(*db::get<TestTags::FirstBase<0>>(box) == 5);
@@ -339,9 +384,9 @@ void test_subitems_tags() {
   //   already in the box another that's being added
   const auto box2 =
       db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
-                      db::AddComputeTags<TestTags::ComputeMultiplyByTwo<0, 1>>>(
+                      db::AddComputeTags<TestTags::MultiplyByTwoCompute<0, 1>>>(
           std::move(box));
-  CHECK(db::get<TestTags::MultiplyByTwo<0, 1>>(box2) == -3 * 7.0);
+  CHECK(db::get<TestTags::MultiplyByTwoBase<0, 1>>(box2) == -3 * 7.0);
 
   // - using a subitem by base tag as the argument to a compute item (make
   //   sure mutating works correctly, both if mutating the base and if
@@ -349,26 +394,26 @@ void test_subitems_tags() {
   // - Test mutating the Subitem itself rather than one of the subitems.
   auto box3 =
       db::create_from<db::RemoveTags<>, db::AddSimpleTags<TestTags::Parent<2>>,
-                      db::AddComputeTags<TestTags::ComputeMultiplyByTwo<0, 2>>>(
+                      db::AddComputeTags<TestTags::MultiplyByTwoCompute<0, 2>>>(
           db::create<db::AddSimpleTags<TestTags::Parent<0>>,
-                     db::AddComputeTags<TestTags::Parent<1, true>>>(
+                     db::AddComputeTags<TestTags::ParentCompute<1>>>(
               std::make_pair(
                   TestTags::Boxed<int>(std::make_shared<int>(-3)),
                   TestTags::Boxed<double>(std::make_shared<double>(3.5)))),
           std::make_pair(
               TestTags::Boxed<int>(std::make_shared<int>(-3)),
               TestTags::Boxed<double>(std::make_shared<double>(9.5))));
-  CHECK(db::get<TestTags::MultiplyByTwo<0, 2>>(box3) == -3 * 9.5);
+  CHECK(db::get<TestTags::MultiplyByTwoBase<0, 2>>(box3) == -3 * 9.5);
   db::mutate<TestTags::FirstBase<0>>(
       make_not_null(&box3), [](const gsl::not_null<TestTags::Boxed<int>*>
                                    first) noexcept { **first = 4; });
-  CHECK(db::get<TestTags::MultiplyByTwo<0, 2>>(box3) == 4 * 9.5);
+  CHECK(db::get<TestTags::MultiplyByTwoBase<0, 2>>(box3) == 4 * 9.5);
   db::mutate<TestTags::ParentBase<0>>(
       make_not_null(&box3),
       [](const gsl::not_null<
           std::pair<TestTags::Boxed<int>, TestTags::Boxed<double>>*>
              parent0) noexcept { *parent0->first = 8; });
-  CHECK(db::get<TestTags::MultiplyByTwo<0, 2>>(box3) == 8 * 9.5);
+  CHECK(db::get<TestTags::MultiplyByTwoBase<0, 2>>(box3) == 8 * 9.5);
 }
 }  // namespace
 

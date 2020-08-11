@@ -309,21 +309,22 @@ const double volume = db::get<Volume>(refined_databox);
 return density * volume *  velocity * velocity / radius;
 }
 
-double mass_from_density_and_volume(
+void mass_from_density_and_volume(const gsl::not_null<double*> result,
   const double density, const double volume) noexcept {
-  return density * volume;
+  *result = density * volume;
 }
 /// [compute_tags]
 struct MassCompute : db::ComputeTag, Mass {
-  static std::string name() noexcept { return "MassCompute"; }
+  using base = Mass;
+  using return_type = double;
   static constexpr auto function = &mass_from_density_and_volume;
   using argument_tags = tmpl::list<Density, Volume>;
 };
 /// [compute_tags]
 
-double acceleration_from_velocity_and_radius(
+void acceleration_from_velocity_and_radius(const gsl::not_null<double*> result,
   const double velocity, const double radius) noexcept {
-  return velocity * velocity / radius;
+  *result = velocity * velocity / radius;
 }
 
 struct Acceleration : db::SimpleTag {
@@ -331,7 +332,8 @@ struct Acceleration : db::SimpleTag {
 };
 
 struct AccelerationCompute : db::ComputeTag, Acceleration {
-  static std::string name() noexcept { return "AccelerationCompute"; }
+  using base = Acceleration;
+  using return_type = double;
   static constexpr auto function = &acceleration_from_velocity_and_radius;
   using argument_tags = tmpl::list<Velocity, Radius>;
 };
@@ -342,10 +344,11 @@ struct Force : db::SimpleTag {
 };
 
 struct ForceCompute : db::ComputeTag, Force {
-  static std::string name() noexcept { return "ForceCompute"; }
-  static constexpr auto function(
+  using base = Force;
+  using return_type = double;
+  static constexpr void function(const gsl::not_null<double*> result,
     const double mass, const double acceleration) noexcept {
-    return mass * acceleration; }
+    *result = mass * acceleration; }
   using argument_tags = tmpl::list<Mass, Acceleration>;
 };
 /// [compute_tags_force_compute]

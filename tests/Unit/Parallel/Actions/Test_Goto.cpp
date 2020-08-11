@@ -21,10 +21,18 @@ struct Counter : db::SimpleTag {
   using type = size_t;
 };
 
-struct HasConverged : db::ComputeTag {
+struct HasConverged : db::SimpleTag {
+  using type = bool;
+};
+
+struct HasConvergedCompute : HasConverged, db::ComputeTag {
   using argument_tags = tmpl::list<Counter>;
-  static bool function(const size_t counter) noexcept { return counter >= 2; }
-  static std::string name() noexcept { return "HasConverged"; }
+  static void function(const gsl::not_null<bool*> result,
+                       const size_t counter) noexcept {
+    *result = (counter >= 2);
+  }
+  using return_type = bool;
+  using base = HasConverged;
 };
 
 struct Increment {
@@ -57,10 +65,11 @@ struct Component {
                  Parallel::Actions::TerminatePhase>>;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<
-              db::AddSimpleTags<Counter>, db::AddComputeTags<HasConverged>>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 db::AddSimpleTags<Counter>,
+                                 db::AddComputeTags<HasConvergedCompute>>>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::TestGoto,

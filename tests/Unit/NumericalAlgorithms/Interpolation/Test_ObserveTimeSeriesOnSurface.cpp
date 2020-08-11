@@ -89,25 +89,25 @@ struct Square : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 struct SquareCompute : Square, db::ComputeTag {
-  static Scalar<DataVector> function(const Scalar<DataVector>& x) noexcept {
-    auto result = make_with_value<Scalar<DataVector>>(x, 0.0);
-    get(result) = square(get(x));
-    return result;
+  static void function(gsl::not_null<Scalar<DataVector>*> result,
+                       const Scalar<DataVector>& x) noexcept {
+    get(*result) = square(get(x));
   }
   using argument_tags = tmpl::list<TestSolution>;
   using base = Square;
+  using return_type = Scalar<DataVector>;
 };
 struct Negate : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 struct NegateCompute : Negate, db::ComputeTag {
-  static Scalar<DataVector> function(const Scalar<DataVector>& x) noexcept {
-    auto result = make_with_value<Scalar<DataVector>>(x, 0.0);
-    get(result) = -get(x);
-    return result;
+  static void function(gsl::not_null<Scalar<DataVector>*> result,
+                       const Scalar<DataVector>& x) noexcept {
+    get(*result) = -get(x);
   }
   using argument_tags = tmpl::list<Square>;
   using base = Negate;
+  using return_type = Scalar<DataVector>;
 };
 }  // namespace Tags
 
@@ -199,10 +199,11 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;
-    using compute_items_on_target = tmpl::list<
-        Tags::SquareCompute,
-        StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
-        StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square, ::Frame::Inertial>>;
+    using compute_items_on_target =
+        tmpl::list<Tags::SquareCompute,
+                   StrahlkorperGr::Tags::AreaElementCompute<Frame::Inertial>,
+                   StrahlkorperGr::Tags::SurfaceIntegralCompute<
+                       Tags::Square, ::Frame::Inertial>>;
     using compute_target_points =
         intrp::TargetPoints::KerrHorizon<SurfaceA, ::Frame::Inertial>;
     using post_interpolation_callback =
@@ -216,11 +217,13 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;
-    using compute_items_on_target = tmpl::list<
-        Tags::SquareCompute, Tags::NegateCompute,
-        StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
-        StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square, Frame::Inertial>,
-        StrahlkorperGr::Tags::SurfaceIntegral<Tags::Negate, Frame::Inertial>>;
+    using compute_items_on_target =
+        tmpl::list<Tags::SquareCompute, Tags::NegateCompute,
+                   StrahlkorperGr::Tags::AreaElementCompute<Frame::Inertial>,
+                   StrahlkorperGr::Tags::SurfaceIntegralCompute<
+                       Tags::Square, Frame::Inertial>,
+                   StrahlkorperGr::Tags::SurfaceIntegralCompute<
+                       Tags::Negate, Frame::Inertial>>;
     using compute_target_points =
         intrp::TargetPoints::KerrHorizon<SurfaceB, ::Frame::Inertial>;
     using post_interpolation_callback =
@@ -236,10 +239,11 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;
-    using compute_items_on_target = tmpl::list<
-        Tags::SquareCompute, Tags::NegateCompute,
-        StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
-        StrahlkorperGr::Tags::SurfaceIntegral<Tags::Negate, ::Frame::Inertial>>;
+    using compute_items_on_target =
+        tmpl::list<Tags::SquareCompute, Tags::NegateCompute,
+                   StrahlkorperGr::Tags::AreaElementCompute<Frame::Inertial>,
+                   StrahlkorperGr::Tags::SurfaceIntegralCompute<
+                       Tags::Negate, ::Frame::Inertial>>;
     using compute_target_points =
         intrp::TargetPoints::KerrHorizon<SurfaceC, ::Frame::Inertial>;
     using post_interpolation_callback =

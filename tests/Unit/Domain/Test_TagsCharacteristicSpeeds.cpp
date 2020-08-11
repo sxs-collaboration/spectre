@@ -29,8 +29,13 @@
 
 namespace {
 template <size_t Dim>
-struct CharSpeeds : db::ComputeTag {
-  static std::string name() noexcept { return "CharSpeeds"; }
+struct CharSpeeds : db::SimpleTag {
+  using type = std::array<DataVector, 4>;
+};
+
+template <size_t Dim>
+struct CharSpeedsCompute : CharSpeeds<Dim>, db::ComputeTag {
+  using base = CharSpeeds<Dim>;
   using return_type = std::array<DataVector, 4>;
 
   static void function(const gsl::not_null<std::array<DataVector, 4>*> result,
@@ -78,7 +83,8 @@ void test_tags() {
   std::uniform_real_distribution<> dist(-1., 1.);
 
   TestHelpers::db::test_compute_tag<
-      domain::Tags::CharSpeedCompute<CharSpeeds<Dim>, Dim>>("CharSpeeds");
+      domain::Tags::CharSpeedCompute<CharSpeedsCompute<Dim>, Dim>>(
+      "CharSpeeds");
 
   using simple_tags = db::AddSimpleTags<
       Directions<Dim>,
@@ -90,7 +96,8 @@ void test_tags() {
           Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>>;
 
   using compute_tags = db::AddComputeTags<domain::Tags::InterfaceCompute<
-      Directions<Dim>, domain::Tags::CharSpeedCompute<CharSpeeds<Dim>, Dim>>>;
+      Directions<Dim>,
+      domain::Tags::CharSpeedCompute<CharSpeedsCompute<Dim>, Dim>>>;
 
   const DataVector used_for_size(5);
 
@@ -123,8 +130,9 @@ void test_tags() {
   std::unordered_map<Direction<Dim>, std::array<DataVector, 4>>
       expected_char_speeds{};
   for (const auto& direction : get_directions<Dim>()) {
-    CharSpeeds<Dim>::function(make_not_null(&expected_char_speeds[direction]),
-                              coordinates[direction]);
+    CharSpeedsCompute<Dim>::function(
+        make_not_null(&expected_char_speeds[direction]),
+        coordinates[direction]);
     if (MeshIsMoving) {
       const Scalar<DataVector> normal_dot_velocity =
           dot_product(normals[direction], *(mesh_velocity[direction]));

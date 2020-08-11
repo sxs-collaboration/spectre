@@ -170,12 +170,8 @@ void test_magnitude_tags() {
             {{{3. / 5., 5. / 13.}, {4. / 5., 12. / 13.}}}));
 
   using Tag = Vector;
-  /// [magnitude_name]
   TestHelpers::db::test_prefix_tag<Tags::Magnitude<Tag>>("Magnitude(Vector)");
-  /// [magnitude_name]
-  /// [normalized_name]
   TestHelpers::db::test_prefix_tag<Tags::Normalized<Tag>>("Normalized(Vector)");
-  /// [normalized_name]
   TestHelpers::db::test_compute_tag<Tags::EuclideanMagnitude<Tag>>(
       "Magnitude(Vector)");
   TestHelpers::db::test_compute_tag<Tags::NormalizedCompute<Tag>>(
@@ -255,14 +251,13 @@ void test_root_tags() {
 
   const auto box =
       db::create<db::AddSimpleTags<MyScalar>,
-                 db::AddComputeTags<Tags::Sqrt<MyScalar>>>(my_scalar);
+                 db::AddComputeTags<Tags::SqrtCompute<MyScalar>>>(my_scalar);
 
   CHECK(get(db::get<Tags::Sqrt<MyScalar>>(box)) == DataVector{npts, sqrt(3.0)});
 
   using Tag = MyScalar;
-  /// [sqrt_name]
-  TestHelpers::db::test_compute_tag<Tags::Sqrt<Tag>>("Sqrt(MyScalar)");
-  /// [sqrt_name]
+  TestHelpers::db::test_simple_tag<Tags::Sqrt<Tag>>("Sqrt(MyScalar)");
+  TestHelpers::db::test_compute_tag<Tags::SqrtCompute<Tag>>("Sqrt(MyScalar)");
 }
 }  // namespace
 

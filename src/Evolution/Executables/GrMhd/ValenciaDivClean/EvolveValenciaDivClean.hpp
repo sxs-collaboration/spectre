@@ -133,7 +133,7 @@ class CProxy_ConstGlobalCache;
 
 struct KerrHorizon {
   using tags_to_observe =
-      tmpl::list<StrahlkorperTags::EuclideanSurfaceIntegralVector<
+      tmpl::list<StrahlkorperTags::EuclideanSurfaceIntegralVectorCompute<
           hydro::Tags::MassFlux<DataVector, 3>, ::Frame::Inertial>>;
   using compute_items_on_source = tmpl::list<>;
   using vars_to_interpolate_to_target =
@@ -145,7 +145,7 @@ struct KerrHorizon {
                  gr::Tags::SqrtDetSpatialMetric<DataVector>>;
   using compute_items_on_target = tmpl::push_front<
       tags_to_observe,
-      StrahlkorperTags::EuclideanAreaElement<::Frame::Inertial>,
+      StrahlkorperTags::EuclideanAreaElementCompute<::Frame::Inertial>,
       hydro::Tags::MassFluxCompute<DataVector, 3, ::Frame::Inertial>>;
   using compute_target_points =
       intrp::TargetPoints::KerrHorizon<KerrHorizon, ::Frame::Inertial>;

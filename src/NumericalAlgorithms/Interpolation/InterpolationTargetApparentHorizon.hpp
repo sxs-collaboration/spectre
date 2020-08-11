@@ -183,14 +183,15 @@ struct ApparentHorizon {
         get<::Tags::Tempi<0, 2, ::Frame::Spherical<Frame>>>(temp_buffer);
     auto& r_hat = get<::Tags::Tempi<1, 3, Frame>>(temp_buffer);
     auto& radius = get(get<::Tags::TempScalar<2>>(temp_buffer));
-    StrahlkorperTags::ThetaPhi<Frame>::function(make_not_null(&theta_phi),
-                                                prolonged_strahlkorper);
-    StrahlkorperTags::Rhat<Frame>::function(make_not_null(&r_hat), theta_phi);
-    StrahlkorperTags::Radius<Frame>::function(make_not_null(&radius),
-                                              prolonged_strahlkorper);
+    StrahlkorperTags::ThetaPhiCompute<Frame>::function(
+        make_not_null(&theta_phi), prolonged_strahlkorper);
+    StrahlkorperTags::RhatCompute<Frame>::function(make_not_null(&r_hat),
+                                                   theta_phi);
+    StrahlkorperTags::RadiusCompute<Frame>::function(make_not_null(&radius),
+                                                     prolonged_strahlkorper);
 
     tnsr::I<DataVector, 3, Frame> prolonged_coords{};
-    StrahlkorperTags::CartesianCoords<Frame>::function(
+    StrahlkorperTags::CartesianCoordsCompute<Frame>::function(
         make_not_null(&prolonged_coords), prolonged_strahlkorper, radius,
         r_hat);
 

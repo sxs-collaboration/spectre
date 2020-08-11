@@ -67,34 +67,42 @@ namespace TestTags {
 struct BaseInt : db::BaseTag {};
 
 struct Int : db::SimpleTag, BaseInt {
-  static std::string name() noexcept { return "Int"; }
   using type = int;
 };
 
 struct Double : db::SimpleTag {
-  static std::string name() noexcept { return "Double"; }
   using type = double;
 };
 
 template <size_t N>
 struct NoCopy : db::SimpleTag {
-  static std::string name() noexcept { return "NoCopy"; }
   using type = domain::NoCopy<N>;
 };
 
 template <typename Tag>
-struct Negate : db::PrefixTag, db::ComputeTag {
-  static std::string name() noexcept { return "Negate"; }
+struct Negate : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
-  static constexpr auto function(const db::const_item_type<Tag>& x) noexcept {
-    return -x;
-  }
-  using argument_tags = tmpl::list<Tag>;
+  using type = typename Tag::type;
 };
 
-struct NegateDoubleAddInt : db::ComputeTag {
-  static std::string name() noexcept { return "NegateDoubleAddInt"; }
+template <typename Tag>
+struct NegateCompute : Negate<Tag>, db::ComputeTag {
+  using base = Negate<Tag>;
+  static constexpr void function(
+      const gsl::not_null<typename Tag::type*> result,
+      const typename Tag::type& x) noexcept {
+    *result = -x;
+  }
+  using argument_tags = tmpl::list<Tag>;
+  using return_type = typename Tag::type;
+};
 
+struct NegateDoubleAddInt : db::SimpleTag {
+  using type = double;
+};
+
+struct NegateDoubleAddIntCompute : NegateDoubleAddInt, db::ComputeTag {
+  using base = NegateDoubleAddInt;
   using return_type = double;
   static constexpr void function(const gsl::not_null<double*> result,
                                  const double x, const int y) noexcept {
@@ -104,29 +112,38 @@ struct NegateDoubleAddInt : db::ComputeTag {
   using volume_tags = tmpl::list<BaseInt>;
 };
 
-struct AddThree : db::ComputeTag, Int {
-  static std::string name() noexcept { return "AddThree"; }
-  static constexpr auto function(const int x) noexcept { return x + 3; }
+struct IntCompute : db::ComputeTag, Int {
+  static constexpr void function(const gsl::not_null<int*> result,
+                                 const int x) noexcept {
+    *result = x + 3;
+  }
   using argument_tags = tmpl::list<Int>;
   using volume_tags = tmpl::list<Int>;
   using base = Int;
+  using return_type = int;
 };
 
 template <size_t VolumeDim>
-struct ComplexComputeItem : db::ComputeTag {
-  static std::string name() noexcept { return "ComplexComputeItem"; }
-  static constexpr auto function(const int i, const double d,
-                                 const domain::NoCopy<1>& /*unused*/,
-                                 const domain::NoCopy<2>& /*unused*/) noexcept {
-    return std::make_pair(i, d);
+struct ComplexItem : db::SimpleTag {
+  using type = std::pair<int, double>;
+};
+
+template <size_t VolumeDim>
+struct ComplexItemCompute : ComplexItem<VolumeDim>, db::ComputeTag {
+  static constexpr void function(
+      const gsl::not_null<std::pair<int, double>*> result, const int i,
+      const double d, const domain::NoCopy<1>& /*unused*/,
+      const domain::NoCopy<2>& /*unused*/) noexcept {
+    *result = std::make_pair(i, d);
   }
   using argument_tags = tmpl::list<Int, Double, NoCopy<1>, NoCopy<2>>;
   using volume_tags = tmpl::list<Int, NoCopy<1>>;
+  using base = ComplexItem<VolumeDim>;
+  using return_type = std::pair<int, double>;
 };
 
 template <typename>
 struct TemplatedDirections : db::SimpleTag {
-  static std::string name() noexcept { return "TemplatedDirections"; }
   using type = std::unordered_set<Direction<3>>;
 };
 }  // namespace TestTags
@@ -168,30 +185,30 @@ void test_interface_items() {
       db::AddComputeTags<
           internal_directions,
           Tags::InterfaceCompute<internal_directions, Tags::Direction<dim>>,
-          TestTags::Negate<TestTags::Int>,
-          Tags::InterfaceCompute<internal_directions, TestTags::AddThree>,
+          TestTags::NegateCompute<TestTags::Int>,
+          Tags::InterfaceCompute<internal_directions, TestTags::IntCompute>,
           Tags::InterfaceCompute<internal_directions,
-                                 TestTags::Negate<TestTags::Double>>,
+                                 TestTags::NegateCompute<TestTags::Double>>,
           Tags::InterfaceCompute<internal_directions,
-                                 TestTags::NegateDoubleAddInt>,
+                                 TestTags::NegateDoubleAddIntCompute>,
           Tags::InterfaceCompute<internal_directions,
-                                 TestTags::ComplexComputeItem<dim>>,
+                                 TestTags::ComplexItemCompute<dim>>,
           Tags::InterfaceCompute<templated_directions, Tags::Direction<dim>>,
           Tags::InterfaceCompute<templated_directions,
-                                 TestTags::Negate<TestTags::Double>>,
+                                 TestTags::NegateCompute<TestTags::Double>>,
           Tags::InterfaceCompute<templated_directions,
-                                 TestTags::NegateDoubleAddInt>,
+                                 TestTags::NegateDoubleAddIntCompute>,
           boundary_directions_interior,
           Tags::InterfaceCompute<boundary_directions_interior,
                                  Tags::Direction<dim>>,
           Tags::InterfaceCompute<boundary_directions_interior,
-                                 TestTags::AddThree>,
+                                 TestTags::IntCompute>,
           Tags::InterfaceCompute<boundary_directions_interior,
-                                 TestTags::Negate<TestTags::Double>>,
+                                 TestTags::NegateCompute<TestTags::Double>>,
           Tags::InterfaceCompute<boundary_directions_interior,
-                                 TestTags::NegateDoubleAddInt>,
+                                 TestTags::NegateDoubleAddIntCompute>,
           Tags::InterfaceCompute<boundary_directions_interior,
-                                 TestTags::ComplexComputeItem<dim>>,
+                                 TestTags::ComplexItemCompute<dim>>,
           boundary_directions_exterior>>(
       std::move(element), 5,
       std::unordered_map<Direction<dim>, double>{
@@ -270,14 +287,14 @@ void test_interface_items() {
                          {Direction<dim>::lower_zeta(), 8}}));
 
   CHECK((get<Tags::Interface<internal_directions,
-                             TestTags::ComplexComputeItem<dim>>>(box)) ==
+                             TestTags::ComplexItemCompute<dim>>>(box)) ==
         (std::unordered_map<Direction<dim>, std::pair<int, double>>{
             {Direction<dim>::lower_xi(), {5, 1.5}},
             {Direction<dim>::upper_xi(), {5, 2.5}},
             {Direction<dim>::upper_zeta(), {5, 3.5}}}));
 
   CHECK((get<Tags::Interface<boundary_directions_interior,
-                             TestTags::ComplexComputeItem<dim>>>(box)) ==
+                             TestTags::ComplexItemCompute<dim>>>(box)) ==
         (std::unordered_map<Direction<dim>, std::pair<int, double>>{
             {Direction<dim>::lower_eta(), {5, 10.5}},
             {Direction<dim>::upper_eta(), {5, 20.5}},
@@ -296,18 +313,23 @@ void test_interface_items() {
 
 constexpr size_t dim = 2;
 
-struct Dirs : db::ComputeTag {
-  static std::string name() noexcept { return "Dirs"; }
-  static auto function() noexcept {
-    return std::unordered_set<Direction<dim>>{Direction<dim>::lower_xi(),
-                                              Direction<dim>::upper_eta()};
+struct Dirs : db::SimpleTag {
+  using type = std::unordered_set<Direction<dim>>;
+};
+
+struct DirsCompute : Dirs, db::ComputeTag {
+  static void function(const gsl::not_null<std::unordered_set<Direction<dim>>*>
+                           result) noexcept {
+    *result = std::unordered_set<Direction<dim>>{Direction<dim>::lower_xi(),
+                                                 Direction<dim>::upper_eta()};
   }
   using argument_tags = tmpl::list<>;
+  using base = Dirs;
+  using return_type = std::unordered_set<Direction<dim>>;
 };
 
 template <size_t N>
 struct Var : db::SimpleTag {
-  static std::string name() noexcept { return "Var"; }
   using type = Scalar<DataVector>;
   static constexpr bool should_be_sliced_to_boundary =
       N == 3 or N == 30 or  // sliced_simple_item_tag below
@@ -316,26 +338,35 @@ struct Var : db::SimpleTag {
 
 template <size_t N>
 struct VarPlusFive : db::SimpleTag {
-  static std::string name() noexcept { return "VarPlusFive"; }
   using type = Scalar<DataVector>;
 };
 
 template <size_t N>
 struct VarPlusFiveCompute : VarPlusFive<N>, db::ComputeTag {
-  static Scalar<DataVector> function(const Scalar<DataVector>& var) noexcept {
-    return Scalar<DataVector>{get(var) + 5.0};
+  static void function(const gsl::not_null<Scalar<DataVector>*> result,
+                       const Scalar<DataVector>& var) noexcept {
+    *result = Scalar<DataVector>{get(var) + 5.0};
   }
   using argument_tags = tmpl::list<Var<N>>;
+  using base = VarPlusFive<N>;
+  using return_type = Scalar<DataVector>;
 };
 
 template <size_t VolumeDim>
-struct Compute : db::ComputeTag {
-  static std::string name() noexcept { return "Compute"; }
-  static auto function(const Mesh<VolumeDim>& mesh) {
-    auto ret = Variables<tmpl::list<Var<VolumeDim>, Var<10 * VolumeDim>>>(
+struct Compute : db::SimpleTag {
+  using type = Variables<tmpl::list<Var<VolumeDim>, Var<10 * VolumeDim>>>;
+};
+
+template <size_t VolumeDim>
+struct ComputeCompute : Compute<VolumeDim>, db::ComputeTag {
+  using base = Compute<VolumeDim>;
+  using return_type =
+      Variables<tmpl::list<Var<VolumeDim>, Var<10 * VolumeDim>>>;
+  static void function(const gsl::not_null<return_type*> result,
+                       const Mesh<VolumeDim>& mesh) {
+    *result = Variables<tmpl::list<Var<VolumeDim>, Var<10 * VolumeDim>>>(
         mesh.number_of_grid_points(), VolumeDim);
-    get(get<Var<10 * VolumeDim>>(ret)) *= 5.0;
-    return ret;
+    get(get<Var<10 * VolumeDim>>(*result)) *= 5.0;
   }
   using argument_tags = tmpl::list<Tags::Mesh<VolumeDim>>;
 };
@@ -410,10 +441,10 @@ void test_interface_subitems() {
           Tags::Mesh<dim>, ::Tags::Variables<tmpl::list<Var<2>>>, Var<3>,
           Tags::Interface<Dirs, ::Tags::Variables<tmpl::list<Var<0>>>>>,
       db::AddComputeTags<
-          Dirs, VarPlusFiveCompute<3>,
+          DirsCompute, VarPlusFiveCompute<3>,
           Tags::InterfaceCompute<Dirs, Tags::Direction<dim>>,
           Tags::InterfaceCompute<Dirs, Tags::InterfaceMesh<dim>>,
-          Tags::InterfaceCompute<Dirs, Compute<1>>,
+          Tags::InterfaceCompute<Dirs, ComputeCompute<1>>,
           Tags::Slice<Dirs, ::Tags::Variables<tmpl::list<Var<2>>>>,
           Tags::Slice<Dirs, Var<3>>, Tags::Slice<Dirs, VarPlusFive<3>>>>(
       mesh, volume_var, volume_tensor,
@@ -441,8 +472,8 @@ void test_interface_subitems() {
 }
 
 using simple_item_tag = ::Tags::Variables<tmpl::list<Var<0>>>;
-using compute_item_tag = Compute<1>;
-using sliced_compute_item_tag = Compute<2>;
+using compute_item_tag = ComputeCompute<1>;
+using sliced_compute_item_tag = ComputeCompute<2>;
 using sliced_simple_item_tag = ::Tags::Variables<tmpl::list<Var<3>>>;
 
 void test_interface_slice(){
@@ -480,7 +511,9 @@ void test_interface_slice(){
   const auto expected_boundary_coords = [&expected_interface_mesh,
                                          &element_map]() {
     std::unordered_map<Direction<dim>, tnsr::I<DataVector, dim>> coords{};
-    for (const auto& direction : Dirs::function()) {
+    typename DirsCompute::return_type directions;
+    DirsCompute::function(make_not_null(&directions));
+    for (const auto& direction : directions) {
       coords[direction] = element_map(interface_logical_coordinates(
           expected_interface_mesh.at(direction), direction));
     }
@@ -492,14 +525,14 @@ void test_interface_slice(){
                         sliced_simple_item_tag, Var<4>,
                         Tags::Interface<Dirs, simple_item_tag>>,
       db::AddComputeTags<
-          Dirs, sliced_compute_item_tag, VarPlusFiveCompute<4>,
+          DirsCompute, sliced_compute_item_tag, VarPlusFiveCompute<4>,
           Tags::InterfaceCompute<Dirs, Tags::Direction<dim>>,
           Tags::InterfaceCompute<Dirs, Tags::InterfaceMesh<dim>>,
           Tags::InterfaceCompute<Dirs, compute_item_tag>,
           Tags::InterfaceCompute<Dirs, Tags::BoundaryCoordinates<dim>>,
           Tags::Slice<Dirs, sliced_compute_item_tag>,
           Tags::Slice<Dirs, sliced_simple_item_tag>, Tags::Slice<Dirs, Var<4>>,
-          Tags::Slice<Dirs, VarPlusFive<4>>>>(
+          Tags::Slice<Dirs, VarPlusFiveCompute<4>>>>(
       mesh, std::move(element_map), std::move(volume_vars),
       std::move(volume_tensor),
       make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
@@ -689,7 +722,8 @@ void test_interface_base_tags() {
   };
   const auto box = db::create<
       db::AddSimpleTags<Tags::Interface<Dirs, SimpleDerived>>,
-      db::AddComputeTags<Dirs, Tags::InterfaceCompute<Dirs, ComputeDerived>>>(
+      db::AddComputeTags<DirsCompute,
+                         Tags::InterfaceCompute<Dirs, ComputeDerived>>>(
       interface(4, 5));
   CHECK(get<Tags::Interface<Dirs, SimpleBase>>(box) == interface(4, 5));
   CHECK(get<Tags::Interface<Dirs, ComputeBase>>(box) == interface(5.5, 6.5));

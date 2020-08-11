@@ -78,25 +78,25 @@ struct Square : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 struct SquareCompute : Square, db::ComputeTag {
-  static Scalar<DataVector> function(const Scalar<DataVector>& x) noexcept {
-    auto result = make_with_value<Scalar<DataVector>>(x, 0.0);
-    get(result) = square(get(x));
-    return result;
+  static void function(gsl::not_null<Scalar<DataVector>*> result,
+                       const Scalar<DataVector>& x) noexcept {
+    get(*result) = square(get(x));
   }
   using argument_tags = tmpl::list<TestSolution>;
   using base = Square;
+  using return_type = Scalar<DataVector>;
 };
 struct Negate : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 struct NegateCompute : Negate, db::ComputeTag {
-  static Scalar<DataVector> function(const Scalar<DataVector>& x) noexcept {
-    auto result = make_with_value<Scalar<DataVector>>(x, 0.0);
-    get(result) = -get(x);
-    return result;
+  static void function(gsl::not_null<Scalar<DataVector>*> result,
+                       const Scalar<DataVector>& x) noexcept {
+    get(*result) = -get(x);
   }
   using argument_tags = tmpl::list<Square>;
   using base = Negate;
+  using return_type = Scalar<DataVector>;
 };
 }  // namespace Tags
 
