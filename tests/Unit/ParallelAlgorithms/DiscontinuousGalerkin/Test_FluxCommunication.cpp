@@ -184,8 +184,7 @@ void test_no_refinement() noexcept {
   using all_mortar_data_tag = ::Tags::Mortars<MortarDataTag<2>, 2>;
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
-  const std::vector<std::array<size_t, 2>> initial_extents{
-      {{{3, 3}}, {{3, 3}}}};
+  const std::vector<std::array<size_t, 2>> initial_extents{{{3, 3}}, {{3, 3}}};
 
   //      xi      Block       +- xi
   //      |     0   |   1     |
@@ -347,8 +346,7 @@ void test_no_neighbors() noexcept {
 
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
-  const std::vector<std::array<size_t, 2>> initial_extents{
-      {{{3, 3}}, {{3, 3}}}};
+  const std::vector<std::array<size_t, 2>> initial_extents{{{3, 3}}, {{3, 3}}};
   const ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
   const Element<2> element(self_id, {});
 
@@ -408,7 +406,7 @@ void test_p_refinement() noexcept {
   const Mesh<3> mesh_neighbor({{3, 3, 3}}, Spectral::Basis::Legendre,
                               Spectral::Quadrature::GaussLobatto);
   const std::vector<std::array<size_t, 3>> initial_extents{
-      {{{2, 3, 4}}, {{3, 3, 3}}}};
+      {{2, 3, 4}}, {{3, 3, 3}}};
 
   const auto mortar_id = std::make_pair(Direction<3>::upper_eta(), neighbor_id);
   const Element<3> element(
@@ -518,7 +516,7 @@ void test_h_refinement(const Spectral::MortarSize& mortar_size) {
   const Mesh<2> mesh(2, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const std::vector<std::array<size_t, 2>> initial_extents{
-      {{{2, 2}}, {{2, 2}}}};
+      {{2, 2}}, {{2, 2}}};
 
   const TemporalId time{1};
 

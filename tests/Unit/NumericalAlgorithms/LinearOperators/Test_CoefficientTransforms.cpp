@@ -102,12 +102,12 @@ void test_1d(const gsl::not_null<Generator*> generator) noexcept {
   CAPTURE(order);
   const Mesh<1> mesh(order + 1, Basis, Quadrature);
   check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-      mesh, {{{{order}}}});
+      mesh, {{{order}}});
   check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-      mesh, {{{{order}}, {{order / 2}}}});
+      mesh, {{{order}}, {{order / 2}}});
   if (order > 4) {
     check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-        mesh, {{{{order}}, {{order / 3}}}});
+        mesh, {{{order}}, {{order / 3}}});
   }
 }
 
@@ -123,17 +123,17 @@ void test_2d(const gsl::not_null<Generator*> generator) noexcept {
   CAPTURE(order);
   const Mesh<2> mesh({{order + 1, order}}, Basis, Quadrature);
   check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-      mesh, {{{{order, order - 1}}}});
+      mesh, {{{order, order - 1}}});
   check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-      mesh, {{{{order, order - 1}}, {{order / 2, order / 2}}}});
-  check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-      Mesh<2>{{{order + 1, order + 1}}, Basis, Quadrature},
-      {{{{order - 1, order}}, {{order / 2, order / 2}}}});
+      mesh, {{{order, order - 1}}, {{order / 2, order / 2}}});
   check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
       Mesh<2>{{{order + 1, order + 1}}, Basis, Quadrature},
-      {{{{order, order}}, {{order / 2, order / 2}}}});
+      {{{order - 1, order}}, {{order / 2, order / 2}}});
   check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-      mesh, {{{{order, order - 1}}, {{order / 3, order / 3}}}});
+      Mesh<2>{{{order + 1, order + 1}}, Basis, Quadrature},
+      {{{order, order}}, {{order / 2, order / 2}}});
+  check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+      mesh, {{{order, order - 1}}, {{order / 3, order / 3}}});
 }
 
 template <typename ModalVectorType, typename NodalVectorType,
@@ -149,16 +149,16 @@ void test_3d(const gsl::not_null<Generator*> generator) noexcept {
   CAPTURE(order);
   const Mesh<3> mesh({{order + 1, order, order - 1}}, Basis, Quadrature);
   check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-      mesh, {{{{order, order - 1, order - 2}}}});
+      mesh, {{{order, order - 1, order - 2}}});
   check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
       mesh,
-      {{{{order, order - 1, order - 2}}, {{order / 2, order / 2, order / 2}}}});
+      {{{order, order - 1, order - 2}}, {{order / 2, order / 2, order / 2}}});
   check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
       Mesh<3>{{{order + 1, order + 1, order + 1}}, Basis, Quadrature},
-      {{{{order, order, order}}}});
+      {{{order, order, order}}});
   check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
       mesh,
-      {{{{order, order - 1, order - 2}}, {{order / 3, order / 3, order / 3}}}});
+      {{{order, order - 1, order - 2}}, {{order / 3, order / 3, order / 3}}});
 }
 }  // namespace
 
