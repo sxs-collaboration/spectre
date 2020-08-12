@@ -3,6 +3,7 @@
 
 set(LIBS_TO_LINK
   Cce
+  CceAnalyticSolutions
   Time
   Interpolation
   Informer

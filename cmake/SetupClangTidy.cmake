@@ -64,10 +64,7 @@ endif()
 if (CLANG_TIDY_BIN)
   message(STATUS "clang-tidy: ${CLANG_TIDY_BIN}")
   set(MODULES_TO_DEPEND_ON
-    module_RunTests
-    module_ConstGlobalCache
-    module_Main
-    module_Test_ConstGlobalCache
+    module_All
     )
   if (TARGET SpectrePch)
     list(APPEND MODULES_TO_DEPEND_ON SpectrePch)

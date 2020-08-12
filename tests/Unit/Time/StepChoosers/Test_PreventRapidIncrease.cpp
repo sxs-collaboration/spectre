@@ -31,7 +31,6 @@
 
 // IWYU pragma: no_include <pup.h>
 
-// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 // IWYU pragma: no_include "Utilities/Rational.hpp"
 
 namespace {

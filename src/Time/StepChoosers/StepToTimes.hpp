@@ -91,7 +91,7 @@ class StepToTimes : public StepChooser<StepChooserRegistrars> {
     // we undershoot.
     const double sloppiness = slab_rounding_error(substep_time);
 
-    double distance_to_next_goal;
+    double distance_to_next_goal = std::numeric_limits<double>::signaling_NaN();
     if (time_step_id.time_runs_forward()) {
       const auto next_time =
           std::upper_bound(times_.begin(), times_.end(), now + sloppiness);

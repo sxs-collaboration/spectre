@@ -14,8 +14,6 @@
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Time.hpp"
 
-// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
-
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.SplitRemaining", "[Unit][Time]") {
   Parallel::register_derived_classes_with_charm<StepController>();
   const auto check = [](const auto& sr) noexcept {

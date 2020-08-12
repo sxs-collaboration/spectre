@@ -36,8 +36,8 @@ file(READ "${CHARM_VERSION_FILE_LOCATION}" CHARM_VERSION_FILE)
 string(REGEX REPLACE "\n" "" CHARM_VERSION_FILE "${CHARM_VERSION_FILE}")
 STRING(
     REGEX REPLACE
-    "([0-9])0([0-9])0([0-9])"
-    "\\1;\\2;\\3"
+    "([0-9])1([0-9])0([0-9])"
+    "\\1;1\\2;\\3"
     CHARM_VERSIONS_PARSED
     ${CHARM_VERSION_FILE}
 )

@@ -9,7 +9,6 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 
 template <size_t Dim>

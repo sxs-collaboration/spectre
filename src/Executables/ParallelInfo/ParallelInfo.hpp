@@ -36,7 +36,7 @@ class ParallelInfo : public CBase_ParallelInfo {
  public:
   explicit ParallelInfo(CkArgMsg* msg);
   void start_node_group_check() const;
-  [[noreturn]] void end_report() const;
+  [[noreturn]] static void end_report();
 
  private:
   void start_pe_group_check() const;
@@ -44,13 +44,11 @@ class ParallelInfo : public CBase_ParallelInfo {
 
 class PeGroupReporter : public Group {
  public:
-  // clang-tidy: non-const reference, Charm++ interface
-  explicit PeGroupReporter(CkCallback& cb_start_node_group_check);  // NOLINT
+  explicit PeGroupReporter(const CkCallback& cb_start_node_group_check);
 };
 
 class NodeGroupReporter : public NodeGroup {
  public:
-  // clang-tidy: non-const reference, Charm++ interface
-  explicit NodeGroupReporter(CkCallback& cb_end_report);  // NOLINT
+  explicit NodeGroupReporter(const CkCallback& cb_end_report);
 };
 /// \endcond

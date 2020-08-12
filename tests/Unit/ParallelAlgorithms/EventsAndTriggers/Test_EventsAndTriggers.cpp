@@ -29,8 +29,6 @@
 
 // IWYU pragma: no_include <pup.h>
 
-// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
-
 namespace {
 using events_and_triggers_tag =
     Tags::EventsAndTriggers<tmpl::list<>, tmpl::list<>>;

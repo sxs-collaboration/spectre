@@ -10,7 +10,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -19,8 +18,7 @@
 #include "Utilities/Numeric.hpp"
 
 /// \cond
-namespace RelativisticEuler {
-namespace Solutions {
+namespace RelativisticEuler::Solutions {
 
 template <size_t Dim>
 SmoothFlow<Dim>::SmoothFlow(const std::array<double, Dim>& mean_velocity,
@@ -198,6 +196,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (1, 2, 3), (double, DataVector),
 #undef INSTANTIATE_CLASS
 #undef INSTANTIATE_SCALARS
 #undef INSTANTIATE_VECTORS
-}  // namespace Solutions
-}  // namespace RelativisticEuler
+}  // namespace RelativisticEuler::Solutions
 /// \endcond

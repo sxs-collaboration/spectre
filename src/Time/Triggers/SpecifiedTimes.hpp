@@ -82,7 +82,7 @@ class SpecifiedTimes : public Trigger<TriggerRegistrars> {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) noexcept { p | times_; }
+  void pup(PUP::er& p) noexcept override { p | times_; }
 
  private:
   std::vector<double> times_;

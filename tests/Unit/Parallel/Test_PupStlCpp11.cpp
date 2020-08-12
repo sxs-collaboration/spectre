@@ -18,7 +18,6 @@
 
 #include "Framework/TestHelpers.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 

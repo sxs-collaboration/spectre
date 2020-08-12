@@ -29,14 +29,15 @@ def create_interface_file(args):
     ci_str += " Algorithm%s {\n" \
               "    entry Algorithm%s(" \
               "Parallel::CProxy_ConstGlobalCache<\n" \
-              "                      METAVARIABLES_FROM_COMPONENT>,\n" \
+              "        typename ParallelComponent::metavariables>,\n" \
               "tuples::tagged_tuple_from_typelist<" \
-              "PARALLEL_COMPONENT_INITIALIZATION_TAGS> initialization_items);" \
+              "typename ParallelComponent::initialization_tags>\n" \
+              "        initialization_items);" \
               "\n" \
               "\n" \
-              "    template <typename Action, typenameLDOTLDOTLDOT Args>\n" \
+              "    template <typename Action, typename... Args>\n" \
               "    entry void simple_action(\n" \
-              "               std::tuple<COMPUTE_VARIADIC_ARGS>& args);\n" \
+              "               std::tuple<Args...>& args);\n" \
               "\n" \
               "    template <typename Action>\n" \
               "    entry void simple_action();\n" \
@@ -48,40 +49,25 @@ def create_interface_file(args):
               "\n" \
               "    entry void perform_algorithm(bool);\n" \
                             "\n" \
-              "    entry void start_phase(TYPENAME_PHASE_TYPE);\n" \
+              "    entry void start_phase(\n" \
+              "         typename ParallelComponent::metavariables::Phase);\n" \
               "\n" % (args['algorithm_name'], args['algorithm_name'])
 
-    if (args['algorithm_type'] == "nodegroup"):
-        ci_str += \
-            "    template <typename Action, typenameLDOTLDOTLDOT Args>\n" \
+    if args['algorithm_type'] == "nodegroup":
+        ci_str += "    template <typename Action, typename... Args>\n" \
             "    entry void threaded_action(\n" \
-            "               std::tuple<COMPUTE_VARIADIC_ARGS>& args);\n" \
+            "               std::tuple<Args...>& args);\n" \
             "\n" \
             "    template <typename Action>\n" \
             "    entry void threaded_action();\n" \
             "\n"
 
-    # A bug in Charm++ prevents entry methods with default argument values.
-    # The workaround is to have two entry methods and default the argument in
-    # the AlgorithmImpl member function.
-    if (args['algorithm_type'] == "group"
-            or args['algorithm_type'] == "nodegroup"):
-        ci_str += \
-            "    template <typename ReceiveTag, typename ReceiveData_t>\n" \
-            "    entry void receive_data(ReceiveTag_temporal_id&,\n" \
-            "                            ReceiveData_t&,\n" \
-            "                            bool enable_if_disabled);\n"
-        ci_str += \
-            "    template <typename ReceiveTag, typename ReceiveData_t>\n" \
-            "    entry void receive_data(ReceiveTag_temporal_id&,\n" \
-            "                            ReceiveData_t&);\n"
-    else:
-        ci_str += \
-            "    template <typename ReceiveTag, typename ReceiveData_t>\n" \
-            "    entry void receive_data(\n" \
-            "                            ReceiveTag_temporal_id&,\n" \
-            "                            ReceiveData_t&,\n" \
-            "                            bool enable_if_disabled = false);\n"
+    ci_str += \
+        "    template <typename ReceiveTag, typename ReceiveData_t>\n" \
+        "    entry void receive_data(\n" \
+        "                            typename ReceiveTag::temporal_id&,\n" \
+        "                            ReceiveData_t&,\n" \
+        "                            bool enable_if_disabled = false);\n"
 
     ci_str += "\n" "    entry void set_terminate(bool);\n" "  }\n" "}\n"
 

@@ -12,7 +12,6 @@
 #include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"
-#include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -21,9 +20,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
-namespace RadiationTransport {
-namespace M1Grey {
-namespace Solutions {
+namespace RadiationTransport::M1Grey::Solutions {
 
 ConstantM1::ConstantM1(const std::array<double, 3>& mean_velocity,
                        const double comoving_energy_density) noexcept
@@ -197,7 +194,5 @@ GENERATE_INSTANTIATIONS(
 #undef EBIN
 #undef GENERATE_LIST
 
-}  // namespace Solutions
-}  // namespace M1Grey
-}  // namespace RadiationTransport
+}  // namespace RadiationTransport::M1Grey::Solutions
 /// \endcond

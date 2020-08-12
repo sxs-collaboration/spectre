@@ -281,13 +281,12 @@ cache:
 # linking errors. All dependencies are installed into the home directory.
 # ccache is used to reduce build times.
 before_install:
-  - export CHARM_VERSION=6.8.0
+  - export CHARM_VERSION=6.10.2
   - export BLAZE_VERSION=3.2
   - export HDF5_VERSION=1.8.17
   - export NUMPY_VERSION=1.14
   - export SPECTRE_MIN_MACOS=-mmacosx-version-min=10.11
   - export DEP_CACHE=$HOME/mac_cache
-  - export CHARM_PATCH=v6.8.patch
   - export CHARM_CC=${CC}
   - export FC=gfortran-8
   - export USE_PCH=ON;
@@ -386,7 +385,6 @@ script:
         --build-arg USE_PCH=${USE_PCH}
         --build-arg UPSTREAM_REPO=${UPSTREAM_REPO}
         --build-arg UPSTREAM_BRANCH=${UPSTREAM_BRANCH}
-        --build-arg CHARM_PATCH=${CHARM_PATCH}
         --build-arg CORE_LIBS=${CORE_LIBS}
         -t ${TRAVIS_REPO_SLUG}
         -f ${HOME}/docker/Dockerfile.travis

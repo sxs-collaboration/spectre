@@ -9,7 +9,6 @@
 #include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 

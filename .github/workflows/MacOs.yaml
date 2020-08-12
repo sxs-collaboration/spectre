@@ -26,13 +26,12 @@ jobs:
       # encountered this issue:
       # https://github.com/sxs-collaboration/spectre/issues/2131
       SPECTRE_BREW_DEPS: >-
-        cmake ccache autoconf boost openblas catch2 gsl jemalloc hdf5 pybind11
-        yaml-cpp
+        cmake ccache autoconf automake boost openblas catch2 gsl jemalloc hdf5
+        pybind11 yaml-cpp
       SPECTRE_PY_DEPS: numpy scipy h5py
       SPECTRE_SPACK_DEPS: >-
         blaze@3.5 brigand@master libxsmm libsharp~mpi~openmp
-      CHARM_VERSION: "6.8.0"
-      CHARM_PATCH: v6.8.patch
+      CHARM_VERSION: "6.10.2"
       SPECTRE_MIN_MACOS: -mmacosx-version-min=10.11
       CCACHE_DIR: $HOME/ccache
       CCACHE_MAXSIZE: 400M
@@ -115,12 +114,11 @@ jobs:
         if: steps.restore-dependencies.outputs.cache-hit != 'true'
         run: |
           cd $HOME/dependencies
-          wget http://charm.cs.illinois.edu/distrib/charm-${CHARM_VERSION}.tar.bz2
-          tar -xjf charm-${CHARM_VERSION}.tar.bz2
-          cd ./charm-${CHARM_VERSION}
+          wget http://charm.cs.illinois.edu/distrib/charm-${CHARM_VERSION}.tar.gz
+          tar -xzf charm-${CHARM_VERSION}.tar.gz
+          cd ./charm-v${CHARM_VERSION}
           ./build charm++ multicore-darwin-x86_64 -j4 -O0 $SPECTRE_MIN_MACOS
-          git apply $GITHUB_WORKSPACE/support/Charm/${CHARM_PATCH}
-          rm ../charm-${CHARM_VERSION}.tar.bz2
+         rm ../charm-${CHARM_VERSION}.tar.gz
       # Replace the ccache directory that building the dependencies may have
       # generated with the cached ccache directory.
       - name: Clear ccache from dependencies
@@ -152,7 +150,7 @@ jobs:
           -D CMAKE_Fortran_COMPILER=gfortran
           -D CMAKE_CXX_FLAGS="-Werror"
           -D OVERRIDE_ARCH=x86-64
-          -D CHARM_ROOT=$HOME/dependencies/charm-${CHARM_VERSION}
+          -D CHARM_ROOT=$HOME/dependencies/charm-v${CHARM_VERSION}
           -D BLAS_ROOT=$(brew --prefix openblas)
           -D MACOSX_MIN=10.11
           -D CMAKE_BUILD_TYPE=Debug

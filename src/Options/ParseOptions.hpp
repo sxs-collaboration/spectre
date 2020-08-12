@@ -659,7 +659,7 @@ struct create_from_yaml<std::unordered_map<K, V, H, P>> {
     // this function and the conversion code for maps in
     // OptionsDetails.hpp can be updated to use the map `extract`
     // method and the shared_ptr conversion below can be removed.
-    std::map<std::shared_ptr<K>, V> ordered =
+    auto ordered =
         options.parse_as<std::map<std::shared_ptr<K>, V>, Metavariables>();
     std::unordered_map<K, V, H, P> result;
     for (auto& kv : ordered) {

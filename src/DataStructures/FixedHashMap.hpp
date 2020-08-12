@@ -13,7 +13,6 @@
 #include <type_traits>
 
 #include "ErrorHandling/Assert.hpp"
-#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/BoostHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
