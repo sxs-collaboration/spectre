@@ -120,7 +120,7 @@ jobs:
           tar -xzf charm-${CHARM_VERSION}.tar.gz
           cd ./charm-v${CHARM_VERSION}
           ./build charm++ multicore-darwin-x86_64 -j4 -O0 $SPECTRE_MIN_MACOS
-         rm ../charm-${CHARM_VERSION}.tar.gz
+          rm ../charm-${CHARM_VERSION}.tar.gz
       # Replace the ccache directory that building the dependencies may have
       # generated with the cached ccache directory.
       - name: Clear ccache from dependencies
