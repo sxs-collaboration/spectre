@@ -38,6 +38,11 @@ struct EuclideanSurfaceIntegral;
 struct OneOverOneFormMagnitude;
 template <size_t Dim, typename Frame, typename DataType>
 struct OneOverOneFormMagnitudeCompute;
+template <typename Frame>
+struct UnitNormalOneForm;
+template <typename Frame>
+struct UnitNormalOneFormCompute;
+
 
 }  // namespace StrahlkorperTags
 
