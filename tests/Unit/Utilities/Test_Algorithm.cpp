@@ -152,16 +152,30 @@ void test_find_related() noexcept {
   CHECK(alg::find(a, 5) == a.end());
   CHECK(alg::found(a, 3));
   CHECK_FALSE(alg::found(a, 5));
+  std::vector<int> a_copy = a;
+  CHECK(alg::find(a_copy, 3) == a_copy.begin() + 2);
+  *alg::find(a_copy, 3) = 4;
+  CHECK(alg::find(a_copy, 3) == a_copy.end());
 
-  CHECK(alg::find_if(a, [](const int t) { return t > 3; }) == a.end() - 1);
+  const auto greater_than_three = [](const int t) noexcept { return t > 3; };
+  CHECK(alg::find_if(a, greater_than_three) == a.end() - 1);
   CHECK(alg::find_if(a, [](const int t) { return t < 0; }) == a.end());
-  CHECK(alg::found_if(a, [](const int t) { return t > 3; }));
+  CHECK(alg::found_if(a, greater_than_three));
   CHECK_FALSE(alg::found_if(a, [](const int t) { return t < 0; }));
+  a_copy = a;
+  CHECK(alg::find_if(a_copy, greater_than_three) == a_copy.begin() + 3);
+  *alg::find_if(a_copy, greater_than_three) = 1;
+  CHECK(alg::find_if(a_copy, greater_than_three) == a_copy.end());
 
-  CHECK(alg::find_if_not(a, [](const int t) { return t < 3; }) == a.end() - 2);
+  const auto less_than_three = [](const int t) noexcept { return t < 3; };
+  CHECK(alg::find_if_not(a, less_than_three) == a.end() - 2);
   CHECK(alg::find_if_not(a, [](const int t) { return t < 8; }) == a.end());
-  CHECK(alg::found_if_not(a, [](const int t) { return t < 3; }));
+  CHECK(alg::found_if_not(a, less_than_three));
   CHECK_FALSE(alg::found_if_not(a, [](const int t) { return t < 8; }));
+  a_copy = a;
+  CHECK(alg::find_if_not(a_copy, less_than_three) == a_copy.begin() + 2);
+  *alg::find_if_not(a_copy, less_than_three) = 2;
+  CHECK(alg::find_if_not(a_copy, less_than_three) == a_copy.begin() + 3);
 }
 
 void test_for_each() noexcept {
