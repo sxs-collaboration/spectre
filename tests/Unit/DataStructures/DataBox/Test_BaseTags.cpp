@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Subitems.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

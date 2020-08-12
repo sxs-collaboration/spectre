@@ -17,6 +17,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Deferred.hpp"
+#include "DataStructures/DataBox/Subitems.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
 #include "ErrorHandling/Error.hpp"
