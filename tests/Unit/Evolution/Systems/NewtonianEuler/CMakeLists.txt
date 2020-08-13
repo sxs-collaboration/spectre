@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   Test_Tags.cpp
   )
 
+add_subdirectory(Limiters)
 add_subdirectory(NumericalFluxes)
 add_subdirectory(Sources)
 
