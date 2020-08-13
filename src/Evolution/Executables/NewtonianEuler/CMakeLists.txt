@@ -22,9 +22,9 @@ set(LIBS_TO_LINK
   Utilities
   )
 
-function(add_newtonian_euler_executable EXECUTABLE_NAME DIM INITIAL_DATA)
+function(add_newtonian_euler_executable INITIAL_DATA_NAME DIM INITIAL_DATA)
   add_spectre_parallel_executable(
-    "Evolve${EXECUTABLE_NAME}${DIM}D"
+    "EvolveNewtonianEuler${INITIAL_DATA_NAME}${DIM}D"
     EvolveNewtonianEuler
     Evolution/Executables/NewtonianEuler
     "EvolutionMetavars<${DIM},${INITIAL_DATA}>"
