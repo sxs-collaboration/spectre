@@ -2,7 +2,7 @@
 Distributed under the MIT License.
 See LICENSE.txt for details.
 \endcond
-# Parallization, Charm++, and Core Concepts {#dev_guide_parallelization_foundations}
+# Parallelization, Charm++, and Core Concepts {#dev_guide_parallelization_foundations}
 
 \tableofcontents
 
