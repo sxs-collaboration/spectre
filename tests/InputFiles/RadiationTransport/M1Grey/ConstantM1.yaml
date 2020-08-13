@@ -1,10 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveStandaloneM1
+# Executable: EvolveM1GreyConstantM1
 # Check: parse;execute
 # ExpectedOutput:
-#   M1Reductions.h5
+#   M1GreyReductions.h5
 
 Evolution:
   InitialTime: 0.0
@@ -47,5 +47,5 @@ EventsAndTriggers:
   : - Completion
 
 Observers:
-  VolumeFileName: "M1Volume"
-  ReductionFileName: "M1Reductions"
+  VolumeFileName: "M1GreyVolume"
+  ReductionFileName: "M1GreyReductions"

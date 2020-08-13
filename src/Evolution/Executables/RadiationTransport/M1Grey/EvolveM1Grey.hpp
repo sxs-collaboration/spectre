@@ -284,7 +284,7 @@ struct EvolutionMetavars {
                  Tags::EventsAndTriggers<events, triggers>>;
 
   static constexpr OptionString help{
-      "Evolve the M1 system (without coupling to hydro).\n\n"};
+      "Evolve the M1Grey system (without coupling to hydro).\n\n"};
 
   static Phase determine_next_phase(
       const Phase& current_phase,

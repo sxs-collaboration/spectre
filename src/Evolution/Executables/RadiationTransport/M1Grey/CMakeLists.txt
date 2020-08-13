@@ -21,8 +21,8 @@ set(LIBS_TO_LINK
   )
 
 add_spectre_parallel_executable(
-  EvolveStandaloneM1
-  EvolveStandaloneM1
+  EvolveM1GreyConstantM1
+  EvolveM1Grey
   Evolution/Executables/RadiationTransport/M1Grey
   EvolutionMetavars
   "${LIBS_TO_LINK}"
