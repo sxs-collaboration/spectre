@@ -24,7 +24,7 @@ spectre_unload_modules() {
     module unload doxygen/1.8.13
     module unload git/2.8.4
     module unload llvm/10.0.0
-    module unload charm/6.8.0-smp
+    module unload charm/6.10.2-mpi-smp
     module unload python/anaconda2-4.1.1
     module unload pybind11/2.4.3
 }
@@ -46,7 +46,7 @@ spectre_load_modules() {
     module load doxygen/1.8.13
     module load git/2.8.4
     module load llvm/10.0.0
-    module load charm/6.8.0-smp
+    module load charm/6.10.2-mpi-smp
     module load python/anaconda2-4.1.1
     module load pybind11/2.4.3
 }
