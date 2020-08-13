@@ -19,6 +19,7 @@ spectre_target_headers(
   GslMultiRoot.hpp
   NewtonRaphson.hpp
   QuadraticEquation.hpp
+  RootBracketing.hpp
   TOMS748.hpp
   )
 
