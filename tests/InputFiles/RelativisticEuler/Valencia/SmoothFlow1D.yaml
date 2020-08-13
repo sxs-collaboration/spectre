@@ -58,5 +58,5 @@ EventsAndTriggers:
   : - Completion
 
 Observers:
-  VolumeFileName: "./ValenciaSmoothFlowVolume1D"
-  ReductionFileName: "./ValenciaSmoothFlowReductions1D"
+  VolumeFileName: "ValenciaSmoothFlow1DVolume"
+  ReductionFileName: "ValenciaSmoothFlow1DReductions"
