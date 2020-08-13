@@ -103,11 +103,11 @@ struct ReadVolumeData {
             typename Metavariables, typename ArrayIndex,
             Requires<db::tag_is_retrievable_v<Tags::RegisteredElements,
                                               DataBox>> = nullptr>
-  static void apply(DataBox& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const gsl::not_null<CmiNodeLock*> node_lock) noexcept {
-    Parallel::lock(node_lock);
+  static void apply(
+      DataBox& box, Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/,
+      const gsl::not_null<Parallel::NodeLock*> node_lock) noexcept {
+    node_lock->lock();
     {
       // The scoping is to close the file before unlocking
       h5::H5File<h5::AccessType::ReadOnly> h5file(
@@ -189,7 +189,7 @@ struct ReadVolumeData {
             std::move(element_data));
       }
     }
-    Parallel::unlock(node_lock);
+    node_lock->unlock();
   }
 };
 

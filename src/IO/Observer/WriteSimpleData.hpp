@@ -37,22 +37,21 @@ struct WriteSimpleData {
   static void apply(db::DataBox<DbTagsList>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const gsl::not_null<CmiNodeLock*> node_lock,
+                    const gsl::not_null<Parallel::NodeLock*> node_lock,
                     const std::vector<std::string>& file_legend,
                     const std::vector<double>& data_row,
                     const std::string& subfile_name) noexcept {
-    Parallel::lock(node_lock);
-    // Clang-tidy: CmiNodeLock changes type depending on the Charm++ build and
-    // sometimes clang-tidy doesn't like the way it is constructed
-    CmiNodeLock file_lock{};  // NOLINT
+    node_lock->lock();
+    Parallel::NodeLock* file_lock = nullptr;
     db::mutate<Tags::H5FileLock>(
-        make_not_null(&box), [&file_lock](const gsl::not_null<CmiNodeLock*>
-                                              in_file_lock) noexcept {
-          file_lock = *in_file_lock;
+        make_not_null(&box),
+        [&file_lock](
+            const gsl::not_null<Parallel::NodeLock*> in_file_lock) noexcept {
+          file_lock = in_file_lock;
         });
-    Parallel::unlock(node_lock);
+    node_lock->unlock();
 
-    Parallel::lock(&file_lock);
+    file_lock->lock();
     // scoped to close file
     {
       const auto& file_prefix = Parallel::get<Tags::VolumeFileName>(cache);
@@ -64,7 +63,7 @@ struct WriteSimpleData {
       output_dataset.append(data_row);
       h5file.close_current_object();
     }
-    Parallel::unlock(&file_lock);
+    file_lock->unlock();
   }
 };
 }  // namespace ThreadedActions

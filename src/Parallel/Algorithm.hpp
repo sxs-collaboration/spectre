@@ -204,11 +204,12 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>> {
   /// Call an Action on a local nodegroup requiring the Action to handle thread
   /// safety.
   ///
-  /// The `CmiNodelock` of the nodegroup is passed to the Action instead of the
-  /// `action_list` as a `const gsl::not_null<CmiNodelock*>&`. The node lock can
-  /// be locked with the `Parallel::lock()` function, and unlocked with
-  /// `Parallel::unlock()`. `Parallel::try_lock()` is also provided in case
-  /// something useful can be done if the lock couldn't be acquired.
+  /// The `Parallel::NodeLock` of the nodegroup is passed to the Action instead
+  /// of the `action_list` as a `const gsl::not_null<Parallel::NodeLock*>&`. The
+  /// node lock can be locked with the `Parallel::NodeLock::lock()` function,
+  /// and unlocked with `Parallel::unlock()`. `Parallel::NodeLock::try_lock()`
+  /// is also provided in case something useful can be done if the lock couldn't
+  /// be acquired.
   template <
       typename Action, typename... Args,
       Requires<(sizeof...(Args), std::is_same_v<Parallel::Algorithms::Nodegroup,
@@ -319,7 +320,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>> {
   void forward_tuple_to_threaded_action(
       std::tuple<Args...>&& args,
       std::index_sequence<Is...> /*meta*/) noexcept {
-    const gsl::not_null<CmiNodeLock*> node_lock{&node_lock_};
+    const gsl::not_null<Parallel::NodeLock*> node_lock{&node_lock_};
     Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
         box_, *const_global_cache_,
         static_cast<const array_index&>(array_index_), node_lock,
@@ -348,7 +349,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>> {
   PhaseType phase_{};
   std::size_t algorithm_step_ = 0;
   tmpl::conditional_t<Parallel::is_node_group_proxy<cproxy_type>::value,
-                      CmiNodeLock, NoSuchType>
+                      Parallel::NodeLock, NoSuchType>
       node_lock_;
 
   bool terminate_{true};
@@ -386,8 +387,6 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>> {
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     AlgorithmImpl() noexcept {
-  make_overloader([](CmiNodeLock& node_lock) { node_lock = create_lock(); },
-                  [](NoSuchType /*unused*/) {})(node_lock_);
   set_array_index();
 }
 
@@ -426,8 +425,6 @@ AlgorithmImpl<ParallelComponent,
   // which will be instantiated.
   (void)Parallel::charmxx::RegisterParallelComponent<
       ParallelComponent>::registrar;
-  make_overloader([](CmiNodeLock& node_lock) { free_lock(&node_lock); },
-                  [](NoSuchType /*unused*/) {})(node_lock_);
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
@@ -436,7 +433,9 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     reduction_action(Arg arg) noexcept {
   (void)Parallel::charmxx::RegisterReductionAction<
       ParallelComponent, Action, std::decay_t<Arg>>::registrar;
-  lock(&node_lock_);
+  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+    node_lock_.lock();
+  }
   if (performing_action_) {
     ERROR(
         "Already performing an Action and cannot execute additional Actions "
@@ -449,7 +448,9 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
   forward_tuple_to_action<Action>(std::move(arg.data()),
                                   std::make_index_sequence<Arg::pack_size()>{});
   performing_action_ = false;
-  unlock(&node_lock_);
+  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+    node_lock_.unlock();
+  }
   perform_algorithm();
 }
 
@@ -459,7 +460,9 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     simple_action(std::tuple<Args...> args) noexcept {
   (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent, Action,
                                                 Args...>::registrar;
-  lock(&node_lock_);
+  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+    node_lock_.lock();
+  }
   if (performing_action_) {
     ERROR(
         "Already performing an Action and cannot execute additional Actions "
@@ -471,7 +474,9 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
   forward_tuple_to_action<Action>(std::move(args),
                                   std::make_index_sequence<sizeof...(Args)>{});
   performing_action_ = false;
-  unlock(&node_lock_);
+  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+    node_lock_.unlock();
+  }
   perform_algorithm();
 }
 
@@ -481,7 +486,9 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     simple_action() noexcept {
   (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
                                                 Action>::registrar;
-  lock(&node_lock_);
+  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+    node_lock_.lock();
+  }
   if (performing_action_) {
     ERROR(
         "Already performing an Action and cannot execute additional Actions "
@@ -494,7 +501,9 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
       box_, *const_global_cache_,
       static_cast<const array_index&>(array_index_));
   performing_action_ = false;
-  unlock(&node_lock_);
+  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+    node_lock_.unlock();
+  }
   perform_algorithm();
 }
 
@@ -506,14 +515,18 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
   (void)Parallel::charmxx::RegisterReceiveData<ParallelComponent,
                                                ReceiveTag>::registrar;
   try {
-    lock(&node_lock_);
+    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+      node_lock_.lock();
+    }
     if (enable_if_disabled) {
       set_terminate(false);
     }
     ReceiveTag::insert_into_inbox(
         make_not_null(&tuples::get<ReceiveTag>(inboxes_)), instance,
         std::forward<ReceiveDataType>(t));
-    unlock(&node_lock_);
+    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+      node_lock_.unlock();
+    }
   } catch (std::exception& e) {
     ERROR("Fatal error: Unexpected exception caught in receive_data: "
           << e.what());
@@ -531,7 +544,9 @@ constexpr void AlgorithmImpl<
 #ifdef SPECTRE_CHARM_PROJECTIONS
   non_action_time_start_ = Parallel::wall_time();
 #endif
-  lock(&node_lock_);
+  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+    node_lock_.lock();
+  }
   const auto invoke_for_phase = [this](auto phase_dep_v) noexcept {
     using PhaseDep = decltype(phase_dep_v);
     constexpr PhaseType phase = PhaseDep::phase;
@@ -548,7 +563,9 @@ constexpr void AlgorithmImpl<
   // waiting on data to be sent or because the algorithm has been marked as
   // terminated.
   EXPAND_PACK_LEFT_TO_RIGHT(invoke_for_phase(PhaseDepActionListsPack{}));
-  unlock(&node_lock_);
+  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+    node_lock_.unlock();
+  }
 #ifdef SPECTRE_CHARM_PROJECTIONS
   traceUserBracketEvent(SPECTRE_CHARM_NON_ACTION_WALLTIME_EVENT_ID,
                         non_action_time_start_, Parallel::wall_time());

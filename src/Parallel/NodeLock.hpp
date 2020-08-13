@@ -3,71 +3,47 @@
 
 #pragma once
 
+#include <charm++.h>
 #include <converse.h>
-
-#include "Utilities/Gsl.hpp"
-#include "Utilities/NoSuchType.hpp"
+#include <pup.h>
 
 namespace Parallel {
-/*!
- * \ingroup ParallelGroup
- * \brief Create a converse CmiNodeLock
- */
-inline CmiNodeLock create_lock() noexcept { return CmiCreateLock(); }
 
 /*!
  * \ingroup ParallelGroup
- * \brief Free a converse CmiNodeLock. Using the lock after free is undefined
- * behavior.
+ * \brief A typesafe wrapper for a lock for synchronization of shared resources
+ * on a given node, with safe creation, destruction, and serialization.
+ *
+ * \details This structure is a thin wrapper around the charm `CmiNodeLock`, in
+ * the <a href="https://charm.readthedocs.io/en/latest/converse/manual.html">
+ * Converse library</a>. On construction, this class creates a Converse
+ * nodelock, and frees the lock on destruction. When the lock is
+ * deserialized, the nodelock is re-created.
  */
-inline void free_lock(const gsl::not_null<CmiNodeLock*> node_lock) noexcept {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-  CmiDestroyLock(*node_lock);
-#pragma GCC diagnostic pop
-}
+class NodeLock {
+ public:
+  NodeLock() noexcept;
 
-/*!
- * \ingroup ParallelGroup
- * \brief Lock a converse CmiNodeLock
- */
-inline void lock(const gsl::not_null<CmiNodeLock*> node_lock) noexcept {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-  CmiLock(*node_lock);
-#pragma GCC diagnostic pop
-}
+  explicit NodeLock(CkMigrateMessage* /*message*/) noexcept {}
 
-/// \cond
-constexpr inline void lock(
-    const gsl::not_null<NoSuchType*> /*unused*/) noexcept {}
-/// \endcond
+  NodeLock(const NodeLock&) = delete;
+  NodeLock& operator=(const NodeLock&) = delete;
+  NodeLock(NodeLock&& moved_lock) noexcept;
+  NodeLock& operator=(NodeLock&& moved_lock) noexcept;
+  ~NodeLock() noexcept;
 
-/*!
- * \ingroup ParallelGroup
- * \brief Returns true if the lock was successfully acquired and false if the
- * lock is already acquired by another processor.
- */
-inline bool try_lock(const gsl::not_null<CmiNodeLock*> node_lock) noexcept {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-  return CmiTryLock(*node_lock) == 0;
-#pragma GCC diagnostic pop
-}
+  void lock() noexcept;
 
-/*!
- * \ingroup ParallelGroup
- * \brief Unlock a converse CmiNodeLock
- */
-inline void unlock(const gsl::not_null<CmiNodeLock*> node_lock) noexcept {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wold-style-cast"
-  CmiUnlock(*node_lock);
-#pragma GCC diagnostic pop
-}
+  bool try_lock() noexcept;
 
-/// \cond
-constexpr inline void unlock(
-    const gsl::not_null<NoSuchType*> /*unused*/) noexcept {}
-/// \endcond
+  void unlock() noexcept;
+
+  void destroy() noexcept;
+
+  void pup(PUP::er& p) noexcept;  // NOLINT
+
+ private:
+  bool destroyed_ = false;
+  CmiNodeLock lock_{};  // NOLINT
+};
 }  // namespace Parallel

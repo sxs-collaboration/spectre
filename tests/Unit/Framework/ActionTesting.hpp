@@ -1082,7 +1082,7 @@ class MockDistributedObject {
   tuples::tagged_tuple_from_typelist<inbox_tags_list>* inboxes_{nullptr};
   std::deque<std::unique_ptr<InvokeActionBase>> simple_action_queue_;
   std::deque<std::unique_ptr<InvokeActionBase>> threaded_action_queue_;
-  CmiNodeLock node_lock_ = Parallel::create_lock();
+  Parallel::NodeLock node_lock_;
 };
 
 template <typename Component>

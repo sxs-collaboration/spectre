@@ -19,6 +19,7 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/NodeLock.hpp"
 #include "Parallel/Reduction.hpp"
 
 namespace observers {
@@ -118,7 +119,7 @@ struct ReductionObserversContributed : db::SimpleTag {
 /// require a thread-safe HDF5 installation. In the future we will need to
 /// experiment with different HDF5 configurations.
 struct H5FileLock : db::SimpleTag {
-  using type = CmiNodeLock;
+  using type = Parallel::NodeLock;
 };
 }  // namespace Tags
 

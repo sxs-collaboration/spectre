@@ -38,7 +38,7 @@ struct MockWriteSimpleData {
   static void apply(db::DataBox<DbTagsList>& /*box*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const gsl::not_null<CmiNodeLock*> /*node_lock*/,
+                    const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
                     const std::vector<std::string>& /*file_legend*/,
                     const std::vector<double>& data_row,
                     const std::string& subfile_name) noexcept {

@@ -200,33 +200,31 @@ struct WriteVolumeData {
   static void apply(db::DataBox<DbTagsList>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const gsl::not_null<CmiNodeLock*> node_lock,
+                    const gsl::not_null<Parallel::NodeLock*> node_lock,
                     const observers::ObservationId& observation_id,
                     const std::string& subfile_name) noexcept {
     // Get data from the DataBox in a thread-safe manner
-    Parallel::lock(node_lock);
+    node_lock->lock();
     std::unordered_map<observers::ArrayComponentId, ExtentsAndTensorVolumeData>
         volume_data{};
-    // Clang-tidy: CmiNodeLock changes type depending on the Charm++ build and
-    // sometimes clang-tidy doesn't like the way it is constructed
-    CmiNodeLock file_lock{};  // NOLINT
+    Parallel::NodeLock* file_lock;
     db::mutate<Tags::H5FileLock, Tags::TensorData>(
         make_not_null(&box),
-        [&observation_id, &file_lock, &volume_data ](
-            const gsl::not_null<CmiNodeLock*> in_file_lock,
+        [&observation_id, &file_lock, &volume_data](
+            const gsl::not_null<Parallel::NodeLock*> in_file_lock,
             const gsl::not_null<db::item_type<Tags::TensorData>*>
                 in_volume_data) noexcept {
           volume_data = std::move((*in_volume_data)[observation_id]);
           in_volume_data->erase(observation_id);
-          file_lock = *in_file_lock;
+          file_lock = in_file_lock;
         });
-    Parallel::unlock(node_lock);
+    node_lock->unlock();
 
     // Write to file. We use a separate node lock because writing can be very
     // time consuming (it's network dependent, depends on how full the disks
     // are, what other users are doing, etc.) and we want to be able to continue
     // to work on the nodegroup while we are writing data to disk.
-    Parallel::lock(&file_lock);
+    file_lock->lock();
     {
       // Scoping is for closing HDF5 file before we release the lock.
       const auto& file_prefix = Parallel::get<Tags::VolumeFileName>(cache);
@@ -244,7 +242,7 @@ struct WriteVolumeData {
       volume_file.write_volume_data(observation_id.hash(),
                                     observation_id.value(), dg_elements);
     }
-    Parallel::unlock(&file_lock);
+    file_lock->unlock();
   }
 };
 }  // namespace ThreadedActions
