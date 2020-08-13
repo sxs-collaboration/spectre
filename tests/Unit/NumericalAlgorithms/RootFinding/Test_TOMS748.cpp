@@ -19,7 +19,7 @@
 namespace {
 double f_free(double x) { return 2.0 - square(x); }
 struct F {
-  double operator()(double x) { return 2.0 - square(x); }
+  double operator()(double x) const { return 2.0 - square(x); }
 };
 
 void test_simple() noexcept {
@@ -54,6 +54,13 @@ void test_bounds() noexcept {
 
   CHECK(std::abs(root - sqrt(2.0)) < abs_tol);
   CHECK(std::abs(root - sqrt(2.0)) / sqrt(2.0) < rel_tol);
+
+  // Test the overload where function values are supplied at lower
+  // and upper bounds.
+  auto root2 = RootFinder::toms748(f_lambda, lower, upper, f_lambda(lower),
+                                   f_lambda(upper), abs_tol, rel_tol);
+  CHECK(std::abs(root2 - sqrt(2.0)) < abs_tol);
+  CHECK(std::abs(root2 - sqrt(2.0)) / sqrt(2.0) < rel_tol);
 
   // Check that the other tight-but-correct bracket works
   CHECK(RootFinder::toms748(f_lambda, 0.0, sqrt(2.0) + abs_tol, abs_tol,
@@ -99,18 +106,36 @@ void test_datavector() noexcept {
     return constant[i] - square(x);
   };
 
-  const auto root =
+  const auto root_no_function_values =
       RootFinder::toms748(f_lambda, lower, upper, abs_tol, rel_tol);
   /// [datavector_root_find]
 
-  CHECK(std::abs(root[0] - sqrt(2.0)) < abs_tol);
-  CHECK(std::abs(root[0] - sqrt(2.0)) / sqrt(2.0) < rel_tol);
-  CHECK(std::abs(root[1] - 2.0) < abs_tol);
-  CHECK(std::abs(root[1] - 2.0) / 2.0 < rel_tol);
-  CHECK(std::abs(root[2] + sqrt(2.0)) < abs_tol);
-  CHECK(std::abs(root[2] + sqrt(2.0)) / sqrt(2.0) < rel_tol);
-  CHECK(std::abs(root[3] + 2.0) < abs_tol);
-  CHECK(std::abs(root[3] + 2.0) / 2.0 < rel_tol);
+  auto check_root = [&abs_tol,&rel_tol](const DataVector& root) noexcept {
+    CHECK(std::abs(root[0] - sqrt(2.0)) < abs_tol);
+    CHECK(std::abs(root[0] - sqrt(2.0)) / sqrt(2.0) < rel_tol);
+    CHECK(std::abs(root[1] - 2.0) < abs_tol);
+    CHECK(std::abs(root[1] - 2.0) / 2.0 < rel_tol);
+    CHECK(std::abs(root[2] + sqrt(2.0)) < abs_tol);
+    CHECK(std::abs(root[2] + sqrt(2.0)) / sqrt(2.0) < rel_tol);
+    CHECK(std::abs(root[3] + 2.0) < abs_tol);
+    CHECK(std::abs(root[3] + 2.0) / 2.0 < rel_tol);
+  };
+  check_root(root_no_function_values);
+
+  // Test the version of toms748 where function values are supplied
+  // at lower and upper bounds.
+  const auto generate_function_values = [&f_lambda](
+      const DataVector& x) noexcept {
+    DataVector f(x.size());
+    for (size_t i = 0; i < x.size(); ++i) {
+      f[i] = f_lambda(x[i], i);
+    }
+    return f;
+  };
+  const auto root_function_values = RootFinder::toms748(
+      f_lambda, lower, upper, generate_function_values(lower),
+      generate_function_values(upper), abs_tol, rel_tol);
+  check_root(root_function_values);
 }
 
 void test_convergence_error_double() noexcept {
