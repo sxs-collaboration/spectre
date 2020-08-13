@@ -17,12 +17,12 @@ set(LIBS_TO_LINK
   WaveEquationSolutions
   )
 
-function(add_scalar_wave_executable EXECUTABLE_NAME DIM INITIAL_DATA)
+function(add_scalar_wave_executable INITIAL_DATA_NAME DIM INITIAL_DATA)
   add_spectre_parallel_executable(
-    "Evolve${EXECUTABLE_NAME}${DIM}D"
+    "EvolveScalarWave${INITIAL_DATA_NAME}${DIM}D"
     EvolveScalarWave
     Evolution/Executables/ScalarWave
-    "EvolutionMetavars<${DIM},${INITIAL_DATA}>"
+    "EvolutionMetavars<${DIM}, ${INITIAL_DATA}>"
     "${LIBS_TO_LINK}"
     )
 endfunction(add_scalar_wave_executable)

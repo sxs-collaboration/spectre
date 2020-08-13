@@ -29,7 +29,7 @@ evolution, run the command:
 By default, the example input files do not produce any output. This can be
 changed by modifying the options passed to `EventsAndTriggers`:
 
-\snippet ObserveExample.yaml observe_event_trigger
+\snippet PlaneWave1DObserveExample.yaml observe_event_trigger
 
 This will observe the norms of the errors in the system every three
 slabs starting with slab five and the volume data of Psi at the start

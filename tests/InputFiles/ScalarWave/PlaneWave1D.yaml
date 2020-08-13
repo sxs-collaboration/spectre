@@ -1,11 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolvePlaneWave1D
-# Check: parse
-# ExpectedOutput:
-#   ObserveExample1DPlaneWavePeriodicReductions.h5
-#   ObserveExample1DPlaneWavePeriodicVolume.h5
+# Executable: EvolveScalarWavePlaneWave1D
+# Check: parse;execute
 
 AnalyticSolution:
   PlaneWave:
@@ -41,28 +38,28 @@ DomainCreator:
     InitialGridPoints: [7]
 
 # If filtering is enabled in the executable the filter can be controlled using:
-# ExpFilter0:
-#   Alpha: 12
-#   HalfPower: 32
+# Filtering:
+#   ExpFilter0:
+#     Alpha: 12
+#     HalfPower: 32
 
 NumericalFlux:
   UpwindPenalty:
 
-# [observe_event_trigger]
 EventsAndTriggers:
-  ? EveryNSlabs:
-      N: 3
-      Offset: 5
-  : - ObserveErrorNorms
   ? SpecifiedSlabs:
-      Slabs: [0, 100]
-  : - ObserveFields:
-        VariablesToObserve: ["Psi"]
-  ? SpecifiedSlabs:
-      Slabs: [100]
+      Slabs: [5]
   : - Completion
-# [observe_event_trigger]
+  ? EveryNSlabs:
+      N: 2
+  : - ChangeSlabSize:
+        DelayChange: 3
+        StepChoosers:
+          # Based on the step size choices above, this should aim for
+          # about 100 steps per slab.
+          - Cfl:
+              SafetyFactor: 20
 
 Observers:
-  VolumeFileName: "ObserveExample1DPlaneWavePeriodicVolume"
-  ReductionFileName: "ObserveExample1DPlaneWavePeriodicReductions"
+  VolumeFileName: "ScalarWavePlaneWave1DVolume"
+  ReductionFileName: "ScalarWavePlaneWave1DReductions"
