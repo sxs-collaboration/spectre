@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveFishboneMoncriefDisk
+# Executable: EvolveValenciaDivCleanFishboneMoncriefDisk
 # Check: parse;execute
 
 Evolution:
@@ -83,8 +83,8 @@ EventsAndTriggers:
           - PreventRapidIncrease
 
 Observers:
-  VolumeFileName: "GrMhdVolume"
-  ReductionFileName: "GrMhdReductions"
+  VolumeFileName: "ValenciaDivCleanFishboneMoncriefDiskVolume"
+  ReductionFileName: "ValenciaDivCleanFishboneMoncriefDiskReductions"
 
 InterpolationTargets:
   KerrHorizon:

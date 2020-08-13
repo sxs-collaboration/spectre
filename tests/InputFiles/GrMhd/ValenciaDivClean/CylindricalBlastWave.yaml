@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveCylindricalBlastWave
+# Executable: EvolveValenciaDivCleanCylindricalBlastWave
 # Check: parse;execute
 
 Evolution:
@@ -51,8 +51,8 @@ VariableFixing:
     DensityCutoff: 1.0e-12
 
 Observers:
-  VolumeFileName: "GrMhdBlastWaveVolume"
-  ReductionFileName: "GrMhdBlastWaveReductions"
+  VolumeFileName: "ValenciaDivCleanCylindricalBlastWaveVolume"
+  ReductionFileName: "ValenciaDivCleanCylindricalBlastWaveReductions"
 
 EventsAndTriggers:
   ? SpecifiedSlabs:
