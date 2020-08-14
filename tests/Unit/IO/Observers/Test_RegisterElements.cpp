@@ -170,6 +170,36 @@ void check_observer_registration() {
   CHECK(ActionTesting::get_databox_tag<obs_writer, observers::Tags::TensorData>(
             runner, 0)
             .empty());
+
+  {
+    INFO("Deregistration");
+    // call the deregistration functions for each element
+    // note that these are not actions, because they are intended to be called
+    // from pup functions.
+    for (const auto& id : element_ids) {
+      observers::Actions::RegisterWithObservers<
+          RegisterObservers<TypeOfObservation>>::
+          template perform_deregistration<element_comp>(
+              ActionTesting::get_databox<element_comp, tmpl::list<>>(
+                  make_not_null(&runner), id),
+              ActionTesting::cache<element_comp>(runner, id), id);
+      ActionTesting::invoke_queued_simple_action<obs_component>(
+          make_not_null(&runner), 0);
+    }
+    for (size_t j = 0; j < number_of_obs_writer_actions; ++j) {
+      ActionTesting::invoke_queued_simple_action<obs_writer>(
+          make_not_null(&runner), 0);
+    }
+    CHECK(ActionTesting::get_databox_tag<
+              obs_component,
+              observers::Tags::ExpectedContributorsForObservations>(runner, 0)
+              .empty());
+
+    CHECK(ActionTesting::get_databox_tag<
+              obs_writer, observers::Tags::ExpectedContributorsForObservations>(
+              runner, 0)
+              .empty());
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterElements", "[Unit][Observers]") {

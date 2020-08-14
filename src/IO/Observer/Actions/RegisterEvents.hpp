@@ -93,17 +93,22 @@ namespace Actions {
  * well as whether each observation is a Reduction or Volume observation.
  * Should be added to the phase dependent action list of the components that
  * contribute data for volume and reduction observations.
+ *
+ * When this struct is used as an action, the `apply` function will perform the
+ * registration with observers. However, this struct also offers the static
+ * member functions `perform_registration` and `perform_deregistration` that
+ * are needed for either registering when an element is added to a core outside
+ * of initialization or deregistering when an element is being eliminated from a
+ * core. The use of separate functions is necessary to provide an interface
+ * usable outside of iterable actions, e.g. in specialized `pup` functions.
  */
 struct RegisterEventsWithObservers {
-  template <typename DbTagList, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagList>&&> apply(
-      db::DataBox<DbTagList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+ private:
+  template <typename ParallelComponent, typename RegisterOrDeregisterAction,
+            typename DbTagList, typename Metavariables, typename ArrayIndex>
+  static void register_or_deregister_impl(
+      db::DataBox<DbTagList>& box, Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index) noexcept {
     auto& observer =
         *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
              cache)
@@ -128,13 +133,46 @@ struct RegisterEventsWithObservers {
 
     for (const auto& [type_of_observation, observation_key] :
          type_of_observation_and_observation_key_pairs) {
-      Parallel::simple_action<RegisterContributorWithObserver>(
+      Parallel::simple_action<RegisterOrDeregisterAction>(
           observer, observation_key,
           observers::ArrayComponentId(
               std::add_pointer_t<ParallelComponent>{nullptr},
               Parallel::ArrayIndex<std::decay_t<ArrayIndex>>{array_index}),
           type_of_observation);
     }
+  }
+
+ public:
+  template <typename ParallelComponent, typename DbTagList,
+            typename Metavariables, typename ArrayIndex>
+  static void perform_registration(db::DataBox<DbTagList>& box,
+                                   Parallel::GlobalCache<Metavariables>& cache,
+                                   const ArrayIndex& array_index) noexcept {
+    register_or_deregister_impl<ParallelComponent,
+                                RegisterContributorWithObserver>(box, cache,
+                                                                 array_index);
+  }
+
+  template <typename ParallelComponent, typename DbTagList,
+            typename Metavariables, typename ArrayIndex>
+  static void perform_deregistration(
+      db::DataBox<DbTagList>& box, Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index) noexcept {
+    register_or_deregister_impl<ParallelComponent,
+                                DeregisterContributorWithObserver>(box, cache,
+                                                                   array_index);
+  }
+
+  template <typename DbTagList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagList>&&> apply(
+      db::DataBox<DbTagList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    perform_registration<ParallelComponent>(box, cache, array_index);
     return {std::move(box)};
   }
 };

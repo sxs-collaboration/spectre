@@ -115,8 +115,34 @@ struct MockRegisterContributorWithObserver {
   }
 };
 
+struct MockDeregisterContributorWithObserver {
+  struct Result {
+    observers::ObservationKey observation_key{};
+    observers::ArrayComponentId array_component_id{};
+    observers::TypeOfObservation type_of_observation{};
+  };
+  static Result result;
+
+  template <typename ParallelComponent, typename DbTagList,
+            typename Metavariables, typename ArrayIndex>
+  static void apply(
+      db::DataBox<DbTagList>& /*box*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const observers::ObservationKey& observation_key,
+      const observers::ArrayComponentId& component_id,
+      const observers::TypeOfObservation& type_of_observation) noexcept {
+    result.observation_key = observation_key;
+    result.array_component_id = component_id;
+    result.type_of_observation = type_of_observation;
+  }
+};
+
 MockRegisterContributorWithObserver::Result
     MockRegisterContributorWithObserver::result{};
+
+MockDeregisterContributorWithObserver::Result
+    MockDeregisterContributorWithObserver::result{};
 
 template <typename Metavariables>
 struct MockObserverComponent {
@@ -130,9 +156,11 @@ struct MockObserverComponent {
 
   using component_being_mocked = observers::Observer<Metavariables>;
   using replace_these_simple_actions =
-      tmpl::list<observers::Actions::RegisterContributorWithObserver>;
+      tmpl::list<observers::Actions::RegisterContributorWithObserver,
+                 observers::Actions::DeregisterContributorWithObserver>;
   using with_these_simple_actions =
-      tmpl::list<MockRegisterContributorWithObserver>;
+      tmpl::list<MockRegisterContributorWithObserver,
+                 MockDeregisterContributorWithObserver>;
 };
 
 struct Metavariables {
@@ -188,6 +216,38 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterEvents", "[Unit][Observers]") {
                    Parallel::ArrayIndex<int>{1})));
     CHECK(MockRegisterContributorWithObserver::result.type_of_observation ==
           observers::TypeOfObservation::Reduction);
+  }
+  {
+    INFO("Deregistration");
+    // call the deregistration functions for each element
+    // note that these are not actions, because they are intended to be called
+    // from pup functions.
+    for (int i = 0; i < 2; ++i) {
+      observers::Actions::RegisterEventsWithObservers::
+          template perform_deregistration<my_component>(
+              ActionTesting::get_databox<my_component, tmpl::list<>>(
+                  make_not_null(&runner), i),
+              ActionTesting::cache<my_component>(runner, i), i);
+      ActionTesting::invoke_queued_simple_action<obs_component>(
+          make_not_null(&runner), 0);
+
+      // The deregistration mock action just records its arguments like the
+      // registration mock action. The actual deregistration procedure is tested
+      // by Unit.IO.Observers.RegisterElements
+      CHECK(MockDeregisterContributorWithObserver::result.observation_key ==
+            observers::ObservationKey("element_data.dat"));
+      // Need an `or` because we don't know what order actions are run in
+      CHECK((MockDeregisterContributorWithObserver::result.array_component_id ==
+                 observers::ArrayComponentId(
+                     std::add_pointer_t<my_component>{nullptr},
+                     Parallel::ArrayIndex<int>{0}) or
+             MockDeregisterContributorWithObserver::result.array_component_id ==
+                 observers::ArrayComponentId(
+                     std::add_pointer_t<my_component>{nullptr},
+                     Parallel::ArrayIndex<int>{1})));
+      CHECK(MockDeregisterContributorWithObserver::result.type_of_observation ==
+            observers::TypeOfObservation::Reduction);
+    }
   }
 }
 }  // namespace
