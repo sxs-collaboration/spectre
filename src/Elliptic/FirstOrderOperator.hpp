@@ -210,9 +210,9 @@ struct FirstOrderOperator {
   using return_tags = tmpl::list<operator_tag>;
   using argument_tags = tmpl::list<div_fluxes_tag, sources_tag>;
   static constexpr auto apply =
-      &first_order_operator<db::get_variables_tags_list<operator_tag>,
-                            db::get_variables_tags_list<div_fluxes_tag>,
-                            db::get_variables_tags_list<sources_tag>>;
+      &first_order_operator<typename operator_tag::tags_list,
+                            typename div_fluxes_tag::tags_list,
+                            typename sources_tag::tags_list>;
 };
 
 }  // namespace elliptic

@@ -67,17 +67,15 @@ template <typename FieldsTag, typename OptionsGroup>
 struct InitializeResidualMonitor {
  private:
   using fields_tag = FieldsTag;
-  using residual_magnitude_tag = db::add_tag_prefix<
-      LinearSolver::Tags::Magnitude,
+  using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
   using initial_residual_magnitude_tag =
-      db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
+      LinearSolver::Tags::Initial<residual_magnitude_tag>;
   using orthogonalization_iteration_id_tag =
-      db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-                         LinearSolver::Tags::IterationId<OptionsGroup>>;
+      LinearSolver::Tags::Orthogonalization<
+          LinearSolver::Tags::IterationId<OptionsGroup>>;
   using orthogonalization_history_tag =
-      db::add_tag_prefix<LinearSolver::Tags::OrthogonalizationHistory,
-                         fields_tag>;
+      LinearSolver::Tags::OrthogonalizationHistory<fields_tag>;
 
  public:
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,

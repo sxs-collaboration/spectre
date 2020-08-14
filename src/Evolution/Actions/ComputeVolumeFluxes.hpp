@@ -80,9 +80,9 @@ struct ComputeVolumeFluxes {
           [](const auto fluxes_ptr, const auto& evolved_vars,
              const tnsr::I<DataVector, Metavariables::volume_dim,
                            Frame::Inertial>& grid_velocity) noexcept {
-            tmpl::for_each<typename fluxes_tag::tag::tags_list>(
-                [&evolved_vars, &fluxes_ptr,
-                 &grid_velocity](auto tag_v) noexcept {
+            tmpl::for_each<typename fluxes_tag::tags_list>(
+                [&evolved_vars, &fluxes_ptr, &
+                 grid_velocity ](auto tag_v) noexcept {
                   using ::get;
                   using flux_tag = typename decltype(tag_v)::type;
                   using var_tag = db::remove_tag_prefix<flux_tag>;

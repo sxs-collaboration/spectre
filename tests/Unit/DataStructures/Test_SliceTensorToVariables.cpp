@@ -31,10 +31,10 @@ void test_variables_slice() noexcept {
   const size_t x_extents = sdist(gen);
   const size_t y_extents = sdist(gen);
   const size_t z_extents = sdist(gen);
-  Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>> vars{
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> vars{
       x_extents * y_extents * z_extents};
   const size_t tensor_size =
-      VariablesTestTags_detail::tensor<VectorType>::type::size();
+      TestHelpers::Tags::Vector<VectorType>::type::size();
   Index<3> extents(x_extents, y_extents, z_extents);
 
   // Test data_on_slice function by using a predictable data set where each
@@ -43,9 +43,11 @@ void test_variables_slice() noexcept {
     // clang-tidy: do not use pointer arithmetic
     vars.data()[s] = s;  // NOLINT
   }
-  Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>>
-      expected_vars_sliced_in_x(y_extents * z_extents, 0.),
-      expected_vars_sliced_in_y(x_extents * z_extents, 0.),
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
+      expected_vars_sliced_in_x(y_extents * z_extents, 0.);
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
+      expected_vars_sliced_in_y(x_extents * z_extents, 0.);
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
       expected_vars_sliced_in_z(x_extents * y_extents, 0.);
   const size_t x_offset = sdist(gen) % x_extents;
   const size_t y_offset = sdist(gen) % y_extents;
@@ -76,17 +78,17 @@ void test_variables_slice() noexcept {
     }
   }
 
-  CHECK(data_on_slice<VariablesTestTags_detail::tensor<VectorType>>(
+  CHECK(data_on_slice<TestHelpers::Tags::Vector<VectorType>>(
             extents, 0, x_offset,
-            get<VariablesTestTags_detail::tensor<VectorType>>(vars)) ==
+            get<TestHelpers::Tags::Vector<VectorType>>(vars)) ==
         expected_vars_sliced_in_x);
-  CHECK(data_on_slice<VariablesTestTags_detail::tensor<VectorType>>(
+  CHECK(data_on_slice<TestHelpers::Tags::Vector<VectorType>>(
             extents, 1, y_offset,
-            get<VariablesTestTags_detail::tensor<VectorType>>(vars)) ==
+            get<TestHelpers::Tags::Vector<VectorType>>(vars)) ==
         expected_vars_sliced_in_y);
-  CHECK(data_on_slice<VariablesTestTags_detail::tensor<VectorType>>(
+  CHECK(data_on_slice<TestHelpers::Tags::Vector<VectorType>>(
             extents, 2, z_offset,
-            get<VariablesTestTags_detail::tensor<VectorType>>(vars)) ==
+            get<TestHelpers::Tags::Vector<VectorType>>(vars)) ==
         expected_vars_sliced_in_z);
 }
 

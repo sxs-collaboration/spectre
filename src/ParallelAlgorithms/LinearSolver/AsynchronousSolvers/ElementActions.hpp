@@ -57,7 +57,7 @@ void contribute_to_residual_observation(
   using residual_tag =
       db::add_tag_prefix<LinearSolver::Tags::Residual, FieldsTag>;
   using residual_magnitude_square_tag =
-      db::add_tag_prefix<LinearSolver::Tags::MagnitudeSquare, residual_tag>;
+      LinearSolver::Tags::MagnitudeSquare<residual_tag>;
 
   const size_t iteration_id =
       get<LinearSolver::Tags::IterationId<OptionsGroup>>(box);
@@ -102,7 +102,7 @@ struct InitializeElement {
   using residual_tag =
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>;
   using residual_magnitude_square_tag =
-      db::add_tag_prefix<LinearSolver::Tags::MagnitudeSquare, residual_tag>;
+      LinearSolver::Tags::MagnitudeSquare<residual_tag>;
 
  public:
   using const_global_cache_tags =
@@ -164,7 +164,7 @@ struct PrepareSolve {
   using residual_tag =
       db::add_tag_prefix<LinearSolver::Tags::Residual, FieldsTag>;
   using residual_magnitude_square_tag =
-      db::add_tag_prefix<LinearSolver::Tags::MagnitudeSquare, residual_tag>;
+      LinearSolver::Tags::MagnitudeSquare<residual_tag>;
 
  public:
   using const_global_cache_tags =
@@ -203,7 +203,7 @@ struct CompleteStep {
   using residual_tag =
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>;
   using residual_magnitude_square_tag =
-      db::add_tag_prefix<LinearSolver::Tags::MagnitudeSquare, residual_tag>;
+      LinearSolver::Tags::MagnitudeSquare<residual_tag>;
 
  public:
   using const_global_cache_tags =

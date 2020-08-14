@@ -465,15 +465,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
 
   TestHelpers::db::test_prefix_tag<
       Tags::deriv<Var1<3>, tmpl::size_t<3>, Frame::Grid>>("deriv(Var1)");
-  TestHelpers::db::test_prefix_tag<Tags::deriv<
-      Tags::Variables<tmpl::list<Var1<3>>>, tmpl::size_t<3>, Frame::Grid>>(
-      "deriv(Variables(Var1))");
   TestHelpers::db::test_prefix_tag<
       Tags::spacetime_deriv<Var1<3>, tmpl::size_t<3>, Frame::Grid>>(
       "spacetime_deriv(Var1)");
-  TestHelpers::db::test_prefix_tag<Tags::spacetime_deriv<
-      Tags::Variables<tmpl::list<Var1<3>>>, tmpl::size_t<3>, Frame::Grid>>(
-      "spacetime_deriv(Variables(Var1))");
 }
 
 namespace {
@@ -510,7 +504,7 @@ void test_partial_derivatives_compute_item(
                          tmpl::list<SomePrefix<Var1<Dim>>>>;
 
   TestHelpers::db::test_compute_tag<deriv_tag>(
-      "deriv(Variables(deriv(Var1),deriv(Var2)))");
+      "Variables(deriv(Var1),deriv(Var2))");
 
   const std::array<size_t, Dim> array_to_functions{extents_array -
                                                    make_array<Dim>(size_t{1})};

@@ -117,9 +117,6 @@ struct Dy : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
   static const size_t dimension_to_differentiate = 2;
-  static std::string name() noexcept {
-    return "Dy(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 /// The derivative with respect to Bondi \f$r\f$
@@ -127,9 +124,6 @@ template <typename Tag>
 struct Dr : db::PrefixTag, db::SimpleTag {
   using type = typename Tag::type;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "Dr(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 /// The derivative with respect to Bondi retarded time \f$u\f$
@@ -137,9 +131,6 @@ template <typename Tag>
 struct Du : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "Du(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 /// The spin-weight 2 angular Jacobian factor
@@ -200,9 +191,6 @@ template <typename Tag>
 struct Integrand : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "Integrand(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 /// A prefix tag representing the boundary data for a quantity on the extraction
@@ -211,9 +199,6 @@ template <typename Tag>
 struct BoundaryValue : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "BoundaryValue(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 /// A prefix tag representing the gauge-transformed boundary data for a quantity
@@ -222,9 +207,6 @@ template <typename Tag>
 struct EvolutionGaugeBoundaryValue : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "EvolutionGaugeBoundaryValue(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 /// A prefix tag representing the coefficient of a pole part of the right-hand
@@ -233,9 +215,6 @@ template <typename Tag>
 struct PoleOfIntegrand : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "PoleOfIntegrand(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 /// A prefix tag representing the regular part of the right-hand side of a
@@ -244,9 +223,6 @@ template <typename Tag>
 struct RegularIntegrand : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "RegularIntegrand(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 /// A prefix tag representing a linear factor that acts on `Tag`. To determine
@@ -257,9 +233,6 @@ template <typename Tag>
 struct LinearFactor : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "LinearFactor(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 /// A prefix tag representing a linear factor that acts on `Tag`. To determine
@@ -271,9 +244,6 @@ struct LinearFactorForConjugate : db::PrefixTag, db::SimpleTag {
   using type =
       Scalar<SpinWeighted<ComplexDataVector, 2 * Tag::type::type::spin>>;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "LinearFactorForConjugate(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 // Below are additional tags for values which are frequently used in CCE
@@ -388,9 +358,6 @@ template <typename Tag>
 struct TimeIntegral : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "TimeIntegral(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 /// A prefix tag representing the value at \f$\mathcal I^+\f$
@@ -398,9 +365,6 @@ template <typename Tag>
 struct ScriPlus : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "ScriPlus(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 /// A prefix tag representing an additional correction factor necessary to
@@ -409,9 +373,6 @@ template <typename Tag>
 struct ScriPlusFactor : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
   using tag = Tag;
-  static std::string name() noexcept {
-    return "ScriPlusFactor(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 template <typename ToInterpolate, typename ObservationTag>

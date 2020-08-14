@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <string>
 
-#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FaceNormal.hpp"
@@ -68,9 +67,8 @@ namespace ScalarWave {
 template <size_t Dim>
 struct ComputeDuDt {
   template <template <class> class StepPrefix>
-  using return_tags = tmpl::list<db::add_tag_prefix<StepPrefix, Pi>,
-                                 db::add_tag_prefix<StepPrefix, Phi<Dim>>,
-                                 db::add_tag_prefix<StepPrefix, Psi>>;
+  using return_tags =
+      tmpl::list<StepPrefix<Pi>, StepPrefix<Phi<Dim>>, StepPrefix<Psi>>;
 
   using argument_tags =
       tmpl::list<::Tags::deriv<Psi, tmpl::size_t<Dim>, Frame::Inertial>, Pi,

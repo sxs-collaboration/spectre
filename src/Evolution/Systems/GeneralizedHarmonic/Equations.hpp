@@ -8,7 +8,6 @@
 
 #include <cstddef>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FaceNormal.hpp"
@@ -102,10 +101,8 @@ struct ComputeDuDt {
  public:
   template <template <class> class StepPrefix>
   using return_tags = tmpl::list<
-      db::add_tag_prefix<StepPrefix, gr::Tags::SpacetimeMetric<
-                                         Dim, Frame::Inertial, DataVector>>,
-      db::add_tag_prefix<StepPrefix, Tags::Pi<Dim>>,
-      db::add_tag_prefix<StepPrefix, Tags::Phi<Dim>>>;
+      StepPrefix<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>,
+      StepPrefix<Tags::Pi<Dim>>, StepPrefix<Tags::Phi<Dim>>>;
 
   using argument_tags = tmpl::list<
       gr::Tags::SpacetimeMetric<Dim>, Tags::Pi<Dim>, Tags::Phi<Dim>,

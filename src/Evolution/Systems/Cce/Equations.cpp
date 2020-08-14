@@ -8,6 +8,7 @@
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 // IWYU pragma: no_forward_declare Cce::Tags::BondiBeta

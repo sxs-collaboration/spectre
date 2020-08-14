@@ -124,9 +124,6 @@ struct ResidualCompute : db::add_tag_prefix<Residual, FieldsTag>,
 
 template <typename Tag>
 struct Initial : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
-    return "Initial(" + db::tag_name<Tag>() + ")";
-  }
   using type = typename Tag::type;
   using tag = Tag;
 };
@@ -165,11 +162,9 @@ struct Magnitude : db::PrefixTag, db::SimpleTag {
  */
 template <typename MagnitudeSquareTag,
           Requires<tt::is_a_v<MagnitudeSquare, MagnitudeSquareTag>> = nullptr>
-struct MagnitudeCompute
-    : db::add_tag_prefix<Magnitude, db::remove_tag_prefix<MagnitudeSquareTag>>,
-      db::ComputeTag {
-  using base =
-      db::add_tag_prefix<Magnitude, db::remove_tag_prefix<MagnitudeSquareTag>>;
+struct MagnitudeCompute : Magnitude<typename MagnitudeSquareTag::tag>,
+                          db::ComputeTag {
+  using base = Magnitude<typename MagnitudeSquareTag::tag>;
   using return_type = double;
   static void function(const gsl::not_null<double*> magnitude,
                        const double magnitude_square) noexcept {
@@ -218,11 +213,8 @@ struct OrthogonalizationHistory : db::PrefixTag, db::SimpleTag {
  */
 template <typename Tag>
 struct KrylovSubspaceBasis : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept {
-    // No "Linear" prefix since a Krylov subspace always refers to a linear
-    // operator
-    return "KrylovSubspaceBasis(" + db::tag_name<Tag>() + ")";
-  }
+  // Use automatically generated name because a Krylov subspace always refers to
+  // a linear operator
   using type = std::vector<typename Tag::type>;
   using tag = Tag;
 };
@@ -254,11 +246,10 @@ template <typename FieldsTag, typename OptionsGroup>
 struct HasConvergedCompute : LinearSolver::Tags::HasConverged<OptionsGroup>,
                              db::ComputeTag {
  private:
-  using residual_magnitude_tag = db::add_tag_prefix<
-      LinearSolver::Tags::Magnitude,
+  using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
       db::add_tag_prefix<LinearSolver::Tags::Residual, FieldsTag>>;
   using initial_residual_magnitude_tag =
-      db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
+      LinearSolver::Tags::Initial<residual_magnitude_tag>;
 
  public:
   using base = LinearSolver::Tags::HasConverged<OptionsGroup>;

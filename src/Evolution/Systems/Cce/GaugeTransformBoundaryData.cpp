@@ -6,6 +6,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tags.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"

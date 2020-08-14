@@ -31,10 +31,10 @@ void test_variables_slice() noexcept {
   const size_t x_extents = sdist(gen);
   const size_t y_extents = sdist(gen);
   const size_t z_extents = sdist(gen);
-  Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>> vars{
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> vars{
       x_extents * y_extents * z_extents};
   const size_t tensor_size =
-      VariablesTestTags_detail::tensor<VectorType>::type::size();
+      TestHelpers::Tags::Vector<VectorType>::type::size();
   Index<3> extents(x_extents, y_extents, z_extents);
 
   // Test data_on_slice function by using a predictable data set where each
@@ -43,9 +43,11 @@ void test_variables_slice() noexcept {
     // clang-tidy: do not use pointer arithmetic
     vars.data()[s] = s;  // NOLINT
   }
-  Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>>
-      expected_vars_sliced_in_x(y_extents * z_extents, 0.),
-      expected_vars_sliced_in_y(x_extents * z_extents, 0.),
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
+      expected_vars_sliced_in_x(y_extents * z_extents, 0.);
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
+      expected_vars_sliced_in_y(x_extents * z_extents, 0.);
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
       expected_vars_sliced_in_z(x_extents * y_extents, 0.);
   const size_t x_offset = sdist(gen) % x_extents;
   const size_t y_offset = sdist(gen) % y_extents;
@@ -104,26 +106,26 @@ void test_variables_add_slice_to_data() noexcept {
   fill_with_random_values(make_not_null(&slice1_vals), make_not_null(&gen),
                           make_not_null(&dist));
 
-  using Tensor = typename VariablesTestTags_detail::tensor<VectorType>::type;
+  using Tensor = typename TestHelpers::Tags::Vector<VectorType>::type;
   const Index<2> extents{{{4, 2}}};
-  Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>> vars(
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> vars(
       extents.product());
-  get<VariablesTestTags_detail::tensor<VectorType>>(vars) =
+  get<TestHelpers::Tags::Vector<VectorType>>(vars) =
       Tensor{{{orig_vals[0], orig_vals[1], orig_vals[2]}}};
   {
     const auto slice_extents = extents.slice_away(0);
-    Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>> slice(
+    Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> slice(
         slice_extents.product(), 0.);
-    get<VariablesTestTags_detail::tensor<VectorType>>(slice) =
+    get<TestHelpers::Tags::Vector<VectorType>>(slice) =
         Tensor{{{slice1_vals[0], slice1_vals[1], slice1_vals[2]}}};
     add_slice_to_data(make_not_null(&vars), slice, extents, 0, 2);
   }
 
   {
     const auto slice_extents = extents.slice_away(1);
-    Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>> slice(
+    Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> slice(
         slice_extents.product(), 0.);
-    get<VariablesTestTags_detail::tensor<VectorType>>(slice) =
+    get<TestHelpers::Tags::Vector<VectorType>>(slice) =
         Tensor{{{slice0_vals[0], slice0_vals[1], slice0_vals[2]}}};
     add_slice_to_data(make_not_null(&vars), slice, extents, 1, 1);
   }
@@ -159,8 +161,8 @@ void test_variables_add_slice_to_data() noexcept {
          orig_vals[2].at(7) + slice0_vals[2].at(3)}}}};
   // clang-format on
 
-  CHECK_ITERABLE_APPROX(
-      expected, get<VariablesTestTags_detail::tensor<VectorType>>(vars));
+  CHECK_ITERABLE_APPROX(expected,
+                        get<TestHelpers::Tags::Vector<VectorType>>(vars));
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.SliceVariables",
@@ -186,10 +188,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.SliceVariables",
     "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  Variables<tmpl::list<VariablesTestTags_detail::tensor<DataVector>>> vars(10,
+  Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>> vars(10, 0.);
+  const Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>> slice(2,
                                                                            0.);
-  const Variables<tmpl::list<VariablesTestTags_detail::tensor<DataVector>>>
-      slice(2, 0.);
   add_slice_to_data(make_not_null(&vars), slice, Index<2>{{{4, 2}}}, 0, 0);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -204,10 +205,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.SliceVariables",
   // clang-format on
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  Variables<tmpl::list<VariablesTestTags_detail::tensor<DataVector>>> vars(8,
+  Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>> vars(8, 0.);
+  const Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>> slice(5,
                                                                            0.);
-  const Variables<tmpl::list<VariablesTestTags_detail::tensor<DataVector>>>
-      slice(5, 0.);
   add_slice_to_data(make_not_null(&vars), slice, Index<2>{{{4, 2}}}, 0, 0);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif

@@ -89,8 +89,7 @@ struct NormalDotFluxCompute : db::add_tag_prefix<NormalDotFlux, Tag>,
   static auto function(
       const typename flux_tag::type& flux,
       const tnsr::i<DataVector, VolumeDim, Fr>& normal) noexcept {
-    using tags_list = typename Tag::type::tags_list;
-    return normal_dot_flux<tags_list>(normal, flux);
+    return normal_dot_flux<typename Tag::tags_list>(normal, flux);
   }
   using argument_tags = tmpl::list<flux_tag, normal_tag>;
 };

@@ -66,13 +66,10 @@ template <typename FieldsTag, typename OptionsGroup>
 struct InitializeResidualMonitor {
  private:
   using fields_tag = FieldsTag;
-  using residual_square_tag = db::add_tag_prefix<
-      LinearSolver::Tags::MagnitudeSquare,
+  using residual_square_tag = LinearSolver::Tags::MagnitudeSquare<
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-  using initial_residual_magnitude_tag = db::add_tag_prefix<
-      LinearSolver::Tags::Initial,
-      db::add_tag_prefix<
-          LinearSolver::Tags::Magnitude,
+  using initial_residual_magnitude_tag =
+      LinearSolver::Tags::Initial<LinearSolver::Tags::Magnitude<
           db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>>;
 
  public:

@@ -21,7 +21,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
@@ -86,6 +85,7 @@ class Variables<tmpl::list<Tags...>> {
   static_assert(sizeof...(Tags) > 0,
                 "You must provide at least one tag to the Variables "
                 "for type inference");
+  static_assert(tmpl2::flat_all_v<tt::is_a_v<Tensor, typename Tags::type>...>);
 
   static_assert((tmpl2::flat_all<std::is_same_v<
                      typename Tags::type::type,
@@ -287,6 +287,10 @@ class Variables<tmpl::list<Tags...>> {
                 db::remove_all_prefixes<Tags>>...>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE Variables& operator+=(
       const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
+    static_assert(
+        (std::is_same_v<typename Tags::type, typename WrappedTags::type> and
+         ...),
+        "Tensor types do not match!");
     variable_data_ += rhs.variable_data_;
     return *this;
   }
@@ -303,6 +307,10 @@ class Variables<tmpl::list<Tags...>> {
                 db::remove_all_prefixes<Tags>>...>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE Variables& operator-=(
       const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
+    static_assert(
+        (std::is_same_v<typename Tags::type, typename WrappedTags::type> and
+         ...),
+        "Tensor types do not match!");
     variable_data_ -= rhs.variable_data_;
     return *this;
   }
@@ -330,6 +338,10 @@ class Variables<tmpl::list<Tags...>> {
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator+(
       const Variables<tmpl::list<WrappedTags...>>& lhs,
       const Variables& rhs) noexcept {
+    static_assert(
+        (std::is_same_v<typename Tags::type, typename WrappedTags::type> and
+         ...),
+        "Tensor types do not match!");
     return lhs.get_variable_data() + rhs.variable_data_;
   }
   template <typename VT, bool VF>
@@ -350,6 +362,10 @@ class Variables<tmpl::list<Tags...>> {
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator-(
       const Variables<tmpl::list<WrappedTags...>>& lhs,
       const Variables& rhs) noexcept {
+    static_assert(
+        (std::is_same_v<typename Tags::type, typename WrappedTags::type> and
+         ...),
+        "Tensor types do not match!");
     return lhs.get_variable_data() - rhs.variable_data_;
   }
   template <typename VT, bool VF>
@@ -598,6 +614,9 @@ template <typename... WrappedTags,
 Variables<tmpl::list<Tags...>>::Variables(
     const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept
     : size_(rhs.size_), number_of_grid_points_(rhs.number_of_grid_points()) {
+  static_assert(
+      (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
+      "Tensor types do not match!");
   if (size_ > 0) {
     // clang-tidy: cppcoreguidelines-no-malloc
     variable_data_impl_.reset(static_cast<value_type*>(
@@ -617,6 +636,9 @@ template <typename... WrappedTags,
                            db::remove_all_prefixes<Tags>>::value...>::value>>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
+  static_assert(
+      (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
+      "Tensor types do not match!");
   size_ = rhs.size_;
   if (number_of_grid_points_ != rhs.number_of_grid_points()) {
     number_of_grid_points_ = rhs.number_of_grid_points();
@@ -645,7 +667,11 @@ Variables<tmpl::list<Tags...>>::Variables(
       size_(rhs.size()),
       number_of_grid_points_(rhs.number_of_grid_points()),
       variable_data_(variable_data_impl_.get(), size_),
-      reference_variable_data_(std::move(rhs.reference_variable_data_)) {}
+      reference_variable_data_(std::move(rhs.reference_variable_data_)) {
+    static_assert(
+      (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
+      "Tensor types do not match!");
+}
 
 template <typename... Tags>
 template <typename... WrappedTags,
@@ -654,6 +680,9 @@ template <typename... WrappedTags,
                            db::remove_all_prefixes<Tags>>::value...>::value>>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     Variables<tmpl::list<WrappedTags...>>&& rhs) noexcept {
+  static_assert(
+      (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
+      "Tensor types do not match!");
   variable_data_impl_ = std::move(rhs.variable_data_impl_);
   size_ = rhs.size_;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
@@ -931,100 +960,3 @@ struct Subitems<
   }
 };
 }  // namespace db
-
-namespace Tags {
-template <size_t N, typename T>
-struct TempTensor : db::SimpleTag {
-  using type = T;
-  static std::string name() noexcept {
-    return std::string("TempTensor") + std::to_string(N);
-  }
-};
-
-// @{
-/// \ingroup PeoGroup
-/// Variables Tags for temporary tensors inside a function.
-template <size_t N, typename DataType = DataVector>
-using TempScalar = TempTensor<N, Scalar<DataType>>;
-
-// Rank 1
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using Tempa = TempTensor<N, tnsr::a<DataType, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using TempA = TempTensor<N, tnsr::A<DataType, SpatialDim, Fr>>;
-
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using Tempi = TempTensor<N, tnsr::i<DataType, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using TempI = TempTensor<N, tnsr::I<DataType, SpatialDim, Fr>>;
-
-// Rank 2
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using Tempab = TempTensor<N, tnsr::ab<DataType, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using TempaB = TempTensor<N, tnsr::aB<DataType, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using TempAb = TempTensor<N, tnsr::Ab<DataType, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using TempAB = TempTensor<N, tnsr::AB<DataType, SpatialDim, Fr>>;
-
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using Tempij = TempTensor<N, tnsr::ij<DataType, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using TempiJ = TempTensor<N, tnsr::iJ<DataType, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using TempIj = TempTensor<N, tnsr::Ij<DataType, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using TempIJ = TempTensor<N, tnsr::IJ<DataType, SpatialDim, Fr>>;
-
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using Tempia = TempTensor<N, tnsr::ia<DataType, SpatialDim, Fr>>;
-
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using Tempaa = TempTensor<N, tnsr::aa<DataType, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using TempAA = TempTensor<N, tnsr::AA<DataType, SpatialDim, Fr>>;
-
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using Tempii = TempTensor<N, tnsr::ii<DataType, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using TempII = TempTensor<N, tnsr::II<DataType, SpatialDim, Fr>>;
-
-// Rank 3
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using Tempijj = TempTensor<N, tnsr::ijj<DataType, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using Tempiaa = TempTensor<N, tnsr::iaa<DataType, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using TempIaa = TempTensor<N, tnsr::Iaa<DataType, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using TempiaB = TempTensor<N, tnsr::iaB<DataType, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using Tempabb = TempTensor<N, tnsr::abb<DataType, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-          typename DataType = DataVector>
-using TempabC = TempTensor<N, tnsr::abC<DataType, SpatialDim, Fr>>;
-// @}
-}  // namespace Tags

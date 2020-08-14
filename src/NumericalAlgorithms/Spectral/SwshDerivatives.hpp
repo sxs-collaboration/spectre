@@ -11,8 +11,8 @@
 #include "DataStructures/ComplexModalVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/TempBuffer.hpp"  // IWYU pragma: keep
-#include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
@@ -25,7 +25,6 @@
 
 // IWYU pragma: no_forward_declare ComplexDataVector
 // IWYU pragma: no_forward_declare SpinWeighted
-// IWYU pragma: no_forward_declare Variables
 
 namespace Spectral {
 namespace Swsh {

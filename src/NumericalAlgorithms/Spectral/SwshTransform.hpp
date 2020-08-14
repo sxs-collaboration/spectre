@@ -14,7 +14,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tags.hpp"
-#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
@@ -22,7 +22,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare Variables
 // IWYU pragma: no_forward_declare Coefficients
 // IWYU pragma: no_forward_declare SpinWeighted
 

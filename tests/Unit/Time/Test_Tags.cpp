@@ -6,15 +6,20 @@
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "Helpers/DataStructures/TestTags.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Tags.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace {
 struct DummyType {};
 struct DummyTag : db::SimpleTag {
   using type = DummyType;
 };
+using DummyVariablesTag =
+    Tags::Variables<tmpl::list<TestHelpers::Tags::Scalar<>>>;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Tags", "[Unit][Time]") {
@@ -28,7 +33,8 @@ SPECTRE_TEST_CASE("Unit.Time.Tags", "[Unit][Time]") {
   TestHelpers::db::test_simple_tag<Tags::TimeStep>("TimeStep");
   TestHelpers::db::test_simple_tag<Tags::SubstepTime>("SubstepTime");
   TestHelpers::db::test_simple_tag<Tags::Time>("Time");
-  TestHelpers::db::test_simple_tag<Tags::HistoryEvolvedVariables<DummyTag>>(
+  TestHelpers::db::test_simple_tag<
+      Tags::HistoryEvolvedVariables<DummyVariablesTag>>(
       "HistoryEvolvedVariables");
   TestHelpers::db::test_simple_tag<
       Tags::BoundaryHistory<DummyType, DummyType, DummyType>>(

@@ -12,6 +12,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tags.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
@@ -25,8 +26,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Cce {
-namespace InitializeJ {
+namespace Cce::InitializeJ {
 namespace detail {
 // perform an iterative solve for the set of angular coordinates necessary to
 // set the gauge transformed version of `surface_j` to zero. This reliably
@@ -370,5 +370,4 @@ void GaugeAdjustInitialJ::apply(
         gauge_d, gauge_omega, interpolator);
   }
 }
-}  // namespace InitializeJ
-}  // namespace Cce
+}  // namespace Cce::InitializeJ

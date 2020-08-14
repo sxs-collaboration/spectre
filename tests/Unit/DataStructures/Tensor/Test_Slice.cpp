@@ -32,10 +32,10 @@ void test_variables_slice() noexcept {
   const size_t x_extents = sdist(gen);
   const size_t y_extents = sdist(gen);
   const size_t z_extents = sdist(gen);
-  Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>> vars{
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> vars{
       x_extents * y_extents * z_extents};
   const size_t tensor_size =
-      VariablesTestTags_detail::tensor<VectorType>::type::size();
+      TestHelpers::Tags::Vector<VectorType>::type::size();
   Index<3> extents(x_extents, y_extents, z_extents);
 
   // Test data_on_slice function by using a predictable data set where each
@@ -44,9 +44,11 @@ void test_variables_slice() noexcept {
     // clang-tidy: do not use pointer arithmetic
     vars.data()[s] = s;  // NOLINT
   }
-  Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>>
-      expected_vars_sliced_in_x(y_extents * z_extents, 0.),
-      expected_vars_sliced_in_y(x_extents * z_extents, 0.),
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
+      expected_vars_sliced_in_x(y_extents * z_extents, 0.);
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
+      expected_vars_sliced_in_y(x_extents * z_extents, 0.);
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
       expected_vars_sliced_in_z(x_extents * y_extents, 0.);
   const size_t x_offset = sdist(gen) % x_extents;
   const size_t y_offset = sdist(gen) % y_extents;
@@ -78,72 +80,61 @@ void test_variables_slice() noexcept {
   }
 
   INFO("Test simple slice");
-  CHECK(data_on_slice(get<VariablesTestTags_detail::tensor<VectorType>>(vars),
-                      extents, 0, x_offset) ==
-        get<VariablesTestTags_detail::tensor<VectorType>>(
-            expected_vars_sliced_in_x));
-  CHECK(data_on_slice(get<VariablesTestTags_detail::tensor<VectorType>>(vars),
-                      extents, 1, y_offset) ==
-        get<VariablesTestTags_detail::tensor<VectorType>>(
-            expected_vars_sliced_in_y));
-  CHECK(data_on_slice(get<VariablesTestTags_detail::tensor<VectorType>>(vars),
-                      extents, 2, z_offset) ==
-        get<VariablesTestTags_detail::tensor<VectorType>>(
-            expected_vars_sliced_in_z));
+  CHECK(data_on_slice(get<TestHelpers::Tags::Vector<VectorType>>(vars), extents,
+                      0, x_offset) ==
+        get<TestHelpers::Tags::Vector<VectorType>>(expected_vars_sliced_in_x));
+  CHECK(data_on_slice(get<TestHelpers::Tags::Vector<VectorType>>(vars), extents,
+                      1, y_offset) ==
+        get<TestHelpers::Tags::Vector<VectorType>>(expected_vars_sliced_in_y));
+  CHECK(data_on_slice(get<TestHelpers::Tags::Vector<VectorType>>(vars), extents,
+                      2, z_offset) ==
+        get<TestHelpers::Tags::Vector<VectorType>>(expected_vars_sliced_in_z));
 
   INFO("Test slice of a boost::optional<Tensor>");
   REQUIRE(data_on_slice(
-      boost::make_optional(
-          get<VariablesTestTags_detail::tensor<VectorType>>(vars)),
+      boost::make_optional(get<TestHelpers::Tags::Vector<VectorType>>(vars)),
       extents, 0, x_offset));
-  CHECK(data_on_slice(
-            boost::make_optional(
-                get<VariablesTestTags_detail::tensor<VectorType>>(vars)),
-            extents, 0, x_offset)
-            .get() == get<VariablesTestTags_detail::tensor<VectorType>>(
-                          expected_vars_sliced_in_x));
+  CHECK(data_on_slice(boost::make_optional(
+                          get<TestHelpers::Tags::Vector<VectorType>>(vars)),
+                      extents, 0, x_offset)
+            .get() ==
+        get<TestHelpers::Tags::Vector<VectorType>>(expected_vars_sliced_in_x));
   REQUIRE(data_on_slice(
-      boost::make_optional(
-          get<VariablesTestTags_detail::tensor<VectorType>>(vars)),
+      boost::make_optional(get<TestHelpers::Tags::Vector<VectorType>>(vars)),
       extents, 1, y_offset));
-  CHECK(data_on_slice(
-            boost::make_optional(
-                get<VariablesTestTags_detail::tensor<VectorType>>(vars)),
-            extents, 1, y_offset)
-            .get() == get<VariablesTestTags_detail::tensor<VectorType>>(
-                          expected_vars_sliced_in_y));
+  CHECK(data_on_slice(boost::make_optional(
+                          get<TestHelpers::Tags::Vector<VectorType>>(vars)),
+                      extents, 1, y_offset)
+            .get() ==
+        get<TestHelpers::Tags::Vector<VectorType>>(expected_vars_sliced_in_y));
   REQUIRE(data_on_slice(
-      boost::make_optional(
-          get<VariablesTestTags_detail::tensor<VectorType>>(vars)),
+      boost::make_optional(get<TestHelpers::Tags::Vector<VectorType>>(vars)),
       extents, 2, z_offset));
-  CHECK(data_on_slice(
-            boost::make_optional(
-                get<VariablesTestTags_detail::tensor<VectorType>>(vars)),
-            extents, 2, z_offset)
-            .get() == get<VariablesTestTags_detail::tensor<VectorType>>(
-                          expected_vars_sliced_in_z));
+  CHECK(data_on_slice(boost::make_optional(
+                          get<TestHelpers::Tags::Vector<VectorType>>(vars)),
+                      extents, 2, z_offset)
+            .get() ==
+        get<TestHelpers::Tags::Vector<VectorType>>(expected_vars_sliced_in_z));
 
   CHECK_FALSE(
       data_on_slice(boost::optional<tnsr::I<VectorType, 3, Frame::Inertial>>{},
                     extents, 0, x_offset));
 
   // Test not_null<boost::option<Tensor>>
-  using TensorType =
-      db::item_type<VariablesTestTags_detail::tensor<VectorType>>;
+  using TensorType = db::item_type<TestHelpers::Tags::Vector<VectorType>>;
   auto optional_tensor = boost::make_optional(TensorType{});
   CHECK(optional_tensor);
   data_on_slice(make_not_null(&optional_tensor), boost::optional<TensorType>{},
                 extents, 0, x_offset);
   CHECK_FALSE(optional_tensor);
 
-  data_on_slice(make_not_null(&optional_tensor),
-                boost::make_optional(
-                    get<VariablesTestTags_detail::tensor<VectorType>>(vars)),
-                extents, 0, x_offset);
+  data_on_slice(
+      make_not_null(&optional_tensor),
+      boost::make_optional(get<TestHelpers::Tags::Vector<VectorType>>(vars)),
+      extents, 0, x_offset);
   REQUIRE(optional_tensor);
   CHECK(optional_tensor.get() ==
-        get<VariablesTestTags_detail::tensor<VectorType>>(
-            expected_vars_sliced_in_x));
+        get<TestHelpers::Tags::Vector<VectorType>>(expected_vars_sliced_in_x));
 
   optional_tensor = boost::none;
   CHECK_FALSE(optional_tensor);

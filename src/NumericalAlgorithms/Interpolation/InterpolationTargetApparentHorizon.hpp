@@ -10,6 +10,7 @@
 #include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"

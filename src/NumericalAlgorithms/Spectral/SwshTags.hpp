@@ -189,9 +189,6 @@ struct SwshTransform : db::PrefixTag, db::SimpleTag {
   // derivative prefix tag fail earlier during compilation
   using transform_of = Tag;
   const static int spin = type::type::spin;
-  static std::string name() noexcept {
-    return "SwshTransform(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 /// \ingroup SwshGroup
@@ -230,9 +227,6 @@ template <typename Tag>
 struct SwshInterpolator : db::SimpleTag, db::PrefixTag {
   using tag = Tag;
   using type = ::Spectral::Swsh::SwshInterpolator;
-  static std::string name() noexcept {
-    return "SwshInterpolator(" + db::tag_name<Tag>() + ")";
-  }
 };
 
 }  // namespace Tags

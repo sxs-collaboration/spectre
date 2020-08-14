@@ -5,7 +5,6 @@
 
 #include <vector>
 
-#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
@@ -165,10 +164,8 @@ struct EvolutionMetavars {
                           tmpl::list<>>,
       dg::Events::Registrars::ObserveFields<
           3, Tags::Time,
-          tmpl::append<
-              db::get_variables_tags_list<typename system::variables_tag>,
-              db::get_variables_tags_list<
-                  typename system::primitive_variables_tag>>,
+          tmpl::append<typename system::variables_tag::tags_list,
+                       typename system::primitive_variables_tag::tags_list>,
           tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
                               analytic_variables_tags, tmpl::list<>>>,
       Events::Registrars::ChangeSlabSize<slab_choosers>>>;

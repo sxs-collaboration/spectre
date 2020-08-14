@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <vector>
 
-#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
@@ -140,8 +139,7 @@ struct EvolutionMetavars {
                    step_choosers_for_slab_only>>;
 
   // public for use by the Charm++ registration code
-  using observe_fields =
-      db::get_variables_tags_list<typename system::variables_tag>;
+  using observe_fields = typename system::variables_tag::tags_list;
   using analytic_solution_fields = observe_fields;
   using events =
       tmpl::list<dg::Events::Registrars::ObserveFields<

@@ -4,6 +4,7 @@
 #include "Evolution/Systems/RelativisticEuler/Valencia/Characteristics.hpp"
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/EagerMath/OrthonormalOneform.hpp"

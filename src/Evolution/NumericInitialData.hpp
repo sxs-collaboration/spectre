@@ -14,8 +14,7 @@ namespace evolution {
  */
 template <typename System>
 struct NumericInitialData : tt::ConformsTo<protocols::NumericInitialData> {
-  using import_fields =
-      db::get_variables_tags_list<typename System::variables_tag>;
+  using import_fields = typename System::variables_tag::tags_list;
 };
 
 }  // namespace evolution

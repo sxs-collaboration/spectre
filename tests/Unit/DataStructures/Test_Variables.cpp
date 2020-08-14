@@ -17,6 +17,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/ModalVector.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -40,9 +41,9 @@
 // IWYU pragma: no_forward_declare Variables
 
 static_assert(
-    std::is_nothrow_move_constructible<Variables<
-        tmpl::list<VariablesTestTags_detail::scalar<DataVector>,
-                   VariablesTestTags_detail::tensor<DataVector>>>>::value,
+    std::is_nothrow_move_constructible<
+        Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,
+                             TestHelpers::Tags::Vector<DataVector>>>>::value,
     "Missing move semantics in Variables.");
 
 namespace {
@@ -89,9 +90,9 @@ void test_variables_construction_and_access() noexcept {
       make_not_null(&gen), make_not_null(&dist));
 
   using VariablesType =
-      Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
-                           VariablesTestTags_detail::scalar<VectorType>,
-                           VariablesTestTags_detail::scalar2<VectorType>>>;
+      Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                           TestHelpers::Tags::Scalar<VectorType>,
+                           TestHelpers::Tags::Scalar2<VectorType>>>;
 
   VariablesType filled_variables{number_of_grid_points, initial_fill_value};
 
@@ -111,7 +112,7 @@ void test_variables_construction_and_access() noexcept {
   // Test that assigning to a tensor pointing into a Variables correctly sets
   // the Variables
   auto& tensor_in_filled_variables =
-      get<VariablesTestTags_detail::tensor<VectorType>>(filled_variables);
+      get<TestHelpers::Tags::Vector<VectorType>>(filled_variables);
   CHECK(VectorType{number_of_grid_points, initial_fill_value} ==
         get<0>(tensor_in_filled_variables));
   CHECK(VectorType{number_of_grid_points, initial_fill_value} ==
@@ -123,7 +124,7 @@ void test_variables_construction_and_access() noexcept {
       make_with_random_values<value_type>(make_not_null(&gen),
                                           make_not_null(&dist));
 
-  tnsr::I<VectorType, 3, Frame::Grid> tensor_for_reference_assignment{
+  tnsr::I<VectorType, 3> tensor_for_reference_assignment{
       number_of_grid_points, value_for_reference_assignment};
   tensor_in_filled_variables = tensor_for_reference_assignment;
 
@@ -142,7 +143,7 @@ void test_variables_construction_and_access() noexcept {
   const auto value_for_tensor_constructor = make_with_random_values<value_type>(
       make_not_null(&gen), make_not_null(&dist));
 
-  tensor_in_filled_variables = tnsr::I<VectorType, 3, Frame::Grid>{
+  tensor_in_filled_variables = tnsr::I<VectorType, 3>{
       number_of_grid_points, value_for_tensor_constructor};
 
   // clang-tidy: do not use pointer arithmetic
@@ -159,7 +160,7 @@ void test_variables_construction_and_access() noexcept {
 
   // Test const vector in variables points to right values
   const auto& const_tensor_in_filled_variables =
-      get<VariablesTestTags_detail::tensor<VectorType>>(filled_variables);
+      get<TestHelpers::Tags::Vector<VectorType>>(filled_variables);
   CHECK(get<0>(const_tensor_in_filled_variables) ==
         VectorType{number_of_grid_points, value_for_tensor_constructor});
   CHECK(get<1>(const_tensor_in_filled_variables) ==
@@ -192,7 +193,7 @@ void test_variables_construction_and_access() noexcept {
 
   // Test stream operator
   const std::string expected_output =
-      "tensor:\n"
+      "Vector:\n"
       "T(0)=(" +
       expected_output_tensor +
       ")\n"
@@ -202,11 +203,11 @@ void test_variables_construction_and_access() noexcept {
       "T(2)=(" +
       expected_output_tensor +
       ")\n\n"
-      "scalar:\n"
+      "Scalar:\n"
       "T()=(" +
       expected_output_initial +
       ")\n\n"
-      "scalar2:\n"
+      "Scalar2:\n"
       "T()=(" +
       expected_output_initial + ")";
   CHECK(get_output(filled_variables) == expected_output);
@@ -222,11 +223,11 @@ void test_variables_construction_and_access() noexcept {
 #endif  // defined(__clang__) && __clang_major__ > 6
   CHECK(filled_variables == another_filled_variables);
 
-  TestHelpers::db::test_simple_tag<Tags::Variables<
-      tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
-                 VariablesTestTags_detail::scalar<VectorType>,
-                 VariablesTestTags_detail::scalar2<VectorType>>>>(
-      "Variables(tensor,scalar,scalar2)");
+  TestHelpers::db::test_simple_tag<
+      Tags::Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                                 TestHelpers::Tags::Scalar<VectorType>,
+                                 TestHelpers::Tags::Scalar2<VectorType>>>>(
+      "Variables(Vector,Scalar,Scalar2)");
 }
 
 template <typename VectorType>
@@ -244,19 +245,18 @@ void test_variables_move() noexcept {
                                                          make_not_null(&dist));
 
   // Test moving with assignment operator
-  Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>> move_to{
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> move_to{
       number_of_grid_points1, initial_fill_values[0]};
-  Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>> move_from{
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> move_from{
       number_of_grid_points2, initial_fill_values[1]};
 
-  Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>>
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
       initializer_move_to = std::move(move_to);
 
   move_to = std::move(move_from);
-  CHECK(move_to ==
-        Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>>{
-            number_of_grid_points2, initial_fill_values[1]});
-  CHECK(&get<VariablesTestTags_detail::tensor<VectorType>>(move_to)[0][0] ==
+  CHECK(move_to == Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{
+                       number_of_grid_points2, initial_fill_values[1]});
+  CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(move_to)[0][0] ==
         move_to.data());
 
   // Intentionally testing self-move
@@ -270,9 +270,9 @@ void test_variables_move() noexcept {
 #endif  // defined(__clang__)
   // clang-tidy: false positive 'move_to' used after it was moved
   CHECK(move_to ==  // NOLINT
-        Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>>{
+        Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{
             number_of_grid_points2, initial_fill_values[1]});
-  CHECK(&get<VariablesTestTags_detail::tensor<VectorType>>(move_to)[0][0] ==
+  CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(move_to)[0][0] ==
         move_to.data());
 }
 
@@ -280,9 +280,9 @@ template <typename VectorType>
 void test_variables_math() noexcept {
   using value_type = typename VectorType::value_type;
   using TestVariablesType =
-      Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
-                           VariablesTestTags_detail::scalar<VectorType>,
-                           VariablesTestTags_detail::scalar2<VectorType>>>;
+      Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                           TestHelpers::Tags::Scalar<VectorType>,
+                           TestHelpers::Tags::Scalar2<VectorType>>>;
 
   MAKE_GENERATOR(gen);
   // keep distribution somewhat near 1.0 to avoid accumulation of errors in
@@ -360,8 +360,8 @@ void test_variables_math() noexcept {
   test_assignment2 = test_assignment * 1.0;
   CHECK(test_assignment2 == test_assignment);
 
-  const auto check_components = [](const auto& variables,
-                                   const VectorType& tensor) noexcept {
+  const auto check_components =
+      [](const auto& variables, const VectorType& tensor) noexcept {
     tmpl::for_each<typename std::decay_t<decltype(variables)>::tags_list>(
         [&variables, &tensor ](auto tag) noexcept {
           using Tag = tmpl::type_from<decltype(tag)>;
@@ -392,12 +392,12 @@ void test_variables_math() noexcept {
 
 template <typename VectorType>
 void test_variables_prefix_semantics() noexcept {
-  using TagList = tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
-                             VariablesTestTags_detail::scalar<VectorType>,
-                             VariablesTestTags_detail::scalar2<VectorType>>;
+  using TagList = tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                             TestHelpers::Tags::Scalar<VectorType>,
+                             TestHelpers::Tags::Scalar2<VectorType>>;
   using VariablesType = Variables<TagList>;
   using PrefixVariablesType =
-      Variables<db::wrap_tags_in<VariablesTestTags_detail::Prefix0, TagList>>;
+      Variables<db::wrap_tags_in<TestHelpers::Tags::Prefix0, TagList>>;
   using value_type = typename VectorType::value_type;
 
   MAKE_GENERATOR(gen);
@@ -460,17 +460,17 @@ void test_variables_prefix_semantics() noexcept {
 
 template <typename VectorType>
 void test_variables_prefix_math() noexcept {
-  using TagList = tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
-                             VariablesTestTags_detail::scalar<VectorType>,
-                             VariablesTestTags_detail::scalar2<VectorType>>;
+  using TagList = tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                             TestHelpers::Tags::Scalar<VectorType>,
+                             TestHelpers::Tags::Scalar2<VectorType>>;
   using Prefix0VariablesType =
-      Variables<db::wrap_tags_in<VariablesTestTags_detail::Prefix0, TagList>>;
+      Variables<db::wrap_tags_in<TestHelpers::Tags::Prefix0, TagList>>;
   using Prefix1VariablesType =
-      Variables<db::wrap_tags_in<VariablesTestTags_detail::Prefix1, TagList>>;
+      Variables<db::wrap_tags_in<TestHelpers::Tags::Prefix1, TagList>>;
   using Prefix2VariablesType =
-      Variables<db::wrap_tags_in<VariablesTestTags_detail::Prefix2, TagList>>;
+      Variables<db::wrap_tags_in<TestHelpers::Tags::Prefix2, TagList>>;
   using Prefix3VariablesType =
-      Variables<db::wrap_tags_in<VariablesTestTags_detail::Prefix3, TagList>>;
+      Variables<db::wrap_tags_in<TestHelpers::Tags::Prefix3, TagList>>;
   using value_type = typename VectorType::value_type;
 
   MAKE_GENERATOR(gen);
@@ -602,11 +602,11 @@ void test_variables_serialization() noexcept {
                                                          make_not_null(&dist));
 
   // Test serialization of a Variables and a tuple of Variables
-  Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>>
-      test_variables(number_of_grid_points, values_in_variables[0]);
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> test_variables(
+      number_of_grid_points, values_in_variables[0]);
   test_serialization(test_variables);
   auto tuple_of_test_variables = std::make_tuple(
-      Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>>{
+      Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{
           number_of_grid_points, values_in_variables[1]});
   test_serialization(tuple_of_test_variables);
 }
@@ -627,104 +627,104 @@ void test_variables_assign_subset() noexcept {
   // Test assigning a single tag to a Variables with two tags, either from a
   // Variables or a TaggedTuple
   const auto test_assign_to_vars_with_two_tags =
-      [&number_of_grid_points, &values_in_variables ](
-          const auto& vars_subset0, const auto& vars_subset1,
-          const value_type& vars_subset0_val,
-          const value_type& vars_subset1_val) noexcept {
-    Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
-                         VariablesTestTags_detail::scalar<VectorType>>>
+      [&number_of_grid_points, &
+       values_in_variables ](const auto& vars_subset0, const auto& vars_subset1,
+                             const value_type& vars_subset0_val,
+                             const value_type& vars_subset1_val) noexcept {
+    Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                         TestHelpers::Tags::Scalar<VectorType>>>
         vars_set{number_of_grid_points, values_in_variables[0]};
-    CHECK(get<VariablesTestTags_detail::tensor<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::tensor<VectorType>>(
+    CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Vector<VectorType>>(
               number_of_grid_points, values_in_variables[0]));
-    CHECK(get<VariablesTestTags_detail::scalar<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::scalar<VectorType>>(
+    CHECK(get<TestHelpers::Tags::Scalar<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Scalar<VectorType>>(
               number_of_grid_points, values_in_variables[0]));
     vars_set.assign_subset(vars_subset0);
-    CHECK(get<VariablesTestTags_detail::tensor<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::tensor<VectorType>>(
+    CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Vector<VectorType>>(
               number_of_grid_points, vars_subset0_val));
-    CHECK(get<VariablesTestTags_detail::scalar<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::scalar<VectorType>>(
+    CHECK(get<TestHelpers::Tags::Scalar<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Scalar<VectorType>>(
               number_of_grid_points, values_in_variables[0]));
     vars_set.assign_subset(vars_subset1);
-    CHECK(get<VariablesTestTags_detail::tensor<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::tensor<VectorType>>(
+    CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Vector<VectorType>>(
               number_of_grid_points, vars_subset0_val));
-    CHECK(get<VariablesTestTags_detail::scalar<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::scalar<VectorType>>(
+    CHECK(get<TestHelpers::Tags::Scalar<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Scalar<VectorType>>(
               number_of_grid_points, vars_subset1_val));
   };
 
   test_assign_to_vars_with_two_tags(
-      Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>>(
+      Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>(
           number_of_grid_points, values_in_variables[1]),
-      Variables<tmpl::list<VariablesTestTags_detail::scalar<VectorType>>>(
+      Variables<tmpl::list<TestHelpers::Tags::Scalar<VectorType>>>(
           number_of_grid_points, values_in_variables[2]),
       values_in_variables[1], values_in_variables[2]);
   test_assign_to_vars_with_two_tags(
-      tuples::TaggedTuple<VariablesTestTags_detail::tensor<VectorType>>(
-          typename VariablesTestTags_detail::tensor<VectorType>::type{
+      tuples::TaggedTuple<TestHelpers::Tags::Vector<VectorType>>(
+          typename TestHelpers::Tags::Vector<VectorType>::type{
               number_of_grid_points, values_in_variables[1]}),
-      tuples::TaggedTuple<VariablesTestTags_detail::scalar<VectorType>>(
-          typename VariablesTestTags_detail::scalar<VectorType>::type{
+      tuples::TaggedTuple<TestHelpers::Tags::Scalar<VectorType>>(
+          typename TestHelpers::Tags::Scalar<VectorType>::type{
               number_of_grid_points, values_in_variables[2]}),
       values_in_variables[1], values_in_variables[2]);
 
   // Test assigning a single tag to a Variables with three tags, either from a
   // Variables or a TaggedTuple
   const auto test_assign_to_vars_with_three_tags =
-      [&number_of_grid_points, &values_in_variables ](
-          const auto& vars_subset0, const auto& vars_subset1,
-          const value_type& vars_subset0_val,
-          const value_type& vars_subset1_val) noexcept {
-    Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
-                         VariablesTestTags_detail::scalar<VectorType>,
-                         VariablesTestTags_detail::scalar2<VectorType>>>
+      [&number_of_grid_points, &
+       values_in_variables ](const auto& vars_subset0, const auto& vars_subset1,
+                             const value_type& vars_subset0_val,
+                             const value_type& vars_subset1_val) noexcept {
+    Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                         TestHelpers::Tags::Scalar<VectorType>,
+                         TestHelpers::Tags::Scalar2<VectorType>>>
         vars_set(number_of_grid_points, values_in_variables[0]);
-    CHECK(get<VariablesTestTags_detail::tensor<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::tensor<VectorType>>(
+    CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Vector<VectorType>>(
               number_of_grid_points, values_in_variables[0]));
-    CHECK(get<VariablesTestTags_detail::scalar<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::scalar<VectorType>>(
+    CHECK(get<TestHelpers::Tags::Scalar<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Scalar<VectorType>>(
               number_of_grid_points, values_in_variables[0]));
-    CHECK(get<VariablesTestTags_detail::scalar2<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::scalar2<VectorType>>(
+    CHECK(get<TestHelpers::Tags::Scalar2<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Scalar2<VectorType>>(
               number_of_grid_points, values_in_variables[0]));
     vars_set.assign_subset(vars_subset0);
-    CHECK(get<VariablesTestTags_detail::tensor<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::tensor<VectorType>>(
+    CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Vector<VectorType>>(
               number_of_grid_points, vars_subset0_val));
-    CHECK(get<VariablesTestTags_detail::scalar<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::scalar<VectorType>>(
+    CHECK(get<TestHelpers::Tags::Scalar<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Scalar<VectorType>>(
               number_of_grid_points, values_in_variables[0]));
-    CHECK(get<VariablesTestTags_detail::scalar2<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::scalar2<VectorType>>(
+    CHECK(get<TestHelpers::Tags::Scalar2<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Scalar2<VectorType>>(
               number_of_grid_points, values_in_variables[0]));
     vars_set.assign_subset(vars_subset1);
-    CHECK(get<VariablesTestTags_detail::tensor<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::tensor<VectorType>>(
+    CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Vector<VectorType>>(
               number_of_grid_points, vars_subset0_val));
-    CHECK(get<VariablesTestTags_detail::scalar<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::scalar<VectorType>>(
+    CHECK(get<TestHelpers::Tags::Scalar<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Scalar<VectorType>>(
               number_of_grid_points, vars_subset1_val));
-    CHECK(get<VariablesTestTags_detail::scalar2<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::scalar2<VectorType>>(
+    CHECK(get<TestHelpers::Tags::Scalar2<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Scalar2<VectorType>>(
               number_of_grid_points, values_in_variables[0]));
   };
 
   test_assign_to_vars_with_three_tags(
-      Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>>(
+      Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>(
           number_of_grid_points, values_in_variables[1]),
-      Variables<tmpl::list<VariablesTestTags_detail::scalar<VectorType>>>(
+      Variables<tmpl::list<TestHelpers::Tags::Scalar<VectorType>>>(
           number_of_grid_points, values_in_variables[2]),
       values_in_variables[1], values_in_variables[2]);
   test_assign_to_vars_with_three_tags(
-      tuples::TaggedTuple<VariablesTestTags_detail::tensor<VectorType>>(
-          typename VariablesTestTags_detail::tensor<VectorType>::type{
+      tuples::TaggedTuple<TestHelpers::Tags::Vector<VectorType>>(
+          typename TestHelpers::Tags::Vector<VectorType>::type{
               number_of_grid_points, values_in_variables[1]}),
-      tuples::TaggedTuple<VariablesTestTags_detail::scalar<VectorType>>(
-          typename VariablesTestTags_detail::scalar<VectorType>::type{
+      tuples::TaggedTuple<TestHelpers::Tags::Scalar<VectorType>>(
+          typename TestHelpers::Tags::Scalar<VectorType>::type{
               number_of_grid_points, values_in_variables[2]}),
       values_in_variables[1], values_in_variables[2]);
 
@@ -733,24 +733,24 @@ void test_variables_assign_subset() noexcept {
   const auto test_assign_to_vars_with_one_tag = [
     &number_of_grid_points, &values_in_variables
   ](const auto& vars_subset0, const value_type& vars_subset0_val) noexcept {
-    Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>>
-        vars_set(number_of_grid_points, values_in_variables[0]);
-    CHECK(get<VariablesTestTags_detail::tensor<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::tensor<VectorType>>(
+    Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> vars_set(
+        number_of_grid_points, values_in_variables[0]);
+    CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Vector<VectorType>>(
               number_of_grid_points, values_in_variables[0]));
     vars_set.assign_subset(vars_subset0);
-    CHECK(get<VariablesTestTags_detail::tensor<VectorType>>(vars_set) ==
-          db::item_type<VariablesTestTags_detail::tensor<VectorType>>(
+    CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
+          db::item_type<TestHelpers::Tags::Vector<VectorType>>(
               number_of_grid_points, vars_subset0_val));
   };
 
   test_assign_to_vars_with_one_tag(
-      Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>>(
+      Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>(
           number_of_grid_points, values_in_variables[1]),
       values_in_variables[1]);
   test_assign_to_vars_with_one_tag(
-      tuples::TaggedTuple<VariablesTestTags_detail::tensor<VectorType>>(
-          typename VariablesTestTags_detail::tensor<VectorType>::type{
+      tuples::TaggedTuple<TestHelpers::Tags::Vector<VectorType>>(
+          typename TestHelpers::Tags::Vector<VectorType>::type{
               number_of_grid_points, values_in_variables[1]}),
       values_in_variables[1]);
 }
@@ -766,31 +766,30 @@ void test_variables_extract_subset() noexcept {
   const size_t number_of_grid_points = sdist(gen);
 
   const auto vars_subset0 = make_with_random_values<
-      Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>>>(
+      Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>>(
       make_not_null(&gen), make_not_null(&dist),
       VectorType{number_of_grid_points});
   const auto vars_subset1 = make_with_random_values<
-      Variables<tmpl::list<VariablesTestTags_detail::scalar<VectorType>>>>(
+      Variables<tmpl::list<TestHelpers::Tags::Scalar<VectorType>>>>(
       make_not_null(&gen), make_not_null(&dist),
       VectorType{number_of_grid_points});
 
-  Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
-                       VariablesTestTags_detail::scalar<VectorType>>>
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                       TestHelpers::Tags::Scalar<VectorType>>>
       vars(number_of_grid_points);
-  get<VariablesTestTags_detail::tensor<VectorType>>(vars) =
-      get<VariablesTestTags_detail::tensor<VectorType>>(vars_subset0);
-  get<VariablesTestTags_detail::scalar<VectorType>>(vars) =
-      get<VariablesTestTags_detail::scalar<VectorType>>(vars_subset1);
+  get<TestHelpers::Tags::Vector<VectorType>>(vars) =
+      get<TestHelpers::Tags::Vector<VectorType>>(vars_subset0);
+  get<TestHelpers::Tags::Scalar<VectorType>>(vars) =
+      get<TestHelpers::Tags::Scalar<VectorType>>(vars_subset1);
   CHECK(vars.template extract_subset<
-            tmpl::list<VariablesTestTags_detail::tensor<VectorType>>>() ==
+            tmpl::list<TestHelpers::Tags::Vector<VectorType>>>() ==
         vars_subset0);
   CHECK(vars.template extract_subset<
-            tmpl::list<VariablesTestTags_detail::scalar<VectorType>>>() ==
+            tmpl::list<TestHelpers::Tags::Scalar<VectorType>>>() ==
         vars_subset1);
   CHECK(vars.template extract_subset<
-            tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
-                       VariablesTestTags_detail::scalar<VectorType>>>() ==
-        vars);
+            tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                       TestHelpers::Tags::Scalar<VectorType>>>() == vars);
 }
 
 template <typename VectorType>
@@ -802,22 +801,20 @@ void test_variables_from_tagged_tuple() noexcept {
   UniformCustomDistribution<size_t> sdist{5, 20};
 
   const size_t number_of_grid_points = sdist(gen);
-  tuples::TaggedTuple<VariablesTestTags_detail::tensor<VectorType>,
-                      VariablesTestTags_detail::scalar<VectorType>>
+  tuples::TaggedTuple<TestHelpers::Tags::Vector<VectorType>,
+                      TestHelpers::Tags::Scalar<VectorType>>
       source;
-  get<VariablesTestTags_detail::tensor<VectorType>>(source) =
-      make_with_random_values<
-          typename VariablesTestTags_detail::tensor<VectorType>::type>(
-          make_not_null(&gen), make_not_null(&dist),
-          VectorType{number_of_grid_points});
-  get<VariablesTestTags_detail::scalar<VectorType>>(source) =
-      make_with_random_values<
-          typename VariablesTestTags_detail::scalar<VectorType>::type>(
-          make_not_null(&gen), make_not_null(&dist),
-          VectorType{number_of_grid_points});
+  get<TestHelpers::Tags::Vector<VectorType>>(source) = make_with_random_values<
+      typename TestHelpers::Tags::Vector<VectorType>::type>(
+      make_not_null(&gen), make_not_null(&dist),
+      VectorType{number_of_grid_points});
+  get<TestHelpers::Tags::Scalar<VectorType>>(source) = make_with_random_values<
+      typename TestHelpers::Tags::Scalar<VectorType>::type>(
+      make_not_null(&gen), make_not_null(&dist),
+      VectorType{number_of_grid_points});
 
-  Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
-                       VariablesTestTags_detail::scalar<VectorType>>>
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                       TestHelpers::Tags::Scalar<VectorType>>>
       assigned(number_of_grid_points);
   assigned.assign_subset(source);
   const auto created = variables_from_tagged_tuple(source);
@@ -899,9 +896,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
 
   TestHelpers::db::test_simple_tag<Tags::TempScalar<1>>("TempTensor1");
 
-  SECTION("Test empty variables") {
-    test_empty_variables();
-  }
+  SECTION("Test empty variables") { test_empty_variables(); }
 }
 }  // namespace
 
@@ -910,18 +905,17 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
                                "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  Variables<tmpl::list<VariablesTestTags_detail::tensor<DataVector>,
-                       VariablesTestTags_detail::scalar<DataVector>,
-                       VariablesTestTags_detail::scalar2<DataVector>>>
+  Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>,
+                       TestHelpers::Tags::Scalar<DataVector>,
+                       TestHelpers::Tags::Scalar2<DataVector>>>
       vars(1, -3.0);
-  auto& tensor_in_vars =
-      get<VariablesTestTags_detail::tensor<DataVector>>(vars);
-  tensor_in_vars = tnsr::I<DataVector, 3, Frame::Grid>{10_st, -4.0};
+  auto& tensor_in_vars = get<TestHelpers::Tags::Vector<DataVector>>(vars);
+  tensor_in_vars = tnsr::I<DataVector, 3>{10_st, -4.0};
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
-    // clang-format off
+// clang-format off
 // [[OutputRegex, Must copy into same size]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.DataStructures.Variables.assign_to_default",
@@ -929,8 +923,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   // clang-format on
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  Variables<tmpl::list<VariablesTestTags_detail::scalar<DataVector>>> vars;
-  get<VariablesTestTags_detail::scalar<DataVector>>(vars) =
+  Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>>> vars;
+  get<TestHelpers::Tags::Scalar<DataVector>>(vars) =
       Scalar<DataVector>{{{{0.}}}};
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif

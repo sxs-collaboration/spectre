@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -26,7 +27,6 @@ struct Mean : db::SimpleTag, db::PrefixTag {
                 "The Mean tag should only be used on tags that hold "
                 "Tensors of DataVectors");
   using type = TensorMetafunctions::swap_type<double, typename Tag::type>;
-  static std::string name() noexcept { return "Mean(" + Tag::name() + ")"; }
 };
 
 /// Given the `NodalTag` holding a `Tensor<DataVector, ...>`, swap the
@@ -39,9 +39,6 @@ struct Modal : db::SimpleTag, db::PrefixTag {
                 "Tensors of DataVectors");
   using type =
       TensorMetafunctions::swap_type<ModalVector, typename NodalTag::type>;
-  static std::string name() noexcept {
-    return "Modal(" + NodalTag::name() + ")";
-  }
 };
 
 /// Given a Tag with a `type` of `Tensor<VectorType, ...>`, acts as a new
@@ -66,7 +63,7 @@ struct SpinWeighted : db::PrefixTag, db::SimpleTag {
       typename Tag::type>;
   using tag = Tag;
   static std::string name() noexcept {
-    return "SpinWeighted(" + Tag::name() + ", " +
+    return "SpinWeighted(" + db::tag_name<Tag>() + ", " +
            std::to_string(SpinConstant::value) + ")";
   }
 };
@@ -87,7 +84,8 @@ struct Multiplies : db::PrefixTag, db::SimpleTag {
   using type = detail::product_t<db::item_type<LhsTag>, db::item_type<RhsTag>>;
   using tag = LhsTag;
   static std::string name() noexcept {
-    return "Multiplies(" + LhsTag::name() + ", " + RhsTag::name() + ")";
+    return "Multiplies(" + db::tag_name<LhsTag>() + ", " +
+           db::tag_name<RhsTag>() + ")";
   }
 };
 

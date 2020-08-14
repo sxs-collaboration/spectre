@@ -10,6 +10,7 @@
 #include <pup.h>  // IWYU pragma: keep
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -54,8 +55,7 @@ class FunctionOfLorentzFactor {
 }  // namespace
 
 /// \cond
-namespace grmhd {
-namespace ValenciaDivClean {
+namespace grmhd::ValenciaDivClean {
 FixConservatives::FixConservatives(
     const double minimum_rest_mass_density_times_lorentz_factor,
     const double rest_mass_density_times_lorentz_factor_cutoff,
@@ -185,17 +185,15 @@ void FixConservatives::operator()(
           b_squared_over_d, tau_over_d, normalized_s_dot_b};
       const double upper_bound_of_lorentz_factor = 1.0 + tau_over_d;
 
-      double lorentz_factor;
+      double lorentz_factor = std::numeric_limits<double>::signaling_NaN();
       try {
         lorentz_factor =
             (equal_within_roundoff(lower_bound_of_lorentz_factor,
                                    upper_bound_of_lorentz_factor)
                  ? lower_bound_of_lorentz_factor
-                 :
-                 // NOLINTNEXTLINE(clang-analyzer-core)
-                 RootFinder::toms748(
-                     f_of_lorentz_factor, lower_bound_of_lorentz_factor,
-                     upper_bound_of_lorentz_factor, 1.e-14, 1.e-14, 50));
+                 : RootFinder::toms748(
+                       f_of_lorentz_factor, lower_bound_of_lorentz_factor,
+                       upper_bound_of_lorentz_factor, 1.e-14, 1.e-14, 50));
       } catch (std::exception& exception) {
         ERROR(
             "Failed to fix conserved variables because the root finder failed "
@@ -248,6 +246,5 @@ bool operator!=(const FixConservatives& lhs,
                 const FixConservatives& rhs) noexcept {
   return not(lhs == rhs);
 }
-}  // namespace ValenciaDivClean
-}  // namespace grmhd
+}  // namespace grmhd::ValenciaDivClean
 /// \endcond

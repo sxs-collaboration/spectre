@@ -72,8 +72,7 @@ struct Hll : tt::ConformsTo<dg::protocols::NumericalFlux> {
     using type = Scalar<DataVector>;
   };
 
-  using variables_tags =
-      db::get_variables_tags_list<typename System::variables_tag>;
+  using variables_tags = typename System::variables_tag::tags_list;
 
   using package_field_tags = tmpl::append<
       db::split_tag<db::add_tag_prefix<::Tags::NormalDotFlux, variables_tag>>,
