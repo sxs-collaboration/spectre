@@ -429,7 +429,7 @@ void ReducedSpecWorldtubeH5BufferUpdater::pup(PUP::er& p) noexcept {
   }
 }
 
-bool WorldtubeDataManager::populate_hypersurface_boundary_data(
+bool MetricWorldtubeDataManager::populate_hypersurface_boundary_data(
     const gsl::not_null<Variables<
         Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
         boundary_data_variables,
@@ -591,7 +591,7 @@ bool WorldtubeDataManager::populate_hypersurface_boundary_data(
   return true;
 }
 
-ReducedWorldtubeDataManager::ReducedWorldtubeDataManager(
+BondiWorldtubeDataManager::BondiWorldtubeDataManager(
     std::unique_ptr<WorldtubeBufferUpdater<reduced_cce_input_tags>>
         buffer_updater,
     const size_t l_max, const size_t buffer_depth,
@@ -619,8 +619,7 @@ ReducedWorldtubeDataManager::ReducedWorldtubeDataManager(
        2 * interpolator_->required_number_of_points_before_and_after())};
 }
 
-
-bool ReducedWorldtubeDataManager::populate_hypersurface_boundary_data(
+bool BondiWorldtubeDataManager::populate_hypersurface_boundary_data(
     const gsl::not_null<Variables<
         Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
         boundary_data_variables,
@@ -730,7 +729,7 @@ bool ReducedWorldtubeDataManager::populate_hypersurface_boundary_data(
   return true;
 }
 
-void ReducedWorldtubeDataManager::pup(PUP::er& p) noexcept {
+void BondiWorldtubeDataManager::pup(PUP::er& p) noexcept {
   p | buffer_updater_;
   p | time_span_start_;
   p | time_span_end_;
@@ -753,5 +752,7 @@ void ReducedWorldtubeDataManager::pup(PUP::er& p) noexcept {
 /// \cond
 PUP::able::PUP_ID SpecWorldtubeH5BufferUpdater::my_PUP_ID = 0;
 PUP::able::PUP_ID ReducedSpecWorldtubeH5BufferUpdater::my_PUP_ID = 0;
+PUP::able::PUP_ID MetricWorldtubeDataManager::my_PUP_ID = 0;
+PUP::able::PUP_ID BondiWorldtubeDataManager::my_PUP_ID = 0;
 /// \endcond
 }  // namespace Cce

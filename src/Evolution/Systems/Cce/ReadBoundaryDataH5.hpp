@@ -338,6 +338,54 @@ class ReducedSpecWorldtubeH5BufferUpdater
   DataVector time_buffer_;
 };
 
+/// \cond
+class MetricWorldtubeDataManager;
+class BondiWorldtubeDataManager;
+/// \endcond
+
+/*!
+ *  \brief Abstract base class for managers of CCE worldtube data that is
+ * provided in large time-series chunks, especially the type provided by input
+ * h5 files.
+ *
+ *  \details The methods that are required to be overridden in the derived
+ * classes are:
+ *
+ * - `WorldtubeDataManager::populate_hypersurface_boundary_data()`:
+ *   updates the Variables passed by pointer to contain correct boundary data
+ *   for the time value passed in. This function should update all of the tags
+ *   in `Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>`.
+ * - `WorldtubeDataManager::get_clone()`: clone function to obtain a
+ *   `std::unique_ptr` of the base `WorldtubeDataManager`, needed to pass around
+ *   the factory-created object.
+ * - `WorldtubeDataManager::get_l_max()`: The override should return the
+ *   `l_max` that it computes for the collocation data calculated during
+ *   `WorldtubeDataManager::populate_hypersurface_boundary_data()`.
+ * - `WorldtubeBufferUpdater::get_time_span()`: The override should return the
+ *   `std::pair` of indices that represent the start and end point of the
+ *   underlying data source. This is primarily used for monitoring the frequency
+ *   and size of the buffer updates.
+ */
+class WorldtubeDataManager : public PUP::able {
+ public:
+  using creatable_classes =
+      tmpl::list<MetricWorldtubeDataManager, BondiWorldtubeDataManager>;
+
+  WRAPPED_PUPable_abstract(WorldtubeDataManager);  // NOLINT
+
+  virtual bool populate_hypersurface_boundary_data(
+      gsl::not_null<Variables<
+          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
+          boundary_data_variables,
+      double time) const noexcept = 0;
+
+  virtual std::unique_ptr<WorldtubeDataManager> get_clone() const noexcept = 0;
+
+  virtual size_t get_l_max() const noexcept = 0;
+
+  virtual std::pair<size_t, size_t> get_time_span() const noexcept = 0;
+};
+
 /*!
  * \brief Manages the cached buffer data associated with a CCE worldtube and
  * interpolates to requested time points to provide worldtube boundary data to
@@ -351,12 +399,12 @@ class ReducedSpecWorldtubeH5BufferUpdater
  * `WorldtubeDataManager::populate_hypersurface_boundary_data()` member
  * function that handles buffer updating and boundary computation.
  */
-class WorldtubeDataManager {
+class MetricWorldtubeDataManager : public WorldtubeDataManager {
  public:
   // charm needs an empty constructor.
-  WorldtubeDataManager() noexcept = default;
+  MetricWorldtubeDataManager() = default;
 
-  WorldtubeDataManager(
+  MetricWorldtubeDataManager(
       std::unique_ptr<WorldtubeBufferUpdater<cce_input_tags>> buffer_updater,
       const size_t l_max, const size_t buffer_depth,
       std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
@@ -385,6 +433,10 @@ class WorldtubeDataManager {
     coefficients_buffers_ = Variables<cce_input_tags>{size_of_buffer};
   }
 
+  WRAPPED_PUPable_decl_template(MetricWorldtubeDataManager);  // NOLINT
+
+  explicit MetricWorldtubeDataManager(CkMigrateMessage* /*unused*/) noexcept {}
+
   /*!
    * \brief Update the `boundary_data_box` entries for all tags in
    * `Tags::characteristic_worldtube_boundary_tags` to the boundary data at
@@ -406,20 +458,26 @@ class WorldtubeDataManager {
       gsl::not_null<Variables<
           Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
           boundary_data_variables,
-      double time) const noexcept;
+      double time) const noexcept override;
+
+  std::unique_ptr<WorldtubeDataManager> get_clone() const noexcept override {
+    return std::make_unique<MetricWorldtubeDataManager>(
+        buffer_updater_->get_clone(), l_max_, buffer_depth_,
+        interpolator_->get_clone());
+  }
 
   /// retrieves the l_max that will be supplied to the \ref DataBoxGroup in
   /// `populate_hypersurface_boundary_data()`
-  size_t get_l_max() const noexcept { return l_max_; }
+  size_t get_l_max() const noexcept override { return l_max_; }
 
   /// retrieves the current time span associated with the `buffer_updater_` for
   /// diagnostics
-  std::pair<size_t, size_t> get_time_span() const noexcept {
+  std::pair<size_t, size_t> get_time_span() const noexcept override {
     return std::make_pair(time_span_start_, time_span_end_);
   }
 
   /// Serialization for Charm++.
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) noexcept override {  // NOLINT
     p | buffer_updater_;
     p | time_span_start_;
     p | time_span_end_;
@@ -474,16 +532,20 @@ class WorldtubeDataManager {
  * handled by `WorldtubeDataManager`. The set of 9 scalars is a far leaner
  * (factor of ~4) data storage format.
  */
-class ReducedWorldtubeDataManager {
+class BondiWorldtubeDataManager : public WorldtubeDataManager {
  public:
   // charm needs an empty constructor.
-  ReducedWorldtubeDataManager() = default;
+  BondiWorldtubeDataManager() = default;
 
-  ReducedWorldtubeDataManager(
+  BondiWorldtubeDataManager(
       std::unique_ptr<WorldtubeBufferUpdater<reduced_cce_input_tags>>
           buffer_updater,
       size_t l_max, size_t buffer_depth,
       std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept;
+
+  WRAPPED_PUPable_decl_template(BondiWorldtubeDataManager);  // NOLINT
+
+  explicit BondiWorldtubeDataManager(CkMigrateMessage* /*unused*/) noexcept {}
 
   /*!
    * \brief Update the `boundary_data_box` entries for all tags in
@@ -505,20 +567,26 @@ class ReducedWorldtubeDataManager {
       gsl::not_null<Variables<
           Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
           boundary_data_variables,
-      double time) const noexcept;
+      double time) const noexcept override;
+
+  std::unique_ptr<WorldtubeDataManager> get_clone() const noexcept override {
+    return std::make_unique<BondiWorldtubeDataManager>(
+        buffer_updater_->get_clone(), l_max_, buffer_depth_,
+        interpolator_->get_clone());
+  }
 
   /// retrieves the l_max that will be supplied to the \ref DataBoxGroup in
   /// `populate_hypersurface_boundary_data()`
-  size_t get_l_max() const noexcept { return l_max_; }
+  size_t get_l_max() const noexcept override { return l_max_; }
 
   /// retrieves the current time span associated with the `buffer_updater_` for
   /// diagnostics
-  std::pair<size_t, size_t> get_time_span() const noexcept {
+  std::pair<size_t, size_t> get_time_span() const noexcept override {
     return std::make_pair(time_span_start_, time_span_end_);
   }
 
   /// Serialization for Charm++.
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p) noexcept override;  // NOLINT
 
  private:
   std::unique_ptr<WorldtubeBufferUpdater<reduced_cce_input_tags>>

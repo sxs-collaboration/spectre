@@ -65,7 +65,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
 
   auto box =
       db::create<db::AddSimpleTags<Cce::Tags::H5WorldtubeBoundaryDataManager>>(
-          Cce::WorldtubeDataManager{});
+          Cce::MetricWorldtubeDataManager{});
   CHECK(db::get<Cce::Tags::H5WorldtubeBoundaryDataManager>(box).get_l_max() ==
         0);
 

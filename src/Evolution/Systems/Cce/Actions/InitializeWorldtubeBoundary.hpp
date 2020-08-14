@@ -78,11 +78,12 @@ struct InitializeH5WorldtubeBoundary {
         boundary_variables{
             Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
 
-    WorldtubeDataManager boundary_data_manager;
+    MetricWorldtubeDataManager boundary_data_manager;
     db::mutate<InitializationTags::H5WorldtubeBoundaryDataManager>(
         make_not_null(&box),
-        [&boundary_data_manager](const gsl::not_null<WorldtubeDataManager*>
-                                     initialization_data_manager) noexcept {
+        [&boundary_data_manager](
+            const gsl::not_null<MetricWorldtubeDataManager*>
+                initialization_data_manager) noexcept {
           boundary_data_manager = std::move(*initialization_data_manager);
         });
     auto initial_box = Initialization::merge_into_databox<

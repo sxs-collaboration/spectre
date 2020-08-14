@@ -744,6 +744,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
       Cce::WorldtubeBufferUpdater<cce_input_tags>>();
   Parallel::register_derived_classes_with_charm<
       Cce::WorldtubeBufferUpdater<reduced_cce_input_tags>>();
+  Parallel::register_derived_classes_with_charm<Cce::WorldtubeDataManager>();
   Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>();
   MAKE_GENERATOR(gen);
   {
@@ -753,14 +754,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
   }
   {
     INFO("Testing data managers");
-    test_data_manager_with_dummy_buffer_updater<WorldtubeDataManager,
+    test_data_manager_with_dummy_buffer_updater<MetricWorldtubeDataManager,
                                                 DummyBufferUpdater>(
         make_not_null(&gen));
     // with normalization bug applied:
-    test_data_manager_with_dummy_buffer_updater<WorldtubeDataManager,
+    test_data_manager_with_dummy_buffer_updater<MetricWorldtubeDataManager,
                                                 DummyBufferUpdater>(
         make_not_null(&gen), true);
-    test_data_manager_with_dummy_buffer_updater<ReducedWorldtubeDataManager,
+    test_data_manager_with_dummy_buffer_updater<BondiWorldtubeDataManager,
                                                 ReducedDummyBufferUpdater>(
         make_not_null(&gen));
   }

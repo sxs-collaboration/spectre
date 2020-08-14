@@ -122,6 +122,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
         Cce::WorldtubeBufferUpdater<Cce::cce_input_tags>>,
     &Parallel::register_derived_classes_with_charm<
         Cce::WorldtubeBufferUpdater<Cce::reduced_cce_input_tags>>,
+    &Parallel::register_derived_classes_with_charm<Cce::WorldtubeDataManager>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>};
 

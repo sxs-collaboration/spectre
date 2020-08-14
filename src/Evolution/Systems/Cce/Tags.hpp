@@ -15,7 +15,7 @@
 namespace Cce {
 
 /// \cond
-struct WorldtubeDataManager;
+struct MetricWorldtubeDataManager;
 struct AnalyticBoundaryDataManager;
 template <typename ToInterpolate, typename Tag>
 struct ScriPlusInterpolationManager;
@@ -310,7 +310,7 @@ struct BondiR : db::SimpleTag {
 
 /// A simple tag for the `WorldtubeDataManager`
 struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
-  using type = WorldtubeDataManager;
+  using type = MetricWorldtubeDataManager;
 };
 
 struct EndTime : db::BaseTag {};
