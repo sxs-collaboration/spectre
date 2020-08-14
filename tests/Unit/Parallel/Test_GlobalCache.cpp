@@ -24,8 +24,8 @@ void register_pupables();
 #include "Informer/InfoFromBuild.hpp"
 #include "Parallel/Abort.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Exit.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Printf.hpp"
