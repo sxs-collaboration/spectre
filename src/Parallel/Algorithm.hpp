@@ -56,6 +56,22 @@ template <typename ParallelComponent, typename PhaseDepActionList>
 class AlgorithmImpl;
 /// \endcond
 
+namespace Algorithm_detail {
+template <typename Metavariables, typename Component, typename = std::void_t<>>
+struct has_registration_list : std::false_type {};
+
+template <typename Metavariables, typename Component>
+struct has_registration_list<
+    Metavariables, Component,
+  std::void_t<
+    typename Metavariables::template registration_list<Component>::type>>
+    : std::true_type {};
+
+template <typename Metavariables, typename Component>
+constexpr bool has_registration_list_v =
+    has_registration_list<Metavariables, Component>::value;
+}  // namespace Algorithm_detail
+
 /*!
  * \ingroup ParallelGroup
  * \brief A distributed object (Charm++ Chare) that executes a series of Actions
@@ -195,6 +211,11 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
     p | inboxes_;
     p | array_index_;
     p | global_cache_;
+    // note that `perform_registration_or_deregistration` passes the `box_` by
+    // const reference. If mutable access is required to the box, this function
+    // call needs to be carefully considered with respect to the `p | box_` call
+    // in both packing and unpacking scenarios.
+    perform_registration_or_deregistration(p, box_);
   }
   /// \cond
   ~AlgorithmImpl() override;
@@ -318,8 +339,8 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
 
   /// Tell the Algorithm it should no longer execute the algorithm. This does
   /// not mean that the execution of the program is terminated, but only that
-  /// the algorithm has terminated. An algorithm can be restarted by pass `true`
-  /// as the second argument to the `receive_data` method or by calling
+  /// the algorithm has terminated. An algorithm can be restarted by passing
+  /// `true` as the second argument to the `receive_data` method or by calling
   /// perform_algorithm(true).
   constexpr void set_terminate(const bool t) noexcept { terminate_ = t; }
 
@@ -373,6 +394,54 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   // @}
 
  private:
+  template <typename ThisVariant, typename... Variants, typename... Args>
+  void perform_registration_or_deregistration_impl(
+      PUP::er& p, const boost::variant<Variants...>& box,
+      const gsl::not_null<int*> iter,
+      const gsl::not_null<bool*> already_visited) noexcept {
+    // void cast to avoid compiler warnings about the unused variable in the
+    // false branch of the constexpr
+    (void)already_visited;
+    if (box.which() == *iter and not *already_visited) {
+      // The deregistration and registration below does not actually insert
+      // anything into the PUP::er stream, so nothing is done on a sizing pup.
+      if constexpr (Algorithm_detail::has_registration_list_v<
+                        metavariables, ParallelComponent>) {
+        using registration_list =
+            typename metavariables::template registration_list<
+                ParallelComponent>::type;
+        if (p.isPacking()) {
+          tmpl::for_each<registration_list>(
+              [this, &box](auto registration_v) noexcept {
+                using registration = typename decltype(registration_v)::type;
+                registration::template perform_deregistration<
+                    ParallelComponent>(box, *global_cache_, array_index_);
+              });
+        }
+        if (p.isUnpacking()) {
+          tmpl::for_each<registration_list>(
+              [this, &box](auto registration_v) noexcept {
+                using registration = typename decltype(registration_v)::type;
+                registration::template perform_registration<ParallelComponent>(
+                    box, *global_cache_, array_index_);
+              });
+        }
+        *already_visited = true;
+      }
+    }
+    ++(*iter);
+  }
+
+  template <typename... Variants, typename... Args>
+  void perform_registration_or_deregistration(
+      PUP::er& p, const boost::variant<Variants...>& box) noexcept {
+    int iter = 0;
+    bool already_visited = false;
+    EXPAND_PACK_LEFT_TO_RIGHT(
+        perform_registration_or_deregistration_impl<Variants>(
+            p, box, &iter, &already_visited));
+  }
+
   static constexpr bool is_singleton =
       std::is_same_v<chare_type, Parallel::Algorithms::Singleton>;
 
