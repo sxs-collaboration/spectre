@@ -1883,8 +1883,8 @@ struct Second : db::SimpleTag {
 }  // namespace
 
 namespace db {
-template <typename TagList, size_t N>
-struct Subitems<TagList, Parent<N>> {
+template <size_t N>
+struct Subitems<Parent<N>> {
   using type = tmpl::list<First<N>, Second<N>>;
   using tag = Parent<N>;
 
@@ -1909,8 +1909,8 @@ struct Subitems<TagList, Parent<N>> {
         std::get<Subtag::index>(parent_value));
   }
 };
-template <typename TagList, size_t N>
-struct Subitems<TagList, ParentCompute<N>> {
+template <size_t N>
+struct Subitems<ParentCompute<N>> {
   using type = tmpl::list<First<N>, Second<N>>;
   using tag = ParentCompute<N>;
 

@@ -281,10 +281,10 @@ struct compute_item_type<tmpl::list<Args...>> {
 
 /// \ingroup DataBoxGroup
 /// Split a tag into its subitems.  `Tag` cannot be a base tag.
-template <typename Tag, typename TagList = NoSuchType>
-using split_tag = tmpl::conditional_t<
-    tmpl::size<typename Subitems<TagList, Tag>::type>::value == 0,
-    tmpl::list<Tag>, typename Subitems<TagList, Tag>::type>;
+template <typename Tag>
+using split_tag =
+    tmpl::conditional_t<tmpl::size<typename Subitems<Tag>::type>::value == 0,
+                        tmpl::list<Tag>, typename Subitems<Tag>::type>;
 
 /// \ingroup DataBoxTagsGroup
 /// \brief `true_type` if the prefix tag wraps the specified tag, `false_type`

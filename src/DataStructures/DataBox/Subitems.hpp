@@ -28,7 +28,7 @@ namespace db {
 ///   static item_type<Subtag> create_compute_item(
 ///       const item_type<Tag>& parent_value) noexcept;
 ///   ```
-template <typename TagList, typename Tag, typename = std::nullptr_t>
+template <typename Tag, typename = std::nullptr_t>
 struct Subitems {
   using type = tmpl::list<>;
 };

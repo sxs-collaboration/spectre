@@ -353,7 +353,7 @@ struct Direction : db::SimpleTag {
 
 namespace db {
 namespace detail {
-template <typename TagList, typename DirectionsTag, typename VariablesTag>
+template <typename DirectionsTag, typename VariablesTag>
 struct InterfaceSubitemsImpl {
   using type = tmpl::transform<
       typename const_item_type<VariablesTag>::tags_list,
@@ -409,10 +409,9 @@ struct InterfaceSubitemsImpl {
 };
 }  // namespace detail
 
-template <typename TagList, typename DirectionsTag, typename VariablesTag>
-struct Subitems<
-    TagList, domain::Tags::Interface<DirectionsTag, VariablesTag>,
-    Requires<tt::is_a_v<Variables, item_type<VariablesTag, TagList>>>>
-    : detail::InterfaceSubitemsImpl<TagList, DirectionsTag, VariablesTag> {};
+template <typename DirectionsTag, typename VariablesTag>
+struct Subitems<domain::Tags::Interface<DirectionsTag, VariablesTag>,
+                Requires<tt::is_a_v<Variables, typename VariablesTag::type>>>
+    : detail::InterfaceSubitemsImpl<DirectionsTag, VariablesTag> {};
 
 }  // namespace db
