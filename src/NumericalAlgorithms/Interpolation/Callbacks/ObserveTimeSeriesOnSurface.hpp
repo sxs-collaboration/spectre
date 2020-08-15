@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/DataBox/TagName.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -58,7 +59,7 @@ struct reduction_data_type<tmpl::list<Ts...>> {
 
 template <typename... Ts>
 auto make_legend(tmpl::list<Ts...> /* meta */) {
-  return std::vector<std::string>{"Time", Ts::name()...};
+  return std::vector<std::string>{"Time", db::tag_name<Ts>()...};
 }
 
 template <typename DbTags, typename... Ts>
