@@ -485,7 +485,7 @@ void test_spec_worldtube_buffer_updater(
                                extraction_radius, frequency, amplitude, l_max);
 
   // request an appropriate buffer
-  SpecWorldtubeH5BufferUpdater buffer_updater{filename};
+  MetricWorldtubeH5BufferUpdater buffer_updater{filename};
   auto serialized_and_deserialized_updater =
       serialize_and_deserialize(buffer_updater);
   size_t time_span_start = 0;
@@ -664,7 +664,7 @@ void test_reduced_spec_worldtube_buffer_updater(
     }
   }
   // request an appropriate buffer
-  ReducedSpecWorldtubeH5BufferUpdater buffer_updater{filename};
+  BondiWorldtubeH5BufferUpdater buffer_updater{filename};
   auto serialized_and_deserialized_updater =
       serialize_and_deserialize(buffer_updater);
   size_t time_span_start = 0;

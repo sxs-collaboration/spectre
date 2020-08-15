@@ -226,11 +226,11 @@ struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
       const bool h5_is_bondi_data) noexcept {
     if (h5_is_bondi_data) {
       return std::make_unique<BondiWorldtubeDataManager>(
-          std::make_unique<ReducedSpecWorldtubeH5BufferUpdater>(filename),
-          l_max, number_of_lookahead_times, interpolator->get_clone());
+          std::make_unique<BondiWorldtubeH5BufferUpdater>(filename), l_max,
+          number_of_lookahead_times, interpolator->get_clone());
     } else {
       return std::make_unique<MetricWorldtubeDataManager>(
-          std::make_unique<SpecWorldtubeH5BufferUpdater>(filename), l_max,
+          std::make_unique<MetricWorldtubeH5BufferUpdater>(filename), l_max,
           number_of_lookahead_times, interpolator->get_clone());
     }
   }
@@ -318,12 +318,12 @@ struct StartTimeFromFile : Tags::StartTime, db::SimpleTag {
                                     const std::string& filename,
                                     const bool is_bondi_data) noexcept {
     if (start_time == -std::numeric_limits<double>::infinity()) {
-      if(is_bondi_data) {
-        ReducedSpecWorldtubeH5BufferUpdater h5_boundary_updater{filename};
+      if (is_bondi_data) {
+        BondiWorldtubeH5BufferUpdater h5_boundary_updater{filename};
         const auto& time_buffer = h5_boundary_updater.get_time_buffer();
         start_time = time_buffer[0];
       } else {
-        SpecWorldtubeH5BufferUpdater h5_boundary_updater{filename};
+        MetricWorldtubeH5BufferUpdater h5_boundary_updater{filename};
         const auto& time_buffer = h5_boundary_updater.get_time_buffer();
         start_time = time_buffer[0];
       }
@@ -363,12 +363,12 @@ struct EndTimeFromFile : Tags::EndTime, db::SimpleTag {
                                     const std::string& filename,
                                     const bool is_bondi_data) {
     if (end_time == std::numeric_limits<double>::infinity()) {
-      if(is_bondi_data) {
-        ReducedSpecWorldtubeH5BufferUpdater h5_boundary_updater{filename};
+      if (is_bondi_data) {
+        BondiWorldtubeH5BufferUpdater h5_boundary_updater{filename};
         const auto& time_buffer = h5_boundary_updater.get_time_buffer();
         end_time = time_buffer[time_buffer.size() - 1];
       } else {
-        SpecWorldtubeH5BufferUpdater h5_boundary_updater{filename};
+        MetricWorldtubeH5BufferUpdater h5_boundary_updater{filename};
         const auto& time_buffer = h5_boundary_updater.get_time_buffer();
         end_time = time_buffer[time_buffer.size() - 1];
       }

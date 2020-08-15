@@ -57,7 +57,7 @@ std::pair<size_t, size_t> create_span_for_time_value(
 }
 }  // namespace detail
 
-SpecWorldtubeH5BufferUpdater::SpecWorldtubeH5BufferUpdater(
+MetricWorldtubeH5BufferUpdater::MetricWorldtubeH5BufferUpdater(
     const std::string& cce_data_filename) noexcept
     : cce_data_file_{cce_data_filename}, filename_{cce_data_filename} {
   get<Tags::detail::InputDataSet<Tags::detail::SpatialMetric>>(dataset_names_) =
@@ -116,7 +116,7 @@ SpecWorldtubeH5BufferUpdater::SpecWorldtubeH5BufferUpdater(
   cce_data_file_.close_current_object();
 }
 
-double SpecWorldtubeH5BufferUpdater::update_buffers_for_time(
+double MetricWorldtubeH5BufferUpdater::update_buffers_for_time(
     const gsl::not_null<Variables<cce_input_tags>*> buffers,
     const gsl::not_null<size_t*> time_span_start,
     const gsl::not_null<size_t*> time_span_end, const double time,
@@ -190,17 +190,17 @@ double SpecWorldtubeH5BufferUpdater::update_buffers_for_time(
 }
 
 std::unique_ptr<WorldtubeBufferUpdater<cce_input_tags>>
-SpecWorldtubeH5BufferUpdater::get_clone() const noexcept {
-  return std::make_unique<SpecWorldtubeH5BufferUpdater>(
-      SpecWorldtubeH5BufferUpdater{filename_});
+MetricWorldtubeH5BufferUpdater::get_clone() const noexcept {
+  return std::make_unique<MetricWorldtubeH5BufferUpdater>(
+      MetricWorldtubeH5BufferUpdater{filename_});
 }
 
-bool SpecWorldtubeH5BufferUpdater::time_is_outside_range(
+bool MetricWorldtubeH5BufferUpdater::time_is_outside_range(
     const double time) const noexcept {
   return time < time_buffer_[0] or time > time_buffer_[time_buffer_.size() - 1];
 }
 
-void SpecWorldtubeH5BufferUpdater::pup(PUP::er& p) noexcept {
+void MetricWorldtubeH5BufferUpdater::pup(PUP::er& p) noexcept {
   p | time_buffer_;
   p | radial_derivatives_need_renormalization_;
   p | filename_;
@@ -212,7 +212,7 @@ void SpecWorldtubeH5BufferUpdater::pup(PUP::er& p) noexcept {
   }
 }
 
-void SpecWorldtubeH5BufferUpdater::update_buffer(
+void MetricWorldtubeH5BufferUpdater::update_buffer(
     const gsl::not_null<ComplexModalVector*> buffer_to_update,
     const h5::Dat& read_data, const size_t computation_l_max,
     const size_t time_span_start, const size_t time_span_end) const noexcept {
@@ -249,7 +249,7 @@ void SpecWorldtubeH5BufferUpdater::update_buffer(
   }
 }
 
-ReducedSpecWorldtubeH5BufferUpdater::ReducedSpecWorldtubeH5BufferUpdater(
+BondiWorldtubeH5BufferUpdater::BondiWorldtubeH5BufferUpdater(
     const std::string& cce_data_filename) noexcept
     : cce_data_file_{cce_data_filename}, filename_{cce_data_filename} {
   get<Tags::detail::InputDataSet<
@@ -304,7 +304,7 @@ ReducedSpecWorldtubeH5BufferUpdater::ReducedSpecWorldtubeH5BufferUpdater(
   cce_data_file_.close_current_object();
 }
 
-double ReducedSpecWorldtubeH5BufferUpdater::update_buffers_for_time(
+double BondiWorldtubeH5BufferUpdater::update_buffers_for_time(
     const gsl::not_null<Variables<reduced_cce_input_tags>*> buffers,
     const gsl::not_null<size_t*> time_span_start,
     const gsl::not_null<size_t*> time_span_end, const double time,
@@ -342,7 +342,7 @@ double ReducedSpecWorldtubeH5BufferUpdater::update_buffers_for_time(
                                time_buffer_.size() - 1)];
 }
 
-void ReducedSpecWorldtubeH5BufferUpdater::update_buffer(
+void BondiWorldtubeH5BufferUpdater::update_buffer(
     const gsl::not_null<ComplexModalVector*> buffer_to_update,
     const h5::Dat& read_data, const size_t computation_l_max,
     const size_t time_span_start, const size_t time_span_end,
@@ -418,7 +418,7 @@ void ReducedSpecWorldtubeH5BufferUpdater::update_buffer(
   }
 }
 
-void ReducedSpecWorldtubeH5BufferUpdater::pup(PUP::er& p) noexcept {
+void BondiWorldtubeH5BufferUpdater::pup(PUP::er& p) noexcept {
   p | time_buffer_;
   p | filename_;
   p | l_max_;
@@ -750,8 +750,8 @@ void BondiWorldtubeDataManager::pup(PUP::er& p) noexcept {
 }
 
 /// \cond
-PUP::able::PUP_ID SpecWorldtubeH5BufferUpdater::my_PUP_ID = 0;
-PUP::able::PUP_ID ReducedSpecWorldtubeH5BufferUpdater::my_PUP_ID = 0;
+PUP::able::PUP_ID MetricWorldtubeH5BufferUpdater::my_PUP_ID = 0;
+PUP::able::PUP_ID BondiWorldtubeH5BufferUpdater::my_PUP_ID = 0;
 PUP::able::PUP_ID MetricWorldtubeDataManager::my_PUP_ID = 0;
 PUP::able::PUP_ID BondiWorldtubeDataManager::my_PUP_ID = 0;
 /// \endcond

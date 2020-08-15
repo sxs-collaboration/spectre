@@ -103,8 +103,8 @@ using reduced_cce_input_tags =
                Spectral::Swsh::Tags::SwshTransform<Tags::Du<Tags::BondiR>>>;
 
 /// \cond
-class SpecWorldtubeH5BufferUpdater;
-class ReducedSpecWorldtubeH5BufferUpdater;
+class MetricWorldtubeH5BufferUpdater;
+class BondiWorldtubeH5BufferUpdater;
 /// \endcond
 
 /*!
@@ -141,8 +141,8 @@ class ReducedSpecWorldtubeH5BufferUpdater;
 template <typename BufferTags>
 class WorldtubeBufferUpdater : public PUP::able {
  public:
-  using creatable_classes = tmpl::list<SpecWorldtubeH5BufferUpdater,
-                                       ReducedSpecWorldtubeH5BufferUpdater>;
+  using creatable_classes =
+      tmpl::list<MetricWorldtubeH5BufferUpdater, BondiWorldtubeH5BufferUpdater>;
 
   WRAPPED_PUPable_abstract(WorldtubeBufferUpdater);  // NOLINT
 
@@ -169,23 +169,23 @@ class WorldtubeBufferUpdater : public PUP::able {
 
 /// A `WorldtubeBufferUpdater` specialized to the CCE input worldtube  H5 file
 /// produced by SpEC.
-class SpecWorldtubeH5BufferUpdater
+class MetricWorldtubeH5BufferUpdater
     : public WorldtubeBufferUpdater<cce_input_tags> {
  public:
   // charm needs the empty constructor
-  SpecWorldtubeH5BufferUpdater() = default;
+  MetricWorldtubeH5BufferUpdater() = default;
 
   /// The constructor takes the filename of the SpEC h5 file that will be used
   /// for boundary data. Note that this assumes that the input data has
   /// correctly-normalized radial derivatives, and that the extraction radius is
   /// encoded as an integer in the filename.
-  explicit SpecWorldtubeH5BufferUpdater(
+  explicit MetricWorldtubeH5BufferUpdater(
       const std::string& cce_data_filename) noexcept;
 
-  WRAPPED_PUPable_decl_template(SpecWorldtubeH5BufferUpdater);  // NOLINT
+  WRAPPED_PUPable_decl_template(MetricWorldtubeH5BufferUpdater);  // NOLINT
 
-  explicit SpecWorldtubeH5BufferUpdater(CkMigrateMessage* /*unused*/) noexcept {
-  }
+  explicit MetricWorldtubeH5BufferUpdater(
+      CkMigrateMessage* /*unused*/) noexcept {}
 
   /// update the `buffers`, `time_span_start`, and `time_span_end` with
   /// time-varies-fastest, Goldberg modal data and the start and end index in
@@ -254,22 +254,22 @@ class SpecWorldtubeH5BufferUpdater
 
 /// A `WorldtubeBufferUpdater` specialized to the CCE input worldtube H5 file
 /// produced by the reduced SpEC format.
-class ReducedSpecWorldtubeH5BufferUpdater
+class BondiWorldtubeH5BufferUpdater
     : public WorldtubeBufferUpdater<reduced_cce_input_tags> {
  public:
   // charm needs the empty constructor
-  ReducedSpecWorldtubeH5BufferUpdater() = default;
+  BondiWorldtubeH5BufferUpdater() = default;
 
   /// The constructor takes the filename of the SpEC h5 file that will be used
   /// for boundary data. Note that this assumes that the input data has
   /// correctly-normalized radial derivatives, and that the extraction radius is
   /// encoded as an integer in the filename.
-  explicit ReducedSpecWorldtubeH5BufferUpdater(
+  explicit BondiWorldtubeH5BufferUpdater(
       const std::string& cce_data_filename) noexcept;
 
-  WRAPPED_PUPable_decl_template(ReducedSpecWorldtubeH5BufferUpdater);  // NOLINT
+  WRAPPED_PUPable_decl_template(BondiWorldtubeH5BufferUpdater);  // NOLINT
 
-  explicit ReducedSpecWorldtubeH5BufferUpdater(
+  explicit BondiWorldtubeH5BufferUpdater(
       CkMigrateMessage* /*unused*/) noexcept {}
 
   /// update the `buffers`, `time_span_start`, and `time_span_end` with
@@ -284,7 +284,7 @@ class ReducedSpecWorldtubeH5BufferUpdater
 
   std::unique_ptr<WorldtubeBufferUpdater<reduced_cce_input_tags>> get_clone()
       const noexcept override {
-    return std::make_unique<ReducedSpecWorldtubeH5BufferUpdater>(filename_);
+    return std::make_unique<BondiWorldtubeH5BufferUpdater>(filename_);
   }
 
   /// The time can only be supported in the buffer update if it is between the

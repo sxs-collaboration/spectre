@@ -28,7 +28,7 @@
 extern "C" void CkRegisterMainModule(void) {}
 
 // from a time-varies-fastest set of buffers provided by
-// `SpecWorldtubeH5BufferUpdater` extract the set of coefficients for a
+// `MetricWorldtubeH5BufferUpdater` extract the set of coefficients for a
 // particular time given by `buffer_time_offset` into the `time_span` size of
 // buffer.
 void slice_buffers_to_libsharp_modes(
@@ -155,7 +155,7 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
                                      const std::string& output_file,
                                      const size_t buffer_depth,
                                      const size_t l_max_factor) noexcept {
-  Cce::SpecWorldtubeH5BufferUpdater buffer_updater{input_file};
+  Cce::MetricWorldtubeH5BufferUpdater buffer_updater{input_file};
   const size_t l_max = buffer_updater.get_l_max();
   // Perform the boundary computation to scalars at twice the input l_max to be
   // absolutely certain that there are no problems associated with aliasing.
