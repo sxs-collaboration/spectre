@@ -207,7 +207,7 @@ struct WriteVolumeData {
     node_lock->lock();
     std::unordered_map<observers::ArrayComponentId, ExtentsAndTensorVolumeData>
         volume_data{};
-    Parallel::NodeLock* file_lock;
+    Parallel::NodeLock* file_lock = nullptr;
     db::mutate<Tags::H5FileLock, Tags::TensorData>(
         make_not_null(&box),
         [&observation_id, &file_lock, &volume_data](

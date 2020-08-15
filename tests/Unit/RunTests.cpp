@@ -45,13 +45,11 @@ RunTests::RunTests(CkArgMsg* msg) {
 // Charm++. However, since Parallel/CharmMain.tpp isn't included in the RunTests
 // executable, no actual registration is done, the GlobalCache is only
 // queued for registration.
-namespace Parallel {
-namespace charmxx {
+namespace Parallel::charmxx {
 class RegistrationHelper;
 /// \cond
 std::unique_ptr<RegistrationHelper>* charm_register_list = nullptr;
 size_t charm_register_list_capacity = 0;
 size_t charm_register_list_size = 0;
 /// \endcond
-}  // namespace charmxx
-}  // namespace Parallel
+}  // namespace Parallel::charmxx

@@ -33,11 +33,9 @@ void register_pupables();
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-namespace Parallel {
-namespace charmxx {
+namespace Parallel::charmxx {
 struct RegistrationHelper;
-}  // namespace charmxx
-}  // namespace Parallel
+}  // namespace Parallel::charmxx
 
 namespace {
 
@@ -225,12 +223,10 @@ PUP::able::PUP_ID Square::my_PUP_ID = 0;    // NOLINT
 
 #include "tests/Unit/Parallel/Test_GlobalCache.def.h"  // IWYU pragma: keep
 
-namespace Parallel {
-namespace charmxx {
+namespace Parallel::charmxx {
 /// \cond
 std::unique_ptr<RegistrationHelper>* charm_register_list = nullptr;
 size_t charm_register_list_capacity = 0;
 size_t charm_register_list_size = 0;
 /// \endcond
-}  // namespace charmxx
-}  // namespace Parallel
+}  // namespace Parallel::charmxx

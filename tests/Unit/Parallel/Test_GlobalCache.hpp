@@ -34,14 +34,14 @@ class TestGroupChare : public CBase_TestGroupChare {
  public:
   TestGroupChare() = default;
   explicit TestGroupChare(CkMigrateMessage* /*unused*/) {}
-  int my_proc() const noexcept { return Parallel::my_proc(); }
+  static int my_proc() noexcept { return Parallel::my_proc(); }
 };
 
 class TestNodeGroupChare : public CBase_TestNodeGroupChare {
  public:
   TestNodeGroupChare() = default;
   explicit TestNodeGroupChare(CkMigrateMessage* /*unused*/) {}
-  int my_node() const noexcept { return Parallel::my_node(); }
+  static int my_node() noexcept { return Parallel::my_node(); }
 };
 
 /// Main executable for running the unit tests.

@@ -720,7 +720,7 @@ struct TestMetavariables {
       case Phase::AnyOrderStart:
         return Phase::AnyOrderFinish;
       case Phase::AnyOrderFinish:
-        return Phase::Exit;
+        [[fallthrough]];
       case Phase::Exit:
         return Phase::Exit;
       default:

@@ -32,14 +32,12 @@
 
 /// \cond
 class DataVector;
-namespace intrp {
-namespace Tags {
+namespace intrp::Tags {
 template <typename TemporalId>
 struct IndicesOfFilledInterpPoints;
 template <typename TemporalId>
 struct TemporalIds;
-}  // namespace Tags
-}  // namespace intrp
+}  // namespace intrp::Tags
 namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;
