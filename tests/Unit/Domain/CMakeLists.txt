@@ -27,7 +27,6 @@ set(LIBRARY_SOURCES
   Test_InterfaceHelpers.cpp
   Test_InterfaceItems.cpp
   Test_LogicalCoordinates.cpp
-  Test_Mesh.cpp
   Test_MinimumGridSpacing.cpp
   Test_Neighbors.cpp
   Test_OrientationMap.cpp

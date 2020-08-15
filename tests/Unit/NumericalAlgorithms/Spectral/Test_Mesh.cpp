@@ -241,7 +241,8 @@ void test_serialization() noexcept {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Mesh",
+                  "[NumericalAlgorithms][Spectral][Unit]") {
   test_uniform_lgl_mesh();
   test_explicit_choices_per_dimension();
   test_equality();
@@ -250,7 +251,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]") {
 
 // [[OutputRegex, Tried to slice through non-existing dimension]]
 [[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.Mesh.SliceThroughNonExistingDimension", "[Domain][Unit]") {
+    "Unit.NumericalAlgorithms.Spectral.Mesh.SliceThroughNonExistingDimension",
+    "[NumericalAlgorithms][Spectral][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   const Mesh<1> mesh1d{2, Spectral::Basis::Legendre,
@@ -261,8 +263,9 @@ SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]") {
 }
 
 // [[OutputRegex, Tried to slice away non-existing dimension]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Mesh.SliceAwayNonExistingDimension",
-                               "[Domain][Unit]") {
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.NumericalAlgorithms.Spectral.Mesh.SliceAwayNonExistingDimension",
+    "[NumericalAlgorithms][Spectral][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   const Mesh<1> mesh1d{2, Spectral::Basis::Legendre,
@@ -274,7 +277,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]") {
 
 // [[OutputRegex, Dimensions to slice through contain duplicates]]
 [[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.Mesh.SliceThroughDuplicateDimensions", "[Domain][Unit]") {
+    "Unit.NumericalAlgorithms.Spectral.Mesh.SliceThroughDuplicateDimensions",
+    "[NumericalAlgorithms][Spectral][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   const Mesh<3> mesh3d{2, Spectral::Basis::Legendre,
