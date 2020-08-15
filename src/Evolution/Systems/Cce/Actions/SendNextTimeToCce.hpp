@@ -16,7 +16,7 @@
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/PointInfoTag.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
 #include "Time/Tags.hpp"
@@ -59,7 +59,7 @@ struct SendNextTimeToCce {
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     const auto& block_logical_coords =
@@ -126,7 +126,7 @@ struct ReceiveNextElementTime {
   template <typename ParallelComponent, typename... DbTags, typename ArrayIndex,
             typename Metavariables>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, const TimeStepId& time,
                     const TimeStepId& next_time) noexcept {
     if constexpr (tmpl::list_contains_v<tmpl::list<DbTags...>,

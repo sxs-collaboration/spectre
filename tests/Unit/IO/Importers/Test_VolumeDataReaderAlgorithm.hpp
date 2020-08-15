@@ -31,7 +31,7 @@
 #include "IO/Importers/VolumeDataReaderActions.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -157,7 +157,7 @@ struct WriteTestData {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     // The data may be in a shared file, so first clean both, then write both
@@ -188,7 +188,7 @@ struct CleanTestData {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     clean_test_data<true>(
@@ -216,12 +216,12 @@ struct TestDataWriter {
                                         tmpl::list<CleanTestData>>>;
   using initialization_tags = tmpl::list<>;
 
-  static void initialize(Parallel::CProxy_ConstGlobalCache<
+  static void initialize(Parallel::CProxy_GlobalCache<
                          Metavariables>& /*global_cache*/) noexcept {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_component = Parallel::get_parallel_component<TestDataWriter>(
         *(global_cache.ckLocalBranch()));
     local_component.start_phase(next_phase);
@@ -234,7 +234,7 @@ struct InitializeElement {
             typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ElementId<Dim>& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -271,7 +271,7 @@ struct TestResult {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     if (TheGrid == Grid::Fine) {
@@ -319,7 +319,7 @@ struct ElementArray {
       typename read_element_data_action::const_global_cache_tags;
 
   static void allocate_array(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
           initialization_items) noexcept {
     auto& array_proxy = Parallel::get_parallel_component<ElementArray>(
@@ -340,7 +340,7 @@ struct ElementArray {
   /// [invoke_readvoldata]
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<ElementArray>(local_cache)
         .start_phase(next_phase);
@@ -370,7 +370,7 @@ struct Metavariables {
 
   static Phase determine_next_phase(
       const Phase& current_phase,
-      const Parallel::CProxy_ConstGlobalCache<
+      const Parallel::CProxy_GlobalCache<
           Metavariables>& /*cache_proxy*/) noexcept {
     switch (current_phase) {
       case Phase::Initialization:

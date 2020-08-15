@@ -14,7 +14,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -143,7 +143,7 @@ struct KerrHorizon {
   template <typename DbTags, typename Metavariables>
   static auto initialize(
       db::DataBox<DbTags>&& box,
-      const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
+      const Parallel::GlobalCache<Metavariables>& cache) noexcept {
     const auto& options =
         Parallel::get<Tags::KerrHorizon<InterpolationTargetTag>>(cache);
 

@@ -17,7 +17,7 @@
 /// \cond
 namespace Parallel {
 template <typename Metavariables>
-struct ConstGlobalCache;
+struct GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
@@ -93,7 +93,7 @@ struct ImposeHomogeneousDirichletBoundaryConditions {
             size_t Dim, typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ElementId<Dim>& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {

@@ -62,7 +62,7 @@ spectre_target_headers(
 
 add_dependencies(
   ${LIBRARY}
-  module_ConstGlobalCache
+  module_GlobalCache
   )
 
 target_link_libraries(

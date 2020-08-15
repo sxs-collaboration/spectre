@@ -16,7 +16,7 @@
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/LinearOperators/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -62,7 +62,7 @@ struct Filter;
  * \snippet LinearOperators/Test_Filtering.cpp action_list_example
  *
  * Uses:
- * - ConstGlobalCache:
+ * - GlobalCache:
  *   - `Filter`
  * - DataBox:
  *   - `Tags::Mesh`
@@ -88,7 +88,7 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     constexpr size_t volume_dim = Metavariables::system::volume_dim;

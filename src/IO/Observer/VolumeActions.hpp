@@ -19,7 +19,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -63,7 +63,7 @@ struct ContributeVolumeData {
       typename ArrayIndex, size_t Dim,
       Requires<tmpl::list_contains_v<DbTagsList, Tags::TensorData>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationId& observation_id,
                     const std::string& subfile_name,
@@ -132,7 +132,7 @@ struct ContributeVolumeDataToWriter {
                                            Tags::VolumeObserversContributed>> =
                 nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationId& observation_id,
                     const std::string& subfile_name,
@@ -198,7 +198,7 @@ struct WriteVolumeData {
       Requires<tmpl::list_contains_v<DbTagsList, Tags::H5FileLock> and
                tmpl::list_contains_v<DbTagsList, Tags::TensorData>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<Parallel::NodeLock*> node_lock,
                     const observers::ObservationId& observation_id,

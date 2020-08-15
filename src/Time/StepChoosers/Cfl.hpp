@@ -17,7 +17,7 @@
 /// \cond
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 namespace domain {
 namespace Tags {
@@ -76,7 +76,7 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
       const typename Metavariables::time_stepper_tag::type::element_type&
           time_stepper,
       const double /*last_step_magnitude*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/) const
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const
       noexcept {
     using compute_largest_characteristic_speed =
         typename Metavariables::system::compute_largest_characteristic_speed;

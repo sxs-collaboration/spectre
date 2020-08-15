@@ -14,7 +14,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -70,7 +70,7 @@ struct InitializeCharacteristicEvolutionVariables {
                       typename Metavariables::evolved_swsh_tag>>>> = nullptr>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -147,7 +147,7 @@ struct InitializeCharacteristicEvolutionVariables {
   static std::tuple<db::DataBox<DbTags>&&> apply(
       const db::DataBox<DbTags>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     ERROR(

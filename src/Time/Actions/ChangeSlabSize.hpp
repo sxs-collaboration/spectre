@@ -19,7 +19,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
@@ -72,7 +72,7 @@ struct StoreNewSlabSize {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
   static void apply(const db::DataBox<DbTags>& /*box*/,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const int64_t slab_number,
                     const double slab_size) noexcept {
     Parallel::receive_data<ChangeSlabSize_detail::NewSlabSizeInbox>(
@@ -90,7 +90,7 @@ namespace Actions {
 /// Events::ChangeSlabSize
 ///
 /// Uses:
-/// - ConstGlobalCache:
+/// - GlobalCache:
 ///   - Tags::TimeStepperBase
 /// - DataBox:
 ///   - Tags::HistoryEvolvedVariables
@@ -114,7 +114,7 @@ struct ChangeSlabSize {
             typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     const auto& time_step_id = db::get<Tags::TimeStepId>(box);
@@ -185,7 +185,7 @@ struct ChangeSlabSize {
   static bool is_ready(
       const db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/) noexcept {
     const auto& time_step_id = db::get<Tags::TimeStepId>(box);
     if (not time_step_id.is_at_slab_boundary()) {
@@ -294,7 +294,7 @@ class ChangeSlabSize : public Event<EventRegistrars> {
             typename ParallelComponent>
   void operator()(const TimeStepId& time_step_id,
                   const db::DataBox<DbTags>& box_for_step_choosers,
-                  Parallel::ConstGlobalCache<Metavariables>& cache,
+                  Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
                   const ParallelComponent* const /*meta*/) const noexcept {
     const auto next_changable_slab = time_step_id.is_at_slab_boundary()

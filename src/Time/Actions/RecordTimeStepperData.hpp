@@ -19,7 +19,7 @@
 class TimeStepId;
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
@@ -33,7 +33,7 @@ namespace Actions {
 /// With `dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>`:
 ///
 /// Uses:
-/// - ConstGlobalCache: nothing
+/// - GlobalCache: nothing
 /// - DataBox:
 ///   - variables_tag (either the provided `VariablesTag` or the
 ///   `system::variables_tag` if none is provided)
@@ -53,7 +53,7 @@ struct RecordTimeStepperData {
             typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
     using variables_tag =

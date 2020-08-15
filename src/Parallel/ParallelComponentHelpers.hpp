@@ -68,7 +68,7 @@ using get_const_global_cache_tags_from_actions =
 /*!
  * \ingroup ParallelGroup
  * \brief Given the metavariables, get a list of the unique tags that will
- * specify the items in the ConstGlobalCache.
+ * specify the items in the GlobalCache.
  */
 template <typename Metavariables>
 using get_const_global_cache_tags =

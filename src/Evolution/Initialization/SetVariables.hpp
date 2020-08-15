@@ -17,7 +17,7 @@
 #include "Evolution/Initialization/Tags.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -29,7 +29,7 @@
 /// \cond
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
@@ -42,7 +42,7 @@ namespace Actions {
 /// Uses:
 /// - DataBox:
 ///   * `CoordinatesTag`
-/// - ConstGlobalCache:
+/// - GlobalCache:
 ///   * `OptionTags::AnalyticSolutionBase` or `OptionTags::AnalyticDataBase`
 ///
 /// DataBox changes:
@@ -62,7 +62,7 @@ struct SetVariables {
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     if constexpr (tmpl::list_contains_v<

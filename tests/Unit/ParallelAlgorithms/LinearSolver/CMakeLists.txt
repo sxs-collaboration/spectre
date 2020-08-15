@@ -17,7 +17,7 @@ add_test_library(
 
 add_dependencies(
   ${LIBRARY}
-  module_ConstGlobalCache
+  module_GlobalCache
   )
 
 function(add_linear_solver_algorithm_test TEST_NAME)
@@ -31,7 +31,7 @@ function(add_linear_solver_algorithm_test TEST_NAME)
 
   add_dependencies(
     ${EXECUTABLE_NAME}
-    module_ConstGlobalCache
+    module_GlobalCache
     module_Main
     )
 

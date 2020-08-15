@@ -36,7 +36,7 @@
 
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 namespace LinearSolver::cg::detail {
 template <typename FieldsTag, typename OptionsGroup>
@@ -96,7 +96,7 @@ struct MockInitializeHasConverged {
       typename ArrayIndex,
       Requires<tmpl::list_contains_v<DbTagsList, CheckConvergedTag>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const Convergence::HasConverged& has_converged) noexcept {
     db::mutate<CheckConvergedTag>(
@@ -114,7 +114,7 @@ struct MockUpdateFieldValues {
       typename ArrayIndex,
       Requires<tmpl::list_contains_v<DbTagsList, CheckValueTag>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const double alpha) noexcept {
     db::mutate<CheckValueTag>(
@@ -131,7 +131,7 @@ struct MockUpdateOperand {
       typename ArrayIndex,
       Requires<tmpl::list_contains_v<DbTagsList, CheckValueTag>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, const double res_ratio,
                     const Convergence::HasConverged& has_converged) noexcept {
     db::mutate<CheckValueTag, CheckConvergedTag>(

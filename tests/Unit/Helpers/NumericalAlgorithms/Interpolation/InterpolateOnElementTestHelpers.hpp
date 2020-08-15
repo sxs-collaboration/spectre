@@ -87,7 +87,7 @@ struct MockInterpolationTargetVarsFromElement {
       Requires<tmpl::list_contains_v<DbTags, Tags::TestTargetPoints>> = nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
-      Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const std::vector<Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
@@ -176,10 +176,10 @@ make_volume_data_and_mesh(const DomainCreator& domain_creator,
 // This is the main test; Takes a functor as an argument so that
 // different tests can call it to do slightly different things.
 template <typename Metavariables, typename elem_component, typename Functor,
-          typename... ConstGlobalCacheTypes>
+          typename... GlobalCacheTypes>
 void test_interpolate_on_element(
     Functor initialize_elements_and_queue_simple_actions,
-    ConstGlobalCacheTypes... const_global_cache_items) noexcept {
+    GlobalCacheTypes... const_global_cache_items) noexcept {
   using metavars = Metavariables;
   using target_component =
       mock_interpolation_target<metavars,

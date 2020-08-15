@@ -20,7 +20,7 @@ struct Inertial;
 }  // namespace Frame
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
@@ -62,7 +62,7 @@ struct ComputeVolumeFluxes {
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
     db::mutate_apply<typename Metavariables::system::volume_fluxes>(

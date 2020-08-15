@@ -32,7 +32,7 @@ struct Inertial;
 }  // namespace Frame
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
@@ -88,7 +88,7 @@ struct InitializeMortars {
                                               DataBox>> = nullptr>
   static auto apply(DataBox& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     const auto& element = db::get<domain::Tags::Element<dim>>(box);
@@ -162,7 +162,7 @@ struct InitializeMortars {
                 domain::Tags::InitialExtents<dim>, DataBox>> = nullptr>
   static std::tuple<DataBox&&> apply(
       DataBox& /*box*/, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     ERROR(

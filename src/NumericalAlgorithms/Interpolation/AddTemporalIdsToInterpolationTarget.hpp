@@ -12,7 +12,7 @@
 #include "NumericalAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -40,7 +40,7 @@ struct AddTemporalIdsToInterpolationTarget {
             Requires<tmpl::list_contains_v<
                 DbTags, Tags::TemporalIds<TemporalId>>> = nullptr>
   static void apply(db::DataBox<DbTags>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     std::vector<TemporalId>&& temporal_ids) noexcept {
     const bool temporal_id_added_for_the_first_time =

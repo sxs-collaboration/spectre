@@ -29,7 +29,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -289,7 +289,7 @@ struct get_array_index;
  * ### Const global cache tags
  *
  * Actions sometimes need tags/items to be placed into the
- * `Parallel::ConstGlobalCache`. Once the list of tags for the global cache has
+ * `Parallel::GlobalCache`. Once the list of tags for the global cache has
  * been assembled, the associated objects need to be inserted. This is done
  * using the constructor of the `ActionTesting::MockRuntimeSystem`. For example,
  * consider the tags:
@@ -466,7 +466,7 @@ using item_type_if_contained_t =
     typename item_type_if_contained<Tag, DataBoxType>::type;
 }  // namespace detail
 
-// Initializes the DataBox values not set via the ConstGlobalCache. This is
+// Initializes the DataBox values not set via the GlobalCache. This is
 // done as part of an `Initialization` phase and is triggered using the
 // `emplace_component_and_initialize` function.
 template <typename... SimpleTags, typename ComputeTagsList>
@@ -482,7 +482,7 @@ struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
                 tmpl::list_contains_v<DbTagsList, SimpleTags>...>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -507,7 +507,7 @@ struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     ERROR(
@@ -674,8 +674,8 @@ class MockDistributedObject {
   using initialization_tags =
       typename detail::get_initialization_tags_from_component<Component>::type;
   using initial_tags = tmpl::flatten<tmpl::list<
-      Parallel::Tags::ConstGlobalCacheImpl<metavariables>, initialization_tags,
-      db::wrap_tags_in<Parallel::Tags::FromConstGlobalCache, all_cache_tags>>>;
+      Parallel::Tags::GlobalCacheImpl<metavariables>, initialization_tags,
+      db::wrap_tags_in<Parallel::Tags::FromGlobalCache, all_cache_tags>>>;
   using initial_databox = db::compute_databox_type<initial_tags>;
 
   // The types held by the boost::variant, box_
@@ -699,16 +699,16 @@ class MockDistributedObject {
   template <typename... Options>
   MockDistributedObject(
       const array_index& index,
-      Parallel::ConstGlobalCache<typename Component::metavariables>* cache,
+      Parallel::GlobalCache<typename Component::metavariables>* cache,
       tuples::tagged_tuple_from_typelist<inbox_tags_list>* inboxes,
       Options&&... opts)
       : array_index_(index), const_global_cache_(cache), inboxes_(inboxes) {
     box_ = detail::ForwardAllOptionsToDataBox<initialization_tags>::apply(
         db::create<db::AddSimpleTags<
-                       Parallel::Tags::ConstGlobalCacheImpl<metavariables>>,
+                       Parallel::Tags::GlobalCacheImpl<metavariables>>,
                    db::AddComputeTags<db::wrap_tags_in<
-                       Parallel::Tags::FromConstGlobalCache, all_cache_tags>>>(
-            static_cast<const Parallel::ConstGlobalCache<metavariables>*>(
+                       Parallel::Tags::FromGlobalCache, all_cache_tags>>>(
+            static_cast<const Parallel::GlobalCache<metavariables>*>(
                 const_global_cache_)),
         std::forward<Options>(opts)...);
   }
@@ -740,7 +740,7 @@ class MockDistributedObject {
   }
 
   // @{
-  /// Returns the DataBox with the tags set from the ConstGlobalCache and the
+  /// Returns the DataBox with the tags set from the GlobalCache and the
   /// tags in `AdditionalTagsList`. If the DataBox type is incorrect
   /// `std::terminate` is called.
   template <typename AdditionalTagsList>
@@ -1077,7 +1077,7 @@ class MockDistributedObject {
   PhaseType phase_{};
 
   typename Component::array_index array_index_{};
-  Parallel::ConstGlobalCache<typename Component::metavariables>*
+  Parallel::GlobalCache<typename Component::metavariables>*
       const_global_cache_{nullptr};
   tuples::tagged_tuple_from_typelist<inbox_tags_list>* inboxes_{nullptr};
   std::deque<std::unique_ptr<InvokeActionBase>> simple_action_queue_;
@@ -1171,7 +1171,7 @@ void MockDistributedObject<Component>::next_action_impl(
     // ```
     // Algorithm_detail::is_is_ready_callable_t<action, databox,
     //         tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-    //         Parallel::ConstGlobalCache<metavariables>, array_index>{}
+    //         Parallel::GlobalCache<metavariables>, array_index>{}
     // ```
     const auto check_if_ready = make_overloader(
         [this](std::true_type /*has_is_ready*/, auto action,
@@ -1229,7 +1229,7 @@ void MockDistributedObject<Component>::next_action_impl(
                         Parallel::Algorithm_detail::is_is_ready_callable_t<
                             local_this_action, this_databox,
                             tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                            Parallel::ConstGlobalCache<metavariables>,
+                            Parallel::GlobalCache<metavariables>,
                             array_index>{},
                         local_this_action{}, box)) {
                   ERROR("Tried to invoke the action '"
@@ -1255,7 +1255,7 @@ void MockDistributedObject<Component>::next_action_impl(
                         Parallel::Algorithm_detail::is_is_ready_callable_t<
                             local_this_action, this_databox,
                             tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                            Parallel::ConstGlobalCache<metavariables>,
+                            Parallel::GlobalCache<metavariables>,
                             array_index>{},
                         local_this_action{}, box)) {
                   ERROR("Tried to invoke the action '"
@@ -1295,7 +1295,7 @@ void MockDistributedObject<Component>::next_action_impl(
                         Parallel::Algorithm_detail::is_is_ready_callable_t<
                             local_this_action, this_databox,
                             tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                            Parallel::ConstGlobalCache<metavariables>,
+                            Parallel::GlobalCache<metavariables>,
                             array_index>{},
                         local_this_action{}, box)) {
                   ERROR("Tried to invoke the action '"
@@ -1399,7 +1399,7 @@ bool MockDistributedObject<Component>::is_ready_impl(
     // ```
     // Algorithm_detail::is_is_ready_callable_t<action, databox,
     //         tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-    //         Parallel::ConstGlobalCache<metavariables>, array_index>{}
+    //         Parallel::GlobalCache<metavariables>, array_index>{}
     // ```
     const auto check_if_ready = make_overloader(
         [&box, &array_index, &const_global_cache, &inboxes](
@@ -1414,7 +1414,7 @@ bool MockDistributedObject<Component>::is_ready_impl(
         check_if_ready(Parallel::Algorithm_detail::is_is_ready_callable_t<
                            this_action, this_databox,
                            tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                           Parallel::ConstGlobalCache<metavariables>,
+                           Parallel::GlobalCache<metavariables>,
                            typename Component::array_index>{},
                        this_action{});
   };
@@ -1633,7 +1633,7 @@ class MockRuntimeSystem {
                                     MockDistributedObject<Component>>;
   };
 
-  using GlobalCache = Parallel::ConstGlobalCache<Metavariables>;
+  using GlobalCache = Parallel::GlobalCache<Metavariables>;
   using CacheTuple = tuples::tagged_tuple_from_typelist<
       Parallel::get_const_global_cache_tags<Metavariables>>;
 
@@ -1646,7 +1646,7 @@ class MockRuntimeSystem {
       tmpl::transform<typename Metavariables::component_list,
                       tmpl::bind<InboxesTag, tmpl::_1>>>;
 
-  /// Construct from the tuple of ConstGlobalCache objects.
+  /// Construct from the tuple of GlobalCache objects.
   explicit MockRuntimeSystem(CacheTuple cache_contents)
       : cache_(std::move(cache_contents)) {
     tmpl::for_each<typename Metavariables::component_list>([this](
@@ -1658,7 +1658,7 @@ class MockRuntimeSystem {
     });
   }
 
-  /// Construct from the tuple of ConstGlobalCache objects that might
+  /// Construct from the tuple of GlobalCache objects that might
   /// be in a different order.
   template <typename... Tags>
   explicit MockRuntimeSystem(tuples::TaggedTuple<Tags...> cache_contents)
@@ -1954,7 +1954,7 @@ void emplace_component_and_initialize(
 }
 
 // @{
-/// Retrieves the DataBox with tags `TagsList` (omitting the `ConstGlobalCache`
+/// Retrieves the DataBox with tags `TagsList` (omitting the `GlobalCache`
 /// and `add_from_options` tags) from the parallel component `Component` with
 /// index `array_index`.
 template <typename Component, typename TagsList, typename Metavariables>

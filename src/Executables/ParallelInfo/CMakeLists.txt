@@ -17,7 +17,7 @@ add_spectre_executable(
 
 add_dependencies(
   ${EXECUTABLE}
-  module_ConstGlobalCache
+  module_GlobalCache
   module_ParallelInfo
   )
 

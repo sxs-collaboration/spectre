@@ -32,7 +32,7 @@
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -51,7 +51,7 @@ struct SetBoundaryValues {
       typename ArrayIndex,
       Requires<tmpl::list_contains_v<tmpl::list<DbTags...>, Tag>> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     ComplexDataVector set_values) noexcept {
     db::mutate<Tag>(make_not_null(&box),
@@ -67,7 +67,7 @@ struct SetBoundaryValues {
       typename ArrayIndex,
       Requires<tmpl::list_contains_v<tmpl::list<DbTags...>, Tag>> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     DataVector set_values) noexcept {
     db::mutate<Tag>(

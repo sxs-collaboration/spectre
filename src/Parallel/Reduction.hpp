@@ -7,7 +7,7 @@
 #include <tuple>
 
 #include "Parallel/CharmRegistration.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"

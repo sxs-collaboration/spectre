@@ -10,7 +10,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DenseVector.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
@@ -55,7 +55,7 @@ struct PrepareSolve {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>, operand_tag,
@@ -124,7 +124,7 @@ struct NormalizeInitialOperand {
                    LinearSolver::Tags::HasConverged<OptionsGroup>, DataBox>> =
           nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index,
                     const double residual_magnitude,
                     const Convergence::HasConverged& has_converged) noexcept {
@@ -153,7 +153,7 @@ struct PrepareStep {
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     if constexpr (Preconditioned) {
@@ -198,7 +198,7 @@ struct PerformStep {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ActionList /*meta*/,
@@ -278,7 +278,7 @@ struct OrthogonalizeOperand {
                    LinearSolver::Tags::IterationId<OptionsGroup>, DataBox>> =
           nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index,
                     const double orthogonalization) noexcept {
     db::mutate<operand_tag, orthogonalization_iteration_id_tag>(
@@ -354,7 +354,7 @@ struct NormalizeOperandAndUpdateField {
                    LinearSolver::Tags::HasConverged<OptionsGroup>, DataBox>> =
           nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const double normalization,
                     const DenseVector<double>& minres,
                     const Convergence::HasConverged& has_converged) noexcept {

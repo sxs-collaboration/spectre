@@ -26,7 +26,7 @@
 #include "Evolution/Systems/Cce/SwshDerivatives.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
@@ -177,12 +177,12 @@ struct CharacteristicEvolution {
       Parallel::get_const_global_cache_tags_from_actions<
           phase_dependent_action_list>;
 
-  static void initialize(Parallel::CProxy_ConstGlobalCache<
+  static void initialize(Parallel::CProxy_GlobalCache<
                          Metavariables>& /*global_cache*/) noexcept {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      const Parallel::CProxy_ConstGlobalCache<Metavariables>&
+      const Parallel::CProxy_GlobalCache<Metavariables>&
           global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<CharacteristicEvolution<Metavariables>>(

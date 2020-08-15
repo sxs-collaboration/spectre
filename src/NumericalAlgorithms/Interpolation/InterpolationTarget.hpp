@@ -10,7 +10,7 @@
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/TMPL.hpp"
@@ -57,7 +57,7 @@ namespace intrp {
 ///      can (optionally) have an additional function
 ///```
 ///   static auto initialize(db::DataBox<DbTags>&&,
-///                          const Parallel::ConstGlobalCache<Metavariables>&)
+///                          const Parallel::GlobalCache<Metavariables>&)
 ///                          noexcept;
 ///```
 ///      that adds arbitrary tags to the `DataBox` when the
@@ -73,13 +73,13 @@ namespace intrp {
 ///      observers::ThreadedActions::WriteReductionData), and with a function
 ///```
 ///     void apply(const DataBox<DbTags>&,
-///                const intrp::ConstGlobalCache<Metavariables>&,
+///                const intrp::GlobalCache<Metavariables>&,
 ///                const Metavariables::temporal_id&) noexcept;
 ///```
 /// or
 ///```
 ///     bool apply(const gsl::not_null<db::DataBox<DbTags>*>,
-///                const gsl::not_null<intrp::ConstGlobalCache<Metavariables>*>,
+///                const gsl::not_null<intrp::GlobalCache<Metavariables>*>,
 ///                const Metavariables::temporal_id&) noexcept;
 ///```
 ///      that will be called when interpolation is complete.  `DbTags` includes
@@ -150,7 +150,7 @@ struct InterpolationTarget {
 
   static void execute_next_phase(
       typename metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<metavariables>& global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<
         InterpolationTarget<metavariables, InterpolationTargetTag>>(local_cache)

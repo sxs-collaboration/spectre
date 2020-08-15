@@ -21,7 +21,7 @@
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/MakeString.hpp"
@@ -62,7 +62,7 @@ class AnalyticBoundaryDataManager {
   /// Use `observers::ThreadedActions::WriteSimpleData` to output the expected
   /// news at `time` from the analytic data to dataset `/expected_news.dat`.
   template <typename Metavariables>
-  void write_news(Parallel::ConstGlobalCache<Metavariables>& cache,
+  void write_news(Parallel::GlobalCache<Metavariables>& cache,
                   double time) const noexcept;
 
   size_t get_l_max() const noexcept { return l_max_; }
@@ -100,7 +100,7 @@ bool AnalyticBoundaryDataManager::populate_hypersurface_boundary_data(
 
 template <typename Metavariables>
 void AnalyticBoundaryDataManager::write_news(
-    Parallel::ConstGlobalCache<Metavariables>& cache,
+    Parallel::GlobalCache<Metavariables>& cache,
     const double time) const noexcept {
   const auto news = get<Tags::News>(
       generator_->variables(l_max_, time, tmpl::list<Tags::News>{}));

@@ -12,7 +12,7 @@ struct TaggedTuple;
 }  // namespace tuples
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
@@ -29,7 +29,7 @@ struct TerminatePhase {
             typename ParallelComponent>
   static std::tuple<DataBox&&, bool> apply(
       DataBox& box, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ActionList /*meta*/,

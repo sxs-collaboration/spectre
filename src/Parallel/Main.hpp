@@ -17,7 +17,7 @@
 #include "Options/ParseOptions.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/CharmRegistration.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/CreateFromOptions.hpp"
 #include "Parallel/Exit.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -86,7 +86,7 @@ class Main : public CBase_Main<Metavariables> {
   typename Metavariables::Phase current_phase_{
       Metavariables::Phase::Initialization};
 
-  CProxy_ConstGlobalCache<Metavariables> const_global_cache_proxy_;
+  CProxy_GlobalCache<Metavariables> const_global_cache_proxy_;
   Options<option_list> options_;
 };
 
@@ -245,14 +245,14 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
                 std::move(args)...);
           });
 
-  const_global_cache_proxy_ = CProxy_ConstGlobalCache<Metavariables>::ckNew(
+  const_global_cache_proxy_ = CProxy_GlobalCache<Metavariables>::ckNew(
       Parallel::create_from_options<Metavariables>(items_from_options,
                                                    const_global_cache_tags{}));
 
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       the_parallel_components;
 
-  // Construct the group proxies with a dependency on the ConstGlobalCache proxy
+  // Construct the group proxies with a dependency on the GlobalCache proxy
   using group_component_list = tmpl::filter<
       component_list,
       tmpl::or_<Parallel::is_group_proxy<tmpl::bind<
@@ -333,7 +333,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
         ParallelComponentProxy::ckNew(opts);
   });
 
-  // Send the complete list of parallel_components to the ConstGlobalCache on
+  // Send the complete list of parallel_components to the GlobalCache on
   // each Charm++ node.  After all nodes have finished, the callback is
   // executed.
   CkCallback callback(

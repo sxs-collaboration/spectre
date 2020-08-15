@@ -36,7 +36,7 @@ struct MockWriteSimpleData {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex>
   static void apply(db::DataBox<DbTagsList>& /*box*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
                     const std::vector<std::string>& /*file_legend*/,
@@ -53,7 +53,7 @@ struct TestCallWriteNews {
             Requires<tmpl2::flat_any_v<std::is_same_v<
                 Tags::AnalyticBoundaryDataManager, DbTags>...>> = nullptr>
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) noexcept {
     db::get<Tags::AnalyticBoundaryDataManager>(box).write_news(
         cache, db::get<::Tags::TimeStepId>(box).substep_time().value());

@@ -29,7 +29,7 @@ add_test_library(
 
 add_dependencies(
   ${LIBRARY}
-  module_ConstGlobalCache
+  module_GlobalCache
   )
 
 spectre_add_python_bindings_test(

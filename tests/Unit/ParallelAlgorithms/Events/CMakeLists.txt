@@ -18,5 +18,5 @@ add_test_library(
 
 add_dependencies(
   ${LIBRARY}
-  module_ConstGlobalCache
+  module_GlobalCache
   )

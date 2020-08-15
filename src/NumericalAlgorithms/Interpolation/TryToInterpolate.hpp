@@ -11,7 +11,7 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -124,7 +124,7 @@ template <typename InterpolationTargetTag, typename Metavariables,
           typename DbTags>
 void try_to_interpolate(
     const gsl::not_null<db::DataBox<DbTags>*> box,
-    const gsl::not_null<Parallel::ConstGlobalCache<Metavariables>*> cache,
+    const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
     const typename Metavariables::temporal_id::type& temporal_id) noexcept {
   const auto& holders =
       db::get<Tags::InterpolatedVarsHolders<Metavariables>>(*box);

@@ -5,7 +5,7 @@
 
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
@@ -32,7 +32,7 @@ class Completion : public Event<EventRegistrars> {
   using argument_tags = tmpl::list<>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component>
-  void operator()(Parallel::ConstGlobalCache<Metavariables>& cache,
+  void operator()(Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
                   const Component* const /*meta*/) const noexcept {
     auto al_gore =

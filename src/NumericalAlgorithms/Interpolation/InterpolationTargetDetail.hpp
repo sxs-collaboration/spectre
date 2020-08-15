@@ -15,7 +15,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -66,7 +66,7 @@ template <typename T, typename DbTags, typename Metavariables,
           typename TemporalId>
 auto apply_callback(
     const gsl::not_null<db::DataBox<DbTags>*> box,
-    const gsl::not_null<Parallel::ConstGlobalCache<Metavariables>*> cache,
+    const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
     const TemporalId& temporal_id) noexcept
     -> decltype(T::post_interpolation_callback::apply(box, cache, temporal_id),
                 bool()) {
@@ -77,7 +77,7 @@ template <typename T, typename DbTags, typename Metavariables,
           typename TemporalId>
 auto apply_callback(
     const gsl::not_null<db::DataBox<DbTags>*> box,
-    const gsl::not_null<Parallel::ConstGlobalCache<Metavariables>*> cache,
+    const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
     const TemporalId& temporal_id) noexcept
     -> decltype(T::post_interpolation_callback::apply(*box, *cache,
                                                       temporal_id),
@@ -153,7 +153,7 @@ template <typename InterpolationTargetTag, typename DbTags,
           typename Metavariables, typename TemporalId>
 bool call_callback(
     const gsl::not_null<db::DataBox<DbTags>*> box,
-    const gsl::not_null<Parallel::ConstGlobalCache<Metavariables>*> cache,
+    const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
     const TemporalId& temporal_id) noexcept {
   // Before doing anything else, deal with the possibility that some
   // of the points might be outside of the Domain.

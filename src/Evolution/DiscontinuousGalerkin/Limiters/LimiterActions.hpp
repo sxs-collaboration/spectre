@@ -15,7 +15,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -53,7 +53,7 @@ namespace Actions {
 /// - Local time-stepping
 ///
 /// Uses:
-/// - ConstGlobalCache:
+/// - GlobalCache:
 ///   - Metavariables::limiter
 /// - DataBox:
 ///   - Metavariables::limiter::type::limit_argument_tags
@@ -83,7 +83,7 @@ struct Limit {
             typename ActionList, typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     using mutate_tags = typename Metavariables::limiter::type::limit_tags;
@@ -106,7 +106,7 @@ struct Limit {
   static bool is_ready(
       const db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/) noexcept {
     constexpr size_t volume_dim = Metavariables::system::volume_dim;
     const auto& element = db::get<domain::Tags::Element<volume_dim>>(box);
@@ -140,7 +140,7 @@ struct Limit {
 /// - Local time-stepping
 ///
 /// Uses:
-/// - ConstGlobalCache:
+/// - GlobalCache:
 ///   - Metavariables::limiter
 /// - DataBox:
 ///   - Tags::Element<volume_dim>
@@ -167,7 +167,7 @@ struct SendData {
             typename ActionList, typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     constexpr size_t volume_dim = Metavariables::system::volume_dim;

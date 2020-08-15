@@ -19,7 +19,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
@@ -49,7 +49,7 @@ struct ProcessReducedSumOfInts {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& /*box*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const int& value) noexcept {
     SPECTRE_PARALLEL_REQUIRE(number_of_1d_array_elements *
@@ -64,7 +64,7 @@ struct ProcessErrorNorms {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& /*box*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, const int points,
                     const double error_u, const double error_v) noexcept {
     SPECTRE_PARALLEL_REQUIRE(number_of_1d_array_elements * 3 == points);
@@ -81,7 +81,7 @@ struct ProcessCustomReductionAction {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& /*box*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, int reduced_int,
                     std::unordered_map<std::string, int> reduced_map,
                     std::vector<int>&& reduced_vector) noexcept {
@@ -114,7 +114,7 @@ struct SingletonParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
-      const Parallel::CProxy_ConstGlobalCache<
+      const Parallel::CProxy_GlobalCache<
           Metavariables>& /*global_cache*/) {}
 };
 
@@ -125,7 +125,7 @@ struct ArrayReduce {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
   static void apply(const db::DataBox<DbTags>& /*box*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index) noexcept {
     static_assert(std::is_same_v<ParallelComponent,
                                  ArrayParallelComponent<TestMetavariables>>,
@@ -238,7 +238,7 @@ struct ArrayParallelComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void allocate_array(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
       /*initialization_items*/) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
@@ -256,7 +256,7 @@ struct ArrayParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::CallArrayReduce) {
       Parallel::simple_action<ArrayReduce>(
@@ -276,7 +276,7 @@ struct TestMetavariables {
 
   enum class Phase { Initialization, CallArrayReduce, Exit };
   static Phase determine_next_phase(const Phase& current_phase,
-                                    const Parallel::CProxy_ConstGlobalCache<
+                                    const Parallel::CProxy_GlobalCache<
                                         TestMetavariables>& /*cache_proxy*/) {
     return current_phase == Phase::Initialization ? Phase::CallArrayReduce
                                                   : Phase::Exit;

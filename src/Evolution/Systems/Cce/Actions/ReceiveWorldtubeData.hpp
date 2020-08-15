@@ -8,7 +8,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/ReceiveTags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
@@ -52,7 +52,7 @@ struct ReceiveWorldtubeData {
           tmpl::list_contains_v<DbTags, ::Tags::TimeStepId>> = nullptr>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& inboxes,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -83,7 +83,7 @@ struct ReceiveWorldtubeData {
           not tmpl::list_contains_v<DbTags, ::Tags::TimeStepId>> = nullptr>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -105,7 +105,7 @@ struct ReceiveWorldtubeData {
   static bool is_ready(
       const db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/) noexcept {
     return tuples::get<Cce::ReceiveTags::BoundaryData<
                typename Metavariables::cce_boundary_communication_tags>>(
@@ -124,7 +124,7 @@ struct ReceiveWorldtubeData {
   static bool is_ready(
       const db::DataBox<DbTags>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/) noexcept {
     return false;
   }

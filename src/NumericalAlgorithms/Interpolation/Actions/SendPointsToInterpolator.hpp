@@ -8,7 +8,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -40,7 +40,7 @@ struct SendPointsToInterpolator {
       Requires<tmpl::list_contains_v<DbTags, Tags::TemporalIds<TemporalId>>> =
           nullptr>
   static void apply(db::DataBox<DbTags>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const TemporalId& temporal_id) noexcept {
     auto coords = InterpolationTarget_detail::block_logical_coords<

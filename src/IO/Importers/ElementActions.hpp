@@ -9,7 +9,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "IO/Importers/VolumeDataReader.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/MakeString.hpp"
@@ -34,7 +34,7 @@ struct RegisterWithVolumeDataReader {
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     const std::string element_name = MakeString{}

@@ -18,7 +18,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -95,7 +95,7 @@ struct CountReceives {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& inboxes,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -135,7 +135,7 @@ struct CountReceives {
   static bool is_ready(
       const db::DataBox<DbTags>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/) noexcept {
     auto& int_receives = tuples::get<Tags::IntReceiveTag>(inboxes);
     return int_receives.size() == 70;
@@ -153,7 +153,7 @@ struct Initialize {
                 DbTagsList, Tags::CountActionsCalled>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -175,7 +175,7 @@ struct Initialize {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     static_assert(std::is_same_v<ParallelComponent,
@@ -193,7 +193,7 @@ struct AddIntValue10 {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& inboxes,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     static_assert(std::is_same_v<ParallelComponent,
@@ -231,7 +231,7 @@ struct IncrementInt0 {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -257,7 +257,7 @@ struct RemoveInt0 {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -283,7 +283,7 @@ struct SendToSingleton {
             typename ParallelComponent>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
     static_assert(std::is_same_v<ParallelComponent,
@@ -314,7 +314,7 @@ struct Initialize {
                 DbTagsList, Tags::CountActionsCalled>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -336,7 +336,7 @@ struct Initialize {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     static_assert(std::is_same_v<ParallelComponent,
@@ -354,7 +354,7 @@ struct CheckComponentType {
             typename ParallelComponent>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
@@ -375,7 +375,7 @@ struct ReduceInt {
             typename ParallelComponent>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
@@ -398,7 +398,7 @@ struct Initialize {
                 DbTagsList, Tags::CountActionsCalled>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -420,7 +420,7 @@ struct Initialize {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     static_assert(std::is_same_v<ParallelComponent,
@@ -446,7 +446,7 @@ struct SingletonParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      const Parallel::CProxy_ConstGlobalCache<Metavariables>&
+      const Parallel::CProxy_GlobalCache<Metavariables>&
           global_cache) noexcept {
     if (next_phase == Metavariables::Phase::PerformSingletonAlgorithm) {
       auto& local_cache = *(global_cache.ckLocalBranch());
@@ -479,7 +479,7 @@ struct ArrayParallelComponent {
   using array_index = int;
 
   static void allocate_array(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
       /*initialization_items*/) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
@@ -497,7 +497,7 @@ struct ArrayParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::PerformArrayAlgorithm) {
       Parallel::get_parallel_component<ArrayParallelComponent>(local_cache)
@@ -519,7 +519,7 @@ struct GroupParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
-      Parallel::CProxy_ConstGlobalCache<
+      Parallel::CProxy_GlobalCache<
           Metavariables>& /*global_cache*/) noexcept {}
 };
 
@@ -536,7 +536,7 @@ struct NodegroupParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
-      Parallel::CProxy_ConstGlobalCache<
+      Parallel::CProxy_GlobalCache<
           Metavariables>& /*global_cache*/) noexcept {}
 };
 
@@ -557,7 +557,7 @@ struct TestMetavariables {
     Exit
   };
   static Phase determine_next_phase(const Phase& current_phase,
-                                    const Parallel::CProxy_ConstGlobalCache<
+                                    const Parallel::CProxy_GlobalCache<
                                         TestMetavariables>& /*cache_proxy*/) {
     Parallel::printf("Determining next phase\n");
 

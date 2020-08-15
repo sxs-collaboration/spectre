@@ -17,7 +17,7 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
@@ -52,7 +52,7 @@ template <typename FieldsTag, typename OptionsGroup, typename DbTagsList,
           typename Metavariables, typename ArrayIndex>
 void contribute_to_residual_observation(
     const db::DataBox<DbTagsList>& box,
-    Parallel::ConstGlobalCache<Metavariables>& cache,
+    Parallel::GlobalCache<Metavariables>& cache,
     const ArrayIndex& array_index) noexcept {
   using residual_tag =
       db::add_tag_prefix<LinearSolver::Tags::Residual, FieldsTag>;
@@ -113,7 +113,7 @@ struct InitializeElement {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -176,7 +176,7 @@ struct PrepareSolve {
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>,
@@ -215,7 +215,7 @@ struct CompleteStep {
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     // Update and observe element-local residual magnitude

@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep  // for Tags::Next
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
@@ -31,7 +31,7 @@ namespace Actions {
 /// \brief Adjust the step size for local time stepping
 ///
 /// Uses:
-/// - ConstGlobalCache:
+/// - GlobalCache:
 ///   - Tags::StepChoosers<StepChooserRegistrars>
 ///   - Tags::StepController
 /// - DataBox:
@@ -55,7 +55,7 @@ struct ChangeStepSize {
             typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     static_assert(Metavariables::local_time_stepping,

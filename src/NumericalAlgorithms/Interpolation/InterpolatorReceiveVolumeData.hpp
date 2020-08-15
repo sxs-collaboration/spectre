@@ -13,7 +13,7 @@
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -44,7 +44,7 @@ struct InterpolatorReceiveVolumeData {
       Requires<tmpl::list_contains_v<DbTags, Tags::NumberOfElements>> = nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id,
       const ElementId<VolumeDim>& element_id, const ::Mesh<VolumeDim>& mesh,

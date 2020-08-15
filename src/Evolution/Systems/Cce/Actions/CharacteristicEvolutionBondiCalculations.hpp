@@ -13,7 +13,7 @@
 #include "Evolution/Systems/Cce/PrecomputeCceDependencies.hpp"
 #include "Evolution/Systems/Cce/SwshDerivatives.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Time/Tags.hpp"
 
@@ -38,7 +38,7 @@ struct CalculateIntegrandInputsForTag {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -66,7 +66,7 @@ struct PrecomputeGlobalCceDependencies {
             typename ParallelComponent>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {

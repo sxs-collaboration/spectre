@@ -19,7 +19,7 @@
 class Time;
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
@@ -61,7 +61,7 @@ class PreventRapidIncrease : public StepChooser<StepChooserRegistrars> {
 
   template <typename Metavariables, typename History>
   double operator()(const History& history, const double last_step_magnitude,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/)
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/)
       const noexcept {
     if (history.size() < 2) {
       return std::numeric_limits<double>::infinity();

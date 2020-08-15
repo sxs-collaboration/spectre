@@ -44,7 +44,7 @@ struct MockBoundaryComputeAndSendToEvolution {
                     typename Metavariables::cce_boundary_communication_tags>,
                 DbTags>...>> = nullptr>
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const TimeStepId& time) noexcept {
     times_requested.push_back(time.substep_time().value());

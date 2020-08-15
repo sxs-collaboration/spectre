@@ -10,7 +10,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Framework/ActionTesting.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/NodeLock.hpp"
@@ -77,7 +77,7 @@ struct simple_action_a_mock {
             typename Metavariables, typename ArrayIndex,
             Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const int value) noexcept {
     db::mutate<ValueTag>(
@@ -93,7 +93,7 @@ struct simple_action_b {
             typename Metavariables, typename ArrayIndex,
             Requires<tmpl::list_contains_v<DbTagsList, PassedToB>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,                      // NOLINT
-                    Parallel::ConstGlobalCache<Metavariables>& cache,  // NOLINT
+                    Parallel::GlobalCache<Metavariables>& cache,  // NOLINT
                     const ArrayIndex& /*array_index*/,
                     const double to_call) noexcept {
     // simple_action_b is the action that we are testing, but it calls some
@@ -136,7 +136,7 @@ struct simple_action_c_mock {
             typename Metavariables, typename ArrayIndex,
             Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) noexcept {
     db::mutate<ValueTag>(
         make_not_null(&box), [](const gsl::not_null<int*> value_box) noexcept {
@@ -151,7 +151,7 @@ struct threaded_action_a {
             Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
   static void apply(
       db::DataBox<DbTagsList>& box,  // NOLINT
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const gsl::not_null<Parallel::NodeLock*> /*node_lock*/) noexcept {
     db::mutate<ValueTag>(make_not_null(&box), [
@@ -164,7 +164,7 @@ struct threaded_action_b_mock {
             typename Metavariables, typename ArrayIndex,
             Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<Parallel::NodeLock*> node_lock,
                     const int tag) noexcept {
@@ -301,7 +301,7 @@ struct Action0 {
       Requires<not tmpl::list_contains_v<DbTagsList, DummyTimeTag>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     return std::make_tuple(
@@ -316,7 +316,7 @@ struct Action0 {
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     return {std::move(box)};
@@ -382,7 +382,7 @@ struct SendValue {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     Parallel::receive_data<Tags::ValueTag>(
@@ -488,7 +488,7 @@ struct ActionCalledOnComponentB {
             Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
   static void apply(
       db::DataBox<DbTagsList>& box,                          // NOLINT
-      Parallel::ConstGlobalCache<Metavariables>& /*cache*/,  // NOLINT
+      Parallel::GlobalCache<Metavariables>& /*cache*/,  // NOLINT
       const ArrayIndex& /*array_index*/) noexcept {
     db::mutate<ValueTag>(make_not_null(&box), [
     ](const gsl::not_null<int*> value) noexcept { *value = 5; });
@@ -500,7 +500,7 @@ struct CallActionOnComponentB {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex>
   static void apply(db::DataBox<DbTagsList>& /*box*/,                  // NOLINT
-                    Parallel::ConstGlobalCache<Metavariables>& cache,  // NOLINT
+                    Parallel::GlobalCache<Metavariables>& cache,  // NOLINT
                     const ArrayIndex& /*array_index*/) noexcept {
     Parallel::simple_action<ActionCalledOnComponentB>(
         Parallel::get_parallel_component<ComponentB<Metavariables>>(cache));

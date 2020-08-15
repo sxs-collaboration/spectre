@@ -48,7 +48,7 @@ class er;
 }  // namespace PUP
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 // IWYU pragma: no_forward_declare db::DataBox
 namespace observers::Actions {
@@ -75,7 +75,7 @@ struct MockContributeReductionData {
   template <typename ParallelComponent, typename... DbTags,
             typename Metavariables, typename ArrayIndex, typename... Ts>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationId& observation_id,
                     const std::string& subfile_name,

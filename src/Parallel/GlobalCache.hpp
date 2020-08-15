@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines class template ConstGlobalCache.
+/// Defines class template GlobalCache.
 
 #pragma once
 
@@ -18,11 +18,11 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
-#include "Parallel/ConstGlobalCache.decl.h"
+#include "Parallel/GlobalCache.decl.h"
 
 namespace Parallel {
 
-namespace ConstGlobalCache_detail {
+namespace GlobalCache_detail {
 template <typename T>
 struct type_for_get_helper {
   using type = T;
@@ -34,32 +34,32 @@ struct type_for_get_helper<std::unique_ptr<T, D>> {
 };
 
 // This struct provides a better error message if
-// an unknown tag is requested from the ConstGlobalCache.
-template <typename ConstGlobalCacheTag, typename ListOfPossibleTags>
+// an unknown tag is requested from the GlobalCache.
+template <typename GlobalCacheTag, typename ListOfPossibleTags>
 struct list_of_matching_tags_helper {
   using type = tmpl::filter<ListOfPossibleTags,
-               std::is_base_of<tmpl::pin<ConstGlobalCacheTag>, tmpl::_1>>;
+               std::is_base_of<tmpl::pin<GlobalCacheTag>, tmpl::_1>>;
   static_assert(not std::is_same_v<type, tmpl::list<>>,
-                "Trying to get a nonexistent tag from the ConstGlobalCache. "
+                "Trying to get a nonexistent tag from the GlobalCache. "
                 "To diagnose the problem, search for "
                 "'list_of_matching_tags_helper' in the error message. "
                 "The first template parameter of "
                 "'list_of_matching_tags_helper' is the requested tag, and "
                 "the second template parameter is a tmpl::list of all the "
-                "tags in the ConstGlobalCache.  One possible bug that may "
+                "tags in the GlobalCache.  One possible bug that may "
                 "lead to this error message is a missing or misspelled "
                 "const_global_cache_tags type alias.");
 };
 
 // Note: Returned list does not need to be size 1
-template <class ConstGlobalCacheTag, class Metavariables>
+template <class GlobalCacheTag, class Metavariables>
 using get_list_of_matching_tags = typename list_of_matching_tags_helper<
-    ConstGlobalCacheTag, get_const_global_cache_tags<Metavariables>>::type;
+    GlobalCacheTag, get_const_global_cache_tags<Metavariables>>::type;
 
-template <class ConstGlobalCacheTag, class Metavariables>
+template <class GlobalCacheTag, class Metavariables>
 using type_for_get = typename type_for_get_helper<
-    typename tmpl::front<ConstGlobalCache_detail::get_list_of_matching_tags<
-        ConstGlobalCacheTag, Metavariables>>::type>::type;
+    typename tmpl::front<GlobalCache_detail::get_list_of_matching_tags<
+        GlobalCacheTag, Metavariables>>::type>::type;
 
 template <class T, class = std::void_t<>>
 struct has_component_being_mocked_alias : std::false_type {};
@@ -100,7 +100,7 @@ using get_component_if_mocked = tmpl::front<tmpl::type_from<tmpl::conditional_t<
     tmpl::lazy::find<ComponentList,
                      tmpl::type_<get_component_if_mocked_helper<
                          tmpl::pin<ParallelComponent>, tmpl::_1>>>>>>;
-}  // namespace ConstGlobalCache_detail
+}  // namespace GlobalCache_detail
 
 /// \ingroup ParallelGroup
 /// A Charm++ chare that caches constant data once per Charm++ node.
@@ -110,7 +110,7 @@ using get_component_if_mocked = tmpl::front<tmpl::type_from<tmpl::conditional_t<
 ///   - `const_global_cache_tags`   (possibly empty) typelist of tags of
 ///     constant data
 ///
-/// The tag list for the items added to the ConstGlobalCache is created by
+/// The tag list for the items added to the GlobalCache is created by
 /// combining the following tag lists:
 ///   - `Metavariables::const_global_cache_tags` which should contain only those
 ///     tags that cannot be added from the other tag lists below.
@@ -129,11 +129,11 @@ using get_component_if_mocked = tmpl::front<tmpl::type_from<tmpl::conditional_t<
 /// `create_from_options` that are used to create the constant data from input
 /// file options.
 ///
-/// References to items in the ConstGlobalCache are also added to the
+/// References to items in the GlobalCache are also added to the
 /// db::DataBox of each `Component` in the `Metavariables::component_list` with
-/// the same tag with which they were inserted into the ConstGlobalCache.
+/// the same tag with which they were inserted into the GlobalCache.
 template <typename Metavariables>
-class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
+class GlobalCache : public CBase_GlobalCache<Metavariables> {
   using parallel_component_tag_list = tmpl::transform<
       typename Metavariables::component_list,
       tmpl::bind<
@@ -143,24 +143,24 @@ class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
  public:
   /// Access to the Metavariables template parameter
   using metavariables = Metavariables;
-  /// Typelist of the ParallelComponents stored in the ConstGlobalCache
+  /// Typelist of the ParallelComponents stored in the GlobalCache
   using component_list = typename Metavariables::component_list;
 
-  explicit ConstGlobalCache(tuples::tagged_tuple_from_typelist<
+  explicit GlobalCache(tuples::tagged_tuple_from_typelist<
                             get_const_global_cache_tags<Metavariables>>
                                 const_global_cache) noexcept
       : const_global_cache_(std::move(const_global_cache)) {}
-  explicit ConstGlobalCache(CkMigrateMessage* /*msg*/) {}
-  ~ConstGlobalCache() noexcept override {
+  explicit GlobalCache(CkMigrateMessage* /*msg*/) {}
+  ~GlobalCache() noexcept override {
     (void)Parallel::charmxx::RegisterChare<
-        ConstGlobalCache<Metavariables>,
-        CkIndex_ConstGlobalCache<Metavariables>>::registrar;
+        GlobalCache<Metavariables>,
+        CkIndex_GlobalCache<Metavariables>>::registrar;
   }
   /// \cond
-  ConstGlobalCache(const ConstGlobalCache&) = default;
-  ConstGlobalCache& operator=(const ConstGlobalCache&) = default;
-  ConstGlobalCache(ConstGlobalCache&&) = default;
-  ConstGlobalCache& operator=(ConstGlobalCache&&) = default;
+  GlobalCache(const GlobalCache&) = default;
+  GlobalCache& operator=(const GlobalCache&) = default;
+  GlobalCache(GlobalCache&&) = default;
+  GlobalCache& operator=(GlobalCache&&) = default;
   /// \endcond
 
   /// Entry method to set the ParallelComponents (should only be called once)
@@ -171,24 +171,24 @@ class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
 
  private:
   // clang-tidy: false positive, redundant declaration
-  template <typename ConstGlobalCacheTag, typename MV>
-  friend auto get(const ConstGlobalCache<MV>& cache) noexcept  // NOLINT
-      -> const ConstGlobalCache_detail::type_for_get<ConstGlobalCacheTag, MV>&;
+  template <typename GlobalCacheTag, typename MV>
+  friend auto get(const GlobalCache<MV>& cache) noexcept  // NOLINT
+      -> const GlobalCache_detail::type_for_get<GlobalCacheTag, MV>&;
 
   // clang-tidy: false positive, redundant declaration
   template <typename ParallelComponentTag, typename MV>
   friend auto get_parallel_component(  // NOLINT
-      ConstGlobalCache<MV>& cache) noexcept
+      GlobalCache<MV>& cache) noexcept
       -> Parallel::proxy_from_parallel_component<
-          ConstGlobalCache_detail::get_component_if_mocked<
+          GlobalCache_detail::get_component_if_mocked<
               typename MV::component_list, ParallelComponentTag>>&;
 
   // clang-tidy: false positive, redundant declaration
   template <typename ParallelComponentTag, typename MV>
   friend auto get_parallel_component(  // NOLINT
-      const ConstGlobalCache<MV>& cache) noexcept
+      const GlobalCache<MV>& cache) noexcept
       -> const Parallel::proxy_from_parallel_component<
-          ConstGlobalCache_detail::get_component_if_mocked<
+          GlobalCache_detail::get_component_if_mocked<
               typename MV::component_list,
               ParallelComponentTag>>&;  // NOLINT
 
@@ -200,7 +200,7 @@ class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
 };
 
 template <typename Metavariables>
-void ConstGlobalCache<Metavariables>::set_parallel_components(
+void GlobalCache<Metavariables>::set_parallel_components(
     tuples::tagged_tuple_from_typelist<parallel_component_tag_list>&&
         parallel_components,
     const CkCallback& callback) noexcept {
@@ -220,24 +220,24 @@ void ConstGlobalCache<Metavariables>::set_parallel_components(
 /// \returns a Charm++ proxy that can be used to call an entry method on the
 /// chare(s)
 template <typename ParallelComponentTag, typename Metavariables>
-auto get_parallel_component(ConstGlobalCache<Metavariables>& cache) noexcept
+auto get_parallel_component(GlobalCache<Metavariables>& cache) noexcept
     -> Parallel::proxy_from_parallel_component<
-        ConstGlobalCache_detail::get_component_if_mocked<
+        GlobalCache_detail::get_component_if_mocked<
             typename Metavariables::component_list, ParallelComponentTag>>& {
   return tuples::get<tmpl::type_<Parallel::proxy_from_parallel_component<
-      ConstGlobalCache_detail::get_component_if_mocked<
+      GlobalCache_detail::get_component_if_mocked<
           typename Metavariables::component_list, ParallelComponentTag>>>>(
       cache.parallel_components_);
 }
 
 template <typename ParallelComponentTag, typename Metavariables>
 auto get_parallel_component(
-    const ConstGlobalCache<Metavariables>& cache) noexcept
+    const GlobalCache<Metavariables>& cache) noexcept
     -> const Parallel::proxy_from_parallel_component<
-        ConstGlobalCache_detail::get_component_if_mocked<
+        GlobalCache_detail::get_component_if_mocked<
             typename Metavariables::component_list, ParallelComponentTag>>& {
   return tuples::get<tmpl::type_<Parallel::proxy_from_parallel_component<
-      ConstGlobalCache_detail::get_component_if_mocked<
+      GlobalCache_detail::get_component_if_mocked<
           typename Metavariables::component_list, ParallelComponentTag>>>>(
       cache.parallel_components_);
 }
@@ -247,18 +247,18 @@ auto get_parallel_component(
 /// \ingroup ParallelGroup
 /// \brief Access data in the cache
 ///
-/// \requires ConstGlobalCacheTag is a tag in tag_list
+/// \requires GlobalCacheTag is a tag in tag_list
 ///
 /// \returns a constant reference to an object in the cache
-template <typename ConstGlobalCacheTag, typename Metavariables>
-auto get(const ConstGlobalCache<Metavariables>& cache) noexcept -> const
-    ConstGlobalCache_detail::type_for_get<ConstGlobalCacheTag, Metavariables>& {
+template <typename GlobalCacheTag, typename Metavariables>
+auto get(const GlobalCache<Metavariables>& cache) noexcept -> const
+    GlobalCache_detail::type_for_get<GlobalCacheTag, Metavariables>& {
   // We check if the tag is to be retrieved directly or via a base class
-  using tag = tmpl::front<ConstGlobalCache_detail::get_list_of_matching_tags<
-      ConstGlobalCacheTag, Metavariables>>;
-  static_assert(tmpl::size<ConstGlobalCache_detail::get_list_of_matching_tags<
-                        ConstGlobalCacheTag, Metavariables>>::value == 1,
-                "Found more than one tag matching the ConstGlobalCacheTag "
+  using tag = tmpl::front<GlobalCache_detail::get_list_of_matching_tags<
+      GlobalCacheTag, Metavariables>>;
+  static_assert(tmpl::size<GlobalCache_detail::get_list_of_matching_tags<
+                        GlobalCacheTag, Metavariables>>::value == 1,
+                "Found more than one tag matching the GlobalCacheTag "
                 "requesting to be retrieved.");
   return make_overloader(
       [](std::true_type /*is_unique_ptr*/, auto&& local_cache)
@@ -278,34 +278,34 @@ auto get(const ConstGlobalCache<Metavariables>& cache) noexcept -> const
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ParallelGroup
-/// Tag to retrieve the `Parallel::ConstGlobalCache` from the DataBox.
-struct ConstGlobalCache : db::BaseTag {};
+/// Tag to retrieve the `Parallel::GlobalCache` from the DataBox.
+struct GlobalCache : db::BaseTag {};
 
 template <class Metavariables>
-struct ConstGlobalCacheImpl : ConstGlobalCache, db::SimpleTag {
-  using type = const Parallel::ConstGlobalCache<Metavariables>*;
-  static std::string name() noexcept { return "ConstGlobalCache"; }
+struct GlobalCacheImpl : GlobalCache, db::SimpleTag {
+  using type = const Parallel::GlobalCache<Metavariables>*;
+  static std::string name() noexcept { return "GlobalCache"; }
 };
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ParallelGroup
-/// Tag used to retrieve data from the `Parallel::ConstGlobalCache`. This is the
+/// Tag used to retrieve data from the `Parallel::GlobalCache`. This is the
 /// recommended way for compute tags to retrieve data out of the global cache.
 template <class CacheTag>
-struct FromConstGlobalCache : CacheTag, db::ComputeTag {
+struct FromGlobalCache : CacheTag, db::ComputeTag {
   static std::string name() noexcept {
-    return "FromConstGlobalCache(" + pretty_type::short_name<CacheTag>() + ")";
+    return "FromGlobalCache(" + pretty_type::short_name<CacheTag>() + ")";
   }
   template <class Metavariables>
-  static const ConstGlobalCache_detail::type_for_get<CacheTag, Metavariables>&
-  function(const Parallel::ConstGlobalCache<Metavariables>* const& cache) {
+  static const GlobalCache_detail::type_for_get<CacheTag, Metavariables>&
+  function(const Parallel::GlobalCache<Metavariables>* const& cache) {
     return Parallel::get<CacheTag>(*cache);
   }
-  using argument_tags = tmpl::list<ConstGlobalCache>;
+  using argument_tags = tmpl::list<GlobalCache>;
 };
 }  // namespace Tags
 }  // namespace Parallel
 
 #define CK_TEMPLATES_ONLY
-#include "Parallel/ConstGlobalCache.def.h"
+#include "Parallel/GlobalCache.def.h"
 #undef CK_TEMPLATES_ONLY

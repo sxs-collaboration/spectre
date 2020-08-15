@@ -23,7 +23,7 @@
 /// \cond
 namespace Parallel {
 template <typename Metavariables>
-struct ConstGlobalCache;
+struct GlobalCache;
 }  // namespace Parallel
 namespace tuples {
 template <typename... Tags>
@@ -93,7 +93,7 @@ struct InitializeFirstOrderOperator {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {

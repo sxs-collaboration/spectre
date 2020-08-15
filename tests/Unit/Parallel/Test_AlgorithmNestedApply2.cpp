@@ -7,7 +7,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
@@ -24,7 +24,7 @@ struct another_action {
   template <typename ParallelComponent, typename... DbTags,
             typename Metavariables, typename ArrayIndex>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {}
 };
 
@@ -32,7 +32,7 @@ struct error_call_single_action_from_action {
   template <typename ParallelComponent, typename... DbTags,
             typename Metavariables, typename ArrayIndex>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) {
     Parallel::simple_action<another_action>(*(
         Parallel::get_parallel_component<ParallelComponent>(cache).ckLocal()));
@@ -52,7 +52,7 @@ struct Component {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      const Parallel::CProxy_ConstGlobalCache<Metavariables>&
+      const Parallel::CProxy_GlobalCache<Metavariables>&
           global_cache) noexcept {
     if (next_phase == Metavariables::Phase::Execute) {
       auto& local_cache = *(global_cache.ckLocalBranch());
@@ -70,7 +70,7 @@ struct TestMetavariables {
   static constexpr OptionString help = "Executable for testing";
 
   static Phase determine_next_phase(const Phase& current_phase,
-                                    const Parallel::CProxy_ConstGlobalCache<
+                                    const Parallel::CProxy_GlobalCache<
                                         TestMetavariables>& /*cache_proxy*/) {
     if (current_phase == Phase::Initialization) {
       return Phase::Execute;

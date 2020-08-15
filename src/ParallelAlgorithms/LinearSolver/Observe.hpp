@@ -9,7 +9,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
@@ -59,7 +59,7 @@ template <typename FieldsTag, typename OptionsGroup, typename DbTagsList,
           typename Metavariables>
 void contribute_to_reduction_observer(
     db::DataBox<DbTagsList>& box,
-    Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
+    Parallel::GlobalCache<Metavariables>& cache) noexcept {
   using fields_tag = FieldsTag;
   using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;

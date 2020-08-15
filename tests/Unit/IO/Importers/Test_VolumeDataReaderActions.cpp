@@ -90,7 +90,7 @@ struct TestCallback {
             typename Metavariables, typename DataBox = db::DataBox<DbTagsList>,
             Requires<db::tag_is_retrievable_v<VectorTag, DataBox>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ElementIdType& /*array_index*/,
                     tuples::tagged_tuple_from_typelist<import_tags_list>
                         tensor_data) noexcept {

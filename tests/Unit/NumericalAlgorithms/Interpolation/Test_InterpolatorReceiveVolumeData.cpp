@@ -67,7 +67,7 @@ struct InterpolationTargetReceiveVars;
 }  // namespace intrp::Actions
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 namespace db {
 template <typename TagsList>
@@ -109,7 +109,7 @@ struct MockInterpolationTargetReceiveVars {
                 DbTags, intrp::Tags::TemporalIds<TemporalId>>> = nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
-      Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const std::vector<db::item_type<::Tags::Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>>&

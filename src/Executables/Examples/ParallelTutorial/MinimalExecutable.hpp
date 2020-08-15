@@ -10,7 +10,7 @@
 
 namespace Parallel {
 template <typename Metavariables>
-class CProxy_ConstGlobalCache;
+class CProxy_GlobalCache;
 }  // namespace Parallel
 
 /// [metavariables_definition]
@@ -21,7 +21,7 @@ struct Metavariables {
 
   static Phase determine_next_phase(
       const Phase& /*current_phase*/,
-      const Parallel::CProxy_ConstGlobalCache<
+      const Parallel::CProxy_GlobalCache<
           Metavariables>& /*cache_proxy*/) noexcept {
     return Phase::Exit;
   }

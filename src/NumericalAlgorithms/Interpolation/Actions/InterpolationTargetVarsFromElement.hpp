@@ -18,7 +18,7 @@
 /// \cond
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
@@ -67,7 +67,7 @@ struct InterpolationTargetVarsFromElement {
           nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
       const std::vector<Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&

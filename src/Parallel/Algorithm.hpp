@@ -20,7 +20,7 @@
 #include "ErrorHandling/Error.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/CharmRegistration.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -97,7 +97,7 @@ class AlgorithmImpl;
  * typename ArrayIndex,  typename ActionList>
  * static auto  apply(db::DataBox<tmpl::list<DbTags...>>& box,
  *                    tuples::TaggedTuple<InboxTags...>& inboxes,
- *                    const ConstGlobalCache<Metavariables>& cache,
+ *                    const GlobalCache<Metavariables>& cache,
  *                    const ArrayIndex& array_index,
  *                    const TemporalId& temporal_id, const ActionList meta);
  * \endcode
@@ -167,7 +167,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>> {
   /// Constructor used by Main to initialize the algorithm
   template <class... InitializationTags>
   AlgorithmImpl(
-      const Parallel::CProxy_ConstGlobalCache<metavariables>&
+      const Parallel::CProxy_GlobalCache<metavariables>&
           global_cache_proxy,
       tuples::TaggedTuple<InitializationTags...> initialization_items) noexcept;
 
@@ -344,7 +344,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>> {
   double non_action_time_start_;
 #endif
 
-  Parallel::ConstGlobalCache<metavariables>* const_global_cache_{nullptr};
+  Parallel::GlobalCache<metavariables>* const_global_cache_{nullptr};
   bool performing_action_ = false;
   PhaseType phase_{};
   std::size_t algorithm_step_ = 0;
@@ -356,9 +356,9 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>> {
 
   using all_cache_tags = get_const_global_cache_tags<metavariables>;
   using initial_databox = db::compute_databox_type<tmpl::flatten<tmpl::list<
-      Tags::ConstGlobalCacheImpl<metavariables>,
+      Tags::GlobalCacheImpl<metavariables>,
       typename ParallelComponent::initialization_tags,
-      db::wrap_tags_in<Tags::FromConstGlobalCache, all_cache_tags>>>>;
+      db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>>>>;
   // The types held by the boost::variant, box_
   using databox_phase_types = typename Algorithm_detail::build_databox_types<
       tmpl::list<>, phase_dependent_action_lists, initial_databox,
@@ -393,7 +393,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <class... InitializationTags>
 AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    AlgorithmImpl(const Parallel::CProxy_ConstGlobalCache<metavariables>&
+    AlgorithmImpl(const Parallel::CProxy_GlobalCache<metavariables>&
                       global_cache_proxy,
                   tuples::TaggedTuple<InitializationTags...>
                       initialization_items) noexcept
@@ -402,11 +402,11 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
   const_global_cache_ = global_cache_proxy.ckLocalBranch();
   box_ = db::create<
       db::AddSimpleTags<tmpl::flatten<
-          tmpl::list<Tags::ConstGlobalCacheImpl<metavariables>,
+          tmpl::list<Tags::GlobalCacheImpl<metavariables>,
                      typename ParallelComponent::initialization_tags>>>,
       db::AddComputeTags<
-          db::wrap_tags_in<Tags::FromConstGlobalCache, all_cache_tags>>>(
-      static_cast<const Parallel::ConstGlobalCache<metavariables>*>(
+          db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>>>(
+      static_cast<const Parallel::GlobalCache<metavariables>*>(
           const_global_cache_),
       std::move(get<InitializationTags>(initialization_items))...);
 }
@@ -629,7 +629,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     // ```
     // Algorithm_detail::is_is_ready_callable_t<action, databox,
     //         tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-    //         Parallel::ConstGlobalCache<metavariables>, array_index>{}
+    //         Parallel::GlobalCache<metavariables>, array_index>{}
     // ```
     const auto check_if_ready = make_overloader(
         [this](std::true_type /*has_is_ready*/, auto action,
@@ -688,7 +688,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                         Algorithm_detail::is_is_ready_callable_t<
                             local_this_action, this_databox,
                             tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                            Parallel::ConstGlobalCache<metavariables>,
+                            Parallel::GlobalCache<metavariables>,
                             array_index>{},
                         local_this_action{}, box)) {
                   take_next_action = false;
@@ -712,7 +712,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                         Algorithm_detail::is_is_ready_callable_t<
                             local_this_action, this_databox,
                             tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                            Parallel::ConstGlobalCache<metavariables>,
+                            Parallel::GlobalCache<metavariables>,
                             array_index>{},
                         local_this_action{}, box)) {
                   take_next_action = false;
@@ -753,7 +753,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                         Algorithm_detail::is_is_ready_callable_t<
                             local_this_action, this_databox,
                             tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                            Parallel::ConstGlobalCache<metavariables>,
+                            Parallel::GlobalCache<metavariables>,
                             array_index>{},
                         local_this_action{}, box)) {
                   take_next_action = false;

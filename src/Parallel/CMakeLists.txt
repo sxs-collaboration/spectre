@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-add_charm_module(ConstGlobalCache)
+add_charm_module(GlobalCache)
 add_charm_module(Main)
 
 set(LIBRARY Parallel)
@@ -25,7 +25,7 @@ spectre_target_headers(
   CharmMain.tpp
   CharmPupable.hpp
   CharmRegistration.hpp
-  ConstGlobalCache.hpp
+  GlobalCache.hpp
   CreateFromOptions.hpp
   Exit.hpp
   InboxInserters.hpp

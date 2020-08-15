@@ -17,7 +17,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Parallel/Algorithm.hpp"  // IWYU pragma: keep
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
@@ -66,7 +66,7 @@ struct nodegroup_initialize {
                 DbTagsList, Tags::vector_of_array_indexs>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
@@ -93,7 +93,7 @@ struct nodegroup_initialize {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     static_assert(std::is_same_v<ParallelComponent,
@@ -108,7 +108,7 @@ struct nodegroup_receive {
             typename Metavariables, typename ArrayIndex,
             Requires<sizeof...(DbTags) == 3> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, const int& id_of_array) {
     static_assert(std::is_same_v<ParallelComponent,
                                  NodegroupParallelComponent<TestMetavariables>>,
@@ -134,7 +134,7 @@ struct nodegroup_check_first_result {
             typename Metavariables, typename ArrayIndex,
             Requires<sizeof...(DbTags) == 3> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {
     static_assert(std::is_same_v<ParallelComponent,
                                  NodegroupParallelComponent<TestMetavariables>>,
@@ -159,7 +159,7 @@ struct nodegroup_threaded_receive {
             typename Metavariables, typename ArrayIndex, typename NodeLock,
             Requires<sizeof...(DbTags) == 3> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<NodeLock*> node_lock,
                     const int& id_of_array) {
@@ -186,7 +186,7 @@ struct nodegroup_check_threaded_result {
             typename Metavariables, typename ArrayIndex,
             Requires<sizeof...(DbTags) == 3> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {
     static_assert(std::is_same_v<ParallelComponent,
                                  NodegroupParallelComponent<TestMetavariables>>,
@@ -210,7 +210,7 @@ struct reduce_to_nodegroup {
   template <typename ParallelComponent, typename... DbTags,
             typename Metavariables, typename ArrayIndex>
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index) {
     static_assert(std::is_same_v<ParallelComponent,
                                  ArrayParallelComponent<TestMetavariables>>,
@@ -229,7 +229,7 @@ struct reduce_threaded_method {
   template <typename ParallelComponent, typename... DbTags,
             typename Metavariables, typename ArrayIndex>
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index) {
     static_assert(std::is_same_v<ParallelComponent,
                                  ArrayParallelComponent<TestMetavariables>>,
@@ -262,7 +262,7 @@ struct ArrayParallelComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void allocate_array(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
       /*initialization_items*/) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
@@ -282,7 +282,7 @@ struct ArrayParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
@@ -320,7 +320,7 @@ struct NodegroupParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& nodegroup_proxy =
         Parallel::get_parallel_component<NodegroupParallelComponent>(
@@ -351,7 +351,7 @@ struct TestMetavariables {
     Exit
   };
   static Phase determine_next_phase(const Phase& current_phase,
-                                    const Parallel::CProxy_ConstGlobalCache<
+                                    const Parallel::CProxy_GlobalCache<
                                         TestMetavariables>& /*cache_proxy*/) {
     Parallel::printf("Determining next phase\n");
 

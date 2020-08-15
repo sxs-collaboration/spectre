@@ -93,8 +93,8 @@ phases of the executable (which must include `Initialization` and
 `Exit`), and a static function `determine_next_phase`.  In this
 example, no additional phases are defined, and the executable will
 execute the `Initialization` phase followed by the `Exit` phase.
-(`Parallel::CProxy_ConstGlobalCache` is an unused proxy to the
-`ConstGlobalCache` that is explained below)
+(`Parallel::CProxy_GlobalCache` is an unused proxy to the
+`GlobalCache` that is explained below)
 
 The metavariables struct must define a type alias `component_list`
 that is a `tmpl::list` (a typelist defined in `Utilities/TMPL.hpp`) of
@@ -298,18 +298,18 @@ takes the command line options as an argument (as type
 - Parses the input file options, populating a tagged tuple with their
   values.  (This is discussed in more detail in a future tutorial on
   input file options.)
-- Creates the `ConstGlobalCache` (a nodegroup chare) that holds
-  objects created from input file options that are constant and stored
+- Creates the `GlobalCache` (a nodegroup chare) that holds
+  objects created from input file options that are stored
   once per Charm++ node, as well as proxies to all other parallel
   components.
 - Creates user-requested non-array parallel components, passing them
-  the proxy to the `ConstGlobalCache` as well as any items they
+  the proxy to the `GlobalCache` as well as any items they
   request that can be created from input file options.
 - Creates empty array user-requested parallel components
 - Sends the complete list of parallel components to the
-  `ConstGlobalCache`.
+  `GlobalCache`.
 
-Once the list of parallel components is sent to the `ConstGlobalCache`
+Once the list of parallel components is sent to the `GlobalCache`
 on each node, the `Main` member function
 `allocate_array_components_and_execute_initial_phase` will be
 executed.  This will allocate the elements of the array parallel

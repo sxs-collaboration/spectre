@@ -16,7 +16,7 @@
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/StepController.hpp"
@@ -38,7 +38,7 @@ template <typename Metavariables,
           Requires<not Metavariables::local_time_stepping> = nullptr>
 TimeDelta get_initial_time_step(
     const Time& initial_time, const double initial_dt_value,
-    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/) noexcept {
+    const Parallel::GlobalCache<Metavariables>& /*cache*/) noexcept {
   return (initial_dt_value > 0.0 ? 1 : -1) * initial_time.slab().duration();
 }
 
@@ -47,7 +47,7 @@ template <typename Metavariables,
           Requires<Metavariables::local_time_stepping> = nullptr>
 TimeDelta get_initial_time_step(
     const Time& initial_time, const double initial_dt_value,
-    const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
+    const Parallel::GlobalCache<Metavariables>& cache) noexcept {
   const auto& step_controller = Parallel::get<Tags::StepController>(cache);
   return step_controller.choose_step(initial_time, initial_dt_value);
 }
@@ -95,7 +95,7 @@ struct TimeAndTimeStep {
           nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     const double initial_time_value = db::get<Tags::InitialTime>(box);
@@ -158,7 +158,7 @@ struct TimeAndTimeStep {
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     ERROR(
@@ -215,7 +215,7 @@ struct TimeStepperHistory {
                          variables_tag>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     using DtVars = typename dt_variables_tag::type;
@@ -250,7 +250,7 @@ struct TimeStepperHistory {
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     ERROR(

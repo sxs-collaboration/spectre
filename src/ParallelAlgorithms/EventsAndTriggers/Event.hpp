@@ -5,7 +5,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
@@ -50,7 +50,7 @@ class Event : public PUP::able {
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
             typename ComponentPointer>
   void run(const db::DataBox<DbTags>& box,
-           Parallel::ConstGlobalCache<Metavariables>& cache,
+           Parallel::GlobalCache<Metavariables>& cache,
            const ArrayIndex& array_index,
            const ComponentPointer /*meta*/) noexcept {
     call_with_dynamic_type<void, creatable_classes>(

@@ -11,7 +11,7 @@
 /// \cond
 namespace Parallel {
 template <typename Metavariables>
-struct ConstGlobalCache;
+struct GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
@@ -40,7 +40,7 @@ struct SetData<tmpl::list<Tags...>> {
       Requires<std::conjunction_v<db::tag_is_retrievable<Tags, DataBox>...>> =
           nullptr>
   static void apply(DataBox& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     tuples::TaggedTuple<Tags...> data) noexcept {
     tmpl::for_each<tmpl::list<Tags...>>([&box, &data](auto tag_v) noexcept {

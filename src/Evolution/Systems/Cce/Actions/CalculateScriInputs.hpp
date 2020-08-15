@@ -13,7 +13,7 @@
 #include "Evolution/Systems/Cce/PreSwshDerivatives.hpp"
 #include "Evolution/Systems/Cce/SwshDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -45,7 +45,7 @@ struct CalculateScriInputs {
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     tmpl::for_each<

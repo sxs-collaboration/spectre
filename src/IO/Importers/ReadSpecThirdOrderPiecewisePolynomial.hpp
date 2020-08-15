@@ -22,7 +22,7 @@
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/Importers/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
@@ -74,7 +74,7 @@ struct ReadSpecThirdOrderPiecewisePolynomial {
                                         db::DataBox<DbTagsList>>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {

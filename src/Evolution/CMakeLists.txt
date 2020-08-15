@@ -40,7 +40,7 @@ target_link_libraries(
 
 add_dependencies(
   ${LIBRARY}
-  module_ConstGlobalCache
+  module_GlobalCache
   )
 
 add_subdirectory(Actions)

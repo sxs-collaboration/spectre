@@ -14,7 +14,7 @@
 /// \cond
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
@@ -63,7 +63,7 @@ class StepChooser : public PUP::able {
   template <typename Metavariables, typename DbTags>
   double desired_step(
       const double last_step_magnitude, const db::DataBox<DbTags>& box,
-      const Parallel::ConstGlobalCache<Metavariables>& cache) const noexcept {
+      const Parallel::GlobalCache<Metavariables>& cache) const noexcept {
     ASSERT(last_step_magnitude > 0.,
            "Passed non-positive step magnitude: " << last_step_magnitude);
     const auto result = call_with_dynamic_type<double, creatable_classes>(

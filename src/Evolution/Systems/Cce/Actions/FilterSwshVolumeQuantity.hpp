@@ -10,7 +10,7 @@
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -21,7 +21,7 @@ namespace Actions {
 /*!
  * \ingroup ActionsGroup
  * \brief Filters the spherical volume data stored in `BondiTag` according to
- * the filter parameters in the `Parallel::ConstGlobalCache`.
+ * the filter parameters in the `Parallel::GlobalCache`.
  *
  * \details This action dispatches to the function
  * `filter_swsh_volume_quantity()` to perform the mathematics of
@@ -30,7 +30,7 @@ namespace Actions {
  * Uses:
  * - DataBox:
  *   - `Cce::Tags::LMax`
- * - ConstGlobalCache:
+ * - GlobalCache:
  *   - `InitializationTags::FilterLMax`
  *   - `InitializationTags::RadialFilterAlpha`
  *   - `InitializationTags::RadialFilterHalfPower`
@@ -49,7 +49,7 @@ struct FilterSwshVolumeQuantity {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {

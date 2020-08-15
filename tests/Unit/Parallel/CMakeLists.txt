@@ -11,7 +11,7 @@ function(add_algorithm_test EXECUTABLE_NAME)
 
   add_dependencies(
     ${EXECUTABLE_NAME}
-    module_ConstGlobalCache
+    module_GlobalCache
     module_Main
     )
 
@@ -39,35 +39,35 @@ add_algorithm_test(Test_AlgorithmParallel)
 add_algorithm_test(Test_AlgorithmNodelock)
 add_algorithm_test(Test_AlgorithmReduction)
 
-# Test ConstGlobalCache
-add_charm_module(Test_ConstGlobalCache)
+# Test GlobalCache
+add_charm_module(Test_GlobalCache)
 
 add_dependencies(
-  module_Test_ConstGlobalCache
-  module_ConstGlobalCache
+  module_Test_GlobalCache
+  module_GlobalCache
   )
 
 add_spectre_executable(
-  Test_ConstGlobalCache
-  Test_ConstGlobalCache.cpp
+  Test_GlobalCache
+  Test_GlobalCache.cpp
   )
 
 add_dependencies(
-  Test_ConstGlobalCache
-  module_Test_ConstGlobalCache
+  Test_GlobalCache
+  module_Test_GlobalCache
   )
 
 target_link_libraries(
-  Test_ConstGlobalCache
+  Test_GlobalCache
   PRIVATE
   ErrorHandling
   Informer
   Parallel
   )
 
-add_dependencies(test-executables Test_ConstGlobalCache)
+add_dependencies(test-executables Test_GlobalCache)
 
-spectre_add_catch_tests(Test_ConstGlobalCache "")
+spectre_add_catch_tests(Test_GlobalCache "")
 
 # Add integration tests. For tests that result in a failure it is necessary to
 # redirect output from stderr to stdout. However, it was necessary at least on
@@ -130,7 +130,7 @@ add_algorithm_test("AlgorithmNodelock" "")
 set(LIBRARY "Test_Parallel")
 
 set(LIBRARY_SOURCES
-  Test_ConstGlobalCacheDataBox.cpp
+  Test_GlobalCacheDataBox.cpp
   Test_InboxInserters.cpp
   Test_NodeLock.cpp
   Test_Parallel.cpp
@@ -148,5 +148,5 @@ add_test_library(
 
 add_dependencies(
   ${LIBRARY}
-  module_ConstGlobalCache
+  module_GlobalCache
   )

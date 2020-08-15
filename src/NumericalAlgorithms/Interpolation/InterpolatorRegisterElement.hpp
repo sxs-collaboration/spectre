@@ -6,7 +6,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp" // IWYU pragma: keep
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
@@ -47,7 +47,7 @@ struct RegisterElement {
       typename ArrayIndex,
       Requires<tmpl::list_contains_v<DbTags, Tags::NumberOfElements>> = nullptr>
   static void apply(db::DataBox<DbTags>& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) noexcept {
     db::mutate<Tags::NumberOfElements>(
         make_not_null(&box), [](const gsl::not_null<
@@ -76,7 +76,7 @@ struct RegisterElementWithInterpolator {
   static std::tuple<db::DataBox<DbTagList>&&> apply(
       db::DataBox<DbTagList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     auto& interpolator =
