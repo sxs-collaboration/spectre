@@ -98,23 +98,24 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<Cce::Tags::H5WorldtubeBoundaryDataManager>(
       "H5WorldtubeBoundaryDataManager");
   CHECK(Cce::Tags::H5WorldtubeBoundaryDataManager::create_from_options(
-            8, filename, 3, std::make_unique<intrp::CubicSpanInterpolator>())
-            .get_l_max() == 8);
+            8, filename, 3, std::make_unique<intrp::CubicSpanInterpolator>(),
+            false)
+            ->get_l_max() == 8);
 
   CHECK(Cce::Tags::LMax::create_from_options(8u) == 8u);
   CHECK(Cce::Tags::NumberOfRadialPoints::create_from_options(6u) == 6u);
 
   CHECK(Cce::Tags::StartTimeFromFile::create_from_options(
             -std::numeric_limits<double>::infinity(),
-            "OptionTagsTestCceR0100.h5") == 2.5);
+            "OptionTagsTestCceR0100.h5", false) == 2.5);
   CHECK(Cce::Tags::StartTimeFromFile::create_from_options(
-            3.3, "OptionTagsTestCceR0100.h5") == 3.3);
+            3.3, "OptionTagsTestCceR0100.h5", false) == 3.3);
 
   CHECK(Cce::Tags::EndTimeFromFile::create_from_options(
             std::numeric_limits<double>::infinity(),
-            "OptionTagsTestCceR0100.h5") == 5.4);
+            "OptionTagsTestCceR0100.h5", false) == 5.4);
   CHECK(Cce::Tags::EndTimeFromFile::create_from_options(
-            2.2, "OptionTagsTestCceR0100.h5") == 2.2);
+            2.2, "OptionTagsTestCceR0100.h5", false) == 2.2);
 
   CHECK(Cce::Tags::ObservationLMax::create_from_options(5_st) == 5_st);
   CHECK(Cce::InitializationTags::TargetStepSize::create_from_options(0.2) ==

@@ -85,8 +85,8 @@ void test_h5_initialization(const gsl::not_null<Generator*> gen) noexcept {
       &runner, 0,
       Tags::H5WorldtubeBoundaryDataManager::create_from_options(
           l_max, filename, buffer_size,
-          std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u,
-                                                                       4u)));
+          std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u),
+          false));
 
   // this should run the initialization
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
