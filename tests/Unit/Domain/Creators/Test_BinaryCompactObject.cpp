@@ -74,8 +74,8 @@ void test_connectivity() {
   constexpr double radius_enveloping_sphere = 32.4;
 
   // Misc.:
-  constexpr size_t refinement = 2;
-  constexpr size_t grid_points = 6;
+  constexpr size_t refinement = 1;
+  constexpr size_t grid_points = 3;
   constexpr bool use_projective_map = true;
 
   // Options for outer sphere
@@ -149,8 +149,8 @@ void test_bbh_time_dependent_factory() {
           "    ExciseInteriorB: true\n"
           "    RadiusOuterCube: 22.0\n"
           "    RadiusOuterSphere: 25.0\n"
-          "    InitialRefinement: 2\n"
-          "    InitialGridPoints: 6\n"
+          "    InitialRefinement: 1\n"
+          "    InitialGridPoints: 3\n"
           "    UseEquiangularMap: true\n"
           "    TimeDependence:\n"
           "      UniformTranslation:\n"
@@ -221,8 +221,8 @@ void test_bbh_equiangular_factory() {
           "    ExciseInteriorB: true\n"
           "    RadiusOuterCube: 22.0\n"
           "    RadiusOuterSphere: 25.0\n"
-          "    InitialRefinement: 2\n"
-          "    InitialGridPoints: 6\n"
+          "    InitialRefinement: 1\n"
+          "    InitialGridPoints: 3\n"
           "    UseEquiangularMap: true\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
@@ -243,8 +243,8 @@ void test_bbh_2_outer_radial_refinements_linear_map_factory() {
           "    ExciseInteriorB: true\n"
           "    RadiusOuterCube: 22.0\n"
           "    RadiusOuterSphere: 25.0\n"
-          "    InitialRefinement: 2\n"
-          "    InitialGridPoints: 6\n"
+          "    InitialRefinement: 1\n"
+          "    InitialGridPoints: 3\n"
           "    AdditionToObjectBRadialRefinementLevel: 2\n"
           "    UseEquiangularMap: true\n"
           "    AdditionToOuterLayerRadialRefinementLevel: 2\n");
@@ -267,8 +267,8 @@ void test_bbh_3_outer_radial_refinements_log_map_factory() {
           "    ExciseInteriorB: true\n"
           "    RadiusOuterCube: 22.0\n"
           "    RadiusOuterSphere: 25.0\n"
-          "    InitialRefinement: 2\n"
-          "    InitialGridPoints: 6\n"
+          "    InitialRefinement: 1\n"
+          "    InitialGridPoints: 3\n"
           "    UseEquiangularMap: true\n"
           "    UseLogarithmicMapObjectA: true\n"
           "    AdditionToObjectARadialRefinementLevel: 3\n"
@@ -293,8 +293,8 @@ void test_bbh_equidistant_factory() {
           "    ExciseInteriorB: true\n"
           "    RadiusOuterCube: 22.0\n"
           "    RadiusOuterSphere: 25.0\n"
-          "    InitialRefinement: 2\n"
-          "    InitialGridPoints: 6\n"
+          "    InitialRefinement: 1\n"
+          "    InitialGridPoints: 3\n"
           "    UseEquiangularMap: false\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
@@ -315,8 +315,8 @@ void test_bns_equiangular_factory() {
           "    ExciseInteriorB: false\n"
           "    RadiusOuterCube: 22.0\n"
           "    RadiusOuterSphere: 25.0\n"
-          "    InitialRefinement: 2\n"
-          "    InitialGridPoints: 6\n"
+          "    InitialRefinement: 1\n"
+          "    InitialGridPoints: 3\n"
           "    UseEquiangularMap: true\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
@@ -337,8 +337,8 @@ void test_bns_equidistant_factory() {
           "    ExciseInteriorB: false\n"
           "    RadiusOuterCube: 22.0\n"
           "    RadiusOuterSphere: 25.0\n"
-          "    InitialRefinement: 2\n"
-          "    InitialGridPoints: 6\n"
+          "    InitialRefinement: 1\n"
+          "    InitialGridPoints: 3\n"
           "    UseEquiangularMap: false\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
@@ -359,8 +359,8 @@ void test_bhns_equiangular_factory() {
           "    ExciseInteriorB: false\n"
           "    RadiusOuterCube: 22.0\n"
           "    RadiusOuterSphere: 25.0\n"
-          "    InitialRefinement: 2\n"
-          "    InitialGridPoints: 6\n"
+          "    InitialRefinement: 1\n"
+          "    InitialGridPoints: 3\n"
           "    UseEquiangularMap: true\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
@@ -381,8 +381,8 @@ void test_bhns_equidistant_factory() {
           "    ExciseInteriorB: false\n"
           "    RadiusOuterCube: 22.0\n"
           "    RadiusOuterSphere: 25.0\n"
-          "    InitialRefinement: 2\n"
-          "    InitialGridPoints: 6\n"
+          "    InitialRefinement: 1\n"
+          "    InitialGridPoints: 3\n"
           "    UseEquiangularMap: false\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
@@ -403,8 +403,8 @@ void test_nsbh_equiangular_factory() {
           "    ExciseInteriorB: true\n"
           "    RadiusOuterCube: 22.0\n"
           "    RadiusOuterSphere: 25.0\n"
-          "    InitialRefinement: 2\n"
-          "    InitialGridPoints: 6\n"
+          "    InitialRefinement: 1\n"
+          "    InitialGridPoints: 3\n"
           "    UseEquiangularMap: true\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
@@ -425,8 +425,8 @@ void test_nsbh_equidistant_factory() {
           "    ExciseInteriorB: true\n"
           "    RadiusOuterCube: 22.0\n"
           "    RadiusOuterSphere: 25.0\n"
-          "    InitialRefinement: 2\n"
-          "    InitialGridPoints: 6\n"
+          "    InitialRefinement: 1\n"
+          "    InitialGridPoints: 3\n"
           "    UseEquiangularMap: false\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
@@ -434,8 +434,6 @@ void test_nsbh_equidistant_factory() {
 }
 }  // namespace
 
-// Test times out sometimes, increase timeout to make it pass reliably.
-// [[TimeOut, 20]]
 SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject.FactoryTests",
                   "[Domain][Unit]") {
   test_connectivity();
