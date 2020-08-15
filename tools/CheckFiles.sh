@@ -63,7 +63,7 @@ ci_checks+=(tmpl_debugging)
 # The CMakeLists for Python bindings, executables, and tests will be updated
 # in the future.
 # We also omit special C++ files we know shouldn't be in their CMakeLists.txt.
-check_cmakelists_for_missing_cpp() {
+check_cmakelists_for_missing_cxx() {
     local dir base cmakelists
     dir=$(dirname $1)
     base=$(basename $1)
@@ -81,7 +81,7 @@ check_cmakelists_for_missing_cpp() {
       && [ -f $cmakelists ] \
       && [ $(grep -L "^  $base" $cmakelists) ]
 }
-check_cmakelists_for_missing_cpp_report() {
+check_cmakelists_for_missing_cxx_report() {
     local file dir base cmakelists
     echo "Found C++ files not in CMakeLists.txt:"
     for file in "$@"; do
@@ -91,12 +91,12 @@ check_cmakelists_for_missing_cpp_report() {
         echo "$base should be added to $cmakelists"
     done
 }
-check_cmakelists_for_missing_cpp_test() {
+check_cmakelists_for_missing_cxx_test() {
     # This check relies on comparisons between different files, which makes
     # it cumbersome to test. We omit the test.
     :
 }
-ci_checks+=(check_cmakelists_for_missing_cpp)
+ci_checks+=(check_cmakelists_for_missing_cxx)
 
 # Check CMakeLists.txt contain no spurious C++ files
 # (Checked in CI because this involves comparisons between files and may
@@ -105,7 +105,7 @@ ci_checks+=(check_cmakelists_for_missing_cpp)
 # Check for CMakeLists lines that are [two spaces][anything][.?pp]
 # Then we check that the filename has no slashes (this would indicate a file
 # in a subdirectory), and that the corresponding file exists.
-check_cmakelists_for_extra_cpp() {
+check_cmakelists_for_extra_cxx() {
     local dir match matches
     dir=$(dirname $1)
     if [[ $1 =~ CMakeLists\.txt$ ]] && whitelist "$dir" 'docs' \
@@ -123,7 +123,7 @@ check_cmakelists_for_extra_cpp() {
     fi
     return 1
 }
-check_cmakelists_for_extra_cpp_report() {
+check_cmakelists_for_extra_cxx_report() {
     local file dir match matches
     echo "Found spurious C++ files in CMakeLists.txt:"
     for file in "$@"; do
@@ -137,12 +137,12 @@ check_cmakelists_for_extra_cpp_report() {
         done
     done
 }
-check_cmakelists_for_extra_cpp_test() {
+check_cmakelists_for_extra_cxx_test() {
     # This check relies on comparisons between different files, which makes
     # it cumbersome to test. We omit the test.
     :
 }
-ci_checks+=(check_cmakelists_for_extra_cpp)
+ci_checks+=(check_cmakelists_for_extra_cxx)
 
 if [ "$1" = --test ] ; then
     run_tests "${ci_checks[@]}"
