@@ -148,8 +148,8 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
 
   explicit GlobalCache(tuples::tagged_tuple_from_typelist<
                             get_const_global_cache_tags<Metavariables>>
-                                const_global_cache) noexcept
-      : const_global_cache_(std::move(const_global_cache)) {}
+                                global_cache) noexcept
+      : global_cache_(std::move(global_cache)) {}
   explicit GlobalCache(CkMigrateMessage* /*msg*/) {}
   ~GlobalCache() noexcept override {
     (void)Parallel::charmxx::RegisterChare<
@@ -193,7 +193,7 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
               ParallelComponentTag>>&;  // NOLINT
 
   tuples::tagged_tuple_from_typelist<get_const_global_cache_tags<Metavariables>>
-      const_global_cache_{};
+      global_cache_{};
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       parallel_components_{};
   bool parallel_components_have_been_set_{false};
@@ -263,15 +263,15 @@ auto get(const GlobalCache<Metavariables>& cache) noexcept -> const
   return make_overloader(
       [](std::true_type /*is_unique_ptr*/, auto&& local_cache)
           -> decltype(
-              *(tuples::get<tag>(local_cache.const_global_cache_).get())) {
+              *(tuples::get<tag>(local_cache.global_cache_).get())) {
         return *(
-            tuples::get<tag>(local_cache.const_global_cache_)
+            tuples::get<tag>(local_cache.global_cache_)
                 .get());
       },
       [](std::false_type /*is_unique_ptr*/, auto&& local_cache)
-          -> decltype(tuples::get<tag>(local_cache.const_global_cache_)) {
+          -> decltype(tuples::get<tag>(local_cache.global_cache_)) {
         return tuples::get<tag>(
-            local_cache.const_global_cache_);
+            local_cache.global_cache_);
       })(typename tt::is_a<std::unique_ptr, typename tag::type>::type{}, cache);
 }
 

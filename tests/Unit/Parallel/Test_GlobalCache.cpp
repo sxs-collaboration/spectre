@@ -184,10 +184,10 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCache", "[Unit][Parallel]") {
         "Nobody", 178, 2.2, std::make_unique<Square>());
 
     Parallel::CProxy_GlobalCache<TestMetavariables>
-        const_global_cache_proxy =
+        global_cache_proxy =
             Parallel::CProxy_GlobalCache<TestMetavariables>::ckNew(
                 const_data_to_be_cached);
-    const auto& local_cache = *const_global_cache_proxy.ckLocalBranch();
+    const auto& local_cache = *global_cache_proxy.ckLocalBranch();
     CHECK("Nobody" == Parallel::get<name>(local_cache));
     CHECK(178 == Parallel::get<age>(local_cache));
     CHECK(2.2 == Parallel::get<height>(local_cache));
