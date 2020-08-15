@@ -7,6 +7,7 @@ add_subdirectory(AnalyticSolutions)
 set(LIBRARY "Test_Cce")
 
 set(LIBRARY_SOURCES
+  InterfaceManagers/Test_GhInterpolationStrategies.cpp
   InterfaceManagers/Test_GhLocalTimeStepping.cpp
   InterfaceManagers/Test_GhLockstep.cpp
   Test_AnalyticBoundaryDataManager.cpp

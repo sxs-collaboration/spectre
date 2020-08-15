@@ -180,28 +180,30 @@ decltype(auto) count_if(const Container& c, UnaryPredicate&& unary_predicate) {
 
 /// Convenience wrapper around std::find
 template <class Container, class T>
-decltype(auto) find(const Container& c, const T& value) {
+decltype(auto) find(Container&& c, const T& value) {
   using std::begin;
   using std::end;
-  return std::find(begin(c), end(c), value);
+  return std::find(begin(std::forward<Container>(c)),
+                   end(std::forward<Container>(c)), value);
 }
 
 /// Convenience wrapper around std::find_if
 template <class Container, class UnaryPredicate>
-decltype(auto) find_if(const Container& c, UnaryPredicate&& unary_predicate) {
+decltype(auto) find_if(Container&& c, UnaryPredicate&& unary_predicate) {
   using std::begin;
   using std::end;
-  return std::find_if(begin(c), end(c),
+  return std::find_if(begin(std::forward<Container>(c)),
+                      end(std::forward<Container>(c)),
                       std::forward<UnaryPredicate>(unary_predicate));
 }
 
 /// Convenience wrapper around std::find_if_not
 template <class Container, class UnaryPredicate>
-decltype(auto) find_if_not(const Container& c,
-                           UnaryPredicate&& unary_predicate) {
+decltype(auto) find_if_not(Container&& c, UnaryPredicate&& unary_predicate) {
   using std::begin;
   using std::end;
-  return std::find_if_not(begin(c), end(c),
+  return std::find_if_not(begin(std::forward<Container>(c)),
+                          end(std::forward<Container>(c)),
                           std::forward<UnaryPredicate>(unary_predicate));
 }
 

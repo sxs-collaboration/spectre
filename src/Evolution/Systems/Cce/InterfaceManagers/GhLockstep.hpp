@@ -11,6 +11,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
+#include "Evolution/Systems/Cce/InterfaceManagers/GhInterpolationStrategies.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/TimeStepId.hpp"
@@ -60,10 +61,14 @@ class GhLockstep : public GhInterfaceManager {
   void insert_gh_data(
       TimeStepId time_id, const tnsr::aa<DataVector, 3>& spacetime_metric,
       const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
-      TimeStepId next_time_id = {},
       const tnsr::aa<DataVector, 3>& dt_spacetime_metric = {},
       const tnsr::iaa<DataVector, 3>& dt_phi = {},
       const tnsr::aa<DataVector, 3>& dt_pi = {}) noexcept override;
+
+  /// \brief next time information is ignored by this implementation, so this is
+  /// a no-op.
+  void insert_next_gh_time(TimeStepId /*time_id*/,
+                           TimeStepId /*next_time_id*/) noexcept override {}
 
   /// \brief Requests are ignored by this implementation, so this is a no-op.
   void request_gh_data(const TimeStepId& /*time_id*/) noexcept override {}
@@ -86,6 +91,10 @@ class GhLockstep : public GhInterfaceManager {
 
   /// Serialization for Charm++.
   void pup(PUP::er& p) noexcept override;
+
+  InterpolationStrategy get_interpolation_strategy() const noexcept override {
+    return InterpolationStrategy::EverySubstep;
+  };
 
  private:
   std::deque<std::tuple<TimeStepId, gh_variables>> provided_data_;

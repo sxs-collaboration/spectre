@@ -23,7 +23,6 @@ std::unique_ptr<GhInterfaceManager> GhLockstep::get_clone() const noexcept {
 void GhLockstep::insert_gh_data(
     TimeStepId time_id, const tnsr::aa<DataVector, 3>& spacetime_metric,
     const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,
-    TimeStepId /*next_time_id*/,
     const tnsr::aa<DataVector, 3>& /*dt_spacetime_metric*/,
     const tnsr::iaa<DataVector, 3>& /*dt_phi*/,
     const tnsr::aa<DataVector, 3>& /*dt_pi*/) noexcept {

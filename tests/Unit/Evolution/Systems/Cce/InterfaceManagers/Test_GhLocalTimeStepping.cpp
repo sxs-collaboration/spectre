@@ -53,6 +53,8 @@ void test_gh_local_time_stepping_interface_manager(
       {true, 0, {target_slab, {17, 40}}},
       {true, 0, {target_slab, {1, 2}}}};
   InterfaceManagers::GhLocalTimeStepping interface_manager{5};
+  CHECK(interface_manager.get_interpolation_strategy() ==
+        InterpolationStrategy::EveryStep);
 
   // These represent data at time = 0, the time dependence for item i in the
   // vector will be a * cos((frequency + i * 0.05) * t), so the first derivative
@@ -80,8 +82,7 @@ void test_gh_local_time_stepping_interface_manager(
           const gsl::not_null<InterfaceManagers::GhLocalTimeStepping*>
               local_interface_manager,
           const size_t index) noexcept {
-        auto current_time_step_id = source_time_steps[index];
-        auto next_time_step_id = source_time_steps[index + 1];
+        const auto current_time_step_id = source_time_steps[index];
         const double current_time = current_time_step_id.substep_time().value();
 
         tnsr::aa<DataVector, 3> current_spacetime_metric{5_st};
@@ -121,8 +122,17 @@ void test_gh_local_time_stepping_interface_manager(
         }
         local_interface_manager->insert_gh_data(
             current_time_step_id, current_spacetime_metric, current_phi,
-            current_pi, next_time_step_id, current_dt_spacetime_metric,
-            current_dt_phi, current_dt_pi);
+            current_pi, current_dt_spacetime_metric, current_dt_phi,
+            current_dt_pi);
+      };
+
+  const auto insert_source_next_time =
+      [&source_time_steps](
+          const gsl::not_null<InterfaceManagers::GhLocalTimeStepping*>
+              local_interface_manager,
+          const size_t index) noexcept {
+        local_interface_manager->insert_next_gh_time(
+            source_time_steps[index], source_time_steps[index + 1]);
       };
 
   const auto request_target_time =
@@ -183,29 +193,40 @@ void test_gh_local_time_stepping_interface_manager(
   };
 
   // Test plan (given in ratios of the source interval):
-  // insert preparation steps 0.0 0.1 0.2 0.3 0.4  (order 5)
+  // insert preparation steps 0.0 0.1 0.2 0.3 0.4 and next times except for 0.4
+  // (order 5)
   // request 0.475 (19/40)
-  // insert .5
+  // fail to retrieve .475
+  // insert 0.4 next time
   // retrieve .475
-  // insert .6
+  // insert .5 data and next time
+  // insert .6 data
   // request .7
   //
   // clone and serialize; check remaining for original, serialized, and clone
   //
+  // insert .6 next time
   // request .85
-  // insert .7
-  // insert .8
+  // insert .7 next time and data
+  // insert .8 data and next time
   // retrieve .7
   // retrieve .85
 
   check_no_retrieval(make_not_null(&interface_manager));
   insert_source_data(make_not_null(&interface_manager), 0_st);
+  insert_source_next_time(make_not_null(&interface_manager), 0_st);
   insert_source_data(make_not_null(&interface_manager), 1_st);
+  insert_source_next_time(make_not_null(&interface_manager), 1_st);
   insert_source_data(make_not_null(&interface_manager), 2_st);
+  insert_source_next_time(make_not_null(&interface_manager), 2_st);
   insert_source_data(make_not_null(&interface_manager), 3_st);
+  insert_source_next_time(make_not_null(&interface_manager), 3_st);
   insert_source_data(make_not_null(&interface_manager), 4_st);
   request_target_time(make_not_null(&interface_manager), 0_st);
+  check_no_retrieval(make_not_null(&interface_manager));
+  insert_source_next_time(make_not_null(&interface_manager), 4_st);
   insert_source_data(make_not_null(&interface_manager), 5_st);
+  insert_source_next_time(make_not_null(&interface_manager), 5_st);
   check_retrieval(make_not_null(&interface_manager), 0_st);
   check_no_retrieval(make_not_null(&interface_manager));
   insert_source_data(make_not_null(&interface_manager), 6_st);
@@ -213,12 +234,15 @@ void test_gh_local_time_stepping_interface_manager(
 
   const auto second_half_checks =
       [&request_target_time, &check_no_retrieval, &check_retrieval,
-       &insert_source_data](
+       &insert_source_data, &insert_source_next_time](
           const gsl::not_null<InterfaceManagers::GhLocalTimeStepping*>
               local_interface_manager) noexcept {
+        insert_source_next_time(local_interface_manager, 6_st);
         request_target_time(local_interface_manager, 2_st);
+        insert_source_next_time(local_interface_manager, 7_st);
         insert_source_data(local_interface_manager, 7_st);
         insert_source_data(local_interface_manager, 8_st);
+        insert_source_next_time(local_interface_manager, 8_st);
         check_retrieval(local_interface_manager, 1_st);
         check_retrieval(local_interface_manager, 2_st);
         check_no_retrieval(local_interface_manager);

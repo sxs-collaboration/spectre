@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "DataStructures/Variables.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeWorldtubeBoundary.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
@@ -127,7 +128,7 @@ void test_gh_initialization() noexcept {
       tuples::tagged_tuple_from_typelist<
           Parallel::get_const_global_cache_tags<GhMetavariables>>{
           l_max, extraction_radius, std::numeric_limits<double>::infinity(),
-          0.0}};
+          0.0, InterfaceManagers::InterpolationStrategy::EveryStep}};
 
   runner.set_phase(GhMetavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(
