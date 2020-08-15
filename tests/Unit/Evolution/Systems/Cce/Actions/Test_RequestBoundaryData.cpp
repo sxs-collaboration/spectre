@@ -185,7 +185,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
                                                         target_step_size);
   ActionTesting::emplace_component<worldtube_component>(
       &runner, 0,
-      InitializationTags::H5WorldtubeBoundaryDataManager::create_from_options(
+      Tags::H5WorldtubeBoundaryDataManager::create_from_options(
           l_max, filename, buffer_size,
           std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3_st,
                                                                        4_st)));

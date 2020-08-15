@@ -155,25 +155,6 @@ struct InitializeJ {
 }  // namespace OptionTags
 
 namespace InitializationTags {
-/// An initialization tag that constructs a `MetricWorldtubeDataManager` from
-/// options
-struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
-  using type = MetricWorldtubeDataManager;
-  using option_tags =
-      tmpl::list<OptionTags::LMax, OptionTags::BoundaryDataFilename,
-                 OptionTags::H5LookaheadTimes, OptionTags::H5Interpolator>;
-
-  static constexpr bool pass_metavariables = false;
-  static type create_from_options(
-      const size_t l_max, const std::string& filename,
-      const size_t number_of_lookahead_times,
-      const std::unique_ptr<intrp::SpanInterpolator>& interpolator) noexcept {
-    return MetricWorldtubeDataManager{
-        std::make_unique<SpecWorldtubeH5BufferUpdater>(filename), l_max,
-        number_of_lookahead_times, interpolator->get_clone()};
-  }
-};
-
 struct ScriInterpolationOrder : db::SimpleTag {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::ScriInterpolationOrder>;
@@ -217,6 +198,24 @@ struct ScriOutputDensity : db::SimpleTag {
 }  // namespace InitializationTags
 
 namespace Tags {
+/// A tag that constructs a `MetricWorldtubeDataManager` from options
+struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
+  using type = MetricWorldtubeDataManager;
+  using option_tags =
+      tmpl::list<OptionTags::LMax, OptionTags::BoundaryDataFilename,
+                 OptionTags::H5LookaheadTimes, OptionTags::H5Interpolator>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(
+      const size_t l_max, const std::string& filename,
+      const size_t number_of_lookahead_times,
+      const std::unique_ptr<intrp::SpanInterpolator>& interpolator) noexcept {
+    return MetricWorldtubeDataManager{
+      std::make_unique<SpecWorldtubeH5BufferUpdater>(filename), l_max,
+          number_of_lookahead_times, interpolator->get_clone()};
+  }
+};
+
 struct LMax : db::SimpleTag, Spectral::Swsh::Tags::LMaxBase {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::LMax>;

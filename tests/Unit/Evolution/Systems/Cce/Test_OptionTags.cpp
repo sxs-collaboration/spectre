@@ -95,11 +95,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       gr::Solutions::KerrSchild{1.0, {{0.2, 0.2, 0.2}}, {{0.0, 0.0, 0.0}}},
       filename, 4.0, 100.0, 0.0, 0.1, 8);
 
-  CHECK(
-      Cce::InitializationTags::H5WorldtubeBoundaryDataManager::
-          create_from_options(8, filename, 3,
-                              std::make_unique<intrp::CubicSpanInterpolator>())
-              .get_l_max() == 8);
+  TestHelpers::db::test_simple_tag<Cce::Tags::H5WorldtubeBoundaryDataManager>(
+      "H5WorldtubeBoundaryDataManager");
+  CHECK(Cce::Tags::H5WorldtubeBoundaryDataManager::create_from_options(
+            8, filename, 3, std::make_unique<intrp::CubicSpanInterpolator>())
+            .get_l_max() == 8);
 
   CHECK(Cce::Tags::LMax::create_from_options(8u) == 8u);
   CHECK(Cce::Tags::NumberOfRadialPoints::create_from_options(6u) == 6u);
