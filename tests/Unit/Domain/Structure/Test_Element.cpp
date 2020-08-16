@@ -100,7 +100,7 @@ void check_element_3d() {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Element", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Structure.Element", "[Domain][Unit]") {
   check_element_1d();
   check_element_2d();
   check_element_3d();

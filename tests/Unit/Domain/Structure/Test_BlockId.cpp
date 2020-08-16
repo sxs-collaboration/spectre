@@ -9,7 +9,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/GetOutput.hpp"
 
-SPECTRE_TEST_CASE("Unit.Domain.BlockId", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Structure.BlockId", "[Domain][Unit]") {
   domain::BlockId id{10};
   CHECK(id.get_index() == 10);
   CHECK(id == domain::BlockId{10});

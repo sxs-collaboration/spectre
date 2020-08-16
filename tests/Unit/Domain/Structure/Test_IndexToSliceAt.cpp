@@ -7,7 +7,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/IndexToSliceAt.hpp"
 
-SPECTRE_TEST_CASE("Unit.Domain.IndexToSliceAt", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Structure.IndexToSliceAt", "[Domain][Unit]") {
   const Index<2> extents{{{2, 5}}};
   CHECK(index_to_slice_at(extents, Direction<2>::lower_xi()) == 0);
   CHECK(index_to_slice_at(extents, Direction<2>::upper_xi()) == 1);

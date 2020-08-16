@@ -14,7 +14,7 @@
 
 namespace domain::Initialization {
 
-SPECTRE_TEST_CASE("Unit.Domain.CreateInitialMesh", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Structure.CreateInitialMesh", "[Domain][Unit]") {
   {
     INFO("Single element");
     CHECK(create_initial_mesh({{{3}}}, ElementId<1>{0}) ==

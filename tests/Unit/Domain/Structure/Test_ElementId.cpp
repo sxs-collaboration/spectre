@@ -152,7 +152,7 @@ void test_serialization() noexcept {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.ElementId", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Structure.ElementId", "[Domain][Unit]") {
   test_element_id();
   test_placement_new_and_hashing();
   test_serialization<1>();
@@ -161,7 +161,7 @@ SPECTRE_TEST_CASE("Unit.Domain.ElementId", "[Domain][Unit]") {
 }
 
 // [[OutputRegex, Block id out of bounds]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.ElementId.BadBlockId",
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.ElementId.BadBlockId",
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
