@@ -170,8 +170,8 @@ void test_interpolation() noexcept {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.ApplyMatrices",
-                  "[NumericalAlgorithms][LinearOperators][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.ApplyMatrices",
+                  "[DataStructures][Unit]") {
   {
     INFO("DataVector test");
     test_interpolation<ScalarTag, TensorTag, 1>();
