@@ -560,26 +560,21 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 namespace MakeWithValueImpls {
-template <int Spin1, int Spin2, typename SpinWeightedType1,
-          typename SpinWeightedType2>
-struct MakeWithValueImpl<SpinWeighted<SpinWeightedType1, Spin1>,
-                         SpinWeighted<SpinWeightedType2, Spin2>> {
-  template <typename ValueType>
-  static SPECTRE_ALWAYS_INLINE SpinWeighted<SpinWeightedType1, Spin1> apply(
-      const SpinWeighted<SpinWeightedType2, Spin2>& input,
-      const ValueType value) noexcept {
-    return SpinWeighted<SpinWeightedType1, Spin1>{
-        make_with_value<SpinWeightedType1>(input.data(), value)};
+template <int Spin, typename SpinWeightedType>
+struct NumberOfPoints<SpinWeighted<SpinWeightedType, Spin>> {
+  static SPECTRE_ALWAYS_INLINE size_t
+  apply(const SpinWeighted<SpinWeightedType, Spin>& input) noexcept {
+    return number_of_points(input.data());
   }
 };
 
-template <int Spin, typename SpinWeightedType, typename MakeWithType>
-struct MakeWithValueImpl<SpinWeighted<SpinWeightedType, Spin>, MakeWithType> {
+template <int Spin, typename SpinWeightedType>
+struct MakeWithSize<SpinWeighted<SpinWeightedType, Spin>> {
   template <typename ValueType>
   static SPECTRE_ALWAYS_INLINE SpinWeighted<SpinWeightedType, Spin> apply(
-      const MakeWithType& input, const ValueType value) noexcept {
+      const size_t size, const ValueType value) noexcept {
     return SpinWeighted<SpinWeightedType, Spin>{
-        make_with_value<SpinWeightedType>(input, value)};
+        make_with_value<SpinWeightedType>(size, value)};
   }
 };
 }  // namespace MakeWithValueImpls

@@ -17,11 +17,57 @@
 /// \ingroup DataStructuresGroup
 /// Implementations of make_with_value.
 namespace MakeWithValueImpls {
+/// Defines a method for determining the number of points represented
+/// by an object.  This allows the object to appear as the input to
+/// make_with_value.
+///
+/// The MakeWithValueImpls::number_of_points convenience wrapper is
+/// provided to simplify calling this.
+template <typename T, typename = std::nullptr_t>
+struct NumberOfPoints {
+  /// The default implementation will produce a compile-time error.
+  [[noreturn]] static SPECTRE_ALWAYS_INLINE size_t
+  apply(const T& /*input*/) noexcept {
+    static_assert(typename tmpl::has_type<T, std::false_type>::type{},
+                  "Do not know how to obtain a size from this type.  Either "
+                  "implement NumberOfPoints or specialize MakeWithValueImpl "
+                  "for the type you are trying to create.");
+  }
+};
+
+/// The number of points represented by an object.
+template <typename T>
+size_t number_of_points(const T& input) noexcept {
+  return NumberOfPoints<T>::apply(input);
+}
+
+/// Defines a method for producing an object representing a given
+/// number of points.
+///
+/// Do not call these functions directly.  Use make_with_value
+/// instead, which can take a size as its first argument.
+template <typename R, typename = std::nullptr_t>
+struct MakeWithSize {
+  /// The default implementation will produce a compile-time error.
+  /// In specializations, the \p value parameter need not be a template.
+  template <typename T>
+  [[noreturn]] static SPECTRE_ALWAYS_INLINE R
+  apply(const size_t /*size*/, const T& /*value*/) noexcept {
+    static_assert(typename tmpl::has_type<R, std::false_type>::type{},
+                  "Do not know how to create a sized object of this type.  "
+                  "Either implement MakeWithSize or specialize "
+                  "MakeWithValueImpl for the type you are trying to create.");
+  }
+};
+
 template <typename R, typename T, typename = std::nullptr_t>
 struct MakeWithValueImpl {
+  /// The default implementation uses \ref number_of_points and MakeWithSize.
   template <typename ValueType>
   static SPECTRE_ALWAYS_INLINE R apply(const T& input,
-                                       ValueType value) noexcept;
+                                       const ValueType value) noexcept {
+    return MakeWithSize<R>::apply(number_of_points(input), value);
+  }
 };
 }  // namespace MakeWithValueImpls
 
@@ -34,9 +80,8 @@ struct MakeWithValueImpl {
 /// that can be called either at a single grid-point or to fill a data structure
 /// at the same set of grid-points as the `input`
 
-/// \tparam ValueType The type of `value`. For many containers, this will be
-/// `double`, but when making a `ComplexDataVector` with value,
-/// `std::complex<double>` is appropriate.
+/// \tparam ValueType The type of `value`. For most containers, this will be
+/// `double`.
 ///
 /// \see MakeWithValueImpls
 template <typename R, typename T, typename ValueType>
@@ -47,6 +92,13 @@ SPECTRE_ALWAYS_INLINE std::remove_const_t<R> make_with_value(
 }
 
 namespace MakeWithValueImpls {
+template <>
+struct NumberOfPoints<size_t> {
+  static SPECTRE_ALWAYS_INLINE size_t apply(const size_t& input) noexcept {
+    return input;
+  }
+};
+
 /// \brief Returns a double initialized to `value` (`input` is ignored)
 template <typename T>
 struct MakeWithValueImpl<double, T> {

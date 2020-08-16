@@ -588,112 +588,36 @@ std::ostream& operator<<(
 }
 
 namespace MakeWithValueImpls {
-namespace Tensor_detail {
-template <typename T>
-constexpr bool is_scalar =
-    tmpl::list_contains_v<tmpl::list<double, std::complex<double>>, T>;
-
-template <typename T>
-constexpr bool is_vector = tmpl::list_contains_v<
-    tmpl::list<DataVector, ComplexDataVector, ModalVector, ComplexModalVector>,
-    T>;
-
-template <typename T>
-constexpr bool is_spin_weighted = is_spin_weighted_of_v<ComplexDataVector, T> or
-                                  is_spin_weighted_of_v<ComplexModalVector, T>;
-}  // namespace Tensor_detail
-
-template <typename T, typename... Structure, typename U>
-struct MakeWithValueImpl<Tensor<T, Structure...>, U,
-                         Requires<Tensor_detail::is_scalar<T>>> {
-  /// \brief Returns a Tensor whose elements are set equal to `value` (`input`
-  /// is ignored).
-  static SPECTRE_ALWAYS_INLINE Tensor<T, Structure...> apply(
-      const U& /*input*/, const T value) noexcept {
-    return Tensor<T, Structure...>(value);
-  }
-};
-
-template <typename T, typename... StructureOut, typename U,
-          typename... StructureIn>
-struct MakeWithValueImpl<Tensor<T, StructureOut...>, Tensor<U, StructureIn...>,
-                         Requires<Tensor_detail::is_scalar<T>>> {
-  /// \brief Returns a Tensor whose elements are set equal to `value` (`input`
-  /// is ignored).
-  static SPECTRE_ALWAYS_INLINE Tensor<T, StructureOut...> apply(
-      const Tensor<U, StructureIn...>& /*input*/, const T value) noexcept {
-    return Tensor<T, StructureOut...>(value);
-  }
-};
-
-template <typename T, typename... Structure, typename U>
-struct MakeWithValueImpl<Tensor<T, Structure...>, U,
-                         Requires<(Tensor_detail::is_vector<T> or
-                                   Tensor_detail::is_spin_weighted<T>) and
-                                  Tensor_detail::is_vector<U>>> {
-  /// \brief Returns a Tensor whose vectors are the same size as `input`,
-  /// with each element equal to `value`.
-  static SPECTRE_ALWAYS_INLINE Tensor<T, Structure...> apply(
-      const U& input, const double value) noexcept {
-    return Tensor<T, Structure...>(input.size(), value);
-  }
-};
-
-template <typename T, typename... StructureOut, typename U,
-          typename... StructureIn>
-struct MakeWithValueImpl<Tensor<T, StructureOut...>, Tensor<U, StructureIn...>,
-                         Requires<(Tensor_detail::is_vector<T> or
-                                   Tensor_detail::is_spin_weighted<T>) and
-                                  Tensor_detail::is_vector<U>>> {
-  /// \brief Returns a Tensor whose vectors are the same size as the
-  /// vectors of `input`, with each element equal to `value`.
-  static SPECTRE_ALWAYS_INLINE Tensor<T, StructureOut...> apply(
-      const Tensor<U, StructureIn...>& input, const double value) noexcept {
-    return Tensor<T, StructureOut...>(input.begin()->size(), value);
-  }
-};
-
-// There are blanket MakeWithValue implementations for <double, Anything> and
-// <std::complex<double>, Anything>, so we don't need to define specific ones
-// here.
-
-template <typename T, typename U, typename... Structure>
-struct MakeWithValueImpl<
-    T, Tensor<U, Structure...>,
-    Requires<Tensor_detail::is_vector<T> and Tensor_detail::is_vector<U>>> {
-  /// \brief Returns a vector with the same size as the vectors of
-  /// `input`, with each element equal to `value`.
-  static SPECTRE_ALWAYS_INLINE T apply(const Tensor<U, Structure...>& input,
-                                       const double value) noexcept {
-    return T(input.begin()->size(), value);
+template <typename T, typename... Structure>
+struct NumberOfPoints<Tensor<T, Structure...>> {
+  static SPECTRE_ALWAYS_INLINE size_t
+  apply(const Tensor<T, Structure...>& input) noexcept {
+    return number_of_points(*input.begin());
   }
 };
 
 template <typename T, typename... Structure>
-struct MakeWithValueImpl<Tensor<T, Structure...>, size_t,
-                         Requires<Tensor_detail::is_vector<T> or
-                                  Tensor_detail::is_spin_weighted<T>>> {
-  /// \brief Returns a Tensor whose elements are set equal to `value` of size
-  /// `size`
+struct MakeWithSize<Tensor<T, Structure...>> {
+  template <typename U>
   static SPECTRE_ALWAYS_INLINE Tensor<T, Structure...> apply(
-      const size_t size, const double value) noexcept {
-    return Tensor<T, Structure...>(size, value);
+      const size_t size, const U value) noexcept {
+    return Tensor<T, Structure...>(make_with_value<T>(size, value));
   }
 };
 
-template <typename T, typename... StructureOut, typename U,
-          typename... StructureIn>
-struct MakeWithValueImpl<Tensor<T, StructureOut...>, Tensor<U, StructureIn...>,
-                         Requires<Tensor_detail::is_spin_weighted<T> and
-                                  Tensor_detail::is_spin_weighted<U>>> {
-  /// \brief Returns a Tensor whose vectors are the same size as
-  /// `input`, with each element set to `value`.
-  ///
-  /// \details When setting complex from `double`s, the real part is set to
-  /// the `double` and  imaginary part is set to zero.
-  static SPECTRE_ALWAYS_INLINE Tensor<T, StructureOut...> apply(
-      const Tensor<U, StructureIn...>& input, const double value) noexcept {
-    return Tensor<T, StructureOut...>(get(input).data().size(), value);
+template <typename... Structure, typename T>
+struct MakeWithValueImpl<Tensor<double, Structure...>, T> {
+  static SPECTRE_ALWAYS_INLINE Tensor<double, Structure...> apply(
+      const T& /*input*/, const double value) noexcept {
+    return Tensor<double, Structure...>(value);
+  }
+};
+
+template <typename... Structure, typename T>
+struct MakeWithValueImpl<Tensor<std::complex<double>, Structure...>, T> {
+  static SPECTRE_ALWAYS_INLINE Tensor<std::complex<double>, Structure...> apply(
+      const T& /*input*/, const std::complex<double> value) noexcept {
+    return Tensor<std::complex<double>, Structure...>(value);
   }
 };
 }  // namespace MakeWithValueImpls

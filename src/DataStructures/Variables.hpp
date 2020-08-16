@@ -896,39 +896,19 @@ Variables<tmpl::list<Tags...>> variables_from_tagged_tuple(
 
 namespace MakeWithValueImpls {
 template <typename TagList>
-struct MakeWithValueImpl<Variables<TagList>,
-                         typename Variables<TagList>::vector_type> {
-  /// \brief Returns a Variables whose vectors are the same size as `input`,
-  /// with each element equal to `value`.
+struct MakeWithSize<Variables<TagList>> {
   static SPECTRE_ALWAYS_INLINE Variables<TagList> apply(
-      const typename Variables<TagList>::vector_type& input,
+      const size_t size,
       const typename Variables<TagList>::value_type value) noexcept {
-    return Variables<TagList>(input.size(), value);
+    return Variables<TagList>(size, value);
   }
 };
 
-template <typename TagList, typename... Structure>
-struct MakeWithValueImpl<
-    Variables<TagList>,
-    Tensor<typename Variables<TagList>::vector_type, Structure...>> {
-  /// \brief Returns a Variables whose DataVectors are the same size as `input`,
-  /// with each element equal to `value`.
-  static SPECTRE_ALWAYS_INLINE Variables<TagList> apply(
-      const Tensor<typename Variables<TagList>::vector_type, Structure...>&
-          input,
-      const typename Variables<TagList>::value_type value) noexcept {
-    return Variables<TagList>(input.begin()->size(), value);
-  }
-};
-
-template <typename TagListOut, typename TagListIn>
-struct MakeWithValueImpl<Variables<TagListOut>, Variables<TagListIn>> {
-  /// \brief Returns a Variables whose DataVectors are the same size as `input`,
-  /// with each element equal to `value`.
-  static SPECTRE_ALWAYS_INLINE Variables<TagListOut> apply(
-      const Variables<TagListIn>& input,
-      const typename Variables<TagListIn>::value_type value) noexcept {
-    return Variables<TagListOut>(input.number_of_grid_points(), value);
+template <typename TagList>
+struct NumberOfPoints<Variables<TagList>> {
+  static SPECTRE_ALWAYS_INLINE size_t
+  apply(const Variables<TagList>& input) noexcept {
+    return input.number_of_grid_points();
   }
 };
 }  // namespace MakeWithValueImpls
