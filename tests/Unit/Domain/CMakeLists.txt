@@ -7,7 +7,6 @@ add_subdirectory(Python)
 set(LIBRARY "Test_Domain")
 
 set(LIBRARY_SOURCES
-  Structure/Test_Hypercube.cpp
   Test_Block.cpp
   Test_BlockAndElementLogicalCoordinates.cpp
   Test_BlockId.cpp
@@ -44,6 +43,7 @@ set(LIBRARY_SOURCES
 add_subdirectory(Amr)
 add_subdirectory(CoordinateMaps)
 add_subdirectory(Creators)
+add_subdirectory(Structure)
 
 add_test_library(
   ${LIBRARY}
