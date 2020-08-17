@@ -288,7 +288,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   ///   somewhat contrived and is unlikely to occur outside of code tests or
   ///   test cases with very clean initial data.
   bool operator()(
-      const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,
+      const gsl::not_null<std::add_pointer_t<typename Tags::type>>... tensors,
       const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
       const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
       const std::array<double, VolumeDim>& element_size,

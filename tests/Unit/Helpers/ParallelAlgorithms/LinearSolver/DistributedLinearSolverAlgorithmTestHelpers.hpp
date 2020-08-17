@@ -175,7 +175,7 @@ struct ComputeOperatorAction {
     const auto number_of_grid_points = linear_operator.columns();
     const auto& operand = get<OperandTag>(box);
 
-    db::item_type<OperandTag> operator_applied_to_operand{
+    typename OperandTag::type operator_applied_to_operand{
         number_of_grid_points * number_of_elements};
     dgemv_('N', linear_operator.rows(), linear_operator.columns(), 1,
            linear_operator.data(), linear_operator.spacing(), operand.data(), 1,
@@ -183,7 +183,7 @@ struct ComputeOperatorAction {
 
     Parallel::contribute_to_reduction<CollectOperatorAction<OperandTag>>(
         Parallel::ReductionData<
-            Parallel::ReductionDatum<db::item_type<OperandTag>, funcl::Plus<>>>{
+            Parallel::ReductionDatum<typename OperandTag::type, funcl::Plus<>>>{
             operator_applied_to_operand},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
         Parallel::get_parallel_component<ParallelComponent>(cache));
@@ -220,8 +220,8 @@ struct CollectOperatorAction {
               Ap_local.begin());
     db::mutate<local_operator_applied_to_operand_tag>(
         make_not_null(&box),
-        [&Ap_local, &number_of_grid_points](auto Ap) noexcept {
-          *Ap = db::item_type<local_operator_applied_to_operand_tag>{
+        [&Ap_local, &number_of_grid_points ](auto Ap) noexcept {
+          *Ap = typename local_operator_applied_to_operand_tag::type{
               number_of_grid_points};
           get(get<LinearSolver::Tags::OperatorAppliedTo<ScalarFieldOperandTag>>(
               *Ap)) = Ap_local;
@@ -279,8 +279,8 @@ struct InitializeElement {
     return std::make_tuple(
         ::Initialization::merge_into_databox<
             InitializeElement, db::AddSimpleTags<fields_tag, sources_tag>>(
-            std::move(box), db::item_type<fields_tag>{num_points, 0.},
-            db::item_type<sources_tag>{source}));
+            std::move(box), typename fields_tag::type{num_points, 0.},
+            typename sources_tag::type{source}));
   }
 };
 

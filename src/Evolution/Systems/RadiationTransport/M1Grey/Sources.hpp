@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"  // for item_type
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"  // IWYU pragma: keep

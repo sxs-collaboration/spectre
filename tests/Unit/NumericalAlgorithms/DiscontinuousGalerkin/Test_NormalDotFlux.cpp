@@ -135,7 +135,7 @@ void test_with_variables() {
   using Fr = Frame::Inertial;
   constexpr size_t num_points = 5;
   tnsr::i<DataVector, Dim, Fr> normal(num_points);
-  db::item_type<flux_tag<Dim, Fr>> fluxes(num_points);
+  typename flux_tag<Dim, Fr>::type fluxes(num_points);
   Var1::type expected1(num_points);
   typename Var2<Dim, Fr>::type expected2(num_points);
   for (size_t i = 0; i < num_points; ++i) {
@@ -169,7 +169,7 @@ template <size_t Dim, typename Frame>
 void check_compute_item() {
   constexpr size_t num_points = 5;
   tnsr::i<DataVector, Dim, Frame> normal(num_points);
-  db::item_type<flux_tag<Dim, Frame>> fluxes(num_points);
+  typename flux_tag<Dim, Frame>::type fluxes(num_points);
   Var1::type expected1(num_points);
   typename Var2<Dim, Frame>::type expected2(num_points);
   for (size_t i = 0; i < num_points; ++i) {

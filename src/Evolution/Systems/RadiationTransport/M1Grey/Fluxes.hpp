@@ -5,7 +5,6 @@
 
 #include <array>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"  // for item_type
 #include "DataStructures/DataBox/Prefixes.hpp"    // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"

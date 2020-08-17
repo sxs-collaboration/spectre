@@ -32,8 +32,7 @@
 // IWYU pragma: no_forward_declare ComplexModalVector
 // IWYU pragma: no_forward_declare SpinWeighted
 
-namespace Spectral {
-namespace Swsh {
+namespace Spectral::Swsh {
 namespace {
 
 // for storing a computed spin-weighted value during the transform test
@@ -99,9 +98,9 @@ void test_transform_and_inverse_transform() noexcept {
       db::AddSimpleTags<collocation_variables_tag, coefficients_variables_tag,
                         Tags::LMax, Tags::NumberOfRadialPoints>,
       db::AddComputeTags<>>(
-      db::item_type<collocation_variables_tag>{
+      typename collocation_variables_tag::type{
           number_of_radial_points * number_of_swsh_collocation_points(l_max)},
-      db::item_type<coefficients_variables_tag>{
+      typename coefficients_variables_tag::type{
           size_of_libsharp_coefficient_vector(l_max) * number_of_radial_points},
       l_max, number_of_radial_points);
 
@@ -320,5 +319,4 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshTransform",
   }
 }
 }  // namespace
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh

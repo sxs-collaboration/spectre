@@ -230,12 +230,12 @@ SPECTRE_TEST_CASE(
           typename metavariables::cce_integration_independent_tags>,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>,
       Tags::LMax, Tags::NumberOfRadialPoints>>(
-      db::item_type<boundary_variables_tag>{number_of_angular_points},
+      typename boundary_variables_tag::type{number_of_angular_points},
       Variables<pre_swsh_derivative_tag_list>{number_of_radial_points *
                                               number_of_angular_points},
       Variables<typename metavariables::cce_gauge_boundary_tags>{
           number_of_angular_points},
-      db::item_type<typename metavariables::evolved_coordinates_variables_tag>{
+      typename metavariables::evolved_coordinates_variables_tag::type{
           number_of_angular_points},
       Variables<typename metavariables::cce_angular_coordinate_tags>{
           number_of_angular_points},

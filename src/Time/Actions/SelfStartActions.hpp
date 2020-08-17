@@ -18,7 +18,7 @@
 #include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Slab.hpp"
-#include "Time/Tags.hpp"  // IWYU pragma: keep // for item_type<Tags::TimeStep>
+#include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
@@ -214,8 +214,7 @@ struct Initialize {
 
     db::mutate<::Tags::TimeStep>(
         make_not_null(&new_box), [&self_start_step](
-                                     const gsl::not_null<
-                                         db::item_type<::Tags::TimeStep>*>
+                                     const gsl::not_null<::TimeDelta*>
                                          time_step) noexcept {
           *time_step = self_start_step;
         });
@@ -300,9 +299,7 @@ struct CheckForOrderIncrease {
     if (done_with_order) {
       db::mutate<::Tags::Next<::Tags::TimeStepId>>(
           make_not_null(&box),
-          [](const gsl::not_null<
-                 db::item_type<::Tags::Next<::Tags::TimeStepId>>*>
-                 next_time_id,
+          [](const gsl::not_null<::TimeStepId*> next_time_id,
              const ::TimeStepId& current_time_id) noexcept {
             const Slab slab = current_time_id.step_time().slab();
             *next_time_id =
@@ -365,7 +362,7 @@ struct StartNextOrderIfReady {
         using Tag = tmpl::type_from<decltype(tag)>;
         db::mutate<Tag>(
             make_not_null(&box),
-            [](const gsl::not_null<db::item_type<Tag>*> value,
+            [](const gsl::not_null<typename Tag::type*> value,
                const std::tuple<typename Tag::type>& initial_value) noexcept {
               *value = get<0>(initial_value);
             },
@@ -415,7 +412,7 @@ struct Cleanup {
     // variables were reset in StartNextOrderIfReady.
     db::mutate<::Tags::TimeStep>(
         make_not_null(&box),
-        [](const gsl::not_null<db::item_type<::Tags::TimeStep>*> time_step,
+        [](const gsl::not_null<::TimeDelta*> time_step,
            const std::tuple<::TimeDelta>& initial_step) noexcept {
           *time_step = get<0>(initial_step);
         },

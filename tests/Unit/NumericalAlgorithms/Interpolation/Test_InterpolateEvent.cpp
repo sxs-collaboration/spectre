@@ -61,7 +61,7 @@ struct Lapse : db::SimpleTag {
 struct MockInterpolatorReceiveVolumeData {
   struct Results {
     // Hardcode expected types here.
-    db::item_type<::Tags::TimeStepId> temporal_id{};
+    ::TimeStepId temporal_id{};
     ElementId<3> element_id{};
     Mesh<3> mesh{};
     Variables<tmpl::list<Tags::Lapse>> vars{};

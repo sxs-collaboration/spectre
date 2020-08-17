@@ -147,8 +147,9 @@ struct MappedCoordinates
   using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
   static constexpr auto function(
       const gsl::not_null<return_type*> target_coords,
-      const db::const_item_type<MapTag>& element_map,
-      const db::const_item_type<SourceCoordsTag>& source_coords) noexcept {
+      const typename MapTag::type& element_map,
+      const tnsr::I<DataVector, MapTag::dim, typename MapTag::source_frame>&
+          source_coords) noexcept {
     *target_coords = element_map(source_coords);
   }
 };
@@ -184,8 +185,9 @@ struct InverseJacobianCompute
   using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
   static constexpr auto function(
       const gsl::not_null<return_type*> inv_jacobian,
-      const db::const_item_type<MapTag>& element_map,
-      const db::const_item_type<SourceCoordsTag>& source_coords) noexcept {
+      const typename MapTag::type& element_map,
+      const tnsr::I<DataVector, MapTag::dim, typename MapTag::source_frame>&
+          source_coords) noexcept {
     *inv_jacobian = element_map.inv_jacobian(source_coords);
   }
 };
@@ -299,8 +301,7 @@ struct BoundaryDirectionsExterior : db::ComputeTag {
 /// a type's base classes in C++.)
 ///
 /// It must be possible to determine the type associated with `Tag`
-/// without reference to a DataBox, i.e., `db::const_item_type<Tag>` must
-/// work.
+/// without reference to a DataBox.
 ///
 /// \tparam DirectionsTag the item of directions
 /// \tparam Tag the tag labeling the item
@@ -331,12 +332,8 @@ struct Interface : virtual db::SimpleTag,
            db::tag_name<Tag>() + ">";
   };
   using tag = Tag;
-  // The use of db::const_item_type<Tag> assumes we will never store
-  // unique_ptrs on interfaces.  This is probably a reasonable
-  // assumption.
-  using type = std::unordered_map<
-      typename db::const_item_type<DirectionsTag>::value_type,
-      db::const_item_type<Tag>>;
+  using type = std::unordered_map<::Direction<DirectionsTag::volume_dim>,
+                                  typename Tag::type>;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -356,15 +353,15 @@ namespace detail {
 template <typename DirectionsTag, typename VariablesTag>
 struct InterfaceSubitemsImpl {
   using type = tmpl::transform<
-      typename const_item_type<VariablesTag>::tags_list,
+      typename VariablesTag::type::tags_list,
       tmpl::bind<domain::Tags::Interface, tmpl::pin<DirectionsTag>, tmpl::_1>>;
 
   using tag = domain::Tags::Interface<DirectionsTag, VariablesTag>;
 
   template <typename Subtag>
   static void create_item(
-      const gsl::not_null<item_type<tag>*> parent_value,
-      const gsl::not_null<item_type<Subtag>*> sub_value) noexcept {
+      const gsl::not_null<typename tag::type*> parent_value,
+      const gsl::not_null<typename Subtag::type*> sub_value) noexcept {
     sub_value->clear();
     for (auto& direction_vars : *parent_value) {
       const auto& direction = direction_vars.first;
@@ -384,8 +381,8 @@ struct InterfaceSubitemsImpl {
 
   template <typename Subtag>
   static void create_compute_item(
-      const gsl::not_null<item_type<Subtag>*> sub_value,
-      const item_type<tag>& parent_value) noexcept {
+      const gsl::not_null<typename Subtag::type*> sub_value,
+      const typename tag::type& parent_value) noexcept {
     for (const auto& direction_vars : parent_value) {
       const auto& direction = direction_vars.first;
       const auto& parent_vars =

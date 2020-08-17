@@ -116,7 +116,7 @@ struct ResidualCompute : db::add_tag_prefix<Residual, FieldsTag>,
   static void function(
       const gsl::not_null<return_type*> residual,
       const typename SourceTag::type& source,
-      const db::item_type<db::add_tag_prefix<OperatorAppliedTo, FieldsTag>>&
+      const typename db::add_tag_prefix<OperatorAppliedTo, FieldsTag>::type&
           operator_applied_to_fields) noexcept {
     *residual = source - operator_applied_to_fields;
   }

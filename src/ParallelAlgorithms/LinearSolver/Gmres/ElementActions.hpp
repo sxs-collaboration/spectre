@@ -68,7 +68,7 @@ struct PrepareSolve {
           *iteration_id = 0;
           *operand = source - operator_applied_to_fields;
           *initial_fields = fields;
-          *basis_history = db::item_type<basis_history_tag>{};
+          *basis_history = typename basis_history_tag::type{};
         },
         get<source_tag>(box), get<operator_applied_to_fields_tag>(box),
         get<fields_tag>(box));
@@ -92,7 +92,7 @@ struct PrepareSolve {
           make_not_null(&box),
           [](const auto preconditioned_basis_history) noexcept {
             *preconditioned_basis_history =
-                db::item_type<preconditioned_basis_history_tag>{};
+                typename preconditioned_basis_history_tag::type{};
           });
     }
 
@@ -173,7 +173,7 @@ struct PrepareStep {
             // preconditioner at all means it is the identity, but that approach
             // appears to yield worse results.
             *preconditioned_operand =
-                make_with_value<db::item_type<preconditioned_operand_tag>>(
+                make_with_value<typename preconditioned_operand_tag::type>(
                     operand, 0.);
           },
           get<operand_tag>(box));
@@ -232,7 +232,7 @@ struct PerformStep {
         [](const auto operand,
            const gsl::not_null<size_t*> orthogonalization_iteration_id,
            const auto& operator_action) noexcept {
-          *operand = db::item_type<operand_tag>(operator_action);
+          *operand = typename operand_tag::type(operator_action);
           *orthogonalization_iteration_id = 0;
         },
         get<operator_tag>(box));

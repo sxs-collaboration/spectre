@@ -147,11 +147,11 @@ void test_first_order_operator(const DataVector& used_for_size) {
 
   // Compute operator for random values
   const auto div_fluxes =
-      make_with_random_values<db::item_type<div_fluxes_tag>>(
+      make_with_random_values<typename div_fluxes_tag::type>(
           nn_generator, nn_dist, used_for_size);
-  const auto sources = make_with_random_values<db::item_type<sources_tag>>(
+  const auto sources = make_with_random_values<typename sources_tag::type>(
       nn_generator, nn_dist, used_for_size);
-  auto step = make_with_value<db::item_type<step_tag>>(
+  auto step = make_with_value<typename step_tag::type>(
       used_for_size, std::numeric_limits<double>::signaling_NaN());
   elliptic::first_order_operator(make_not_null(&step), div_fluxes, sources);
 
@@ -171,7 +171,7 @@ void test_first_order_operator(const DataVector& used_for_size) {
   auto box =
       db::create<db::AddSimpleTags<div_fluxes_tag, sources_tag, step_tag>>(
           div_fluxes, sources,
-          make_with_value<db::item_type<step_tag>>(
+          make_with_value<typename step_tag::type>(
               used_for_size, std::numeric_limits<double>::signaling_NaN()));
   db::mutate_apply<elliptic::FirstOrderOperator<Dim, Step, vars_tag>>(
       make_not_null(&box));

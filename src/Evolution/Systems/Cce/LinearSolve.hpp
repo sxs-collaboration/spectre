@@ -116,13 +116,13 @@ struct RadialIntegrateBondi {
       tmpl::append<integrand_tags, boundary_tags,
                    tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>>;
   static void apply(
-      gsl::not_null<Scalar<
-          SpinWeighted<ComplexDataVector, db::item_type<Tag>::type::spin>>*>
+      gsl::not_null<
+          Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>*>
           integral_result,
-      const Scalar<SpinWeighted<ComplexDataVector,
-                                db::item_type<Tag>::type::spin>>& integrand,
-      const Scalar<SpinWeighted<ComplexDataVector,
-                                db::item_type<Tag>::type::spin>>& boundary,
+      const Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>&
+          integrand,
+      const Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>&
+          boundary,
       size_t l_max, size_t number_of_radial_points) noexcept;
 };
 

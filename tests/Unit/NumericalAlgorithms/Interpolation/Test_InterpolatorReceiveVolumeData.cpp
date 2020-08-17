@@ -108,11 +108,10 @@ struct MockInterpolationTargetReceiveVars {
             Requires<tmpl::list_contains_v<
                 DbTags, intrp::Tags::TemporalIds<TemporalId>>> = nullptr>
   static void apply(
-      db::DataBox<DbTags>& box,
-      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
-      const std::vector<db::item_type<::Tags::Variables<
-          typename InterpolationTargetTag::vars_to_interpolate_to_target>>>&
+      const std::vector<::Variables<
+          typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
           vars_src,
       const std::vector<std::vector<size_t>>& global_offsets,
       const TemporalId& /*temporal_id*/) noexcept {
@@ -241,7 +240,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
       }
     }
     auto coords = block_logical_coordinates(domain, points);
-    db::item_type<intrp::Tags::InterpolatedVarsHolders<metavars>>
+    typename intrp::Tags::InterpolatedVarsHolders<metavars>::type
         vars_holders_l{};
     auto& vars_infos =
         get<intrp::Vars::HolderTag<metavars::InterpolationTargetA, metavars>>(
@@ -259,8 +258,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
       {domain_creator.create_domain()}};
   ActionTesting::emplace_component_and_initialize<interp_component>(
       &runner, 0,
-      {0_st, db::item_type<intrp::Tags::VolumeVarsInfo<metavars>>{},
-       db::item_type<intrp::Tags::InterpolatedVarsHolders<metavars>>{
+      {0_st, typename intrp::Tags::VolumeVarsInfo<metavars>::type{},
+       typename intrp::Tags::InterpolatedVarsHolders<metavars>::type{
            vars_holders}});
   ActionTesting::emplace_component<target_component>(&runner, 0);
   ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
@@ -295,9 +294,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
     ElementMap<3, Frame::Inertial> map{element_id,
                                        block.stationary_map().get_clone()};
     const auto inertial_coords = map(logical_coordinates(mesh));
-    db::item_type<
-        ::Tags::Variables<typename metavars::interpolator_source_vars>>
-        output_vars(mesh.number_of_grid_points());
+    ::Variables<typename metavars::interpolator_source_vars> output_vars(
+        mesh.number_of_grid_points());
     auto& lapse = get<gr::Tags::Lapse<DataVector>>(output_vars);
 
     // Fill lapse with some analytic solution.

@@ -80,7 +80,7 @@ struct ReceivePoints {
         [
           &temporal_id, &block_logical_coords
         ](const gsl::not_null<
-            db::item_type<intrp::Tags::InterpolatedVarsHolders<Metavariables>>*>
+            typename intrp::Tags::InterpolatedVarsHolders<Metavariables>::type*>
               vars_holders) noexcept {
           auto& vars_infos =
               get<intrp::Vars::HolderTag<InterpolationTargetTag,

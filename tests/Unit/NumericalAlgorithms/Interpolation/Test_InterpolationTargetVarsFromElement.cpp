@@ -167,8 +167,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   // Now set up the vars and global offsets
-  std::vector<db::item_type<::Tags::Variables<
-      typename metavars::InterpolationTargetA::vars_to_interpolate_to_target>>>
+  std::vector<::Variables<
+      typename metavars::InterpolationTargetA::vars_to_interpolate_to_target>>
       vars_src;
   std::vector<std::vector<size_t>> global_offsets;
 
@@ -177,9 +177,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
                              const std::vector<double>& vals,
                              const std::vector<size_t>& offset_vals) {
     vars_src.emplace_back(
-        db::item_type<
-            ::Tags::Variables<typename metavars::InterpolationTargetA::
-                                  vars_to_interpolate_to_target>>{vals.size()});
+        ::Variables<typename metavars::InterpolationTargetA::
+                        vars_to_interpolate_to_target>{vals.size()});
     global_offsets.emplace_back(offset_vals);
     auto& scalar = get<Tags::TestSolution>(vars_src.back());
     for (size_t i = 0; i < vals.size(); ++i) {

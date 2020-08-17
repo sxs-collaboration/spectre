@@ -46,8 +46,8 @@ struct SetData<tmpl::list<Tags...>> {
     tmpl::for_each<tmpl::list<Tags...>>([&box, &data](auto tag_v) noexcept {
       using tag = tmpl::type_from<decltype(tag_v)>;
       db::mutate<tag>(
-          make_not_null(&box),
-          [&data](const gsl::not_null<db::item_type<tag>*> value) noexcept {
+          make_not_null(&box), [&data](const gsl::not_null<typename tag::type*>
+                                           value) noexcept {
             *value = std::move(tuples::get<tag>(data));
           });
     });

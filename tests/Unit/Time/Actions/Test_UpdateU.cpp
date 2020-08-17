@@ -136,7 +136,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
     db::mutate<history_tag>(
         make_not_null(&before_box),
         [&rhs, &substep, &substep_times ](
-            const gsl::not_null<db::item_type<history_tag>*> history,
+            const gsl::not_null<typename history_tag::type*> history,
             const double vars) noexcept {
           const Time& time = gsl::at(substep_times, substep);
           history->insert(TimeStepId(true, 0, time), vars,
@@ -151,7 +151,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
     db::mutate<alternative_history_tag>(
         make_not_null(&alternative_before_box),
         [&rhs, &substep, &substep_times ](
-            const gsl::not_null<db::item_type<alternative_history_tag>*>
+            const gsl::not_null<typename alternative_history_tag::type*>
                 alternative_history,
             const double alternative_vars) noexcept {
           const Time& time = gsl::at(substep_times, substep);

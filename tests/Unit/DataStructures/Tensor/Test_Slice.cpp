@@ -121,7 +121,7 @@ void test_variables_slice() noexcept {
                     extents, 0, x_offset));
 
   // Test not_null<boost::option<Tensor>>
-  using TensorType = db::item_type<TestHelpers::Tags::Vector<VectorType>>;
+  using TensorType = tnsr::I<VectorType, 3>;
   auto optional_tensor = boost::make_optional(TensorType{});
   CHECK(optional_tensor);
   data_on_slice(make_not_null(&optional_tensor), boost::optional<TensorType>{},

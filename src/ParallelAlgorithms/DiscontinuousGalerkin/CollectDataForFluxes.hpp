@@ -126,8 +126,8 @@ struct CollectDataForFluxes<BoundaryScheme, domain::Tags::InternalDirections<
         // Store the boundary data on this side of the mortar
         db::mutate<all_mortar_data_tag>(
             make_not_null(&box),
-            [&mortar_id, &temporal_id, &boundary_data_on_mortar](
-                const gsl::not_null<db::item_type<all_mortar_data_tag>*>
+            [&mortar_id, &temporal_id, &boundary_data_on_mortar ](
+                const gsl::not_null<typename all_mortar_data_tag::type*>
                     all_mortar_data) noexcept {
               all_mortar_data->at(mortar_id).local_insert(
                   temporal_id, std::move(boundary_data_on_mortar));
@@ -181,10 +181,11 @@ struct CollectDataForFluxes<
           direction, ::ElementId<volume_dim>::external_boundary_id()};
       db::mutate<all_mortar_data_tag>(
           make_not_null(&box),
-          [&temporal_id, &mortar_id, &direction, &interior_boundary_data,
-           &exterior_boundary_data](
-              const gsl::not_null<db::item_type<all_mortar_data_tag>*>
-                  all_mortar_data) noexcept {
+          [
+            &temporal_id, &mortar_id, &direction, &interior_boundary_data, &
+            exterior_boundary_data
+          ](const gsl::not_null<typename all_mortar_data_tag::type*>
+                all_mortar_data) noexcept {
             // We don't need to project the boundary data since mortars and
             // element faces are identical on external boundaries.
             all_mortar_data->at(mortar_id).local_insert(

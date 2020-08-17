@@ -123,12 +123,12 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
   for (const auto& id : element_ids) {
     const auto hashed_id = static_cast<double>(std::hash<ElementId<2>>{}(id));
     const size_t num_points = 4;
-    db::item_type<VectorTag> vector{num_points};
+    tnsr::I<DataVector, 2> vector{num_points};
     get<0>(vector) = DataVector{0.5 * hashed_id, 1.0 * hashed_id,
                                 3.0 * hashed_id, -2.0 * hashed_id};
     get<1>(vector) = DataVector{-0.5 * hashed_id, -1.0 * hashed_id,
                                 -3.0 * hashed_id, 2.0 * hashed_id};
-    db::item_type<TensorTag> tensor{num_points};
+    tnsr::ij<DataVector, 2> tensor{num_points};
     get<0, 0>(tensor) = DataVector{10.5 * hashed_id, 11.0 * hashed_id,
                                    13.0 * hashed_id, -22.0 * hashed_id};
     get<0, 1>(tensor) = DataVector{10.5 * hashed_id, -11.0 * hashed_id,

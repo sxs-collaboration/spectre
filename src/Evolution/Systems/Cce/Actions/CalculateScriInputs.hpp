@@ -80,9 +80,9 @@ struct CalculateScriInputs {
       tmpl::list<TagPack...> /*meta*/) noexcept {
     db::mutate<TagPack...>(
         make_not_null(&box),
-        [&l_max](const gsl::not_null<db::item_type<TagPack>*>... derivatives,
-                 const db::item_type<
-                     typename TagPack::derivative_of>&... arguments) noexcept {
+        [&l_max](const gsl::not_null<typename TagPack::type*>... derivatives,
+                 const typename TagPack::derivative_of::
+                     type&... arguments) noexcept {
           Spectral::Swsh::angular_derivatives<
               tmpl::list<typename TagPack::derivative_kind...>>(
               l_max, 1, make_not_null(&get(*derivatives))...,

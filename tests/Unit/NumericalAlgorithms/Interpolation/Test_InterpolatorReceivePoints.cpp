@@ -79,8 +79,8 @@ struct MockInterpolationTargetReceiveVars {
       db::DataBox<DbTags>& /*box*/,
       Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
-      const std::vector<db::item_type<::Tags::Variables<
-          typename InterpolationTargetTag::vars_to_interpolate_to_target>>>&
+      const std::vector<::Variables<
+          typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
       /*vars_src*/,
       const std::vector<std::vector<size_t>>& /*global_offsets*/) noexcept {
     // InterpolationTargetReceiveVars will not be called in this test,

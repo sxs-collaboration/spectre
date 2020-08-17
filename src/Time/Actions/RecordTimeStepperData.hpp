@@ -65,7 +65,7 @@ struct RecordTimeStepperData {
 
     db::mutate<history_tag>(
         make_not_null(&box),
-        [](const gsl::not_null<db::item_type<history_tag>*> history,
+        [](const gsl::not_null<typename history_tag::type*> history,
            const TimeStepId& time_step_id,
            const typename variables_tag::type& vars,
            const typename dt_variables_tag::type& dt_vars) noexcept {

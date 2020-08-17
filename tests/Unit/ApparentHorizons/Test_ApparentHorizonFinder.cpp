@@ -343,9 +343,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
             solution_vars);
 
     // Fill output variables with solution.
-    db::item_type<
-        ::Tags::Variables<typename metavars::interpolator_source_vars>>
-        output_vars(mesh.number_of_grid_points());
+    typename ::Tags::Variables<typename metavars::interpolator_source_vars>::
+        type output_vars(mesh.number_of_grid_points());
     get<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(output_vars) =
         gr::spacetime_metric(lapse, shift, g);
     get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(output_vars) =

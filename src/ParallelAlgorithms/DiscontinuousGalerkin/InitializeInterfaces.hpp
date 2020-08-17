@@ -70,11 +70,11 @@ struct InitExteriorVarsImpl<true, Metavariables> {
         domain::Tags::Interface<domain::Tags::BoundaryDirectionsExterior<dim>,
                                 vars_tag>;
 
-    db::item_type<exterior_vars_tag> exterior_boundary_vars{};
+    typename exterior_vars_tag::type exterior_boundary_vars{};
     const auto& mesh = db::get<domain::Tags::Mesh<dim>>(box);
     for (const auto& direction :
          db::get<domain::Tags::Element<dim>>(box).external_boundaries()) {
-      exterior_boundary_vars[direction] = db::item_type<vars_tag>{
+      exterior_boundary_vars[direction] = typename vars_tag::type{
           mesh.slice_away(direction.dimension()).number_of_grid_points()};
     }
     return ::Initialization::merge_into_databox<

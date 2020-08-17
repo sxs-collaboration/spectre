@@ -68,12 +68,12 @@ void test_l2_norm_tag() {
 
   // create test tensors
   const auto psi_1d = [&npts, &minus_five]() {
-    db::item_type<Metric<1, Frame>> tmp{npts};
+    tnsr::ii<DataVector, 1, Frame> tmp{npts};
     get<0, 0>(tmp) = minus_five;
     return tmp;
   }();
   const auto psi_2d = [&npts, &one, &two]() {
-    db::item_type<Metric<2, Frame>> tmp{npts};
+    tnsr::ii<DataVector, 2, Frame> tmp{npts};
     get<0, 0>(tmp) = two;
     get<0, 1>(tmp) = two;
     get<1, 0>(tmp) = two;
@@ -81,7 +81,7 @@ void test_l2_norm_tag() {
     return tmp;
   }();
   const auto psi_3d = [&npts, &one, &two, &minus_three]() {
-    db::item_type<Metric<3, Frame>> tmp{npts};
+    tnsr::ii<DataVector, 3, Frame> tmp{npts};
     get<0, 0>(tmp) = one;
     get<0, 1>(tmp) = two;
     get<0, 2>(tmp) = minus_three;
@@ -124,13 +124,13 @@ void test_l2_norm_tag() {
                          Tags::L2NormCompute<InverseMetric<1, Frame>>,
                          Tags::L2NormCompute<InverseMetric<2, Frame>>,
                          Tags::L2NormCompute<InverseMetric<3, Frame>>>>(
-      db::item_type<MyScalar>{{{minus_three}}},
-      db::item_type<Vector<1, Frame>>{{{mixed}}},
-      db::item_type<Vector<2, Frame>>{{{minus_three, mixed}}},
-      db::item_type<Vector<3, Frame>>{{{minus_three, mixed, four}}},
-      db::item_type<Covector<1, Frame>>{{{four}}},
-      db::item_type<Covector<2, Frame>>{{{four, two}}},
-      db::item_type<Covector<3, Frame>>{{{four, two, twelve}}}, psi_1d, psi_2d,
+      Scalar<DataVector>{{{minus_three}}},
+      tnsr::I<DataVector, 1, Frame>{{{mixed}}},
+      tnsr::I<DataVector, 2, Frame>{{{minus_three, mixed}}},
+      tnsr::I<DataVector, 3, Frame>{{{minus_three, mixed, four}}},
+      tnsr::i<DataVector, 1, Frame>{{{four}}},
+      tnsr::i<DataVector, 2, Frame>{{{four, two}}},
+      tnsr::i<DataVector, 3, Frame>{{{four, two, twelve}}}, psi_1d, psi_2d,
       psi_3d, determinant_and_inverse(psi_1d).second,
       determinant_and_inverse(psi_2d).second,
       determinant_and_inverse(psi_3d).second);

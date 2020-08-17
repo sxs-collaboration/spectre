@@ -108,9 +108,9 @@ void test_gauge_transforms_via_inverse_coordinate_map(
       volume_spin_weighted_variables_tag, Tags::LMax,
       Tags::NumberOfRadialPoints,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>>>(
-      db::item_type<coordinate_variables_tag>{number_of_angular_grid_points},
-      db::item_type<spin_weighted_variables_tag>{number_of_angular_grid_points},
-      db::item_type<volume_spin_weighted_variables_tag>{
+      typename coordinate_variables_tag::type{number_of_angular_grid_points},
+      typename spin_weighted_variables_tag::type{number_of_angular_grid_points},
+      typename volume_spin_weighted_variables_tag::type{
           number_of_angular_grid_points * number_of_radial_grid_points},
       l_max, number_of_radial_grid_points, Spectral::Swsh::SwshInterpolator{});
 
@@ -209,9 +209,9 @@ void test_gauge_transforms_via_inverse_coordinate_map(
       volume_spin_weighted_variables_tag, Tags::LMax,
       Tags::NumberOfRadialPoints,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>>>(
-      db::item_type<coordinate_variables_tag>{number_of_angular_grid_points},
-      db::item_type<spin_weighted_variables_tag>{number_of_angular_grid_points},
-      db::item_type<volume_spin_weighted_variables_tag>{
+      typename coordinate_variables_tag::type{number_of_angular_grid_points},
+      typename spin_weighted_variables_tag::type{number_of_angular_grid_points},
+      typename volume_spin_weighted_variables_tag::type{
           number_of_angular_grid_points * number_of_radial_grid_points},
       l_max, number_of_radial_grid_points, Spectral::Swsh::SwshInterpolator{});
 
@@ -354,9 +354,9 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         make_not_null(&forward_transform_box));
     db::mutate<Tags::BoundaryValue<tag>>(
         make_not_null(&inverse_transform_box),
-        [](const gsl::not_null<db::item_type<Tags::BoundaryValue<tag>>*>
+        [](const gsl::not_null<typename Tags::BoundaryValue<tag>::type*>
                inverse_transform_boundary_value,
-           const db::item_type<Tags::EvolutionGaugeBoundaryValue<tag>>&
+           const typename Tags::EvolutionGaugeBoundaryValue<tag>::type&
                forward_transform_evolution_gauge_value) noexcept {
           *inverse_transform_boundary_value =
               forward_transform_evolution_gauge_value;

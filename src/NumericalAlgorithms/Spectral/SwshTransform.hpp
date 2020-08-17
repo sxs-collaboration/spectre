@@ -434,7 +434,7 @@ struct SwshTransform<tmpl::list<TransformTags...>, Representation> {
 
   static void apply(
       const gsl::not_null<
-          db::item_type<Tags::SwshTransform<TransformTags>>*>... coefficients,
+          typename Tags::SwshTransform<TransformTags>::type*>... coefficients,
       const typename TransformTags::type&... collocations, const size_t l_max,
       const size_t number_of_radial_points) noexcept {
     // forward to the version which takes parameter packs of vectors
@@ -460,8 +460,8 @@ struct SwshTransform<tmpl::list<TransformTags...>, Representation> {
 
  private:
   static void apply_to_vectors(
-      const gsl::not_null<typename db::item_type<
-          Tags::SwshTransform<TransformTags>>::type*>... coefficients,
+      const gsl::not_null<typename Tags::SwshTransform<
+          TransformTags>::type::type*>... coefficients,
       const typename TransformTags::type::type&... collocations, size_t l_max,
       size_t number_of_radial_points) noexcept;
 };
@@ -518,7 +518,7 @@ struct InverseSwshTransform<tmpl::list<TransformTags...>, Representation> {
                  Tags::NumberOfRadialPointsBase>;
 
   static void apply(
-      const gsl::not_null<db::item_type<TransformTags>*>... collocations,
+      const gsl::not_null<typename TransformTags::type*>... collocations,
       const typename Tags::SwshTransform<TransformTags>::type&... coefficients,
       const size_t l_max, const size_t number_of_radial_points) noexcept {
     // forward to the version which takes parameter packs of vectors
@@ -544,8 +544,7 @@ struct InverseSwshTransform<tmpl::list<TransformTags...>, Representation> {
 
  private:
   static void apply_to_vectors(
-      const gsl::not_null<
-          typename db::item_type<TransformTags>::type*>... collocations,
+      const gsl::not_null<typename TransformTags::type::type*>... collocations,
       const typename Tags::SwshTransform<
           TransformTags>::type::type&... coefficients,
       size_t l_max, size_t number_of_radial_points) noexcept;
@@ -553,11 +552,11 @@ struct InverseSwshTransform<tmpl::list<TransformTags...>, Representation> {
 
 template <typename... TransformTags, ComplexRepresentation Representation>
 void SwshTransform<tmpl::list<TransformTags...>, Representation>::
-    apply_to_vectors(
-        const gsl::not_null<typename db::item_type<
-            Tags::SwshTransform<TransformTags>>::type*>... coefficients,
-        const typename TransformTags::type::type&... collocations,
-        const size_t l_max, const size_t number_of_radial_points) noexcept {
+    apply_to_vectors(const gsl::not_null<typename Tags::SwshTransform<
+                         TransformTags>::type::type*>... coefficients,
+                     const typename TransformTags::type::type&... collocations,
+                     const size_t l_max,
+                     const size_t number_of_radial_points) noexcept {
   EXPAND_PACK_LEFT_TO_RIGHT(coefficients->destructive_resize(
       size_of_libsharp_coefficient_vector(l_max) * number_of_radial_points));
 
@@ -575,10 +574,9 @@ void SwshTransform<tmpl::list<TransformTags...>, Representation>::
   EXPAND_PACK_LEFT_TO_RIGHT(detail::append_libsharp_collocation_pointers(
       make_not_null(&pre_transform_collocation_data),
       make_not_null(&pre_transform_views),
-      make_not_null(
-          &const_cast<typename db::item_type<TransformTags>::type&>(  // NOLINT
-               collocations)
-               .data()),
+      make_not_null(&const_cast<typename TransformTags::type::type&>(  // NOLINT
+                         collocations)
+                         .data()),
       l_max, spin >= 0));
 
   std::vector<std::complex<double>*> post_transform_coefficient_data;
@@ -606,12 +604,12 @@ void SwshTransform<tmpl::list<TransformTags...>, Representation>::
 
 template <typename... TransformTags, ComplexRepresentation Representation>
 void InverseSwshTransform<tmpl::list<TransformTags...>, Representation>::
-    apply_to_vectors(
-        const gsl::not_null<
-            typename db::item_type<TransformTags>::type*>... collocations,
-        const typename Tags::SwshTransform<
-            TransformTags>::type::type&... coefficients,
-        const size_t l_max, const size_t number_of_radial_points) noexcept {
+    apply_to_vectors(const gsl::not_null<
+                         typename TransformTags::type::type*>... collocations,
+                     const typename Tags::SwshTransform<
+                         TransformTags>::type::type&... coefficients,
+                     const size_t l_max,
+                     const size_t number_of_radial_points) noexcept {
   EXPAND_PACK_LEFT_TO_RIGHT(collocations->destructive_resize(
       number_of_swsh_collocation_points(l_max) * number_of_radial_points));
 
@@ -622,10 +620,9 @@ void InverseSwshTransform<tmpl::list<TransformTags...>, Representation>::
   // original state
   EXPAND_PACK_LEFT_TO_RIGHT(detail::append_libsharp_coefficient_pointers(
       make_not_null(&pre_transform_coefficient_data),
-      make_not_null(
-          &const_cast<typename db::item_type<  // NOLINT
-               Tags::SwshTransform<TransformTags>>::type&>(coefficients)
-               .data()),
+      make_not_null(&const_cast<typename Tags::SwshTransform<  // NOLINT
+                         TransformTags>::type::type&>(coefficients)
+                         .data()),
       l_max));
 
   std::vector<detail::ComplexDataView<Representation>> post_transform_views;

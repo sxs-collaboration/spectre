@@ -50,9 +50,8 @@ struct RegisterElement {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) noexcept {
     db::mutate<Tags::NumberOfElements>(
-        make_not_null(&box), [](const gsl::not_null<
-                                 db::item_type<Tags::NumberOfElements>*>
-                                    num_elements) noexcept {
+        make_not_null(&box),
+        [](const gsl::not_null<size_t*> num_elements) noexcept {
           ++(*num_elements);
         });
   }

@@ -35,7 +35,7 @@ struct InsertIntoInterpolationManagerImpl {
   static void apply(
       const gsl::not_null<ScriPlusInterpolationManager<ComplexDataVector, Tag>*>
           interpolation_manager,
-      const db::item_type<Tag>& scri_data,
+      const typename Tag::type& scri_data,
       const Scalar<DataVector>& inertial_retarded_time) noexcept {
     interpolation_manager->insert_data(get(inertial_retarded_time),
                                        get(scri_data).data());
@@ -52,8 +52,8 @@ struct InsertIntoInterpolationManagerImpl<::Tags::Multiplies<LhsTag, RhsTag>> {
   static void apply(const gsl::not_null<ScriPlusInterpolationManager<
                         ComplexDataVector, ::Tags::Multiplies<LhsTag, RhsTag>>*>
                         interpolation_manager,
-                    const db::item_type<LhsTag>& lhs_data,
-                    const db::item_type<RhsTag>& rhs_data,
+                    const typename LhsTag::type& lhs_data,
+                    const typename RhsTag::type& rhs_data,
                     const Scalar<DataVector>& inertial_retarded_time) noexcept {
     interpolation_manager->insert_data(get(inertial_retarded_time),
                                        get(lhs_data).data(),

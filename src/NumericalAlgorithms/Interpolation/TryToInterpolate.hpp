@@ -42,7 +42,7 @@ void interpolate_data(
                    tmpl::list<Tags::VolumeVarsInfo<Metavariables>>>(
       [&temporal_id](
           const gsl::not_null<
-              db::item_type<Tags::InterpolatedVarsHolders<Metavariables>>*>
+              typename Tags::InterpolatedVarsHolders<Metavariables>::type*>
               holders,
           const typename Tags::VolumeVarsInfo<Metavariables>::type&
               volume_vars_info) noexcept {
@@ -159,9 +159,10 @@ void try_to_interpolate(
 
     // Clear interpolated data, since we don't need it anymore.
     db::mutate<Tags::InterpolatedVarsHolders<Metavariables>>(
-        box, [&temporal_id](const gsl::not_null<db::item_type<
-                                Tags::InterpolatedVarsHolders<Metavariables>>*>
-                                holders_l) noexcept {
+        box, [&temporal_id](
+                 const gsl::not_null<typename Tags::InterpolatedVarsHolders<
+                     Metavariables>::type*>
+                     holders_l) noexcept {
           get<Vars::HolderTag<InterpolationTargetTag, Metavariables>>(
               *holders_l)
               .infos.erase(temporal_id);

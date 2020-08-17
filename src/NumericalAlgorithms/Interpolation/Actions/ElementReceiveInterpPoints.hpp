@@ -47,7 +47,7 @@ struct ElementReceiveInterpPoints {
         make_not_null(&box),
         [&block_logical_coords](
             const gsl::not_null<
-                db::item_type<intrp::Tags::InterpPointInfo<Metavariables>>*>
+                typename intrp::Tags::InterpPointInfo<Metavariables>::type*>
                 point_infos) noexcept {
           get<intrp::Vars::PointInfoTag<InterpolationTargetTag,
                                         Metavariables::volume_dim>>(

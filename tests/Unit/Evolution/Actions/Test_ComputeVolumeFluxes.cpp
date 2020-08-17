@@ -99,7 +99,7 @@ void test() noexcept {
       &runner, self_id,
       {Variables<tmpl::list<Var1>>{1, var1_value},
        tnsr::I<DataVector, dim, Frame::Inertial>{{{{7.}, {12.}}}},
-       db::item_type<flux_tag>{1, -100.}, mesh_velocity});
+       typename flux_tag::type{1, -100.}, mesh_velocity});
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
   runner.next_action<component<Metavariables>>(self_id);

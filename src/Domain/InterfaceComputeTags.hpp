@@ -44,6 +44,7 @@ template <typename DirectionsTag, typename BaseComputeItem,
 struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
                              tmpl::list<ArgumentTags...>> {
   using volume_tags = get_volume_tags<BaseComputeItem>;
+  static constexpr size_t volume_dim = DirectionsTag::volume_dim;
   static_assert(
       tmpl::size<tmpl::list_difference<
               volume_tags, typename BaseComputeItem::argument_tags>>::value ==
@@ -63,18 +64,18 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
     using type = std::decay_t<decltype(BaseComputeItem::function(
         std::declval<typename InterfaceHelpers_detail::unmap_interface_args<
             tmpl::list_contains_v<volume_tags, ArgumentTags>>::
-                         template f<db::const_item_type<ArgumentTags>>>()...))>;
+                         template f<typename ArgumentTags::type>>()...))>;
   };
 
  public:
-  using return_type = std::unordered_map<
-      typename db::const_item_type<DirectionsTag>::value_type,
-      typename ComputeItemType<BaseComputeItem>::type>;
+  using return_type =
+      std::unordered_map<::Direction<volume_dim>,
+                         typename ComputeItemType<BaseComputeItem>::type>;
 
   template <typename... ArgTypes>
   static constexpr void apply(
       const gsl::not_null<return_type*> result,
-      const db::const_item_type<DirectionsTag>& directions,
+      const std::unordered_set<::Direction<volume_dim>>& directions,
       const ArgTypes&... args) noexcept {
     apply_helper(
         std::integral_constant<bool,
@@ -87,7 +88,7 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
   static constexpr void apply_helper(
       std::false_type /*has_return_type_member*/,
       const gsl::not_null<return_type*> result,
-      const db::const_item_type<DirectionsTag>& directions,
+      const std::unordered_set<::Direction<volume_dim>>& directions,
       const ArgTypes&... args) noexcept {
     for (const auto& direction : directions) {
       (*result)[direction] = BaseComputeItem::function(
@@ -100,7 +101,7 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
   static constexpr void apply_helper(
       std::true_type /*has_return_type_member*/,
       const gsl::not_null<return_type*> result,
-      const db::const_item_type<DirectionsTag>& directions,
+      const std::unordered_set<::Direction<volume_dim>>& directions,
       const ArgTypes&... args) noexcept {
     for (const auto& direction : directions) {
       BaseComputeItem::function(
@@ -174,17 +175,16 @@ struct InterfaceCompute : Interface<DirectionsTag, Tag>, db::ComputeTag {
 /// \tparam Tag the tag labeling the item
 template <typename DirectionsTag, typename Tag>
 struct Slice : Interface<DirectionsTag, Tag>, db::ComputeTag {
-  static constexpr size_t volume_dim =
-      db::const_item_type<DirectionsTag>::value_type::volume_dim;
+  static constexpr size_t volume_dim = DirectionsTag::volume_dim;
 
   using return_type =
-      std::unordered_map<::Direction<volume_dim>, db::const_item_type<Tag>>;
+      std::unordered_map<::Direction<volume_dim>, typename Tag::type>;
 
   static constexpr void function(
       const gsl::not_null<return_type*> sliced_vars,
       const ::Mesh<volume_dim>& mesh,
       const std::unordered_set<::Direction<volume_dim>>& directions,
-      const db::const_item_type<Tag>& variables) noexcept {
+      const typename Tag::type& variables) noexcept {
     for (const auto& direction : directions) {
       data_on_slice(make_not_null(&((*sliced_vars)[direction])), variables,
                     mesh.extents(), direction.dimension(),

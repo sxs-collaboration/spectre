@@ -71,9 +71,9 @@ void test() {
     div_frame_velocity = Scalar<DataVector>{{{{5., 6.}}}};
   }
 
-  db::item_type<db::add_tag_prefix<Tags::dt, System::variables_tag>> dt_vars(
+  typename db::add_tag_prefix<Tags::dt, System::variables_tag>::type dt_vars(
       2, 0.);
-  db::item_type<System::variables_tag> vars(2);
+  typename System::variables_tag::type vars(2);
   get(get<Var1>(vars)) = 3.;
   for (size_t i = 0; i < 3; ++i) {
     get<Var2>(vars)[i] = 5. + i;

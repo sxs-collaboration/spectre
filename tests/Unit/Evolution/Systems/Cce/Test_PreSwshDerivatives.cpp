@@ -205,7 +205,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PreSwshDerivatives",
         db::mutate<tag>(
             make_not_null(&spare_computation_box), [
               &generator, &dist
-            ](const gsl::not_null<db::item_type<tag>*> to_generate) noexcept {
+            ](const gsl::not_null<typename tag::type*> to_generate) noexcept {
               fill_with_random_values(to_generate, make_not_null(&generator),
                                       make_not_null(&dist));
             });

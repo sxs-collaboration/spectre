@@ -117,9 +117,9 @@ struct ImposeDirichletBoundaryConditions {
                          domain::Tags::BoundaryDirectionsExterior<VolumeDim>,
                          typename system::variables_tag>>,
                      tmpl::list<>>(
-        [](const gsl::not_null<db::item_type<domain::Tags::Interface<
+        [](const gsl::not_null<typename domain::Tags::Interface<
                domain::Tags::BoundaryDirectionsExterior<VolumeDim>,
-               typename system::variables_tag>>*>
+               typename system::variables_tag>::type*>
                external_bdry_vars,
            const double time, const auto& boundary_condition,
            const auto& boundary_coords) noexcept {
@@ -175,9 +175,9 @@ struct ImposeDirichletBoundaryConditions {
                          domain::Tags::BoundaryDirectionsExterior<VolumeDim>,
                          typename system::variables_tag>>,
                      tmpl::list<>>(
-        [](const gsl::not_null<db::item_type<domain::Tags::Interface<
+        [](const gsl::not_null<typename domain::Tags::Interface<
                domain::Tags::BoundaryDirectionsExterior<VolumeDim>,
-               typename system::variables_tag>>*>
+               typename system::variables_tag>::type*>
                external_bdry_vars,
            const double time, const auto& boundary_condition,
            const auto& boundary_coords) noexcept {

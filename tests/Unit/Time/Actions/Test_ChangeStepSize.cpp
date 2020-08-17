@@ -101,12 +101,12 @@ void check(const bool time_runs_forward,
            time_runs_forward, 0,
            (time_runs_forward ? time.slab().start() : time.slab().end()) +
                initial_step_size),
-       initial_step_size, db::item_type<history_tag>{}});
+       initial_step_size, typename history_tag::type{}});
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
   runner.next_action<component>(0);
-  auto& box =
+  const auto& box =
       ActionTesting::get_databox<component, typename component::simple_tags>(
           runner, 0);
 

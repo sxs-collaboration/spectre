@@ -63,7 +63,7 @@ struct ReceiveWorldtubeData {
           using tag = typename decltype(tag_v)::type;
           db::mutate<tag>(
               make_not_null(&box),
-              [&inbox](const gsl::not_null<db::item_type<tag>*> destination,
+              [&inbox](const gsl::not_null<typename tag::type*> destination,
                        const TimeStepId& time) noexcept {
                 *destination = get<tag>(inbox[time]);
               },

@@ -95,14 +95,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeSources",
   const Scalar<DataVector> var1{{{{3., 4.}}}};
   const Scalar<DataVector> var3{{{{5., 6.}}}};
 
-  db::item_type<System::variables_tag> vars(2);
+  typename System::variables_tag::type vars(2);
   get<Var1>(vars) = var1;
 
   using simple_tags = typename component<Metavariables>::simple_tags;
   MockRuntimeSystem runner{{}};
   ActionTesting::emplace_component_and_initialize<component<Metavariables>>(
       &runner, self_id,
-      {std::move(vars), var3, db::item_type<source_tag>(2_st)});
+      {std::move(vars), var3, typename source_tag::type(2_st)});
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
   runner.next_action<component<Metavariables>>(self_id);

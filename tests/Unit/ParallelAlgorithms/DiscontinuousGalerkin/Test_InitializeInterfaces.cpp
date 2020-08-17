@@ -193,8 +193,8 @@ void create_runner_and_run_tests(
        std::make_unique<TimeSteppers::RungeKutta3>()}};
   constexpr size_t num_points =
       Metavariables::dim == 1 ? 4 : Metavariables::dim == 2 ? 12 : 24;
-  db::item_type<vars_tag> vars{num_points, 0.};
-  db::item_type<other_vars_tag> other_vars{num_points, 0.};
+  typename vars_tag::type vars{num_points, 0.};
+  typename other_vars_tag::type other_vars{num_points, 0.};
 
   ActionTesting::emplace_component_and_initialize<
       typename Metavariables::element_array>(
@@ -222,8 +222,8 @@ void create_runner_and_run_tests(
       {domain_creator.create_domain()}};
   constexpr size_t num_points =
       Metavariables::dim == 1 ? 4 : Metavariables::dim == 2 ? 12 : 24;
-  db::item_type<vars_tag> vars{num_points, 0.};
-  db::item_type<other_vars_tag> other_vars{num_points, 0.};
+  typename vars_tag::type vars{num_points, 0.};
+  typename other_vars_tag::type other_vars{num_points, 0.};
 
   ActionTesting::emplace_component_and_initialize<
       typename Metavariables::element_array>(

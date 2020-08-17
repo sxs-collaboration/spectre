@@ -97,7 +97,7 @@ struct NullL : db::SimpleTag {
 
 template <typename Tag>
 struct DLambda : db::SimpleTag {
-  using type = db::item_type<Tag>;
+  using type = typename Tag::type;
 };
 
 }  // namespace detail

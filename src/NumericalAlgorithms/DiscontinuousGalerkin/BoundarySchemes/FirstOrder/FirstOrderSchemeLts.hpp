@@ -111,8 +111,8 @@ struct FirstOrderSchemeLts {
                  NumericalFluxComputerTag, time_stepper_tag, ::Tags::TimeStep>;
 
   static void apply(
-      const gsl::not_null<db::item_type<variables_tag>*> variables,
-      const gsl::not_null<db::item_type<::Tags::Mortars<mortar_data_tag, Dim>>*>
+      const gsl::not_null<typename variables_tag::type*> variables,
+      const gsl::not_null<typename ::Tags::Mortars<mortar_data_tag, Dim>::type*>
           all_mortar_data,
       const Mesh<Dim>& volume_mesh,
       const typename ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>::type&

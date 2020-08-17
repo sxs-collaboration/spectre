@@ -81,8 +81,8 @@ struct LocalLaxFriedrichs : tt::ConformsTo<dg::protocols::NumericalFlux> {
                              tmpl::list<NormalDotFluxTags...>> {
     static void apply(
         const gsl::not_null<
-            db::item_type<NormalDotFluxTags>*>... packaged_n_dot_f,
-        const gsl::not_null<db::item_type<VariablesTags>*>... packaged_u,
+            typename NormalDotFluxTags::type*>... packaged_n_dot_f,
+        const gsl::not_null<typename VariablesTags::type*>... packaged_u,
         const gsl::not_null<Scalar<DataVector>*> packaged_max_char_speed,
         const typename NormalDotFluxTags::type&... n_dot_f_to_package,
         const typename VariablesTags::type&... u_to_package,
@@ -118,7 +118,7 @@ struct LocalLaxFriedrichs : tt::ConformsTo<dg::protocols::NumericalFlux> {
                               tmpl::list<NormalDotFluxTags...>> {
     static void apply(
         const gsl::not_null<
-            db::item_type<NormalDotNumericalFluxTags>*>... n_dot_numerical_f,
+            typename NormalDotNumericalFluxTags::type*>... n_dot_numerical_f,
         const typename NormalDotFluxTags::type&... n_dot_f_interior,
         const typename VariablesTags::type&... u_interior,
         const Scalar<DataVector>& max_abs_speed_interior,

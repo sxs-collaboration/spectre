@@ -65,7 +65,7 @@ double get_suggestion(const size_t stepper_order, const double safety_factor,
       characteristic_speed, tnsr::I<DataVector, dim, frame>{{{coordinates}}},
       Mesh<dim>(coordinates.size(), Spectral::Basis::Legendre,
                 Spectral::Quadrature::GaussLobatto),
-      db::item_type<Tags::TimeStepper<TimeStepper>>{
+      std::unique_ptr<TimeStepper>{
           std::make_unique<TimeSteppers::AdamsBashforthN>(stepper_order)});
 
   const double grid_spacing =

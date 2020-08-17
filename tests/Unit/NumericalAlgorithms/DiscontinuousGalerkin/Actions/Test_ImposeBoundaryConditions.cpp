@@ -129,12 +129,12 @@ void run_test() {
   {
     tnsr::I<DataVector, Dim> arbitrary_coords{
         DataVector{3, std::numeric_limits<double>::signaling_NaN()}};
-    db::item_type<domain::Tags::Interface<
+    typename domain::Tags::Interface<
         domain::Tags::BoundaryDirectionsExterior<Dim>,
-        domain::Tags::Coordinates<Dim, Frame::Inertial>>>
+        domain::Tags::Coordinates<Dim, Frame::Inertial>>::type
         external_bdry_coords{{{Direction<2>::lower_eta(), arbitrary_coords},
                               {Direction<2>::upper_xi(), arbitrary_coords}}};
-    db::item_type<exterior_bdry_vars_tag> exterior_bdry_vars;
+    typename exterior_bdry_vars_tag::type exterior_bdry_vars;
     for (const auto& direction : external_directions) {
       exterior_bdry_vars[direction].initialize(3);
     }
@@ -152,7 +152,7 @@ void run_test() {
   const auto& external_vars =
       ActionTesting::get_databox_tag<my_component, exterior_bdry_vars_tag>(
           runner, 0);
-  db::item_type<exterior_bdry_vars_tag> expected_vars{};
+  typename exterior_bdry_vars_tag::type expected_vars{};
   for (const auto& direction : external_directions) {
     expected_vars[direction].initialize(3);
   }

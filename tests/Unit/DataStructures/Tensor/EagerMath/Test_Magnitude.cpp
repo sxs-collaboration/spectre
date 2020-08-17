@@ -155,18 +155,18 @@ void test_magnitude_tags() {
                                     Tags::EuclideanMagnitude<Covector<2>>,
                                     Tags::NormalizedCompute<Vector>,
                                     Tags::NormalizedCompute<Covector<2>>>>(
-          db::item_type<Vector>({{{1., 2.}, {2., 3.}, {2., 6.}}}),
-          db::item_type<Covector<2>>({{{3., 5.}, {4., 12.}}}));
+          tnsr::I<DataVector, 3, Frame::Grid>({{{1., 2.}, {2., 3.}, {2., 6.}}}),
+          tnsr::i<DataVector, 2, Frame::Grid>({{{3., 5.}, {4., 12.}}}));
 
   CHECK(db::get<Tags::EuclideanMagnitude<Vector>>(box) ==
         Scalar<DataVector>({{{3., 7.}}}));
   CHECK(db::get<Tags::EuclideanMagnitude<Covector<2>>>(box) ==
         Scalar<DataVector>({{{5., 13.}}}));
   CHECK(db::get<Tags::Normalized<Vector>>(box) ==
-        db::item_type<Vector>(
+        tnsr::I<DataVector, 3, Frame::Grid>(
             {{{1. / 3., 2. / 7.}, {2. / 3., 3. / 7.}, {2. / 3., 6. / 7.}}}));
   CHECK(db::get<Tags::Normalized<Covector<2>>>(box) ==
-        db::item_type<Covector<2>>(
+        tnsr::i<DataVector, 2, Frame::Grid>(
             {{{3. / 5., 5. / 13.}, {4. / 5., 12. / 13.}}}));
 
   using Tag = Vector;

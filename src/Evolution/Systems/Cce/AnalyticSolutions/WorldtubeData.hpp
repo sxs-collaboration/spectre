@@ -232,7 +232,7 @@ struct WorldtubeData : public PUP::able {
 
   template <typename Tag>
   struct IntermediateCache {
-    db::item_type<Tag> data;
+    typename Tag::type data;
     size_t l_max = 0;
     double time = -std::numeric_limits<double>::infinity();
   };

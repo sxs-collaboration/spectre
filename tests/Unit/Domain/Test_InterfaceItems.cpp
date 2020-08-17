@@ -144,6 +144,7 @@ struct ComplexItemCompute : ComplexItem<VolumeDim>, db::ComputeTag {
 
 template <typename>
 struct TemplatedDirections : db::SimpleTag {
+  static constexpr size_t volume_dim = 3;
   using type = std::unordered_set<Direction<3>>;
 };
 }  // namespace TestTags
@@ -314,6 +315,7 @@ void test_interface_items() {
 constexpr size_t dim = 2;
 
 struct Dirs : db::SimpleTag {
+  static constexpr size_t volume_dim = dim;
   using type = std::unordered_set<Direction<dim>>;
 };
 
@@ -487,7 +489,7 @@ void test_interface_slice(){
     }
     return Scalar<DataVector>{result};
   }();
-  db::item_type<sliced_simple_item_tag> volume_vars(
+  typename sliced_simple_item_tag::type volume_vars(
       mesh.number_of_grid_points());
   get<Var<3>>(volume_vars).get() =
       DataVector{0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.};
@@ -560,6 +562,7 @@ void test_interface_slice(){
 
 template <size_t Dim>
 struct Directions : db::SimpleTag {
+  static constexpr size_t volume_dim = Dim;
   static std::string name() noexcept { return "Directions"; }
   using type = std::unordered_set<Direction<Dim>>;
 };

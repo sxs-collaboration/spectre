@@ -149,13 +149,13 @@ void transpose_to_reals_then_imags_radial_stripes(
 // generic template applies to `Tags::BondiBeta` and `Tags::BondiU`
 template <template <typename> class BoundaryPrefix, typename Tag>
 void RadialIntegrateBondi<BoundaryPrefix, Tag>::apply(
-    const gsl::not_null<Scalar<
-        SpinWeighted<ComplexDataVector, db::item_type<Tag>::type::spin>>*>
+    const gsl::not_null<
+        Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>*>
         integral_result,
-    const Scalar<SpinWeighted<ComplexDataVector,
-                              db::item_type<Tag>::type::spin>>& integrand,
-    const Scalar<SpinWeighted<ComplexDataVector,
-                              db::item_type<Tag>::type::spin>>& boundary,
+    const Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>&
+        integrand,
+    const Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>&
+        boundary,
     const size_t l_max, const size_t number_of_radial_points) noexcept {
   indefinite_integral(make_not_null(&get(*integral_result).data()),
                       get(integrand).data(),

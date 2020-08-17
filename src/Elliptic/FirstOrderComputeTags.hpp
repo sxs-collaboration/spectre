@@ -34,7 +34,7 @@ struct FirstOrderFluxesCompute
                                          VariablesTag, fluxes_computer_tag>;
   using volume_tags =
       tmpl::push_front<get_volume_tags<FluxesComputer>, fluxes_computer_tag>;
-  using return_type = db::item_type<base>;
+  using return_type = typename base::type;
   template <typename... FluxesArgs>
   static void function(const gsl::not_null<return_type*> fluxes,
                        const typename VariablesTag::type& vars,
@@ -55,7 +55,7 @@ struct FirstOrderSourcesCompute
   using argument_tags =
       tmpl::push_front<typename SourcesComputer::argument_tags, VariablesTag>;
   using volume_tags = get_volume_tags<SourcesComputer>;
-  using return_type = db::item_type<base>;
+  using return_type = typename base::type;
   template <typename... SourcesArgs>
   static void function(const gsl::not_null<return_type*> sources,
                        const typename VariablesTag::type& vars,

@@ -128,7 +128,7 @@ struct DiscontinuousGalerkin {
       const auto& boundary_directions =
           db::get<domain::Tags::BoundaryDirectionsInterior<dim>>(box);
 
-      db::item_type<interface_tag<normal_dot_fluxes_tag>>
+      typename interface_tag<normal_dot_fluxes_tag>::type
           normal_dot_fluxes_interface{};
       for (const auto& direction : internal_directions) {
         const auto& interface_num_points =
@@ -139,7 +139,7 @@ struct DiscontinuousGalerkin {
                                                           0.);
       }
 
-      db::item_type<interior_boundary_tag<normal_dot_fluxes_tag>>
+      typename interior_boundary_tag<normal_dot_fluxes_tag>::type
           normal_dot_fluxes_boundary_exterior{},
           normal_dot_fluxes_boundary_interior{};
       for (const auto& direction : boundary_directions) {

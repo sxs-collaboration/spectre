@@ -54,6 +54,7 @@ namespace domain {
 namespace {
 template <size_t Dim>
 struct Directions : db::SimpleTag {
+  static constexpr size_t volume_dim = Dim;
   static std::string name() noexcept { return "Directions"; }
   using type = std::unordered_set<Direction<Dim>>;
 };

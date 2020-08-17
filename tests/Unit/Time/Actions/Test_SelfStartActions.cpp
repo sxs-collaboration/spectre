@@ -167,7 +167,7 @@ void emplace_component_and_initialize(
   ActionTesting::emplace_component_and_initialize<
       Component<Metavariables<HasPrimitives>>>(
       runner, 0,
-      {initial_value, 0., db::item_type<history_tag>{}, TimeStepId{},
+      {initial_value, 0., typename history_tag::type{}, TimeStepId{},
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),
        initial_time_step, std::numeric_limits<double>::signaling_NaN()});
@@ -182,7 +182,7 @@ void emplace_component_and_initialize<true>(
   ActionTesting::emplace_component_and_initialize<
       Component<Metavariables<true>>>(
       runner, 0,
-      {initial_value, initial_value, 0., db::item_type<history_tag>{},
+      {initial_value, initial_value, 0., typename history_tag::type{},
        TimeStepId{},
        TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
                   initial_time),

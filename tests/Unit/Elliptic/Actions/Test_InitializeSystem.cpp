@@ -120,7 +120,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
         &runner, element_id,
         {domain_creator.initial_refinement_levels(),
          domain_creator.initial_extents(),
-         db::item_type<linear_operator_applied_to_fields_tag<1>>{4}});
+         typename linear_operator_applied_to_fields_tag<1>::type{4}});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     ActionTesting::set_phase(make_not_null(&runner),
@@ -160,7 +160,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
         &runner, element_id,
         {domain_creator.initial_refinement_levels(),
          domain_creator.initial_extents(),
-         db::item_type<linear_operator_applied_to_fields_tag<2>>{12}});
+         typename linear_operator_applied_to_fields_tag<2>::type{12}});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     ActionTesting::set_phase(make_not_null(&runner),
@@ -204,7 +204,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
         &runner, element_id,
         {domain_creator.initial_refinement_levels(),
          domain_creator.initial_extents(),
-         db::item_type<linear_operator_applied_to_fields_tag<3>>{24}});
+         typename linear_operator_applied_to_fields_tag<3>::type{24}});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     ActionTesting::set_phase(make_not_null(&runner),

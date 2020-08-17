@@ -83,7 +83,7 @@ class DummyLimiterForTest {
   using limit_tags = tmpl::list<Var>;
   using limit_argument_tags =
       tmpl::list<domain::Tags::Mesh<2>, domain::Tags::Element<2>>;
-  void operator()(const gsl::not_null<db::item_type<Var>*> var,
+  void operator()(const gsl::not_null<typename Var::type*> var,
                   const Mesh<2>& /*mesh*/, const Element<2>& /*element*/,
                   const std::unordered_map<
                       std::pair<Direction<2>, ElementId<2>>,

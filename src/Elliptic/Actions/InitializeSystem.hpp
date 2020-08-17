@@ -66,7 +66,7 @@ struct InitializeSystem {
         get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
     // Set initial data to zero (for now).
-    db::item_type<fields_tag> fields{num_grid_points, 0.};
+    typename fields_tag::type fields{num_grid_points, 0.};
     // Since the initial data is zero we don't need to apply the DG operator but
     // may just set it to zero as well. Once this condition is relaxed we will
     // have to add a communication step to the initialization that computes the
@@ -75,10 +75,10 @@ struct InitializeSystem {
         make_not_null(&box),
         [&num_grid_points](
             const gsl::not_null<
-                db::item_type<linear_operator_applied_to_fields_tag>*>
+                typename linear_operator_applied_to_fields_tag::type*>
                 linear_operator_applied_to_fields) noexcept {
           *linear_operator_applied_to_fields =
-              db::item_type<linear_operator_applied_to_fields_tag>{
+              typename linear_operator_applied_to_fields_tag::type{
                   num_grid_points, 0.};
         });
 
@@ -86,7 +86,7 @@ struct InitializeSystem {
     // which defines the problem we want to solve.
     // We need only retrieve sources for the primal fields, since the auxiliary
     // fields will never be sourced.
-    db::item_type<fixed_sources_tag> fixed_sources{num_grid_points, 0.};
+    typename fixed_sources_tag::type fixed_sources{num_grid_points, 0.};
     fixed_sources.assign_subset(
         Parallel::get<typename Metavariables::analytic_solution_tag>(cache)
             .variables(inertial_coords,

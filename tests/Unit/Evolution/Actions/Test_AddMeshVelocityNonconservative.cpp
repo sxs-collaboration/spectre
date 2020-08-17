@@ -83,12 +83,12 @@ void test() noexcept {
     }
   }
 
-  db::item_type<db::add_tag_prefix<Tags::dt, typename system::variables_tag>>
+  typename db::add_tag_prefix<Tags::dt, typename system::variables_tag>::type
       dt_vars(2, 0.);
   using deriv_tag =
       db::add_tag_prefix<::Tags::deriv, typename system::variables_tag,
                          tmpl::size_t<Dim>, Frame::Inertial>;
-  db::item_type<deriv_tag> deriv_vars(2);
+  typename deriv_tag::type deriv_vars(2);
   for (size_t i = 0; i < Dim; ++i) {
     get<::Tags::deriv<Var1, tmpl::size_t<Dim>, Frame::Inertial>>(deriv_vars)
         .get(i) = (1. + i) * 3.;

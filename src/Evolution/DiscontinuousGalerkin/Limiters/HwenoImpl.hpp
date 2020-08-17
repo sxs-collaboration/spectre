@@ -529,7 +529,7 @@ void hweno_impl(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>*>
         modified_neighbor_solution_buffer,
-    const gsl::not_null<db::item_type<Tag>*> tensor,
+    const gsl::not_null<typename Tag::type*> tensor,
     const double neighbor_linear_weight, const Mesh<VolumeDim>& mesh,
     const Element<VolumeDim>& element,
     const std::unordered_map<

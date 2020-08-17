@@ -39,7 +39,7 @@ struct FluxesInboxTag
   static constexpr size_t volume_dim = BoundaryScheme::volume_dim;
 
  public:
-  using temporal_id = db::item_type<typename BoundaryScheme::temporal_id_tag>;
+  using temporal_id = typename BoundaryScheme::temporal_id_tag::type;
   using type = std::map<
       temporal_id,
       FixedHashMap<
@@ -202,10 +202,10 @@ struct ReceiveDataForFluxes {
     const auto& temporal_id = get<temporal_id_tag>(box);
     const auto temporal_received = inbox.find(temporal_id);
     db::mutate<all_mortar_data_tag>(
-        make_not_null(&box),
-        [&temporal_received](
-            const gsl::not_null<db::item_type<all_mortar_data_tag>*>
-                mortar_data) noexcept {
+        make_not_null(&box), [&temporal_received](
+                                 const gsl::not_null<
+                                     typename all_mortar_data_tag::type*>
+                                     mortar_data) noexcept {
           for (auto& received_mortar_data : temporal_received->second) {
             const auto& mortar_id = received_mortar_data.first;
             mortar_data->at(mortar_id).remote_insert(
@@ -287,13 +287,14 @@ struct ReceiveDataForFluxes<
     db::mutate<all_mortar_data_tag,
                Tags::Mortars<receive_temporal_id_tag, volume_dim>>(
         make_not_null(&box),
-        [&inboxes](const gsl::not_null<db::item_type<all_mortar_data_tag>*>
-                       mortar_data,
-                   const gsl::not_null<db::item_type<
-                       Tags::Mortars<receive_temporal_id_tag, volume_dim>>*>
-                       neighbor_next_temporal_ids,
-                   const typename receive_temporal_id_tag::type&
-                       local_next_temporal_id) noexcept {
+        [&inboxes](
+            const gsl::not_null<typename all_mortar_data_tag::type*>
+                mortar_data,
+            const gsl::not_null<typename Tags::Mortars<receive_temporal_id_tag,
+                                                       volume_dim>::type*>
+                neighbor_next_temporal_ids,
+            const typename receive_temporal_id_tag::type&
+                local_next_temporal_id) noexcept {
           auto& inbox = tuples::get<fluxes_inbox_tag>(inboxes);
           for (auto received_data = inbox.begin();
                received_data != inbox.end() and

@@ -389,9 +389,8 @@ SPECTRE_TEST_CASE(
     ElementMap<3, Frame::Inertial> map{element_id,
                                        block.stationary_map().get_clone()};
     const auto inertial_coords = map(logical_coordinates(mesh));
-    db::item_type<
-        ::Tags::Variables<typename metavars::interpolator_source_vars>>
-        output_vars(mesh.number_of_grid_points());
+    ::Variables<typename metavars::interpolator_source_vars> output_vars(
+        mesh.number_of_grid_points());
     auto& test_solution = get<Tags::TestSolution>(output_vars);
 
     // Fill test_solution with some analytic solution.

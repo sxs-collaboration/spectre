@@ -96,9 +96,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
   ActionTesting::emplace_component_and_initialize<interp_component>(
       &runner, 0,
       {0_st,
-       db::item_type<intrp::Tags::VolumeVarsInfo<metavars>>{
+       typename intrp::Tags::VolumeVarsInfo<metavars>::type{
            std::move(volume_vars_info)},
-       db::item_type<intrp::Tags::InterpolatedVarsHolders<metavars>>{}});
+       typename intrp::Tags::InterpolatedVarsHolders<metavars>::type{}});
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   // There should be one temporal_id in VolumeVarsInfo.

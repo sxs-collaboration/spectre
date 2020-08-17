@@ -63,7 +63,7 @@ struct FilterSwshVolumeQuantity {
         [
           &l_max, &l_filter_start, &radial_filter_alpha, &
           radial_filter_half_power
-        ](const gsl::not_null<db::item_type<BondiTag>*>
+        ](const gsl::not_null<typename BondiTag::type*>
               bondi_quantity) noexcept {
           Spectral::Swsh::filter_swsh_volume_quantity(
               make_not_null(&get(*bondi_quantity)), l_max, l_filter_start,

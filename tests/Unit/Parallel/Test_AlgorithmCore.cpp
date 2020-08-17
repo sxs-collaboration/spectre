@@ -625,7 +625,7 @@ struct finalize {
         std::is_same_v<ParallelComponent, AnyOrderComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(db::get<TemporalId>(box) ==
-                             db::item_type<TemporalId>{0});
+                             TestAlgorithmArrayInstance{0});
     SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 31);
     SPECTRE_PARALLEL_REQUIRE(db::get<Int0>(box) == 25);
   }

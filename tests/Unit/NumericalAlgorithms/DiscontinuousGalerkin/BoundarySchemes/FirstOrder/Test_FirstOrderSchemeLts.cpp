@@ -65,7 +65,7 @@ struct NumericalFluxTag : db::SimpleTag {
 template <typename Tag>
 struct BoundaryContribution : db::SimpleTag, db::PrefixTag {
   using tag = Tag;
-  using type = db::item_type<Tag>;
+  using type = typename Tag::type;
 };
 
 struct TemporalIdTag : db::SimpleTag {
@@ -80,9 +80,8 @@ template <typename BoundaryScheme,
 auto make_mortar_data(const dg::MortarId<BoundaryScheme::volume_dim>& mortar_id,
                       const TimeStepId& time, BoundaryData&& interior_data,
                       BoundaryData&& exterior_data) noexcept {
-  db::item_type<::Tags::Mortars<typename BoundaryScheme::mortar_data_tag,
-                                BoundaryScheme::volume_dim>>
-      all_mortar_data;
+  typename ::Tags::Mortars<typename BoundaryScheme::mortar_data_tag,
+                           BoundaryScheme::volume_dim>::type all_mortar_data;
   all_mortar_data[mortar_id].local_insert(
       time, std::forward<BoundaryData>(interior_data));
   all_mortar_data[mortar_id].remote_insert(
@@ -122,7 +121,7 @@ void test_first_order_scheme_lts() {
                                {{face_direction, {{neighbor_id}, {}}}}};
     const size_t num_points_on_face =
         mesh.slice_away(face_direction.dimension()).number_of_grid_points();
-    db::item_type<db::add_tag_prefix<::Tags::NormalDotFlux, variables_tag>>
+    typename db::add_tag_prefix<::Tags::NormalDotFlux, variables_tag>::type
         normal_dot_fluxes{num_points_on_face};
     get<::Tags::NormalDotFlux<SomeField>>(normal_dot_fluxes) =
         Scalar<DataVector>{num_points_on_face, 3.};
@@ -145,9 +144,9 @@ void test_first_order_scheme_lts() {
                                 SomeField>>>(
         NumericalFlux{}, Scalar<DataVector>{num_points, 2.}, extra_data, mesh,
         element,
-        db::item_type<all_normal_dot_fluxes_tag>{
+        typename all_normal_dot_fluxes_tag::type{
             {face_direction, std::move(normal_dot_fluxes)}},
-        db::item_type<all_magnitude_of_face_normals_tag>{
+        typename all_magnitude_of_face_normals_tag::type{
             {face_direction, magnitude_of_face_normal}});
     // Collect the boundary data needed by the boundary scheme
     const auto all_boundary_data =
@@ -216,7 +215,7 @@ void test_first_order_scheme_lts() {
     auto all_mortar_data_copy = make_mortar_data<boundary_scheme>(
         mortar_id, {true, 0, now}, local_boundary_data, remote_boundary_data);
     // Assemble a DataBox and test
-    db::item_type<variables_tag> boundary_contributions{num_points, 0.};
+    typename variables_tag::type boundary_contributions{num_points, 0.};
     auto box = db::create<db::AddSimpleTags<
         NumericalFluxTag<NumericalFlux>, domain::Tags::Mesh<Dim>,
         ::Tags::Mortars<mortar_data_tag, Dim>,
@@ -230,7 +229,7 @@ void test_first_order_scheme_lts() {
         std::move(boundary_contributions),
         std::make_unique<TimeSteppers::AdamsBashforthN>(1), time_step);
     db::mutate_apply<boundary_scheme>(make_not_null(&box));
-    db::item_type<variables_tag> expected_boundary_contributions{num_points,
+    typename variables_tag::type expected_boundary_contributions{num_points,
                                                                  0.};
     boundary_scheme::apply(
         make_not_null(&expected_boundary_contributions),
@@ -332,7 +331,7 @@ SPECTRE_TEST_CASE("Unit.DG.FirstOrderScheme.Lts",
     get(get<Tags::NormalDotFlux<SomeField>>(
         gsl::at(remote_data, 2).field_data)) = DataVector{67., 71., 73.};
 
-    db::item_type<::Tags::Mortars<mortar_data_tag, 2>> mortar_data;
+    typename ::Tags::Mortars<mortar_data_tag, 2>::type mortar_data;
     mortar_data[slow_mortar].local_insert(TimeStepId(true, 0, now),
                                           gsl::at(local_data, 0));
     mortar_data[fast_mortar].local_insert(TimeStepId(true, 0, now),
