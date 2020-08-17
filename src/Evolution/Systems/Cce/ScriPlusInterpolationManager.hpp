@@ -15,7 +15,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
+#include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/MakeArray.hpp"
