@@ -30,7 +30,8 @@
 
 namespace Cce {
 
-class DummyBufferUpdater : public WorldtubeBufferUpdater<cce_input_tags> {
+class DummyBufferUpdater
+    : public WorldtubeBufferUpdater<cce_metric_input_tags> {
  public:
   DummyBufferUpdater(DataVector time_buffer,
                      const gr::Solutions::KerrSchild& solution,
@@ -55,7 +56,7 @@ class DummyBufferUpdater : public WorldtubeBufferUpdater<cce_input_tags> {
         l_max_{0} {}
 
   double update_buffers_for_time(
-      const gsl::not_null<Variables<cce_input_tags>*> buffers,
+      const gsl::not_null<Variables<cce_metric_input_tags>*> buffers,
       const gsl::not_null<size_t*> time_span_start,
       const gsl::not_null<size_t*> time_span_end, const double time,
       const size_t /*l_max*/, const size_t interpolator_length,
@@ -138,7 +139,7 @@ class DummyBufferUpdater : public WorldtubeBufferUpdater<cce_input_tags> {
     return time_buffer_[*time_span_end - interpolator_length + 1];
   }
 
-  std::unique_ptr<WorldtubeBufferUpdater<cce_input_tags>> get_clone()
+  std::unique_ptr<WorldtubeBufferUpdater<cce_metric_input_tags>> get_clone()
       const noexcept override {
     return std::make_unique<DummyBufferUpdater>(*this);
   }
@@ -195,7 +196,7 @@ class DummyBufferUpdater : public WorldtubeBufferUpdater<cce_input_tags> {
 };
 
 class ReducedDummyBufferUpdater
-    : public WorldtubeBufferUpdater<reduced_cce_input_tags> {
+    : public WorldtubeBufferUpdater<cce_bondi_input_tags> {
  public:
   ReducedDummyBufferUpdater(DataVector time_buffer,
                             const gr::Solutions::KerrSchild& solution,
@@ -216,7 +217,7 @@ class ReducedDummyBufferUpdater
   explicit ReducedDummyBufferUpdater(CkMigrateMessage* /*unused*/) noexcept {}
 
   double update_buffers_for_time(
-      const gsl::not_null<Variables<reduced_cce_input_tags>*> buffers,
+      const gsl::not_null<Variables<cce_bondi_input_tags>*> buffers,
       const gsl::not_null<size_t*> time_span_start,
       const gsl::not_null<size_t*> time_span_end, const double time,
       const size_t l_max, const size_t interpolator_length,
@@ -274,7 +275,7 @@ class ReducedDummyBufferUpdater
           lapse_coefficients, dt_lapse_coefficients, dr_lapse_coefficients,
           extraction_radius_, l_max);
       tmpl::for_each<tmpl::transform<
-          reduced_cce_input_tags, tmpl::bind<db::remove_tag_prefix, tmpl::_1>>>(
+          cce_bondi_input_tags, tmpl::bind<db::remove_tag_prefix, tmpl::_1>>>(
           [this, &boundary_variables, &buffers, &time_index, &time_span_end,
            &time_span_start, &l_max](auto tag_v) noexcept {
             using tag = typename decltype(tag_v)::type;
@@ -291,7 +292,7 @@ class ReducedDummyBufferUpdater
     }
     return time_buffer_[*time_span_end - interpolator_length + 1];
   }
-  std::unique_ptr<WorldtubeBufferUpdater<reduced_cce_input_tags>> get_clone()
+  std::unique_ptr<WorldtubeBufferUpdater<cce_bondi_input_tags>> get_clone()
       const noexcept override {
     return std::make_unique<ReducedDummyBufferUpdater>(*this);
   }
@@ -473,9 +474,9 @@ void test_spec_worldtube_buffer_updater(
   const size_t interpolator_length = 2;
   const size_t l_max = 8;
 
-  Variables<cce_input_tags> coefficients_buffers_from_file{
+  Variables<cce_metric_input_tags> coefficients_buffers_from_file{
       (buffer_size + 2 * interpolator_length) * square(l_max + 1)};
-  Variables<cce_input_tags> expected_coefficients_buffers{
+  Variables<cce_metric_input_tags> expected_coefficients_buffers{
       (buffer_size + 2 * interpolator_length) * square(l_max + 1)};
   const std::string filename = "BoundaryDataH5Test_CceR0100.h5";
   if (file_system::check_if_file_exists(filename)) {
@@ -495,7 +496,7 @@ void test_spec_worldtube_buffer_updater(
       make_not_null(&time_span_start), make_not_null(&time_span_end),
       target_time, l_max, interpolator_length, buffer_size);
 
-  Variables<cce_input_tags> coefficients_buffers_from_serialized{
+  Variables<cce_metric_input_tags> coefficients_buffers_from_serialized{
       (buffer_size + 2 * interpolator_length) * square(l_max + 1)};
   size_t time_span_start_from_serialized = 0;
   size_t time_span_end_from_serialized = 0;
@@ -528,7 +529,7 @@ void test_spec_worldtube_buffer_updater(
       make_not_null(&time_span_start), make_not_null(&time_span_end),
       target_time, l_max, interpolator_length, buffer_size);
   // check that the data in the buffer matches the expected analytic data.
-  tmpl::for_each<cce_input_tags>(
+  tmpl::for_each<cce_metric_input_tags>(
       [&expected_coefficients_buffers, &coefficients_buffers_from_file,
        &coefficients_buffers_from_serialized](auto tag_v) noexcept {
         using tag = typename decltype(tag_v)::type;
@@ -567,9 +568,9 @@ void test_reduced_spec_worldtube_buffer_updater(
   const size_t file_l_max = 12;
   const size_t computation_l_max = 14;
 
-  Variables<reduced_cce_input_tags> coefficients_buffers_from_file{
+  Variables<cce_bondi_input_tags> coefficients_buffers_from_file{
       (buffer_size + 2 * interpolator_length) * square(computation_l_max + 1)};
-  Variables<reduced_cce_input_tags> expected_coefficients_buffers{
+  Variables<cce_bondi_input_tags> expected_coefficients_buffers{
       (buffer_size + 2 * interpolator_length) * square(computation_l_max + 1)};
   size_t libsharp_size =
       Spectral::Swsh::size_of_libsharp_coefficient_vector(file_l_max);
@@ -674,7 +675,7 @@ void test_reduced_spec_worldtube_buffer_updater(
       make_not_null(&time_span_start), make_not_null(&time_span_end),
       target_time, computation_l_max, interpolator_length, buffer_size);
 
-  Variables<reduced_cce_input_tags> coefficients_buffers_from_serialized{
+  Variables<cce_bondi_input_tags> coefficients_buffers_from_serialized{
       (buffer_size + 2 * interpolator_length) * square(computation_l_max + 1)};
   size_t time_span_start_from_serialized = 0;
   size_t time_span_end_from_serialized = 0;
@@ -718,7 +719,7 @@ void test_reduced_spec_worldtube_buffer_updater(
           .scale(1.0);
 
   // check that the data in the buffer matches the expected analytic data.
-  tmpl::for_each<reduced_cce_input_tags>(
+  tmpl::for_each<cce_bondi_input_tags>(
       [&expected_coefficients_buffers, &coefficients_buffers_from_file,
        &coefficients_buffers_from_serialized, &modal_approx](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
@@ -741,9 +742,9 @@ void test_reduced_spec_worldtube_buffer_updater(
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
                   "[Unit][Cce]") {
   Parallel::register_derived_classes_with_charm<
-      Cce::WorldtubeBufferUpdater<cce_input_tags>>();
+      Cce::WorldtubeBufferUpdater<cce_metric_input_tags>>();
   Parallel::register_derived_classes_with_charm<
-      Cce::WorldtubeBufferUpdater<reduced_cce_input_tags>>();
+      Cce::WorldtubeBufferUpdater<cce_bondi_input_tags>>();
   Parallel::register_derived_classes_with_charm<Cce::WorldtubeDataManager>();
   Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>();
   MAKE_GENERATOR(gen);

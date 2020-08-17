@@ -119,9 +119,9 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &Parallel::register_derived_classes_with_charm<
         Cce::InitializeJ::InitializeJ>,
     &Parallel::register_derived_classes_with_charm<
-        Cce::WorldtubeBufferUpdater<Cce::cce_input_tags>>,
+        Cce::WorldtubeBufferUpdater<Cce::cce_metric_input_tags>>,
     &Parallel::register_derived_classes_with_charm<
-        Cce::WorldtubeBufferUpdater<Cce::reduced_cce_input_tags>>,
+        Cce::WorldtubeBufferUpdater<Cce::cce_bondi_input_tags>>,
     &Parallel::register_derived_classes_with_charm<Cce::WorldtubeDataManager>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>};

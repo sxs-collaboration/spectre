@@ -82,7 +82,7 @@ std::pair<size_t, size_t> create_span_for_time_value(
 }  // namespace detail
 
 /// the full set of tensors to be extracted from the worldtube h5 file
-using cce_input_tags = tmpl::list<
+using cce_metric_input_tags = tmpl::list<
     Tags::detail::SpatialMetric, Tags::detail::Dr<Tags::detail::SpatialMetric>,
     ::Tags::dt<Tags::detail::SpatialMetric>, Tags::detail::Shift,
     Tags::detail::Dr<Tags::detail::Shift>, ::Tags::dt<Tags::detail::Shift>,
@@ -91,7 +91,7 @@ using cce_input_tags = tmpl::list<
 
 /// the full set of tensors to be extracted from the reduced form of the
 /// worldtube h5 file
-using reduced_cce_input_tags =
+using cce_bondi_input_tags =
     tmpl::list<Spectral::Swsh::Tags::SwshTransform<Tags::BondiBeta>,
                Spectral::Swsh::Tags::SwshTransform<Tags::BondiU>,
                Spectral::Swsh::Tags::SwshTransform<Tags::BondiQ>,
@@ -170,7 +170,7 @@ class WorldtubeBufferUpdater : public PUP::able {
 /// A `WorldtubeBufferUpdater` specialized to the CCE input worldtube  H5 file
 /// produced by SpEC.
 class MetricWorldtubeH5BufferUpdater
-    : public WorldtubeBufferUpdater<cce_input_tags> {
+    : public WorldtubeBufferUpdater<cce_metric_input_tags> {
  public:
   // charm needs the empty constructor
   MetricWorldtubeH5BufferUpdater() = default;
@@ -194,13 +194,13 @@ class MetricWorldtubeH5BufferUpdater
   /// called again at times earlier than the next full update time, it will
   /// leave the `buffers` unchanged and again return the next needed time.
   double update_buffers_for_time(
-      gsl::not_null<Variables<cce_input_tags>*> buffers,
+      gsl::not_null<Variables<cce_metric_input_tags>*> buffers,
       gsl::not_null<size_t*> time_span_start,
       gsl::not_null<size_t*> time_span_end, double time,
       size_t computation_l_max, size_t interpolator_length,
       size_t buffer_depth) const noexcept override;
 
-  std::unique_ptr<WorldtubeBufferUpdater<cce_input_tags>> get_clone()
+  std::unique_ptr<WorldtubeBufferUpdater<cce_metric_input_tags>> get_clone()
       const noexcept override;
 
   /// The time can only be supported in the buffer update if it is between the
@@ -245,7 +245,7 @@ class MetricWorldtubeH5BufferUpdater
   std::string filename_;
 
   tuples::tagged_tuple_from_typelist<
-      db::wrap_tags_in<Tags::detail::InputDataSet, cce_input_tags>>
+      db::wrap_tags_in<Tags::detail::InputDataSet, cce_metric_input_tags>>
       dataset_names_;
 
   // stores all the times in the input file
@@ -255,7 +255,7 @@ class MetricWorldtubeH5BufferUpdater
 /// A `WorldtubeBufferUpdater` specialized to the CCE input worldtube H5 file
 /// produced by the reduced SpEC format.
 class BondiWorldtubeH5BufferUpdater
-    : public WorldtubeBufferUpdater<reduced_cce_input_tags> {
+    : public WorldtubeBufferUpdater<cce_bondi_input_tags> {
  public:
   // charm needs the empty constructor
   BondiWorldtubeH5BufferUpdater() = default;
@@ -276,13 +276,13 @@ class BondiWorldtubeH5BufferUpdater
   /// time-varies-fastest, Goldberg modal data and the start and end index in
   /// the member `time_buffer_` covered by the newly updated `buffers`.
   double update_buffers_for_time(
-      gsl::not_null<Variables<reduced_cce_input_tags>*> buffers,
+      gsl::not_null<Variables<cce_bondi_input_tags>*> buffers,
       gsl::not_null<size_t*> time_span_start,
       gsl::not_null<size_t*> time_span_end, double time,
       size_t computation_l_max, size_t interpolator_length,
       size_t buffer_depth) const noexcept override;
 
-  std::unique_ptr<WorldtubeBufferUpdater<reduced_cce_input_tags>> get_clone()
+  std::unique_ptr<WorldtubeBufferUpdater<cce_bondi_input_tags>> get_clone()
       const noexcept override {
     return std::make_unique<BondiWorldtubeH5BufferUpdater>(filename_);
   }
@@ -331,7 +331,7 @@ class BondiWorldtubeH5BufferUpdater
   std::string filename_;
 
   tuples::tagged_tuple_from_typelist<
-      db::wrap_tags_in<Tags::detail::InputDataSet, reduced_cce_input_tags>>
+      db::wrap_tags_in<Tags::detail::InputDataSet, cce_bondi_input_tags>>
       dataset_names_;
 
   // stores all the times in the input file
@@ -405,7 +405,8 @@ class MetricWorldtubeDataManager : public WorldtubeDataManager {
   MetricWorldtubeDataManager() = default;
 
   MetricWorldtubeDataManager(
-      std::unique_ptr<WorldtubeBufferUpdater<cce_input_tags>> buffer_updater,
+      std::unique_ptr<WorldtubeBufferUpdater<cce_metric_input_tags>>
+          buffer_updater,
       const size_t l_max, const size_t buffer_depth,
       std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
       : buffer_updater_{std::move(buffer_updater)},
@@ -430,7 +431,7 @@ class MetricWorldtubeDataManager : public WorldtubeDataManager {
         square(l_max + 1) *
         (buffer_depth +
          2 * interpolator_->required_number_of_points_before_and_after());
-    coefficients_buffers_ = Variables<cce_input_tags>{size_of_buffer};
+    coefficients_buffers_ = Variables<cce_metric_input_tags>{size_of_buffer};
   }
 
   WRAPPED_PUPable_decl_template(MetricWorldtubeDataManager);  // NOLINT
@@ -491,24 +492,25 @@ class MetricWorldtubeDataManager : public WorldtubeDataManager {
           square(l_max_ + 1) *
           (buffer_depth_ +
            2 * interpolator_->required_number_of_points_before_and_after());
-      coefficients_buffers_ = Variables<cce_input_tags>{size_of_buffer};
-      interpolated_coefficients_ = Variables<cce_input_tags>{
+      coefficients_buffers_ = Variables<cce_metric_input_tags>{size_of_buffer};
+      interpolated_coefficients_ = Variables<cce_metric_input_tags>{
           Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_)};
     }
   }
 
  private:
-  std::unique_ptr<WorldtubeBufferUpdater<cce_input_tags>> buffer_updater_;
+  std::unique_ptr<WorldtubeBufferUpdater<cce_metric_input_tags>>
+      buffer_updater_;
   mutable size_t time_span_start_ = 0;
   mutable size_t time_span_end_ = 0;
   size_t l_max_ = 0;
 
   // These buffers are just kept around to avoid allocations; they're
   // updated every time a time is requested
-  mutable Variables<cce_input_tags> interpolated_coefficients_;
+  mutable Variables<cce_metric_input_tags> interpolated_coefficients_;
 
   // note: buffers store data in a 'time-varies-fastest' manner
-  mutable Variables<cce_input_tags> coefficients_buffers_;
+  mutable Variables<cce_metric_input_tags> coefficients_buffers_;
 
   size_t buffer_depth_ = 0;
 
@@ -528,7 +530,7 @@ class MetricWorldtubeDataManager : public WorldtubeDataManager {
  * `WorldtubeDataManager::populate_hypersurface_boundary_data()` member
  * function that handles buffer updating and boundary computation. This version
  * of the data manager handles the 9 scalars of
- * `reduced_cce_input_tags`, rather than direct metric components
+ * `cce_bondi_input_tags`, rather than direct metric components
  * handled by `WorldtubeDataManager`. The set of 9 scalars is a far leaner
  * (factor of ~4) data storage format.
  */
@@ -538,7 +540,7 @@ class BondiWorldtubeDataManager : public WorldtubeDataManager {
   BondiWorldtubeDataManager() = default;
 
   BondiWorldtubeDataManager(
-      std::unique_ptr<WorldtubeBufferUpdater<reduced_cce_input_tags>>
+      std::unique_ptr<WorldtubeBufferUpdater<cce_bondi_input_tags>>
           buffer_updater,
       size_t l_max, size_t buffer_depth,
       std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept;
@@ -554,7 +556,7 @@ class BondiWorldtubeDataManager : public WorldtubeDataManager {
    *
    * \details First, if the stored buffer requires updating, it will be updated
    * via the `buffer_updater_` supplied in the constructor. Then, each of the
-   * 9 spin-weighted scalars in `reduced_cce_input_tags`
+   * 9 spin-weighted scalars in `cce_bondi_input_tags`
    * are interpolated across buffer points to the requested time value (via the
    * `Interpolator` provided in the constructor). Finally, the remaining two
    * scalars not directly supplied in the input file are calculated in-line and
@@ -589,18 +591,17 @@ class BondiWorldtubeDataManager : public WorldtubeDataManager {
   void pup(PUP::er& p) noexcept override;  // NOLINT
 
  private:
-  std::unique_ptr<WorldtubeBufferUpdater<reduced_cce_input_tags>>
-      buffer_updater_;
+  std::unique_ptr<WorldtubeBufferUpdater<cce_bondi_input_tags>> buffer_updater_;
   mutable size_t time_span_start_ = 0;
   mutable size_t time_span_end_ = 0;
   size_t l_max_ = 0;
 
   // These buffers are just kept around to avoid allocations; they're
   // updated every time a time is requested
-  mutable Variables<reduced_cce_input_tags> interpolated_coefficients_;
+  mutable Variables<cce_bondi_input_tags> interpolated_coefficients_;
 
   // note: buffers store data in an 'time-varies-fastest' manner
-  mutable Variables<reduced_cce_input_tags> coefficients_buffers_;
+  mutable Variables<cce_bondi_input_tags> coefficients_buffers_;
 
   size_t buffer_depth_ = 0;
 
