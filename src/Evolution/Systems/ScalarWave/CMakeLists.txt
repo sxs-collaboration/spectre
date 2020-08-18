@@ -11,6 +11,7 @@ spectre_target_sources(
   Characteristics.cpp
   Constraints.cpp
   Equations.cpp
+  TimeDerivative.cpp
   UpwindPenaltyCorrection.cpp
   )
 
@@ -25,6 +26,7 @@ spectre_target_headers(
   System.hpp
   Tags.hpp
   TagsDeclarations.hpp
+  TimeDerivative.hpp
   UpwindPenaltyCorrection.hpp
   )
 
