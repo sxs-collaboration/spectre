@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   BentBeam.cpp
+  HalfSpaceMirror.cpp
   )
 
 spectre_target_headers(
@@ -16,13 +17,16 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   BentBeam.hpp
+  HalfSpaceMirror.hpp
   Solutions.hpp
   )
 
 target_link_libraries(
   ${LIBRARY}
+  PUBLIC ConstitutiveRelations
   PUBLIC DataStructures
-  INTERFACE ErrorHandling
-  INTERFACE Utilities
-  INTERFACE ConstitutiveRelations
+  PUBLIC ErrorHandling
+  PUBLIC Integration
+  PUBLIC Utilities
+  PRIVATE GSL::gsl
   )
