@@ -64,6 +64,10 @@ To run the tests:
 
 Use `compute_canada` as the `SYSTEM_TO_RUN_ON` in the general instructions.
 
+## Frontera at TACC
+
+Follow the general instructions, using `frontera` for `SYSTEM_TO_RUN_ON`.
+
 ## Wheeler at Caltech
 
 Follow the general instructions using `wheeler` for `SYSTEM_TO_RUN_ON`, except
