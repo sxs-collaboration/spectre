@@ -12,9 +12,8 @@
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "Evolution/Actions/AddMeshVelocityNonconservative.hpp"
-#include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/ComputeTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
@@ -33,6 +32,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderScheme.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderSchemeLts.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
 #include "NumericalAlgorithms/LinearOperators/FilterAction.hpp"  // IWYU pragma: keep
@@ -103,6 +103,8 @@ struct EvolutionMetavars {
       "initial_data must be either an analytic_data or an analytic_solution");
 
   using system = ScalarWave::System<Dim>;
+  static constexpr dg::Formulation dg_formulation =
+      dg::Formulation::StrongInertial;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = true;
   using boundary_condition_tag = initial_data_tag;
@@ -165,13 +167,8 @@ struct EvolutionMetavars {
   static constexpr bool use_filtering = (2 == volume_dim);
 
   using step_actions = tmpl::flatten<tmpl::list<
-      dg::Actions::ComputeNonconservativeBoundaryFluxes<
-          domain::Tags::InternalDirections<Dim>>,
-      dg::Actions::CollectDataForFluxes<
-          boundary_scheme, domain::Tags::InternalDirections<volume_dim>>,
+      evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
       dg::Actions::SendDataForFluxes<boundary_scheme>,
-      Actions::ComputeTimeDerivative<ScalarWave::ComputeDuDt<Dim>>,
-      evolution::Actions::AddMeshVelocityNonconservative,
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
           domain::Tags::BoundaryDirectionsInterior<Dim>>,
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
