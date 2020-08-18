@@ -382,9 +382,10 @@ struct wrap_create_types_impl<std::map<K, V>> {
     using UnwrappedK = decltype(unwrap_create_types<K>(std::declval<K>()));
     using UnwrappedV = decltype(unwrap_create_types<V>(std::declval<V>()));
     std::map<UnwrappedK, UnwrappedV> result;
-    for (auto& w : wrapped) {
-      result.emplace(unwrap_create_types<K>(std::move(w.first)),
-                     unwrap_create_types<V>(std::move(w.second)));
+    for (auto it = wrapped.begin(); it != wrapped.end();) {
+      auto node = wrapped.extract(it++);
+      result.emplace(unwrap_create_types<K>(std::move(node.key())),
+                     unwrap_create_types<V>(std::move(node.mapped())));
     }
     return result;
   }
