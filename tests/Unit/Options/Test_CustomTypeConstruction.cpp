@@ -148,7 +148,7 @@ template <>
 struct create_from_yaml<CreateFromOptionsAnimal> {
   template <typename Metavariables>
   static CreateFromOptionsAnimal create(const Option& options) {
-    const std::string animal = options.parse_as<std::string>();
+    const auto animal = options.parse_as<std::string>();
     if (animal == "Cat") {
       return CreateFromOptionsAnimal::Cat;
     }
@@ -195,7 +195,7 @@ template <>
 CreateFromOptionsExoticAnimal
 create_from_yaml<CreateFromOptionsExoticAnimal>::create<void>(
     const Option& options) {
-  const std::string animal = options.parse_as<std::string>();
+  const auto animal = options.parse_as<std::string>();
   if (animal == "MexicanWalkingFish") {
     return CreateFromOptionsExoticAnimal::MexicanWalkingFish;
   }
