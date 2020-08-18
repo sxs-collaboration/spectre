@@ -40,7 +40,7 @@ template <typename IdType, typename DataType>
 class IdPair;
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 namespace db {
 template <typename TagsList>
@@ -90,7 +90,7 @@ struct MockReceivePoints {
           nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
-      Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id,
       std::vector<boost::optional<

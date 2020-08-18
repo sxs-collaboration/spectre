@@ -14,7 +14,7 @@
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
@@ -53,7 +53,7 @@ struct ReceiveGhWorldtubeData {
                                            Tags::GhInterfaceManager>> = nullptr>
   static void apply(
       db::DataBox<tmpl::list<DbTags...>>& box,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const TimeStepId& time,
       const tnsr::aa<DataVector, 3>& spacetime_metric,
       const tnsr::iaa<DataVector, 3>& phi, const tnsr::aa<DataVector, 3>& pi,

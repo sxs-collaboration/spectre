@@ -15,7 +15,7 @@
 namespace Parallel {
 /// \cond
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 /// \endcond
 
 namespace Algorithm_detail {
@@ -112,7 +112,7 @@ struct build_databox_types<
     InboxTagsList, Metavariables, ArrayIndex, ParallelComponent> {
   using additional_args_list =
       tmpl::list<tuples::tagged_tuple_from_typelist<InboxTagsList>,
-                 Parallel::ConstGlobalCache<Metavariables>, ArrayIndex,
+                 Parallel::GlobalCache<Metavariables>, ArrayIndex,
                  typename CurrentPhaseDepActionList::action_list,
                  std::add_pointer_t<ParallelComponent>>;
   using action_list_of_this_phase =

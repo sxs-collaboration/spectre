@@ -15,7 +15,7 @@
 /// \cond
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 namespace db {
 template <typename TagsList>
@@ -39,7 +39,7 @@ class EventsAndTriggers {
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
             typename Component>
   void run_events(const db::DataBox<DbTags>& box,
-                  Parallel::ConstGlobalCache<Metavariables>& cache,
+                  Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
                   const Component* component) const noexcept {
     for (const auto& trigger_and_events : events_and_triggers_) {

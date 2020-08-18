@@ -10,7 +10,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
@@ -55,7 +55,7 @@ struct PrepareSolve {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>, operand_tag,
@@ -99,7 +99,7 @@ struct InitializeHasConverged {
       Requires<db::tag_is_retrievable_v<
           LinearSolver::Tags::HasConverged<OptionsGroup>, DataBox>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index,
                     const Convergence::HasConverged& has_converged) noexcept {
     db::mutate<LinearSolver::Tags::HasConverged<OptionsGroup>>(
@@ -123,7 +123,7 @@ struct PrepareStep {
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     // Nothing to do before applying the linear operator to the operand
@@ -139,7 +139,7 @@ struct PerformStep {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ActionList /*meta*/,
@@ -193,7 +193,7 @@ struct UpdateFieldValues {
                      db::tag_is_retrievable_v<operand_tag, DataBox> and
                      db::tag_is_retrievable_v<operator_tag, DataBox>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index,
                     const double alpha) noexcept {
     // Received global reduction result, proceed with conjugate gradient.
@@ -242,7 +242,7 @@ struct UpdateOperand {
                    LinearSolver::Tags::IterationId<OptionsGroup>, DataBox> and
                db::tag_is_retrievable_v<residual_tag, DataBox>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const double res_ratio,
                     const Convergence::HasConverged& has_converged) noexcept {
     db::mutate<operand_tag, LinearSolver::Tags::IterationId<OptionsGroup>,

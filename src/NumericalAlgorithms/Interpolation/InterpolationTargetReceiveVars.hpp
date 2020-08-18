@@ -14,7 +14,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -78,7 +78,7 @@ struct InterpolationTargetReceiveVars {
           nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
       const std::vector<Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&

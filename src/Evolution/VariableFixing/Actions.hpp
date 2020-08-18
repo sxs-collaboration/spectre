@@ -8,7 +8,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -32,7 +32,7 @@ namespace Actions {
 /// Uses:
 /// - DataBox:
 ///   - Metavariables::variable_fixer::argument_tags
-/// - ConstGlobalCache:
+/// - GlobalCache:
 ///   - Metavariables::variable_fixer
 ///
 /// DataBox changes:
@@ -51,7 +51,7 @@ struct FixVariables {
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     const auto& variable_fixer = get<Tags::VariableFixer<VariableFixer>>(cache);

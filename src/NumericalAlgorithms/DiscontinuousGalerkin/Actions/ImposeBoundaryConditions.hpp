@@ -14,7 +14,7 @@
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Evolution/TypeTraits.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Tags.hpp"
@@ -44,7 +44,7 @@ namespace Actions {
 ///   Tags::Interface<Tags::ExternalBoundaryDirections<volume_dim>, Tag>
 ///
 /// Uses:
-/// - ConstGlobalCache:
+/// - GlobalCache:
 ///   - Metavariables::boundary_condition_tag
 /// - DataBox:
 ///   - Tags::Time
@@ -80,7 +80,7 @@ struct ImposeDirichletBoundaryConditions {
             typename ActionList, typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     using system = typename Metavariables::system;
@@ -99,7 +99,7 @@ struct ImposeDirichletBoundaryConditions {
   template <size_t VolumeDim, typename DbTags>
   static std::tuple<db::DataBox<DbTags>&&> apply_impl(
       db::DataBox<DbTags>& box,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const Parallel::GlobalCache<Metavariables>& cache,
       std::integral_constant<
           BoundaryConditionMethod,
           BoundaryConditionMethod::AnalyticBcNoPrimitives> /*meta*/) noexcept {
@@ -155,7 +155,7 @@ struct ImposeDirichletBoundaryConditions {
   template <size_t VolumeDim, typename DbTags>
   static std::tuple<db::DataBox<DbTags>&&> apply_impl(
       db::DataBox<DbTags>& box,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const Parallel::GlobalCache<Metavariables>& cache,
       std::integral_constant<
           BoundaryConditionMethod,
           BoundaryConditionMethod::

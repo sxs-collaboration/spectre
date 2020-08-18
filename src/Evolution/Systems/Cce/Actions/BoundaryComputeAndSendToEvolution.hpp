@@ -16,7 +16,7 @@
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
 #include "Evolution/Systems/Cce/ReceiveTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
 #include "Time/Tags.hpp"
@@ -91,7 +91,7 @@ struct BoundaryComputeAndSendToEvolution<H5WorldtubeBoundary<Metavariables>,
                     typename Metavariables::cce_boundary_communication_tags>,
                 DbTags>...>> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const TimeStepId& time) noexcept {
     if (not db::get<Tags::H5WorldtubeBoundaryDataManager>(box)
@@ -140,7 +140,7 @@ struct BoundaryComputeAndSendToEvolution<GhWorldtubeBoundary<Metavariables>,
                     typename Metavariables::cce_boundary_communication_tags>,
                 DbTags>...>> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const TimeStepId& time) noexcept {
     db::mutate<Tags::GhInterfaceManager>(
@@ -171,7 +171,7 @@ struct SendToEvolution<GhWorldtubeBoundary<Metavariables>, EvolutionComponent> {
                     typename Metavariables::cce_boundary_communication_tags>,
                 DbTags>...>> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, const TimeStepId& time,
                     const InterfaceManagers::GhInterfaceManager::gh_variables&
                         gh_variables) noexcept {

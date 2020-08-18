@@ -69,7 +69,7 @@ struct InitializeH5WorldtubeBoundary {
                 nullptr>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -103,7 +103,7 @@ struct InitializeH5WorldtubeBoundary {
                 nullptr>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -153,7 +153,7 @@ struct InitializeGhWorldtubeBoundary {
                 nullptr>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -179,7 +179,7 @@ struct InitializeGhWorldtubeBoundary {
           nullptr>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {

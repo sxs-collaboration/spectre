@@ -25,7 +25,7 @@ struct test_send_to_evolution {
             typename Metavariables>
   static void apply(
       const db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const TimeStepId& /*time*/,
       const Cce::InterfaceManagers::GhInterfaceManager::gh_variables&
       /*gh_variables*/) noexcept {}
@@ -36,7 +36,7 @@ struct test_receive_next_element_time {
   template <typename ParallelComponent, typename... DbTags, typename ArrayIndex,
             typename Metavariables>
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const TimeStepId& /*time*/,
                     const TimeStepId& next_time) noexcept {

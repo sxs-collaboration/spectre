@@ -158,7 +158,7 @@ deferred_assoc_state<Rt, Fp, Args...>::deferred_assoc_state(
 // return value as pointer to the data we actually want to have visible to us
 // when we retrieve the data. The reason for using a pointer is because we need
 // to be able to rebind in case the memory address of `const Rt&` changes (for
-// example, if we point to a `ConstGlobalCache` and we are migrated to a
+// example, if we point to a `GlobalCache` and we are migrated to a
 // different node). Since lvalue references cannot be rebound, we store a
 // pointer. The `get` function dereferences the pointer we store so that we have
 // a const lvalue reference to work with when retrieving the data being pointed
@@ -225,10 +225,10 @@ deferred_assoc_state<const Rt&, Fp, Args...>::deferred_assoc_state(
  * lvalue reference) the underlying data stored is actually a pointer to `t`,
  * which will be dereferenced upon retrieval. This could lead to a dangling
  * pointer/reference if care isn't taken. The reason for this design is that:
- * 1. We need to be able to retrieve data stored in the ConstGlobalCache from
+ * 1. We need to be able to retrieve data stored in the GlobalCache from
  *    the DataBox. The way to do this is to have a pointer to the
- *    ConstGlobalCache inside the DataBox alongside compute items that return
- *    `const Rt&` to the ConstGlobalCache data.
+ *    GlobalCache inside the DataBox alongside compute items that return
+ *    `const Rt&` to the GlobalCache data.
  * 2. Functions used in the DataBox shouldn't return references, they are
  *    compute tags and should return by value. If we find an actual use-case for
  *    compute tags returning `const Rt&` where referencing behavior is undesired

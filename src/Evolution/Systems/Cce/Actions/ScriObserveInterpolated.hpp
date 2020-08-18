@@ -18,7 +18,7 @@
 #include "IO/Observer/WriteSimpleData.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -106,7 +106,7 @@ struct ScriObserveInterpolated {
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     const size_t observation_l_max = db::get<Tags::ObservationLMax>(box);
@@ -213,7 +213,7 @@ struct ScriObserveInterpolated {
       const gsl::not_null<std::vector<double>*> data_to_write_buffer,
       const std::vector<std::string>& legend, const size_t l_max,
       const size_t observation_l_max,
-      Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
+      Parallel::GlobalCache<Metavariables>& cache) noexcept {
     const SpinWeighted<ComplexDataVector, Spin> to_transform;
     make_const_view(make_not_null(&to_transform.data()), data, 0, data.size());
     SpinWeighted<ComplexModalVector, Spin> goldberg_modes;

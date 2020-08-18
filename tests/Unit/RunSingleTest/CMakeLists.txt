@@ -55,7 +55,7 @@ target_link_libraries(
 
 add_dependencies(
   ${EXECUTABLE}
-  module_ConstGlobalCache
+  module_GlobalCache
   module_Main
   module_RunTests
   )

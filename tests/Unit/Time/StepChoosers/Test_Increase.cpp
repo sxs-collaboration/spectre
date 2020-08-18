@@ -9,7 +9,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Increase.hpp"
@@ -32,7 +32,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
 
   Parallel::register_derived_classes_with_charm<StepChooserType>();
 
-  const Parallel::ConstGlobalCache<Metavariables> cache{{}};
+  const Parallel::GlobalCache<Metavariables> cache{{}};
   const auto box = db::create<db::AddSimpleTags<>>();
   const auto check =
       [&box, &cache](const double step, const double expected) noexcept {

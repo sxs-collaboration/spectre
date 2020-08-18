@@ -133,7 +133,7 @@ struct IncrementTime {
             typename ArrayIndex>
   static auto apply(DataBox& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -235,7 +235,7 @@ void test() noexcept {
   const auto logical_to_grid_map = create_affine_map<Dim, Frame::Grid>();
   const auto grid_to_inertial_map =
       create_translation_map<Dim>(functions_of_time_names);
-  const auto logical_coords = ActionTesting::get_databox_tag<
+  const auto& logical_coords = ActionTesting::get_databox_tag<
       component, domain::Tags::Coordinates<Dim, Frame::Logical>>(runner,
                                                                  self_id);
 

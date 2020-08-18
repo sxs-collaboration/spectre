@@ -86,8 +86,8 @@
               "\"NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp\"",
               public]},
 
-  { include: ["<ConstGlobalCache.decl.h>", private,
-              "\"Parallel/ConstGlobalCache.hpp\"", public]},
+  { include: ["<GlobalCache.decl.h>", private,
+              "\"Parallel/GlobalCache.hpp\"", public]},
   { include: ["\"AlgorithmArray.decl.h\"", private,
               "\"AlgorithmArray.hpp\"", public]},
   { include: ["\"AlgorithmGroup.decl.h\"", private,

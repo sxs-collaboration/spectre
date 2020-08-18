@@ -595,7 +595,7 @@
  * \defgroup OptionTagsGroup Option Tags
  * \brief Tags used for options parsed from the input file.
  *
- * These can be stored in the ConstGlobalCache or passed to the `initialize`
+ * These can be stored in the GlobalCache or passed to the `initialize`
  * function of a parallel component.
  */
 

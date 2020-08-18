@@ -8,7 +8,7 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/TMPL.hpp"
@@ -35,7 +35,7 @@ struct Observer {
 
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
-      Parallel::CProxy_ConstGlobalCache<
+      Parallel::CProxy_GlobalCache<
           Metavariables>& /*global_cache*/) noexcept {}
 };
 
@@ -58,7 +58,7 @@ struct ObserverWriter {
 
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
-      Parallel::CProxy_ConstGlobalCache<
+      Parallel::CProxy_GlobalCache<
           Metavariables>& /*global_cache*/) noexcept {}
 };
 }  // namespace observers

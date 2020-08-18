@@ -60,7 +60,7 @@
 // IWYU pragma: no_forward_declare Tensor
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 namespace StrahlkorperTags {
 template <typename Frame>
@@ -126,7 +126,7 @@ template <typename InterpolationTargetTag, typename DbTagToRetrieve>
 struct TestFunction {
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const typename Metavariables::temporal_id::
                         type& /*temporal_id*/) noexcept {
     const auto& interpolation_result = get<DbTagToRetrieve>(box);
@@ -154,7 +154,7 @@ struct TestFunction {
 struct TestKerrHorizonIntegral {
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const typename Metavariables::temporal_id::
                         type& /*temporal_id*/) noexcept {
     const auto& interpolation_result = get<Tags::Square>(box);

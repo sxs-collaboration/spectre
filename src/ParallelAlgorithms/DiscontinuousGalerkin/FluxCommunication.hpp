@@ -20,7 +20,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/HasReceivedFromAllMortars.hpp"
@@ -92,7 +92,7 @@ struct SendDataForFluxes {
             typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     auto& receiver_proxy =
@@ -190,7 +190,7 @@ struct ReceiveDataForFluxes {
             typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     if (UNLIKELY(
@@ -222,7 +222,7 @@ struct ReceiveDataForFluxes {
   static bool is_ready(
       const db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/) noexcept {
     return has_received_from_all_mortars<fluxes_inbox_tag>(
         db::get<temporal_id_tag>(box),
@@ -281,7 +281,7 @@ struct ReceiveDataForFluxes<
             typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     db::mutate<all_mortar_data_tag,
@@ -348,7 +348,7 @@ struct ReceiveDataForFluxes<
   static bool is_ready(
       const db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/) noexcept {
     const auto& inbox = tuples::get<fluxes_inbox_tag>(inboxes);
     const auto& local_next_temporal_id = db::get<receive_temporal_id_tag>(box);

@@ -137,7 +137,7 @@ struct TestSendToEvolution {
             typename Metavariables, typename ArrayIndex>
   static void apply(
       const db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const TimeStepId& time,
       const Variables<typename Metavariables::cce_boundary_communication_tags>&
           data_to_send) noexcept {

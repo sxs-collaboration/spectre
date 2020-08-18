@@ -39,7 +39,7 @@
 
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 namespace LinearSolver::gmres::detail {
 template <typename FieldsTag, typename OptionsGroup, bool Preconditioned>
@@ -110,7 +110,7 @@ struct MockNormalizeInitialOperand {
       typename ArrayIndex,
       Requires<tmpl::list_contains_v<DbTagsList, CheckValueTag>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const double residual_magnitude,
                     const Convergence::HasConverged& has_converged) noexcept {
@@ -131,7 +131,7 @@ struct MockOrthogonalizeOperand {
       typename ArrayIndex,
       Requires<tmpl::list_contains_v<DbTagsList, CheckValueTag>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const double orthogonalization) noexcept {
     db::mutate<CheckValueTag>(
@@ -148,7 +148,7 @@ struct MockNormalizeOperandAndUpdateField {
       typename ArrayIndex,
       Requires<tmpl::list_contains_v<DbTagsList, CheckValueTag>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const double normalization,
                     const DenseVector<double>& minres,

@@ -8,7 +8,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -30,7 +30,7 @@ using Constant = StepChoosers::Constant<>;
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Constant", "[Unit][Time]") {
   Parallel::register_derived_classes_with_charm<StepChooserType>();
 
-  const Parallel::ConstGlobalCache<Metavariables> cache{{}};
+  const Parallel::GlobalCache<Metavariables> cache{{}};
   const auto box = db::create<db::AddSimpleTags<>>();
 
   const Constant constant{5.4};

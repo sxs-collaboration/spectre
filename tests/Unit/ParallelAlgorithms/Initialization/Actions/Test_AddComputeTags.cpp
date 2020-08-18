@@ -9,7 +9,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Framework/ActionTesting.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "Utilities/Gsl.hpp"

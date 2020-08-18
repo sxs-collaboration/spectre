@@ -13,7 +13,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -78,7 +78,7 @@ struct SendMap {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     Parallel::receive_data<Tags::MapTag>(
@@ -98,7 +98,7 @@ struct ReceiveMap {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     db::mutate<Tags::MapCounter>(make_not_null(&box), [
@@ -111,7 +111,7 @@ struct ReceiveMap {
   static bool is_ready(
       const db::DataBox<DbTags>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/) noexcept {
     return get<Tags::MapTag>(inboxes).at(1_st).size() == 1;
   }
@@ -123,7 +123,7 @@ struct SendMemberInsert {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     Parallel::receive_data<Tags::MemberInsertTag>(
@@ -145,7 +145,7 @@ struct ReceiveMemberInsert {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     db::mutate<Tags::MemberInsertCounter>(make_not_null(&box), [
@@ -160,7 +160,7 @@ struct ReceiveMemberInsert {
   static bool is_ready(
       const db::DataBox<DbTags>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/) noexcept {
     return get<Tags::MemberInsertTag>(inboxes).at(1_st).size() == 1;
   }
@@ -172,7 +172,7 @@ struct SendValue {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     Parallel::receive_data<Tags::ValueTag>(
@@ -194,7 +194,7 @@ struct ReceiveValue {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     db::mutate<Tags::ValueCounter>(make_not_null(&box), [
@@ -209,7 +209,7 @@ struct ReceiveValue {
   static bool is_ready(
       const db::DataBox<DbTags>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/) noexcept {
     return get<Tags::ValueTag>(inboxes).count(1_st) == 1;
   }
@@ -221,7 +221,7 @@ struct SendPushback {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     Parallel::receive_data<Tags::PushbackTag>(
@@ -243,7 +243,7 @@ struct ReceivePushback {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     db::mutate<Tags::PushbackCounter>(make_not_null(&box), [
@@ -258,7 +258,7 @@ struct ReceivePushback {
   static bool is_ready(
       const db::DataBox<DbTags>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/) noexcept {
     return get<Tags::PushbackTag>(inboxes).at(1_st).size() == 1;
   }

@@ -25,7 +25,7 @@
 class DataVector;
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond

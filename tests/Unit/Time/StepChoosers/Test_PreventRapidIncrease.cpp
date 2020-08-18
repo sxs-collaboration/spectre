@@ -17,7 +17,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
@@ -51,7 +51,7 @@ void check_case(const Frac& expected_frac,
   const std::unique_ptr<StepChooserType> relax_base =
       std::make_unique<PreventRapidIncrease>(relax);
 
-  const Parallel::ConstGlobalCache<Metavariables> cache{{}};
+  const Parallel::GlobalCache<Metavariables> cache{{}};
 
   const Slab slab(0.25, 1.5);
   const double expected = expected_frac == -1

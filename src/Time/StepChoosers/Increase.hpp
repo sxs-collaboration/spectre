@@ -17,7 +17,7 @@
 /// \cond
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
@@ -55,7 +55,7 @@ class Increase : public StepChooser<StepChooserRegistrars> {
 
   template <typename Metavariables>
   double operator()(const double last_step_magnitude,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/)
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/)
       const noexcept {
     return last_step_magnitude * factor_;
   }

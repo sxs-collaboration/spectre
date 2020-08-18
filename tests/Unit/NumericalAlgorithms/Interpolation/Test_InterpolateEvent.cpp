@@ -39,7 +39,7 @@
 class DataVector;
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 namespace db {
 template <typename TagsList>
@@ -72,7 +72,7 @@ struct MockInterpolatorReceiveVolumeData {
             typename ArrayIndex, size_t VolumeDim>
   static void apply(
       db::DataBox<DbTags>& /*box*/,
-      Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ::TimeStepId& temporal_id,
       const ElementId<VolumeDim>& element_id, const ::Mesh<VolumeDim>& mesh,
       Variables<typename Metavariables::interpolator_source_vars>&&
@@ -93,7 +93,7 @@ struct MockAddTemporalIdsToInterpolationTarget {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& /*box*/,
-                    Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     std::vector<typename Metavariables::temporal_id::type>&&
                     /*temporal_ids*/) noexcept {

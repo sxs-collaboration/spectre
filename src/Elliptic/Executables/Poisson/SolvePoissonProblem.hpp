@@ -28,7 +28,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
@@ -211,7 +211,7 @@ struct Metavariables {
   // Specify the transitions between phases.
   static Phase determine_next_phase(
       const Phase& current_phase,
-      const Parallel::CProxy_ConstGlobalCache<
+      const Parallel::CProxy_GlobalCache<
           Metavariables>& /*cache_proxy*/) noexcept {
     switch (current_phase) {
       case Phase::Initialization:

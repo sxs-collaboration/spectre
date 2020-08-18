@@ -7,7 +7,7 @@ See LICENSE.txt for details.
 SpECTRE can read YAML configuration files at runtime to set parameters
 and choose between classes implementing an interface.  %Options are
 parsed during code initialization and can be used to construct objects
-placed in the Parallel::ConstGlobalCache and options passed to the
+placed in the Parallel::GlobalCache and options passed to the
 parallel components.  The types necessary to mark objects for parsing
 are declared in `Options/Options.hpp`.
 

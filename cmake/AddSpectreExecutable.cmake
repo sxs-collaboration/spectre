@@ -93,7 +93,7 @@ function(
 
   add_dependencies(
     ${EXECUTABLE_NAME}
-    module_ConstGlobalCache
+    module_GlobalCache
     module_Main
     )
 

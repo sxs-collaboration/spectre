@@ -11,7 +11,7 @@
 #include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
@@ -56,7 +56,7 @@ struct InitializeResidual {
             Requires<db::tag_is_retrievable_v<residual_square_tag, DataBox>> =
                 nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const double residual_square) noexcept {
     db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>,
@@ -123,7 +123,7 @@ struct ComputeAlpha {
             Requires<db::tag_is_retrievable_v<residual_square_tag, DataBox>> =
                 nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const double conj_grad_inner_product) noexcept {
     Parallel::simple_action<UpdateFieldValues<FieldsTag, OptionsGroup>>(
@@ -148,7 +148,7 @@ struct UpdateResidual {
             Requires<db::tag_is_retrievable_v<residual_square_tag, DataBox>> =
                 nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const double residual_square) noexcept {
     // Compute the residual ratio before mutating the DataBox

@@ -25,7 +25,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -172,7 +172,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       const typename ::Tags::Analytic<
           AnalyticSolutionTensors>::type&... analytic_solutions,
       const typename NonSolutionTensors::type&... non_solution_tensors,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
       const ParallelComponent* const /*meta*/) const noexcept {
     const std::string element_name =

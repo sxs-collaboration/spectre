@@ -5,7 +5,7 @@
 
 #include "AlgorithmNodegroup.hpp"
 #include "IO/Importers/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
@@ -38,12 +38,12 @@ struct VolumeDataReader {
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
-  static void initialize(Parallel::CProxy_ConstGlobalCache<
+  static void initialize(Parallel::CProxy_GlobalCache<
                          Metavariables>& /*global_cache*/) noexcept {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<VolumeDataReader>(local_cache)
         .start_phase(next_phase);
@@ -57,7 +57,7 @@ struct InitializeVolumeDataReader {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {

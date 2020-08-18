@@ -48,7 +48,7 @@ struct CleanUpInterpolator;
 }  // namespace intrp::Actions
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 namespace db {
 template <typename TagsList>
@@ -80,7 +80,7 @@ struct MockSendPointsToInterpolator {
                       typename Metavariables::temporal_id::type>>> = nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
-      Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     using temporal_id_type = typename Metavariables::temporal_id::type;
@@ -134,7 +134,7 @@ struct MockCleanUpInterpolator {
                 DbTags, typename intrp::Tags::NumberOfElements>> = nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     Slab slab(0.0, 1.0);
@@ -190,7 +190,7 @@ struct MockPostInterpolationCallback {
   template <typename DbTags, typename Metavariables>
   static void apply(
       const db::DataBox<DbTags>& box,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     callback_impl(box, temporal_id);
   }
@@ -205,7 +205,7 @@ struct MockPostInterpolationCallbackNoCleanup {
   template <typename DbTags, typename Metavariables>
   static bool apply(
       const gsl::not_null<db::DataBox<DbTags>*> box,
-      const gsl::not_null<Parallel::ConstGlobalCache<Metavariables>*> /*cache*/,
+      const gsl::not_null<Parallel::GlobalCache<Metavariables>*> /*cache*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     callback_impl(*box, temporal_id);
     return false;
@@ -219,7 +219,7 @@ struct MockPostInterpolationCallbackWithInvalidPoints {
   template <typename DbTags, typename Metavariables>
   static void apply(
       const db::DataBox<DbTags>& box,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     Slab slab(0.0, 1.0);
     CHECK(temporal_id == TimeStepId(true, 0, Time(slab, Rational(13, 15))));

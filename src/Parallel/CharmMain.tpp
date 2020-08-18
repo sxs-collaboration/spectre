@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "Parallel/CharmRegistration.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Main.hpp"
 #include "Utilities/NoSuchType.hpp"
 

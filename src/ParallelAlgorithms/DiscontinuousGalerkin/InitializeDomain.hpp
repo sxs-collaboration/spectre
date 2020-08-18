@@ -21,7 +21,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -41,7 +41,7 @@ namespace Actions {
  * \ingroup InitializationGroup
  * \brief Initialize items related to the basic structure of the element
  *
- * ConstGlobalCache:
+ * GlobalCache:
  * - Uses:
  *   - `Tags::Domain<Dim, Frame::Inertial>`
  * DataBox:
@@ -74,7 +74,7 @@ struct InitializeDomain {
                                     tmpl::pin<DataBox>>>::value> = nullptr>
   static auto apply(DataBox& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ElementId<Dim>& array_index,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -129,7 +129,7 @@ struct InitializeDomain {
                                         tmpl::pin<DataBox>>>::value> = nullptr>
   static std::tuple<DataBox&&> apply(
       DataBox& /*box*/, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     ERROR(

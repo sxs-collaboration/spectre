@@ -17,9 +17,9 @@
 #include "Options/ParseOptions.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/CharmRegistration.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/CreateFromOptions.hpp"
 #include "Parallel/Exit.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/TypeTraits.hpp"
@@ -86,7 +86,7 @@ class Main : public CBase_Main<Metavariables> {
   typename Metavariables::Phase current_phase_{
       Metavariables::Phase::Initialization};
 
-  CProxy_ConstGlobalCache<Metavariables> const_global_cache_proxy_;
+  CProxy_GlobalCache<Metavariables> global_cache_proxy_;
   Options<option_list> options_;
 };
 
@@ -245,38 +245,38 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
                 std::move(args)...);
           });
 
-  const_global_cache_proxy_ = CProxy_ConstGlobalCache<Metavariables>::ckNew(
+  global_cache_proxy_ = CProxy_GlobalCache<Metavariables>::ckNew(
       Parallel::create_from_options<Metavariables>(items_from_options,
                                                    const_global_cache_tags{}));
 
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       the_parallel_components;
 
-  // Construct the group proxies with a dependency on the ConstGlobalCache proxy
+  // Construct the group proxies with a dependency on the GlobalCache proxy
   using group_component_list = tmpl::filter<
       component_list,
       tmpl::or_<Parallel::is_group_proxy<tmpl::bind<
                     Parallel::proxy_from_parallel_component, tmpl::_1>>,
                 Parallel::is_node_group_proxy<tmpl::bind<
                     Parallel::proxy_from_parallel_component, tmpl::_1>>>>;
-  CkEntryOptions const_global_cache_dependency;
-  const_global_cache_dependency.setGroupDepID(
-      const_global_cache_proxy_.ckGetGroupID());
+  CkEntryOptions global_cache_dependency;
+  global_cache_dependency.setGroupDepID(
+      global_cache_proxy_.ckGetGroupID());
 
   tmpl::for_each<group_component_list>([
     this, &the_parallel_components, &items_from_options, &
-    const_global_cache_dependency
+    global_cache_dependency
   ](auto parallel_component_v) noexcept {
     using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
     using ParallelComponentProxy =
         Parallel::proxy_from_parallel_component<parallel_component>;
     tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
         ParallelComponentProxy::ckNew(
-            const_global_cache_proxy_,
+            global_cache_proxy_,
             Parallel::create_from_options<Metavariables>(
                 items_from_options,
                 typename parallel_component::initialization_tags{}),
-            &const_global_cache_dependency);
+            &global_cache_dependency);
   });
 
   // Construct the proxies for the single chares
@@ -292,7 +292,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
         Parallel::proxy_from_parallel_component<parallel_component>;
     tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
         ParallelComponentProxy::ckNew(
-            const_global_cache_proxy_,
+            global_cache_proxy_,
             Parallel::create_from_options<Metavariables>(
                 items_from_options,
                 typename parallel_component::initialization_tags{}));
@@ -333,14 +333,14 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
         ParallelComponentProxy::ckNew(opts);
   });
 
-  // Send the complete list of parallel_components to the ConstGlobalCache on
+  // Send the complete list of parallel_components to the GlobalCache on
   // each Charm++ node.  After all nodes have finished, the callback is
   // executed.
   CkCallback callback(
       CkIndex_Main<Metavariables>::
           allocate_array_components_and_execute_initialization_phase(),
       this->thisProxy);
-  const_global_cache_proxy_.set_parallel_components(the_parallel_components,
+  global_cache_proxy_.set_parallel_components(the_parallel_components,
                                                     callback);
 }
 
@@ -365,7 +365,7 @@ void Main<Metavariables>::
       auto parallel_component_v) noexcept {
     using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
     parallel_component::allocate_array(
-        const_global_cache_proxy_,
+        global_cache_proxy_,
         Parallel::create_from_options<Metavariables>(
             items_from_options,
             typename parallel_component::initialization_tags{}));
@@ -373,7 +373,7 @@ void Main<Metavariables>::
   tmpl::for_each<component_list>([this](auto parallel_component_v) noexcept {
     using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
     Parallel::get_parallel_component<parallel_component>(
-        *(const_global_cache_proxy_.ckLocalBranch()))
+        *(global_cache_proxy_.ckLocalBranch()))
         .start_phase(current_phase_);
   });
   CkStartQD(CkCallback(CkIndex_Main<Metavariables>::execute_next_phase(),
@@ -383,14 +383,14 @@ void Main<Metavariables>::
 template <typename Metavariables>
 void Main<Metavariables>::execute_next_phase() noexcept {
   current_phase_ = Metavariables::determine_next_phase(
-      current_phase_, const_global_cache_proxy_);
+      current_phase_, global_cache_proxy_);
   if (Metavariables::Phase::Exit == current_phase_) {
     Informer::print_exit_info();
     Parallel::exit();
   }
   tmpl::for_each<component_list>([this](auto parallel_component) noexcept {
     tmpl::type_from<decltype(parallel_component)>::execute_next_phase(
-        current_phase_, const_global_cache_proxy_);
+        current_phase_, global_cache_proxy_);
   });
   CkStartQD(CkCallback(CkIndex_Main<Metavariables>::execute_next_phase(),
                        this->thisProxy));

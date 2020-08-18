@@ -13,7 +13,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Informer/Verbosity.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -54,7 +54,7 @@ namespace callbacks {
 /// struct called `post_horizon_find_callback`, which has a function
 ///```
 ///  static void apply(const DataBox<DbTags>&,
-///                    const intrp::ConstGlobalCache<Metavariables>&,
+///                    const intrp::GlobalCache<Metavariables>&,
 ///                    const Metavariables::temporal_id&) noexcept;
 ///```
 /// that is called if the FastFlow iteration has converged.
@@ -84,7 +84,7 @@ struct FindApparentHorizon {
   template <typename DbTags, typename Metavariables, typename TemporalId>
   static bool apply(
       const gsl::not_null<db::DataBox<DbTags>*> box,
-      const gsl::not_null<Parallel::ConstGlobalCache<Metavariables>*> cache,
+      const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
       const TemporalId& temporal_id) noexcept {
     // Before doing anything else, deal with the possibility that some
     // of the points might be outside of the Domain.

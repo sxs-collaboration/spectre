@@ -32,17 +32,15 @@
 
 /// \cond
 class DataVector;
-namespace intrp {
-namespace Tags {
+namespace intrp::Tags {
 template <typename TemporalId>
 struct IndicesOfFilledInterpPoints;
 template <typename TemporalId>
 struct TemporalIds;
-}  // namespace Tags
-}  // namespace intrp
+}  // namespace intrp::Tags
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
@@ -54,7 +52,7 @@ struct MockSendPointsToInterpolator {
             Requires<tmpl::list_contains_v<
                 DbTags, intrp::Tags::TemporalIds<TemporalId>>> = nullptr>
   static void apply(db::DataBox<DbTags>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const TemporalId& temporal_id) noexcept {
     // Put something in IndicesOfFilledInterpPts so we can check later whether

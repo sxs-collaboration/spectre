@@ -30,7 +30,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/Actions/Goto.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
@@ -139,7 +139,7 @@ struct ComputeOperatorAction {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const int /*array_index*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
@@ -170,7 +170,7 @@ struct TestResult {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const int /*array_index*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
@@ -196,7 +196,7 @@ struct InitializeElement {
             typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const int /*array_index*/, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     return std::make_tuple(
@@ -294,7 +294,7 @@ struct ElementArray {
       tmpl::list<LinearOperator, Source, InitialGuess, ExpectedResult>;
 
   static void allocate_array(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
           initialization_items) noexcept {
     auto& local_component = Parallel::get_parallel_component<ElementArray>(
@@ -305,7 +305,7 @@ struct ElementArray {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_component = Parallel::get_parallel_component<ElementArray>(
         *(global_cache.ckLocalBranch()));
     local_component.start_phase(next_phase);
@@ -322,7 +322,7 @@ struct CleanOutput {
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     const auto& reductions_file_name =
@@ -354,7 +354,7 @@ struct OutputCleaner {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_component = Parallel::get_parallel_component<OutputCleaner>(
         *(global_cache.ckLocalBranch()));
     local_component.start_phase(next_phase);
@@ -372,7 +372,7 @@ enum class Phase {
 
 template <typename Metavariables>
 Phase determine_next_phase(const Phase& current_phase,
-                           const Parallel::CProxy_ConstGlobalCache<
+                           const Parallel::CProxy_GlobalCache<
                                Metavariables>& /*cache_proxy*/) noexcept {
   switch (current_phase) {
     case Phase::Initialization:

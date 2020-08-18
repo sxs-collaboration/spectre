@@ -68,7 +68,7 @@
 /// \cond
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 namespace StrahlkorperTags {
 template <typename Frame>
@@ -96,7 +96,7 @@ struct TestSchwarzschildHorizon {
   using observation_types = tmpl::list<>;
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const typename Metavariables::temporal_id::
                         type& /*temporal_id*/) noexcept {
     const auto& horizon_radius =
@@ -129,7 +129,7 @@ struct TestKerrHorizon {
   using observation_types = tmpl::list<>;
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const typename Metavariables::temporal_id::
                         type& /*temporal_id*/) noexcept {
     const auto& strahlkorper =

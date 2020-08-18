@@ -10,7 +10,7 @@
 #include "DataStructures/DenseVector.hpp"
 #include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
@@ -59,7 +59,7 @@ struct InitializeResidualMagnitude {
       Requires<db::tag_is_retrievable_v<residual_magnitude_tag, DataBox>> =
           nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const double residual_magnitude) noexcept {
     db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>,
@@ -131,7 +131,7 @@ struct StoreOrthogonalization {
             Requires<db::tag_is_retrievable_v<orthogonalization_history_tag,
                                               DataBox>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const double orthogonalization) noexcept {
     db::mutate<orthogonalization_history_tag,
@@ -176,7 +176,7 @@ struct StoreFinalOrthogonalization {
       Requires<db::tag_is_retrievable_v<residual_magnitude_tag, DataBox>> =
           nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const double orthogonalization) noexcept {
     db::mutate<orthogonalization_history_tag>(

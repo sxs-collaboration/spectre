@@ -10,7 +10,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
@@ -47,7 +47,7 @@ struct PrintMessage {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& /*box*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) {
     Parallel::printf("Hello %s from process %d on node %d!\n",
                      Parallel::get<Tags::Name>(cache), Parallel::my_proc(),
@@ -70,13 +70,13 @@ struct HelloWorld {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept;
+      Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept;
 };
 
 template <class Metavariables>
 void HelloWorld<Metavariables>::execute_next_phase(
     const typename Metavariables::Phase /* next_phase */,
-    Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
+    Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
   Parallel::simple_action<Actions::PrintMessage>(
       Parallel::get_parallel_component<HelloWorld>(
           *(global_cache.ckLocalBranch())));
@@ -93,7 +93,7 @@ struct Metavars {
   enum class Phase { Initialization, Execute, Exit };
 
   static Phase determine_next_phase(const Phase& current_phase,
-                                    const Parallel::CProxy_ConstGlobalCache<
+                                    const Parallel::CProxy_GlobalCache<
                                         Metavars>& /*cache_proxy*/) noexcept {
     return current_phase == Phase::Initialization ? Phase::Execute
                                                   : Phase::Exit;

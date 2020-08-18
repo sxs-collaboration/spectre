@@ -25,7 +25,7 @@
 /// \cond
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 namespace Tags {
 struct TimeStepId;
@@ -82,7 +82,7 @@ class StepToTimes : public StepChooser<StepChooserRegistrars> {
   template <typename Metavariables>
   double operator()(
       const TimeStepId& time_step_id, const double last_step_magnitude,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/) const
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const
       noexcept {
     const auto& substep_time = time_step_id.substep_time();
     const double now = substep_time.value();

@@ -12,7 +12,7 @@
 #include "Domain/Tags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/StepChoosers/ByBlock.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -41,7 +41,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ByBlock", "[Unit][Time]") {
       std::make_unique<ByBlock>(by_block);
 
   const double current_step = std::numeric_limits<double>::infinity();
-  const Parallel::ConstGlobalCache<Metavariables> cache{{}};
+  const Parallel::GlobalCache<Metavariables> cache{{}};
   for (size_t block = 0; block < 3; ++block) {
     const Element<volume_dim> element(ElementId<volume_dim>(block), {});
     const auto box =

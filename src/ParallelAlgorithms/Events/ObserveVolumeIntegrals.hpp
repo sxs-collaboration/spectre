@@ -19,7 +19,7 @@
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -121,7 +121,7 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
                   const Mesh<VolumeDim>& mesh,
                   const Scalar<DataVector>& det_inv_jacobian,
                   const typename Tensors::type&... tensors,
-                  Parallel::ConstGlobalCache<Metavariables>& cache,
+                  Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& /*array_index*/,
                   const ParallelComponent* const /*meta*/) const noexcept {
     // Determinant of Jacobian is needed because integral is performed in

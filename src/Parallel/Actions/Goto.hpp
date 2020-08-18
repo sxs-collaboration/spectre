@@ -14,7 +14,7 @@
 /// \cond
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 namespace db {
 template <typename TagsList>
@@ -27,7 +27,7 @@ namespace Actions {
 /// Labels a location in the action list that can be jumped to using Goto.
 ///
 /// Uses:
-/// - ConstGlobalCache: nothing
+/// - GlobalCache: nothing
 /// - DataBox: nothing
 ///
 /// DataBox changes:
@@ -41,7 +41,7 @@ struct Label {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -58,7 +58,7 @@ struct Label {
 /// Jumps to a Label.
 ///
 /// Uses:
-/// - ConstGlobalCache: nothing
+/// - GlobalCache: nothing
 /// - DataBox: nothing
 ///
 /// DataBox changes:
@@ -72,7 +72,7 @@ struct Goto {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -96,7 +96,7 @@ struct RepeatStart {
   static std::tuple<db::DataBox<DbTagsList>&&, bool, size_t> apply(
       db::DataBox<DbTagsList>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     return {std::move(box), false,
@@ -114,7 +114,7 @@ struct RepeatEnd {
   static std::tuple<db::DataBox<DbTagsList>&&, bool, size_t> apply(
       db::DataBox<DbTagsList>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     return {

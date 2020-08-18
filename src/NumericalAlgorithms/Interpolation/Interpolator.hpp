@@ -7,7 +7,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/TMPL.hpp"
@@ -30,7 +30,7 @@ struct Interpolator {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   static void execute_next_phase(
       typename Metavariables::Phase next_phase,
-      const Parallel::CProxy_ConstGlobalCache<Metavariables>&
+      const Parallel::CProxy_GlobalCache<Metavariables>&
           global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<Interpolator>(local_cache)

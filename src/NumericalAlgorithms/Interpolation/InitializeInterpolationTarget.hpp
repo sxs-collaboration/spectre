@@ -20,7 +20,7 @@
 // IWYU pragma: no_forward_declare db::DataBox
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
@@ -62,7 +62,7 @@ template <
         nullptr>
 auto make_initial_box(
     db::DataBox<DbTags>&& box,
-    const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
+    const Parallel::GlobalCache<Metavariables>& cache) noexcept {
   return InterpolationTargetTag::compute_target_points::initialize(
       std::move(box), cache);
 }
@@ -72,7 +72,7 @@ template <
     Requires<has_empty_initialization_tags_v<InterpolationTargetTag>> = nullptr>
 auto make_initial_box(
     db::DataBox<DbTags>&& box,
-    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/) noexcept {
+    const Parallel::GlobalCache<Metavariables>& /*cache*/) noexcept {
   return std::move(box);
 }
 
@@ -119,7 +119,7 @@ struct InitializeInterpolationTarget {
                 nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -156,7 +156,7 @@ struct InitializeInterpolationTarget {
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     return {std::move(box)};

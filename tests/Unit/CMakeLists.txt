@@ -66,7 +66,7 @@ target_link_libraries(
 
 add_dependencies(
   ${executable}
-  module_ConstGlobalCache
+  module_GlobalCache
   module_Main
   )
 

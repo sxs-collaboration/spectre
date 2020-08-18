@@ -17,7 +17,7 @@ add_test_library(
 
 add_dependencies(
   ${LIBRARY}
-  module_ConstGlobalCache
+  module_GlobalCache
   )
 
 add_linear_solver_algorithm_test("ConjugateGradientAlgorithm")

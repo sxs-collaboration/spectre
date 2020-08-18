@@ -18,7 +18,7 @@
 #include "IO/Observer/ReductionActions.hpp"   // IWYU pragma: keep
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -125,7 +125,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
       const typename ObservationValueTag::type& observation_value,
       const typename Tensors::type&... tensors,
       const typename ::Tags::Analytic<Tensors>::type&... analytic_tensors,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
       const ParallelComponent* const /*meta*/) const noexcept {
     tuples::TaggedTuple<LocalSquareError<Tensors>...> local_square_errors;

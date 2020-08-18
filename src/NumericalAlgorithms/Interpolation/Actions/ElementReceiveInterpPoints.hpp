@@ -13,7 +13,7 @@
 
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 
 namespace intrp {
@@ -37,7 +37,7 @@ struct ElementReceiveInterpPoints {
                 DbTags, intrp::Tags::InterpPointInfo<Metavariables>>> = nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
-      Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       std::vector<boost::optional<
           IdPair<domain::BlockId, tnsr::I<double, Metavariables::volume_dim,

@@ -56,7 +56,7 @@ specify the following:
   for one of the test executables is:
   \snippet Test_AlgorithmCore.cpp component_list_example
 - `using const_global_cache_tags`: a `tmpl::list` of tags that are
-  used to place items in the ConstGlobalCache.  The alias may be
+  used to place items in the GlobalCache.  The alias may be
   omitted if the list is empty.
 - `Phase`: an `enum class` that must contain at least `Initialization` and
   `Exit`. Phases are described in the next section.
@@ -64,7 +64,7 @@ specify the following:
   \code
     static Phase determine_next_phase(
       const Phase& current_phase,
-      const Parallel::CProxy_ConstGlobalCache<EvolutionMetavars>& cache_proxy)
+      const Parallel::CProxy_GlobalCache<EvolutionMetavars>& cache_proxy)
       noexcept;
   \endcode
   What this function does is described below in the discussion of
@@ -106,7 +106,7 @@ In contrast, an evolution executable might have phases
 similar `switch` or `if-else` logic in the `determine_next_phase`
 function. The first phase that is entered is always
 `Initialization`. During the `Initialization` phase the
-`Parallel::ConstGlobalCache` is created, all non-array components are created,
+`Parallel::GlobalCache` is created, all non-array components are created,
 and empty array components are created.  Next, the function
 `allocate_array_components_and_execute_initialization_phase` is called
 which allocates the elements of each array component, and then starts
@@ -202,11 +202,11 @@ Each %Parallel Component struct must have the following type aliases:
    that are required by the `allocate_array` function of an array
    component, or simple actions called on the parallel component.
    These tags correspond to items that are stored in the
-   Parallel::ConstGlobalCache (of which there is one copy per Charm++
+   Parallel::GlobalCache (of which there is one copy per Charm++
    node).  The alias can be omitted if the list is empty.  (See
    `array_allocation_tags` below for specifying tags needed for the
    `allocate_array` function, but will not be added to the
-   Parallel::ConstGlobalCache.)
+   Parallel::GlobalCache.)
 
 \note Array parallel components must also specify the type alias `using
 array_index`, which is set to the type that indexes the %Parallel Component
@@ -225,7 +225,7 @@ that is used to construct the elements of the array. The
 signature of the `allocate_array` functions must be:
 \code
 static void allocate_array(
-    Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache,
+    Parallel::CProxy_GlobalCache<metavariables>& global_cache,
     const tuples::tagged_tuple_from_typelist<initialization_tags>&
     initialization_items) noexcept;
 \endcode
@@ -248,7 +248,7 @@ signature:
 \code
 static void execute_next_phase(
     const typename metavariables::Phase next_phase,
-    const Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache);
+    const Parallel::CProxy_GlobalCache<metavariables>& global_cache);
 \endcode
 The `determine_next_phase` function in the Metavariables determines the next
 phase, after which the `execute_next_phase` function gets called. The
@@ -276,7 +276,7 @@ For those familiar with Charm++, actions should be thought of as effectively
 being entry methods. They are functions that can be invoked on a remote object
 (chare/parallel component) using a `CProxy` (see the [Charm++
 manual](http://charm.cs.illinois.edu/help)), which is retrieved from the
-Parallel::ConstGlobalCache using the parallel component struct and the
+Parallel::GlobalCache using the parallel component struct and the
 `Parallel::get_parallel_component()` function. %Actions are structs with a
 static `apply` method and come in three variants: simple actions, iterable
 actions, and reduction actions. One important thing to note
@@ -299,12 +299,12 @@ and methods using template parameters and invocation of actions. This approach
 allows us to eliminate the need for users to work with Charm++'s interface
 files, which can be error prone and difficult to use.
 
-The Parallel::ConstGlobalCache is passed to each action so that the
+The Parallel::GlobalCache is passed to each action so that the
 action has access to global data and is able to invoke actions on
 other parallel components. The `ParallelComponent` template parameter
 is the tag of the parallel component that invoked the action. A proxy
 to the calling parallel component can then be retrieved from the
-Parallel::ConstGlobalCache. The remote entry method invocations are
+Parallel::GlobalCache. The remote entry method invocations are
 slightly different for different types of actions, so they will be
 discussed below. However, one thing that is disallowed for all actions
 is calling an action locally from within an action on the same
@@ -317,7 +317,7 @@ to the local (currently executing) parallel component. See the
 [Charm++ manual](http://charm.cs.illinois.edu/help) for more
 information.  However, you are able to queue a new action to be
 executed later on the same parallel component by getting your own
-parallel component from the Parallel::ConstGlobalCache
+parallel component from the Parallel::GlobalCache
 (`Parallel::get_parallel_component<ParallelComponent>(cache)`).  The
 difference between the two calls is that by calling an action through
 the parallel component you will first finish the series of actions you
@@ -363,7 +363,7 @@ where the conditional checks if any element in the parameter pack `DbTags` is
 `CountActionsCalled`.
 
 A simple action that does not take any arguments can be called using a `CProxy`
-from the Parallel::ConstGlobalCache as follows:
+from the Parallel::GlobalCache as follows:
 
 \snippet Test_AlgorithmCore.cpp simple_action_call
 

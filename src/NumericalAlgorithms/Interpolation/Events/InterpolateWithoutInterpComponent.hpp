@@ -13,7 +13,7 @@
 #include "NumericalAlgorithms/Interpolation/PointInfoTag.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -107,7 +107,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       const TimeStepId& time_id,
       const db::item_type<Tags::InterpPointInfo<Metavariables>>& point_infos,
       const Mesh<VolumeDim>& mesh, const typename Tensors::type&... tensors,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
       const ParallelComponent* const /*meta*/) const noexcept {
     // Get element logical coordinates of the target points.

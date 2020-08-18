@@ -12,7 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -50,7 +50,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
       const std::unique_ptr<StepChooserType> step_to_times_base =
           std::make_unique<StepToTimes>(step_to_times);
 
-      const Parallel::ConstGlobalCache<Metavariables> cache{{}};
+      const Parallel::GlobalCache<Metavariables> cache{{}};
       const auto box = db::create<db::AddSimpleTags<Tags::TimeStepId>>(now_id);
 
       const double answer = step_to_times(now_id, step, cache);

@@ -14,7 +14,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -61,7 +61,7 @@ struct ComputeNonconservativeBoundaryFluxes {
             typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     using system = typename Metavariables::system;

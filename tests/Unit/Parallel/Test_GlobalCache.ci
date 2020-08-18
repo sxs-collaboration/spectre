@@ -1,18 +1,18 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-mainmodule Test_ConstGlobalCache {
+mainmodule Test_GlobalCache {
 
   initnode void register_pupables();
 
-  extern module ConstGlobalCache;
+  extern module GlobalCache;
 
   namespace Parallel {
-  nodegroup ConstGlobalCache<TestMetavariables>;
+  nodegroup GlobalCache<TestMetavariables>;
   }
 
-  mainchare Test_ConstGlobalCache {
-    entry Test_ConstGlobalCache(CkArgMsg * msg);
+  mainchare Test_GlobalCache {
+    entry Test_GlobalCache(CkArgMsg * msg);
   };
 
   array [1D] TestArrayChare {

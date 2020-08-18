@@ -15,7 +15,7 @@ def create_interface_file(args):
              "// See LICENSE.txt for details.\n\n" \
              "module Algorithm%s {\n" \
              "  include \"Utilities/TaggedTuple.hpp\";\n" \
-             "  include \"Parallel/ConstGlobalCache.decl.h\";\n" \
+             "  include \"Parallel/GlobalCache.decl.h\";\n" \
              "\n" \
              "  template <typename ParallelComponent,\n" \
              "            typename SpectreArrayIndex>\n" \
@@ -28,7 +28,7 @@ def create_interface_file(args):
 
     ci_str += " Algorithm%s {\n" \
               "    entry Algorithm%s(" \
-              "Parallel::CProxy_ConstGlobalCache<\n" \
+              "Parallel::CProxy_GlobalCache<\n" \
               "        typename ParallelComponent::metavariables>,\n" \
               "tuples::tagged_tuple_from_typelist<" \
               "typename ParallelComponent::initialization_tags>\n" \

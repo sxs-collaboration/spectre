@@ -7,7 +7,7 @@
 #include <pup.h>
 
 #include "Parallel/Info.hpp"
-#include "tests/Unit/Parallel/Test_ConstGlobalCache.decl.h"
+#include "tests/Unit/Parallel/Test_GlobalCache.decl.h"
 
 /// \cond
 class CkArgMsg;
@@ -34,18 +34,18 @@ class TestGroupChare : public CBase_TestGroupChare {
  public:
   TestGroupChare() = default;
   explicit TestGroupChare(CkMigrateMessage* /*unused*/) {}
-  int my_proc() const noexcept { return Parallel::my_proc(); }
+  static int my_proc() noexcept { return Parallel::my_proc(); }
 };
 
 class TestNodeGroupChare : public CBase_TestNodeGroupChare {
  public:
   TestNodeGroupChare() = default;
   explicit TestNodeGroupChare(CkMigrateMessage* /*unused*/) {}
-  int my_node() const noexcept { return Parallel::my_node(); }
+  static int my_node() noexcept { return Parallel::my_node(); }
 };
 
 /// Main executable for running the unit tests.
-class Test_ConstGlobalCache : public CBase_Test_ConstGlobalCache {
+class Test_GlobalCache : public CBase_Test_GlobalCache {
  public:
-  [[noreturn]] explicit Test_ConstGlobalCache(CkArgMsg* msg);
+  [[noreturn]] explicit Test_GlobalCache(CkArgMsg* msg);
 };

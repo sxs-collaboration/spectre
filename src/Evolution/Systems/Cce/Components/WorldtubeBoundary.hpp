@@ -6,7 +6,7 @@
 #include "Evolution/Systems/Cce/Actions/InitializeWorldtubeBoundary.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
@@ -62,12 +62,12 @@ struct H5WorldtubeBoundary {
 
   using options = tmpl::list<>;
 
-  static void initialize(Parallel::CProxy_ConstGlobalCache<
+  static void initialize(Parallel::CProxy_GlobalCache<
                          Metavariables>& /*global_cache*/) noexcept {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      const Parallel::CProxy_ConstGlobalCache<Metavariables>&
+      const Parallel::CProxy_GlobalCache<Metavariables>&
           global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::Evolve) {
@@ -129,12 +129,12 @@ struct GhWorldtubeBoundary {
 
   using options = tmpl::list<>;
 
-  static void initialize(Parallel::CProxy_ConstGlobalCache<
+  static void initialize(Parallel::CProxy_GlobalCache<
                          Metavariables>& /*global_cache*/) noexcept {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      const Parallel::CProxy_ConstGlobalCache<Metavariables>&
+      const Parallel::CProxy_GlobalCache<Metavariables>&
           global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::Evolve) {

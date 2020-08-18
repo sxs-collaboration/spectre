@@ -20,7 +20,7 @@ template <size_t VolumeDim>
 class Element;
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 namespace domain {
 namespace Tags {
@@ -71,7 +71,7 @@ class ByBlock : public StepChooser<StepChooserRegistrars> {
   template <typename Metavariables>
   double operator()(
       const Element<Dim>& element, const double /*last_step_magnitude*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/) const
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const
       noexcept {
     const size_t block = element.id().block_id();
     if (block >= sizes_.size()) {

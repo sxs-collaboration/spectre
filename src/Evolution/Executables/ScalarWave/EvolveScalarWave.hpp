@@ -88,7 +88,7 @@ struct Inertial;
 }  // namespace Frame
 namespace Parallel {
 template <typename Metavariables>
-class CProxy_ConstGlobalCache;
+class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
@@ -149,7 +149,7 @@ struct EvolutionMetavars {
                  Events::Registrars::ChangeSlabSize<slab_choosers>>;
   using triggers = Triggers::time_triggers;
 
-  // A tmpl::list of tags to be added to the ConstGlobalCache by the
+  // A tmpl::list of tags to be added to the GlobalCache by the
   // metavariables
   using const_global_cache_tags =
       tmpl::list<initial_data_tag, normal_dot_numerical_flux, time_stepper_tag,
@@ -265,7 +265,7 @@ struct EvolutionMetavars {
 
   static Phase determine_next_phase(
       const Phase& current_phase,
-      const Parallel::CProxy_ConstGlobalCache<
+      const Parallel::CProxy_GlobalCache<
           EvolutionMetavars>& /*cache_proxy*/) noexcept {
     switch (current_phase) {
       case Phase::Initialization:

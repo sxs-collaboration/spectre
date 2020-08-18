@@ -49,7 +49,7 @@ namespace Filters {
  * `Alpha` and `HalfPower` parameters for different tensors while still being
  * able to cache the matrices.   If different `Alpha` or `HalfPower` parameters
  * are desired for filtering different tensors, then multiple filters must be
- * inserted into the ConstGlobalCache with different `FilterIndex` values. In
+ * inserted into the GlobalCache with different `FilterIndex` values. In
  * the input file these will be specified as `ExpFilterFILTER_INDEX`, e.g.
  * -  Filtering:
  * -    ExpFilter0:

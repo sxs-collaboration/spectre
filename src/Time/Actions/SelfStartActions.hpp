@@ -31,7 +31,7 @@
 /// \cond
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
@@ -150,7 +150,7 @@ using vars_to_save = typename vars_to_save_impl<
 /// generated.
 ///
 /// Uses:
-/// - ConstGlobalCache: nothing
+/// - GlobalCache: nothing
 /// - DataBox:
 ///   - Tags::TimeStepId
 ///   - Tags::TimeStep
@@ -187,7 +187,7 @@ struct Initialize {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -229,7 +229,7 @@ struct Initialize {
 /// Exits the self-start loop if the required order has been reached.
 ///
 /// Uses:
-/// - ConstGlobalCache: nothing
+/// - GlobalCache: nothing
 /// - DataBox: Tags::Next<Tags::TimeStepId>
 ///
 /// DataBox changes:
@@ -244,7 +244,7 @@ struct CheckForCompletion {
   static std::tuple<db::DataBox<DbTags>&&, bool, size_t> apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     // The self start procedure begins with slab number
@@ -267,7 +267,7 @@ struct CheckForCompletion {
 /// the start time and increment the slab number
 ///
 /// Uses:
-/// - ConstGlobalCache: nothing
+/// - GlobalCache: nothing
 /// - DataBox:
 ///   - Tags::HistoryEvolvedVariables
 ///   - Tags::SubstepTime
@@ -285,7 +285,7 @@ struct CheckForOrderIncrease {
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
     const auto& time = db::get<::Tags::SubstepTime>(box);
@@ -325,7 +325,7 @@ struct CheckForOrderIncrease {
 /// current order is complete.
 ///
 /// Uses:
-/// - ConstGlobalCache: nothing
+/// - GlobalCache: nothing
 /// - DataBox:
 ///   - Tags::Next<Tags::TimeStepId>
 ///   - SelfStart::Tags::InitialValue<variables_tag>
@@ -347,7 +347,7 @@ struct StartNextOrderIfReady {
   static std::tuple<db::DataBox<DbTags>&&, bool, size_t> apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     using system = typename Metavariables::system;
@@ -386,7 +386,7 @@ struct StartNextOrderIfReady {
 /// removes temporary self-start data.
 ///
 /// Uses:
-/// - ConstGlobalCache: nothing
+/// - GlobalCache: nothing
 /// - DataBox: SelfStart::Tags::InitialValue<Tags::TimeStep>
 ///
 /// DataBox changes:
@@ -407,7 +407,7 @@ struct Cleanup {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {

@@ -184,8 +184,8 @@ essentially a one-element array.
 
 SpECTRE does not use the readonly global variables provided by
 Charm++.  Instead SpECTRE provides a nodegroup called the
-`ConstGlobalCache` which provides global access to read-only objects,
-as well as a way to access every parallel component.
+`GlobalCache` which provides global access to both read-only
+and writable objects, as well as a way to access every parallel component.
 
 > Every Charm++ program must have at least one mainchare. Each
 > mainchare is created by the system on processor 0 when the Charm++
@@ -198,7 +198,7 @@ as well as a way to access every parallel component.
 
 SpECTRE provides a pre-defined mainchare called `Main` that is run
 when a SpECTRE executable is started.  `Main` will create the other
-parallel components, and initialize items in the `ConstGlobalCache`
+parallel components, and initialize items in the `GlobalCache`
 whose items can be used by any parallel component.
 
 > Charm++ program execution is terminated by the CkExit call. Like the
@@ -268,7 +268,7 @@ SpECTRE has wrapped all of this functionality in order to make it
 easier to use.  SpECTRE automatically creates the interface files for
 each parallel component using template metaprogramming.  SpECTRE
 provides proxies for each parallel component that are all held in the
-`ConstGlobalCache` which is available to every parallel component.  In
+`GlobalCache` which is available to every parallel component.  In
 order for actions to be called as entry methods on remote parallel
 components, the arguments to the function call must be serializable.
 Charm++ provides the `PUP` framework to serialize objects where `PUP`

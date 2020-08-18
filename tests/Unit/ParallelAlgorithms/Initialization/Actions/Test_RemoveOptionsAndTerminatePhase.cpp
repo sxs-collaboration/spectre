@@ -11,7 +11,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
@@ -60,7 +60,7 @@ struct Action0 {
             Requires<tmpl::list_contains_v<DbTagsList, InitialTime>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     const double initial_time_value = db::get<InitialTime>(box);
@@ -77,7 +77,7 @@ struct Action0 {
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     return {std::move(box)};
@@ -92,7 +92,7 @@ struct Action1 {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     return std::make_tuple(Initialization::merge_into_databox<

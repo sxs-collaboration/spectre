@@ -13,7 +13,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -38,7 +38,7 @@ struct RegisterVolumeContributorWithObserverWriter {
             Requires<tmpl::list_contains_v<
                 DbTagsList, Tags::VolumeObserversRegistered>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationId& observation_id,
                     const size_t processing_element) noexcept {
@@ -80,7 +80,7 @@ struct RegisterReductionContributorWithObserverWriter {
                                      Tags::ReductionObserversRegisteredNodes>> =
           nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationId& observation_id,
                     const size_t processing_element_or_node,
@@ -158,7 +158,7 @@ struct RegisterSenderWithSelf {
                    DbTagList, observers::Tags::VolumeArrayComponentIds>> =
           nullptr>
   static void apply(db::DataBox<DbTagList>& box,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationId& observation_id,
                     const observers::ArrayComponentId& component_id,
@@ -236,7 +236,7 @@ struct RegisterWithObservers {
   static std::tuple<db::DataBox<DbTagList>&&> apply(
       db::DataBox<DbTagList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     auto& observer =
@@ -279,7 +279,7 @@ struct RegisterWithObservers {
  * template <typename DbTags, typename Metavariables>
  * static void apply(
  *     const db::DataBox<DbTags>& box,
- *     Parallel::ConstGlobalCache<Metavariables>& cache,
+ *     Parallel::GlobalCache<Metavariables>& cache,
  *     const typename Metavariables::temporal_id::type& temporal_id) noexcept {
  *   auto& proxy = Parallel::get_parallel_component<
  *       observers::ObserverWriter<Metavariables>>(cache);
@@ -306,7 +306,7 @@ struct RegisterSingletonWithObserverWriter {
   static std::tuple<db::DataBox<DbTagList>&&, bool> apply(
       db::DataBox<DbTagList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     std::pair<observers::TypeOfObservation, observers::ObservationId>

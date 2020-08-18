@@ -39,17 +39,15 @@ RunTests::RunTests(CkArgMsg* msg) {
 
 #include "tests/Unit/RunTests.def.h"  /// IWYU pragma: keep
 
-// Needed for tests that use the ConstGlobalCache since it registers itself with
+// Needed for tests that use the GlobalCache since it registers itself with
 // Charm++. However, since Parallel/CharmMain.tpp isn't included in the RunTests
-// executable, no actual registration is done, the ConstGlobalCache is only
+// executable, no actual registration is done, the GlobalCache is only
 // queued for registration.
-namespace Parallel {
-namespace charmxx {
+namespace Parallel::charmxx {
 class RegistrationHelper;
 /// \cond
 std::unique_ptr<RegistrationHelper>* charm_register_list = nullptr;
 size_t charm_register_list_capacity = 0;
 size_t charm_register_list_size = 0;
 /// \endcond
-}  // namespace charmxx
-}  // namespace Parallel
+}  // namespace Parallel::charmxx

@@ -19,7 +19,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/StepChoosers/Cfl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -56,7 +56,7 @@ struct Metavariables {
 double get_suggestion(const size_t stepper_order, const double safety_factor,
                       const double characteristic_speed,
                       const DataVector& coordinates) noexcept {
-  const Parallel::ConstGlobalCache<Metavariables> cache{{}};
+  const Parallel::GlobalCache<Metavariables> cache{{}};
   const auto box = db::create<
       db::AddSimpleTags<
           CharacteristicSpeed, domain::Tags::Coordinates<dim, frame>,

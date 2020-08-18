@@ -12,7 +12,7 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/Functional.hpp"
@@ -99,7 +99,7 @@ struct ObserveTimeSeriesOnSurface {
   template <typename DbTags, typename Metavariables>
   static void apply(
       const db::DataBox<DbTags>& box,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     auto& proxy = Parallel::get_parallel_component<
         observers::ObserverWriter<Metavariables>>(cache);

@@ -43,7 +43,7 @@ component is created upon, and prints a message.
 Executables can read in an input file (specified by the `--input-file`
 argument) that will be parsed when the executable begins.  %Options
 specified in the input file can be used to either place items in the
-Parallel::ConstGlobalCache (by specifying tags in the
+Parallel::GlobalCache (by specifying tags in the
 `const_global_cache_tags` type alias of the metavariables, component
 and action structs), to construct items in the db::DataBox of
 components during initialization (by specifying tags in the

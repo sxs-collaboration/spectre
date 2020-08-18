@@ -26,7 +26,7 @@
 /// \cond
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
@@ -76,7 +76,7 @@ struct MockPostInterpolationCallback {
   template <typename DbTags, typename Metavariables>
   static void apply(
       const db::DataBox<DbTags>& box,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     // This callback simply checks that the points are as expected.
     Slab slab(0.0, 1.0);

@@ -18,7 +18,7 @@
 #include "IO/H5/VolumeData.hpp"
 #include "IO/Importers/Tags.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -44,7 +44,7 @@ struct RegisterElementWithSelf {
       Requires<db::tag_is_retrievable_v<Tags::RegisteredElements, DataBox>> =
           nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const observers::ArrayComponentId& array_component_id,
                     const std::string& grid_name) noexcept {
@@ -104,7 +104,7 @@ struct ReadVolumeData {
             Requires<db::tag_is_retrievable_v<Tags::RegisteredElements,
                                               DataBox>> = nullptr>
   static void apply(
-      DataBox& box, Parallel::ConstGlobalCache<Metavariables>& cache,
+      DataBox& box, Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
       const gsl::not_null<Parallel::NodeLock*> node_lock) noexcept {
     node_lock->lock();

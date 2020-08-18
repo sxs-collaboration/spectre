@@ -104,7 +104,7 @@ struct EvolutionMetavars {
 
   static Phase determine_next_phase(
       const Phase& current_phase,
-      const Parallel::CProxy_ConstGlobalCache<
+      const Parallel::CProxy_GlobalCache<
           EvolutionMetavars>& /*cache_proxy*/) noexcept {
     if (current_phase == Phase::Initialization) {
       return Phase::Evolve;

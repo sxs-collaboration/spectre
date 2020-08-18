@@ -7,7 +7,7 @@
 
 void register_pupables();
 
-#include "Parallel/Test_ConstGlobalCache.hpp"
+#include "Parallel/Test_GlobalCache.hpp"
 
 #include <algorithm>
 #include <charm++.h>
@@ -24,8 +24,8 @@ void register_pupables();
 #include "Informer/InfoFromBuild.hpp"
 #include "Parallel/Abort.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Exit.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Printf.hpp"
@@ -33,11 +33,9 @@ void register_pupables();
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-namespace Parallel {
-namespace charmxx {
+namespace Parallel::charmxx {
 struct RegistrationHelper;
-}  // namespace charmxx
-}  // namespace Parallel
+}  // namespace Parallel::charmxx
 
 namespace {
 
@@ -152,18 +150,18 @@ struct TestMetavariables {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
+SPECTRE_TEST_CASE("Unit.Parallel.GlobalCache", "[Unit][Parallel]") {
   {
     using tag_list =
         typename Parallel::get_const_global_cache_tags<TestMetavariables>;
     static_assert(
         std::is_same_v<tag_list,
                        tmpl::list<name, age, height, shape_of_nametag>>,
-        "Wrong tag_list in ConstGlobalCache test");
+        "Wrong tag_list in GlobalCache test");
 
     tuples::tagged_tuple_from_typelist<tag_list> const_data_to_be_cached(
         "Nobody", 178, 2.2, std::make_unique<Square>());
-    Parallel::ConstGlobalCache<TestMetavariables> cache(
+    Parallel::GlobalCache<TestMetavariables> cache(
         std::move(const_data_to_be_cached));
     CHECK("Nobody" == Parallel::get<name>(cache));
     CHECK(178 == Parallel::get<age>(cache));
@@ -178,16 +176,16 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
     static_assert(
         std::is_same_v<tag_list,
                        tmpl::list<name, age, height, shape_of_nametag>>,
-        "Wrong tag_list in ConstGlobalCache test");
+        "Wrong tag_list in GlobalCache test");
 
     tuples::tagged_tuple_from_typelist<tag_list> const_data_to_be_cached(
         "Nobody", 178, 2.2, std::make_unique<Square>());
 
-    Parallel::CProxy_ConstGlobalCache<TestMetavariables>
-        const_global_cache_proxy =
-            Parallel::CProxy_ConstGlobalCache<TestMetavariables>::ckNew(
+    Parallel::CProxy_GlobalCache<TestMetavariables>
+        global_cache_proxy =
+            Parallel::CProxy_GlobalCache<TestMetavariables>::ckNew(
                 const_data_to_be_cached);
-    const auto& local_cache = *const_global_cache_proxy.ckLocalBranch();
+    const auto& local_cache = *global_cache_proxy.ckLocalBranch();
     CHECK("Nobody" == Parallel::get<name>(local_cache));
     CHECK(178 == Parallel::get<age>(local_cache));
     CHECK(2.2 == Parallel::get<height>(local_cache));
@@ -197,7 +195,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
   }
 }
 
-Test_ConstGlobalCache::Test_ConstGlobalCache(CkArgMsg* msg) {
+Test_GlobalCache::Test_GlobalCache(CkArgMsg* msg) {
   std::set_terminate(
       []() { Parallel::abort("Called terminate. Aborting..."); });
   Parallel::printf("%s", info_from_build().c_str());
@@ -221,16 +219,14 @@ PUP::able::PUP_ID Triangle::my_PUP_ID = 0;  // NOLINT
 PUP::able::PUP_ID Square::my_PUP_ID = 0;    // NOLINT
 /// \endcond
 
-#include "src/Parallel/ConstGlobalCache.def.h"  // IWYU pragma: keep
+#include "src/Parallel/GlobalCache.def.h"  // IWYU pragma: keep
 
-#include "tests/Unit/Parallel/Test_ConstGlobalCache.def.h"  // IWYU pragma: keep
+#include "tests/Unit/Parallel/Test_GlobalCache.def.h"  // IWYU pragma: keep
 
-namespace Parallel {
-namespace charmxx {
+namespace Parallel::charmxx {
 /// \cond
 std::unique_ptr<RegistrationHelper>* charm_register_list = nullptr;
 size_t charm_register_list_capacity = 0;
 size_t charm_register_list_size = 0;
 /// \endcond
-}  // namespace charmxx
-}  // namespace Parallel
+}  // namespace Parallel::charmxx

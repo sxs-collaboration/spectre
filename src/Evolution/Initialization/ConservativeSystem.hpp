@@ -18,7 +18,7 @@
 #include "ErrorHandling/Error.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"  // Needs to be included somewhere and here seems most natural.
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -69,7 +69,7 @@ struct ConservativeSystem {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     using system = typename Metavariables::system;

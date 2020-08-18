@@ -99,7 +99,7 @@ struct InverseCubic;
  * \note The `InitializeJ::operator()` should be const, and therefore not alter
  * the internal state of the generator. This is compatible with all known
  * use-cases and permits the `InitializeJ` generator to be placed in the
- * `ConstGlobalCache`.
+ * `GlobalCache`.
  */
 struct InitializeJ : public PUP::able {
   using boundary_tags = tmpl::list<Tags::BoundaryValue<Tags::BondiJ>,

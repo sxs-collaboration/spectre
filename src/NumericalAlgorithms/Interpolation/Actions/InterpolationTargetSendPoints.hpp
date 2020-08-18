@@ -8,7 +8,7 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/ElementReceiveInterpPoints.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -41,7 +41,7 @@ struct InterpolationTargetSendTimeIndepPointsToElements {
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     auto coords = InterpolationTarget_detail::block_logical_coords<

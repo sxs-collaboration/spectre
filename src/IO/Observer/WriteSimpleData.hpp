@@ -11,7 +11,7 @@
 #include "IO/H5/File.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/NodeLock.hpp"
@@ -35,7 +35,7 @@ struct WriteSimpleData {
       typename ArrayIndex,
       Requires<tmpl::list_contains_v<DbTagsList, Tags::H5FileLock>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<Parallel::NodeLock*> node_lock,
                     const std::vector<std::string>& file_legend,

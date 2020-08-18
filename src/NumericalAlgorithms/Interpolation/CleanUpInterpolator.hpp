@@ -17,7 +17,7 @@
 // IWYU pragma: no_forward_declare db::DataBox
 namespace Parallel {
 template <typename Metavariables>
-class ConstGlobalCache;
+class GlobalCache;
 }  // namespace Parallel
 namespace intrp {
 namespace Tags {
@@ -62,7 +62,7 @@ struct CleanUpInterpolator {
       Requires<tmpl::list_contains_v<DbTags, Tags::NumberOfElements>> = nullptr>
   static void apply(
       db::DataBox<DbTags>& box,  // HorizonManager's box
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     // Signal that this InterpolationTarget is done at this time.

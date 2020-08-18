@@ -11,7 +11,7 @@
 #include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -94,7 +94,7 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>,
   template <typename Metavariables, typename ParallelComponent>
   void operator()(const TimeStepId& time_id, const Mesh<VolumeDim>& mesh,
                   const typename Tensors::type&... tensors,
-                  Parallel::ConstGlobalCache<Metavariables>& cache,
+                  Parallel::GlobalCache<Metavariables>& cache,
                   const ElementId<VolumeDim>& array_index,
                   const ParallelComponent* const /*meta*/) const noexcept {
     Variables<tmpl::list<Tensors...>> interp_vars(mesh.number_of_grid_points());
