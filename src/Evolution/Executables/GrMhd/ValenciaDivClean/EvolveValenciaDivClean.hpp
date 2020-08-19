@@ -51,6 +51,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "NumericalAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
 #include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"
@@ -129,29 +130,6 @@ template <typename Metavariables>
 class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
-
-struct KerrHorizon {
-  using tags_to_observe =
-      tmpl::list<StrahlkorperTags::EuclideanSurfaceIntegralVectorCompute<
-          hydro::Tags::MassFlux<DataVector, 3>, ::Frame::Inertial>>;
-  using compute_items_on_source = tmpl::list<>;
-  using vars_to_interpolate_to_target =
-      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                 hydro::Tags::SpatialVelocity<DataVector, 3>,
-                 hydro::Tags::LorentzFactor<DataVector>,
-                 gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                 gr::Tags::SqrtDetSpatialMetric<DataVector>>;
-  using compute_items_on_target = tmpl::push_front<
-      tags_to_observe,
-      StrahlkorperTags::EuclideanAreaElementCompute<::Frame::Inertial>,
-      hydro::Tags::MassFluxCompute<DataVector, 3, ::Frame::Inertial>>;
-  using compute_target_points =
-      intrp::TargetPoints::KerrHorizon<KerrHorizon, ::Frame::Inertial>;
-  using post_interpolation_callback =
-      intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, KerrHorizon,
-                                                   KerrHorizon>;
-};
 
 template <typename InitialData, typename... InterpolationTargetTags>
 struct EvolutionMetavars {
@@ -250,10 +228,10 @@ struct EvolutionMetavars {
 
   using interpolation_target_tags = tmpl::list<InterpolationTargetTags...>;
 
-  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-      tmpl::push_back<typename Event<observation_events>::creatable_classes,
-                   typename InterpolationTargetTags::
-                                  post_interpolation_callback...>>;
+  using observed_reduction_data_tags =
+      observers::collect_reduction_data_tags<tmpl::push_back<
+          typename Event<observation_events>::creatable_classes,
+          typename InterpolationTargetTags::post_interpolation_callback...>>;
 
   using step_actions = tmpl::flatten<tmpl::list<
       Actions::ComputeVolumeFluxes,
@@ -322,44 +300,44 @@ struct EvolutionMetavars {
       dg::Actions::InitializeMortars<boundary_scheme>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::Minmod<3>,
+      intrp::Actions::ElementInitInterpPoints,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
+  using dg_element_array_component = DgElementArray<
+      EvolutionMetavars,
+      tmpl::list<
+          Parallel::PhaseActions<Phase, Phase::Initialization,
+                                 initialization_actions>,
+
+          Parallel::PhaseActions<Phase, Phase::InitializeTimeStepperHistory,
+                                 SelfStart::self_start_procedure<step_actions>>,
+
+          Parallel::PhaseActions<
+              Phase, Phase::Register,
+              tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
+                         observers::Actions::RegisterWithObservers<
+                             observers::RegisterObservers<
+                                 Tags::Time, element_observation_type>>,
+                         Parallel::Actions::TerminatePhase>>,
+
+          Parallel::PhaseActions<
+              Phase, Phase::Evolve,
+              tmpl::list<
+                  VariableFixing::Actions::FixVariables<
+                      VariableFixing::FixToAtmosphere<volume_dim,
+                                                      thermodynamic_dim>>,
+                  Actions::UpdateConservatives, Actions::RunEventsAndTriggers,
+                  Actions::ChangeSlabSize,
+                  tmpl::conditional_t<local_time_stepping,
+                                      Actions::ChangeStepSize<step_choosers>,
+                                      tmpl::list<>>,
+                  step_actions, Actions::AdvanceTime>>>>;
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       intrp::Interpolator<EvolutionMetavars>,
       intrp::InterpolationTarget<EvolutionMetavars, InterpolationTargetTags>...,
-      DgElementArray<
-          EvolutionMetavars,
-          tmpl::list<
-              Parallel::PhaseActions<Phase, Phase::Initialization,
-                                     initialization_actions>,
-
-              Parallel::PhaseActions<
-                  Phase, Phase::InitializeTimeStepperHistory,
-                  SelfStart::self_start_procedure<step_actions>>,
-
-              Parallel::PhaseActions<
-                  Phase, Phase::Register,
-                  tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
-                             observers::Actions::RegisterWithObservers<
-                                 observers::RegisterObservers<
-                                     Tags::Time, element_observation_type>>,
-                             Parallel::Actions::TerminatePhase>>,
-
-              Parallel::PhaseActions<
-                  Phase, Phase::Evolve,
-                  tmpl::list<
-                      VariableFixing::Actions::FixVariables<
-                          VariableFixing::FixToAtmosphere<volume_dim,
-                                                          thermodynamic_dim>>,
-                      Actions::UpdateConservatives,
-                      Actions::RunEventsAndTriggers,
-                      Actions::ChangeSlabSize,
-                      tmpl::conditional_t<
-                          local_time_stepping,
-                          Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      step_actions, Actions::AdvanceTime>>>>>;
+      dg_element_array_component>;
 
   using const_global_cache_tags =
       tmpl::list<initial_data_tag, normal_dot_numerical_flux, time_stepper_tag,
@@ -394,6 +372,32 @@ struct EvolutionMetavars {
     }
   }
 };
+
+struct KerrHorizon {
+  using tags_to_observe =
+      tmpl::list<StrahlkorperTags::EuclideanSurfaceIntegralVectorCompute<
+          hydro::Tags::MassFlux<DataVector, 3>, ::Frame::Inertial>>;
+  using compute_items_on_source = tmpl::list<>;
+  using vars_to_interpolate_to_target =
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, 3>,
+                 hydro::Tags::LorentzFactor<DataVector>,
+                 gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+                 gr::Tags::SqrtDetSpatialMetric<DataVector>>;
+  using compute_items_on_target = tmpl::push_front<
+      tags_to_observe,
+      StrahlkorperTags::EuclideanAreaElementCompute<::Frame::Inertial>,
+      hydro::Tags::MassFluxCompute<DataVector, 3, ::Frame::Inertial>>;
+  using compute_target_points =
+      intrp::TargetPoints::KerrHorizon<KerrHorizon, ::Frame::Inertial>;
+  using post_interpolation_callback =
+      intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, KerrHorizon,
+                                                   KerrHorizon>;
+  using interpolating_component =
+      typename metavariables::dg_element_array_component;
+};
+
 
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling,

@@ -33,7 +33,7 @@ namespace Actions {
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies: nothing
-template <typename InterpolationTargetTag, typename PhaseDepActionList>
+template <typename InterpolationTargetTag>
 struct InterpolationTargetSendTimeIndepPointsToElements {
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename Metavariables,
@@ -47,7 +47,7 @@ struct InterpolationTargetSendTimeIndepPointsToElements {
     auto coords = InterpolationTarget_detail::block_logical_coords<
         InterpolationTargetTag>(box, tmpl::type_<Metavariables>{});
     auto& receiver_proxy = Parallel::get_parallel_component<
-        DgElementArray<Metavariables, PhaseDepActionList>>(cache);
+        typename InterpolationTargetTag::interpolating_component>(cache);
     Parallel::simple_action<ElementReceiveInterpPoints<InterpolationTargetTag>>(
         receiver_proxy, std::move(coords));
     return std::forward_as_tuple(std::move(box));
