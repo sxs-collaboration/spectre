@@ -12,13 +12,9 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "Evolution/Actions/AddMeshVelocitySourceTerms.hpp"
-#include "Evolution/Actions/ComputeTimeDerivative.hpp"
-#include "Evolution/Actions/ComputeVolumeFluxes.hpp"
-#include "Evolution/Actions/ComputeVolumeSources.hpp"
 #include "Evolution/ComputeTags.hpp"
-#include "Evolution/Conservative/ConservativeDuDt.hpp"
 #include "Evolution/Conservative/UpdateConservatives.hpp"
+#include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.tpp"
@@ -190,14 +186,8 @@ struct EvolutionMetavars {
       typename Event<events>::creatable_classes>;
 
   using step_actions = tmpl::flatten<tmpl::list<
-      Actions::ComputeVolumeFluxes,
-      dg::Actions::CollectDataForFluxes<
-          boundary_scheme, domain::Tags::InternalDirections<volume_dim>>,
+      evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
       dg::Actions::SendDataForFluxes<boundary_scheme>,
-      Actions::ComputeVolumeSources,
-      Actions::ComputeTimeDerivative<
-          evolution::dg::ConservativeDuDt<system, dg_formulation>>,
-      evolution::Actions::AddMeshVelocitySourceTerms,
       tmpl::conditional_t<
           evolution::is_analytic_solution_v<initial_data>,
           dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
