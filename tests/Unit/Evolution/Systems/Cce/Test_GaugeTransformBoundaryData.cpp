@@ -153,12 +153,21 @@ void test_gauge_transforms_via_inverse_coordinate_map(
       make_not_null(&dr_lapse_coefficients), solution, extraction_radius,
       amplitude, frequency, target_time, l_max, false);
 
-  create_bondi_boundary_data(
-      make_not_null(&forward_transform_box), spatial_metric_coefficients,
-      dt_spatial_metric_coefficients, dr_spatial_metric_coefficients,
-      shift_coefficients, dt_shift_coefficients, dr_shift_coefficients,
-      lapse_coefficients, dt_lapse_coefficients, dr_lapse_coefficients,
-      extraction_radius, l_max);
+  db::mutate<spin_weighted_variables_tag>(
+      make_not_null(&forward_transform_box),
+      [&spatial_metric_coefficients, &dt_spatial_metric_coefficients,
+       &dr_spatial_metric_coefficients, &shift_coefficients,
+       &dt_shift_coefficients, &dr_shift_coefficients, &lapse_coefficients,
+       &dt_lapse_coefficients, &dr_lapse_coefficients, &extraction_radius](
+          const gsl::not_null<Variables<spin_weighted_boundary_tags>*>
+              spin_weighted_boundary_variables) noexcept {
+        create_bondi_boundary_data(
+            spin_weighted_boundary_variables, spatial_metric_coefficients,
+            dt_spatial_metric_coefficients, dr_spatial_metric_coefficients,
+            shift_coefficients, dt_shift_coefficients, dr_shift_coefficients,
+            lapse_coefficients, dt_lapse_coefficients, dr_lapse_coefficients,
+            extraction_radius, l_max);
+      });
 
   // construct the coordinate transform quantities
   const double variation_amplitude = value_dist(*gen);
@@ -250,7 +259,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
     db::mutate_apply<GaugeUpdateAngularFromCartesian<
         Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>(
         make_not_null(&forward_transform_box));
-    double angular_phi;
+    double angular_phi = 0.0;
     const auto& computed_angular_coordinates =
         db::get<Tags::CauchyAngularCoords>(forward_transform_box);
     const auto& collocation = Spectral::Swsh::cached_collocation_metadata<

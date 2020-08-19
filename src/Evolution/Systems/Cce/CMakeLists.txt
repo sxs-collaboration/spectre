@@ -58,6 +58,7 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   IO
+  Interpolation
   LinearOperators
   Options
   Spectral

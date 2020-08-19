@@ -252,13 +252,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
       make_not_null(&dr_lapse_coefficients), solution, extraction_radius,
       amplitude, frequency, target_time, l_max, false);
 
-  using boundary_variables_tag = ::Tags::Variables<
-      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>;
-  auto expected_boundary_box =
-      db::create<db::AddSimpleTags<boundary_variables_tag>>(
-          db::item_type<boundary_variables_tag>{number_of_angular_points});
+  Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
+      expected_boundary_variables{number_of_angular_points};
   create_bondi_boundary_data(
-      make_not_null(&expected_boundary_box), spatial_metric_coefficients,
+      make_not_null(&expected_boundary_variables), spatial_metric_coefficients,
       dt_spatial_metric_coefficients, dr_spatial_metric_coefficients,
       shift_coefficients, dt_shift_coefficients, dr_shift_coefficients,
       lapse_coefficients, dt_lapse_coefficients, dr_lapse_coefficients,
@@ -271,13 +268,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
 
   tmpl::for_each<
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
-      [&expected_boundary_box, &runner,
+      [&expected_boundary_variables, &runner,
        &angular_derivative_approx](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         INFO(db::tag_name<tag>());
         const auto& test_lhs =
             ActionTesting::get_databox_tag<evolution_component, tag>(runner, 0);
-        const auto& test_rhs = db::get<tag>(expected_boundary_box);
+        const auto& test_rhs = get<tag>(expected_boundary_variables);
         CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs,
                                      angular_derivative_approx);
       });

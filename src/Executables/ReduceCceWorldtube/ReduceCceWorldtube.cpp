@@ -32,9 +32,8 @@ extern "C" void CkRegisterMainModule(void) {}
 // particular time given by `buffer_time_offset` into the `time_span` size of
 // buffer.
 void slice_buffers_to_libsharp_modes(
-    const gsl::not_null<Variables<Cce::detail::cce_input_tags>*>
-        coefficients_set,
-    const Variables<Cce::detail::cce_input_tags>& coefficients_buffers,
+    const gsl::not_null<Variables<Cce::cce_input_tags>*> coefficients_set,
+    const Variables<Cce::cce_input_tags>& coefficients_buffers,
     const size_t time_span, const size_t buffer_time_offset, const size_t l_max,
     const size_t computation_l_max) noexcept {
   SpinWeighted<ComplexModalVector, 0> spin_weighted_buffer;
@@ -46,16 +45,86 @@ void slice_buffers_to_libsharp_modes(
         tmpl::for_each<
             tmpl::list<Cce::Tags::detail::SpatialMetric,
                        Cce::Tags::detail::Dr<Cce::Tags::detail::SpatialMetric>,
-                       Tags::dt<Cce::Tags::detail::SpatialMetric>>>([
-          &i, &j, &libsharp_mode, &spin_weighted_buffer, &coefficients_buffers,
-          &coefficients_set, &l_max, &computation_l_max, &time_span, &
-          buffer_time_offset
-        ](auto tag_v) noexcept {
+                       Tags::dt<Cce::Tags::detail::SpatialMetric>>>(
+            [&i, &j, &libsharp_mode, &spin_weighted_buffer,
+             &coefficients_buffers, &coefficients_set, &l_max,
+             &computation_l_max, &time_span,
+             &buffer_time_offset](auto tag_v) noexcept {
+              using tag = typename decltype(tag_v)::type;
+              spin_weighted_buffer.set_data_ref(
+                  get<tag>(*coefficients_set).get(i, j).data(),
+                  Spectral::Swsh::size_of_libsharp_coefficient_vector(
+                      computation_l_max));
+              if (libsharp_mode.l > l_max) {
+                Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
+                    libsharp_mode, make_not_null(&spin_weighted_buffer), 0, 0.0,
+                    0.0);
+
+              } else {
+                Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
+                    libsharp_mode, make_not_null(&spin_weighted_buffer), 0,
+                    get<tag>(coefficients_buffers)
+                        .get(i, j)[time_span *
+                                       Spectral::Swsh::goldberg_mode_index(
+                                           l_max, libsharp_mode.l,
+                                           static_cast<int>(libsharp_mode.m)) +
+                                   buffer_time_offset],
+                    get<tag>(coefficients_buffers)
+                        .get(i, j)[time_span *
+                                       Spectral::Swsh::goldberg_mode_index(
+                                           l_max, libsharp_mode.l,
+                                           -static_cast<int>(libsharp_mode.m)) +
+                                   buffer_time_offset]);
+              }
+            });
+      }
+      tmpl::for_each<tmpl::list<Cce::Tags::detail::Shift,
+                                Cce::Tags::detail::Dr<Cce::Tags::detail::Shift>,
+                                Tags::dt<Cce::Tags::detail::Shift>>>(
+          [&i, &libsharp_mode, &spin_weighted_buffer, &coefficients_buffers,
+           &coefficients_set, &l_max, &computation_l_max, &time_span,
+           &buffer_time_offset](auto tag_v) noexcept {
+            using tag = typename decltype(tag_v)::type;
+            spin_weighted_buffer.set_data_ref(
+                get<tag>(*coefficients_set).get(i).data(),
+                Spectral::Swsh::size_of_libsharp_coefficient_vector(
+                    computation_l_max));
+
+            if (libsharp_mode.l > l_max) {
+              Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
+                  libsharp_mode, make_not_null(&spin_weighted_buffer), 0, 0.0,
+                  0.0);
+
+            } else {
+              Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
+                  libsharp_mode, make_not_null(&spin_weighted_buffer), 0,
+                  get<tag>(coefficients_buffers)
+                      .get(i)[time_span *
+                                  Spectral::Swsh::goldberg_mode_index(
+                                      l_max, libsharp_mode.l,
+                                      static_cast<int>(libsharp_mode.m)) +
+                              buffer_time_offset],
+                  get<tag>(coefficients_buffers)
+                      .get(i)[time_span *
+                                  Spectral::Swsh::goldberg_mode_index(
+                                      l_max, libsharp_mode.l,
+                                      -static_cast<int>(libsharp_mode.m)) +
+                              buffer_time_offset]);
+            }
+          });
+    }
+    tmpl::for_each<tmpl::list<Cce::Tags::detail::Lapse,
+                              Cce::Tags::detail::Dr<Cce::Tags::detail::Lapse>,
+                              Tags::dt<Cce::Tags::detail::Lapse>>>(
+        [&libsharp_mode, &spin_weighted_buffer, &coefficients_buffers,
+         &coefficients_set, &l_max, &computation_l_max, &time_span,
+         &buffer_time_offset](auto tag_v) noexcept {
           using tag = typename decltype(tag_v)::type;
           spin_weighted_buffer.set_data_ref(
-              get<tag>(*coefficients_set).get(i, j).data(),
+              get(get<tag>(*coefficients_set)).data(),
               Spectral::Swsh::size_of_libsharp_coefficient_vector(
                   computation_l_max));
+
           if (libsharp_mode.l > l_max) {
             Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
                 libsharp_mode, make_not_null(&spin_weighted_buffer), 0, 0.0,
@@ -64,87 +133,18 @@ void slice_buffers_to_libsharp_modes(
           } else {
             Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
                 libsharp_mode, make_not_null(&spin_weighted_buffer), 0,
-                get<tag>(coefficients_buffers)
-                    .get(i,
-                         j)[time_span * Spectral::Swsh::goldberg_mode_index(
-                                            l_max, libsharp_mode.l,
-                                            static_cast<int>(libsharp_mode.m)) +
-                            buffer_time_offset],
-                get<tag>(coefficients_buffers)
-                    .get(
-                        i,
-                        j)[time_span * Spectral::Swsh::goldberg_mode_index(
-                                           l_max, libsharp_mode.l,
-                                           -static_cast<int>(libsharp_mode.m)) +
-                           buffer_time_offset]);
+                get(get<tag>(coefficients_buffers))
+                    [time_span * Spectral::Swsh::goldberg_mode_index(
+                                     l_max, libsharp_mode.l,
+                                     static_cast<int>(libsharp_mode.m)) +
+                     buffer_time_offset],
+                get(get<tag>(coefficients_buffers))
+                    [time_span * Spectral::Swsh::goldberg_mode_index(
+                                     l_max, libsharp_mode.l,
+                                     -static_cast<int>(libsharp_mode.m)) +
+                     buffer_time_offset]);
           }
         });
-      }
-      tmpl::for_each<tmpl::list<Cce::Tags::detail::Shift,
-                                Cce::Tags::detail::Dr<Cce::Tags::detail::Shift>,
-                                Tags::dt<Cce::Tags::detail::Shift>>>([
-        &i, &libsharp_mode, &spin_weighted_buffer, &coefficients_buffers,
-        &coefficients_set, &l_max, &computation_l_max, &time_span, &
-        buffer_time_offset
-      ](auto tag_v) noexcept {
-        using tag = typename decltype(tag_v)::type;
-        spin_weighted_buffer.set_data_ref(
-            get<tag>(*coefficients_set).get(i).data(),
-            Spectral::Swsh::size_of_libsharp_coefficient_vector(
-                computation_l_max));
-
-        if (libsharp_mode.l > l_max) {
-          Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
-              libsharp_mode, make_not_null(&spin_weighted_buffer), 0, 0.0, 0.0);
-
-        } else {
-          Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
-              libsharp_mode, make_not_null(&spin_weighted_buffer), 0,
-              get<tag>(coefficients_buffers)
-                  .get(i)[time_span * Spectral::Swsh::goldberg_mode_index(
-                                          l_max, libsharp_mode.l,
-                                          static_cast<int>(libsharp_mode.m)) +
-                          buffer_time_offset],
-              get<tag>(coefficients_buffers)
-                  .get(i)[time_span * Spectral::Swsh::goldberg_mode_index(
-                                          l_max, libsharp_mode.l,
-                                          -static_cast<int>(libsharp_mode.m)) +
-                          buffer_time_offset]);
-        }
-      });
-    }
-    tmpl::for_each<tmpl::list<Cce::Tags::detail::Lapse,
-                              Cce::Tags::detail::Dr<Cce::Tags::detail::Lapse>,
-                              Tags::dt<Cce::Tags::detail::Lapse>>>([
-      &libsharp_mode, &spin_weighted_buffer, &coefficients_buffers,
-      &coefficients_set, &l_max, &computation_l_max, &time_span, &
-      buffer_time_offset
-    ](auto tag_v) noexcept {
-      using tag = typename decltype(tag_v)::type;
-      spin_weighted_buffer.set_data_ref(
-          get(get<tag>(*coefficients_set)).data(),
-          Spectral::Swsh::size_of_libsharp_coefficient_vector(
-              computation_l_max));
-
-      if (libsharp_mode.l > l_max) {
-        Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
-            libsharp_mode, make_not_null(&spin_weighted_buffer), 0, 0.0, 0.0);
-
-      } else {
-        Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
-            libsharp_mode, make_not_null(&spin_weighted_buffer), 0,
-            get(get<tag>(coefficients_buffers))
-                [time_span * Spectral::Swsh::goldberg_mode_index(
-                                 l_max, libsharp_mode.l,
-                                 static_cast<int>(libsharp_mode.m)) +
-                 buffer_time_offset],
-            get(get<tag>(coefficients_buffers))
-                [time_span * Spectral::Swsh::goldberg_mode_index(
-                                 l_max, libsharp_mode.l,
-                                 -static_cast<int>(libsharp_mode.m)) +
-                 buffer_time_offset]);
-      }
-    });
   }
 }
 
@@ -166,19 +166,14 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
   const size_t size_of_buffer = square(l_max + 1) * (buffer_depth);
   const DataVector& time_buffer = buffer_updater.get_time_buffer();
 
-  Variables<Cce::detail::cce_input_tags> coefficients_buffers{size_of_buffer};
-  Variables<Cce::detail::cce_input_tags> coefficients_set{
+  Variables<Cce::cce_input_tags> coefficients_buffers{size_of_buffer};
+  Variables<Cce::cce_input_tags> coefficients_set{
       Spectral::Swsh::size_of_libsharp_coefficient_vector(computation_l_max)};
 
-  using boundary_variables_tag =
-      Tags::Variables<Cce::Tags::characteristic_worldtube_boundary_tags<
-          Cce::Tags::BoundaryValue>>;
-
-  auto boundary_data_box =
-      db::create<db::AddSimpleTags<boundary_variables_tag>>(
-          db::item_type<boundary_variables_tag>{
-              Spectral::Swsh::number_of_swsh_collocation_points(
-                  computation_l_max)});
+  Variables<Cce::Tags::characteristic_worldtube_boundary_tags<
+      Cce::Tags::BoundaryValue>>
+      boundary_data_variables{
+          Spectral::Swsh::number_of_swsh_collocation_points(computation_l_max)};
 
   using reduced_boundary_tags =
       tmpl::list<Cce::Tags::BoundaryValue<Cce::Tags::BondiBeta>,
@@ -214,7 +209,7 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
 
     if (buffer_updater.radial_derivatives_need_renormalization()) {
       Cce::create_bondi_boundary_data_from_unnormalized_spec_modes(
-          make_not_null(&boundary_data_box),
+          make_not_null(&boundary_data_variables),
           get<Cce::Tags::detail::SpatialMetric>(coefficients_set),
           get<Tags::dt<Cce::Tags::detail::SpatialMetric>>(coefficients_set),
           get<Cce::Tags::detail::Dr<Cce::Tags::detail::SpatialMetric>>(
@@ -230,7 +225,7 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
           buffer_updater.get_extraction_radius(), computation_l_max);
     } else {
       Cce::create_bondi_boundary_data(
-          make_not_null(&boundary_data_box),
+          make_not_null(&boundary_data_variables),
           get<Cce::Tags::detail::SpatialMetric>(coefficients_set),
           get<Tags::dt<Cce::Tags::detail::SpatialMetric>>(coefficients_set),
           get<Cce::Tags::detail::Dr<Cce::Tags::detail::SpatialMetric>>(
@@ -246,37 +241,38 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
           buffer_updater.get_extraction_radius(), computation_l_max);
     }
     // loop over the tags that we want to dump.
-    tmpl::for_each<reduced_boundary_tags>([
-      &recorder, &boundary_data_box, &output_goldberg_mode_buffer,
-      &output_libsharp_mode_buffer, &l_max, &computation_l_max, &time
-    ](auto tag_v) noexcept {
-      using tag = typename decltype(tag_v)::type;
-      SpinWeighted<ComplexModalVector, db::item_type<tag>::type::spin>
-          spin_weighted_libsharp_view;
-      spin_weighted_libsharp_view.set_data_ref(
-          output_libsharp_mode_buffer.data(),
-          output_libsharp_mode_buffer.size());
-      Spectral::Swsh::swsh_transform(
-          computation_l_max, 1, make_not_null(&spin_weighted_libsharp_view),
-          get(db::get<tag>(boundary_data_box)));
-      SpinWeighted<ComplexModalVector, db::item_type<tag>::type::spin>
-          spin_weighted_goldberg_view;
-      spin_weighted_goldberg_view.set_data_ref(
-          output_goldberg_mode_buffer.data(),
-          output_goldberg_mode_buffer.size());
-      Spectral::Swsh::libsharp_to_goldberg_modes(
-          make_not_null(&spin_weighted_goldberg_view),
-          spin_weighted_libsharp_view, computation_l_max);
+    tmpl::for_each<reduced_boundary_tags>(
+        [&recorder, &boundary_data_variables, &output_goldberg_mode_buffer,
+         &output_libsharp_mode_buffer, &l_max, &computation_l_max,
+         &time](auto tag_v) noexcept {
+          using tag = typename decltype(tag_v)::type;
+          SpinWeighted<ComplexModalVector, db::item_type<tag>::type::spin>
+              spin_weighted_libsharp_view;
+          spin_weighted_libsharp_view.set_data_ref(
+              output_libsharp_mode_buffer.data(),
+              output_libsharp_mode_buffer.size());
+          Spectral::Swsh::swsh_transform(
+              computation_l_max, 1, make_not_null(&spin_weighted_libsharp_view),
+              get(get<tag>(boundary_data_variables)));
+          SpinWeighted<ComplexModalVector, db::item_type<tag>::type::spin>
+              spin_weighted_goldberg_view;
+          spin_weighted_goldberg_view.set_data_ref(
+              output_goldberg_mode_buffer.data(),
+              output_goldberg_mode_buffer.size());
+          Spectral::Swsh::libsharp_to_goldberg_modes(
+              make_not_null(&spin_weighted_goldberg_view),
+              spin_weighted_libsharp_view, computation_l_max);
 
-      // The goldberg format type is in strictly increasing l modes, so to
-      // reduce to a smaller l_max, we can just take the first (l_max + 1)^2
-      // values.
-      ComplexModalVector reduced_goldberg_view{
-          output_goldberg_mode_buffer.data(), square(l_max + 1)};
-      recorder.append_worldtube_mode_data(
-          "/" + Cce::dataset_label_for_tag<tag>(), time, reduced_goldberg_view,
-          l_max, db::item_type<tag>::type::spin == 0);
-    });
+          // The goldberg format type is in strictly increasing l modes, so to
+          // reduce to a smaller l_max, we can just take the first (l_max + 1)^2
+          // values.
+          ComplexModalVector reduced_goldberg_view{
+              output_goldberg_mode_buffer.data(), square(l_max + 1)};
+          recorder.append_worldtube_mode_data(
+              "/" + Cce::dataset_label_for_tag<tag>(), time,
+              reduced_goldberg_view, l_max,
+              db::item_type<tag>::type::spin == 0);
+        });
   }
   Parallel::printf("\n");
 }

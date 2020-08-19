@@ -94,9 +94,22 @@ struct BoundaryComputeAndSendToEvolution<H5WorldtubeBoundary<Metavariables>,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const TimeStepId& time) noexcept {
-    if (not db::get<Tags::H5WorldtubeBoundaryDataManager>(box)
-                .populate_hypersurface_boundary_data(
-                    make_not_null(&box), time.substep_time().value())) {
+    bool successfully_populated = false;
+    db::mutate<Tags::H5WorldtubeBoundaryDataManager,
+               ::Tags::Variables<
+                   typename Metavariables::cce_boundary_communication_tags>>(
+        make_not_null(&box),
+        [&successfully_populated, &time](
+            const gsl::not_null<Cce::WorldtubeDataManager*>
+                worldtube_data_manager,
+            const gsl::not_null<Variables<
+                typename Metavariables::cce_boundary_communication_tags>*>
+                boundary_variables) noexcept {
+          successfully_populated =
+              worldtube_data_manager->populate_hypersurface_boundary_data(
+                  boundary_variables, time.substep_time().value());
+        });
+    if (not successfully_populated) {
       ERROR("Insufficient boundary data to proceed, exiting early at time " +
             std::to_string(time.substep_time().value()));
     }
@@ -175,12 +188,24 @@ struct SendToEvolution<GhWorldtubeBoundary<Metavariables>, EvolutionComponent> {
                     const ArrayIndex& /*array_index*/, const TimeStepId& time,
                     const InterfaceManagers::GhInterfaceManager::gh_variables&
                         gh_variables) noexcept {
-    create_bondi_boundary_data(
+    db::mutate<::Tags::Variables<
+        typename Metavariables::cce_boundary_communication_tags>>(
         make_not_null(&box),
-        get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(gh_variables),
-        get<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(gh_variables),
-        get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
-            gh_variables),
+        [&gh_variables](
+            const gsl::not_null<Variables<
+                typename Metavariables::cce_boundary_communication_tags>*>
+                boundary_variables,
+            const double extraction_radius, const double l_max) noexcept {
+          create_bondi_boundary_data(
+              boundary_variables,
+              get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
+                  gh_variables),
+              get<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(
+                  gh_variables),
+              get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
+                  gh_variables),
+              extraction_radius, l_max);
+        },
         db::get<InitializationTags::ExtractionRadius>(box),
         db::get<Tags::LMax>(box));
     Parallel::receive_data<Cce::ReceiveTags::BoundaryData<

@@ -34,7 +34,7 @@ struct ObservationLMax;
 }  // namespace Tags
 
 /// A boundary data manager that constructs the desired boundary data into
-/// the \ref DataBoxGroup from the data provided by the analytic solution.
+/// the `Variables` from the data provided by the analytic solution.
 class AnalyticBoundaryDataManager {
  public:
   // charm needs an empty constructor.
@@ -45,18 +45,19 @@ class AnalyticBoundaryDataManager {
       std::unique_ptr<Solutions::WorldtubeData> generator) noexcept;
 
   /*!
-   * \brief Update the `boundary_data_box` entries for all tags in
+   * \brief Update the `boundary_data_variables` entries for all tags in
    * `Tags::characteristic_worldtube_boundary_tags` to the boundary data from
    * the analytic solution at  `time`.
    *
    * \details This class retrieves metric boundary data from the
    * `Cce::Solutions::WorldtubeData` derived class that represents an analytic
    * solution, then dispatches to `Cce::create_bondi_boundary_data()` to
-   * construct the Bondi values into the provided \ref DataBoxGroup.
+   * construct the Bondi values into the provided `Variables`
    */
-  template <typename TagList>
   bool populate_hypersurface_boundary_data(
-      gsl::not_null<db::DataBox<TagList>*> boundary_data_box,
+      gsl::not_null<Variables<
+          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
+          boundary_data_variables,
       double time) const noexcept;
 
   /// Use `observers::ThreadedActions::WriteSimpleData` to output the expected
@@ -76,27 +77,6 @@ class AnalyticBoundaryDataManager {
   std::unique_ptr<Solutions::WorldtubeData> generator_;
   double extraction_radius_ = std::numeric_limits<double>::signaling_NaN();
 };
-
-template <typename TagList>
-bool AnalyticBoundaryDataManager::populate_hypersurface_boundary_data(
-    const gsl::not_null<db::DataBox<TagList>*> boundary_data_box,
-    const double time) const noexcept {
-  const auto boundary_tuple = generator_->variables(
-      l_max_, time,
-      tmpl::list<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>,
-                 GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>{});
-  const auto& spacetime_metric =
-      get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
-          boundary_tuple);
-  const auto& pi =
-      get<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(boundary_tuple);
-  const auto& phi =
-      get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(boundary_tuple);
-  create_bondi_boundary_data(boundary_data_box, phi, pi, spacetime_metric,
-                             extraction_radius_, l_max_);
-  return true;
-}
 
 template <typename Metavariables>
 void AnalyticBoundaryDataManager::write_news(
