@@ -24,14 +24,45 @@ struct CFO {
   static constexpr OptionString help = {"help"};
 };
 
+// In order to avoid duplicating too much code we use inheritance to get the
+// `using options` type alias into CreateFromOptions.
+template <typename>
+struct CfoOption {
+  static std::string name() noexcept { return "Option"; }
+  using type = std::string;
+  static constexpr OptionString help = {"Option help text"};
+};
+
+template <>
+struct CfoOption<Metavariables<true>> {
+  static std::string name() noexcept { return "Option"; }
+  using type = std::string;
+  static constexpr OptionString help = {"Option help text"};
+  static type default_value() noexcept { return "fHi"; }
+};
+
+template <>
+struct CfoOption<Metavariables<false>> {
+  static std::string name() noexcept { return "Option"; }
+  using type = std::string;
+  static constexpr OptionString help = {"Option help text"};
+  static type default_value() noexcept { return "fHello"; }
+};
+
+template <typename>
+struct Selector {
+  template <typename Metavariables>
+  using options = tmpl::list<CfoOption<Metavariables>>;
+};
+
+template <>
+struct Selector<int> {
+  using options = tmpl::list<CfoOption<void>>;
+};
+
 template <typename T>
-class CreateFromOptions {
+class CreateFromOptions : public Selector<T> {
  public:
-  struct Option {
-    using type = std::string;
-    static constexpr OptionString help = {"Option help text"};
-  };
-  using options = tmpl::list<Option>;
   static constexpr OptionString help = {"Class help text"};
 
   CreateFromOptions() = default;
@@ -56,14 +87,31 @@ CFO:
   Option: foo
 )";
 /// [class_creation_example]
+
+struct CfoVoid {
+  using type = CreateFromOptions<void>;
+  static constexpr OptionString help = {"help"};
+};
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options.CustomType", "[Unit][Options]") {
-  Options<tmpl::list<CFO>> opts("");
-  opts.parse(input_file_text);
-  CHECK(opts.get<CFO, Metavariables<true>>().str_ == "foo");
-  CHECK(opts.get<CFO, Metavariables<true>>().valid_);
-  CHECK_FALSE(opts.get<CFO, Metavariables<false>>().valid_);
+  {
+    INFO("Type alias options is not a template");
+    Options<tmpl::list<CFO>> opts("");
+    opts.parse(input_file_text);
+    CHECK(opts.get<CFO, Metavariables<true>>().str_ == "foo");
+    CHECK(opts.get<CFO, Metavariables<true>>().valid_);
+    CHECK_FALSE(opts.get<CFO, Metavariables<false>>().valid_);
+  }
+  {
+    INFO("Type alias options is a template");
+    Options<tmpl::list<CfoVoid>> opts("");
+    opts.parse("CfoVoid:");
+    CHECK(opts.get<CfoVoid, Metavariables<true>>().str_ == "fHi");
+    CHECK(opts.get<CfoVoid, Metavariables<true>>().valid_);
+    CHECK(opts.get<CfoVoid, Metavariables<false>>().str_ == "fHello");
+    CHECK_FALSE(opts.get<CfoVoid, Metavariables<false>>().valid_);
+  }
 }
 
 // [[OutputRegex, In string:.*At line 2 column 3:.Option 'NotOption' is not a
@@ -100,7 +148,7 @@ template <>
 struct create_from_yaml<CreateFromOptionsAnimal> {
   template <typename Metavariables>
   static CreateFromOptionsAnimal create(const Option& options) {
-    const std::string animal = options.parse_as<std::string>();
+    const auto animal = options.parse_as<std::string>();
     if (animal == "Cat") {
       return CreateFromOptionsAnimal::Cat;
     }
@@ -147,7 +195,7 @@ template <>
 CreateFromOptionsExoticAnimal
 create_from_yaml<CreateFromOptionsExoticAnimal>::create<void>(
     const Option& options) {
-  const std::string animal = options.parse_as<std::string>();
+  const auto animal = options.parse_as<std::string>();
   if (animal == "MexicanWalkingFish") {
     return CreateFromOptionsExoticAnimal::MexicanWalkingFish;
   }
