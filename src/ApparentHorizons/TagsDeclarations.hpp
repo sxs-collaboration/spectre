@@ -42,6 +42,10 @@ template <typename Frame>
 struct UnitNormalOneForm;
 template <typename Frame>
 struct UnitNormalOneFormCompute;
+template <typename Frame>
+struct UnitNormalVector;
+template <typename Frame>
+struct UnitNormalVectorCompute;
 
 }  // namespace StrahlkorperTags
 
