@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Subitems.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -286,8 +287,8 @@ struct MultiplyByTwoCompute : MultiplyByTwo<N0, N1>, db::ComputeTag {
 }  // namespace
 
 namespace db {
-template <typename TagList, size_t N>
-struct Subitems<TagList, TestTags::Parent<N>> {
+template <size_t N>
+struct Subitems<TestTags::Parent<N>> {
   using type = tmpl::list<TestTags::First<N>, TestTags::Second<N>>;
   using tag = TestTags::Parent<N>;
 
@@ -310,12 +311,12 @@ struct Subitems<TagList, TestTags::Parent<N>> {
     // DataBox will only allow access to a const version of the result
     // and we ensure in the definition of Boxed that that will not
     // allow modification of the original item.
-    return const_cast<item_type<Subtag, TagList>&>(  // NOLINT
+    return const_cast<typename Subtag::type&>(  // NOLINT
         std::get<Subtag::index>(parent_value));
   }
 };
-template <typename TagList, size_t N>
-struct Subitems<TagList, TestTags::ParentCompute<N>> {
+template <size_t N>
+struct Subitems<TestTags::ParentCompute<N>> {
   using type = tmpl::list<TestTags::First<N>, TestTags::Second<N>>;
   using tag = TestTags::ParentCompute<N>;
 
@@ -338,7 +339,7 @@ struct Subitems<TagList, TestTags::ParentCompute<N>> {
     // DataBox will only allow access to a const version of the result
     // and we ensure in the definition of Boxed that that will not
     // allow modification of the original item.
-    return const_cast<item_type<Subtag, TagList>&>(  // NOLINT
+    return const_cast<typename Subtag::type&>(  // NOLINT
         std::get<Subtag::index>(parent_value));
   }
 };

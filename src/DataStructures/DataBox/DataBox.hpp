@@ -17,6 +17,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Deferred.hpp"
+#include "DataStructures/DataBox/Subitems.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
 #include "ErrorHandling/Error.hpp"
@@ -121,8 +122,7 @@ class DataBoxLeaf {
 
 template <typename Element>
 struct extract_expand_simple_subitems {
-  using type =
-      tmpl::push_front<typename Subitems<NoSuchType, Element>::type, Element>;
+  using type = tmpl::push_front<typename Subitems<Element>::type, Element>;
 };
 
 // Given a typelist of items List, returns a new typelist containing
@@ -144,14 +144,14 @@ constexpr int select_expand_subitems_impl(const size_t pack_size) noexcept {
 template <int FastTrackSelector, template <typename...> class F>
 struct expand_subitems_impl;
 
-template <typename FulltagList, typename TagList, typename Element>
-using expand_subitems_impl_helper = tmpl::append<
-    tmpl::push_back<TagList, Element>,
-    typename Subitems<tmpl::push_back<TagList, Element>, Element>::type>;
+template <typename TagList, typename Element>
+using expand_subitems_impl_helper =
+    tmpl::append<tmpl::push_back<TagList, Element>,
+                 typename Subitems<Element>::type>;
 
 template <template <typename...> class F>
 struct expand_subitems_impl<0, F> {
-  template <typename FullTagList, typename TagList>
+  template <typename TagList>
   using f = TagList;
 };
 
@@ -160,39 +160,29 @@ struct expand_subitems_impl<1, F> {
   // The compile time here could be improved by having Subitems have a nested
   // type alias that generates the list currently retrieved by `::type` on to
   // the next call of `expand_subitems_impl`
-  template <typename FullTagList, typename TagList, typename Element,
-            typename... Rest>
+  template <typename TagList, typename Element, typename... Rest>
   using f = typename expand_subitems_impl<
       select_expand_subitems_impl(sizeof...(Rest)),
-      F>::template f<FullTagList, F<FullTagList, TagList, Element>, Rest...>;
+      F>::template f<F<TagList, Element>, Rest...>;
 };
 
 template <template <typename...> class F>
 struct expand_subitems_impl<2, F> {
-  template <typename FullTagList, typename TagList, typename Element0,
-            typename Element1, typename... Rest>
+  template <typename TagList, typename Element0, typename Element1,
+            typename... Rest>
   using f = typename expand_subitems_impl<
-      select_expand_subitems_impl(sizeof...(Rest)), F>::
-      template f<FullTagList,
-                 F<FullTagList, F<FullTagList, TagList, Element0>, Element1>,
-                 Rest...>;
+      select_expand_subitems_impl(sizeof...(Rest)),
+      F>::template f<F<F<TagList, Element0>, Element1>, Rest...>;
 };
 
 template <template <typename...> class F>
 struct expand_subitems_impl<3, F> {
-  template <typename FullTagList, typename TagList, typename Element0,
-            typename Element1, typename Element2, typename Element3,
-            typename... Rest>
+  template <typename TagList, typename Element0, typename Element1,
+            typename Element2, typename Element3, typename... Rest>
   using f = typename expand_subitems_impl<
       select_expand_subitems_impl(sizeof...(Rest)), F>::
-      template f<
-          FullTagList,
-          F<FullTagList,
-            F<FullTagList,
-              F<FullTagList, F<FullTagList, TagList, Element0>, Element1>,
-              Element2>,
-            Element3>,
-          Rest...>;
+      template f<F<F<F<F<TagList, Element0>, Element1>, Element2>, Element3>,
+                 Rest...>;
 };
 
 /*!
@@ -216,8 +206,7 @@ struct expand_subitems<tmpl::list<ComputeTags...>, true> {
   using f = typename detail::expand_subitems_impl<select_expand_subitems_impl(
                                                       sizeof...(ComputeTags)),
                                                   expand_subitems_impl_helper>::
-      template f<tmpl::list<>, expand_simple_subitems<SimpleTagsList>,
-                 ComputeTags...>;
+      template f<expand_simple_subitems<SimpleTagsList>, ComputeTags...>;
 };
 
 template <class... ComputeTags>
@@ -225,17 +214,16 @@ struct expand_subitems<tmpl::list<ComputeTags...>, false> {
   template <typename SimpleTagsList>
   using f = typename detail::expand_subitems_impl<
       select_expand_subitems_impl(sizeof...(ComputeTags)),
-      expand_subitems_impl_helper>::template f<tmpl::list<>, SimpleTagsList,
-                                               ComputeTags...>;
+      expand_subitems_impl_helper>::template f<SimpleTagsList, ComputeTags...>;
 };
 
 // The compile time here could be improved by having Subitems have a nested
 // type alias that generates the list currently retrieved by `::type` on to
 // the next call of `expand_subitems_from_list_impl`
-template <typename FullTagList, typename BuildingTagList, typename Element>
+template <typename BuildingTagList, typename Element>
 using expand_subitems_from_list_impl_helper =
     tmpl::append<tmpl::push_back<BuildingTagList, Element>,
-                 typename Subitems<FullTagList, Element>::type>;
+                 typename Subitems<Element>::type>;
 
 template <typename ComputeTagsList>
 struct expanded_list_from_full_list_impl;
@@ -243,11 +231,10 @@ struct expanded_list_from_full_list_impl;
 template <typename... ComputeTags>
 struct expanded_list_from_full_list_impl<tmpl::list<ComputeTags...>> {
   template <typename FullTagList>
-  using f =
-      typename expand_subitems_impl<select_expand_subitems_impl(
-                                        sizeof...(ComputeTags)),
-                                    expand_subitems_from_list_impl_helper>::
-          template f<FullTagList, tmpl::list<>, ComputeTags...>;
+  using f = typename expand_subitems_impl<
+      select_expand_subitems_impl(sizeof...(ComputeTags)),
+      expand_subitems_from_list_impl_helper>::template f<tmpl::list<>,
+                                                         ComputeTags...>;
 };
 
 template <>
@@ -283,9 +270,9 @@ template <typename SimpleTagsList, typename ComputeTagsList,
 using expand_subitems = typename detail::expand_subitems<
     ComputeTagsList, ExpandSimpleTags>::template f<SimpleTagsList>;
 
-template <typename TagList, typename Tag>
-using has_subitems = tmpl::not_<
-    std::is_same<typename Subitems<TagList, Tag>::type, tmpl::list<>>>;
+template <typename Tag>
+using has_subitems =
+    tmpl::not_<std::is_same<typename Subitems<Tag>::type, tmpl::list<>>>;
 
 template <typename ComputeTag, typename ArgumentTag,
           typename FoundComputeItemInBox>
@@ -324,7 +311,7 @@ struct create_dependency_graph {
   // These edges record that the values of the subitems of a compute
   // item depend on the value of the compute item itself.
   using subitem_reverse_edges =
-      tmpl::transform<typename Subitems<TagList, ComputeTag>::type,
+      tmpl::transform<typename Subitems<ComputeTag>::type,
                       tmpl::bind<tmpl::edge, tmpl::pin<ComputeTag>, tmpl::_1>>;
 
   using type = tmpl::append<compute_tag_argument_edges, subitem_reverse_edges>;
@@ -392,17 +379,17 @@ class DataBox<tmpl::list<Tags...>>
 
   /// A list of the simple items that have subitems, without expanding the
   /// subitems out
-  using simple_subitems_tags = tmpl::filter<
-      simple_item_tags,
-      tmpl::bind<DataBox_detail::has_subitems, tmpl::pin<tags_list>, tmpl::_1>>;
+  using simple_subitems_tags =
+      tmpl::filter<simple_item_tags,
+                   tmpl::bind<DataBox_detail::has_subitems, tmpl::_1>>;
 
   /// A list of the expanded simple subitems, not including the main Subitem
   /// tags themselves.
   ///
   /// Specifically, if there is a `Variables<Tag0, Tag1>`, then this list would
   /// contain `Tag0, Tag1`.
-  using simple_only_expanded_subitems_tags = tmpl::flatten<tmpl::transform<
-      simple_subitems_tags, db::Subitems<tmpl::pin<tags_list>, tmpl::_1>>>;
+  using simple_only_expanded_subitems_tags = tmpl::flatten<
+      tmpl::transform<simple_subitems_tags, db::Subitems<tmpl::_1>>>;
 
   /// \cond HIDDEN_SYMBOLS
   /*!
@@ -667,8 +654,8 @@ DataBox<tmpl::list<Tags...>>::add_sub_compute_item_tags_to_box(
     std::false_type /*has_return_type_member*/) noexcept {
   const auto helper = [lazy_function = get_deferred<ParentTag>()](
                           auto tag) noexcept->decltype(auto) {
-    return Subitems<tmpl::list<Tags...>, ParentTag>::
-        template create_compute_item<decltype(tag)>(lazy_function.get());
+    return Subitems<ParentTag>::template create_compute_item<decltype(tag)>(
+        lazy_function.get());
   };
   EXPAND_PACK_LEFT_TO_RIGHT(
       (get_deferred<Subtags>() =
@@ -684,8 +671,8 @@ DataBox<tmpl::list<Tags...>>::add_sub_compute_item_tags_to_box(
     std::true_type /*has_return_type_member*/) noexcept {
   const auto helper = [lazy_function = get_deferred<ParentTag>()](
       const auto result, auto tag) noexcept {
-    Subitems<tmpl::list<Tags...>, ParentTag>::template create_compute_item<
-        decltype(tag)>(result, lazy_function.get());
+    Subitems<ParentTag>::template create_compute_item<decltype(tag)>(
+        result, lazy_function.get());
   };
   EXPAND_PACK_LEFT_TO_RIGHT(
       (get_deferred<Subtags>() = make_deferred_for_subitem<
@@ -747,9 +734,8 @@ db::DataBox<tmpl::list<Tags...>>::add_compute_item_to_box() noexcept {
                       tmpl::bind<DataBox_detail::first_matching_tag,
                                  tmpl::pin<tmpl::list<Tags...>>, tmpl::_1>>{});
   add_sub_compute_item_tags_to_box<Tag>(
-      typename Subitems<tmpl::list<Tags...>, Tag>::type{},
-      typename has_return_type_member<
-          Subitems<tmpl::list<Tags...>, Tag>>::type{});
+      typename Subitems<Tag>::type{},
+      typename has_return_type_member<Subitems<Tag>>::type{});
 }
 // End adding compute items
 
@@ -764,7 +750,7 @@ db::DataBox<tmpl::list<Tags...>>::add_subitem_tags_to_box(
     using tag = decltype(tag_v);
     using ItemType = DataBox_detail::storage_type<tag, tmpl::list<Tags...>>;
     get_deferred<tag>() = Deferred<ItemType>(ItemType{});
-    Subitems<tmpl::list<Tags...>, ParentTag>::template create_item<tag>(
+    Subitems<ParentTag>::template create_item<tag>(
         make_not_null(&get_deferred<ParentTag>().mutate()),
         make_not_null(&get_deferred<tag>().mutate()));
   };
@@ -786,8 +772,7 @@ db::DataBox<tmpl::list<Tags...>>::add_item_to_box(
   get_deferred<Tag>() =
       Deferred<DataBox_detail::storage_type<Tag, tmpl::list<Tags...>>>(
           std::forward<ArgType>(std::get<ArgsIndex>(tupull)));
-  add_subitem_tags_to_box<Tag>(
-      typename Subitems<tmpl::list<Tags...>, Tag>::type{});
+  add_subitem_tags_to_box<Tag>(typename Subitems<Tag>::type{});
   return cpp17::void_type{};  // must return in constexpr function
 }
 // End adding simple items
@@ -920,8 +905,7 @@ void DataBox<tmpl::list<Tags...>>::pup_impl(
       get_deferred<tag>() =
           Deferred<DataBox_detail::storage_type<tag, tmpl::list<Tags...>>>(
               std::move(t));
-      add_subitem_tags_to_box<tag>(
-          typename Subitems<tmpl::list<Tags...>, tag>::type{});
+      add_subitem_tags_to_box<tag>(typename Subitems<tag>::type{});
     } else {
       p | get_deferred<tag>().mutate();
     }
@@ -952,7 +936,7 @@ DataBox<tmpl::list<Tags...>>::add_reset_compute_item_to_box(
     tmpl::list<ComputeItemArgumentsTags...> /*meta*/) noexcept {
   get_deferred<ComputeItem>().reset();
   mutate_subitem_tags_in_box<ComputeItem>(
-      typename Subitems<tmpl::list<Tags...>, ComputeItem>::type{});
+      typename Subitems<ComputeItem>::type{});
 }
 
 template <typename... Tags>
@@ -986,7 +970,7 @@ db::DataBox<tmpl::list<Tags...>>::mutate_subitem_tags_in_box(
     [this](auto tag_v, std::false_type /*is_compute_tag*/) noexcept {
       (void)this;  // Compiler bug warns about unused this capture
       using tag = decltype(tag_v);
-      Subitems<tmpl::list<Tags...>, ParentTag>::template create_item<tag>(
+      Subitems<ParentTag>::template create_item<tag>(
           make_not_null(&get_deferred<ParentTag>().mutate()),
           make_not_null(&get_deferred<tag>().mutate()));
     });
@@ -1049,12 +1033,11 @@ void mutate(const gsl::not_null<DataBox<TagList>*> box, Invokable&& invokable,
   // being mutated. Then, remove any tags that would be passed
   // multiple times.
   using extra_mutated_tags = tmpl::list_difference<
-      tmpl::filter<
-          TagList,
-          tmpl::bind<
-              tmpl::found, Subitems<tmpl::pin<TagList>, tmpl::_1>,
-              tmpl::pin<tmpl::bind<tmpl::list_contains,
-                                   tmpl::pin<mutate_tags_list>, tmpl::_1>>>>,
+      tmpl::filter<TagList,
+                   tmpl::bind<tmpl::found, Subitems<tmpl::_1>,
+                              tmpl::pin<tmpl::bind<tmpl::list_contains,
+                                                   tmpl::pin<mutate_tags_list>,
+                                                   tmpl::_1>>>>,
       mutate_tags_list>;
   // Extract the subtags inside the MutateTags and reset compute items
   // depending on those too.
@@ -1071,7 +1054,7 @@ void mutate(const gsl::not_null<DataBox<TagList>*> box, Invokable&& invokable,
 
   EXPAND_PACK_LEFT_TO_RIGHT(
       box->template mutate_subitem_tags_in_box<MutateTags>(
-          typename Subitems<TagList, MutateTags>::type{}));
+          typename Subitems<MutateTags>::type{}));
   box->template reset_compute_items_after_mutate(
       first_compute_items_to_reset{});
 
@@ -1287,11 +1270,10 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box,
   // Check that we're not removing a subitem itself, should remove the parent.
   using compute_subitems_tags =
       tmpl::filter<typename std::decay_t<Box>::compute_item_tags,
-                   tmpl::bind<DataBox_detail::has_subitems,
-                              tmpl::pin<old_box_tags>, tmpl::_1>>;
+                   tmpl::bind<DataBox_detail::has_subitems, tmpl::_1>>;
 
-  using compute_only_expand_subitems_tags = tmpl::flatten<tmpl::transform<
-      compute_subitems_tags, db::Subitems<tmpl::pin<old_box_tags>, tmpl::_1>>>;
+  using compute_only_expand_subitems_tags = tmpl::flatten<
+      tmpl::transform<compute_subitems_tags, db::Subitems<tmpl::_1>>>;
   using all_only_subitems_tags = tmpl::append<
       typename std::decay_t<Box>::simple_only_expanded_subitems_tags,
       compute_only_expand_subitems_tags>;

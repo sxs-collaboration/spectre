@@ -16,6 +16,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Subitems.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -933,10 +934,8 @@ struct MakeWithValueImpl<Variables<TagListOut>, Variables<TagListIn>> {
 }  // namespace MakeWithValueImpls
 
 namespace db {
-template <typename TagList, typename Tag>
-struct Subitems<
-    TagList, Tag,
-    Requires<tt::is_a_v<Variables, const_item_type<Tag, TagList>>>> {
+template <typename Tag>
+struct Subitems<Tag, Requires<tt::is_a_v<Variables, typename Tag::type>>> {
   using type = typename const_item_type<Tag>::tags_list;
 
   template <typename Subtag, typename LocalTag = Tag>

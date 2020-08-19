@@ -9,6 +9,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Tags.hpp"
@@ -154,7 +155,13 @@ struct InitializeDampedHarmonic {
   };
 
   template <typename Frame>
-  struct DampedHarmonicRollonCompute : db::ComputeTag {
+  struct DampedHarmonicRollonCompute
+      : db::ComputeTag,
+        ::Tags::Variables<tmpl::list<Tags::GaugeH<Dim, Frame>,
+                                     Tags::SpacetimeDerivGaugeH<Dim, Frame>>> {
+    using base =
+        ::Tags::Variables<tmpl::list<Tags::GaugeH<Dim, Frame>,
+                                     Tags::SpacetimeDerivGaugeH<Dim, Frame>>>;
     static std::string name() noexcept { return "DampedHarmonicRollonCompute"; }
     using argument_tags =
         tmpl::list<Tags::InitialGaugeH<Dim, Frame>,
@@ -191,7 +198,13 @@ struct InitializeDampedHarmonic {
   };
 
   template <typename Frame>
-  struct DampedHarmonicCompute : db::ComputeTag {
+  struct DampedHarmonicCompute
+      : db::ComputeTag,
+        ::Tags::Variables<tmpl::list<Tags::GaugeH<Dim, Frame>,
+                                     Tags::SpacetimeDerivGaugeH<Dim, Frame>>> {
+    using base =
+        ::Tags::Variables<tmpl::list<Tags::GaugeH<Dim, Frame>,
+                                     Tags::SpacetimeDerivGaugeH<Dim, Frame>>>;
     static std::string name() noexcept { return "DampedHarmonicCompute"; }
     using argument_tags =
         tmpl::list<::gr::Tags::Lapse<DataVector>,

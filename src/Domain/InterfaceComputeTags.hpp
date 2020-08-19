@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Subitems.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
@@ -297,15 +298,13 @@ struct BoundaryCoordinates : db::ComputeTag,
 }  // namespace domain
 
 namespace db {
-template <typename TagList, typename DirectionsTag, typename VariablesTag>
-struct Subitems<
-    TagList, domain::Tags::InterfaceCompute<DirectionsTag, VariablesTag>,
-    Requires<tt::is_a_v<Variables, const_item_type<VariablesTag, TagList>>>>
-    : detail::InterfaceSubitemsImpl<TagList, DirectionsTag, VariablesTag> {};
+template <typename DirectionsTag, typename VariablesTag>
+struct Subitems<domain::Tags::InterfaceCompute<DirectionsTag, VariablesTag>,
+                Requires<tt::is_a_v<Variables, typename VariablesTag::type>>>
+    : detail::InterfaceSubitemsImpl<DirectionsTag, VariablesTag> {};
 
-template <typename TagList, typename DirectionsTag, typename VariablesTag>
-struct Subitems<
-    TagList, domain::Tags::Slice<DirectionsTag, VariablesTag>,
-    Requires<tt::is_a_v<Variables, const_item_type<VariablesTag, TagList>>>>
-    : detail::InterfaceSubitemsImpl<TagList, DirectionsTag, VariablesTag> {};
+template <typename DirectionsTag, typename VariablesTag>
+struct Subitems<domain::Tags::Slice<DirectionsTag, VariablesTag>,
+                Requires<tt::is_a_v<Variables, typename VariablesTag::type>>>
+    : detail::InterfaceSubitemsImpl<DirectionsTag, VariablesTag> {};
 }  // namespace db

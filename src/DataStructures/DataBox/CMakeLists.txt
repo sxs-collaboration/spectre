@@ -11,6 +11,7 @@ spectre_target_headers(
   Deferred.hpp
   PrefixHelpers.hpp
   Prefixes.hpp
+  Subitems.hpp
   Tag.hpp
   TagName.hpp
   TagTraits.hpp
