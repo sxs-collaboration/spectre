@@ -45,7 +45,7 @@ void test_hypercube_iterator(
         ++HypercubeElementsIterator<ElementDim, HypercubeDim>::begin());
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Hypercube", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Structure.Hypercube", "[Domain][Unit]") {
   {
     const Vertex<0> point{};
     CHECK(get_output(point) == "Vertex0D[(),()]");

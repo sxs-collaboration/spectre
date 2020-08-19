@@ -4,6 +4,7 @@
 set(LIBRARY "Test_DataStructures")
 
 set(LIBRARY_SOURCES
+  Test_ApplyMatrices.cpp
   Test_CachedTempBuffer.cpp
   Test_ComplexDataVector.cpp
   Test_ComplexDataVectorBinaryOperations.cpp
@@ -32,6 +33,7 @@ set(LIBRARY_SOURCES
   Test_StripeIterator.cpp
   Test_Tags.cpp
   Test_TempBuffer.cpp
+  Test_Transpose.cpp
   Test_Variables.cpp
   Test_VectorImpl.cpp
   Test_VectorImplTestHelper.cpp

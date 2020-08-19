@@ -34,8 +34,7 @@ template <size_t Dim>
 using one_var = tmpl::list<Var1<Dim>>;
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Transpose",
-                  "[NumericalAlgorithms][LinearOperators][Unit]") {
+SPECTRE_TEST_CASE("Unit.DataStructures.Transpose", "[DataStructures][Unit]") {
   // clang-format off
   /// [transpose_matrix]
   const DataVector matrix{ 1.,  2.,  3.,
@@ -113,7 +112,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Transpose",
   Variables<one_var<2>> partial_vars(n_grid_pts, 0.);
   get<Var1<2>>(partial_vars) = get<Var1<2>>(variables);
   Variables<one_var<2>> partial_transpose(n_grid_pts, 0.);
-  const size_t partial_number_of_chunks = 2*number_of_chunks_vars / 3;
+  const size_t partial_number_of_chunks = 2 * number_of_chunks_vars / 3;
   transpose(make_not_null(&partial_transpose), variables, chunk_size_vars,
             partial_number_of_chunks);
   for (size_t i = 0; i < chunk_size_vars; ++i) {

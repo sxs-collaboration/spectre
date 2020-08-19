@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_IndefiniteIntegral.cpp
   Test_LegendreGauss.cpp
   Test_LegendreGaussLobatto.cpp
+  Test_Mesh.cpp
   Test_Projection.cpp
   Test_Spectral.cpp
   Test_SwshCoefficients.cpp

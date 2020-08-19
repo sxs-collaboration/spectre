@@ -41,7 +41,7 @@ void test_initial_element_ids(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.InitialElementIds", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Structure.InitialElementIds", "[Domain][Unit]") {
   const std::vector<std::array<size_t, 1>> initial_refinement_levels_1d{{{2}},
                                                                         {{3}}};
   const auto element_ids_1d = initial_element_ids(initial_refinement_levels_1d);

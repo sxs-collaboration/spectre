@@ -429,7 +429,8 @@ void test_2d_orient_variables_on_slice() noexcept {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.OrientationMapHelpers", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Structure.OrientationMapHelpers",
+                  "[Domain][Unit]") {
   SECTION("Testing orient_variables") {
     test_1d_orient_variables();
     test_2d_orient_variables();

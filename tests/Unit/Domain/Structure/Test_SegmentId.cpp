@@ -14,7 +14,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GetOutput.hpp"
 
-SPECTRE_TEST_CASE("Unit.Domain.SegmentId", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentId", "[Domain][Unit]") {
   // Test equality operator:
   SegmentId segment_one(4, 3);
   SegmentId segment_two(4, 3);
@@ -75,7 +75,7 @@ SPECTRE_TEST_CASE("Unit.Domain.SegmentId", "[Domain][Unit]") {
 }
 
 // [[OutputRegex, index = 8, refinement_level = 3]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.SegmentId.BadIndex",
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentId.BadIndex",
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
@@ -86,7 +86,7 @@ SPECTRE_TEST_CASE("Unit.Domain.SegmentId", "[Domain][Unit]") {
 }
 
 // [[OutputRegex, on root refinement level!]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.SegmentId.NoParent",
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentId.NoParent",
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
@@ -97,7 +97,7 @@ SPECTRE_TEST_CASE("Unit.Domain.SegmentId", "[Domain][Unit]") {
 }
 
 // [[OutputRegex, The segment on the root refinement level has no sibling]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.SegmentId.NoSibling",
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentId.NoSibling",
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
@@ -109,7 +109,7 @@ SPECTRE_TEST_CASE("Unit.Domain.SegmentId", "[Domain][Unit]") {
 
 // [[OutputRegex, The segment on the root refinement level has no abutting
 // nibling]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.SegmentId.NoNibling",
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentId.NoNibling",
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
@@ -120,7 +120,7 @@ SPECTRE_TEST_CASE("Unit.Domain.SegmentId", "[Domain][Unit]") {
 }
 
 // [[OutputRegex, The segment on the root refinement level has no sibling]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.SegmentId.NoSibling2",
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentId.NoSibling2",
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG

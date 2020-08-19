@@ -210,7 +210,7 @@ void test_output() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Direction", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Structure.Direction", "[Domain][Unit]") {
   test_construction_1d();
   test_construction_2d();
   test_construction_3d();
@@ -221,7 +221,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction", "[Domain][Unit]") {
 }
 
 // [[OutputRegex, dim = 1, for Direction<1> only dim = 0 is allowed.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Direction.FirstDimension",
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.Direction.FirstDimension",
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
@@ -234,8 +234,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction", "[Domain][Unit]") {
 
 // [[OutputRegex, dim = 2, for Direction<2> only dim = 0 or dim = 1 are
 // allowed.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Direction.SecondDimension",
-                               "[Domain][Unit]") {
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.Domain.Structure.Direction.SecondDimension", "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   auto failed_direction = Direction<2>(2, Side::Upper);
@@ -247,7 +247,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Direction", "[Domain][Unit]") {
 
 // [[OutputRegex, dim = 3, for Direction<3> only dim = 0, dim = 1, or dim = 2
 // are allowed.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Direction.ThirdDimension",
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.Direction.ThirdDimension",
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG

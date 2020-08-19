@@ -314,14 +314,14 @@ void test_3d() {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.OrientationMap", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Structure.OrientationMap", "[Domain][Unit]") {
   test_1d();
   test_2d();
   test_3d();
 }
 
 // [[OutputRegex, This OrientationMap fails to map Directions one-to-one.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.OrientationMap.Bijective",
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.OrientationMap.Bijective",
                                "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
@@ -334,8 +334,8 @@ SPECTRE_TEST_CASE("Unit.Domain.OrientationMap", "[Domain][Unit]") {
 }
 
 // [[OutputRegex, This OrientationMap fails to map Directions one-to-one.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.OrientationMap.BijectiveHost",
-                               "[Domain][Unit]") {
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.Domain.Structure.OrientationMap.BijectiveHost", "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   auto failed_orientationmap = OrientationMap<2>{
@@ -351,8 +351,9 @@ SPECTRE_TEST_CASE("Unit.Domain.OrientationMap", "[Domain][Unit]") {
 }
 
 // [[OutputRegex, This OrientationMap fails to map Directions one-to-one.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.OrientationMap.BijectiveNeighbor",
-                               "[Domain][Unit]") {
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.Domain.Structure.OrientationMap.BijectiveNeighbor",
+    "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   auto failed_orientationmap = OrientationMap<3>{
@@ -369,7 +370,7 @@ SPECTRE_TEST_CASE("Unit.Domain.OrientationMap", "[Domain][Unit]") {
 #endif
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DiscreteRotation.AllOrientations",
+SPECTRE_TEST_CASE("Unit.Domain.Structure.DiscreteRotation.AllOrientations",
                   "[Domain][Unit]") {
   for (OrientationMapIterator<2> map_i{}; map_i; ++map_i) {
     const std::array<double, 2> original_point{{0.5, -2.0}};
@@ -395,7 +396,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DiscreteRotation.AllOrientations",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DiscreteRotation.Rotation", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Structure.DiscreteRotation.Rotation",
+                  "[Domain][Unit]") {
   const OrientationMap<1> rotation1(
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
   const std::array<DataVector, 1> test_points1{
@@ -430,7 +432,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DiscreteRotation.Rotation", "[Domain][Unit]") {
         std::array<double, 3>{{0.5, -1.0, 1.0}});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DiscreteRotation.ReferenceWrapper",
+SPECTRE_TEST_CASE("Unit.Domain.Structure.DiscreteRotation.ReferenceWrapper",
                   "[Domain][Unit]") {
   const OrientationMap<3> rotation(std::array<Direction<3>, 3>{
       {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
