@@ -7,6 +7,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -28,12 +29,16 @@ struct System {
   using variables_tag = ::Tags::Variables<tmpl::list<
       gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
       Tags::Pi<Dim, Frame::Inertial>, Tags::Phi<Dim, Frame::Inertial>>>;
-  using gradients_tags =
+  using flux_variables = tmpl::list<>;
+  using gradient_variables =
       tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
                  Tags::Pi<Dim, Frame::Inertial>,
                  Tags::Phi<Dim, Frame::Inertial>>;
+  using gradients_tags = gradient_variables;
 
+  using compute_volume_time_derivative_terms = TimeDerivative<Dim>;
   using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
+
   using char_speeds_compute_tag =
       CharacteristicSpeedsCompute<Dim, Frame::Inertial>;
   using char_speeds_tag = Tags::CharacteristicSpeeds<Dim, Frame::Inertial>;
