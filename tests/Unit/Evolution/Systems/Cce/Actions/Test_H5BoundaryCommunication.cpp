@@ -189,7 +189,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
   const double target_step_size = 0.01 * value_dist(gen);
   const double end_time = std::numeric_limits<double>::quiet_NaN();
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
-      {l_max, Tags::EndTimeFromFile::create_from_options(end_time, filename),
+      {l_max,
+       Tags::EndTimeFromFile::create_from_options(end_time, filename, false),
        start_time, number_of_radial_points,
        std::make_unique<::TimeSteppers::RungeKutta3>()}};
 
@@ -203,10 +204,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
                                                         target_step_size);
   ActionTesting::emplace_component<worldtube_component>(
       &runner, 0,
-      InitializationTags::H5WorldtubeBoundaryDataManager::create_from_options(
+      Tags::H5WorldtubeBoundaryDataManager::create_from_options(
           l_max, filename, buffer_size,
-          std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u,
-                                                                       4u)));
+          std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u),
+          false));
 
   // this should run the initializations
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);

@@ -14,8 +14,8 @@
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
-#include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
+#include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Parallel/Algorithm.hpp"
 #include "Parallel/Info.hpp"
@@ -47,16 +47,15 @@ namespace Actions {
  */
 struct InitializeH5WorldtubeBoundary {
   using initialization_tags =
-      tmpl::list<InitializationTags::H5WorldtubeBoundaryDataManager>;
-
+      tmpl::list<Tags::H5WorldtubeBoundaryDataManager>;
+  using initialization_tags_to_keep =
+      tmpl::list<Tags::H5WorldtubeBoundaryDataManager>;
   using const_global_cache_tags =
       tmpl::list<Tags::LMax, Tags::EndTimeFromFile, Tags::StartTimeFromFile>;
 
   template <class Metavariables>
-  using h5_boundary_manager_simple_tags = db::AddSimpleTags<
-      ::Tags::Variables<
-          typename Metavariables::cce_boundary_communication_tags>,
-      Tags::H5WorldtubeBoundaryDataManager>;
+  using h5_boundary_manager_simple_tags = db::AddSimpleTags<::Tags::Variables<
+      typename Metavariables::cce_boundary_communication_tags>>;
 
   template <class Metavariables>
   using return_tag_list = h5_boundary_manager_simple_tags<Metavariables>;
@@ -65,8 +64,7 @@ struct InitializeH5WorldtubeBoundary {
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
             Requires<tmpl::list_contains_v<
-                DbTags, InitializationTags::H5WorldtubeBoundaryDataManager>> =
-                nullptr>
+                DbTags, Tags::H5WorldtubeBoundaryDataManager>> = nullptr>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -78,19 +76,11 @@ struct InitializeH5WorldtubeBoundary {
         boundary_variables{
             Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
 
-    WorldtubeDataManager boundary_data_manager;
-    db::mutate<InitializationTags::H5WorldtubeBoundaryDataManager>(
-        make_not_null(&box),
-        [&boundary_data_manager](const gsl::not_null<WorldtubeDataManager*>
-                                     initialization_data_manager) noexcept {
-          boundary_data_manager = std::move(*initialization_data_manager);
-        });
     auto initial_box = Initialization::merge_into_databox<
         InitializeH5WorldtubeBoundary,
         h5_boundary_manager_simple_tags<Metavariables>, db::AddComputeTags<>,
-        Initialization::MergePolicy::Overwrite>(
-        std::move(box), std::move(boundary_variables),
-        std::move(boundary_data_manager));
+        Initialization::MergePolicy::Overwrite>(std::move(box),
+                                                std::move(boundary_variables));
 
     return std::make_tuple(std::move(initial_box));
   }
@@ -99,8 +89,7 @@ struct InitializeH5WorldtubeBoundary {
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
             Requires<not tmpl::list_contains_v<
-                DbTags, InitializationTags::H5WorldtubeBoundaryDataManager>> =
-                nullptr>
+                DbTags, Tags::H5WorldtubeBoundaryDataManager>> = nullptr>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,

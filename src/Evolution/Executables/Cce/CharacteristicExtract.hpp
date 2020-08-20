@@ -14,9 +14,9 @@
 #include "Evolution/Systems/Cce/Initialize/ZeroNonSmooth.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
-#include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
 #include "Evolution/Systems/Cce/System.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
+#include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"
@@ -119,9 +119,10 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &Parallel::register_derived_classes_with_charm<
         Cce::InitializeJ::InitializeJ>,
     &Parallel::register_derived_classes_with_charm<
-        Cce::WorldtubeBufferUpdater<Cce::cce_input_tags>>,
+        Cce::WorldtubeBufferUpdater<Cce::cce_metric_input_tags>>,
     &Parallel::register_derived_classes_with_charm<
-        Cce::WorldtubeBufferUpdater<Cce::reduced_cce_input_tags>>,
+        Cce::WorldtubeBufferUpdater<Cce::cce_bondi_input_tags>>,
+    &Parallel::register_derived_classes_with_charm<Cce::WorldtubeDataManager>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>};
 

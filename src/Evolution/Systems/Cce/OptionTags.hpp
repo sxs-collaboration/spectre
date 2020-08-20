@@ -11,7 +11,7 @@
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterpolationStrategies.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
-#include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
+#include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Options/Options.hpp"
 
@@ -122,6 +122,18 @@ struct H5Interpolator {
   using group = Cce;
 };
 
+struct H5IsBondiData {
+  using type = bool;
+  static constexpr OptionString help{
+      "true for boundary data in Bondi form, false for metric data. Metric "
+      "data is more readily available from Cauchy simulations, so historically "
+      "has been the typical format provided by SpEC simulations. Bondi data is "
+      "much more efficient for storage size and performance, but both must be "
+      "supported for compatibility with current CCE data sources."};
+  static bool default_value() noexcept { return false; }
+  using group = Cce;
+};
+
 struct GhInterfaceManager {
   using type = std::unique_ptr<InterfaceManagers::GhInterfaceManager>;
   static constexpr OptionString help{
@@ -155,24 +167,6 @@ struct InitializeJ {
 }  // namespace OptionTags
 
 namespace InitializationTags {
-/// An initialization tag that constructs a `WorldtubeDataManager` from options
-struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
-  using type = WorldtubeDataManager;
-  using option_tags =
-      tmpl::list<OptionTags::LMax, OptionTags::BoundaryDataFilename,
-                 OptionTags::H5LookaheadTimes, OptionTags::H5Interpolator>;
-
-  static constexpr bool pass_metavariables = false;
-  static WorldtubeDataManager create_from_options(
-      const size_t l_max, const std::string& filename,
-      const size_t number_of_lookahead_times,
-      const std::unique_ptr<intrp::SpanInterpolator>& interpolator) noexcept {
-    return WorldtubeDataManager{
-        std::make_unique<SpecWorldtubeH5BufferUpdater>(filename), l_max,
-        number_of_lookahead_times, interpolator->get_clone()};
-  }
-};
-
 struct ScriInterpolationOrder : db::SimpleTag {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::ScriInterpolationOrder>;
@@ -216,6 +210,32 @@ struct ScriOutputDensity : db::SimpleTag {
 }  // namespace InitializationTags
 
 namespace Tags {
+/// A tag that constructs a `MetricWorldtubeDataManager` from options
+struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
+  using type = std::unique_ptr<WorldtubeDataManager>;
+  using option_tags =
+      tmpl::list<OptionTags::LMax, OptionTags::BoundaryDataFilename,
+                 OptionTags::H5LookaheadTimes, OptionTags::H5Interpolator,
+                 OptionTags::H5IsBondiData>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(
+      const size_t l_max, const std::string& filename,
+      const size_t number_of_lookahead_times,
+      const std::unique_ptr<intrp::SpanInterpolator>& interpolator,
+      const bool h5_is_bondi_data) noexcept {
+    if (h5_is_bondi_data) {
+      return std::make_unique<BondiWorldtubeDataManager>(
+          std::make_unique<BondiWorldtubeH5BufferUpdater>(filename), l_max,
+          number_of_lookahead_times, interpolator->get_clone());
+    } else {
+      return std::make_unique<MetricWorldtubeDataManager>(
+          std::make_unique<MetricWorldtubeH5BufferUpdater>(filename), l_max,
+          number_of_lookahead_times, interpolator->get_clone());
+    }
+  }
+};
+
 struct LMax : db::SimpleTag, Spectral::Swsh::Tags::LMaxBase {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::LMax>;
@@ -290,15 +310,23 @@ struct RadialFilterHalfPower : db::SimpleTag {
 struct StartTimeFromFile : Tags::StartTime, db::SimpleTag {
   using type = double;
   using option_tags =
-      tmpl::list<OptionTags::StartTime, OptionTags::BoundaryDataFilename>;
+      tmpl::list<OptionTags::StartTime, OptionTags::BoundaryDataFilename,
+                 OptionTags::H5IsBondiData>;
 
   static constexpr bool pass_metavariables = false;
   static double create_from_options(double start_time,
-                                    const std::string& filename) noexcept {
+                                    const std::string& filename,
+                                    const bool is_bondi_data) noexcept {
     if (start_time == -std::numeric_limits<double>::infinity()) {
-      SpecWorldtubeH5BufferUpdater h5_boundary_updater{filename};
-      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
-      start_time = time_buffer[0];
+      if (is_bondi_data) {
+        BondiWorldtubeH5BufferUpdater h5_boundary_updater{filename};
+        const auto& time_buffer = h5_boundary_updater.get_time_buffer();
+        start_time = time_buffer[0];
+      } else {
+        MetricWorldtubeH5BufferUpdater h5_boundary_updater{filename};
+        const auto& time_buffer = h5_boundary_updater.get_time_buffer();
+        start_time = time_buffer[0];
+      }
     }
     return start_time;
   }
@@ -327,15 +355,23 @@ struct SpecifiedStartTime : Tags::StartTime, db::SimpleTag {
 struct EndTimeFromFile : Tags::EndTime, db::SimpleTag {
   using type = double;
   using option_tags =
-      tmpl::list<OptionTags::EndTime, OptionTags::BoundaryDataFilename>;
+      tmpl::list<OptionTags::EndTime, OptionTags::BoundaryDataFilename,
+                 OptionTags::H5IsBondiData>;
 
   static constexpr bool pass_metavariables = false;
   static double create_from_options(double end_time,
-                                    const std::string& filename) {
+                                    const std::string& filename,
+                                    const bool is_bondi_data) {
     if (end_time == std::numeric_limits<double>::infinity()) {
-      SpecWorldtubeH5BufferUpdater h5_boundary_updater{filename};
-      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
-      end_time = time_buffer[time_buffer.size() - 1];
+      if (is_bondi_data) {
+        BondiWorldtubeH5BufferUpdater h5_boundary_updater{filename};
+        const auto& time_buffer = h5_boundary_updater.get_time_buffer();
+        end_time = time_buffer[time_buffer.size() - 1];
+      } else {
+        MetricWorldtubeH5BufferUpdater h5_boundary_updater{filename};
+        const auto& time_buffer = h5_boundary_updater.get_time_buffer();
+        end_time = time_buffer[time_buffer.size() - 1];
+      }
     }
     return end_time;
   }
@@ -357,8 +393,7 @@ struct NoEndTime : Tags::EndTime, db::SimpleTag {
 /// supplied in the input file (for e.g. analytic tests).
 struct SpecifiedEndTime : Tags::EndTime, db::SimpleTag {
   using type = double;
-  using option_tags =
-      tmpl::list<OptionTags::EndTime>;
+  using option_tags = tmpl::list<OptionTags::EndTime>;
 
   static constexpr bool pass_metavariables = false;
   static double create_from_options(const double end_time) noexcept {

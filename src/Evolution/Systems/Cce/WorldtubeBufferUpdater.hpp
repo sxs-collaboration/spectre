@@ -3,28 +3,30 @@
 
 #pragma once
 
-#include <algorithm>
-#include <boost/iterator/zip_iterator.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
+#include <cstddef>
 #include <memory>
 #include <string>
+#include <utility>
 
+#include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "Evolution/Systems/Cce/BoundaryData.hpp"
-#include "Evolution/Systems/Cce/SpecBoundaryData.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/Version.hpp"
-#include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
+#include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 namespace Cce {
 namespace Tags {
@@ -82,7 +84,7 @@ std::pair<size_t, size_t> create_span_for_time_value(
 }  // namespace detail
 
 /// the full set of tensors to be extracted from the worldtube h5 file
-using cce_input_tags = tmpl::list<
+using cce_metric_input_tags = tmpl::list<
     Tags::detail::SpatialMetric, Tags::detail::Dr<Tags::detail::SpatialMetric>,
     ::Tags::dt<Tags::detail::SpatialMetric>, Tags::detail::Shift,
     Tags::detail::Dr<Tags::detail::Shift>, ::Tags::dt<Tags::detail::Shift>,
@@ -91,7 +93,7 @@ using cce_input_tags = tmpl::list<
 
 /// the full set of tensors to be extracted from the reduced form of the
 /// worldtube h5 file
-using reduced_cce_input_tags =
+using cce_bondi_input_tags =
     tmpl::list<Spectral::Swsh::Tags::SwshTransform<Tags::BondiBeta>,
                Spectral::Swsh::Tags::SwshTransform<Tags::BondiU>,
                Spectral::Swsh::Tags::SwshTransform<Tags::BondiQ>,
@@ -103,8 +105,8 @@ using reduced_cce_input_tags =
                Spectral::Swsh::Tags::SwshTransform<Tags::Du<Tags::BondiR>>>;
 
 /// \cond
-class SpecWorldtubeH5BufferUpdater;
-class ReducedSpecWorldtubeH5BufferUpdater;
+class MetricWorldtubeH5BufferUpdater;
+class BondiWorldtubeH5BufferUpdater;
 /// \endcond
 
 /*!
@@ -141,8 +143,8 @@ class ReducedSpecWorldtubeH5BufferUpdater;
 template <typename BufferTags>
 class WorldtubeBufferUpdater : public PUP::able {
  public:
-  using creatable_classes = tmpl::list<SpecWorldtubeH5BufferUpdater,
-                                       ReducedSpecWorldtubeH5BufferUpdater>;
+  using creatable_classes =
+      tmpl::list<MetricWorldtubeH5BufferUpdater, BondiWorldtubeH5BufferUpdater>;
 
   WRAPPED_PUPable_abstract(WorldtubeBufferUpdater);  // NOLINT
 
@@ -169,23 +171,23 @@ class WorldtubeBufferUpdater : public PUP::able {
 
 /// A `WorldtubeBufferUpdater` specialized to the CCE input worldtube  H5 file
 /// produced by SpEC.
-class SpecWorldtubeH5BufferUpdater
-    : public WorldtubeBufferUpdater<cce_input_tags> {
+class MetricWorldtubeH5BufferUpdater
+    : public WorldtubeBufferUpdater<cce_metric_input_tags> {
  public:
   // charm needs the empty constructor
-  SpecWorldtubeH5BufferUpdater() = default;
+  MetricWorldtubeH5BufferUpdater() = default;
 
   /// The constructor takes the filename of the SpEC h5 file that will be used
   /// for boundary data. Note that this assumes that the input data has
   /// correctly-normalized radial derivatives, and that the extraction radius is
   /// encoded as an integer in the filename.
-  explicit SpecWorldtubeH5BufferUpdater(
+  explicit MetricWorldtubeH5BufferUpdater(
       const std::string& cce_data_filename) noexcept;
 
-  WRAPPED_PUPable_decl_template(SpecWorldtubeH5BufferUpdater);  // NOLINT
+  WRAPPED_PUPable_decl_template(MetricWorldtubeH5BufferUpdater);  // NOLINT
 
-  explicit SpecWorldtubeH5BufferUpdater(CkMigrateMessage* /*unused*/) noexcept {
-  }
+  explicit MetricWorldtubeH5BufferUpdater(
+      CkMigrateMessage* /*unused*/) noexcept {}
 
   /// update the `buffers`, `time_span_start`, and `time_span_end` with
   /// time-varies-fastest, Goldberg modal data and the start and end index in
@@ -194,13 +196,13 @@ class SpecWorldtubeH5BufferUpdater
   /// called again at times earlier than the next full update time, it will
   /// leave the `buffers` unchanged and again return the next needed time.
   double update_buffers_for_time(
-      gsl::not_null<Variables<cce_input_tags>*> buffers,
+      gsl::not_null<Variables<cce_metric_input_tags>*> buffers,
       gsl::not_null<size_t*> time_span_start,
       gsl::not_null<size_t*> time_span_end, double time,
       size_t computation_l_max, size_t interpolator_length,
       size_t buffer_depth) const noexcept override;
 
-  std::unique_ptr<WorldtubeBufferUpdater<cce_input_tags>> get_clone()
+  std::unique_ptr<WorldtubeBufferUpdater<cce_metric_input_tags>> get_clone()
       const noexcept override;
 
   /// The time can only be supported in the buffer update if it is between the
@@ -245,7 +247,7 @@ class SpecWorldtubeH5BufferUpdater
   std::string filename_;
 
   tuples::tagged_tuple_from_typelist<
-      db::wrap_tags_in<Tags::detail::InputDataSet, cce_input_tags>>
+      db::wrap_tags_in<Tags::detail::InputDataSet, cce_metric_input_tags>>
       dataset_names_;
 
   // stores all the times in the input file
@@ -254,37 +256,37 @@ class SpecWorldtubeH5BufferUpdater
 
 /// A `WorldtubeBufferUpdater` specialized to the CCE input worldtube H5 file
 /// produced by the reduced SpEC format.
-class ReducedSpecWorldtubeH5BufferUpdater
-    : public WorldtubeBufferUpdater<reduced_cce_input_tags> {
+class BondiWorldtubeH5BufferUpdater
+    : public WorldtubeBufferUpdater<cce_bondi_input_tags> {
  public:
   // charm needs the empty constructor
-  ReducedSpecWorldtubeH5BufferUpdater() = default;
+  BondiWorldtubeH5BufferUpdater() = default;
 
   /// The constructor takes the filename of the SpEC h5 file that will be used
   /// for boundary data. Note that this assumes that the input data has
   /// correctly-normalized radial derivatives, and that the extraction radius is
   /// encoded as an integer in the filename.
-  explicit ReducedSpecWorldtubeH5BufferUpdater(
+  explicit BondiWorldtubeH5BufferUpdater(
       const std::string& cce_data_filename) noexcept;
 
-  WRAPPED_PUPable_decl_template(ReducedSpecWorldtubeH5BufferUpdater);  // NOLINT
+  WRAPPED_PUPable_decl_template(BondiWorldtubeH5BufferUpdater);  // NOLINT
 
-  explicit ReducedSpecWorldtubeH5BufferUpdater(
+  explicit BondiWorldtubeH5BufferUpdater(
       CkMigrateMessage* /*unused*/) noexcept {}
 
   /// update the `buffers`, `time_span_start`, and `time_span_end` with
   /// time-varies-fastest, Goldberg modal data and the start and end index in
   /// the member `time_buffer_` covered by the newly updated `buffers`.
   double update_buffers_for_time(
-      gsl::not_null<Variables<reduced_cce_input_tags>*> buffers,
+      gsl::not_null<Variables<cce_bondi_input_tags>*> buffers,
       gsl::not_null<size_t*> time_span_start,
       gsl::not_null<size_t*> time_span_end, double time,
       size_t computation_l_max, size_t interpolator_length,
       size_t buffer_depth) const noexcept override;
 
-  std::unique_ptr<WorldtubeBufferUpdater<reduced_cce_input_tags>> get_clone()
+  std::unique_ptr<WorldtubeBufferUpdater<cce_bondi_input_tags>> get_clone()
       const noexcept override {
-    return std::make_unique<ReducedSpecWorldtubeH5BufferUpdater>(filename_);
+    return std::make_unique<BondiWorldtubeH5BufferUpdater>(filename_);
   }
 
   /// The time can only be supported in the buffer update if it is between the
@@ -331,211 +333,10 @@ class ReducedSpecWorldtubeH5BufferUpdater
   std::string filename_;
 
   tuples::tagged_tuple_from_typelist<
-      db::wrap_tags_in<Tags::detail::InputDataSet, reduced_cce_input_tags>>
+      db::wrap_tags_in<Tags::detail::InputDataSet, cce_bondi_input_tags>>
       dataset_names_;
 
   // stores all the times in the input file
   DataVector time_buffer_;
-};
-
-/*!
- * \brief Manages the cached buffer data associated with a CCE worldtube and
- * interpolates to requested time points to provide worldtube boundary data to
- * the main evolution routines.
- *
- * \details The maintained buffer will be maintained at a length that is set by
- * the `Interpolator` and the `buffer_depth` also passed to the constructor. A
- * longer depth will ensure that the buffer updater is called less frequently,
- * which is useful for slow updaters (e.g. those that perform file access).
- * The main functionality is provided by the
- * `WorldtubeDataManager::populate_hypersurface_boundary_data()` member
- * function that handles buffer updating and boundary computation.
- */
-class WorldtubeDataManager {
- public:
-  // charm needs an empty constructor.
-  WorldtubeDataManager() noexcept = default;
-
-  WorldtubeDataManager(
-      std::unique_ptr<WorldtubeBufferUpdater<cce_input_tags>> buffer_updater,
-      const size_t l_max, const size_t buffer_depth,
-      std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
-      : buffer_updater_{std::move(buffer_updater)},
-        l_max_{l_max},
-        interpolated_coefficients_{
-            Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)},
-        buffer_depth_{buffer_depth},
-        interpolator_{std::move(interpolator)} {
-    if (UNLIKELY(
-            buffer_updater_->get_time_buffer().size() <
-            2 * interpolator_->required_number_of_points_before_and_after() +
-                buffer_depth)) {
-      ERROR(
-          "The specified buffer updater doesn't have enough time points to "
-          "supply the requested interpolation buffer. This almost certainly "
-          "indicates that the corresponding file hasn't been created properly, "
-          "but might indicate that the `buffer_depth` template parameter is "
-          "too large or the specified Interpolator requests too many points");
-    }
-
-    const size_t size_of_buffer =
-        square(l_max + 1) *
-        (buffer_depth +
-         2 * interpolator_->required_number_of_points_before_and_after());
-    coefficients_buffers_ = Variables<cce_input_tags>{size_of_buffer};
-  }
-
-  /*!
-   * \brief Update the `boundary_data_box` entries for all tags in
-   * `Tags::characteristic_worldtube_boundary_tags` to the boundary data at
-   * `time`.
-   *
-   * \details First, if the stored buffer requires updating, it will be updated
-   * via the `buffer_updater_` supplied in the constructor. Then, each of the
-   * spatial metric, shift, lapse, and each of their radial and time derivatives
-   * are interpolated across buffer points to the requested time value (via the
-   * `Interpolator` provided in the constructor). Finally, that data is supplied
-   * to the `create_bondi_boundary_data()`, which updates the
-   * `boundary_data_box` with the Bondi spin-weighted scalars determined from
-   * the interpolated Cartesian data.
-   *
-   * Returns `true` if the time can be supplied from the `buffer_updater_`, and
-   * `false` otherwise. No tags are updated if `false` is returned.
-   */
-  bool populate_hypersurface_boundary_data(
-      gsl::not_null<Variables<
-          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
-          boundary_data_variables,
-      double time) const noexcept;
-
-  /// retrieves the l_max that will be supplied to the \ref DataBoxGroup in
-  /// `populate_hypersurface_boundary_data()`
-  size_t get_l_max() const noexcept { return l_max_; }
-
-  /// retrieves the current time span associated with the `buffer_updater_` for
-  /// diagnostics
-  std::pair<size_t, size_t> get_time_span() const noexcept {
-    return std::make_pair(time_span_start_, time_span_end_);
-  }
-
-  /// Serialization for Charm++.
-  void pup(PUP::er& p) noexcept {  // NOLINT
-    p | buffer_updater_;
-    p | time_span_start_;
-    p | time_span_end_;
-    p | l_max_;
-    p | buffer_depth_;
-    p | interpolator_;
-    if (p.isUnpacking()) {
-      time_span_start_ = 0;
-      time_span_end_ = 0;
-      const size_t size_of_buffer =
-          square(l_max_ + 1) *
-          (buffer_depth_ +
-           2 * interpolator_->required_number_of_points_before_and_after());
-      coefficients_buffers_ = Variables<cce_input_tags>{size_of_buffer};
-      interpolated_coefficients_ = Variables<cce_input_tags>{
-          Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_)};
-    }
-  }
-
- private:
-  std::unique_ptr<WorldtubeBufferUpdater<cce_input_tags>> buffer_updater_;
-  mutable size_t time_span_start_ = 0;
-  mutable size_t time_span_end_ = 0;
-  size_t l_max_ = 0;
-
-  // These buffers are just kept around to avoid allocations; they're
-  // updated every time a time is requested
-  mutable Variables<cce_input_tags> interpolated_coefficients_;
-
-  // note: buffers store data in a 'time-varies-fastest' manner
-  mutable Variables<cce_input_tags> coefficients_buffers_;
-
-  size_t buffer_depth_ = 0;
-
-  std::unique_ptr<intrp::SpanInterpolator> interpolator_;
-};
-
-/*!
- * \brief Manages the 'reduced' cached buffer dataset associated with a CCE
- * worldtube and interpolates to requested time points to provide worldtube
- * boundary data to the main evolution routines.
- *
- * \details The maintained buffer will be kept at a length that is set by
- * the `Interpolator` and the `buffer_depth` also passed to the constructor. A
- * longer depth will ensure that the buffer updater is called less frequently,
- * which is useful for slow updaters (e.g. those that perform file access).
- * The main functionality is provided by the
- * `WorldtubeDataManager::populate_hypersurface_boundary_data()` member
- * function that handles buffer updating and boundary computation. This version
- * of the data manager handles the 9 scalars of
- * `reduced_cce_input_tags`, rather than direct metric components
- * handled by `WorldtubeDataManager`. The set of 9 scalars is a far leaner
- * (factor of ~4) data storage format.
- */
-class ReducedWorldtubeDataManager {
- public:
-  // charm needs an empty constructor.
-  ReducedWorldtubeDataManager() = default;
-
-  ReducedWorldtubeDataManager(
-      std::unique_ptr<WorldtubeBufferUpdater<reduced_cce_input_tags>>
-          buffer_updater,
-      size_t l_max, size_t buffer_depth,
-      std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept;
-
-  /*!
-   * \brief Update the `boundary_data_box` entries for all tags in
-   * `Tags::characteristic_worldtube_boundary_tags` to the boundary data at
-   * `time`.
-   *
-   * \details First, if the stored buffer requires updating, it will be updated
-   * via the `buffer_updater_` supplied in the constructor. Then, each of the
-   * 9 spin-weighted scalars in `reduced_cce_input_tags`
-   * are interpolated across buffer points to the requested time value (via the
-   * `Interpolator` provided in the constructor). Finally, the remaining two
-   * scalars not directly supplied in the input file are calculated in-line and
-   * put in the \ref DataBoxGroup.
-   *
-   * Returns `true` if the time can be supplied from the `buffer_updater_`, and
-   * `false` otherwise. No tags are updated if `false` is returned.
-   */
-  bool populate_hypersurface_boundary_data(
-      gsl::not_null<Variables<
-          Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>*>
-          boundary_data_variables,
-      double time) const noexcept;
-
-  /// retrieves the l_max that will be supplied to the \ref DataBoxGroup in
-  /// `populate_hypersurface_boundary_data()`
-  size_t get_l_max() const noexcept { return l_max_; }
-
-  /// retrieves the current time span associated with the `buffer_updater_` for
-  /// diagnostics
-  std::pair<size_t, size_t> get_time_span() const noexcept {
-    return std::make_pair(time_span_start_, time_span_end_);
-  }
-
-  /// Serialization for Charm++.
-  void pup(PUP::er& p) noexcept;  // NOLINT
-
- private:
-  std::unique_ptr<WorldtubeBufferUpdater<reduced_cce_input_tags>>
-      buffer_updater_;
-  mutable size_t time_span_start_ = 0;
-  mutable size_t time_span_end_ = 0;
-  size_t l_max_ = 0;
-
-  // These buffers are just kept around to avoid allocations; they're
-  // updated every time a time is requested
-  mutable Variables<reduced_cce_input_tags> interpolated_coefficients_;
-
-  // note: buffers store data in an 'time-varies-fastest' manner
-  mutable Variables<reduced_cce_input_tags> coefficients_buffers_;
-
-  size_t buffer_depth_ = 0;
-
-  std::unique_ptr<intrp::SpanInterpolator> interpolator_;
 };
 }  // namespace Cce

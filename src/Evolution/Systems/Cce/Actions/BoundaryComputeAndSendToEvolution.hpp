@@ -13,9 +13,9 @@
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
-#include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
 #include "Evolution/Systems/Cce/ReceiveTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
+#include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
@@ -100,14 +100,15 @@ struct BoundaryComputeAndSendToEvolution<H5WorldtubeBoundary<Metavariables>,
                    typename Metavariables::cce_boundary_communication_tags>>(
         make_not_null(&box),
         [&successfully_populated, &time](
-            const gsl::not_null<Cce::WorldtubeDataManager*>
+            const gsl::not_null<std::unique_ptr<Cce::WorldtubeDataManager>*>
                 worldtube_data_manager,
             const gsl::not_null<Variables<
                 typename Metavariables::cce_boundary_communication_tags>*>
                 boundary_variables) noexcept {
           successfully_populated =
-              worldtube_data_manager->populate_hypersurface_boundary_data(
-                  boundary_variables, time.substep_time().value());
+              (*worldtube_data_manager)
+                  ->populate_hypersurface_boundary_data(
+                      boundary_variables, time.substep_time().value());
         });
     if (not successfully_populated) {
       ERROR("Insufficient boundary data to proceed, exiting early at time " +

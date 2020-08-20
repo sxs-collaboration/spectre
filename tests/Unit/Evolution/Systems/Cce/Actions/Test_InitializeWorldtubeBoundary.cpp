@@ -15,8 +15,8 @@
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
-#include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
+#include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -83,10 +83,10 @@ void test_h5_initialization(const gsl::not_null<Generator*> gen) noexcept {
                            H5Metavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(
       &runner, 0,
-      InitializationTags::H5WorldtubeBoundaryDataManager::create_from_options(
+      Tags::H5WorldtubeBoundaryDataManager::create_from_options(
           l_max, filename, buffer_size,
-          std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u,
-                                                                       4u)));
+          std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u),
+          false));
 
   // this should run the initialization
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
