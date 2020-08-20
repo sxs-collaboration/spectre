@@ -13,6 +13,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
@@ -563,6 +564,16 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) noexcept {
       make_not_null(&dt_spacetime_metric), make_not_null(&dt_pi),
       make_not_null(&dt_phi), spacetime_metric, pi, phi, d_spacetime_metric,
       d_pi, d_phi, gamma0, gamma1, gamma2, gauge_function,
+      spacetime_deriv_gauge_function);
+
+  CHECK_ITERABLE_APPROX(expected_dt_spacetime_metric, dt_spacetime_metric);
+  CHECK_ITERABLE_APPROX(expected_dt_pi, dt_pi);
+  CHECK_ITERABLE_APPROX(expected_dt_phi, dt_phi);
+
+  GeneralizedHarmonic::TimeDerivative<Dim>::apply(
+      make_not_null(&dt_spacetime_metric), make_not_null(&dt_pi),
+      make_not_null(&dt_phi), d_spacetime_metric, d_pi, d_phi, spacetime_metric,
+      pi, phi, gamma0, gamma1, gamma2, gauge_function,
       spacetime_deriv_gauge_function);
 
   CHECK_ITERABLE_APPROX(expected_dt_spacetime_metric, dt_spacetime_metric);
