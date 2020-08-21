@@ -30,7 +30,7 @@ spectre_setup_modules() {
     fi
 
     local start_dir=`pwd`
-    dep_dir=$1
+    dep_dir=`realpath $1`
     if [ $# != 1 ]; then
         echo "You must pass one argument to spectre_setup_modules, which"
         echo "is the directory where you want the dependencies to be built."
