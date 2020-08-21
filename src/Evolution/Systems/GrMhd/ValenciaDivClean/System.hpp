@@ -14,6 +14,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservative.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Sources.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/TimeDerivativeTerms.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -39,19 +40,30 @@ struct System {
   static constexpr size_t thermodynamic_dim =
       EquationOfStateType::thermodynamic_dim;
 
-  using primitive_variables_tag =
-      ::Tags::Variables<hydro::grmhd_tags<DataVector>>;
-
   using variables_tag =
       ::Tags::Variables<tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<>,
                                    Tags::TildeB<>, Tags::TildePhi>>;
-
+  using flux_variables =
+      tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<>, Tags::TildeB<>,
+                 Tags::TildePhi>;
+  using gradient_variables = tmpl::list<>;
+  // skip TildeD as its source is zero.
+  using sourced_variables = tmpl::list<Tags::TildeTau, Tags::TildeS<>,
+                                       Tags::TildeB<>, Tags::TildePhi>;
+  using primitive_variables_tag =
+      ::Tags::Variables<hydro::grmhd_tags<DataVector>>;
   using spacetime_variables_tag =
       ::Tags::Variables<gr::tags_for_hydro<volume_dim, DataVector>>;
 
-  template <typename Tag>
-  using magnitude_tag = ::Tags::NonEuclideanMagnitude<
-      Tag, gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
+  using compute_volume_time_derivative_terms = TimeDerivativeTerms;
+  using volume_fluxes = ComputeFluxes;
+  using volume_sources = ComputeSources;
+
+  using conservative_from_primitive = ConservativeFromPrimitive;
+  template <typename OrderedListOfPrimitiveRecoverySchemes>
+  using primitive_from_conservative =
+      PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
+                                EquationOfStateType::thermodynamic_dim>;
 
   using char_speeds_compute_tag =
       Tags::CharacteristicSpeedsCompute<EquationOfStateType>;
@@ -59,20 +71,9 @@ struct System {
   using compute_largest_characteristic_speed =
       ComputeLargestCharacteristicSpeed;
 
-  using conservative_from_primitive = ConservativeFromPrimitive;
-
-  template <typename OrderedListOfPrimitiveRecoverySchemes>
-  using primitive_from_conservative =
-      PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
-                                EquationOfStateType::thermodynamic_dim>;
-
-  using volume_fluxes = ComputeFluxes;
-
-  using volume_sources = ComputeSources;
-
-  // skip TildeD as its source is zero.
-  using sourced_variables = tmpl::list<Tags::TildeTau, Tags::TildeS<>,
-                                       Tags::TildeB<>, Tags::TildePhi>;
+  template <typename Tag>
+  using magnitude_tag = ::Tags::NonEuclideanMagnitude<
+      Tag, gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
 };
 }  // namespace ValenciaDivClean
 }  // namespace grmhd
