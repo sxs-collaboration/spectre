@@ -31,6 +31,7 @@
 #include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "IO/Observer/VolumeActions.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/FileSystem.hpp"
@@ -119,7 +120,13 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
                               DataVector{-10.5 * hashed_id, -11.0 * hashed_id,
                                          -13.0 * hashed_id, 22.0 * hashed_id});
 
-    return std::make_tuple(Index<2>{2, 2}, std::move(data));
+    return std::make_tuple(
+        Index<2>{2, 2}, std::move(data),
+        std::array<Spectral::Basis, 2>{
+            {Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+        std::array<Spectral::Quadrature, 2>{
+            {Spectral::Quadrature::GaussLobatto,
+             Spectral::Quadrature::GaussLobatto}});
   };
 
   // Test passing volume data...
@@ -140,7 +147,11 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
             /* get<1> = volume tensor data */
             std::move(std::get<1>(volume_data_fakes)),
             /* get<0> = index of dimensions */
-            std::get<0>(volume_data_fakes));
+            std::get<0>(volume_data_fakes),
+            /* get<2> = element bases */
+            std::get<2>(volume_data_fakes),
+            /* get<3> = element quadratures*/
+            std::get<3>(volume_data_fakes));
   }
   // Invoke the simple action 'ContributeVolumeDataToWriter'
   // to move the volume data to the Writer parallel component.
@@ -212,6 +223,10 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   // Read the extents that were written to file
   const std::vector<std::vector<size_t>> read_extents =
       volume_file.get_extents(temporal_id);
+  const std::vector<std::vector<std::string>> read_bases =
+      volume_file.get_bases(temporal_id);
+  const std::vector<std::vector<std::string>> read_quadratures =
+      volume_file.get_quadratures(temporal_id);
   // The data is stored contiguously, and each element has a subset of the
   // data.  We need to keep track of how many points have already been checked
   // so that we know where to look in the tensor component data for the current

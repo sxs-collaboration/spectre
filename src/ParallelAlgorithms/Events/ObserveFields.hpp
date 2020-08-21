@@ -242,7 +242,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ElementId<VolumeDim>>(array_index)),
-        std::move(components), mesh.extents());
+        std::move(components), mesh.extents(), mesh.basis(),
+        mesh.quadrature());
   }
 
   // NOLINTNEXTLINE(google-runtime-references)

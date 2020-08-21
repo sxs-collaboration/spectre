@@ -128,11 +128,13 @@ void write_test_data(const std::string& data_file_name,
   auto& test_data_file = data_file.insert<h5::VolumeData>("/" + subgroup);
 
   // Construct test data for all elements
-  std::vector<ExtentsAndTensorVolumeData> element_data{};
+  std::vector<ElementVolumeData> element_data{};
   for (size_t i = 0; i < number_of_elements<TheGrid>; i++) {
     const std::string element_name = MakeString{} << ElementId<Dim>{i};
     std::vector<TensorComponent> tensor_components{};
     std::vector<size_t> element_extents{};
+    std::vector<Spectral::Quadrature> element_quadratures{};
+    std::vector<Spectral::Basis> element_bases{};
     tensor_components.push_back(
         {element_name + "/ScalarField", test_data.scalar_field_data[i]});
     for (size_t d = 0; d < Dim; d++) {
@@ -141,9 +143,12 @@ void write_test_data(const std::string& data_file_name,
           {element_name + "/VectorField_" + dim_suffix[d],
            test_data.vector_field_data[i][d]});
       element_extents.push_back(test_data.extents[i][d]);
+      element_quadratures.push_back(Spectral::Quadrature::Gauss);
+      element_bases.push_back(Spectral::Basis::Chebyshev);
     }
     element_data.push_back(
-        {std::move(element_extents), std::move(tensor_components)});
+        {std::move(element_extents), std::move(tensor_components),
+         std::move(element_bases), std::move(element_quadratures)});
   }
   test_data_file.write_volume_data(0, observation_value,
                                    std::move(element_data));

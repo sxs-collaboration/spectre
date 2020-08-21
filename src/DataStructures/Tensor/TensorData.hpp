@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 /// \cond
 namespace PUP {
@@ -29,6 +30,7 @@ struct TensorComponent {
   TensorComponent() = default;
   TensorComponent(std::string n, DataVector d) noexcept
       : name(std::move(n)), data(std::move(d)) {}
+
   void pup(PUP::er& p) noexcept;  // NOLINT
   std::string name{};
   DataVector data{};
@@ -54,10 +56,33 @@ bool operator!=(const TensorComponent& lhs,
  */
 struct ExtentsAndTensorVolumeData {
   ExtentsAndTensorVolumeData() = default;
-  ExtentsAndTensorVolumeData(std::vector<size_t> exts,
+  ExtentsAndTensorVolumeData(std::vector<size_t> extents_in,
                              std::vector<TensorComponent> components) noexcept
-      : extents(std::move(exts)), tensor_components(std::move(components)) {}
+      : extents(std::move(extents_in)),
+        tensor_components(std::move(components)) {}
+
   void pup(PUP::er& p) noexcept;  // NOLINT
   std::vector<size_t> extents{};
   std::vector<TensorComponent> tensor_components{};
+};
+
+/*!
+ * An extension of `ExtentsAndTensorVolumeData` to store `Spectral::Quadrature`
+ * and `Spectral::Basis`  associated with each axis of the element, in addition
+ * to the extents and tensor components data.
+ */
+struct ElementVolumeData : ExtentsAndTensorVolumeData {
+  ElementVolumeData() = default;
+  ElementVolumeData(std::vector<size_t> extents_in,
+                    std::vector<TensorComponent> components,
+                    std::vector<Spectral::Basis> basis_in,
+                    std::vector<Spectral::Quadrature> quadrature_in) noexcept
+      : ExtentsAndTensorVolumeData(std::move(extents_in),
+                                   std::move(components)),
+        basis(std::move(basis_in)),
+        quadrature(std::move(quadrature_in)) {};
+
+  void pup(PUP::er& p) noexcept;  // NOLINT
+  std::vector<Spectral::Basis> basis{};
+  std::vector<Spectral::Quadrature> quadrature{};
 };

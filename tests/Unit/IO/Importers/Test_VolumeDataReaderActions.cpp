@@ -27,6 +27,7 @@
 #include "IO/Importers/VolumeDataReader.hpp"
 #include "IO/Importers/VolumeDataReaderActions.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/MakeString.hpp"
@@ -154,7 +155,7 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
   };
 
   // Collect the sample data from all elements
-  std::vector<ExtentsAndTensorVolumeData> all_element_data{};
+  std::vector<ElementVolumeData> all_element_data{};
   for (const auto& id : element_ids) {
     const std::string element_name = MakeString{} << id << '/';
     std::vector<TensorComponent> tensor_data(6);
@@ -166,7 +167,10 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
     tensor_data[3] = TensorComponent(element_name + "T_xy"s, get<0, 1>(tensor));
     tensor_data[4] = TensorComponent(element_name + "T_yx"s, get<1, 0>(tensor));
     tensor_data[5] = TensorComponent(element_name + "T_yy"s, get<1, 1>(tensor));
-    all_element_data.push_back({{2, 2}, tensor_data});
+    all_element_data.push_back({{2, 2},
+                                tensor_data,
+                                {2, Spectral::Basis::Legendre},
+                                {2, Spectral::Quadrature::GaussLobatto}});
   }
   // Write the sample data into an H5 file
   const std::string h5_file_name = "TestVolumeData.h5";

@@ -75,6 +75,8 @@ struct MockContributeVolumeData {
     observers::ArrayComponentId array_component_id{};
     std::vector<TensorComponent> in_received_tensor_data{};
     std::vector<size_t> received_extents{};
+    std::vector<Spectral::Basis> received_basis{};
+    std::vector<Spectral::Quadrature> received_quadrature{};
   };
   static Results results;
 
@@ -87,13 +89,19 @@ struct MockContributeVolumeData {
                     const std::string& subfile_name,
                     const observers::ArrayComponentId& array_component_id,
                     std::vector<TensorComponent>&& in_received_tensor_data,
-                    const Index<Dim>& received_extents) noexcept {
+                    const Index<Dim>& received_extents,
+                    const std::array<Spectral::Basis, Dim>& received_basis,
+                    const std::array<Spectral::Quadrature, Dim>&
+                        received_quadrature) noexcept {
     results.observation_id = observation_id;
     results.subfile_name = subfile_name;
     results.array_component_id = array_component_id;
     results.in_received_tensor_data = in_received_tensor_data;
     results.received_extents.assign(received_extents.indices().begin(),
                                     received_extents.indices().end());
+    results.received_basis.assign(received_basis.begin(), received_basis.end());
+    results.received_quadrature.assign(received_quadrature.begin(),
+                                       received_quadrature.end());
   }
 };
 
@@ -165,8 +173,8 @@ struct ScalarSystem {
     static void check_data(const CheckComponent& check_component) noexcept {
       check_component("Error(Scalar)", ScalarVar{});
     }
-
     static tuples::tagged_tuple_from_typelist<vars_for_test> variables(
+
         const tnsr::I<DataVector, 1>& x, const double t,
         const vars_for_test /*meta*/) noexcept {
       return {Scalar<DataVector>{1.0 - t * get<0>(x)}};
@@ -348,17 +356,16 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   // gcc 6.4.0 gets confused if we try to capture tensor_data by
   // reference and fails to compile because it wants it to be
   // non-const, so we capture a pointer instead.
-  const auto check_component = [
-    &element_name, &num_components_observed,
-    tensor_data = &results.in_received_tensor_data
-  ](const std::string& component, const DataVector& expected) noexcept {
+  const auto check_component = [&element_name, &num_components_observed,
+                                tensor_data = &results.in_received_tensor_data](
+                                   const std::string& component,
+                                   const DataVector& expected) noexcept {
     CAPTURE(*tensor_data);
     CAPTURE(component);
-    const auto it =
-        alg::find_if(*tensor_data, [name = element_name + "/" + component](
-                                       const TensorComponent& tc) noexcept {
-          return tc.name == name;
-        });
+    const auto it = alg::find_if(
+        *tensor_data,
+        [name = element_name + "/" + component](
+            const TensorComponent& tc) noexcept { return tc.name == name; });
     CHECK(it != tensor_data->end());
     if (it != tensor_data->end()) {
       CHECK(it->data == expected);
@@ -370,14 +377,16 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
         std::string("InertialCoordinates_") + gsl::at({'x', 'y', 'z'}, i),
         get<coordinates_tag>(vars).get(i));
   }
-  System::check_data([&check_component, &vars ](
-      const std::string& name, auto tag, const auto... indices) noexcept {
+  System::check_data([&check_component, &vars](const std::string& name,
+                                               auto tag,
+                                               const auto... indices) noexcept {
     check_component(name, get<decltype(tag)>(vars).get(indices...));
   });
-  System::solution_for_test::check_data([&check_component, &errors ](
-      const std::string& name, auto tag, const auto... indices) noexcept {
-    check_component(name, get<decltype(tag)>(errors).get(indices...));
-  });
+  System::solution_for_test::check_data(
+      [&check_component, &errors](const std::string& name, auto tag,
+                                  const auto... indices) noexcept {
+        check_component(name, get<decltype(tag)>(errors).get(indices...));
+      });
   CHECK(results.in_received_tensor_data.size() == num_components_observed);
 }
 

@@ -29,7 +29,10 @@ void bind_h5vol(py::module& m) {  // NOLINT
       .def("get_tensor_component", &h5::VolumeData::get_tensor_component,
            py::arg("observation_id"), py::arg("tensor_component"))
       .def("get_extents", &h5::VolumeData::get_extents,
-           py::arg("observation_id"));
+           py::arg("observation_id"))
+      .def("get_quadratures", &h5::VolumeData::get_quadratures,
+           py::arg("observation_id"))
+      .def("get_bases", &h5::VolumeData::get_bases, py::arg("observation_id"));
   m.def("offset_and_length_for_grid", &h5::offset_and_length_for_grid,
         py::arg("grid_name"), py::arg("all_grid_names"),
         py::arg("all_extents"));

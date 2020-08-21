@@ -17,8 +17,10 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/VolumeData.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/FileSystem.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
 
 SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
@@ -40,17 +42,23 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
   const std::vector<size_t> observation_ids{8435087234, size_t(-1)};
   const std::vector<double> observation_values{8.0, 2.3};
   const std::vector<std::string> grid_names{"[[2,3,4]]", "[[5,6,7]]"};
+  const std::vector<std::vector<Spectral::Basis>> bases{
+      {3, Spectral::Basis::Chebyshev}, {3, Spectral::Basis::Legendre}};
+  const std::vector<std::vector<Spectral::Quadrature>> quadratures{
+      {3, Spectral::Quadrature::Gauss},
+      {3, Spectral::Quadrature::GaussLobatto}};
   {
     auto& volume_file =
         my_file.insert<h5::VolumeData>("/element_data", version_number);
-    const auto write_to_file = [
-      &volume_file, &tensor_components_and_coords, &grid_names
-    ](const size_t observation_id, const double observation_value) noexcept {
+    const auto write_to_file = [&volume_file, &tensor_components_and_coords,
+                                &grid_names, &bases, &quadratures](
+                                   const size_t observation_id,
+                                   const double observation_value) noexcept {
       std::string first_grid = grid_names.front();
       std::string last_grid = grid_names.back();
       volume_file.write_volume_data(
           observation_id, observation_value,
-          std::vector<ExtentsAndTensorVolumeData>{
+          std::vector<ElementVolumeData>{
               {{2, 2, 2},
                {TensorComponent{
                     first_grid + "/S",
@@ -72,7 +80,9 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
                     observation_value * tensor_components_and_coords[5]},
                 TensorComponent{
                     first_grid + "/T_z",
-                    observation_value * tensor_components_and_coords[6]}}},
+                    observation_value * tensor_components_and_coords[6]}},
+               bases.front(),
+               quadratures.front()},
               // Second Element Data
               {{2, 2, 2},
                {TensorComponent{
@@ -95,7 +105,9 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
                     observation_value * tensor_components_and_coords[4]},
                 TensorComponent{
                     last_grid + "/T_z",
-                    observation_value * tensor_components_and_coords[2]}}}});
+                    observation_value * tensor_components_and_coords[2]}},
+               bases.back(),
+               quadratures.back()}});
     };
     for (size_t i = 0; i < observation_ids.size(); ++i) {
       write_to_file(observation_ids[i], observation_values[i]);
@@ -120,14 +132,14 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
     CHECK(found_observation_ids == observation_ids);
   }
   // Check that the volume data is correct
-  const auto check_time = [
-    &volume_file, &tensor_components_and_coords, &grid_names
-  ](const size_t observation_id, const double observation_value) noexcept {
+  const auto check_time = [&volume_file, &tensor_components_and_coords,
+                           &grid_names, &bases, &quadratures](
+                              const size_t observation_id,
+                              const double observation_value) noexcept {
     CHECK(std::vector<std::vector<size_t>>{{2, 2, 2}, {2, 2, 2}} ==
           volume_file.get_extents(observation_id));
     CHECK(volume_file.get_observation_value(observation_id) ==
           observation_value);
-
     // Check that all of the grid names were written correctly by checking their
     // equality of elements
     const std::vector<std::string> read_grid_names =
@@ -152,7 +164,31 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
       grid_positions[i] =
           static_cast<size_t>(std::distance(read_grid_names.begin(), position));
     }
-
+    auto read_bases = volume_file.get_bases(observation_id);
+    alg::sort(read_bases, std::less<>{});
+    auto read_quadratures = volume_file.get_quadratures(observation_id);
+    alg::sort(read_quadratures, std::less<>{});
+    // We need non-const bases and quadratures in order to sort them, and we
+    // need them in their string form,
+    const auto& stringify = [](const auto& bases_or_quadratures) noexcept {
+      std::vector<std::vector<std::string>> local_target_data{};
+      local_target_data.reserve(bases_or_quadratures.size() + 1);
+      for (const auto& element_data : bases_or_quadratures) {
+        std::vector<std::string> target_axis_data{};
+        target_axis_data.reserve(element_data.size() + 1);
+        for (const auto& axis_datum : element_data) {
+          target_axis_data.emplace_back(MakeString{} << axis_datum);
+        }
+        local_target_data.push_back(target_axis_data);
+      }
+      return local_target_data;
+    };
+    auto target_bases = stringify(bases);
+    alg::sort(target_bases, std::less<>{});
+    auto target_quadratures = stringify(quadratures);
+    alg::sort(target_quadratures, std::less<>{});
+    CHECK(target_bases == read_bases);
+    CHECK(target_quadratures == read_quadratures);
     const std::vector<std::string> expected_components{
         "S", "x-coord", "y-coord", "z-coord", "T_x", "T_y", "T_z",
     };
@@ -255,8 +291,10 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
   auto& volume_file =
       my_file.insert<h5::VolumeData>("/element_data", version_number);
   volume_file.write_volume_data(100, 10.0,
-                                std::vector<ExtentsAndTensorVolumeData>{
-                                    {{2}, {TensorComponent{"S", {1.0, 2.0}}}}});
+                                {{{2},
+                                  {TensorComponent{"S", {1.0, 2.0}}},
+                                  {Spectral::Basis::Legendre},
+                                  {Spectral::Quadrature::Gauss}}});
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
   // clang-format off
@@ -280,9 +318,10 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData.ComponentFormat1",
       my_file.insert<h5::VolumeData>("/element_data", version_number);
   volume_file.write_volume_data(
       100, 10.0,
-      std::vector<ExtentsAndTensorVolumeData>{
-          ExtentsAndTensorVolumeData({2}, {TensorComponent{"A/S", {1.0, 2.0}},
-                                           TensorComponent{"S", {1.0, 2.0}}})});
+      {{{2},
+        {TensorComponent{"A/S", {1.0, 2.0}}, TensorComponent{"S", {1.0, 2.0}}},
+        {Spectral::Basis::Legendre},
+        {Spectral::Quadrature::Gauss}}});
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
   // clang-format off
@@ -305,10 +344,11 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData.ComponentFormat1",
   auto& volume_file =
       my_file.insert<h5::VolumeData>("/element_data", version_number);
   volume_file.write_volume_data(100, 10.0,
-                                std::vector<ExtentsAndTensorVolumeData>{
-                                    {{2},
-                                     {TensorComponent{"A/S", {1.0, 2.0}},
-                                      TensorComponent{"A/S", {1.0, 2.0}}}}});
+                                {{{2},
+                                  {TensorComponent{"A/S", {1.0, 2.0}},
+                                   TensorComponent{"A/S", {1.0, 2.0}}},
+                                  {Spectral::Basis::Legendre},
+                                  {Spectral::Quadrature::Gauss}}});
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
   // clang-format off
@@ -329,7 +369,8 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData.FindNoObservationId",
       h5_file.insert<h5::VolumeData>("/element_data", version_number);
   volume_file.write_volume_data(
       100, 10.0,
-      std::vector<ExtentsAndTensorVolumeData>{
-          {{2}, {TensorComponent{"A/S", {1.0, 2.0}}}}});
+      {
+       {{2}, {TensorComponent{"A/S", {1.0, 2.0}}},{Spectral::Basis::Legendre},
+        {Spectral::Quadrature::Gauss}}});
   volume_file.find_observation_id(11.0);
 }
