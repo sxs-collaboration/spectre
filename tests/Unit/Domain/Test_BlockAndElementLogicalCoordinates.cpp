@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <iterator>
 #include <limits>
+#include <memory>
 #include <random>
 #include <unordered_map>
 #include <vector>
@@ -21,10 +22,13 @@
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/TimeDependence/TimeDependence.hpp"
+#include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/ElementLogicalCoordinates.hpp"
 #include "Domain/ElementMap.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/BlockId.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
@@ -173,7 +177,14 @@ void fuzzy_test_block_and_element_logical_coordinates(
 
 template <size_t Dim>
 void fuzzy_test_block_and_element_logical_coordinates_unrefined(
-    const Domain<Dim>& domain, const size_t n_pts) noexcept {
+    const Domain<Dim>& domain, const size_t n_pts,
+    const double time = std::numeric_limits<double>::signaling_NaN(),
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time = std::unordered_map<
+            std::string,
+            std::unique_ptr<
+                domain::FunctionsOfTime::FunctionOfTime>>{}) noexcept {
   const size_t n_blocks = domain.blocks().size();
 
   // Random block_id for each point.
@@ -205,8 +216,9 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
   CAPTURE_PRECISE(block_coords);
 
   // Map to inertial coords
-  const auto inertial_coords = [&n_pts, &domain, &block_ids,
-                                &block_coords]() noexcept {
+  const auto inertial_coords = [
+    &n_pts, &domain, &block_ids, &block_coords, &time, &functions_of_time
+  ]() noexcept {
     tnsr::I<DataVector, Dim, Frame::Inertial> coords(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       tnsr::I<double, Dim, Frame::Inertial> coord_one_point{};
@@ -214,7 +226,8 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
         coord_one_point =
             domain.blocks()[block_ids[s]].moving_mesh_grid_to_inertial_map()(
                 domain.blocks()[block_ids[s]].moving_mesh_logical_to_grid_map()(
-                    block_coords[s]));
+                    block_coords[s]),
+                time, functions_of_time);
       } else {
         coord_one_point =
             domain.blocks()[block_ids[s]].stationary_map()(block_coords[s]);
@@ -226,10 +239,44 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
     return coords;
   }();
 
-  const auto block_logical_result =
-      block_logical_coordinates(domain, inertial_coords);
+  auto block_logical_result = block_logical_coordinates(
+      domain, inertial_coords, time, functions_of_time);
   test_serialization(block_logical_result);
 
+  for (size_t s = 0; s < n_pts; ++s) {
+    CHECK(block_logical_result[s].get().id.get_index() == block_ids[s]);
+    CHECK_ITERABLE_APPROX(block_logical_result[s].get().data, block_coords[s]);
+  }
+
+  // Map to grid coords
+  const auto grid_coords =
+      [&n_pts, &domain, &block_ids, &block_coords ]() noexcept {
+    tnsr::I<DataVector, Dim, Frame::Grid> coords(n_pts);
+    for (size_t s = 0; s < n_pts; ++s) {
+      tnsr::I<double, Dim, Frame::Grid> coord_one_point{};
+      if (domain.blocks()[block_ids[s]].is_time_dependent()) {
+        // logical to grid map is time-independent.
+        coord_one_point =
+            domain.blocks()[block_ids[s]].moving_mesh_logical_to_grid_map()(
+                block_coords[s]);
+      } else {
+        // time-independent maps have identical grid and inertial frames.
+        const tnsr::I<double, Dim, Frame::Inertial> coord_one_point_inertial =
+            domain.blocks()[block_ids[s]].stationary_map()(block_coords[s]);
+        for (size_t d = 0; d < Dim; ++d) {
+          coord_one_point.get(d) = coord_one_point_inertial.get(d);
+        }
+      }
+      for (size_t d = 0; d < Dim; ++d) {
+        coords.get(d)[s] = coord_one_point.get(d);
+      }
+    }
+    return coords;
+  }();
+
+  block_logical_result =
+      block_logical_coordinates(domain, grid_coords, time, functions_of_time);
+  test_serialization(block_logical_result);
   for (size_t s = 0; s < n_pts; ++s) {
     CHECK(block_logical_result[s].get().id.get_index() == block_ids[s]);
     CHECK_ITERABLE_APPROX(block_logical_result[s].get().data, block_coords[s]);
@@ -243,6 +290,23 @@ void fuzzy_test_block_and_element_logical_coordinates_shell(
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts);
   fuzzy_test_block_and_element_logical_coordinates(
       domain, shell.initial_refinement_levels(), n_pts);
+}
+
+void fuzzy_test_block_and_element_logical_coordinates_time_dependent_brick(
+    const size_t n_pts) noexcept {
+  const auto uniform_translation =
+      domain::creators::time_dependence::UniformTranslation<3>(
+          0.0, {{0.1, 0.2, 0.3}});
+  const auto brick = domain::creators::Brick(
+      {{-0.1, -0.2, -0.3}}, {{0.1, 0.2, 0.3}}, {{false, false, false}},
+      {{0, 0, 0}}, {{3, 3, 3}}, uniform_translation.get_clone());
+  const auto domain = brick.create_domain();
+  const auto functions_of_time = uniform_translation.functions_of_time();
+  // Test at two different times.
+  fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts, 0.0,
+                                                             functions_of_time);
+  fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts, 0.1,
+                                                             functions_of_time);
 }
 
 void fuzzy_test_block_and_element_logical_coordinates3(
@@ -517,5 +581,6 @@ SPECTRE_TEST_CASE("Unit.Domain.BlockAndElementLogicalCoords",
   fuzzy_test_block_and_element_logical_coordinates1(20);
   fuzzy_test_block_and_element_logical_coordinates1(0);
   fuzzy_test_block_and_element_logical_coordinates_shell(20);
+  fuzzy_test_block_and_element_logical_coordinates_time_dependent_brick(20);
   test_block_logical_coordinates1fail();
 }
