@@ -34,16 +34,16 @@ void test_characteristic_speeds() noexcept {
   const DataVector used_for_size(5);
   pypp::check_with_random_values<1>(speed_with_index<0, SpatialDim>,
                                     "Characteristics", "char_speed_vpsi",
-                                    {{{-10.0, 10.0}}}, used_for_size);
+                                    {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(speed_with_index<1, SpatialDim>,
                                     "Characteristics", "char_speed_vzero",
-                                    {{{-10.0, 10.0}}}, used_for_size);
+                                    {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(speed_with_index<3, SpatialDim>,
                                     "Characteristics", "char_speed_vminus",
-                                    {{{-10.0, 10.0}}}, used_for_size);
+                                    {{{-2.0, 2.0}}}, used_for_size);
   pypp::check_with_random_values<1>(speed_with_index<2, SpatialDim>,
                                     "Characteristics", "char_speed_vplus",
-                                    {{{-10.0, 10.0}}}, used_for_size);
+                                    {{{-2.0, 2.0}}}, used_for_size);
 }
 }  // namespace
 
@@ -66,19 +66,19 @@ void test_characteristic_fields() noexcept {
   // VPsi
   pypp::check_with_random_values<1>(
       field_with_tag<CurvedScalarWave::Tags::VPsi, SpatialDim>,
-      "Characteristics", "char_field_vpsi", {{{-10., 10.}}}, used_for_size);
+      "Characteristics", "char_field_vpsi", {{{-2.0, 2.0}}}, used_for_size);
   // VZero
   pypp::check_with_random_values<1>(
       field_with_tag<CurvedScalarWave::Tags::VZero<SpatialDim>, SpatialDim>,
-      "Characteristics", "char_field_vzero", {{{-10., 10.}}}, used_for_size);
+      "Characteristics", "char_field_vzero", {{{-2.0, 2.0}}}, used_for_size);
   // VPlus
   pypp::check_with_random_values<1>(
       field_with_tag<CurvedScalarWave::Tags::VPlus, SpatialDim>,
-      "Characteristics", "char_field_vplus", {{{-10., 10.}}}, used_for_size);
+      "Characteristics", "char_field_vplus", {{{-2.0, 2.0}}}, used_for_size);
   // VMinus
   pypp::check_with_random_values<1>(
       field_with_tag<CurvedScalarWave::Tags::VMinus, SpatialDim>,
-      "Characteristics", "char_field_vminus", {{{-10., 10.}}}, used_for_size);
+      "Characteristics", "char_field_vminus", {{{-2.0, 2.0}}}, used_for_size);
 }
 }  // namespace
 
@@ -99,15 +99,15 @@ void test_evolved_from_characteristic_fields() noexcept {
   // Psi
   pypp::check_with_random_values<1>(
       evolved_field_with_tag<CurvedScalarWave::Psi, SpatialDim>,
-      "Characteristics", "evol_field_psi", {{{-10., 10.}}}, used_for_size);
+      "Characteristics", "evol_field_psi", {{{-2.0, 2.0}}}, used_for_size);
   // Pi
   pypp::check_with_random_values<1>(
       evolved_field_with_tag<CurvedScalarWave::Pi, SpatialDim>,
-      "Characteristics", "evol_field_pi", {{{-10., 10.}}}, used_for_size);
+      "Characteristics", "evol_field_pi", {{{-2.0, 2.0}}}, used_for_size);
   // Phi
   pypp::check_with_random_values<1>(
       evolved_field_with_tag<CurvedScalarWave::Phi<SpatialDim>, SpatialDim>,
-      "Characteristics", "evol_field_phi", {{{-10., 10.}}}, used_for_size);
+      "Characteristics", "evol_field_phi", {{{-2.0, 2.0}}}, used_for_size);
 }
 
 template <size_t SpatialDim>
