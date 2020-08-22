@@ -635,6 +635,11 @@
  */
 
 /*!
+ * \defgroup SpecialRelativityGroup Special Relativity
+ * \brief Contains functions used in special relativity calculations
+ */
+
+/*!
  * \defgroup SpectralGroup Spectral
  * Things related to spectral transformations.
  */
