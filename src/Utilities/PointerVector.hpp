@@ -622,7 +622,8 @@ template <typename VT>
 inline PointerVector<Type, AF, PF, TF, ExprResultType>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator=(
     const blaze::Vector<VT, TF>& rhs) {
-  ASSERT((~rhs).size() == size_, "Vector sizes do not match");
+  ASSERT((~rhs).size() == size_,
+         "Vector sizes do not match: " << size_ << " and " << (~rhs).size());
   blaze::smpAssign(*this, ~rhs);
   return *this;
 }
@@ -633,7 +634,8 @@ template <typename VT>
 inline PointerVector<Type, AF, PF, TF, ExprResultType>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator+=(
     const blaze::Vector<VT, TF>& rhs) {
-  ASSERT((~rhs).size() == size_, "Vector sizes do not match");
+  ASSERT((~rhs).size() == size_,
+         "Vector sizes do not match: " << size_ << " and " << (~rhs).size());
   blaze::smpAddAssign(*this, ~rhs);
   return *this;
 }
@@ -644,7 +646,8 @@ template <typename VT>
 inline PointerVector<Type, AF, PF, TF, ExprResultType>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator-=(
     const blaze::Vector<VT, TF>& rhs) {
-  ASSERT((~rhs).size() == size_, "Vector sizes do not match");
+  ASSERT((~rhs).size() == size_,
+         "Vector sizes do not match: " << size_ << " and " << (~rhs).size());
   blaze::smpSubAssign(*this, ~rhs);
   return *this;
 }
@@ -663,7 +666,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::operator*=(
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(MultType, TF);
   BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(MultType);
 
-  ASSERT((~rhs).size() == size_, "Vector sizes do not match");
+  ASSERT((~rhs).size() == size_,
+         "Vector sizes do not match: " << size_ << " and " << (~rhs).size());
   blaze::smpMultAssign(*this, ~rhs);
   return *this;
 }
@@ -682,7 +686,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::operator/=(
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(DivType, TF);
   BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(DivType);
 
-  ASSERT((~rhs).size() == size_, "Vector sizes do not match");
+  ASSERT((~rhs).size() == size_,
+         "Vector sizes do not match: " << size_ << " and " << (~rhs).size());
   blaze::smpDivAssign(*this, ~rhs);
   return *this;
 }
