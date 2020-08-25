@@ -602,8 +602,10 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   variable_data_impl_ = std::move(rhs.variable_data_impl_);
   size_ = rhs.size_;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
-  variable_data_.reset(variable_data_impl_.get(), size());
-  add_reference_variable_data(tmpl::list<Tags...>{});
+  if (size_ > 0) {
+    variable_data_.reset(variable_data_impl_.get(), size());
+    add_reference_variable_data(tmpl::list<Tags...>{});
+  }
   return *this;
 }
 
@@ -687,8 +689,10 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   variable_data_impl_ = std::move(rhs.variable_data_impl_);
   size_ = rhs.size_;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
-  variable_data_.reset(variable_data_impl_.get(), size());
-  add_reference_variable_data(tmpl::list<Tags...>{});
+  if (size_ > 0) {
+    variable_data_.reset(variable_data_impl_.get(), size());
+    add_reference_variable_data(tmpl::list<Tags...>{});
+  }
   return *this;
 }
 

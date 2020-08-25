@@ -288,6 +288,8 @@ void test_variables_move() noexcept {
   CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(move_to)[0][0] ==
         move_to.data());
 
+  move_to = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{};
+  CHECK(move_to.size() == 0);
   Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
       default_for_construction{};
   const auto constructed_from_default = std::move(default_for_construction);
@@ -444,6 +446,12 @@ void test_variables_prefix_semantics() noexcept {
   CHECK_VARIABLES_APPROX(vars_to, expected);
   expected = VariablesType(number_of_grid_points, variables_vals[1]);
   CHECK_VARIABLES_APPROX(move_constructed_vars, expected);
+
+  VariablesType constructed_from_default{PrefixVariablesType{}};
+  CHECK(constructed_from_default.size() == 0);
+  PrefixVariablesType assigned_from_default{number_of_grid_points};
+  assigned_from_default = std::move(constructed_from_default);
+  CHECK(assigned_from_default.size() == 0);
 
   // Check move and copy from prefix variables to non-prefix variables via
   // assignment operator
