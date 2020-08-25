@@ -71,8 +71,8 @@ struct InitializeInterpolator {
         db::create_from<db::RemoveTags<>,
                         db::get_items<return_tag_list<Metavariables>>>(
             std::move(box), 0_st,
-            db::item_type<Tags::VolumeVarsInfo<Metavariables>>{},
-            db::item_type<Tags::InterpolatedVarsHolders<Metavariables>>{}));
+            typename Tags::VolumeVarsInfo<Metavariables>::type{},
+            typename Tags::InterpolatedVarsHolders<Metavariables>::type{}));
   }
 
   template <

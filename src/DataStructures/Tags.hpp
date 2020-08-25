@@ -81,7 +81,7 @@ using product_t =
 /// those cases, or template specializations should be constructed for this tag.
 template <typename LhsTag, typename RhsTag>
 struct Multiplies : db::PrefixTag, db::SimpleTag {
-  using type = detail::product_t<db::item_type<LhsTag>, db::item_type<RhsTag>>;
+  using type = detail::product_t<typename LhsTag::type, typename RhsTag::type>;
   using tag = LhsTag;
   static std::string name() noexcept {
     return "Multiplies(" + db::tag_name<LhsTag>() + ", " +

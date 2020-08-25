@@ -44,9 +44,9 @@ struct ComputeSources {
   template <typename... SourcedVarsTags, typename... ArgsTags>
   struct apply_helper<tmpl::list<SourcedVarsTags...>, tmpl::list<ArgsTags...>> {
     static void function(
-        const gsl::not_null<db::item_type<SourcedVarsTags>*>... sourced_vars,
-        const db::item_type<Tags::SourceTerm<InitialDataType>>& source,
-        const db::item_type<ArgsTags>&... args) noexcept {
+        const gsl::not_null<typename SourcedVarsTags::type*>... sourced_vars,
+        const typename Tags::SourceTerm<InitialDataType>::type& source,
+        const typename ArgsTags::type&... args) noexcept {
       source.apply(sourced_vars..., args...);
     }
   };

@@ -197,15 +197,13 @@ void test_upwind_flux_random() noexcept {
           shift_int, inverse_spatial_metric_int, gamma_1, gamma_2,
           minus_unit_normal_one_form_int);
 
-  auto psi_normal_dot_numerical_flux = make_with_value<
-      db::item_type<::Tags::NormalDotNumericalFlux<CurvedScalarWave::Psi>>>(
+  auto psi_normal_dot_numerical_flux = make_with_value<Scalar<DataVector>>(
       used_for_size, std::numeric_limits<double>::signaling_NaN());
-  auto pi_normal_dot_numerical_flux = make_with_value<
-      db::item_type<::Tags::NormalDotNumericalFlux<CurvedScalarWave::Pi>>>(
+  auto pi_normal_dot_numerical_flux = make_with_value<Scalar<DataVector>>(
       used_for_size, std::numeric_limits<double>::signaling_NaN());
-  auto phi_normal_dot_numerical_flux = make_with_value<db::item_type<
-      ::Tags::NormalDotNumericalFlux<CurvedScalarWave::Phi<Dim>>>>(
-      used_for_size, std::numeric_limits<double>::signaling_NaN());
+  auto phi_normal_dot_numerical_flux =
+      make_with_value<tnsr::i<DataVector, Dim>>(
+          used_for_size, std::numeric_limits<double>::signaling_NaN());
   dg::NumericalFluxes::normal_dot_numerical_fluxes(
       flux_computer, packaged_data_int, packaged_data_int_opposite_normal,
       make_not_null(&pi_normal_dot_numerical_flux),
@@ -213,14 +211,11 @@ void test_upwind_flux_random() noexcept {
       make_not_null(&psi_normal_dot_numerical_flux));
 
   CurvedScalarWave::ComputeNormalDotFluxes<Dim> normal_dot_flux_computer{};
-  auto psi_normal_dot_flux = make_with_value<
-      db::item_type<::Tags::NormalDotFlux<CurvedScalarWave::Psi>>>(
+  auto psi_normal_dot_flux = make_with_value<Scalar<DataVector>>(
       used_for_size, std::numeric_limits<double>::signaling_NaN());
-  auto pi_normal_dot_flux = make_with_value<
-      db::item_type<::Tags::NormalDotFlux<CurvedScalarWave::Pi>>>(
+  auto pi_normal_dot_flux = make_with_value<Scalar<DataVector>>(
       used_for_size, std::numeric_limits<double>::signaling_NaN());
-  auto phi_normal_dot_flux = make_with_value<
-      db::item_type<::Tags::NormalDotFlux<CurvedScalarWave::Phi<Dim>>>>(
+  auto phi_normal_dot_flux = make_with_value<tnsr::i<DataVector, Dim>>(
       used_for_size, std::numeric_limits<double>::signaling_NaN());
   normal_dot_flux_computer.apply(
       make_not_null(&pi_normal_dot_flux), make_not_null(&phi_normal_dot_flux),

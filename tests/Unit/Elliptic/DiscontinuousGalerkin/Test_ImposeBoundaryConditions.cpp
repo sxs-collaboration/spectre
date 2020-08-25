@@ -83,8 +83,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.BoundaryConditions",
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
   {
-    db::item_type<interior_bdry_vars_tag> interior_bdry_vars;
-    db::item_type<exterior_bdry_vars_tag> exterior_bdry_vars;
+    typename interior_bdry_vars_tag::type interior_bdry_vars;
+    typename exterior_bdry_vars_tag::type exterior_bdry_vars;
     for (const auto& direction : external_directions) {
       interior_bdry_vars[direction].initialize(3);
       exterior_bdry_vars[direction].initialize(3);
@@ -107,7 +107,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.BoundaryConditions",
   const auto& exterior_vars =
       ActionTesting::get_databox_tag<my_component, exterior_bdry_vars_tag>(
           runner, self_id);
-  db::item_type<exterior_bdry_vars_tag> expected_vars{};
+  typename exterior_bdry_vars_tag::type expected_vars{};
   for (const auto& direction : external_directions) {
     expected_vars[direction].initialize(3);
   }

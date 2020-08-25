@@ -634,26 +634,21 @@ void test_variables_assign_subset() noexcept {
     Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
                          TestHelpers::Tags::Scalar<VectorType>>>
         vars_set{number_of_grid_points, values_in_variables[0]};
-    CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Vector<VectorType>>(
-              number_of_grid_points, values_in_variables[0]));
+    CHECK(
+        get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
+        tnsr::I<VectorType, 3>(number_of_grid_points, values_in_variables[0]));
     CHECK(get<TestHelpers::Tags::Scalar<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Scalar<VectorType>>(
-              number_of_grid_points, values_in_variables[0]));
+          ::Scalar<VectorType>(number_of_grid_points, values_in_variables[0]));
     vars_set.assign_subset(vars_subset0);
     CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Vector<VectorType>>(
-              number_of_grid_points, vars_subset0_val));
+          tnsr::I<VectorType, 3>(number_of_grid_points, vars_subset0_val));
     CHECK(get<TestHelpers::Tags::Scalar<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Scalar<VectorType>>(
-              number_of_grid_points, values_in_variables[0]));
+          ::Scalar<VectorType>(number_of_grid_points, values_in_variables[0]));
     vars_set.assign_subset(vars_subset1);
     CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Vector<VectorType>>(
-              number_of_grid_points, vars_subset0_val));
+          tnsr::I<VectorType, 3>(number_of_grid_points, vars_subset0_val));
     CHECK(get<TestHelpers::Tags::Scalar<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Scalar<VectorType>>(
-              number_of_grid_points, vars_subset1_val));
+          ::Scalar<VectorType>(number_of_grid_points, vars_subset1_val));
   };
 
   test_assign_to_vars_with_two_tags(
@@ -682,35 +677,27 @@ void test_variables_assign_subset() noexcept {
                          TestHelpers::Tags::Scalar<VectorType>,
                          TestHelpers::Tags::Scalar2<VectorType>>>
         vars_set(number_of_grid_points, values_in_variables[0]);
-    CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Vector<VectorType>>(
-              number_of_grid_points, values_in_variables[0]));
+    CHECK(
+        get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
+        tnsr::I<VectorType, 3>(number_of_grid_points, values_in_variables[0]));
     CHECK(get<TestHelpers::Tags::Scalar<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Scalar<VectorType>>(
-              number_of_grid_points, values_in_variables[0]));
+          ::Scalar<VectorType>(number_of_grid_points, values_in_variables[0]));
     CHECK(get<TestHelpers::Tags::Scalar2<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Scalar2<VectorType>>(
-              number_of_grid_points, values_in_variables[0]));
+          ::Scalar<VectorType>(number_of_grid_points, values_in_variables[0]));
     vars_set.assign_subset(vars_subset0);
     CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Vector<VectorType>>(
-              number_of_grid_points, vars_subset0_val));
+          tnsr::I<VectorType, 3>(number_of_grid_points, vars_subset0_val));
     CHECK(get<TestHelpers::Tags::Scalar<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Scalar<VectorType>>(
-              number_of_grid_points, values_in_variables[0]));
+          ::Scalar<VectorType>(number_of_grid_points, values_in_variables[0]));
     CHECK(get<TestHelpers::Tags::Scalar2<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Scalar2<VectorType>>(
-              number_of_grid_points, values_in_variables[0]));
+          ::Scalar<VectorType>(number_of_grid_points, values_in_variables[0]));
     vars_set.assign_subset(vars_subset1);
     CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Vector<VectorType>>(
-              number_of_grid_points, vars_subset0_val));
+          tnsr::I<VectorType, 3>(number_of_grid_points, vars_subset0_val));
     CHECK(get<TestHelpers::Tags::Scalar<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Scalar<VectorType>>(
-              number_of_grid_points, vars_subset1_val));
+          ::Scalar<VectorType>(number_of_grid_points, vars_subset1_val));
     CHECK(get<TestHelpers::Tags::Scalar2<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Scalar2<VectorType>>(
-              number_of_grid_points, values_in_variables[0]));
+          ::Scalar<VectorType>(number_of_grid_points, values_in_variables[0]));
   };
 
   test_assign_to_vars_with_three_tags(
@@ -735,13 +722,12 @@ void test_variables_assign_subset() noexcept {
   ](const auto& vars_subset0, const value_type& vars_subset0_val) noexcept {
     Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> vars_set(
         number_of_grid_points, values_in_variables[0]);
-    CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Vector<VectorType>>(
-              number_of_grid_points, values_in_variables[0]));
+    CHECK(
+        get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
+        tnsr::I<VectorType, 3>(number_of_grid_points, values_in_variables[0]));
     vars_set.assign_subset(vars_subset0);
     CHECK(get<TestHelpers::Tags::Vector<VectorType>>(vars_set) ==
-          db::item_type<TestHelpers::Tags::Vector<VectorType>>(
-              number_of_grid_points, vars_subset0_val));
+          tnsr::I<VectorType, 3>(number_of_grid_points, vars_subset0_val));
   };
 
   test_assign_to_vars_with_one_tag(

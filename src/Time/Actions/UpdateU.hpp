@@ -64,8 +64,8 @@ struct UpdateU {
 
     db::mutate<variables_tag, history_tag>(
         make_not_null(&box),
-        [](const gsl::not_null<db::item_type<variables_tag>*> vars,
-           const gsl::not_null<db::item_type<history_tag>*> history,
+        [](const gsl::not_null<typename variables_tag::type*> vars,
+           const gsl::not_null<typename history_tag::type*> history,
            const ::TimeDelta& time_step, const auto& time_stepper) noexcept {
           time_stepper.update_u(vars, history, time_step);
         },

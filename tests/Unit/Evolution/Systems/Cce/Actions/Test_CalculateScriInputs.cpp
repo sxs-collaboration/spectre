@@ -241,8 +241,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.CalculateScriInputs",
     db::mutate<swsh_derivative_tag>(
         make_not_null(&expected_box),
         [&l_max](
-            const gsl::not_null<db::item_type<swsh_derivative_tag>*> derivative,
-            const db::item_type<typename swsh_derivative_tag::derivative_of>&
+            const gsl::not_null<typename swsh_derivative_tag::type*> derivative,
+            const typename swsh_derivative_tag::derivative_of::type&
                 argument) noexcept {
           Spectral::Swsh::angular_derivatives<
               tmpl::list<typename swsh_derivative_tag::derivative_kind>>(

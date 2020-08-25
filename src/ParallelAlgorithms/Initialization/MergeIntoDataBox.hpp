@@ -35,11 +35,11 @@ template <typename AddingAction, typename SimpleTag, MergePolicy Policy,
           Requires<Policy == MergePolicy::Overwrite> = nullptr>
 void merge_simple_tag_value(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
-    db::item_type<SimpleTag>&& simple_tag_value) noexcept {
+    typename SimpleTag::type&& simple_tag_value) noexcept {
   db::mutate<SimpleTag>(
       box,
-      [](const gsl::not_null<db::item_type<SimpleTag>*> stored_simple_tag_value,
-         db::item_type<SimpleTag>&& local_simple_tag_value) noexcept {
+      [](const gsl::not_null<typename SimpleTag::type*> stored_simple_tag_value,
+         typename SimpleTag::type&& local_simple_tag_value) noexcept {
         *stored_simple_tag_value = std::move(local_simple_tag_value);
       },
       std::move(simple_tag_value));
@@ -49,9 +49,9 @@ template <typename AddingAction, typename SimpleTag, MergePolicy Policy,
           typename DbTagsList,
           Requires<(Policy == MergePolicy::Error or
                     Policy == MergePolicy::IgnoreIncomparable) and
-                   tt::has_inequivalence_v<db::item_type<SimpleTag>>> = nullptr>
+                   tt::has_inequivalence_v<typename SimpleTag::type>> = nullptr>
 void merge_simple_tag_value(const gsl::not_null<db::DataBox<DbTagsList>*> box,
-                            db::item_type<SimpleTag>&& simple_tag) noexcept {
+                            typename SimpleTag::type&& simple_tag) noexcept {
   if (db::get<SimpleTag>(*box) != simple_tag) {
     ERROR("While adding the simple tag "
           << db::tag_name<SimpleTag>()
@@ -70,10 +70,10 @@ template <
     typename DbTagsList,
     Requires<(Policy == MergePolicy::Error or
               Policy == MergePolicy::IgnoreIncomparable) and
-             not tt::has_inequivalence_v<db::item_type<SimpleTag>>> = nullptr>
+             not tt::has_inequivalence_v<typename SimpleTag::type>> = nullptr>
 void merge_simple_tag_value(
     const gsl::not_null<db::DataBox<DbTagsList>*> /*box*/,
-    db::item_type<SimpleTag>&& /*simple_tag*/) noexcept {
+    typename SimpleTag::type&& /*simple_tag*/) noexcept {
   static_assert(Policy != MergePolicy::Error,
                 "The tag being added does not have an equivalence operator and "
                 "is already in the DataBox. See the first template parameter "

@@ -182,7 +182,7 @@ struct StoreFinalOrthogonalization {
     db::mutate<orthogonalization_history_tag>(
         make_not_null(&box),
         [orthogonalization](
-            const gsl::not_null<db::item_type<orthogonalization_history_tag>*>
+            const gsl::not_null<typename orthogonalization_history_tag::type*>
                 orthogonalization_history,
             const size_t& iteration_id,
             const size_t& orthogonalization_iteration_id) noexcept {
@@ -217,7 +217,7 @@ struct StoreFinalOrthogonalization {
             const gsl::not_null<double*> local_residual_magnitude,
             const gsl::not_null<size_t*> iteration_id,
             const gsl::not_null<size_t*> orthogonalization_iteration_id,
-            const gsl::not_null<db::item_type<orthogonalization_history_tag>*>
+            const gsl::not_null<typename orthogonalization_history_tag::type*>
                 local_orthogonalization_history) noexcept {
           *local_residual_magnitude = residual_magnitude;
           // Prepare for the next iteration

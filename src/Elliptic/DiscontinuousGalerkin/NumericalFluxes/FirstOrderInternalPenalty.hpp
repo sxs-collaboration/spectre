@@ -188,13 +188,13 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
   template <typename Tag>
   struct NormalDotDivFlux : db::PrefixTag, db::SimpleTag {
     using tag = Tag;
-    using type = TensorMetafunctions::remove_first_index<db::item_type<Tag>>;
+    using type = TensorMetafunctions::remove_first_index<typename Tag::type>;
   };
 
   template <typename Tag>
   struct NormalDotNormalDotFlux : db::PrefixTag, db::SimpleTag {
     using tag = Tag;
-    using type = TensorMetafunctions::remove_first_index<db::item_type<Tag>>;
+    using type = TensorMetafunctions::remove_first_index<typename Tag::type>;
   };
 
  public:
@@ -241,18 +241,19 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
 
   template <typename... FluxesArgs>
   void package_data(
-      const gsl::not_null<db::item_type<::Tags::NormalDotFlux<
-          AuxiliaryFieldTags>>*>... packaged_n_dot_aux_fluxes,
-      const gsl::not_null<db::item_type<NormalDotDivFlux<
-          AuxiliaryFieldTags>>*>... packaged_n_dot_div_aux_fluxes,
-      const gsl::not_null<db::item_type<NormalDotNormalDotFlux<
-          AuxiliaryFieldTags>>*>... packaged_n_dot_principal_n_dot_aux_fluxes,
+      const gsl::not_null<typename ::Tags::NormalDotFlux<
+          AuxiliaryFieldTags>::type*>... packaged_n_dot_aux_fluxes,
+      const gsl::not_null<typename NormalDotDivFlux<
+          AuxiliaryFieldTags>::type*>... packaged_n_dot_div_aux_fluxes,
+      const gsl::not_null<
+          typename NormalDotNormalDotFlux<AuxiliaryFieldTags>::
+              type*>... packaged_n_dot_principal_n_dot_aux_fluxes,
       const gsl::not_null<Scalar<DataVector>*> element_size,
       const gsl::not_null<size_t*> perpendicular_num_points,
       const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction,
       const Scalar<DataVector>& face_normal_magnitude,
-      const db::item_type<::Tags::NormalDotFlux<
-          AuxiliaryFieldTags>>&... normal_dot_auxiliary_field_fluxes,
+      const typename ::Tags::NormalDotFlux<
+          AuxiliaryFieldTags>::type&... normal_dot_auxiliary_field_fluxes,
       const typename ::Tags::div<
           ::Tags::Flux<AuxiliaryFieldTags, tmpl::size_t<Dim>,
                        Frame::Inertial>>::type&... div_auxiliary_field_fluxes,
@@ -307,24 +308,24 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
   }
 
   void operator()(
-      const gsl::not_null<db::item_type<::Tags::NormalDotNumericalFlux<
-          FieldTags>>*>... numerical_flux_for_fields,
-      const gsl::not_null<db::item_type<::Tags::NormalDotNumericalFlux<
-          AuxiliaryFieldTags>>*>... numerical_flux_for_auxiliary_fields,
-      const db::item_type<::Tags::NormalDotFlux<
-          AuxiliaryFieldTags>>&... normal_dot_auxiliary_flux_interiors,
-      const db::item_type<NormalDotDivFlux<
-          AuxiliaryFieldTags>>&... normal_dot_div_auxiliary_flux_interiors,
-      const db::item_type<NormalDotNormalDotFlux<
-          AuxiliaryFieldTags>>&... ndot_ndot_aux_flux_interiors,
+      const gsl::not_null<typename ::Tags::NormalDotNumericalFlux<
+          FieldTags>::type*>... numerical_flux_for_fields,
+      const gsl::not_null<typename ::Tags::NormalDotNumericalFlux<
+          AuxiliaryFieldTags>::type*>... numerical_flux_for_auxiliary_fields,
+      const typename ::Tags::NormalDotFlux<
+          AuxiliaryFieldTags>::type&... normal_dot_auxiliary_flux_interiors,
+      const typename NormalDotDivFlux<
+          AuxiliaryFieldTags>::type&... normal_dot_div_auxiliary_flux_interiors,
+      const typename NormalDotNormalDotFlux<
+          AuxiliaryFieldTags>::type&... ndot_ndot_aux_flux_interiors,
       const Scalar<DataVector>& element_size_interior,
       const size_t perpendicular_num_points_interior,
-      const db::item_type<::Tags::NormalDotFlux<
-          AuxiliaryFieldTags>>&... minus_normal_dot_auxiliary_flux_exteriors,
-      const db::item_type<NormalDotDivFlux<
-          AuxiliaryFieldTags>>&... minus_normal_dot_div_aux_flux_exteriors,
-      const db::item_type<NormalDotDivFlux<
-          AuxiliaryFieldTags>>&... ndot_ndot_aux_flux_exteriors,
+      const typename ::Tags::NormalDotFlux<AuxiliaryFieldTags>::
+          type&... minus_normal_dot_auxiliary_flux_exteriors,
+      const typename NormalDotDivFlux<
+          AuxiliaryFieldTags>::type&... minus_normal_dot_div_aux_flux_exteriors,
+      const typename NormalDotDivFlux<
+          AuxiliaryFieldTags>::type&... ndot_ndot_aux_flux_exteriors,
       const Scalar<DataVector>& element_size_exterior,
       const size_t perpendicular_num_points_exterior) const noexcept {
     const auto penalty = ::elliptic::dg::NumericalFluxes::penalty(
@@ -381,10 +382,10 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
   // remains to solve the homogeneous problem with the modified source.
   template <typename... FluxesArgs>
   void compute_dirichlet_boundary(
-      const gsl::not_null<db::item_type<::Tags::NormalDotNumericalFlux<
-          FieldTags>>*>... numerical_flux_for_fields,
-      const gsl::not_null<db::item_type<::Tags::NormalDotNumericalFlux<
-          AuxiliaryFieldTags>>*>... numerical_flux_for_auxiliary_fields,
+      const gsl::not_null<typename ::Tags::NormalDotNumericalFlux<
+          FieldTags>::type*>... numerical_flux_for_fields,
+      const gsl::not_null<typename ::Tags::NormalDotNumericalFlux<
+          AuxiliaryFieldTags>::type*>... numerical_flux_for_auxiliary_fields,
       const typename FieldTags::type&... dirichlet_fields,
       const Mesh<Dim>& volume_mesh, const Direction<Dim>& direction,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal,

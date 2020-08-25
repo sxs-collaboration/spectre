@@ -148,7 +148,7 @@ struct Metavariables {
 };
 
 using system = Metavariables::system;
-using EvolvedVariables = db::item_type<system::variables_tag>;
+using EvolvedVariables = typename system::variables_tag::type;
 
 std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
     const double time,
@@ -184,16 +184,16 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
 
         auto map = ElementMap<1, Frame::Inertial>(id, block_map->get_clone());
 
-        db::item_type<system::variables_tag> variables(2);
-        db::item_type<db::add_tag_prefix<Tags::dt, system::variables_tag>>
+        typename system::variables_tag::type variables(2);
+        typename db::add_tag_prefix<Tags::dt, system::variables_tag>::type
             dt_variables(2);
 
-        db::item_type<component::normal_dot_fluxes_tag> normal_dot_fluxes;
-        db::item_type<typename component::mortar_data_tag> mortar_history{};
-        db::item_type<Tags::Mortars<Tags::Next<Tags::TimeStepId>, 1>>
+        typename component::normal_dot_fluxes_tag::type normal_dot_fluxes;
+        typename component::mortar_data_tag::type mortar_history{};
+        typename Tags::Mortars<Tags::Next<Tags::TimeStepId>, 1>::type
             mortar_next_temporal_ids{};
-        db::item_type<Tags::Mortars<domain::Tags::Mesh<0>, 1>> mortar_meshes{};
-        db::item_type<Tags::Mortars<Tags::MortarSize<0>, 1>> mortar_sizes{};
+        typename Tags::Mortars<domain::Tags::Mesh<0>, 1>::type mortar_meshes{};
+        typename Tags::Mortars<Tags::MortarSize<0>, 1>::type mortar_sizes{};
         for (const auto& mortar_id : mortars) {
           normal_dot_fluxes[mortar_id.first].initialize(1, 0.0);
           mortar_history.insert({mortar_id, {}});

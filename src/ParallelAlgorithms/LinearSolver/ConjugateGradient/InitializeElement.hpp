@@ -60,10 +60,10 @@ struct InitializeElement {
             // `operator_applied_to_operand_tag` which is expected to be updated
             // in every iteration of the algorithm.
             std::numeric_limits<size_t>::max(),
-            db::item_type<operator_applied_to_fields_tag>{},
-            db::item_type<operand_tag>{},
-            db::item_type<operator_applied_to_operand_tag>{},
-            db::item_type<residual_tag>{}, Convergence::HasConverged{}));
+            typename operator_applied_to_fields_tag::type{},
+            typename operand_tag::type{},
+            typename operator_applied_to_operand_tag::type{},
+            typename residual_tag::type{}, Convergence::HasConverged{}));
   }
 };
 

@@ -193,7 +193,7 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
 
   /// \brief Limit the solution on the element
   bool operator()(
-      const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,
+      const gsl::not_null<std::add_pointer_t<typename Tags::type>>... tensors,
       const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
       const std::array<double, VolumeDim>& element_size,
       const std::unordered_map<
@@ -279,7 +279,7 @@ void Weno<VolumeDim, tmpl::list<Tags...>>::package_data(
 
 template <size_t VolumeDim, typename... Tags>
 bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
-    const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,
+    const gsl::not_null<std::add_pointer_t<typename Tags::type>>... tensors,
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<

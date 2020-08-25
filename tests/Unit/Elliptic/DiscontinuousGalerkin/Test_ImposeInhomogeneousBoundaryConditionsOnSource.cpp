@@ -152,9 +152,9 @@ void test_impose_inhomogeneous_boundary_conditions_on_source(
   using system = typename metavariables::system;
   using element_array = ElementArray<Dim, metavariables>;
 
-  db::item_type<
-      db::add_tag_prefix<Tags::FixedSource, typename system::fields_tag>>
-      source_vars{source_expected.size(), 0.};
+  typename db::add_tag_prefix<Tags::FixedSource,
+                              typename system::fields_tag>::type source_vars{
+      source_expected.size(), 0.};
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       {Fluxes<Dim>{}, AnalyticSolution<Dim>{}, NumericalFlux<Dim>{}}};

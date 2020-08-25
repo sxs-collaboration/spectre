@@ -201,9 +201,8 @@ template <typename Frame>
 void InitializeDampedHarmonic<Dim, UseRollon>::
     DampedHarmonicRollonCompute<Frame>::function(
         const gsl::not_null<return_type*> h_and_d4_h,
-        const db::item_type<Tags::InitialGaugeH<Dim, Frame>>& gauge_h_init,
-        const db::item_type<Tags::SpacetimeDerivInitialGaugeH<Dim, Frame>>&
-            dgauge_h_init,
+        const tnsr::a<DataVector, Dim, Frame>& gauge_h_init,
+        const tnsr::ab<DataVector, Dim, Frame>& dgauge_h_init,
         const Scalar<DataVector>& lapse,
         const tnsr::I<DataVector, Dim, Frame>& shift,
         const tnsr::a<DataVector, Dim, Frame>& spacetime_unit_normal_one_form,

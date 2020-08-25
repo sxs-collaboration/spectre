@@ -247,7 +247,7 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
          &output_libsharp_mode_buffer, &l_max, &computation_l_max,
          &time](auto tag_v) noexcept {
           using tag = typename decltype(tag_v)::type;
-          SpinWeighted<ComplexModalVector, db::item_type<tag>::type::spin>
+          SpinWeighted<ComplexModalVector, tag::type::type::spin>
               spin_weighted_libsharp_view;
           spin_weighted_libsharp_view.set_data_ref(
               output_libsharp_mode_buffer.data(),
@@ -255,7 +255,7 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
           Spectral::Swsh::swsh_transform(
               computation_l_max, 1, make_not_null(&spin_weighted_libsharp_view),
               get(get<tag>(boundary_data_variables)));
-          SpinWeighted<ComplexModalVector, db::item_type<tag>::type::spin>
+          SpinWeighted<ComplexModalVector, tag::type::type::spin>
               spin_weighted_goldberg_view;
           spin_weighted_goldberg_view.set_data_ref(
               output_goldberg_mode_buffer.data(),
@@ -271,8 +271,7 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
               output_goldberg_mode_buffer.data(), square(l_max + 1)};
           recorder.append_worldtube_mode_data(
               "/" + Cce::dataset_label_for_tag<tag>(), time,
-              reduced_goldberg_view, l_max,
-              db::item_type<tag>::type::spin == 0);
+              reduced_goldberg_view, l_max, tag::type::type::spin == 0);
         });
   }
   Parallel::printf("\n");

@@ -17,8 +17,8 @@ void test() {
       "InitialFunctionsOfTime");
   TestHelpers::db::test_simple_tag<Tags::FunctionsOfTime>("FunctionsOfTime");
   static_assert(
-      std::is_same_v<db::item_type<Tags::FunctionsOfTime>,
-                     db::item_type<Tags::InitialFunctionsOfTime<Dim>>>,
+      std::is_same_v<typename Tags::FunctionsOfTime::type,
+                     typename Tags::InitialFunctionsOfTime<Dim>::type>,
       "FunctionsOfTime and InitialFunctionsOfTime tags must have the same "
       "types");
 }

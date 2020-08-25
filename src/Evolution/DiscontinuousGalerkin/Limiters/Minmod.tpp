@@ -43,7 +43,7 @@ template <size_t VolumeDim, typename Tag, typename PackagedData>
 bool limit_one_tensor(
     const gsl::not_null<DataVector*> u_lin_buffer,
     const gsl::not_null<BufferWrapper<VolumeDim>*> buffer,
-    const gsl::not_null<db::item_type<Tag>*> tensor,
+    const gsl::not_null<typename Tag::type*> tensor,
     const Limiters::MinmodType minmod_type, const double tvb_constant,
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
@@ -145,7 +145,7 @@ void Minmod<VolumeDim, tmpl::list<Tags...>>::package_data(
 
 template <size_t VolumeDim, typename... Tags>
 bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
-    const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,
+    const gsl::not_null<std::add_pointer_t<typename Tags::type>>... tensors,
     const Mesh<VolumeDim>& mesh, const Element<VolumeDim>& element,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,

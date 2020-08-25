@@ -85,7 +85,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags.Errors",
           inertial_coords, time, system::variables_tag::tags_list{}));
 
   constexpr double constant_numeric_value = 5.0;
-  db::item_type<system::variables_tag> numeric{4, constant_numeric_value};
+  typename system::variables_tag::type numeric{4, constant_numeric_value};
 
   const auto box = db::create<simple_tags, compute_tags>(
       std::move(inertial_coords), time, numeric,
@@ -95,7 +95,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags.Errors",
                                                     &analytic](auto tag_v) {
     using tensor_tag = typename decltype(tag_v)::type;
     const auto& diff = db::get<Tags::Error<tensor_tag>>(box);
-    for (size_t i = 0; i < db::item_type<tensor_tag>::size(); ++i) {
+    for (size_t i = 0; i < tensor_tag::type::size(); ++i) {
       CHECK_ITERABLE_APPROX(diff[i], -1.0 * get<tensor_tag>(analytic)[i] + 5.0);
     }
   });

@@ -66,11 +66,11 @@ struct InitializeElement {
         // except for `operator_applied_to_fields_tag` which is expected to be
         // filled at that point and `operator_applied_to_operand_tag` which is
         // expected to be updated in every iteration of the algorithm.
-        std::numeric_limits<size_t>::max(), db::item_type<initial_fields_tag>{},
-        db::item_type<operator_applied_to_fields_tag>{},
-        db::item_type<operand_tag>{},
-        db::item_type<operator_applied_to_operand_tag>{},
-        std::numeric_limits<size_t>::max(), db::item_type<basis_history_tag>{},
+        std::numeric_limits<size_t>::max(), typename initial_fields_tag::type{},
+        typename operator_applied_to_fields_tag::type{},
+        typename operand_tag::type{},
+        typename operator_applied_to_operand_tag::type{},
+        std::numeric_limits<size_t>::max(), typename basis_history_tag::type{},
         Convergence::HasConverged{});
 
     if constexpr (not Preconditioned) {
@@ -84,8 +84,8 @@ struct InitializeElement {
                              db::AddSimpleTags<preconditioned_basis_history_tag,
                                                preconditioned_operand_tag>>(
           std::move(initial_box),
-          db::item_type<preconditioned_basis_history_tag>{},
-          db::item_type<preconditioned_operand_tag>{}));
+          typename preconditioned_basis_history_tag::type{},
+          typename preconditioned_operand_tag::type{}));
     }
   }
 };

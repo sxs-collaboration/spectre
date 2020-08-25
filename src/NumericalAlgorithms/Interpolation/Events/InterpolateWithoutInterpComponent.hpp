@@ -105,7 +105,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
   template <typename ParallelComponent>
   void operator()(
       const TimeStepId& time_id,
-      const db::item_type<Tags::InterpPointInfo<Metavariables>>& point_infos,
+      const typename Tags::InterpPointInfo<Metavariables>::type& point_infos,
       const Mesh<VolumeDim>& mesh, const typename Tensors::type&... tensors,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,

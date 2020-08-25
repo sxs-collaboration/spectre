@@ -99,11 +99,11 @@ struct InitializeFirstOrderOperator {
                     const ParallelComponent* const /*meta*/) noexcept {
     // Initialize the variables on exterior (ghost) boundary faces. They are
     // updated throughout the algorithm to impose boundary conditions.
-    db::item_type<exterior_vars_tag> exterior_boundary_vars{};
+    typename exterior_vars_tag::type exterior_boundary_vars{};
     const auto& mesh = db::get<domain::Tags::Mesh<volume_dim>>(box);
     for (const auto& direction : db::get<domain::Tags::Element<volume_dim>>(box)
                                      .external_boundaries()) {
-      exterior_boundary_vars[direction] = db::item_type<vars_tag>{
+      exterior_boundary_vars[direction] = typename vars_tag::type{
           mesh.slice_away(direction.dimension()).number_of_grid_points()};
     }
     using compute_tags = tmpl::flatten<tmpl::list<

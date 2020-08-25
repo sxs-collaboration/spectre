@@ -92,8 +92,8 @@ struct MockSendPointsToInterpolator {
     db::mutate<intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>(
         make_not_null(&box),
         [&temporal_id](
-            const gsl::not_null<db::item_type<
-                intrp::Tags::IndicesOfFilledInterpPoints<temporal_id_type>>*>
+            const gsl::not_null<std::unordered_map<temporal_id_type,
+                                                   std::unordered_set<size_t>>*>
                 indices) noexcept {
           (*indices)[temporal_id].insert((*indices)[temporal_id].size() + 1);
         });
@@ -143,9 +143,8 @@ struct MockCleanUpInterpolator {
     // this function was called.  This isn't the usual usage of
     // NumberOfElements.
     db::mutate<intrp::Tags::NumberOfElements>(
-        make_not_null(&box), [](const gsl::not_null<
-                                 db::item_type<intrp::Tags::NumberOfElements>*>
-                                    number_of_elements) noexcept {
+        make_not_null(&box),
+        [](const gsl::not_null<size_t*> number_of_elements) noexcept {
           ++(*number_of_elements);
         });
   }
@@ -329,8 +328,8 @@ void test_interpolation_target_receive_vars() noexcept {
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   // Now set up the vars.
-  std::vector<db::item_type<::Tags::Variables<
-      typename metavars::InterpolationTargetA::vars_to_interpolate_to_target>>>
+  std::vector<typename ::Variables<
+      typename metavars::InterpolationTargetA::vars_to_interpolate_to_target>>
       vars_src;
   std::vector<std::vector<size_t>> global_offsets;
 
@@ -339,10 +338,8 @@ void test_interpolation_target_receive_vars() noexcept {
                              const std::vector<double>& lapse_vals,
                              const std::vector<size_t>& offset_vals) {
     vars_src.emplace_back(
-        db::item_type<
-            ::Tags::Variables<typename metavars::InterpolationTargetA::
-                                  vars_to_interpolate_to_target>>{
-            lapse_vals.size()});
+        ::Variables<typename metavars::InterpolationTargetA::
+                        vars_to_interpolate_to_target>{lapse_vals.size()});
     global_offsets.emplace_back(offset_vals);
     auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars_src.back());
     for (size_t i = 0; i < lapse_vals.size(); ++i) {

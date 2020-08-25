@@ -99,8 +99,8 @@ struct SetVariables {
       using primitives_tag = typename system::primitive_variables_tag;
       // Set initial data from analytic solution
       db::mutate<primitives_tag>(
-          box, [&initial_time, &inertial_coords, &solution_or_data](
-                   const gsl::not_null<db::item_type<primitives_tag>*>
+          box, [&initial_time, &inertial_coords, &solution_or_data ](
+                   const gsl::not_null<typename primitives_tag::type*>
                        primitive_vars) noexcept {
             primitive_vars->assign_subset(evolution::initial_data(
                 solution_or_data, inertial_coords, initial_time,

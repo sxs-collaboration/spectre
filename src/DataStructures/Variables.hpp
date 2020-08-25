@@ -936,12 +936,12 @@ struct MakeWithValueImpl<Variables<TagListOut>, Variables<TagListIn>> {
 namespace db {
 template <typename Tag>
 struct Subitems<Tag, Requires<tt::is_a_v<Variables, typename Tag::type>>> {
-  using type = typename const_item_type<Tag>::tags_list;
+  using type = typename Tag::type::tags_list;
 
   template <typename Subtag, typename LocalTag = Tag>
   static void create_item(
-      const gsl::not_null<item_type<LocalTag>*> parent_value,
-      const gsl::not_null<item_type<Subtag>*> sub_value) noexcept {
+      const gsl::not_null<typename LocalTag::type*> parent_value,
+      const gsl::not_null<typename Subtag::type*> sub_value) noexcept {
     auto& vars = get<Subtag>(*parent_value);
     // Only update the Tensor if the Variables has changed its allocation
     if constexpr (not is_any_spin_weighted_v<typename Subtag::type::type>) {
@@ -962,8 +962,8 @@ struct Subitems<Tag, Requires<tt::is_a_v<Variables, typename Tag::type>>> {
   }
 
   template <typename Subtag>
-  static const const_item_type<Subtag>& create_compute_item(
-      const const_item_type<Tag>& parent_value) noexcept {
+  static const typename Subtag::type& create_compute_item(
+      const typename Tag::type& parent_value) noexcept {
     return get<Subtag>(parent_value);
   }
 };

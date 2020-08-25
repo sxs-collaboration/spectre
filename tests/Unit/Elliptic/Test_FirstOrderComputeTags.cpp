@@ -92,7 +92,7 @@ void test_first_order_compute_tags() {
 
   // Construct some field data
   static constexpr size_t num_points = 3;
-  db::item_type<vars_tag> vars{num_points, 0.};
+  typename vars_tag::type vars{num_points, 0.};
   get(get<FieldTag>(vars)) = DataVector{num_points, 2.};
   for (size_t d = 0; d < Dim; d++) {
     get<AuxiliaryFieldTag<Dim>>(vars).get(d) = DataVector{num_points, d + 1.};

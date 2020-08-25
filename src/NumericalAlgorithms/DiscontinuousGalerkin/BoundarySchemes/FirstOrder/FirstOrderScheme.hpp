@@ -108,8 +108,8 @@ struct FirstOrderScheme {
                               magnitude_of_face_normal_tag>>;
 
   static void apply(
-      const gsl::not_null<db::item_type<dt_variables_tag>*> dt_variables,
-      const gsl::not_null<db::item_type<::Tags::Mortars<mortar_data_tag, Dim>>*>
+      const gsl::not_null<typename dt_variables_tag::type*> dt_variables,
+      const gsl::not_null<typename ::Tags::Mortars<mortar_data_tag, Dim>::type*>
           all_mortar_data,
       const Mesh<Dim>& volume_mesh,
       const MortarMap<Dim, Mesh<Dim - 1>>& mortar_meshes,
@@ -138,7 +138,7 @@ struct FirstOrderScheme {
               : face_normal_magnitudes_internal.at(direction);
 
       auto boundary_flux_on_slice =
-          db::item_type<dt_variables_tag>(boundary_flux(
+          typename dt_variables_tag::type(boundary_flux(
               local_data, remote_data, normal_dot_numerical_flux_computer,
               magnitude_of_face_normal, volume_mesh.extents(dimension),
               volume_mesh.slice_away(dimension), mortar_meshes.at(mortar_id),

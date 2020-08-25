@@ -102,7 +102,7 @@ struct MockReceivePoints {
         [
           &temporal_id, &block_coord_holders
         ](const gsl::not_null<
-            db::item_type<intrp::Tags::InterpolatedVarsHolders<Metavariables>>*>
+            typename intrp::Tags::InterpolatedVarsHolders<Metavariables>::type*>
               vars_holders) noexcept {
           auto& vars_infos =
               get<intrp::Vars::HolderTag<InterpolationTargetTag,

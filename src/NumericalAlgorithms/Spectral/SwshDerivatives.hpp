@@ -199,11 +199,11 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
                  Tags::NumberOfRadialPointsBase>;
 
   static void apply(
-      const gsl::not_null<db::item_type<DerivativeTags>*>... derivative_scalars,
-      const gsl::not_null<db::item_type<Tags::SwshTransform<
-          DerivativeTags>>*>... transform_of_derivative_scalars,
-      const gsl::not_null<db::item_type<Tags::SwshTransform<
-          UniqueDifferentiatedFromTags>>*>... transform_of_input_scalars,
+      const gsl::not_null<typename DerivativeTags::type*>... derivative_scalars,
+      const gsl::not_null<typename Tags::SwshTransform<
+          DerivativeTags>::type*>... transform_of_derivative_scalars,
+      const gsl::not_null<typename Tags::SwshTransform<
+          UniqueDifferentiatedFromTags>::type*>... transform_of_input_scalars,
       const typename UniqueDifferentiatedFromTags::type&... input_scalars,
       const size_t l_max, const size_t number_of_radial_points) noexcept {
     apply_to_vectors(make_not_null(&get(*transform_of_derivative_scalars))...,
@@ -225,10 +225,10 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
   // note inputs reordered to accommodate the alternative tag-free functions
   // which call into this function.
   static void apply_to_vectors(
-      const gsl::not_null<typename db::item_type<Tags::SwshTransform<
-          DerivativeTags>>::type*>... transform_of_derivatives,
-      const gsl::not_null<typename db::item_type<Tags::SwshTransform<
-          UniqueDifferentiatedFromTags>>::type*>... transform_of_inputs,
+      const gsl::not_null<typename Tags::SwshTransform<
+          DerivativeTags>::type::type*>... transform_of_derivatives,
+      const gsl::not_null<typename Tags::SwshTransform<
+          UniqueDifferentiatedFromTags>::type::type*>... transform_of_inputs,
       const gsl::not_null<typename DerivativeTags::type::type*>... derivatives,
       const typename UniqueDifferentiatedFromTags::type::type&... inputs,
       const size_t l_max, const size_t number_of_radial_points) noexcept {

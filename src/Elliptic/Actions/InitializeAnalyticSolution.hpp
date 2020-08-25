@@ -60,7 +60,7 @@ struct InitializeAnalyticSolution {
 
     const auto& inertial_coords =
         get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
-    db::item_type<analytic_fields_tag> analytic_fields{
+    typename analytic_fields_tag::type analytic_fields{
         variables_from_tagged_tuple(get<AnalyticSolutionTag>(cache).variables(
             inertial_coords, AnalyticSolutionFields{}))};
 

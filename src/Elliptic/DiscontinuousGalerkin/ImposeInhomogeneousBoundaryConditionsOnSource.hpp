@@ -149,8 +149,8 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
           dirichlet_boundary_data.assign_subset(analytic_solution.variables(
               boundary_coordinates, typename system::primal_fields{}));
           // Compute the numerical flux contribution from the Dirichlet data
-          db::item_type<db::add_tag_prefix<::Tags::NormalDotNumericalFlux,
-                                           fixed_sources_tag>>
+          typename db::add_tag_prefix<::Tags::NormalDotNumericalFlux,
+                                      fixed_sources_tag>::type
               boundary_normal_dot_numerical_fluxes{
                   face_mesh.number_of_grid_points(), 0.};
           compute_dirichlet_boundary_normal_dot_numerical_flux(
@@ -161,7 +161,7 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
               fluxes_args...);
           // Flip sign of the boundary contributions, making them
           // contributions to the source
-          return db::item_type<fixed_sources_tag>{
+          return typename fixed_sources_tag::type{
               -1. *
               ::dg::lift_flux(std::move(boundary_normal_dot_numerical_fluxes),
                               volume_mesh.extents(dimension),
@@ -173,11 +173,11 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
     db::mutate<fixed_sources_tag>(
         make_not_null(&box),
         [&dirichlet_boundary_contributions](
-            const gsl::not_null<db::item_type<fixed_sources_tag>*>
+            const gsl::not_null<typename fixed_sources_tag::type*>
                 fixed_sources,
             const Mesh<volume_dim>& mesh,
-            const db::const_item_type<domain::Tags::BoundaryDirectionsInterior<
-                volume_dim>>& directions) noexcept {
+            const std::unordered_set<::Direction<volume_dim>>&
+                directions) noexcept {
           for (const auto& direction : directions) {
             add_slice_to_data(
                 fixed_sources,

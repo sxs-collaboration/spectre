@@ -46,7 +46,7 @@ struct SetRandomBoundaryValues {
           db::mutate<tag>(
               make_not_null(&box), [
                 &gen, &value_dist
-              ](const gsl::not_null<db::item_type<tag>*> scri_value) noexcept {
+              ](const gsl::not_null<typename tag::type*> scri_value) noexcept {
                 fill_with_random_values(make_not_null(&get(*scri_value).data()),
                                         make_not_null(&gen),
                                         make_not_null(&value_dist));
@@ -54,10 +54,9 @@ struct SetRandomBoundaryValues {
         });
 
     db::mutate<Tags::InertialRetardedTime>(
-        make_not_null(&box),
-        [&gen, &value_dist ](
-            const gsl::not_null<db::item_type<Tags::InertialRetardedTime>*>
-                scri_value) noexcept {
+        make_not_null(&box), [
+          &gen, &value_dist
+        ](const gsl::not_null<Scalar<DataVector>*> scri_value) noexcept {
           fill_with_random_values(make_not_null(&get(*scri_value)),
                                   make_not_null(&gen),
                                   make_not_null(&value_dist));

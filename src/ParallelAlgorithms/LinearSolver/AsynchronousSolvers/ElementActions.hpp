@@ -133,7 +133,7 @@ struct InitializeElement {
             // expected to be updated in every iteration of the algorithm
             std::numeric_limits<size_t>::max(),
             std::numeric_limits<double>::signaling_NaN(),
-            db::item_type<operator_applied_to_fields_tag>{}));
+            typename operator_applied_to_fields_tag::type{}));
   }
 };
 

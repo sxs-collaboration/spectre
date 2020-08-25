@@ -62,7 +62,7 @@ struct NumericalFluxTag : db::SimpleTag {
 template <typename Tag>
 struct BoundaryContribution : db::SimpleTag, db::PrefixTag {
   using tag = Tag;
-  using type = db::item_type<Tag>;
+  using type = typename Tag::type;
 };
 
 struct TemporalIdTag : db::SimpleTag {
@@ -77,11 +77,11 @@ template <typename BoundaryScheme,
 auto make_mortar_data(const dg::MortarId<BoundaryScheme::volume_dim>& mortar_id,
                       const int time, BoundaryData&& interior_data,
                       BoundaryData&& exterior_data) noexcept {
-  db::item_type<typename BoundaryScheme::mortar_data_tag> mortar_data{};
+  typename BoundaryScheme::mortar_data_tag::type mortar_data{};
   mortar_data.local_insert(time, std::forward<BoundaryData>(interior_data));
   mortar_data.remote_insert(time, std::forward<BoundaryData>(exterior_data));
-  return db::item_type<::Tags::Mortars<typename BoundaryScheme::mortar_data_tag,
-                                       BoundaryScheme::volume_dim>>{
+  return typename ::Tags::Mortars<typename BoundaryScheme::mortar_data_tag,
+                                  BoundaryScheme::volume_dim>::type{
       {mortar_id, std::move(mortar_data)}};
 }
 
@@ -111,7 +111,7 @@ void test_first_order_scheme() {
                                {{face_direction, {{neighbor_id}, {}}}}};
     const size_t num_points_on_face =
         mesh.slice_away(face_direction.dimension()).number_of_grid_points();
-    db::item_type<db::add_tag_prefix<::Tags::NormalDotFlux, variables_tag>>
+    typename db::add_tag_prefix<::Tags::NormalDotFlux, variables_tag>::type
         normal_dot_fluxes{num_points_on_face};
     get<::Tags::NormalDotFlux<SomeField>>(normal_dot_fluxes) =
         Scalar<DataVector>{num_points_on_face, 3.};
@@ -132,7 +132,7 @@ void test_first_order_scheme() {
                                 SomeField>>>(
         NumericalFlux{}, Scalar<DataVector>{num_points, 2.}, extra_data, mesh,
         element,
-        db::item_type<all_normal_dot_fluxes_tag>{
+        typename all_normal_dot_fluxes_tag::type{
             {face_direction, std::move(normal_dot_fluxes)}});
     // Collect the boundary data needed by the boundary scheme
     const auto all_boundary_data =
@@ -186,7 +186,7 @@ void test_first_order_scheme() {
     auto all_mortar_data = make_mortar_data<boundary_scheme>(
         mortar_id, dummy_time, make_boundary_data(), make_boundary_data());
     // Assemble a DataBox and test
-    db::item_type<db::add_tag_prefix<BoundaryContribution, variables_tag>>
+    typename db::add_tag_prefix<BoundaryContribution, variables_tag>::type
         boundary_contributions{num_points, 0.};
     auto box = db::create<db::AddSimpleTags<
         NumericalFluxTag, domain::Tags::Mesh<Dim>,
@@ -211,7 +211,7 @@ void test_first_order_scheme() {
         dg::MortarMap<Dim, dg::MortarSize<Dim - 1>>{{mortar_id, mortar_size}},
         std::move(boundary_contributions));
     db::mutate_apply<boundary_scheme>(make_not_null(&box));
-    db::item_type<db::add_tag_prefix<BoundaryContribution, variables_tag>>
+    typename db::add_tag_prefix<BoundaryContribution, variables_tag>::type
         expected_boundary_contributions{num_points, 0.};
     boundary_scheme::apply(
         make_not_null(&expected_boundary_contributions),

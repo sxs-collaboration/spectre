@@ -95,10 +95,10 @@ struct InitializeMortars {
     const auto& initial_extents =
         db::get<domain::Tags::InitialExtents<dim>>(box);
 
-    db::item_type<mortar_data_tag> mortar_data{};
-    db::item_type<::Tags::Mortars<domain::Tags::Mesh<dim - 1>, dim>>
+    typename mortar_data_tag::type mortar_data{};
+    typename ::Tags::Mortars<domain::Tags::Mesh<dim - 1>, dim>::type
         mortar_meshes{};
-    db::item_type<::Tags::Mortars<::Tags::MortarSize<dim - 1>, dim>>
+    typename ::Tags::Mortars<::Tags::MortarSize<dim - 1>, dim>::type
         mortar_sizes{};
     const auto& interface_meshes =
         db::get<domain::Tags::Interface<domain::Tags::InternalDirections<dim>,
@@ -180,7 +180,7 @@ struct InitializeMortars {
     using mortars_next_temporal_id_tag =
         ::Tags::Mortars<next_temporal_id_tag, dim>;
     const auto& next_temporal_id = get<next_temporal_id_tag>(box);
-    db::item_type<mortars_next_temporal_id_tag> mortar_next_temporal_ids{};
+    typename mortars_next_temporal_id_tag::type mortar_next_temporal_ids{};
     // Since no communication needs to happen for boundary conditions
     // the temporal id is not advanced on the boundary, so we only need to
     // initialize it on internal boundaries

@@ -45,7 +45,7 @@ void make_boundary_data(const gsl::not_null<db::DataBox<DataBoxTagList>*> box,
       box,
       [
         &expected, &l_max
-      ](const gsl::not_null<db::item_type<Tags::BoundaryValue<BondiValueTag>>*>
+      ](const gsl::not_null<typename Tags::BoundaryValue<BondiValueTag>::type*>
             boundary) noexcept {
         get(*boundary).data() = ComplexDataVector{
             expected->data(),
@@ -126,10 +126,10 @@ auto create_box_for_bondi_integration(
       integration_variables_tag, Tags::BoundaryValue<BondiValueTag>,
       integration_modes_variables_tag, Tags::LMax, Tags::NumberOfRadialPoints,
       Tags::OneMinusY>>(
-      db::item_type<integration_variables_tag>{number_of_grid_points},
-      db::item_type<Tags::BoundaryValue<BondiValueTag>>{
+      typename integration_variables_tag::type{number_of_grid_points},
+      typename Tags::BoundaryValue<BondiValueTag>::type{
           Spectral::Swsh::number_of_swsh_collocation_points(l_max)},
-      db::item_type<integration_modes_variables_tag>{
+      typename integration_modes_variables_tag::type{
           number_of_radial_polynomials},
       l_max, number_of_radial_grid_points,
       Scalar<SpinWeighted<ComplexDataVector, 0>>{number_of_grid_points});
@@ -322,13 +322,11 @@ void test_pole_integration_with_linear_operator(
       TestHelpers::RadialPolyCoefficientsFor<
           Tags::LinearFactorForConjugate<BondiValueTag>>>(
       make_not_null(&box),
-      [](const gsl::not_null<
-             db::item_type<TestHelpers::RadialPolyCoefficientsFor<
-                 Tags::LinearFactor<BondiValueTag>>>*>
+      [](const gsl::not_null<typename TestHelpers::RadialPolyCoefficientsFor<
+             Tags::LinearFactor<BondiValueTag>>::type*>
              linear_factor_modes,
-         const gsl::not_null<
-             db::item_type<TestHelpers::RadialPolyCoefficientsFor<
-                 Tags::LinearFactorForConjugate<BondiValueTag>>>*>
+         const gsl::not_null<typename TestHelpers::RadialPolyCoefficientsFor<
+             Tags::LinearFactorForConjugate<BondiValueTag>>::type*>
              linear_factor_of_conjugate_modes) noexcept {
         get(*linear_factor_modes)[0] = 1.0;
         get(*linear_factor_of_conjugate_modes)[0] = 0.0;
@@ -386,10 +384,10 @@ void test_pole_integration_with_linear_operator(
         &random_angular_data, &l_max, &one_minus_y, &
         number_of_radial_grid_points
       ](const gsl::not_null<
-            db::item_type<Tags::PoleOfIntegrand<BondiValueTag>>*>
+            typename Tags::PoleOfIntegrand<BondiValueTag>::type*>
             pole_integrand,
         const gsl::not_null<
-            db::item_type<Tags::RegularIntegrand<BondiValueTag>>*>
+            typename Tags::RegularIntegrand<BondiValueTag>::type*>
             regular_integrand,
         const Scalar<ComplexModalVector>& bondi_value_modes,
         const Scalar<ComplexModalVector>& pole_integrand_modes,

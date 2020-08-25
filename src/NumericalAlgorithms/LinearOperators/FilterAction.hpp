@@ -118,11 +118,10 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
             template f<evolved_vars_tags_list, TagsToFilter...>::value) {
       db::mutate<typename Metavariables::system::variables_tag>(
           make_not_null(&box),
-          [&filter](
-              const gsl::not_null<
-                  db::item_type<typename Metavariables::system::variables_tag>*>
-                  vars,
-              const auto& local_mesh) noexcept {
+          [&filter](const gsl::not_null<
+                        typename Metavariables::system::variables_tag::type*>
+                        vars,
+                    const auto& local_mesh) noexcept {
             *vars = apply_matrices(filter, *vars, local_mesh.extents());
           },
           mesh);
@@ -130,7 +129,7 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
       db::mutate<TagsToFilter...>(
           make_not_null(&box),
           [&filter](const gsl::not_null<
-                        db::item_type<TagsToFilter>*>... tensors_to_filter,
+                        typename TagsToFilter::type*>... tensors_to_filter,
                     const auto& local_mesh) noexcept {
             DataVector temp(local_mesh.number_of_grid_points(), 0.0);
             const auto helper =

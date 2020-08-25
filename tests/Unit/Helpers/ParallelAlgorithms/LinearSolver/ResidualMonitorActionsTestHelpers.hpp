@@ -63,13 +63,13 @@ struct MockWriteReductionData {
                CheckReductionNamesTag, CheckReductionDataTag>(
         make_not_null(&box),
         [ observation_id, subfile_name, reduction_names, in_reduction_data ](
-            const gsl::not_null<db::item_type<CheckObservationIdTag>*>
+            const gsl::not_null<typename CheckObservationIdTag::type*>
                 check_observation_id,
-            const gsl::not_null<db::item_type<CheckSubfileNameTag>*>
+            const gsl::not_null<typename CheckSubfileNameTag::type*>
                 check_subfile_name,
-            const gsl::not_null<db::item_type<CheckReductionNamesTag>*>
+            const gsl::not_null<typename CheckReductionNamesTag::type*>
                 check_reduction_names,
-            const gsl::not_null<db::item_type<CheckReductionDataTag>*>
+            const gsl::not_null<typename CheckReductionDataTag::type*>
                 check_reduction_data) noexcept {
           *check_observation_id = observation_id;
           *check_subfile_name = subfile_name;

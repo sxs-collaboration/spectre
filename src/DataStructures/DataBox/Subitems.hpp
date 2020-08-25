@@ -17,16 +17,16 @@ namespace db {
 ///   ```
 ///   template <typename Subtag>
 ///   static void create_item(
-///       const gsl::not_null<item_type<Tag>*> parent_value,
-///       const gsl::not_null<item_type<Subtag>*> sub_value) noexcept;
+///       const gsl::not_null<typename Tag::type*> parent_value,
+///       const gsl::not_null<typename Subtag::type*> sub_value) noexcept;
 ///   ```
 ///   Mutating the subitems must also modify the main item.
 /// * A static member function evaluating a subitem of a compute
 ///   item:
 ///   ```
 ///   template <typename Subtag>
-///   static item_type<Subtag> create_compute_item(
-///       const item_type<Tag>& parent_value) noexcept;
+///   static typename Subtag::type create_compute_item(
+///       typename Tag::type& parent_value) noexcept;
 ///   ```
 template <typename Tag, typename = std::nullptr_t>
 struct Subitems {

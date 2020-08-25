@@ -93,10 +93,10 @@ struct InitializeCharacteristicEvolutionTime {
     TimeStepId second_time_id =
         time_stepper.next_time_id(initial_time_id, fixed_time_step);
 
-    db::item_type<::Tags::HistoryEvolvedVariables<coordinate_variables_tag>>
+    typename ::Tags::HistoryEvolvedVariables<coordinate_variables_tag>::type
         coordinate_history;
 
-    db::item_type<::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>
+    typename ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>::type
         swsh_history;
     return std::make_tuple(
         Initialization::merge_into_databox<

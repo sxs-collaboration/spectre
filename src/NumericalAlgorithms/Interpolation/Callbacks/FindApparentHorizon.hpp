@@ -206,7 +206,7 @@ struct FindApparentHorizon {
           const size_t L_mesh = fast_flow.current_l_mesh(strahlkorper);
           const auto prolonged_strahlkorper =
               Strahlkorper<Frame::Inertial>(L_mesh, L_mesh, strahlkorper);
-          auto new_vars = db::item_type<::Tags::Variables<vars_tags>>(
+          auto new_vars = ::Variables<vars_tags>(
               strahlkorper.ylm_spherepack().physical_size());
 
           tmpl::for_each<vars_tags>([

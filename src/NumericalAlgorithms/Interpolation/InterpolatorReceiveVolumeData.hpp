@@ -52,11 +52,10 @@ struct InterpolatorReceiveVolumeData {
           vars) noexcept {
     db::mutate<Tags::VolumeVarsInfo<Metavariables>>(
         make_not_null(&box),
-        [
-          &temporal_id, &element_id, &mesh, &vars
-        ](const gsl::not_null<
-            db::item_type<Tags::VolumeVarsInfo<Metavariables>>*>
-              container) noexcept {
+        [&temporal_id, &element_id, &mesh, &
+         vars ](const gsl::not_null<
+                typename Tags::VolumeVarsInfo<Metavariables>::type*>
+                    container) noexcept {
           if (container->find(temporal_id) == container->end()) {
             container->emplace(
                 temporal_id,

@@ -84,8 +84,8 @@ void check_case(const Frac& expected_frac,
       using type = std::nullptr_t;
     };
     using history_tag = Tags::HistoryEvolvedVariables<Tag>;
-    db::item_type<history_tag> lts_history{};
-    db::item_type<history_tag> gts_history{};
+    typename history_tag::type lts_history{};
+    typename history_tag::type gts_history{};
 
     const auto make_gts_time_id =
         [&direction, &make_time_id](const size_t i) noexcept {

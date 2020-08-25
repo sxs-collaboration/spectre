@@ -514,7 +514,7 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
                                          domain::Tags::Mesh<VolumeDim>>;
 
   bool operator()(
-      const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,
+      const gsl::not_null<std::add_pointer_t<typename Tags::type>>... tensors,
       const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
       const std::unordered_map<
           std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
@@ -603,7 +603,7 @@ void Krivodonova<VolumeDim, tmpl::list<Tags...>>::package_data(
 
 template <size_t VolumeDim, typename... Tags>
 bool Krivodonova<VolumeDim, tmpl::list<Tags...>>::operator()(
-    const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,
+    const gsl::not_null<std::add_pointer_t<typename Tags::type>>... tensors,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,

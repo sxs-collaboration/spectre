@@ -56,10 +56,10 @@ struct MutationFromArguments<Mutator, OutputTag, tmpl::list<ArgumentTags...>,
                              NumberOfGridPoints, Args...> {
   static ComplexDataVector evaluate(const Args&... args) noexcept {
     auto box = db::create<db::AddSimpleTags<OutputTag, ArgumentTags...>>(
-        db::item_type<OutputTag>{typename db::item_type<OutputTag>::type{
+        typename OutputTag::type{typename OutputTag::type::type{
             ComplexDataVector{NumberOfGridPoints}}},
-        db::item_type<ArgumentTags>{
-            typename db::item_type<ArgumentTags>::type{args}}...);
+        typename ArgumentTags::type{
+            typename ArgumentTags::type::type{args}}...);
     db::mutate_apply<Mutator>(make_not_null(&box));
     return ComplexDataVector{get(db::get<OutputTag>(box)).data()};
   }

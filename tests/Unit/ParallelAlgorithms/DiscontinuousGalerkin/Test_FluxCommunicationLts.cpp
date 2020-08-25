@@ -359,7 +359,7 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
   ActionTesting::next_action<my_component>(make_not_null(&runner), self_id);
 
   CHECK(get_tag(mortar_next_temporal_ids_tag{}) ==
-        db::item_type<mortar_next_temporal_ids_tag>{
+        typename mortar_next_temporal_ids_tag::type{
             {left_mortar_id, relevant_left_steps.back()},
             {right_mortar_id, relevant_right_steps.back()}});
 

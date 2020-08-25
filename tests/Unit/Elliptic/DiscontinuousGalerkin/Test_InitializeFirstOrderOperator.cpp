@@ -184,7 +184,7 @@ void test_initialize_fluxes(const DomainCreator<Dim>& domain_creator,
   const size_t num_points =
       alg::accumulate(gsl::at(initial_extents, element_id.block_id()),
                       size_t{1}, funcl::Multiplies<>{});
-  db::item_type<vars_tag<Dim>> vars{num_points, 0.};
+  typename vars_tag<Dim>::type vars{num_points, 0.};
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       {Fluxes<Dim>{}, domain_creator.create_domain()}};

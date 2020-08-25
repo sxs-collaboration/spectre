@@ -63,7 +63,7 @@ struct CopyDataBoxTags {
                     const FromDataBox& from_data_box) noexcept {
     db::mutate<Tags...>(
         to_data_box,
-        [](const gsl::not_null<db::item_type<Tags>*>... to_value,
+        [](const gsl::not_null<typename Tags::type*>... to_value,
            const typename Tags::type&... from_value) noexcept {
           const auto assign = [](auto to, const auto& from) noexcept {
             *to = from;

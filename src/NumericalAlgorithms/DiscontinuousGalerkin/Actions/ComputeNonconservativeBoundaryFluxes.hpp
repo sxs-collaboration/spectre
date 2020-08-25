@@ -77,7 +77,7 @@ struct ComputeNonconservativeBoundaryFluxes {
                                          tmpl::bind<domain::Tags::Interface,
                                                     DirectionsTag, tmpl::_1>>,
                          DirectionsTag>>(
-        [](const gsl::not_null<db::item_type<interface_normal_dot_fluxes_tag>*>
+        [](const gsl::not_null<typename interface_normal_dot_fluxes_tag::type*>
                boundary_fluxes,
            const std::unordered_set<Direction<Metavariables::volume_dim>>&
                internal_directions,

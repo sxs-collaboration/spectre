@@ -482,7 +482,7 @@ struct MapTag : db::SimpleTag {
 
 template <typename Tag>
 struct SomePrefix : db::PrefixTag, db::SimpleTag {
-  using type = db::item_type<Tag>;
+  using type = typename Tag::type;
   using tag = Tag;
   static std::string name() noexcept {
     return "SomePrefix(" + db::tag_name<Tag>() + ")";
@@ -522,7 +522,7 @@ void test_partial_derivatives_compute_item(
     using Tag = tmpl::type_from<decltype(tag)>;
     get<Tag>(u) = Tag::f(array_to_functions, x);
   });
-  db::item_type<prefixed_variables_tag> prefixed_vars(u);
+  typename prefixed_variables_tag::type prefixed_vars(u);
 
   tmpl::for_each<vars_tags>(
       [&array_to_functions, &x, &expected_du ](auto tag) noexcept {
