@@ -518,54 +518,39 @@ Variables<tmpl::list<Tags...>>::Variables(const size_t number_of_grid_points,
 template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::initialize(
     const size_t number_of_grid_points) noexcept {
-  size_ = number_of_grid_points * number_of_independent_components;
-  if (size_ > 0) {
-    // clang-tidy: cppcoreguidelines-no-malloc
-    variable_data_impl_.reset(static_cast<value_type*>(
-        malloc(number_of_grid_points *  // NOLINT
-               number_of_independent_components * sizeof(value_type))));
+  if (number_of_grid_points_ != number_of_grid_points) {
     number_of_grid_points_ = number_of_grid_points;
+    size_ = number_of_grid_points * number_of_independent_components;
+    if (size_ > 0) {
+      // clang-tidy: cppcoreguidelines-no-malloc
+      variable_data_impl_.reset(static_cast<value_type*>(
+          malloc(size_ * sizeof(value_type))));  // NOLINT
 #if defined(SPECTRE_DEBUG) || defined(SPECTRE_NAN_INIT)
-    std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
-              make_signaling_NaN<value_type>());
+      std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
+                make_signaling_NaN<value_type>());
 #endif  // SPECTRE_DEBUG
-    variable_data_.reset(variable_data_impl_.get(), size_);
-    add_reference_variable_data(tmpl::list<Tags...>{});
+      variable_data_.reset(variable_data_impl_.get(), size_);
+      add_reference_variable_data(tmpl::list<Tags...>{});
+    }
   }
 }
 
 template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::initialize(
     const size_t number_of_grid_points, const value_type value) noexcept {
-  size_ = number_of_grid_points * number_of_independent_components;
-  if (size_ > 0) {
-    // clang-tidy: cppcoreguidelines-no-malloc
-    variable_data_impl_.reset(static_cast<value_type*>(
-        malloc(number_of_grid_points *  // NOLINT
-               number_of_independent_components * sizeof(value_type))));
-    number_of_grid_points_ = number_of_grid_points;
-    std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
-              value);
-    variable_data_.reset(variable_data_impl_.get(), size_);
-    add_reference_variable_data(tmpl::list<Tags...>{});
-  }
+  initialize(number_of_grid_points);
+  std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
+            value);
 }
 
 /// \cond HIDDEN_SYMBOLS
 template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables(
-    const Variables<tmpl::list<Tags...>>& rhs) noexcept
-    : size_(rhs.size_), number_of_grid_points_(rhs.number_of_grid_points()) {
-  if (size_ > 0) {
-    // clang-tidy: cppcoreguidelines-no-malloc
-    variable_data_impl_.reset(static_cast<value_type*>(
-        malloc(size_ * sizeof(value_type))));  // NOLINT
-    variable_data_.reset(variable_data_impl_.get(), size_);
-    add_reference_variable_data(tmpl::list<Tags...>{});
-    variable_data_ =
-        static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
-            rhs.variable_data_);
-  }
+    const Variables<tmpl::list<Tags...>>& rhs) noexcept {
+  initialize(rhs.number_of_grid_points());
+  variable_data_ =
+      static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
+          rhs.variable_data_);
 }
 
 template <typename... Tags>
@@ -574,22 +559,10 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   if (&rhs == this) {
     return *this;
   }
-  size_ = rhs.size_;
-  if (number_of_grid_points_ != rhs.number_of_grid_points()) {
-    number_of_grid_points_ = rhs.number_of_grid_points();
-    if (size_ > 0) {
-      // clang-tidy: cppcoreguidelines-no-malloc
-      variable_data_impl_.reset(static_cast<value_type*>(
-          malloc(size_ * sizeof(value_type))));  // NOLINT
-      variable_data_.reset(variable_data_impl_.get(), size_);
-      add_reference_variable_data(tmpl::list<Tags...>{});
-    }
-  }
-  if (size_ > 0) {
-    variable_data_ =
-        static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
-            rhs.variable_data_);
-  }
+  initialize(rhs.number_of_grid_points());
+  variable_data_ =
+      static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
+          rhs.variable_data_);
   return *this;
 }
 
@@ -615,21 +588,14 @@ template <typename... WrappedTags,
               std::is_same<db::remove_all_prefixes<WrappedTags>,
                            db::remove_all_prefixes<Tags>>::value...>::value>>
 Variables<tmpl::list<Tags...>>::Variables(
-    const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept
-    : size_(rhs.size_), number_of_grid_points_(rhs.number_of_grid_points()) {
+    const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
   static_assert(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
-  if (size_ > 0) {
-    // clang-tidy: cppcoreguidelines-no-malloc
-    variable_data_impl_.reset(static_cast<value_type*>(
-        malloc(size_ * sizeof(value_type))));  // NOLINT
-    variable_data_.reset(variable_data_impl_.get(), size_);
-    variable_data_ =
-        static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
-            rhs.variable_data_);
-    add_reference_variable_data(tmpl::list<Tags...>{});
-  }
+  initialize(rhs.number_of_grid_points());
+  variable_data_ =
+      static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
+          rhs.variable_data_);
 }
 
 template <typename... Tags>
@@ -642,17 +608,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   static_assert(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
-  size_ = rhs.size_;
-  if (number_of_grid_points_ != rhs.number_of_grid_points()) {
-    number_of_grid_points_ = rhs.number_of_grid_points();
-    if (size_ > 0) {
-      // clang-tidy: cppcoreguidelines-no-malloc
-      variable_data_impl_.reset(static_cast<value_type*>(
-          malloc(size_ * sizeof(value_type))));  // NOLINT
-      variable_data_.reset(variable_data_impl_.get(), size_);
-      add_reference_variable_data(tmpl::list<Tags...>{});
-    }
-  }
+  initialize(rhs.number_of_grid_points());
   variable_data_ =
       static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
           rhs.variable_data_);
@@ -698,15 +654,10 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
 
 template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) noexcept {
-  p | size_;
-  p | number_of_grid_points_;
+  size_t number_of_grid_points = number_of_grid_points_;
+  p | number_of_grid_points;
   if (p.isUnpacking()) {
-    // clang-tidy: cppcoreguidelines-no-malloc
-    variable_data_impl_.reset(static_cast<value_type*>(
-        malloc(number_of_grid_points_ *  // NOLINT
-               number_of_independent_components * sizeof(value_type))));
-    variable_data_.reset(variable_data_impl_.get(), size());
-    add_reference_variable_data(tmpl::list<Tags...>{});
+    initialize(number_of_grid_points);
   }
   PUParray(p, variable_data_impl_.get(), size_);
 }
@@ -742,10 +693,8 @@ constexpr const typename Tag::type& get(const Variables<TagList>& v) noexcept {
 template <typename... Tags>
 template <typename VT, bool VF>
 Variables<tmpl::list<Tags...>>::Variables(
-    const blaze::Vector<VT, VF>& expression) noexcept
-    : size_((~expression).size()),
-      number_of_grid_points_(size_ / number_of_independent_components) {
-  initialize(number_of_grid_points_);
+    const blaze::Vector<VT, VF>& expression) noexcept {
+  initialize((~expression).size() / number_of_independent_components);
   variable_data_ = expression;
 }
 
@@ -754,11 +703,7 @@ template <typename... Tags>
 template <typename VT, bool VF>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     const blaze::Vector<VT, VF>& expression) noexcept {
-  if (size_ != (~expression).size()) {
-    size_ = (~expression).size();
-    number_of_grid_points_ = size_ / number_of_independent_components;
-    initialize(number_of_grid_points_);
-  }
+  initialize((~expression).size() / number_of_independent_components);
   variable_data_ = expression;
   return *this;
 }
