@@ -99,13 +99,6 @@ class Variables<tmpl::list<Tags...>> {
                 "All tensors stored in a single Variables must "
                 "have the same internal storage type.");
 
-  static_assert(
-      tmpl2::flat_all<std::is_same_v<
-          std::void_t<typename Tags::type::type::value_type>, void>...>::value,
-      "The tensor stored in a Variables must have as member `type` "
-      "a vector with a member `value_type` (e.g. Tensors of doubles are "
-      "disallowed, use instead a Tensor of DataVectors).");
-
   using vector_type =
       tmpl::conditional_t<is_any_spin_weighted_v<first_tensors_type>,
                           typename first_tensors_type::value_type,
