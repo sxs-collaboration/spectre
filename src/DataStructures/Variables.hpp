@@ -129,26 +129,11 @@ class Variables<tmpl::list<Tags...>> {
   /// \f$\psi_{ab}\f$ would be counted as one variable.
   static constexpr auto number_of_variables = sizeof...(Tags);
 
-  /// \cond
-  // If you encounter an error of the `size()` function not existing you are
-  // not filling the Variables with Tensors. Variables can be generalized to
-  // holding containers other than Tensor by having the containers have a
-  // `size()` function that in most cases should return 1. For Tensors the
-  // `size()` function returns the number of independent components.
-  template <typename State, typename Element>
-  struct number_of_independent_components_helper {
-    using type =
-        typename tmpl::plus<State, tmpl::int32_t<Element::type::size()>>::type;
-  };
-  /// \endcond
-
   /// The total number of independent components of all the variables. E.g.
   /// a rank-2 symmetric spacetime Tensor \f$\psi_{ab}\f$ in 3 spatial
   /// dimensions would have 10 independent components.
   static constexpr size_t number_of_independent_components =
-      tmpl::fold<tmpl::list<Tags...>, tmpl::int32_t<0>,
-                 number_of_independent_components_helper<
-                     tmpl::_state, tmpl::_element>>::value;
+      (... + Tags::type::size());
 
   /// Default construct an empty Variables class, Charm++ needs this
   Variables() noexcept;
