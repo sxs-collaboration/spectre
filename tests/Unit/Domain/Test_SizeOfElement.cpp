@@ -63,20 +63,19 @@ void test_1d(const std::array<double, 4>& times_to_check) noexcept {
       std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time = make_single_expansion_functions_of_time();
 
-  const auto check_helper =
-      [&functions_of_time, &logical_to_grid_map,
-       &times_to_check](const auto& grid_to_inertial_map) noexcept {
-        std::array<double, 1> element_size{};
-        for (const double time : times_to_check) {
-          size_of_element(make_not_null(&element_size), logical_to_grid_map,
-                          grid_to_inertial_map, time, functions_of_time);
-          // for this affine map, expected size = width of block / number of
-          // elements
-          const auto expected_size_of_element =
-              make_array<1>(0.225 * (UseMovingMesh ? time : 1.0));
-          CHECK_ITERABLE_APPROX(element_size, expected_size_of_element);
-        }
-      };
+  const auto check_helper = [&functions_of_time, &logical_to_grid_map,
+                             &times_to_check](
+                                const auto& grid_to_inertial_map) noexcept {
+    for (const double time : times_to_check) {
+      const auto element_size = size_of_element(
+          logical_to_grid_map, grid_to_inertial_map, time, functions_of_time);
+      // for this affine map, expected size = width of block / number of
+      // elements
+      const auto expected_size_of_element =
+          make_array<1>(0.225 * (UseMovingMesh ? time : 1.0));
+      CHECK_ITERABLE_APPROX(element_size, expected_size_of_element);
+    }
+  };
 
   if (UseMovingMesh) {
     check_helper(domain::make_coordinate_map<Frame::Grid, Frame::Inertial>(
@@ -106,18 +105,17 @@ void test_2d(const std::array<double, 4>& times_to_check) noexcept {
       std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time = make_single_expansion_functions_of_time();
 
-  const auto check_helper =
-      [&functions_of_time, &logical_to_grid_map,
-       &times_to_check](const auto& grid_to_inertial_map) noexcept {
-        std::array<double, 2> element_size{};
-        for (const double time : times_to_check) {
-          size_of_element(make_not_null(&element_size), logical_to_grid_map,
-                          grid_to_inertial_map, time, functions_of_time);
-          const auto expected_size_of_element =
-              make_array(0.05, 0.425) * (UseMovingMesh ? time : 1.0);
-          CHECK_ITERABLE_APPROX(element_size, expected_size_of_element);
-        }
-      };
+  const auto check_helper = [&functions_of_time, &logical_to_grid_map,
+                             &times_to_check](
+                                const auto& grid_to_inertial_map) noexcept {
+    for (const double time : times_to_check) {
+      const auto element_size = size_of_element(
+          logical_to_grid_map, grid_to_inertial_map, time, functions_of_time);
+      const auto expected_size_of_element =
+          make_array(0.05, 0.425) * (UseMovingMesh ? time : 1.0);
+      CHECK_ITERABLE_APPROX(element_size, expected_size_of_element);
+    }
+  };
 
   if (UseMovingMesh) {
     check_helper(domain::make_coordinate_map<Frame::Grid, Frame::Inertial>(
@@ -148,18 +146,17 @@ void test_3d(const std::array<double, 4>& times_to_check) noexcept {
       std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time = make_single_expansion_functions_of_time();
 
-  const auto check_helper =
-      [&functions_of_time, &logical_to_grid_map,
-       &times_to_check](const auto& grid_to_inertial_map) noexcept {
-        std::array<double, 3> element_size{};
-        for (const double time : times_to_check) {
-          size_of_element(make_not_null(&element_size), logical_to_grid_map,
-                          grid_to_inertial_map, time, functions_of_time);
-          const auto expected_size_of_element =
-              make_array(0.0125, 0.85, 0.125) * (UseMovingMesh ? time : 1.0);
-          CHECK_ITERABLE_APPROX(element_size, expected_size_of_element);
-        }
-      };
+  const auto check_helper = [&functions_of_time, &logical_to_grid_map,
+                             &times_to_check](
+                                const auto& grid_to_inertial_map) noexcept {
+    for (const double time : times_to_check) {
+      const auto element_size = size_of_element(
+          logical_to_grid_map, grid_to_inertial_map, time, functions_of_time);
+      const auto expected_size_of_element =
+          make_array(0.0125, 0.85, 0.125) * (UseMovingMesh ? time : 1.0);
+      CHECK_ITERABLE_APPROX(element_size, expected_size_of_element);
+    }
+  };
 
   if (UseMovingMesh) {
     check_helper(domain::make_coordinate_map<Frame::Grid, Frame::Inertial>(

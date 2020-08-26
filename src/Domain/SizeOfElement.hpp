@@ -52,8 +52,7 @@ struct ElementMap;
  * not well represented by a `Tensor`, so we use a `std::array`.
  */
 template <size_t VolumeDim>
-void size_of_element(
-    gsl::not_null<std::array<double, VolumeDim>*> result,
+std::array<double, VolumeDim> size_of_element(
     const ElementMap<VolumeDim, Frame::Grid>& logical_to_grid_map,
     const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>&
         grid_to_inertial_map,
@@ -84,15 +83,19 @@ struct SizeOfElementCompute : db::ComputeTag, SizeOfElement<VolumeDim> {
                  ::Tags::Time, domain::Tags::FunctionsOfTime>;
   using return_type = typename base::type;
 
-  static constexpr void (*function)(
+  static constexpr void function(
       gsl::not_null<std::array<double, VolumeDim>*> result,
-      const ::ElementMap<VolumeDim, Frame::Grid>&,
-      const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>&,
-      const double,
+      const ::ElementMap<VolumeDim, Frame::Grid>& logical_to_grid_map,
+      const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>&
+          grid_to_inertial_map,
+      const double time,
       const std::unordered_map<
           std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&) =
-      size_of_element<VolumeDim>;
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) noexcept {
+    *result = size_of_element(logical_to_grid_map, grid_to_inertial_map, time,
+                              functions_of_time);
+  }
 };
 }  // namespace Tags
 }  // namespace domain

@@ -17,8 +17,7 @@
 #include "Utilities/StdArrayHelpers.hpp"  // IWYU pragma: keep
 
 template <size_t VolumeDim>
-void size_of_element(
-    const gsl::not_null<std::array<double, VolumeDim>*> result,
+std::array<double, VolumeDim> size_of_element(
     const ElementMap<VolumeDim, Frame::Grid>& logical_to_grid_map,
     const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>&
         grid_to_inertial_map,
@@ -26,7 +25,7 @@ void size_of_element(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) noexcept {
-  *result = make_array<VolumeDim>(0.0);
+  auto result = make_array<VolumeDim>(0.0);
   for (size_t logical_dim = 0; logical_dim < VolumeDim; ++logical_dim) {
     const auto face_center = [&functions_of_time, &grid_to_inertial_map,
                               &logical_dim, &logical_to_grid_map,
@@ -48,16 +47,16 @@ void size_of_element(
           upper_center.get(inertial_dim) - lower_center.get(inertial_dim);
     }
 
-    result->at(logical_dim) = magnitude(center_to_center);
+    result.at(logical_dim) = magnitude(center_to_center);
   }
+  return result;
 }
 
 // Explicit instantiations
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                              \
-  template void size_of_element(                                            \
-      gsl::not_null<std::array<double, GET_DIM(data)>*> result,             \
+  template std::array<double, GET_DIM(data)> size_of_element(               \
       const ElementMap<GET_DIM(data), Frame::Grid>& logical_to_grid_map,    \
       const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial,         \
                                       GET_DIM(data)>& grid_to_inertial_map, \
