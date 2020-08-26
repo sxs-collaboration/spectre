@@ -88,12 +88,14 @@ class Variables<tmpl::list<Tags...>> {
                 "for type inference");
   static_assert(tmpl2::flat_all_v<tt::is_a_v<Tensor, typename Tags::type>...>);
 
-  static_assert((tmpl2::flat_all<std::is_same_v<
-                     typename Tags::type::type,
-                     typename tmpl::front<tags_list>::type::type>...>::value or
-                 tmpl2::flat_all<is_spin_weighted_of_same_type_v<
-                     typename tmpl::front<tags_list>::type::type,
-                     typename Tags::type::type>...>::value),
+ private:
+  using first_tensors_type = typename tmpl::front<tags_list>::type::type;
+
+ public:
+  static_assert(tmpl2::flat_all_v<std::is_same_v<typename Tags::type::type,
+                                                 first_tensors_type>...> or
+                    tmpl2::flat_all_v<is_spin_weighted_of_same_type_v<
+                        typename Tags::type::type, first_tensors_type>...>,
                 "All tensors stored in a single Variables must "
                 "have the same internal storage type.");
 
@@ -104,10 +106,10 @@ class Variables<tmpl::list<Tags...>> {
       "a vector with a member `value_type` (e.g. Tensors of doubles are "
       "disallowed, use instead a Tensor of DataVectors).");
 
-  using vector_type = tmpl::conditional_t<
-      is_any_spin_weighted_v<typename tmpl::front<tags_list>::type::value_type>,
-      typename tmpl::front<tags_list>::type::type::value_type,
-      typename tmpl::front<tags_list>::type::type>;
+  using vector_type =
+      tmpl::conditional_t<is_any_spin_weighted_v<first_tensors_type>,
+                          typename first_tensors_type::value_type,
+                          first_tensors_type>;
   using value_type = typename vector_type::value_type;
   using pointer = value_type*;
   using const_pointer = const value_type*;
