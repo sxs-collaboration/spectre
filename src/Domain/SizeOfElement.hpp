@@ -53,6 +53,11 @@ struct ElementMap;
  */
 template <size_t VolumeDim>
 std::array<double, VolumeDim> size_of_element(
+    const ElementMap<VolumeDim, Frame::Inertial>&
+        logical_to_inertial_map) noexcept;
+
+template <size_t VolumeDim>
+std::array<double, VolumeDim> size_of_element(
     const ElementMap<VolumeDim, Frame::Grid>& logical_to_grid_map,
     const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>&
         grid_to_inertial_map,
