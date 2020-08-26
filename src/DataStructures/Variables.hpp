@@ -108,8 +108,7 @@ class Variables<tmpl::list<Tags...>> {
   using const_pointer = const value_type*;
   using allocator_type = std::allocator<value_type>;
   using pointer_type =
-      PointerVector<value_type, blaze_unaligned, blaze_unpadded,
-                    transpose_flag,
+      PointerVector<value_type, blaze_unaligned, blaze_unpadded, transpose_flag,
                     blaze::DynamicVector<value_type, transpose_flag>>;
 
   static_assert(
@@ -182,8 +181,8 @@ class Variables<tmpl::list<Tags...>> {
   void initialize(size_t number_of_grid_points, value_type value) noexcept;
   // @}
 
-  constexpr SPECTRE_ALWAYS_INLINE size_t number_of_grid_points() const
-      noexcept {
+  constexpr SPECTRE_ALWAYS_INLINE size_t
+  number_of_grid_points() const noexcept {
     return number_of_grid_points_;
   }
 
@@ -399,8 +398,8 @@ class Variables<tmpl::list<Tags...>> {
   SPECTRE_ALWAYS_INLINE value_type& operator[](const size_type i) noexcept {
     return variable_data_[i];
   }
-  SPECTRE_ALWAYS_INLINE const value_type& operator[](const size_type i) const
-      noexcept {
+  SPECTRE_ALWAYS_INLINE const value_type& operator[](
+      const size_type i) const noexcept {
     return variable_data_[i];
   }
   //@}
@@ -427,7 +426,7 @@ class Variables<tmpl::list<Tags...>> {
 
 // The above Variables implementation doesn't work for an empty parameter pack,
 // so specialize here.
-template<>
+template <>
 class Variables<tmpl::list<>> {
  public:
   Variables() noexcept = default;
@@ -596,7 +595,7 @@ Variables<tmpl::list<Tags...>>::Variables(
       number_of_grid_points_(rhs.number_of_grid_points()),
       variable_data_(variable_data_impl_.get(), size_),
       reference_variable_data_(std::move(rhs.reference_variable_data_)) {
-    static_assert(
+  static_assert(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
 }
@@ -764,7 +763,7 @@ template <typename... Tags, Requires<sizeof...(Tags) != 0> = nullptr>
 std::ostream& operator<<(std::ostream& os,
                          const Variables<tmpl::list<Tags...>>& d) noexcept {
   size_t count = 0;
-  const auto helper = [&os, &d, &count ](auto tag_v) noexcept {
+  const auto helper = [&os, &d, &count](auto tag_v) noexcept {
     count++;
     using Tag = typename decltype(tag_v)::type;
     os << db::tag_name<Tag>() << ":\n";
