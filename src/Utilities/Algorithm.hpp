@@ -127,6 +127,48 @@ constexpr bool next_permutation(BidirectionalIterator first,
       std::less<
           typename std::iterator_traits<BidirectionalIterator>::value_type>());
 }
+
+/*!
+ * \ingroup UtilitiesGroup
+ * Reimplementation of std::find that is constexpr
+ */
+template <class InputIt, class T>
+constexpr InputIt find(InputIt first, InputIt last, const T& value) {
+  for (; first != last; ++first) {
+    if (*first == value) {
+      return first;
+    }
+  }
+  return last;
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * Reimplementation of std::find_if that is constexpr
+ */
+template <class InputIt, class UnaryPredicate>
+constexpr InputIt find_if(InputIt first, InputIt last, UnaryPredicate p) {
+  for (; first != last; ++first) {
+    if (p(*first)) {
+      return first;
+    }
+  }
+  return last;
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * Reimplementation of std::find_if_not that is constexpr
+ */
+template <class InputIt, class UnaryPredicate>
+constexpr InputIt find_if_not(InputIt first, InputIt last, UnaryPredicate q) {
+  for (; first != last; ++first) {
+    if (!q(*first)) {
+      return first;
+    }
+  }
+  return last;
+}
 }  // namespace cpp20
 
 /*!
@@ -178,61 +220,67 @@ decltype(auto) count_if(const Container& c, UnaryPredicate&& unary_predicate) {
                        std::forward<UnaryPredicate>(unary_predicate));
 }
 
-/// Convenience wrapper around std::find
+/// Convenience wrapper around constexpr reimplementation of std::find
 template <class Container, class T>
-decltype(auto) find(Container&& c, const T& value) {
+constexpr decltype(auto) find(Container&& c, const T& value) {
   using std::begin;
   using std::end;
-  return std::find(begin(std::forward<Container>(c)),
-                   end(std::forward<Container>(c)), value);
+  return cpp20::find(begin(std::forward<Container>(c)),
+                     end(std::forward<Container>(c)), value);
 }
 
-/// Convenience wrapper around std::find_if
+/// Convenience wrapper around constexpr reimplementation of std::find_if
 template <class Container, class UnaryPredicate>
-decltype(auto) find_if(Container&& c, UnaryPredicate&& unary_predicate) {
+constexpr decltype(auto) find_if(Container&& c,
+                                 UnaryPredicate&& unary_predicate) {
   using std::begin;
   using std::end;
-  return std::find_if(begin(std::forward<Container>(c)),
-                      end(std::forward<Container>(c)),
-                      std::forward<UnaryPredicate>(unary_predicate));
+  return cpp20::find_if(begin(std::forward<Container>(c)),
+                        end(std::forward<Container>(c)),
+                        std::forward<UnaryPredicate>(unary_predicate));
 }
 
-/// Convenience wrapper around std::find_if_not
+/// Convenience wrapper around constexpr reimplementation of std::find_if_not
 template <class Container, class UnaryPredicate>
-decltype(auto) find_if_not(Container&& c, UnaryPredicate&& unary_predicate) {
+constexpr decltype(auto) find_if_not(Container&& c,
+                                     UnaryPredicate&& unary_predicate) {
   using std::begin;
   using std::end;
-  return std::find_if_not(begin(std::forward<Container>(c)),
-                          end(std::forward<Container>(c)),
-                          std::forward<UnaryPredicate>(unary_predicate));
+  return cpp20::find_if_not(begin(std::forward<Container>(c)),
+                            end(std::forward<Container>(c)),
+                            std::forward<UnaryPredicate>(unary_predicate));
 }
 
-/// Convenience wrapper around std::find, returns `true` if `value` is in `c`.
+/// Convenience wrapper around constexpr reimplementation of std::find, returns
+/// `true` if `value` is in `c`.
 template <class Container, class T>
-bool found(const Container& c, const T& value) {
+constexpr bool found(const Container& c, const T& value) {
   using std::begin;
   using std::end;
-  return std::find(begin(c), end(c), value) != end(c);
+  return cpp20::find(begin(c), end(c), value) != end(c);
 }
 
-/// Convenience wrapper around std::find_if, returns `true` if the result of
-/// `std::find_if` is not equal to `end(c)`.
+/// Convenience wrapper around constexpr reimplementation of std::find_if,
+/// returns `true` if the result of `cpp20::find_if` is not equal to `end(c)`.
 template <class Container, class UnaryPredicate>
-bool found_if(const Container& c, UnaryPredicate&& unary_predicate) {
+constexpr bool found_if(const Container& c, UnaryPredicate&& unary_predicate) {
   using std::begin;
   using std::end;
-  return std::find_if(begin(c), end(c),
-                      std::forward<UnaryPredicate>(unary_predicate)) != end(c);
+  return cpp20::find_if(begin(c), end(c),
+                        std::forward<UnaryPredicate>(unary_predicate)) !=
+         end(c);
 }
 
-/// Convenience wrapper around std::find_if_not, returns `true` if the result of
-/// `std::find_if_not` is not equal to `end(c)`.
+/// Convenience wrapper around constexpr reimplementation of std::find_if_not,
+/// returns `true` if the result of `cpp20::find_if_not` is not equal to
+/// `end(c)`.
 template <class Container, class UnaryPredicate>
-bool found_if_not(const Container& c, UnaryPredicate&& unary_predicate) {
+constexpr bool found_if_not(const Container& c,
+                            UnaryPredicate&& unary_predicate) {
   using std::begin;
   using std::end;
-  return std::find_if_not(begin(c), end(c),
-                          std::forward<UnaryPredicate>(unary_predicate)) !=
+  return cpp20::find_if_not(begin(c), end(c),
+                            std::forward<UnaryPredicate>(unary_predicate)) !=
          end(c);
 }
 
