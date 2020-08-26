@@ -425,14 +425,7 @@ class Variables<tmpl::list<Tags...>> {
   }
   //@}
 
-  static SPECTRE_ALWAYS_INLINE void add_reference_variable_data(
-      tmpl::list<> /*unused*/, const size_t /*variable_offset*/ = 0) noexcept {}
-
-  template <
-      typename TagToAdd, typename... Rest,
-      Requires<tt::is_a<Tensor, typename TagToAdd::type>::value> = nullptr>
-  void add_reference_variable_data(tmpl::list<TagToAdd, Rest...> /*unused*/,
-                                   size_t variable_offset = 0) noexcept;
+  void add_reference_variable_data() noexcept;
 
   friend bool operator==(const Variables& lhs, const Variables& rhs) noexcept {
     return lhs.variable_data_ == rhs.variable_data_;
@@ -529,8 +522,7 @@ void Variables<tmpl::list<Tags...>>::initialize(
       std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
                 make_signaling_NaN<value_type>());
 #endif  // SPECTRE_DEBUG
-      variable_data_.reset(variable_data_impl_.get(), size_);
-      add_reference_variable_data(tmpl::list<Tags...>{});
+      add_reference_variable_data();
     }
   }
 }
@@ -575,10 +567,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   variable_data_impl_ = std::move(rhs.variable_data_impl_);
   size_ = rhs.size_;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
-  if (size_ > 0) {
-    variable_data_.reset(variable_data_impl_.get(), size());
-    add_reference_variable_data(tmpl::list<Tags...>{});
-  }
+  add_reference_variable_data();
   return *this;
 }
 
@@ -645,10 +634,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   variable_data_impl_ = std::move(rhs.variable_data_impl_);
   size_ = rhs.size_;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
-  if (size_ > 0) {
-    variable_data_.reset(variable_data_impl_.get(), size());
-    add_reference_variable_data(tmpl::list<Tags...>{});
-  }
+  add_reference_variable_data();
   return *this;
 }
 
@@ -711,26 +697,21 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
 
 /// \cond HIDDEN_SYMBOLS
 template <typename... Tags>
-template <typename TagToAdd, typename... Rest,
-          Requires<tt::is_a<Tensor, typename TagToAdd::type>::value>>
-void Variables<tmpl::list<Tags...>>::add_reference_variable_data(
-    tmpl::list<TagToAdd, Rest...> /*unused*/,
-    const size_t variable_offset) noexcept {
-  ASSERT(size_ > (variable_offset + TagToAdd::type::size() - 1) *
-                     number_of_grid_points_,
-         "This ASSERT is typically triggered because a Variables class was "
-         "default constructed. The only reason the Variables class has a "
-         "default constructor is because Charm++ uses it, you are not "
-         "supposed to use it otherwise.");
-  typename TagToAdd::type& var =
-      tuples::get<TagToAdd>(reference_variable_data_);
-  for (size_t i = 0; i < TagToAdd::type::size(); ++i) {
-    var[i].set_data_ref(
-        &variable_data_[(variable_offset + i) * number_of_grid_points_],
-        number_of_grid_points_);
+void Variables<tmpl::list<Tags...>>::add_reference_variable_data() noexcept {
+  if (size_ == 0) {
+    return;
   }
-  add_reference_variable_data(tmpl::list<Rest...>{},
-                              variable_offset + TagToAdd::type::size());
+  variable_data_.reset(variable_data_impl_.get(), size_);
+  size_t variable_offset = 0;
+  tmpl::for_each<tags_list>([this, &variable_offset](auto tag_v) noexcept {
+    using Tag = tmpl::type_from<decltype(tag_v)>;
+    auto& var = tuples::get<Tag>(reference_variable_data_);
+    for (size_t i = 0; i < Tag::type::size(); ++i) {
+      var[i].set_data_ref(
+          &variable_data_[variable_offset++ * number_of_grid_points_],
+          number_of_grid_points_);
+    }
+  });
 }
 /// \endcond
 
