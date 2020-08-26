@@ -193,7 +193,7 @@ struct get_array_index;
 template <>
 struct get_array_index<Parallel::Algorithms::Singleton> {
   template <class ParallelComponent>
-  using f = cpp17::void_type;
+  using f = char;
 };
 
 template <>

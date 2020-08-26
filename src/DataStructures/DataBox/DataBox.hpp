@@ -532,8 +532,7 @@ class DataBox<tmpl::list<Tags...>>
       tmpl::list<Subtags...> /*meta*/) noexcept;
 
   template <size_t ArgsIndex, typename Tag, typename... Ts>
-  constexpr cpp17::void_type add_item_to_box(
-      std::tuple<Ts...>& tupull) noexcept;
+  constexpr char add_item_to_box(std::tuple<Ts...>& tupull) noexcept;
   // End adding simple items
 
   template <typename FullTagList, typename... Ts, typename... AddItemTags,
@@ -684,7 +683,7 @@ namespace DataBox_detail {
 // This function exists so that the user can look at the template
 // arguments to find out what triggered the static_assert.
 template <typename ComputeItem, typename Argument, typename FullTagList>
-constexpr cpp17::void_type check_compute_item_argument_exists() noexcept {
+constexpr char check_compute_item_argument_exists() noexcept {
   using compute_item_index = tmpl::index_of<FullTagList, ComputeItem>;
   static_assert(
       tmpl::less<tmpl::index_if<FullTagList,
@@ -696,7 +695,7 @@ constexpr cpp17::void_type check_compute_item_argument_exists() noexcept {
       "dependencies arise.  See the first and second template "
       "arguments of the instantiation of this function for the "
       "compute item and missing dependency.");
-  return cpp17::void_type{};
+  return '0';
 }
 }  // namespace DataBox_detail
 
@@ -760,7 +759,7 @@ db::DataBox<tmpl::list<Tags...>>::add_subitem_tags_to_box(
 
 template <typename... Tags>
 template <size_t ArgsIndex, typename Tag, typename... Ts>
-SPECTRE_ALWAYS_INLINE constexpr cpp17::void_type
+SPECTRE_ALWAYS_INLINE constexpr char
 db::DataBox<tmpl::list<Tags...>>::add_item_to_box(
     std::tuple<Ts...>& tupull) noexcept {
   using ArgType = std::tuple_element_t<ArgsIndex, std::tuple<Ts...>>;
@@ -773,7 +772,7 @@ db::DataBox<tmpl::list<Tags...>>::add_item_to_box(
       Deferred<DataBox_detail::storage_type<Tag, tmpl::list<Tags...>>>(
           std::forward<ArgType>(std::get<ArgsIndex>(tupull)));
   add_subitem_tags_to_box<Tag>(typename Subitems<Tag>::type{});
-  return cpp17::void_type{};  // must return in constexpr function
+  return '0';  // must return in constexpr function
 }
 // End adding simple items
 

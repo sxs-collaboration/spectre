@@ -66,7 +66,7 @@ void check_random_values(
     const double upper_bound) noexcept {
   expand_pack((check_random_values<decltype(get<Tags>(v))>(
                    values, counter, get<Tags>(v), lower_bound, upper_bound),
-               cpp17::void_type{})...);
+               '0')...);
 }
 
 template <typename T, typename U>

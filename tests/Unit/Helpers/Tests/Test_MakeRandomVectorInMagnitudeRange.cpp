@@ -32,7 +32,7 @@ void check_random_values(const Variables<tmpl::list<Tags...>>& v,
                          const double bound1, const double bound2) noexcept {
   expand_pack((
       check_random_values<decltype(get<Tags>(v))>(get<Tags>(v), bound1, bound2),
-      cpp17::void_type{})...);
+      '0')...);
 }
 
 // Compute Magnitude
