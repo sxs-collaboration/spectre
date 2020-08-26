@@ -22,55 +22,54 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Tensor_detail {
-constexpr size_t number_of_independent_components(
-    const std::array<int, 0>& /*symm*/,
-    const std::array<size_t, 0>& /*dims*/) noexcept {
-  return 1;
-}
-
-constexpr size_t number_of_independent_components(
-    const std::array<int, 1>& /*symm*/,
-    const std::array<size_t, 1>& dims) noexcept {
-  return dims[0];
-}
-
 template <size_t Size>
 constexpr size_t number_of_independent_components(
     const std::array<int, Size>& symm,
     const std::array<size_t, Size>& dims) noexcept {
-  size_t max_element = 0;
-  for (size_t i = 0; i < Size; ++i) {
-    // clang-tidy: internal STL and gls::at (don't need it in constexpr)
-    assert(symm[i] > 0);  // NOLINT
-    max_element =
-        std::max(static_cast<size_t>(ce_abs(symm[i])), max_element);  // NOLINT
-  }
-  assert(max_element > 0);  // NOLINT
-  size_t total_independent_components = 1;
-  for (size_t symm_index = 1; symm_index <= max_element; ++symm_index) {
-    size_t number_of_indices_with_symm = 0;
-    size_t dim_of_index = 0;
+  if constexpr (Size == 0) {
+    (void)symm;
+    (void)dims;
+
+    return 1;
+  } else if constexpr (Size == 1) {
+    (void)symm;
+
+    return dims[0];
+  } else {
+    size_t max_element = 0;
     for (size_t i = 0; i < Size; ++i) {
-      if (static_cast<size_t>(symm[i]) == symm_index) {  // NOLINT
-        ++number_of_indices_with_symm;
-        dim_of_index = dims[i];  // NOLINT
+      // clang-tidy: internal STL and gls::at (don't need it in constexpr)
+      assert(symm[i] > 0);  // NOLINT
+      max_element = std::max(static_cast<size_t>(ce_abs(symm[i])),
+                             max_element);  // NOLINT
+    }
+    assert(max_element > 0);  // NOLINT
+    size_t total_independent_components = 1;
+    for (size_t symm_index = 1; symm_index <= max_element; ++symm_index) {
+      size_t number_of_indices_with_symm = 0;
+      size_t dim_of_index = 0;
+      for (size_t i = 0; i < Size; ++i) {
+        if (static_cast<size_t>(symm[i]) == symm_index) {  // NOLINT
+          ++number_of_indices_with_symm;
+          dim_of_index = dims[i];  // NOLINT
+        }
+      }
+      assert(dim_of_index > 0);                 // NOLINT
+      assert(number_of_indices_with_symm > 0);  // NOLINT
+      if (dim_of_index - 1 > number_of_indices_with_symm) {
+        total_independent_components *=
+            falling_factorial(dim_of_index + number_of_indices_with_symm - 1,
+                              number_of_indices_with_symm) /
+            factorial(number_of_indices_with_symm);
+      } else {
+        total_independent_components *=
+            falling_factorial(dim_of_index + number_of_indices_with_symm - 1,
+                              dim_of_index - 1) /
+            factorial(dim_of_index - 1);
       }
     }
-    assert(dim_of_index > 0);                 // NOLINT
-    assert(number_of_indices_with_symm > 0);  // NOLINT
-    if (dim_of_index - 1 > number_of_indices_with_symm) {
-      total_independent_components *=
-          falling_factorial(dim_of_index + number_of_indices_with_symm - 1,
-                            number_of_indices_with_symm) /
-          factorial(number_of_indices_with_symm);
-    } else {
-      total_independent_components *=
-          falling_factorial(dim_of_index + number_of_indices_with_symm - 1,
-                            dim_of_index - 1) /
-          factorial(dim_of_index - 1);
-    }
+    return total_independent_components;
   }
-  return total_independent_components;
 }
 
 template <size_t Size>
@@ -143,74 +142,66 @@ constexpr size_t compute_collapsed_index(
   return collapsed_index;
 }
 
-template <typename Symm, size_t NumberOfComponents,
-          Requires<tmpl::size<Symm>::value != 0> = nullptr>
-constexpr cpp20::array<size_t, NumberOfComponents> compute_collapsed_to_storage(
+template <typename Symm, size_t NumberOfComponents>
+constexpr auto compute_collapsed_to_storage(
     const cpp20::array<size_t, tmpl::size<Symm>::value>&
         index_dimensions) noexcept {
-  cpp20::array<size_t, NumberOfComponents> collapsed_to_storage{};
-  auto tensor_index =
-      convert_to_cpp20_array(make_array<tmpl::size<Symm>::value>(size_t{0}));
-  size_t count{0};
-  for (auto& current_storage_index : collapsed_to_storage) {
-    // Compute canonical tensor_index, which, for symmetric get_tensor_index is
-    // in decreasing numerical order, e.g. (3,2) rather than (2,3).
-    const auto canonical_tensor_index = canonicalize_tensor_index(
-        tensor_index, make_cpp20_array_from_list<Symm>());
-    // If the tensor_index was already in the canonical form, then it must be a
-    // new unique entry  and we add it to collapsed_to_storage_ as a new
-    // integer, thus increasing the size_. Else, the StorageIndex has already
-    // been determined so we look it up in the existing collapsed_to_storage
-    // table.
-    if (tensor_index == canonical_tensor_index) {
-      current_storage_index = count;
-      ++count;
-    } else {
-      current_storage_index = collapsed_to_storage[compute_collapsed_index(
-          canonical_tensor_index, index_dimensions)];
+  if constexpr (tmpl::size<Symm>::value != 0) {
+    cpp20::array<size_t, NumberOfComponents> collapsed_to_storage{};
+    auto tensor_index =
+        convert_to_cpp20_array(make_array<tmpl::size<Symm>::value>(size_t{0}));
+    size_t count{0};
+    for (auto& current_storage_index : collapsed_to_storage) {
+      // Compute canonical tensor_index, which, for symmetric get_tensor_index
+      // is in decreasing numerical order, e.g. (3,2) rather than (2,3).
+      const auto canonical_tensor_index = canonicalize_tensor_index(
+          tensor_index, make_cpp20_array_from_list<Symm>());
+      // If the tensor_index was already in the canonical form, then it must be
+      // a new unique entry  and we add it to collapsed_to_storage_ as a new
+      // integer, thus increasing the size_. Else, the StorageIndex has already
+      // been determined so we look it up in the existing collapsed_to_storage
+      // table.
+      if (tensor_index == canonical_tensor_index) {
+        current_storage_index = count;
+        ++count;
+      } else {
+        current_storage_index = collapsed_to_storage[compute_collapsed_index(
+            canonical_tensor_index, index_dimensions)];
+      }
+      // Move to the next tensor_index.
+      increment_tensor_index(tensor_index, index_dimensions);
     }
-    // Move to the next tensor_index.
-    increment_tensor_index(tensor_index, index_dimensions);
+    return collapsed_to_storage;
+  } else {
+    (void)index_dimensions;
+
+    return cpp20::array<size_t, 1>{{0}};
   }
-  return collapsed_to_storage;
 }
 
-template <typename Symm, size_t NumberOfComponents,
-          Requires<tmpl::size<Symm>::value == 0> = nullptr>
-constexpr cpp20::array<size_t, 1> compute_collapsed_to_storage(
-    const cpp20::array<
-        size_t, tmpl::size<Symm>::value>& /*index_dimensions*/) noexcept {
-  return cpp20::array<size_t, 1>{{0}};
-}
-
-template <typename Symm, size_t NumIndComps, size_t NumComps,
-          Requires<(tmpl::size<Symm>::value > 0)> = nullptr>
-constexpr cpp20::array<cpp20::array<size_t, tmpl::size<Symm>::value>,
-                       NumIndComps>
-compute_storage_to_tensor(
+template <typename Symm, size_t NumIndComps, size_t NumComps>
+constexpr auto compute_storage_to_tensor(
     const cpp20::array<size_t, NumComps>& collapsed_to_storage,
     const cpp20::array<size_t, tmpl::size<Symm>::value>&
         index_dimensions) noexcept {
-  constexpr size_t rank = tmpl::size<Symm>::value;
-  cpp20::array<cpp20::array<size_t, rank>, NumIndComps> storage_to_tensor{};
-  cpp20::array<size_t, rank> tensor_index =
-      convert_to_cpp20_array(make_array<rank>(size_t{0}));
-  for (const auto& current_storage_index : collapsed_to_storage) {
-    storage_to_tensor[current_storage_index] = canonicalize_tensor_index(
-        tensor_index, make_cpp20_array_from_list<Symm>());
-    increment_tensor_index(tensor_index, index_dimensions);
-  }
-  return storage_to_tensor;
-}
+  if constexpr (tmpl::size<Symm>::value > 0) {
+    constexpr size_t rank = tmpl::size<Symm>::value;
+    cpp20::array<cpp20::array<size_t, rank>, NumIndComps> storage_to_tensor{};
+    cpp20::array<size_t, rank> tensor_index =
+        convert_to_cpp20_array(make_array<rank>(size_t{0}));
+    for (const auto& current_storage_index : collapsed_to_storage) {
+      storage_to_tensor[current_storage_index] = canonicalize_tensor_index(
+          tensor_index, make_cpp20_array_from_list<Symm>());
+      increment_tensor_index(tensor_index, index_dimensions);
+    }
+    return storage_to_tensor;
+  } else {
+    (void)collapsed_to_storage;
+    (void)index_dimensions;
 
-template <typename Symm, size_t NumIndComps, size_t NumComps,
-          Requires<(tmpl::size<Symm>::value == 0)> = nullptr>
-constexpr cpp20::array<cpp20::array<int, 1>, NumIndComps>
-compute_storage_to_tensor(
-    const cpp20::array<size_t, NumComps>& /*collapsed_to_storage*/,
-    const cpp20::array<size_t, tmpl::size<Symm>::value>&
-    /*index_dimensions*/) noexcept {
-  return cpp20::array<cpp20::array<int, 1>, 1>{{cpp20::array<int, 1>{{0}}}};
+    return cpp20::array<cpp20::array<size_t, 1>, 1>{
+        {cpp20::array<size_t, 1>{{0}}}};
+  }
 }
 
 template <size_t NumIndComps, typename T, size_t NumComps>
@@ -408,18 +399,17 @@ struct Structure {
    * for that particular index.
    * Note that this ordering is implementation defined.
    */
-  template <size_t Rank = sizeof...(Indices),
-            std::enable_if_t<Rank != 0>* = nullptr>
-  SPECTRE_ALWAYS_INLINE static constexpr std::array<size_t, sizeof...(Indices)>
+  template <size_t Rank = sizeof...(Indices)>
+  SPECTRE_ALWAYS_INLINE static constexpr std::array<size_t, Rank>
   get_canonical_tensor_index(const size_t storage_index) noexcept {
-    constexpr auto storage_to_tensor = storage_to_tensor_;
-    return gsl::at(storage_to_tensor, storage_index);
-  }
-  template <size_t Rank = sizeof...(Indices),
-            std::enable_if_t<Rank == 0>* = nullptr>
-  SPECTRE_ALWAYS_INLINE static constexpr std::array<size_t, 0>
-  get_canonical_tensor_index(const size_t /*storage_index*/) noexcept {
-    return std::array<size_t, 0>{};
+    if constexpr (Rank != 0) {
+      constexpr auto storage_to_tensor = storage_to_tensor_;
+      return gsl::at(storage_to_tensor, storage_index);
+    } else {
+      (void)storage_index;
+
+      return std::array<size_t, 0>{};
+    }
   }
 
   /// Get storage_index
