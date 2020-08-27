@@ -75,6 +75,10 @@ static TensorIndex<8> ti_i{};
 static TensorIndex<8> ti_I{};
 static TensorIndex<9> ti_j{};
 static TensorIndex<9> ti_J{};
+static TensorIndex<10> ti_k{};
+static TensorIndex<10> ti_K{};
+static TensorIndex<11> ti_l{};
+static TensorIndex<11> ti_L{};
 
 using ti_a_t = decltype(ti_a);
 using ti_A_t = decltype(ti_A);
@@ -96,6 +100,10 @@ using ti_i_t = decltype(ti_i);
 using ti_I_t = decltype(ti_I);
 using ti_j_t = decltype(ti_j);
 using ti_J_t = decltype(ti_J);
+using ti_k_t = decltype(ti_k);
+using ti_K_t = decltype(ti_K);
+using ti_l_t = decltype(ti_l);
+using ti_L_t = decltype(ti_L);
 // @}
 
 /// \cond HIDDEN_SYMBOLS
