@@ -310,8 +310,7 @@ struct TensorExpression<Derived, DataType, Symm, IndexList, ArgsList<Args...>>
   using type = DataType;
   using symmetry = Symm;
   using index_list = IndexList;
-  static constexpr auto num_tensor_indices =
-      tmpl::size<index_list>::value == 0 ? 1 : tmpl::size<index_list>::value;
+  static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
   /// Typelist of the tensor indices, e.g. `_a_t` and `_b_t` in `F(_a, _b)`
   using args_list = ArgsList<Args...>;
 
