@@ -43,6 +43,10 @@ set(CLANG_TIDY_IGNORE_CHECKS "*,"
     "-hicpp-*,"
     # We use pragma once instead of include guards
     "-llvm-header-guard,"
+    # Makes code less portable because some implementation-defined STL
+    # types can be pointers or not.  (Same as
+    # readability-qualified-auto below)
+    "-llvm-qualified-auto,"
     # thinks constexpr variables in header files cause ODR violations
     "-misc-definitions-in-headers,"
     # false positives
@@ -63,6 +67,13 @@ set(CLANG_TIDY_IGNORE_CHECKS "*,"
     # style choice, discussed in issue #145
     "-readability-else-after-return,"
     "-readability-magic-numbers,"
+    # Same as llvm-qualified-auto above.
+    "-readability-qualified-auto,"
+    # We can have two of: methods are static when possible, static
+    # methods are not called through instances, and methods of
+    # calling, e.g., x.size(), are consistent across classes.  We
+    # choose to lose this one.
+    "-readability-static-accessed-through-instance,"
     # we're okay with lower case
     "-readability-uppercase-literal-suffix,"
     )
