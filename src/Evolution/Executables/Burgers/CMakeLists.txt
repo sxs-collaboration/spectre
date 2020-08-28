@@ -17,9 +17,9 @@ set(LIBS_TO_LINK
   Utilities
   )
 
-function(add_burgers_executable EXECUTABLE_NAME INITIAL_DATA)
+function(add_burgers_executable INITIAL_DATA_NAME INITIAL_DATA)
   add_spectre_parallel_executable(
-    "Evolve${EXECUTABLE_NAME}"
+    "EvolveBurgers${INITIAL_DATA_NAME}"
     EvolveBurgers
     Evolution/Executables/Burgers
     "EvolutionMetavars<${INITIAL_DATA}>"

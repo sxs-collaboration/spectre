@@ -1,12 +1,12 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveKerrSchild
+# Executable: EvolveGhKerrSchild
 # Check: parse;execute
 # Timeout: 8
 # ExpectedOutput:
-#   GhKerrSchildReductionData.h5
-#   GhKerrSchildVolumeData0.h5
+#   GhKerrSchildVolume0.h5
+#   GhKerrSchildReductions.h5
 
 Evolution:
   InitialTime: 0.0
@@ -60,8 +60,8 @@ EventsAndTriggers:
   : - Completion
 
 Observers:
-  VolumeFileName: "GhKerrSchildVolumeData"
-  ReductionFileName: "GhKerrSchildReductionData"
+  VolumeFileName: "GhKerrSchildVolume"
+  ReductionFileName: "GhKerrSchildReductions"
 
 ApparentHorizons:
   AhA:

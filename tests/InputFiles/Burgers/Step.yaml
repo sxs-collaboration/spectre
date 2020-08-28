@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveStep
+# Executable: EvolveBurgersStep
 # Check: parse;execute
 
 AnalyticSolution:
@@ -56,5 +56,5 @@ EventsAndTriggers:
   : - Completion
 
 Observers:
-  VolumeFileName: "BurgersVolume"
-  ReductionFileName: "BurgersReductions"
+  VolumeFileName: "BurgersStepVolume"
+  ReductionFileName: "BurgersStepReductions"

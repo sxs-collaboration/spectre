@@ -20,9 +20,9 @@ set(LIBS_TO_LINK
   Valencia
   )
 
-function(add_valencia_executable EXECUTABLE_NAME DIM INITIAL_DATA)
+function(add_valencia_executable INITIAL_DATA_NAME DIM INITIAL_DATA)
   add_spectre_parallel_executable(
-    "Evolve${EXECUTABLE_NAME}${DIM}D"
+    "EvolveValencia${INITIAL_DATA_NAME}${DIM}D"
     EvolveValencia
     Evolution/Executables/RelativisticEuler/Valencia
     "EvolutionMetavars<${DIM},${INITIAL_DATA}>"
@@ -32,7 +32,7 @@ endfunction(add_valencia_executable)
 
 function(add_smooth_flow_executable DIM)
   add_valencia_executable(
-    ValenciaSmoothFlow
+    SmoothFlow
     ${DIM}
     RelativisticEuler::Solutions::SmoothFlow<${DIM}>
     )

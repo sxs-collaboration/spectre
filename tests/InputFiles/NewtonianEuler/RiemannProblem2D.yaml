@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveRiemannProblem2D
+# Executable: EvolveNewtonianEulerRiemannProblem2D
 # Check: parse;execute
 
 Evolution:
@@ -52,5 +52,5 @@ EventsAndTriggers:
   : - Completion
 
 Observers:
-  VolumeFileName: "./NewtonianEulerRiemannProblemVolume2D"
-  ReductionFileName: "./NewtonianEulerRiemannProblemReductions2D"
+  VolumeFileName: "NewtonianEulerRiemannProblem2DVolume"
+  ReductionFileName: "NewtonianEulerRiemannProblem2DReductions"

@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveRiemannProblem3D
+# Executable: EvolveNewtonianEulerRiemannProblem3D
 # Check: parse;execute
 
 Evolution:
@@ -52,5 +52,5 @@ EventsAndTriggers:
   : - Completion
 
 Observers:
-  VolumeFileName: "./NewtonianEulerRiemannProblemVolume3D"
-  ReductionFileName: "./NewtonianEulerRiemannProblemReductions3D"
+  VolumeFileName: "NewtonianEulerRiemannProblem3DVolume"
+  ReductionFileName: "NewtonianEulerRiemannProblem3DReductions"

@@ -22,9 +22,9 @@ set(LIBS_TO_LINK
   ValenciaDivClean
   )
 
-function(add_grmhd_executable EXECUTABLE_NAME INITIAL_DATA)
+function(add_grmhd_executable INITIAL_DATA_NAME INITIAL_DATA)
   add_spectre_parallel_executable(
-    "Evolve${EXECUTABLE_NAME}"
+    "EvolveValenciaDivClean${INITIAL_DATA_NAME}"
     EvolveValenciaDivClean
     Evolution/Executables/GrMhd/ValenciaDivClean
     "EvolutionMetavars<${INITIAL_DATA}>"
@@ -37,7 +37,7 @@ add_grmhd_executable(
   RelativisticEuler::Solutions::FishboneMoncriefDisk,KerrHorizon
   )
 target_link_libraries(
-  EvolveFishboneMoncriefDisk
+  EvolveValenciaDivCleanFishboneMoncriefDisk
   PUBLIC
   ApparentHorizons
   Interpolation
@@ -64,7 +64,7 @@ add_grmhd_executable(
   )
 
 add_grmhd_executable(
-  ValenciaDivCleanSmoothFlow
+  SmoothFlow
   grmhd::Solutions::SmoothFlow
   )
 
