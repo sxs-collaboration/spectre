@@ -2,44 +2,71 @@
 # See LICENSE.txt for details.
 
 # Remove the checks because:
-# -cppcoreguidelines-no-malloc: we want to use malloc with unique_ptr because
-#                               not initializing the memory is faster.
-# -llvm-header-guard: We use pragma once instead of include guards
-# -google-runtime-int: specifying int32_t and int64_t instead of just int
-# -readability-else-after-return: style choice, discussed in issue #145
-# -misc-noexcept-move-constructor: false positives
-# -misc-unconventional-assign-operator: false positives
-# -cppcoreguidelines-c-copy-assignment-signature: false positives
-# -cert-err58-cpp: many static variables we use do not throw, and if they do
-#                  we want to terminate anyway
-# -google-default-arguments: defaulting virtual functions in CoordinateMap
-# -modernize-use-trailing-return-type: this wants everything to use trailing
-#                                      return type syntax, which is silly.
-# -cert-oop54-cpp: checks for incorrectly implemented self-assignment checks.
-#                  However, it's broken.
-# -misc-definitions-in-headers: thinks constexpr variables in header files
-#                               cause ODR violations
-# -modernize-use-nodiscard: while it would be great to do this, changing
-#                           the entire source tree is something we don't have
-#                           the resources for.
-# -hicpp-*: redundant with other checks
-# -cppcoreguidelines-macro-usage: sometimes macros are the right answer.
-# -cppcoreguidelines-avoid-magic-numbers: too many inconvenient positives
-#                                         for us to deal with
-# -modernize-use-nodiscard: should be used, but requires possibly a lot of code
-#                           changes that we don't have the resources for
-# -cppcoreguidelines-non-private-member-variables-in-classes:
-#         public and protected member variables are fine
-# -readability-uppercase-literal-suffix: we're okay with lower case
-# -readability-const-return-type: complains about decltype(auto)
-# -bugprone-infinite-loop:  complains about Catch macros having infinite loops
 #
 # Notes:
 # misc-move-const-arg: we keep this check because even though this gives
 #                      a lot of annoying warnings about moving trivially
 #                      copyable types, it warns about moving const objects,
 #                      which can have severe performance impacts.
-set(CLANG_TIDY_IGNORE_CHECKS "*,-cppcoreguidelines-no-malloc,-llvm-header-guard,-google-runtime-int,-readability-else-after-return,-misc-noexcept-move-constructor,-misc-unconventional-assign-operator,-cppcoreguidelines-c-copy-assignment-signature,-modernize-raw-string-literal,-hicpp-*,-android-*,-cert-err58-cpp,-google-default-arguments,-fuchsia-*,-performance-noexcept-move-constructor,-modernize-use-trailing-return-type,-cert-oop54-cpp,-misc-definitions-in-headers,-cppcoreguidelines-macro-usage,-cppcoreguidelines-avoid-magic-numbers,-modernize-use-nodiscard,-readability-magic-numbers,-bugprone-exception-escape,-cert-msc32-c,-misc-non-private-member-variables-in-classes,-cppcoreguidelines-avoid-c-arrays,-cppcoreguidelines-non-private-member-variables-in-classes,-cert-msc51-cpp,-bugprone-macro-parentheses,-readability-uppercase-literal-suffix,-readability-const-return-type,-bugprone-infinite-loop")
+set(CLANG_TIDY_IGNORE_CHECKS "*,"
+    "-android-*,"
+    "-bugprone-exception-escape,"
+    # complains about Catch macros having infinite loops
+    "-bugprone-infinite-loop,"
+    "-bugprone-macro-parentheses,"
+    # many static variables we use do not throw, and if they do we
+    # want to terminate anyway
+    "-cert-err58-cpp,"
+    "-cert-msc51-cpp,"
+    "-cert-msc32-c,"
+    # checks for incorrectly implemented self-assignment
+    # checks.  However, it's broken.
+    "-cert-oop54-cpp,"
+    "-cppcoreguidelines-avoid-c-arrays,"
+    # too many inconvenient positives for us to deal with
+    "-cppcoreguidelines-avoid-magic-numbers,"
+    # false positives
+    "-cppcoreguidelines-c-copy-assignment-signature,"
+    # sometimes macros are the right answer.
+    "-cppcoreguidelines-macro-usage,"
+    # we want to use malloc with unique_ptr because not initializing
+    # the memory is faster.
+    "-cppcoreguidelines-no-malloc,"
+    # public and protected member variables are fine
+    "-cppcoreguidelines-non-private-member-variables-in-classes,"
+    "-fuchsia-*,"
+    # defaulting virtual functions in CoordinateMap
+    "-google-default-arguments,"
+    # specifying int32_t and int64_t instead of just int
+    "-google-runtime-int,"
+    # redundant with other checks
+    "-hicpp-*,"
+    # We use pragma once instead of include guards
+    "-llvm-header-guard,"
+    # thinks constexpr variables in header files cause ODR violations
+    "-misc-definitions-in-headers,"
+    # false positives
+    "-misc-noexcept-move-constructor,"
+    "-misc-non-private-member-variables-in-classes,"
+    # false positives
+    "-misc-unconventional-assign-operator,"
+    "-modernize-raw-string-literal,"
+    # should be used, but requires possibly a lot of code changes that
+    # we don't have the resources for
+    "-modernize-use-nodiscard,"
+    # this wants everything to use trailing return type syntax, which
+    # is silly.
+    "-modernize-use-trailing-return-type,"
+    "-performance-noexcept-move-constructor,"
+    # complains about decltype(auto)
+    "-readability-const-return-type,"
+    # style choice, discussed in issue #145
+    "-readability-else-after-return,"
+    "-readability-magic-numbers,"
+    # we're okay with lower case
+    "-readability-uppercase-literal-suffix,"
+    )
+string(REPLACE ";" "" CLANG_TIDY_IGNORE_CHECKS "${CLANG_TIDY_IGNORE_CHECKS}")
 
 if(NOT CLANG_TIDY_ROOT)
   # Need to set to empty to avoid warnings with --warn-uninitialized
