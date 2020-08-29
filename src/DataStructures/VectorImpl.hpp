@@ -522,15 +522,14 @@ std::ostream& operator<<(std::ostream& os,
 #define MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(VECTOR_TYPE)                     \
   namespace MakeWithValueImpls {                                             \
   template <>                                                                \
-  struct MakeWithValueImpl<VECTOR_TYPE, VECTOR_TYPE> {                       \
-    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE                                 \
-    apply(const VECTOR_TYPE& input,                                          \
-          const VECTOR_TYPE::value_type value) noexcept {                    \
-      return VECTOR_TYPE(input.size(), value);                               \
+  struct NumberOfPoints<VECTOR_TYPE> {                                       \
+    static SPECTRE_ALWAYS_INLINE size_t                                      \
+    apply(const VECTOR_TYPE& input) noexcept {                               \
+      return input.size();                                                   \
     }                                                                        \
   };                                                                         \
   template <>                                                                \
-  struct MakeWithValueImpl<VECTOR_TYPE, size_t> {                            \
+  struct MakeWithSize<VECTOR_TYPE> {                                         \
     static SPECTRE_ALWAYS_INLINE VECTOR_TYPE                                 \
     apply(const size_t size, const VECTOR_TYPE::value_type value) noexcept { \
       return VECTOR_TYPE(size, value);                                       \

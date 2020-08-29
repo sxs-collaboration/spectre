@@ -59,13 +59,21 @@ class DenseVector : public blaze::DynamicVector<T, TF> {
 };
 
 namespace MakeWithValueImpls {
-template <bool TFOut, typename TIn, bool TFIn>
-struct MakeWithValueImpl<DenseVector<double, TFOut>, DenseVector<TIn, TFIn>> {
-  /// \brief Returns a `DenseVector` the same size as `input`, with each element
+template <bool TF>
+struct NumberOfPoints<DenseVector<double, TF>> {
+  static SPECTRE_ALWAYS_INLINE size_t
+  apply(const DenseVector<double, TF>& input) noexcept {
+    return input.size();
+  }
+};
+
+template <bool TF>
+struct MakeWithSize<DenseVector<double, TF>> {
+  /// \brief Returns a `DenseVector` with the given size, with each element
   /// equal to `value`.
-  static SPECTRE_ALWAYS_INLINE DenseVector<double, TFOut> apply(
-      const DenseVector<TIn, TFIn>& input, const double value) noexcept {
-    return DenseVector<double, TFOut>(input.size(), value);
+  static SPECTRE_ALWAYS_INLINE DenseVector<double, TF> apply(
+      const size_t size, const double value) noexcept {
+    return DenseVector<double, TF>(size, value);
   }
 };
 }  // namespace MakeWithValueImpls
