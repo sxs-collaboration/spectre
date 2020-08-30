@@ -12,8 +12,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace Burgers {
-namespace Solutions {
+namespace Burgers::Solutions {
 
 Linear::Linear(const double shock_time) noexcept : shock_time_(shock_time) {}
 
@@ -32,8 +31,7 @@ tuples::TaggedTuple<Tags::U> Linear::variables(
 
 void Linear::pup(PUP::er& p) noexcept { p | shock_time_; }
 
-}  // namespace Solutions
-}  // namespace Burgers
+}  // namespace Burgers::Solutions
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 

@@ -13,8 +13,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace Burgers {
-namespace Solutions {
+namespace Burgers::Solutions {
 
 Bump::Bump(const double half_width, const double height,
            const double center) noexcept
@@ -46,8 +45,7 @@ void Bump::pup(PUP::er& p) noexcept {
   p | center_;
 }
 
-}  // namespace Solutions
-}  // namespace Burgers
+}  // namespace Burgers::Solutions
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 

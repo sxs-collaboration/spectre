@@ -13,8 +13,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace Burgers {
-namespace Solutions {
+namespace Burgers::Solutions {
 
 Step::Step(const double left_value, const double right_value,
            const double initial_shock_position, const OptionContext& context)
@@ -48,8 +47,7 @@ void Step::pup(PUP::er& p) noexcept {
   p | initial_shock_position_;
 }
 
-}  // namespace Solutions
-}  // namespace Burgers
+}  // namespace Burgers::Solutions
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
