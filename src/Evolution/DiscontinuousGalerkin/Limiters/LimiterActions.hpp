@@ -103,11 +103,10 @@ struct Limit {
   }
 
   template <typename DbTags, typename... InboxTags, typename ArrayIndex>
-  static bool is_ready(
-      const db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) noexcept {
+  static bool is_ready(const db::DataBox<DbTags>& box,
+                       const tuples::TaggedTuple<InboxTags...>& inboxes,
+                       const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                       const ArrayIndex& /*array_index*/) noexcept {
     constexpr size_t volume_dim = Metavariables::system::volume_dim;
     const auto& element = db::get<domain::Tags::Element<volume_dim>>(box);
     const auto num_expected = element.neighbors().size();
