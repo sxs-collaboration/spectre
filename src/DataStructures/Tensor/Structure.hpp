@@ -40,8 +40,8 @@ constexpr size_t number_of_independent_components(
     for (size_t i = 0; i < Size; ++i) {
       // clang-tidy: internal STL and gls::at (don't need it in constexpr)
       assert(symm[i] > 0);  // NOLINT
-      max_element = std::max(static_cast<size_t>(ce_abs(symm[i])),
-                             max_element);  // NOLINT
+      max_element = std::max(static_cast<size_t>(ce_abs(symm[i])),  // NOLINT
+                             max_element);
     }
     assert(max_element > 0);  // NOLINT
     size_t total_independent_components = 1;

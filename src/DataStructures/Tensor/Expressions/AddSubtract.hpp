@@ -78,8 +78,7 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   using symmetry = tmpl::transform<typename T1::symmetry, typename T2::symmetry,
                                    tmpl::append<tmpl::max<tmpl::_1, tmpl::_2>>>;
   using index_list = typename T1::index_list;
-  static constexpr auto num_tensor_indices =
-      tmpl::size<index_list>::value == 0 ? 1 : tmpl::size<index_list>::value;
+  static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
   using args_list = tmpl::sort<typename T1::args_list>;
 
   AddSub(T1 t1, T2 t2) : t1_(std::move(t1)), t2_(std::move(t2)) {}
