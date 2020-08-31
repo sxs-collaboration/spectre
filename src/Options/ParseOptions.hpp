@@ -25,7 +25,6 @@
 #include "Options/Options.hpp"
 #include "Options/OptionsDetails.hpp"
 #include "Utilities/NoSuchType.hpp"
-#include "Utilities/Overloader.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -623,25 +622,16 @@ T create_from_yaml<T>::create(const Option& options) {
   parser.parse(options);
   return parser.template apply<typename Options_detail::get_options_list<
       T, Metavariables>::type>([&options](auto&&... args) {
-    return make_overloader(
-        [&options](std::false_type /*option_context_no_metavars*/,
-                   std::true_type /*option_context_with_metavars*/,
-                   auto&&... args2) {
-          return T(std::move(args2)..., options.context(), Metavariables{});
-        },
-        [&options](std::true_type /*option_context_no_metavars*/,
-                   std::false_type /*option_context_with_metavars*/,
-                   auto&&... args2) {
-          return T(std::move(args2)..., options.context());
-        },
-        [](std::false_type /*option_context_no_metavars*/,
-           std::false_type /*option_context_with_metavars*/, auto&&... args2) {
-          return T(std::move(args2)...);
-        })(std::is_constructible<T, decltype(std::move(args))...,
-                                 const OptionContext&>{},
-           std::is_constructible<T, decltype(std::move(args))...,
-                                 const OptionContext&, Metavariables>{},
-           std::move(args)...);
+    if constexpr (std::is_constructible<T, decltype(std::move(args))...,
+                                        const OptionContext&,
+                                        Metavariables>{}) {
+      return T(std::move(args)..., options.context(), Metavariables{});
+    } else if constexpr (std::is_constructible<T, decltype(std::move(args))...,
+                                               const OptionContext&>{}) {
+      return T(std::move(args)..., options.context());
+    } else {
+      return T(std::move(args)...);
+    }
   });
 }
 
