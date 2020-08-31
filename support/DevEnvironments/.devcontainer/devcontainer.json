@@ -1,0 +1,36 @@
+{
+    "name": "SpECTRE development environment",
+    "image": "sxscollaboration/spectrebuildenv:latest",
+    "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind,consistency=delegated",
+    "workspaceFolder": "${localWorkspaceFolder}",
+    "extensions": [
+        "eamodio.gitlens",
+        "foxundermoon.shell-format",
+        "github.vscode-pull-request-github",
+        "gruntfuggly.format-modified",
+        "ms-python.python",
+        "ms-vscode.cmake-tools",
+        "ms-vscode.cpptools",
+        "ms-vsliveshare.vsliveshare",
+        "redhat.vscode-yaml",
+        "stkb.rewrap",
+        "streetsidesoftware.code-spell-checker",
+        "twxs.cmake"
+    ],
+    "settings": {
+        "cmake.buildDirectory": "${localWorkspaceFolder}/build-${buildKit}-${buildType}",
+        "editor.rulers": [
+            80
+        ],
+        "editor.wordWrap": "off",
+        "editor.formatOnSave": false,
+        "editor.formatOnPaste": true,
+        "editor.formatOnType": true,
+        "python.pythonPath": "/usr/bin/python3",
+        "python.formatting.provider": "yapf"
+    },
+    "remoteEnv": {
+        "SPECTRE_HOME": "${localWorkspaceFolder}"
+    },
+    "postCreateCommand": "mkdir -p /root/.local/share/CMakeTools && cp ${localWorkspaceFolder}/support/DevEnvironments/.devcontainer/cmake-kits.json /root/.local/share/CMakeTools/cmake-tools-kits.json"
+}
