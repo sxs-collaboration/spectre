@@ -20,4 +20,8 @@ spectre_target_headers(
 
 target_link_libraries(
   ${LIBRARY}
+  PRIVATE
+  Utilities
+  PUBLIC
+  DataStructures
   )
