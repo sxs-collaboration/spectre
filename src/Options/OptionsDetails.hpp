@@ -171,23 +171,10 @@ struct print_impl {
 template <typename Tag, typename OptionList>
 struct print_impl<Tag, OptionList,
                   Requires<tmpl::list_contains_v<OptionList, Tag>>> {
-  template <typename LocalTag,
-            Requires<has_default<LocalTag>::value and
-                     not tt::is_a_v<std::unique_ptr, typename LocalTag::type>> =
-                nullptr>
-  static std::string print_default() noexcept {
+  static std::string print_factory_default() noexcept {
     std::ostringstream ss;
-    ss << "default=" << std::boolalpha << LocalTag::default_value();
-    return ss.str();
-  }
-  template <
-      typename LocalTag,
-      Requires<has_default<LocalTag>::value and
-               tt::is_a_v<std::unique_ptr, typename LocalTag::type>> = nullptr>
-  static std::string print_default() noexcept {
-    std::ostringstream ss;
-    using base_class = typename LocalTag::type::element_type;
-    const auto default_value = LocalTag::default_value();
+    using base_class = typename Tag::type::element_type;
+    const auto default_value = Tag::default_value();
     bool found_derived = false;
     tmpl::for_each<typename base_class::creatable_classes>(
         [&default_value, &found_derived, &ss](auto class_v) noexcept {
@@ -208,76 +195,29 @@ struct print_impl<Tag, OptionList,
     }
     return ss.str();
   }
-  template <typename LocalTag,
-            Requires<not has_default<LocalTag>::value> = nullptr>
-  static std::string print_default() noexcept {
-    return "";
-  }
-  template <typename LocalTag,
-            Requires<has_lower_bound<LocalTag>::value> = nullptr>
-  static std::string print_lower_bound() noexcept {
-    std::ostringstream ss;
-    ss << "min=" << LocalTag::lower_bound();
-    return ss.str();
-  }
-  template <typename LocalTag,
-            Requires<not has_lower_bound<LocalTag>::value> = nullptr>
-  static std::string print_lower_bound() noexcept {
-    return "";
-  }
-  template <typename LocalTag,
-            Requires<has_upper_bound<LocalTag>::value> = nullptr>
-  static std::string print_upper_bound() noexcept {
-    std::ostringstream ss;
-    ss << "max=" << LocalTag::upper_bound();
-    return ss.str();
-  }
-  template <typename LocalTag,
-            Requires<not has_upper_bound<LocalTag>::value> = nullptr>
-  static std::string print_upper_bound() noexcept {
-    return "";
-  }
-  template <typename LocalTag,
-            Requires<has_lower_bound_on_size<LocalTag>::value> = nullptr>
-  static std::string print_lower_bound_on_size() noexcept {
-    std::ostringstream ss;
-    ss << "min size=" << LocalTag::lower_bound_on_size();
-    return ss.str();
-  }
-  template <typename LocalTag,
-            Requires<not has_lower_bound_on_size<LocalTag>::value> = nullptr>
-  static std::string print_lower_bound_on_size() noexcept {
-    return "";
-  }
-  template <typename LocalTag,
-            Requires<has_upper_bound_on_size<LocalTag>::value> = nullptr>
-  static std::string print_upper_bound_on_size() noexcept {
-    std::ostringstream ss;
-    ss << "max size=" << LocalTag::upper_bound_on_size();
-    return ss.str();
-  }
-  template <typename LocalTag,
-            Requires<not has_upper_bound_on_size<LocalTag>::value> = nullptr>
-  static std::string print_upper_bound_on_size() noexcept {
-    return "";
-  }
 
   static std::string apply() noexcept {
     std::ostringstream ss;
     ss << "  " << option_name<Tag>() << ":\n"
        << "    " << "type=" << yaml_type<typename Tag::type>::value();
-    std::string limits;
-    for (const auto& limit :
-         {print_default<Tag>(), print_lower_bound<Tag>(),
-          print_upper_bound<Tag>(), print_lower_bound_on_size<Tag>(),
-          print_upper_bound_on_size<Tag>()}) {
-      if (not limits.empty() and not limit.empty()) {
-        limits += "\n    ";
+    if constexpr (has_default<Tag>::value) {
+      if constexpr (tt::is_a_v<std::unique_ptr, typename Tag::type>) {
+        ss << "\n    " << print_factory_default();
+      } else {
+        ss << "\n    default=" << std::boolalpha << Tag::default_value();
       }
-      limits += limit;
     }
-    if (not limits.empty()) {
-      ss << "\n    " << limits;
+    if constexpr (has_lower_bound<Tag>::value) {
+      ss << "\n    min=" << Tag::lower_bound();
+    }
+    if constexpr (has_upper_bound<Tag>::value) {
+      ss << "\n    max=" << Tag::upper_bound();
+    }
+    if constexpr (has_lower_bound_on_size<Tag>::value) {
+      ss << "\n    min size=" << Tag::lower_bound_on_size();
+    }
+    if constexpr (has_upper_bound_on_size<Tag>::value) {
+      ss << "\n    max size=" << Tag::upper_bound_on_size();
     }
     ss << "\n" << wrap_text(Tag::help, 77, "    ") << "\n\n";
     return ss.str();
