@@ -21,6 +21,7 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/FakeVirtual.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -171,38 +172,18 @@ struct print_impl {
 template <typename Tag, typename OptionList>
 struct print_impl<Tag, OptionList,
                   Requires<tmpl::list_contains_v<OptionList, Tag>>> {
-  static std::string print_factory_default() noexcept {
-    std::ostringstream ss;
-    using base_class = typename Tag::type::element_type;
-    const auto default_value = Tag::default_value();
-    bool found_derived = false;
-    tmpl::for_each<typename base_class::creatable_classes>(
-        [&default_value, &found_derived, &ss](auto class_v) noexcept {
-          if (found_derived) {
-            return;
-          }
-
-          using derived = typename decltype(class_v)::type;
-          if (dynamic_cast<const derived*>(default_value.get()) != nullptr) {
-            ss << "default=" << std::boolalpha
-               << pretty_type::short_name<derived>();
-            found_derived = true;
-          }
-        });
-    if (not found_derived) {
-      ss << "default=Unknown derived class of "
-         << pretty_type::short_name<base_class>();
-    }
-    return ss.str();
-  }
-
   static std::string apply() noexcept {
     std::ostringstream ss;
     ss << "  " << option_name<Tag>() << ":\n"
        << "    " << "type=" << yaml_type<typename Tag::type>::value();
     if constexpr (has_default<Tag>::value) {
       if constexpr (tt::is_a_v<std::unique_ptr, typename Tag::type>) {
-        ss << "\n    " << print_factory_default();
+        call_with_dynamic_type<
+            void, typename Tag::type::element_type::creatable_classes>(
+            Tag::default_value().get(), [&ss](const auto* derived) noexcept {
+              ss << "\n    default=" << std::boolalpha
+                 << pretty_type::short_name<decltype(*derived)>();
+            });
       } else {
         ss << "\n    default=" << std::boolalpha << Tag::default_value();
       }
