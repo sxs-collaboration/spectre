@@ -252,6 +252,11 @@ void test_variables_move() noexcept {
 
   Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
       initializer_move_to = std::move(move_to);
+  CHECK(initializer_move_to ==
+        Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{
+            number_of_grid_points1, initial_fill_values[0]});
+  CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(
+            initializer_move_to)[0][0] == initializer_move_to.data());
 
   move_to = std::move(move_from);
   CHECK(move_to == Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{
@@ -274,6 +279,21 @@ void test_variables_move() noexcept {
             number_of_grid_points2, initial_fill_values[1]});
   CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(move_to)[0][0] ==
         move_to.data());
+
+  move_to = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{
+      number_of_grid_points2, initial_fill_values[0]};
+  CHECK(move_to ==
+        Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{
+            number_of_grid_points2, initial_fill_values[0]});
+  CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(move_to)[0][0] ==
+        move_to.data());
+
+  move_to = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{};
+  CHECK(move_to.size() == 0);
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
+      default_for_construction{};
+  const auto constructed_from_default = std::move(default_for_construction);
+  CHECK(constructed_from_default.size() == 0);
 }
 
 template <typename VectorType>
@@ -359,6 +379,8 @@ void test_variables_math() noexcept {
   TestVariablesType test_assignment2{num_points};
   test_assignment2 = test_assignment * 1.0;
   CHECK(test_assignment2 == test_assignment);
+  test_assignment2 = test_assignment2 * 1.0;
+  CHECK(test_assignment2 == test_assignment);
 
   const auto check_components =
       [](const auto& variables, const VectorType& tensor) noexcept {
@@ -424,6 +446,12 @@ void test_variables_prefix_semantics() noexcept {
   CHECK_VARIABLES_APPROX(vars_to, expected);
   expected = VariablesType(number_of_grid_points, variables_vals[1]);
   CHECK_VARIABLES_APPROX(move_constructed_vars, expected);
+
+  VariablesType constructed_from_default{PrefixVariablesType{}};
+  CHECK(constructed_from_default.size() == 0);
+  PrefixVariablesType assigned_from_default{number_of_grid_points};
+  assigned_from_default = std::move(constructed_from_default);
+  CHECK(assigned_from_default.size() == 0);
 
   // Check move and copy from prefix variables to non-prefix variables via
   // assignment operator

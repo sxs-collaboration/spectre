@@ -88,33 +88,27 @@ class Variables<tmpl::list<Tags...>> {
                 "for type inference");
   static_assert(tmpl2::flat_all_v<tt::is_a_v<Tensor, typename Tags::type>...>);
 
-  static_assert((tmpl2::flat_all<std::is_same_v<
-                     typename Tags::type::type,
-                     typename tmpl::front<tags_list>::type::type>...>::value or
-                 tmpl2::flat_all<is_spin_weighted_of_same_type_v<
-                     typename tmpl::front<tags_list>::type::type,
-                     typename Tags::type::type>...>::value),
+ private:
+  using first_tensors_type = typename tmpl::front<tags_list>::type::type;
+
+ public:
+  static_assert(tmpl2::flat_all_v<std::is_same_v<typename Tags::type::type,
+                                                 first_tensors_type>...> or
+                    tmpl2::flat_all_v<is_spin_weighted_of_same_type_v<
+                        typename Tags::type::type, first_tensors_type>...>,
                 "All tensors stored in a single Variables must "
                 "have the same internal storage type.");
 
-  static_assert(
-      tmpl2::flat_all<std::is_same_v<
-          std::void_t<typename Tags::type::type::value_type>, void>...>::value,
-      "The tensor stored in a Variables must have as member `type` "
-      "a vector with a member `value_type` (e.g. Tensors of doubles are "
-      "disallowed, use instead a Tensor of DataVectors).");
-
-  using vector_type = tmpl::conditional_t<
-      is_any_spin_weighted_v<typename tmpl::front<tags_list>::type::value_type>,
-      typename tmpl::front<tags_list>::type::type::value_type,
-      typename tmpl::front<tags_list>::type::type>;
+  using vector_type =
+      tmpl::conditional_t<is_any_spin_weighted_v<first_tensors_type>,
+                          typename first_tensors_type::value_type,
+                          first_tensors_type>;
   using value_type = typename vector_type::value_type;
   using pointer = value_type*;
   using const_pointer = const value_type*;
   using allocator_type = std::allocator<value_type>;
   using pointer_type =
-      PointerVector<value_type, blaze_unaligned, blaze_unpadded,
-                    transpose_flag,
+      PointerVector<value_type, blaze_unaligned, blaze_unpadded, transpose_flag,
                     blaze::DynamicVector<value_type, transpose_flag>>;
 
   static_assert(
@@ -129,26 +123,11 @@ class Variables<tmpl::list<Tags...>> {
   /// \f$\psi_{ab}\f$ would be counted as one variable.
   static constexpr auto number_of_variables = sizeof...(Tags);
 
-  /// \cond
-  // If you encounter an error of the `size()` function not existing you are
-  // not filling the Variables with Tensors. Variables can be generalized to
-  // holding containers other than Tensor by having the containers have a
-  // `size()` function that in most cases should return 1. For Tensors the
-  // `size()` function returns the number of independent components.
-  template <typename State, typename Element>
-  struct number_of_independent_components_helper {
-    using type =
-        typename tmpl::plus<State, tmpl::int32_t<Element::type::size()>>::type;
-  };
-  /// \endcond
-
   /// The total number of independent components of all the variables. E.g.
   /// a rank-2 symmetric spacetime Tensor \f$\psi_{ab}\f$ in 3 spatial
   /// dimensions would have 10 independent components.
   static constexpr size_t number_of_independent_components =
-      tmpl::fold<tmpl::list<Tags...>, tmpl::int32_t<0>,
-                 number_of_independent_components_helper<
-                     tmpl::_state, tmpl::_element>>::value;
+      (... + Tags::type::size());
 
   /// Default construct an empty Variables class, Charm++ needs this
   Variables() noexcept;
@@ -202,8 +181,8 @@ class Variables<tmpl::list<Tags...>> {
   void initialize(size_t number_of_grid_points, value_type value) noexcept;
   // @}
 
-  constexpr SPECTRE_ALWAYS_INLINE size_t number_of_grid_points() const
-      noexcept {
+  constexpr SPECTRE_ALWAYS_INLINE size_t
+  number_of_grid_points() const noexcept {
     return number_of_grid_points_;
   }
 
@@ -419,20 +398,13 @@ class Variables<tmpl::list<Tags...>> {
   SPECTRE_ALWAYS_INLINE value_type& operator[](const size_type i) noexcept {
     return variable_data_[i];
   }
-  SPECTRE_ALWAYS_INLINE const value_type& operator[](const size_type i) const
-      noexcept {
+  SPECTRE_ALWAYS_INLINE const value_type& operator[](
+      const size_type i) const noexcept {
     return variable_data_[i];
   }
   //@}
 
-  static SPECTRE_ALWAYS_INLINE void add_reference_variable_data(
-      tmpl::list<> /*unused*/, const size_t /*variable_offset*/ = 0) noexcept {}
-
-  template <
-      typename TagToAdd, typename... Rest,
-      Requires<tt::is_a<Tensor, typename TagToAdd::type>::value> = nullptr>
-  void add_reference_variable_data(tmpl::list<TagToAdd, Rest...> /*unused*/,
-                                   size_t variable_offset = 0) noexcept;
+  void add_reference_variable_data() noexcept;
 
   friend bool operator==(const Variables& lhs, const Variables& rhs) noexcept {
     return lhs.variable_data_ == rhs.variable_data_;
@@ -454,7 +426,7 @@ class Variables<tmpl::list<Tags...>> {
 
 // The above Variables implementation doesn't work for an empty parameter pack,
 // so specialize here.
-template<>
+template <>
 class Variables<tmpl::list<>> {
  public:
   Variables() noexcept = default;
@@ -518,54 +490,38 @@ Variables<tmpl::list<Tags...>>::Variables(const size_t number_of_grid_points,
 template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::initialize(
     const size_t number_of_grid_points) noexcept {
-  size_ = number_of_grid_points * number_of_independent_components;
-  if (size_ > 0) {
-    // clang-tidy: cppcoreguidelines-no-malloc
-    variable_data_impl_.reset(static_cast<value_type*>(
-        malloc(number_of_grid_points *  // NOLINT
-               number_of_independent_components * sizeof(value_type))));
+  if (number_of_grid_points_ != number_of_grid_points) {
     number_of_grid_points_ = number_of_grid_points;
+    size_ = number_of_grid_points * number_of_independent_components;
+    if (size_ > 0) {
+      // clang-tidy: cppcoreguidelines-no-malloc
+      variable_data_impl_.reset(static_cast<value_type*>(
+          malloc(size_ * sizeof(value_type))));  // NOLINT
 #if defined(SPECTRE_DEBUG) || defined(SPECTRE_NAN_INIT)
-    std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
-              make_signaling_NaN<value_type>());
+      std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
+                make_signaling_NaN<value_type>());
 #endif  // SPECTRE_DEBUG
-    variable_data_.reset(variable_data_impl_.get(), size_);
-    add_reference_variable_data(tmpl::list<Tags...>{});
+      add_reference_variable_data();
+    }
   }
 }
 
 template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::initialize(
     const size_t number_of_grid_points, const value_type value) noexcept {
-  size_ = number_of_grid_points * number_of_independent_components;
-  if (size_ > 0) {
-    // clang-tidy: cppcoreguidelines-no-malloc
-    variable_data_impl_.reset(static_cast<value_type*>(
-        malloc(number_of_grid_points *  // NOLINT
-               number_of_independent_components * sizeof(value_type))));
-    number_of_grid_points_ = number_of_grid_points;
-    std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
-              value);
-    variable_data_.reset(variable_data_impl_.get(), size_);
-    add_reference_variable_data(tmpl::list<Tags...>{});
-  }
+  initialize(number_of_grid_points);
+  std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
+            value);
 }
 
 /// \cond HIDDEN_SYMBOLS
 template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables(
-    const Variables<tmpl::list<Tags...>>& rhs) noexcept
-    : size_(rhs.size_), number_of_grid_points_(rhs.number_of_grid_points()) {
-  if (size_ > 0) {
-    // clang-tidy: cppcoreguidelines-no-malloc
-    variable_data_impl_.reset(static_cast<value_type*>(
-        malloc(size_ * sizeof(value_type))));  // NOLINT
-    variable_data_.reset(variable_data_impl_.get(), size_);
-    add_reference_variable_data(tmpl::list<Tags...>{});
-    variable_data_ =
-        static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
-            rhs.variable_data_);
-  }
+    const Variables<tmpl::list<Tags...>>& rhs) noexcept {
+  initialize(rhs.number_of_grid_points());
+  variable_data_ =
+      static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
+          rhs.variable_data_);
 }
 
 template <typename... Tags>
@@ -574,22 +530,10 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   if (&rhs == this) {
     return *this;
   }
-  size_ = rhs.size_;
-  if (number_of_grid_points_ != rhs.number_of_grid_points()) {
-    number_of_grid_points_ = rhs.number_of_grid_points();
-    if (size_ > 0) {
-      // clang-tidy: cppcoreguidelines-no-malloc
-      variable_data_impl_.reset(static_cast<value_type*>(
-          malloc(size_ * sizeof(value_type))));  // NOLINT
-      variable_data_.reset(variable_data_impl_.get(), size_);
-      add_reference_variable_data(tmpl::list<Tags...>{});
-    }
-  }
-  if (size_ > 0) {
-    variable_data_ =
-        static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
-            rhs.variable_data_);
-  }
+  initialize(rhs.number_of_grid_points());
+  variable_data_ =
+      static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
+          rhs.variable_data_);
   return *this;
 }
 
@@ -602,8 +546,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   variable_data_impl_ = std::move(rhs.variable_data_impl_);
   size_ = rhs.size_;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
-  variable_data_.reset(variable_data_impl_.get(), size());
-  add_reference_variable_data(tmpl::list<Tags...>{});
+  add_reference_variable_data();
   return *this;
 }
 
@@ -613,21 +556,14 @@ template <typename... WrappedTags,
               std::is_same<db::remove_all_prefixes<WrappedTags>,
                            db::remove_all_prefixes<Tags>>::value...>::value>>
 Variables<tmpl::list<Tags...>>::Variables(
-    const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept
-    : size_(rhs.size_), number_of_grid_points_(rhs.number_of_grid_points()) {
+    const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
   static_assert(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
-  if (size_ > 0) {
-    // clang-tidy: cppcoreguidelines-no-malloc
-    variable_data_impl_.reset(static_cast<value_type*>(
-        malloc(size_ * sizeof(value_type))));  // NOLINT
-    variable_data_.reset(variable_data_impl_.get(), size_);
-    variable_data_ =
-        static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
-            rhs.variable_data_);
-    add_reference_variable_data(tmpl::list<Tags...>{});
-  }
+  initialize(rhs.number_of_grid_points());
+  variable_data_ =
+      static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
+          rhs.variable_data_);
 }
 
 template <typename... Tags>
@@ -640,17 +576,7 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   static_assert(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
-  size_ = rhs.size_;
-  if (number_of_grid_points_ != rhs.number_of_grid_points()) {
-    number_of_grid_points_ = rhs.number_of_grid_points();
-    if (size_ > 0) {
-      // clang-tidy: cppcoreguidelines-no-malloc
-      variable_data_impl_.reset(static_cast<value_type*>(
-          malloc(size_ * sizeof(value_type))));  // NOLINT
-      variable_data_.reset(variable_data_impl_.get(), size_);
-      add_reference_variable_data(tmpl::list<Tags...>{});
-    }
-  }
+  initialize(rhs.number_of_grid_points());
   variable_data_ =
       static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
           rhs.variable_data_);
@@ -669,7 +595,7 @@ Variables<tmpl::list<Tags...>>::Variables(
       number_of_grid_points_(rhs.number_of_grid_points()),
       variable_data_(variable_data_impl_.get(), size_),
       reference_variable_data_(std::move(rhs.reference_variable_data_)) {
-    static_assert(
+  static_assert(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
 }
@@ -687,22 +613,16 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   variable_data_impl_ = std::move(rhs.variable_data_impl_);
   size_ = rhs.size_;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
-  variable_data_.reset(variable_data_impl_.get(), size());
-  add_reference_variable_data(tmpl::list<Tags...>{});
+  add_reference_variable_data();
   return *this;
 }
 
 template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) noexcept {
-  p | size_;
-  p | number_of_grid_points_;
+  size_t number_of_grid_points = number_of_grid_points_;
+  p | number_of_grid_points;
   if (p.isUnpacking()) {
-    // clang-tidy: cppcoreguidelines-no-malloc
-    variable_data_impl_.reset(static_cast<value_type*>(
-        malloc(number_of_grid_points_ *  // NOLINT
-               number_of_independent_components * sizeof(value_type))));
-    variable_data_.reset(variable_data_impl_.get(), size());
-    add_reference_variable_data(tmpl::list<Tags...>{});
+    initialize(number_of_grid_points);
   }
   PUParray(p, variable_data_impl_.get(), size_);
 }
@@ -738,10 +658,8 @@ constexpr const typename Tag::type& get(const Variables<TagList>& v) noexcept {
 template <typename... Tags>
 template <typename VT, bool VF>
 Variables<tmpl::list<Tags...>>::Variables(
-    const blaze::Vector<VT, VF>& expression) noexcept
-    : size_((~expression).size()),
-      number_of_grid_points_(size_ / number_of_independent_components) {
-  initialize(number_of_grid_points_);
+    const blaze::Vector<VT, VF>& expression) noexcept {
+  initialize((~expression).size() / number_of_independent_components);
   variable_data_ = expression;
 }
 
@@ -750,11 +668,7 @@ template <typename... Tags>
 template <typename VT, bool VF>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     const blaze::Vector<VT, VF>& expression) noexcept {
-  if (size_ != (~expression).size()) {
-    size_ = (~expression).size();
-    number_of_grid_points_ = size_ / number_of_independent_components;
-    initialize(number_of_grid_points_);
-  }
+  initialize((~expression).size() / number_of_independent_components);
   variable_data_ = expression;
   return *this;
 }
@@ -762,26 +676,21 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
 
 /// \cond HIDDEN_SYMBOLS
 template <typename... Tags>
-template <typename TagToAdd, typename... Rest,
-          Requires<tt::is_a<Tensor, typename TagToAdd::type>::value>>
-void Variables<tmpl::list<Tags...>>::add_reference_variable_data(
-    tmpl::list<TagToAdd, Rest...> /*unused*/,
-    const size_t variable_offset) noexcept {
-  ASSERT(size_ > (variable_offset + TagToAdd::type::size() - 1) *
-                     number_of_grid_points_,
-         "This ASSERT is typically triggered because a Variables class was "
-         "default constructed. The only reason the Variables class has a "
-         "default constructor is because Charm++ uses it, you are not "
-         "supposed to use it otherwise.");
-  typename TagToAdd::type& var =
-      tuples::get<TagToAdd>(reference_variable_data_);
-  for (size_t i = 0; i < TagToAdd::type::size(); ++i) {
-    var[i].set_data_ref(
-        &variable_data_[(variable_offset + i) * number_of_grid_points_],
-        number_of_grid_points_);
+void Variables<tmpl::list<Tags...>>::add_reference_variable_data() noexcept {
+  if (size_ == 0) {
+    return;
   }
-  add_reference_variable_data(tmpl::list<Rest...>{},
-                              variable_offset + TagToAdd::type::size());
+  variable_data_.reset(variable_data_impl_.get(), size_);
+  size_t variable_offset = 0;
+  tmpl::for_each<tags_list>([this, &variable_offset](auto tag_v) noexcept {
+    using Tag = tmpl::type_from<decltype(tag_v)>;
+    auto& var = tuples::get<Tag>(reference_variable_data_);
+    for (size_t i = 0; i < Tag::type::size(); ++i) {
+      var[i].set_data_ref(
+          &variable_data_[variable_offset++ * number_of_grid_points_],
+          number_of_grid_points_);
+    }
+  });
 }
 /// \endcond
 
@@ -854,7 +763,7 @@ template <typename... Tags, Requires<sizeof...(Tags) != 0> = nullptr>
 std::ostream& operator<<(std::ostream& os,
                          const Variables<tmpl::list<Tags...>>& d) noexcept {
   size_t count = 0;
-  const auto helper = [&os, &d, &count ](auto tag_v) noexcept {
+  const auto helper = [&os, &d, &count](auto tag_v) noexcept {
     count++;
     using Tag = typename decltype(tag_v)::type;
     os << db::tag_name<Tag>() << ":\n";
