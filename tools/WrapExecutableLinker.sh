@@ -32,17 +32,19 @@ $(basename "${!oindex}")_InfoAtLink.cpp
 temp_files+=("${InfoAtLink_file}")
 cp @CMAKE_BINARY_DIR@/Informer/InfoAtLink.cpp "${InfoAtLink_file}"
 
-# Formaline through the linker doesn't work on macOS and since we won't
-# be doing production runs on macOS we disable it.
+# - Formaline through the linker doesn't work on macOS and since we won't
+#   be doing production runs on macOS we disable it.
+# - Since InfoAtLink.cpp depends on Boost headers but is not part of the build
+#   system, we pass the Boost include directory explicitly.
 if [ -f @CMAKE_BINARY_DIR@/tmp/Formaline.sh ]; then
     . @CMAKE_BINARY_DIR@/tmp/Formaline.sh $(basename "${!oindex}")
     temp_files+=("${formaline_output}" "${formaline_object_output}")
     "$@" -DGIT_COMMIT_HASH=$git_commit_hash -DGIT_BRANCH=$git_branch \
-         "${InfoAtLink_file}" "${formaline_output}" \
+         -I@Boost_INCLUDE_DIR@ "${InfoAtLink_file}" "${formaline_output}" \
          ${formaline_object_output}
 else
     "$@" -DGIT_COMMIT_HASH=$git_commit_hash -DGIT_BRANCH=$git_branch \
-         "${InfoAtLink_file}"
+         -I@Boost_INCLUDE_DIR@ "${InfoAtLink_file}"
 fi
 
 if @WRAP_EXECUTABLE_LINKER_USE_STUB_OBJECT_FILES@; then
