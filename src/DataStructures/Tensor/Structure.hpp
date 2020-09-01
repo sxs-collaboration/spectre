@@ -38,10 +38,11 @@ constexpr size_t number_of_independent_components(
   } else {
     size_t max_element = 0;
     for (size_t i = 0; i < Size; ++i) {
-      // clang-tidy: internal STL and gls::at (don't need it in constexpr)
-      assert(symm[i] > 0);  // NOLINT
-      max_element = std::max(static_cast<size_t>(ce_abs(symm[i])),  // NOLINT
-                             max_element);
+      // clang-tidy: internals of assert(), don't need gsl::at in constexpr
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay,cppcoreguidelines-pro-bounds-constant-array-index)
+      assert(symm[i] > 0);
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
+      max_element = std::max(static_cast<size_t>(ce_abs(symm[i])), max_element);
     }
     assert(max_element > 0);  // NOLINT
     size_t total_independent_components = 1;
