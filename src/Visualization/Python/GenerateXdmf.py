@@ -183,6 +183,8 @@ def generate_xdmf(file_prefix, output_filename, start_time, stop_time, stride,
             components.remove('connectivity')
             components.remove('total_extents')
             components.remove('grid_names')
+            components.remove('bases')
+            components.remove('quadratures')
 
             # Write the tensors that are to be visualized.
             for component in components:
