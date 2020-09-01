@@ -153,7 +153,6 @@ struct InitializeInterfaces {
   };
   template <typename Directions>
   using face_tags = tmpl::flatten<tmpl::list<
-      Directions,
       domain::Tags::InterfaceCompute<Directions, domain::Tags::Direction<dim>>,
       domain::Tags::InterfaceCompute<Directions,
                                      domain::Tags::InterfaceMesh<dim>>,
@@ -218,10 +217,12 @@ struct InitializeInterfaces {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using compute_tags =
+    using compute_tags = tmpl::push_front<
         tmpl::append<face_tags<domain::Tags::InternalDirections<dim>>,
                      face_tags<domain::Tags::BoundaryDirectionsInterior<dim>>,
-                     exterior_face_tags>;
+                     exterior_face_tags>,
+        domain::Tags::InternalDirectionsCompute<dim>,
+        domain::Tags::BoundaryDirectionsInterior<dim>>;
     return std::make_tuple(
         ::Initialization::merge_into_databox<InitializeInterfaces,
                                              db::AddSimpleTags<>, compute_tags>(

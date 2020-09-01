@@ -112,7 +112,7 @@ struct component {
                         interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,
                         interface_tag<OtherArg>, n_dot_f_tag>;
   using compute_tags = db::AddComputeTags<
-      domain::Tags::InternalDirections<2>,
+      domain::Tags::InternalDirectionsCompute<2>,
       interface_compute_tag<domain::Tags::Direction<2>>,
       interface_compute_tag<domain::Tags::InterfaceMesh<2>>,
       interface_compute_tag<domain::Tags::UnnormalizedFaceNormalCompute<2>>,

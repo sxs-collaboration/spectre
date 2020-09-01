@@ -227,13 +227,21 @@ struct DetInvJacobianCompute : db::ComputeTag,
 /// Base tag for boundary data needed for updating the variables.
 struct VariablesBoundaryData : db::BaseTag {};
 
+// @{
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The set of directions to neighboring Elements
 template <size_t VolumeDim>
-struct InternalDirections : db::ComputeTag {
+struct InternalDirections : db::SimpleTag {
   static constexpr size_t volume_dim = VolumeDim;
-  static std::string name() noexcept { return "InternalDirections"; }
+  using type = std::unordered_set<::Direction<VolumeDim>>;
+};
+
+template <size_t VolumeDim>
+struct InternalDirectionsCompute : InternalDirections<VolumeDim>,
+                                   db::ComputeTag {
+  static constexpr size_t volume_dim = VolumeDim;
+  using base = InternalDirections<VolumeDim>;
   using return_type = std::unordered_set<::Direction<VolumeDim>>;
   using argument_tags = tmpl::list<Element<VolumeDim>>;
   static void function(const gsl::not_null<return_type*> directions,
@@ -243,6 +251,7 @@ struct InternalDirections : db::ComputeTag {
     }
   }
 };
+// @}
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
@@ -311,22 +320,36 @@ template <typename DirectionsTag, typename Tag>
 struct Interface;
 
 namespace Interface_detail {
-template <typename DirectionsTag, typename Tag, typename = std::void_t<>>
-struct GetBaseTagIfPresent {};
+template <typename Tag, typename = std::void_t<>>
+struct GetBaseTagIfPresent {
+  using type = Tag;
+};
 
-template <typename DirectionsTag, typename Tag>
-struct GetBaseTagIfPresent<DirectionsTag, Tag, std::void_t<typename Tag::base>>
-    : Interface<DirectionsTag, typename Tag::base> {
+template <typename Tag>
+struct GetBaseTagIfPresent<Tag, std::void_t<typename Tag::base>> {
   static_assert(std::is_base_of_v<typename Tag::base, Tag>,
                 "Tag `base` alias must be a base class of `Tag`.");
+  using type = typename Tag::base;
 };
+
+template <typename DirectionsTag, typename Tag,
+          bool = std::is_same_v<DirectionsTag, typename GetBaseTagIfPresent<
+                                                   DirectionsTag>::type>and
+              std::is_same_v<Tag, typename GetBaseTagIfPresent<Tag>::type>>
+struct GetBaseInterfaceTagIfPresent {};
+
+template <typename DirectionsTag, typename Tag>
+struct GetBaseInterfaceTagIfPresent<DirectionsTag, Tag, false>
+    : Interface<typename GetBaseTagIfPresent<DirectionsTag>::type,
+                typename GetBaseTagIfPresent<Tag>::type> {};
 }  // namespace Interface_detail
 
 // Virtual inheritance is used here to prevent a compiler warning: Derived class
 // SimpleTag is inaccessible
 template <typename DirectionsTag, typename Tag>
-struct Interface : virtual db::SimpleTag,
-                   Interface_detail::GetBaseTagIfPresent<DirectionsTag, Tag> {
+struct Interface
+    : virtual db::SimpleTag,
+      Interface_detail::GetBaseInterfaceTagIfPresent<DirectionsTag, Tag> {
   static std::string name() noexcept {
     return "Interface<" + db::tag_name<DirectionsTag>() + ", " +
            db::tag_name<Tag>() + ">";

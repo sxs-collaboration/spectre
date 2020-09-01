@@ -129,7 +129,7 @@ struct ElementArray {
                  domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
                  domain::Tags::ElementMap<Dim>>;
   using compute_tags = tmpl::list<
-      domain::Tags::InternalDirections<Dim>,
+      domain::Tags::InternalDirectionsCompute<Dim>,
       domain::Tags::BoundaryDirectionsInterior<Dim>,
       domain::Tags::InterfaceCompute<domain::Tags::InternalDirections<Dim>,
                                      domain::Tags::Direction<Dim>>,

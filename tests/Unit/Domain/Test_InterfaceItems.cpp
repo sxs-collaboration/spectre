@@ -156,9 +156,11 @@ void test_interface_items() {
   using boundary_directions_exterior = Tags::BoundaryDirectionsExterior<dim>;
   using templated_directions = TestTags::TemplatedDirections<int>;
 
-  CHECK(internal_directions::name() == "InternalDirections");
-  CHECK(boundary_directions_interior::name() == "BoundaryDirectionsInterior");
-  CHECK(boundary_directions_exterior::name() == "BoundaryDirectionsExterior");
+  CHECK(db::tag_name<internal_directions>() == "InternalDirections");
+  CHECK(db::tag_name<boundary_directions_interior>() ==
+        "BoundaryDirectionsInterior");
+  CHECK(db::tag_name<boundary_directions_exterior>() ==
+        "BoundaryDirectionsExterior");
 
   Element<dim> element{ElementId<3>(0),
                        {{Direction<dim>::lower_xi(), {}},
@@ -184,7 +186,7 @@ void test_interface_items() {
           templated_directions,
           Tags::Interface<templated_directions, TestTags::Double>>,
       db::AddComputeTags<
-          internal_directions,
+          Tags::InternalDirectionsCompute<dim>,
           Tags::InterfaceCompute<internal_directions, Tags::Direction<dim>>,
           TestTags::NegateCompute<TestTags::Int>,
           Tags::InterfaceCompute<internal_directions, TestTags::IntCompute>,
