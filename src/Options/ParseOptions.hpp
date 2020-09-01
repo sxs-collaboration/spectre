@@ -26,7 +26,6 @@
 #include "Options/OptionsDetails.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrettyType.hpp"
-#include "Utilities/Requires.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
@@ -208,116 +207,45 @@ class Options {
   // The maximum length of an option label.
   static constexpr int max_label_size_ = 70;
 
-  //@{
   /// Check that the size is not smaller than the lower bound
   ///
   /// \tparam T the option struct
   /// \param t the value of the read in option
-  template <
-      typename T,
-      Requires<Options_detail::has_lower_bound_on_size<T>::value> = nullptr>
+  template <typename T>
   void check_lower_bound_on_size(const typename T::type& t,
                                  const OptionContext& context) const;
-  template <
-      typename T,
-      Requires<not Options_detail::has_lower_bound_on_size<T>::value> = nullptr>
-  constexpr void check_lower_bound_on_size(
-      const typename T::type& /*t*/, const OptionContext& /*context*/) const
-      noexcept {}
-  //@}
 
-  //@{
   /// Check that the size is not larger than the upper bound
   ///
   /// \tparam T the option struct
   /// \param t the value of the read in option
-  template <
-      typename T,
-      Requires<Options_detail::has_upper_bound_on_size<T>::value> = nullptr>
+  template <typename T>
   void check_upper_bound_on_size(const typename T::type& t,
                                  const OptionContext& context) const;
-  template <
-      typename T,
-      Requires<not Options_detail::has_upper_bound_on_size<T>::value> = nullptr>
-  constexpr void check_upper_bound_on_size(
-      const typename T::type& /*t*/, const OptionContext& /*context*/) const
-      noexcept {}
-  //@}
 
-  //@{
   /// Returns the default value or errors if there is no default.
   ///
   /// \tparam T the option struct
-  template <typename T,
-            Requires<Options_detail::has_default<T>::value> = nullptr>
-  typename T::type get_default() const noexcept {
-    static_assert(
-        std::is_same_v<decltype(T::default_value()), typename T::type>,
-        "Default value is not of the same type as the option.");
-    return T::default_value();
-  }
-  template <typename T,
-            Requires<not Options_detail::has_default<T>::value> = nullptr>
-  [[noreturn]] typename T::type get_default() const {
-    PARSE_ERROR(context_, "You did not specify the option '" << option_name<T>()
-                                                             << "'.\n"
-                                                             << help());
-  }
-  //@}
+  template <typename T>
+  typename T::type get_default() const;
 
-  //@{
   /// If the options has a lower bound, check it is satisfied.
   ///
   /// Note: Lower bounds are >=, not just >.
   /// \tparam T the option struct
   /// \param t the value of the read in option
-  template <typename T,
-            Requires<Options_detail::has_lower_bound<T>::value> = nullptr>
+  template <typename T>
   void check_lower_bound(const typename T::type& t,
                          const OptionContext& context) const;
-  template <typename T,
-            Requires<not Options_detail::has_lower_bound<T>::value> = nullptr>
-  constexpr void check_lower_bound(const typename T::type& /*t*/,
-                                   const OptionContext& /*context*/) const
-      noexcept {}
-  //@}
 
-  //@{
   /// If the options has a upper bound, check it is satisfied.
   ///
   /// Note: Upper bounds are <=, not just <.
   /// \tparam T the option struct
   /// \param t the value of the read in option
-  template <typename T,
-            Requires<Options_detail::has_upper_bound<T>::value> = nullptr>
+  template <typename T>
   void check_upper_bound(const typename T::type& t,
                          const OptionContext& context) const;
-  template <typename T,
-            Requires<not Options_detail::has_upper_bound<T>::value> = nullptr>
-  constexpr void check_upper_bound(const typename T::type& /*t*/,
-                                   const OptionContext& /*context*/) const
-      noexcept {}
-  //@}
-
-  //@{
-  /// Check that the default (if any) satisfies the bounds
-  ///
-  /// \tparam T the option struct
-  template <typename T,
-            Requires<Options_detail::has_default<T>::value> = nullptr>
-  void validate_default() const {
-    OptionContext context;
-    context.append("Checking DEFAULT value for " + option_name<T>());
-    const auto default_value = T::default_value();
-    check_lower_bound_on_size<T>(default_value, context);
-    check_upper_bound_on_size<T>(default_value, context);
-    check_lower_bound<T>(default_value, context);
-    check_upper_bound<T>(default_value, context);
-  }
-  template <typename T,
-            Requires<not Options_detail::has_default<T>::value> = nullptr>
-  constexpr void validate_default() const noexcept {}
-  //@}
 
   /// Get the help string for parsing errors
   std::string parsing_help(const YAML::Node& options) const noexcept;
@@ -443,7 +371,15 @@ struct get_impl<Tag, Metavariables, Tag> {
         "you forget to add the option tag to the OptionList?");
     const std::string label = option_name<Tag>();
 
-    opts.template validate_default<Tag>();
+    if constexpr (Options_detail::has_default<Tag>::value) {
+      OptionContext context;
+      context.append("Checking DEFAULT value for " + option_name<Tag>());
+      const auto default_value = Tag::default_value();
+      opts.template check_lower_bound_on_size<Tag>(default_value, context);
+      opts.template check_upper_bound_on_size<Tag>(default_value, context);
+      opts.template check_lower_bound<Tag>(default_value, context);
+      opts.template check_upper_bound<Tag>(default_value, context);
+    }
     if (0 == opts.parsed_options_.count(label)) {
       return opts.template get_default<Tag>();
     }
@@ -509,62 +445,90 @@ std::string Options<OptionList, Group>::help() const noexcept {
 }
 
 template <typename OptionList, typename Group>
-template <typename T,
-          Requires<Options_detail::has_lower_bound_on_size<T>::value>>
+template <typename T>
 void Options<OptionList, Group>::check_lower_bound_on_size(
     const typename T::type& t, const OptionContext& context) const {
-  static_assert(std::is_same_v<decltype(T::lower_bound_on_size()), size_t>,
-                "lower_bound_on_size() is not a size_t.");
-  if (t.size() < T::lower_bound_on_size()) {
-    PARSE_ERROR(context, "Value must have at least "
-                             << T::lower_bound_on_size() << " entries, but "
-                             << t.size() << " were given.\n"
-                             << help());
+  if constexpr (Options_detail::has_lower_bound_on_size<T>::value) {
+    static_assert(std::is_same_v<decltype(T::lower_bound_on_size()), size_t>,
+                  "lower_bound_on_size() is not a size_t.");
+    if (t.size() < T::lower_bound_on_size()) {
+      PARSE_ERROR(context, "Value must have at least "
+                               << T::lower_bound_on_size() << " entries, but "
+                               << t.size() << " were given.\n"
+                               << help());
+    }
   }
 }
 
 template <typename OptionList, typename Group>
-template <typename T,
-          Requires<Options_detail::has_upper_bound_on_size<T>::value>>
+template <typename T>
 void Options<OptionList, Group>::check_upper_bound_on_size(
     const typename T::type& t, const OptionContext& context) const {
-  static_assert(std::is_same_v<decltype(T::upper_bound_on_size()), size_t>,
-                "upper_bound_on_size() is not a size_t.");
-  if (t.size() > T::upper_bound_on_size()) {
-    PARSE_ERROR(context, "Value must have at most "
-                             << T::upper_bound_on_size() << " entries, but "
-                             << t.size() << " were given.\n"
-                             << help());
+  if constexpr (Options_detail::has_upper_bound_on_size<T>::value) {
+    static_assert(std::is_same_v<decltype(T::upper_bound_on_size()), size_t>,
+                  "upper_bound_on_size() is not a size_t.");
+    if (t.size() > T::upper_bound_on_size()) {
+      PARSE_ERROR(context, "Value must have at most "
+                               << T::upper_bound_on_size() << " entries, but "
+                               << t.size() << " were given.\n"
+                               << help());
+    }
   }
 }
 
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
+#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
 template <typename OptionList, typename Group>
-template <typename T, Requires<Options_detail::has_lower_bound<T>::value>>
+template <typename T>
+typename T::type Options<OptionList, Group>::get_default() const {
+  if constexpr (Options_detail::has_default<T>::value) {
+    static_assert(
+        std::is_same_v<decltype(T::default_value()), typename T::type>,
+        "Default value is not of the same type as the option.");
+    return T::default_value();
+  } else {
+    PARSE_ERROR(context_, "You did not specify the option '" << option_name<T>()
+                                                             << "'.\n"
+                                                             << help());
+  }
+}
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
+
+template <typename OptionList, typename Group>
+template <typename T>
 inline void Options<OptionList, Group>::check_lower_bound(
     const typename T::type& t, const OptionContext& context) const {
-  static_assert(std::is_same_v<decltype(T::lower_bound()), typename T::type>,
-                "Lower bound is not of the same type as the option.");
-  static_assert(not std::is_same_v<typename T::type, bool>,
-                "Cannot set a lower bound for a bool.");
-  if (t < T::lower_bound()) {
-    PARSE_ERROR(context, "Value " << t << " is below the lower bound of "
-                                  << T::lower_bound() << ".\n"
-                                  << help());
+  if constexpr (Options_detail::has_lower_bound<T>::value) {
+    static_assert(std::is_same_v<decltype(T::lower_bound()), typename T::type>,
+                  "Lower bound is not of the same type as the option.");
+    static_assert(not std::is_same_v<typename T::type, bool>,
+                  "Cannot set a lower bound for a bool.");
+    if (t < T::lower_bound()) {
+      PARSE_ERROR(context, "Value " << t << " is below the lower bound of "
+                                    << T::lower_bound() << ".\n"
+                                    << help());
+    }
   }
 }
 
 template <typename OptionList, typename Group>
-template <typename T, Requires<Options_detail::has_upper_bound<T>::value>>
+template <typename T>
 inline void Options<OptionList, Group>::check_upper_bound(
     const typename T::type& t, const OptionContext& context) const {
-  static_assert(std::is_same_v<decltype(T::upper_bound()), typename T::type>,
-                "Upper bound is not of the same type as the option.");
-  static_assert(not std::is_same_v<typename T::type, bool>,
-                "Cannot set an upper bound for a bool.");
-  if (t > T::upper_bound()) {
-    PARSE_ERROR(context, "Value " << t << " is above the upper bound of "
-                                  << T::upper_bound() << ".\n"
-                                  << help());
+  if constexpr (Options_detail::has_upper_bound<T>::value) {
+    static_assert(std::is_same_v<decltype(T::upper_bound()), typename T::type>,
+                  "Upper bound is not of the same type as the option.");
+    static_assert(not std::is_same_v<typename T::type, bool>,
+                  "Cannot set an upper bound for a bool.");
+    if (t > T::upper_bound()) {
+      PARSE_ERROR(context, "Value " << t << " is above the upper bound of "
+                                    << T::upper_bound() << ".\n"
+                                    << help());
+    }
   }
 }
 
