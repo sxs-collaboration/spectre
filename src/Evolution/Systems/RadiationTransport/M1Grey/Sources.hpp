@@ -23,8 +23,8 @@ class DataVector;
 namespace RadiationTransport {
 namespace M1Grey {
 
-/// Implementation of the curvature source terms
-/// for the M1 system, for an individual species.
+// Implementation of the curvature source terms
+// for the M1 system, for an individual species.
 namespace detail {
 void compute_sources_impl(
     gsl::not_null<Scalar<DataVector>*> source_tilde_e,
