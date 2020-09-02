@@ -140,7 +140,7 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceHelpers", "[Unit][Domain]") {
       // Reference element has no internal directions:
       // [ X ]-> xi
       {{0, {{{0, 0}}}}, {}}, {}, {});
-  test_interface_apply<1, Tags::BoundaryDirectionsInterior<1>>(
+  test_interface_apply<1, Tags::BoundaryDirectionsInteriorCompute<1>>(
       // Reference element has two boundary directions:
       // [ X ]-> xi
       {{0, {{{0, 0}}}}, {}},

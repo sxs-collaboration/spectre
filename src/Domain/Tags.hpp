@@ -253,15 +253,24 @@ struct InternalDirectionsCompute : InternalDirections<VolumeDim>,
 };
 // @}
 
+// @{
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The set of directions which correspond to external boundaries.
 /// Used for representing data on the interior side of the external boundary
 /// faces.
 template <size_t VolumeDim>
-struct BoundaryDirectionsInterior : db::ComputeTag {
+struct BoundaryDirectionsInterior : db::SimpleTag {
   static constexpr size_t volume_dim = VolumeDim;
-  static std::string name() noexcept { return "BoundaryDirectionsInterior"; }
+  using type = std::unordered_set<::Direction<VolumeDim>>;
+};
+
+template <size_t VolumeDim>
+struct BoundaryDirectionsInteriorCompute
+    : BoundaryDirectionsInterior<VolumeDim>,
+      db::ComputeTag {
+  static constexpr size_t volume_dim = VolumeDim;
+  using base = BoundaryDirectionsInterior<VolumeDim>;
   using return_type = std::unordered_set<::Direction<VolumeDim>>;
   using argument_tags = tmpl::list<Element<VolumeDim>>;
   static void function(const gsl::not_null<return_type*> directions,
@@ -269,16 +278,26 @@ struct BoundaryDirectionsInterior : db::ComputeTag {
     *directions = element.external_boundaries();
   }
 };
+// @}
 
+// @{
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The set of directions which correspond to external boundaries. To be used
 /// to represent data which exists on the exterior side of the external boundary
 /// faces.
 template <size_t VolumeDim>
-struct BoundaryDirectionsExterior : db::ComputeTag {
+struct BoundaryDirectionsExterior : db::SimpleTag {
   static constexpr size_t volume_dim = VolumeDim;
-  static std::string name() noexcept { return "BoundaryDirectionsExterior"; }
+  using type = std::unordered_set<::Direction<VolumeDim>>;
+};
+
+template <size_t VolumeDim>
+struct BoundaryDirectionsExteriorCompute
+    : BoundaryDirectionsExterior<VolumeDim>,
+      db::ComputeTag {
+  static constexpr size_t volume_dim = VolumeDim;
+  using base = BoundaryDirectionsExterior<VolumeDim>;
   using return_type = std::unordered_set<::Direction<VolumeDim>>;
   using argument_tags = tmpl::list<Element<VolumeDim>>;
   static constexpr auto function(const gsl::not_null<return_type*> directions,
@@ -286,6 +305,7 @@ struct BoundaryDirectionsExterior : db::ComputeTag {
     *directions = element.external_boundaries();
   }
 };
+// @}
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup

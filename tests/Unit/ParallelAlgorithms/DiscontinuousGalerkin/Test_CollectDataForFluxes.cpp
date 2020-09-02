@@ -95,8 +95,8 @@ struct ElementArray {
               dg::Actions::InitializeDomain<volume_dim>,
               Initialization::Actions::AddComputeTags<tmpl::list<
                   domain::Tags::InternalDirectionsCompute<volume_dim>,
-                  domain::Tags::BoundaryDirectionsInterior<volume_dim>,
-                  domain::Tags::BoundaryDirectionsExterior<volume_dim>,
+                  domain::Tags::BoundaryDirectionsInteriorCompute<volume_dim>,
+                  domain::Tags::BoundaryDirectionsExteriorCompute<volume_dim>,
                   domain::Tags::InterfaceCompute<
                       domain::Tags::InternalDirections<volume_dim>,
                       domain::Tags::Direction<volume_dim>>,

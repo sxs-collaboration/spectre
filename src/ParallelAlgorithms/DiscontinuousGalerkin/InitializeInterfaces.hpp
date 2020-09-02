@@ -174,7 +174,7 @@ struct InitializeInterfaces {
                       make_compute_tag<tmpl::_1, tmpl::pin<Directions>>>>>;
 
   using exterior_face_tags = tmpl::flatten<tmpl::list<
-      domain::Tags::BoundaryDirectionsExterior<dim>,
+      domain::Tags::BoundaryDirectionsExteriorCompute<dim>,
       domain::Tags::InterfaceCompute<
           domain::Tags::BoundaryDirectionsExterior<dim>,
           domain::Tags::Direction<dim>>,
@@ -222,7 +222,7 @@ struct InitializeInterfaces {
                      face_tags<domain::Tags::BoundaryDirectionsInterior<dim>>,
                      exterior_face_tags>,
         domain::Tags::InternalDirectionsCompute<dim>,
-        domain::Tags::BoundaryDirectionsInterior<dim>>;
+        domain::Tags::BoundaryDirectionsInteriorCompute<dim>>;
     return std::make_tuple(
         ::Initialization::merge_into_databox<InitializeInterfaces,
                                              db::AddSimpleTags<>, compute_tags>(

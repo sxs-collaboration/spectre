@@ -201,7 +201,7 @@ void test_interface_items() {
                                  TestTags::NegateCompute<TestTags::Double>>,
           Tags::InterfaceCompute<templated_directions,
                                  TestTags::NegateDoubleAddIntCompute>,
-          boundary_directions_interior,
+          Tags::BoundaryDirectionsInteriorCompute<dim>,
           Tags::InterfaceCompute<boundary_directions_interior,
                                  Tags::Direction<dim>>,
           Tags::InterfaceCompute<boundary_directions_interior,
@@ -212,7 +212,7 @@ void test_interface_items() {
                                  TestTags::NegateDoubleAddIntCompute>,
           Tags::InterfaceCompute<boundary_directions_interior,
                                  TestTags::ComplexItemCompute<dim>>,
-          boundary_directions_exterior>>(
+          Tags::BoundaryDirectionsExteriorCompute<dim>>>(
       std::move(element), 5,
       std::unordered_map<Direction<dim>, double>{
           {Direction<dim>::lower_xi(), 1.5},

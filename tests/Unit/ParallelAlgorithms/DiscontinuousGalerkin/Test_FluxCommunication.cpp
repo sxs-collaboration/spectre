@@ -130,7 +130,7 @@ struct ElementArray {
                  domain::Tags::ElementMap<Dim>>;
   using compute_tags = tmpl::list<
       domain::Tags::InternalDirectionsCompute<Dim>,
-      domain::Tags::BoundaryDirectionsInterior<Dim>,
+      domain::Tags::BoundaryDirectionsInteriorCompute<Dim>,
       domain::Tags::InterfaceCompute<domain::Tags::InternalDirections<Dim>,
                                      domain::Tags::Direction<Dim>>,
       domain::Tags::InterfaceCompute<
