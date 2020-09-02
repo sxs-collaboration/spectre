@@ -16,36 +16,10 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
-#include "Utilities/Requires.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Factory_detail {
-template <typename BaseClass, typename CreateList, typename Metavariables,
-          Requires<(tmpl::size<CreateList>::value == 0)> = nullptr>
-std::unique_ptr<BaseClass> create_derived(const std::string& /*id*/,
-                                          const Option& /*opts*/) noexcept {
-  return std::unique_ptr<BaseClass>{};
-}
-
-template <typename BaseClass, typename CreateList, typename Metavariables,
-          Requires<(tmpl::size<CreateList>::value != 0)> = nullptr>
-std::unique_ptr<BaseClass> create_derived(const std::string& id,
-                                          const Option& opts) {
-  using derived = tmpl::front<CreateList>;
-
-  if (option_name<derived>() != id) {
-    return create_derived<BaseClass, tmpl::pop_front<CreateList>,
-                          Metavariables>(id, opts);
-  }
-
-  ASSERT((not create_derived<BaseClass, tmpl::pop_front<CreateList>,
-                             Metavariables>(id, opts)),
-         "Duplicate factory id: " << id);
-
-  return std::make_unique<derived>(opts.parse_as<derived, Metavariables>());
-}
-
 struct print_derived {
   // Not a stream because brigand requires the functor to be copyable.
   std::string value;
@@ -109,11 +83,19 @@ std::unique_ptr<BaseClass> create(const Option& options) {
                 "Expected a class or a class with options, got:\n"
                 << node);
   }
-  auto derived =
-      create_derived<BaseClass, typename BaseClass::creatable_classes,
-                     Metavariables>(id, derived_opts);
-  if (derived != nullptr) {
-    return derived;
+
+  std::unique_ptr<BaseClass> result;
+  tmpl::for_each<typename BaseClass::creatable_classes>(
+      [&id, &derived_opts, &result](auto derived_v) {
+        using Derived = tmpl::type_from<decltype(derived_v)>;
+        if (option_name<Derived>() == id) {
+          ASSERT(result == nullptr, "Duplicate factory id: " << id);
+          result = std::make_unique<Derived>(
+              derived_opts.parse_as<Derived, Metavariables>());
+        }
+      });
+  if (result != nullptr) {
+    return result;
   }
   PARSE_ERROR(derived_opts.context(),
               "Unknown Id '" << id << "'\n" << help_derived<BaseClass>());
