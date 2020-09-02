@@ -714,7 +714,7 @@ void test_options_apply() {
       "Apply3: [1, 2, 3]");
   // We do the checks outside the lambda to make sure it actually gets called.
   std::vector<int> arg1;
-  int arg2;
+  int arg2 = 0;
   opts.apply<tmpl::list<Apply3, Apply1>>([&](const auto& a, auto b) {
     arg1 = a;
     arg2 = b;
