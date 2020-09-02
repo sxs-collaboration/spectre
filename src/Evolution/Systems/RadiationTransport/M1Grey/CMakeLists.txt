@@ -27,6 +27,7 @@ spectre_target_headers(
   Sources.hpp
   System.hpp
   Tags.hpp
+  TimeDerivativeTerms.hpp
   )
 
 target_link_libraries(
