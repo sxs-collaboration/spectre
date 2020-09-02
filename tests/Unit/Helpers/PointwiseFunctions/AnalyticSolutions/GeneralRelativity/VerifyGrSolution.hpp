@@ -21,8 +21,8 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Constraints.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
 #include "Evolution/TypeTraits.hpp"  // IWYU pragma: keep
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
@@ -239,9 +239,9 @@ void verify_time_independent_einstein_solution(
       make_with_value<tnsr::aa<DataVector, 3, Frame::Inertial>>(x, 0.0);
   auto dt_phi =
       make_with_value<tnsr::iaa<DataVector, 3, Frame::Inertial>>(x, 0.0);
-  GeneralizedHarmonic::ComputeDuDt<3>::apply(
+  GeneralizedHarmonic::TimeDerivative<3>::apply(
       make_not_null(&dt_psi), make_not_null(&dt_pi), make_not_null(&dt_phi),
-      psi, pi, phi, d_psi, d_pi, d_phi, gamma0, gamma1, gamma2, gauge_function,
+      d_psi, d_pi, d_phi, psi, pi, phi, gamma0, gamma1, gamma2, gauge_function,
       d4_H);
 
   // Make sure the RHS is zero.
