@@ -27,6 +27,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Printf.hpp"
+#include "Utilities/Blas.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -575,7 +576,7 @@ struct TestMetavariables {
 
 /// [charm_include_example]
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling};
+    &setup_error_handling, &disable_openblas_multithreading};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 
