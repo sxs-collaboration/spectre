@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  Blas.cpp
   FileSystem.cpp
   Formaline.cpp
   OptimizerHacks.cpp
@@ -77,6 +78,7 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  Blas
   Blaze
   Boost::boost
   Brigand
