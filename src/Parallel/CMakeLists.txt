@@ -50,9 +50,10 @@ target_link_libraries(
   INTERFACE
   Boost::boost
   DataStructures
-  ErrorHandling
   Informer
   Options
+  PUBLIC
+  ErrorHandling
   Utilities
   )
 

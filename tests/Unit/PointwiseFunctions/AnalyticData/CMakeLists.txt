@@ -11,7 +11,7 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticData"
   "${LIBRARY_SOURCES}"
-  ""
+  "AnalyticData;DataStructures;DataStructuresHelpers"
   )
 
 add_subdirectory(Burgers)

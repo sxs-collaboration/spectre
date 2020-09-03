@@ -11,5 +11,5 @@ add_test_library(
   ${LIBRARY}
   "Elliptic/Systems/Xcts/"
   "${LIBRARY_SOURCES}"
-  ""
+  "DataStructuresHelpers;Xcts"
   )

@@ -25,10 +25,15 @@ spectre_target_headers(
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE DataStructures
-  INTERFACE ErrorHandling
-  INTERFACE GeneralRelativity
-  INTERFACE GeneralRelativitySolutions
-  INTERFACE Spectral
-  INTERFACE Utilities
+  INTERFACE
+  AnalyticData
+  CurvedScalarWave
+  Options
+  ScalarWave
+  PUBLIC
+  DataStructures
+  GeneralRelativity
+  GeneralRelativitySolutions
+  Utilities
+  WaveEquationSolutions
   )

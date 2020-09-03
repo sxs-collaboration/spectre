@@ -11,5 +11,5 @@ add_test_library(
   ${LIBRARY}
   "DataStructures/Tensor/Expressions"
   "${LIBRARY_SOURCES}"
-  "ErrorHandling"
+  "DataStructures;Utilities"
   )

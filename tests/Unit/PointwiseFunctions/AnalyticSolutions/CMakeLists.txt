@@ -22,5 +22,5 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions"
   "${LIBRARY_SOURCES}"
-  ""
+  "AnalyticSolutions;DataStructures;DataStructuresHelpers"
   )

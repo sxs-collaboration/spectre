@@ -58,6 +58,7 @@ target_link_libraries(
   Boost::boost
   ErrorHandling
   Options
+  Utilities
   )
 
 add_subdirectory(DataBox)
