@@ -35,7 +35,7 @@ RUN apt-get update -y \
                           gcc-8 g++-8 gfortran-8 \
                           gcc-9 g++-9 gfortran-9 \
                           gcc-10 g++-10 gfortran-10 \
-                          gdb git cmake autoconf automake \
+                          gdb git ninja-build autoconf automake \
                           libopenblas-dev liblapack-dev \
                           libhdf5-dev hdf5-tools \
                           libgsl0-dev \
@@ -96,6 +96,17 @@ RUN apt-get update -y \
     && apt-get install -y bash-completion \
     && printf "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then\n\
     . /etc/bash_completion\nfi\n\n" >> /root/.bashrc
+
+
+# Install cmake.  We need version 3.18.2 so that fortran builds work
+# with ninja.
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2.tar.gz \
+    && tar -xzf cmake-3.18.2.tar.gz \
+    && cd cmake-3.18.2 \
+    && ./bootstrap --prefix=/usr/local \
+    && make \
+    && make install \
+    && rm -rf cmake*
 
 # We install dependencies not available through apt manually rather than using
 # Spack since Spack ends up building a lot of dependencies from scratch
