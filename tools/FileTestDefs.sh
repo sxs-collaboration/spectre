@@ -291,6 +291,7 @@ standard_checks+=(carriage_returns)
 license() {
     whitelist "$1" \
               '.clang-format$' \
+              '.clang-tidy$' \
               '.github/ISSUE_TEMPLATE.md' \
               '.github/PULL_REQUEST_TEMPLATE.md' \
               '.h5' \
