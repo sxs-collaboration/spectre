@@ -25,16 +25,5 @@ struct ConformalFactor : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
-/*!
- * \brief The gradient of the conformal factor \f$\psi(x)\f$
- *
- * \details This quantity can be used as an auxiliary variable in a first-order
- * formulation of the XCTS equations.
- */
-template <size_t Dim, typename Frame, typename DataType>
-struct ConformalFactorGradient : db::SimpleTag {
-  using type = tnsr::I<DataType, Dim, Frame>;
-};
-
 }  // namespace Tags
 }  // namespace Xcts

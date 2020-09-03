@@ -15,6 +15,7 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/ConstantDensityStar.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -25,8 +26,9 @@
 namespace {
 
 using field_tags = tmpl::list<Xcts::Tags::ConformalFactor<DataVector>>;
-using auxiliary_field_tags = tmpl::list<
-    Xcts::Tags::ConformalFactorGradient<3, Frame::Inertial, DataVector>>;
+using auxiliary_field_tags =
+    tmpl::list<::Tags::deriv<Xcts::Tags::ConformalFactor<DataVector>,
+                             tmpl::size_t<3>, Frame::Inertial>>;
 using initial_tags =
     db::wrap_tags_in<Tags::Initial,
                      tmpl::append<field_tags, auxiliary_field_tags>>;
@@ -78,7 +80,7 @@ void test_solution(const double density, const double radius,
       get<Xcts::Tags::ConformalFactor<DataVector>>(far_away_solution),
       make_with_value<Scalar<DataVector>>(far_away_coords, 1.));
 
-  Xcts::Solutions::ConstantDensityStar created_solution =
+  const auto created_solution =
       TestHelpers::test_creation<Xcts::Solutions::ConstantDensityStar>(options);
   CHECK(created_solution == solution);
   test_serialization(solution);
