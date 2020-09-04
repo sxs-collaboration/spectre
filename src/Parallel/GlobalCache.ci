@@ -7,10 +7,20 @@ module GlobalCache {
   namespace Parallel {
 
   template <typename Metavariables>
+  group[migratable] MutableGlobalCache {
+    entry MutableGlobalCache(
+        tuples::tagged_tuple_from_typelist<
+            get_mutable_global_cache_tags<Metavariables>>&);
+    template <typename GlobalCacheTag, typename Function, typename... Args>
+    entry void mutate(std::tuple<Args...> & args);
+  }
+
+  template <typename Metavariables>
   nodegroup[migratable] GlobalCache {
     entry GlobalCache(
         tuples::tagged_tuple_from_typelist<
-            get_const_global_cache_tags<Metavariables>>&);
+            get_const_global_cache_tags<Metavariables>>&,
+            CProxy_MutableGlobalCache<Metavariables>&);
     entry void set_parallel_components(
         tuples::tagged_tuple_from_typelist<tmpl::transform<
             typename Metavariables::component_list,
@@ -18,6 +28,8 @@ module GlobalCache {
                        tmpl::bind<Parallel::proxy_from_parallel_component,
                                   tmpl::_1>>>>,
         const CkCallback&);
+    template <typename GlobalCacheTag, typename Function, typename... Args>
+    entry void mutate(std::tuple<Args...> & args);
   }
   }
 }

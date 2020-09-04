@@ -41,6 +41,8 @@ class Main : public CBase_Main<Metavariables> {
  public:
   using component_list = typename Metavariables::component_list;
   using const_global_cache_tags = get_const_global_cache_tags<Metavariables>;
+  using mutable_global_cache_tags =
+      get_mutable_global_cache_tags<Metavariables>;
 
   /// \cond HIDDEN_SYMBOLS
   /// The constructor used to register the class
@@ -76,6 +78,7 @@ class Main : public CBase_Main<Metavariables> {
                                 Metavariables>;
   using option_list = tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
       Parallel::get_option_tags<const_global_cache_tags, Metavariables>,
+      Parallel::get_option_tags<mutable_global_cache_tags, Metavariables>,
       tmpl::transform<component_list,
                       tmpl::bind<parallel_component_options, tmpl::_1>>>>>;
   using parallel_component_tag_list = tmpl::transform<
@@ -86,6 +89,7 @@ class Main : public CBase_Main<Metavariables> {
   typename Metavariables::Phase current_phase_{
       Metavariables::Phase::Initialization};
 
+  CProxy_MutableGlobalCache<Metavariables> mutable_global_cache_proxy_;
   CProxy_GlobalCache<Metavariables> global_cache_proxy_;
   Options::Parser<option_list> options_;
 };
@@ -245,9 +249,19 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
                 std::move(args)...);
           });
 
+  mutable_global_cache_proxy_ = CProxy_MutableGlobalCache<Metavariables>::ckNew(
+      Parallel::create_from_options<Metavariables>(
+          items_from_options, mutable_global_cache_tags{}));
+
+  // global_cache_proxy_ depends on mutable_global_cache_proxy_.
+  CkEntryOptions mutable_global_cache_dependency;
+  mutable_global_cache_dependency.setGroupDepID(
+      mutable_global_cache_proxy_.ckGetGroupID());
+
   global_cache_proxy_ = CProxy_GlobalCache<Metavariables>::ckNew(
       Parallel::create_from_options<Metavariables>(items_from_options,
-                                                   const_global_cache_tags{}));
+                                                   const_global_cache_tags{}),
+      mutable_global_cache_proxy_, &mutable_global_cache_dependency);
 
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       the_parallel_components;
