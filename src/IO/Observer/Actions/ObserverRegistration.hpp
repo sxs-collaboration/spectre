@@ -92,13 +92,13 @@ struct RegisterReductionNodeWithWritingNode {
                     const observers::ObservationKey& observation_key,
                     const size_t caller_node_id) noexcept {
     if constexpr (tmpl::list_contains_v<
-                      DbTagsList, Tags::ReductionObserversRegisteredNodes>) {
+                      DbTagsList, Tags::NodesExpectedToContributeReductions>) {
       const auto node_id = static_cast<size_t>(Parallel::my_node());
       ASSERT(node_id == 0, "Only node zero, not node "
                                << node_id
                                << ", should be called from another node");
 
-      db::mutate<Tags::ReductionObserversRegisteredNodes>(
+      db::mutate<Tags::NodesExpectedToContributeReductions>(
           make_not_null(&box),
           [&caller_node_id, &observation_key](
               const gsl::not_null<
@@ -125,7 +125,8 @@ struct RegisterReductionNodeWithWritingNode {
       (void)observation_key;
       (void)caller_node_id;
       ERROR(
-          "Do not have tag observers::Tags::ReductionObserversRegisteredNodes "
+          "Do not have tag "
+          "observers::Tags::NodesExpectedToContributeReductions "
           "in the DataBox. This means components are registering for "
           "reductions before initialization is complete.");
     }

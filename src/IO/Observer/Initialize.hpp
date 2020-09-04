@@ -87,7 +87,7 @@ struct InitializeWriter {
           Tags::ObservationsRegistered, Tags::ReductionsContributed,
           Tags::ReductionDataLock, Tags::ContributorsOfTensorData,
           Tags::VolumeDataLock, Tags::TensorData,
-          Tags::ReductionObserversRegisteredNodes,
+          Tags::NodesExpectedToContributeReductions,
           Tags::NodeReductionsContributedForWriting, Tags::H5FileLock>,
       typename Metavariables::observed_reduction_data_tags,
       tmpl::transform<
@@ -122,7 +122,7 @@ struct InitializeWriter {
             db::item_type<Tags::ReductionsContributed>{}, Parallel::NodeLock{},
             db::item_type<Tags::ContributorsOfTensorData>{},
             Parallel::NodeLock{}, db::item_type<Tags::TensorData>{},
-            db::item_type<Tags::ReductionObserversRegisteredNodes>{},
+            db::item_type<Tags::NodesExpectedToContributeReductions>{},
             db::item_type<Tags::NodeReductionsContributedForWriting>{},
             Parallel::NodeLock{}, db::item_type<ReductionTags>{}...,
             db::item_type<

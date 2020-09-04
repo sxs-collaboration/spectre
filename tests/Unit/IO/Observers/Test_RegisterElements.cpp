@@ -89,7 +89,7 @@ void check_observer_registration() {
             runner, 0)
             .empty());
   CHECK(ActionTesting::get_databox_tag<
-            obs_writer, observers::Tags::ReductionObserversRegisteredNodes>(
+            obs_writer, observers::Tags::NodesExpectedToContributeReductions>(
             runner, 0)
             .empty());
   CHECK(ActionTesting::get_databox_tag<

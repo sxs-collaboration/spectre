@@ -66,7 +66,7 @@ struct NodeReductionsContributedForWriting : db::SimpleTag {
 /// We need to keep track of this separately from the local reductions on the
 /// node that are contributing so we need a separate tag. Since nodes are easily
 /// indexed by an unsigned integer, we use `size_t` to keep track of them.
-struct ReductionObserversRegisteredNodes : db::SimpleTag {
+struct NodesExpectedToContributeReductions : db::SimpleTag {
   using type = std::unordered_map<ObservationKey, std::set<size_t>>;
 };
 

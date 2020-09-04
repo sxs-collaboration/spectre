@@ -487,7 +487,7 @@ struct WriteReductionData {
             observations_registered_with_id =
                 nodes_registered_for_reductions.at(key).size();
           },
-          db::get<Tags::ReductionObserversRegisteredNodes>(box));
+          db::get<Tags::NodesExpectedToContributeReductions>(box));
       node_lock->unlock();
 
       ASSERT(
