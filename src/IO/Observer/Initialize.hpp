@@ -30,8 +30,8 @@ template <class Metavariables>
 struct Initialize {
   using simple_tags = tmpl::append<
       db::AddSimpleTags<Tags::ObservationsRegistered,
-                        Tags::ReductionsContributed, Tags::VolumesContributed,
-                        Tags::TensorData>,
+                        Tags::ReductionsContributed,
+                        Tags::ContributorsOfTensorData, Tags::TensorData>,
       typename Metavariables::observed_reduction_data_tags,
       tmpl::transform<
           typename Metavariables::observed_reduction_data_tags,
@@ -63,7 +63,7 @@ struct Initialize {
         db::create<simple_tags>(
             db::item_type<Tags::ObservationsRegistered>{},
             db::item_type<Tags::ReductionsContributed>{},
-            db::item_type<Tags::VolumesContributed>{},
+            db::item_type<Tags::ContributorsOfTensorData>{},
             db::item_type<Tags::TensorData>{},
             db::item_type<ReductionTags>{}...,
             db::item_type<
@@ -85,7 +85,7 @@ struct InitializeWriter {
   using simple_tags = tmpl::append<
       db::AddSimpleTags<
           Tags::ObservationsRegistered, Tags::ReductionsContributed,
-          Tags::ReductionDataLock, Tags::VolumesContributed,
+          Tags::ReductionDataLock, Tags::ContributorsOfTensorData,
           Tags::VolumeDataLock, Tags::TensorData,
           Tags::ReductionObserversRegisteredNodes,
           Tags::NodeReductionsContributedForWriting, Tags::H5FileLock>,
@@ -120,8 +120,8 @@ struct InitializeWriter {
         db::create<simple_tags>(
             db::item_type<Tags::ObservationsRegistered>{},
             db::item_type<Tags::ReductionsContributed>{}, Parallel::NodeLock{},
-            db::item_type<Tags::VolumesContributed>{}, Parallel::NodeLock{},
-            db::item_type<Tags::TensorData>{},
+            db::item_type<Tags::ContributorsOfTensorData>{},
+            Parallel::NodeLock{}, db::item_type<Tags::TensorData>{},
             db::item_type<Tags::ReductionObserversRegisteredNodes>{},
             db::item_type<Tags::NodeReductionsContributedForWriting>{},
             Parallel::NodeLock{}, db::item_type<ReductionTags>{}...,

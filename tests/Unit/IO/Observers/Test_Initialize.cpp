@@ -56,9 +56,8 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Initialize", "[Unit][Observers]") {
                                        observers::Tags::ReductionsContributed>(
             runner, 0)
             .empty());
-  CHECK(ActionTesting::get_databox_tag<obs_component,
-                                       observers::Tags::VolumesContributed>(
-            runner, 0)
+  CHECK(ActionTesting::get_databox_tag<
+            obs_component, observers::Tags::ContributorsOfTensorData>(runner, 0)
             .empty());
   CHECK(ActionTesting::get_databox_tag<obs_component,
                                        observers::Tags::TensorData>(runner, 0)

@@ -64,7 +64,7 @@ struct ContributeVolumeData {
                     const std::array<Spectral::Basis, Dim>& received_basis,
                     const std::array<Spectral::Quadrature, Dim>&
                         received_quadrature) noexcept {
-    db::mutate<Tags::TensorData, Tags::VolumesContributed>(
+    db::mutate<Tags::TensorData, Tags::ContributorsOfTensorData>(
         make_not_null(&box),
         [&array_index, &cache, &observation_id, &sender_array_id,
          &received_basis, &received_extents, &received_quadrature,
@@ -177,7 +177,7 @@ struct ContributeVolumeDataToWriter {
           received_volume_data) noexcept {
     if constexpr (tmpl::list_contains_v<DbTagsList, Tags::TensorData> and
                   tmpl::list_contains_v<DbTagsList,
-                                        Tags::VolumesContributed> and
+                                        Tags::ContributorsOfTensorData> and
                   tmpl::list_contains_v<DbTagsList, Tags::VolumeDataLock> and
                   tmpl::list_contains_v<DbTagsList, Tags::H5FileLock>) {
       // The below gymnastics with pointers is done in order to minimize the
@@ -203,7 +203,7 @@ struct ContributeVolumeDataToWriter {
           std::numeric_limits<size_t>::max();
 
       node_lock->lock();
-      db::mutate<Tags::TensorData, Tags::VolumesContributed,
+      db::mutate<Tags::TensorData, Tags::ContributorsOfTensorData,
                  Tags::VolumeDataLock, Tags::H5FileLock>(
           make_not_null(&box),
           [&observation_id, &observations_registered_with_id,
@@ -324,7 +324,8 @@ struct ContributeVolumeDataToWriter {
       (void)subfile_name;
       (void)received_volume_data;
       ERROR(
-          "Could not find one of the tags TensorData, VolumesContributed, "
+          "Could not find one of the tags TensorData, "
+          "ContributorsOfTensorData, "
           "VolumeDataLock, or H5FileLock in the DataBox.");
     }
   }
