@@ -83,12 +83,12 @@ struct Initialize {
 template <class Metavariables>
 struct InitializeWriter {
   using simple_tags = tmpl::append<
-      db::AddSimpleTags<
-          Tags::ObservationsRegistered, Tags::ReductionsContributed,
-          Tags::ReductionDataLock, Tags::ContributorsOfTensorData,
-          Tags::VolumeDataLock, Tags::TensorData,
-          Tags::NodesExpectedToContributeReductions,
-          Tags::NodeReductionsContributedForWriting, Tags::H5FileLock>,
+      db::AddSimpleTags<Tags::ObservationsRegistered,
+                        Tags::ReductionsContributed, Tags::ReductionDataLock,
+                        Tags::ContributorsOfTensorData, Tags::VolumeDataLock,
+                        Tags::TensorData,
+                        Tags::NodesExpectedToContributeReductions,
+                        Tags::NodesThatContributedReductions, Tags::H5FileLock>,
       typename Metavariables::observed_reduction_data_tags,
       tmpl::transform<
           typename Metavariables::observed_reduction_data_tags,
@@ -123,7 +123,7 @@ struct InitializeWriter {
             db::item_type<Tags::ContributorsOfTensorData>{},
             Parallel::NodeLock{}, db::item_type<Tags::TensorData>{},
             db::item_type<Tags::NodesExpectedToContributeReductions>{},
-            db::item_type<Tags::NodeReductionsContributedForWriting>{},
+            db::item_type<Tags::NodesThatContributedReductions>{},
             Parallel::NodeLock{}, db::item_type<ReductionTags>{}...,
             db::item_type<
                 detail::reduction_data_to_reduction_names<ReductionTags>>{}...),

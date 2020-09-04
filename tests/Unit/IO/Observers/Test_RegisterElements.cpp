@@ -93,8 +93,8 @@ void check_observer_registration() {
             runner, 0)
             .empty());
   CHECK(ActionTesting::get_databox_tag<
-            obs_writer, observers::Tags::NodeReductionsContributedForWriting>(
-            runner, 0)
+            obs_writer, observers::Tags::NodesThatContributedReductions>(runner,
+                                                                         0)
             .empty());
 
   const size_t number_of_obs_writer_actions =

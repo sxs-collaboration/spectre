@@ -54,7 +54,7 @@ struct ReductionsContributed : db::SimpleTag {
 /// This is used on node 0 (or whichever node has been designated as the one to
 /// write the reduction files). The `unordered_set` is the node IDs that have
 /// contributed so far.
-struct NodeReductionsContributedForWriting : db::SimpleTag {
+struct NodesThatContributedReductions : db::SimpleTag {
   using type = std::unordered_map<ObservationId, std::unordered_set<size_t>>;
 };
 

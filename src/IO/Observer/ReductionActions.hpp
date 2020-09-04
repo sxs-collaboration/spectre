@@ -418,7 +418,7 @@ struct WriteReductionData {
                   tmpl::list_contains_v<DbTagsList, Tags::ReductionDataNames<
                                                         ReductionDatums...>> and
                   tmpl::list_contains_v<
-                      DbTagsList, Tags::NodeReductionsContributedForWriting> and
+                      DbTagsList, Tags::NodesThatContributedReductions> and
                   tmpl::list_contains_v<DbTagsList, Tags::ReductionDataLock> and
                   tmpl::list_contains_v<DbTagsList, Tags::H5FileLock>) {
       // The below gymnastics with pointers is done in order to minimize the
@@ -445,8 +445,8 @@ struct WriteReductionData {
       node_lock->lock();
       db::mutate<Tags::ReductionData<ReductionDatums...>,
                  Tags::ReductionDataNames<ReductionDatums...>,
-                 Tags::NodeReductionsContributedForWriting,
-                 Tags::ReductionDataLock, Tags::H5FileLock>(
+                 Tags::NodesThatContributedReductions, Tags::ReductionDataLock,
+                 Tags::H5FileLock>(
           make_not_null(&box),
           [&nodes_contributed, &reduction_data, &reduction_names_map,
            &reduction_data_lock, &reduction_file_lock, &observation_id,
@@ -581,7 +581,7 @@ struct WriteReductionData {
             << ' '
             << pretty_type::get_name<
                    Tags::ReductionDataNames<ReductionDatums...>>()
-            << ", Tags::NodeReductionsContributedForWriting, "
+            << ", Tags::NodesThatContributedReductions, "
                "Tags::ReductionDataLock, or Tags::H5FileLock.");
     }
   }

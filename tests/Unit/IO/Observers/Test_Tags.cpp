@@ -15,8 +15,8 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
       "ObservationsRegistered");
   TestHelpers::db::test_simple_tag<ReductionsContributed>(
       "ReductionsContributed");
-  TestHelpers::db::test_simple_tag<NodeReductionsContributedForWriting>(
-      "NodeReductionsContributedForWriting");
+  TestHelpers::db::test_simple_tag<NodesThatContributedReductions>(
+      "NodesThatContributedReductions");
   TestHelpers::db::test_simple_tag<NodesExpectedToContributeReductions>(
       "NodesExpectedToContributeReductions");
   TestHelpers::db::test_simple_tag<ContributorsOfTensorData>(
