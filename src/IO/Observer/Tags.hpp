@@ -43,7 +43,7 @@ struct ExpectedContributorsForObservations : db::SimpleTag {
 /// The tag is used both on the `Observer` and on the `ObserverWriter`
 /// components since all we need to do is keep track of array component IDs in
 /// both cases.
-struct ReductionsContributed : db::SimpleTag {
+struct ContributorsOfReductionData : db::SimpleTag {
   using type =
       std::unordered_map<ObservationId, std::unordered_set<ArrayComponentId>>;
 };

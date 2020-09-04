@@ -30,7 +30,7 @@ template <class Metavariables>
 struct Initialize {
   using simple_tags = tmpl::append<
       db::AddSimpleTags<Tags::ExpectedContributorsForObservations,
-                        Tags::ReductionsContributed,
+                        Tags::ContributorsOfReductionData,
                         Tags::ContributorsOfTensorData, Tags::TensorData>,
       typename Metavariables::observed_reduction_data_tags,
       tmpl::transform<
@@ -62,7 +62,7 @@ struct Initialize {
     return std::make_tuple(
         db::create<simple_tags>(
             db::item_type<Tags::ExpectedContributorsForObservations>{},
-            db::item_type<Tags::ReductionsContributed>{},
+            db::item_type<Tags::ContributorsOfReductionData>{},
             db::item_type<Tags::ContributorsOfTensorData>{},
             db::item_type<Tags::TensorData>{},
             db::item_type<ReductionTags>{}...,
@@ -84,9 +84,9 @@ template <class Metavariables>
 struct InitializeWriter {
   using simple_tags = tmpl::append<
       db::AddSimpleTags<Tags::ExpectedContributorsForObservations,
-                        Tags::ReductionsContributed, Tags::ReductionDataLock,
-                        Tags::ContributorsOfTensorData, Tags::VolumeDataLock,
-                        Tags::TensorData,
+                        Tags::ContributorsOfReductionData,
+                        Tags::ReductionDataLock, Tags::ContributorsOfTensorData,
+                        Tags::VolumeDataLock, Tags::TensorData,
                         Tags::NodesExpectedToContributeReductions,
                         Tags::NodesThatContributedReductions, Tags::H5FileLock>,
       typename Metavariables::observed_reduction_data_tags,
@@ -119,7 +119,8 @@ struct InitializeWriter {
     return std::make_tuple(
         db::create<simple_tags>(
             db::item_type<Tags::ExpectedContributorsForObservations>{},
-            db::item_type<Tags::ReductionsContributed>{}, Parallel::NodeLock{},
+            db::item_type<Tags::ContributorsOfReductionData>{},
+            Parallel::NodeLock{},
             db::item_type<Tags::ContributorsOfTensorData>{},
             Parallel::NodeLock{}, db::item_type<Tags::TensorData>{},
             db::item_type<Tags::NodesExpectedToContributeReductions>{},

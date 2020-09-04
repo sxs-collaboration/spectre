@@ -63,9 +63,9 @@ void check_observer_registration() {
           obs_component, observers::Tags::ExpectedContributorsForObservations>(
           runner, 0)
           .empty());
-  CHECK(ActionTesting::get_databox_tag<obs_component,
-                                       observers::Tags::ReductionsContributed>(
-            runner, 0)
+  CHECK(ActionTesting::get_databox_tag<
+            obs_component, observers::Tags::ContributorsOfReductionData>(runner,
+                                                                         0)
             .empty());
   CHECK(ActionTesting::get_databox_tag<
             obs_component, observers::Tags::ContributorsOfTensorData>(runner, 0)
@@ -79,9 +79,8 @@ void check_observer_registration() {
             obs_writer, observers::Tags::ExpectedContributorsForObservations>(
             runner, 0)
             .empty());
-  CHECK(ActionTesting::get_databox_tag<obs_writer,
-                                       observers::Tags::ReductionsContributed>(
-            runner, 0)
+  CHECK(ActionTesting::get_databox_tag<
+            obs_writer, observers::Tags::ContributorsOfReductionData>(runner, 0)
             .empty());
   CHECK(ActionTesting::get_databox_tag<
             obs_writer, observers::Tags::ContributorsOfTensorData>(runner, 0)
@@ -145,9 +144,9 @@ void check_observer_registration() {
       ActionTesting::get_databox_tag<
           obs_component, observers::Tags::ExpectedContributorsForObservations>(
           runner, 0) == expected_obs_ids);
-  CHECK(ActionTesting::get_databox_tag<obs_component,
-                                       observers::Tags::ReductionsContributed>(
-            runner, 0)
+  CHECK(ActionTesting::get_databox_tag<
+            obs_component, observers::Tags::ContributorsOfReductionData>(runner,
+                                                                         0)
             .empty());
   CHECK(ActionTesting::get_databox_tag<
             obs_component, observers::Tags::ContributorsOfTensorData>(runner, 0)
@@ -159,9 +158,8 @@ void check_observer_registration() {
   CHECK(ActionTesting::get_databox_tag<
             obs_writer, observers::Tags::ExpectedContributorsForObservations>(
             runner, 0) == expected_obs_writer_ids);
-  CHECK(ActionTesting::get_databox_tag<obs_writer,
-                                       observers::Tags::ReductionsContributed>(
-            runner, 0)
+  CHECK(ActionTesting::get_databox_tag<
+            obs_writer, observers::Tags::ContributorsOfReductionData>(runner, 0)
             .empty());
   CHECK(ActionTesting::get_databox_tag<
             obs_writer, observers::Tags::ContributorsOfTensorData>(runner, 0)

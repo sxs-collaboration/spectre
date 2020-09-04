@@ -94,9 +94,9 @@ struct ContributeReductionData {
                   tmpl::list_contains_v<DbTagsList,
                                         Tags::ReductionDataNames<Ts...>> and
                   tmpl::list_contains_v<DbTagsList,
-                                        Tags::ReductionsContributed>) {
+                                        Tags::ContributorsOfReductionData>) {
       db::mutate<Tags::ReductionData<Ts...>, Tags::ReductionDataNames<Ts...>,
-                 Tags::ReductionsContributed>(
+                 Tags::ContributorsOfReductionData>(
           make_not_null(&box),
           [&array_index, &cache, &observation_id,
            reduction_data = std::move(reduction_data), &reduction_names,
@@ -174,7 +174,8 @@ struct ContributeReductionData {
       ERROR("Could not find the tag "
             << pretty_type::get_name<Tags::ReductionData<Ts...>>() << ' '
             << pretty_type::get_name<Tags::ReductionDataNames<Ts...>>()
-            << " or " << pretty_type::get_name<Tags::ReductionsContributed>()
+            << " or "
+            << pretty_type::get_name<Tags::ContributorsOfReductionData>()
             << " in the DataBox.");
     }
   }
@@ -230,7 +231,7 @@ struct CollectReductionDataOnNode {
       node_lock->lock();
       db::mutate<Tags::ReductionData<ReductionDatums...>,
                  Tags::ReductionDataNames<ReductionDatums...>,
-                 Tags::ReductionsContributed, Tags::ReductionDataLock>(
+                 Tags::ContributorsOfReductionData, Tags::ReductionDataLock>(
           make_not_null(&box),
           [&reduction_data, &reduction_names_map,
            &reduction_observers_contributed, &reduction_data_lock,
