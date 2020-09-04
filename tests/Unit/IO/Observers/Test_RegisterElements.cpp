@@ -106,8 +106,8 @@ void check_observer_registration() {
   for (const auto& element_id : element_ids) {
     ActionTesting::next_action<element_comp>(make_not_null(&runner),
                                              element_id);
-    // Invoke the simple_action RegisterSenderWithSelf that was called on the
-    // observer component by the RegisterWithObservers action.
+    // Invoke the simple_action RegisterContributorWithObserver that was called
+    // on the observer component by the RegisterWithObservers action.
     ActionTesting::invoke_queued_simple_action<obs_component>(
         make_not_null(&runner), 0);
   }

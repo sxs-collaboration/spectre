@@ -129,7 +129,7 @@ struct RegisterEventsWithObservers {
 
     for (const auto& [type_of_observation, observation_key] :
          type_of_observation_and_observation_key_pairs) {
-      Parallel::simple_action<RegisterSenderWithSelf>(
+      Parallel::simple_action<RegisterContributorWithObserver>(
           observer, observation_key,
           observers::ArrayComponentId(
               std::add_pointer_t<ParallelComponent>{nullptr},

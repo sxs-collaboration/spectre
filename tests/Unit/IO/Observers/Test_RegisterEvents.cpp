@@ -92,7 +92,7 @@ struct Component {
       tmpl::list<observers::Actions::RegisterEventsWithObservers>>>;
 };
 
-struct MockRegisterSenderWithSelf {
+struct MockRegisterContributorWithObserver {
   struct Result {
     observers::ObservationKey observation_key{};
     observers::ArrayComponentId array_component_id{};
@@ -115,7 +115,8 @@ struct MockRegisterSenderWithSelf {
   }
 };
 
-MockRegisterSenderWithSelf::Result MockRegisterSenderWithSelf::result{};
+MockRegisterContributorWithObserver::Result
+    MockRegisterContributorWithObserver::result{};
 
 template <typename Metavariables>
 struct MockObserverComponent {
@@ -129,8 +130,9 @@ struct MockObserverComponent {
 
   using component_being_mocked = observers::Observer<Metavariables>;
   using replace_these_simple_actions =
-      tmpl::list<observers::Actions::RegisterSenderWithSelf>;
-  using with_these_simple_actions = tmpl::list<MockRegisterSenderWithSelf>;
+      tmpl::list<observers::Actions::RegisterContributorWithObserver>;
+  using with_these_simple_actions =
+      tmpl::list<MockRegisterContributorWithObserver>;
 };
 
 struct Metavariables {
@@ -173,18 +175,18 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterEvents", "[Unit][Observers]") {
     ActionTesting::invoke_queued_simple_action<obs_component>(
         make_not_null(&runner), 0);
 
-    CHECK(MockRegisterSenderWithSelf::result.observation_key ==
+    CHECK(MockRegisterContributorWithObserver::result.observation_key ==
           observers::ObservationKey("element_data.dat"));
     // Need an `or` because we don't know what order actions are run in
-    CHECK((MockRegisterSenderWithSelf::result.array_component_id ==
+    CHECK((MockRegisterContributorWithObserver::result.array_component_id ==
                observers::ArrayComponentId(
                    std::add_pointer_t<my_component>{nullptr},
                    Parallel::ArrayIndex<int>{0}) or
-           MockRegisterSenderWithSelf::result.array_component_id ==
+           MockRegisterContributorWithObserver::result.array_component_id ==
                observers::ArrayComponentId(
                    std::add_pointer_t<my_component>{nullptr},
                    Parallel::ArrayIndex<int>{1})));
-    CHECK(MockRegisterSenderWithSelf::result.type_of_observation ==
+    CHECK(MockRegisterContributorWithObserver::result.type_of_observation ==
           observers::TypeOfObservation::Reduction);
   }
 }

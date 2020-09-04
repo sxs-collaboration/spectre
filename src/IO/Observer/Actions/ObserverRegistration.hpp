@@ -198,7 +198,7 @@ struct RegisterReductionContributorWithObserverWriter {
  *
  * Should be invoked on the `Observer` by the contributing component.
  */
-struct RegisterSenderWithSelf {
+struct RegisterContributorWithObserver {
   template <typename ParallelComponent, typename DbTagList,
             typename Metavariables, typename ArrayIndex>
   static void apply(db::DataBox<DbTagList>& box,
@@ -270,7 +270,7 @@ struct RegisterSenderWithSelf {
       ERROR(
           "The DataBox must contain the tag "
           "observers::Tags::ObservationsRegistered when the action "
-          "RegisterSenderWithSelf is called.");
+          "RegisterContributorWithObserver is called.");
     }
   }
 };

@@ -54,7 +54,8 @@ struct RegisterWithObservers {
         RegisterHelper::template register_info<ParallelComponent>(box,
                                                                   array_index);
 
-    Parallel::simple_action<observers::Actions::RegisterSenderWithSelf>(
+    Parallel::simple_action<
+        observers::Actions::RegisterContributorWithObserver>(
         observer, observation_id,
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
