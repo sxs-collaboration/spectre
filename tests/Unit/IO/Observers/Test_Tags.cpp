@@ -11,8 +11,8 @@
 
 namespace observers::Tags {
 SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
-  TestHelpers::db::test_simple_tag<ObservationsRegistered>(
-      "ObservationsRegistered");
+  TestHelpers::db::test_simple_tag<ExpectedContributorsForObservations>(
+      "ExpectedContributorsForObservations");
   TestHelpers::db::test_simple_tag<ReductionsContributed>(
       "ReductionsContributed");
   TestHelpers::db::test_simple_tag<NodesThatContributedReductions>(

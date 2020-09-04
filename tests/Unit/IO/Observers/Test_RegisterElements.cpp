@@ -58,10 +58,11 @@ void check_observer_registration() {
                            metavariables::Phase::RegisterWithObservers);
 
   // Check observer component
-  CHECK(ActionTesting::get_databox_tag<obs_component,
-                                       observers::Tags::ObservationsRegistered>(
-            runner, 0)
-            .empty());
+  CHECK(
+      ActionTesting::get_databox_tag<
+          obs_component, observers::Tags::ExpectedContributorsForObservations>(
+          runner, 0)
+          .empty());
   CHECK(ActionTesting::get_databox_tag<obs_component,
                                        observers::Tags::ReductionsContributed>(
             runner, 0)
@@ -74,8 +75,8 @@ void check_observer_registration() {
             .empty());
 
   // Check observer writer component
-  CHECK(ActionTesting::get_databox_tag<obs_writer,
-                                       observers::Tags::ObservationsRegistered>(
+  CHECK(ActionTesting::get_databox_tag<
+            obs_writer, observers::Tags::ExpectedContributorsForObservations>(
             runner, 0)
             .empty());
   CHECK(ActionTesting::get_databox_tag<obs_writer,
@@ -140,9 +141,10 @@ void check_observer_registration() {
       observers::ArrayComponentId{std::add_pointer_t<obs_component>{nullptr},
                                   Parallel::ArrayIndex<int>(0)});
 
-  CHECK(ActionTesting::get_databox_tag<obs_component,
-                                       observers::Tags::ObservationsRegistered>(
-            runner, 0) == expected_obs_ids);
+  CHECK(
+      ActionTesting::get_databox_tag<
+          obs_component, observers::Tags::ExpectedContributorsForObservations>(
+          runner, 0) == expected_obs_ids);
   CHECK(ActionTesting::get_databox_tag<obs_component,
                                        observers::Tags::ReductionsContributed>(
             runner, 0)
@@ -154,8 +156,8 @@ void check_observer_registration() {
                                        observers::Tags::TensorData>(runner, 0)
             .empty());
 
-  CHECK(ActionTesting::get_databox_tag<obs_writer,
-                                       observers::Tags::ObservationsRegistered>(
+  CHECK(ActionTesting::get_databox_tag<
+            obs_writer, observers::Tags::ExpectedContributorsForObservations>(
             runner, 0) == expected_obs_writer_ids);
   CHECK(ActionTesting::get_databox_tag<obs_writer,
                                        observers::Tags::ReductionsContributed>(

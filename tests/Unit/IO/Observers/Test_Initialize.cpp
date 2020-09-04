@@ -48,10 +48,11 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Initialize", "[Unit][Observers]") {
   ActionTesting::emplace_component<obs_component>(&runner, 0);
   runner.next_action<obs_component>(0);
 
-  CHECK(ActionTesting::get_databox_tag<obs_component,
-                                       observers::Tags::ObservationsRegistered>(
-            runner, 0)
-            .empty());
+  CHECK(
+      ActionTesting::get_databox_tag<
+          obs_component, observers::Tags::ExpectedContributorsForObservations>(
+          runner, 0)
+          .empty());
   CHECK(ActionTesting::get_databox_tag<obs_component,
                                        observers::Tags::ReductionsContributed>(
             runner, 0)

@@ -169,7 +169,7 @@ struct ContributeReductionData {
               reduction_observers_contributed->erase(observation_id);
             }
           },
-          db::get<Tags::ObservationsRegistered>(box));
+          db::get<Tags::ExpectedContributorsForObservations>(box));
     } else {
       ERROR("Could not find the tag "
             << pretty_type::get_name<Tags::ReductionData<Ts...>>() << ' '
@@ -268,7 +268,7 @@ struct CollectReductionDataOnNode {
             observations_registered_with_id =
                 observations_registered.at(key).size();
           },
-          db::get<Tags::ObservationsRegistered>(box));
+          db::get<Tags::ExpectedContributorsForObservations>(box));
       node_lock->unlock();
 
       ASSERT(

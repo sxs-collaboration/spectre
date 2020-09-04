@@ -44,9 +44,9 @@ struct RegisterVolumeContributorWithObserverWriter {
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
                     const ArrayComponentId& id_of_caller) noexcept {
-    if constexpr (tmpl::list_contains_v<DbTagsList,
-                                        Tags::ObservationsRegistered>) {
-      db::mutate<Tags::ObservationsRegistered>(
+    if constexpr (tmpl::list_contains_v<
+                      DbTagsList, Tags::ExpectedContributorsForObservations>) {
+      db::mutate<Tags::ExpectedContributorsForObservations>(
           make_not_null(&box),
           [&id_of_caller, &observation_key](
               const gsl::not_null<std::unordered_map<
@@ -74,7 +74,8 @@ struct RegisterVolumeContributorWithObserverWriter {
       (void)observation_key;
       (void)id_of_caller;
       ERROR(
-          "Could not find tag observers::Tags::ObservationsRegistered in the "
+          "Could not find tag "
+          "observers::Tags::ExpectedContributorsForObservations in the "
           "DataBox.");
     }
   }
@@ -149,10 +150,10 @@ struct RegisterReductionContributorWithObserverWriter {
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationKey& observation_key,
                     const ArrayComponentId& id_of_caller) noexcept {
-    if constexpr (tmpl::list_contains_v<DbTagsList,
-                                        Tags::ObservationsRegistered>) {
+    if constexpr (tmpl::list_contains_v<
+                      DbTagsList, Tags::ExpectedContributorsForObservations>) {
       const auto node_id = static_cast<size_t>(Parallel::my_node());
-      db::mutate<Tags::ObservationsRegistered>(
+      db::mutate<Tags::ExpectedContributorsForObservations>(
           make_not_null(&box),
           [&cache, &id_of_caller, &node_id, &observation_key](
               const gsl::not_null<std::unordered_map<
@@ -187,7 +188,8 @@ struct RegisterReductionContributorWithObserverWriter {
       (void)observation_key;
       (void)id_of_caller;
       ERROR(
-          "Could not find tag observers::Tags::ObservationsRegistered in the "
+          "Could not find tag "
+          "observers::Tags::ExpectedContributorsForObservations in the "
           "DataBox.");
     }
   }
@@ -209,9 +211,10 @@ struct RegisterContributorWithObserver {
                     const observers::ArrayComponentId& component_id,
                     const TypeOfObservation& type_of_observation) noexcept {
     if constexpr (tmpl::list_contains_v<
-                      DbTagList, observers::Tags::ObservationsRegistered>) {
+                      DbTagList,
+                      observers::Tags::ExpectedContributorsForObservations>) {
       bool observation_key_already_registered = true;
-      db::mutate<observers::Tags::ObservationsRegistered>(
+      db::mutate<observers::Tags::ExpectedContributorsForObservations>(
           make_not_null(&box),
           [&component_id, &observation_key,
            &observation_key_already_registered](
@@ -270,7 +273,8 @@ struct RegisterContributorWithObserver {
     } else {
       ERROR(
           "The DataBox must contain the tag "
-          "observers::Tags::ObservationsRegistered when the action "
+          "observers::Tags::ExpectedContributorsForObservations when the "
+          "action "
           "RegisterContributorWithObserver is called.");
     }
   }

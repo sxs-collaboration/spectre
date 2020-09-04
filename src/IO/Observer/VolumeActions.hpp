@@ -152,7 +152,7 @@ struct ContributeVolumeData {
             volume_data->erase(observation_id);
           }
         },
-        db::get<Tags::ObservationsRegistered>(box));
+        db::get<Tags::ExpectedContributorsForObservations>(box));
   }
 };
 }  // namespace Actions
@@ -239,7 +239,7 @@ struct ContributeVolumeDataToWriter {
                 observations_registered.at(key).size();
             volume_file_lock = &*volume_file_lock_ptr;
           },
-          db::get<Tags::ObservationsRegistered>(box));
+          db::get<Tags::ExpectedContributorsForObservations>(box));
       node_lock->unlock();
 
       ASSERT(all_volume_data != nullptr,

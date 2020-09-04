@@ -32,7 +32,7 @@ namespace Tags {
 /// This is set during registration is only read from later on in the
 /// simulation, except for possibly during migration of an `ArrayComponentId`
 /// component.
-struct ObservationsRegistered : db::SimpleTag {
+struct ExpectedContributorsForObservations : db::SimpleTag {
   using type =
       std::unordered_map<ObservationKey, std::unordered_set<ArrayComponentId>>;
 };

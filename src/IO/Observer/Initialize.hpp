@@ -29,7 +29,7 @@ using reduction_data_to_reduction_names = typename Tag::names_tag;
 template <class Metavariables>
 struct Initialize {
   using simple_tags = tmpl::append<
-      db::AddSimpleTags<Tags::ObservationsRegistered,
+      db::AddSimpleTags<Tags::ExpectedContributorsForObservations,
                         Tags::ReductionsContributed,
                         Tags::ContributorsOfTensorData, Tags::TensorData>,
       typename Metavariables::observed_reduction_data_tags,
@@ -61,7 +61,7 @@ struct Initialize {
   static auto helper(tmpl::list<ReductionTags...> /*meta*/) noexcept {
     return std::make_tuple(
         db::create<simple_tags>(
-            db::item_type<Tags::ObservationsRegistered>{},
+            db::item_type<Tags::ExpectedContributorsForObservations>{},
             db::item_type<Tags::ReductionsContributed>{},
             db::item_type<Tags::ContributorsOfTensorData>{},
             db::item_type<Tags::TensorData>{},
@@ -83,7 +83,7 @@ struct Initialize {
 template <class Metavariables>
 struct InitializeWriter {
   using simple_tags = tmpl::append<
-      db::AddSimpleTags<Tags::ObservationsRegistered,
+      db::AddSimpleTags<Tags::ExpectedContributorsForObservations,
                         Tags::ReductionsContributed, Tags::ReductionDataLock,
                         Tags::ContributorsOfTensorData, Tags::VolumeDataLock,
                         Tags::TensorData,
@@ -118,7 +118,7 @@ struct InitializeWriter {
   static auto helper(tmpl::list<ReductionTags...> /*meta*/) noexcept {
     return std::make_tuple(
         db::create<simple_tags>(
-            db::item_type<Tags::ObservationsRegistered>{},
+            db::item_type<Tags::ExpectedContributorsForObservations>{},
             db::item_type<Tags::ReductionsContributed>{}, Parallel::NodeLock{},
             db::item_type<Tags::ContributorsOfTensorData>{},
             Parallel::NodeLock{}, db::item_type<Tags::TensorData>{},
