@@ -22,7 +22,7 @@
 namespace ScalarWave::Solutions {
 
 RegularSphericalWave::RegularSphericalWave(
-    std::unique_ptr<MathFunction<1>> profile) noexcept
+    std::unique_ptr<MathFunction<1, Frame::Inertial>> profile) noexcept
     : profile_(std::move(profile)) {}
 
 tuples::TaggedTuple<ScalarWave::Pi, ScalarWave::Phi<3>, ScalarWave::Psi>

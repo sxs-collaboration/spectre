@@ -52,7 +52,8 @@ template <size_t Dim>
 void check_du_dt(const size_t npts, const double time) {
   ScalarWave::Solutions::PlaneWave<Dim> solution(
       make_array<Dim>(0.1), make_array<Dim>(0.0),
-      std::make_unique<MathFunctions::Gaussian>(1.0, 1.0, 0.0));
+      std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(1.0, 1.0,
+                                                                    0.0));
 
   tnsr::I<DataVector, Dim> x = [npts]() {
     auto logical_coords = logical_coordinates(Mesh<Dim>{
@@ -139,7 +140,8 @@ template <size_t Dim>
 void check_normal_dot_fluxes(const size_t npts, const double t) {
   const ScalarWave::Solutions::PlaneWave<Dim> solution(
       make_array<Dim>(0.1), make_array<Dim>(0.0),
-      std::make_unique<MathFunctions::Gaussian>(1.0, 1.0, 0.0));
+      std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(1.0, 1.0,
+                                                                    0.0));
 
   const tnsr::I<DataVector, Dim> x = [npts]() {
     auto logical_coords = logical_coordinates(Mesh<Dim>{

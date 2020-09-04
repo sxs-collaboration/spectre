@@ -14,7 +14,9 @@ namespace MathFunctions {
 
 template <size_t Dim>
 TensorProduct<Dim>::TensorProduct(
-    double scale, std::array<std::unique_ptr<MathFunction<1>>, Dim>&& functions)
+    double scale,
+    std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, Dim>&&
+        functions)
     : scale_(scale), functions_(std::move(functions)) {}
 
 template <size_t Dim>
@@ -74,10 +76,6 @@ tnsr::ii<T, Dim> TensorProduct<Dim>::second_derivatives(
 }  // namespace MathFunctions
 
 /// \cond
-template class MathFunctions::TensorProduct<1>;
-template class MathFunctions::TensorProduct<2>;
-template class MathFunctions::TensorProduct<3>;
-
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
@@ -92,6 +90,20 @@ template class MathFunctions::TensorProduct<3>;
       const tnsr::I<DTYPE(data), DIM(data)>& x) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector))
+
+#undef DIM
+#undef DTYPE
+#undef INSTANTIATE
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                        \
+  template MathFunctions::TensorProduct<DIM(data)>::TensorProduct(  \
+      double scale,                                                 \
+      std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, \
+                 DIM(data)>&& functions);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef DTYPE

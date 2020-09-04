@@ -164,9 +164,11 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
     // interpolate to arbitrary points, and then check that the
     // values at arbitrary points match this solution.
     // We choose polynomials so that interpolation is exact on an LGL grid.
-    std::array<std::unique_ptr<MathFunction<1>>, Dim> functions;
+    std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, Dim>
+        functions;
     for (size_t d = 0; d < Dim; ++d) {
-      gsl::at(functions, d) = std::make_unique<MathFunctions::PowX>(iter()[d]);
+      gsl::at(functions, d) =
+          std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(iter()[d]);
     }
     MathFunctions::TensorProduct<Dim> f(1.0, std::move(functions));
 

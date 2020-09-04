@@ -5,67 +5,74 @@
 
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <random>
 
 #include "DataStructures/DataVector.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/PointwiseFunctions/MathFunctions/TestHelpers.hpp"
+#include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 
-template <size_t VolumeDim>
+template <size_t VolumeDim, typename Fr>
 class MathFunction;
+
+namespace Frame {
+struct Grid;
+struct Inertial;
+}  // namespace Frame
+
+namespace {
+template <size_t VolumeDim, typename DataType, typename Fr>
+void test_sinusoid_random(const DataType& used_for_size) noexcept {
+  Parallel::register_derived_classes_with_charm<
+      MathFunctions::Sinusoid<VolumeDim, Fr>>();
+
+  // Generate the amplitude and width
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> real_dis(-1, 1);
+
+  const double amplitude = real_dis(gen);
+  // If the width is too small then the terms in the second derivative
+  // can become very large and fail the test due to rounding errors.
+  const double wavenumber = real_dis(gen);
+
+  // Generate the center
+  const double phase = real_dis(gen);
+
+  MathFunctions::Sinusoid<VolumeDim, Fr> sinusoid{amplitude, wavenumber, phase};
+
+  TestHelpers::MathFunctions::check(std::move(sinusoid), "sinusoid",
+                                    used_for_size, {{{-1.0, 1.0}}}, amplitude,
+                                    wavenumber, phase);
+}
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid",
                   "[PointwiseFunctions][Unit]") {
-  MAKE_GENERATOR(gen);
-  std::uniform_real_distribution<> real_dis(-1, 1);
-  const double wavenumber = real_dis(gen);
-  CAPTURE_PRECISE(wavenumber);
-  const double amplitude = real_dis(gen);
-  CAPTURE_PRECISE(amplitude);
-  const double phase = real_dis(gen);
-  CAPTURE_PRECISE(phase);
-  const MathFunctions::Sinusoid sinusoid{amplitude, wavenumber, phase};
+  const DataVector dv{5};
 
-  // Check some random points
-  for (size_t i = 0; i < 100; ++i) {
-    const double point = real_dis(gen);
-    const double mapped_point = amplitude * sin(wavenumber * point + phase);
-    CHECK(sinusoid(point) == approx(mapped_point));
-    CHECK(sinusoid.first_deriv(point) ==
-          approx(amplitude * wavenumber * cos(wavenumber * point + phase)));
-    CHECK(sinusoid.second_deriv(point) ==
-          approx(-square(wavenumber) * mapped_point));
-    CHECK(sinusoid.third_deriv(point) ==
-          approx(-amplitude * cube(wavenumber) *
-                 cos(wavenumber * point + phase)));
-  }
+  pypp::SetupLocalPythonEnvironment{"PointwiseFunctions/MathFunctions/Python"};
 
-  const DataVector one{1., 1.};
-  const DataVector mapped_point = amplitude * sin(wavenumber * one + phase);
-  const DataVector mapped_first_deriv =
-      amplitude * wavenumber * cos(wavenumber * one + phase);
-  const DataVector mapped_second_deriv = -square(wavenumber) * mapped_point;
-  const DataVector mapped_third_deriv =
-      -amplitude * cube(wavenumber) * cos(wavenumber * one + phase);
-  CHECK_ITERABLE_APPROX(sinusoid(one), mapped_point);
-  CHECK_ITERABLE_APPROX(sinusoid.first_deriv(one), mapped_first_deriv);
-  CHECK_ITERABLE_APPROX(sinusoid.second_deriv(one), mapped_second_deriv);
-  CHECK_ITERABLE_APPROX(sinusoid.third_deriv(one), mapped_third_deriv);
-
-  test_serialization(sinusoid);
-  test_serialization_via_base<MathFunction<1>, MathFunctions::Sinusoid>(
-      amplitude, wavenumber, phase);
-  // test operator !=
-  const MathFunctions::Sinusoid sinusoid2{amplitude + 1.0, wavenumber, phase};
-  CHECK(sinusoid != sinusoid2);
+  using Frames = tmpl::list<Frame::Grid, Frame::Inertial>;
+  tmpl::for_each<Frames>([&dv](auto frame_v) {
+    using Fr = typename decltype(frame_v)::type;
+    test_sinusoid_random<1, DataVector, Fr>(dv);
+    test_sinusoid_random<1, double, Fr>(
+        std::numeric_limits<double>::signaling_NaN());
+  });
 }
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid.Factory",
                   "[PointwiseFunctions][Unit]") {
-  TestHelpers::test_factory_creation<MathFunction<1>>(
+  TestHelpers::test_factory_creation<MathFunction<1, Frame::Inertial>>(
+      "Sinusoid:\n"
+      "  Amplitude: 3\n"
+      "  Wavenumber: 2\n"
+      "  Phase: -9");
+  TestHelpers::test_factory_creation<MathFunction<1, Frame::Inertial>>(
       "Sinusoid:\n"
       "  Amplitude: 3\n"
       "  Wavenumber: 2\n"

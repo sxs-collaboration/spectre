@@ -161,7 +161,8 @@ void test_construct_from_options() noexcept {
     const gr::Solutions::KerrSchild bh_solution(0.7, {{0.1, -0.2, 0.3}},
                                                 {{0.7, 0.6, -2.}});
     const ScalarWave::Solutions::RegularSphericalWave flat_wave_solution{
-        std::make_unique<MathFunctions::Gaussian>(11., 1.4, 0.3)};
+        std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(11., 1.4,
+                                                                      0.3)};
 
     CHECK(curved_wave_data_constructed_from_opts ==
           CurvedScalarWave::AnalyticData::ScalarWaveGr<
@@ -171,7 +172,8 @@ void test_construct_from_options() noexcept {
               // cannot use `flat_wave_solution` in construction here
               // as it has a `std::unique_ptr` member
               ScalarWave::Solutions::RegularSphericalWave(
-                  std::make_unique<MathFunctions::Gaussian>(11., 1.4, 0.3))));
+                  std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                      11., 1.4, 0.3))));
 
     test_kerr(curved_wave_data_constructed_from_opts, bh_solution,
               flat_wave_solution);
@@ -202,7 +204,8 @@ void test_construct_from_options() noexcept {
     const ScalarWave::Solutions::PlaneWave<3> flat_wave_solution{
         {{1.0, 1.0, 1.0}},
         {{0.0, 0.0, 0.0}},
-        std::make_unique<MathFunctions::Gaussian>(11., 1.4, 0.3)};
+        std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(11., 1.4,
+                                                                      0.3)};
 
     CHECK(curved_wave_data_constructed_from_opts ==
           CurvedScalarWave::AnalyticData::ScalarWaveGr<
@@ -212,7 +215,8 @@ void test_construct_from_options() noexcept {
               // as it has a `std::unique_ptr` member
               ScalarWave::Solutions::PlaneWave<3>(
                   {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}},
-                  std::make_unique<MathFunctions::Gaussian>(11., 1.4, 0.3))));
+                  std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                      11., 1.4, 0.3))));
 
     test_kerr(curved_wave_data_constructed_from_opts, bh_solution,
               flat_wave_solution);
@@ -227,8 +231,10 @@ void test_serialize(const double mass, const std::array<double, 3>& spin,
         curved_wave_data(
             gr::Solutions::KerrSchild(mass, spin, center),
             ScalarWave::Solutions::RegularSphericalWave(
-                std::make_unique<MathFunctions::Gaussian>(11., 1.4, 0.3)));
-    Parallel::register_derived_classes_with_charm<MathFunction<1>>();
+                std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                    11., 1.4, 0.3)));
+    Parallel::register_derived_classes_with_charm<
+        MathFunction<1, Frame::Inertial>>();
     const auto snd_curved_wave_data =
         serialize_and_deserialize(curved_wave_data);
     CHECK(curved_wave_data == snd_curved_wave_data);
@@ -236,7 +242,8 @@ void test_serialize(const double mass, const std::array<double, 3>& spin,
     // test internals of deserialized data
     const gr::Solutions::KerrSchild bh_solution(mass, spin, center);
     const ScalarWave::Solutions::RegularSphericalWave flat_wave_solution{
-        std::make_unique<MathFunctions::Gaussian>(11., 1.4, 0.3)};
+        std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(11., 1.4,
+                                                                      0.3)};
 
     test_kerr(snd_curved_wave_data, bh_solution, flat_wave_solution);
   }
@@ -247,8 +254,10 @@ void test_serialize(const double mass, const std::array<double, 3>& spin,
             gr::Solutions::KerrSchild(mass, spin, center),
             ScalarWave::Solutions::PlaneWave<3>(
                 {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}},
-                std::make_unique<MathFunctions::Gaussian>(11., 1.4, 0.3)));
-    Parallel::register_derived_classes_with_charm<MathFunction<1>>();
+                std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                    11., 1.4, 0.3)));
+    Parallel::register_derived_classes_with_charm<
+        MathFunction<1, Frame::Inertial>>();
     const auto snd_curved_wave_data =
         serialize_and_deserialize(curved_wave_data);
     CHECK(curved_wave_data == snd_curved_wave_data);
@@ -258,7 +267,8 @@ void test_serialize(const double mass, const std::array<double, 3>& spin,
     const ScalarWave::Solutions::PlaneWave<3> flat_wave_solution{
         {{1.0, 1.0, 1.0}},
         {{0.0, 0.0, 0.0}},
-        std::make_unique<MathFunctions::Gaussian>(11., 1.4, 0.3)};
+        std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(11., 1.4,
+                                                                      0.3)};
 
     test_kerr(snd_curved_wave_data, bh_solution, flat_wave_solution);
   }
@@ -272,14 +282,16 @@ void test_move(const double mass, const std::array<double, 3>& spin,
         curved_wave_data(
             gr::Solutions::KerrSchild(mass, spin, center),
             ScalarWave::Solutions::RegularSphericalWave(
-                std::make_unique<MathFunctions::Gaussian>(11., 1.4, 0.3)));
+                std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                    11., 1.4, 0.3)));
     // since it can't actually be copied
     CurvedScalarWave::AnalyticData::ScalarWaveGr<
         ScalarWave::Solutions::RegularSphericalWave, gr::Solutions::KerrSchild>
         copy_of_curved_wave_data(
             gr::Solutions::KerrSchild(mass, spin, center),
             ScalarWave::Solutions::RegularSphericalWave(
-                std::make_unique<MathFunctions::Gaussian>(11., 1.4, 0.3)));
+                std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                    11., 1.4, 0.3)));
     test_move_semantics(std::move(curved_wave_data), copy_of_curved_wave_data);
   }
   {  // test with wave profile = plane
@@ -289,7 +301,8 @@ void test_move(const double mass, const std::array<double, 3>& spin,
             gr::Solutions::KerrSchild(mass, spin, center),
             ScalarWave::Solutions::PlaneWave<3>(
                 {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}},
-                std::make_unique<MathFunctions::Gaussian>(11., 1.4, 0.3)));
+                std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                    11., 1.4, 0.3)));
     // since it can't actually be copied
     CurvedScalarWave::AnalyticData::ScalarWaveGr<
         ScalarWave::Solutions::PlaneWave<3>, gr::Solutions::KerrSchild>
@@ -297,7 +310,8 @@ void test_move(const double mass, const std::array<double, 3>& spin,
             gr::Solutions::KerrSchild(mass, spin, center),
             ScalarWave::Solutions::PlaneWave<3>(
                 {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}},
-                std::make_unique<MathFunctions::Gaussian>(11., 1.4, 0.3)));
+                std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                    11., 1.4, 0.3)));
     test_move_semantics(std::move(curved_wave_data), copy_of_curved_wave_data);
   }
 }
@@ -321,13 +335,18 @@ SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGr",
     const CurvedScalarWave::AnalyticData::ScalarWaveGr<sw_tag, background_tag>
         curved_wave_data_bh_far_away{
             background_tag(mass, spin, {{1.e20, 1., 1.}}),
-            sw_tag(std::make_unique<MathFunctions::Gaussian>(11., 1.5, 0.))};
+            sw_tag(
+                std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                    11., 1.5, 0.))};
     const CurvedScalarWave::AnalyticData::ScalarWaveGr<sw_tag, background_tag>
         curved_wave_data{
             background_tag(mass, spin, center),
-            sw_tag(std::make_unique<MathFunctions::Gaussian>(11., 1.5, 0.))};
+            sw_tag(
+                std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                    11., 1.5, 0.))};
     const sw_tag flat_wave_solution{
-        std::make_unique<MathFunctions::Gaussian>(11., 1.5, 0.)};
+        std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(11., 1.5,
+                                                                      0.)};
 
     test_tag_retrieval(curved_wave_data_bh_far_away);
     test_tag_retrieval(curved_wave_data);
@@ -340,17 +359,22 @@ SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGr",
     const CurvedScalarWave::AnalyticData::ScalarWaveGr<sw_tag, background_tag>
         curved_wave_data_bh_far_away{
             background_tag(mass, spin, {{1.e20, 1., 1.}}),
-            sw_tag({{1., 1., 1.}}, {{0., 0., 0.}},
-                   std::make_unique<MathFunctions::Gaussian>(11., 1.5, 0.))};
+            sw_tag(
+                {{1., 1., 1.}}, {{0., 0., 0.}},
+                std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                    11., 1.5, 0.))};
     const CurvedScalarWave::AnalyticData::ScalarWaveGr<sw_tag, background_tag>
         curved_wave_data{
             background_tag(mass, spin, center),
-            sw_tag({{1., 1., 1.}}, {{0., 0., 0.}},
-                   std::make_unique<MathFunctions::Gaussian>(11., 1.5, 0.))};
+            sw_tag(
+                {{1., 1., 1.}}, {{0., 0., 0.}},
+                std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                    11., 1.5, 0.))};
     const sw_tag flat_wave_solution{
         {{1., 1., 1.}},
         {{0., 0., 0.}},
-        std::make_unique<MathFunctions::Gaussian>(11., 1.5, 0.)};
+        std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(11., 1.5,
+                                                                      0.)};
 
     test_tag_retrieval(curved_wave_data_bh_far_away);
     test_tag_retrieval(curved_wave_data);
@@ -368,10 +392,12 @@ SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGrMass",
   ERROR_TEST();
   CurvedScalarWave::AnalyticData::ScalarWaveGr<
       ScalarWave::Solutions::RegularSphericalWave, gr::Solutions::KerrSchild>
-      solution(gr::Solutions::KerrSchild(-0.2, {{0.1, -0.2, 0.3}},
-                                         {{0.3, 0.2, 0.4}}),
-               ScalarWave::Solutions::RegularSphericalWave(
-                   std::make_unique<MathFunctions::Gaussian>(1., 1., 0.)));
+      solution(
+          gr::Solutions::KerrSchild(-0.2, {{0.1, -0.2, 0.3}},
+                                    {{0.3, 0.2, 0.4}}),
+          ScalarWave::Solutions::RegularSphericalWave(
+              std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                  1., 1., 0.)));
 }
 
 // [[OutputRegex, In string:.*At line 3 column 11:.Value -0.5 is below the
@@ -406,5 +432,6 @@ SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGrSpin",
       solution(
           gr::Solutions::KerrSchild(0.2, {{1.0, 1.0, 1.0}}, {{0.3, 0.2, 0.4}}),
           ScalarWave::Solutions::RegularSphericalWave(
-              std::make_unique<MathFunctions::Gaussian>(1., 1., 0.)));
+              std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
+                  1., 1., 0.)));
 }

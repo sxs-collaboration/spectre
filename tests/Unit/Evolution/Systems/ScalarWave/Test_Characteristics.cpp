@@ -32,6 +32,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/RegularSphericalWave.hpp"
 #include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
+#include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -369,7 +370,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.Characteristics",
   const std::array<double, 3> upper_bound{{0.78, 1.18, 1.28}};
 
   const ScalarWave::Solutions::RegularSphericalWave spherical_wave_solution(
-      std::make_unique<MathFunctions::Gaussian>(1., 1., 0.));
+      std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(1., 1.,
+                                                                    0.));
 
   test_characteristic_speeds_analytic<3>(grid_size);
   test_characteristic_fields_analytic<3>(spherical_wave_solution, grid_size,
@@ -386,7 +388,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.Characteristics",
   const double center_z = 8.4;
   const ScalarWave::Solutions::PlaneWave<3> plane_wave_solution(
       {{kx, ky, kz}}, {{center_x, center_y, center_z}},
-      std::make_unique<MathFunctions::PowX>(3));
+      std::make_unique<MathFunctions::PowX<1, Frame::Inertial>>(3));
 
   test_characteristic_speeds_analytic<3>(grid_size);
   test_characteristic_fields_analytic<3>(plane_wave_solution, grid_size,

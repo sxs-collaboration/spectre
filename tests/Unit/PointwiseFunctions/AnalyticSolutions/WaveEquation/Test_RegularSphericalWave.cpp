@@ -20,7 +20,8 @@
 SPECTRE_TEST_CASE("Unit.AnalyticSolutions.WaveEquation.RegularSphericalWave",
                   "[PointwiseFunctions][Unit]") {
   const ScalarWave::Solutions::RegularSphericalWave solution{
-      std::make_unique<MathFunctions::Gaussian>(1., 1., 0.)};
+      std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(1., 1.,
+                                                                    0.)};
 
   const tnsr::I<DataVector, 3> x{std::array<DataVector, 3>{
       {DataVector({0., 1., 2., 3.}), DataVector({0., 0., 0., 0.}),

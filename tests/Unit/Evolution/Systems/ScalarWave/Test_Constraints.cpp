@@ -194,7 +194,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.Constraints",
     const std::array<double, 3> lower_bound{{0., 0., 0.}};
 
     const ScalarWave::Solutions::RegularSphericalWave solution(
-        std::make_unique<MathFunctions::Gaussian>(1., 1., 0.));
+        std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(1., 1.,
+                                                                      0.));
 
     // Note: looser numerical tolerance because this check
     // uses numerical derivatives

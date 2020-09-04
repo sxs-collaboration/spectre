@@ -295,7 +295,8 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::FunctionsOfTime::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<
         Event<metavariables::events>>,
-    &Parallel::register_derived_classes_with_charm<MathFunction<1>>,
+    &Parallel::register_derived_classes_with_charm<
+        MathFunction<1, Frame::Inertial>>,
     &Parallel::register_derived_classes_with_charm<
         StepChooser<metavariables::slab_choosers>>,
     &Parallel::register_derived_classes_with_charm<
