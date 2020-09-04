@@ -53,6 +53,7 @@ if (CLANG_TIDY_BIN)
   add_custom_target(
       clang-tidy-all
       COMMAND ${CMAKE_BINARY_DIR}/ClangTidyAll.sh
+      \${NUM_THREADS}
   )
   set_target_properties(
       clang-tidy-all
@@ -68,6 +69,7 @@ if (CLANG_TIDY_BIN)
       ${CMAKE_BINARY_DIR}
       ${CMAKE_SOURCE_DIR}
       \${HASH}
+      \${NUM_THREADS}
   )
   set_target_properties(
       clang-tidy-hash
