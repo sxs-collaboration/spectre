@@ -9,7 +9,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "TagsDeclarations.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 
 namespace gr {
 namespace Tags {
