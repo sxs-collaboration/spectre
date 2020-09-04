@@ -42,7 +42,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   tuples::get<Tags::IntegerList>(tuple) = std::array<int, 3>{{-1, 3, 7}};
   tuples::get<Tags::UniquePtrIntegerList>(tuple) =
       std::make_unique<std::array<int, 3>>(std::array<int, 3>{{1, 5, -8}});
-  GlobalCache<Metavars> cache{std::move(tuple)};
+  MutableGlobalCache<Metavars> mutable_cache{tuples::TaggedTuple<>{}};
+  GlobalCache<Metavars> cache{std::move(tuple), &mutable_cache};
   auto box =
       db::create<db::AddSimpleTags<Tags::GlobalCacheImpl<Metavars>>,
                  db::AddComputeTags<
@@ -62,7 +63,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   tuples::get<Tags::IntegerList>(tuple2) = std::array<int, 3>{{10, -3, 700}};
   tuples::get<Tags::UniquePtrIntegerList>(tuple2) =
       std::make_unique<std::array<int, 3>>(std::array<int, 3>{{100, -7, -300}});
-  GlobalCache<Metavars> cache2{std::move(tuple2)};
+  MutableGlobalCache<Metavars> mutable_cache2{tuples::TaggedTuple<>{}};
+  GlobalCache<Metavars> cache2{std::move(tuple2), &mutable_cache2};
   db::mutate<Tags::GlobalCache>(
       make_not_null(&box),
       [&cache2](
