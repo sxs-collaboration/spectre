@@ -18,9 +18,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace domain {
-namespace creators {
-namespace time_dependence {
+namespace domain::creators::time_dependence {
 namespace {
 template <typename TimeDep>
 struct get_maps {
@@ -42,6 +40,4 @@ void register_derived_with_charm() noexcept {
   register_maps_with_charm<2>();
   register_maps_with_charm<3>();
 }
-}  // namespace time_dependence
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::time_dependence

@@ -11,9 +11,7 @@
 #include "Domain/Creators/TimeDependence/UniformRotationAboutZAxis.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-namespace domain {
-namespace creators {
-namespace time_dependence {
+namespace domain::creators::time_dependence {
 /// \cond
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -31,6 +29,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (2, 3))
 #undef INSTANTIATION
 
 /// \endcond
-}  // namespace time_dependence
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::time_dependence

@@ -71,7 +71,6 @@ class Composition final
   using maps_list = tmpl::list<CoordMap>;
   static constexpr OptionString help = {"A composition of TimeDependences."};
 
- public:
   static constexpr size_t mesh_dim = TimeDependenceCompTag0::mesh_dim;
 
   static_assert(
