@@ -4,6 +4,7 @@
 set(LIBRARY "Test_ConstitutiveRelations")
 
 set(LIBRARY_SOURCES
+  Test_CubicCrystal.cpp
   Test_IsotropicHomogeneous.cpp
   Test_Tags.cpp
   )
