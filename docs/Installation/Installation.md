@@ -30,9 +30,8 @@ installation_on_clusters "Installation on clusters" page.
   support disabled for openmp and mpi, as we want all of our parallelism to
   be accomplished via Charm++.
 * [LIBXSMM](https://github.com/hfp/libxsmm)
-* [yaml-cpp](https://github.com/jbeder/yaml-cpp) built from a commit more
-  recent than November 2016 (versions newer than 0.5.3 should work once any
-  are released)
+* [yaml-cpp](https://github.com/jbeder/yaml-cpp) version 0.6.3 is
+  recommended. Building with shared library support is also recommended.
 * [Python](https://www.python.org/) 2.7, or 3.5 or later
 * [NumPy](http://www.numpy.org/) 1.10 or later
 * [SciPy](https://www.scipy.org)
