@@ -33,7 +33,15 @@ void check_element_work(const typename Element<VolumeDim>::Neighbors_t&
     // The highest spatial dimension has neighbors; else, external boundary.
     CHECK((direction.dimension() == VolumeDim - 1) !=
           (element.external_boundaries().count(direction) == 1));
+    CHECK((direction.dimension() != VolumeDim - 1) !=
+          (element.internal_boundaries().count(direction) == 1));
+    CHECK((direction.dimension() != VolumeDim - 1) !=
+          (element.neighbors().count(direction) == 1));
   }
+  CHECK(element.neighbors().size() == element.internal_boundaries().size());
+  CHECK(element.internal_boundaries().size() +
+            element.external_boundaries().size() ==
+        2 * VolumeDim);
   CHECK(element == element);
   CHECK_FALSE(element != element);
 
