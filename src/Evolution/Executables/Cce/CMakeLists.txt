@@ -10,6 +10,7 @@ set(LIBS_TO_LINK
   Spectral
   LinearOperators
   Options
+  Utilities
   )
 
 add_spectre_parallel_executable(

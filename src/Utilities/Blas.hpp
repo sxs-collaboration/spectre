@@ -33,6 +33,17 @@ void dgemv_(const char& TRANS, const int& M, const int& N, const double& ALPHA,
 }  // namespace blas_detail
 
 /*!
+ * \brief Disable OpenBLAS multithreading since it conflicts with Charm++
+ * parallelism
+ *
+ * Add this function to the `charm_init_node_funcs` of any executable that uses
+ * BLAS routines.
+ *
+ * Details: https://github.com/xianyi/OpenBLAS/wiki/Faq#multi-threaded
+ */
+void disable_openblas_multithreading() noexcept;
+
+/*!
  * \ingroup UtilitiesGroup
  * The dot product of two vectors.
  *

@@ -27,6 +27,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/Blas.hpp"
 
 struct EvolutionMetavars {
   using system = Cce::System;
@@ -115,7 +116,7 @@ struct EvolutionMetavars {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling,
+    &setup_error_handling, &disable_openblas_multithreading,
     &Parallel::register_derived_classes_with_charm<
         Cce::InitializeJ::InitializeJ>,
     &Parallel::register_derived_classes_with_charm<

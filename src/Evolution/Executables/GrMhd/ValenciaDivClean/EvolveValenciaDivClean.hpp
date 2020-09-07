@@ -118,6 +118,7 @@
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
+#include "Utilities/Blas.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -400,7 +401,7 @@ struct KerrHorizon {
 
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling,
+    &setup_error_handling, &disable_openblas_multithreading,
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
