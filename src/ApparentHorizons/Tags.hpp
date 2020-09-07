@@ -322,6 +322,28 @@ struct UnitNormalOneFormCompute : UnitNormalOneForm<Frame>, db::ComputeTag {
   using return_type = tnsr::i<DataVector, 3, Frame>;
 };
 
+/// UnitNormalVector is defined as \f$S^i = \gamma^{ij} S_j\f$,
+/// where \f$S_j\f$ is the unit normal one form
+/// and \f$\gamma^{ij}\f$ is the inverse spatial metric.
+template <typename Frame>
+struct UnitNormalVector : db::SimpleTag {
+  using type = tnsr::I<DataVector, 3, Frame>;
+};
+/// Computes the UnitNormalVector perpendicular to the horizon.
+template <typename Frame>
+struct UnitNormalVectorCompute : UnitNormalVector<Frame>, db::ComputeTag {
+  using base = UnitNormalVector<Frame>;
+  static void function(gsl::not_null<tnsr::I<DataVector, 3, Frame>*> result,
+      const tnsr::II<DataVector, 3, Frame>& inverse_spatial_metric,
+      const tnsr::i<DataVector, 3, Frame>& unit_normal_one_form) noexcept {
+    raise_or_lower_index(result, unit_normal_one_form, inverse_spatial_metric);
+  }
+  using argument_tags =
+      tmpl::list<gr::Tags::InverseSpatialMetric<3, Frame, DataVector>,
+                 UnitNormalOneForm<Frame>>;
+  using return_type = tnsr::I<DataVector, 3, Frame>;
+};
+
 // @{
 /// `Tangents(i,j)` is \f$\partial x_{\rm surf}^i/\partial q^j\f$,
 /// where \f$x_{\rm surf}^i\f$ are the Cartesian coordinates of the
