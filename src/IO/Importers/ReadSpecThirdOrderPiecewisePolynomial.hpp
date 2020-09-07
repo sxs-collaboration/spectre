@@ -184,15 +184,13 @@ struct ReadSpecThirdOrderPiecewisePolynomial {
             std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
             spec_functions_of_time_for_tuple;
         for (const auto& key_and_poly : spec_functions_of_time) {
-          spec_functions_of_time_for_tuple[key_and_poly.first] = static_cast<
-              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>(
+          spec_functions_of_time_for_tuple[key_and_poly.first] =
               std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
-                  key_and_poly.second));
+                  key_and_poly.second);
         }
 
         // Package the domain::Tags::FunctionsOfTime in a TaggedTuple
-        tuples::tagged_tuple_from_typelist<
-            tmpl::list<::domain::Tags::FunctionsOfTime>>
+        tuples::TaggedTuple<::domain::Tags::FunctionsOfTime>
             imported_functions_of_time{};
         get<domain::Tags::FunctionsOfTime>(imported_functions_of_time) =
             std::move(spec_functions_of_time_for_tuple);

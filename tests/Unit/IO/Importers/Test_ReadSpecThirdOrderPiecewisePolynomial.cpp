@@ -279,13 +279,11 @@ void test_reader() noexcept {
                        std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
         expected_functions_of_time;
     expected_functions_of_time["ExpansionFactor"] =
-        static_cast<std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>(
-            std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
-                expansion));
+        std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
+            expansion);
     expected_functions_of_time["RotationAngle"] =
-        static_cast<std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>(
-            std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
-                rotation));
+        std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
+            rotation);
 
     // Initialize the FunctionsOfTime on each element
     ActionTesting::emplace_component_and_initialize<element_array>(
