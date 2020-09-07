@@ -6,10 +6,13 @@
 #include <cstddef>
 #include <map>
 #include <string>
+#include <unordered_set>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/InboxInserters.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 /// Items related to loading data from files
 namespace importers {
@@ -169,6 +172,25 @@ struct ObservationValue : db::SimpleTag {
  */
 struct RegisteredElements : db::SimpleTag {
   using type = std::unordered_map<observers::ArrayComponentId, std::string>;
+};
+
+/// Indicates which volume data files have already been read.
+struct HasReadVolumeData : db::SimpleTag {
+  using type = std::unordered_set<std::string>;
+};
+
+/*!
+ * \brief Inbox tag that carries the data read from a volume data file.
+ *
+ * Since we read a volume data file only once, this tag's map will only ever
+ * hold data at the index (i.e. the temporal ID) with value `0`.
+ */
+template <typename ImporterOptionsGroup, typename FieldTagsList>
+struct VolumeData : Parallel::InboxInserters::Value<
+                        VolumeData<ImporterOptionsGroup, FieldTagsList>> {
+  using temporal_id = size_t;
+  using type =
+      std::map<temporal_id, tuples::tagged_tuple_from_typelist<FieldTagsList>>;
 };
 
 /*!

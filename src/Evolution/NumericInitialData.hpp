@@ -8,13 +8,8 @@
 
 namespace evolution {
 
-/*!
- * \brief Provides compile-time information to import numeric initial data for
- * the given `System` from a volume data file.
- */
-template <typename System>
-struct NumericInitialData : tt::ConformsTo<protocols::NumericInitialData> {
-  using import_fields = typename System::variables_tag::tags_list;
-};
+/// Use in place of an analytic solution or analytic data to start an evolution
+/// with numeric initial data loaded from a data file.
+struct NumericInitialData : tt::ConformsTo<protocols::NumericInitialData> {};
 
 }  // namespace evolution

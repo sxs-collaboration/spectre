@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include <string>
+#include <unordered_set>
+
 #include "AlgorithmNodegroup.hpp"
 #include "IO/Importers/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -27,6 +30,8 @@ struct InitializeVolumeDataReader;
  * `importers::ThreadedActions::ReadVolumeData` on the `VolumeDataReader`
  * component to read in the file and distribute its data to the registered
  * elements.
+ *
+ * \see Dev guide on \ref dev_guide_importing
  */
 template <typename Metavariables>
 struct VolumeDataReader {
@@ -61,13 +66,15 @@ struct InitializeVolumeDataReader {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using simple_tags = db::AddSimpleTags<Tags::RegisteredElements>;
+    using simple_tags =
+        db::AddSimpleTags<Tags::RegisteredElements, Tags::HasReadVolumeData>;
     using compute_tags = db::AddComputeTags<>;
 
     return std::make_tuple(
         ::Initialization::merge_into_databox<InitializeVolumeDataReader,
                                              simple_tags, compute_tags>(
-            std::move(box), db::item_type<Tags::RegisteredElements>{}),
+            std::move(box), db::item_type<Tags::RegisteredElements>{},
+            std::unordered_set<std::string>{}),
         true);
   }
 };

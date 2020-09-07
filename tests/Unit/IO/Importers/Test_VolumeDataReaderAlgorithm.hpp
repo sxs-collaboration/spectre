@@ -28,7 +28,6 @@
 #include "IO/Importers/ElementActions.hpp"
 #include "IO/Importers/Tags.hpp"
 #include "IO/Importers/VolumeDataReader.hpp"
-#include "IO/Importers/VolumeDataReaderActions.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -298,30 +297,28 @@ struct ElementArray {
   using initialization_tags = tmpl::list<>;
   using array_allocation_tags = tmpl::list<>;
 
+  using import_fields = tmpl::list<ScalarFieldTag, VectorFieldTag<Dim>>;
+
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Initialization,
                              tmpl::list<InitializeElement<Dim>>>,
-      /// [register_action]
+      /// [import_actions]
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Register,
           tmpl::list<importers::Actions::RegisterWithVolumeDataReader,
                      Parallel::Actions::TerminatePhase>>,
-      /// [register_action]
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::ImportData,
+          tmpl::list<importers::Actions::ReadVolumeData<
+                         VolumeDataOptions<TheGrid>, import_fields>,
+                     importers::Actions::ReceiveVolumeData<
+                         VolumeDataOptions<TheGrid>, import_fields>,
+                     Parallel::Actions::TerminatePhase>>,
+      /// [import_actions]
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::TestResult,
                              tmpl::list<TestResult<Dim, TheGrid>>>>;
-
-  /// [read_data_action]
-  using import_fields = tmpl::list<ScalarFieldTag, VectorFieldTag<Dim>>;
-
-  using read_element_data_action = importers::ThreadedActions::ReadVolumeData<
-      VolumeDataOptions<TheGrid>, import_fields,
-      ::Actions::SetData<import_fields>, ElementArray>;
-  /// [read_data_action]
-
-  using const_global_cache_tags =
-      typename read_element_data_action::const_global_cache_tags;
 
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
@@ -342,21 +339,13 @@ struct ElementArray {
     array_proxy.doneInserting();
   }
 
-  /// [invoke_readvoldata]
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     Parallel::get_parallel_component<ElementArray>(local_cache)
         .start_phase(next_phase);
-
-    if (next_phase == Metavariables::Phase::ImportData) {
-      Parallel::threaded_action<read_element_data_action>(
-          Parallel::get_parallel_component<
-              importers::VolumeDataReader<Metavariables>>(local_cache));
-    }
   }
-  /// [invoke_readvoldata]
 };
 
 /// [metavars]

@@ -364,11 +364,22 @@ struct EvolutionMetavars {
                                      initialization_actions>,
               tmpl::conditional_t<
                   evolution::is_numeric_initial_data_v<initial_data>,
-                  Parallel::PhaseActions<
-                      Phase, Phase::RegisterWithVolumeDataReader,
-                      tmpl::list<
-                          importers::Actions::RegisterWithVolumeDataReader,
-                          Parallel::Actions::TerminatePhase>>,
+                  tmpl::list<
+                      Parallel::PhaseActions<
+                          Phase, Phase::RegisterWithVolumeDataReader,
+                          tmpl::list<
+                              importers::Actions::RegisterWithVolumeDataReader,
+                              Parallel::Actions::TerminatePhase>>,
+                      Parallel::PhaseActions<
+                          Phase, Phase::ImportInitialData,
+                          tmpl::list<
+                              importers::Actions::ReadVolumeData<
+                                  evolution::OptionTags::NumericInitialData,
+                                  typename system::variables_tag::tags_list>,
+                              importers::Actions::ReceiveVolumeData<
+                                  evolution::OptionTags::NumericInitialData,
+                                  typename system::variables_tag::tags_list>,
+                              Parallel::Actions::TerminatePhase>>>,
                   tmpl::list<>>,
               Parallel::PhaseActions<
                   Phase, Phase::InitializeInitialDataDependentQuantities,
@@ -385,12 +396,7 @@ struct EvolutionMetavars {
                   Phase, Phase::Evolve,
                   tmpl::list<Actions::RunEventsAndTriggers,
                              Actions::ChangeSlabSize, step_actions,
-                             Actions::AdvanceTime>>>>,
-          tmpl::conditional_t<
-              evolution::is_numeric_initial_data_v<initial_data>,
-              ImportNumericInitialData<Phase, Phase::ImportInitialData,
-                                       initial_data>,
-              ImportNoInitialData>>>>;
+                             Actions::AdvanceTime>>>>>>>;
 
   static constexpr Options::String help{
       "Evolve a generalized harmonic analytic solution.\n\n"
