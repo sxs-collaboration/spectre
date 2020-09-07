@@ -714,7 +714,7 @@ void test_options_apply() {
       "Apply3: [1, 2, 3]");
   // We do the checks outside the lambda to make sure it actually gets called.
   std::vector<int> arg1;
-  int arg2;
+  int arg2 = 0;
   opts.apply<tmpl::list<Apply3, Apply1>>([&](const auto& a, auto b) {
     arg1 = a;
     arg2 = b;
@@ -766,6 +766,21 @@ struct FormatUnorderedMap {
   static constexpr const char* const expected = "{[int x0]: [double x0]}";
 };
 
+struct ScalarWithLimits {
+  using type = int;
+  static constexpr OptionString help = "ScalarHelp";
+  static type default_value() noexcept { return 7; }
+  static type lower_bound() noexcept { return 2; }
+  static type upper_bound() noexcept { return 8; }
+};
+
+struct VectorWithLimits {
+  using type = std::vector<int>;
+  static constexpr OptionString help = "VectorHelp";
+  static size_t lower_bound_on_size() noexcept { return 5; }
+  static size_t upper_bound_on_size() noexcept { return 9; }
+};
+
 void test_options_format() {
   const auto check = [](auto opt) noexcept {
     using Opt = decltype(opt);
@@ -783,6 +798,32 @@ void test_options_format() {
   check(FormatArray{});
   check(FormatPair{});
   check(FormatUnorderedMap{});
+
+  CHECK(Options<tmpl::list<ScalarWithLimits>>("").help() == R"(
+==== Description of expected options:
+
+
+Options:
+  ScalarWithLimits:
+    type=int
+    default=7
+    min=2
+    max=8
+    ScalarHelp
+
+)");
+  CHECK(Options<tmpl::list<VectorWithLimits>>("").help() == R"(
+==== Description of expected options:
+
+
+Options:
+  VectorWithLimits:
+    type=[int, ...]
+    min size=5
+    max size=9
+    VectorHelp
+
+)");
 }
 
 // [[OutputRegex, Failed to convert value to type

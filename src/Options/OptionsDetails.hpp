@@ -21,6 +21,7 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/FakeVirtual.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -171,113 +172,33 @@ struct print_impl {
 template <typename Tag, typename OptionList>
 struct print_impl<Tag, OptionList,
                   Requires<tmpl::list_contains_v<OptionList, Tag>>> {
-  template <typename LocalTag,
-            Requires<has_default<LocalTag>::value and
-                     not tt::is_a_v<std::unique_ptr, typename LocalTag::type>> =
-                nullptr>
-  static std::string print_default() noexcept {
-    std::ostringstream ss;
-    ss << "default=" << std::boolalpha << LocalTag::default_value();
-    return ss.str();
-  }
-  template <
-      typename LocalTag,
-      Requires<has_default<LocalTag>::value and
-               tt::is_a_v<std::unique_ptr, typename LocalTag::type>> = nullptr>
-  static std::string print_default() noexcept {
-    std::ostringstream ss;
-    using base_class = typename LocalTag::type::element_type;
-    const auto default_value = LocalTag::default_value();
-    bool found_derived = false;
-    tmpl::for_each<typename base_class::creatable_classes>(
-        [&default_value, &found_derived, &ss](auto class_v) noexcept {
-          if (found_derived) {
-            return;
-          }
-
-          using derived = typename decltype(class_v)::type;
-          if (dynamic_cast<const derived*>(default_value.get()) != nullptr) {
-            ss << "default=" << std::boolalpha
-               << pretty_type::short_name<derived>();
-            found_derived = true;
-          }
-        });
-    if (not found_derived) {
-      ss << "default=Unknown derived class of "
-         << pretty_type::short_name<base_class>();
-    }
-    return ss.str();
-  }
-  template <typename LocalTag,
-            Requires<not has_default<LocalTag>::value> = nullptr>
-  static std::string print_default() noexcept {
-    return "";
-  }
-  template <typename LocalTag,
-            Requires<has_lower_bound<LocalTag>::value> = nullptr>
-  static std::string print_lower_bound() noexcept {
-    std::ostringstream ss;
-    ss << "min=" << LocalTag::lower_bound();
-    return ss.str();
-  }
-  template <typename LocalTag,
-            Requires<not has_lower_bound<LocalTag>::value> = nullptr>
-  static std::string print_lower_bound() noexcept {
-    return "";
-  }
-  template <typename LocalTag,
-            Requires<has_upper_bound<LocalTag>::value> = nullptr>
-  static std::string print_upper_bound() noexcept {
-    std::ostringstream ss;
-    ss << "max=" << LocalTag::upper_bound();
-    return ss.str();
-  }
-  template <typename LocalTag,
-            Requires<not has_upper_bound<LocalTag>::value> = nullptr>
-  static std::string print_upper_bound() noexcept {
-    return "";
-  }
-  template <typename LocalTag,
-            Requires<has_lower_bound_on_size<LocalTag>::value> = nullptr>
-  static std::string print_lower_bound_on_size() noexcept {
-    std::ostringstream ss;
-    ss << "min size=" << LocalTag::lower_bound_on_size();
-    return ss.str();
-  }
-  template <typename LocalTag,
-            Requires<not has_lower_bound_on_size<LocalTag>::value> = nullptr>
-  static std::string print_lower_bound_on_size() noexcept {
-    return "";
-  }
-  template <typename LocalTag,
-            Requires<has_upper_bound_on_size<LocalTag>::value> = nullptr>
-  static std::string print_upper_bound_on_size() noexcept {
-    std::ostringstream ss;
-    ss << "max size=" << LocalTag::upper_bound_on_size();
-    return ss.str();
-  }
-  template <typename LocalTag,
-            Requires<not has_upper_bound_on_size<LocalTag>::value> = nullptr>
-  static std::string print_upper_bound_on_size() noexcept {
-    return "";
-  }
-
   static std::string apply() noexcept {
     std::ostringstream ss;
     ss << "  " << option_name<Tag>() << ":\n"
        << "    " << "type=" << yaml_type<typename Tag::type>::value();
-    std::string limits;
-    for (const auto& limit :
-         {print_default<Tag>(), print_lower_bound<Tag>(),
-          print_upper_bound<Tag>(), print_lower_bound_on_size<Tag>(),
-          print_upper_bound_on_size<Tag>()}) {
-      if (not limits.empty() and not limit.empty()) {
-        limits += "\n    ";
+    if constexpr (has_default<Tag>::value) {
+      if constexpr (tt::is_a_v<std::unique_ptr, typename Tag::type>) {
+        call_with_dynamic_type<
+            void, typename Tag::type::element_type::creatable_classes>(
+            Tag::default_value().get(), [&ss](const auto* derived) noexcept {
+              ss << "\n    default=" << std::boolalpha
+                 << pretty_type::short_name<decltype(*derived)>();
+            });
+      } else {
+        ss << "\n    default=" << std::boolalpha << Tag::default_value();
       }
-      limits += limit;
     }
-    if (not limits.empty()) {
-      ss << "\n    " << limits;
+    if constexpr (has_lower_bound<Tag>::value) {
+      ss << "\n    min=" << Tag::lower_bound();
+    }
+    if constexpr (has_upper_bound<Tag>::value) {
+      ss << "\n    max=" << Tag::upper_bound();
+    }
+    if constexpr (has_lower_bound_on_size<Tag>::value) {
+      ss << "\n    min size=" << Tag::lower_bound_on_size();
+    }
+    if constexpr (has_upper_bound_on_size<Tag>::value) {
+      ss << "\n    max size=" << Tag::upper_bound_on_size();
     }
     ss << "\n" << wrap_text(Tag::help, 77, "    ") << "\n\n";
     return ss.str();
@@ -382,9 +303,10 @@ struct wrap_create_types_impl<std::map<K, V>> {
     using UnwrappedK = decltype(unwrap_create_types<K>(std::declval<K>()));
     using UnwrappedV = decltype(unwrap_create_types<V>(std::declval<V>()));
     std::map<UnwrappedK, UnwrappedV> result;
-    for (auto& w : wrapped) {
-      result.emplace(unwrap_create_types<K>(std::move(w.first)),
-                     unwrap_create_types<V>(std::move(w.second)));
+    for (auto it = wrapped.begin(); it != wrapped.end();) {
+      auto node = wrapped.extract(it++);
+      result.emplace(unwrap_create_types<K>(std::move(node.key())),
+                     unwrap_create_types<V>(std::move(node.mapped())));
     }
     return result;
   }
