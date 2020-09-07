@@ -38,6 +38,7 @@ if(${ENABLE_WARNINGS})
 -Wsign-conversion;\
 -Wstack-protector;\
 -Wswitch-default;\
+-Wno-undefined-var-template;\
 -Wunreachable-code;\
 -Wwrite-strings" SpectreWarnings)
 endif()
