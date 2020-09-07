@@ -9,13 +9,13 @@
 #include <pup.h>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeSequence.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -62,7 +62,7 @@ class NearTimes : public Trigger<TriggerRegistrars> {
 
   struct OptionTags {
     struct Times {
-      using type = std::vector<double>;
+      using type = std::unique_ptr<TimeSequence<double>>;
       static constexpr Options::String help = "Times to trigger at";
     };
 
@@ -92,14 +92,12 @@ class NearTimes : public Trigger<TriggerRegistrars> {
       tmpl::list<typename OptionTags::Times, typename OptionTags::Range,
                  typename OptionTags::Unit, typename OptionTags::Direction>;
 
-  NearTimes(std::vector<double> times, const double range, const Unit unit,
-            const Direction direction) noexcept
+  NearTimes(std::unique_ptr<TimeSequence<double>> times, const double range,
+            const Unit unit, const Direction direction) noexcept
       : times_(std::move(times)),
         range_(range),
         unit_(unit),
-        direction_(direction) {
-    std::sort(times_.begin(), times_.end());
-  }
+        direction_(direction) {}
 
   using argument_tags = tmpl::list<Tags::Time, Tags::TimeStep>;
 
@@ -126,9 +124,14 @@ class NearTimes : public Trigger<TriggerRegistrars> {
       std::swap(trigger_range.first, trigger_range.second);
     }
 
-    const auto next_time =
-        std::lower_bound(times_.begin(), times_.end(), trigger_range.first);
-    return next_time != times_.end() and *next_time <= trigger_range.second;
+    const auto nearby_times = times_->times_near(trigger_range.first);
+    for (const auto& time : nearby_times) {
+      if (time and *time >= trigger_range.first and
+          *time <= trigger_range.second) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -140,7 +143,7 @@ class NearTimes : public Trigger<TriggerRegistrars> {
   }
 
  private:
-  std::vector<double> times_{};
+  std::unique_ptr<TimeSequence<double>> times_{};
   double range_ = std::numeric_limits<double>::signaling_NaN();
   Unit unit_{};
   Direction direction_{};
