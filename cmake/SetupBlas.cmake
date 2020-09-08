@@ -39,7 +39,7 @@ ${CHECK_DISABLE_OPENBLAS_MULTITHREADING_SOURCE}' -o /dev/null"
   )
 if(${CHECK_DISABLE_OPENBLAS_MULTITHREADING_RESULT} EQUAL 0)
   set(DISABLE_OPENBLAS_MULTITHREADING ON)
-  add_compile_definitions(DISABLE_OPENBLAS_MULTITHREADING)
+  add_definitions(-DDISABLE_OPENBLAS_MULTITHREADING)
   message(STATUS "Disabled OpenBLAS multithreading")
 else()
   message(STATUS "BLAS vendor is probably not OpenBLAS. Make sure it doesn't "
