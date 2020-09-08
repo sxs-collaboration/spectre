@@ -5,8 +5,8 @@ spectre_target_headers(
   IO
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  ElementDataReader.hpp
-  Tags.hpp
+  ReadSpecThirdOrderPiecewisePolynomial.hpp
+  ReadVolumeData.hpp
+  ReceiveVolumeData.hpp
+  RegisterWithElementDataReader.hpp
   )
-
-add_subdirectory(Actions)

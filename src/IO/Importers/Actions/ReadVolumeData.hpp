@@ -4,58 +4,90 @@
 #pragma once
 
 #include <cstddef>
-#include <iterator>
-#include <unordered_map>
+#include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/TagName.hpp"
-#include "DataStructures/Index.hpp"
-#include "DataStructures/Tensor/TensorData.hpp"
-#include "ErrorHandling/Error.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/VolumeData.hpp"
 #include "IO/Importers/Tags.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
+#include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
-#include "Utilities/Algorithm.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-/// Actions related to importers
+/// \cond
+namespace importers {
+template <typename Metavariables>
+struct ElementDataReader;
+namespace Actions {
+template <typename ImporterOptionsGroup, typename FieldTagsList,
+          typename ReceiveComponent>
+struct ReadAllVolumeDataAndDistribute;
+}  // namespace Actions
+}  // namespace importers
+/// \endcond
+
 namespace importers::Actions {
 
 /*!
- * \brief Invoked on the `importers::ElementDataReader` component to store the
- * registered data.
+ * \brief Read a volume data file and distribute the data to all registered
+ * elements.
  *
- * The `importers::Actions::RegisterWithElementDataReader` action, which is
- * performed on each element of an array parallel component, invokes this action
- * on the `importers::ElementDataReader` component.
+ * Invoke this action on the elements of an array parallel component to dispatch
+ * reading the volume data file specified by the options in
+ * `ImporterOptionsGroup`. The tensors in `FieldTagsList` will be loaded from
+ * the file and distributed to all elements that have previously registered. Use
+ * `importers::Actions::RegisterWithElementDataReader` to register the elements
+ * of the array parallel component in a previous phase.
+ *
+ * Note that the volume data file will only be read once per node, triggered by
+ * the first element that invokes this action. All subsequent invocations of
+ * this action on the node will do nothing. See
+ * `importers::Actions::ReadAllVolumeDataAndDistribute` for details.
+ *
+ * The data is distributed to the elements using `Parallel::receive_data`. The
+ * elements can monitor `importers::Tags::VolumeData` in their inbox to wait for
+ * the data and process it once it's available. We provide the action
+ * `importers::Actions::ReceiveVolumeData` that waits for the data and moves it
+ * directly into the DataBox. You can also implement a specialized action that
+ * might verify and post-process the data before populating the DataBox.
  *
  * \see Dev guide on \ref dev_guide_importing
  */
-struct RegisterElementWithSelf {
-  template <
-      typename ParallelComponent, typename DbTagsList, typename Metavariables,
-      typename ArrayIndex, typename DataBox = db::DataBox<DbTagsList>,
-      Requires<db::tag_is_retrievable_v<Tags::RegisteredElements, DataBox>> =
-          nullptr>
-  static void apply(db::DataBox<DbTagsList>& box,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const observers::ArrayComponentId& array_component_id,
-                    const std::string& grid_name) noexcept {
-    db::mutate<Tags::RegisteredElements>(
-        make_not_null(&box),
-        [&array_component_id, &grid_name](
-            const gsl::not_null<db::item_type<Tags::RegisteredElements>*>
-                registered_elements) noexcept {
-          (*registered_elements)[array_component_id] = grid_name;
-        });
+template <typename ImporterOptionsGroup, typename FieldTagsList>
+struct ReadVolumeData {
+  using const_global_cache_tags =
+      tmpl::list<Tags::FileName<ImporterOptionsGroup>,
+                 Tags::Subgroup<ImporterOptionsGroup>,
+                 Tags::ObservationValue<ImporterOptionsGroup>>;
+
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    auto& local_reader_component =
+        *Parallel::get_parallel_component<
+             importers::ElementDataReader<Metavariables>>(cache)
+             .ckLocalBranch();
+    Parallel::simple_action<importers::Actions::ReadAllVolumeDataAndDistribute<
+        ImporterOptionsGroup, FieldTagsList, ParallelComponent>>(
+        local_reader_component);
+    return {std::move(box)};
   }
 };
 
