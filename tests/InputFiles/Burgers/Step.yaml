@@ -58,8 +58,9 @@ EventsAndTriggers:
               Times:
                 Specified:
                   Values: [0.123456]
-  ? SpecifiedTimes:
-      Times: [0.123456]
+  ? Times:
+      Specified:
+        Values: [0.123456]
   : - Completion
 
 Observers:

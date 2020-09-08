@@ -46,7 +46,7 @@ enum class Direction { Before, After, Both };
 /// When using adaptive time stepping, intervals specified in terms of
 /// slabs or steps are approximate.
 ///
-/// \see SpecifiedTimes
+/// \see Times
 template <typename TriggerRegistrars = tmpl::list<Registrars::NearTimes>>
 class NearTimes : public Trigger<TriggerRegistrars> {
  public:
