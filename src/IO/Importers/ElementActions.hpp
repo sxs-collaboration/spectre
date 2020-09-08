@@ -8,9 +8,9 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "IO/Importers/ElementDataReader.hpp"
+#include "IO/Importers/ElementDataReaderActions.hpp"
 #include "IO/Importers/Tags.hpp"
-#include "IO/Importers/VolumeDataReader.hpp"
-#include "IO/Importers/VolumeDataReaderActions.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -36,7 +36,7 @@ struct RegisterElementWithSelf;
  *
  * \see Dev guide on \ref dev_guide_importing
  */
-struct RegisterWithVolumeDataReader {
+struct RegisterWithElementDataReader {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
@@ -49,7 +49,7 @@ struct RegisterWithVolumeDataReader {
                                      << ElementId<Dim>(array_index);
     auto& local_reader_component =
         *Parallel::get_parallel_component<
-             importers::VolumeDataReader<Metavariables>>(cache)
+             importers::ElementDataReader<Metavariables>>(cache)
              .ckLocalBranch();
     Parallel::simple_action<importers::Actions::RegisterElementWithSelf>(
         local_reader_component,
@@ -69,7 +69,7 @@ struct RegisterWithVolumeDataReader {
  * reading the volume data file specified by the options in
  * `ImporterOptionsGroup`. The tensors in `FieldTagsList` will be loaded from
  * the file and distributed to all elements that have previously registered. Use
- * `importers::Actions::RegisterWithVolumeDataReader` to register the elements
+ * `importers::Actions::RegisterWithElementDataReader` to register the elements
  * of the array parallel component in a previous phase.
  *
  * Note that the volume data file will only be read once per node, triggered by
@@ -104,7 +104,7 @@ struct ReadVolumeData {
       const ParallelComponent* const /*meta*/) noexcept {
     auto& local_reader_component =
         *Parallel::get_parallel_component<
-             importers::VolumeDataReader<Metavariables>>(cache)
+             importers::ElementDataReader<Metavariables>>(cache)
              .ckLocalBranch();
     Parallel::simple_action<importers::Actions::ReadAllVolumeDataAndDistribute<
         ImporterOptionsGroup, FieldTagsList, ParallelComponent>>(

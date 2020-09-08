@@ -16,7 +16,7 @@
 namespace importers {
 
 namespace detail {
-struct InitializeVolumeDataReader;
+struct InitializeElementDataReader;
 }  // namespace detail
 
 /*!
@@ -25,21 +25,21 @@ struct InitializeVolumeDataReader;
  *
  * Each element of the array parallel component must register itself before
  * data can be sent to it. To do so, invoke
- * `importers::Actions::RegisterWithVolumeDataReader` on each element. In a
+ * `importers::Actions::RegisterWithElementDataReader` on each element. In a
  * subsequent phase you can then invoke
- * `importers::ThreadedActions::ReadVolumeData` on the `VolumeDataReader`
+ * `importers::ThreadedActions::ReadVolumeData` on the `ElementDataReader`
  * component to read in the file and distribute its data to the registered
  * elements.
  *
  * \see Dev guide on \ref dev_guide_importing
  */
 template <typename Metavariables>
-struct VolumeDataReader {
+struct ElementDataReader {
   using chare_type = Parallel::Algorithms::Nodegroup;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<detail::InitializeVolumeDataReader>>>;
+      tmpl::list<detail::InitializeElementDataReader>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -50,13 +50,13 @@ struct VolumeDataReader {
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::get_parallel_component<VolumeDataReader>(local_cache)
+    Parallel::get_parallel_component<ElementDataReader>(local_cache)
         .start_phase(next_phase);
   }
 };
 
 namespace detail {
-struct InitializeVolumeDataReader {
+struct InitializeElementDataReader {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -66,12 +66,12 @@ struct InitializeVolumeDataReader {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using simple_tags =
-        db::AddSimpleTags<Tags::RegisteredElements, Tags::HasReadVolumeData>;
+    using simple_tags = db::AddSimpleTags<Tags::RegisteredElements,
+                                          Tags::ElementDataAlreadyRead>;
     using compute_tags = db::AddComputeTags<>;
 
     return std::make_tuple(
-        ::Initialization::merge_into_databox<InitializeVolumeDataReader,
+        ::Initialization::merge_into_databox<InitializeElementDataReader,
                                              simple_tags, compute_tags>(
             std::move(box), db::item_type<Tags::RegisteredElements>{},
             std::unordered_set<std::string>{}),

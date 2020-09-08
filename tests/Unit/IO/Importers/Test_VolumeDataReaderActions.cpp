@@ -23,9 +23,9 @@
 #include "IO/H5/File.hpp"
 #include "IO/H5/VolumeData.hpp"
 #include "IO/Importers/ElementActions.hpp"
+#include "IO/Importers/ElementDataReader.hpp"
+#include "IO/Importers/ElementDataReaderActions.hpp"
 #include "IO/Importers/Tags.hpp"
-#include "IO/Importers/VolumeDataReader.hpp"
-#include "IO/Importers/VolumeDataReaderActions.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ArrayIndex.hpp"
@@ -63,7 +63,7 @@ struct MockElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<import_tags_list>,
-                     importers::Actions::RegisterWithVolumeDataReader>>,
+                     importers::Actions::RegisterWithElementDataReader>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<importers::Actions::ReadVolumeData<TestVolumeData,
@@ -74,13 +74,13 @@ struct MockElementArray {
 
 template <typename Metavariables>
 struct MockVolumeDataReader {
-  using component_being_mocked = importers::VolumeDataReader<Metavariables>;
+  using component_being_mocked = importers::ElementDataReader<Metavariables>;
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<importers::detail::InitializeVolumeDataReader>>>;
+      tmpl::list<importers::detail::InitializeElementDataReader>>>;
 };
 
 struct Metavariables {
@@ -146,7 +146,7 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
     // Register element
     ActionTesting::next_action<element_array>(make_not_null(&runner), id);
     // Invoke the simple_action RegisterElementWithSelf that was called on the
-    // reader component by the RegisterWithVolumeDataReader action.
+    // reader component by the RegisterWithElementDataReader action.
     runner.invoke_queued_simple_action<reader_component>(0);
   }
 
@@ -198,13 +198,14 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
     // no data has been read yet.
     CHECK(ActionTesting::is_ready<element_array>(runner, id) !=
           first_invocation);
-    CHECK(get_reader_tag(importers::Tags::HasReadVolumeData{}).size() ==
+    CHECK(get_reader_tag(importers::Tags::ElementDataAlreadyRead{}).size() ==
           (first_invocation ? 0 : 1));
     // Invoke the simple_action `ReadAllVolumeDataAndDistribute` that was called
     // on the reader component by the `ReadVolumeData` action.
     runner.invoke_queued_simple_action<reader_component>(0);
-    CAPTURE(get_reader_tag(importers::Tags::HasReadVolumeData{}));
-    CHECK(get_reader_tag(importers::Tags::HasReadVolumeData{}).size() == 1);
+    CAPTURE(get_reader_tag(importers::Tags::ElementDataAlreadyRead{}));
+    CHECK(get_reader_tag(importers::Tags::ElementDataAlreadyRead{}).size() ==
+          1);
     // `ReceiveVolumeData` should be ready now
     CHECK(ActionTesting::is_ready<element_array>(runner, id));
     ActionTesting::next_action<element_array>(make_not_null(&runner), id);

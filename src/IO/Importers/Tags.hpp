@@ -175,7 +175,7 @@ struct RegisteredElements : db::SimpleTag {
 };
 
 /// Indicates which volume data files have already been read.
-struct HasReadVolumeData : db::SimpleTag {
+struct ElementDataAlreadyRead : db::SimpleTag {
   using type = std::unordered_set<std::string>;
 };
 

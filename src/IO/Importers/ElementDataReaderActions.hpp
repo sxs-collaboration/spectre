@@ -29,12 +29,12 @@
 namespace importers::Actions {
 
 /*!
- * \brief Invoked on the `importers::VolumeDataReader` component to store the
+ * \brief Invoked on the `importers::ElementDataReader` component to store the
  * registered data.
  *
- * The `importers::Actions::RegisterWithVolumeDataReader` action, which is
+ * The `importers::Actions::RegisterWithElementDataReader` action, which is
  * performed on each element of an array parallel component, invokes this action
- * on the `importers::VolumeDataReader` component.
+ * on the `importers::ElementDataReader` component.
  *
  * \see Dev guide on \ref dev_guide_importing
  */
@@ -63,7 +63,7 @@ struct RegisterElementWithSelf {
  * \brief Read a volume data file and distribute the data to all registered
  * elements.
  *
- * This action can be invoked on the `importers::VolumeDataReader` component
+ * This action can be invoked on the `importers::ElementDataReader` component
  * once all elements have been registered with it. It opens the data file, reads
  * the data for each registered element and uses `Parallel::receive_data` to
  * distribute the data to the elements. The elements can monitor
@@ -73,7 +73,7 @@ struct RegisterElementWithSelf {
  * specialized action that might verify and post-process the data.
  *
  * Note that instead of invoking this action directly on the
- * `importers::VolumeDataReader` component you can invoke the iterable action
+ * `importers::ElementDataReader` component you can invoke the iterable action
  * `importers::Actions::ReadVolumeData` on the elements of an array parallel
  * component.
  *
@@ -104,8 +104,8 @@ struct ReadAllVolumeDataAndDistribute {
       typename ParallelComponent, typename DataBox, typename Metavariables,
       typename ArrayIndex,
       Requires<db::tag_is_retrievable_v<Tags::RegisteredElements, DataBox> and
-               db::tag_is_retrievable_v<Tags::HasReadVolumeData, DataBox>> =
-          nullptr>
+               db::tag_is_retrievable_v<Tags::ElementDataAlreadyRead,
+                                        DataBox>> = nullptr>
   static void apply(DataBox& box, Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) noexcept {
     // Only read and distribute the volume data once
@@ -117,13 +117,14 @@ struct ReadAllVolumeDataAndDistribute {
     // requested data. Doing this at runtime avoids having to collect all
     // data files that will be read in at compile-time to initialize a flag in
     // the DataBox for each of them.
-    const auto& has_read_volume_data = db::get<Tags::HasReadVolumeData>(box);
+    const auto& has_read_volume_data =
+        db::get<Tags::ElementDataAlreadyRead>(box);
     const auto volume_data_id = pretty_type::get_name<ImporterOptionsGroup>();
     if (has_read_volume_data.find(volume_data_id) !=
         has_read_volume_data.end()) {
       return;
     }
-    db::mutate<Tags::HasReadVolumeData>(
+    db::mutate<Tags::ElementDataAlreadyRead>(
         make_not_null(&box),
         [&volume_data_id](const gsl::not_null<std::unordered_set<std::string>*>
                               local_has_read_volume_data) noexcept {

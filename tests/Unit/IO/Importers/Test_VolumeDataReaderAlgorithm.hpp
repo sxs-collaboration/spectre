@@ -26,8 +26,8 @@
 #include "IO/H5/File.hpp"
 #include "IO/H5/VolumeData.hpp"
 #include "IO/Importers/ElementActions.hpp"
+#include "IO/Importers/ElementDataReader.hpp"
 #include "IO/Importers/Tags.hpp"
-#include "IO/Importers/VolumeDataReader.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -306,7 +306,7 @@ struct ElementArray {
       /// [import_actions]
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Register,
-          tmpl::list<importers::Actions::RegisterWithVolumeDataReader,
+          tmpl::list<importers::Actions::RegisterWithElementDataReader,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::ImportData,
@@ -355,7 +355,7 @@ struct Metavariables {
       tmpl::list<ElementArray<Dim, Grid::Fine, Metavariables>,
                  ElementArray<Dim, Grid::Coarse, Metavariables>,
                  TestDataWriter<Dim, Metavariables>,
-                 importers::VolumeDataReader<Metavariables>>;
+                 importers::ElementDataReader<Metavariables>>;
 
   static constexpr const char* const help{"Test the volume data reader"};
   static constexpr bool ignore_unrecognized_command_line_options = false;

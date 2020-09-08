@@ -10,13 +10,13 @@ written by the `observers`.
 
 ## Importing volume data
 
-The `importers::VolumeDataReader` parallel component is responsible for loading
+The `importers::ElementDataReader` parallel component is responsible for loading
 volume data and distributing it to elements of one or multiple array parallel
 components. As a first step, make sure you have added the
-`importers::VolumeDataReader` to your `Metavariables::component_list`. Also make
-sure you have a `Metavariables::Phase` in which you will perform registration
-with the importer, and another in which you want to load the data. Here's an
-example for such `Metavariables`:
+`importers::ElementDataReader` to your `Metavariables::component_list`. Also
+make sure you have a `Metavariables::Phase` in which you will perform
+registration with the importer, and another in which you want to load the data.
+Here's an example for such `Metavariables`:
 
 \snippet Test_VolumeDataReaderAlgorithm.hpp metavars
 
@@ -29,7 +29,7 @@ component. Here's an example that will be explained in more detail below:
 - The `importers::Actions::ReadVolumeData` action will load the volume data file
   once per node on its first invocation by dispatching to
   `importers::Actions::ReadAllVolumeDataAndDistribute` on the
-  `importers::VolumeDataReader` nodegroup component. Subsequent invocations of
+  `importers::ElementDataReader` nodegroup component. Subsequent invocations of
   these actions, e.g. from all other elements on the node, will do nothing. The
   data is distributed into the inboxes of all elements on the node under the
   `importers::Tags::VolumeData` tag using `Parallel::receive_data`.
@@ -39,8 +39,8 @@ component. Here's an example that will be explained in more detail below:
   specialized action in place of `importers::Actions::ReceiveVolumeData`.
 - You need to register the elements of your array parallel component for
   receiving volume data. To do so, invoke the
-  `importers::Actions::RegisterWithVolumeDataReader` action in an earlier phase,
-  as shown in the example above.
+  `importers::Actions::RegisterWithElementDataReader` action in an earlier
+  phase, as shown in the example above.
 
 The template parameters to the actions in the example above specify the volume
 data to load. The first template parameter is an option group that determines

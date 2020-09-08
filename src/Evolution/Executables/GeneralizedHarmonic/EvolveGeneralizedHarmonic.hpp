@@ -36,7 +36,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/UpwindPenaltyCorrection.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "IO/Importers/ElementActions.hpp"
-#include "IO/Importers/VolumeDataReader.hpp"
+#include "IO/Importers/ElementDataReader.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -282,7 +282,7 @@ struct EvolutionMetavars {
 
   enum class Phase {
     Initialization,
-    RegisterWithVolumeDataReader,
+    RegisterWithElementDataReader,
     ImportInitialData,
     InitializeInitialDataDependentQuantities,
     InitializeTimeStepperHistory,
@@ -355,7 +355,7 @@ struct EvolutionMetavars {
       intrp::Interpolator<EvolutionMetavars>,
       intrp::InterpolationTarget<EvolutionMetavars, AhA>,
       tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
-                          importers::VolumeDataReader<EvolutionMetavars>,
+                          importers::ElementDataReader<EvolutionMetavars>,
                           tmpl::list<>>,
       DgElementArray<
           EvolutionMetavars,
@@ -366,9 +366,9 @@ struct EvolutionMetavars {
                   evolution::is_numeric_initial_data_v<initial_data>,
                   tmpl::list<
                       Parallel::PhaseActions<
-                          Phase, Phase::RegisterWithVolumeDataReader,
+                          Phase, Phase::RegisterWithElementDataReader,
                           tmpl::list<
-                              importers::Actions::RegisterWithVolumeDataReader,
+                              importers::Actions::RegisterWithElementDataReader,
                               Parallel::Actions::TerminatePhase>>,
                       Parallel::PhaseActions<
                           Phase, Phase::ImportInitialData,
@@ -410,9 +410,9 @@ struct EvolutionMetavars {
     switch (current_phase) {
       case Phase::Initialization:
         return evolution::is_numeric_initial_data_v<initial_data>
-                   ? Phase::RegisterWithVolumeDataReader
+                   ? Phase::RegisterWithElementDataReader
                    : Phase::InitializeInitialDataDependentQuantities;
-      case Phase::RegisterWithVolumeDataReader:
+      case Phase::RegisterWithElementDataReader:
         return Phase::ImportInitialData;
       case Phase::ImportInitialData:
         return Phase::InitializeInitialDataDependentQuantities;
