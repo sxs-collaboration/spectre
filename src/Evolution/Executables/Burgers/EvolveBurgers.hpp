@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <vector>
 
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
@@ -287,6 +288,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
         StepChooser<metavariables::step_choosers>>,
     &Parallel::register_derived_classes_with_charm<StepController>,
     &Parallel::register_derived_classes_with_charm<TimeSequence<double>>,
+    &Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<
         Trigger<metavariables::triggers>>};

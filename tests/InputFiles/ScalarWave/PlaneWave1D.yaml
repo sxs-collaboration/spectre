@@ -47,11 +47,13 @@ NumericalFlux:
   UpwindPenalty:
 
 EventsAndTriggers:
-  ? SpecifiedSlabs:
-      Slabs: [5]
+  ? Slabs:
+      Specified:
+        Values: [5]
   : - Completion
-  ? EveryNSlabs:
-      N: 2
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 2
   : - ChangeSlabSize:
         DelayChange: 3
         StepChoosers:

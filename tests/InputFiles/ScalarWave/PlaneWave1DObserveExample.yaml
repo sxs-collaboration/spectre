@@ -50,24 +50,28 @@ NumericalFlux:
 
 # [observe_event_trigger]
 EventsAndTriggers:
-  ? EveryNSlabs:
-      N: 3
-      Offset: 5
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 3
+        Offset: 5
   : - ObserveErrorNorms:
         SubfileName: Errors
-  ? SpecifiedSlabs:
-      Slabs: [0, 100]
+  ? Slabs:
+      Specified:
+        Values: [0, 100]
   : - ObserveFields:
         SubfileName: VolumePsi0And100
         VariablesToObserve: ["Psi"]
-  ? EveryNSlabs:
-      N: 50
-      Offset: 0
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 50
+        Offset: 0
   : - ObserveFields:
         SubfileName: VolumePsiPiPhiEvery50Slabs
         VariablesToObserve: ["Psi", "Pi", "Phi"]
-  ? SpecifiedSlabs:
-      Slabs: [100]
+  ? Slabs:
+      Specified:
+        Values: [100]
   : - Completion
 # [observe_event_trigger]
 

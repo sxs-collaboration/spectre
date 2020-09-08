@@ -5,10 +5,9 @@ spectre_target_headers(
   Time
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  EveryNSlabs.hpp
   NearTimes.hpp
   PastTime.hpp
-  SpecifiedSlabs.hpp
+  Slabs.hpp
   SpecifiedTimes.hpp
   TimeTriggers.hpp
   )

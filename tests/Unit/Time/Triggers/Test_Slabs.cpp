@@ -3,7 +3,8 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <initializer_list>  // IWYU pragma: keep
+#include <cstdint>
+#include <initializer_list>
 #include <memory>
 #include <pup.h>
 
@@ -16,19 +17,19 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/Triggers/SpecifiedSlabs.hpp"
+#include "Time/Triggers/Slabs.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_include <vector>
-
-SPECTRE_TEST_CASE("Unit.Time.Triggers.SpecifiedSlabs", "[Unit][Time]") {
-  using TriggerType = Trigger<tmpl::list<Triggers::Registrars::SpecifiedSlabs>>;
+SPECTRE_TEST_CASE("Unit.Time.Triggers.Slabs", "[Unit][Time]") {
+  using TriggerType = Trigger<tmpl::list<Triggers::Registrars::Slabs>>;
   Parallel::register_derived_classes_with_charm<TriggerType>();
+  Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>();
 
   const auto trigger = TestHelpers::test_factory_creation<TriggerType>(
-      "SpecifiedSlabs:\n"
-      "  Slabs: [3, 6, 8]");
+      "Slabs:\n"
+      "  Specified:\n"
+      "    Values: [3, 6, 8]");
 
   const auto sent_trigger = serialize_and_deserialize(trigger);
 

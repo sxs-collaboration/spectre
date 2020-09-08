@@ -63,11 +63,13 @@ VariableFixing:
     DensityCutoff: 1.0e-12
 
 EventsAndTriggers:
-  ? SpecifiedSlabs:
-      Slabs: [10]
+  ? Slabs:
+      Specified:
+        Values: [10]
   : - Completion
-  ? EveryNSlabs:
-      N: 1
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 1
   : - ChangeSlabSize:
         # DelayChange: 0 forces a synchronization after every slab.
         # It is more efficient to use a higher value.  This is for

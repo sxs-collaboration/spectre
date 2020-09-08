@@ -57,6 +57,7 @@ Observers:
   ReductionFileName: "ValenciaDivCleanCylindricalBlastWaveReductions"
 
 EventsAndTriggers:
-  ? SpecifiedSlabs:
-      Slabs: [2]
+  ? Slabs:
+      Specified:
+        Values: [2]
   : - Completion
