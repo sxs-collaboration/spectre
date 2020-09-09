@@ -174,7 +174,7 @@ struct MagnitudeCompute : Magnitude<typename MagnitudeSquareTag::tag>,
 };
 
 /*!
- * \brief The prefix for tags related to an orthogonalization procedurce
+ * \brief The prefix for tags related to an orthogonalization procedure
  */
 template <typename Tag>
 struct Orthogonalization : db::PrefixTag, db::SimpleTag {
