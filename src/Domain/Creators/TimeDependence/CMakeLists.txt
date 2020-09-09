@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  CompositionCubicScaleAndUniformRotationAboutZAxis.cpp
   CubicScale.cpp
   None.cpp
   RegisterDerivedWithCharm.cpp
