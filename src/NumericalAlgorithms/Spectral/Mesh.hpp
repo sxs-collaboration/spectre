@@ -10,6 +10,7 @@
 #include <cstddef>
 
 #include "DataStructures/Index.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
@@ -19,10 +20,6 @@
 namespace PUP {
 class er;
 }  // namespace PUP
-namespace Spectral {
-enum class Basis;
-enum class Quadrature;
-}  // namespace Spectral
 /// \endcond
 
 /*!

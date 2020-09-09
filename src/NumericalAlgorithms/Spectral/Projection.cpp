@@ -220,7 +220,11 @@ const Matrix& projection_matrix_element_to_mortar(
   ASSERT(
       mortar_mesh.extents(0) <= maximum_number_of_points<Basis::Legendre> and
           element_mesh.extents(0) <= maximum_number_of_points<Basis::Legendre>,
-      "Mesh has more points than supported by its quadrature.");
+      "Mesh has more points than supported by its quadrature. Has "
+          << mortar_mesh.extents(0) << " and max allowed is "
+          << (maximum_number_of_points<Basis::Legendre>)
+          << " for the mortar mesh, while for the element mesh has "
+          << element_mesh.extents(0) << " points.");
   ASSERT(mortar_mesh.extents(0) >= element_mesh.extents(0),
          "Requested projection matrix to mortar with fewer points ("
              << mortar_mesh.extents(0) << ") than the element ("
