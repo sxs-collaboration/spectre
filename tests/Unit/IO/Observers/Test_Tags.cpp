@@ -19,8 +19,10 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
       "NodesThatContributedReductions");
   TestHelpers::db::test_simple_tag<NodesExpectedToContributeReductions>(
       "NodesExpectedToContributeReductions");
+  TestHelpers::db::test_simple_tag<ReductionDataLock>("ReductionDataLock");
   TestHelpers::db::test_simple_tag<ContributorsOfTensorData>(
       "ContributorsOfTensorData");
+  TestHelpers::db::test_simple_tag<VolumeDataLock>("VolumeDataLock");
   TestHelpers::db::test_simple_tag<TensorData>("TensorData");
   TestHelpers::db::test_simple_tag<ReductionData<double>>("ReductionData");
   TestHelpers::db::test_simple_tag<ReductionDataNames<double>>(
@@ -28,8 +30,6 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
   TestHelpers::db::test_simple_tag<H5FileLock>("H5FileLock");
   TestHelpers::db::test_simple_tag<VolumeFileName>("VolumeFileName");
   TestHelpers::db::test_simple_tag<ReductionFileName>("ReductionFileName");
-  TestHelpers::db::test_simple_tag<NodesExpectedToContributeReductions>(
-      "NodesExpectedToContributeReductions");
   static_assert(
       std::is_same_v<typename ReductionData<double, int, char>::names_tag,
                      ReductionDataNames<double, int, char>>,

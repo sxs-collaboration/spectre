@@ -30,27 +30,27 @@ namespace TestHelpers {
 namespace NumericalFluxes {
 
 namespace Tags {
-struct Variable1 : db::SimpleTag {
+struct Variable1 : ::db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
 template <size_t Dim>
-struct Variable2 : db::SimpleTag {
+struct Variable2 : ::db::SimpleTag {
   using type = tnsr::I<DataVector, Dim>;
 };
 
 template <size_t Dim>
-struct Variable3 : db::SimpleTag {
+struct Variable3 : ::db::SimpleTag {
   using type = tnsr::i<DataVector, Dim>;
 };
 
 template <size_t Dim>
-struct Variable4 : db::SimpleTag {
+struct Variable4 : ::db::SimpleTag {
   using type = tnsr::Ij<DataVector, Dim>;
 };
 
 template <size_t Dim>
-struct CharacteristicSpeeds : db::SimpleTag {
+struct CharacteristicSpeeds : ::db::SimpleTag {
   using type = std::array<DataVector, (Dim + 1) * (Dim + 1)>;
 };
 

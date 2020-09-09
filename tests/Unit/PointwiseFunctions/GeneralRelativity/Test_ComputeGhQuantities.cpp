@@ -36,6 +36,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DerivativesOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintGammas.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/GaugeSource.hpp"
@@ -732,6 +733,22 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
   TestHelpers::db::test_compute_tag<
       GeneralizedHarmonic::Tags::TraceExtrinsicCurvatureCompute<
           3, Frame::Inertial>>("TraceExtrinsicCurvature");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::ConstraintGamma0Compute<3, Frame::Inertial>>(
+      "ConstraintGamma0");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::ConstraintGamma1Compute<3, Frame::Inertial>>(
+      "ConstraintGamma1");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::ConstraintGamma2Compute<3, Frame::Inertial>>(
+      "ConstraintGamma2");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<3,
+                                                             Frame::Inertial>>(
+      "SpacetimeDerivGaugeH");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::GaugeHImplicitFrom3p1QuantitiesCompute<
+          3, Frame::Inertial>>("GaugeH");
 
   // Check that the compute items return the correct values
   MAKE_GENERATOR(generator);

@@ -29,9 +29,24 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<
       Cce::InitializationTags::ScriInterpolationOrder>(
       "ScriInterpolationOrder");
+  TestHelpers::db::test_simple_tag<Cce::InitializationTags::TargetStepSize>(
+      "TargetStepSize");
+  TestHelpers::db::test_simple_tag<Cce::InitializationTags::ExtractionRadius>(
+      "ExtractionRadius");
   TestHelpers::db::test_simple_tag<Cce::InitializationTags::ScriOutputDensity>(
       "ScriOutputDensity");
-
+  TestHelpers::db::test_simple_tag<Cce::Tags::H5WorldtubeBoundaryDataManager>(
+      "H5WorldtubeBoundaryDataManager");
+  TestHelpers::db::test_simple_tag<Cce::Tags::LMax>("LMax");
+  TestHelpers::db::test_simple_tag<Cce::Tags::NumberOfRadialPoints>(
+      "NumberOfRadialPoints");
+  TestHelpers::db::test_simple_tag<Cce::Tags::ObservationLMax>(
+      "ObservationLMax");
+  TestHelpers::db::test_simple_tag<Cce::Tags::FilterLMax>("FilterLMax");
+  TestHelpers::db::test_simple_tag<Cce::Tags::RadialFilterAlpha>(
+      "RadialFilterAlpha");
+  TestHelpers::db::test_simple_tag<Cce::Tags::RadialFilterHalfPower>(
+      "RadialFilterHalfPower");
   TestHelpers::db::test_simple_tag<Cce::Tags::StartTimeFromFile>(
       "StartTimeFromFile");
   TestHelpers::db::test_simple_tag<Cce::Tags::EndTimeFromFile>(
@@ -41,6 +56,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "SpecifiedStartTime");
   TestHelpers::db::test_simple_tag<Cce::Tags::SpecifiedEndTime>(
       "SpecifiedEndTime");
+  TestHelpers::db::test_simple_tag<Cce::Tags::GhInterfaceManager>(
+      "GhInterfaceManager");
+  TestHelpers::db::test_simple_tag<
+      Cce::Tags::InterfaceManagerInterpolationStrategy>(
+      "InterfaceManagerInterpolationStrategy");
   TestHelpers::db::test_simple_tag<Cce::Tags::InitializeJ>("InitializeJ");
 
   CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::LMax>("8") == 8_st);

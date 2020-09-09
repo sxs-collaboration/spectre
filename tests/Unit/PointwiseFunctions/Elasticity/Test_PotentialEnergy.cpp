@@ -14,6 +14,7 @@
 #include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/Tags.hpp"
@@ -54,6 +55,8 @@ void test_compute_tags(const DataVector& used_for_size) noexcept {
   using constitutive_relation_tag = Elasticity::Tags::ConstitutiveRelation<
       Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>>;
   using coordinates_tag = domain::Tags::Coordinates<Dim, Frame::Inertial>;
+  TestHelpers::db::test_compute_tag<energy_compute_tag>(
+      "PotentialEnergyDensity");
   const size_t num_points = used_for_size.size();
   {
     INFO("Energy");

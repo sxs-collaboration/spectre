@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "NumericalAlgorithms/Interpolation/PointInfoTag.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -45,4 +46,6 @@ SPECTRE_TEST_CASE("Unit.Interpolation.Tags", "[Unit][NumericalAlgorithms]") {
       "InterpolatedVarsHolders");
   TestHelpers::db::test_simple_tag<intrp::Tags::NumberOfElements>(
       "NumberOfElements");
+  TestHelpers::db::test_simple_tag<intrp::Tags::InterpPointInfo<Metavars>>(
+      "InterpPointInfo");
 }

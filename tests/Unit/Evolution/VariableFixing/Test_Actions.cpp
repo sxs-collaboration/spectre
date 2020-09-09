@@ -12,7 +12,9 @@
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "Evolution/VariableFixing/Actions.hpp"
 #include "Evolution/VariableFixing/RadiallyFallingFloor.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"      // IWYU pragma: keep
@@ -48,10 +50,15 @@ struct Metavariables {
   using component_list = tmpl::list<mock_component<Metavariables>>;
   enum class Phase { Initialization, Testing, Exit };
 };
+
+struct SomeType {};
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
                   "[Unit][Evolution][VariableFixing]") {
+  TestHelpers::db::test_simple_tag<Tags::VariableFixer<SomeType>>(
+      "VariableFixer");
+
   using component = mock_component<Metavariables>;
   const DataVector x{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector y{-2.0, -1.0, 0.0, 1.0, 2.0};

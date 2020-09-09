@@ -6,6 +6,7 @@
 #include <string>
 
 #include "DataStructures/DataBox/TagName.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "IO/Importers/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
@@ -18,14 +19,21 @@ struct ExampleVolumeData {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.IO.Importers.Tags", "[Unit][IO]") {
-  CHECK(db::tag_name<importers::Tags::RegisteredElements>() ==
-        "RegisteredElements");
-  CHECK(db::tag_name<importers::Tags::FileName<ExampleVolumeData>>() ==
-        "FileName(ExampleVolumeData)");
-  CHECK(db::tag_name<importers::Tags::Subgroup<ExampleVolumeData>>() ==
-        "Subgroup(ExampleVolumeData)");
-  CHECK(db::tag_name<importers::Tags::ObservationValue<ExampleVolumeData>>() ==
-        "ObservationValue(ExampleVolumeData)");
+  TestHelpers::db::test_simple_tag<importers::Tags::RegisteredElements>(
+      "RegisteredElements");
+  TestHelpers::db::test_simple_tag<
+      importers::Tags::FileName<ExampleVolumeData>>(
+      "FileName(ExampleVolumeData)");
+  TestHelpers::db::test_simple_tag<
+      importers::Tags::Subgroup<ExampleVolumeData>>(
+      "Subgroup(ExampleVolumeData)");
+  TestHelpers::db::test_simple_tag<
+      importers::Tags::ObservationValue<ExampleVolumeData>>(
+      "ObservationValue(ExampleVolumeData)");
+  TestHelpers::db::test_simple_tag<importers::Tags::FunctionOfTimeFile>(
+      "FunctionOfTimeFile");
+  TestHelpers::db::test_simple_tag<importers::Tags::FunctionOfTimeNameMap>(
+      "FunctionOfTimeNameMap");
 
   Options::Parser<
       tmpl::list<importers::OptionTags::FileName<ExampleVolumeData>,

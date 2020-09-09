@@ -256,7 +256,7 @@ void test_root_tags() {
   CHECK(get(db::get<Tags::Sqrt<MyScalar>>(box)) == DataVector{npts, sqrt(3.0)});
 
   using Tag = MyScalar;
-  TestHelpers::db::test_simple_tag<Tags::Sqrt<Tag>>("Sqrt(MyScalar)");
+  TestHelpers::db::test_prefix_tag<Tags::Sqrt<Tag>>("Sqrt(MyScalar)");
   TestHelpers::db::test_compute_tag<Tags::SqrtCompute<Tag>>("Sqrt(MyScalar)");
 }
 }  // namespace

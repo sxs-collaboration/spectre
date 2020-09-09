@@ -20,6 +20,7 @@
 #include "Domain/FaceNormal.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -196,6 +197,9 @@ void check_compute_item() {
                         flux_tag<Dim, Frame>>,
       db::AddComputeTags<magnitude_normal_tag, normalized_normal_tag,
                          compute_n_dot_f>>(normal, fluxes);
+  TestHelpers::db::test_compute_tag<compute_n_dot_f>(
+      "Variables(NormalDotFlux(Var1),NormalDotFlux(Var2))");
+
   static_assert(
       std::is_same_v<typename compute_n_dot_f::argument_tags,
                      tmpl::list<flux_tag<Dim, Frame>,

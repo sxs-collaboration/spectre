@@ -28,6 +28,7 @@
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
@@ -211,6 +212,14 @@ void test_compute_tag(const std::array<double, 4>& times_to_check) noexcept {
                           expected_size_of_element);
   }
 }
+
+template <size_t Dim>
+void test_tags() {
+  TestHelpers::db::test_simple_tag<domain::Tags::SizeOfElement<Dim>>(
+      "SizeOfElement");
+  TestHelpers::db::test_compute_tag<domain::Tags::SizeOfElementCompute<Dim>>(
+      "SizeOfElement");
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.SizeOfElement", "[Domain][Unit]") {
@@ -223,4 +232,8 @@ SPECTRE_TEST_CASE("Unit.Domain.SizeOfElement", "[Domain][Unit]") {
   test_2d_moving_mesh(times_to_check);
   test_3d_moving_mesh(times_to_check);
   test_compute_tag(times_to_check);
+
+  test_tags<1>();
+  test_tags<2>();
+  test_tags<3>();
 }

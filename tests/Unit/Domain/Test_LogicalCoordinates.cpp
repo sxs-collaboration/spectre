@@ -18,6 +18,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
@@ -77,9 +78,12 @@ SPECTRE_TEST_CASE("Unit.Domain.LogicalCoordinates", "[Domain][Unit]") {
   CHECK(x_3d[2][0] == -32.0);
   CHECK(x_3d[2][15] == 74.0);
 
-  CHECK(Tags::LogicalCoordinates<1>::name() == "LogicalCoordinates");
-  CHECK(Tags::LogicalCoordinates<2>::name() == "LogicalCoordinates");
-  CHECK(Tags::LogicalCoordinates<3>::name() == "LogicalCoordinates");
+  TestHelpers::db::test_compute_tag<Tags::LogicalCoordinates<1>>(
+      "LogicalCoordinates");
+  TestHelpers::db::test_compute_tag<Tags::LogicalCoordinates<2>>(
+      "LogicalCoordinates");
+  TestHelpers::db::test_compute_tag<Tags::LogicalCoordinates<3>>(
+      "LogicalCoordinates");
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.InterfaceLogicalCoordinates", "[Domain][Unit]") {

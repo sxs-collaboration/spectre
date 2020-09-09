@@ -12,6 +12,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/MinimumGridSpacing.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 
 // IWYU pragma: no_include "Utilities/Array.hpp"
 
@@ -95,6 +96,12 @@ void check_frame() noexcept {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.MinimumGridSpacing", "[Domain][Unit]") {
+  TestHelpers::db::test_simple_tag<
+      domain::Tags::MinimumGridSpacing<3, Frame::Inertial>>(
+      "MinimumGridSpacing");
+  TestHelpers::db::test_compute_tag<
+      domain::Tags::MinimumGridSpacingCompute<3, Frame::Inertial>>(
+      "MinimumGridSpacing");
   check_frame<Frame::Grid>();
   check_frame<Frame::Inertial>();
 }

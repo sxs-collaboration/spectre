@@ -15,6 +15,7 @@
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Framework/TestCreation.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetWedgeSectionTorus.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -122,6 +123,10 @@ void test_r_theta_uniform() noexcept {
     }
     return block_logical_coordinates(domain_creator.create_domain(), points);
   }();
+
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::WedgeSectionTorus<MockMetavariables::InterpolationTargetA>>(
+      "WedgeSectionTorus");
 
   InterpTargetTestHelpers::test_interpolation_target<
       MockMetavariables,

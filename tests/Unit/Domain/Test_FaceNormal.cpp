@@ -39,6 +39,7 @@
 #include "Domain/Structure/Side.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -170,6 +171,11 @@ void check_time_dependent(
                                    logical_to_grid_map.block_map().get_clone()),
       grid_to_inertial_map->get_clone(), time,
       clone_unique_ptrs(functions_of_time));
+
+  TestHelpers::db::test_compute_tag<
+      Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<2>,
+                             Tags::UnnormalizedFaceNormalMovingMeshCompute<2>>>(
+      "BoundaryDirectionsExterior<UnnormalizedFaceNormal>"s);
 
   for (const auto& direction_and_face_normal :
        db::get<Tags::Interface<Tags::BoundaryDirectionsExterior<Dim>,
@@ -374,10 +380,10 @@ void test_compute_item() {
           make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
               CoordinateMaps::Rotation<2>(atan2(4., 3.)))));
 
-  CHECK((Tags::InterfaceCompute<
-            Tags::BoundaryDirectionsExterior<2>,
-            Tags::UnnormalizedFaceNormalCompute<2>>::name()) ==
-        "BoundaryDirectionsExterior<UnnormalizedFaceNormal>"s);
+  TestHelpers::db::test_compute_tag<
+      Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<2>,
+                             Tags::UnnormalizedFaceNormalCompute<2>>>(
+      "BoundaryDirectionsExterior<UnnormalizedFaceNormal>"s);
 
   std::unordered_map<Direction<2>, tnsr::i<DataVector, 2>> expected;
   expected[Direction<2>::upper_xi()] =
@@ -449,6 +455,20 @@ void test_compute_item() {
                                         Tags::UnnormalizedFaceNormal<2>>>(
             box_with_non_affine_map))));
 }
+
+template <size_t Dim, typename Frame>
+void test_tags() {
+  TestHelpers::db::test_simple_tag<Tags::UnnormalizedFaceNormal<Dim, Frame>>(
+      "UnnormalizedFaceNormal");
+  TestHelpers::db::test_compute_tag<
+      Tags::UnnormalizedFaceNormalCompute<Dim, Frame>>(
+      "UnnormalizedFaceNormal");
+  if constexpr (std::is_same_v<Frame, ::Frame::Inertial>) {
+    TestHelpers::db::test_compute_tag<
+        Tags::UnnormalizedFaceNormalMovingMeshCompute<Dim>>(
+        "UnnormalizedFaceNormal");
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.FaceNormal", "[Unit][Domain]") {
@@ -457,5 +477,11 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal", "[Unit][Domain]") {
   test_face_normal_element_map<Frame::Grid>();
   test_face_normal_moving_mesh();
   test_compute_item();
+  test_tags<1, Frame::Inertial>();
+  test_tags<2, Frame::Inertial>();
+  test_tags<3, Frame::Inertial>();
+  test_tags<1, Frame::Grid>();
+  test_tags<2, Frame::Grid>();
+  test_tags<3, Frame::Grid>();
 }
 }  // namespace domain
