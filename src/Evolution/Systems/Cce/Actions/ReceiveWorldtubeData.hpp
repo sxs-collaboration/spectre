@@ -8,6 +8,8 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/ReceiveTags.hpp"
+#include "Parallel/Actions/Receive.hpp"
+#include "Parallel/ExtractFromInbox.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Time/Tags.hpp"
@@ -37,10 +39,11 @@ namespace Actions {
  *   - `Cce::Tags::BoundaryTime`
  */
 template <typename Metavariables>
-struct ReceiveWorldtubeData {
-  using inbox_tags = tmpl::list<Cce::ReceiveTags::BoundaryData<
-      typename Metavariables::cce_boundary_communication_tags>>;
-
+struct ReceiveWorldtubeData
+    : Parallel::Actions::Receive<
+          Cce::ReceiveTags::BoundaryData<
+              typename Metavariables::cce_boundary_communication_tags>,
+          ::Tags::TimeStepId> {
   template <
       typename DbTags, typename... InboxTags, typename ArrayIndex,
       typename ActionList, typename ParallelComponent,
@@ -56,20 +59,20 @@ struct ReceiveWorldtubeData {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    auto& inbox = tuples::get<Cce::ReceiveTags::BoundaryData<
-        typename Metavariables::cce_boundary_communication_tags>>(inboxes);
+    const auto received_boundary_data = Parallel::extract_from_inbox<
+        Cce::ReceiveTags::BoundaryData<
+            typename Metavariables::cce_boundary_communication_tags>,
+        ::Tags::TimeStepId>(inboxes, box);
     tmpl::for_each<typename Metavariables::cce_boundary_communication_tags>(
-        [&inbox, &box ](auto tag_v) noexcept {
+        [&received_boundary_data, &box](auto tag_v) noexcept {
           using tag = typename decltype(tag_v)::type;
           db::mutate<tag>(
               make_not_null(&box),
-              [&inbox](const gsl::not_null<typename tag::type*> destination,
-                       const TimeStepId& time) noexcept {
-                *destination = get<tag>(inbox[time]);
-              },
-              db::get<::Tags::TimeStepId>(box));
+              [&received_boundary_data](const gsl::not_null<typename tag::type*>
+                                            destination) noexcept {
+                *destination = get<tag>(received_boundary_data);
+              });
         });
-    inbox.erase(db::get<::Tags::TimeStepId>(box));
     return std::forward_as_tuple(std::move(box));
   }
   template <
@@ -92,41 +95,6 @@ struct ReceiveWorldtubeData {
         "boundary data");
     // provided for return type inference. This line will never be executed.
     return std::forward_as_tuple(std::move(box));
-  }
-
-  template <
-      typename DbTags, typename... InboxTags, typename ArrayIndex,
-      Requires<
-          tmpl::list_contains_v<
-              tmpl::list<InboxTags...>,
-              Cce::ReceiveTags::BoundaryData<
-                  typename Metavariables::cce_boundary_communication_tags>> and
-          tmpl::list_contains_v<DbTags, ::Tags::TimeStepId>> = nullptr>
-  static bool is_ready(
-      const db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) noexcept {
-    return tuples::get<Cce::ReceiveTags::BoundaryData<
-               typename Metavariables::cce_boundary_communication_tags>>(
-               inboxes)
-               .count(db::get<::Tags::TimeStepId>(box)) == 1;
-  }
-
-  template <
-      typename DbTags, typename... InboxTags, typename ArrayIndex,
-      Requires<
-          not tmpl::list_contains_v<
-              tmpl::list<InboxTags...>,
-              Cce::ReceiveTags::BoundaryData<
-                  typename Metavariables::cce_boundary_communication_tags>> or
-          not tmpl::list_contains_v<DbTags, ::Tags::TimeStepId>> = nullptr>
-  static bool is_ready(
-      const db::DataBox<DbTags>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/) noexcept {
-    return false;
   }
 };
 }  // namespace Actions
