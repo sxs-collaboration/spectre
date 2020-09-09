@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -28,18 +29,27 @@ double minimum_grid_spacing(
 
 namespace domain {
 namespace Tags {
+// @{
 /// \ingroup ComputationalDomainGroup
 /// \ingroup DataBoxTagsGroup
 /// The minimum coordinate distance between grid points.
 template <size_t Dim, typename Frame>
-struct MinimumGridSpacing : db::ComputeTag {
-  static std::string name() noexcept { return "MinimumGridSpacing"; }
-  static auto function(
-      const ::Mesh<Dim>& mesh,
+struct MinimumGridSpacing : db::SimpleTag {
+  using type = double;
+};
+
+template <size_t Dim, typename Frame>
+struct MinimumGridSpacingCompute : MinimumGridSpacing<Dim, Frame>,
+                                   db::ComputeTag {
+  using base = MinimumGridSpacing<Dim, Frame>;
+  using return_type = double;
+  static void function(
+      const gsl::not_null<double*> result, const ::Mesh<Dim>& mesh,
       const tnsr::I<DataVector, Dim, Frame>& coordinates) noexcept {
-    return minimum_grid_spacing(mesh.extents(), coordinates);
+    *result = minimum_grid_spacing(mesh.extents(), coordinates);
   }
   using argument_tags = tmpl::list<Mesh<Dim>, Coordinates<Dim, Frame>>;
 };
+// @}
 }  // namespace Tags
 }  // namespace domain

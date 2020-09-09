@@ -72,7 +72,7 @@ namespace Initialization {
  *   - `domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>`
  *   - `domain::Tags::MeshVelocity<Dim, Frame::Inertial>`
  *   - `domain::Tags::DivMeshVelocity`
- *   - `domain::Tags::MinimumGridSpacing<Dim, Frame::Inertial>>`
+ *   - `domain::Tags::MinimumGridSpacingCompute<Dim, Frame::Inertial>>`
  * - Removes: nothing
  * - Modifies: nothing
  */
@@ -124,7 +124,7 @@ struct Domain {
         ::domain::Tags::InertialMeshVelocityCompute<Dim>,
         evolution::domain::Tags::DivMeshVelocityCompute<Dim>,
         // Compute tags for other mesh quantities
-        ::domain::Tags::MinimumGridSpacing<Dim, Frame::Inertial>>;
+        ::domain::Tags::MinimumGridSpacingCompute<Dim, Frame::Inertial>>;
 
     const auto& initial_extents =
         db::get<::domain::Tags::InitialExtents<Dim>>(box);

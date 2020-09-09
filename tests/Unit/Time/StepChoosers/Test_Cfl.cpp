@@ -61,7 +61,7 @@ double get_suggestion(const size_t stepper_order, const double safety_factor,
       db::AddSimpleTags<
           CharacteristicSpeed, domain::Tags::Coordinates<dim, frame>,
           domain::Tags::Mesh<dim>, Tags::TimeStepper<TimeStepper>>,
-      db::AddComputeTags<domain::Tags::MinimumGridSpacing<dim, frame>>>(
+      db::AddComputeTags<domain::Tags::MinimumGridSpacingCompute<dim, frame>>>(
       characteristic_speed, tnsr::I<DataVector, dim, frame>{{{coordinates}}},
       Mesh<dim>(coordinates.size(), Spectral::Basis::Legendre,
                 Spectral::Quadrature::GaussLobatto),
