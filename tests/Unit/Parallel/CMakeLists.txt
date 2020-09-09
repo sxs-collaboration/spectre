@@ -38,6 +38,7 @@ add_algorithm_test(Test_AlgorithmNestedApply2)
 add_algorithm_test(Test_AlgorithmParallel)
 add_algorithm_test(Test_AlgorithmNodelock)
 add_algorithm_test(Test_AlgorithmReduction)
+add_algorithm_test(Test_GlobalCache)
 
 # Test GlobalCache
 add_charm_module(Test_GlobalCache)
@@ -47,27 +48,12 @@ add_dependencies(
   module_GlobalCache
   )
 
-add_spectre_executable(
-  Test_GlobalCache
-  Test_GlobalCache.cpp
-  )
-
 add_dependencies(
   Test_GlobalCache
   module_Test_GlobalCache
   )
 
-target_link_libraries(
-  Test_GlobalCache
-  PRIVATE
-  ErrorHandling
-  Informer
-  Parallel
-  )
-
 add_dependencies(test-executables Test_GlobalCache)
-
-spectre_add_catch_tests(Test_GlobalCache "")
 
 # Add integration tests. For tests that result in a failure it is necessary to
 # redirect output from stderr to stdout. However, it was necessary at least on
@@ -124,6 +110,7 @@ function is not invoked via a proxy, which we do not allow.")
 add_algorithm_test("AlgorithmParallel" "")
 add_algorithm_test("AlgorithmReduction" "")
 add_algorithm_test("AlgorithmNodelock" "")
+add_algorithm_test("GlobalCache" "")
 
 # Tests that do not require their own Chare setup and can work with the
 # unit tests

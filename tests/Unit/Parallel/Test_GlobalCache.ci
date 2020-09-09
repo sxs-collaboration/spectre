@@ -2,32 +2,21 @@
 // See LICENSE.txt for details.
 
 mainmodule Test_GlobalCache {
-
-  initnode void register_pupables();
-
-  extern module GlobalCache;
-
-  namespace Parallel {
-  nodegroup GlobalCache<TestMetavariables>;
-  }
-
-  mainchare Test_GlobalCache {
-    entry Test_GlobalCache(CkArgMsg * msg);
+  template <typename Metavariables>
+  mainchare [migratable] Test_GlobalCache {
+    entry Test_GlobalCache(CkArgMsg* msg);
+    entry void exit_if_done(int index);
   };
 
+  template <typename Metavariables>
   array [1D] TestArrayChare {
-    entry TestArrayChare();
+    entry TestArrayChare(
+        CProxy_Test_GlobalCache<Metavariables> & main_proxy,
+        Parallel::CProxy_GlobalCache<Metavariables> & global_cache_proxy);
+    entry void run_test_one();
+    entry void run_test_two();
+    entry void run_test_three();
+    entry void run_test_four();
+    entry void run_test_five();
   };
-
-  chare ParallelComponent {
-    entry ParallelComponent(int);
-  };
-
-  group TestGroupChare {
-    entry TestGroupChare();
-  };
-
-  nodegroup TestNodeGroupChare {
-    entry TestNodeGroupChare();
-  };
-};
+}
