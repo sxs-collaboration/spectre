@@ -130,6 +130,7 @@ add_algorithm_test("AlgorithmNodelock" "")
 set(LIBRARY "Test_Parallel")
 
 set(LIBRARY_SOURCES
+  Test_ExtractFromInbox.cpp
   Test_GlobalCacheDataBox.cpp
   Test_InboxInserters.cpp
   Test_NodeLock.cpp
