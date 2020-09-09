@@ -6,5 +6,6 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Goto.hpp
+  Receive.hpp
   TerminatePhase.hpp
   )
