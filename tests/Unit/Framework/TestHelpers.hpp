@@ -231,6 +231,30 @@ void test_reverse_iterators(Container& c) {
 
 /*!
  * \ingroup TestingFrameworkGroup
+ * \brief Class to observe which constructors are used
+ */
+struct ConstructionObserver {
+  ConstructionObserver() = default;
+  ConstructionObserver(const ConstructionObserver& /*rhs*/) noexcept {
+    status = "copy-constructed";
+  }
+  ConstructionObserver& operator=(const ConstructionObserver&) = delete;
+  ConstructionObserver(ConstructionObserver&& rhs) noexcept {
+    status = "move-constructed";
+    rhs.status = "move-constructed-away";
+  }
+  ConstructionObserver& operator=(ConstructionObserver&& rhs) noexcept {
+    status = "moved";
+    rhs.status = "moved-away";
+    return *this;
+  };
+  ~ConstructionObserver() = default;
+
+  std::string status = "initial";
+};
+
+/*!
+ * \ingroup TestingFrameworkGroup
  * \brief Function to test comparison operators.  Pass values with
  * less < greater.
  */

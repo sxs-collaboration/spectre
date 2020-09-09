@@ -6,31 +6,8 @@
 #include <string>
 #include <tuple>
 
+#include "Framework/TestHelpers.hpp"
 #include "Utilities/TupleSlice.hpp"
-
-namespace {
-
-struct ConstructionObserver {
-  ConstructionObserver() = default;
-  ConstructionObserver(const ConstructionObserver& /*rhs*/) noexcept {
-    status = "copy-constructed";
-  }
-  ConstructionObserver& operator=(const ConstructionObserver&) = delete;
-  ConstructionObserver(ConstructionObserver&& rhs) noexcept {
-    status = "move-constructed";
-    rhs.status = "move-constructed-away";
-  }
-  ConstructionObserver& operator=(ConstructionObserver&& rhs) noexcept {
-    status = "moved";
-    rhs.status = "moved-away";
-    return *this;
-  };
-  ~ConstructionObserver() = default;
-
-  std::string status = "initial";
-};
-
-}  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.TupleSlice", "[Utilities][Unit]") {
   CHECK(tuple_slice<1, 3>(std::tuple<int, float, double, std::string>{
