@@ -111,7 +111,6 @@ namespace Tags {
 /// The unnormalized face normal one form
 template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
 struct UnnormalizedFaceNormal : db::SimpleTag {
-  static std::string name() noexcept { return "UnnormalizedFaceNormal"; }
   using type = tnsr::i<DataVector, VolumeDim, Frame>;
 };
 
@@ -169,6 +168,8 @@ struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
     : db::ComputeTag,
       Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
                       Tags::UnnormalizedFaceNormal<VolumeDim, Frame>> {
+  using base = Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                               Tags::UnnormalizedFaceNormal<VolumeDim, Frame>>;
   using dirs = BoundaryDirectionsExterior<VolumeDim>;
 
   static std::string name() noexcept {
@@ -202,6 +203,9 @@ struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
       Tags::Interface<
           Tags::BoundaryDirectionsExterior<VolumeDim>,
           Tags::UnnormalizedFaceNormal<VolumeDim, Frame::Inertial>> {
+  using base =
+      Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                      Tags::UnnormalizedFaceNormal<VolumeDim, Frame::Inertial>>;
   using dirs = BoundaryDirectionsExterior<VolumeDim>;
 
   static std::string name() noexcept {
