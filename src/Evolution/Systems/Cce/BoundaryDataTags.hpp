@@ -6,6 +6,13 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Utilities/TMPL.hpp"
+
+/// \cond
+class ComplexDataVector;
+class DataVector;
+/// \endcond
 
 namespace Cce {
 namespace Frame {
