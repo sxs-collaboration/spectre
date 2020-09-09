@@ -54,7 +54,6 @@ struct LocalLaxFriedrichs : tt::ConformsTo<dg::protocols::NumericalFlux> {
   /// The maximum characteristic speed modulus on one side of the interface.
   struct MaxAbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
-    static std::string name() noexcept { return "MaxAbsCharSpeed"; }
   };
 
   using variables_tags = typename System::variables_tag::tags_list;

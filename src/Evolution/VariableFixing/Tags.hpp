@@ -40,7 +40,6 @@ namespace Tags {
  */
 template <typename VariableFixerType>
 struct VariableFixer : db::SimpleTag {
-  static std::string name() noexcept { return "VariableFixer"; }
   using type = VariableFixerType;
   using option_tags =
       tmpl::list<::OptionTags::VariableFixer<VariableFixerType>>;

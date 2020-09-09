@@ -175,7 +175,6 @@ struct RegisteredElements : db::SimpleTag {
  * \brief Path to an H5 file containing SpEC `FunctionOfTime` data to read.
  */
 struct FunctionOfTimeFile : db::SimpleTag {
-  static std::string name() noexcept { return "FunctionOfTimeFile"; }
   using type = std::string;
   using option_tags = tmpl::list<::importers::OptionTags::FunctionOfTimeFile>;
   static constexpr bool pass_metavariables = false;
@@ -195,7 +194,6 @@ struct FunctionOfTimeFile : db::SimpleTag {
  * `std::unordered_map` after reading it.
  */
 struct FunctionOfTimeNameMap : db::SimpleTag {
-  static std::string name() noexcept { return "FunctionOfTimeNameMap"; }
   using type = std::map<std::string, std::string>;
   using option_tags =
       tmpl::list<::importers::OptionTags::FunctionOfTimeNameMap>;

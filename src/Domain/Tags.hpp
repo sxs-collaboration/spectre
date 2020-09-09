@@ -341,7 +341,6 @@ struct Interface : virtual db::SimpleTag,
 /// ::Direction to an interface
 template <size_t VolumeDim>
 struct Direction : db::SimpleTag {
-  static std::string name() noexcept { return "Direction"; }
   using type = ::Direction<VolumeDim>;
 };
 
