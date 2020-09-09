@@ -33,6 +33,7 @@ endfunction()
 
 add_algorithm_test(Test_AlgorithmCore)
 add_algorithm_test(Test_AlgorithmBadBoxApply)
+add_algorithm_test(Test_AlgorithmGlobalCache)
 add_algorithm_test(Test_AlgorithmNestedApply1)
 add_algorithm_test(Test_AlgorithmNestedApply2)
 add_algorithm_test(Test_AlgorithmParallel)
@@ -92,6 +93,23 @@ function(add_algorithm_test TEST_NAME REGEX_TO_MATCH)
   endif()
 endfunction()
 
+function(add_algorithm_test_with_input_file TEST_NAME INPUT_FILE_DIR)
+  add_test(
+    NAME "\"Integration.Parallel.${TEST_NAME}\""
+    COMMAND
+    ${SHELL_EXECUTABLE}
+    -c
+    "${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} --input-file \
+     ${CMAKE_SOURCE_DIR}/tests/${INPUT_FILE_DIR}/Test_${TEST_NAME}.yaml 2>&1"
+    )
+    set_tests_properties(
+      "\"Integration.Parallel.${TEST_NAME}\""
+      PROPERTIES
+      TIMEOUT 10
+      LABELS "integration"
+      ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+endfunction()
+
 add_algorithm_test("AlgorithmCore" "")
 add_algorithm_test(
   "AlgorithmBadBoxApply"
@@ -111,6 +129,8 @@ add_algorithm_test("AlgorithmParallel" "")
 add_algorithm_test("AlgorithmReduction" "")
 add_algorithm_test("AlgorithmNodelock" "")
 add_algorithm_test("GlobalCache" "")
+
+add_algorithm_test_with_input_file("AlgorithmGlobalCache" "Unit/Parallel")
 
 # Tests that do not require their own Chare setup and can work with the
 # unit tests
