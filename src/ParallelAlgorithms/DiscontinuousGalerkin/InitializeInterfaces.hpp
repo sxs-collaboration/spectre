@@ -119,7 +119,6 @@ struct InitializeInterfaces {
 
   template <typename Directions>
   using face_tags = tmpl::flatten<tmpl::list<
-      Directions,
       domain::Tags::InterfaceCompute<Directions, domain::Tags::Direction<dim>>,
       domain::Tags::InterfaceCompute<Directions,
                                      domain::Tags::InterfaceMesh<dim>>,
@@ -141,7 +140,7 @@ struct InitializeInterfaces {
                       make_compute_tag<tmpl::_1, tmpl::pin<Directions>>>>>;
 
   using exterior_face_tags = tmpl::flatten<tmpl::list<
-      domain::Tags::BoundaryDirectionsExterior<dim>,
+      domain::Tags::BoundaryDirectionsExteriorCompute<dim>,
       domain::Tags::InterfaceCompute<
           domain::Tags::BoundaryDirectionsExterior<dim>,
           domain::Tags::Direction<dim>>,
@@ -184,10 +183,12 @@ struct InitializeInterfaces {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using compute_tags =
+    using compute_tags = tmpl::push_front<
         tmpl::append<face_tags<domain::Tags::InternalDirections<dim>>,
                      face_tags<domain::Tags::BoundaryDirectionsInterior<dim>>,
-                     exterior_face_tags>;
+                     exterior_face_tags>,
+        domain::Tags::InternalDirectionsCompute<dim>,
+        domain::Tags::BoundaryDirectionsInteriorCompute<dim>>;
 
     if constexpr (AddExteriorVariables) {
       using system = typename Metavariables::system;

@@ -151,7 +151,7 @@ void check_time_dependent(
                                                             Frame::Inertial>,
                         ::Tags::Time, Tags::FunctionsOfTime>,
       db::AddComputeTags<
-          Tags::BoundaryDirectionsExterior<Dim>,
+          Tags::BoundaryDirectionsExteriorCompute<Dim>,
           Tags::InterfaceCompute<Directions<Dim>, Tags::Direction<Dim>>,
           Tags::InterfaceCompute<Directions<Dim>, Tags::InterfaceMesh<Dim>>,
           Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<Dim>,
@@ -360,7 +360,7 @@ void test_compute_item() {
       db::AddSimpleTags<Tags::Element<2>, Directions<2>, Tags::Mesh<2>,
                         Tags::ElementMap<2>>,
       db::AddComputeTags<
-          Tags::BoundaryDirectionsExterior<2>,
+          Tags::BoundaryDirectionsExteriorCompute<2>,
           Tags::InterfaceCompute<Directions<2>, Tags::Direction<2>>,
           Tags::InterfaceCompute<Directions<2>, Tags::InterfaceMesh<2>>,
           Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<2>,
@@ -416,8 +416,8 @@ void test_compute_item() {
   const auto box_with_non_affine_map = db::create<
       db::AddSimpleTags<Tags::Element<2>, Tags::Mesh<2>, Tags::ElementMap<2>>,
       db::AddComputeTags<
-          Tags::BoundaryDirectionsExterior<2>,
-          Tags::BoundaryDirectionsInterior<2>,
+          Tags::BoundaryDirectionsExteriorCompute<2>,
+          Tags::BoundaryDirectionsInteriorCompute<2>,
           Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<2>,
                                  Tags::Direction<2>>,
           Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<2>,

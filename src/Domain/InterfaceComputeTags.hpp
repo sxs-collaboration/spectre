@@ -134,6 +134,7 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
 /// \tparam Tag the tag labeling the item
 template <typename DirectionsTag, typename Tag>
 struct InterfaceCompute : Interface<DirectionsTag, Tag>, db::ComputeTag {
+  using base = Interface<DirectionsTag, Tag>;
   static_assert(db::is_compute_tag_v<Tag>,
                 "Cannot use a non compute item as an interface compute item.");
   // Defining name here prevents an ambiguous function call when using base
@@ -175,6 +176,7 @@ struct InterfaceCompute : Interface<DirectionsTag, Tag>, db::ComputeTag {
 /// \tparam Tag the tag labeling the item
 template <typename DirectionsTag, typename Tag>
 struct Slice : Interface<DirectionsTag, Tag>, db::ComputeTag {
+  using base = Interface<DirectionsTag, Tag>;
   static constexpr size_t volume_dim = DirectionsTag::volume_dim;
 
   using return_type =
@@ -202,6 +204,7 @@ struct Slice : Interface<DirectionsTag, Tag>, db::ComputeTag {
 template <typename DirectionsTag, size_t VolumeDim>
 struct InterfaceCompute<DirectionsTag, Direction<VolumeDim>>
     : db::ComputeTag, Tags::Interface<DirectionsTag, Direction<VolumeDim>> {
+  using base = Tags::Interface<DirectionsTag, Direction<VolumeDim>>;
   static std::string name() noexcept { return "Interface"; }
   using tag = Direction<VolumeDim>;
   using return_type =

@@ -47,6 +47,13 @@ void test_simple_tags() noexcept {
   TestHelpers::db::test_simple_tag<
       Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(
       "DetInvJacobian(Logical,Inertial)");
+  TestHelpers::db::test_simple_tag<Tags::InternalDirections<Dim>>(
+      "InternalDirections");
+  TestHelpers::db::test_simple_tag<Tags::BoundaryDirectionsInterior<Dim>>(
+      "BoundaryDirectionsInterior");
+  TestHelpers::db::test_simple_tag<Tags::BoundaryDirectionsExterior<Dim>>(
+      "BoundaryDirectionsExterior");
+  TestHelpers::db::test_simple_tag<Tags::Direction<Dim>>("Direction");
 }
 
 template <size_t Dim>
@@ -98,6 +105,17 @@ void test_compute_tags() noexcept {
   TestHelpers::db::test_compute_tag<
       Tags::DetInvJacobianCompute<Dim, Frame::Logical, Frame::Inertial>>(
       "DetInvJacobian(Logical,Inertial)");
+  TestHelpers::db::test_compute_tag<Tags::InternalDirectionsCompute<Dim>>(
+      "InternalDirections");
+  TestHelpers::db::test_compute_tag<
+      Tags::BoundaryDirectionsInteriorCompute<Dim>>(
+      "BoundaryDirectionsInterior");
+  TestHelpers::db::test_compute_tag<
+      Tags::BoundaryDirectionsExteriorCompute<Dim>>(
+      "BoundaryDirectionsExterior");
+  TestHelpers::db::test_compute_tag<Tags::MappedCoordinates<
+      Tags::ElementMap<Dim>, Tags::Coordinates<Dim, Frame::Logical>>>(
+      "InertialCoordinates");
 
   auto map = element_map<Dim>();
   const tnsr::I<DataVector, Dim, Frame::Logical> logical_coords(
