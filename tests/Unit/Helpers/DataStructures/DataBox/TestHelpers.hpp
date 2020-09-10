@@ -17,16 +17,16 @@
 
 namespace TestHelpers {
 
-CREATE_HAS_TYPE_ALIAS(base)
-CREATE_HAS_TYPE_ALIAS_V(base)
-CREATE_HAS_TYPE_ALIAS(argument_tags)
-CREATE_HAS_TYPE_ALIAS_V(argument_tags)
-CREATE_HAS_TYPE_ALIAS(return_type)
-CREATE_HAS_TYPE_ALIAS_V(return_type)
-
 namespace db {
 
 namespace detail {
+CREATE_HAS_TYPE_ALIAS(argument_tags)
+CREATE_HAS_TYPE_ALIAS_V(argument_tags)
+CREATE_HAS_TYPE_ALIAS(base)
+CREATE_HAS_TYPE_ALIAS_V(base)
+CREATE_HAS_TYPE_ALIAS(return_type)
+CREATE_HAS_TYPE_ALIAS_V(return_type)
+
 CREATE_IS_CALLABLE(name)
 CREATE_IS_CALLABLE_V(name)
 
@@ -53,9 +53,9 @@ template <typename Tag>
 void test_compute_tag(const std::string& expected_name) {
   static_assert(::db::is_compute_tag_v<Tag>,
                 "A compute tag must be derived from db::ComputeTag");
-  static_assert(has_return_type_v<Tag>);
-  static_assert(has_argument_tags_v<Tag>);
-  static_assert(has_base_v<Tag>);
+  static_assert(detail::has_return_type_v<Tag>);
+  static_assert(detail::has_argument_tags_v<Tag>);
+  static_assert(detail::has_base_v<Tag>);
   static_assert(std::is_same_v<typename Tag::return_type, typename Tag::type>);
   detail::check_tag_name<Tag>(expected_name);
 }
