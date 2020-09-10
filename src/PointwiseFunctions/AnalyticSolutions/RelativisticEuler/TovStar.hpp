@@ -113,14 +113,15 @@ class TovStar : public MarkAsAnalyticSolution {
   /// The central density of the star.
   struct CentralDensity {
     using type = double;
-    static constexpr OptionString help = {"The central density of the star."};
+    static constexpr Options::String help = {
+        "The central density of the star."};
     static type lower_bound() noexcept { return 0.; }
   };
 
   /// The polytropic constant of the polytropic fluid.
   struct PolytropicConstant {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The polytropic constant of the fluid."};
     static type lower_bound() noexcept { return 0.; }
   };
@@ -128,7 +129,7 @@ class TovStar : public MarkAsAnalyticSolution {
   /// The polytropic exponent of the polytropic fluid.
   struct PolytropicExponent {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The polytropic exponent of the fluid."};
     static type lower_bound() noexcept { return 1.; }
   };
@@ -136,7 +137,7 @@ class TovStar : public MarkAsAnalyticSolution {
   using options =
       tmpl::list<CentralDensity, PolytropicConstant, PolytropicExponent>;
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "A static, spherically-symmetric star found by solving the \n"
       "Tolman-Oppenheimer-Volkoff (TOV) equations, with a given central \n"
       "density and polytropic fluid."};

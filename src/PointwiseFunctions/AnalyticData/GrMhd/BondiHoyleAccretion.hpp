@@ -83,45 +83,47 @@ class BondiHoyleAccretion : public MarkAsAnalyticData {
   /// The mass of the black hole, \f$M\f$.
   struct BhMass {
     using type = double;
-    static constexpr OptionString help = {"The mass of the black hole."};
+    static constexpr Options::String help = {"The mass of the black hole."};
     static type lower_bound() noexcept { return 0.0; }
   };
   /// The dimensionless black hole spin, \f$a_* = a/M\f$.
   struct BhDimlessSpin {
     using type = double;
-    static constexpr OptionString help = {"The dimensionless black hole spin."};
+    static constexpr Options::String help = {
+        "The dimensionless black hole spin."};
     static type lower_bound() noexcept { return -1.0; }
     static type upper_bound() noexcept { return 1.0; }
   };
   /// The rest mass density of the fluid far from the black hole.
   struct RestMassDensity {
     using type = double;
-    static constexpr OptionString help = {"The asymptotic rest mass density."};
+    static constexpr Options::String help = {
+        "The asymptotic rest mass density."};
     static type lower_bound() noexcept { return 0.0; }
   };
   /// The magnitude of the spatial velocity far from the black hole.
   struct FlowSpeed {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The magnitude of the asymptotic flow velocity."};
   };
   /// The strength of the magnetic field.
   struct MagFieldStrength {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The strength of the magnetic field."};
   };
   /// The polytropic constant of the fluid.
   struct PolytropicConstant {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The polytropic constant of the fluid."};
     static type lower_bound() noexcept { return 0.0; }
   };
   /// The polytropic exponent of the fluid.
   struct PolytropicExponent {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The polytropic exponent of the fluid."};
     static type lower_bound() noexcept { return 1.0; }
   };
@@ -130,7 +132,7 @@ class BondiHoyleAccretion : public MarkAsAnalyticData {
       tmpl::list<BhMass, BhDimlessSpin, RestMassDensity, FlowSpeed,
                  MagFieldStrength, PolytropicConstant, PolytropicExponent>;
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Axially symmetric accretion on to a Kerr black hole."};
 
   BondiHoyleAccretion() = default;

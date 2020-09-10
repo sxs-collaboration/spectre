@@ -93,13 +93,13 @@ class AlfvenWave : public MarkAsAnalyticSolution {
   /// The wave number of the profile.
   struct WaveNumber {
     using type = double;
-    static constexpr OptionString help = {"The wave number of the profile."};
+    static constexpr Options::String help = {"The wave number of the profile."};
   };
 
   /// The constant pressure throughout the fluid.
   struct Pressure {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The constant pressure throughout the fluid."};
     static type lower_bound() noexcept { return 0.0; }
   };
@@ -107,7 +107,7 @@ class AlfvenWave : public MarkAsAnalyticSolution {
   /// The constant rest mass density throughout the fluid.
   struct RestMassDensity {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The constant rest mass density throughout the fluid."};
     static type lower_bound() noexcept { return 0.0; }
   };
@@ -115,7 +115,7 @@ class AlfvenWave : public MarkAsAnalyticSolution {
   /// The adiabatic index for the ideal fluid.
   struct AdiabaticIndex {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The adiabatic index for the ideal fluid."};
     static type lower_bound() noexcept { return 1.0; }
   };
@@ -124,7 +124,7 @@ class AlfvenWave : public MarkAsAnalyticSolution {
   struct BackgroundMagneticField {
     using type = std::array<double, 3>;
     static std::string name() noexcept { return "BkgdMagneticField"; }
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The background magnetic field [B0^x, B0^y, B0^z]."};
   };
 
@@ -133,14 +133,14 @@ class AlfvenWave : public MarkAsAnalyticSolution {
   /// magnetic field vector.
   struct WaveMagneticField {
     using type = std::array<double, 3>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The wave magnetic field [B1^x, B1^y, B1^z]."};
   };
 
   using options =
       tmpl::list<WaveNumber, Pressure, RestMassDensity, AdiabaticIndex,
                  BackgroundMagneticField, WaveMagneticField>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Circularly polarized Alfven wave in Minkowski spacetime."};
 
   AlfvenWave() = default;

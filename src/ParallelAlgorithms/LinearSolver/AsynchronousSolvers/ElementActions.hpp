@@ -81,7 +81,7 @@ void contribute_to_residual_observation(
       observers::ArrayComponentId{
           std::add_pointer_t<ParallelComponent>{nullptr},
           Parallel::ArrayIndex<ArrayIndex>(array_index)},
-      std::string{"/" + option_name<OptionsGroup>() + "Residuals"},
+      std::string{"/" + Options::name<OptionsGroup>() + "Residuals"},
       std::vector<std::string>{"Iteration", "Residual"},
       reduction_data{iteration_id, residual_magnitude_square});
   if (UNLIKELY(static_cast<int>(
@@ -89,11 +89,12 @@ void contribute_to_residual_observation(
                static_cast<int>(::Verbosity::Verbose))) {
     if (iteration_id == 0) {
       Parallel::printf(
-          "Linear solver '" + option_name<OptionsGroup>() +
+          "Linear solver '" + Options::name<OptionsGroup>() +
               "' initialized on element %s. Remaining local residual: %e\n",
           get_output(array_index), sqrt(residual_magnitude_square));
     } else {
-      Parallel::printf("Linear solver '" + option_name<OptionsGroup>() +
+      Parallel::printf("Linear solver '" +
+                           Options::name<OptionsGroup>() +
                            "' iteration %zu done on element %s. Remaining "
                            "local residual: %e\n",
                        iteration_id, get_output(array_index),

@@ -158,39 +158,40 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution {
   /// The mass of the black hole, \f$M\f$.
   struct BhMass {
     using type = double;
-    static constexpr OptionString help = {"The mass of the black hole."};
+    static constexpr Options::String help = {"The mass of the black hole."};
     static type lower_bound() noexcept { return 0.0; }
   };
   /// The dimensionless black hole spin, \f$\chi = a/M\f$.
   struct BhDimlessSpin {
     using type = double;
-    static constexpr OptionString help = {"The dimensionless black hole spin."};
+    static constexpr Options::String help = {
+        "The dimensionless black hole spin."};
     static type lower_bound() { return 0.0; }
     static type upper_bound() { return 1.0; }
   };
   /// The radial coordinate of the inner edge of the disk, in units of \f$M\f$.
   struct InnerEdgeRadius {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The radial coordinate of the inner edge of the disk."};
   };
   /// The radial coordinate of the maximum pressure, in units of \f$M\f$.
   struct MaxPressureRadius {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The radial coordinate of the maximum pressure."};
   };
   /// The polytropic constant of the fluid.
   struct PolytropicConstant {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The polytropic constant of the fluid."};
     static type lower_bound() noexcept { return 0.; }
   };
   /// The polytropic exponent of the fluid.
   struct PolytropicExponent {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The polytropic exponent of the fluid."};
     static type lower_bound() noexcept { return 1.; }
   };
@@ -198,7 +199,7 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution {
   using options =
       tmpl::list<BhMass, BhDimlessSpin, InnerEdgeRadius, MaxPressureRadius,
                  PolytropicConstant, PolytropicExponent>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Fluid disk orbiting a Kerr black hole."};
 
   FishboneMoncriefDisk() = default;

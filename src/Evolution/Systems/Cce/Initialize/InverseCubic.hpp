@@ -39,7 +39,7 @@ namespace InitializeJ {
  */
 struct InverseCubic : InitializeJ {
   using options = tmpl::list<>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Initialization process where J is set to a simple Ansatz with a\n"
       " A/r + B/r^3 piece such that it is smooth with the Cauchy data at the \n"
       "worldtube"};

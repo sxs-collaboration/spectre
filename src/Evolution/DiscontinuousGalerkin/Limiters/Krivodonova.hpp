@@ -442,7 +442,7 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
   struct Alphas {
     using type = std::array<
         double, Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The alpha parameters of the Krivodonova limiter"};
     static type default_value() noexcept {
       return make_array<
@@ -459,11 +459,11 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
   struct DisableForDebugging {
     using type = bool;
     static type default_value() noexcept { return false; }
-    static constexpr OptionString help = {"Disable the limiter"};
+    static constexpr Options::String help = {"Disable the limiter"};
   };
 
   using options = tmpl::list<Alphas, DisableForDebugging>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "The hierarchical limiter of Krivodonova.\n\n"
       "This limiter works by limiting the highest modal "
       "coefficients/derivatives using an aggressive minmod approach, "
@@ -474,7 +474,7 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
       std::array<double,
                  Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>
           alphas,
-      bool disable_for_debugging = false, const OptionContext& context = {});
+      bool disable_for_debugging = false, const Options::Context& context = {});
 
   Krivodonova() = default;
   Krivodonova(const Krivodonova&) = delete;
@@ -566,7 +566,7 @@ Krivodonova<VolumeDim, tmpl::list<Tags...>>::Krivodonova(
     std::array<double,
                Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>
         alphas,
-    bool disable_for_debugging, const OptionContext& context)
+    bool disable_for_debugging, const Options::Context& context)
     : alphas_(alphas), disable_for_debugging_(disable_for_debugging) {
   // See the main documentation for an explanation of why these bounds are
   // different from those of Krivodonova 2007

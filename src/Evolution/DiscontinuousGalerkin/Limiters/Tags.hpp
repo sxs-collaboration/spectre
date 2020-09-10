@@ -15,7 +15,7 @@ namespace OptionTags {
  */
 struct LimiterGroup {
   static std::string name() noexcept { return "Limiter"; }
-  static constexpr OptionString help = "Options for limiting troubled cells";
+  static constexpr Options::String help = "Options for limiting troubled cells";
 };
 
 /*!
@@ -25,8 +25,10 @@ struct LimiterGroup {
  */
 template <typename LimiterType>
 struct Limiter {
-  static std::string name() noexcept { return option_name<LimiterType>(); }
-  static constexpr OptionString help = "Options for the limiter";
+  static std::string name() noexcept {
+    return Options::name<LimiterType>();
+  }
+  static constexpr Options::String help = "Options for the limiter";
   using type = LimiterType;
   using group = LimiterGroup;
 };

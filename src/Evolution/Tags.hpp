@@ -18,7 +18,7 @@ namespace OptionTags {
  */
 struct Group {
   static std::string name() noexcept { return "Evolution"; }
-  static constexpr OptionString help{"Options for the time evolution"};
+  static constexpr Options::String help{"Options for the time evolution"};
 };
 
 /*!
@@ -30,7 +30,7 @@ struct Group {
  */
 struct SystemGroup {
   static std::string name() noexcept { return "EvolutionSystem"; }
-  static constexpr OptionString help{"The system of hyperbolic PDEs"};
+  static constexpr Options::String help{"The system of hyperbolic PDEs"};
 };
 
 /*!
@@ -39,7 +39,7 @@ struct SystemGroup {
  */
 struct NumericInitialData {
   using group = importers::OptionTags::Group;
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "Numeric initial data for all system variables";
 };
 

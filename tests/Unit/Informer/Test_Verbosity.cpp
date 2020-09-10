@@ -15,13 +15,13 @@
 namespace {
 
 void test_construct_from_options() noexcept {
-  Options<tmpl::list<OptionTags::Verbosity>> opts("");
+  Options::Parser<tmpl::list<OptionTags::Verbosity>> opts("");
   opts.parse("Verbosity: Verbose\n");
   CHECK(opts.get<OptionTags::Verbosity>() == Verbosity::Verbose);
 }
 
 void test_construct_from_options_fail() noexcept {
-  Options<tmpl::list<OptionTags::Verbosity>> opts("");
+  Options::Parser<tmpl::list<OptionTags::Verbosity>> opts("");
   opts.parse("Verbosity: Braggadocious\n");  // Meant to fail.
   opts.get<OptionTags::Verbosity>();
 }

@@ -53,7 +53,7 @@ namespace DistributedLinearSolverAlgorithmTestHelpers {
 
 namespace OptionTags {
 struct NumberOfElements {
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "The number of elements to distribute work on.";
   using type = size_t;
 };
@@ -82,17 +82,17 @@ namespace OptionTags {
 // split over all elements. In a context where the linear operator represents a
 // DG discretization, M is the number of collocation points per element.
 struct LinearOperator {
-  static constexpr OptionString help = "The linear operator A to invert.";
+  static constexpr Options::String help = "The linear operator A to invert.";
   using type = std::vector<DenseMatrix<double, blaze::columnMajor>>;
 };
 // Both of the following options expect a list of N vectors that have a size of
 // M each, so that they constitute a vector of total size N*M (see above).
 struct Source {
-  static constexpr OptionString help = "The source b in the equation Ax=b.";
+  static constexpr Options::String help = "The source b in the equation Ax=b.";
   using type = std::vector<DenseVector<double>>;
 };
 struct ExpectedResult {
-  static constexpr OptionString help = "The solution x in the equation Ax=b";
+  static constexpr Options::String help = "The solution x in the equation Ax=b";
   using type = std::vector<DenseVector<double>>;
 };
 }  // namespace OptionTags

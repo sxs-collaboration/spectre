@@ -41,7 +41,7 @@ namespace gr {
 namespace Solutions {
 template <size_t Dim>
 GaugeWave<Dim>::GaugeWave(const double amplitude, const double wavelength,
-                          const OptionContext& context)
+                          const Options::Context& context)
     : amplitude_(amplitude), wavelength_(wavelength) {
   if (abs(amplitude) >= 1.0) {
     PARSE_ERROR(context,

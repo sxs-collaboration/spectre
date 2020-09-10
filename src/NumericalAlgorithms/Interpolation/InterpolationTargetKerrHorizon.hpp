@@ -53,37 +53,38 @@ namespace OptionHolders {
 struct KerrHorizon {
   struct Lmax {
     using type = size_t;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "KerrHorizon is expanded in Ylms up to l=Lmax"};
   };
   struct Center {
     using type = std::array<double, 3>;
-    static constexpr OptionString help = {"Center of black hole"};
+    static constexpr Options::String help = {"Center of black hole"};
   };
   struct Mass {
     using type = double;
-    static constexpr OptionString help = {"Mass of black hole"};
+    static constexpr Options::String help = {"Mass of black hole"};
   };
   struct DimensionlessSpin {
     using type = std::array<double, 3>;
-    static constexpr OptionString help = {"Dimensionless spin of black hole"};
+    static constexpr Options::String help = {
+        "Dimensionless spin of black hole"};
   };
   struct ThetaVariesFastest {
     using type = bool;
     static type default_value() noexcept { return true; }
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Chooses theta,phi ordering in 2d array"};
   };
   using options =
       tmpl::list<Lmax, Center, Mass, DimensionlessSpin, ThetaVariesFastest>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "A Strahlkorper conforming to the horizon (in Kerr-Schild coordinates)"
       " of a Kerr black hole with a specified center, mass, and spin."};
 
   KerrHorizon(size_t l_max_in, std::array<double, 3> center_in, double mass_in,
               std::array<double, 3> dimensionless_spin_in,
               bool theta_varies_fastest_in = true,
-              const OptionContext& context = {});
+              const Options::Context& context = {});
 
   KerrHorizon() = default;
   KerrHorizon(const KerrHorizon& /*rhs*/) = default;
@@ -111,10 +112,10 @@ namespace OptionTags {
 template <typename InterpolationTargetTag>
 struct KerrHorizon {
   using type = OptionHolders::KerrHorizon;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Options for interpolation onto Kerr horizon."};
   static std::string name() noexcept {
-    return option_name<InterpolationTargetTag>();
+    return Options::name<InterpolationTargetTag>();
   }
   using group = InterpolationTargets;
 };

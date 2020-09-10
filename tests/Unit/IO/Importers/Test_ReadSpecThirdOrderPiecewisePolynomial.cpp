@@ -68,7 +68,7 @@ void test_options() noexcept {
       "  FunctionOfTimeNameMap: {Set1: Name1, Set2: Name2}"};
   using option_tags = tmpl::list<importers::OptionTags::FunctionOfTimeFile,
                                  importers::OptionTags::FunctionOfTimeNameMap>;
-  Options<option_tags> options{""};
+  Options::Parser<option_tags> options{""};
   options.parse(option_string);
   CHECK(options.get<importers::OptionTags::FunctionOfTimeFile>() ==
         "TestFile.h5");

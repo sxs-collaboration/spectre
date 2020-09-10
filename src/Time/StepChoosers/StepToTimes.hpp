@@ -59,10 +59,10 @@ class StepToTimes : public StepChooser<StepChooserRegistrars> {
 
   struct Times {
     using type = std::vector<double>;
-    static constexpr OptionString help{"Times to force steps at"};
+    static constexpr Options::String help{"Times to force steps at"};
   };
 
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "Suggests step sizes to place steps at specific times.\n"
       "\n"
       "The suggestion provided depends on the current time, so it should\n"

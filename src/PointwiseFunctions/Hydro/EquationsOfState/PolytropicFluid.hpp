@@ -43,17 +43,17 @@ class PolytropicFluid : public EquationOfState<IsRelativistic, 1> {
 
   struct PolytropicConstant {
     using type = double;
-    static constexpr OptionString help = {"Polytropic constant K"};
+    static constexpr Options::String help = {"Polytropic constant K"};
     static double lower_bound() noexcept { return 0.0; }
   };
 
   struct PolytropicExponent {
     using type = double;
-    static constexpr OptionString help = {"Polytropic exponent Gamma"};
+    static constexpr Options::String help = {"Polytropic exponent Gamma"};
     static double lower_bound() noexcept { return 1.0; }
   };
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "A polytropic fluid equation of state.\n"
       "The pressure is related to the rest mass density by p = K rho ^ Gamma, "
       "where p is the pressure, rho is the rest mass density, K is the "

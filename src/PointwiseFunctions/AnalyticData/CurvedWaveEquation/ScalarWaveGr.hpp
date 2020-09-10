@@ -59,15 +59,15 @@ class ScalarWaveGr : public MarkAsAnalyticData {
 
   struct ScalarField {
     using type = ScalarFieldData;
-    static constexpr OptionString help = {"Flat space scalar field."};
+    static constexpr Options::String help = {"Flat space scalar field."};
   };
   struct Background {
     using type = BackgroundGrData;
-    static constexpr OptionString help = {"Background spacetime."};
+    static constexpr Options::String help = {"Background spacetime."};
   };
 
   using options = tmpl::list<Background, ScalarField>;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "A scalar field in curved background spacetime\n\n"};
   static std::string name() noexcept { return "ScalarWaveGr"; };
 

@@ -24,7 +24,7 @@
 namespace OptionTags {
 struct Name {
   using type = std::string;
-  static constexpr OptionString help{"A name"};
+  static constexpr Options::String help{"A name"};
 };
 }  // namespace OptionTags
 
@@ -87,7 +87,7 @@ void HelloWorld<Metavariables>::execute_next_phase(
 struct Metavars {
   using component_list = tmpl::list<HelloWorld<Metavars>>;
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Say hello from a singleton parallel component."};
 
   enum class Phase { Initialization, Execute, Exit };

@@ -25,7 +25,7 @@ namespace gr::Solutions {
 KerrSchild::KerrSchild(const double mass,
                        KerrSchild::Spin::type dimensionless_spin,
                        KerrSchild::Center::type center,
-                       const OptionContext& context)
+                       const Options::Context& context)
     : mass_(mass),
       // clang-tidy: do not std::move trivial types.
       dimensionless_spin_(std::move(dimensionless_spin)),  // NOLINT

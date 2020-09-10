@@ -203,7 +203,7 @@ struct Hll : tt::ConformsTo<dg::protocols::NumericalFlux> {
 
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString help = {"Computes the HLL numerical flux."};
+  static constexpr Options::String help = {"Computes the HLL numerical flux."};
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT

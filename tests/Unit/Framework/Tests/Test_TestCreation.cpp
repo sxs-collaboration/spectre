@@ -20,15 +20,16 @@ enum class Color { Red, Green, Purple };
 }  // namespace
 
 template <>
-struct create_from_yaml<Color> {
+struct Options::create_from_yaml<Color> {
   template <typename Metavariables>
-  static Color create(const Option& options) {
+  static Color create(const Options::Option& options) {
     return create<void>(options);
   }
 };
 template <>
-Color create_from_yaml<Color>::create<void>(const Option& options) {
-  const std::string color_read = options.parse_as<std::string>();
+Color Options::create_from_yaml<Color>::create<void>(
+    const Options::Option& options) {
+  const auto color_read = options.parse_as<std::string>();
   if (color_read == "Red") {
     return Color::Red;
   } else if (color_read == "Green") {
@@ -46,11 +47,11 @@ namespace {
 struct ClassWithoutMetavariables {
   struct SizeT {
     using type = size_t;
-    static constexpr OptionString help = {"SizeT help"};
+    static constexpr Options::String help = {"SizeT help"};
   };
 
   using options = tmpl::list<SizeT>;
-  static constexpr OptionString help = {"Help"};
+  static constexpr Options::String help = {"Help"};
 
   explicit ClassWithoutMetavariables(const size_t in_value) : value(in_value) {}
 
@@ -62,22 +63,23 @@ struct ClassWithoutMetavariables {
 struct ClassWithMetavariables {
   struct SizeT {
     using type = size_t;
-    static constexpr OptionString help = {"SizeT help"};
+    static constexpr Options::String help = {"SizeT help"};
   };
 
   using options = tmpl::list<SizeT>;
-  static constexpr OptionString help = {"Help"};
+  static constexpr Options::String help = {"Help"};
 
   template <typename Metavariables>
   // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
   ClassWithMetavariables(const size_t in_value,
-                         const OptionContext& /*context*/,
+                         const Options::Context& /*context*/,
                          Metavariables /*meta*/) {
     value = in_value * Metavariables::value_multiplier;
   }
 
   ClassWithMetavariables(const size_t /*in_value*/,
-                         const OptionContext& /*context*/, NoSuchType /*meta*/)
+                         const Options::Context& /*context*/,
+                         NoSuchType /*meta*/)
       : value{std::numeric_limits<size_t>::max()} {}
 
   ClassWithMetavariables() = default;
@@ -86,31 +88,31 @@ struct ClassWithMetavariables {
 };
 
 struct OptionGroup1 {
-  static constexpr OptionString help = {"OptionGroup1 help"};
+  static constexpr Options::String help = {"OptionGroup1 help"};
 };
 
 struct OptionGroup2 {
-  static constexpr OptionString help = {"OptionGroup2 help"};
+  static constexpr Options::String help = {"OptionGroup2 help"};
   using group = OptionGroup1;
 };
 
 template <typename T>
 struct NoGroup {
   using type = T;
-  static constexpr OptionString help = {"halp"};
+  static constexpr Options::String help = {"halp"};
 };
 
 template <typename T>
 struct OneGroup {
   using type = T;
-  static constexpr OptionString help = {"halp"};
+  static constexpr Options::String help = {"halp"};
   using group = OptionGroup1;
 };
 
 template <typename T>
 struct TwoGroup {
   using type = T;
-  static constexpr OptionString help = {"halp"};
+  static constexpr Options::String help = {"halp"};
   using group = OptionGroup2;
 };
 
@@ -138,11 +140,11 @@ struct BaseClass {
 struct DerivedClassWithoutMetavariables : BaseClass {
   struct SizeT {
     using type = size_t;
-    static constexpr OptionString help = {"SizeT help"};
+    static constexpr Options::String help = {"SizeT help"};
   };
 
   using options = tmpl::list<SizeT>;
-  static constexpr OptionString help = {"Help"};
+  static constexpr Options::String help = {"Help"};
 
   explicit DerivedClassWithoutMetavariables(const size_t in_value)
       : value(in_value) {}
@@ -166,22 +168,22 @@ struct DerivedClassWithoutMetavariables : BaseClass {
 struct DerivedClassWithMetavariables : BaseClass {
   struct SizeT {
     using type = size_t;
-    static constexpr OptionString help = {"SizeT help"};
+    static constexpr Options::String help = {"SizeT help"};
   };
 
   using options = tmpl::list<SizeT>;
-  static constexpr OptionString help = {"Help"};
+  static constexpr Options::String help = {"Help"};
 
   template <typename Metavariables>
   // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
   DerivedClassWithMetavariables(const size_t in_value,
-                                const OptionContext& /*context*/,
+                                const Options::Context& /*context*/,
                                 Metavariables /*meta*/) {
     value = in_value * Metavariables::value_multiplier;
   }
 
   DerivedClassWithMetavariables(const size_t /*in_value*/,
-                                const OptionContext& /*context*/,
+                                const Options::Context& /*context*/,
                                 NoSuchType /*meta*/)
       : value{std::numeric_limits<size_t>::max()} {}
 

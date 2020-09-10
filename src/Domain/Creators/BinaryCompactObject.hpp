@@ -139,92 +139,92 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   struct InnerRadiusObjectA {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Inner coordinate radius of Layer 1 for Object A."};
   };
 
   struct OuterRadiusObjectA {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Outer coordinate radius of Layer 1 for Object A."};
   };
 
   struct XCoordObjectA {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "x-coordinate of center for Object A."};
   };
 
   struct ExciseInteriorA {
     using type = bool;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Exclude Layer 0 for ObjectA. Set to `true` for a BH."};
   };
 
   struct InnerRadiusObjectB {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Inner coordinate radius of Layer 1 for Object B."};
   };
 
   struct OuterRadiusObjectB {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Outer coordinate radius of Layer 1 for Object B."};
   };
 
   struct XCoordObjectB {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "x-coordinate of the center for Object B."};
   };
 
   struct ExciseInteriorB {
     using type = bool;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Exclude Layer 0 for ObjectB. Set to `true` for a BH."};
   };
 
   struct RadiusOuterCube {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Radius of Layer 3 which circumscribes the Frustums."};
   };
 
   struct RadiusOuterSphere {
     using type = double;
-    static constexpr OptionString help = {"Radius of the entire domain."};
+    static constexpr Options::String help = {"Radius of the entire domain."};
   };
 
   struct InitialRefinement {
     using type = size_t;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Initial refinement level. Applied to each dimension."};
   };
 
   struct InitialGridPoints {
     using type = size_t;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Initial number of grid points in each dim per element."};
   };
 
   struct UseEquiangularMap {
     using type = bool;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Use equiangular instead of equidistant coordinates."};
     static type default_value() { return false; }
   };
 
   struct UseProjectiveMap {
     using type = bool;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Use projective scaling on the frustal cloak."};
     static type default_value() { return true; }
   };
 
   struct UseLogarithmicMapOuterSphericalShell {
     using type = bool;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Use a logarithmically spaced radial grid in Layer 5, the outer "
         "spherical shell that covers the wave zone."};
     static type default_value() noexcept { return false; }
@@ -232,7 +232,7 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   struct AdditionToOuterLayerRadialRefinementLevel {
     using type = size_t;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Addition to radial refinement level in Layer 5 (the outer spherical "
         "shell that covers that wave zone), beyond the refinement "
         "level set by InitialRefinement."};
@@ -242,7 +242,7 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   struct UseLogarithmicMapObjectA {
     using type = bool;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Use a logarithmically spaced radial grid in the part of Layer 1 "
         "enveloping Object A (requires ExciseInteriorA == true)"};
     static type default_value() noexcept { return false; }
@@ -250,7 +250,7 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   struct AdditionToObjectARadialRefinementLevel {
     using type = size_t;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Addition to radial refinement level in the part of Layer 1 enveloping "
         "Object A, beyond the refinement level set by InitialRefinement."};
     static constexpr type default_value() noexcept { return 0; }
@@ -259,7 +259,7 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   struct UseLogarithmicMapObjectB {
     using type = bool;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Use a logarithmically spaced radial grid in the part of Layer 1 "
         "enveloping Object B (requires ExciseInteriorB == true)"};
     static type default_value() noexcept { return false; }
@@ -267,7 +267,7 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   struct AdditionToObjectBRadialRefinementLevel {
     using type = size_t;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Addition to radial refinement level in the part of Layer 1 enveloping "
         "Object B, beyond the refinement level set by InitialRefinement."};
     static constexpr type default_value() noexcept { return 0; }
@@ -277,7 +277,7 @@ class BinaryCompactObject : public DomainCreator<3> {
   struct TimeDependence {
     using type =
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The time dependence of the moving mesh domain."};
     static type default_value() noexcept;
   };
@@ -291,7 +291,7 @@ class BinaryCompactObject : public DomainCreator<3> {
       AdditionToObjectARadialRefinementLevel, UseLogarithmicMapObjectB,
       AdditionToObjectBRadialRefinementLevel, TimeDependence>;
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "The BinaryCompactObject domain is a general domain for two compact "
       "objects. The user must provide the inner and outer radii of the "
       "spherical shells surrounding each of the two compact objects A and "
@@ -347,7 +347,7 @@ class BinaryCompactObject : public DomainCreator<3> {
           addition_to_object_B_radial_refinement_level = 0,
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
           time_dependence = nullptr,
-      const OptionContext& context = {});
+      const Options::Context& context = {});
 
   BinaryCompactObject() = default;
   BinaryCompactObject(const BinaryCompactObject&) = delete;

@@ -87,7 +87,7 @@ class Main : public CBase_Main<Metavariables> {
       Metavariables::Phase::Initialization};
 
   CProxy_GlobalCache<Metavariables> global_cache_proxy_;
-  Options<option_list> options_;
+  Options::Parser<option_list> options_;
 };
 
 // ================================================================

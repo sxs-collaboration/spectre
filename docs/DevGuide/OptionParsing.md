@@ -42,7 +42,7 @@ Example:
 
 ## Constructible classes
 
-A class that defines `static constexpr OptionString help` and a
+A class that defines `static constexpr Options::String help` and a
 typelist of option structs `options` can be created by the option
 parser.  When the class is requested, the option parser will parse
 each of the options in the `options` list, and then supply them to the
@@ -56,14 +56,14 @@ described in their individual help strings.
 
 Creatable classes must be default constructible and move assignable.
 
-The `OptionContext` is an optional argument to the constructor that should be
+The `Options::Context` is an optional argument to the constructor that should be
 used when the constructor checks for validity of the input. If the input is
 invalid, `PARSE_ERROR` is used to propagate the error message back through the
 options ensuring that the error message will have a full backtrace so it is easy
-for the user to diagnose. Finally, after the `OptionContext` the constructor may
-optionally take the Metavariables struct, which is effectively the compile time
-input file, and the constructor can use the Metavariables for whatever it wants,
-including additional option parsing.
+for the user to diagnose. Finally, after the `Options::Context` the constructor
+may optionally take the Metavariables struct, which is effectively the compile
+time input file, and the constructor can use the Metavariables for whatever it
+wants, including additional option parsing.
 
 Example:
 \snippet Test_CustomTypeConstruction.cpp class_creation_example
@@ -88,9 +88,9 @@ algorithm can be overridden by providing a specialization of the
 struct
 \code{cpp}
 template <typename T>
-struct create_from_yaml {
+struct Options::create_from_yaml {
   template <typename Metavariables>
-  static T create(const Option& options);
+  static T create(const Options::Option& options);
 };
 \endcode
 The create function can perform any operations required to construct

@@ -17,7 +17,7 @@ namespace OptionTags {
 /// \ingroup LoggingGroup
 struct Verbosity {
   using type = ::Verbosity;
-  static constexpr OptionString help{"Verbosity"};
+  static constexpr Options::String help{"Verbosity"};
 };
 }  // namespace OptionTags
 

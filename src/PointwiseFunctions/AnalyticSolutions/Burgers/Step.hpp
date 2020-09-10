@@ -42,24 +42,24 @@ class Step : public MarkAsAnalyticSolution {
     using type = double;
     static type lower_bound() noexcept { return 0.0; }
     static type default_value() noexcept { return 2.0; }
-    static constexpr OptionString help{"The value of U, left of the shock"};
+    static constexpr Options::String help{"The value of U, left of the shock"};
   };
   struct RightValue {
     using type = double;
     static type lower_bound() noexcept { return 0.0; }
     static type default_value() noexcept { return 1.0; }
-    static constexpr OptionString help{"The value of U, right of the shock"};
+    static constexpr Options::String help{"The value of U, right of the shock"};
   };
   struct InitialPosition {
     using type = double;
-    static constexpr OptionString help{"The shock's position at t==0"};
+    static constexpr Options::String help{"The shock's position at t==0"};
   };
 
   using options = tmpl::list<LeftValue, RightValue, InitialPosition>;
-  static constexpr OptionString help{"A propagating shock solution"};
+  static constexpr Options::String help{"A propagating shock solution"};
 
   Step(double left_value, double right_value, double initial_shock_position,
-       const OptionContext& context = {});
+       const Options::Context& context = {});
 
   Step() = default;
   Step(const Step&) noexcept = default;

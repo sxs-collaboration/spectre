@@ -307,12 +307,13 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
 }
 
 void test_options() noexcept {
-  Options<tmpl::list<GeneralizedHarmonic::gauges::Actions::OptionTags::
-                         DampedHarmonicRollOnStart,
-                     GeneralizedHarmonic::gauges::Actions::OptionTags::
-                         DampedHarmonicRollOnWindow,
-                     GeneralizedHarmonic::gauges::Actions::OptionTags::
-                         DampedHarmonicSpatialDecayWidth<Frame::Inertial>>>
+  Options::Parser<
+      tmpl::list<GeneralizedHarmonic::gauges::Actions::OptionTags::
+                     DampedHarmonicRollOnStart,
+                 GeneralizedHarmonic::gauges::Actions::OptionTags::
+                     DampedHarmonicRollOnWindow,
+                 GeneralizedHarmonic::gauges::Actions::OptionTags::
+                     DampedHarmonicSpatialDecayWidth<Frame::Inertial>>>
       opts("");
   opts.parse(
       "EvolutionSystem:\n"

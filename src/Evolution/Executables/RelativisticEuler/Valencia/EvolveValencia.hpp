@@ -298,7 +298,7 @@ struct EvolutionMetavars {
       tmpl::list<initial_data_tag, normal_dot_numerical_flux, time_stepper_tag,
                  Tags::EventsAndTriggers<events, triggers>>;
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Evolve the Valencia formulation of RelativisticEuler system.\n\n"};
 
   static Phase determine_next_phase(

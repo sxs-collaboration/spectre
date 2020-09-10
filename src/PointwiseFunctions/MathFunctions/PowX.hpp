@@ -30,12 +30,12 @@ class PowX<1, Fr> : public MathFunction<1, Fr> {
  public:
   struct Power {
     using type = int;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The power that the double is raised to."};
   };
   using options = tmpl::list<Power>;
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Raises the input value to a given power"};
 
   PowX() = default;

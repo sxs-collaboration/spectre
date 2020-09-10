@@ -48,56 +48,57 @@ class Shell : public DomainCreator<3> {
 
   struct InnerRadius {
     using type = double;
-    static constexpr OptionString help = {"Inner radius of the Shell."};
+    static constexpr Options::String help = {"Inner radius of the Shell."};
   };
 
   struct OuterRadius {
     using type = double;
-    static constexpr OptionString help = {"Outer radius of the Shell."};
+    static constexpr Options::String help = {"Outer radius of the Shell."};
   };
 
   struct InitialRefinement {
     using type = size_t;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Initial refinement level in each dimension."};
   };
 
   struct InitialGridPoints {
     using type = std::array<size_t, 2>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Initial number of grid points in [r,angular]."};
   };
 
   struct UseEquiangularMap {
     using type = bool;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Use equiangular instead of equidistant coordinates."};
     static constexpr type default_value() noexcept { return true; }
   };
 
   struct AspectRatio {
     using type = double;
-    static constexpr OptionString help = {"The equatorial compression factor."};
+    static constexpr Options::String help = {
+        "The equatorial compression factor."};
     static constexpr type default_value() noexcept { return 1.0; }
   };
 
   struct UseLogarithmicMap {
     using type = bool;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Use a logarithmically spaced radial grid."};
     static constexpr type default_value() noexcept { return false; }
   };
 
   struct WhichWedges {
     using type = ShellWedges;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Which wedges to include in the shell."};
     static constexpr type default_value() noexcept { return ShellWedges::All; }
   };
 
   struct RadialBlockLayers {
     using type = size_t;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The number of concentric layers of Blocks to have."};
     static constexpr type default_value() noexcept { return 1; }
     static type lower_bound() { return 1; }
@@ -107,7 +108,7 @@ class Shell : public DomainCreator<3> {
                              InitialGridPoints, UseEquiangularMap, AspectRatio,
                              UseLogarithmicMap, WhichWedges, RadialBlockLayers>;
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Creates a 3D spherical shell with 6 Blocks. `UseEquiangularMap` has\n"
       "a default value of `true` because there is no central Block in this\n"
       "domain. Equidistant coordinates are best suited to Blocks with\n"

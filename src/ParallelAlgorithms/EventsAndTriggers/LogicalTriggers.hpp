@@ -23,7 +23,7 @@ class Always : public Trigger<TriggerRegistrars> {
   /// \endcond
 
   using options = tmpl::list<>;
-  static constexpr OptionString help = {"Always trigger."};
+  static constexpr Options::String help = {"Always trigger."};
 
   Always() = default;
 
@@ -44,7 +44,7 @@ class Not : public Trigger<TriggerRegistrars> {
   WRAPPED_PUPable_decl_template(Not);  // NOLINT
   /// \endcond
 
-  static constexpr OptionString help = {"Negates another trigger."};
+  static constexpr Options::String help = {"Negates another trigger."};
 
   explicit Not(
       std::unique_ptr<Trigger<TriggerRegistrars>> negated_trigger) noexcept
@@ -79,7 +79,7 @@ class And : public Trigger<TriggerRegistrars> {
   WRAPPED_PUPable_decl_template(And);  // NOLINT
   /// \endcond
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Short-circuiting logical AND of other triggers."};
 
   explicit And(std::vector<std::unique_ptr<Trigger<TriggerRegistrars>>>
@@ -120,7 +120,7 @@ class Or : public Trigger<TriggerRegistrars> {
   WRAPPED_PUPable_decl_template(Or);  // NOLINT
   /// \endcond
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Short-circuiting logical OR of other triggers."};
 
   explicit Or(std::vector<std::unique_ptr<Trigger<TriggerRegistrars>>>
@@ -161,18 +161,20 @@ PUP::able::PUP_ID Or<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
 }  // namespace Triggers
 
 template <typename TriggerRegistrars>
-struct create_from_yaml<Triggers::Not<TriggerRegistrars>> {
+struct Options::create_from_yaml<Triggers::Not<TriggerRegistrars>> {
   template <typename Metavariables>
-  static Triggers::Not<TriggerRegistrars> create(const Option& options) {
+  static Triggers::Not<TriggerRegistrars> create(
+      const Options::Option& options) {
     return Triggers::Not<TriggerRegistrars>(
         options.parse_as<std::unique_ptr<Trigger<TriggerRegistrars>>>());
   }
 };
 
 template <typename TriggerRegistrars>
-struct create_from_yaml<Triggers::And<TriggerRegistrars>> {
+struct Options::create_from_yaml<Triggers::And<TriggerRegistrars>> {
   template <typename Metavariables>
-  static Triggers::And<TriggerRegistrars> create(const Option& options) {
+  static Triggers::And<TriggerRegistrars> create(
+      const Options::Option& options) {
     return Triggers::And<TriggerRegistrars>(
         options.parse_as<
             std::vector<std::unique_ptr<Trigger<TriggerRegistrars>>>>());
@@ -180,9 +182,10 @@ struct create_from_yaml<Triggers::And<TriggerRegistrars>> {
 };
 
 template <typename TriggerRegistrars>
-struct create_from_yaml<Triggers::Or<TriggerRegistrars>> {
+struct Options::create_from_yaml<Triggers::Or<TriggerRegistrars>> {
   template <typename Metavariables>
-  static Triggers::Or<TriggerRegistrars> create(const Option& options) {
+  static Triggers::Or<TriggerRegistrars> create(
+      const Options::Option& options) {
     return Triggers::Or<TriggerRegistrars>(
         options.parse_as<
             std::vector<std::unique_ptr<Trigger<TriggerRegistrars>>>>());

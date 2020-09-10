@@ -21,7 +21,7 @@ template <typename>
 class CreateFromOptions;
 struct CFO {
   using type = CreateFromOptions<int>;
-  static constexpr OptionString help = {"help"};
+  static constexpr Options::String help = {"help"};
 };
 
 // In order to avoid duplicating too much code we use inheritance to get the
@@ -30,14 +30,14 @@ template <typename>
 struct CfoOption {
   static std::string name() noexcept { return "Option"; }
   using type = std::string;
-  static constexpr OptionString help = {"Option help text"};
+  static constexpr Options::String help = {"Option help text"};
 };
 
 template <>
 struct CfoOption<Metavariables<true>> {
   static std::string name() noexcept { return "Option"; }
   using type = std::string;
-  static constexpr OptionString help = {"Option help text"};
+  static constexpr Options::String help = {"Option help text"};
   static type default_value() noexcept { return "fHi"; }
 };
 
@@ -45,7 +45,7 @@ template <>
 struct CfoOption<Metavariables<false>> {
   static std::string name() noexcept { return "Option"; }
   using type = std::string;
-  static constexpr OptionString help = {"Option help text"};
+  static constexpr Options::String help = {"Option help text"};
   static type default_value() noexcept { return "fHello"; }
 };
 
@@ -63,13 +63,13 @@ struct Selector<int> {
 template <typename T>
 class CreateFromOptions : public Selector<T> {
  public:
-  static constexpr OptionString help = {"Class help text"};
+  static constexpr Options::String help = {"Class help text"};
 
   CreateFromOptions() = default;
   // The Metavariables arguments can be left off if unneeded, and the
-  // OptionContext as well.
+  // Options::Context as well.
   template <typename Metavariables>
-  CreateFromOptions(std::string str, const OptionContext& context,
+  CreateFromOptions(std::string str, const Options::Context& context,
                     Metavariables /*meta*/)
       : str_(std::move(str)), valid_(Metavariables::valid) {
     if (str_[0] != 'f') {
@@ -90,14 +90,14 @@ CFO:
 
 struct CfoVoid {
   using type = CreateFromOptions<void>;
-  static constexpr OptionString help = {"help"};
+  static constexpr Options::String help = {"help"};
 };
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options.CustomType", "[Unit][Options]") {
   {
     INFO("Type alias options is not a template");
-    Options<tmpl::list<CFO>> opts("");
+    Options::Parser<tmpl::list<CFO>> opts("");
     opts.parse(input_file_text);
     CHECK(opts.get<CFO, Metavariables<true>>().str_ == "foo");
     CHECK(opts.get<CFO, Metavariables<true>>().valid_);
@@ -105,7 +105,7 @@ SPECTRE_TEST_CASE("Unit.Options.CustomType", "[Unit][Options]") {
   }
   {
     INFO("Type alias options is a template");
-    Options<tmpl::list<CfoVoid>> opts("");
+    Options::Parser<tmpl::list<CfoVoid>> opts("");
     opts.parse("CfoVoid:");
     CHECK(opts.get<CfoVoid, Metavariables<true>>().str_ == "fHi");
     CHECK(opts.get<CfoVoid, Metavariables<true>>().valid_);
@@ -118,7 +118,7 @@ SPECTRE_TEST_CASE("Unit.Options.CustomType", "[Unit][Options]") {
 // valid option.]]
 SPECTRE_TEST_CASE("Unit.Options.CustomType.error", "[Unit][Options]") {
   ERROR_TEST();
-  Options<tmpl::list<CFO>> opts("");
+  Options::Parser<tmpl::list<CFO>> opts("");
   opts.parse("CFO:\n"
              "  NotOption: foo");
   opts.get<CFO, Metavariables<true>>();
@@ -128,7 +128,7 @@ SPECTRE_TEST_CASE("Unit.Options.CustomType.error", "[Unit][Options]") {
 // but is]]
 SPECTRE_TEST_CASE("Unit.Options.CustomType.custom_error", "[Unit][Options]") {
   ERROR_TEST();
-  Options<tmpl::list<CFO>> opts("");
+  Options::Parser<tmpl::list<CFO>> opts("");
   opts.parse("CFO:\n"
              "  Option: zoo");
   opts.get<CFO, Metavariables<true>>();
@@ -140,14 +140,14 @@ enum class CreateFromOptionsAnimal { Cat, Dog };
 
 struct CFOAnimal {
   using type = CreateFromOptionsAnimal;
-  static constexpr OptionString help = {"Option help text"};
+  static constexpr Options::String help = {"Option help text"};
 };
 }  // namespace
 
 template <>
-struct create_from_yaml<CreateFromOptionsAnimal> {
+struct Options::create_from_yaml<CreateFromOptionsAnimal> {
   template <typename Metavariables>
-  static CreateFromOptionsAnimal create(const Option& options) {
+  static CreateFromOptionsAnimal create(const Options::Option& options) {
     const auto animal = options.parse_as<std::string>();
     if (animal == "Cat") {
       return CreateFromOptionsAnimal::Cat;
@@ -162,7 +162,7 @@ struct create_from_yaml<CreateFromOptionsAnimal> {
 /// [enum_creation_example]
 
 SPECTRE_TEST_CASE("Unit.Options.CustomType.specialized", "[Unit][Options]") {
-  Options<tmpl::list<CFOAnimal>> opts("");
+  Options::Parser<tmpl::list<CFOAnimal>> opts("");
   opts.parse("CFOAnimal: Cat");
   CHECK(opts.get<CFOAnimal>() == CreateFromOptionsAnimal::Cat);
 }
@@ -173,28 +173,28 @@ enum class CreateFromOptionsExoticAnimal { MexicanWalkingFish, Platypus };
 
 struct CFOExoticAnimal {
   using type = CreateFromOptionsExoticAnimal;
-  static constexpr OptionString help = {"Option help text"};
+  static constexpr Options::String help = {"Option help text"};
 };
 }  // namespace
 
 template <>
-struct create_from_yaml<CreateFromOptionsExoticAnimal> {
+struct Options::create_from_yaml<CreateFromOptionsExoticAnimal> {
   template <typename Metavariables>
-  static CreateFromOptionsExoticAnimal create(const Option& options) {
+  static CreateFromOptionsExoticAnimal create(const Options::Option& options) {
     return create<void>(options);
   }
 };
 template <>
 CreateFromOptionsExoticAnimal
-create_from_yaml<CreateFromOptionsExoticAnimal>::create<void>(
-    const Option& options);
+Options::create_from_yaml<CreateFromOptionsExoticAnimal>::create<void>(
+    const Options::Option& options);
 /// [enum_void_creation_header_example]
 
 /// [enum_void_creation_cpp_example]
 template <>
 CreateFromOptionsExoticAnimal
-create_from_yaml<CreateFromOptionsExoticAnimal>::create<void>(
-    const Option& options) {
+Options::create_from_yaml<CreateFromOptionsExoticAnimal>::create<void>(
+    const Options::Option& options) {
   const auto animal = options.parse_as<std::string>();
   if (animal == "MexicanWalkingFish") {
     return CreateFromOptionsExoticAnimal::MexicanWalkingFish;
@@ -212,7 +212,7 @@ SPECTRE_TEST_CASE("Unit.Options.CustomType.specialized_void",
                   "[Unit][Options]") {
   const auto helper = [](const std::string& name,
                          const CreateFromOptionsExoticAnimal expected) {
-    Options<tmpl::list<CFOExoticAnimal>> opts("");
+    Options::Parser<tmpl::list<CFOExoticAnimal>> opts("");
     opts.parse("CFOExoticAnimal: " + name);
     CHECK(opts.get<CFOExoticAnimal>() == expected);
   };
@@ -226,7 +226,7 @@ SPECTRE_TEST_CASE("Unit.Options.CustomType.specialized_void",
 SPECTRE_TEST_CASE("Unit.Options.CustomType.specialized.error",
                   "[Unit][Options]") {
   ERROR_TEST();
-  Options<tmpl::list<CFOAnimal>> opts("");
+  Options::Parser<tmpl::list<CFOAnimal>> opts("");
   opts.parse("CFOAnimal: Mouse");
   opts.get<CFOAnimal>();
 }

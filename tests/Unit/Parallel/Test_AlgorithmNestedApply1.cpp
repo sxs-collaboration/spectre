@@ -63,7 +63,7 @@ struct TestMetavariables {
 
   enum class Phase { Initialization, Execute, Exit };
 
-  static constexpr OptionString help = "Executable for testing";
+  static constexpr Options::String help = "Executable for testing";
 
   static Phase determine_next_phase(const Phase& current_phase,
                                     const Parallel::CProxy_GlobalCache<

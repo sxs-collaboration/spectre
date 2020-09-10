@@ -44,10 +44,10 @@ referred to as the metavariables. What exactly the metavariables struct
 specifies depends on the executable, but all metavariables structs must
 specify the following:
 
-- `help`: a `static constexpr OptionString` that will be printed as part of the
-  help message. It should describe the executable and basic usage of it, as well
-  as any non-standard options that must be specified in the metavariables and
-  their current values. An example of a help string for one of the testing
+- `help`: a `static constexpr Options::String` that will be printed as part of
+  the help message. It should describe the executable and basic usage of it, as
+  well as any non-standard options that must be specified in the metavariables
+  and their current values. An example of a help string for one of the testing
   executables is:
   \snippet Test_AlgorithmCore.cpp help_string_example
 - `component_list`: a `tmpl::list` of the parallel components (described below)
@@ -72,7 +72,7 @@ specify the following:
 
 There are also several optional members:
 
-- `input_file`: a `static constexpr OptionString` that is the default name of
+- `input_file`: a `static constexpr Options::String` that is the default name of
   the input file that is to be read. This can be overridden at runtime by
   passing the `--input-file` argument to the executable.
 - `ignore_unrecognized_command_line_options`: a `static constexpr bool` that

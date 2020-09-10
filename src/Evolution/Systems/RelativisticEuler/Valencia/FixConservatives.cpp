@@ -25,7 +25,7 @@ FixConservatives<Dim>::FixConservatives(
     const double minimum_rest_mass_density_times_lorentz_factor,
     const double rest_mass_density_times_lorentz_factor_cutoff,
     const double safety_factor_for_momentum_density,
-    const OptionContext& context)
+    const Options::Context& context)
     : minimum_rest_mass_density_times_lorentz_factor_(
           minimum_rest_mass_density_times_lorentz_factor),
       rest_mass_density_times_lorentz_factor_cutoff_(

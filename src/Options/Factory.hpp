@@ -19,6 +19,7 @@
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
+namespace Options {
 namespace Factory_detail {
 struct print_derived {
   // Not a stream because brigand requires the functor to be copyable.
@@ -33,7 +34,7 @@ struct print_derived {
     std::ostringstream ss;
     ss << std::left
        << std::setw(name_col) << ""
-       << std::setw(help_col - name_col - 1) << option_name<T>();
+       << std::setw(help_col - name_col - 1) << name<T>();
     if (ss.str().size() >= help_col) {
       ss << "\n" << std::setw(help_col - 1) << "";
     }
@@ -63,7 +64,7 @@ std::unique_ptr<BaseClass> create(const Option& options) {
   const auto& node = options.node();
   Option derived_opts(options.context());
   derived_opts.append_context("While operating factory for " +
-                              option_name<BaseClass>());
+                              name<BaseClass>());
   std::string id;
   if (node.IsScalar()) {
     id = node.as<std::string>();
@@ -88,7 +89,7 @@ std::unique_ptr<BaseClass> create(const Option& options) {
   tmpl::for_each<typename BaseClass::creatable_classes>(
       [&id, &derived_opts, &result](auto derived_v) {
         using Derived = tmpl::type_from<decltype(derived_v)>;
-        if (option_name<Derived>() == id) {
+        if (name<Derived>() == id) {
           ASSERT(result == nullptr, "Duplicate factory id: " << id);
           result = std::make_unique<Derived>(
               derived_opts.parse_as<Derived, Metavariables>());
@@ -109,3 +110,4 @@ struct create_from_yaml<std::unique_ptr<T>> {
     return Factory_detail::create<T, Metavariables>(options);
   }
 };
+}  // namespace Options

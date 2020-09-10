@@ -41,19 +41,20 @@ namespace Solutions {
 struct TeukolskyWave : public SphericalMetricData {
   struct ExtractionRadius {
     using type = double;
-    static constexpr OptionString help{
+    static constexpr Options::String help{
         "The extraction radius of the spherical solution"};
     static type lower_bound() noexcept { return 0.0; }
     static type default_value() noexcept { return 20.0; }
   };
   struct Amplitude {
     using type = double;
-    static constexpr OptionString help{"The amplitude of the Teukolsky wave."};
+    static constexpr Options::String help{
+        "The amplitude of the Teukolsky wave."};
     static type lower_bound() noexcept { return 0.0; }
   };
   struct Duration {
     using type = double;
-    static constexpr OptionString help{
+    static constexpr Options::String help{
         "The characteristic duration of the Gaussian envelope."};
     static type lower_bound() noexcept { return 0.0; }
   };

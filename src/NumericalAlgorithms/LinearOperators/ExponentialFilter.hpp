@@ -66,7 +66,7 @@ class Exponential {
   /// rescaled by.
   struct Alpha {
     using type = double;
-    static constexpr OptionString help =
+    static constexpr Options::String help =
         "exp(-alpha) is rescaling of highest coefficient";
     static type lower_bound() noexcept { return 0.0; }
   };
@@ -80,7 +80,7 @@ class Exponential {
    */
   struct HalfPower {
     using type = unsigned;
-    static constexpr OptionString help =
+    static constexpr Options::String help =
         "Half of the exponent in the generalized Gaussian";
     static type lower_bound() noexcept { return 1; }
   };
@@ -93,11 +93,11 @@ class Exponential {
   struct DisableForDebugging {
     using type = bool;
     static type default_value() noexcept { return false; }
-    static constexpr OptionString help = {"Disable the filter"};
+    static constexpr Options::String help = {"Disable the filter"};
   };
 
   using options = tmpl::list<Alpha, HalfPower, DisableForDebugging>;
-  static constexpr OptionString help = {"An exponential filter."};
+  static constexpr Options::String help = {"An exponential filter."};
   static std::string name() noexcept {
     return "ExpFilter" + std::to_string(FilterIndex);
   }

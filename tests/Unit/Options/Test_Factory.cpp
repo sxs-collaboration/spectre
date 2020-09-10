@@ -25,7 +25,7 @@ struct TestWithMetavars;
 /// [factory_example]
 struct OptionType {
   using type = std::unique_ptr<OptionTest>;
-  static constexpr OptionString help = {"The type of OptionTest"};
+  static constexpr Options::String help = {"The type of OptionTest"};
   static std::unique_ptr<OptionTest> default_value() noexcept;
 };
 
@@ -47,7 +47,7 @@ class OptionTest {
 class Test1 : public OptionTest {
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString help = {"A derived class"};
+  static constexpr Options::String help = {"A derived class"};
   Test1() = default;
 
   std::string name() const override { return "Test1"; }
@@ -57,7 +57,7 @@ class Test1 : public OptionTest {
 class Test2 : public OptionTest {
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString help = {""};
+  static constexpr Options::String help = {""};
   Test2() = default;
 
   std::string name() const override { return "Test2"; }
@@ -67,10 +67,10 @@ class TestWithArg : public OptionTest {
  public:
   struct Arg {
     using type = std::string;
-    static constexpr OptionString help = {"halp"};
+    static constexpr Options::String help = {"halp"};
   };
   using options = tmpl::list<Arg>;
-  static constexpr OptionString help = {""};
+  static constexpr Options::String help = {""};
   TestWithArg() = default;
   explicit TestWithArg(std::string arg) : arg_(std::move(arg)) {}
 
@@ -82,16 +82,16 @@ class TestWithArg : public OptionTest {
 
 // Same as TestWithArg, except there is an TestWithArg2::Arg::name() that
 // returns something other than "Arg" to test that Arg is named in the
-// input file using option_name rather than pretty_type::short_name
+// input file using Options::name rather than pretty_type::short_name
 class TestWithArg2 : public OptionTest {
  public:
   struct Arg {
     using type = std::string;
-    static constexpr OptionString help = {"halp"};
+    static constexpr Options::String help = {"halp"};
     static std::string name() noexcept { return "ThisIsArg"; }
   };
   using options = tmpl::list<Arg>;
-  static constexpr OptionString help = {""};
+  static constexpr Options::String help = {""};
   TestWithArg2() = default;
   explicit TestWithArg2(std::string arg) : arg_(std::move(arg)) {}
 
@@ -107,12 +107,12 @@ std::unique_ptr<OptionTest> OptionType::default_value() noexcept {
 
 struct Vector {
   using type = std::vector<std::unique_ptr<OptionTest>>;
-  static constexpr OptionString help = {"halp"};
+  static constexpr Options::String help = {"halp"};
 };
 
 struct Map {
   using type = std::map<std::string, std::unique_ptr<OptionTest>>;
-  static constexpr OptionString help = {"halp"};
+  static constexpr Options::String help = {"halp"};
 };
 
 template <bool Valid>
@@ -123,14 +123,14 @@ struct Metavars {
 struct TestWithMetavars : OptionTest {
   struct Arg {
     using type = std::string;
-    static constexpr OptionString help = {"halp"};
+    static constexpr Options::String help = {"halp"};
   };
   using options = tmpl::list<Arg>;
-  static constexpr OptionString help = {""};
+  static constexpr Options::String help = {""};
 
   TestWithMetavars() = default;
   template <typename Metavariables>
-  explicit TestWithMetavars(std::string arg, const OptionContext& /*unused*/,
+  explicit TestWithMetavars(std::string arg, const Options::Context& /*unused*/,
                             Metavariables /*meta*/)
       : arg_(std::move(arg)), valid_(Metavariables::valid) {}
 
@@ -145,7 +145,7 @@ struct TestWithMetavars : OptionTest {
 };
 
 void test_factory() {
-  Options<tmpl::list<OptionType>> opts("");
+  Options::Parser<tmpl::list<OptionType>> opts("");
   opts.parse("OptionType: Test2");
   // must pass metavars because TestWithMetavars is a derived class in
   // `creatable_classes`
@@ -153,7 +153,7 @@ void test_factory() {
 }
 
 void test_factory_with_colon() {
-  Options<tmpl::list<OptionType>> opts("");
+  Options::Parser<tmpl::list<OptionType>> opts("");
   opts.parse(
       "OptionType:\n"
       "  Test2:");
@@ -163,7 +163,7 @@ void test_factory_with_colon() {
 }
 
 void test_factory_with_arg() {
-  Options<tmpl::list<OptionType>> opts("");
+  Options::Parser<tmpl::list<OptionType>> opts("");
   opts.parse(
       "OptionType:\n"
       "  TestWithArg:\n"
@@ -174,7 +174,7 @@ void test_factory_with_arg() {
 }
 
 void test_factory_with_name_function() {
-  Options<tmpl::list<OptionType>> opts("");
+  Options::Parser<tmpl::list<OptionType>> opts("");
   opts.parse(
       "OptionType:\n"
       "  TestWithArg2:\n"
@@ -186,7 +186,7 @@ void test_factory_with_name_function() {
 }
 
 void test_factory_with_metavars() {
-  Options<tmpl::list<OptionType>> opts("");
+  Options::Parser<tmpl::list<OptionType>> opts("");
   opts.parse(
       "OptionType:\n"
       "  TestWithMetavars:\n"
@@ -208,7 +208,7 @@ void test_factory_with_metavars() {
 }
 
 void test_factory_object_vector() {
-  Options<tmpl::list<Vector>> opts("");
+  Options::Parser<tmpl::list<Vector>> opts("");
   opts.parse("Vector: [Test1, Test2, Test1]");
   // must pass metavars because TestWithMetavars is a derived class in
   // `creatable_classes`
@@ -220,7 +220,7 @@ void test_factory_object_vector() {
 }
 
 void test_factory_object_map() {
-  Options<tmpl::list<Map>> opts("");
+  Options::Parser<tmpl::list<Map>> opts("");
   opts.parse(
       "Map:\n"
       "  A: Test1\n"
@@ -236,7 +236,7 @@ void test_factory_object_map() {
 }
 
 void test_factory_format() {
-  Options<tmpl::list<OptionType>> opts("");
+  Options::Parser<tmpl::list<OptionType>> opts("");
   const std::string expected1{"default=Test1\n"};
   const std::string expected2{"default=Test2\n"};
   INFO("Help string:\n"
@@ -267,7 +267,7 @@ SPECTRE_TEST_CASE("Unit.Options.Factory", "[Unit][Options]") {
 // create:.Known Ids:.*Test1]]
 SPECTRE_TEST_CASE("Unit.Options.Factory.missing", "[Unit][Options]") {
   ERROR_TEST();
-  Options<tmpl::list<OptionType>> opts("");
+  Options::Parser<tmpl::list<OptionType>> opts("");
   opts.parse("OptionType:");
   opts.get<OptionType, Metavars<true>>();
 }
@@ -276,7 +276,7 @@ SPECTRE_TEST_CASE("Unit.Options.Factory.missing", "[Unit][Options]") {
 // create, got 2]]
 SPECTRE_TEST_CASE("Unit.Options.Factory.multiple", "[Unit][Options]") {
   ERROR_TEST();
-  Options<tmpl::list<OptionType>> opts("");
+  Options::Parser<tmpl::list<OptionType>> opts("");
   opts.parse("OptionType:\n"
              "  Test1:\n"
              "  Test2:");
@@ -287,7 +287,7 @@ SPECTRE_TEST_CASE("Unit.Options.Factory.multiple", "[Unit][Options]") {
 // with options]]
 SPECTRE_TEST_CASE("Unit.Options.Factory.vector", "[Unit][Options]") {
   ERROR_TEST();
-  Options<tmpl::list<OptionType>> opts("");
+  Options::Parser<tmpl::list<OptionType>> opts("");
   opts.parse("OptionType: []");
   opts.get<OptionType, Metavars<true>>();
 }
@@ -295,7 +295,7 @@ SPECTRE_TEST_CASE("Unit.Options.Factory.vector", "[Unit][Options]") {
 // [[OutputRegex, In string:.*At line 1 column 13:.Unknown Id 'Potato']]
 SPECTRE_TEST_CASE("Unit.Options.Factory.unknown", "[Unit][Options]") {
   ERROR_TEST();
-  Options<tmpl::list<OptionType>> opts("");
+  Options::Parser<tmpl::list<OptionType>> opts("");
   opts.parse("OptionType: Potato");
   opts.get<OptionType, Metavars<true>>();
 }
@@ -304,7 +304,7 @@ SPECTRE_TEST_CASE("Unit.Options.Factory.unknown", "[Unit][Options]") {
 // option 'Arg']]
 SPECTRE_TEST_CASE("Unit.Options.Factory.missing_arg", "[Unit][Options]") {
   ERROR_TEST();
-  Options<tmpl::list<OptionType>> opts("");
+  Options::Parser<tmpl::list<OptionType>> opts("");
   opts.parse("OptionType:\n"
              "  TestWithArg:");
   CHECK(opts.get<OptionType, Metavars<true>>()->name() == "TestWithArg(stuff)");

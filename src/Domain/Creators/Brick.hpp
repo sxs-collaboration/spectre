@@ -45,38 +45,38 @@ class Brick : public DomainCreator<3> {
 
   struct LowerBound {
     using type = std::array<double, 3>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Sequence of [x,y,z] for lower bounds."};
   };
 
   struct UpperBound {
     using type = std::array<double, 3>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Sequence of [x,y,z] for upper bounds."};
   };
   struct IsPeriodicIn {
     using type = std::array<bool, 3>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Sequence for [x,y,z], true if periodic."};
     static type default_value() noexcept { return make_array<3>(false); }
   };
 
   struct InitialRefinement {
     using type = std::array<size_t, 3>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Initial refinement level in [x,y,z]."};
   };
 
   struct InitialGridPoints {
     using type = std::array<size_t, 3>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Initial number of grid points in [x,y,z]."};
   };
 
   struct TimeDependence {
     using type =
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The time dependence of the moving mesh domain."};
     static type default_value() noexcept;
   };
@@ -85,7 +85,7 @@ class Brick : public DomainCreator<3> {
       tmpl::list<LowerBound, UpperBound, IsPeriodicIn, InitialRefinement,
                  InitialGridPoints, TimeDependence>;
 
-  static constexpr OptionString help{"Creates a 3D brick."};
+  static constexpr Options::String help{"Creates a 3D brick."};
 
   Brick(typename LowerBound::type lower_xyz,
         typename UpperBound::type upper_xyz,

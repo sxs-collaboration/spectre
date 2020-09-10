@@ -253,7 +253,7 @@ struct EvolutionMetavars {
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
                       step_actions, Actions::AdvanceTime>>>>>;
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Evolve the Burgers equation.\n\n"
       "The analytic solution is: Linear\n"
       "The numerical flux is:    LocalLaxFriedrichs\n"};

@@ -56,10 +56,11 @@ class ByBlock : public StepChooser<StepChooserRegistrars> {
 
   struct Sizes {
     using type = std::vector<double>;
-    static constexpr OptionString help{"Step sizes, indexed by block number"};
+    static constexpr Options::String help{
+        "Step sizes, indexed by block number"};
   };
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Suggests specified step sizes in each block"};
   using options = tmpl::list<Sizes>;
 

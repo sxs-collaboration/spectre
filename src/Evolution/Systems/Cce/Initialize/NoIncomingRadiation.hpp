@@ -36,7 +36,7 @@ struct NoIncomingRadiation : InitializeJ {
   struct AngularCoordinateTolerance {
     using type = double;
     static std::string name() noexcept { return "AngularCoordTolerance"; }
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Tolerance of initial angular coordinates for CCE"};
     static type lower_bound() noexcept { return 1.0e-14; }
     static type upper_bound() noexcept { return 1.0e-3; }
@@ -45,7 +45,7 @@ struct NoIncomingRadiation : InitializeJ {
 
   struct MaxIterations {
     using type = size_t;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Number of linearized inversion iterations."};
     static type lower_bound() noexcept { return 10; }
     static type upper_bound() noexcept { return 1000; }
@@ -54,14 +54,14 @@ struct NoIncomingRadiation : InitializeJ {
 
   struct RequireConvergence {
     using type = bool;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
       "If true, initialization will error if it hits MaxIterations"};
     static type default_value() noexcept { return false; }
   };
 
   using options =
       tmpl::list<AngularCoordinateTolerance, MaxIterations, RequireConvergence>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Initialization process where J is set so Psi0 is vanishing\n"
       "(roughly a no incoming radiation condition)"};
 

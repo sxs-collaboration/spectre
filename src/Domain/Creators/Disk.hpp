@@ -47,37 +47,37 @@ class Disk : public DomainCreator<2> {
 
   struct InnerRadius {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Radius of the circle circumscribing the inner square."};
   };
 
   struct OuterRadius {
     using type = double;
-    static constexpr OptionString help = {"Radius of the Disk."};
+    static constexpr Options::String help = {"Radius of the Disk."};
   };
 
   struct InitialRefinement {
     using type = size_t;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Initial refinement level in each dimension."};
   };
 
   struct InitialGridPoints {
     using type = std::array<size_t, 2>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Initial number of grid points in [r,theta]."};
   };
 
   struct UseEquiangularMap {
     using type = bool;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Use equiangular instead of equidistant coordinates."};
   };
 
   using options = tmpl::list<InnerRadius, OuterRadius, InitialRefinement,
                              InitialGridPoints, UseEquiangularMap>;
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Creates a 2D Disk with five Blocks.\n"
       "Only one refinement level for both dimensions is currently supported.\n"
       "The number of gridpoints in each dimension can be set independently.\n"

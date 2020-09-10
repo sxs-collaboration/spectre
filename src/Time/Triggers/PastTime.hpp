@@ -45,7 +45,7 @@ class PastTime : public Trigger<TriggerRegistrars> {
   WRAPPED_PUPable_decl_template(PastTime);  // NOLINT
   /// \endcond
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Trigger if the simulation is past a given time."};
 
   explicit PastTime(const double trigger_time) noexcept
@@ -77,9 +77,10 @@ PUP::able::PUP_ID PastTime<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
 }  // namespace Triggers
 
 template <typename TriggerRegistrars>
-struct create_from_yaml<Triggers::PastTime<TriggerRegistrars>> {
+struct Options::create_from_yaml<Triggers::PastTime<TriggerRegistrars>> {
   template <typename Metavariables>
-  static Triggers::PastTime<TriggerRegistrars> create(const Option& options) {
+  static Triggers::PastTime<TriggerRegistrars> create(
+      const Options::Option& options) {
     return Triggers::PastTime<TriggerRegistrars>(options.parse_as<double>());
   }
 };

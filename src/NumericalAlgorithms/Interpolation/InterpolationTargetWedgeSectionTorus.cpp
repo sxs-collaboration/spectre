@@ -14,7 +14,7 @@ WedgeSectionTorus::WedgeSectionTorus(
     const size_t number_of_radial_points_in,
     const size_t number_of_theta_points_in,
     const size_t number_of_phi_points_in, const bool use_uniform_radial_grid_in,
-    const bool use_uniform_theta_grid_in, const OptionContext& context)
+    const bool use_uniform_theta_grid_in, const Options::Context& context)
     : min_radius(min_radius_in),
       max_radius(max_radius_in),
       min_theta(min_theta_in),

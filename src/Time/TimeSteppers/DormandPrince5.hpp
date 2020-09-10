@@ -58,7 +58,7 @@ namespace TimeSteppers {
 class DormandPrince5 : public TimeStepper::Inherit {
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "The standard Dormand-Prince 5th-order time stepper."};
 
   DormandPrince5() = default;

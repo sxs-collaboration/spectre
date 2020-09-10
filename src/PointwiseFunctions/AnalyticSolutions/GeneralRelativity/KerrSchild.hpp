@@ -215,27 +215,28 @@ class KerrSchild : public MarkAsAnalyticSolution {
   static constexpr size_t volume_dim = 3;
   struct Mass {
     using type = double;
-    static constexpr OptionString help = {"Mass of the black hole"};
+    static constexpr Options::String help = {"Mass of the black hole"};
     static type default_value() noexcept { return 1.; }
     static type lower_bound() noexcept { return 0.; }
   };
   struct Spin {
     using type = std::array<double, volume_dim>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The [x,y,z] dimensionless spin of the black hole"};
     static type default_value() noexcept { return {{0., 0., 0.}}; }
   };
   struct Center {
     using type = std::array<double, volume_dim>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The [x,y,z] center of the black hole"};
     static type default_value() noexcept { return {{0., 0., 0.}}; }
   };
   using options = tmpl::list<Mass, Spin, Center>;
-  static constexpr OptionString help{"Black hole in Kerr-Schild coordinates"};
+  static constexpr Options::String help{
+      "Black hole in Kerr-Schild coordinates"};
 
   KerrSchild(double mass, Spin::type dimensionless_spin, Center::type center,
-             const OptionContext& context = {});
+             const Options::Context& context = {});
 
   explicit KerrSchild(CkMigrateMessage* /*unused*/) noexcept {}
 

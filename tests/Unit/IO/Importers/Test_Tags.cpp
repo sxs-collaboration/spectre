@@ -13,7 +13,7 @@
 namespace {
 struct ExampleVolumeData {
   using group = importers::OptionTags::Group;
-  static constexpr OptionString help = "Example volume data";
+  static constexpr Options::String help = "Example volume data";
 };
 }  // namespace
 
@@ -27,7 +27,7 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.Tags", "[Unit][IO]") {
   CHECK(db::tag_name<importers::Tags::ObservationValue<ExampleVolumeData>>() ==
         "ObservationValue(ExampleVolumeData)");
 
-  Options<
+  Options::Parser<
       tmpl::list<importers::OptionTags::FileName<ExampleVolumeData>,
                  importers::OptionTags::Subgroup<ExampleVolumeData>,
                  importers::OptionTags::ObservationValue<ExampleVolumeData>>>

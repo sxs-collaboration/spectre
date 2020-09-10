@@ -199,7 +199,7 @@ struct UpwindPenaltyCorrection : tt::ConformsTo<dg::protocols::NumericalFlux> {
 
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Computes the upwind penalty flux for the first-order generalized "
       "harmonic system. It requires no options."};
   static std::string name() noexcept { return "UpwindPenalty"; }

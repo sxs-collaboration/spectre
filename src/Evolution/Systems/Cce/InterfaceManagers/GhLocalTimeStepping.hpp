@@ -49,7 +49,7 @@ class GhLocalTimeStepping : public GhInterfaceManager {
 
   struct AdamsBashforthOrder {
     using type = size_t;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Convergence order for the internal Adams-Bashforth stepper"};
     static type lower_bound() noexcept { return 1; }
     static type upper_bound() noexcept {
@@ -57,7 +57,7 @@ class GhLocalTimeStepping : public GhInterfaceManager {
     }
   };
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Pass data between GH and CCE systems via Adams-Bashforth local "
       "time-stepping"};
 

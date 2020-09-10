@@ -24,7 +24,7 @@ class Completion : public Event<EventRegistrars> {
   /// \endcond
 
   using options = tmpl::list<>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Sets the termination flag for the code to exit."};
 
   Completion() = default;

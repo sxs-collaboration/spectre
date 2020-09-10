@@ -5,9 +5,11 @@
 
 #include <ostream>
 
+namespace Options {
 class Option;
 template <typename T>
 struct create_from_yaml;
+}  // namespace Options
 
 namespace Limiters {
 /// \ingroup LimitersGroup
@@ -22,12 +24,13 @@ std::ostream& operator<<(std::ostream& os,
 }  // namespace Limiters
 
 template <>
-struct create_from_yaml<Limiters::MinmodType> {
+struct Options::create_from_yaml<Limiters::MinmodType> {
   template <typename Metavariables>
-  static Limiters::MinmodType create(const Option& options) {
+  static Limiters::MinmodType create(const Options::Option& options) {
     return create<void>(options);
   }
 };
 template <>
-Limiters::MinmodType create_from_yaml<Limiters::MinmodType>::create<void>(
-    const Option& options);
+Limiters::MinmodType
+Options::create_from_yaml<Limiters::MinmodType>::create<void>(
+    const Options::Option& options);

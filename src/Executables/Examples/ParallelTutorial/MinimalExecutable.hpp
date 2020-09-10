@@ -26,7 +26,7 @@ struct Metavariables {
     return Phase::Exit;
   }
 
-  static constexpr OptionString help{"A minimal executable"};
+  static constexpr Options::String help{"A minimal executable"};
 };
 /// [metavariables_definition]
 

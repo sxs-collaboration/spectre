@@ -71,7 +71,7 @@ namespace Solutions {
 
 ConstantDensityStar::ConstantDensityStar(const double density,
                                          const double radius,
-                                         const OptionContext& context)
+                                         const Options::Context& context)
     : density_(density), radius_(radius) {
   const double critical_density =
       3. * pow<5>(5.) / (2. * pow<6>(6.) * M_PI * pow<2>(radius));

@@ -30,11 +30,11 @@ class Linear : public MarkAsAnalyticSolution {
  public:
   struct ShockTime {
     using type = double;
-    static constexpr OptionString help{"The time at which a shock forms"};
+    static constexpr Options::String help{"The time at which a shock forms"};
   };
 
   using options = tmpl::list<ShockTime>;
-  static constexpr OptionString help{"A spatially linear solution"};
+  static constexpr Options::String help{"A spatially linear solution"};
 
   Linear() = default;
   Linear(const Linear&) noexcept = delete;

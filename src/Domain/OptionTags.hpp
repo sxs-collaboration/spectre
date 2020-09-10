@@ -21,7 +21,7 @@ namespace OptionTags {
 template <size_t Dim>
 struct DomainCreator {
   using type = std::unique_ptr<::DomainCreator<Dim>>;
-  static constexpr OptionString help = {"The domain to create initially"};
+  static constexpr Options::String help = {"The domain to create initially"};
 };
 }  // namespace OptionTags
 }  // namespace domain

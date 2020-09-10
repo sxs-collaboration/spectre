@@ -78,7 +78,7 @@ struct VolumeDataOptions {
   static std::string name() noexcept {
     return MakeString{} << TheGrid << "VolumeData";
   }
-  static constexpr OptionString help = "Numeric volume data";
+  static constexpr Options::String help = "Numeric volume data";
 };
 /// [option_group]
 

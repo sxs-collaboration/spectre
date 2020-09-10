@@ -14,7 +14,7 @@ namespace OptionTags {
 /// Holds the `OptionTags::AnalyticSolution` option in the input file
 struct AnalyticSolutionGroup {
   static std::string name() noexcept { return "AnalyticSolution"; }
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "Analytic solution used for the initial data and errors";
 };
 
@@ -23,8 +23,10 @@ struct AnalyticSolutionGroup {
 /// template parameter
 template <typename SolutionType>
 struct AnalyticSolution {
-  static std::string name() noexcept { return option_name<SolutionType>(); }
-  static constexpr OptionString help = "Options for the analytic solution";
+  static std::string name() noexcept {
+    return Options::name<SolutionType>();
+  }
+  static constexpr Options::String help = "Options for the analytic solution";
   using type = SolutionType;
   using group = AnalyticSolutionGroup;
 };
@@ -32,7 +34,7 @@ struct AnalyticSolution {
 /// The boundary condition to be applied at all external boundaries.
 template <typename BoundaryConditionType>
 struct BoundaryCondition {
-  static constexpr OptionString help = "Boundary condition to be used";
+  static constexpr Options::String help = "Boundary condition to be used";
   using type = BoundaryConditionType;
 };
 }  // namespace OptionTags

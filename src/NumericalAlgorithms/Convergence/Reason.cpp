@@ -29,8 +29,9 @@ std::ostream& operator<<(std::ostream& os, const Reason& reason) noexcept {
 }  // namespace Convergence
 
 template <>
-Convergence::Reason create_from_yaml<Convergence::Reason>::create<void>(
-    const Option& options) {
+Convergence::Reason
+Options::create_from_yaml<Convergence::Reason>::create<void>(
+    const Options::Option& options) {
   const std::string type_read = options.parse_as<std::string>();
   if (type_read == get_output(Convergence::Reason::MaxIterations)) {
     return Convergence::Reason::MaxIterations;

@@ -60,55 +60,55 @@ class CylindricalBlastWave : public MarkAsAnalyticData {
   /// Inside InnerRadius, density is InnerDensity.
   struct InnerRadius {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Inside InnerRadius, density is InnerDensity."};
     static type lower_bound() noexcept { return 0.0; }
   };
   /// Outside OuterRadius, density is OuterDensity.
   struct OuterRadius {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Outside OuterRadius, density is OuterDensity."};
     static type lower_bound() noexcept { return 0.0; }
   };
   /// Density at radii less than InnerRadius.
   struct InnerDensity {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Density at radii less than InnerRadius."};
     static type lower_bound() noexcept { return 0.0; }
   };
   /// Density at radii greater than OuterRadius.
   struct OuterDensity {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Density at radii greater than OuterRadius."};
     static type lower_bound() noexcept { return 0.0; }
   };
   /// Pressure at radii less than InnerRadius.
   struct InnerPressure {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Pressure at radii less than InnerRadius."};
     static type lower_bound() noexcept { return 0.0; }
   };
   /// Pressure at radii greater than OuterRadius.
   struct OuterPressure {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Pressure at radii greater than OuterRadius."};
     static type lower_bound() noexcept { return 0.0; }
   };
   /// The x,y,z components of the uniform magnetic field threading the matter.
   struct MagneticField {
     using type = std::array<double, 3>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The x,y,z components of the uniform magnetic field."};
   };
   /// The adiabatic index of the ideal fluid.
   struct AdiabaticIndex {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The adiabatic index of the ideal fluid."};
     static type lower_bound() noexcept { return 1.0; }
   };
@@ -117,7 +117,7 @@ class CylindricalBlastWave : public MarkAsAnalyticData {
       tmpl::list<InnerRadius, OuterRadius, InnerDensity, OuterDensity,
                  InnerPressure, OuterPressure, MagneticField, AdiabaticIndex>;
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Cylindrical blast wave analytic initial data."};
 
   CylindricalBlastWave() = default;
@@ -133,7 +133,7 @@ class CylindricalBlastWave : public MarkAsAnalyticData {
                        double inner_pressure, double outer_pressure,
                        const std::array<double, 3>& magnetic_field,
                        double adiabatic_index,
-                       const OptionContext& context = {});
+                       const Options::Context& context = {});
 
   explicit CylindricalBlastWave(CkMigrateMessage* /*unused*/) noexcept {}
 

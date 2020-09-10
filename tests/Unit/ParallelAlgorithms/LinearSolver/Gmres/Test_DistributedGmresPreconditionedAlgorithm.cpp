@@ -20,12 +20,12 @@ namespace helpers_distributed = DistributedLinearSolverAlgorithmTestHelpers;
 namespace {
 
 struct ParallelGmres {
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "Options for the iterative linear solver";
 };
 
 struct Preconditioner {
-  static constexpr OptionString help = "Options for the preconditioner";
+  static constexpr Options::String help = "Options for the preconditioner";
 };
 
 struct Metavariables {

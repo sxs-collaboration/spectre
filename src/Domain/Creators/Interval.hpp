@@ -40,31 +40,34 @@ class Interval : public DomainCreator<1> {
 
   struct LowerBound {
     using type = std::array<double, 1>;
-    static constexpr OptionString help = {"Sequence of [x] for lower bounds."};
+    static constexpr Options::String help = {
+        "Sequence of [x] for lower bounds."};
   };
   struct UpperBound {
     using type = std::array<double, 1>;
-    static constexpr OptionString help = {"Sequence of [x] for upper bounds."};
+    static constexpr Options::String help = {
+        "Sequence of [x] for upper bounds."};
   };
   struct IsPeriodicIn {
     using type = std::array<bool, 1>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Sequence for [x], true if periodic."};
     static type default_value() noexcept { return make_array<1>(false); }
   };
   struct InitialRefinement {
     using type = std::array<size_t, 1>;
-    static constexpr OptionString help = {"Initial refinement level in [x]."};
+    static constexpr Options::String help = {
+        "Initial refinement level in [x]."};
   };
   struct InitialGridPoints {
     using type = std::array<size_t, 1>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Initial number of grid points in [x]."};
   };
   struct TimeDependence {
     using type =
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The time dependence of the moving mesh domain."};
     static type default_value() noexcept;
   };
@@ -73,7 +76,7 @@ class Interval : public DomainCreator<1> {
       tmpl::list<LowerBound, UpperBound, IsPeriodicIn, InitialRefinement,
                  InitialGridPoints, TimeDependence>;
 
-  static constexpr OptionString help = {"Creates a 1D interval."};
+  static constexpr Options::String help = {"Creates a 1D interval."};
 
   Interval(typename LowerBound::type lower_x, typename UpperBound::type upper_x,
            typename IsPeriodicIn::type is_periodic_in_x,

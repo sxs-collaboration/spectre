@@ -144,7 +144,7 @@ struct LocalLaxFriedrichs : tt::ConformsTo<dg::protocols::NumericalFlux> {
 
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Computes the local Lax-Friedrichs numerical flux."};
 
   // clang-tidy: google-runtime-references

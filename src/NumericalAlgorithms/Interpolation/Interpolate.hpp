@@ -79,11 +79,11 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>,
   /// \endcond
 
   using options = tmpl::list<>;
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "Starts interpolation onto the given InterpolationTargetTag.";
 
   static std::string name() noexcept {
-    return option_name<InterpolationTargetTag>();
+    return Options::name<InterpolationTargetTag>();
   }
 
   Interpolate() = default;

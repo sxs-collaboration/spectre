@@ -60,37 +60,37 @@ class NearTimes : public Trigger<TriggerRegistrars> {
   using Unit = NearTimes_enums::Unit;
   using Direction = NearTimes_enums::Direction;
 
-  struct Options {
+  struct OptionTags {
     struct Times {
       using type = std::vector<double>;
-      static constexpr OptionString help = "Times to trigger at";
+      static constexpr Options::String help = "Times to trigger at";
     };
 
     struct Range {
       using type = double;
       static type lower_bound() noexcept { return 0.0; }
-      static constexpr OptionString help =
+      static constexpr Options::String help =
           "Maximum time difference to trigger at";
     };
 
     struct Unit {
       using type = NearTimes::Unit;
-      static constexpr OptionString help =
+      static constexpr Options::String help =
           "Interpret Range as 'Time', 'Step's, or 'Slab's";
     };
 
     struct Direction {
       using type = NearTimes::Direction;
-      static constexpr OptionString help =
+      static constexpr Options::String help =
           "Trigger 'Before', 'After', or 'Both' from the times";
     };
   };
 
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "Trigger in intervals surrounding particular times.";
   using options =
-      tmpl::list<typename Options::Times, typename Options::Range,
-                 typename Options::Unit, typename Options::Direction>;
+      tmpl::list<typename OptionTags::Times, typename OptionTags::Range,
+                 typename OptionTags::Unit, typename OptionTags::Direction>;
 
   NearTimes(std::vector<double> times, const double range, const Unit unit,
             const Direction direction) noexcept
@@ -153,10 +153,10 @@ PUP::able::PUP_ID NearTimes<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
 }  // namespace Triggers
 
 template <>
-struct create_from_yaml<Triggers::NearTimes_enums::Unit> {
+struct Options::create_from_yaml<Triggers::NearTimes_enums::Unit> {
   using type = Triggers::NearTimes_enums::Unit;
   template <typename Metavariables>
-  static type create(const Option& options) {
+  static type create(const Options::Option& options) {
     const auto unit = options.parse_as<std::string>();
     if (unit == "Time") {
       return type::Time;
@@ -171,10 +171,11 @@ struct create_from_yaml<Triggers::NearTimes_enums::Unit> {
 };
 
 template <>
-struct create_from_yaml<typename Triggers::NearTimes_enums::Direction> {
+struct Options::create_from_yaml<
+    typename Triggers::NearTimes_enums::Direction> {
   using type = Triggers::NearTimes_enums::Direction;
   template <typename Metavariables>
-  static type create(const Option& options) {
+  static type create(const Options::Option& options) {
     const auto unit = options.parse_as<std::string>();
     if (unit == "Before") {
       return type::Before;

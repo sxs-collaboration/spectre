@@ -155,7 +155,8 @@ void test_constructor_with_different_coefs(Func function) {
 }
 
 void test_construct_from_options() {
-  Options<tmpl::list<OptionTags::Strahlkorper<Frame::Inertial>>> opts("");
+  Options::Parser<tmpl::list<OptionTags::Strahlkorper<Frame::Inertial>>> opts(
+      "");
   opts.parse(
       "Strahlkorper:\n"
       " Lmax : 6\n"

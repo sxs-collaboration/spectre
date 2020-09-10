@@ -89,7 +89,7 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
   /// The name of the subfile inside the HDF5 file
   struct SubfileName {
     using type = std::string;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The name of the subfile inside the HDF5 file without an extension and "
         "without a preceding '/'."};
   };
@@ -101,7 +101,7 @@ class ObserveVolumeIntegrals<VolumeDim, ObservationValueTag,
   /// \endcond
 
   using options = tmpl::list<SubfileName>;
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "Observe the volume integrals of the tensors over the domain.\n"
       "\n"
       "Writes reduction quantities:\n"

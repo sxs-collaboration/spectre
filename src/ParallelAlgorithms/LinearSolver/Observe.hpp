@@ -75,7 +75,7 @@ void contribute_to_reduction_observer(
       // When multiple linear solves are performed, e.g. for the nonlinear
       // solver, we'll need to write into separate subgroups, e.g.:
       // `/linear_residuals/<nonlinear_iteration_id>`
-      std::string{"/" + option_name<OptionsGroup>() + "Residuals"},
+      std::string{"/" + Options::name<OptionsGroup>() + "Residuals"},
       std::vector<std::string>{"Iteration", "Residual"},
       reduction_data{get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
                      get<residual_magnitude_tag>(box)});

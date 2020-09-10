@@ -200,14 +200,14 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
  public:
   struct PenaltyParameter {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The prefactor to the penalty term of the flux. Values closer to one "
         "lead to better-conditioned problems, but on curved meshes the penalty "
         "parameter may need to be increased to keep the problem well-defined."};
     static type lower_bound() noexcept { return 1.; }
   };
   using options = tmpl::list<PenaltyParameter>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "The internal penalty flux for elliptic systems."};
   static std::string name() noexcept { return "InternalPenalty"; }
 

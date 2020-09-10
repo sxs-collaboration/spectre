@@ -35,22 +35,22 @@ class Gaussian<1, Fr> : public MathFunction<1, Fr> {
  public:
   struct Amplitude {
     using type = double;
-    static constexpr OptionString help = {"The amplitude."};
+    static constexpr Options::String help = {"The amplitude."};
   };
 
   struct Width {
     using type = double;
-    static constexpr OptionString help = {"The width."};
+    static constexpr Options::String help = {"The width."};
     static type lower_bound() noexcept { return 0.; }
   };
 
   struct Center {
     using type = double;
-    static constexpr OptionString help = {"The center."};
+    static constexpr Options::String help = {"The center."};
   };
   using options = tmpl::list<Amplitude, Width, Center>;
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Computes a Gaussian about an arbitrary coordinate center with given "
       "width and amplitude"};
 
@@ -125,22 +125,22 @@ class Gaussian : public MathFunction<VolumeDim, Fr> {
  public:
   struct Amplitude {
     using type = double;
-    static constexpr OptionString help = {"The amplitude."};
+    static constexpr Options::String help = {"The amplitude."};
   };
 
   struct Width {
     using type = double;
-    static constexpr OptionString help = {"The width."};
+    static constexpr Options::String help = {"The width."};
     static type lower_bound() noexcept { return 0.; }
   };
 
   struct Center {
     using type = std::array<double, VolumeDim>;
-    static constexpr OptionString help = {"The center."};
+    static constexpr Options::String help = {"The center."};
   };
   using options = tmpl::list<Amplitude, Width, Center>;
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Computes a Gaussian about an arbitrary coordinate center with given "
       "width and amplitude"};
 

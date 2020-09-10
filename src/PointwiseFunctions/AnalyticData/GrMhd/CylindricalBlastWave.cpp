@@ -57,7 +57,7 @@ CylindricalBlastWave::CylindricalBlastWave(
     const double inner_density, const double outer_density,
     const double inner_pressure, const double outer_pressure,
     const std::array<double, 3>& magnetic_field, const double adiabatic_index,
-    const OptionContext& context)
+    const Options::Context& context)
     : inner_radius_(inner_radius),
       outer_radius_(outer_radius),
       inner_density_(inner_density),

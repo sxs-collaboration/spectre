@@ -34,7 +34,7 @@ class SplitRemaining : public StepController {
   /// \endcond
 
   using options = tmpl::list<>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Chooses steps by dividing the remainder of the slab evenly.\n"
       "WARNING: With many steps per slab this often leads to overflow in the\n"
       "  time representations."};

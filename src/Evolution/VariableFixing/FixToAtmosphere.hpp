@@ -50,19 +50,19 @@ class FixToAtmosphere {
   struct DensityOfAtmosphere {
     using type = double;
     static type lower_bound() noexcept { return 0.0; }
-    static constexpr OptionString help = {"Density of atmosphere"};
+    static constexpr Options::String help = {"Density of atmosphere"};
   };
   /// \brief Rest mass density at which to impose the atmosphere. Should be
   /// greater than or equal to the density of the atmosphere.
   struct DensityCutoff {
     using type = double;
     static type lower_bound() noexcept { return 0.0; }
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Density to impose atmosphere at. Must be >= rho_atm"};
   };
 
   using options = tmpl::list<DensityOfAtmosphere, DensityCutoff>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "If the rest mass density is below DensityCutoff, it is set\n"
       "to DensityOfAtmosphere, and the pressure, specific internal energy\n"
       "(for one-dimensional equations of state), and specific enthalpy are\n"
@@ -72,7 +72,7 @@ class FixToAtmosphere {
       "factor is set to one.\n"};
 
   FixToAtmosphere(double density_of_atmosphere, double density_cutoff,
-                  const OptionContext& context = {});
+                  const Options::Context& context = {});
 
   FixToAtmosphere() = default;
   FixToAtmosphere(const FixToAtmosphere& /*rhs*/) = default;

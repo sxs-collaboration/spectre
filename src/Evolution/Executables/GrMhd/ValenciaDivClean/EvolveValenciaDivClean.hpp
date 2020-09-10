@@ -342,7 +342,7 @@ struct EvolutionMetavars {
                  grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
                  Tags::EventsAndTriggers<events, triggers>>;
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Evolve the Valencia formulation of the GRMHD system with divergence "
       "cleaning.\n\n"};
 

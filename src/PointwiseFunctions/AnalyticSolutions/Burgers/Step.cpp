@@ -17,7 +17,7 @@ namespace Burgers {
 namespace Solutions {
 
 Step::Step(const double left_value, const double right_value,
-           const double initial_shock_position, const OptionContext& context)
+           const double initial_shock_position, const Options::Context& context)
     : left_value_(left_value),
       right_value_(right_value),
       initial_shock_position_(initial_shock_position) {

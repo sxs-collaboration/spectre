@@ -35,7 +35,7 @@ FrustalCloak::FrustalCloak(
     typename LengthInnerCube::type length_inner_cube,
     typename LengthOuterCube::type length_outer_cube,
     typename OriginPreimage::type origin_preimage,
-    const OptionContext& /*context*/) noexcept
+    const Options::Context& /*context*/) noexcept
     // clang-tidy: trivially copyable
     : initial_refinement_level_(                      // NOLINT
           std::move(initial_refinement_level)),       // NOLINT
