@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Formulation.cpp
+  MetricIdentityJacobian.cpp
   MortarHelpers.cpp
   )
 
@@ -18,6 +19,7 @@ spectre_target_headers(
   HEADERS
   Formulation.hpp
   LiftFlux.hpp
+  MetricIdentityJacobian.hpp
   MortarHelpers.hpp
   NormalDotFlux.hpp
   Protocols.hpp
