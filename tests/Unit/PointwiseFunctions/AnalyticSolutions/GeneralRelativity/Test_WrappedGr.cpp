@@ -11,10 +11,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "Options/Options.hpp"
-#include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
@@ -133,24 +132,16 @@ void test_generalized_harmonic_solution(const Args&... args) noexcept {
   test_copy_and_move(wrapped_solution);
 }
 
-struct WrappedGr {
-  using type =
-      GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>;
-  static std::string name() { return option_name<type>(); }
-  static constexpr OptionString help{"A wrapped generalized harmonic solution"};
-};
-
 void test_construct_from_options() {
-  Options<tmpl::list<WrappedGr>> opts("");
-  opts.parse(
-      "KerrSchild:\n"
-      "  Mass: 0.5\n"
-      "  Spin: [0.1,0.2,0.3]\n"
-      "  Center: [1.0,3.0,2.0]");
+  const auto created = TestHelpers::test_creation<
+      GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>>(
+      "Mass: 0.5\n"
+      "Spin: [0.1,0.2,0.3]\n"
+      "Center: [1.0,3.0,2.0]");
   const double mass = 0.5;
   const std::array<double, 3> spin{{0.1, 0.2, 0.3}};
   const std::array<double, 3> center{{1.0, 3.0, 2.0}};
-  CHECK(opts.get<WrappedGr>() ==
+  CHECK(created ==
         GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>(
             mass, spin, center));
 }

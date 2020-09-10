@@ -14,12 +14,11 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/GeneralRelativity/VerifyGrSolution.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
-#include "Options/Options.hpp"
-#include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -30,11 +29,6 @@
 // IWYU pragma: no_forward_declare Tags::deriv
 
 namespace {
-
-struct KerrSchild {
-  using type = gr::Solutions::KerrSchild;
-  static constexpr OptionString help{"A Kerr-Schild solution"};
-};
 
 template <typename DataType>
 tnsr::I<DataType, 3, Frame::Inertial> spatial_coords(
@@ -216,13 +210,11 @@ void test_copy_and_move() noexcept {
 }
 
 void test_construct_from_options() {
-  Options<tmpl::list<KerrSchild>> opts("");
-  opts.parse(
-      "KerrSchild:\n"
-      "  Mass: 0.5\n"
-      "  Spin: [0.1,0.2,0.3]\n"
-      "  Center: [1.0,3.0,2.0]");
-  CHECK(opts.get<KerrSchild>() ==
+  const auto created = TestHelpers::test_creation<gr::Solutions::KerrSchild>(
+      "Mass: 0.5\n"
+      "Spin: [0.1,0.2,0.3]\n"
+      "Center: [1.0,3.0,2.0]");
+  CHECK(created ==
         gr::Solutions::KerrSchild(0.5, {{0.1, 0.2, 0.3}}, {{1.0, 3.0, 2.0}}));
 }
 
@@ -260,24 +252,18 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchildMass",
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchildOptM",
                   "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<KerrSchild>> opts("");
-  opts.parse(
-      "KerrSchild:\n"
-      "  Mass: -0.5\n"
-      "  Spin: [0.1,0.2,0.3]\n"
-      "  Center: [1.0,3.0,2.0]");
-  opts.get<KerrSchild>();
+  TestHelpers::test_creation<gr::Solutions::KerrSchild>(
+      "Mass: -0.5\n"
+      "Spin: [0.1,0.2,0.3]\n"
+      "Center: [1.0,3.0,2.0]");
 }
 
 // [[OutputRegex, In string:.*At line 2 column 3:.Spin magnitude must be < 1]]
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchildOptS",
                   "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<KerrSchild>> opts("");
-  opts.parse(
-      "KerrSchild:\n"
-      "  Mass: 0.5\n"
-      "  Spin: [1.1,0.9,0.3]\n"
-      "  Center: [1.0,3.0,2.0]");
-  opts.get<KerrSchild>();
+  TestHelpers::test_creation<gr::Solutions::KerrSchild>(
+      "Mass: 0.5\n"
+      "Spin: [1.1,0.9,0.3]\n"
+      "Center: [1.0,3.0,2.0]");
 }

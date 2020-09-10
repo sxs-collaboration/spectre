@@ -23,14 +23,6 @@
 
 namespace {
 template <typename ScalarFieldData>
-struct ScalarWaveKerr {
-  using type =
-      CurvedScalarWave::AnalyticData::ScalarWaveGr<ScalarFieldData,
-                                                   gr::Solutions::KerrSchild>;
-  static constexpr OptionString help{"A scalar wave in Kerr spacetime"};
-};
-
-template <typename ScalarFieldData>
 void test_tag_retrieval(const CurvedScalarWave::AnalyticData::ScalarWaveGr<
                         ScalarFieldData, gr::Solutions::KerrSchild>&
                             curved_wave_data) noexcept {
@@ -139,23 +131,20 @@ void test_kerr_schild_vars(
 
 void test_construct_from_options() noexcept {
   {  // test with wave profile = spherical
-    Options<
-        tmpl::list<ScalarWaveKerr<ScalarWave::Solutions::RegularSphericalWave>>>
-        opts("");
-    opts.parse(
-        "ScalarWaveKerr:\n"
-        "  Background:\n"
-        "    Mass: 0.7\n"
-        "    Spin: [0.1, -0.2, 0.3]\n"
-        "    Center: [0.7,0.6,-2.]\n"
-        "  ScalarField:\n"
-        "    Profile:\n"
-        "      Gaussian:\n"
-        "        Amplitude: 11.\n"
-        "        Width: 1.4\n"
-        "        Center: 0.3");
     const auto curved_wave_data_constructed_from_opts =
-        opts.get<ScalarWaveKerr<ScalarWave::Solutions::RegularSphericalWave>>();
+        TestHelpers::test_creation<CurvedScalarWave::AnalyticData::ScalarWaveGr<
+            ScalarWave::Solutions::RegularSphericalWave,
+            gr::Solutions::KerrSchild>>(
+            "Background:\n"
+            "  Mass: 0.7\n"
+            "  Spin: [0.1, -0.2, 0.3]\n"
+            "  Center: [0.7,0.6,-2.]\n"
+            "ScalarField:\n"
+            "  Profile:\n"
+            "    Gaussian:\n"
+            "      Amplitude: 11.\n"
+            "      Width: 1.4\n"
+            "      Center: 0.3");
 
     // construct internals of data constructed from options
     const gr::Solutions::KerrSchild bh_solution(0.7, {{0.1, -0.2, 0.3}},
@@ -179,24 +168,21 @@ void test_construct_from_options() noexcept {
               flat_wave_solution);
   }
   {  // test with wave profile = plane
-    Options<tmpl::list<ScalarWaveKerr<ScalarWave::Solutions::PlaneWave<3>>>>
-        opts("");
-    opts.parse(
-        "ScalarWaveKerr:\n"
-        "  Background:\n"
-        "    Mass: 0.7\n"
-        "    Spin: [0.1, -0.2, 0.3]\n"
-        "    Center: [0.7,0.6,-2.]\n"
-        "  ScalarField:\n"
-        "    WaveVector: [1.0, 1.0, 1.0]\n"
-        "    Center: [0.0, 0.0, 0.0]\n"
-        "    Profile:\n"
-        "      Gaussian:\n"
-        "        Amplitude: 11.\n"
-        "        Width: 1.4\n"
-        "        Center: 0.3");
     const auto curved_wave_data_constructed_from_opts =
-        opts.get<ScalarWaveKerr<ScalarWave::Solutions::PlaneWave<3>>>();
+        TestHelpers::test_creation<CurvedScalarWave::AnalyticData::ScalarWaveGr<
+            ScalarWave::Solutions::PlaneWave<3>, gr::Solutions::KerrSchild>>(
+            "Background:\n"
+            "  Mass: 0.7\n"
+            "  Spin: [0.1, -0.2, 0.3]\n"
+            "  Center: [0.7,0.6,-2.]\n"
+            "ScalarField:\n"
+            "  WaveVector: [1.0, 1.0, 1.0]\n"
+            "  Center: [0.0, 0.0, 0.0]\n"
+            "  Profile:\n"
+            "    Gaussian:\n"
+            "      Amplitude: 11.\n"
+            "      Width: 1.4\n"
+            "      Center: 0.3");
 
     // construct internals of data constructed from options
     const gr::Solutions::KerrSchild bh_solution(0.7, {{0.1, -0.2, 0.3}},
@@ -405,22 +391,18 @@ SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGrMass",
 SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGrOptM",
                   "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  Options<
-      tmpl::list<ScalarWaveKerr<ScalarWave::Solutions::RegularSphericalWave>>>
-      opts("");
-  opts.parse(
-      "ScalarWaveKerr:\n"
-      "  Background:\n"
-      "    Mass: -0.5\n"
-      "    Spin: [0.1, -0.2, 0.3]\n"
-      "    Center: [0.7,0.6,-2.]\n"
-      "  ScalarField:\n"
-      "    Profile:\n"
-      "      Gaussian:\n"
-      "        Amplitude: 11.\n"
-      "        Width: 1.4\n"
-      "        Center: 0.3");
-  opts.get<ScalarWaveKerr<ScalarWave::Solutions::RegularSphericalWave>>();
+  TestHelpers::test_creation<CurvedScalarWave::AnalyticData::ScalarWaveGr<
+      ScalarWave::Solutions::RegularSphericalWave, gr::Solutions::KerrSchild>>(
+      "Background:\n"
+      "  Mass: -0.5\n"
+      "  Spin: [0.1, -0.2, 0.3]\n"
+      "  Center: [0.7,0.6,-2.]\n"
+      "ScalarField:\n"
+      "  Profile:\n"
+      "    Gaussian:\n"
+      "      Amplitude: 11.\n"
+      "      Width: 1.4\n"
+      "      Center: 0.3");
 }
 
 // [[OutputRegex, Spin magnitude must be < 1]]

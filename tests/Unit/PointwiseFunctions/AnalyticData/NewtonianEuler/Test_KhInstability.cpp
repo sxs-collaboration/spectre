@@ -16,8 +16,6 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Options/Options.hpp"
-#include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticData/NewtonianEuler/KhInstability.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -112,33 +110,23 @@ SPECTRE_TEST_CASE(
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_analytic_data, (2, 3));
 }
 
-template <size_t Dim>
-struct Instability {
-  using type = NewtonianEuler::AnalyticData::KhInstability<Dim>;
-  static constexpr OptionString help = {
-      "Initial data to simulate the KH instability."};
-};
-
 // [[OutputRegex, In string:.*At line 5 column 17:.Value -2.1 is below the
 // lower bound of 0]]
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.NewtEuler.KhInstability.RhoOut2d",
     "[Unit][PointwiseFunctions]") {
   ERROR_TEST();
-  Options<tmpl::list<Instability<2>>> test_options("");
-  test_options.parse(
-      "Instability:\n"
-      "  AdiabaticIndex: 1.43\n"
-      "  StripBimedianHeight: 0.5\n"
-      "  StripThickness: 0.4\n"
-      "  StripDensity: -2.1\n"
-      "  StripVelocity: 0.3\n"
-      "  BackgroundDensity: 2.0\n"
-      "  BackgroundVelocity: -0.2\n"
-      "  Pressure: 1.1\n"
-      "  PerturbAmplitude: 0.1\n"
-      "  PerturbWidth: 0.01");
-  test_options.get<Instability<2>>();
+  TestHelpers::test_creation<NewtonianEuler::AnalyticData::KhInstability<2>>(
+      "AdiabaticIndex: 1.43\n"
+      "StripBimedianHeight: 0.5\n"
+      "StripThickness: 0.4\n"
+      "StripDensity: -2.1\n"
+      "StripVelocity: 0.3\n"
+      "BackgroundDensity: 2.0\n"
+      "BackgroundVelocity: -0.2\n"
+      "Pressure: 1.1\n"
+      "PerturbAmplitude: 0.1\n"
+      "PerturbWidth: 0.01");
 }
 
 // [[OutputRegex, In string:.*At line 5 column 17:.Value -2.1 is below the
@@ -147,20 +135,17 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.NewtEuler.KhInstability.RhoOut3d",
     "[Unit][PointwiseFunctions]") {
   ERROR_TEST();
-  Options<tmpl::list<Instability<3>>> test_options("");
-  test_options.parse(
-      "Instability:\n"
-      "  AdiabaticIndex: 1.43\n"
-      "  StripBimedianHeight: 0.5\n"
-      "  StripThickness: 0.4\n"
-      "  StripDensity: -2.1\n"
-      "  StripVelocity: 0.3\n"
-      "  BackgroundDensity: 2.0\n"
-      "  BackgroundVelocity: -0.2\n"
-      "  Pressure: 1.1\n"
-      "  PerturbAmplitude: 0.1\n"
-      "  PerturbWidth: 0.01");
-  test_options.get<Instability<3>>();
+  TestHelpers::test_creation<NewtonianEuler::AnalyticData::KhInstability<3>>(
+      "AdiabaticIndex: 1.43\n"
+      "StripBimedianHeight: 0.5\n"
+      "StripThickness: 0.4\n"
+      "StripDensity: -2.1\n"
+      "StripVelocity: 0.3\n"
+      "BackgroundDensity: 2.0\n"
+      "BackgroundVelocity: -0.2\n"
+      "Pressure: 1.1\n"
+      "PerturbAmplitude: 0.1\n"
+      "PerturbWidth: 0.01");
 }
 
 // [[OutputRegex, In string:.*At line 7 column 22:.Value -2 is below the
@@ -169,20 +154,17 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.NewtEuler.KhInstability.RhoIn2d",
     "[Unit][PointwiseFunctions]") {
   ERROR_TEST();
-  Options<tmpl::list<Instability<2>>> test_options("");
-  test_options.parse(
-      "Instability:\n"
-      "  AdiabaticIndex: 1.43\n"
-      "  StripBimedianHeight: 0.5\n"
-      "  StripThickness: 0.4\n"
-      "  StripDensity: 2.1\n"
-      "  StripVelocity: 0.3\n"
-      "  BackgroundDensity: -2.0\n"
-      "  BackgroundVelocity: -0.2\n"
-      "  Pressure: 1.1\n"
-      "  PerturbAmplitude: 0.1\n"
-      "  PerturbWidth: 0.01");
-  test_options.get<Instability<2>>();
+  TestHelpers::test_creation<NewtonianEuler::AnalyticData::KhInstability<2>>(
+      "AdiabaticIndex: 1.43\n"
+      "StripBimedianHeight: 0.5\n"
+      "StripThickness: 0.4\n"
+      "StripDensity: 2.1\n"
+      "StripVelocity: 0.3\n"
+      "BackgroundDensity: -2.0\n"
+      "BackgroundVelocity: -0.2\n"
+      "Pressure: 1.1\n"
+      "PerturbAmplitude: 0.1\n"
+      "PerturbWidth: 0.01");
 }
 
 // [[OutputRegex, In string:.*At line 7 column 22:.Value -2 is below the
@@ -191,20 +173,17 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.NewtEuler.KhInstability.RhoIn3d",
     "[Unit][PointwiseFunctions]") {
   ERROR_TEST();
-  Options<tmpl::list<Instability<3>>> test_options("");
-  test_options.parse(
-      "Instability:\n"
-      "  AdiabaticIndex: 1.43\n"
-      "  StripBimedianHeight: 0.5\n"
-      "  StripThickness: 0.4\n"
-      "  StripDensity: 2.1\n"
-      "  StripVelocity: 0.3\n"
-      "  BackgroundDensity: -2.0\n"
-      "  BackgroundVelocity: -0.2\n"
-      "  Pressure: 1.1\n"
-      "  PerturbAmplitude: 0.1\n"
-      "  PerturbWidth: 0.01");
-  test_options.get<Instability<3>>();
+  TestHelpers::test_creation<NewtonianEuler::AnalyticData::KhInstability<3>>(
+      "AdiabaticIndex: 1.43\n"
+      "StripBimedianHeight: 0.5\n"
+      "StripThickness: 0.4\n"
+      "StripDensity: 2.1\n"
+      "StripVelocity: 0.3\n"
+      "BackgroundDensity: -2.0\n"
+      "BackgroundVelocity: -0.2\n"
+      "Pressure: 1.1\n"
+      "PerturbAmplitude: 0.1\n"
+      "PerturbWidth: 0.01");
 }
 
 // [[OutputRegex, In string:.*At line 9 column 13:.Value -1.1 is below the
@@ -213,20 +192,17 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.NewtEuler.KhInstability.Pressure2d",
     "[Unit][PointwiseFunctions]") {
   ERROR_TEST();
-  Options<tmpl::list<Instability<2>>> test_options("");
-  test_options.parse(
-      "Instability:\n"
-      "  AdiabaticIndex: 1.43\n"
-      "  StripBimedianHeight: 0.5\n"
-      "  StripThickness: 0.4\n"
-      "  StripDensity: 2.1\n"
-      "  StripVelocity: 0.3\n"
-      "  BackgroundDensity: 2.0\n"
-      "  BackgroundVelocity: -0.2\n"
-      "  Pressure: -1.1\n"
-      "  PerturbAmplitude: 0.1\n"
-      "  PerturbWidth: 0.01");
-  test_options.get<Instability<2>>();
+  TestHelpers::test_creation<NewtonianEuler::AnalyticData::KhInstability<2>>(
+      "AdiabaticIndex: 1.43\n"
+      "StripBimedianHeight: 0.5\n"
+      "StripThickness: 0.4\n"
+      "StripDensity: 2.1\n"
+      "StripVelocity: 0.3\n"
+      "BackgroundDensity: 2.0\n"
+      "BackgroundVelocity: -0.2\n"
+      "Pressure: -1.1\n"
+      "PerturbAmplitude: 0.1\n"
+      "PerturbWidth: 0.01");
 }
 
 // [[OutputRegex, In string:.*At line 9 column 13:.Value -1.1 is below the
@@ -235,20 +211,17 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.NewtEuler.KhInstability.Pressure3d",
     "[Unit][PointwiseFunctions]") {
   ERROR_TEST();
-  Options<tmpl::list<Instability<3>>> test_options("");
-  test_options.parse(
-      "Instability:\n"
-      "  AdiabaticIndex: 1.43\n"
-      "  StripBimedianHeight: 0.5\n"
-      "  StripThickness: 0.4\n"
-      "  StripDensity: 2.1\n"
-      "  StripVelocity: 0.3\n"
-      "  BackgroundDensity: 2.0\n"
-      "  BackgroundVelocity: -0.2\n"
-      "  Pressure: -1.1\n"
-      "  PerturbAmplitude: 0.1\n"
-      "  PerturbWidth: 0.01");
-  test_options.get<Instability<3>>();
+  TestHelpers::test_creation<NewtonianEuler::AnalyticData::KhInstability<3>>(
+      "AdiabaticIndex: 1.43\n"
+      "StripBimedianHeight: 0.5\n"
+      "StripThickness: 0.4\n"
+      "StripDensity: 2.1\n"
+      "StripVelocity: 0.3\n"
+      "BackgroundDensity: 2.0\n"
+      "BackgroundVelocity: -0.2\n"
+      "Pressure: -1.1\n"
+      "PerturbAmplitude: 0.1\n"
+      "PerturbWidth: 0.01");
 }
 
 // [[OutputRegex, In string:.*At line 11 column 17:.Value -0.01 is below the
@@ -257,20 +230,17 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.NewtEuler.KhInstability.PertWidth2d",
     "[Unit][PointwiseFunctions]") {
   ERROR_TEST();
-  Options<tmpl::list<Instability<2>>> test_options("");
-  test_options.parse(
-      "Instability:\n"
-      "  AdiabaticIndex: 1.43\n"
-      "  StripBimedianHeight: 0.5\n"
-      "  StripThickness: 0.4\n"
-      "  StripDensity: 2.1\n"
-      "  StripVelocity: 0.3\n"
-      "  BackgroundDensity: 2.0\n"
-      "  BackgroundVelocity: -0.2\n"
-      "  Pressure: 1.1\n"
-      "  PerturbAmplitude: 0.1\n"
-      "  PerturbWidth: -0.01");
-  test_options.get<Instability<2>>();
+  TestHelpers::test_creation<NewtonianEuler::AnalyticData::KhInstability<2>>(
+      "AdiabaticIndex: 1.43\n"
+      "StripBimedianHeight: 0.5\n"
+      "StripThickness: 0.4\n"
+      "StripDensity: 2.1\n"
+      "StripVelocity: 0.3\n"
+      "BackgroundDensity: 2.0\n"
+      "BackgroundVelocity: -0.2\n"
+      "Pressure: 1.1\n"
+      "PerturbAmplitude: 0.1\n"
+      "PerturbWidth: -0.01");
 }
 
 // [[OutputRegex, In string:.*At line 11 column 17:.Value -0.01 is below the
@@ -279,20 +249,17 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.NewtEuler.KhInstability.PertWidth3d",
     "[Unit][PointwiseFunctions]") {
   ERROR_TEST();
-  Options<tmpl::list<Instability<3>>> test_options("");
-  test_options.parse(
-      "Instability:\n"
-      "  AdiabaticIndex: 1.43\n"
-      "  StripBimedianHeight: 0.5\n"
-      "  StripThickness: 0.4\n"
-      "  StripDensity: 2.1\n"
-      "  StripVelocity: 0.3\n"
-      "  BackgroundDensity: 2.0\n"
-      "  BackgroundVelocity: -0.2\n"
-      "  Pressure: 1.1\n"
-      "  PerturbAmplitude: 0.1\n"
-      "  PerturbWidth: -0.01");
-  test_options.get<Instability<3>>();
+  TestHelpers::test_creation<NewtonianEuler::AnalyticData::KhInstability<3>>(
+      "AdiabaticIndex: 1.43\n"
+      "StripBimedianHeight: 0.5\n"
+      "StripThickness: 0.4\n"
+      "StripDensity: 2.1\n"
+      "StripVelocity: 0.3\n"
+      "BackgroundDensity: 2.0\n"
+      "BackgroundVelocity: -0.2\n"
+      "Pressure: 1.1\n"
+      "PerturbAmplitude: 0.1\n"
+      "PerturbWidth: -0.01");
 }
 
 // [[OutputRegex, In string:.*At line 4 column 19:.Value -0.4 is below the
@@ -301,20 +268,17 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.NewtEuler.KhInstability.StripThick2d",
     "[Unit][PointwiseFunctions]") {
   ERROR_TEST();
-  Options<tmpl::list<Instability<2>>> test_options("");
-  test_options.parse(
-      "Instability:\n"
-      "  AdiabaticIndex: 1.43\n"
-      "  StripBimedianHeight: 0.5\n"
-      "  StripThickness: -0.4\n"
-      "  StripDensity: 2.1\n"
-      "  StripVelocity: 0.3\n"
-      "  BackgroundDensity: 2.0\n"
-      "  BackgroundVelocity: -0.2\n"
-      "  Pressure: 1.1\n"
-      "  PerturbAmplitude: 0.1\n"
-      "  PerturbWidth: 0.01");
-  test_options.get<Instability<2>>();
+  TestHelpers::test_creation<NewtonianEuler::AnalyticData::KhInstability<2>>(
+      "AdiabaticIndex: 1.43\n"
+      "StripBimedianHeight: 0.5\n"
+      "StripThickness: -0.4\n"
+      "StripDensity: 2.1\n"
+      "StripVelocity: 0.3\n"
+      "BackgroundDensity: 2.0\n"
+      "BackgroundVelocity: -0.2\n"
+      "Pressure: 1.1\n"
+      "PerturbAmplitude: 0.1\n"
+      "PerturbWidth: 0.01");
 }
 
 // [[OutputRegex, In string:.*At line 4 column 19:.Value -0.4 is below the
@@ -323,18 +287,15 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.NewtEuler.KhInstability.StripThick3d",
     "[Unit][PointwiseFunctions]") {
   ERROR_TEST();
-  Options<tmpl::list<Instability<3>>> test_options("");
-  test_options.parse(
-      "Instability:\n"
-      "  AdiabaticIndex: 1.43\n"
-      "  StripBimedianHeight: 0.5\n"
-      "  StripThickness: -0.4\n"
-      "  StripDensity: 2.1\n"
-      "  StripVelocity: 0.3\n"
-      "  BackgroundDensity: 2.0\n"
-      "  BackgroundVelocity: -0.2\n"
-      "  Pressure: 1.1\n"
-      "  PerturbAmplitude: 0.1\n"
-      "  PerturbWidth: 0.01");
-  test_options.get<Instability<3>>();
+  TestHelpers::test_creation<NewtonianEuler::AnalyticData::KhInstability<3>>(
+      "AdiabaticIndex: 1.43\n"
+      "StripBimedianHeight: 0.5\n"
+      "StripThickness: -0.4\n"
+      "StripDensity: 2.1\n"
+      "StripVelocity: 0.3\n"
+      "BackgroundDensity: 2.0\n"
+      "BackgroundVelocity: -0.2\n"
+      "Pressure: 1.1\n"
+      "PerturbAmplitude: 0.1\n"
+      "PerturbWidth: 0.01");
 }
