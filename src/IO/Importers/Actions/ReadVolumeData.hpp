@@ -80,13 +80,13 @@ struct ReadVolumeData {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    auto& local_reader_component =
-        *Parallel::get_parallel_component<
-             importers::ElementDataReader<Metavariables>>(cache)
-             .ckLocalBranch();
+    // Not using `ckLocalBranch` here to make sure the simple action invocation
+    // is asynchronous.
+    auto& reader_component = Parallel::get_parallel_component<
+        importers::ElementDataReader<Metavariables>>(cache);
     Parallel::simple_action<importers::Actions::ReadAllVolumeDataAndDistribute<
         ImporterOptionsGroup, FieldTagsList, ParallelComponent>>(
-        local_reader_component);
+        reader_component);
     return {std::move(box)};
   }
 };
