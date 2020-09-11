@@ -38,6 +38,7 @@ spectre_target_headers(
   PhaseDependentActionList.hpp
   Printf.hpp
   PupStlCpp11.hpp
+  PupStlCpp17.hpp
   Reduction.hpp
   RegisterDerivedClassesWithCharm.hpp
   Serialize.hpp
