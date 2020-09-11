@@ -8,6 +8,7 @@ set(LIBRARY "Test_EvolutionDg")
 set(LIBRARY_SOURCES
   Actions/Test_ComputeTimeDerivative.cpp
   Test_InboxTags.cpp
+  Test_MortarData.cpp
   )
 
 add_test_library(

@@ -32,8 +32,10 @@ target_link_libraries(
   DataStructures
   Domain
   DomainStructure
+  ErrorHandling
   Options
   Spectral
+  Time
   Utilities
   PRIVATE
   LinearOperators

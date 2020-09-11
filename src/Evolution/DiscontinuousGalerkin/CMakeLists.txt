@@ -7,6 +7,13 @@ spectre_target_headers(
   HEADERS
   DgElementArray.hpp
   InboxTags.hpp
+  MortarData.hpp
+  )
+
+spectre_target_sources(
+  Evolution
+  PRIVATE
+  MortarData.cpp
   )
 
 add_subdirectory(Limiters)
