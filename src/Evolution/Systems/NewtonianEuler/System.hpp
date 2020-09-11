@@ -40,7 +40,8 @@ struct System {
   template <typename Tag>
   using magnitude_tag = ::Tags::EuclideanMagnitude<Tag>;
 
-  using char_speeds_tag = Tags::CharacteristicSpeedsCompute<Dim>;
+  using char_speeds_compute_tag = Tags::CharacteristicSpeedsCompute<Dim>;
+  using char_speeds_tag = Tags::CharacteristicSpeeds<Dim>;
   using compute_largest_characteristic_speed =
       ComputeLargestCharacteristicSpeed<Dim>;
 

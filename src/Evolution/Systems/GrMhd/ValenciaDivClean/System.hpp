@@ -53,8 +53,9 @@ struct System {
   using magnitude_tag = ::Tags::NonEuclideanMagnitude<
       Tag, gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
 
-  using char_speeds_tag =
+  using char_speeds_compute_tag =
       Tags::CharacteristicSpeedsCompute<EquationOfStateType>;
+  using char_speeds_tag = Tags::CharacteristicSpeeds;
   using compute_largest_characteristic_speed =
       ComputeLargestCharacteristicSpeed;
 

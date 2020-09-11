@@ -105,9 +105,8 @@ struct DiscontinuousGalerkin {
     using boundary_exterior_compute_tag = domain::Tags::InterfaceCompute<
         domain::Tags::BoundaryDirectionsExterior<dim>, Tag>;
 
-    using char_speed_tag =
-        domain::Tags::CharSpeedCompute<typename LocalSystem::char_speeds_tag,
-                                       dim>;
+    using char_speed_tag = domain::Tags::CharSpeedCompute<
+        typename LocalSystem::char_speeds_compute_tag, dim>;
 
     using compute_tags = db::AddComputeTags<
         domain::Tags::Slice<domain::Tags::InternalDirections<dim>,
@@ -178,9 +177,8 @@ struct DiscontinuousGalerkin {
     using boundary_exterior_compute_tag = domain::Tags::InterfaceCompute<
         domain::Tags::BoundaryDirectionsExterior<dim>, Tag>;
 
-    using char_speed_tag =
-        domain::Tags::CharSpeedCompute<typename LocalSystem::char_speeds_tag,
-                                       dim>;
+    using char_speed_tag = domain::Tags::CharSpeedCompute<
+        typename LocalSystem::char_speeds_compute_tag, dim>;
 
     using compute_tags = db::AddComputeTags<
         domain::Tags::Slice<

@@ -11,6 +11,7 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // For Tags::Normalized
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/InterfaceHelpers.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Utilities/Gsl.hpp"
@@ -24,8 +25,8 @@ namespace Tags {
 /// \note Assumes that `typename CharSpeedsComputeTag::return_type` is a
 /// `std::array<DataVector, NumberOfCharSpeeds>`
 template <typename CharSpeedsComputeTag, size_t Dim>
-struct CharSpeedCompute : CharSpeedsComputeTag {
-  using base = CharSpeedsComputeTag;
+struct CharSpeedCompute : CharSpeedsComputeTag::base, db::ComputeTag {
+  using base = typename CharSpeedsComputeTag::base;
   using return_type = typename CharSpeedsComputeTag::return_type;
 
   template <typename... Ts, typename T, size_t NumberOfCharSpeeds>
@@ -53,6 +54,7 @@ struct CharSpeedCompute : CharSpeedsComputeTag {
       tmpl::push_front<typename CharSpeedsComputeTag::argument_tags,
                        MeshVelocity<Dim, Frame::Inertial>,
                        ::Tags::Normalized<UnnormalizedFaceNormal<Dim>>>;
+  using volume_tags = get_volume_tags<CharSpeedsComputeTag>;
 };
 }  // namespace Tags
 }  // namespace domain

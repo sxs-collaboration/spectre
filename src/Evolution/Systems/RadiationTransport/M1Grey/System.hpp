@@ -78,7 +78,8 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
   using magnitude_tag = ::Tags::NonEuclideanMagnitude<
       Tag, gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
 
-  using char_speeds_tag = Tags::CharacteristicSpeedsCompute;
+  using char_speeds_compute_tag = Tags::CharacteristicSpeedsCompute;
+  using char_speeds_tag = Tags::CharacteristicSpeeds;
 
   using volume_fluxes = ComputeFluxes<NeutrinoSpecies...>;
 
