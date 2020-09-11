@@ -136,6 +136,7 @@ class GhLocalTimeStepping : public GhInterfaceManager {
                  std::optional<TimeStepId>, std::optional<dt_gh_variables>>>
       pre_history_;
   std::deque<TimeStepId> requests_;
+  std::unordered_set<TimeStepId> times_seen_;
 
   TimeSteppers::History<gh_variables, dt_gh_variables> boundary_history_;
   TimeStepId latest_next_;

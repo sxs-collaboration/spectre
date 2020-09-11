@@ -93,6 +93,10 @@ void GhLocalTimeStepping::insert_gh_data(
 
 void GhLocalTimeStepping::insert_next_gh_time(
     TimeStepId time_id, TimeStepId next_time_id) noexcept {
+  if (times_seen_.count(time_id) != 0) {
+    return;
+  }
+  times_seen_.insert(time_id);
   // retrieve an iterator position if the next time has already been
   // inserted for this data
   const auto previous_deque_entry = alg::find_if(
