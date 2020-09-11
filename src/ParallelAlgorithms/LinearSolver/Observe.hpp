@@ -29,14 +29,12 @@ struct ObservationType {};
 struct Registration {
   template <typename ParallelComponent, typename DbTagsList,
             typename ArrayIndex>
-  static std::pair<observers::TypeOfObservation, observers::ObservationId>
+  static std::pair<observers::TypeOfObservation, observers::ObservationKey>
   register_info(const db::DataBox<DbTagsList>& /*box*/,
                 const ArrayIndex& /*array_index*/) noexcept {
-    observers::ObservationId fake_initial_observation_id{0., ObservationType{}};
-    return {
-        observers::TypeOfObservation::Reduction,
-        std::move(fake_initial_observation_id)  // NOLINT
-    };
+    return {observers::TypeOfObservation::Reduction,
+            observers::ObservationKey{
+                "LinearSolver::observe_detail::ObservationType"}};
   }
 };
 
@@ -66,13 +64,14 @@ void contribute_to_reduction_observer(
 
   const auto observation_id = observers::ObservationId(
       get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
-      ObservationType{});
+      "LinearSolver::observe_detail::ObservationType");
   auto& reduction_writer = Parallel::get_parallel_component<
       observers::ObserverWriter<Metavariables>>(cache);
   Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>(
       // Node 0 is always the writer, so directly call the component on that
       // node
       reduction_writer[0], observation_id,
+      static_cast<size_t>(Parallel::my_node()),
       // When multiple linear solves are performed, e.g. for the nonlinear
       // solver, we'll need to write into separate subgroups, e.g.:
       // `/linear_residuals/<nonlinear_iteration_id>`

@@ -32,13 +32,14 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
-#include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Actions/RegisterSingleton.hpp"
 #include "IO/Observer/Helpers.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Tags.hpp"              // IWYU pragma: keep
+#include "IO/Observer/TypeOfObservation.hpp"
 #include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"  // IWYU pragma: keep
@@ -141,15 +142,12 @@ struct MockInterpolationTarget {
   struct RegistrationHelper {
     template <typename ParallelComponent, typename DbTagsList,
               typename ArrayIndex>
-    static std::pair<observers::TypeOfObservation, observers::ObservationId>
+    static std::pair<observers::TypeOfObservation, observers::ObservationKey>
     register_info(const db::DataBox<DbTagsList>& /*box*/,
                   const ArrayIndex& /*array_index*/) noexcept {
-      observers::ObservationId fake_initial_observation_id{
-          0., InterpolationTargetTag{}};
-      return {
-          observers::TypeOfObservation::Reduction,
-          std::move(fake_initial_observation_id)  // NOLINT
-      };
+      return {observers::TypeOfObservation::Reduction,
+              observers::ObservationKey{
+                  pretty_type::get_name<InterpolationTargetTag>()}};
     }
   };
 

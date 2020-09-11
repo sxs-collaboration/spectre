@@ -50,6 +50,7 @@ concepts and patterns.
 ### Technical Documentation for Fluent Developers
 Assumes a thorough familiarity and fluency in SpECTRE's usage of TMP.
 - \ref DataBoxGroup "DataBox"
+- \ref observers_infrastructure_dev_guide "Observers infrastructure"
 - \ref dev_guide_parallelization_foundations "Parallelization infrastructure"
   components and usage
 

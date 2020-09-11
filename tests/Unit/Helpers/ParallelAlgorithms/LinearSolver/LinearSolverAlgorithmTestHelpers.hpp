@@ -20,10 +20,9 @@
 #include "DataStructures/DenseVector.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "IO/Observer/Actions.hpp"
+#include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
-#include "IO/Observer/RegisterObservers.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Reason.hpp"
@@ -224,6 +223,20 @@ using init_preconditioner =
     typename init_preconditioner_impl<Preconditioner>::type;
 
 template <typename Preconditioner>
+struct register_preconditioner_impl {
+  using type = typename Preconditioner::register_element;
+};
+
+template <>
+struct register_preconditioner_impl<void> {
+  using type = tmpl::list<>;
+};
+
+template <typename Preconditioner>
+using register_preconditioner =
+    typename register_preconditioner_impl<Preconditioner>::type;
+
+template <typename Preconditioner>
 struct run_preconditioner_impl {
   using type =
       tmpl::list<ComputeOperatorAction<typename Preconditioner::fields_tag>,
@@ -272,6 +285,7 @@ struct ElementArray {
           typename Metavariables::Phase,
           Metavariables::Phase::RegisterWithObserver,
           tmpl::list<typename linear_solver::register_element,
+                     detail::register_preconditioner<preconditioner>,
                      typename linear_solver::prepare_solve,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<

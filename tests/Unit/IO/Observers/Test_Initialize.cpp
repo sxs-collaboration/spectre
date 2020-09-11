@@ -49,15 +49,16 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Initialize", "[Unit][Observers]") {
   runner.next_action<obs_component>(0);
 
   CHECK(
-      ActionTesting::get_databox_tag<obs_component,
-                                     observers::Tags::NumberOfEvents>(runner, 0)
-          .empty());
-  CHECK(
       ActionTesting::get_databox_tag<
-          obs_component, observers::Tags::ReductionArrayComponentIds>(runner, 0)
+          obs_component, observers::Tags::ExpectedContributorsForObservations>(
+          runner, 0)
           .empty());
   CHECK(ActionTesting::get_databox_tag<
-            obs_component, observers::Tags::VolumeArrayComponentIds>(runner, 0)
+            obs_component, observers::Tags::ContributorsOfReductionData>(runner,
+                                                                         0)
+            .empty());
+  CHECK(ActionTesting::get_databox_tag<
+            obs_component, observers::Tags::ContributorsOfTensorData>(runner, 0)
             .empty());
   CHECK(ActionTesting::get_databox_tag<obs_component,
                                        observers::Tags::TensorData>(runner, 0)

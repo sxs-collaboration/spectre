@@ -7,13 +7,14 @@
 
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/ActionTesting.hpp"
-#include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Helpers.hpp"
+#include "IO/Observer/Initialize.hpp"         // IWYU pragma: keep
 #include "IO/Observer/ObservationId.hpp"      // IWYU pragma: keep
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Parallel/ArrayIndex.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -28,20 +29,18 @@ namespace TestObservers_detail {
 using ElementIdType = ElementId<2>;
 
 template <observers::TypeOfObservation TypeOfObservation>
-struct RegisterThisObsType {
-  struct ElementObservationType {};
+struct RegisterObservers {
   template <typename ParallelComponent, typename DbTagsList,
             typename ArrayIndex>
-  static std::pair<observers::TypeOfObservation, observers::ObservationId>
+  static std::pair<observers::TypeOfObservation, observers::ObservationKey>
   register_info(const db::DataBox<DbTagsList>& /*box*/,
                 const ArrayIndex& /*array_index*/) noexcept {
     return {TypeOfObservation,
-            observers::ObservationId{3.0, ElementObservationType{}}};
+            observers::ObservationKey{"ElementObservationType"}};
   }
 };
 
-template <typename Metavariables,
-          observers::TypeOfObservation TypeOfObservation>
+template <typename Metavariables, typename RegistrationActionsList>
 struct element_component {
   using component_being_mocked = void;  // Not needed
   using metavariables = Metavariables;
@@ -50,17 +49,14 @@ struct element_component {
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase,
-      Metavariables::Phase::RegisterWithObservers,
-      tmpl::list<observers::Actions::RegisterWithObservers<
-                     RegisterThisObsType<TypeOfObservation>>,
-                 Parallel::Actions::TerminatePhase>>>;
+      Metavariables::Phase::RegisterWithObservers, RegistrationActionsList>>;
 };
 
 template <typename Metavariables>
 struct observer_component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = size_t;
+  using array_index = int;
 
   using component_being_mocked = observers::Observer<Metavariables>;
   using simple_tags =
@@ -77,7 +73,7 @@ template <typename Metavariables>
 struct observer_writer_component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = size_t;
+  using array_index = int;
   using const_global_cache_tags = tmpl::list<observers::Tags::ReductionFileName,
                                              observers::Tags::VolumeFileName>;
 
@@ -113,10 +109,10 @@ using reduction_data_from_ds_and_vs = Parallel::ReductionData<
     Parallel::ReductionDatum<std::vector<double>, funcl::VectorPlus>,
     l2_error_datum>;
 
-template <observers::TypeOfObservation TypeOfObservation>
+template <typename RegistrationActionsList>
 struct Metavariables {
   using component_list =
-      tmpl::list<element_component<Metavariables, TypeOfObservation>,
+      tmpl::list<element_component<Metavariables, RegistrationActionsList>,
                  observer_component<Metavariables>,
                  observer_writer_component<Metavariables>>;
 

@@ -6,6 +6,8 @@
 #include <charm++.h>
 #include <type_traits>
 
+#include "Utilities/TypeTraits/IsA.hpp"
+
 namespace Parallel {
 /*!
  * \ingroup ParallelGroup
@@ -38,6 +40,8 @@ struct ArrayIndex : public CkArrayIndex {
       alignof(Index) == alignof(decltype(index)),
       "Incorrect alignment of Charm++ array Index type. The "
       "alignment must match the alignment of the internal Charm++ type");
+  static_assert(not tt::is_a_v<ArrayIndex, Index>,
+                "The Index type passed to ArrayIndex cannot be an ArrayIndex");
 
   // Use placement new to ensure that the custom index object is placed in the
   // memory reserved for it in the base class

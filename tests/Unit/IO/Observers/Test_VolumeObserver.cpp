@@ -23,7 +23,8 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/VolumeData.hpp"
-#include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Actions/ObserverRegistration.hpp"
+#include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Initialize.hpp"  // IWYU pragma: keep
 #include "IO/Observer/ObservationId.hpp"
@@ -45,13 +46,16 @@
 namespace helpers = TestObservers_detail;
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
-  constexpr observers::TypeOfObservation type_of_observation =
-      observers::TypeOfObservation::Volume;
-  using metavariables = helpers::Metavariables<type_of_observation>;
+  using registration_list = tmpl::list<
+      observers::Actions::RegisterWithObservers<
+          helpers::RegisterObservers<observers::TypeOfObservation::Volume>>,
+      Parallel::Actions::TerminatePhase>;
+
+  using metavariables = helpers::Metavariables<registration_list>;
   using obs_component = helpers::observer_component<metavariables>;
   using obs_writer = helpers::observer_writer_component<metavariables>;
   using element_comp =
-      helpers::element_component<metavariables, type_of_observation>;
+      helpers::element_component<metavariables, registration_list>;
 
   tuples::TaggedTuple<observers::Tags::ReductionFileName,
                       observers::Tags::VolumeFileName>
@@ -80,14 +84,14 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   // Register elements
   for (const auto& id : element_ids) {
     ActionTesting::next_action<element_comp>(make_not_null(&runner), id);
-    // Invoke the simple_action RegisterSenderWithSelf that was called on the
-    // observer component by the RegisterWithObservers action.
+    // Invoke the simple_action RegisterContributorWithObserver that was called
+    // on the observer component by the RegisterWithObservers action.
     ActionTesting::invoke_queued_simple_action<obs_component>(
         make_not_null(&runner), 0);
-    // Invoke the simple_action RegisterVolumeContributorWithObserverWriter.
-    ActionTesting::invoke_queued_simple_action<obs_writer>(
-        make_not_null(&runner), 0);
   }
+  // Invoke the simple_action RegisterVolumeContributorWithObserverWriter.
+  ActionTesting::invoke_queued_simple_action<obs_writer>(make_not_null(&runner),
+                                                         0);
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Testing);
 
@@ -139,10 +143,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
         make_fake_volume_data(array_id, MakeString{} << id << '/');
     runner
         .simple_action<obs_component, observers::Actions::ContributeVolumeData>(
-            0,
-            observers::ObservationId(
-                3., typename TestObservers_detail::RegisterThisObsType<
-                        type_of_observation>::ElementObservationType{}),
+            0, observers::ObservationId(3., "ElementObservationType"),
             std::string{"/element_data"}, array_id,
             /* get<1> = volume tensor data */
             std::move(std::get<1>(volume_data_fakes)),
@@ -155,10 +156,8 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   }
   // Invoke the simple action 'ContributeVolumeDataToWriter'
   // to move the volume data to the Writer parallel component.
-  runner.invoke_queued_simple_action<obs_writer>(0);
-  // Invoke the threaded action 'WriteVolumeData' to write the data
-  // to disk.
   runner.invoke_queued_threaded_action<obs_writer>(0);
+  CHECK(ActionTesting::is_threaded_action_queue_empty<obs_writer>(runner, 0));
 
   REQUIRE(file_system::check_if_file_exists(h5_file_name));
   // Check that the H5 file was written correctly.
@@ -166,10 +165,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   const auto& volume_file = my_file.get<h5::VolumeData>("/element_data");
 
   const auto temporal_id =
-      observers::ObservationId(
-          3., typename TestObservers_detail::RegisterThisObsType<
-                  type_of_observation>::ElementObservationType{})
-          .hash();
+      observers::ObservationId(3., "ElementObservationType").hash();
   CHECK(volume_file.list_observation_ids() == std::vector<size_t>{temporal_id});
 
   const auto tensor_names = volume_file.list_tensor_components(temporal_id);

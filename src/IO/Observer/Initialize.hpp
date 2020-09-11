@@ -29,9 +29,9 @@ using reduction_data_to_reduction_names = typename Tag::names_tag;
 template <class Metavariables>
 struct Initialize {
   using simple_tags = tmpl::append<
-      db::AddSimpleTags<Tags::NumberOfEvents, Tags::ReductionArrayComponentIds,
-                        Tags::VolumeArrayComponentIds, Tags::TensorData,
-                        Tags::ReductionObserversContributed>,
+      db::AddSimpleTags<Tags::ExpectedContributorsForObservations,
+                        Tags::ContributorsOfReductionData,
+                        Tags::ContributorsOfTensorData, Tags::TensorData>,
       typename Metavariables::observed_reduction_data_tags,
       tmpl::transform<
           typename Metavariables::observed_reduction_data_tags,
@@ -40,33 +40,20 @@ struct Initialize {
 
   using return_tag_list = tmpl::append<simple_tags, compute_tags>;
 
-  template <
-      typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-      typename ActionList, typename ParallelComponent,
-      Requires<not tmpl::list_contains_v<DbTagsList, Tags::NumberOfEvents> and
-               not tmpl::list_contains_v<DbTagsList, Tags::TensorData>> =
-          nullptr>
-  static auto apply(const db::DataBox<DbTagsList>& /*box*/,
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    return helper(typename Metavariables::observed_reduction_data_tags{});
-  }
-
-  template <
-      typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-      typename ActionList, typename ParallelComponent,
-      Requires<tmpl::list_contains_v<DbTagsList, Tags::NumberOfEvents> and
-               tmpl::list_contains_v<DbTagsList, Tags::TensorData>> = nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
-      db::DataBox<DbTagsList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    return {std::move(box), true};
+    if constexpr (not tmpl::list_contains_v<DbTagsList, Tags::TensorData>) {
+      return helper(typename Metavariables::observed_reduction_data_tags{});
+    } else {
+      ERROR("You appear to be initializing the Observer twice.");
+      return std::make_tuple(std::move(box));
+    }
   }
 
  private:
@@ -74,11 +61,10 @@ struct Initialize {
   static auto helper(tmpl::list<ReductionTags...> /*meta*/) noexcept {
     return std::make_tuple(
         db::create<simple_tags>(
-            db::item_type<Tags::NumberOfEvents>{},
-            db::item_type<Tags::ReductionArrayComponentIds>{},
-            db::item_type<Tags::VolumeArrayComponentIds>{},
+            db::item_type<Tags::ExpectedContributorsForObservations>{},
+            db::item_type<Tags::ContributorsOfReductionData>{},
+            db::item_type<Tags::ContributorsOfTensorData>{},
             db::item_type<Tags::TensorData>{},
-            db::item_type<Tags::ReductionObserversContributed>{},
             db::item_type<ReductionTags>{}...,
             db::item_type<
                 detail::reduction_data_to_reduction_names<ReductionTags>>{}...),
@@ -97,11 +83,12 @@ struct Initialize {
 template <class Metavariables>
 struct InitializeWriter {
   using simple_tags = tmpl::append<
-      db::AddSimpleTags<Tags::TensorData, Tags::VolumeObserversRegistered,
-                        Tags::VolumeObserversContributed,
-                        Tags::ReductionObserversRegistered,
-                        Tags::ReductionObserversRegisteredNodes,
-                        Tags::ReductionObserversContributed, Tags::H5FileLock>,
+      db::AddSimpleTags<Tags::ExpectedContributorsForObservations,
+                        Tags::ContributorsOfReductionData,
+                        Tags::ReductionDataLock, Tags::ContributorsOfTensorData,
+                        Tags::VolumeDataLock, Tags::TensorData,
+                        Tags::NodesExpectedToContributeReductions,
+                        Tags::NodesThatContributedReductions, Tags::H5FileLock>,
       typename Metavariables::observed_reduction_data_tags,
       tmpl::transform<
           typename Metavariables::observed_reduction_data_tags,
@@ -110,34 +97,20 @@ struct InitializeWriter {
 
   using return_tag_list = tmpl::append<simple_tags, compute_tags>;
 
-  template <
-      typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-      typename ActionList, typename ParallelComponent,
-      Requires<not tmpl::list_contains_v<DbTagsList, Tags::TensorData> and
-               not tmpl::list_contains_v<
-                   DbTagsList, Tags::VolumeObserversRegistered>> = nullptr>
-  static auto apply(const db::DataBox<DbTagsList>& /*box*/,
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    return helper(typename Metavariables::observed_reduction_data_tags{});
-  }
-
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent,
-            Requires<tmpl::list_contains_v<DbTagsList, Tags::TensorData> and
-                     tmpl::list_contains_v<DbTagsList,
-                                           Tags::VolumeObserversRegistered>> =
-                nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
-      db::DataBox<DbTagsList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    return {std::move(box), true};
+    if constexpr (not tmpl::list_contains_v<DbTagsList, Tags::TensorData>) {
+      return helper(typename Metavariables::observed_reduction_data_tags{});
+    } else {
+      ERROR("You appear to be initializing the ObserverWriter twice.");
+      return std::make_tuple(std::move(box));
+    }
   }
 
  private:
@@ -145,12 +118,13 @@ struct InitializeWriter {
   static auto helper(tmpl::list<ReductionTags...> /*meta*/) noexcept {
     return std::make_tuple(
         db::create<simple_tags>(
-            db::item_type<Tags::TensorData>{},
-            db::item_type<Tags::VolumeObserversRegistered>{},
-            db::item_type<Tags::VolumeObserversContributed>{},
-            db::item_type<Tags::ReductionObserversRegistered>{},
-            db::item_type<Tags::ReductionObserversRegisteredNodes>{},
-            db::item_type<Tags::ReductionObserversContributed>{},
+            db::item_type<Tags::ExpectedContributorsForObservations>{},
+            db::item_type<Tags::ContributorsOfReductionData>{},
+            Parallel::NodeLock{},
+            db::item_type<Tags::ContributorsOfTensorData>{},
+            Parallel::NodeLock{}, db::item_type<Tags::TensorData>{},
+            db::item_type<Tags::NodesExpectedToContributeReductions>{},
+            db::item_type<Tags::NodesThatContributedReductions>{},
             Parallel::NodeLock{}, db::item_type<ReductionTags>{}...,
             db::item_type<
                 detail::reduction_data_to_reduction_names<ReductionTags>>{}...),

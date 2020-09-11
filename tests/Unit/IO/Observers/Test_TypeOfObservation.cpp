@@ -22,6 +22,4 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.TypeOfObservation", "[Unit][Observers]") {
   using observers::TypeOfObservation;
   CHECK(get_output(TypeOfObservation::Reduction) == "Reduction");
   CHECK(get_output(TypeOfObservation::Volume) == "Volume");
-  CHECK(get_output(TypeOfObservation::ReductionAndVolume) ==
-        "ReductionAndVolume");
 }

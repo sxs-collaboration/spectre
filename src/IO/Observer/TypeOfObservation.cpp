@@ -15,8 +15,6 @@ std::ostream& operator<<(std::ostream& os,
       return os << "Reduction";
     case TypeOfObservation::Volume:
       return os << "Volume";
-    case TypeOfObservation::ReductionAndVolume:
-      return os << "ReductionAndVolume";
     default:
       ERROR("Unknown TypeOfObservation.");
   }

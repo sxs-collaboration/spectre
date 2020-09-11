@@ -20,10 +20,9 @@
 #include "Elliptic/Tags.hpp"
 #include "Elliptic/Triggers/EveryNIterations.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "IO/Observer/Actions.hpp"
+#include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
-#include "IO/Observer/RegisterObservers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderScheme.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
@@ -180,13 +179,13 @@ struct Metavariables {
       dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
       Actions::MutateApply<boundary_scheme>>;
 
-  using register_actions = tmpl::list<
-      observers::Actions::RegisterWithObservers<observers::RegisterObservers<
-          linear_solver_iteration_id, element_observation_type>>,
-      // We prepare the linear solve here to avoid adding an extra phase. We
-      // can't do that before registration because the `prepare_solve` action
-      // may contribute to observers.
-      typename linear_solver::prepare_solve, Parallel::Actions::TerminatePhase>;
+  using register_actions =
+      tmpl::list<observers::Actions::RegisterEventsWithObservers,
+                 // We prepare the linear solve here to avoid adding an extra
+                 // phase. We can't do that before registration because the
+                 // `prepare_solve` action may contribute to observers.
+                 typename linear_solver::prepare_solve,
+                 Parallel::Actions::TerminatePhase>;
 
   using solve_actions = tmpl::list<Actions::RunEventsAndTriggers,
                                    LinearSolver::Actions::TerminateIfConverged<

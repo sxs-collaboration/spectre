@@ -46,11 +46,13 @@ EventsAndTriggers:
   ? EveryNSlabs:
       N: 2
       Offset: 0
-  : - ObserveErrorNorms
+  : - ObserveErrorNorms:
+        SubfileName: Errors
   ? EveryNSlabs:
       N: 5
       Offset: 0
-  : - ObserveFields
+  : - ObserveFields:
+        SubfileName: VolumeData
   ? EveryNSlabs:
       N: 5
       Offset: 2

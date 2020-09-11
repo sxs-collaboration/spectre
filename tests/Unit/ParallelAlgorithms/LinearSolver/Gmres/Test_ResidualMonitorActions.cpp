@@ -269,7 +269,7 @@ SPECTRE_TEST_CASE(
     // Test observer writer state
     CHECK(get_observer_writer_tag(helpers::CheckObservationIdTag{}) ==
           observers::ObservationId{
-              0, LinearSolver::observe_detail::ObservationType{}});
+              0, "LinearSolver::observe_detail::ObservationType"});
     CHECK(get_observer_writer_tag(helpers::CheckSubfileNameTag{}) ==
           "/TestLinearSolverResiduals");
     CHECK(get_observer_writer_tag(helpers::CheckReductionNamesTag{}) ==
@@ -389,7 +389,7 @@ SPECTRE_TEST_CASE(
     // Test observer writer state
     CHECK(get_observer_writer_tag(helpers::CheckObservationIdTag{}) ==
           observers::ObservationId{
-              1, LinearSolver::observe_detail::ObservationType{}});
+              1, "LinearSolver::observe_detail::ObservationType"});
     CHECK(get_observer_writer_tag(helpers::CheckSubfileNameTag{}) ==
           "/TestLinearSolverResiduals");
     CHECK(get_observer_writer_tag(helpers::CheckReductionNamesTag{}) ==

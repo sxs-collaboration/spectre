@@ -36,10 +36,9 @@
 #include "Evolution/TypeTraits.hpp"
 #include "IO/Importers/ElementActions.hpp"
 #include "IO/Importers/VolumeDataReader.hpp"
-#include "IO/Observer/Actions.hpp"
+#include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
-#include "IO/Observer/RegisterObservers.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "Informer/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"
@@ -375,9 +374,7 @@ struct EvolutionMetavars {
               Parallel::PhaseActions<
                   Phase, Phase::Register,
                   tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
-                             observers::Actions::RegisterWithObservers<
-                                 observers::RegisterObservers<
-                                     Tags::Time, element_observation_type>>,
+                             observers::Actions::RegisterEventsWithObservers,
                              Parallel::Actions::TerminatePhase>>,
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,

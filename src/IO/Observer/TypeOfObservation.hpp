@@ -20,8 +20,6 @@ enum class TypeOfObservation {
   Reduction,
   /// The sender will only perform volume observations
   Volume,
-  /// The sender will perform both reduction and volume observations
-  ReductionAndVolume
 };
 
 std::ostream& operator<<(std::ostream& os, const TypeOfObservation& t) noexcept;

@@ -44,5 +44,7 @@ LinearSolver:
 EventsAndTriggers:
   ? EveryNIterations:
       N: 1
-  : - ObserveErrorNorms
-    - ObserveFields
+  : - ObserveErrorNorms:
+        SubfileName: "element_data"
+    - ObserveFields:
+        SubfileName: "element_data"

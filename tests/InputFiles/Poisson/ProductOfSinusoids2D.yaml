@@ -37,5 +37,7 @@ LinearSolver:
 EventsAndTriggers:
   ? EveryNIterations:
       N: 1
-  : - ObserveErrorNorms
-    - ObserveFields
+  : - ObserveErrorNorms:
+        SubfileName: Errors
+    - ObserveFields:
+        SubfileName: VolumeData

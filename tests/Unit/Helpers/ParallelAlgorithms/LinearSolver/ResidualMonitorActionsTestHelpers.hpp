@@ -55,6 +55,7 @@ struct MockWriteReductionData {
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
                     const observers::ObservationId& observation_id,
+                    const size_t /*sender_node_number*/,
                     const std::string& subfile_name,
                     std::vector<std::string>&& reduction_names,
                     Parallel::ReductionData<ReductionDatums...>&&
