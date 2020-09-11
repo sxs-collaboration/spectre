@@ -266,8 +266,13 @@ struct PerformStep {
     Parallel::contribute_to_reduction<
         StoreOrthogonalization<FieldsTag, OptionsGroup, ParallelComponent>>(
         Parallel::ReductionData<
-            Parallel::ReductionDatum<double, funcl::Plus<>>>{inner_product(
-            get<basis_history_tag>(box)[0], get<operand_tag>(box))},
+            Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
+            Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
+            Parallel::ReductionDatum<double, funcl::Plus<>>>{
+            get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
+            get<orthogonalization_iteration_id_tag>(box),
+            inner_product(get<basis_history_tag>(box)[0],
+                          get<operand_tag>(box))},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
         Parallel::get_parallel_component<
             ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>(cache));
@@ -345,7 +350,10 @@ struct OrthogonalizeOperand {
     Parallel::contribute_to_reduction<
         StoreOrthogonalization<FieldsTag, OptionsGroup, ParallelComponent>>(
         Parallel::ReductionData<
+            Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
+            Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
             Parallel::ReductionDatum<double, funcl::Plus<>>>{
+            iteration_id, next_orthogonalization_iteration_id,
             local_orthogonalization},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
         Parallel::get_parallel_component<

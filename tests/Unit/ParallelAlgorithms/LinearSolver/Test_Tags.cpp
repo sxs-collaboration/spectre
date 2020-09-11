@@ -9,11 +9,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
-#include "NumericalAlgorithms/Convergence/Criteria.hpp"
-#include "NumericalAlgorithms/Convergence/HasConverged.hpp"
-#include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
-#include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -23,12 +19,6 @@ struct Tag : db::SimpleTag {
 struct TestOptionsGroup {
   static std::string name() noexcept { return "TestLinearSolver"; }
 };
-using magnitude_square_tag = LinearSolver::Tags::MagnitudeSquare<Tag>;
-using magnitude_tag = LinearSolver::Tags::Magnitude<Tag>;
-using residual_magnitude_tag =
-    LinearSolver::Tags::Magnitude<LinearSolver::Tags::Residual<Tag>>;
-using initial_residual_magnitude_tag =
-    LinearSolver::Tags::Initial<residual_magnitude_tag>;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
@@ -71,64 +61,6 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
       "Verbosity(TestLinearSolver)");
 
   {
-    INFO("HasConvergedCompute");
-    TestHelpers::db::test_compute_tag<
-        LinearSolver::Tags::HasConvergedCompute<Tag, TestOptionsGroup>>(
-        "HasConverged(TestLinearSolver)");
-    const auto box = db::create<
-        db::AddSimpleTags<
-            LinearSolver::Tags::ConvergenceCriteria<TestOptionsGroup>,
-            LinearSolver::Tags::IterationId<TestOptionsGroup>,
-            residual_magnitude_tag, initial_residual_magnitude_tag>,
-        db::AddComputeTags<
-            LinearSolver::Tags::HasConvergedCompute<Tag, TestOptionsGroup>>>(
-        Convergence::Criteria{2, 0., 0.5}, 2_st, 1., 1.);
-    CHECK(db::get<LinearSolver::Tags::HasConverged<TestOptionsGroup>>(box));
-    CHECK(db::get<LinearSolver::Tags::HasConverged<TestOptionsGroup>>(box)
-              .reason() == Convergence::Reason::MaxIterations);
-  }
-
-  {
-    INFO("HasConvergedCompute - Zero initial residual");
-    // A vanishing initial residual should work because the absolute residual
-    // condition takes precedence so that no FPE occurs
-    const auto box = db::create<
-        db::AddSimpleTags<
-            LinearSolver::Tags::ConvergenceCriteria<TestOptionsGroup>,
-            LinearSolver::Tags::IterationId<TestOptionsGroup>,
-            residual_magnitude_tag, initial_residual_magnitude_tag>,
-        db::AddComputeTags<
-            LinearSolver::Tags::HasConvergedCompute<Tag, TestOptionsGroup>>>(
-        Convergence::Criteria{2, 0., 0.5}, 1_st, 0., 0.);
-    CHECK(db::get<LinearSolver::Tags::HasConverged<TestOptionsGroup>>(box));
-    CHECK(db::get<LinearSolver::Tags::HasConverged<TestOptionsGroup>>(box)
-              .reason() == Convergence::Reason::AbsoluteResidual);
-  }
-
-  {
-    INFO("HasConvergedByIterationsCompute - not converged");
-    const auto box = db::create<
-        db::AddSimpleTags<LinearSolver::Tags::Iterations<TestOptionsGroup>,
-                          LinearSolver::Tags::IterationId<TestOptionsGroup>>,
-        db::AddComputeTags<LinearSolver::Tags::HasConvergedByIterationsCompute<
-            TestOptionsGroup>>>(2_st, 1_st);
-    CHECK_FALSE(
-        db::get<LinearSolver::Tags::HasConverged<TestOptionsGroup>>(box));
-  }
-
-  {
-    INFO("HasConvergedByIterationsCompute - has converged");
-    const auto box = db::create<
-        db::AddSimpleTags<LinearSolver::Tags::Iterations<TestOptionsGroup>,
-                          LinearSolver::Tags::IterationId<TestOptionsGroup>>,
-        db::AddComputeTags<LinearSolver::Tags::HasConvergedByIterationsCompute<
-            TestOptionsGroup>>>(2_st, 2_st);
-    CHECK(db::get<LinearSolver::Tags::HasConverged<TestOptionsGroup>>(box));
-    CHECK(db::get<LinearSolver::Tags::HasConverged<TestOptionsGroup>>(box)
-              .reason() == Convergence::Reason::MaxIterations);
-  }
-
-  {
     INFO("ResidualCompute");
     TestHelpers::db::test_compute_tag<
         LinearSolver::Tags::ResidualCompute<Tag, ::Tags::Source<Tag>>>(
@@ -141,20 +73,4 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
                                                                             2);
     CHECK(db::get<LinearSolver::Tags::Residual<Tag>>(box) == 1);
   }
-
-  {
-    INFO("MagnitudeCompute");
-    TestHelpers::db::test_compute_tag<
-        LinearSolver::Tags::MagnitudeCompute<magnitude_square_tag>>(
-        "LinearMagnitude(Tag)");
-    const auto box =
-        db::create<db::AddSimpleTags<magnitude_square_tag>,
-                   db::AddComputeTags<LinearSolver::Tags::MagnitudeCompute<
-                       magnitude_square_tag>>>(4.);
-    CHECK(db::get<magnitude_tag>(box) == approx(2.));
-  }
-
-  TestHelpers::db::test_compute_tag<
-      Tags::NextCompute<LinearSolver::Tags::IterationId<TestOptionsGroup>>>(
-      "Next(IterationId(TestLinearSolver))");
 }
