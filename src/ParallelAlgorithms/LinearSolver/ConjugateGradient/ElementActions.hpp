@@ -163,7 +163,9 @@ struct PerformStep {
     Parallel::contribute_to_reduction<
         ComputeAlpha<FieldsTag, OptionsGroup, ParallelComponent>>(
         Parallel::ReductionData<
+            Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
             Parallel::ReductionDatum<double, funcl::Plus<>>>{
+            get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
             local_conj_grad_inner_product},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
         Parallel::get_parallel_component<
@@ -229,7 +231,9 @@ struct UpdateFieldValues {
     Parallel::contribute_to_reduction<
         UpdateResidual<FieldsTag, OptionsGroup, ParallelComponent>>(
         Parallel::ReductionData<
+            Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
             Parallel::ReductionDatum<double, funcl::Plus<>>>{
+            get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
             local_residual_magnitude_square},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
         Parallel::get_parallel_component<

@@ -58,21 +58,12 @@ using reduction_data = Parallel::ReductionData<
     // Residual
     Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Sqrt<>>>;
 
-template <typename FieldsTag, typename OptionsGroup, typename ParallelComponent,
-          typename DbTagsList, typename Metavariables, typename ArrayIndex>
+template <typename OptionsGroup, typename ParallelComponent,
+          typename Metavariables, typename ArrayIndex>
 void contribute_to_residual_observation(
-    const db::DataBox<DbTagsList>& box,
+    const size_t iteration_id, const double residual_magnitude_square,
     Parallel::GlobalCache<Metavariables>& cache,
     const ArrayIndex& array_index) noexcept {
-  using residual_tag =
-      db::add_tag_prefix<LinearSolver::Tags::Residual, FieldsTag>;
-  using residual_magnitude_square_tag =
-      LinearSolver::Tags::MagnitudeSquare<residual_tag>;
-
-  const size_t iteration_id =
-      get<LinearSolver::Tags::IterationId<OptionsGroup>>(box);
-  const double residual_magnitude_square =
-      get<residual_magnitude_square_tag>(box);
   auto& local_observer =
       *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
            cache)
@@ -135,18 +126,15 @@ struct InitializeElement {
         ::Initialization::merge_into_databox<
             InitializeElement,
             db::AddSimpleTags<LinearSolver::Tags::IterationId<OptionsGroup>,
-                              residual_magnitude_square_tag,
+                              LinearSolver::Tags::HasConverged<OptionsGroup>,
                               operator_applied_to_fields_tag>,
             db::AddComputeTags<
-                LinearSolver::Tags::ResidualCompute<fields_tag, source_tag>,
-                LinearSolver::Tags::HasConvergedByIterationsCompute<
-                    OptionsGroup>>>(
+                LinearSolver::Tags::ResidualCompute<fields_tag, source_tag>>>(
             std::move(box),
             // The `PrepareSolve` action populates these tags with initial
             // values, except for `operator_applied_to_fields_tag` which is
             // expected to be updated in every iteration of the algorithm
-            std::numeric_limits<size_t>::max(),
-            std::numeric_limits<double>::signaling_NaN(),
+            std::numeric_limits<size_t>::max(), Convergence::HasConverged{},
             typename operator_applied_to_fields_tag::type{}));
   }
 };
@@ -174,8 +162,6 @@ struct PrepareSolve {
   using fields_tag = FieldsTag;
   using residual_tag =
       db::add_tag_prefix<LinearSolver::Tags::Residual, FieldsTag>;
-  using residual_magnitude_square_tag =
-      LinearSolver::Tags::MagnitudeSquare<residual_tag>;
 
  public:
   using const_global_cache_tags =
@@ -190,20 +176,26 @@ struct PrepareSolve {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
+    constexpr size_t iteration_id = 0;
+
     db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>,
-               residual_magnitude_square_tag>(
+               LinearSolver::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
-        [](const gsl::not_null<size_t*> iteration_id,
-           const gsl::not_null<double*> residual_magnitude_square,
-           const auto& residual) noexcept {
-          *iteration_id = 0;
-          *residual_magnitude_square = inner_product(residual, residual);
+        [](const gsl::not_null<size_t*> local_iteration_id,
+           const gsl::not_null<Convergence::HasConverged*> has_converged,
+           const size_t num_iterations) noexcept {
+          *local_iteration_id = iteration_id;
+          *has_converged =
+              Convergence::HasConverged{num_iterations, iteration_id};
         },
-        get<residual_tag>(box));
+        get<LinearSolver::Tags::Iterations<OptionsGroup>>(box));
+
     // Observe the initial residual even if no steps are going to be performed
-    contribute_to_residual_observation<FieldsTag, OptionsGroup,
-                                       ParallelComponent>(box, cache,
-                                                          array_index);
+    const auto& residual = get<residual_tag>(box);
+    const double residual_magnitude_square = inner_product(residual, residual);
+    contribute_to_residual_observation<OptionsGroup, ParallelComponent>(
+        iteration_id, residual_magnitude_square, cache, array_index);
+
     // Skip steps entirely if the solve has already converged
     constexpr size_t step_end_index =
         tmpl::index_of<ActionList, CompleteStep<FieldsTag, OptionsGroup,
@@ -224,8 +216,6 @@ struct CompleteStep {
   using fields_tag = FieldsTag;
   using residual_tag =
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>;
-  using residual_magnitude_square_tag =
-      LinearSolver::Tags::MagnitudeSquare<residual_tag>;
 
  public:
   using const_global_cache_tags =
@@ -240,20 +230,27 @@ struct CompleteStep {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    // Update and observe element-local residual magnitude
-    db::mutate<residual_magnitude_square_tag,
-               LinearSolver::Tags::IterationId<OptionsGroup>>(
+    // Prepare for next iteration
+    db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>,
+               LinearSolver::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
-        [](const gsl::not_null<double*> residual_magnitude_square,
-           const gsl::not_null<size_t*> iteration_id,
-           const auto& residual) noexcept {
-          *residual_magnitude_square = inner_product(residual, residual);
+        [](const gsl::not_null<size_t*> iteration_id,
+           const gsl::not_null<Convergence::HasConverged*> has_converged,
+           const size_t num_iterations) noexcept {
           ++(*iteration_id);
+          *has_converged =
+              Convergence::HasConverged{num_iterations, *iteration_id};
         },
-        get<residual_tag>(box));
-    contribute_to_residual_observation<FieldsTag, OptionsGroup,
-                                       ParallelComponent>(box, cache,
-                                                          array_index);
+        get<LinearSolver::Tags::Iterations<OptionsGroup>>(box));
+
+    // Observe element-local residual magnitude
+    const size_t completed_iterations =
+        get<LinearSolver::Tags::IterationId<OptionsGroup>>(box);
+    const auto& residual = get<residual_tag>(box);
+    const double residual_magnitude_square = inner_product(residual, residual);
+    contribute_to_residual_observation<OptionsGroup, ParallelComponent>(
+        completed_iterations, residual_magnitude_square, cache, array_index);
+
     // Repeat steps until the solve has converged
     constexpr size_t step_begin_index =
         tmpl::index_of<ActionList, PrepareSolve<FieldsTag, OptionsGroup,

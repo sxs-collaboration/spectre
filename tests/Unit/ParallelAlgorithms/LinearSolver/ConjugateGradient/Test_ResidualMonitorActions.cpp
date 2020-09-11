@@ -150,16 +150,11 @@ SPECTRE_TEST_CASE(
     // Test residual monitor state
     CHECK(get_residual_monitor_tag(residual_square_tag{}) == 4.);
     CHECK(get_residual_monitor_tag(initial_residual_magnitude_tag{}) == 2.);
-    CHECK(get_residual_monitor_tag(
-              LinearSolver::Tags::IterationId<TestLinearSolver>{}) == 0);
-    const auto& has_converged = get_residual_monitor_tag(
-        LinearSolver::Tags::HasConverged<TestLinearSolver>{});
-    CHECK_FALSE(has_converged);
     // Test element state
-    CHECK(get_element_inbox_tag(
-              LinearSolver::cg::detail::Tags::InitialHasConverged<
-                  TestLinearSolver>{})
-              .at(0) == has_converged);
+    CHECK_FALSE(get_element_inbox_tag(
+                    LinearSolver::cg::detail::Tags::InitialHasConverged<
+                        TestLinearSolver>{})
+                    .at(0));
     // Test observer writer state
     CHECK(
         get_observer_writer_tag(helpers::CheckObservationIdTag{}) ==
@@ -182,16 +177,11 @@ SPECTRE_TEST_CASE(
     // Test residual monitor state
     CHECK(get_residual_monitor_tag(residual_square_tag{}) == 0.);
     CHECK(get_residual_monitor_tag(initial_residual_magnitude_tag{}) == 0.);
-    CHECK(get_residual_monitor_tag(
-              LinearSolver::Tags::IterationId<TestLinearSolver>{}) == 0);
-    const auto& has_converged = get_residual_monitor_tag(
-        LinearSolver::Tags::HasConverged<TestLinearSolver>{});
-    CHECK(has_converged);
     // Test element state
     CHECK(get_element_inbox_tag(
               LinearSolver::cg::detail::Tags::InitialHasConverged<
                   TestLinearSolver>{})
-              .at(0) == has_converged);
+              .at(0));
   }
 
   SECTION("ComputeAlpha") {
@@ -202,11 +192,9 @@ SPECTRE_TEST_CASE(
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::cg::detail::ComputeAlpha<
                               fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 2.);
+        make_not_null(&runner), 0, 0_st, 2.);
     // Test residual monitor state
     CHECK(get_residual_monitor_tag(residual_square_tag{}) == 1.);
-    CHECK(get_residual_monitor_tag(
-              LinearSolver::Tags::IterationId<TestLinearSolver>{}) == 0);
     // Test element state
     CHECK(get_element_inbox_tag(
               LinearSolver::cg::detail::Tags::Alpha<TestLinearSolver>{})
@@ -223,17 +211,12 @@ SPECTRE_TEST_CASE(
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::cg::detail::UpdateResidual<
                               fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 4.);
+        make_not_null(&runner), 0, 0_st, 4.);
     ActionTesting::invoke_queued_threaded_action<observer_writer>(
         make_not_null(&runner), 0);
     // Test residual monitor state
     CHECK(get_residual_monitor_tag(residual_square_tag{}) == 4.);
     CHECK(get_residual_monitor_tag(initial_residual_magnitude_tag{}) == 3.);
-    CHECK(get_residual_monitor_tag(
-              LinearSolver::Tags::IterationId<TestLinearSolver>{}) == 1);
-    const auto& has_converged = get_residual_monitor_tag(
-        LinearSolver::Tags::HasConverged<TestLinearSolver>{});
-    CHECK_FALSE(has_converged);
     // Test element state
     const auto& element_inbox =
         get_element_inbox_tag(
@@ -241,7 +224,8 @@ SPECTRE_TEST_CASE(
                 TestLinearSolver>{})
             .at(0);
     CHECK(get<0>(element_inbox) == approx(4. / 9.));
-    CHECK(get<1>(element_inbox) == has_converged);
+    const auto& has_converged = get<1>(element_inbox);
+    CHECK_FALSE(has_converged);
     // Test observer writer state
     CHECK(
         get_observer_writer_tag(helpers::CheckObservationIdTag{}) ==
@@ -264,16 +248,10 @@ SPECTRE_TEST_CASE(
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::cg::detail::UpdateResidual<
                               fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 0.);
+        make_not_null(&runner), 0, 0_st, 0.);
     // Test residual monitor state
     CHECK(get_residual_monitor_tag(residual_square_tag{}) == 0.);
     CHECK(get_residual_monitor_tag(initial_residual_magnitude_tag{}) == 1.);
-    CHECK(get_residual_monitor_tag(
-              LinearSolver::Tags::IterationId<TestLinearSolver>{}) == 1);
-    const auto& has_converged = get_residual_monitor_tag(
-        LinearSolver::Tags::HasConverged<TestLinearSolver>{});
-    REQUIRE(has_converged);
-    CHECK(has_converged.reason() == Convergence::Reason::AbsoluteResidual);
     // Test element state
     const auto& element_inbox =
         get_element_inbox_tag(
@@ -281,7 +259,9 @@ SPECTRE_TEST_CASE(
                 TestLinearSolver>{})
             .at(0);
     CHECK(get<0>(element_inbox) == 0.);
-    CHECK(get<1>(element_inbox) == has_converged);
+    const auto& has_converged = get<1>(element_inbox);
+    REQUIRE(has_converged);
+    CHECK(has_converged.reason() == Convergence::Reason::AbsoluteResidual);
   }
 
   SECTION("ConvergeByMaxIterations") {
@@ -289,24 +269,13 @@ SPECTRE_TEST_CASE(
         residual_monitor, LinearSolver::cg::detail::InitializeResidual<
                               fields_tag, TestLinearSolver, element_array>>(
         make_not_null(&runner), 0, 1.);
-    // Perform 2 mock iterations
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::cg::detail::UpdateResidual<
                               fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 1.);
-    ActionTesting::simple_action<
-        residual_monitor, LinearSolver::cg::detail::UpdateResidual<
-                              fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 1.);
+        make_not_null(&runner), 0, 1_st, 1.);
     // Test residual monitor state
     CHECK(get_residual_monitor_tag(residual_square_tag{}) == 1.);
     CHECK(get_residual_monitor_tag(initial_residual_magnitude_tag{}) == 1.);
-    CHECK(get_residual_monitor_tag(
-              LinearSolver::Tags::IterationId<TestLinearSolver>{}) == 2);
-    const auto& has_converged = get_residual_monitor_tag(
-        LinearSolver::Tags::HasConverged<TestLinearSolver>{});
-    REQUIRE(has_converged);
-    CHECK(has_converged.reason() == Convergence::Reason::MaxIterations);
     // Test element state
     const auto& element_inbox =
         get_element_inbox_tag(
@@ -314,7 +283,9 @@ SPECTRE_TEST_CASE(
                 TestLinearSolver>{})
             .at(1);
     CHECK(get<0>(element_inbox) == 1.);
-    CHECK(get<1>(element_inbox) == has_converged);
+    const auto& has_converged = get<1>(element_inbox);
+    REQUIRE(has_converged);
+    CHECK(has_converged.reason() == Convergence::Reason::MaxIterations);
   }
 
   SECTION("ConvergeByRelativeResidual") {
@@ -325,16 +296,10 @@ SPECTRE_TEST_CASE(
     ActionTesting::simple_action<
         residual_monitor, LinearSolver::cg::detail::UpdateResidual<
                               fields_tag, TestLinearSolver, element_array>>(
-        make_not_null(&runner), 0, 0.25);
+        make_not_null(&runner), 0, 0_st, 0.25);
     // Test residual monitor state
     CHECK(get_residual_monitor_tag(residual_square_tag{}) == 0.25);
     CHECK(get_residual_monitor_tag(initial_residual_magnitude_tag{}) == 1.);
-    CHECK(get_residual_monitor_tag(
-              LinearSolver::Tags::IterationId<TestLinearSolver>{}) == 1);
-    const auto& has_converged = get_residual_monitor_tag(
-        LinearSolver::Tags::HasConverged<TestLinearSolver>{});
-    REQUIRE(has_converged);
-    CHECK(has_converged.reason() == Convergence::Reason::RelativeResidual);
     // Test element state
     const auto& element_inbox =
         get_element_inbox_tag(
@@ -342,6 +307,8 @@ SPECTRE_TEST_CASE(
                 TestLinearSolver>{})
             .at(0);
     CHECK(get<0>(element_inbox) == 0.25);
-    CHECK(get<1>(element_inbox) == has_converged);
+    const auto& has_converged = get<1>(element_inbox);
+    REQUIRE(has_converged);
+    CHECK(has_converged.reason() == Convergence::Reason::RelativeResidual);
   }
 }

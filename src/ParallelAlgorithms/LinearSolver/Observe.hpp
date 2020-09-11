@@ -8,8 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
@@ -45,31 +43,13 @@ struct Registration {
 
 /*!
  * \brief Contributes data from the residual monitor to the reduction observer
- *
- * With:
- * - `residual_magnitude_tag` = `
- * LinearSolver::Tags::Magnitude<db::add_tag_prefix<
- * LinearSolver::Tags::Residual, fields_tag>>`
- *
- * Uses:
- * - System:
- *   - `fields_tag`
- * - DataBox:
- *   - `LinearSolver::Tags::IterationId`
- *   - `residual_magnitude_tag`
  */
-template <typename FieldsTag, typename OptionsGroup, typename DbTagsList,
-          typename Metavariables>
+template <typename OptionsGroup, typename Metavariables>
 void contribute_to_reduction_observer(
-    db::DataBox<DbTagsList>& box,
+    const size_t iteration_id, const double residual_magnitude,
     Parallel::GlobalCache<Metavariables>& cache) noexcept {
-  using fields_tag = FieldsTag;
-  using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
-      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-
   const auto observation_id = observers::ObservationId(
-      get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
-      pretty_type::get_name<OptionsGroup>());
+      iteration_id, pretty_type::get_name<OptionsGroup>());
   auto& reduction_writer = Parallel::get_parallel_component<
       observers::ObserverWriter<Metavariables>>(cache);
   Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>(
@@ -82,8 +62,7 @@ void contribute_to_reduction_observer(
       // `/linear_residuals/<nonlinear_iteration_id>`
       std::string{"/" + Options::name<OptionsGroup>() + "Residuals"},
       std::vector<std::string>{"Iteration", "Residual"},
-      reduction_data{get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
-                     get<residual_magnitude_tag>(box)});
+      reduction_data{iteration_id, residual_magnitude});
 }
 
 }  // namespace observe_detail

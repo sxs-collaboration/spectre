@@ -68,10 +68,9 @@ template <typename FieldsTag, typename OptionsGroup>
 struct InitializeResidualMonitor {
  private:
   using fields_tag = FieldsTag;
-  using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
-      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
   using initial_residual_magnitude_tag =
-      LinearSolver::Tags::Initial<residual_magnitude_tag>;
+      LinearSolver::Tags::Initial<LinearSolver::Tags::Magnitude<
+          db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>>;
   using orthogonalization_iteration_id_tag =
       LinearSolver::Tags::Orthogonalization<
           LinearSolver::Tags::IterationId<OptionsGroup>>;
@@ -88,24 +87,16 @@ struct InitializeResidualMonitor {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using compute_tags = db::AddComputeTags<
-        LinearSolver::Tags::HasConvergedCompute<fields_tag, OptionsGroup>>;
     return std::make_tuple(
         ::Initialization::merge_into_databox<
             InitializeResidualMonitor,
-            db::AddSimpleTags<residual_magnitude_tag,
-                              initial_residual_magnitude_tag,
-                              LinearSolver::Tags::IterationId<OptionsGroup>,
-                              orthogonalization_iteration_id_tag,
-                              orthogonalization_history_tag>,
-            compute_tags>(std::move(box),
-                          // The `InitializeResidualMagnitude` action populates
-                          // these tags with initial values
-                          std::numeric_limits<double>::signaling_NaN(),
-                          std::numeric_limits<double>::signaling_NaN(),
-                          std::numeric_limits<size_t>::max(),
-                          std::numeric_limits<size_t>::max(),
-                          DenseMatrix<double>{}),
+            db::AddSimpleTags<initial_residual_magnitude_tag,
+                              orthogonalization_history_tag>>(
+            std::move(box),
+            // The `InitializeResidualMagnitude` action populates these tags
+            // with initial values
+            std::numeric_limits<double>::signaling_NaN(),
+            DenseMatrix<double>{}),
         true);
   }
 };

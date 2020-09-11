@@ -38,10 +38,9 @@ struct InitializeResidual {
   using fields_tag = FieldsTag;
   using residual_square_tag = LinearSolver::Tags::MagnitudeSquare<
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-  using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
-      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
   using initial_residual_magnitude_tag =
-      LinearSolver::Tags::Initial<residual_magnitude_tag>;
+      LinearSolver::Tags::Initial<LinearSolver::Tags::Magnitude<
+          db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>>;
 
  public:
   template <typename ParallelComponent, typename DbTagsList,
@@ -53,32 +52,25 @@ struct InitializeResidual {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const double residual_square) noexcept {
-    db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>,
-               residual_square_tag>(
+    constexpr size_t iteration_id = 0;
+    const double residual_magnitude = sqrt(residual_square);
+
+    db::mutate<residual_square_tag, initial_residual_magnitude_tag>(
         make_not_null(&box),
-        [residual_square](
-            const gsl::not_null<size_t*> iteration_id,
-            const gsl::not_null<double*> local_residual_square) noexcept {
+        [residual_square, residual_magnitude](
+            const gsl::not_null<double*> local_residual_square,
+            const gsl::not_null<double*> initial_residual_magnitude) noexcept {
           *local_residual_square = residual_square;
-          *iteration_id = 0;
+          *initial_residual_magnitude = residual_magnitude;
         });
-    // Perform a separate `db::mutate` so that we can retrieve the
-    // `residual_magnitude_tag` from the compute item
-    db::mutate<initial_residual_magnitude_tag>(
-        make_not_null(&box),
-        [](const gsl::not_null<double*> local_initial_residual_magnitude,
-           const double initial_residual_magnitude) noexcept {
-          *local_initial_residual_magnitude = initial_residual_magnitude;
-        },
-        get<residual_magnitude_tag>(box));
 
     LinearSolver::observe_detail::contribute_to_reduction_observer<
-        FieldsTag, OptionsGroup>(box, cache);
+        OptionsGroup>(iteration_id, residual_magnitude, cache);
 
-    // Determine whether the linear solver has converged. This invokes the
-    // compute item.
-    const auto& has_converged =
-        db::get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
+    // Determine whether the linear solver has converged
+    Convergence::HasConverged has_converged{
+        get<LinearSolver::Tags::ConvergenceCriteria<OptionsGroup>>(box),
+        iteration_id, residual_magnitude, residual_magnitude};
 
     // Do some logging
     if (UNLIKELY(static_cast<int>(
@@ -87,7 +79,7 @@ struct InitializeResidual {
       Parallel::printf("Linear solver '" +
                            Options::name<OptionsGroup>() +
                            "' initialized with residual: %e\n",
-                       get<residual_magnitude_tag>(box));
+                       residual_magnitude);
     }
     if (UNLIKELY(has_converged and
                  static_cast<int>(
@@ -100,8 +92,9 @@ struct InitializeResidual {
     }
 
     Parallel::receive_data<Tags::InitialHasConverged<OptionsGroup>>(
-        Parallel::get_parallel_component<BroadcastTarget>(cache),
-        get<LinearSolver::Tags::IterationId<OptionsGroup>>(box), has_converged);
+        Parallel::get_parallel_component<BroadcastTarget>(cache), iteration_id,
+        // NOLINTNEXTLINE(performance-move-const-arg)
+        std::move(has_converged));
   }
 };
 
@@ -121,10 +114,10 @@ struct ComputeAlpha {
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
+                    const size_t iteration_id,
                     const double conj_grad_inner_product) noexcept {
     Parallel::receive_data<Tags::Alpha<OptionsGroup>>(
-        Parallel::get_parallel_component<BroadcastTarget>(cache),
-        get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
+        Parallel::get_parallel_component<BroadcastTarget>(cache), iteration_id,
         get<residual_square_tag>(box) / conj_grad_inner_product);
   }
 };
@@ -135,8 +128,9 @@ struct UpdateResidual {
   using fields_tag = FieldsTag;
   using residual_square_tag = LinearSolver::Tags::MagnitudeSquare<
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-  using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
-      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
+  using initial_residual_magnitude_tag =
+      LinearSolver::Tags::Initial<LinearSolver::Tags::Magnitude<
+          db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>>;
 
  public:
   template <typename ParallelComponent, typename DbTagsList,
@@ -147,34 +141,32 @@ struct UpdateResidual {
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
+                    const size_t iteration_id,
                     const double residual_square) noexcept {
     // Compute the residual ratio before mutating the DataBox
     const double res_ratio = residual_square / get<residual_square_tag>(box);
-    const size_t iteration_id =
-        get<LinearSolver::Tags::IterationId<OptionsGroup>>(box);
 
-    db::mutate<residual_square_tag,
-               LinearSolver::Tags::IterationId<OptionsGroup>>(
+    db::mutate<residual_square_tag>(
         make_not_null(&box),
         [residual_square](
-            const gsl::not_null<double*> local_residual_square,
-            const gsl::not_null<size_t*> local_iteration_id) noexcept {
+            const gsl::not_null<double*> local_residual_square) noexcept {
           *local_residual_square = residual_square;
-          // Prepare for the next iteration
-          ++(*local_iteration_id);
         });
 
     // At this point, the iteration is complete. We proceed with observing,
     // logging and checking convergence before broadcasting back to the
     // elements.
 
+    const size_t completed_iterations = iteration_id + 1;
+    const double residual_magnitude = sqrt(residual_square);
     LinearSolver::observe_detail::contribute_to_reduction_observer<
-        FieldsTag, OptionsGroup>(box, cache);
+        OptionsGroup>(completed_iterations, residual_magnitude, cache);
 
-    // Determine whether the linear solver has converged. This invokes the
-    // compute item.
-    const auto& has_converged =
-        get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
+    // Determine whether the linear solver has converged
+    Convergence::HasConverged has_converged{
+        get<LinearSolver::Tags::ConvergenceCriteria<OptionsGroup>>(box),
+        completed_iterations, residual_magnitude,
+        get<initial_residual_magnitude_tag>(box)};
 
     // Do some logging
     if (UNLIKELY(static_cast<int>(
@@ -183,8 +175,7 @@ struct UpdateResidual {
       Parallel::printf("Linear solver '" +
                            Options::name<OptionsGroup>() +
                            "' iteration %zu done. Remaining residual: %e\n",
-                       get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
-                       get<residual_magnitude_tag>(box));
+                       completed_iterations, residual_magnitude);
     }
     if (UNLIKELY(has_converged and
                  static_cast<int>(
@@ -193,13 +184,13 @@ struct UpdateResidual {
       Parallel::printf("The linear solver '" +
                            Options::name<OptionsGroup>() +
                            "' has converged in %zu iterations: %s\n",
-                       get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
-                       has_converged);
+                       completed_iterations, has_converged);
     }
 
     Parallel::receive_data<Tags::ResidualRatioAndHasConverged<OptionsGroup>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache), iteration_id,
-        std::make_tuple(res_ratio, has_converged));
+        // NOLINTNEXTLINE(performance-move-const-arg)
+        std::make_tuple(res_ratio, std::move(has_converged)));
   }
 };
 

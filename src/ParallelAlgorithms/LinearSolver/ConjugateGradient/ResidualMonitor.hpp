@@ -85,21 +85,16 @@ struct InitializeResidualMonitor {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using compute_tags = db::AddComputeTags<
-        LinearSolver::Tags::MagnitudeCompute<residual_square_tag>,
-        LinearSolver::Tags::HasConvergedCompute<fields_tag, OptionsGroup>>;
     return std::make_tuple(
         ::Initialization::merge_into_databox<
             InitializeResidualMonitor,
-            db::AddSimpleTags<LinearSolver::Tags::IterationId<OptionsGroup>,
-                              residual_square_tag,
-                              initial_residual_magnitude_tag>,
-            compute_tags>(std::move(box),
-                          // The `InitializeResidual` action populates these
-                          // tags with initial values
-                          std::numeric_limits<size_t>::max(),
-                          std::numeric_limits<double>::signaling_NaN(),
-                          std::numeric_limits<double>::signaling_NaN()),
+            db::AddSimpleTags<residual_square_tag,
+                              initial_residual_magnitude_tag>>(
+            std::move(box),
+            // The `InitializeResidual` action populates these tags with initial
+            // values
+            std::numeric_limits<double>::signaling_NaN(),
+            std::numeric_limits<double>::signaling_NaN()),
         true);
   }
 };

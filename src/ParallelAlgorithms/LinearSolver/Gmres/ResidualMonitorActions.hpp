@@ -35,52 +35,38 @@ template <typename FieldsTag, typename OptionsGroup, typename BroadcastTarget>
 struct InitializeResidualMagnitude {
  private:
   using fields_tag = FieldsTag;
-  using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
-      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
   using initial_residual_magnitude_tag =
-      LinearSolver::Tags::Initial<residual_magnitude_tag>;
-  using orthogonalization_iteration_id_tag =
-      LinearSolver::Tags::Orthogonalization<
-          LinearSolver::Tags::IterationId<OptionsGroup>>;
+      LinearSolver::Tags::Initial<LinearSolver::Tags::Magnitude<
+          db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>>;
   using orthogonalization_history_tag =
       LinearSolver::Tags::OrthogonalizationHistory<fields_tag>;
 
  public:
-  template <
-      typename ParallelComponent, typename DbTagsList, typename Metavariables,
-      typename ArrayIndex, typename DataBox = db::DataBox<DbTagsList>,
-      Requires<db::tag_is_retrievable_v<residual_magnitude_tag, DataBox>> =
-          nullptr>
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            typename DataBox = db::DataBox<DbTagsList>,
+            Requires<db::tag_is_retrievable_v<initial_residual_magnitude_tag,
+                                              DataBox>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const double residual_magnitude) noexcept {
-    db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>,
-               residual_magnitude_tag, initial_residual_magnitude_tag,
-               orthogonalization_iteration_id_tag,
-               orthogonalization_history_tag>(
+    constexpr size_t iteration_id = 0;
+
+    db::mutate<initial_residual_magnitude_tag>(
         make_not_null(&box),
         [residual_magnitude](
-            const gsl::not_null<size_t*> iteration_id,
-            const gsl::not_null<double*> local_residual_magnitude,
-            const gsl::not_null<double*> initial_residual_magnitude,
-            const gsl::not_null<size_t*> orthogonalization_iteration_id,
-            const gsl::not_null<DenseMatrix<double>*>
-                orthogonalization_history) noexcept {
-          *local_residual_magnitude = *initial_residual_magnitude =
-              residual_magnitude;
-          *iteration_id = 0;
-          *orthogonalization_iteration_id = 0;
-          *orthogonalization_history = DenseMatrix<double>{2, 1, 0.};
+            const gsl::not_null<double*> initial_residual_magnitude) noexcept {
+          *initial_residual_magnitude = residual_magnitude;
         });
 
     LinearSolver::observe_detail::contribute_to_reduction_observer<
-        FieldsTag, OptionsGroup>(box, cache);
+        OptionsGroup>(iteration_id, residual_magnitude, cache);
 
-    // Determine whether the linear solver has already converged. This invokes
-    // the compute item.
-    const auto& has_converged =
-        db::get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
+    // Determine whether the linear solver has already converged
+    Convergence::HasConverged has_converged{
+        get<LinearSolver::Tags::ConvergenceCriteria<OptionsGroup>>(box),
+        iteration_id, residual_magnitude, residual_magnitude};
 
     // Do some logging
     if (UNLIKELY(static_cast<int>(
@@ -102,9 +88,9 @@ struct InitializeResidualMagnitude {
     }
 
     Parallel::receive_data<Tags::InitialOrthogonalization<OptionsGroup>>(
-        Parallel::get_parallel_component<BroadcastTarget>(cache),
-        get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
-        std::make_tuple(residual_magnitude, has_converged));
+        Parallel::get_parallel_component<BroadcastTarget>(cache), iteration_id,
+        // NOLINTNEXTLINE(performance-move-const-arg)
+        std::make_tuple(residual_magnitude, std::move(has_converged)));
   }
 };
 
@@ -112,13 +98,9 @@ template <typename FieldsTag, typename OptionsGroup, typename BroadcastTarget>
 struct StoreOrthogonalization {
  private:
   using fields_tag = FieldsTag;
-  using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
-      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
   using initial_residual_magnitude_tag =
-      LinearSolver::Tags::Initial<residual_magnitude_tag>;
-  using orthogonalization_iteration_id_tag =
-      LinearSolver::Tags::Orthogonalization<
-          LinearSolver::Tags::IterationId<OptionsGroup>>;
+      LinearSolver::Tags::Initial<LinearSolver::Tags::Magnitude<
+          db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>>;
   using orthogonalization_history_tag =
       LinearSolver::Tags::OrthogonalizationHistory<fields_tag>;
 
@@ -131,22 +113,34 @@ struct StoreOrthogonalization {
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
+                    const size_t iteration_id,
+                    const size_t orthogonalization_iteration_id,
                     const double orthogonalization) noexcept {
+    if (UNLIKELY(orthogonalization_iteration_id == 0)) {
+      // Append a row and a column to the orthogonalization history. Zero the
+      // entries that won't be set during the orthogonalization procedure below.
+      db::mutate<orthogonalization_history_tag>(
+          make_not_null(&box),
+          [iteration_id](const auto orthogonalization_history) noexcept {
+            orthogonalization_history->resize(iteration_id + 2,
+                                              iteration_id + 1);
+            for (size_t j = 0; j < orthogonalization_history->columns() - 1;
+                 ++j) {
+              (*orthogonalization_history)(
+                  orthogonalization_history->rows() - 1, j) = 0.;
+            }
+          });
+    }
+
     // While the orthogonalization procedure is not complete, store the
     // orthogonalization, broadcast it back to all elements and return early
-    const size_t iteration_id =
-        get<LinearSolver::Tags::IterationId<OptionsGroup>>(box);
-    if (get<orthogonalization_iteration_id_tag>(box) <= iteration_id) {
-      db::mutate<orthogonalization_history_tag,
-                 orthogonalization_iteration_id_tag>(
+    if (orthogonalization_iteration_id <= iteration_id) {
+      db::mutate<orthogonalization_history_tag>(
           make_not_null(&box),
-          [orthogonalization, iteration_id](
-              const auto orthogonalization_history,
-              const gsl::not_null<size_t*>
-                  orthogonalization_iteration_id) noexcept {
-            (*orthogonalization_history)(*orthogonalization_iteration_id,
+          [orthogonalization, iteration_id, orthogonalization_iteration_id](
+              const auto orthogonalization_history) noexcept {
+            (*orthogonalization_history)(orthogonalization_iteration_id,
                                          iteration_id) = orthogonalization;
-            ++(*orthogonalization_iteration_id);
           });
 
       Parallel::receive_data<Tags::Orthogonalization<OptionsGroup>>(
@@ -158,19 +152,17 @@ struct StoreOrthogonalization {
     // At this point, the orthogonalization procedure is complete.
     db::mutate<orthogonalization_history_tag>(
         make_not_null(&box),
-        [orthogonalization, iteration_id](
-            const auto orthogonalization_history,
-            const size_t& orthogonalization_iteration_id) noexcept {
+        [orthogonalization, iteration_id, orthogonalization_iteration_id](
+            const auto orthogonalization_history) noexcept {
           (*orthogonalization_history)(orthogonalization_iteration_id,
                                        iteration_id) = sqrt(orthogonalization);
-        },
-        get<orthogonalization_iteration_id_tag>(box));
+        });
 
     // Perform a QR decomposition of the Hessenberg matrix that was built during
     // the orthogonalization
     const auto& orthogonalization_history =
         get<orthogonalization_history_tag>(box);
-    const auto num_rows = get<orthogonalization_iteration_id_tag>(box) + 1;
+    const auto num_rows = orthogonalization_iteration_id + 1;
     DenseMatrix<double> qr_Q;
     DenseMatrix<double> qr_R;
     blaze::qr(orthogonalization_history, qr_Q, qr_R);
@@ -181,46 +173,19 @@ struct StoreOrthogonalization {
     const double residual_magnitude =
         blaze::length(beta - orthogonalization_history * minres);
 
-    // Store residual magnitude and prepare for the next iteration
-    db::mutate<
-        residual_magnitude_tag, LinearSolver::Tags::IterationId<OptionsGroup>,
-        orthogonalization_iteration_id_tag, orthogonalization_history_tag>(
-        make_not_null(&box),
-        [residual_magnitude](
-            const gsl::not_null<double*> local_residual_magnitude,
-            const gsl::not_null<size_t*> local_iteration_id,
-            const gsl::not_null<size_t*> orthogonalization_iteration_id,
-            const gsl::not_null<typename orthogonalization_history_tag::type*>
-                local_orthogonalization_history) noexcept {
-          *local_residual_magnitude = residual_magnitude;
-          // Prepare for the next iteration
-          ++(*local_iteration_id);
-          *orthogonalization_iteration_id = 0;
-          local_orthogonalization_history->resize(*local_iteration_id + 2,
-                                                  *local_iteration_id + 1);
-          // Make sure the new entries are zero
-          for (size_t i = 0; i < local_orthogonalization_history->rows(); i++) {
-            (*local_orthogonalization_history)(
-                i, local_orthogonalization_history->columns() - 1) = 0.;
-          }
-          for (size_t j = 0; j < local_orthogonalization_history->columns();
-               j++) {
-            (*local_orthogonalization_history)(
-                local_orthogonalization_history->rows() - 1, j) = 0.;
-          }
-        });
-
     // At this point, the iteration is complete. We proceed with observing,
     // logging and checking convergence before broadcasting back to the
     // elements.
 
+    const size_t completed_iterations = iteration_id + 1;
     LinearSolver::observe_detail::contribute_to_reduction_observer<
-        FieldsTag, OptionsGroup>(box, cache);
+        OptionsGroup>(completed_iterations, residual_magnitude, cache);
 
-    // Determine whether the linear solver has converged. This invokes the
-    // compute item.
-    const auto& has_converged =
-        db::get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
+    // Determine whether the linear solver has converged
+    Convergence::HasConverged has_converged{
+        get<LinearSolver::Tags::ConvergenceCriteria<OptionsGroup>>(box),
+        completed_iterations, residual_magnitude,
+        get<initial_residual_magnitude_tag>(box)};
 
     // Do some logging
     if (UNLIKELY(static_cast<int>(
@@ -229,8 +194,7 @@ struct StoreOrthogonalization {
       Parallel::printf("Linear solver '" +
                            Options::name<OptionsGroup>() +
                            "' iteration %zu done. Remaining residual: %e\n",
-                       get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
-                       residual_magnitude);
+                       completed_iterations, residual_magnitude);
     }
     if (UNLIKELY(has_converged and
                  static_cast<int>(
@@ -239,14 +203,14 @@ struct StoreOrthogonalization {
       Parallel::printf("The linear solver '" +
                            Options::name<OptionsGroup>() +
                            "' has converged in %zu iterations: %s\n",
-                       get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
-                       has_converged);
+                       completed_iterations, has_converged);
     }
 
     Parallel::receive_data<Tags::FinalOrthogonalization<OptionsGroup>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache), iteration_id,
         std::make_tuple(sqrt(orthogonalization), std::move(minres),
-                        has_converged));
+                        // NOLINTNEXTLINE(performance-move-const-arg)
+                        std::move(has_converged)));
   }
 };
 
