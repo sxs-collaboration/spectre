@@ -8,6 +8,7 @@ spectre_target_headers(
   DgElementArray.hpp
   InboxTags.hpp
   MortarData.hpp
+  MortarTags.hpp
   )
 
 spectre_target_sources(

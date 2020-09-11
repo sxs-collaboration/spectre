@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Actions/Test_ComputeTimeDerivative.cpp
   Test_InboxTags.cpp
   Test_MortarData.cpp
+  Test_MortarTags.cpp
   )
 
 add_test_library(
