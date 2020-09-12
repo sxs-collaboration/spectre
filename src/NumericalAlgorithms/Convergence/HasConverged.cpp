@@ -39,6 +39,12 @@ HasConverged::HasConverged(const Criteria& criteria, const size_t iteration_id,
       residual_magnitude_(residual_magnitude),
       initial_residual_magnitude_(initial_residual_magnitude) {}
 
+HasConverged::HasConverged(const size_t num_iterations,
+                           const size_t iteration_id) noexcept
+    : HasConverged(Criteria{num_iterations, 0., 0.}, iteration_id,
+                   std::numeric_limits<double>::max(),
+                   std::numeric_limits<double>::max()) {}
+
 Reason HasConverged::reason() const noexcept {
   ASSERT(reason_,
          "Tried to retrieve the convergence reason, but has not yet converged. "
