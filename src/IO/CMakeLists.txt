@@ -21,7 +21,7 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
-  Boost::boost # PUBLIC because of the actions
+  Boost::boost
   DataStructures
   ErrorHandling
   Hdf5

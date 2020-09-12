@@ -53,5 +53,6 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ObservationId", "[Unit][Observers]") {
   CHECK(key0 != key1);
   CHECK(key0 == id0.observation_key());
   CHECK(get_output(key0) == "(" + get_output(key0.tag()) + ")");
+  test_serialization(key0);
 }
 }  // namespace observers
