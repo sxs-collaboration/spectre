@@ -83,6 +83,23 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
     test_serialization(has_converged);
     test_copy_semantics(has_converged);
   }
+
+  {
+    INFO("HasConverged - fixed number of iterations incomplete")
+    const Convergence::HasConverged has_converged{1, 0};
+    CHECK_FALSE(has_converged);
+    test_serialization(has_converged);
+    test_copy_semantics(has_converged);
+  }
+
+  {
+    INFO("HasConverged - fixed number of iterations complete")
+    const Convergence::HasConverged has_converged{1, 1};
+    CHECK(has_converged);
+    CHECK(has_converged.reason() == Convergence::Reason::MaxIterations);
+    test_serialization(has_converged);
+    test_copy_semantics(has_converged);
+  }
 }
 
 // [[OutputRegex, Tried to retrieve the convergence reason, but has not yet
