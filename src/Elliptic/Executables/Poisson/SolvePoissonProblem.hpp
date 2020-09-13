@@ -137,7 +137,6 @@ struct Metavariables {
                  Tags::EventsAndTriggers<events, triggers>>;
 
   // Collect all reduction tags for observers
-  struct element_observation_type {};
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
           typename Event<events>::creatable_classes, linear_solver>>>;

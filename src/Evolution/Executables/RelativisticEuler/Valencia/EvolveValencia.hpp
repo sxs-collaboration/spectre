@@ -182,9 +182,6 @@ struct EvolutionMetavars {
       Events::Registrars::ChangeSlabSize<slab_choosers>>;
   using triggers = Triggers::time_triggers;
 
-  struct ObservationType {};
-  using element_observation_type = ObservationType;
-
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       typename Event<events>::creatable_classes>;
 

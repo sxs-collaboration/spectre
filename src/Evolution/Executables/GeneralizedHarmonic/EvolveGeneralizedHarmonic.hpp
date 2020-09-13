@@ -245,9 +245,6 @@ struct EvolutionMetavars {
       tmpl::list<analytic_solution_tag, normal_dot_numerical_flux,
                  time_stepper_tag, Tags::EventsAndTriggers<events, triggers>>;
 
-  struct ObservationType {};
-  using element_observation_type = ObservationType;
-
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::push_back<typename Event<observation_events>::creatable_classes,
                       typename AhA::post_horizon_find_callback>>;
