@@ -51,9 +51,6 @@ using reduction_data = Parallel::ReductionData<
     // Residual
     Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Sqrt<>>>;
 
-template <typename OptionsGroup>
-struct ElementObservationType {};
-
 template <typename FieldsTag, typename OptionsGroup, typename ParallelComponent,
           typename DbTagsList, typename Metavariables, typename ArrayIndex>
 void contribute_to_residual_observation(
@@ -75,9 +72,8 @@ void contribute_to_residual_observation(
            .ckLocalBranch();
   Parallel::simple_action<observers::Actions::ContributeReductionData>(
       local_observer,
-      observers::ObservationId(
-          iteration_id,
-          pretty_type::get_name<ElementObservationType<OptionsGroup>>()),
+      observers::ObservationId(iteration_id,
+                               pretty_type::get_name<OptionsGroup>()),
       observers::ArrayComponentId{
           std::add_pointer_t<ParallelComponent>{nullptr},
           Parallel::ArrayIndex<ArrayIndex>(array_index)},
@@ -155,8 +151,7 @@ struct RegisterObservers {
   register_info(const db::DataBox<DbTagsList>& /*box*/,
                 const ArrayIndex& /*array_index*/) noexcept {
     return {observers::TypeOfObservation::Reduction,
-            observers::ObservationKey{
-                pretty_type::get_name<ElementObservationType<OptionsGroup>>()}};
+            observers::ObservationKey{pretty_type::get_name<OptionsGroup>()}};
   }
 };
 

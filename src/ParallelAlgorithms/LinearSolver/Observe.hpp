@@ -14,6 +14,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
+#include "Utilities/PrettyType.hpp"
 
 namespace LinearSolver {
 namespace observe_detail {
@@ -24,8 +25,7 @@ using reduction_data = Parallel::ReductionData<
     // Residual
     Parallel::ReductionDatum<double, funcl::AssertEqual<>>>;
 
-struct ObservationType {};
-
+template <typename OptionsGroup>
 struct Registration {
   template <typename ParallelComponent, typename DbTagsList,
             typename ArrayIndex>
@@ -33,8 +33,7 @@ struct Registration {
   register_info(const db::DataBox<DbTagsList>& /*box*/,
                 const ArrayIndex& /*array_index*/) noexcept {
     return {observers::TypeOfObservation::Reduction,
-            observers::ObservationKey{
-                "LinearSolver::observe_detail::ObservationType"}};
+            observers::ObservationKey{pretty_type::get_name<OptionsGroup>()}};
   }
 };
 
@@ -64,7 +63,7 @@ void contribute_to_reduction_observer(
 
   const auto observation_id = observers::ObservationId(
       get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
-      "LinearSolver::observe_detail::ObservationType");
+      pretty_type::get_name<OptionsGroup>());
   auto& reduction_writer = Parallel::get_parallel_component<
       observers::ObserverWriter<Metavariables>>(cache);
   Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>(
