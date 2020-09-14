@@ -867,6 +867,18 @@ void test_options_explicit_constructor() {
   opts.parse("ExplicitObjectTag:");
   opts.get<ExplicitObjectTag>();
 }
+
+struct DefaultBool {
+  using type = bool;
+  static type default_value() noexcept { return false; }
+  constexpr static OptionString help = "halp";
+};
+
+void test_options_format_bool() noexcept {
+  const auto help = Options<tmpl::list<DefaultBool>>("").help();
+  CAPTURE(help);
+  CHECK(help.find("default=false") != std::string::npos);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
@@ -890,4 +902,5 @@ SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
   test_options_option_context_default_stream();
   test_options_format();
   test_options_explicit_constructor();
+  test_options_format_bool();
 }
