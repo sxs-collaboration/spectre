@@ -12,3 +12,4 @@ spectre_target_headers(
   ResidualMonitorActions.hpp
   )
 
+add_subdirectory(Tags)

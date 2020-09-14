@@ -5,10 +5,13 @@
 
 #include <cstddef>
 #include <limits>
+#include <tuple>
+#include <type_traits>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
+#include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"

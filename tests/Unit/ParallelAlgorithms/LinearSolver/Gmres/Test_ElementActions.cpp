@@ -10,21 +10,19 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DenseVector.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "Parallel/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
-#include "ParallelAlgorithms/LinearSolver/Gmres/ElementActions.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/LinearSolver/Gmres/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/InitializeElement.hpp"
-#include "ParallelAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/LinearSolver/Gmres/Tags/InboxTags.hpp"
+#include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-// IWYU pragma: no_include <boost/variant/get.hpp>
-// IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
 
@@ -65,8 +63,17 @@ struct ElementArray {
                          fields_tag, DummyOptionsGroup, Preconditioned>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<LinearSolver::gmres::detail::PrepareStep<
-              fields_tag, DummyOptionsGroup, Preconditioned>>>>;
+          tmpl::list<
+              LinearSolver::gmres::detail::NormalizeInitialOperand<
+                  fields_tag, DummyOptionsGroup, Preconditioned,
+                  DummyOptionsGroup>,
+              LinearSolver::gmres::detail::PrepareStep<
+                  fields_tag, DummyOptionsGroup, Preconditioned,
+                  DummyOptionsGroup>,
+              LinearSolver::gmres::detail::NormalizeOperandAndUpdateField<
+                  fields_tag, DummyOptionsGroup, Preconditioned,
+                  DummyOptionsGroup>,
+              Parallel::Actions::TerminatePhase>>>;
 };
 
 template <bool Preconditioned>
@@ -134,45 +141,93 @@ void test_element_actions() {
     CHECK_FALSE(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
   }
 
-  SECTION("NormalizeInitialOperand") {
-    set_tag(operand_tag{}, DenseVector<double>(3, 2.));
-    set_tag(basis_history_tag{},
-            std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
-                                             DenseVector<double>(3, 1.5)});
-    ActionTesting::simple_action<
-        element_array, LinearSolver::gmres::detail::NormalizeInitialOperand<
-                           fields_tag, DummyOptionsGroup, Preconditioned>>(
-        make_not_null(&runner), 0, 4.,
-        Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.});
-    CHECK_ITERABLE_APPROX(get_tag(operand_tag{}), DenseVector<double>(3, 0.5));
-    CHECK(get_tag(basis_history_tag{}).size() == 3);
-    CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
-    CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
+  const auto test_normalize_initial_operand =
+      [&runner, &get_tag,
+       &set_tag](const Convergence::HasConverged& has_converged) {
+        const size_t iteration_id = 0;
+        set_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{},
+                iteration_id);
+        set_tag(operand_tag{}, DenseVector<double>(3, 2.));
+        set_tag(basis_history_tag{},
+                std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
+                                                 DenseVector<double>(3, 1.5)});
+        REQUIRE_FALSE(ActionTesting::is_ready<element_array>(runner, 0));
+        auto& inbox = ActionTesting::get_inbox_tag<
+            element_array, LinearSolver::gmres::detail::Tags::
+                               InitialOrthogonalization<DummyOptionsGroup>>(
+            make_not_null(&runner), 0);
+        const double residual_magnitude = 4.;
+        CAPTURE(has_converged);
+        inbox[iteration_id] =
+            std::make_tuple(residual_magnitude, has_converged);
+        REQUIRE(ActionTesting::is_ready<element_array>(runner, 0));
+        ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
+        CHECK_ITERABLE_APPROX(get_tag(operand_tag{}),
+                              DenseVector<double>(3, 0.5));
+        CHECK(get_tag(basis_history_tag{}).size() == 3);
+        CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
+        CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}) ==
+              has_converged);
+        CHECK(ActionTesting::get_next_action_index<element_array>(runner, 0) ==
+              (has_converged ? 3 : 1));
+      };
+  SECTION("NormalizeInitialOperand (not yet converged: continue loop)") {
+    test_normalize_initial_operand(Convergence::HasConverged{1, 0});
   }
-  SECTION("NormalizeOperandAndUpdateField") {
-    set_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}, size_t{2});
-    set_tag(initial_fields_tag{}, DenseVector<double>(3, -1.));
-    set_tag(operand_tag{}, DenseVector<double>(3, 2.));
-    set_tag(basis_history_tag{},
-            std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
-                                             DenseVector<double>(3, 1.5)});
-    if constexpr (Preconditioned) {
-      set_tag(preconditioned_basis_history_tag{}, get_tag(basis_history_tag{}));
-    }
-    ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
-    ActionTesting::simple_action<
-        element_array,
-        LinearSolver::gmres::detail::NormalizeOperandAndUpdateField<
-            fields_tag, DummyOptionsGroup, Preconditioned>>(
-        make_not_null(&runner), 0, 4., DenseVector<double>{2., 4.},
-        Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.});
-    CHECK_ITERABLE_APPROX(get_tag(operand_tag{}), DenseVector<double>(3, 0.5));
-    CHECK(get_tag(basis_history_tag{}).size() == 3);
-    CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
-    // minres * basis_history - initial = 2 * 0.5 + 4 * 1.5 - 1 = 6
-    CHECK_ITERABLE_APPROX(get_tag(VectorTag{}), DenseVector<double>(3, 6.));
-    CHECK(get_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}) == 3);
-    CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
+  SECTION("NormalizeInitialOperand (has converged: terminate loop)") {
+    test_normalize_initial_operand(Convergence::HasConverged{1, 1});
+  }
+
+  const auto test_normalize_operand_and_update_field =
+      [&runner, &get_tag,
+       &set_tag](const Convergence::HasConverged& has_converged) {
+        const size_t iteration_id = 2;
+        set_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{},
+                iteration_id);
+        set_tag(initial_fields_tag{}, DenseVector<double>(3, -1.));
+        set_tag(operand_tag{}, DenseVector<double>(3, 2.));
+        set_tag(basis_history_tag{},
+                std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
+                                                 DenseVector<double>(3, 1.5)});
+        if constexpr (Preconditioned) {
+          set_tag(preconditioned_basis_history_tag{},
+                  get_tag(basis_history_tag{}));
+        }
+        runner.template force_next_action_to_be<
+            element_array,
+            LinearSolver::gmres::detail::NormalizeOperandAndUpdateField<
+                fields_tag, DummyOptionsGroup, Preconditioned,
+                DummyOptionsGroup>>(0);
+        REQUIRE_FALSE(ActionTesting::is_ready<element_array>(runner, 0));
+        auto& inbox = ActionTesting::get_inbox_tag<
+            element_array, LinearSolver::gmres::detail::Tags::
+                               FinalOrthogonalization<DummyOptionsGroup>>(
+            make_not_null(&runner), 0);
+        const double normalization = 4.;
+        const DenseVector<double> minres{2., 4.};
+        CAPTURE(has_converged);
+        inbox[iteration_id] =
+            std::make_tuple(normalization, minres, has_converged);
+        ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
+        REQUIRE(ActionTesting::is_ready<element_array>(runner, 0));
+        CHECK_ITERABLE_APPROX(get_tag(operand_tag{}),
+                              DenseVector<double>(3, 0.5));
+        CHECK(get_tag(basis_history_tag{}).size() == 3);
+        CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
+        // minres * basis_history - initial = 2 * 0.5 + 4 * 1.5 - 1 = 6
+        CHECK_ITERABLE_APPROX(get_tag(VectorTag{}), DenseVector<double>(3, 6.));
+        CHECK(get_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}) ==
+              3);
+        CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}) ==
+              has_converged);
+        CHECK(ActionTesting::get_next_action_index<element_array>(runner, 0) ==
+              (has_converged ? 3 : 1));
+      };
+  SECTION("NormalizeOperandAndUpdateField (not yet converged: continue loop)") {
+    test_normalize_operand_and_update_field(Convergence::HasConverged{1, 0});
+  }
+  SECTION("NormalizeOperandAndUpdateField (has converged: terminate loop)") {
+    test_normalize_operand_and_update_field(Convergence::HasConverged{1, 1});
   }
 }
 

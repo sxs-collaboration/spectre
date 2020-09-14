@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <limits>
 #include <string>
 #include <tuple>
@@ -28,6 +29,7 @@
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
+#include "Utilities/Functional.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -39,6 +41,11 @@ namespace tuples {
 template <typename...>
 class TaggedTuple;
 }  // namespace tuples
+namespace LinearSolver::async_solvers {
+template <typename FieldsTag, typename OptionsGroup, typename SourceTag,
+          typename Label>
+struct CompleteStep;
+}  // namespace LinearSolver::async_solvers
 /// \endcond
 
 /// Functionality shared between parallel linear solvers that have no global
@@ -160,7 +167,8 @@ template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
 using RegisterElement =
     observers::Actions::RegisterWithObservers<RegisterObservers<OptionsGroup>>;
 
-template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
+template <typename FieldsTag, typename OptionsGroup, typename SourceTag,
+          typename Label>
 struct PrepareSolve {
  private:
   using fields_tag = FieldsTag;
@@ -176,7 +184,7 @@ struct PrepareSolve {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static std::tuple<db::DataBox<DbTagsList>&&, bool, size_t> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -196,11 +204,21 @@ struct PrepareSolve {
     contribute_to_residual_observation<FieldsTag, OptionsGroup,
                                        ParallelComponent>(box, cache,
                                                           array_index);
-    return {std::move(box)};
+    // Skip steps entirely if the solve has already converged
+    constexpr size_t step_end_index =
+        tmpl::index_of<ActionList, CompleteStep<FieldsTag, OptionsGroup,
+                                                SourceTag, Label>>::value;
+    constexpr size_t this_action_index =
+        tmpl::index_of<ActionList, PrepareSolve>::value;
+    return {std::move(box), false,
+            get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box)
+                ? (step_end_index + 1)
+                : (this_action_index + 1)};
   }
 };
 
-template <typename FieldsTag, typename OptionsGroup, typename SourceTag>
+template <typename FieldsTag, typename OptionsGroup, typename SourceTag,
+          typename Label>
 struct CompleteStep {
  private:
   using fields_tag = FieldsTag;
@@ -216,7 +234,7 @@ struct CompleteStep {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static std::tuple<db::DataBox<DbTagsList>&&, bool, size_t> apply(
       db::DataBox<DbTagsList>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -236,7 +254,17 @@ struct CompleteStep {
     contribute_to_residual_observation<FieldsTag, OptionsGroup,
                                        ParallelComponent>(box, cache,
                                                           array_index);
-    return {std::move(box)};
+    // Repeat steps until the solve has converged
+    constexpr size_t step_begin_index =
+        tmpl::index_of<ActionList, PrepareSolve<FieldsTag, OptionsGroup,
+                                                SourceTag, Label>>::value +
+        1;
+    constexpr size_t this_action_index =
+        tmpl::index_of<ActionList, CompleteStep>::value;
+    return {std::move(box), false,
+            get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box)
+                ? (this_action_index + 1)
+                : step_begin_index};
   }
 };
 

@@ -3,9 +3,14 @@
 
 #pragma once
 
+#include <cstddef>
+#include <tuple>
+#include <utility>
+
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
-#include "Options/Options.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "IO/Observer/Helpers.hpp"
 #include "ParallelAlgorithms/LinearSolver/AsynchronousSolvers/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Richardson/Tags.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
@@ -109,10 +114,11 @@ struct Richardson {
       async_solvers::InitializeElement<FieldsTag, OptionsGroup, SourceTag>;
   using register_element =
       async_solvers::RegisterElement<FieldsTag, OptionsGroup, SourceTag>;
-  using prepare_solve =
-      async_solvers::PrepareSolve<FieldsTag, OptionsGroup, SourceTag>;
-  using prepare_step = detail::UpdateFields<FieldsTag, OptionsGroup, SourceTag>;
-  using perform_step =
-      async_solvers::CompleteStep<FieldsTag, OptionsGroup, SourceTag>;
+  template <typename ApplyOperatorActions, typename Label = OptionsGroup>
+  using solve = tmpl::list<
+      async_solvers::PrepareSolve<FieldsTag, OptionsGroup, SourceTag, Label>,
+      detail::UpdateFields<FieldsTag, OptionsGroup, SourceTag>,
+      ApplyOperatorActions,
+      async_solvers::CompleteStep<FieldsTag, OptionsGroup, SourceTag, Label>>;
 };
 }  // namespace LinearSolver::Richardson

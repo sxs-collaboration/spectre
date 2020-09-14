@@ -3,13 +3,15 @@
 
 #pragma once
 
+#include <cstddef>
+#include <limits>
+#include <utility>
+
 #include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DenseMatrix.hpp"
 #include "IO/Observer/Actions/RegisterSingleton.hpp"
-#include "Informer/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -27,9 +29,6 @@ namespace LinearSolver::gmres::detail {
 template <typename FieldsTag, typename OptionsGroup>
 struct InitializeResidualMonitor;
 }  // namespace LinearSolver::gmres::detail
-namespace Convergence {
-struct Criteria;
-}  // namespace Convergence
 /// \endcond
 
 namespace LinearSolver::gmres::detail {
@@ -41,6 +40,9 @@ struct ResidualMonitor {
       tmpl::list<LinearSolver::Tags::Verbosity<OptionsGroup>,
                  LinearSolver::Tags::ConvergenceCriteria<OptionsGroup>>;
   using metavariables = Metavariables;
+  // The actions in `ResidualMonitorActions.hpp` are invoked as simple actions
+  // on this component as the result of reductions from the actions in
+  // `ElementActions.hpp`. See `LinearSolver::gmres::Gmres` for details.
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
