@@ -3,14 +3,22 @@
 
 #include "IO/Observer/ObservationId.hpp"
 
+#include <boost/functional/hash.hpp>
+#include <cstddef>
 #include <ostream>
 #include <pup.h>
+#include <pup_stl.h>
+#include <string>
+#include <utility>
 
 namespace observers {
 ObservationKey::ObservationKey(std::string tag) noexcept
     : key_(std::hash<std::string>{}(tag)), tag_(std::move(tag)) {}
 
-void ObservationKey::pup(PUP::er& p) noexcept { p | key_; }
+void ObservationKey::pup(PUP::er& p) noexcept {
+  p | key_;
+  p | tag_;
+}
 
 const std::string& ObservationKey::tag() const noexcept { return tag_; }
 
