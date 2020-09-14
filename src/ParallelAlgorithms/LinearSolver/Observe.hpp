@@ -3,6 +3,11 @@
 
 #pragma once
 
+#include <cstddef>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
@@ -14,6 +19,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
+#include "Utilities/Functional.hpp"
 #include "Utilities/PrettyType.hpp"
 
 namespace LinearSolver {

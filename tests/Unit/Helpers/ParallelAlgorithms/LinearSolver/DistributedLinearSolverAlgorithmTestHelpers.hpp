@@ -289,14 +289,8 @@ template <typename Preconditioner>
 struct run_preconditioner_impl {
   using type =
       tmpl::list<ComputeOperatorAction<typename Preconditioner::fields_tag>,
-                 typename Preconditioner::prepare_solve,
-                 ::Actions::RepeatUntil<
-                     LinearSolver::Tags::HasConverged<
-                         typename Preconditioner::options_group>,
-                     tmpl::list<typename Preconditioner::prepare_step,
-                                ComputeOperatorAction<
-                                    typename Preconditioner::operand_tag>,
-                                typename Preconditioner::perform_step>>>;
+                 typename Preconditioner::template solve<ComputeOperatorAction<
+                     typename Preconditioner::operand_tag>>>;
 };
 
 template <>
@@ -329,18 +323,15 @@ struct ElementArray {
           Metavariables::Phase::RegisterWithObserver,
           tmpl::list<typename linear_solver::register_element,
                      helpers::detail::register_preconditioner<preconditioner>,
-                     typename linear_solver::prepare_solve,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase,
           Metavariables::Phase::PerformLinearSolve,
-          tmpl::list<LinearSolver::Actions::TerminateIfConverged<
-                         typename linear_solver::options_group>,
-                     typename linear_solver::prepare_step,
-                     detail::run_preconditioner<preconditioner>,
-                     ComputeOperatorAction<typename linear_solver::operand_tag>,
-                     typename linear_solver::perform_step>>,
-
+          tmpl::list<
+              typename linear_solver::template solve<tmpl::list<
+                  detail::run_preconditioner<preconditioner>,
+                  ComputeOperatorAction<typename linear_solver::operand_tag>>>,
+              Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::TestResult,
           tmpl::list<TestResult<typename linear_solver::options_group>>>>;

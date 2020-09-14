@@ -9,21 +9,19 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DenseVector.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "Parallel/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
-#include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ElementActions.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/InitializeElement.hpp"
-#include "ParallelAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/LinearSolver/ConjugateGradient/Tags/InboxTags.hpp"
+#include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-// IWYU pragma: no_include <boost/variant/get.hpp>
-// IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
 
@@ -52,10 +50,13 @@ struct ElementArray {
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<VectorTag>>,
                      LinearSolver::cg::detail::InitializeElement<
                          fields_tag, DummyOptionsGroup>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing,
-                             tmpl::list<LinearSolver::cg::detail::PrepareStep<
-                                 fields_tag, DummyOptionsGroup>>>>;
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          tmpl::list<LinearSolver::cg::detail::InitializeHasConverged<
+                         fields_tag, DummyOptionsGroup, DummyOptionsGroup>,
+                     LinearSolver::cg::detail::UpdateOperand<
+                         fields_tag, DummyOptionsGroup, DummyOptionsGroup>,
+                     Parallel::Actions::TerminatePhase>>>;
 };
 
 struct Metavariables {
@@ -115,27 +116,65 @@ SPECTRE_TEST_CASE(
     CHECK_FALSE(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
   }
 
-  SECTION("InitializeHasConverged") {
-    ActionTesting::simple_action<
-        element_array, LinearSolver::cg::detail::InitializeHasConverged<
-                           fields_tag, DummyOptionsGroup>>(
-        make_not_null(&runner), 0,
-        Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.});
-    CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
+  const auto test_initialize_has_converged =
+      [&runner, &get_tag,
+       &set_tag](const Convergence::HasConverged& has_converged) {
+        const size_t iteration_id = 0;
+        set_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{},
+                iteration_id);
+        REQUIRE_FALSE(ActionTesting::is_ready<element_array>(runner, 0));
+        auto& inbox = ActionTesting::get_inbox_tag<
+            element_array, LinearSolver::cg::detail::Tags::InitialHasConverged<
+                               DummyOptionsGroup>>(make_not_null(&runner), 0);
+        CAPTURE(has_converged);
+        inbox[iteration_id] = has_converged;
+        REQUIRE(ActionTesting::is_ready<element_array>(runner, 0));
+        ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
+        CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}) ==
+              has_converged);
+        CHECK(ActionTesting::get_next_action_index<element_array>(runner, 0) ==
+              (has_converged ? 2 : 1));
+      };
+  SECTION("InitializeHasConverged (not yet converged: continue loop)") {
+    test_initialize_has_converged(Convergence::HasConverged{1, 0});
   }
-  SECTION("UpdateOperand") {
-    set_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}, size_t{0});
+  SECTION("InitializeHasConverged (has converged: terminate loop)") {
+    test_initialize_has_converged(Convergence::HasConverged{1, 1});
+  }
+
+  const auto test_update_operand = [&runner, &get_tag,
+                                    &set_tag](const Convergence::HasConverged&
+                                                  has_converged) {
+    const size_t iteration_id = 0;
+    set_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}, iteration_id);
     set_tag(operand_tag{}, DenseVector<double>(3, 2.));
     set_tag(residual_tag{}, DenseVector<double>(3, 1.));
+    runner.template force_next_action_to_be<
+        element_array, LinearSolver::cg::detail::UpdateOperand<
+                           fields_tag, DummyOptionsGroup, DummyOptionsGroup>>(
+        0);
+    REQUIRE_FALSE(ActionTesting::is_ready<element_array>(runner, 0));
+    auto& inbox = ActionTesting::get_inbox_tag<
+        element_array, LinearSolver::cg::detail::Tags::
+                           ResidualRatioAndHasConverged<DummyOptionsGroup>>(
+        make_not_null(&runner), 0);
+    const double res_ratio = 2.;
+    CAPTURE(has_converged);
+    inbox[iteration_id] = std::make_tuple(res_ratio, has_converged);
+    REQUIRE(ActionTesting::is_ready<element_array>(runner, 0));
     ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
-    ActionTesting::simple_action<
-        element_array,
-        LinearSolver::cg::detail::UpdateOperand<fields_tag, DummyOptionsGroup>>(
-        make_not_null(&runner), 0, 2.,
-        Convergence::HasConverged{{1, 0., 0.}, 1, 0., 0.});
     CHECK(get_tag(LinearSolver::Tags::Operand<VectorTag>{}) ==
           DenseVector<double>(3, 5.));
     CHECK(get_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}) == 1);
-    CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
+    CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}) ==
+          has_converged);
+    CHECK(ActionTesting::get_next_action_index<element_array>(runner, 0) ==
+          (has_converged ? 2 : 1));
+  };
+  SECTION("UpdateOperand (not yet converged: continue loop)") {
+    test_update_operand(Convergence::HasConverged{1, 0});
+  }
+  SECTION("UpdateOperand (has converged: terminate loop)") {
+    test_update_operand(Convergence::HasConverged{1, 1});
   }
 }

@@ -59,9 +59,9 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Test,
           tmpl::list<LinearSolver::async_solvers::PrepareSolve<
-                         fields_tag, TestSolver, source_tag>,
+                         fields_tag, TestSolver, source_tag, TestSolver>,
                      LinearSolver::async_solvers::CompleteStep<
-                         fields_tag, TestSolver, source_tag>>>>;
+                         fields_tag, TestSolver, source_tag, TestSolver>>>>;
 };
 
 struct Metavariables {

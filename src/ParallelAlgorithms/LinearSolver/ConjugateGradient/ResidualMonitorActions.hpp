@@ -4,21 +4,23 @@
 #pragma once
 
 #include <cstddef>
+#include <tuple>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
-#include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
+#include "ParallelAlgorithms/LinearSolver/ConjugateGradient/Tags/InboxTags.hpp"
 #include "ParallelAlgorithms/LinearSolver/Observe.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 
 /// \cond
@@ -26,14 +28,6 @@ namespace tuples {
 template <typename...>
 class TaggedTuple;
 }  // namespace tuples
-namespace LinearSolver::cg::detail {
-template <typename FieldsTag, typename OptionsGroup>
-struct InitializeHasConverged;
-template <typename FieldsTag, typename OptionsGroup>
-struct UpdateFieldValues;
-template <typename FieldsTag, typename OptionsGroup>
-struct UpdateOperand;
-}  // namespace LinearSolver::cg::detail
 /// \endcond
 
 namespace LinearSolver::cg::detail {
@@ -105,9 +99,9 @@ struct InitializeResidual {
                        has_converged);
     }
 
-    Parallel::simple_action<InitializeHasConverged<FieldsTag, OptionsGroup>>(
+    Parallel::receive_data<Tags::InitialHasConverged<OptionsGroup>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache),
-        has_converged);
+        get<LinearSolver::Tags::IterationId<OptionsGroup>>(box), has_converged);
   }
 };
 
@@ -128,8 +122,9 @@ struct ComputeAlpha {
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const double conj_grad_inner_product) noexcept {
-    Parallel::simple_action<UpdateFieldValues<FieldsTag, OptionsGroup>>(
+    Parallel::receive_data<Tags::Alpha<OptionsGroup>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache),
+        get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
         get<residual_square_tag>(box) / conj_grad_inner_product);
   }
 };
@@ -155,15 +150,18 @@ struct UpdateResidual {
                     const double residual_square) noexcept {
     // Compute the residual ratio before mutating the DataBox
     const double res_ratio = residual_square / get<residual_square_tag>(box);
+    const size_t iteration_id =
+        get<LinearSolver::Tags::IterationId<OptionsGroup>>(box);
 
     db::mutate<residual_square_tag,
                LinearSolver::Tags::IterationId<OptionsGroup>>(
         make_not_null(&box),
-        [residual_square](const gsl::not_null<double*> local_residual_square,
-                          const gsl::not_null<size_t*> iteration_id) noexcept {
+        [residual_square](
+            const gsl::not_null<double*> local_residual_square,
+            const gsl::not_null<size_t*> local_iteration_id) noexcept {
           *local_residual_square = residual_square;
           // Prepare for the next iteration
-          (*iteration_id)++;
+          ++(*local_iteration_id);
         });
 
     // At this point, the iteration is complete. We proceed with observing,
@@ -199,9 +197,9 @@ struct UpdateResidual {
                        has_converged);
     }
 
-    Parallel::simple_action<UpdateOperand<FieldsTag, OptionsGroup>>(
-        Parallel::get_parallel_component<BroadcastTarget>(cache), res_ratio,
-        has_converged);
+    Parallel::receive_data<Tags::ResidualRatioAndHasConverged<OptionsGroup>>(
+        Parallel::get_parallel_component<BroadcastTarget>(cache), iteration_id,
+        std::make_tuple(res_ratio, has_converged));
   }
 };
 
