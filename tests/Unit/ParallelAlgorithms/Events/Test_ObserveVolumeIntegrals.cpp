@@ -126,9 +126,6 @@ struct Metavariables {
                                     MockObserverComponent<Metavariables>>;
   using const_global_cache_tags = tmpl::list<>;  //  unused
   enum class Phase { Initialization, Testing, Exit };
-
-  struct ObservationType {};
-  using element_observation_type = ObservationType;
 };
 
 struct ScalarVar : db::SimpleTag {

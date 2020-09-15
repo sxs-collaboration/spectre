@@ -155,9 +155,6 @@ struct EvolutionMetavars {
       tmpl::list<initial_data_tag, normal_dot_numerical_flux, time_stepper_tag,
                  Tags::EventsAndTriggers<events, triggers>>;
 
-  struct ObservationType {};
-  using element_observation_type = ObservationType;
-
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       typename Event<events>::creatable_classes>;
 

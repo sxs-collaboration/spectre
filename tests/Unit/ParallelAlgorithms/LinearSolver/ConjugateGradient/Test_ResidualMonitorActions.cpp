@@ -239,9 +239,9 @@ SPECTRE_TEST_CASE(
     // Test element state
     CHECK_FALSE(get_element_tag(CheckConvergedTag{}));
     // Test observer writer state
-    CHECK(get_observer_writer_tag(helpers::CheckObservationIdTag{}) ==
-          observers::ObservationId{
-              0, "LinearSolver::observe_detail::ObservationType"});
+    CHECK(
+        get_observer_writer_tag(helpers::CheckObservationIdTag{}) ==
+        observers::ObservationId{0, "(anonymous namespace)::TestLinearSolver"});
     CHECK(get_observer_writer_tag(helpers::CheckSubfileNameTag{}) ==
           "/TestLinearSolverResiduals");
     CHECK(get_observer_writer_tag(helpers::CheckReductionNamesTag{}) ==
@@ -321,9 +321,9 @@ SPECTRE_TEST_CASE(
           get_residual_monitor_tag(
               LinearSolver::Tags::HasConverged<TestLinearSolver>{}));
     // Test observer writer state
-    CHECK(get_observer_writer_tag(helpers::CheckObservationIdTag{}) ==
-          observers::ObservationId{
-              1, "LinearSolver::observe_detail::ObservationType"});
+    CHECK(
+        get_observer_writer_tag(helpers::CheckObservationIdTag{}) ==
+        observers::ObservationId{1, "(anonymous namespace)::TestLinearSolver"});
     CHECK(get_observer_writer_tag(helpers::CheckSubfileNameTag{}) ==
           "/TestLinearSolverResiduals");
     CHECK(get_observer_writer_tag(helpers::CheckReductionNamesTag{}) ==

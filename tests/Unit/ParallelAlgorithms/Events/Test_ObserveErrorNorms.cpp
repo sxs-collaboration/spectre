@@ -137,9 +137,6 @@ struct Metavariables {
   using const_global_cache_tags =
       tmpl::list<Tags::AnalyticSolution<typename System::solution_for_test>>;
   enum class Phase { Initialization, Testing, Exit };
-
-  struct ObservationType {};
-  using element_observation_type = ObservationType;
 };
 
 // Test systems

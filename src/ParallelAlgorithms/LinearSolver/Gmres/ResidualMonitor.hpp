@@ -49,7 +49,7 @@ struct ResidualMonitor {
           typename Metavariables::Phase,
           Metavariables::Phase::RegisterWithObserver,
           tmpl::list<observers::Actions::RegisterSingletonWithObserverWriter<
-              LinearSolver::observe_detail::Registration>>>>;
+              LinearSolver::observe_detail::Registration<OptionsGroup>>>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 

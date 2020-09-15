@@ -223,9 +223,6 @@ struct EvolutionMetavars {
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>;
 
-  struct ObservationType {};
-  using element_observation_type = ObservationType;
-
   using interpolation_target_tags = tmpl::list<InterpolationTargetTags...>;
 
   using observed_reduction_data_tags =
