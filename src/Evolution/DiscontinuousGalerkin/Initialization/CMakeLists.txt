@@ -5,17 +5,11 @@ spectre_target_headers(
   Evolution
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  DgElementArray.hpp
-  InboxTags.hpp
-  MortarData.hpp
-  MortarTags.hpp
+  Mortars.hpp
   )
 
 spectre_target_sources(
   Evolution
   PRIVATE
-  MortarData.cpp
+  Mortars.cpp
   )
-
-add_subdirectory(Initialization)
-add_subdirectory(Limiters)

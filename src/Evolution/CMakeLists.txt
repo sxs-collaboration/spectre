@@ -30,6 +30,7 @@ target_link_libraries(
   PUBLIC
   Boost::boost
   DataStructures
+  DiscontinuousGalerkin
   Domain
   DomainStructure
   ErrorHandling
