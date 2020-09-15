@@ -287,7 +287,7 @@ int main(int argc, char** argv) {
   pos_desc.add("old_spec_cce_file", 1).add("output_file", 1);
 
   boost::program_options::options_description desc("Options");
-  desc.add_options()("help", "show this help message")(
+  desc.add_options()("help,h,", "show this help message")(
       "input_file", boost::program_options::value<std::string>()->required(),
       "name of old CCE data file")(
       "output_file", boost::program_options::value<std::string>()->required(),
@@ -309,7 +309,8 @@ int main(int argc, char** argv) {
           .run(),
       vars);
 
-  if (vars.count("help") != 0u) {
+  if (vars.count("help") != 0u or vars.count("input_file") == 0u or
+      vars.count("output_file") == 0u) {
     Parallel::printf("%s\n", desc);
     Parallel::exit();
   }
