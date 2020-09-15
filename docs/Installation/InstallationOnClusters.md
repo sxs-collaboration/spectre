@@ -79,19 +79,3 @@ of `wheeler_gcc.sh`
 
 Follow the general instructions, using `ocean` for `SYSTEM_TO_RUN_ON`,
 you do not need to install any dependencies, so you can skip steps 5 and 6.
-
-## Orca at Fullerton
-
-Follow the general instructions, using `orca` for `SYSTEM_TO_RUN_ON`,
-you do not need to install any dependencies, so you can skip steps 5 and 6.
-
-## Zwicky at Fullerton
-
-Follow the general instructions using `zwicky` for `SYSTEM_TO_RUN_ON`, except
-you do not need to install any dependencies, so you can skip steps 5 and 6.
-Only gcc is supported (use `zwicky_gcc.sh`).
-
-Note that this is a very old machine, so you'll need to load many modules to
-do common things (e.g. load modules for openssh and git operations). Do
-`module avail` for a list of available modules, and look at
-`/home/geoffrey/.bash_profile` for an example list of modules to load.
