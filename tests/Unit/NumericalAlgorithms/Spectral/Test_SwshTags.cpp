@@ -22,9 +22,7 @@ class ComplexDataVector;
 class ComplexModalVector;
 /// \endcond
 
-namespace Spectral {
-namespace Swsh {
-namespace Tags {
+namespace Spectral::Swsh::Tags {
 namespace {
 
 struct UnweightedTestTag : db::SimpleTag {
@@ -124,6 +122,4 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Tags",
       "NumberOfRadialPointsBase");
 }
 }  // namespace
-}  // namespace Tags
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh::Tags

@@ -261,7 +261,9 @@ struct WedgeSectionTorus {
 
     // Take tensor product to get full 3D r/theta/phi points
     const size_t num_total = num_radial * num_theta * num_phi;
-    DataVector radii(num_total), thetas(num_total), phis(num_total);
+    DataVector radii(num_total);
+    DataVector thetas(num_total);
+    DataVector phis(num_total);
     for (size_t phi = 0; phi < num_phi; ++phi) {
       for (size_t theta = 0; theta < num_theta; ++theta) {
         for (size_t r = 0; r < num_radial; ++r) {
