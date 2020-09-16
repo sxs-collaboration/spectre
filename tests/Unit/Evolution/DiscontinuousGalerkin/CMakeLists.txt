@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_InboxTags.cpp
   Test_MortarData.cpp
   Test_MortarTags.cpp
+  Test_ProjectToBoundary.cpp
   )
 
 add_test_library(
