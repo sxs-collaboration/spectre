@@ -48,24 +48,24 @@ namespace LinearSolverAlgorithmTestHelpers {
 
 namespace OptionTags {
 struct LinearOperator {
-  static constexpr OptionString help = "The linear operator A to invert.";
+  static constexpr Options::String help = "The linear operator A to invert.";
   using type = DenseMatrix<double>;
 };
 struct Source {
-  static constexpr OptionString help = "The source b in the equation Ax=b.";
+  static constexpr Options::String help = "The source b in the equation Ax=b.";
   using type = DenseVector<double>;
 };
 struct InitialGuess {
-  static constexpr OptionString help = "The initial guess for the vector x.";
+  static constexpr Options::String help = "The initial guess for the vector x.";
   using type = DenseVector<double>;
 };
 struct ExpectedResult {
-  static constexpr OptionString help = "The solution x in the equation Ax=b";
+  static constexpr Options::String help = "The solution x in the equation Ax=b";
   using type = DenseVector<double>;
 };
 struct ExpectedConvergenceReason {
   static std::string name() noexcept { return "ConvergenceReason"; }
-  static constexpr OptionString help = "The expected convergence reason";
+  static constexpr Options::String help = "The expected convergence reason";
   using type = Convergence::Reason;
 };
 }  // namespace OptionTags

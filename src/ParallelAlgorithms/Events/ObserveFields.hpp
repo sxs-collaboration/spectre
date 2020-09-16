@@ -104,7 +104,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   /// The name of the subfile inside the HDF5 file
   struct SubfileName {
     using type = std::string;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The name of the subfile inside the HDF5 file without an extension and "
         "without a preceding '/'."};
   };
@@ -116,7 +116,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   /// \endcond
 
   struct VariablesToObserve {
-    static constexpr OptionString help = "Subset of variables to observe";
+    static constexpr Options::String help = "Subset of variables to observe";
     using type = std::vector<std::string>;
     static type default_value() noexcept {
       return {db::tag_name<Tensors>()...};
@@ -125,7 +125,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   };
 
   using options = tmpl::list<SubfileName, VariablesToObserve>;
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "Observe volume tensor fields.\n"
       "\n"
       "Writes volume quantities:\n"
@@ -143,7 +143,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   explicit ObserveFields(const std::string& subfile_name,
                          const std::vector<std::string>& variables_to_observe =
                              VariablesToObserve::default_value(),
-                         const OptionContext& context = {})
+                         const Options::Context& context = {})
       : subfile_path_("/" + subfile_name),
         variables_to_observe_(variables_to_observe.begin(),
                               variables_to_observe.end()) {

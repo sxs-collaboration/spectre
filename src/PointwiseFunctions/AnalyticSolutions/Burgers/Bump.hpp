@@ -39,24 +39,24 @@ class Bump : public MarkAsAnalyticSolution {
  public:
   struct HalfWidth {
     using type = double;
-    static constexpr OptionString help{
+    static constexpr Options::String help{
         "The distance from the center to the zero of the bump"};
     static type lower_bound() noexcept { return 0.; }
   };
 
   struct Height {
     using type = double;
-    static constexpr OptionString help{"The height of the bump"};
+    static constexpr Options::String help{"The height of the bump"};
   };
 
   struct Center {
     using type = double;
-    static constexpr OptionString help{"The center of the bump"};
+    static constexpr Options::String help{"The center of the bump"};
     static type default_value() noexcept { return 0.; }
   };
 
   using options = tmpl::list<HalfWidth, Height, Center>;
-  static constexpr OptionString help{"A bump solution"};
+  static constexpr Options::String help{"A bump solution"};
 
   Bump() = default;
   Bump(const Bump&) noexcept = delete;

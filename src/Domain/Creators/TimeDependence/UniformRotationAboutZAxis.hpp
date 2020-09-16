@@ -78,20 +78,21 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
   /// \brief The initial time of the function of time.
   struct InitialTime {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The initial time of the function of time"};
   };
   /// \brief The \f$x\f$-, \f$y\f$-, and \f$z\f$-velocity.
   struct AngularVelocity {
     using type = double;
-    static constexpr OptionString help = {"The angular velocity of the map."};
+    static constexpr Options::String help = {
+        "The angular velocity of the map."};
   };
   /// \brief The name of the function of time to be added to the DataBox.
   ///
   /// The default is `"RotationAngle"`.
   struct FunctionOfTimeName {
     using type = std::string;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Name of the rotation angle function of time."};
     static type default_value() noexcept {
       return std::string{"RotationAngle"};
@@ -105,7 +106,7 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
 
   using options = tmpl::list<InitialTime, AngularVelocity, FunctionOfTimeName>;
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "A spatially uniform rotation about the z axis initialized with a "
       "constant angular velocity."};
 

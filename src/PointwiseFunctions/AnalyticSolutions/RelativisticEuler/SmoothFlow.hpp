@@ -58,19 +58,19 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
   /// The mean flow velocity.
   struct MeanVelocity {
     using type = std::array<double, Dim>;
-    static constexpr OptionString help = {"The mean flow velocity."};
+    static constexpr Options::String help = {"The mean flow velocity."};
   };
 
   /// The wave vector of the profile.
   struct WaveVector {
     using type = std::array<double, Dim>;
-    static constexpr OptionString help = {"The wave vector of the profile."};
+    static constexpr Options::String help = {"The wave vector of the profile."};
   };
 
   /// The constant pressure throughout the fluid.
   struct Pressure {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The constant pressure throughout the fluid."};
     static type lower_bound() noexcept { return 0.0; }
   };
@@ -78,7 +78,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
   /// The adiabatic index for the ideal fluid.
   struct AdiabaticIndex {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The adiabatic index for the ideal fluid."};
     static type lower_bound() noexcept { return 1.0; }
   };
@@ -86,7 +86,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
   /// The perturbation amplitude of the rest mass density of the fluid.
   struct PerturbationSize {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The perturbation size of the rest mass density."};
     static type lower_bound() noexcept { return -1.0; }
     static type upper_bound() noexcept { return 1.0; }
@@ -94,7 +94,8 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
 
   using options = tmpl::list<MeanVelocity, WaveVector, Pressure, AdiabaticIndex,
                              PerturbationSize>;
-  static constexpr OptionString help = {"Smooth flow in Minkowski spacetime."};
+  static constexpr Options::String help = {
+      "Smooth flow in Minkowski spacetime."};
 
   SmoothFlow() = default;
   SmoothFlow(const SmoothFlow& /*rhs*/) = delete;

@@ -52,7 +52,7 @@ class PreventRapidIncrease : public StepChooser<StepChooserRegistrars> {
   WRAPPED_PUPable_decl_template(PreventRapidIncrease);  // NOLINT
   /// \endcond
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Prevents rapid increases in time step that can cause integrator \n"
       "instabilities."};
   using options = tmpl::list<>;

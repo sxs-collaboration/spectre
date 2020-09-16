@@ -15,7 +15,7 @@ namespace OptionTags {
  */
 struct FilteringGroup {
   static std::string name() noexcept { return "Filtering"; }
-  static constexpr OptionString help = "Options for filtering";
+  static constexpr Options::String help = "Options for filtering";
 };
 
 /*!
@@ -25,8 +25,10 @@ struct FilteringGroup {
  */
 template <typename FilterType>
 struct Filter {
-  static std::string name() noexcept { return option_name<FilterType>(); }
-  static constexpr OptionString help = "Options for the filter";
+  static std::string name() noexcept {
+    return Options::name<FilterType>();
+  }
+  static constexpr Options::String help = "Options for the filter";
   using type = FilterType;
   using group = FilteringGroup;
 };

@@ -43,7 +43,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
  public:
   using options = smooth_flow::options;
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Periodic smooth flow in Minkowski spacetime with zero magnetic field."};
 
   SmoothFlow() = default;

@@ -14,7 +14,7 @@ namespace OptionTags {
 /// Gauge-related option tags for the GeneralizedHarmonic evolution system.
 struct GaugeGroup {
   static std::string name() noexcept { return "Gauge"; }
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Gauge-specific options for the GH evolution system"};
   using group = GeneralizedHarmonic::OptionTags::Group;
 };

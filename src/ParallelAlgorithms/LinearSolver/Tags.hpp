@@ -83,7 +83,7 @@ struct OperatorAppliedTo : db::PrefixTag, db::SimpleTag {
 template <typename OptionsGroup>
 struct IterationId : db::SimpleTag {
   static std::string name() noexcept {
-    return "IterationId(" + option_name<OptionsGroup>() + ")";
+    return "IterationId(" + Options::name<OptionsGroup>() + ")";
   }
   using type = size_t;
   template <typename Tag>
@@ -233,7 +233,7 @@ struct Preconditioned : db::PrefixTag, db::SimpleTag {
 template <typename OptionsGroup>
 struct HasConverged : db::SimpleTag {
   static std::string name() noexcept {
-    return "HasConverged(" + option_name<OptionsGroup>() + ")";
+    return "HasConverged(" + Options::name<OptionsGroup>() + ")";
   }
   using type = Convergence::HasConverged;
 };
@@ -296,7 +296,7 @@ namespace OptionTags {
 
 template <typename OptionsGroup>
 struct ConvergenceCriteria {
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "Determine convergence of the linear solve";
   using type = Convergence::Criteria;
   using group = OptionsGroup;
@@ -304,7 +304,8 @@ struct ConvergenceCriteria {
 
 template <typename OptionsGroup>
 struct Iterations {
-  static constexpr OptionString help = "Number of iterations to run the solver";
+  static constexpr Options::String help =
+      "Number of iterations to run the solver";
   using type = size_t;
   using group = OptionsGroup;
 };
@@ -312,7 +313,7 @@ struct Iterations {
 template <typename OptionsGroup>
 struct Verbosity {
   using type = ::Verbosity;
-  static constexpr OptionString help = "Logging verbosity";
+  static constexpr Options::String help = "Logging verbosity";
   using group = OptionsGroup;
   static type default_value() noexcept { return ::Verbosity::Quiet; }
 };
@@ -343,7 +344,7 @@ namespace Tags {
 template <typename OptionsGroup>
 struct ConvergenceCriteria : db::SimpleTag {
   static std::string name() noexcept {
-    return "ConvergenceCriteria(" + option_name<OptionsGroup>() + ")";
+    return "ConvergenceCriteria(" + Options::name<OptionsGroup>() + ")";
   }
   using type = Convergence::Criteria;
   using option_tags =
@@ -360,7 +361,7 @@ struct ConvergenceCriteria : db::SimpleTag {
 template <typename OptionsGroup>
 struct Iterations : db::SimpleTag {
   static std::string name() noexcept {
-    return "Iterations(" + option_name<OptionsGroup>() + ")";
+    return "Iterations(" + Options::name<OptionsGroup>() + ")";
   }
   using type = size_t;
 
@@ -375,7 +376,7 @@ struct Iterations : db::SimpleTag {
 template <typename OptionsGroup>
 struct Verbosity : db::SimpleTag {
   static std::string name() noexcept {
-    return "Verbosity(" + option_name<OptionsGroup>() + ")";
+    return "Verbosity(" + Options::name<OptionsGroup>() + ")";
   }
   using type = ::Verbosity;
   using option_tags =

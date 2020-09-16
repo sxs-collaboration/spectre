@@ -48,7 +48,7 @@ template <size_t Dim>
 class Moustache {
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "A solution with a discontinuous first derivative of its source at 1/2 "
       "that also happens to look like a moustache. It vanishes at zero and one "
       "in each dimension"};

@@ -102,8 +102,8 @@ the parallel components used by the executable.  In this example no
 parallel components are used.
 
 The metavariables struct must define `help`, a `static constexpr
-OptionString` that will be printed as part of the help message of the
-executable. (`OptionString` is defined in `Options/Options.hpp`.)
+Options::String` that will be printed as part of the help message of the
+executable. (`Options::String` is defined in `Options/Options.hpp`.)
 
 In addition to defining the metavaribles struct, the metavariables
 file must define the two vectors of functions `charm_init_node_funcs`

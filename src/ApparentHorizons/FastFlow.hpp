@@ -61,42 +61,42 @@ class FastFlow {
 
   struct Flow {
     using type = FlowType;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Flow method: Jacobi, Curvature, or Fast"};
     static type default_value() noexcept { return FlowType::Fast; }
   };
 
   struct Alpha {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Alpha parameter in PRD 57, 863 (1998)"};
     static type default_value() noexcept { return 1.0; }
   };
 
   struct Beta {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Beta parameter in PRD 57, 863 (1998)"};
     static type default_value() noexcept { return 0.5; }
   };
 
   struct AbsTol {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Convergence found if R_{Y_lm} < AbsTol"};
     static type default_value() noexcept { return 1.e-12; }
   };
 
   struct TruncationTol {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Convergence found if R_{Y_lm} < TruncationTol*R_{mesh}"};
     static type default_value() noexcept { return 1.e-2; }
   };
 
   struct DivergenceTol {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Fraction that residual can increase before dying"};
     static type default_value() noexcept { return 1.2; }
     static type lower_bound() noexcept { return 1.0; }
@@ -104,21 +104,21 @@ class FastFlow {
 
   struct DivergenceIter {
     using type = size_t;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Num iterations residual can increase before dying"};
     static type default_value() noexcept { return 5; }
   };
 
   struct MaxIts {
     using type = size_t;
-    static constexpr OptionString help = {"Maximum number of iterations."};
+    static constexpr Options::String help = {"Maximum number of iterations."};
     static type default_value() noexcept { return 100; }
   };
 
   using options = tmpl::list<Flow, Alpha, Beta, AbsTol, TruncationTol,
                              DivergenceTol, DivergenceIter, MaxIts>;
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Find a Strahlkorper using a 'fast flow' method.\n"
       "Based on Gundlach, PRD 57, 863 (1998).\n"
       "Expands the surface in terms of spherical harmonics Y_lm up to a given\n"
@@ -211,12 +211,12 @@ SPECTRE_ALWAYS_INLINE bool operator!=(const FastFlow& lhs,
 }
 
 template <>
-struct create_from_yaml<FastFlow::FlowType> {
+struct Options::create_from_yaml<FastFlow::FlowType> {
   template <typename Metavariables>
-  static FastFlow::FlowType create(const Option& options) {
+  static FastFlow::FlowType create(const Options::Option& options) {
     return create<void>(options);
   }
 };
 template <>
-FastFlow::FlowType create_from_yaml<FastFlow::FlowType>::create<void>(
-    const Option& options);
+FastFlow::FlowType Options::create_from_yaml<FastFlow::FlowType>::create<void>(
+    const Options::Option& options);

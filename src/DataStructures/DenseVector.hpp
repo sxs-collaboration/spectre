@@ -79,9 +79,9 @@ struct MakeWithSize<DenseVector<double, TF>> {
 }  // namespace MakeWithValueImpls
 
 template <typename T, bool TF>
-struct create_from_yaml<DenseVector<T, TF>> {
+struct Options::create_from_yaml<DenseVector<T, TF>> {
   template <typename Metavariables>
-  static DenseVector<T, TF> create(const Option& options) {
+  static DenseVector<T, TF> create(const Options::Option& options) {
     const auto data = options.parse_as<std::vector<T>>();
     DenseVector<T, TF> result(data.size());
     std::copy(std::begin(data), std::end(data), result.begin());

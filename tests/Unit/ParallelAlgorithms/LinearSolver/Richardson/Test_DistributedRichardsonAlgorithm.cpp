@@ -19,7 +19,7 @@ namespace helpers_distributed = DistributedLinearSolverAlgorithmTestHelpers;
 namespace {
 
 struct ParallelRichardson {
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "Options for the iterative linear solver";
 };
 

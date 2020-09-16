@@ -43,36 +43,37 @@ class Rectangle : public DomainCreator<2> {
 
   struct LowerBound {
     using type = std::array<double, 2>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Sequence of [x,y] for lower bounds."};
   };
 
   struct UpperBound {
     using type = std::array<double, 2>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Sequence of [x,y] for upper bounds."};
   };
   struct IsPeriodicIn {
     using type = std::array<bool, 2>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Sequence for [x,y], true if periodic."};
     static type default_value() noexcept { return make_array<2>(false); }
   };
 
   struct InitialRefinement {
     using type = std::array<size_t, 2>;
-    static constexpr OptionString help = {"Initial refinement level in [x,y]."};
+    static constexpr Options::String help = {
+        "Initial refinement level in [x,y]."};
   };
 
   struct InitialGridPoints {
     using type = std::array<size_t, 2>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Initial number of grid points in [x,y]."};
   };
   struct TimeDependence {
     using type =
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The time dependence of the moving mesh domain."};
     static type default_value() noexcept;
   };
@@ -81,7 +82,7 @@ class Rectangle : public DomainCreator<2> {
       tmpl::list<LowerBound, UpperBound, IsPeriodicIn, InitialRefinement,
                  InitialGridPoints, TimeDependence>;
 
-  static constexpr OptionString help{"Creates a 2D rectangle."};
+  static constexpr Options::String help{"Creates a 2D rectangle."};
 
   Rectangle(
       typename LowerBound::type lower_xy, typename UpperBound::type upper_xy,

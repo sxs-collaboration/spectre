@@ -39,7 +39,7 @@ class Constant : public StepChooser<StepChooserRegistrars> {
   WRAPPED_PUPable_decl_template(Constant);  // NOLINT
   /// \endcond
 
-  static constexpr OptionString help{"Suggests a constant step size."};
+  static constexpr Options::String help{"Suggests a constant step size."};
 
   explicit Constant(const double value) noexcept : value_(value) {
     ASSERT(value_ > 0., "Requested step magnitude should be positive.");
@@ -67,15 +67,16 @@ PUP::able::PUP_ID Constant<StepChooserRegistrars>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
 namespace Constant_detail {
-double parse_options(const Option& options);
+double parse_options(const Options::Option& options);
 }  // namespace Constant_detail
 }  // namespace StepChoosers
 
 template <typename StepChooserRegistrars>
-struct create_from_yaml<StepChoosers::Constant<StepChooserRegistrars>> {
+struct Options::create_from_yaml<
+    StepChoosers::Constant<StepChooserRegistrars>> {
   template <typename Metavariables>
   static StepChoosers::Constant<StepChooserRegistrars> create(
-      const Option& options) {
+      const Options::Option& options) {
     return StepChoosers::Constant<StepChooserRegistrars>(
         StepChoosers::Constant_detail::parse_options(options));
   }

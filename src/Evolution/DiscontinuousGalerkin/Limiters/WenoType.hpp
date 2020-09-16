@@ -6,9 +6,11 @@
 #include <ostream>
 
 /// \cond
+namespace Options {
 class Option;
 template <typename T>
 struct create_from_yaml;
+}  // namespace Options
 /// \endcond
 
 namespace Limiters {
@@ -23,12 +25,12 @@ std::ostream& operator<<(std::ostream& os,
 }  // namespace Limiters
 
 template <>
-struct create_from_yaml<Limiters::WenoType> {
+struct Options::create_from_yaml<Limiters::WenoType> {
   template <typename Metavariables>
-  static Limiters::WenoType create(const Option& options) {
+  static Limiters::WenoType create(const Options::Option& options) {
     return create<void>(options);
   }
 };
 template <>
-Limiters::WenoType create_from_yaml<Limiters::WenoType>::create<void>(
-    const Option& options);
+Limiters::WenoType Options::create_from_yaml<Limiters::WenoType>::create<void>(
+    const Options::Option& options);

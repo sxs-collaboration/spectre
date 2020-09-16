@@ -34,7 +34,7 @@ class SimpleTimes : public StepController {
   /// \endcond
 
   using options = tmpl::list<>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Chooses steps by dividing the remainder of the slab approximately\n"
       "evenly, but preferring evaluation times that are simple (i.e., small\n"
       "denominator) fractions of the slab."};

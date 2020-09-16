@@ -59,7 +59,7 @@ namespace TimeSteppers {
 class RungeKutta4 : public TimeStepper::Inherit {
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "The standard fourth-order Runge-Kutta time-stepper."};
 
   RungeKutta4() = default;

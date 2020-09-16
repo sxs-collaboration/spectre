@@ -59,49 +59,49 @@ class Cylinder : public DomainCreator<3> {
 
   struct InnerRadius {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Radius of the circle circumscribing the inner square."};
   };
 
   struct OuterRadius {
     using type = double;
-    static constexpr OptionString help = {"Radius of the cylinder."};
+    static constexpr Options::String help = {"Radius of the cylinder."};
   };
 
   struct LowerBound {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "z-coordinate of the base of the cylinder."};
   };
 
   struct UpperBound {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "z-coordinate of the top of the cylinder."};
   };
 
   struct IsPeriodicInZ {
     using type = bool;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "True if periodic in the cylindrical z direction."};
     static type default_value() noexcept { return true; }
   };
 
   struct InitialRefinement {
     using type = size_t;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Initial refinement level in each dimension."};
   };
 
   struct InitialGridPoints {
     using type = std::array<size_t, 3>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Initial number of grid points in [r, theta, z]."};
   };
 
   struct UseEquiangularMap {
     using type = bool;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Use equiangular instead of equidistant coordinates."};
     static type default_value() noexcept { return false; }
   };
@@ -109,7 +109,7 @@ class Cylinder : public DomainCreator<3> {
   struct RadialPartitioning {
     using type = std::vector<double>;
     static type default_value() noexcept { return std::vector<double>{}; }
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Radial coordinates of the boundaries splitting the outer shell "
         "between InnerRadius and OuterRadius."};
   };
@@ -117,7 +117,7 @@ class Cylinder : public DomainCreator<3> {
   struct HeightPartitioning {
     using type = std::vector<double>;
     static type default_value() noexcept { return std::vector<double>{}; }
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "z-coordinates of the boundaries splitting the domain into discs "
         "between LowerBound and UpperBound."};
   };
@@ -127,7 +127,7 @@ class Cylinder : public DomainCreator<3> {
                  IsPeriodicInZ, InitialRefinement, InitialGridPoints,
                  UseEquiangularMap, RadialPartitioning, HeightPartitioning>;
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Creates a right circular Cylinder with a square prism surrounded by \n"
       "wedges. \n"
       "The cylinder can be partitioned radially into multiple cylindrical \n"

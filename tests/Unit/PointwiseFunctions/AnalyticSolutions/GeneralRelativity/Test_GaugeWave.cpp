@@ -14,11 +14,10 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/GeneralRelativity/VerifyGrSolution.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/TestHelpers.hpp"
-#include "Options/Options.hpp"
-#include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -40,11 +39,6 @@ struct GaugeWaveProxy : gr::Solutions::GaugeWave<Dim> {
       const tnsr::I<DataType, Dim>& x, const double t) const noexcept {
     return this->variables(x, t, variables_tags<DataType>{});
   }
-};
-
-struct GaugeWaveOptionTag {
-  using type = gr::Solutions::GaugeWave<3>;
-  static constexpr OptionString help{"A gauge-wave solution"};
 };
 
 template <size_t Dim, typename DataType>
@@ -243,13 +237,10 @@ void test_copy_and_move() noexcept {
 }
 
 void test_construct_from_options() {
-  Options<tmpl::list<GaugeWaveOptionTag>> opts("");
-  opts.parse(
-      "GaugeWaveOptionTag:\n"
-      "  Amplitude: 0.24\n"
-      "  Wavelength: 4.4");
-  CHECK(opts.get<GaugeWaveOptionTag>() ==
-        gr::Solutions::GaugeWave<3>(0.24, 4.4));
+  const auto created = TestHelpers::test_creation<gr::Solutions::GaugeWave<3>>(
+      "Amplitude: 0.24\n"
+      "Wavelength: 4.4");
+  CHECK(created == gr::Solutions::GaugeWave<3>(0.24, 4.4));
 }
 
 }  // namespace
@@ -303,12 +294,9 @@ SPECTRE_TEST_CASE(
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.GaugeWaveOptA",
                   "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<GaugeWaveOptionTag>> opts("");
-  opts.parse(
-      "GaugeWaveOptionTag:\n"
-      "  Amplitude: -1.25\n"
-      "  Wavelength: 1.0");
-  opts.get<GaugeWaveOptionTag>();
+  TestHelpers::test_creation<gr::Solutions::GaugeWave<3>>(
+      "Amplitude: -1.25\n"
+      "Wavelength: 1.0");
 }
 
 // [[OutputRegex, In string:.*At line 3 column 15:.Value -0.25 is below the
@@ -316,10 +304,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.GaugeWaveOptA",
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.GaugeWaveOptW",
                   "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<GaugeWaveOptionTag>> opts("");
-  opts.parse(
-      "GaugeWaveOptionTag:\n"
-      "  Amplitude: 1.0\n"
-      "  Wavelength: -0.25\n");
-  opts.get<GaugeWaveOptionTag>();
+  TestHelpers::test_creation<gr::Solutions::GaugeWave<3>>(
+      "Amplitude: 1.0\n"
+      "Wavelength: -0.25\n");
 }

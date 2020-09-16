@@ -6,9 +6,11 @@
 #include <iosfwd>
 
 /// \cond
+namespace Options {
+class Option;
 template <typename T>
 struct create_from_yaml;
-class Option;
+}  // namespace Options
 /// \endcond
 
 namespace Convergence {
@@ -25,12 +27,13 @@ std::ostream& operator<<(std::ostream& os, const Reason& reason) noexcept;
 }  // namespace Convergence
 
 template <>
-struct create_from_yaml<Convergence::Reason> {
+struct Options::create_from_yaml<Convergence::Reason> {
   template <typename Metavariables>
-  static Convergence::Reason create(const Option& options) {
+  static Convergence::Reason create(const Options::Option& options) {
     return create<void>(options);
   }
 };
 template <>
-Convergence::Reason create_from_yaml<Convergence::Reason>::create<void>(
-    const Option& options);
+Convergence::Reason
+Options::create_from_yaml<Convergence::Reason>::create<void>(
+    const Options::Option& options);

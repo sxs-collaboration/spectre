@@ -62,7 +62,7 @@ BinaryCompactObject::BinaryCompactObject(
         addition_to_object_B_radial_refinement_level,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
         time_dependence,
-    const OptionContext& context)
+    const Options::Context& context)
     // clang-tidy: trivially copyable
     : inner_radius_object_A_(std::move(inner_radius_object_A)),        // NOLINT
       outer_radius_object_A_(std::move(outer_radius_object_A)),        // NOLINT

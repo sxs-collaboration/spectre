@@ -20,8 +20,7 @@ struct AddGroups {
     construction_string.insert(0, 2, ' ');
     construction_string =
         boost::algorithm::replace_all_copy(construction_string, "\n", "\n  ");
-    construction_string.insert(
-        0, Options_detail::name_helper<OptionTag>::name() + ":\n");
+    construction_string.insert(0, Options::name<OptionTag>() + ":\n");
     return construction_string;
   }
 };
@@ -41,7 +40,7 @@ struct AddGroups<Tag, std::void_t<typename Tag::group>> {
 template <typename T>
 struct TestCreationOpt {
   using type = T;
-  static constexpr OptionString help = {"halp"};
+  static constexpr Options::String help = {"halp"};
 };
 
 /// \ingroup TestingFrameworkGroup
@@ -68,7 +67,7 @@ struct TestCreationOpt {
 template <typename T, typename OptionTag = TestCreationOpt<T>,
           typename Metavariables = NoSuchType>
 T test_creation(const std::string& construction_string) noexcept {
-  Options<tmpl::list<OptionTag>> options("");
+  Options::Parser<tmpl::list<OptionTag>> options("");
   options.parse(
       TestCreation_detail::AddGroups<OptionTag>::apply(construction_string));
   return options.template get<OptionTag, Metavariables>();

@@ -137,7 +137,7 @@ struct Hllc : tt::ConformsTo<dg::protocols::NumericalFlux> {
   };
 
   using options = tmpl::list<>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Compute the HLLC flux for the Newtonian Euler system."};
 
   // clang-tidy: non-const reference

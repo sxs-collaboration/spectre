@@ -27,8 +27,9 @@ std::ostream& Limiters::operator<<(
 }
 
 template <>
-Limiters::MinmodType create_from_yaml<Limiters::MinmodType>::create<void>(
-    const Option& options) {
+Limiters::MinmodType
+Options::create_from_yaml<Limiters::MinmodType>::create<void>(
+    const Options::Option& options) {
   const std::string minmod_type_read = options.parse_as<std::string>();
   if (minmod_type_read == "LambdaPi1") {
     return Limiters::MinmodType::LambdaPi1;

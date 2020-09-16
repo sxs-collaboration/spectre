@@ -57,25 +57,25 @@ class PlaneWave : public MarkAsAnalyticSolution {
   static constexpr size_t volume_dim = Dim;
   struct WaveVector {
     using type = std::array<double, Dim>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The direction of propagation of the wave."};
   };
 
   struct Center {
     using type = std::array<double, Dim>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The initial center of the profile of the wave."};
     static type default_value() noexcept { return make_array<Dim>(0.0); }
   };
 
   struct Profile {
     using type = std::unique_ptr<MathFunction<1, Frame::Inertial>>;
-    static constexpr OptionString help = {"The profile of the wave."};
+    static constexpr Options::String help = {"The profile of the wave."};
   };
 
   using options = tmpl::list<WaveVector, Center, Profile>;
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "A plane wave solution of the Euclidean wave equation"};
 
   PlaneWave() = default;

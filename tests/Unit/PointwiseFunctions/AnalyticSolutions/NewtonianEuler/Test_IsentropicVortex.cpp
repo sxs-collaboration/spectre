@@ -19,8 +19,6 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Options/Options.hpp"
-#include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/IsentropicVortex.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -172,26 +170,17 @@ SPECTRE_TEST_CASE(
 #endif
 }
 
-template <size_t Dim>
-struct Vortex {
-  using type = NewtonianEuler::Solutions::IsentropicVortex<Dim>;
-  static constexpr OptionString help = {"A Newtonian isentropic vortex."};
-};
-
 // [[OutputRegex, In string:.*At line 5 column 13:.Value -0.2 is below the lower
 // bound of 0]]
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.VortexStrengthOpt2d",
     "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<Vortex<2>>> test_options("");
-  test_options.parse(
-      "Vortex:\n"
-      "  AdiabaticIndex: 1.4\n"
-      "  Center: [-3.9, 1.1]\n"
-      "  MeanVelocity: [0.1, -0.032]\n"
-      "  Strength: -0.2");
-  test_options.get<Vortex<2>>();
+  TestHelpers::test_creation<NewtonianEuler::Solutions::IsentropicVortex<2>>(
+      "AdiabaticIndex: 1.4\n"
+      "Center: [-3.9, 1.1]\n"
+      "MeanVelocity: [0.1, -0.032]\n"
+      "Strength: -0.2");
 }
 
 // [[OutputRegex, In string:.*At line 5 column 13:.Value -0.3 is below the lower
@@ -200,13 +189,10 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.VortexStrengthOpt3d",
     "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<Vortex<3>>> test_options("");
-  test_options.parse(
-      "Vortex:\n"
-      "  AdiabaticIndex: 1.12\n"
-      "  Center: [0.3, -0.12, 4.2]\n"
-      "  MeanVelocity: [-0.03, -0.1, 0.09]\n"
-      "  Strength: -0.3\n"
-      "  PerturbAmplitude: 0.42");
-  test_options.get<Vortex<3>>();
+  TestHelpers::test_creation<NewtonianEuler::Solutions::IsentropicVortex<3>>(
+      "AdiabaticIndex: 1.12\n"
+      "Center: [0.3, -0.12, 4.2]\n"
+      "MeanVelocity: [-0.03, -0.1, 0.09]\n"
+      "Strength: -0.3\n"
+      "PerturbAmplitude: 0.42");
 }

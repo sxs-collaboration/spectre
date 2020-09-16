@@ -34,7 +34,7 @@ namespace OptionTags {
 struct DampedHarmonicRollOnStart {
   using type = double;
   static std::string name() noexcept { return "RollOnStartTime"; }
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Simulation time to start rolling on the damped harmonic gauge"};
   using group = gauges::OptionTags::GaugeGroup;
 };
@@ -43,7 +43,7 @@ struct DampedHarmonicRollOnStart {
 struct DampedHarmonicRollOnWindow {
   using type = double;
   static std::string name() noexcept { return "RollOnTimeWindow"; }
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "The width of the Gaussian that controls how quickly the gauge is "
       "rolled on."};
   using group = gauges::OptionTags::GaugeGroup;
@@ -55,7 +55,7 @@ template <typename Frame>
 struct DampedHarmonicSpatialDecayWidth {
   using type = double;
   static std::string name() noexcept { return "SpatialDecayWidth"; }
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Spatial width of weight function used in the damped harmonic "
       "gauge."};
   using group = gauges::OptionTags::GaugeGroup;

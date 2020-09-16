@@ -122,7 +122,7 @@ namespace OptionTags {
 template <typename StepperType>
 struct TimeStepper {
   static std::string name() noexcept { return "TimeStepper"; }
-  static constexpr OptionString help{"The time stepper"};
+  static constexpr Options::String help{"The time stepper"};
   using type = std::unique_ptr<StepperType>;
   using group = evolution::OptionTags::Group;
 };
@@ -131,7 +131,7 @@ struct TimeStepper {
 /// \ingroup TimeGroup
 template <typename Registrars>
 struct StepChoosers {
-  static constexpr OptionString help{"Limits on LTS step size"};
+  static constexpr Options::String help{"Limits on LTS step size"};
   using type = std::vector<std::unique_ptr<::StepChooser<Registrars>>>;
   static size_t lower_bound_on_size() noexcept { return 1; }
   using group = evolution::OptionTags::Group;
@@ -140,7 +140,7 @@ struct StepChoosers {
 /// \ingroup OptionTagsGroup
 /// \ingroup TimeGroup
 struct StepController {
-  static constexpr OptionString help{"The LTS step controller"};
+  static constexpr Options::String help{"The LTS step controller"};
   using type = std::unique_ptr<::StepController>;
   using group = evolution::OptionTags::Group;
 };
@@ -150,7 +150,7 @@ struct StepController {
 /// \brief The time at which to start the simulation
 struct InitialTime {
   using type = double;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "The time at which the evolution is started."};
   static type default_value() noexcept { return 0.0; }
   using group = evolution::OptionTags::Group;
@@ -162,7 +162,7 @@ struct InitialTime {
 /// overridden by an adaptive stepper
 struct InitialTimeStep {
   using type = double;
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "The initial time step, before local stepping adjustment";
   using group = evolution::OptionTags::Group;
 };
@@ -172,7 +172,7 @@ struct InitialTimeStep {
 /// \brief The initial slab size
 struct InitialSlabSize {
   using type = double;
-  static constexpr OptionString help = "The initial slab size";
+  static constexpr Options::String help = "The initial slab size";
   static type lower_bound() noexcept { return 0.; }
   using group = evolution::OptionTags::Group;
 };

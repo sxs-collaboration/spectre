@@ -22,8 +22,6 @@
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/GrMhd/VerifyGrMhdSolution.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Options/Options.hpp"
-#include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -215,28 +213,20 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDisk",
   test_solution();
 }
 
-struct Disk {
-  using type = RelativisticEuler::Solutions::FishboneMoncriefDisk;
-  static constexpr OptionString help = {
-      "A fluid disk orbiting a Kerr black hole."};
-};
-
 // [[OutputRegex, In string:.*At line 2 column 11:.Value -1.5 is below the lower
 // bound of 0]]
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDiskBHMassOpt",
     "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<Disk>> test_options("");
-  test_options.parse(
-      "Disk:\n"
-      "  BhMass: -1.5\n"
-      "  BhDimlessSpin: 0.3\n"
-      "  InnerEdgeRadius: 4.3\n"
-      "  MaxPressureRadius: 6.7\n"
-      "  PolytropicConstant: 0.12\n"
-      "  PolytropicExponent: 1.5");
-  test_options.get<Disk>();
+  TestHelpers::test_creation<
+      RelativisticEuler::Solutions::FishboneMoncriefDisk>(
+      "BhMass: -1.5\n"
+      "BhDimlessSpin: 0.3\n"
+      "InnerEdgeRadius: 4.3\n"
+      "MaxPressureRadius: 6.7\n"
+      "PolytropicConstant: 0.12\n"
+      "PolytropicExponent: 1.5");
 }
 
 // [[OutputRegex, In string:.*At line 3 column 18:.Value -0.24 is below the
@@ -245,16 +235,14 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDiskBHSpinLowerOpt",
     "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<Disk>> test_options("");
-  test_options.parse(
-      "Disk:\n"
-      "  BhMass: 1.5\n"
-      "  BhDimlessSpin: -0.24\n"
-      "  InnerEdgeRadius: 5.76\n"
-      "  MaxPressureRadius: 13.2\n"
-      "  PolytropicConstant: 0.002\n"
-      "  PolytropicExponent: 1.34");
-  test_options.get<Disk>();
+  TestHelpers::test_creation<
+      RelativisticEuler::Solutions::FishboneMoncriefDisk>(
+      "BhMass: 1.5\n"
+      "BhDimlessSpin: -0.24\n"
+      "InnerEdgeRadius: 5.76\n"
+      "MaxPressureRadius: 13.2\n"
+      "PolytropicConstant: 0.002\n"
+      "PolytropicExponent: 1.34");
 }
 
 // [[OutputRegex, In string:.*At line 3 column 18:.Value 1.24 is above the
@@ -263,16 +251,14 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDiskBHSpinUpperOpt",
     "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<Disk>> test_options("");
-  test_options.parse(
-      "Disk:\n"
-      "  BhMass: 1.5\n"
-      "  BhDimlessSpin: 1.24\n"
-      "  InnerEdgeRadius: 5.76\n"
-      "  MaxPressureRadius: 13.2\n"
-      "  PolytropicConstant: 0.002\n"
-      "  PolytropicExponent: 1.34");
-  test_options.get<Disk>();
+  TestHelpers::test_creation<
+      RelativisticEuler::Solutions::FishboneMoncriefDisk>(
+      "BhMass: 1.5\n"
+      "BhDimlessSpin: 1.24\n"
+      "InnerEdgeRadius: 5.76\n"
+      "MaxPressureRadius: 13.2\n"
+      "PolytropicConstant: 0.002\n"
+      "PolytropicExponent: 1.34");
 }
 
 // [[OutputRegex, In string:.*At line 6 column 23:.Value -0.12 is below the
@@ -281,16 +267,14 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDiskPolytConstOpt",
     "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<Disk>> test_options("");
-  test_options.parse(
-      "Disk:\n"
-      "  BhMass: 1.5\n"
-      "  BhDimlessSpin: 0.3\n"
-      "  InnerEdgeRadius: 4.3\n"
-      "  MaxPressureRadius: 6.7\n"
-      "  PolytropicConstant: -0.12\n"
-      "  PolytropicExponent: 1.5");
-  test_options.get<Disk>();
+  TestHelpers::test_creation<
+      RelativisticEuler::Solutions::FishboneMoncriefDisk>(
+      "BhMass: 1.5\n"
+      "BhDimlessSpin: 0.3\n"
+      "InnerEdgeRadius: 4.3\n"
+      "MaxPressureRadius: 6.7\n"
+      "PolytropicConstant: -0.12\n"
+      "PolytropicExponent: 1.5");
 }
 
 // [[OutputRegex, In string:.*At line 7 column 23:.Value 0.25 is below the
@@ -299,14 +283,12 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDiskPolytExpOpt",
     "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<Disk>> test_options("");
-  test_options.parse(
-      "Disk:\n"
-      "  BhMass: 1.5\n"
-      "  BhDimlessSpin: 0.3\n"
-      "  InnerEdgeRadius: 4.3\n"
-      "  MaxPressureRadius: 6.7\n"
-      "  PolytropicConstant: 0.123\n"
-      "  PolytropicExponent: 0.25");
-  test_options.get<Disk>();
+  TestHelpers::test_creation<
+      RelativisticEuler::Solutions::FishboneMoncriefDisk>(
+      "BhMass: 1.5\n"
+      "BhDimlessSpin: 0.3\n"
+      "InnerEdgeRadius: 4.3\n"
+      "MaxPressureRadius: 6.7\n"
+      "PolytropicConstant: 0.123\n"
+      "PolytropicExponent: 0.25");
 }

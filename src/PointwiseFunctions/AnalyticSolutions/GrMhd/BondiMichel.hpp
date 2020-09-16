@@ -171,14 +171,14 @@ class BondiMichel : public MarkAsAnalyticSolution {
   /// The mass of the black hole.
   struct Mass {
     using type = double;
-    static constexpr OptionString help = {"Mass of the black hole."};
+    static constexpr Options::String help = {"Mass of the black hole."};
     static type lower_bound() noexcept { return 0.0; }
   };
 
   /// The radius at which the fluid becomes supersonic.
   struct SonicRadius {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Schwarzschild radius where fluid becomes supersonic."};
     static type lower_bound() noexcept { return 0.0; }
   };
@@ -186,7 +186,7 @@ class BondiMichel : public MarkAsAnalyticSolution {
   /// The rest mass density of the fluid at the sonic radius.
   struct SonicDensity {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The density of the fluid at the sonic radius."};
     static type lower_bound() noexcept { return 0.0; }
   };
@@ -194,7 +194,7 @@ class BondiMichel : public MarkAsAnalyticSolution {
   /// The polytropic exponent for the polytropic fluid.
   struct PolytropicExponent {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The polytropic exponent for the polytropic fluid."};
     static type lower_bound() noexcept { return 1.0; }
   };
@@ -202,13 +202,13 @@ class BondiMichel : public MarkAsAnalyticSolution {
   /// The strength of the radial magnetic field.
   struct MagFieldStrength {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The strength of the radial magnetic field."};
   };
 
   using options = tmpl::list<Mass, SonicRadius, SonicDensity,
                              PolytropicExponent, MagFieldStrength>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Bondi-Michel solution with a radial magnetic field using \n"
       "the Schwarzschild coordinate system. Quantities prefixed with \n"
       "`sonic` refer to field quantities evaluated at the radius \n"

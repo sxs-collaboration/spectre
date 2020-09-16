@@ -91,18 +91,19 @@ class ConstantDensityStar {
  private:
   struct Density {
     using type = double;
-    static constexpr OptionString help{"The constant density within the star"};
+    static constexpr Options::String help{
+        "The constant density within the star"};
     static double lower_bound() noexcept { return 0.; }
   };
   struct Radius {
     using type = double;
-    static constexpr OptionString help{"The conformal radius of the star"};
+    static constexpr Options::String help{"The conformal radius of the star"};
     static double lower_bound() noexcept { return 0.; }
   };
 
  public:
   using options = tmpl::list<Density, Radius>;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "A constant density star in general relativity"};
 
   ConstantDensityStar() = default;
@@ -113,7 +114,7 @@ class ConstantDensityStar {
   ~ConstantDensityStar() noexcept = default;
 
   ConstantDensityStar(double density, double radius,
-                      const OptionContext& context = {});
+                      const Options::Context& context = {});
 
   double density() const noexcept { return density_; }
   double radius() const noexcept { return radius_; }

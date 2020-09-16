@@ -38,7 +38,7 @@ template <size_t Dim>
 class Minkowski : public MarkAsAnalyticSolution {
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Minkowski solution to Einstein's Equations"};
   static constexpr size_t volume_dim = Dim;
 

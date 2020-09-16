@@ -26,17 +26,19 @@ class Node;
 }  // namespace YAML
 /// \endcond
 
+/// Utilities for parsing input files.
+namespace Options {
 /// The string used in option structs
-using OptionString = const char* const;
+using String = const char* const;
 
 /// \ingroup OptionParsingGroup
 /// Information about the nested operations being performed by the
 /// parser, for use in printing errors.  A default-constructed
-/// OptionContext is printed as an empty string.  This struct is
+/// Context is printed as an empty string.  This struct is
 /// primarily used as an argument to PARSE_ERROR for reporting input
 /// file parsing errors.  Users outside of the core option parsing
 /// code should not need to manipulate the contents.
-struct OptionContext {
+struct Context {
   bool top_level{true};
   /// (Part of) the parsing "backtrace" printed with an error
   std::string context;
@@ -49,8 +51,7 @@ struct OptionContext {
   void append(const std::string& c) noexcept { context += c + ":\n"; }
 };
 
-inline std::ostream& operator<<(std::ostream& s,
-                                const OptionContext& c) noexcept {
+inline std::ostream& operator<<(std::ostream& s, const Context& c) noexcept {
   s << c.context;
   if (c.line >= 0 and c.column >= 0) {
     s << "At line " << c.line + 1 << " column " << c.column + 1 << ":\n";
@@ -65,7 +66,7 @@ inline std::ostream& operator<<(std::ostream& s,
 /// "backtrace" since we can't pass any extra data through the
 /// yaml-cpp code.
 ///
-/// \param context OptionContext used to print a parsing traceback
+/// \param context Context used to print a parsing traceback
 /// \param m error message, as for ERROR
 #define PARSE_ERROR(context, m)                                         \
   do {                                                                  \
@@ -76,7 +77,7 @@ inline std::ostream& operator<<(std::ostream& s,
       std::ostringstream avoid_name_collisions_PARSE_ERROR;             \
       /* clang-tidy: macro arg in parentheses */                        \
       avoid_name_collisions_PARSE_ERROR << (context) << m; /* NOLINT */ \
-      throw Options_detail::propagate_context(                          \
+      throw ::Options::Options_detail::propagate_context(               \
           avoid_name_collisions_PARSE_ERROR.str());                     \
     }                                                                   \
   } while (false)
@@ -98,7 +99,7 @@ class propagate_context : public std::exception {
 
 /// \ingroup OptionParsingGroup
 /// The type that options are passed around as.  Contains YAML node
-/// data and an OptionContext.
+/// data and an Context.
 ///
 /// \note To use any methods on this class in a concrete function you
 /// must include ParseOptions.hpp, but you do *not* need to include
@@ -106,7 +107,7 @@ class propagate_context : public std::exception {
 /// `create_from_yaml::create` function.
 class Option {
  public:
-  const OptionContext& context() const noexcept;
+  const Context& context() const noexcept;
 
   /// Append a line to the contained context.
   void append_context(const std::string& context) noexcept;
@@ -119,10 +120,10 @@ class Option {
   /// context with the one from the node.
   ///
   /// \warning This method is for internal use of the option parser.
-  explicit Option(YAML::Node node, OptionContext context = {}) noexcept;
+  explicit Option(YAML::Node node, Context context = {}) noexcept;
 
   /// \warning This method is for internal use of the option parser.
-  explicit Option(OptionContext context) noexcept;
+  explicit Option(Context context) noexcept;
 
   /// \warning This method is for internal use of the option parser.
   const YAML::Node& node() const noexcept;
@@ -134,7 +135,7 @@ class Option {
 
  private:
   std::unique_ptr<YAML::Node> node_;
-  OptionContext context_;
+  Context context_;
 };
 
 /// \ingroup OptionParsingGroup
@@ -163,6 +164,7 @@ struct name_helper<T, std::void_t<decltype(T::name())>> {
 
 // The name in the YAML file for a struct.
 template <typename T>
-std::string option_name() noexcept {
+std::string name() noexcept {
   return Options_detail::name_helper<T>::name();
 }
+}  // namespace Options

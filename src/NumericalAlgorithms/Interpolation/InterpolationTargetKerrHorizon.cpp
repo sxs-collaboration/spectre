@@ -13,7 +13,7 @@ KerrHorizon::KerrHorizon(size_t l_max_in, std::array<double, 3> center_in,
                          double mass_in,
                          std::array<double, 3> dimensionless_spin_in,
                          const bool theta_varies_fastest_in,
-                         const OptionContext& context)
+                         const Options::Context& context)
     : l_max(l_max_in),
       center(center_in),
       mass(mass_in),

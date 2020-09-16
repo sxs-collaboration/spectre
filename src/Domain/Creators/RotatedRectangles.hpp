@@ -59,45 +59,45 @@ class RotatedRectangles : public DomainCreator<2> {
 
   struct LowerBound {
     using type = std::array<double, 2>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Sequence of [x,y] for lower bounds in the target frame."};
   };
 
   struct Midpoint {
     using type = std::array<double, 2>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Sequence of [x,y] for midpoints in the target frame."};
   };
 
   struct UpperBound {
     using type = std::array<double, 2>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Sequence of [x,y] for upper bounds in the target frame."};
   };
 
   struct IsPeriodicIn {
     using type = std::array<bool, 2>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Sequence for [x], true if periodic."};
     static type default_value() noexcept { return {{false, false}}; }
   };
 
   struct InitialRefinement {
     using type = std::array<size_t, 2>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Initial refinement level in [x, y]."};
   };
 
   struct InitialGridPoints {
     using type = std::array<std::array<size_t, 2>, 2>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Initial number of grid points in [[x], [y]]."};
   };
 
   using options = tmpl::list<LowerBound, Midpoint, UpperBound, IsPeriodicIn,
                              InitialRefinement, InitialGridPoints>;
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "A DomainCreator useful for testing purposes.\n"
       "RotatedRectangles uses four rotated Blocks to create the rectangle\n"
       "[LowerX,UpperX] x [LowerY,UpperY]. The outermost index to\n"

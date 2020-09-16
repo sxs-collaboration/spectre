@@ -36,7 +36,7 @@ class BinaryFraction : public StepController {
   /// \endcond
 
   using options = tmpl::list<>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Chooses steps to be binary fractions of a slab"};
 
   TimeDelta choose_step(const Time& time,

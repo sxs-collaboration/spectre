@@ -384,7 +384,7 @@ struct EvolutionMetavars {
                                        initial_data>,
               ImportNoInitialData>>>>;
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Evolve a generalized harmonic analytic solution.\n\n"
       "The analytic solution is: KerrSchild\n"
       "The numerical flux is:    UpwindFlux\n"};

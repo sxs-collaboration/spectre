@@ -220,7 +220,7 @@ template <size_t Dim>
 struct UpwindFlux : tt::ConformsTo<dg::protocols::NumericalFlux> {
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Computes the curved scalar-wave upwind flux."};
 
   // clang-tidy: non-const reference

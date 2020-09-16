@@ -264,19 +264,19 @@ class ChangeSlabSize : public Event<EventRegistrars> {
   /// \endcond
 
   struct StepChoosers {
-    static constexpr OptionString help = "Limits on slab size";
+    static constexpr Options::String help = "Limits on slab size";
     using type =
         std::vector<std::unique_ptr<StepChooser<StepChooserRegistrars>>>;
     static size_t lower_bound_on_size() noexcept { return 1; }
   };
 
   struct DelayChange {
-    static constexpr OptionString help = "Slabs to wait before changing";
+    static constexpr Options::String help = "Slabs to wait before changing";
     using type = uint64_t;
   };
 
   using options = tmpl::list<StepChoosers, DelayChange>;
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "Trigger a slab size change chosen by the provided step choosers.\n"
       "The actual changing of the slab size can be delayed until a later\n"
       "slab to improve parallelization.";

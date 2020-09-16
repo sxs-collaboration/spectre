@@ -144,21 +144,22 @@ struct Gmres {
  private:
   struct ConvergenceCriteria {
     using type = Convergence::Criteria;
-    static constexpr OptionString help =
+    static constexpr Options::String help =
         "Determine convergence of the algorithm";
   };
   struct Restart {
     using type = size_t;
-    static constexpr OptionString help = "Iterations to run before restarting";
+    static constexpr Options::String help =
+        "Iterations to run before restarting";
     static size_t default_value() noexcept { return 0; }
   };
   struct Verbosity {
     using type = ::Verbosity;
-    static constexpr OptionString help = "Logging verbosity";
+    static constexpr Options::String help = "Logging verbosity";
   };
 
  public:
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "A serial GMRES iterative solver for nonsymmetric linear systems of\n"
       "equations Ax=b. It will converge to numerical precision in at most N_A\n"
       "iterations, where N_A is the number of equations represented by the\n"

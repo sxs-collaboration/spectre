@@ -17,7 +17,6 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/CylindricalBlastWave.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -200,12 +199,6 @@ SPECTRE_TEST_CASE(
 
   test_density_on_and_near_boundaries();
 }
-
-struct BlastWave {
-  using type = grmhd::AnalyticData::CylindricalBlastWave;
-  static constexpr OptionString help = {
-      "Cylindrical blast wave analytic initial data."};
-};
 
 // [[OutputRegex, CylindricalBlastWave expects InnerRadius < OuterRadius]]
 [[noreturn]] SPECTRE_TEST_CASE(

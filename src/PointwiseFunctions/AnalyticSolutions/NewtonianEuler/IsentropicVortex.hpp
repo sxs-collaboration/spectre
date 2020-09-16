@@ -102,26 +102,27 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
   /// The adiabatic index of the fluid.
   struct AdiabaticIndex {
     using type = double;
-    static constexpr OptionString help = {"The adiabatic index of the fluid."};
+    static constexpr Options::String help = {
+        "The adiabatic index of the fluid."};
   };
 
   /// The position of the center of the vortex at \f$t = 0\f$
   struct Center {
     using type = std::array<double, Dim>;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The coordinates of the center of the vortex at t = 0."};
   };
 
   /// The mean flow velocity.
   struct MeanVelocity {
     using type = std::array<double, Dim>;
-    static constexpr OptionString help = {"The mean flow velocity."};
+    static constexpr Options::String help = {"The mean flow velocity."};
   };
 
   /// The amplitude of the perturbation generating a source term.
   struct PerturbAmplitude {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The amplitude of the perturbation producing sources."};
     static constexpr type default_value() noexcept { return 0.0; }
   };
@@ -129,7 +130,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
   /// The strength of the vortex.
   struct Strength {
     using type = double;
-    static constexpr OptionString help = {"The strength of the vortex."};
+    static constexpr Options::String help = {"The strength of the vortex."};
     static type lower_bound() noexcept { return 0.0; }
   };
 
@@ -139,7 +140,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
                  PerturbAmplitude>,
       tmpl::list<AdiabaticIndex, Center, MeanVelocity, Strength>>;
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Newtonian Isentropic Vortex. Works in 2 and 3 dimensions."};
 
   IsentropicVortex() = default;

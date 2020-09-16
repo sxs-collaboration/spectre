@@ -254,7 +254,7 @@ struct EvolutionMetavars {
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
                       step_actions, Actions::AdvanceTime>>>>>;
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Evolve a Scalar Wave in Dim spatial dimension.\n\n"
       "The numerical flux is:    UpwindFlux\n"};
 

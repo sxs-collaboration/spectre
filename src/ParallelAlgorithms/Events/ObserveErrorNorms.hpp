@@ -94,7 +94,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
   /// The name of the subfile inside the HDF5 file
   struct SubfileName {
     using type = std::string;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The name of the subfile inside the HDF5 file without an extension and "
         "without a preceding '/'."};
   };
@@ -106,7 +106,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
   /// \endcond
 
   using options = tmpl::list<SubfileName>;
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "Observe the RMS errors in the tensors compared to their analytic\n"
       "solution.\n"
       "\n"

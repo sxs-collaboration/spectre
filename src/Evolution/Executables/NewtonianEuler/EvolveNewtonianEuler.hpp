@@ -292,7 +292,7 @@ struct EvolutionMetavars {
       normal_dot_numerical_flux, time_stepper_tag,
       Tags::EventsAndTriggers<events, triggers>>;
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Evolve the Newtonian Euler system in conservative form.\n\n"};
 
   static Phase determine_next_phase(

@@ -43,7 +43,7 @@ class Lorentzian {
 
  public:
   using options = tmpl::list<>;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "A Lorentzian solution to the Poisson equation."};
 
   Lorentzian() = default;

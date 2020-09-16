@@ -19,7 +19,7 @@ namespace VariableFixing {
 template <size_t Dim, size_t ThermodynamicDim>
 FixToAtmosphere<Dim, ThermodynamicDim>::FixToAtmosphere(
     const double density_of_atmosphere, const double density_cutoff,
-    const OptionContext& context)
+    const Options::Context& context)
     : density_of_atmosphere_(density_of_atmosphere),
       density_cutoff_(density_cutoff) {
   if (density_of_atmosphere_ > density_cutoff_) {

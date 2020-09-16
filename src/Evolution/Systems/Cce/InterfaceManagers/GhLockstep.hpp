@@ -39,7 +39,7 @@ class GhLockstep : public GhInterfaceManager {
  public:
   using GhInterfaceManager::gh_variables;
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Pass data between GH and CCE systems on matching timesteps only."};
 
   using options = tmpl::list<>;

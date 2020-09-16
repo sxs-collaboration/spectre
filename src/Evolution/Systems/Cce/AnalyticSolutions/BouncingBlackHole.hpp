@@ -35,28 +35,28 @@ namespace Cce::Solutions {
 struct BouncingBlackHole : public WorldtubeData {
   struct Amplitude {
     using type = double;
-    static constexpr OptionString help{
+    static constexpr Options::String help{
         "The coordinate distance of the gauge oscillation"};
     static type lower_bound() noexcept { return 0.0; }
     static type default_value() noexcept { return 2.0; }
   };
   struct ExtractionRadius {
     using type = double;
-    static constexpr OptionString help{
+    static constexpr Options::String help{
         "The extraction radius of the spherical solution"};
     static type lower_bound() noexcept { return 0.0; }
     static type default_value() noexcept { return 20.0; }
   };
   struct Mass {
     using type = double;
-    static constexpr OptionString help{
+    static constexpr Options::String help{
         "The mass of the Schwarzschild black hole"};
     static type lower_bound() noexcept { return 0.0; }
     static type default_value() noexcept { return 1.0; }
   };
   struct Period {
     using type = double;
-    static constexpr OptionString help{
+    static constexpr Options::String help{
         "The period of the coordinate oscillation"};
     static type lower_bound() noexcept { return 0.0; }
     static type default_value() noexcept { return 40.0; }

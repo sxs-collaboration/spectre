@@ -32,7 +32,7 @@ class FullSlab : public StepController {
   /// \endcond
 
   using options = tmpl::list<>;
-  static constexpr OptionString help = {"Chooses the full slab."};
+  static constexpr Options::String help = {"Chooses the full slab."};
 
   TimeDelta choose_step(const Time& time,
                         const double desired_step) const noexcept override {

@@ -124,7 +124,7 @@ struct Metavariables {
       tmpl::list<Tags::TimeStepper<TimeStepper>,
                  Tags::EventsAndTriggers<events, triggers>>;
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Export the inertial coordinates of the Domain specified in the input "
       "file. The output can be used to compute initial data externally, for "
       "instance. Also outputs the determinant of the inverse jacobian as a "

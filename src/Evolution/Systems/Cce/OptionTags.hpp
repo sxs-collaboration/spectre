@@ -20,64 +20,66 @@ namespace OptionTags {
 
 /// %Option group
 struct Cce {
-  static constexpr OptionString help = {"Options for the Cce evolution system"};
+  static constexpr Options::String help = {
+      "Options for the Cce evolution system"};
 };
 
 /// %Option group
 struct Filtering {
-  static constexpr OptionString help = {"Options for the filtering in Cce"};
+  static constexpr Options::String help = {"Options for the filtering in Cce"};
   using group = Cce;
 };
 
 struct LMax {
   using type = size_t;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Maximum l value for spin-weighted spherical harmonics"};
   using group = Cce;
 };
 
 struct FilterLMax {
   using type = size_t;
-  static constexpr OptionString help{"l mode cutoff for angular filtering"};
+  static constexpr Options::String help{"l mode cutoff for angular filtering"};
   using group = Filtering;
 };
 
 struct RadialFilterAlpha {
   using type = double;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "alpha parameter in exponential radial filter"};
   using group = Filtering;
 };
 
 struct RadialFilterHalfPower {
   using type = size_t;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Half-power of the exponential radial filter argument"};
   using group = Filtering;
 };
 
 struct ObservationLMax {
   using type = size_t;
-  static constexpr OptionString help{"Maximum l value for swsh output"};
+  static constexpr Options::String help{"Maximum l value for swsh output"};
   using group = Cce;
 };
 
 struct NumberOfRadialPoints {
   using type = size_t;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Number of radial grid points in the spherical domain"};
   using group = Cce;
 };
 
 struct ExtractionRadius {
   using type = double;
-  static constexpr OptionString help{"Extraction radius from the GH system."};
+  static constexpr Options::String help{
+      "Extraction radius from the GH system."};
   using group = Cce;
 };
 
 struct EndTime {
   using type = double;
-  static constexpr OptionString help{"End time for the Cce Evolution."};
+  static constexpr Options::String help{"End time for the Cce Evolution."};
   static double default_value() noexcept {
     return std::numeric_limits<double>::infinity();
   }
@@ -86,7 +88,7 @@ struct EndTime {
 
 struct StartTime {
   using type = double;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Cce Start time (default to earliest possible time)."};
   static double default_value() noexcept {
     return -std::numeric_limits<double>::infinity();
@@ -96,20 +98,21 @@ struct StartTime {
 
 struct TargetStepSize {
   using type = double;
-  static constexpr OptionString help{"Target time step size for Cce Evolution"};
+  static constexpr Options::String help{
+      "Target time step size for Cce Evolution"};
   using group = Cce;
 };
 
 struct BoundaryDataFilename {
   using type = std::string;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "H5 file to read the wordltube data from."};
   using group = Cce;
 };
 
 struct H5LookaheadTimes {
   using type = size_t;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Number of times steps from the h5 to cache each read."};
   static size_t default_value() noexcept { return 200; }
   using group = Cce;
@@ -117,14 +120,14 @@ struct H5LookaheadTimes {
 
 struct H5Interpolator {
   using type = std::unique_ptr<intrp::SpanInterpolator>;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "The interpolator for imported h5 worldtube data."};
   using group = Cce;
 };
 
 struct H5IsBondiData {
   using type = bool;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "true for boundary data in Bondi form, false for metric data. Metric "
       "data is more readily available from Cauchy simulations, so historically "
       "has been the typical format provided by SpEC simulations. Bondi data is "
@@ -136,7 +139,7 @@ struct H5IsBondiData {
 
 struct GhInterfaceManager {
   using type = std::unique_ptr<InterfaceManagers::GhInterfaceManager>;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Class to manage worldtube data from a GH system."};
   using group = Cce;
 };
@@ -144,14 +147,15 @@ struct GhInterfaceManager {
 struct ScriInterpolationOrder {
   static std::string name() noexcept { return "ScriInterpOrder"; }
   using type = size_t;
-  static constexpr OptionString help{"Order of time interpolation at scri+."};
+  static constexpr Options::String help{
+      "Order of time interpolation at scri+."};
   static size_t default_value() noexcept { return 5; }
   using group = Cce;
 };
 
 struct ScriOutputDensity {
   using type = size_t;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Number of scri output points per timestep."};
   static size_t default_value() noexcept { return 1; }
   using group = Cce;
@@ -159,7 +163,7 @@ struct ScriOutputDensity {
 
 struct InitializeJ {
   using type = std::unique_ptr<::Cce::InitializeJ::InitializeJ>;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "The initialization for the first hypersurface for J"};
   using group = Cce;
 };

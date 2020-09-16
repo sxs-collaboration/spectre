@@ -54,10 +54,10 @@ class SpecifiedTimes : public Trigger<TriggerRegistrars> {
 
   struct Times {
     using type = std::vector<double>;
-    static constexpr OptionString help{"Times to trigger at"};
+    static constexpr Options::String help{"Times to trigger at"};
   };
 
-  static constexpr OptionString help{"Trigger at particular times."};
+  static constexpr Options::String help{"Trigger at particular times."};
   using options = tmpl::list<Times>;
 
   explicit SpecifiedTimes(std::vector<double> times) noexcept

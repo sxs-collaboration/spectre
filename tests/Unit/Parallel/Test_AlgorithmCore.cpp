@@ -674,7 +674,7 @@ struct TestMetavariables {
   /// [component_list_example]
 
   /// [help_string_example]
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "An executable for testing the core functionality of the Algorithm. "
       "Actions that do not perform any operations (no-ops), invoking simple "
       "actions, mutating data in the DataBox, adding and removing items from "

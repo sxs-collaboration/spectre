@@ -56,30 +56,31 @@ class CubicScale final : public TimeDependence<MeshDim> {
   /// \brief The initial time of the functions of time.
   struct InitialTime {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The initial time of the functions of time"};
   };
   /// \brief The outer boundary or pivot point of the
   /// `domain::CoordinateMaps::TimeDependent::CubicScale` map
   struct OuterBoundary {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Outer boundary or pivot point of the map"};
   };
   /// \brief The initial values of the expansion factors.
   struct InitialExpansion {
     using type = std::array<double, 2>;
-    static constexpr OptionString help = {"Expansion values at initial time."};
+    static constexpr Options::String help = {
+        "Expansion values at initial time."};
   };
   /// \brief The velocity of the expansion factors.
   struct Velocity {
     using type = std::array<double, 2>;
-    static constexpr OptionString help = {"The rate of expansion."};
+    static constexpr Options::String help = {"The rate of expansion."};
   };
   /// \brief The acceleration of the expansion factors.
   struct Acceleration {
     using type = std::array<double, 2>;
-    static constexpr OptionString help = {"The acceleration of expansion."};
+    static constexpr Options::String help = {"The acceleration of expansion."};
   };
   /// \brief The names of the functions of times to be added to the added to the
   /// DataBox.
@@ -90,7 +91,7 @@ class CubicScale final : public TimeDependence<MeshDim> {
   /// a cubic scaling.
   struct FunctionOfTimeNames {
     using type = std::array<std::string, 2>;
-    static constexpr OptionString help = {"Names of the functions of time."};
+    static constexpr Options::String help = {"Names of the functions of time."};
     static type default_value() noexcept {
       return {{"ExpansionA", "ExpansionB"}};
     }
@@ -99,7 +100,7 @@ class CubicScale final : public TimeDependence<MeshDim> {
   using options = tmpl::list<InitialTime, OuterBoundary, FunctionOfTimeNames,
                              InitialExpansion, Velocity, Acceleration>;
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "A spatial radial scaling either based on a cubic scaling or a simple\n"
       "linear scaling.\n"
       "\n"

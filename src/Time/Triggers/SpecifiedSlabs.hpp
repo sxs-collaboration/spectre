@@ -45,12 +45,12 @@ class SpecifiedSlabs : public Trigger<TriggerRegistrars> {
   struct Slabs {
     // No observing negative slabs.  That's the initialization phase.
     using type = std::vector<uint64_t>;
-    static constexpr OptionString help{
+    static constexpr Options::String help{
       "List of slab numbers on which to trigger."};
   };
 
   using options = tmpl::list<Slabs>;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
     "Trigger at specified numbers of slabs after the simulation start."};
 
   explicit SpecifiedSlabs(const std::vector<uint64_t>& slabs) noexcept

@@ -55,12 +55,12 @@ namespace SolveElasticityProblem {
 namespace OptionTags {
 struct LinearSolverGroup {
   static std::string name() noexcept { return "LinearSolver"; }
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "The iterative Krylov-subspace linear solver";
 };
 struct GmresGroup {
   static std::string name() noexcept { return "GMRES"; }
-  static constexpr OptionString help = "Options for the GMRES linear solver";
+  static constexpr Options::String help = "Options for the GMRES linear solver";
   using group = LinearSolverGroup;
 };
 }  // namespace OptionTags
@@ -74,7 +74,7 @@ struct Metavariables {
   using initial_guess = InitialGuess;
   using boundary_conditions = BoundaryConditions;
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Find the solution to a linear elasticity problem."};
 
   using fluxes_computer_tag =

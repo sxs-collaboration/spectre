@@ -20,10 +20,9 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "Options/Options.hpp"
-#include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
@@ -87,59 +86,46 @@ FastFlow::Status do_iteration(
   return status;
 }
 
-struct FastFlowFromOpts {
-  using type = FastFlow;
-  static constexpr OptionString help{"FastFlow horizon-finder"};
-};
-
 void test_construct_from_options_fast() {
-  Options<tmpl::list<FastFlowFromOpts>> opts("");
-  opts.parse(
-      "FastFlowFromOpts:\n"
-      "  Flow: Fast\n"
-      "  Alpha: 1.1\n"
-      "  Beta: 0.6\n"
-      "  AbsTol: 1.e-10\n"
-      "  TruncationTol: 1.e-3\n"
-      "  DivergenceTol: 1.1\n"
-      "  DivergenceIter: 6\n"
-      "  MaxIts: 200");
-  CHECK(opts.get<FastFlowFromOpts>() ==
+  const auto created = TestHelpers::test_creation<FastFlow>(
+      "Flow: Fast\n"
+      "Alpha: 1.1\n"
+      "Beta: 0.6\n"
+      "AbsTol: 1.e-10\n"
+      "TruncationTol: 1.e-3\n"
+      "DivergenceTol: 1.1\n"
+      "DivergenceIter: 6\n"
+      "MaxIts: 200");
+  CHECK(created ==
         FastFlow(FastFlow::FlowType::Fast, 1.1, 0.6, 1e-10, 1e-3, 1.1, 6, 200));
 }
 
 void test_construct_from_options_jacobi() {
-  Options<tmpl::list<FastFlowFromOpts>> opts("");
-  opts.parse(
-      "FastFlowFromOpts:\n"
-      "  Flow: Jacobi\n"
-      "  Alpha: 1.1\n"
-      "  Beta: 0.6\n"
-      "  AbsTol: 1.e-10\n"
-      "  TruncationTol: 1.e-3\n"
-      "  DivergenceTol: 1.1\n"
-      "  DivergenceIter: 6\n"
-      "  MaxIts: 200");
-  CHECK(opts.get<FastFlowFromOpts>() == FastFlow(FastFlow::FlowType::Jacobi,
-                                                 1.1, 0.6, 1e-10, 1e-3, 1.1, 6,
-                                                 200));
+  const auto created = TestHelpers::test_creation<FastFlow>(
+      "Flow: Jacobi\n"
+      "Alpha: 1.1\n"
+      "Beta: 0.6\n"
+      "AbsTol: 1.e-10\n"
+      "TruncationTol: 1.e-3\n"
+      "DivergenceTol: 1.1\n"
+      "DivergenceIter: 6\n"
+      "MaxIts: 200");
+  CHECK(created == FastFlow(FastFlow::FlowType::Jacobi, 1.1, 0.6, 1e-10, 1e-3,
+                            1.1, 6, 200));
 }
 
 void test_construct_from_options_curvature() {
-  Options<tmpl::list<FastFlowFromOpts>> opts("");
-  opts.parse(
-      "FastFlowFromOpts:\n"
-      "  Flow: Curvature\n"
-      "  Alpha: 1.1\n"
-      "  Beta: 0.6\n"
-      "  AbsTol: 1.e-10\n"
-      "  TruncationTol: 1.e-3\n"
-      "  DivergenceTol: 1.1\n"
-      "  DivergenceIter: 6\n"
-      "  MaxIts: 200");
-  CHECK(opts.get<FastFlowFromOpts>() == FastFlow(FastFlow::FlowType::Curvature,
-                                                 1.1, 0.6, 1e-10, 1e-3, 1.1, 6,
-                                                 200));
+  const auto created = TestHelpers::test_creation<FastFlow>(
+      "Flow: Curvature\n"
+      "Alpha: 1.1\n"
+      "Beta: 0.6\n"
+      "AbsTol: 1.e-10\n"
+      "TruncationTol: 1.e-3\n"
+      "DivergenceTol: 1.1\n"
+      "DivergenceIter: 6\n"
+      "MaxIts: 200");
+  CHECK(created == FastFlow(FastFlow::FlowType::Curvature, 1.1, 0.6, 1e-10,
+                            1e-3, 1.1, 6, 200));
 }
 
 void test_serialize() noexcept {
@@ -329,34 +315,28 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowMisc", "[Utilities][Unit]") {
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowOptFail",
                   "[Utilities][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<FastFlowFromOpts>> opts("");
-  opts.parse(
-      "FastFlowFromOpts:\n"
-      "  Flow: Fast\n"
-      "  Alpha: 1.1\n"
-      "  Beta: 0.6\n"
-      "  AbsTol: 1.e-10\n"
-      "  TruncationTol: 1.e-3\n"
-      "  DivergenceTol: 0.5\n"
-      "  DivergenceIter: 6\n"
-      "  MaxIts: 200");
-  opts.get<FastFlowFromOpts>();
+  TestHelpers::test_creation<FastFlow>(
+      "Flow: Fast\n"
+      "Alpha: 1.1\n"
+      "Beta: 0.6\n"
+      "AbsTol: 1.e-10\n"
+      "TruncationTol: 1.e-3\n"
+      "DivergenceTol: 0.5\n"
+      "DivergenceIter: 6\n"
+      "MaxIts: 200");
 }
 
 // [[OutputRegex, Failed to convert "Crud" to FastFlow::FlowType]]
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowOptFail2",
                   "[Utilities][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<FastFlowFromOpts>> opts("");
-  opts.parse(
-      "FastFlowFromOpts:\n"
-      "  Flow: Crud\n"
-      "  Alpha: 1.1\n"
-      "  Beta: 0.6\n"
-      "  AbsTol: 1.e-10\n"
-      "  TruncationTol: 1.e-3\n"
-      "  DivergenceTol: 1.1\n"
-      "  DivergenceIter: 6\n"
-      "  MaxIts: 200");
-  opts.get<FastFlowFromOpts>();
+  TestHelpers::test_creation<FastFlow>(
+      "Flow: Crud\n"
+      "Alpha: 1.1\n"
+      "Beta: 0.6\n"
+      "AbsTol: 1.e-10\n"
+      "TruncationTol: 1.e-3\n"
+      "DivergenceTol: 1.1\n"
+      "DivergenceIter: 6\n"
+      "MaxIts: 200");
 }

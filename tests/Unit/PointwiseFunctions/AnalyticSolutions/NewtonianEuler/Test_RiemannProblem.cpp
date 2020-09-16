@@ -18,8 +18,6 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Options/Options.hpp"
-#include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/RiemannProblem.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -206,29 +204,20 @@ SPECTRE_TEST_CASE(
 #endif
 }
 
-template <size_t Dim>
-struct Riemann {
-  using type = NewtonianEuler::Solutions::RiemannProblem<Dim>;
-  static constexpr OptionString help = {"Riemann problem."};
-};
-
 // [[OutputRegex, newton_raphson reached max iterations of 50 without
 // converging.]]
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.RiemannProblem.RootF",
     "[Unit][PointwiseFunctions]") {
   ERROR_TEST();
-  Options<tmpl::list<Riemann<1>>> test_options("");
-  test_options.parse(
-      "Riemann:\n"
-      "  AdiabaticIndex: 1.4\n"
-      "  InitialPosition: 0.25\n"
-      "  LeftMassDensity: 10.0\n"
-      "  LeftVelocity: [0.0]\n"
-      "  LeftPressure: 100.0\n"
-      "  RightMassDensity: 1.0\n"
-      "  RightVelocity: [0.0]\n"
-      "  RightPressure: 1.0\n"
-      "  PressureStarTol: 1.e-10");
-  test_options.get<Riemann<1>>();
+  TestHelpers::test_creation<NewtonianEuler::Solutions::RiemannProblem<1>>(
+      "AdiabaticIndex: 1.4\n"
+      "InitialPosition: 0.25\n"
+      "LeftMassDensity: 10.0\n"
+      "LeftVelocity: [0.0]\n"
+      "LeftPressure: 100.0\n"
+      "RightMassDensity: 1.0\n"
+      "RightVelocity: [0.0]\n"
+      "RightPressure: 1.0\n"
+      "PressureStarTol: 1.e-10");
 }

@@ -56,7 +56,7 @@ class FixConservatives {
   /// \f$D\f$
   struct MinimumValueOfD {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Minimum value of rest-mass density times Lorentz factor"};
     static type lower_bound() noexcept { return 0.0; }
   };
@@ -64,7 +64,7 @@ class FixConservatives {
   /// The cutoff below which \f$D\f$ is set to `MinimumValueOfD`
   struct CutoffD {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Cutoff below which D is set to MinimumValueOfD"};
     static type lower_bound() noexcept { return 0.0; }
   };
@@ -72,7 +72,7 @@ class FixConservatives {
   /// The safety factor to fix \f$\tilde S_i\f$
   struct SafetyFactorForS {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Safety factor for momentum density bound."};
     static type lower_bound() noexcept {
       return std::numeric_limits<double>::epsilon();
@@ -81,7 +81,7 @@ class FixConservatives {
   };
 
   using options = tmpl::list<MinimumValueOfD, CutoffD, SafetyFactorForS>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Variable fixing used in Foucart's thesis."};
 
   FixConservatives() = default;
@@ -94,7 +94,7 @@ class FixConservatives {
   FixConservatives(double minimum_rest_mass_density_times_lorentz_factor,
                    double rest_mass_density_times_lorentz_factor_cutoff,
                    double safety_factor_for_momentum_density,
-                   const OptionContext& context = {});
+                   const Options::Context& context = {});
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept;

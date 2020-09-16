@@ -34,9 +34,11 @@ template <size_t VolumeDim>
 class Domain;
 template <size_t VolumeDim>
 class OrientationMap;
+namespace Options {
 class Option;
 template <typename T>
 struct create_from_yaml;
+}  // namespace Options
 /// \endcond
 
 /// \ingroup ComputationalDomainGroup
@@ -441,11 +443,12 @@ std::ostream& operator<<(std::ostream& os,
                          const ShellWedges& which_wedges) noexcept;
 
 template <>
-struct create_from_yaml<ShellWedges> {
+struct Options::create_from_yaml<ShellWedges> {
   template <typename Metavariables>
-  static ShellWedges create(const Option& options) {
+  static ShellWedges create(const Options::Option& options) {
     return create<void>(options);
   }
 };
 template <>
-ShellWedges create_from_yaml<ShellWedges>::create<void>(const Option& options);
+ShellWedges Options::create_from_yaml<ShellWedges>::create<void>(
+    const Options::Option& options);

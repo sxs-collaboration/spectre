@@ -17,7 +17,7 @@ template <typename OptionsGroup>
 struct RelaxationParameter {
   using type = double;
   using group = OptionsGroup;
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "The weight for the residual in the scheme";
 };
 
@@ -31,7 +31,7 @@ namespace Tags {
 template <typename OptionsGroup>
 struct RelaxationParameter : db::SimpleTag {
   static std::string name() noexcept {
-    return "RelaxationParameter(" + option_name<OptionsGroup>() + ")";
+    return "RelaxationParameter(" + Options::name<OptionsGroup>() + ")";
   }
   using type = double;
 

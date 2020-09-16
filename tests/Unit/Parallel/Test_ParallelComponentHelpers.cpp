@@ -242,19 +242,19 @@ static_assert(
 namespace OptionTags {
 struct Yards {
   using type = double;
-  static constexpr OptionString help = {"halp_yards"};
+  static constexpr Options::String help = {"halp_yards"};
 };
 struct Dim {
   using type = size_t;
-  static constexpr OptionString help = {"halp_size"};
+  static constexpr Options::String help = {"halp_size"};
 };
 struct Greeting {
   using type = std::string;
-  static constexpr OptionString help = {"halp_greeting"};
+  static constexpr Options::String help = {"halp_greeting"};
 };
 struct Name {
   using type = std::string;
-  static constexpr OptionString help = {"halp_name"};
+  static constexpr Options::String help = {"halp_name"};
 };
 }  // namespace OptionTags
 
@@ -340,7 +340,7 @@ using all_option_tags = tmpl::list<OptionTags::Yards, OptionTags::Dim,
 
 template <typename Metavariables, typename... InitializationTags>
 void check_initialization_items(
-    const Options<all_option_tags>& all_options,
+    const Options::Parser<all_option_tags>& all_options,
     const tuples::TaggedTuple<InitializationTags...>& expected_items) {
   using initialization_tags = tmpl::list<InitializationTags...>;
   using option_tags =
@@ -356,7 +356,7 @@ void check_initialization_items(
 
 
 SPECTRE_TEST_CASE("Unit.Parallel.ComponentHelpers", "[Unit][Parallel]") {
-  Options<all_option_tags> all_options("");
+  Options::Parser<all_option_tags> all_options("");
   all_options.parse(
       "Yards: 2.0\n"
       "Dim: 3\n"

@@ -93,7 +93,8 @@ struct InitializeResidualMagnitude {
     if (UNLIKELY(static_cast<int>(
                      get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
                  static_cast<int>(::Verbosity::Verbose))) {
-      Parallel::printf("Linear solver '" + option_name<OptionsGroup>() +
+      Parallel::printf("Linear solver '" +
+                           Options::name<OptionsGroup>() +
                            "' initialized with residual: %e\n",
                        residual_magnitude);
     }
@@ -101,7 +102,8 @@ struct InitializeResidualMagnitude {
                  static_cast<int>(
                      get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
                      static_cast<int>(::Verbosity::Quiet))) {
-      Parallel::printf("The linear solver '" + option_name<OptionsGroup>() +
+      Parallel::printf("The linear solver '" +
+                           Options::name<OptionsGroup>() +
                            "' has converged without any iterations: %s\n",
                        has_converged);
     }
@@ -253,7 +255,8 @@ struct StoreFinalOrthogonalization {
     if (UNLIKELY(static_cast<int>(
                      get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
                  static_cast<int>(::Verbosity::Verbose))) {
-      Parallel::printf("Linear solver '" + option_name<OptionsGroup>() +
+      Parallel::printf("Linear solver '" +
+                           Options::name<OptionsGroup>() +
                            "' iteration %zu done. Remaining residual: %e\n",
                        get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
                        residual_magnitude);
@@ -262,7 +265,8 @@ struct StoreFinalOrthogonalization {
                  static_cast<int>(
                      get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
                      static_cast<int>(::Verbosity::Quiet))) {
-      Parallel::printf("The linear solver '" + option_name<OptionsGroup>() +
+      Parallel::printf("The linear solver '" +
+                           Options::name<OptionsGroup>() +
                            "' has converged in %zu iterations: %s\n",
                        get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
                        has_converged);

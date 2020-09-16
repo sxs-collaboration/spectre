@@ -64,14 +64,14 @@ class FixConservatives {
   struct MinimumValueOfD {
     using type = double;
     static type lower_bound() noexcept { return 0.0; }
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Minimum value of rest-mass density times lorentz factor"};
   };
   /// \brief Cutoff below which \f$D = \rho W\f$ is set to MinimumValueOfD
   struct CutoffD {
     using type = double;
     static type lower_bound() noexcept { return 0.0; }
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Cutoff below which D is set to MinimumValueOfD"};
   };
 
@@ -79,26 +79,26 @@ class FixConservatives {
   struct SafetyFactorForB {
     using type = double;
     static type lower_bound() noexcept { return 0.0; }
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Safety factor for magnetic field bound."};
   };
   /// \brief Safety factor \f$\epsilon_S\f$.
   struct SafetyFactorForS {
     using type = double;
     static type lower_bound() noexcept { return 0.0; }
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "Safety factor for momentum density bound."};
   };
   using options =
       tmpl::list<MinimumValueOfD, CutoffD, SafetyFactorForB, SafetyFactorForS>;
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Variable fixing used in Foucart's thesis.\n"};
 
   FixConservatives(double minimum_rest_mass_density_times_lorentz_factor,
                    double rest_mass_density_times_lorentz_factor_cutoff,
                    double safety_factor_for_magnetic_field,
                    double safety_factor_for_momentum_density,
-                   const OptionContext& context = {});
+                   const Options::Context& context = {});
 
   FixConservatives() = default;
   FixConservatives(const FixConservatives& /*rhs*/) = default;

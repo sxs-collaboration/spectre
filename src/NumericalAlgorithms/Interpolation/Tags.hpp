@@ -32,7 +32,7 @@ namespace OptionTags {
  * \brief Groups option tags for InterpolationTargets.
  */
 struct InterpolationTargets {
-  static constexpr OptionString help{"Options for interpolation targets"};
+  static constexpr Options::String help{"Options for interpolation targets"};
 };
 }  // namespace OptionTags
 

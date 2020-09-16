@@ -42,7 +42,8 @@ struct TimeDependenceCompositionTag {
                 : std::to_string(Suffix));
   }
   using type = std::unique_ptr<TimeDependence<TimeDep::mesh_dim>>;
-  static constexpr OptionString help = {"One of the maps in the composition."};
+  static constexpr Options::String help = {
+      "One of the maps in the composition."};
   using time_dependence = TimeDep;
 };
 
@@ -69,7 +70,7 @@ class Composition final
                  typename TimeDependenceCompTags::time_dependence::
                      MapForComposition::maps_list...>>>;
   using maps_list = tmpl::list<CoordMap>;
-  static constexpr OptionString help = {"A composition of TimeDependences."};
+  static constexpr Options::String help = {"A composition of TimeDependences."};
 
   static constexpr size_t mesh_dim = TimeDependenceCompTag0::mesh_dim;
 

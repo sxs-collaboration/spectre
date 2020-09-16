@@ -339,8 +339,8 @@ bool operator==(const FastFlow& lhs, const FastFlow& rhs) noexcept {
 }
 
 template <>
-FastFlow::FlowType create_from_yaml<FastFlow::FlowType>::create<void>(
-    const Option& options) {
+FastFlow::FlowType Options::create_from_yaml<FastFlow::FlowType>::create<void>(
+    const Options::Option& options) {
   const auto flow_type_read = options.parse_as<std::string>();
   if ("Jacobi" == flow_type_read) {
     return FastFlow::FlowType::Jacobi;

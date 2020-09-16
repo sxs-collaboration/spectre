@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines helpers for the Options<T> class
+/// Defines helpers for the Parser<T> class
 
 #pragma once
 
@@ -22,6 +22,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/FakeVirtual.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -29,8 +30,7 @@
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/WrapText.hpp"
 
-/// Holds details of the implementation of Options
-namespace Options_detail {
+namespace Options::Options_detail {
 
 // Traverses the group hierarchy of `Tag`, returning the topmost group that is
 // a subgroup of `Root`. Directly returns `Tag` if it has no group.
@@ -163,7 +163,7 @@ template <typename Group, typename OptionList, typename = std::nullptr_t>
 struct print_impl {
   static std::string apply() noexcept {
     std::ostringstream ss;
-    ss << "  " << option_name<Group>() << ":\n"
+    ss << "  " << name<Group>() << ":\n"
        << wrap_text(Group::help, 77, "    ") << "\n\n";
     return ss.str();
   }
@@ -174,7 +174,7 @@ struct print_impl<Tag, OptionList,
                   Requires<tmpl::list_contains_v<OptionList, Tag>>> {
   static std::string apply() noexcept {
     std::ostringstream ss;
-    ss << "  " << option_name<Tag>() << ":\n"
+    ss << "  " << name<Tag>() << ":\n"
        << "    " << "type=" << yaml_type<typename Tag::type>::value();
     if constexpr (has_default<Tag>::value) {
       if constexpr (tt::is_a_v<std::unique_ptr, typename Tag::type>) {
@@ -185,14 +185,15 @@ struct print_impl<Tag, OptionList,
                  << pretty_type::short_name<decltype(*derived)>();
             });
       } else {
-        ss << "\n    default=" << std::boolalpha << Tag::default_value();
+        ss << "\n    default="
+           << (MakeString{} << std::boolalpha << Tag::default_value());
       }
     }
     if constexpr (has_lower_bound<Tag>::value) {
-      ss << "\n    min=" << Tag::lower_bound();
+      ss << "\n    min=" << (MakeString{} << Tag::lower_bound());
     }
     if constexpr (has_upper_bound<Tag>::value) {
-      ss << "\n    max=" << Tag::upper_bound();
+      ss << "\n    max=" << (MakeString{} << Tag::upper_bound());
     }
     if constexpr (has_lower_bound_on_size<Tag>::value) {
       ss << "\n    min size=" << Tag::lower_bound_on_size();
@@ -222,7 +223,7 @@ struct create_valid_names {
   value_type value{};
   template <typename T>
   void operator()(tmpl::type_<T> /*meta*/) noexcept {
-    const std::string label = option_name<T>();
+    const std::string label = name<T>();
     ASSERT(0 == value.count(label), "Duplicate option name: " << label);
     value.insert(label);
   }
@@ -376,4 +377,4 @@ struct wrap_create_types_impl<std::pair<T, U>> {
         unwrap_create_types<U>(std::move(wrapped.second)));
   }
 };
-}  // namespace Options_detail
+}  // namespace Options::Options_detail

@@ -97,7 +97,7 @@ struct EvolutionMetavars {
 
   using observed_reduction_data_tags = tmpl::list<>;
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Perform Cauchy Characteristic Extraction using .h5 input data.\n"
       "Uses regularity-preserving formulation."};
 

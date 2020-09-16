@@ -17,8 +17,6 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Options/Options.hpp"
-#include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedFmDisk.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -260,31 +258,22 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDisk",
 #endif
 }
 
-struct MagFmDisk {
-  using type = grmhd::AnalyticData::MagnetizedFmDisk;
-  static constexpr OptionString help = {
-      "A magnetized fluid disk orbiting a Kerr black hole."};
-};
-
 // [[OutputRegex, In string:.*At line 8 column 21:.Value -0.01 is below the
 // lower bound of 0]]
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDiskThreshLowerOpt",
     "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<MagFmDisk>> test_options("");
-  test_options.parse(
-      "MagFmDisk:\n"
-      "  BhMass: 13.45\n"
-      "  BhDimlessSpin: 0.45\n"
-      "  InnerEdgeRadius: 6.1\n"
-      "  MaxPressureRadius: 7.6\n"
-      "  PolytropicConstant: 2.42\n"
-      "  PolytropicExponent: 1.33\n"
-      "  ThresholdDensity: -0.01\n"
-      "  InversePlasmaBeta: 0.016\n"
-      "  BFieldNormGridRes: 4");
-  test_options.get<MagFmDisk>();
+  TestHelpers::test_creation<grmhd::AnalyticData::MagnetizedFmDisk>(
+      "BhMass: 13.45\n"
+      "BhDimlessSpin: 0.45\n"
+      "InnerEdgeRadius: 6.1\n"
+      "MaxPressureRadius: 7.6\n"
+      "PolytropicConstant: 2.42\n"
+      "PolytropicExponent: 1.33\n"
+      "ThresholdDensity: -0.01\n"
+      "InversePlasmaBeta: 0.016\n"
+      "BFieldNormGridRes: 4");
 }
 
 // [[OutputRegex, In string:.*At line 8 column 21:.Value 4.1 is above the
@@ -293,19 +282,16 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDiskThreshUpperOpt",
     "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<MagFmDisk>> test_options("");
-  test_options.parse(
-      "MagFmDisk:\n"
-      "  BhMass: 1.5\n"
-      "  BhDimlessSpin: 0.94\n"
-      "  InnerEdgeRadius: 6.4\n"
-      "  MaxPressureRadius: 8.2\n"
-      "  PolytropicConstant: 41.1\n"
-      "  PolytropicExponent: 1.8\n"
-      "  ThresholdDensity: 4.1\n"
-      "  InversePlasmaBeta: 0.03\n"
-      "  BFieldNormGridRes: 4");
-  test_options.get<MagFmDisk>();
+  TestHelpers::test_creation<grmhd::AnalyticData::MagnetizedFmDisk>(
+      "BhMass: 1.5\n"
+      "BhDimlessSpin: 0.94\n"
+      "InnerEdgeRadius: 6.4\n"
+      "MaxPressureRadius: 8.2\n"
+      "PolytropicConstant: 41.1\n"
+      "PolytropicExponent: 1.8\n"
+      "ThresholdDensity: 4.1\n"
+      "InversePlasmaBeta: 0.03\n"
+      "BFieldNormGridRes: 4");
 }
 
 // [[OutputRegex, In string:.*At line 9 column 22:.Value -0.03 is below the
@@ -314,19 +300,16 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDiskInvBetaOpt",
     "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<MagFmDisk>> test_options("");
-  test_options.parse(
-      "MagFmDisk:\n"
-      "  BhMass: 1.4\n"
-      "  BhDimlessSpin: 0.91\n"
-      "  InnerEdgeRadius: 6.5\n"
-      "  MaxPressureRadius: 7.8\n"
-      "  PolytropicConstant: 13.5\n"
-      "  PolytropicExponent: 1.54\n"
-      "  ThresholdDensity: 0.22\n"
-      "  InversePlasmaBeta: -0.03\n"
-      "  BFieldNormGridRes: 4");
-  test_options.get<MagFmDisk>();
+  TestHelpers::test_creation<grmhd::AnalyticData::MagnetizedFmDisk>(
+      "BhMass: 1.4\n"
+      "BhDimlessSpin: 0.91\n"
+      "InnerEdgeRadius: 6.5\n"
+      "MaxPressureRadius: 7.8\n"
+      "PolytropicConstant: 13.5\n"
+      "PolytropicExponent: 1.54\n"
+      "ThresholdDensity: 0.22\n"
+      "InversePlasmaBeta: -0.03\n"
+      "BFieldNormGridRes: 4");
 }
 
 // [[OutputRegex, In string:.*At line 10 column 22:.Value 2 is below the
@@ -335,17 +318,14 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.GrMhd.MagFmDiskGridResOpt",
     "[PointwiseFunctions][Unit]") {
   ERROR_TEST();
-  Options<tmpl::list<MagFmDisk>> test_options("");
-  test_options.parse(
-      "MagFmDisk:\n"
-      "  BhMass: 1.4\n"
-      "  BhDimlessSpin: 0.91\n"
-      "  InnerEdgeRadius: 6.5\n"
-      "  MaxPressureRadius: 7.8\n"
-      "  PolytropicConstant: 13.5\n"
-      "  PolytropicExponent: 1.54\n"
-      "  ThresholdDensity: 0.22\n"
-      "  InversePlasmaBeta: 0.03\n"
-      "  BFieldNormGridRes: 2");
-  test_options.get<MagFmDisk>();
+  TestHelpers::test_creation<grmhd::AnalyticData::MagnetizedFmDisk>(
+      "BhMass: 1.4\n"
+      "BhDimlessSpin: 0.91\n"
+      "InnerEdgeRadius: 6.5\n"
+      "MaxPressureRadius: 7.8\n"
+      "PolytropicConstant: 13.5\n"
+      "PolytropicExponent: 1.54\n"
+      "ThresholdDensity: 0.22\n"
+      "InversePlasmaBeta: 0.03\n"
+      "BFieldNormGridRes: 2");
 }

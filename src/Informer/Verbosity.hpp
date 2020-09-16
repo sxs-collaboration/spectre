@@ -6,9 +6,11 @@
 #include <iosfwd>
 
 /// \cond
+namespace Options {
+class Option;
 template <typename T>
 struct create_from_yaml;
-class Option;
+}  // namespace Options
 /// \endcond
 
 /// \ingroup LoggingGroup
@@ -18,11 +20,12 @@ enum class Verbosity { Silent, Quiet, Verbose, Debug };
 std::ostream& operator<<(std::ostream& os, const Verbosity& verbosity) noexcept;
 
 template <>
-struct create_from_yaml<Verbosity> {
+struct Options::create_from_yaml<Verbosity> {
   template <typename Metavariables>
-  static Verbosity create(const Option& options) {
+  static Verbosity create(const Options::Option& options) {
     return create<void>(options);
   }
 };
 template <>
-Verbosity create_from_yaml<Verbosity>::create<void>(const Option& options);
+Verbosity Options::create_from_yaml<Verbosity>::create<void>(
+    const Options::Option& options);

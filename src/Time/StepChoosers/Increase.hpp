@@ -42,11 +42,11 @@ class Increase : public StepChooser<StepChooserRegistrars> {
 
   struct Factor {
     using type = double;
-    static constexpr OptionString help{"Factor to increase by"};
+    static constexpr Options::String help{"Factor to increase by"};
     static type lower_bound() noexcept { return 1.0; }
   };
 
-  static constexpr OptionString help{"Suggests a constant factor increase."};
+  static constexpr Options::String help{"Suggests a constant factor increase."};
   using options = tmpl::list<Factor>;
 
   explicit Increase(const double factor) noexcept : factor_(factor) {}

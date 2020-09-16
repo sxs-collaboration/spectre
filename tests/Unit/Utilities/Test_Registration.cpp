@@ -36,7 +36,7 @@ using Derived1 = Registration::Registrar<::Derived1>;
 template <typename Registrars = tmpl::list<Registrars::Derived1>>
 class Derived1 : public Base<Registrars> {
  public:
-  static constexpr OptionString help = "help";
+  static constexpr Options::String help = "help";
   using options = tmpl::list<>;
   int func() const noexcept override { return 1; }
 };
@@ -55,7 +55,7 @@ template <typename SomeArg,
           typename Registrars = tmpl::list<Registrars::Derived2<SomeArg>>>
 class Derived2 : public Base<Registrars> {
  public:
-  static constexpr OptionString help = "help";
+  static constexpr Options::String help = "help";
   using options = tmpl::list<>;
   int func() const noexcept override { return 2; }
 };
@@ -76,7 +76,7 @@ struct Derived3 {
 template <int N, typename Registrars = tmpl::list<Registrars::Derived3<N>>>
 class Derived3 : public Base<Registrars> {
  public:
-  static constexpr OptionString help = "help";
+  static constexpr Options::String help = "help";
   using options = tmpl::list<>;
   int func() const noexcept override { return N; }
 };

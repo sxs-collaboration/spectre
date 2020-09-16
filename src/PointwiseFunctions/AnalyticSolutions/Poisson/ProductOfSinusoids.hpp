@@ -35,11 +35,11 @@ class ProductOfSinusoids {
  public:
   struct WaveNumbers {
     using type = std::array<double, Dim>;
-    static constexpr OptionString help{"The wave numbers of the sinusoids"};
+    static constexpr Options::String help{"The wave numbers of the sinusoids"};
   };
 
   using options = tmpl::list<WaveNumbers>;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "A product of sinusoids that are taken of a wave number times the "
       "coordinate in each dimension."};
 

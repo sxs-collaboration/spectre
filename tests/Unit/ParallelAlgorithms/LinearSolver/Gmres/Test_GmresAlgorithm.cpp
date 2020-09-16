@@ -17,7 +17,7 @@ namespace helpers = LinearSolverAlgorithmTestHelpers;
 namespace {
 
 struct SerialGmres {
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "Options for the iterative linear solver";
 };
 

@@ -64,9 +64,9 @@ class DenseMatrix : public blaze::DynamicMatrix<T, SO> {
 };
 
 template <typename T, bool SO>
-struct create_from_yaml<DenseMatrix<T, SO>> {
+struct Options::create_from_yaml<DenseMatrix<T, SO>> {
   template <typename Metavariables>
-  static DenseMatrix<T, SO> create(const Option& options) {
+  static DenseMatrix<T, SO> create(const Options::Option& options) {
     const auto data = options.parse_as<std::vector<std::vector<T>>>();
     const size_t num_rows = data.size();
     size_t num_cols = 0;

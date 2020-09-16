@@ -105,20 +105,21 @@ class KhInstability : public MarkAsAnalyticData {
   /// The adiabatic index of the fluid.
   struct AdiabaticIndex {
     using type = double;
-    static constexpr OptionString help = {"The adiabatic index of the fluid."};
+    static constexpr Options::String help = {
+        "The adiabatic index of the fluid."};
   };
 
   /// The vertical coordinate of the horizontal bimedian of the strip.
   struct StripBimedianHeight {
     using type = double;
-    static constexpr OptionString help = {"The height of the strip center."};
+    static constexpr Options::String help = {"The height of the strip center."};
   };
 
   /// The thickness of the strip.
   struct StripThickness {
     using type = double;
     static type lower_bound() noexcept { return 0.0; }
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The thickness of the horizontal strip."};
   };
 
@@ -126,14 +127,14 @@ class KhInstability : public MarkAsAnalyticData {
   struct StripDensity {
     using type = double;
     static type lower_bound() noexcept { return 0.0; }
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The mass density in the horizontal strip."};
   };
 
   /// The velocity along \f$x\f$ in the strip
   struct StripVelocity {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The velocity along x in the horizontal strip."};
   };
 
@@ -141,14 +142,14 @@ class KhInstability : public MarkAsAnalyticData {
   struct BackgroundDensity {
     using type = double;
     static type lower_bound() noexcept { return 0.0; }
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The mass density outside of the strip."};
   };
 
   /// The velocity along \f$x\f$ outside of the strip
   struct BackgroundVelocity {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The velocity along x outside of the strip."};
   };
 
@@ -156,20 +157,22 @@ class KhInstability : public MarkAsAnalyticData {
   struct Pressure {
     using type = double;
     static type lower_bound() noexcept { return 0.0; }
-    static constexpr OptionString help = {"The initial (constant) pressure."};
+    static constexpr Options::String help = {
+        "The initial (constant) pressure."};
   };
 
   /// The amplitude of the perturbation
   struct PerturbAmplitude {
     using type = double;
-    static constexpr OptionString help = {"The amplitude of the perturbation."};
+    static constexpr Options::String help = {
+        "The amplitude of the perturbation."};
   };
 
   /// The characteristic length for the width of the perturbation
   struct PerturbWidth {
     using type = double;
     static type lower_bound() noexcept { return 0.0; }
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The characteristic length for the width of the perturbation."};
   };
 
@@ -178,7 +181,7 @@ class KhInstability : public MarkAsAnalyticData {
                  StripDensity, StripVelocity, BackgroundDensity,
                  BackgroundVelocity, Pressure, PerturbAmplitude, PerturbWidth>;
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "Initial data to simulate the KH instability."};
 
   KhInstability() = default;

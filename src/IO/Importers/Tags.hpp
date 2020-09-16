@@ -23,7 +23,7 @@ namespace OptionTags {
  */
 struct Group {
   static std::string name() noexcept { return "Importers"; }
-  static constexpr OptionString help = "Options for loading data files";
+  static constexpr Options::String help = "Options for loading data files";
 };
 
 /*!
@@ -36,7 +36,7 @@ struct FileName {
       "The importer options should be placed in the 'Importers' option "
       "group. Add a type alias `using group = importers::OptionTags::Group`.");
   using type = std::string;
-  static constexpr OptionString help = "Path to the data file";
+  static constexpr Options::String help = "Path to the data file";
   using group = ImporterOptionsGroup;
 };
 
@@ -52,7 +52,7 @@ struct Subgroup {
       "The importer options should be placed in the 'Importers' option "
       "group. Add a type alias `using group = importers::OptionTags::Group`.");
   using type = std::string;
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "The subgroup within the file, excluding extensions";
   using group = ImporterOptionsGroup;
 };
@@ -67,7 +67,7 @@ struct ObservationValue {
       "The importer options should be placed in the 'Importers' option "
       "group. Add a type alias `using group = importers::OptionTags::Group`.");
   using type = double;
-  static constexpr OptionString help =
+  static constexpr Options::String help =
       "The observation value at which to read data";
   using group = ImporterOptionsGroup;
 };
@@ -77,7 +77,7 @@ struct ObservationValue {
  * \brief Groups options for reading in FunctionOfTime data from SpEC
  */
 struct SpecFuncOfTimeReader {
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Options for importing FunctionOfTimes from SpEC"};
 };
 
@@ -86,7 +86,7 @@ struct SpecFuncOfTimeReader {
  */
 struct FunctionOfTimeFile {
   using type = std::string;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Path to an H5 file containing SpEC FunctionOfTime data"};
   using group = SpecFuncOfTimeReader;
 };
@@ -96,7 +96,7 @@ struct FunctionOfTimeFile {
  */
 struct FunctionOfTimeNameMap {
   using type = std::map<std::string, std::string>;
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "String pairs mapping spec names to spectre names"};
   using group = SpecFuncOfTimeReader;
 };
@@ -111,7 +111,7 @@ namespace Tags {
 template <typename ImporterOptionsGroup>
 struct FileName : db::SimpleTag {
   static std::string name() noexcept {
-    return "FileName(" + option_name<ImporterOptionsGroup>() + ")";
+    return "FileName(" + Options::name<ImporterOptionsGroup>() + ")";
   }
   using type = std::string;
   using option_tags = tmpl::list<OptionTags::FileName<ImporterOptionsGroup>>;
@@ -130,7 +130,7 @@ struct FileName : db::SimpleTag {
 template <typename ImporterOptionsGroup>
 struct Subgroup : db::SimpleTag {
   static std::string name() noexcept {
-    return "Subgroup(" + option_name<ImporterOptionsGroup>() + ")";
+    return "Subgroup(" + Options::name<ImporterOptionsGroup>() + ")";
   }
   using type = std::string;
   using option_tags = tmpl::list<OptionTags::Subgroup<ImporterOptionsGroup>>;
@@ -147,7 +147,8 @@ struct Subgroup : db::SimpleTag {
 template <typename ImporterOptionsGroup>
 struct ObservationValue : db::SimpleTag {
   static std::string name() noexcept {
-    return "ObservationValue(" + option_name<ImporterOptionsGroup>() + ")";
+    return "ObservationValue(" + Options::name<ImporterOptionsGroup>() +
+           ")";
   }
   using type = double;
   using option_tags =

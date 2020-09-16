@@ -35,7 +35,7 @@ namespace OptionTags {
 template <typename EventRegistrars, typename TriggerRegistrars>
 struct EventsAndTriggers {
   using type = ::EventsAndTriggers<EventRegistrars, TriggerRegistrars>;
-  static constexpr OptionString help = "Events to run at triggers";
+  static constexpr Options::String help = "Events to run at triggers";
   // When the template arguments to this struct are sufficiently
   // complicated, pretty_type::short_name() run on this struct returns
   // something that is neither pretty nor short, and leads to an

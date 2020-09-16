@@ -31,7 +31,7 @@ MagneticFieldLoop::MagneticFieldLoop(
     const double adiabatic_index,
     const std::array<double, 3>& advection_velocity,
     const double magnetic_field_magnitude, const double inner_radius,
-    const double outer_radius, const OptionContext& context)
+    const double outer_radius, const Options::Context& context)
     : pressure_(pressure),
       rest_mass_density_(rest_mass_density),
       adiabatic_index_(adiabatic_index),

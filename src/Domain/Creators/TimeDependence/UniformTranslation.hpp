@@ -76,13 +76,13 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
   /// \brief The initial time of the functions of time.
   struct InitialTime {
     using type = double;
-    static constexpr OptionString help = {
+    static constexpr Options::String help = {
         "The initial time of the functions of time"};
   };
   /// \brief The \f$x\f$-, \f$y\f$-, and \f$z\f$-velocity.
   struct Velocity {
     using type = std::array<double, MeshDim>;
-    static constexpr OptionString help = {"The velocity of the map."};
+    static constexpr Options::String help = {"The velocity of the map."};
   };
   /// \brief The names of the functions of times to be added to the added to the
   /// DataBox.
@@ -90,7 +90,7 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
   /// The defaults are `"TranslationX", "TranslationY", "TranslationZ"`.
   struct FunctionOfTimeNames {
     using type = std::array<std::string, MeshDim>;
-    static constexpr OptionString help = {"Names of the functions of time."};
+    static constexpr Options::String help = {"Names of the functions of time."};
     static type default_value() noexcept {
       return UniformTranslation::default_function_names();
     }
@@ -108,7 +108,7 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
 
   using options = tmpl::list<InitialTime, Velocity, FunctionOfTimeNames>;
 
-  static constexpr OptionString help = {
+  static constexpr Options::String help = {
       "A spatially uniform translation initialized with a constant velocity."};
 
   UniformTranslation() = default;

@@ -55,12 +55,12 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
 
   struct SafetyFactor {
     using type = double;
-    static constexpr OptionString help{"Multiplier for computed step"};
+    static constexpr Options::String help{"Multiplier for computed step"};
     static type default_value() noexcept { return 1.0; }
     static type lower_bound() noexcept { return 0.0; }
   };
 
-  static constexpr OptionString help{
+  static constexpr Options::String help{
       "Suggests a step size based on the CFL stability criterion."};
   using options = tmpl::list<SafetyFactor>;
 
