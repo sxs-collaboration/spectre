@@ -44,6 +44,8 @@ namespace Cce {
 template <typename VectorTypeToInterpolate, typename Tag>
 struct ScriPlusInterpolationManager {
  public:
+  ScriPlusInterpolationManager() = default;
+
   ScriPlusInterpolationManager(
       const size_t target_number_of_points, const size_t vector_size,
       std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
@@ -312,6 +314,7 @@ template <typename VectorTypeToInterpolate, typename MultipliesLhs,
 struct ScriPlusInterpolationManager<
     VectorTypeToInterpolate, ::Tags::Multiplies<MultipliesLhs, MultipliesRhs>> {
  public:
+  ScriPlusInterpolationManager() = default;
   ScriPlusInterpolationManager(
       const size_t target_number_of_points, const size_t vector_size,
       std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
@@ -452,6 +455,7 @@ struct ScriPlusInterpolationManager<
 template <typename VectorTypeToInterpolate, typename Tag>
 struct ScriPlusInterpolationManager<VectorTypeToInterpolate, Tags::Du<Tag>> {
  public:
+  ScriPlusInterpolationManager() = default;
   ScriPlusInterpolationManager(
       const size_t target_number_of_points, const size_t vector_size,
       std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
