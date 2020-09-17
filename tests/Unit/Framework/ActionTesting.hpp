@@ -660,7 +660,8 @@ class MockDistributedObject {
 
   using metavariables = typename Component::metavariables;
 
-  using inbox_tags_list = Parallel::get_inbox_tags<all_actions_list>;
+  using inbox_tags_list =
+      Parallel::get_inbox_tags<tmpl::push_front<all_actions_list, Component>>;
 
   using array_index = typename Parallel::get_array_index<
       typename Component::chare_type>::template f<Component>;
@@ -1857,16 +1858,16 @@ class MockRuntimeSystem {
   template <typename Component>
   auto inboxes() noexcept -> std::unordered_map<
       typename Component::array_index,
-      tuples::tagged_tuple_from_typelist<Parallel::get_inbox_tags<
-          typename MockDistributedObject<Component>::all_actions_list>>>& {
+      tuples::tagged_tuple_from_typelist<
+          typename MockDistributedObject<Component>::inbox_tags_list>>& {
     return tuples::get<InboxesTag<Component>>(inboxes_);
   }
 
   template <typename Component>
   auto inboxes() const noexcept -> const std::unordered_map<
       typename Component::array_index,
-      tuples::tagged_tuple_from_typelist<Parallel::get_inbox_tags<
-          typename MockDistributedObject<Component>::all_actions_list>>>& {
+      tuples::tagged_tuple_from_typelist<
+          typename MockDistributedObject<Component>::inbox_tags_list>>& {
     return tuples::get<InboxesTag<Component>>(inboxes_);
   }
   // @}
