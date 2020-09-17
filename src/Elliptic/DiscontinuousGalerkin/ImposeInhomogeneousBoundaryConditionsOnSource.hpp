@@ -15,6 +15,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceHelpers.hpp"
+#include "Domain/SurfaceJacobian.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
@@ -125,6 +126,7 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
             ::Tags::Normalized<
                 domain::Tags::UnnormalizedFaceNormal<volume_dim>>,
             ::Tags::Magnitude<domain::Tags::UnnormalizedFaceNormal<volume_dim>>,
+            domain::Tags::SurfaceJacobian<Frame::Logical, Frame::Inertial>,
             fluxes_computer_tag>,
         tmpl::push_front<get_volume_tags<FluxesType>,
                          domain::Tags::Mesh<volume_dim>, fluxes_computer_tag>>(
@@ -136,6 +138,7 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
                 boundary_coordinates,
             tnsr::i<DataVector, volume_dim> normalized_face_normal,
             const Scalar<DataVector>& magnitude_of_face_normal,
+            const Scalar<DataVector>& surface_jacobian,
             const FluxesType& fluxes_computer, const auto&... fluxes_args) {
           const size_t dimension = direction.dimension();
           // We get the exterior face normal out of the box, so we flip its sign
@@ -161,11 +164,18 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
               fluxes_args...);
           // Flip sign of the boundary contributions, making them
           // contributions to the source
-          return typename fixed_sources_tag::type{
-              -1. *
-              ::dg::lift_flux(std::move(boundary_normal_dot_numerical_fluxes),
-                              volume_mesh.extents(dimension),
-                              magnitude_of_face_normal)};
+          if constexpr (Metavariables::massive_operator) {
+            return typename fixed_sources_tag::type{
+                -1. * ::dg::lift_flux_massive_no_mass_lumping(
+                          std::move(boundary_normal_dot_numerical_fluxes),
+                          face_mesh, surface_jacobian)};
+          } else {
+            return typename fixed_sources_tag::type{
+                -1. *
+                ::dg::lift_flux(std::move(boundary_normal_dot_numerical_fluxes),
+                                volume_mesh.extents(dimension),
+                                magnitude_of_face_normal)};
+          }
         },
         box);
 

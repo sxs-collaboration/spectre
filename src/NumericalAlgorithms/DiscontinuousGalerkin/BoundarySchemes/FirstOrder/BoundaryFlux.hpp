@@ -12,7 +12,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/BoundaryData.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/NumericalFluxHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
@@ -45,16 +44,15 @@ template <size_t FaceDim, typename NumericalFluxType, typename AllFieldsTags,
           typename AllExtraDataTags,
           Requires<tt::conforms_to_v<NumericalFluxType,
                                      dg::protocols::NumericalFlux>> = nullptr>
-Variables<typename NumericalFluxType::variables_tags> boundary_flux(
-    const dg::SimpleBoundaryData<AllFieldsTags, AllExtraDataTags>&
-        local_boundary_data,
-    const dg::SimpleBoundaryData<AllFieldsTags, AllExtraDataTags>&
-        remote_boundary_data,
-    const NumericalFluxType& numerical_flux_computer,
-    const Scalar<DataVector>& magnitude_of_face_normal,
-    const size_t extent_perpendicular_to_boundary,
-    const Mesh<FaceDim>& face_mesh, const Mesh<FaceDim>& mortar_mesh,
-    const MortarSize<FaceDim>& mortar_size) noexcept {
+Variables<db::wrap_tags_in<::Tags::NormalDotNumericalFlux,
+                           typename NumericalFluxType::variables_tags>>
+boundary_flux(const dg::SimpleBoundaryData<AllFieldsTags, AllExtraDataTags>&
+                  local_boundary_data,
+              const dg::SimpleBoundaryData<AllFieldsTags, AllExtraDataTags>&
+                  remote_boundary_data,
+              const NumericalFluxType& numerical_flux_computer,
+              const Mesh<FaceDim>& face_mesh, const Mesh<FaceDim>& mortar_mesh,
+              const MortarSize<FaceDim>& mortar_size) noexcept {
   using variables_tags = typename NumericalFluxType::variables_tags;
 
   // Compute the Tags::NormalDotNumericalFlux from local and remote data
@@ -79,16 +77,10 @@ Variables<typename NumericalFluxType::variables_tags> boundary_flux(
   });
 
   // Project from the mortar back to the face if needed
-  auto projected_fluxes =
-      needs_projection(face_mesh, mortar_mesh, mortar_size)
-          ? project_from_mortar(normal_dot_numerical_fluxes, face_mesh,
-                                mortar_mesh, mortar_size)
-          : std::move(normal_dot_numerical_fluxes);
-
-  // Lift flux to the volume. We still only need to provide it on the face
-  // because it is zero everywhere else.
-  return lift_flux(std::move(projected_fluxes),
-                   extent_perpendicular_to_boundary, magnitude_of_face_normal);
+  return needs_projection(face_mesh, mortar_mesh, mortar_size)
+             ? project_from_mortar(normal_dot_numerical_fluxes, face_mesh,
+                                   mortar_mesh, mortar_size)
+             : normal_dot_numerical_fluxes;
 }
 
 }  // namespace FirstOrderScheme

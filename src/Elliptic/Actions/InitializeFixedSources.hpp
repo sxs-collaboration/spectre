@@ -14,6 +14,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Mass.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
@@ -51,6 +52,12 @@ struct InitializeFixedSources {
             .variables(inertial_coords,
                        db::wrap_tags_in<::Tags::FixedSource,
                                         typename system::primal_fields>{}));
+    if constexpr (Metavariables::massive_operator) {
+      fixed_sources = mass(
+          fixed_sources, mesh,
+          db::get<domain::Tags::DetJacobian<Frame::Logical, Frame::Inertial>>(
+              box));
+    }
 
     return std::make_tuple(
         ::Initialization::merge_into_databox<

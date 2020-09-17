@@ -15,8 +15,10 @@
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceHelpers.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/SurfaceJacobian.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/BoundaryData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/BoundaryFlux.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
@@ -63,7 +65,7 @@ struct boundary_data_computer_impl {
  * `db::add_tag_prefix<TemporalIdTag::template step_prefix, VariablesTag>`.
  */
 template <size_t Dim, typename VariablesTag, typename NumericalFluxComputerTag,
-          typename TemporalIdTag>
+          typename TemporalIdTag, bool MassiveOperator>
 struct FirstOrderScheme {
   static constexpr size_t volume_dim = Dim;
   using variables_tag = VariablesTag;
@@ -105,7 +107,13 @@ struct FirstOrderScheme {
       domain::Tags::Interface<domain::Tags::InternalDirections<Dim>,
                               magnitude_of_face_normal_tag>,
       domain::Tags::Interface<domain::Tags::BoundaryDirectionsInterior<Dim>,
-                              magnitude_of_face_normal_tag>>;
+                              magnitude_of_face_normal_tag>,
+      domain::Tags::Interface<
+          domain::Tags::InternalDirections<Dim>,
+          domain::Tags::SurfaceJacobian<Frame::Logical, Frame::Inertial>>,
+      domain::Tags::Interface<
+          domain::Tags::BoundaryDirectionsInterior<Dim>,
+          domain::Tags::SurfaceJacobian<Frame::Logical, Frame::Inertial>>>;
 
   static void apply(
       const gsl::not_null<typename dt_variables_tag::type*> dt_variables,
@@ -117,8 +125,18 @@ struct FirstOrderScheme {
       const NumericalFlux& normal_dot_numerical_flux_computer,
       const std::unordered_map<Direction<Dim>, Scalar<DataVector>>&
           face_normal_magnitudes_internal,
-      const std::unordered_map<Direction<Dim>, Scalar<DataVector>>&
-          face_normal_magnitudes_boundary) noexcept {
+      const db::const_item_type<
+          domain::Tags::Interface<domain::Tags::BoundaryDirectionsInterior<Dim>,
+                                  magnitude_of_face_normal_tag>>&
+          face_normal_magnitudes_boundary,
+      const db::const_item_type<domain::Tags::Interface<
+          domain::Tags::InternalDirections<Dim>,
+          domain::Tags::SurfaceJacobian<Frame::Logical, Frame::Inertial>>>&
+          surface_jacobians_internal,
+      const db::const_item_type<domain::Tags::Interface<
+          domain::Tags::BoundaryDirectionsInterior<Dim>,
+          domain::Tags::SurfaceJacobian<Frame::Logical, Frame::Inertial>>>&
+          surface_jacobians_boundary) noexcept {
     // Iterate over all mortars
     for (auto& mortar_id_and_data : *all_mortar_data) {
       // Retrieve mortar data
@@ -136,16 +154,33 @@ struct FirstOrderScheme {
           mortar_id.second == ElementId<Dim>::external_boundary_id()
               ? face_normal_magnitudes_boundary.at(direction)
               : face_normal_magnitudes_internal.at(direction);
+      const auto& surface_jacobian =
+          mortar_id.second == ElementId<Dim>::external_boundary_id()
+              ? surface_jacobians_boundary.at(direction)
+              : surface_jacobians_internal.at(direction);
 
       auto boundary_flux_on_slice =
           typename dt_variables_tag::type(boundary_flux(
               local_data, remote_data, normal_dot_numerical_flux_computer,
-              magnitude_of_face_normal, volume_mesh.extents(dimension),
               volume_mesh.slice_away(dimension), mortar_meshes.at(mortar_id),
               mortar_sizes.at(mortar_id)));
 
+      // Lift flux to the volume. We still only need to provide it on the face
+      // because it is zero everywhere else.
+      auto lifted_flux = [&]() noexcept {
+        if constexpr (MassiveOperator) {
+          return ::dg::lift_flux_massive_no_mass_lumping(
+              std::move(boundary_flux_on_slice),
+              volume_mesh.slice_away(dimension), surface_jacobian);
+        } else {
+          return ::dg::lift_flux(std::move(boundary_flux_on_slice),
+                                 volume_mesh.extents(dimension),
+                                 magnitude_of_face_normal);
+        }
+      }();
+
       // Add the flux contribution to the volume data
-      add_slice_to_data(dt_variables, std::move(boundary_flux_on_slice),
+      add_slice_to_data(dt_variables, std::move(lifted_flux),
                         volume_mesh.extents(), dimension,
                         index_to_slice_at(volume_mesh.extents(), direction));
     }

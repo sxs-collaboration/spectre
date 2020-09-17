@@ -19,6 +19,7 @@
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/SurfaceJacobian.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -83,14 +84,18 @@ struct InitializeDomain {
                           domain::Tags::ElementMap<Dim>>;
     using compute_tags = tmpl::append<db::AddComputeTags<
         domain::Tags::LogicalCoordinates<Dim>,
-        domain ::Tags::MappedCoordinates<
+        domain::Tags::MappedCoordinates<
             domain::Tags::ElementMap<Dim>,
             domain ::Tags::Coordinates<Dim, Frame::Logical>>,
-        domain ::Tags::InverseJacobianCompute<
+        domain::Tags::JacobianCompute<
+            domain ::Tags::ElementMap<Dim>,
+            domain::Tags::Coordinates<Dim, Frame::Logical>>,
+        domain::Tags::InverseJacobianCompute<
             domain ::Tags::ElementMap<Dim>,
             domain::Tags::Coordinates<Dim, Frame::Logical>>,
         domain::Tags::DetInvJacobianCompute<Dim, Frame::Logical,
                                             Frame::Inertial>,
+        domain::Tags::DetJacobianCompute<Dim, Frame::Logical, Frame::Inertial>,
         domain::Tags::MinimumGridSpacing<Dim, Frame::Inertial>>>;
 
     const auto& initial_extents =

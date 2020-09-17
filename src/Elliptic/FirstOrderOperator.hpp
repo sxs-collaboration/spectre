@@ -3,12 +3,16 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 
+#include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/Matrix.hpp"
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -165,6 +169,26 @@ void first_order_operator(
   *operator_applied_to_vars = sources - div_fluxes;
 }
 
+template <size_t Dim, typename OperatorTags, typename DivFluxesTags,
+          typename SourcesTags>
+void first_order_operator_massive(
+    const gsl::not_null<Variables<OperatorTags>*> operator_applied_to_vars,
+    const Variables<DivFluxesTags>& div_fluxes,
+    const Variables<SourcesTags>& sources, const Mesh<Dim>& mesh,
+    const Scalar<DataVector>& det_jacobian) noexcept {
+  std::array<Matrix, Dim> mass_matrices{};
+  for (size_t d = 0; d < Dim; d++) {
+    gsl::at(mass_matrices, d) = Spectral::mass_matrix(mesh.slice_through(d));
+  }
+  *operator_applied_to_vars =
+      Variables<OperatorTags>{mesh.number_of_grid_points()};
+  apply_matrices(
+      operator_applied_to_vars, mass_matrices,
+      Variables<OperatorTags>(get(det_jacobian) *
+                              Variables<OperatorTags>(sources - div_fluxes)),
+      mesh.extents());
+}
+
 /*!
  * \brief Mutating DataBox invokable to compute the bulk contribution to the
  * operator represented by the `OperatorTag` applied to the `VarsTag`
@@ -197,7 +221,8 @@ void first_order_operator(
  * - Modifies:
  *   - `operator_tag`
  */
-template <size_t Dim, template <typename> class OperatorTag, typename VarsTag>
+template <size_t Dim, template <typename> class OperatorTag, typename VarsTag,
+          bool MassiveOperator>
 struct FirstOrderOperator {
  private:
   using operator_tag = db::add_tag_prefix<OperatorTag, VarsTag>;
@@ -208,11 +233,21 @@ struct FirstOrderOperator {
 
  public:
   using return_tags = tmpl::list<operator_tag>;
-  using argument_tags = tmpl::list<div_fluxes_tag, sources_tag>;
-  static constexpr auto apply =
-      &first_order_operator<typename operator_tag::tags_list,
-                            typename div_fluxes_tag::tags_list,
-                            typename sources_tag::tags_list>;
+  using argument_tags =
+      tmpl::list<div_fluxes_tag, sources_tag, domain::Tags::Mesh<Dim>,
+                 domain::Tags::DetJacobian<Frame::Logical, Frame::Inertial>>;
+  static void apply(
+      const gsl::not_null<typename operator_tag::type*> operator_data,
+      const typename div_fluxes_tag::type& div_fluxes,
+      const typename sources_tag::type& sources, const Mesh<Dim>& mesh,
+      const Scalar<DataVector>& det_jac) noexcept {
+    if constexpr (MassiveOperator) {
+      first_order_operator_massive(operator_data, div_fluxes, sources, mesh,
+                                   det_jac);
+    } else {
+      first_order_operator(operator_data, div_fluxes, sources);
+    }
+  }
 };
 
 }  // namespace elliptic

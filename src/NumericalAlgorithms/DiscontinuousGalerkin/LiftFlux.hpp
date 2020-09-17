@@ -15,6 +15,13 @@
 #include "DataStructures/Variables.hpp"
 #include "Utilities/TMPL.hpp"
 
+#include "DataStructures/ApplyMatrices.hpp"
+#include "DataStructures/Matrix.hpp"
+#include "DataStructures/SliceVariables.hpp"
+#include "Domain/Structure/IndexToSliceAt.hpp"
+#include "NumericalAlgorithms/LinearOperators/Mass.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+
 namespace dg {
 /// \ingroup DiscontinuousGalerkinGroup
 /// \brief Lifts the flux contribution from an interface to the volume.
@@ -61,4 +68,36 @@ auto lift_flux(Variables<tmpl::list<FluxTags...>> flux,
   lifted_data *= lift_factor;
   return lifted_data;
 }
+
+template <size_t Dim, typename... FluxTags>
+auto lift_flux_no_mass_lumping(
+    Variables<tmpl::list<FluxTags...>> flux, const Mesh<Dim>& volume_mesh,
+    const Direction<Dim>& direction,
+    Scalar<DataVector> magnitude_of_face_normal) noexcept
+    -> Variables<tmpl::list<db::remove_tag_prefix<FluxTags>...>> {
+  const auto& inv_mass_matrix = blaze::inv(
+      Spectral::mass_matrix(volume_mesh.slice_through(direction.dimension())));
+  std::array<Matrix, Dim> lifting_operator{};
+  lifting_operator[direction.dimension()] = inv_mass_matrix;
+  Variables<tmpl::list<db::remove_tag_prefix<FluxTags>...>> flux_in_volume{
+      volume_mesh.number_of_grid_points(), 0.};
+  // TODO: handle jacobian correctly, resolve it better on curved meshes e.g. by
+  // taking the numerical integral of the mass matrix
+  add_slice_to_data(make_not_null(&flux_in_volume),
+                    -get(magnitude_of_face_normal) * flux,
+                    volume_mesh.extents(), direction.dimension(),
+                    index_to_slice_at(volume_mesh.extents(), direction));
+  return apply_matrices(lifting_operator, flux_in_volume,
+                        volume_mesh.extents());
+}
+
+template <size_t FaceDim, typename... FluxTags>
+auto lift_flux_massive_no_mass_lumping(
+    Variables<tmpl::list<FluxTags...>> flux, const Mesh<FaceDim>& face_mesh,
+    const Scalar<DataVector>& surface_jacobian) noexcept
+    -> Variables<tmpl::list<db::remove_tag_prefix<FluxTags>...>> {
+  return Variables<tmpl::list<db::remove_tag_prefix<FluxTags>...>>(mass_on_face(
+      Variables<tmpl::list<FluxTags...>>(-flux), face_mesh, surface_jacobian));
+}
+
 }  // namespace dg

@@ -78,6 +78,8 @@ struct Metavariables {
   using initial_guess = InitialGuess;
   using boundary_conditions = BoundaryConditions;
 
+  static constexpr bool massive_operator = true;
+
   static constexpr Options::String help{
       "Find the solution to a Poisson problem."};
 
@@ -115,10 +117,9 @@ struct Metavariables {
   // Specify the DG boundary scheme. We use the strong first-order scheme here
   // that only requires us to compute normals dotted into the first-order
   // fluxes.
-  using boundary_scheme =
-      dg::FirstOrderScheme::FirstOrderScheme<volume_dim, linear_operand_tag,
-                                             normal_dot_numerical_flux,
-                                             linear_solver_iteration_id>;
+  using boundary_scheme = dg::FirstOrderScheme::FirstOrderScheme<
+      volume_dim, linear_operand_tag, normal_dot_numerical_flux,
+      linear_solver_iteration_id, massive_operator>;
 
   // Collect events and triggers
   // (public for use by the Charm++ registration code)
@@ -174,7 +175,7 @@ struct Metavariables {
       dg::Actions::SendDataForFluxes<boundary_scheme>,
       Actions::MutateApply<elliptic::FirstOrderOperator<
           volume_dim, LinearSolver::Tags::OperatorAppliedTo,
-          linear_operand_tag>>,
+          linear_operand_tag, massive_operator>>,
       elliptic::dg::Actions::ImposeHomogeneousDirichletBoundaryConditions<
           linear_operand_tag, primal_variables>,
       dg::Actions::CollectDataForFluxes<
