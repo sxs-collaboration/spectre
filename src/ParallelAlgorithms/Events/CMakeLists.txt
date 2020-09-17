@@ -26,6 +26,7 @@ target_link_libraries(
   ErrorHandling
   EventsAndTriggers
   Interpolation
+  LinearOperators
   Options
   Time
   Utilities

@@ -14,12 +14,13 @@
 
 namespace dg::Events {
 template <size_t VolumeDim, typename TimeTag, typename Fields,
-          typename SolutionFields>
+          typename SolutionFields, typename ArraySectionIdTag = void>
 using field_observations = tmpl::flatten<tmpl::list<
-    ObserveFields<VolumeDim, TimeTag, Fields, SolutionFields>,
-    tmpl::conditional_t<std::is_same_v<SolutionFields, tmpl::list<>>,
-                        tmpl::list<>,
-                        ObserveErrorNorms<TimeTag, SolutionFields>>>>;
+    ObserveFields<VolumeDim, TimeTag, Fields, SolutionFields,
+                  ArraySectionIdTag>,
+    tmpl::conditional_t<
+        std::is_same_v<SolutionFields, tmpl::list<>>, tmpl::list<>,
+        ObserveErrorNorms<TimeTag, SolutionFields, ArraySectionIdTag>>>>;
 }  // namespace dg::Events
 
 namespace Events {

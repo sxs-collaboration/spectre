@@ -51,6 +51,8 @@ struct ObservationTimeTag : db::SimpleTag {
   using type = double;
 };
 
+struct TestSectionIdTag {};
+
 struct MockContributeVolumeData {
   struct Results {
     observers::ObservationId observation_id{};
@@ -139,8 +141,11 @@ struct Metavariables {
 
 // Test systems
 
-template <template <size_t, class...> class ObservationEvent>
+template <template <size_t, class...> class ObservationEvent,
+          typename... ExtraArgs>
 struct ScalarSystem {
+  using extra_args = tmpl::list<ExtraArgs...>;
+
   struct ScalarVar : db::SimpleTag {
     static std::string name() noexcept { return "Scalar"; }
     using type = Scalar<DataVector>;
@@ -174,7 +179,7 @@ struct ScalarSystem {
 
   using ObserveEvent =
       ObservationEvent<volume_dim, ObservationTimeTag, all_vars_for_test,
-                       typename solution_for_test::vars_for_test>;
+                       typename solution_for_test::vars_for_test, ExtraArgs...>;
   static constexpr auto creation_string_for_test =
       "ObserveFields:\n"
       "  SubfileName: element_data\n"
@@ -191,8 +196,11 @@ struct ScalarSystem {
   }
 };
 
-template <template <size_t, class...> class ObservationEvent>
+template <template <size_t, class...> class ObservationEvent,
+          typename... ExtraArgs>
 struct ComplicatedSystem {
+  using extra_args = tmpl::list<ExtraArgs...>;
+
   struct ScalarVar : db::SimpleTag {
     static std::string name() noexcept { return "Scalar"; }
     using type = Scalar<DataVector>;
@@ -277,7 +285,7 @@ struct ComplicatedSystem {
 
   using ObserveEvent =
       ObservationEvent<volume_dim, ObservationTimeTag, all_vars_for_test,
-                       typename solution_for_test::vars_for_test>;
+                       typename solution_for_test::vars_for_test, ExtraArgs...>;
   static constexpr auto creation_string_for_test =
       "ObserveFields:\n"
       "  SubfileName: element_data\n"
