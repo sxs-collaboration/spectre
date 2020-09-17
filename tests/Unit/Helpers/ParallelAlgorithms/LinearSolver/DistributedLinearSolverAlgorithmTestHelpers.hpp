@@ -219,7 +219,7 @@ struct CollectOperatorAction {
               Ap_local.begin());
     db::mutate<local_operator_applied_to_operand_tag>(
         make_not_null(&box),
-        [&Ap_local, &number_of_grid_points ](auto Ap) noexcept {
+        [&Ap_local, &number_of_grid_points](auto Ap) noexcept {
           *Ap = typename local_operator_applied_to_operand_tag::type{
               number_of_grid_points};
           get(get<LinearSolver::Tags::OperatorAppliedTo<ScalarFieldOperandTag>>(
@@ -252,8 +252,8 @@ struct TestResult {
     const auto& has_converged =
         get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
     SPECTRE_PARALLEL_REQUIRE(has_converged);
-    SPECTRE_PARALLEL_REQUIRE(
-        has_converged.reason() == get<helpers::ExpectedConvergenceReason>(box));
+    SPECTRE_PARALLEL_REQUIRE(has_converged.reason() ==
+                             get<helpers::ExpectedConvergenceReason>(box));
     const auto& expected_result =
         gsl::at(get<ExpectedResult>(box), array_index);
     const auto& result = get<ScalarFieldTag>(box).get();
