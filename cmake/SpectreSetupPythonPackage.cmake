@@ -285,8 +285,6 @@ function (spectre_python_add_dependencies LIBRARY_NAME)
     )
 endfunction()
 
-add_custom_target(python-executables)
-
 # Register a Python file as an executable. It will be symlinked to bin/.
 # - EXECUTABLE_NAME   The name of the executable in bin/
 #
@@ -296,11 +294,10 @@ add_custom_target(python-executables)
 #                     configured by calling `spectre_python_add_module`, _not_
 #                     the path to the Python file in `src/`.
 function (spectre_python_add_executable EXECUTABLE_NAME EXECUTABLE_PATH)
-  add_custom_target(${EXECUTABLE_NAME} ALL
+  execute_process(
     COMMAND ${CMAKE_COMMAND} -E create_symlink
     "${SPECTRE_PYTHON_PREFIX}/${EXECUTABLE_PATH}"
     "${CMAKE_BINARY_DIR}/bin/${EXECUTABLE_NAME}")
-  add_dependencies(python-executables ${EXECUTABLE_NAME})
 endfunction()
 
 # Register a python test file with ctest.
