@@ -64,7 +64,7 @@ Blaze types, but in addition, the methods `set_data_ref`, and `pup` are defined
 for use in SpECTRE. All except for the assignment operators and constructors
 will be implicitly inherited from `VectorImpl`. The assignment and constructors
 may be inherited calling the following alias code in the vector class
- definition:
+definition:
 ```
 using VectorImpl<T,VectorType>::operator=;
 using VectorImpl<T,VectorType>::VectorImpl;
