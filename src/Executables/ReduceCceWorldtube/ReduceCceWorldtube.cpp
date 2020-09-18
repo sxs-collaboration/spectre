@@ -312,7 +312,7 @@ int main(int argc, char** argv) {
   if (vars.count("help") != 0u or vars.count("input_file") == 0u or
       vars.count("output_file") == 0u) {
     Parallel::printf("%s\n", desc);
-    Parallel::exit();
+    return 0;
   }
 
   perform_cce_worldtube_reduction(vars["input_file"].as<std::string>(),
