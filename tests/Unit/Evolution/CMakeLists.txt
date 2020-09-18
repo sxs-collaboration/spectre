@@ -11,6 +11,7 @@ add_subdirectory(VariableFixing)
 set(LIBRARY "Test_Evolution")
 
 set(LIBRARY_SOURCES
+  Test_BoundaryCorrectionTags.cpp
   Test_ComputeTags.cpp
   Test_NumericInitialData.cpp
   Test_Protocols.cpp
