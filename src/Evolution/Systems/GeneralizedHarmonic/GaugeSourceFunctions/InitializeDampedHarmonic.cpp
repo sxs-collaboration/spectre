@@ -3,10 +3,13 @@
 
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/InitializeDampedHarmonic.hpp"
 
+#include <array>
+
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedHarmonic.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DhGaugeParameters.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -130,7 +133,8 @@ void InitializeDampedHarmonic<Dim, UseRollon>::new_pi_from_gauge_h(
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
-    const double sigma_r) noexcept {
+    const GeneralizedHarmonic::gauges::DhGaugeParameters<false>&
+        parameters) noexcept {
   const auto spatial_metric = gr::spatial_metric(spacetime_metric);
   const auto det_and_inverse_spatial_metric =
       determinant_and_inverse(spatial_metric);
@@ -165,9 +169,10 @@ void InitializeDampedHarmonic<Dim, UseRollon>::new_pi_from_gauge_h(
   DampedHarmonicCompute<Frame::Inertial>::function(
       make_not_null(&gauge_h_and_deriv), lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
-      inverse_spatial_metric, spacetime_metric, *pi, phi, coords, sigma_r);
+      inverse_spatial_metric, spacetime_metric, *pi, phi, coords, parameters);
   const auto& gauge_h =
-      get<Tags::GaugeH<Dim, Frame::Inertial>>(gauge_h_and_deriv);
+      get<GeneralizedHarmonic::Tags::GaugeH<Dim, Frame::Inertial>>(
+          gauge_h_and_deriv);
 
   // Compute lapse and shift time derivatives
   Scalar<DataVector> dt_lapse{};
@@ -211,21 +216,26 @@ void InitializeDampedHarmonic<Dim, UseRollon>::
         const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
         const tnsr::aa<DataVector, Dim, Frame>& pi,
         const tnsr::iaa<DataVector, Dim, Frame>& phi, const double time,
-        const double rollon_start_time, const double rollon_width,
         const tnsr::I<DataVector, Dim, Frame>& coords,
-        const double sigma_r) noexcept {
+        const GeneralizedHarmonic::gauges::DhGaugeParameters<true>&
+            parameters) noexcept {
   if (UNLIKELY(h_and_d4_h->number_of_grid_points() != get(lapse).size())) {
     h_and_d4_h->initialize(get(lapse).size());
   }
   damped_harmonic_rollon(
-      make_not_null(&get<Tags::GaugeH<Dim, Frame>>(*h_and_d4_h)),
-      make_not_null(&get<Tags::SpacetimeDerivGaugeH<Dim, Frame>>(*h_and_d4_h)),
+      make_not_null(
+          &get<GeneralizedHarmonic::Tags::GaugeH<Dim, Frame>>(*h_and_d4_h)),
+      make_not_null(
+          &get<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim, Frame>>(
+              *h_and_d4_h)),
       gauge_h_init, dgauge_h_init, lapse, shift, spacetime_unit_normal_one_form,
       sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi,
-      phi, time, coords, 1., 1.,
-      1.,       // amp_coef_{L1, L2, S}
-      4, 4, 4,  // exp_{L1, L2, S}
-      rollon_start_time, rollon_width, sigma_r);
+      phi, time, coords, parameters.amplitudes[0], parameters.amplitudes[1],
+      parameters.amplitudes[2], parameters.exponents[0],
+      parameters.exponents[1], parameters.exponents[2], parameters.rollon_start,
+      parameters.rollon_window,
+      parameters.spatial_decay_width);  // indexes 0, 1, 2 refer to L1, L2, S
+                                        // terms, respectively
 }
 
 template <size_t Dim, bool UseRollon>
@@ -242,18 +252,24 @@ void InitializeDampedHarmonic<Dim, UseRollon>::DampedHarmonicCompute<Frame>::
         const tnsr::aa<DataVector, Dim, Frame>& pi,
         const tnsr::iaa<DataVector, Dim, Frame>& phi,
         const tnsr::I<DataVector, Dim, Frame>& coords,
-        const double sigma_r) noexcept {
+        const GeneralizedHarmonic::gauges::DhGaugeParameters<false>&
+            parameters) noexcept {
   if (UNLIKELY(h_and_d4_h->number_of_grid_points() != get(lapse).size())) {
     h_and_d4_h->initialize(get(lapse).size());
   }
   damped_harmonic(
-      make_not_null(&get<Tags::GaugeH<Dim, Frame>>(*h_and_d4_h)),
-      make_not_null(&get<Tags::SpacetimeDerivGaugeH<Dim, Frame>>(*h_and_d4_h)),
+      make_not_null(
+          &get<GeneralizedHarmonic::Tags::GaugeH<Dim, Frame>>(*h_and_d4_h)),
+      make_not_null(
+          &get<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim, Frame>>(
+              *h_and_d4_h)),
       lapse, shift, spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
-      inverse_spatial_metric, spacetime_metric, pi, phi, coords, 1., 1.,
-      1.,       // amp_coef_{L1, L2, S}
-      4, 4, 4,  // exp_{L1, L2, S}
-      sigma_r);
+      inverse_spatial_metric, spacetime_metric, pi, phi, coords,
+      parameters.amplitudes[0], parameters.amplitudes[1],
+      parameters.amplitudes[2], parameters.exponents[0],
+      parameters.exponents[1], parameters.exponents[2],
+      parameters.spatial_decay_width);  // indexes 0, 1, 2 refer to L1, L2, S
+                                        // terms, respectively
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
