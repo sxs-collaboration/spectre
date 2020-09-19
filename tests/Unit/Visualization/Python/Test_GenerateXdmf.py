@@ -18,6 +18,7 @@ class TestGenerateXdmf(unittest.TestCase):
 
         generate_xdmf(file_prefix=data_file_prefix,
                       output=output_filename,
+                      subfile_name="element_data",
                       start_time=0.,
                       stop_time=1.,
                       stride=1,
