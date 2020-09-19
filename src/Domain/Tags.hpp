@@ -323,38 +323,14 @@ struct BoundaryDirectionsExteriorCompute
 /// Interface is desired, then it should be added using `Slice`. In all cases,
 /// the tag can then be retrieved using `Tags::Interface<DirectionsTag, Tag>`.
 ///
-/// If using the base tag mechanism for an interface tag is desired,
-/// then `Tag` can have a `base` type alias pointing to its base
-/// class.  (This requirement is due to the lack of a way to determine
-/// a type's base classes in C++.)
-///
-/// It must be possible to determine the type associated with `Tag`
-/// without reference to a DataBox.
-///
 /// \tparam DirectionsTag the item of directions
 /// \tparam Tag the tag labeling the item
 ///
 /// \see InterfaceCompute, Slice
 template <typename DirectionsTag, typename Tag>
-struct Interface;
-
-namespace Interface_detail {
-template <typename DirectionsTag, typename Tag, typename = std::void_t<>>
-struct GetBaseTagIfPresent {};
-
-template <typename DirectionsTag, typename Tag>
-struct GetBaseTagIfPresent<DirectionsTag, Tag, std::void_t<typename Tag::base>>
-    : Interface<DirectionsTag, typename Tag::base> {
-  static_assert(std::is_base_of_v<typename Tag::base, Tag>,
-                "Tag `base` alias must be a base class of `Tag`.");
-};
-}  // namespace Interface_detail
-
-// Virtual inheritance is used here to prevent a compiler warning: Derived class
-// SimpleTag is inaccessible
-template <typename DirectionsTag, typename Tag>
-struct Interface : virtual db::SimpleTag,
-                   Interface_detail::GetBaseTagIfPresent<DirectionsTag, Tag> {
+struct Interface : db::SimpleTag {
+  static_assert(db::is_simple_tag_v<DirectionsTag>);
+  static_assert(db::is_simple_tag_v<Tag>);
   static std::string name() noexcept {
     return "Interface<" + db::tag_name<DirectionsTag>() + ", " +
            db::tag_name<Tag>() + ">";
