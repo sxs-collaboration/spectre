@@ -10,7 +10,7 @@ import numpy as np
 import sys
 
 
-def generate_xdmf(file_prefix, output_filename, start_time, stop_time, stride,
+def generate_xdmf(file_prefix, output, start_time, stop_time, stride,
                   coordinates):
     """
     Generate one XDMF file that ParaView and VisIt can use to load the data
@@ -227,7 +227,7 @@ def generate_xdmf(file_prefix, output_filename, start_time, stop_time, stride,
     for h5file in h5files:
         h5file[0].close()
 
-    with open(output_filename + ".xmf", "w") as xmf_file:
+    with open(output + ".xmf", "w") as xmf_file:
         xmf_file.write(xdmf_output)
 
 
@@ -247,6 +247,7 @@ def parse_args():
         help="The common prefix of the H5 volume files to load")
     parser.add_argument(
         '--output',
+        '-o',
         required=True,
         help="Output file name, an xmf extension will be added")
     parser.add_argument("--stride",
@@ -274,6 +275,4 @@ def parse_args():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     input_args = parse_args()
-    generate_xdmf(input_args.file_prefix, input_args.output,
-                  input_args.start_time, input_args.stop_time,
-                  input_args.stride, input_args.coordinates)
+    generate_xdmf(**vars(input_args))

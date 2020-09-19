@@ -17,7 +17,7 @@ class TestGenerateXdmf(unittest.TestCase):
             os.remove(output_filename + '.xmf')
 
         generate_xdmf(file_prefix=data_file_prefix,
-                      output_filename=output_filename,
+                      output=output_filename,
                       start_time=0.,
                       stop_time=1.,
                       stride=1,
