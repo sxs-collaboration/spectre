@@ -11,6 +11,7 @@ template <size_t Dim>
 struct FirstOrderSystem;
 namespace Solutions {
 struct BentBeam;
+struct HalfSpaceMirror;
 }  // namespace Solutions
 }  // namespace Elasticity
 
