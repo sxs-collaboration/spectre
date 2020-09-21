@@ -31,6 +31,13 @@ Element<VolumeDim>::Element(ElementId<VolumeDim> id,
           external_boundaries.erase(neighbor_direction.first);
         }
         return external_boundaries;
+      }()),
+      internal_boundaries_([this]() {
+        std::unordered_set<Direction<VolumeDim>> internal_boundaries;
+        for (const auto& direction_neighbors : neighbors_) {
+          internal_boundaries.insert(direction_neighbors.first);
+        }
+        return internal_boundaries;
       }()) {
   // Assuming a maximum 2-to-1 refinement between neighboring elements:
   ASSERT(number_of_neighbors_ <= maximum_number_of_neighbors(VolumeDim),
@@ -44,6 +51,7 @@ void Element<VolumeDim>::pup(PUP::er& p) noexcept {
   p | neighbors_;
   p | number_of_neighbors_;
   p | external_boundaries_;
+  p | internal_boundaries_;
 }
 
 template <size_t VolumeDim>
@@ -51,7 +59,8 @@ bool operator==(const Element<VolumeDim>& lhs,
                 const Element<VolumeDim>& rhs) noexcept {
   return lhs.id() == rhs.id() and lhs.neighbors() == rhs.neighbors() and
          lhs.number_of_neighbors() == rhs.number_of_neighbors() and
-         lhs.external_boundaries() == rhs.external_boundaries();
+         lhs.external_boundaries() == rhs.external_boundaries() and
+         lhs.internal_boundaries() == rhs.internal_boundaries();
 }
 
 template <size_t VolumeDim>

@@ -34,7 +34,9 @@ struct System {
                  Tags::Phi<Dim, Frame::Inertial>>;
 
   using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
-  using char_speeds_tag = CharacteristicSpeedsCompute<Dim, Frame::Inertial>;
+  using char_speeds_compute_tag =
+      CharacteristicSpeedsCompute<Dim, Frame::Inertial>;
+  using char_speeds_tag = Tags::CharacteristicSpeeds<Dim, Frame::Inertial>;
   using compute_largest_characteristic_speed =
       ComputeLargestCharacteristicSpeed<Dim, Frame::Inertial>;
 

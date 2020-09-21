@@ -54,7 +54,8 @@ struct System {
   using magnitude_tag = ::Tags::NonEuclideanMagnitude<
       Tag, gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
 
-  using char_speeds_tag = Tags::CharacteristicSpeedsCompute<Dim>;
+  using char_speeds_compute_tag = Tags::CharacteristicSpeedsCompute<Dim>;
+  using char_speeds_tag = Tags::CharacteristicSpeeds<Dim>;
 
   using volume_fluxes = ComputeFluxes<Dim>;
 

@@ -106,7 +106,7 @@ struct Component {
       inverse_jacobian,
       Tags::DerivCompute<variables_tag, inverse_jacobian,
                          typename metavariables::system::gradients_tags>,
-      domain::Tags::InternalDirections<1>,
+      domain::Tags::InternalDirectionsCompute<1>,
       domain::Tags::Slice<domain::Tags::InternalDirections<1>,
                           typename metavariables::system::variables_tag>,
       domain::Tags::Slice<domain::Tags::InternalDirections<1>,

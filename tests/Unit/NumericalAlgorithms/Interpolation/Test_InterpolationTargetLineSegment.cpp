@@ -14,6 +14,7 @@
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Framework/TestCreation.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetLineSegment.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -70,6 +71,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
     return block_logical_coordinates(domain_creator.create_domain(), points);
   }
   ();
+
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::LineSegment<MockMetavariables::InterpolationTargetA, 3>>(
+      "LineSegment");
 
   InterpTargetTestHelpers::test_interpolation_target<
       MockMetavariables,

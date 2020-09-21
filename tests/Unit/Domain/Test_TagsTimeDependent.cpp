@@ -54,6 +54,9 @@ void test_tags() noexcept {
   TestHelpers::db::test_compute_tag<
       domain::Tags::InertialFromGridCoordinatesCompute<Dim>>(
       "InertialCoordinates");
+  TestHelpers::db::test_compute_tag<
+      domain::Tags::ElementToInertialInverseJacobian<Dim>>(
+      "InverseJacobian(Logical,Inertial)");
   TestHelpers::db::test_simple_tag<domain::Tags::MeshVelocity<Dim>>(
       "MeshVelocity");
   TestHelpers::db::test_compute_tag<

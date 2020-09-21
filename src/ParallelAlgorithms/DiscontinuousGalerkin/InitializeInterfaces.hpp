@@ -49,41 +49,6 @@ using exterior_compute_tags = tmpl::list<Tags...>;
 
 namespace Actions {
 
-namespace InitializeInterfaces_detail {
-template <bool Enable, typename Metavariables>
-struct InitExteriorVarsImpl {
-  template <typename DbTagsList>
-  static db::DataBox<DbTagsList>&& apply(
-      db::DataBox<DbTagsList>&& box) noexcept {
-    return std::move(box);
-  }
-};
-
-template <typename Metavariables>
-struct InitExteriorVarsImpl<true, Metavariables> {
-  template <typename DbTagsList>
-  static auto apply(db::DataBox<DbTagsList>&& box) noexcept {
-    using system = typename Metavariables::system;
-    static constexpr size_t dim = system::volume_dim;
-    using vars_tag = typename system::variables_tag;
-    using exterior_vars_tag =
-        domain::Tags::Interface<domain::Tags::BoundaryDirectionsExterior<dim>,
-                                vars_tag>;
-
-    typename exterior_vars_tag::type exterior_boundary_vars{};
-    const auto& mesh = db::get<domain::Tags::Mesh<dim>>(box);
-    for (const auto& direction :
-         db::get<domain::Tags::Element<dim>>(box).external_boundaries()) {
-      exterior_boundary_vars[direction] = typename vars_tag::type{
-          mesh.slice_away(direction.dimension()).number_of_grid_points()};
-    }
-    return ::Initialization::merge_into_databox<
-        InitExteriorVarsImpl, db::AddSimpleTags<exterior_vars_tag>>(
-        std::move(box), std::move(exterior_boundary_vars));
-  }
-};
-}  // namespace InitializeInterfaces_detail
-
 /// \ingroup InitializationGroup
 /// \brief Initialize items related to the interfaces between Elements and on
 /// external boundaries
@@ -151,9 +116,9 @@ struct InitializeInterfaces {
   struct make_compute_tag {
     using type = domain::Tags::InterfaceCompute<Directions, ComputeTag>;
   };
+
   template <typename Directions>
   using face_tags = tmpl::flatten<tmpl::list<
-      Directions,
       domain::Tags::InterfaceCompute<Directions, domain::Tags::Direction<dim>>,
       domain::Tags::InterfaceCompute<Directions,
                                      domain::Tags::InterfaceMesh<dim>>,
@@ -175,7 +140,7 @@ struct InitializeInterfaces {
                       make_compute_tag<tmpl::_1, tmpl::pin<Directions>>>>>;
 
   using exterior_face_tags = tmpl::flatten<tmpl::list<
-      domain::Tags::BoundaryDirectionsExterior<dim>,
+      domain::Tags::BoundaryDirectionsExteriorCompute<dim>,
       domain::Tags::InterfaceCompute<
           domain::Tags::BoundaryDirectionsExterior<dim>,
           domain::Tags::Direction<dim>>,
@@ -218,15 +183,37 @@ struct InitializeInterfaces {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using compute_tags =
+    using compute_tags = tmpl::push_front<
         tmpl::append<face_tags<domain::Tags::InternalDirections<dim>>,
                      face_tags<domain::Tags::BoundaryDirectionsInterior<dim>>,
-                     exterior_face_tags>;
-    return std::make_tuple(
-        ::Initialization::merge_into_databox<InitializeInterfaces,
-                                             db::AddSimpleTags<>, compute_tags>(
-            InitializeInterfaces_detail::InitExteriorVarsImpl<
-                AddExteriorVariables, Metavariables>::apply(std::move(box))));
+                     exterior_face_tags>,
+        domain::Tags::InternalDirectionsCompute<dim>,
+        domain::Tags::BoundaryDirectionsInteriorCompute<dim>>;
+
+    if constexpr (AddExteriorVariables) {
+      using system = typename Metavariables::system;
+      using vars_tag = typename system::variables_tag;
+      using exterior_vars_tag =
+          domain::Tags::Interface<domain::Tags::BoundaryDirectionsExterior<dim>,
+                                  vars_tag>;
+
+      typename exterior_vars_tag::type exterior_boundary_vars{};
+      const auto& mesh = db::get<domain::Tags::Mesh<dim>>(box);
+      for (const auto& direction :
+           db::get<domain::Tags::Element<dim>>(box).external_boundaries()) {
+        exterior_boundary_vars[direction] = typename vars_tag::type{
+            mesh.slice_away(direction.dimension()).number_of_grid_points()};
+      }
+      return std::make_tuple(
+          ::Initialization::merge_into_databox<
+              InitializeInterfaces, db::AddSimpleTags<exterior_vars_tag>,
+              compute_tags>(std::move(box), std::move(exterior_boundary_vars)));
+    } else {
+      return std::make_tuple(
+          ::Initialization::merge_into_databox<
+              InitializeInterfaces, db::AddSimpleTags<>, compute_tags>(
+              std::move(box)));
+    }
   }
 };
 }  // namespace Actions

@@ -107,6 +107,9 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
 
   {
     INFO("HasConvergedByIterationsCompute - not converged");
+    TestHelpers::db::test_compute_tag<
+        LinearSolver::Tags::HasConvergedByIterationsCompute<TestOptionsGroup>>(
+        "HasConverged(TestLinearSolver)");
     const auto box = db::create<
         db::AddSimpleTags<LinearSolver::Tags::Iterations<TestOptionsGroup>,
                           LinearSolver::Tags::IterationId<TestOptionsGroup>>,

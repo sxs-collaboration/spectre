@@ -133,7 +133,7 @@ void test_first_order_scheme_lts() {
                           domain::Tags::Element<Dim>, all_normal_dot_fluxes_tag,
                           all_magnitude_of_face_normals_tag>,
         db::AddComputeTags<
-            domain::Tags::InternalDirections<Dim>,
+            domain::Tags::InternalDirectionsCompute<Dim>,
             domain::Tags::InterfaceCompute<
                 domain::Tags::InternalDirections<Dim>,
                 domain::Tags::Direction<Dim>>,

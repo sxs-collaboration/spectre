@@ -21,6 +21,8 @@ struct SomeTag {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
+  TestHelpers::db::test_base_tag<Cce::Tags::EndTime>("EndTime");
+  TestHelpers::db::test_base_tag<Cce::Tags::StartTime>("StartTime");
   TestHelpers::db::test_simple_tag<Cce::Tags::BondiBeta>("BondiBeta");
   TestHelpers::db::test_simple_tag<Cce::Tags::BondiH>("H");
   TestHelpers::db::test_simple_tag<Cce::Tags::BondiJ>("J");
@@ -67,7 +69,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<Cce::Tags::Psi3>("Psi3");
   TestHelpers::db::test_simple_tag<Cce::Tags::Psi4>("Psi4");
   TestHelpers::db::test_simple_tag<Cce::Tags::Strain>("Strain");
+  TestHelpers::db::test_simple_tag<
+      Cce::Tags::InterpolationManager<ComplexDataVector, SomeTag>>(
+      "InterpolationManager(SomeTag)");
 
+  TestHelpers::db::test_prefix_tag<::Tags::dt<Cce::Tags::BondiJ>>("H");
   TestHelpers::db::test_prefix_tag<Cce::Tags::Dy<SomeTag>>("Dy(SomeTag)");
   TestHelpers::db::test_prefix_tag<Cce::Tags::Du<SomeTag>>("Du(SomeTag)");
   TestHelpers::db::test_prefix_tag<Cce::Tags::Dr<SomeTag>>("Dr(SomeTag)");

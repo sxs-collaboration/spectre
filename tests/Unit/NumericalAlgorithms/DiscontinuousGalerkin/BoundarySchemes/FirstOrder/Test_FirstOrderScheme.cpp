@@ -121,7 +121,7 @@ void test_first_order_scheme() {
                           domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
                           all_normal_dot_fluxes_tag>,
         db::AddComputeTags<
-            domain::Tags::InternalDirections<Dim>,
+            domain::Tags::InternalDirectionsCompute<Dim>,
             domain::Tags::InterfaceCompute<
                 domain::Tags::InternalDirections<Dim>,
                 domain::Tags::Direction<Dim>>,

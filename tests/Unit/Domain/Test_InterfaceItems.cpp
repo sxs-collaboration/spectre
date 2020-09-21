@@ -40,6 +40,7 @@
 #include "Domain/Structure/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -153,12 +154,7 @@ void test_interface_items() {
   constexpr size_t dim = 3;
   using internal_directions = Tags::InternalDirections<dim>;
   using boundary_directions_interior = Tags::BoundaryDirectionsInterior<dim>;
-  using boundary_directions_exterior = Tags::BoundaryDirectionsExterior<dim>;
   using templated_directions = TestTags::TemplatedDirections<int>;
-
-  CHECK(internal_directions::name() == "InternalDirections");
-  CHECK(boundary_directions_interior::name() == "BoundaryDirectionsInterior");
-  CHECK(boundary_directions_exterior::name() == "BoundaryDirectionsExterior");
 
   Element<dim> element{ElementId<3>(0),
                        {{Direction<dim>::lower_xi(), {}},
@@ -184,7 +180,7 @@ void test_interface_items() {
           templated_directions,
           Tags::Interface<templated_directions, TestTags::Double>>,
       db::AddComputeTags<
-          internal_directions,
+          Tags::InternalDirectionsCompute<dim>,
           Tags::InterfaceCompute<internal_directions, Tags::Direction<dim>>,
           TestTags::NegateCompute<TestTags::Int>,
           Tags::InterfaceCompute<internal_directions, TestTags::IntCompute>,
@@ -199,7 +195,7 @@ void test_interface_items() {
                                  TestTags::NegateCompute<TestTags::Double>>,
           Tags::InterfaceCompute<templated_directions,
                                  TestTags::NegateDoubleAddIntCompute>,
-          boundary_directions_interior,
+          Tags::BoundaryDirectionsInteriorCompute<dim>,
           Tags::InterfaceCompute<boundary_directions_interior,
                                  Tags::Direction<dim>>,
           Tags::InterfaceCompute<boundary_directions_interior,
@@ -210,7 +206,7 @@ void test_interface_items() {
                                  TestTags::NegateDoubleAddIntCompute>,
           Tags::InterfaceCompute<boundary_directions_interior,
                                  TestTags::ComplexItemCompute<dim>>,
-          boundary_directions_exterior>>(
+          Tags::BoundaryDirectionsExteriorCompute<dim>>>(
       std::move(element), 5,
       std::unordered_map<Direction<dim>, double>{
           {Direction<dim>::lower_xi(), 1.5},
@@ -538,6 +534,19 @@ void test_interface_slice(){
       mesh, std::move(element_map), std::move(volume_vars),
       std::move(volume_tensor),
       make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
+
+  TestHelpers::db::test_simple_tag<Tags::Interface<Dirs, simple_item_tag>>(
+      "Interface<Dirs, Variables(Var)>");
+  TestHelpers::db::test_compute_tag<
+      Tags::InterfaceCompute<Dirs, Tags::InterfaceMesh<dim>>>(
+      "Interface<Dirs, Mesh>");
+  TestHelpers::db::test_compute_tag<Tags::Slice<Dirs, Var<4>>>(
+      "Interface<Var>");
+  TestHelpers::db::test_compute_tag<
+      Tags::InterfaceCompute<Dirs, Tags::Direction<dim>>>("Interface");
+  TestHelpers::db::test_compute_tag<Tags::InterfaceMesh<dim>>("Mesh");
+  TestHelpers::db::test_compute_tag<Tags::BoundaryCoordinates<dim>>(
+      "BoundaryCoordinates");
 
   CHECK((db::get<Tags::Interface<Dirs, simple_item_tag>>(box)) ==
         make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));

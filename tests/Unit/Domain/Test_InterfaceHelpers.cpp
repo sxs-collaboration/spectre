@@ -131,22 +131,22 @@ void test_interface_apply(
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.InterfaceHelpers", "[Unit][Domain]") {
-  test_interface_apply<1, Tags::InternalDirections<1>>(
+  test_interface_apply<1, Tags::InternalDirectionsCompute<1>>(
       // Reference element has one internal direction:
       // [ X | ]-> xi
       {{0, {{{1, 0}}}}, {{Direction<1>::upper_xi(), {{{0, {{{1, 1}}}}}, {}}}}},
       {{Direction<1>::upper_xi(), 2.}}, {{Direction<1>::upper_xi(), 5.}});
-  test_interface_apply<1, Tags::InternalDirections<1>>(
+  test_interface_apply<1, Tags::InternalDirectionsCompute<1>>(
       // Reference element has no internal directions:
       // [ X ]-> xi
       {{0, {{{0, 0}}}}, {}}, {}, {});
-  test_interface_apply<1, Tags::BoundaryDirectionsInterior<1>>(
+  test_interface_apply<1, Tags::BoundaryDirectionsInteriorCompute<1>>(
       // Reference element has two boundary directions:
       // [ X ]-> xi
       {{0, {{{0, 0}}}}, {}},
       {{Direction<1>::lower_xi(), 2.}, {Direction<1>::upper_xi(), 3.}},
       {{Direction<1>::lower_xi(), 5.}, {Direction<1>::upper_xi(), 7.}});
-  test_interface_apply<2, Tags::InternalDirections<2>>(
+  test_interface_apply<2, Tags::InternalDirectionsCompute<2>>(
       // Reference element has one internal directions:
       // ^ eta
       // +-+-+

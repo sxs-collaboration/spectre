@@ -99,4 +99,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags.Errors",
       CHECK_ITERABLE_APPROX(diff[i], -1.0 * get<tensor_tag>(analytic)[i] + 5.0);
     }
   });
+
+  TestHelpers::db::test_compute_tag<evolution::Tags::ErrorsCompute<
+      1, AnalyticSolutionTag, tmpl::list<FieldTag>>>(
+      "Variables(Error(FieldTag))");
 }

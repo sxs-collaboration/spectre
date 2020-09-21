@@ -50,6 +50,26 @@ SPECTRE_TEST_CASE("Evolution.Systems.RadiationTransport.M1Grey.Tags",
           Frame::Grid, neutrinos::ElectronNeutrinos<1>>>(
       "Grid_TildeHSpatial_ElectronNeutrinos1");
   TestHelpers::db::test_simple_tag<
+      RadiationTransport::M1Grey::Tags::GreyEmissivity<
+          neutrinos::ElectronNeutrinos<1>>>(
+      "GreyEmissivity_ElectronNeutrinos1");
+  TestHelpers::db::test_simple_tag<
+      RadiationTransport::M1Grey::Tags::GreyAbsorptionOpacity<
+          neutrinos::ElectronNeutrinos<1>>>(
+      "GreyAbsorptionOpacity_ElectronNeutrinos1");
+  TestHelpers::db::test_simple_tag<
+      RadiationTransport::M1Grey::Tags::GreyScatteringOpacity<
+          neutrinos::ElectronNeutrinos<1>>>(
+      "GreyScatteringOpacity_ElectronNeutrinos1");
+  TestHelpers::db::test_simple_tag<
+      RadiationTransport::M1Grey::Tags::M1HydroCouplingNormal<
+          neutrinos::ElectronNeutrinos<1>>>(
+      "M1HydroCouplingNormal_ElectronNeutrinos1");
+  TestHelpers::db::test_simple_tag<
+      RadiationTransport::M1Grey::Tags::M1HydroCouplingSpatial<
+          Frame::Grid, neutrinos::ElectronNeutrinos<1>>>(
+      "Grid_M1HydroCouplingSpatial_ElectronNeutrinos1");
+  TestHelpers::db::test_simple_tag<
       RadiationTransport::M1Grey::Tags::CharacteristicSpeeds>(
       "CharacteristicSpeeds");
   TestHelpers::db::test_compute_tag<

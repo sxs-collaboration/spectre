@@ -77,8 +77,8 @@ struct ElementArray {
                                     ::Tags::Next<TemporalIdTag>>>,
                      dg::Actions::InitializeDomain<Dim>,
                      Initialization::Actions::AddComputeTags<tmpl::list<
-                         domain::Tags::InternalDirections<Dim>,
-                         domain::Tags::BoundaryDirectionsInterior<Dim>,
+                         domain::Tags::InternalDirectionsCompute<Dim>,
+                         domain::Tags::BoundaryDirectionsInteriorCompute<Dim>,
                          domain::Tags::InterfaceCompute<
                              domain::Tags::InternalDirections<Dim>,
                              domain::Tags::Direction<Dim>>,

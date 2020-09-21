@@ -13,6 +13,7 @@
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/TestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
@@ -28,6 +29,8 @@ template <size_t Dim>
 void test_llf_flux_tags() noexcept {
   using system = TestHelpers::NumericalFluxes::System<Dim>;
   using llf_flux = dg::NumericalFluxes::LocalLaxFriedrichs<system>;
+  TestHelpers::db::test_simple_tag<typename llf_flux::MaxAbsCharSpeed>(
+      "MaxAbsCharSpeed");
 
   using expected_type_argument_tags = tmpl::list<
       Tags::NormalDotFlux<TestHelpers::NumericalFluxes::Tags::Variable1>,

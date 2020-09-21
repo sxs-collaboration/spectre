@@ -186,7 +186,7 @@ struct SimpleActionMockMetavariables {
 
 struct MockMetavariablesWithGlobalCacheTags {
   using component_list = tmpl::list<
-      component_for_simple_action_mock<SimpleActionMockMetavariables>>;
+      component_for_simple_action_mock<MockMetavariablesWithGlobalCacheTags>>;
   /// [const global cache metavars]
   using const_global_cache_tags = tmpl::list<ValueTag, PassedToB>;
   /// [const global cache metavars]

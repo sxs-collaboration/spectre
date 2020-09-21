@@ -15,6 +15,7 @@
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Framework/TestCreation.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetKerrHorizon.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -142,6 +143,10 @@ void test_interpolation_target_kerr_horizon(
     }
     return block_logical_coordinates(domain_creator.create_domain(), points);
   }();
+
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::KerrHorizon<MockMetavariables::InterpolationTargetA>>(
+      "KerrHorizon");
 
   InterpTargetTestHelpers::test_interpolation_target<
       MockMetavariables,

@@ -53,6 +53,12 @@ class Element {
     return external_boundaries_;
   }
 
+  /// The directions of the faces of the Element that are internal boundaries.
+  const std::unordered_set<Direction<VolumeDim>>& internal_boundaries() const
+      noexcept {
+    return internal_boundaries_;
+  }
+
   /// A unique ID for the Element.
   const ElementId<VolumeDim>& id() const noexcept { return id_; }
 
@@ -70,6 +76,7 @@ class Element {
   Neighbors_t neighbors_{};
   size_t number_of_neighbors_{};
   std::unordered_set<Direction<VolumeDim>> external_boundaries_{};
+  std::unordered_set<Direction<VolumeDim>> internal_boundaries_{};
 };
 
 template <size_t VolumeDim>

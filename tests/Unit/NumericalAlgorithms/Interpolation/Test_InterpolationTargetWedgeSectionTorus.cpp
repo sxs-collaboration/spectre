@@ -15,6 +15,7 @@
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Framework/TestCreation.hpp"
+#include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetWedgeSectionTorus.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -74,7 +75,7 @@ void test_r_theta_lgl() noexcept {
                                      num_theta)[t]);
         for (size_t p = 0; p < num_phi; ++p) {
           const double phi = 2.0 * M_PI * p / num_phi;
-          const double i = r + t * num_radial + p * num_theta * num_radial;
+          const size_t i = r + t * num_radial + p * num_theta * num_radial;
           get<0>(points)[i] = radius * sin(theta) * cos(phi);
           get<1>(points)[i] = radius * sin(theta) * sin(phi);
           get<2>(points)[i] = radius * cos(theta);
@@ -113,7 +114,7 @@ void test_r_theta_uniform() noexcept {
         const double theta = M_PI * (0.25 + 0.5 * t / (num_theta - 1.0));
         for (size_t p = 0; p < num_phi; ++p) {
           const double phi = 2.0 * M_PI * p / num_phi;
-          const double i = r + t * num_radial + p * num_theta * num_radial;
+          const size_t i = r + t * num_radial + p * num_theta * num_radial;
           get<0>(points)[i] = radius * sin(theta) * cos(phi);
           get<1>(points)[i] = radius * sin(theta) * sin(phi);
           get<2>(points)[i] = radius * cos(theta);
@@ -122,6 +123,10 @@ void test_r_theta_uniform() noexcept {
     }
     return block_logical_coordinates(domain_creator.create_domain(), points);
   }();
+
+  TestHelpers::db::test_simple_tag<
+      intrp::Tags::WedgeSectionTorus<MockMetavariables::InterpolationTargetA>>(
+      "WedgeSectionTorus");
 
   InterpTargetTestHelpers::test_interpolation_target<
       MockMetavariables,

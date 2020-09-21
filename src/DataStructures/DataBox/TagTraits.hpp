@@ -35,6 +35,23 @@ template <typename Tag>
 constexpr bool is_compute_tag_v = is_compute_tag<Tag>::value;
 // @}
 
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Check if `Tag` is a simple tag.
+ */
+template <typename Tag, typename = std::nullptr_t>
+struct is_simple_tag : std::false_type {};
+/// \cond HIDDEN_SYMBOLS
+template <typename Tag>
+struct is_simple_tag<Tag, Requires<std::is_base_of_v<db::SimpleTag, Tag> and
+                                   not is_compute_tag_v<Tag>>>
+    : std::true_type {};
+/// \endcond
+
+template <typename Tag>
+constexpr bool is_simple_tag_v = is_simple_tag<Tag>::value;
+// @}
+
 // @{
 /*!
  * \ingroup DataBoxGroup

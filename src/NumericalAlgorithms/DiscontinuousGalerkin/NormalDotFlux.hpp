@@ -79,6 +79,7 @@ template <typename Tag, size_t VolumeDim, typename Fr>
 struct NormalDotFluxCompute : db::add_tag_prefix<NormalDotFlux, Tag>,
                               db::ComputeTag {
   using base = db::add_tag_prefix<NormalDotFlux, Tag>;
+  using return_type = typename base::type;
 
  private:
   using flux_tag = db::add_tag_prefix<Flux, Tag, tmpl::size_t<VolumeDim>, Fr>;
@@ -86,10 +87,11 @@ struct NormalDotFluxCompute : db::add_tag_prefix<NormalDotFlux, Tag>,
       Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<VolumeDim, Fr>>;
 
  public:
-  static auto function(
+  static void function(
+      const gsl::not_null<return_type*> result,
       const typename flux_tag::type& flux,
       const tnsr::i<DataVector, VolumeDim, Fr>& normal) noexcept {
-    return normal_dot_flux<typename Tag::tags_list>(normal, flux);
+    *result = normal_dot_flux<typename Tag::tags_list>(normal, flux);
   }
   using argument_tags = tmpl::list<flux_tag, normal_tag>;
 };

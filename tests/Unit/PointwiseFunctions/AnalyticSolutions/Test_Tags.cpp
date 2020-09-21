@@ -29,4 +29,5 @@ SPECTRE_TEST_CASE("Unit.AnalyticSolutions.Tags", "[Unit][PointwiseFunctions]") {
   TestHelpers::db::test_prefix_tag<Tags::Analytic<DummyTag>>(
       "Analytic(DummyTag)");
   /// [analytic_name]
+  TestHelpers::db::test_prefix_tag<Tags::Error<DummyTag>>("Error(DummyTag)");
 }

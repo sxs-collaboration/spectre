@@ -146,8 +146,8 @@ struct lts_component {
                  ::Tags::Next<TemporalIdTag>, domain::Tags::Mesh<Dim>,
                  domain::Tags::Element<Dim>, domain::Tags::ElementMap<Dim>>;
   using compute_tags = tmpl::list<
-      domain::Tags::InternalDirections<Dim>,
-      domain::Tags::BoundaryDirectionsInterior<Dim>,
+      domain::Tags::InternalDirectionsCompute<Dim>,
+      domain::Tags::BoundaryDirectionsInteriorCompute<Dim>,
       domain::Tags::InterfaceCompute<domain::Tags::InternalDirections<Dim>,
                                      domain::Tags::Direction<Dim>>,
       domain::Tags::InterfaceCompute<

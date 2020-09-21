@@ -119,7 +119,7 @@ namespace NumericalFluxes {
  */
 template <size_t Dim, typename Frame>
 struct Hllc : tt::ConformsTo<dg::protocols::NumericalFlux> {
-  using char_speeds_tag = Tags::CharacteristicSpeedsCompute<Dim>;
+  using char_speeds_tag = Tags::CharacteristicSpeeds<Dim>;
 
   /// Estimate for one of the signal speeds
   struct LargestIngoingSpeed : db::SimpleTag {
