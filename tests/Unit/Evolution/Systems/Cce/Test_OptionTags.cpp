@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <limits>
+#include <optional>
 #include <string>
 
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
@@ -59,10 +60,18 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(TestHelpers::test_creation<double, Cce::OptionTags::ExtractionRadius>(
             "100.0") == 100.0);
 
-  CHECK(TestHelpers::test_creation<double, Cce::OptionTags::EndTime>("4.0") ==
-        4.0);
-  CHECK(TestHelpers::test_creation<double, Cce::OptionTags::StartTime>("2.0") ==
-        2.0);
+  CHECK(TestHelpers::test_creation<std::optional<double>,
+                                   Cce::OptionTags::EndTime>("4.0") ==
+        std::optional<double>{4.0});
+  CHECK(TestHelpers::test_creation<std::optional<double>,
+                                   Cce::OptionTags::EndTime>("Auto") ==
+        std::optional<double>{});
+  CHECK(TestHelpers::test_creation<std::optional<double>,
+                                   Cce::OptionTags::StartTime>("2.0") ==
+        std::optional<double>{2.0});
+  CHECK(TestHelpers::test_creation<std::optional<double>,
+                                   Cce::OptionTags::StartTime>("Auto") ==
+        std::optional<double>{});
   CHECK(TestHelpers::test_creation<double, Cce::OptionTags::TargetStepSize>(
             "0.5") == 0.5);
   CHECK(TestHelpers::test_creation<std::string,
@@ -106,16 +115,18 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(Cce::Tags::NumberOfRadialPoints::create_from_options(6u) == 6u);
 
   CHECK(Cce::Tags::StartTimeFromFile::create_from_options(
-            -std::numeric_limits<double>::infinity(),
-            "OptionTagsTestCceR0100.h5", false) == 2.5);
+            std::optional<double>{}, "OptionTagsTestCceR0100.h5", false) ==
+        2.5);
   CHECK(Cce::Tags::StartTimeFromFile::create_from_options(
-            3.3, "OptionTagsTestCceR0100.h5", false) == 3.3);
+            std::optional<double>{3.3}, "OptionTagsTestCceR0100.h5", false) ==
+        3.3);
 
   CHECK(Cce::Tags::EndTimeFromFile::create_from_options(
-            std::numeric_limits<double>::infinity(),
-            "OptionTagsTestCceR0100.h5", false) == 5.4);
+            std::optional<double>{}, "OptionTagsTestCceR0100.h5", false) ==
+        5.4);
   CHECK(Cce::Tags::EndTimeFromFile::create_from_options(
-            2.2, "OptionTagsTestCceR0100.h5", false) == 2.2);
+            std::optional<double>{2.2}, "OptionTagsTestCceR0100.h5", false) ==
+        2.2);
 
   CHECK(Cce::Tags::ObservationLMax::create_from_options(5_st) == 5_st);
   CHECK(Cce::InitializationTags::TargetStepSize::create_from_options(0.2) ==

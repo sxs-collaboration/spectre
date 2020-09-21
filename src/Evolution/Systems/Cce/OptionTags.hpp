@@ -13,6 +13,7 @@
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
 #include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 
 namespace Cce {
@@ -78,21 +79,17 @@ struct ExtractionRadius {
 };
 
 struct EndTime {
-  using type = double;
+  using type = Options::Auto<double>;
   static constexpr Options::String help{"End time for the Cce Evolution."};
-  static double default_value() noexcept {
-    return std::numeric_limits<double>::infinity();
-  }
+  static type default_value() noexcept { return {}; }
   using group = Cce;
 };
 
 struct StartTime {
-  using type = double;
+  using type = Options::Auto<double>;
   static constexpr Options::String help{
       "Cce Start time (default to earliest possible time)."};
-  static double default_value() noexcept {
-    return -std::numeric_limits<double>::infinity();
-  }
+  static type default_value() noexcept { return {}; }
   using group = Cce;
 };
 
@@ -307,8 +304,7 @@ struct RadialFilterHalfPower : db::SimpleTag {
 /// either from option specification or from the file
 ///
 /// \details If no start time is specified in the input file (so the option
-/// `OptionTags::StartTime` is set to the default
-/// `-std::numeric_limits<double>::%infinity()`), this will find the start time
+/// `OptionTags::StartTime` is set to "Auto"), this will find the start time
 /// from the provided H5 file. If `OptionTags::StartTime` takes any other value,
 /// it will be used directly as the start time for the CCE evolution instead.
 struct StartTimeFromFile : Tags::StartTime, db::SimpleTag {
@@ -318,21 +314,21 @@ struct StartTimeFromFile : Tags::StartTime, db::SimpleTag {
                  OptionTags::H5IsBondiData>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(double start_time,
+  static double create_from_options(const std::optional<double> start_time,
                                     const std::string& filename,
                                     const bool is_bondi_data) noexcept {
-    if (start_time == -std::numeric_limits<double>::infinity()) {
-      if (is_bondi_data) {
-        BondiWorldtubeH5BufferUpdater h5_boundary_updater{filename};
-        const auto& time_buffer = h5_boundary_updater.get_time_buffer();
-        start_time = time_buffer[0];
-      } else {
-        MetricWorldtubeH5BufferUpdater h5_boundary_updater{filename};
-        const auto& time_buffer = h5_boundary_updater.get_time_buffer();
-        start_time = time_buffer[0];
-      }
+    if (start_time) {
+      return *start_time;
     }
-    return start_time;
+    if (is_bondi_data) {
+      BondiWorldtubeH5BufferUpdater h5_boundary_updater{filename};
+      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
+      return time_buffer[0];
+    } else {
+      MetricWorldtubeH5BufferUpdater h5_boundary_updater{filename};
+      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
+      return time_buffer[0];
+    }
   }
 };
 
@@ -352,8 +348,7 @@ struct SpecifiedStartTime : Tags::StartTime, db::SimpleTag {
 /// either from option specification or from the file
 ///
 /// \details If no end time is specified in the input file (so the option
-/// `OptionTags::EndTime` is set to the default
-/// `std::numeric_limits<double>::%infinity()`), this will find the end time
+/// `OptionTags::EndTime` is set to "Auto"), this will find the end time
 /// from the provided H5 file. If `OptionTags::EndTime` takes any other value,
 /// it will be used directly as the final time for the CCE evolution instead.
 struct EndTimeFromFile : Tags::EndTime, db::SimpleTag {
@@ -363,21 +358,21 @@ struct EndTimeFromFile : Tags::EndTime, db::SimpleTag {
                  OptionTags::H5IsBondiData>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(double end_time,
+  static double create_from_options(const std::optional<double> end_time,
                                     const std::string& filename,
                                     const bool is_bondi_data) {
-    if (end_time == std::numeric_limits<double>::infinity()) {
-      if (is_bondi_data) {
-        BondiWorldtubeH5BufferUpdater h5_boundary_updater{filename};
-        const auto& time_buffer = h5_boundary_updater.get_time_buffer();
-        end_time = time_buffer[time_buffer.size() - 1];
-      } else {
-        MetricWorldtubeH5BufferUpdater h5_boundary_updater{filename};
-        const auto& time_buffer = h5_boundary_updater.get_time_buffer();
-        end_time = time_buffer[time_buffer.size() - 1];
-      }
+    if (end_time) {
+      return *end_time;
     }
-    return end_time;
+    if (is_bondi_data) {
+      BondiWorldtubeH5BufferUpdater h5_boundary_updater{filename};
+      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
+        return time_buffer[time_buffer.size() - 1];
+    } else {
+      MetricWorldtubeH5BufferUpdater h5_boundary_updater{filename};
+      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
+      return time_buffer[time_buffer.size() - 1];
+    }
   }
 };
 
