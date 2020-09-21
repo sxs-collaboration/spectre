@@ -12,13 +12,14 @@ set(LIBRARY_SOURCES
   Test_Linearize.cpp
   Test_MeanValue.cpp
   Test_PartialDerivatives.cpp
+  Test_WeakDivergence.cpp
   )
 
 add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/LinearOperators/"
   "${LIBRARY_SOURCES}"
-  "LinearOperators;MathFunctions;Spectral;Utilities"
+  "DiscontinuousGalerkin;ErrorHandling;LinearOperators;MathFunctions;Spectral;Utilities"
   )
 
 add_dependencies(

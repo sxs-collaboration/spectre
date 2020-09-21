@@ -33,6 +33,7 @@ spectre_target_headers(
   PartialDerivatives.hpp
   PartialDerivatives.tpp
   Tags.hpp
+  WeakDivergence.hpp
   )
 
 target_link_libraries(
