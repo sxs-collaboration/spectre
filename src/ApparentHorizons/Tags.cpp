@@ -13,6 +13,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
+/// \cond
 namespace StrahlkorperTags {
 
 template <typename Frame>
@@ -271,3 +272,4 @@ template struct LaplacianRadiusCompute<Frame::Inertial>;
 template struct NormalOneFormCompute<Frame::Inertial>;
 template struct TangentsCompute<Frame::Inertial>;
 }  // namespace StrahlkorperTags
+/// \endcond

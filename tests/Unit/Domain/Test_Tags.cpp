@@ -54,6 +54,9 @@ void test_simple_tags() noexcept {
   TestHelpers::db::test_simple_tag<Tags::BoundaryDirectionsExterior<Dim>>(
       "BoundaryDirectionsExterior");
   TestHelpers::db::test_simple_tag<Tags::Direction<Dim>>("Direction");
+  TestHelpers::db::test_simple_tag<
+      Tags::Jacobian<Dim, Frame::Logical, Frame::Inertial>>(
+      "Jacobian(Logical,Inertial)");
 }
 
 template <size_t Dim>
