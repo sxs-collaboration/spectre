@@ -19,6 +19,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/OptionTags.hpp"
@@ -206,6 +207,24 @@ struct Jacobian : db::SimpleTag {
            get_output(TargetFrame{}) + ")";
   }
   using type = ::Jacobian<DataVector, Dim, SourceFrame, TargetFrame>;
+};
+
+/// \ingroup ComputationalDomainGroup
+/// Computes the Jacobian of the map from the `InverseJacobian<Dim, SourceFrame,
+/// TargetFrame>` tag.
+template <size_t Dim, typename SourceFrame, typename TargetFrame>
+struct JacobianCompute : Jacobian<Dim, SourceFrame, TargetFrame>,
+                         db::ComputeTag {
+  using base = Jacobian<Dim, SourceFrame, TargetFrame>;
+  using return_type = typename base::type;
+  using argument_tags =
+      tmpl::list<InverseJacobian<Dim, SourceFrame, TargetFrame>>;
+  static constexpr auto function(
+      const gsl::not_null<return_type*> jacobian,
+      const ::InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>&
+          inv_jac) noexcept {
+    *jacobian = determinant_and_inverse(inv_jac).second;
+  }
 };
 
 /// \ingroup DataBoxTagsGroup
