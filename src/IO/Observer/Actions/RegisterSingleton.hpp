@@ -14,6 +14,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -52,17 +53,12 @@ struct RegisterSingletonWithObserverWriter {
             "'Reduction' for singleton.");
     };
 
-    // The actual value of the processing element doesn't matter
-    // here; it is used only to give an ObserverWriter a count of how many
-    // times it will be called.
-    constexpr size_t fake_processing_element = 0;
-
     // We call only on node 0; the observation call will occur only
     // on node 0.
     Parallel::simple_action<Actions::RegisterReductionNodeWithWritingNode>(
         Parallel::get_parallel_component<
             observers::ObserverWriter<Metavariables>>(cache)[0],
-        observation_key, fake_processing_element);
+        observation_key, static_cast<size_t>(Parallel::my_node()));
     return {std::move(box), true};
   }
 };
