@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "Framework/TestingFramework.hpp"
+
 #include <complex>
 #include <cstddef>
 
@@ -12,6 +14,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/SphericalMetricData.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
+#include "Framework/Pypp.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfLapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfShift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfLapse.hpp"
@@ -28,6 +31,91 @@
 namespace Cce {
 namespace Solutions {
 namespace TestHelpers {
+
+template <typename SphericalSolution>
+struct SphericalSolutionWrapper : public SphericalSolution {
+  using taglist =
+      tmpl::list<gr::Tags::SpacetimeMetric<
+                     3, ::Frame::Spherical<::Frame::Inertial>, DataVector>,
+                 Tags::Dr<gr::Tags::SpacetimeMetric<
+                     3, ::Frame::Spherical<::Frame::Inertial>, DataVector>>,
+                 ::Tags::dt<gr::Tags::SpacetimeMetric<
+                     3, ::Frame::Spherical<::Frame::Inertial>, DataVector>>,
+                 Tags::News>;
+  using SphericalSolution::SphericalSolution;
+
+  template <typename... Args>
+  void test_spherical_metric(const std::string python_file, const size_t l_max,
+                             const double time,
+                             const Args... args) const noexcept {
+    const size_t size =
+        Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+    Scalar<DataVector> sin_theta{size};
+    Scalar<DataVector> cos_theta{size};
+    const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
+        Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
+    for (const auto& collocation_point : collocation) {
+      get(sin_theta)[collocation_point.offset] = sin(collocation_point.theta);
+      get(cos_theta)[collocation_point.offset] = cos(collocation_point.theta);
+    }
+    tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>
+        local_spherical_metric{size};
+    tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>
+        local_dr_spherical_metric{size};
+    tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>
+        local_dt_spherical_metric{size};
+    Scalar<SpinWeighted<ComplexDataVector, -2>> local_news{size};
+
+    this->spherical_metric(make_not_null(&local_spherical_metric), l_max, time);
+    this->dr_spherical_metric(make_not_null(&local_dr_spherical_metric), l_max,
+                              time);
+    this->dt_spherical_metric(make_not_null(&local_dt_spherical_metric), l_max,
+                              time);
+    this->variables_impl(make_not_null(&local_news), l_max, time,
+                         tmpl::type_<Tags::News>{});
+
+    // Pypp call expects all of the objects to be the same category -- here we
+    // need to use tensors, so we must pack up the `double` arguments into
+    // tensors.
+    Scalar<DataVector> time_vector;
+    get(time_vector) = DataVector{size, time};
+
+    const auto py_spherical_metric = pypp::call<
+        tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>>(
+        python_file, "spherical_metric", sin_theta, cos_theta, time_vector,
+        Scalar<DataVector>{DataVector{size, args}}...);
+    const auto py_dt_spherical_metric = pypp::call<
+        tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>>(
+        python_file, "dt_spherical_metric", sin_theta, cos_theta, time_vector,
+        Scalar<DataVector>{DataVector{size, args}}...);
+    const auto py_dr_spherical_metric = pypp::call<
+        tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>>(
+        python_file, "dr_spherical_metric", sin_theta, cos_theta, time_vector,
+        Scalar<DataVector>{DataVector{size, args}}...);
+    const auto py_news = pypp::call<Scalar<SpinWeighted<ComplexDataVector, 2>>>(
+        python_file, "news", sin_theta, time_vector,
+        Scalar<DataVector>{DataVector{size, args}}...);
+
+    for (size_t a = 0; a < 4; ++a) {
+      for (size_t b = a; b < 4; ++b) {
+        CAPTURE(a);
+        CAPTURE(b);
+        const auto& lhs = local_spherical_metric.get(a, b);
+        const auto& rhs = py_spherical_metric.get(a, b);
+        CHECK_ITERABLE_APPROX(lhs, rhs);
+        const auto& dr_lhs = local_dr_spherical_metric.get(a, b);
+        const auto& dr_rhs = py_dr_spherical_metric.get(a, b);
+        CHECK_ITERABLE_APPROX(dr_lhs, dr_rhs);
+        const auto& dt_lhs = local_dt_spherical_metric.get(a, b);
+        const auto& dt_rhs = py_dt_spherical_metric.get(a, b);
+        CHECK_ITERABLE_APPROX(dt_lhs, dt_rhs);
+      }
+    }
+  }
+
+ protected:
+  using SphericalSolution::extraction_radius_;
+};
 
 // This function determines the Bondi-Sachs scalars from a Cartesian spacetime
 // metric, assuming that the metric is already in null form, so the spatial
