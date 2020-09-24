@@ -15,6 +15,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  ElementCenteredSubdomainData.hpp
   OverlapHelpers.hpp
   Schwarz.hpp
   )
@@ -28,4 +29,6 @@ target_link_libraries(
   PRIVATE
   ErrorHandling
   Utilities
+  INTERFACE
+  LinearSolver
   )
