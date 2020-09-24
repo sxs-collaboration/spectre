@@ -36,9 +36,11 @@
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/SystemType.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderScheme.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/MetricIdentityJacobian.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+#include "NumericalAlgorithms/LinearOperators/WeakDivergence.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
@@ -711,6 +713,7 @@ struct component {
               ::Tags::NormalDotFlux,
               typename metavariables::boundary_scheme::variables_tag>>,
       domain::Tags::Element<Metavariables::volume_dim>,
+      domain::Tags::Coordinates<Metavariables::volume_dim, Frame::Inertial>,
       domain::Tags::InverseJacobian<Metavariables::volume_dim, Frame::Logical,
                                     Frame::Inertial>,
       domain::Tags::MeshVelocity<Metavariables::volume_dim>,
@@ -732,6 +735,10 @@ struct component {
                   Tags::Variables<tmpl::list<Var2<Metavariables::volume_dim>>>,
                   tmpl::size_t<Metavariables::volume_dim>, Frame::Inertial>>>>;
   using common_compute_tags = tmpl::list<
+      domain::Tags::JacobianCompute<Metavariables::volume_dim, Frame::Logical,
+                                    Frame::Inertial>,
+      domain::Tags::DetInvJacobianCompute<Metavariables::volume_dim,
+                                          Frame::Logical, Frame::Inertial>,
       domain::Tags::InternalDirectionsCompute<Metavariables::volume_dim>,
       domain::Tags::InterfaceCompute<
           internal_directions,
@@ -828,12 +835,13 @@ double dg_package_data(
 template <bool UseMovingMesh, size_t Dim, SystemType system_type,
           UseBoundaryCorrection use_boundary_correction, bool HasPrims>
 void test_impl(const Spectral::Quadrature quadrature,
-               const ::dg::Formulation dg_formulation) noexcept {
+               ::dg::Formulation dg_formulation) noexcept {
   CAPTURE(UseMovingMesh);
   CAPTURE(Dim);
   CAPTURE(system_type);
   CAPTURE(use_boundary_correction);
   CAPTURE(quadrature);
+  CAPTURE(dg_formulation);
   using metavars = Metavariables<Dim, system_type, use_boundary_correction,
                                  UseMovingMesh, HasPrims>;
   using system = typename metavars::system;
@@ -905,10 +913,23 @@ void test_impl(const Spectral::Quadrature quadrature,
 
   const Mesh<Dim> mesh{2, Spectral::Basis::Legendre, quadrature};
 
+  // Set the Jacobian to not be the identity because otherwise bugs creep in
+  // easily.
   ::InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial> inv_jac{
       mesh.number_of_grid_points(), 0.0};
   for (size_t i = 0; i < Dim; ++i) {
-    inv_jac.get(i, i) = 1.0;
+    inv_jac.get(i, i) = 2.0;
+  }
+  const auto det_inv_jacobian = determinant(inv_jac);
+  const auto jacobian = determinant_and_inverse(inv_jac).second;
+
+  // We don't need the Jacobian and map to be consistent since we are just
+  // checking that given a Jacobian, coordinates, etc., the correct terms are
+  // added to the evolution equations.
+  const auto logical_coords = logical_coordinates(mesh);
+  tnsr::I<DataVector, Dim, Frame::Inertial> inertial_coords{};
+  for (size_t i = 0; i < logical_coords.size(); ++i) {
+    inertial_coords[i] = logical_coords[i];
   }
 
   std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>> mesh_velocity{};
@@ -957,8 +978,8 @@ void test_impl(const Spectral::Quadrature quadrature,
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
         {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3, mesh,
-         normal_dot_fluxes_interface, element, inv_jac, mesh_velocity,
-         div_mesh_velocity,
+         normal_dot_fluxes_interface, element, inertial_coords, inv_jac,
+         mesh_velocity, div_mesh_velocity,
          Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
                                     tmpl::size_t<Dim>, Frame::Inertial>>{
              2, -100.}});
@@ -968,8 +989,8 @@ void test_impl(const Spectral::Quadrature quadrature,
         ActionTesting::emplace_component_and_initialize<component<metavars>>(
             &runner, neighbor_id,
             {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3,
-             mesh, normal_dot_fluxes_interface, element, inv_jac, mesh_velocity,
-             div_mesh_velocity,
+             mesh, normal_dot_fluxes_interface, element, inertial_coords,
+             inv_jac, mesh_velocity, div_mesh_velocity,
              Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
                                         tmpl::size_t<Dim>, Frame::Inertial>>{
                  2, -100.}});
@@ -979,16 +1000,16 @@ void test_impl(const Spectral::Quadrature quadrature,
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
         {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3, mesh,
-         normal_dot_fluxes_interface, element, inv_jac, mesh_velocity,
-         div_mesh_velocity});
+         normal_dot_fluxes_interface, element, inertial_coords, inv_jac,
+         mesh_velocity, div_mesh_velocity});
     for (const auto& [direction, neighbor_ids] : neighbors) {
       (void)direction;
       for (const auto& neighbor_id : neighbor_ids) {
         ActionTesting::emplace_component_and_initialize<component<metavars>>(
             &runner, neighbor_id,
             {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3,
-             mesh, normal_dot_fluxes_interface, element, inv_jac, mesh_velocity,
-             div_mesh_velocity});
+             mesh, normal_dot_fluxes_interface, element, inertial_coords,
+             inv_jac, mesh_velocity, div_mesh_velocity});
       }
     }
   }
@@ -1014,30 +1035,25 @@ void test_impl(const Spectral::Quadrature quadrature,
                 system_type == SystemType::Mixed) {
     for (size_t i = 0; i < mesh.number_of_grid_points(); i += 2) {
       if (quadrature == Spectral::Quadrature::GaussLobatto) {
-        get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars))[i] = 25.5;
-        get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars))[i + 1] = 37.5;
+        get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars))[i] = 26.0;
+        get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars))[i + 1] = 39.0;
       } else if (quadrature == Spectral::Quadrature::Gauss) {
         get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars))[i] =
-            25.8660254037844375;
+            26.7320508075688785;
         get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars))[i + 1] =
-            38.598076211353316;
+            41.196152422706632;
       } else {
         ERROR("Only support Gauss and Gauss-Lobatto quadrature in test, not "
               << quadrature);
       }
     }
     if (UseMovingMesh) {
-      if (quadrature == Spectral::Quadrature::GaussLobatto) {
-        get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars)) +=
-            -0.5 * get<0>(*mesh_velocity);
-      } else {
-        const tnsr::i<DataVector, Dim> d_var1 =
-            get<::Tags::deriv<Var1, tmpl::size_t<Dim>, Frame::Inertial>>(
-                partial_derivatives<tmpl::list<Var1>>(get_tag(variables_tag{}),
-                                                      mesh, inv_jac));
-        get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars)) +=
-            get<0>(d_var1) * get<0>(*mesh_velocity);
-      }
+      const tnsr::i<DataVector, Dim> d_var1 =
+          get<::Tags::deriv<Var1, tmpl::size_t<Dim>, Frame::Inertial>>(
+              partial_derivatives<tmpl::list<Var1>>(get_tag(variables_tag{}),
+                                                    mesh, inv_jac));
+      get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars)) +=
+          get<0>(d_var1) * get<0>(*mesh_velocity);
     }
   } else {
     // Deal with source terms:
@@ -1047,19 +1063,39 @@ void test_impl(const Spectral::Quadrature quadrature,
           1.5 * get(get<Var1>(evolved_vars));
     }
     // Deal with volume flux divergence
-    if (quadrature == Spectral::Quadrature::GaussLobatto) {
-      get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars)) -= 1.5;
+    if (quadrature == Spectral::Quadrature::GaussLobatto and
+        dg_formulation == ::dg::Formulation::StrongInertial) {
+      get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars)) -= 3.0;
       if constexpr (UseMovingMesh) {
         get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars)) +=
-            mesh_velocity->get(0) * -0.5;
+            mesh_velocity->get(0) * -1.0;
       }
     } else {
-      const auto div = divergence(get_tag(fluxes_tag{}), mesh, inv_jac);
-      const Scalar<DataVector>& div_var1_flux = get<
-          ::Tags::div<::Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>>>(
-          div);
-      get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars)) -=
-          get(div_var1_flux);
+      if (dg_formulation == ::dg::Formulation::StrongInertial) {
+        const auto div = divergence(get_tag(fluxes_tag{}), mesh, inv_jac);
+        const Scalar<DataVector>& div_var1_flux = get<::Tags::div<
+            ::Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>>>(div);
+        get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars)) -=
+            get(div_var1_flux);
+      } else {
+        Variables<db::wrap_tags_in<Tags::div, typename fluxes_tag::tags_list>>
+            weak_div_fluxes{mesh.number_of_grid_points()};
+
+        InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+            det_jac_times_inverse_jacobian{};
+        ::dg::metric_identity_det_jac_times_inv_jac(
+            make_not_null(&det_jac_times_inverse_jacobian), mesh,
+            inertial_coords, jacobian);
+
+        weak_divergence(make_not_null(&weak_div_fluxes), get_tag(fluxes_tag{}),
+                        mesh, det_jac_times_inverse_jacobian);
+        weak_div_fluxes *= get(det_inv_jacobian);
+
+        get(get<::Tags::dt<Var1>>(expected_dt_evolved_vars)) +=
+            get(get<Tags::div<
+                    Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>>>(
+                weak_div_fluxes));
+      }
     }
   }
   // Set dt<Var2<Dim>>
@@ -1071,27 +1107,52 @@ void test_impl(const Spectral::Quadrature quadrature,
           j * get(var3);
     }
     // Deal with volume flux divergence
-    if (quadrature == Spectral::Quadrature::GaussLobatto) {
-      get<0>(get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars)) += 2.0;
+    if (quadrature == Spectral::Quadrature::GaussLobatto and
+        dg_formulation == ::dg::Formulation::StrongInertial) {
+      get<0>(get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars)) += 4.0;
       if constexpr (Dim > 1) {
-        get<1>(get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars)) -= 9.0;
+        get<1>(get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars)) -= 18.0;
       }
       if constexpr (Dim > 2) {
-        get<2>(get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars)) -= 10.5;
+        get<2>(get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars)) -= 21.0;
       }
       if constexpr (UseMovingMesh) {
         for (size_t j = 0; j < Dim; ++j) {
           get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars).get(j) +=
-              mesh_velocity->get(0) * 1.0;
+              mesh_velocity->get(0) * 2.0;
         }
       }
     } else {
-      const auto div = divergence(get_tag(fluxes_tag{}), mesh, inv_jac);
-      const tnsr::I<DataVector, Dim>& div_var2_flux = get<::Tags::div<
-          ::Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>>(div);
-      for (size_t i = 0; i < Dim; ++i) {
-        get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars).get(i) -=
-            div_var2_flux.get(i);
+      if (dg_formulation == ::dg::Formulation::StrongInertial) {
+        const auto div = divergence(get_tag(fluxes_tag{}), mesh, inv_jac);
+        const tnsr::I<DataVector, Dim>& div_var2_flux = get<::Tags::div<
+            ::Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>>(div);
+        for (size_t i = 0; i < Dim; ++i) {
+          get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars).get(i) -=
+              div_var2_flux.get(i);
+        }
+      } else {
+        Variables<db::wrap_tags_in<Tags::div, typename fluxes_tag::tags_list>>
+            weak_div_fluxes{mesh.number_of_grid_points()};
+
+        InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+            det_jac_times_inverse_jacobian{};
+        ::dg::metric_identity_det_jac_times_inv_jac(
+            make_not_null(&det_jac_times_inverse_jacobian), mesh,
+            inertial_coords, determinant_and_inverse(inv_jac).second);
+
+        weak_divergence(make_not_null(&weak_div_fluxes), get_tag(fluxes_tag{}),
+                        mesh, det_jac_times_inverse_jacobian);
+
+        weak_div_fluxes *= get(det_inv_jacobian);
+
+        for (size_t i = 0; i < Dim; ++i) {
+          get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars).get(i) +=
+              get<Tags::div<
+                  Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>>(
+                  weak_div_fluxes)
+                  .get(i);
+        }
       }
     }
     if constexpr (UseMovingMesh) {
@@ -1110,9 +1171,9 @@ void test_impl(const Spectral::Quadrature quadrature,
     if (quadrature == Spectral::Quadrature::GaussLobatto) {
       for (size_t i = 0; i < mesh.number_of_grid_points(); i += 2) {
         for (size_t j = 0; j < Dim; ++j) {
-          get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars).get(j)[i] = -3.;
+          get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars).get(j)[i] = -6.;
           get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars).get(j)[i + 1] =
-              -6.;
+              -12.;
         }
       }
     } else {
@@ -1137,7 +1198,7 @@ void test_impl(const Spectral::Quadrature quadrature,
       for (size_t j = 0; j < Dim; ++j) {
         if (quadrature == Spectral::Quadrature::GaussLobatto) {
           get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars).get(j) +=
-              get<0>(*mesh_velocity);
+              2.0 * get<0>(*mesh_velocity);
         } else {
           get<::Tags::dt<Var2<Dim>>>(expected_dt_evolved_vars).get(j) +=
               d_var2.get(0, j) * get<0>(*mesh_velocity);
@@ -1426,7 +1487,8 @@ void test() noexcept {
         moving_mesh_helper(std::integral_constant<bool, false>{});
         moving_mesh_helper(std::integral_constant<bool, true>{});
       };
-  for (const auto dg_formulation : {::dg::Formulation::StrongInertial}) {
+  for (const auto dg_formulation :
+       {::dg::Formulation::StrongInertial, ::dg::Formulation::WeakInertial}) {
     invoke_tests_with_quadrature_and_formulation(
         Spectral::Quadrature::GaussLobatto, dg_formulation);
     if constexpr (use_boundary_correction == UseBoundaryCorrection::Yes) {
