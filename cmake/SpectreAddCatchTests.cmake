@@ -212,7 +212,7 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
     endif()
 
     # Add the test and set its properties
-    add_test(NAME "\"${CTEST_NAME}\""
+    add_test(NAME ${CTEST_NAME}
       COMMAND $<TARGET_FILE:${TEST_TARGET}>
       \"${NAME}\" --durations yes
       --warn NoAssertions
@@ -226,7 +226,7 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
           "${OUTPUT_REGEX}|### No ASSERT tests in release mode ###")
       endif()
       set_tests_properties(
-        "\"${CTEST_NAME}\"" PROPERTIES
+        ${CTEST_NAME} PROPERTIES
         FAIL_REGULAR_EXPRESSION "No tests ran"
         TIMEOUT ${TIMEOUT}
         PASS_REGULAR_EXPRESSION "${OUTPUT_REGEX}"
@@ -235,7 +235,7 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
       set(FAILURE_TESTS "\"~${CTEST_NAME}\";${FAILURE_TESTS}")
     else ()
       set_tests_properties(
-        "\"${CTEST_NAME}\"" PROPERTIES
+        ${CTEST_NAME} PROPERTIES
         FAIL_REGULAR_EXPRESSION "No tests ran"
         TIMEOUT ${TIMEOUT}
         LABELS "${TAGS}"
