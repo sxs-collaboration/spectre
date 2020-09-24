@@ -46,7 +46,8 @@ SetupLocalPythonEnvironment::SetupLocalPythonEnvironment(
       PySys_GetObject(const_cast<char *>("path"));  // NOLINT
   const auto old_paths =
       pypp::from_py_object<std::vector<std::string>>(pyob_old_paths);
-  std::string new_path = unit_test_path() + cur_dir_relative_to_unit_test_path;
+  std::string new_path =
+      unit_test_src_path()+cur_dir_relative_to_unit_test_path;
   for (const auto &p : old_paths) {
     new_path += ":";
     new_path += p;
