@@ -304,14 +304,14 @@ struct EvolutionMetavars {
           dg::Initialization::slice_tags_to_face<
               typename system::variables_tag,
               gr::Tags::SpatialMetric<volume_dim, frame, DataVector>,
-              gr::Tags::DetAndInverseSpatialMetricCompute<volume_dim, frame,
-                                                          DataVector>,
+              typename gr::Tags::DetAndInverseSpatialMetricCompute<
+                  volume_dim, frame, DataVector>::base,
               gr::Tags::Shift<volume_dim, frame, DataVector>,
               gr::Tags::Lapse<DataVector>>,
           dg::Initialization::slice_tags_to_exterior<
               gr::Tags::SpatialMetric<volume_dim, frame, DataVector>,
-              gr::Tags::DetAndInverseSpatialMetricCompute<volume_dim, frame,
-                                                          DataVector>,
+              typename gr::Tags::DetAndInverseSpatialMetricCompute<
+                  volume_dim, frame, DataVector>::base,
               gr::Tags::Shift<volume_dim, frame, DataVector>,
               gr::Tags::Lapse<DataVector>>,
           dg::Initialization::face_compute_tags<

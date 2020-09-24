@@ -35,147 +35,86 @@ namespace Tags {
 
 namespace Interface_detail {
 
-template <typename DirectionsTag, typename BaseComputeItem,
-          typename ArgumentTags>
-struct evaluate_compute_item;
-
-template <typename DirectionsTag, typename BaseComputeItem,
-          typename... ArgumentTags>
-struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
-                             tmpl::list<ArgumentTags...>> {
-  using volume_tags = get_volume_tags<BaseComputeItem>;
-  static constexpr size_t volume_dim = DirectionsTag::volume_dim;
-  static_assert(
-      tmpl::size<tmpl::list_difference<
-              volume_tags, typename BaseComputeItem::argument_tags>>::value ==
-          0,
-      "volume_tags contains tags not in argument_tags");
-
- private:
-  // Order matters so we mix public/private
-  template <class ComputeItem, typename = std::nullptr_t>
-  struct ComputeItemType {
-    using type = typename BaseComputeItem::return_type;
-  };
-
-  template <class ComputeItem>
-  struct ComputeItemType<
-      ComputeItem, Requires<not db::has_return_type_member_v<ComputeItem>>> {
-    using type = std::decay_t<decltype(BaseComputeItem::function(
-        std::declval<typename InterfaceHelpers_detail::unmap_interface_args<
-            tmpl::list_contains_v<volume_tags, ArgumentTags>>::
-                         template f<typename ArgumentTags::type>>()...))>;
-  };
-
- public:
-  using return_type =
-      std::unordered_map<::Direction<volume_dim>,
-                         typename ComputeItemType<BaseComputeItem>::type>;
-
-  template <typename... ArgTypes>
-  static constexpr void apply(
-      const gsl::not_null<return_type*> result,
-      const std::unordered_set<::Direction<volume_dim>>& directions,
-      const ArgTypes&... args) noexcept {
-    apply_helper(
-        std::integral_constant<bool,
-                               db::has_return_type_member_v<BaseComputeItem>>{},
-        result, directions, args...);
-  }
-
- private:
-  template <typename... ArgTypes>
-  static constexpr void apply_helper(
-      std::false_type /*has_return_type_member*/,
-      const gsl::not_null<return_type*> result,
-      const std::unordered_set<::Direction<volume_dim>>& directions,
-      const ArgTypes&... args) noexcept {
-    for (const auto& direction : directions) {
-      (*result)[direction] = BaseComputeItem::function(
-          InterfaceHelpers_detail::unmap_interface_args<tmpl::list_contains_v<
-              volume_tags, ArgumentTags>>::apply(direction, args)...);
-    }
-  }
-
-  template <typename... ArgTypes>
-  static constexpr void apply_helper(
-      std::true_type /*has_return_type_member*/,
-      const gsl::not_null<return_type*> result,
-      const std::unordered_set<::Direction<volume_dim>>& directions,
-      const ArgTypes&... args) noexcept {
-    for (const auto& direction : directions) {
-      BaseComputeItem::function(
-          make_not_null(&(*result)[direction]),
-          InterfaceHelpers_detail::unmap_interface_args<tmpl::list_contains_v<
-              volume_tags, ArgumentTags>>::apply(direction, args)...);
-    }
-  }
-};
-
+template <typename ComputeTag, typename VolumeTags, typename... ArgumentTags,
+          size_t Dim, typename... ArgTypes>
+constexpr void evaluate_compute_item(
+    const gsl::not_null<typename ComputeTag::type*> result,
+    const ::Direction<Dim>& direction, tmpl::list<ArgumentTags...> /*meta*/,
+    const ArgTypes&... args) noexcept {
+  ComputeTag::function(
+      result,
+      InterfaceHelpers_detail::unmap_interface_args<
+          tmpl::list_contains_v<VolumeTags, ArgumentTags>>::apply(direction,
+                                                                  args)...);
+}
 }  // namespace Interface_detail
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
-/// \brief Derived tag for representing a compute item which acts on Tags on an
-/// interface. Can be retrieved using Tags::Interface<DirectionsTag, Tag>
+/// \brief Compute tag for representing items computed on a set of interfaces.
+/// Can be retrieved using `Tags::Interface<DirectionsTag, Tag>`
 ///
-/// The contained object will be a map from ::Direction to the item type of
-/// `Tag`, with the set of directions being those produced by `DirectionsTag`.
-/// `Tag::function` will be applied separately to the data on each interface. If
-/// some of the compute item's inputs should be taken from the volume even when
-/// applied on a slice, it may indicate them using `volume_tags`.
+/// The computed object will be a map from a ::Direction to the item type of
+/// `Tag` (i.e. `Tag::type`), with the set of directions being those produced by
+/// `DirectionsTag`. `Tag::function` will be applied separately to the data on
+/// each interface. If some of the compute item's inputs (i.e.
+/// `Tag::argument_tags`) should be taken from the volume rather than the
+/// interface, they should be specified in the typelist `Tag::volume_tags`.
 ///
-/// If using the base tag mechanism for an interface tag is desired,
-/// then `Tag` can have a `base` type alias pointing to its base
-/// class.  (This requirement is due to the lack of a way to determine
-/// a type's base classes in C++.)
-///
-/// \tparam DirectionsTag the item of Directions
-/// \tparam Tag the tag labeling the item
+/// \tparam DirectionsTag the simple tag labeling the set of Directions
+/// \tparam Tag the compute tag to apply on each interface
 template <typename DirectionsTag, typename Tag>
-struct InterfaceCompute : Interface<DirectionsTag, Tag>, db::ComputeTag {
-  using base = Interface<DirectionsTag, Tag>;
+struct InterfaceCompute : Interface<DirectionsTag, typename Tag::base>,
+                          db::ComputeTag {
+  static_assert(db::is_simple_tag_v<DirectionsTag>);
   static_assert(db::is_compute_tag_v<Tag>,
                 "Cannot use a non compute item as an interface compute item.");
-  // Defining name here prevents an ambiguous function call when using base
-  // tags; Both Interface<Dirs, Tag> and Interface<Dirs, Tag::base> will have a
-  // name function and so cannot be disambiguated.
-  static std::string name() noexcept {
-    return "Interface<" + db::tag_name<DirectionsTag>() + ", " +
-           db::tag_name<Tag>() + ">";
-  };
-  using tag = Tag;
+  using base = Interface<DirectionsTag, typename Tag::base>;
+  static constexpr size_t volume_dim = DirectionsTag::volume_dim;
+  using return_type =
+      std::unordered_map<::Direction<volume_dim>, typename Tag::type>;
+
   using forwarded_argument_tags =
       InterfaceHelpers_detail::get_interface_argument_tags<Tag, DirectionsTag>;
   using argument_tags =
       tmpl::push_front<forwarded_argument_tags, DirectionsTag>;
 
-  using return_type = typename Interface_detail::evaluate_compute_item<
-      DirectionsTag, Tag, forwarded_argument_tags>::return_type;
-  template <typename... Ts>
-  static constexpr auto function(Ts&&... ts) noexcept {
-    return Interface_detail::evaluate_compute_item<
-        DirectionsTag, Tag,
-        forwarded_argument_tags>::apply(std::forward<Ts>(ts)...);
+  using volume_tags = get_volume_tags<Tag>;
+  static_assert(
+      tmpl::size<tmpl::list_difference<volume_tags, argument_tags>>::value == 0,
+      "volume_tags contains tags not in argument_tags");
+
+  template <typename... ArgTypes>
+  static constexpr void function(
+      const gsl::not_null<return_type*> result,
+      const std::unordered_set<::Direction<volume_dim>>& directions,
+      const ArgTypes&... args) noexcept {
+    for (const auto& direction : directions) {
+      Interface_detail::evaluate_compute_item<Tag, volume_tags>(
+          make_not_null(&(*result)[direction]), direction,
+          forwarded_argument_tags{}, args...);
+    }
   }
 };
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
-/// \brief Derived tag for representing a compute item which slices a Tag
-/// containing a `Tensor` or a `Variables` from the volume to an interface.
-/// Retrievable from the DataBox using `Tags::Interface<DirectionsTag, Tag>`
+/// \brief Compute tag for representing a compute item that slices data from
+/// the volume to a set of interfaces.
 ///
-/// The contained object will be a map from ::Direction to the item
-/// type of `Tag`, with the set of directions being those produced by
-/// `DirectionsTag`.
+/// The computed object will be a map from a ::Direction to the item type of
+/// `Tag` (i.e. `Tag::type`), with the set of directions being those produced by
+/// `DirectionsTag`. `Tag::type` must be a `Tensor` or a `Variables`.
+/// Retrievable from the DataBox using `Tags::Interface<DirectionsTag, Tag>`
 ///
 /// \requires `Tag` correspond to a `Tensor` or a `Variables`
 ///
-/// \tparam DirectionsTag the item of Directions
-/// \tparam Tag the tag labeling the item
+/// \tparam DirectionsTag the simple tag labeling the set of Directions
+/// \tparam Tag the simple tag for the volume data to be sliced
 template <typename DirectionsTag, typename Tag>
 struct Slice : Interface<DirectionsTag, Tag>, db::ComputeTag {
+  static_assert(db::is_simple_tag_v<DirectionsTag>);
+  static_assert(db::is_simple_tag_v<Tag>);
   using base = Interface<DirectionsTag, Tag>;
   static constexpr size_t volume_dim = DirectionsTag::volume_dim;
 
@@ -193,9 +132,7 @@ struct Slice : Interface<DirectionsTag, Tag>, db::ComputeTag {
                     index_to_slice_at(mesh.extents(), direction));
     }
   }
-  static std::string name() {
-    return "Interface<" + db::tag_name<Tag>() + ">";
-  };
+
   using argument_tags = tmpl::list<Mesh<volume_dim>, DirectionsTag, Tag>;
   using volume_tags = tmpl::list<Mesh<volume_dim>, Tag>;
 };
@@ -203,10 +140,9 @@ struct Slice : Interface<DirectionsTag, Tag>, db::ComputeTag {
 /// \cond
 template <typename DirectionsTag, size_t VolumeDim>
 struct InterfaceCompute<DirectionsTag, Direction<VolumeDim>>
-    : db::ComputeTag, Tags::Interface<DirectionsTag, Direction<VolumeDim>> {
-  using base = Tags::Interface<DirectionsTag, Direction<VolumeDim>>;
-  static std::string name() noexcept { return "Interface"; }
-  using tag = Direction<VolumeDim>;
+    : db::ComputeTag, Interface<DirectionsTag, Direction<VolumeDim>> {
+  static_assert(db::is_simple_tag_v<DirectionsTag>);
+  using base = Interface<DirectionsTag, Direction<VolumeDim>>;
   using return_type =
       std::unordered_map<::Direction<VolumeDim>, ::Direction<VolumeDim>>;
   using argument_tags = tmpl::list<DirectionsTag>;
@@ -278,7 +214,6 @@ struct BoundaryCoordinates : db::ComputeTag,
                              time, functions_of_time);
   }
 
-  static std::string name() noexcept { return "BoundaryCoordinates"; }
   using argument_tags = tmpl::conditional_t<
       MovingMesh,
       tmpl::list<Direction<VolumeDim>, Mesh<VolumeDim - 1>,
@@ -304,7 +239,8 @@ namespace db {
 template <typename DirectionsTag, typename VariablesTag>
 struct Subitems<domain::Tags::InterfaceCompute<DirectionsTag, VariablesTag>,
                 Requires<tt::is_a_v<Variables, typename VariablesTag::type>>>
-    : detail::InterfaceSubitemsImpl<DirectionsTag, VariablesTag> {};
+    : detail::InterfaceSubitemsImpl<DirectionsTag,
+                                    typename VariablesTag::base> {};
 
 template <typename DirectionsTag, typename VariablesTag>
 struct Subitems<domain::Tags::Slice<DirectionsTag, VariablesTag>,

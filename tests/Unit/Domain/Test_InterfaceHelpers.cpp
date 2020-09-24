@@ -56,16 +56,16 @@ struct ComputeWithVoidReturnType {
 template <size_t Dim, typename DirectionsTag>
 void test_interface_apply(
     const Element<Dim>& element,
+    const std::unordered_set<Direction<Dim>>& directions,
     const std::unordered_map<Direction<Dim>, double>& number_on_interfaces,
     const std::unordered_map<Direction<Dim>, double>&
         expected_result_on_interfaces) {
   // Construct DataBox that holds the test data
   const auto box =
-      db::create<db::AddSimpleTags<Tags::Element<Dim>,
+      db::create<db::AddSimpleTags<Tags::Element<Dim>, DirectionsTag,
                                    Tags::Interface<DirectionsTag, SomeNumber>,
-                                   SomeVolumeArgument>,
-                 db::AddComputeTags<DirectionsTag>>(element,
-                                                    number_on_interfaces, 1.);
+                                   SomeVolumeArgument>>(
+          element, directions, number_on_interfaces, 1.);
   // Test applying a function to the interface and give an example
   /// [interface_apply_example]
   const auto computed_number_on_interfaces =
@@ -131,22 +131,24 @@ void test_interface_apply(
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.InterfaceHelpers", "[Unit][Domain]") {
-  test_interface_apply<1, Tags::InternalDirectionsCompute<1>>(
+  test_interface_apply<1, Tags::InternalDirections<1>>(
       // Reference element has one internal direction:
       // [ X | ]-> xi
       {{0, {{{1, 0}}}}, {{Direction<1>::upper_xi(), {{{0, {{{1, 1}}}}}, {}}}}},
-      {{Direction<1>::upper_xi(), 2.}}, {{Direction<1>::upper_xi(), 5.}});
-  test_interface_apply<1, Tags::InternalDirectionsCompute<1>>(
+      {Direction<1>::upper_xi()}, {{Direction<1>::upper_xi(), 2.}},
+      {{Direction<1>::upper_xi(), 5.}});
+  test_interface_apply<1, Tags::InternalDirections<1>>(
       // Reference element has no internal directions:
       // [ X ]-> xi
-      {{0, {{{0, 0}}}}, {}}, {}, {});
-  test_interface_apply<1, Tags::BoundaryDirectionsInteriorCompute<1>>(
+      {{0, {{{0, 0}}}}, {}}, {}, {}, {});
+  test_interface_apply<1, Tags::BoundaryDirectionsInterior<1>>(
       // Reference element has two boundary directions:
       // [ X ]-> xi
       {{0, {{{0, 0}}}}, {}},
+      {Direction<1>::lower_xi(), Direction<1>::upper_xi()},
       {{Direction<1>::lower_xi(), 2.}, {Direction<1>::upper_xi(), 3.}},
       {{Direction<1>::lower_xi(), 5.}, {Direction<1>::upper_xi(), 7.}});
-  test_interface_apply<2, Tags::InternalDirectionsCompute<2>>(
+  test_interface_apply<2, Tags::InternalDirections<2>>(
       // Reference element has one internal directions:
       // ^ eta
       // +-+-+
@@ -154,7 +156,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceHelpers", "[Unit][Domain]") {
       // +-+-+> xi
       {{0, {{{1, 0}, {0, 0}}}},
        {{Direction<2>::upper_xi(), {{{0, {{{1, 1}, {0, 0}}}}}, {}}}}},
-      {{Direction<2>::upper_xi(), 2.}}, {{Direction<2>::upper_xi(), 5.}});
+      {Direction<2>::upper_xi()}, {{Direction<2>::upper_xi(), 2.}},
+      {{Direction<2>::upper_xi(), 5.}});
 }
 }  // namespace
 }  // namespace domain

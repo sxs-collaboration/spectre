@@ -283,15 +283,15 @@ void test_interface_items() {
                          {Direction<dim>::upper_eta(), 8},
                          {Direction<dim>::lower_zeta(), 8}}));
 
-  CHECK((get<Tags::Interface<internal_directions,
-                             TestTags::ComplexItemCompute<dim>>>(box)) ==
+  CHECK((get<Tags::Interface<internal_directions, TestTags::ComplexItem<dim>>>(
+            box)) ==
         (std::unordered_map<Direction<dim>, std::pair<int, double>>{
             {Direction<dim>::lower_xi(), {5, 1.5}},
             {Direction<dim>::upper_xi(), {5, 2.5}},
             {Direction<dim>::upper_zeta(), {5, 3.5}}}));
 
-  CHECK((get<Tags::Interface<boundary_directions_interior,
-                             TestTags::ComplexItemCompute<dim>>>(box)) ==
+  CHECK((get<Tags::InterfaceCompute<boundary_directions_interior,
+                                    TestTags::ComplexItemCompute<dim>>>(box)) ==
         (std::unordered_map<Direction<dim>, std::pair<int, double>>{
             {Direction<dim>::lower_eta(), {5, 10.5}},
             {Direction<dim>::upper_eta(), {5, 20.5}},
@@ -471,7 +471,6 @@ void test_interface_subitems() {
 
 using simple_item_tag = ::Tags::Variables<tmpl::list<Var<0>>>;
 using compute_item_tag = ComputeCompute<1>;
-using sliced_compute_item_tag = ComputeCompute<2>;
 using sliced_simple_item_tag = ::Tags::Variables<tmpl::list<Var<3>>>;
 
 void test_interface_slice(){
@@ -523,14 +522,14 @@ void test_interface_slice(){
                         sliced_simple_item_tag, Var<4>,
                         Tags::Interface<Dirs, simple_item_tag>>,
       db::AddComputeTags<
-          DirsCompute, sliced_compute_item_tag, VarPlusFiveCompute<4>,
+          DirsCompute, ComputeCompute<2>, VarPlusFiveCompute<4>,
           Tags::InterfaceCompute<Dirs, Tags::Direction<dim>>,
           Tags::InterfaceCompute<Dirs, Tags::InterfaceMesh<dim>>,
           Tags::InterfaceCompute<Dirs, compute_item_tag>,
           Tags::InterfaceCompute<Dirs, Tags::BoundaryCoordinates<dim>>,
-          Tags::Slice<Dirs, sliced_compute_item_tag>,
+          Tags::Slice<Dirs, Compute<2>>,
           Tags::Slice<Dirs, sliced_simple_item_tag>, Tags::Slice<Dirs, Var<4>>,
-          Tags::Slice<Dirs, VarPlusFiveCompute<4>>>>(
+          Tags::Slice<Dirs, VarPlusFive<4>>>>(
       mesh, std::move(element_map), std::move(volume_vars),
       std::move(volume_tensor),
       make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
@@ -540,13 +539,17 @@ void test_interface_slice(){
   TestHelpers::db::test_compute_tag<
       Tags::InterfaceCompute<Dirs, Tags::InterfaceMesh<dim>>>(
       "Interface<Dirs, Mesh>");
-  TestHelpers::db::test_compute_tag<Tags::Slice<Dirs, Var<4>>>(
-      "Interface<Var>");
   TestHelpers::db::test_compute_tag<
-      Tags::InterfaceCompute<Dirs, Tags::Direction<dim>>>("Interface");
+      Tags::InterfaceCompute<Dirs, Tags::BoundaryCoordinates<dim>>>(
+      "Interface<Dirs, InertialCoordinates>");
+  TestHelpers::db::test_compute_tag<Tags::Slice<Dirs, Var<4>>>(
+      "Interface<Dirs, Var>");
+  TestHelpers::db::test_compute_tag<
+      Tags::InterfaceCompute<Dirs, Tags::Direction<dim>>>(
+      "Interface<Dirs, Direction>");
   TestHelpers::db::test_compute_tag<Tags::InterfaceMesh<dim>>("Mesh");
   TestHelpers::db::test_compute_tag<Tags::BoundaryCoordinates<dim>>(
-      "BoundaryCoordinates");
+      "InertialCoordinates");
 
   CHECK((db::get<Tags::Interface<Dirs, simple_item_tag>>(box)) ==
         make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
@@ -554,13 +557,13 @@ void test_interface_slice(){
         expected_interface_mesh);
   CHECK(db::get<Tags::Interface<Dirs, Tags::Coordinates<dim, Frame::Inertial>>>(
             box) == expected_boundary_coords);
-  CHECK((db::get<Tags::Interface<Dirs, compute_item_tag>>(box)) ==
+  CHECK((db::get<Tags::InterfaceCompute<Dirs, compute_item_tag>>(box)) ==
         (make_interface_variables<1, 10>({1., 1., 1.}, {5., 5., 5.},
                                          {1., 1., 1., 1.}, {5., 5., 5., 5.})));
-  CHECK((db::get<Tags::Interface<Dirs, sliced_compute_item_tag>>(box)) ==
-        (make_interface_variables<2, 20>(
-             {2., 2., 2.}, {10., 10., 10.},
-             {2., 2., 2., 2.}, {10., 10., 10., 10.})));
+  CHECK((db::get<Tags::Interface<Dirs, Compute<2>>>(box)) ==
+        (make_interface_variables<2, 20>({2., 2., 2.}, {10., 10., 10.},
+                                         {2., 2., 2., 2.},
+                                         {10., 10., 10., 10.})));
   CHECK((db::get<Tags::Interface<Dirs, sliced_simple_item_tag>>(box)) ==
         make_interface_variables<3>({0., 4., 8.}, {8., 9., 10., 11.}));
   CHECK((db::get<Tags::Interface<Dirs, Var<4>>>(box)) ==
@@ -702,25 +705,20 @@ void test_boundary_coordinates_moving_mesh() {
 }
 
 struct SimpleBase : db::SimpleTag {
-  static std::string name() noexcept { return "SimpleBase"; }
-  using type = int;
-};
-
-struct SimpleDerived : SimpleBase {
-  using base = SimpleBase;
-  static std::string name() noexcept { return "SimpleDerived"; }
   using type = int;
 };
 
 struct ComputeBase : db::SimpleTag {
-  static std::string name() noexcept { return "ComputeBase"; }
   using type = double;
 };
 
 struct ComputeDerived : ComputeBase, db::ComputeTag {
   using base = ComputeBase;
-  static std::string name() noexcept { return "ComputeDerived"; }
-  static auto function(const int& arg) noexcept { return arg + 1.5; }
+  using return_type = double;
+  static void function(const gsl::not_null<double*> result,
+                       const int& arg) noexcept {
+    *result = arg + 1.5;
+  }
   using argument_tags = tmpl::list<SimpleBase>;
 };
 }  // namespace
@@ -733,7 +731,7 @@ void test_interface_base_tags() {
         {Direction<2>::upper_eta(), eta_value}};
   };
   const auto box = db::create<
-      db::AddSimpleTags<Tags::Interface<Dirs, SimpleDerived>>,
+      db::AddSimpleTags<Tags::Interface<Dirs, SimpleBase>>,
       db::AddComputeTags<DirsCompute,
                          Tags::InterfaceCompute<Dirs, ComputeDerived>>>(
       interface(4, 5));
