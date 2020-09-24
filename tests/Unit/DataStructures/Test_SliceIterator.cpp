@@ -66,6 +66,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.SliceIterator",
     check_slice_iterator_helper(slice_iter);
     slice_iter.reset();
     check_slice_iterator_helper(slice_iter);
+    // Run the iterator only partially, then reset
+    ++slice_iter;
+    slice_iter.reset();
+    check_slice_iterator_helper(slice_iter);
   }
   SECTION("volume_and_slice_indices function") {
     check_slice_and_volume_indices(Index<1>{2});
