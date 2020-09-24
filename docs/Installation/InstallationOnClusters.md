@@ -75,6 +75,19 @@ you do not need to install any dependencies, so you can skip steps 5 and 6. You
 can optionally compile using LLVM/Clang by sourcing `wheeler_clang.sh` instead
 of `wheeler_gcc.sh`
 
+## CaltechHPC at Caltech
+
+Follow the general instructions, using `caltech_hpc` for `SYSTEM_TO_RUN_ON`.
+When you go to build, you will need to get an interactive node (login nodes
+limit the amount of memory accessible to individual users, to below the amount
+necessary to build SpECTRE).
+To ensure you get an entire node to build on, use the command:
+```
+srun -t 02:00:00 -N 1 -c 32 --mem=192000 -A sxs -D . --pty /bin/bash
+```
+being sure to re-source environment files once you get the interactive node
+shell.
+
 ## Ocean at Fullerton
 
 Follow the general instructions, using `ocean` for `SYSTEM_TO_RUN_ON`,
