@@ -13,6 +13,7 @@
 #include "Evolution/Systems/ScalarWave/Characteristics.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
+#include "Evolution/Systems/ScalarWave/TimeDerivative.hpp"
 #include "Utilities/TMPL.hpp"
 
 /*!
@@ -41,10 +42,12 @@ struct System {
   static constexpr size_t volume_dim = Dim;
 
   using variables_tag = ::Tags::Variables<tmpl::list<Pi, Phi<Dim>, Psi>>;
-  // Typelist of which subset of the variables to take the gradient of.
-  using gradients_tags = tmpl::list<Pi, Phi<Dim>, Psi>;
+  using flux_variables = tmpl::list<>;
+  using gradient_variables = tmpl::list<Pi, Phi<Dim>, Psi>;
 
+  using compute_volume_time_derivative = TimeDerivative<Dim>;
   using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
+
   using compute_largest_characteristic_speed =
       ComputeLargestCharacteristicSpeed;
 
@@ -53,5 +56,9 @@ struct System {
 
   template <typename Tag>
   using magnitude_tag = ::Tags::EuclideanMagnitude<Tag>;
+
+  // Remove gradients_tags once GH is converted over to the new
+  // dg::ComputeTimeDerivative action.
+  using gradients_tags = gradient_variables;
 };
 }  // namespace ScalarWave

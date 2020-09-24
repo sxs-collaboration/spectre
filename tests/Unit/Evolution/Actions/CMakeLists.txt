@@ -15,7 +15,7 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Actions/"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;DataStructures;Domain;ErrorHandling"
+  "Boost::boost;DataStructures;DiscontinuousGalerkin;Domain;ErrorHandling"
   )
 
 add_dependencies(

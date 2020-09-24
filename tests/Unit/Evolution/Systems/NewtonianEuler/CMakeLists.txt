@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_SoundSpeedSquared.cpp
   Test_Sources.cpp
   Test_Tags.cpp
+  Test_TimeDerivative.cpp
   )
 
 add_subdirectory(Limiters)

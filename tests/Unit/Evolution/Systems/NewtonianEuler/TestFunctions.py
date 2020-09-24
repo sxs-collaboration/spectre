@@ -34,26 +34,6 @@ def energy_density(mass_density, velocity, specific_internal_energy):
 # End functions for testing ConservativeFromPrimitive.cpp
 
 
-# Functions for testing Fluxes.cpp
-def mass_density_cons_flux(momentum_density, energy_density, velocity,
-                           pressure):
-    return momentum_density
-
-
-def momentum_density_flux(momentum_density, energy_density, velocity,
-                          pressure):
-    result = np.outer(momentum_density, velocity)
-    result += pressure * np.identity(velocity.size)
-    return result
-
-
-def energy_density_flux(momentum_density, energy_density, velocity, pressure):
-    return (energy_density + pressure) * velocity
-
-
-# End functions for testing Fluxes.cpp
-
-
 # Functions for testing PrimitiveFromConservative.cpp
 def mass_density(mass_density_cons, momentum_density, energy_density):
     return mass_density_cons
@@ -81,19 +61,3 @@ def pressure_2d(mass_density_cons, momentum_density, energy_density):
 
 
 # End functions for testing PrimitiveFromConservative.cpp
-
-
-# Functions for testing Sources.cpp
-def source_mass_density_cons(first_arg, second_arg, third_arg, fourth_arg):
-    return np.exp(first_arg)
-
-
-def source_momentum_density(first_arg, second_arg, third_arg, fourth_arg):
-    return (first_arg - 1.5 * third_arg) * second_arg
-
-
-def source_energy_density(first_arg, second_arg, third_arg, fourth_arg):
-    return np.dot(second_arg, fourth_arg) + 3.0 * third_arg
-
-
-# End functions for testing Sources.cpp

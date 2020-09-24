@@ -27,17 +27,20 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
+#include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/Systems/ScalarWave/Characteristics.hpp"
 #include "Evolution/Systems/ScalarWave/Constraints.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
+#include "Evolution/Systems/ScalarWave/TimeDerivative.hpp"
 #include "Evolution/Systems/ScalarWave/UpwindPenaltyCorrection.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderScheme.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
@@ -63,10 +66,7 @@ struct Component {
   using array_index = ElementId<1>;
 
   using variables_tag = typename metavariables::system::variables_tag;
-  using boundary_scheme = dg::FirstOrderScheme::FirstOrderScheme<
-      1, variables_tag,
-      Tags::NumericalFlux<ScalarWave::UpwindPenaltyCorrection<1>>,
-      Tags::TimeStepId>;
+  using boundary_scheme = typename metavariables::boundary_scheme;
   using normal_dot_fluxes_tag = domain::Tags::Interface<
       domain::Tags::InternalDirections<1>,
       db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>>;
@@ -78,7 +78,8 @@ struct Component {
 
   using simple_tags = db::AddSimpleTags<
       Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, domain::Tags::Mesh<1>,
-      domain::Tags::Element<1>, domain::Tags::ElementMap<1>, variables_tag,
+      domain::Tags::Element<1>, domain::Tags::MeshVelocity<1>,
+      domain::Tags::DivMeshVelocity, domain::Tags::ElementMap<1>, variables_tag,
       db::add_tag_prefix<Tags::dt, variables_tag>,
       ScalarWave::Tags::ConstraintGamma2, normal_dot_fluxes_tag,
       mortar_data_tag, Tags::Mortars<Tags::Next<Tags::TimeStepId>, 1>,
@@ -129,19 +130,23 @@ struct Component {
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<dg::Actions::ComputeNonconservativeBoundaryFluxes<
-                         domain::Tags::InternalDirections<1>>,
-                     dg::Actions::CollectDataForFluxes<
-                         boundary_scheme, domain::Tags::InternalDirections<1>>,
-                     dg::Actions::SendDataForFluxes<boundary_scheme>,
-                     Actions::ComputeTimeDerivative<ScalarWave::ComputeDuDt<1>>,
-                     dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
-                     Actions::MutateApply<boundary_scheme>>>>;
+          tmpl::list<
+              evolution::dg::Actions::ComputeTimeDerivative<Metavariables>,
+              dg::Actions::SendDataForFluxes<boundary_scheme>,
+              dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
+              Actions::MutateApply<boundary_scheme>>>>;
 };
 
 struct Metavariables {
   static constexpr size_t volume_dim = 1;
+  static constexpr dg::Formulation dg_formulation =
+      dg::Formulation::StrongInertial;
   using system = ScalarWave::System<1>;
+  using boundary_scheme = dg::FirstOrderScheme::FirstOrderScheme<
+      1, typename system::variables_tag,
+      Tags::NumericalFlux<ScalarWave::UpwindPenaltyCorrection<1>>,
+      Tags::TimeStepId>;
+
   using component_list = tmpl::list<Component<Metavariables>>;
   using temporal_id = Tags::TimeStepId;
   enum class Phase { Initialization, Testing, Exit };
@@ -205,7 +210,9 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
 
         ActionTesting::emplace_component_and_initialize<component>(
             &runner, id,
-            {current_time, next_time, mesh, element, std::move(map),
+            {current_time, next_time, mesh, element,
+             boost::optional<tnsr::I<DataVector, 1, Frame::Inertial>>{},
+             boost::optional<Scalar<DataVector>>{}, std::move(map),
              std::move(variables), std::move(dt_variables), std::move(gamma_2),
              std::move(normal_dot_fluxes), std::move(mortar_history),
              std::move(mortar_next_temporal_ids), std::move(mortar_meshes),
@@ -240,12 +247,12 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
                            Metavariables::Phase::Testing);
 
   // The neighbors only have to get as far as sending data
-  for (size_t i = 0; i < 3; ++i) {
+  for (size_t i = 0; i < 2; ++i) {
     runner.next_action<component>(left_id);
     runner.next_action<component>(right_id);
   }
 
-  for (size_t i = 0; i < 6; ++i) {
+  for (size_t i = 0; i < 4; ++i) {
     runner.next_action<component>(self_id);
   }
 
