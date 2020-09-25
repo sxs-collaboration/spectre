@@ -74,7 +74,6 @@ struct Tag4 : db::SimpleTag {
   using type = double;
 };
 
-/// [databox_compute_item_tag_example]
 struct Tag4Compute : Tag4, db::ComputeTag {
   using base = Tag4;
   using return_type = double;
@@ -86,7 +85,6 @@ struct Tag5 : db::SimpleTag {
   using type = std::string;
 };
 
-/// [databox_compute_item_tag_example]
 struct Tag5Compute : Tag5, db::ComputeTag {
   using base = Tag5;
   using return_type = std::string;
@@ -108,11 +106,11 @@ struct Tag6Compute : Tag6, db::ComputeTag {
   using argument_tags = tmpl::list<Tag2Base>;
 };
 
+/// [compute_item_tag_function]
 struct Lambda0 : db::SimpleTag {
   using type = double;
 };
 
-/// [compute_item_tag_function]
 struct Lambda0Compute : Lambda0, db::ComputeTag {
   using base = Lambda0;
   using return_type = double;
