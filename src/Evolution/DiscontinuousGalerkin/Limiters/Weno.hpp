@@ -125,7 +125,6 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
   /// See `Limiters::Minmod` documentation for details.
   struct TvbConstant {
     using type = double;
-    static type default_value() noexcept { return 0.0; }
     static type lower_bound() noexcept { return 0.0; }
     static constexpr Options::String help = {"TVB constant 'm'"};
   };
@@ -143,8 +142,8 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
       tmpl::list<Type, NeighborWeight, TvbConstant, DisableForDebugging>;
   static constexpr Options::String help = {"A WENO limiter for DG"};
 
-  Weno(WenoType weno_type, double neighbor_linear_weight,
-       double tvb_constant = 0.0, bool disable_for_debugging = false) noexcept;
+  Weno(WenoType weno_type, double neighbor_linear_weight, double tvb_constant,
+       bool disable_for_debugging = false) noexcept;
 
   Weno() noexcept = default;
   Weno(const Weno& /*rhs*/) = default;
