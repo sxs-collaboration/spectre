@@ -44,19 +44,20 @@ int general_matrix_linear_solve(
 
   if (number_of_rhs == 0) {
     ASSERT(
-        rhs_in_solution_out->size() % static_cast<size_t>(rhs_vector_size) == 0,
+        (rhs_in_solution_out->size() % matrix_operator->rows()) ==
+            0_st,
         "The provided DataVector does not have size equal to (number of "
         "equations) * (larger matrix dimension), so the number of right-hand "
         "sides cannot be inferred and must be provided explicitly");
-    number_of_rhs =
+    number_of_rhs = static_cast<int>(
         rhs_in_solution_out->size() /
-        static_cast<size_t>(std::max(rhs_vector_size, output_vector_size));
+        std::max(matrix_operator->rows(), matrix_operator->columns()));
   }
   int info = 0;
   ASSERT(static_cast<size_t>(rhs_vector_size * number_of_rhs) <=
-                 rhs_in_solution_out->size() and
+                 static_cast<size_t>(rhs_in_solution_out->size()) and
              static_cast<size_t>(output_vector_size * number_of_rhs) <=
-                 rhs_in_solution_out->size(),
+                 static_cast<size_t>(rhs_in_solution_out->size()),
          "The single DataVector passed to the LAPACK call must be sufficiently "
          "large to contain x and b in A x = b");
   dgesv_(&rhs_vector_size, &number_of_rhs, matrix_operator->data(),
@@ -84,19 +85,20 @@ int general_matrix_linear_solve(const gsl::not_null<DataVector*> solution,
   const int output_vector_size = matrix_operator->columns();
   const int rhs_vector_size = matrix_operator->rows();
   if (number_of_rhs == 0) {
-    ASSERT(rhs.size() % static_cast<size_t>(rhs_vector_size) == 0,
+    ASSERT(rhs.size() % matrix_operator->rows() == 0,
            "The provided DataVector does not have size equal to (number of "
            "equations) * (number_of_matrix_rows), so the number of right-hand "
            "sides cannot be inferred and must be provided explicitly");
-    number_of_rhs = rhs.size() / static_cast<size_t>(rhs_vector_size);
+    number_of_rhs = static_cast<int>(rhs.size() / matrix_operator->rows());
   }
   ASSERT(solution->size() >=
-             static_cast<size_t>(number_of_rhs * output_vector_size),
+             static_cast<size_t>(number_of_rhs) * matrix_operator->columns(),
          "The provided pointer for the output of the LAPACK linear solve is "
          "too small for the operation. Solution size is: "
              << solution->size() << " and should be: "
              << number_of_rhs * output_vector_size << ".");
-  ASSERT(rhs.size() >= static_cast<size_t>(number_of_rhs * rhs_vector_size),
+  ASSERT(rhs.size() >=
+             static_cast<size_t>(number_of_rhs) * matrix_operator->rows(),
          "The provided pointer for the input right-hand side vector of the "
          "LAPACK linear solve is too small for the operation. Vector size is: "
              << rhs.size()
