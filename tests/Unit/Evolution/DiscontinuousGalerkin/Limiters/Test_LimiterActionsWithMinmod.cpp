@@ -148,8 +148,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Minmod",
 
   auto var = Scalar<DataVector>(mesh.number_of_grid_points(), 1234.);
 
+  const double tvb_constant = 0.0;
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      Limiters::Minmod<2, tmpl::list<Var>>(Limiters::MinmodType::LambdaPi1)};
+      Limiters::Minmod<2, tmpl::list<Var>>(Limiters::MinmodType::LambdaPi1,
+                                           tvb_constant)};
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, self_id,
       {0, mesh, element, std::move(logical_to_grid_map),

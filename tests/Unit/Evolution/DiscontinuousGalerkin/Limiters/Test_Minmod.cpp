@@ -65,43 +65,65 @@ struct VectorTag : db::SimpleTag {
 
 void test_minmod_option_parsing() noexcept {
   INFO("Test Minmod option parsing");
-  const auto lambda_pi1_default =
-      TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
-          "Type: LambdaPi1");
-  const auto lambda_pi1_m0 =
+  const auto lambda_pi1 =
       TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "Type: LambdaPi1\n"
           "TvbConstant: 0.0");
-  const auto lambda_pi1_m1 =
+  const auto lambda_pi1_tvb =
       TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "Type: LambdaPi1\n"
           "TvbConstant: 1.0");
-  const auto muscl_default =
+  const auto lambda_pi1_disabled =
       TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
-          "Type: Muscl");
+          "Type: LambdaPi1\n"
+          "TvbConstant: 0.0\n"
+          "DisableForDebugging: True");
+  const auto muscl =
+      TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
+          "Type: Muscl\n"
+          "TvbConstant: 0.0");
 
-  // Test default TVB value, operator==, and operator!=
-  CHECK(lambda_pi1_default == lambda_pi1_m0);
-  CHECK(lambda_pi1_default != lambda_pi1_m1);
-  CHECK(lambda_pi1_default != muscl_default);
+  // Test operators == and !=
+  CHECK(lambda_pi1 == lambda_pi1);
+  CHECK(lambda_pi1 != lambda_pi1_tvb);
+  CHECK(lambda_pi1 != lambda_pi1_disabled);
+  CHECK(lambda_pi1 != muscl);
 
-  TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
-      "Type: LambdaPiN");
-  TestHelpers::test_creation<Limiters::Minmod<2, tmpl::list<ScalarTag>>>(
-      "Type: LambdaPiN");
-  TestHelpers::test_creation<
+  const auto lambda_pin_2d =
+      TestHelpers::test_creation<Limiters::Minmod<2, tmpl::list<ScalarTag>>>(
+          "Type: LambdaPiN\n"
+          "TvbConstant: 0.0");
+  const auto lambda_pin_3d = TestHelpers::test_creation<
       Limiters::Minmod<3, tmpl::list<ScalarTag, VectorTag<3>>>>(
-      "Type: LambdaPiN");
-
-  TestHelpers::test_creation<Limiters::Minmod<3, tmpl::list<ScalarTag>>>(
       "Type: LambdaPiN\n"
-      "DisableForDebugging: True");
+      "TvbConstant: 10.0");
+
+  // Test that creation from options gives correct object
+  const Limiters::Minmod<1, tmpl::list<ScalarTag>> expected_lambda_pi1(
+      Limiters::MinmodType::LambdaPi1, 0.0);
+  const Limiters::Minmod<1, tmpl::list<ScalarTag>> expected_lambda_pi1_tvb(
+      Limiters::MinmodType::LambdaPi1, 1.0);
+  const Limiters::Minmod<1, tmpl::list<ScalarTag>> expected_lambda_pi1_disabled(
+      Limiters::MinmodType::LambdaPi1, 0.0, true);
+  const Limiters::Minmod<1, tmpl::list<ScalarTag>> expected_muscl(
+      Limiters::MinmodType::Muscl, 0.0);
+  const Limiters::Minmod<2, tmpl::list<ScalarTag>> expected_lambda_pin_2d(
+      Limiters::MinmodType::LambdaPiN, 0.0);
+  const Limiters::Minmod<3, tmpl::list<ScalarTag, VectorTag<3>>>
+      expected_lambda_pin_3d(Limiters::MinmodType::LambdaPiN, 10.0);
+
+  CHECK(lambda_pi1 == expected_lambda_pi1);
+  CHECK(lambda_pi1_tvb == expected_lambda_pi1_tvb);
+  CHECK(lambda_pi1_disabled == expected_lambda_pi1_disabled);
+  CHECK(muscl == expected_muscl);
+  CHECK(lambda_pin_2d == expected_lambda_pin_2d);
+  CHECK(lambda_pin_3d == expected_lambda_pin_3d);
 }
 
 void test_minmod_serialization() noexcept {
   INFO("Test Minmod serialization");
   const Limiters::Minmod<1, tmpl::list<ScalarTag>> minmod(
-      Limiters::MinmodType::LambdaPi1);
+      Limiters::MinmodType::LambdaPi1, 1.0);
   test_serialization(minmod);
 }
 
@@ -123,8 +145,9 @@ void test_package_data_work(
           make_not_null(&generator), make_not_null(&dist), 0.0);
 
   using TagList = tmpl::list<ScalarTag, VectorTag<VolumeDim>>;
+  const double tvb_constant = 0.0;
   const Limiters::Minmod<VolumeDim, TagList> minmod(
-      Limiters::MinmodType::LambdaPiN);
+      Limiters::MinmodType::LambdaPiN, tvb_constant);
   typename Limiters::Minmod<VolumeDim, TagList>::PackagedData packaged_data{};
 
   minmod.package_data(make_not_null(&packaged_data), input_scalar, input_vector,
@@ -839,8 +862,9 @@ void test_limiter_work(
   }();
 
   const auto element = TestHelpers::Limiters::make_element<VolumeDim>();
+  const double tvb_constant = 0.0;
   const Limiters::Minmod<VolumeDim, tmpl::list<ScalarTag, VectorTag<VolumeDim>>>
-      minmod(Limiters::MinmodType::LambdaPi1);
+      minmod(Limiters::MinmodType::LambdaPi1, tvb_constant);
   const bool limiter_activated =
       minmod(make_not_null(&scalar_to_limit), make_not_null(&vector_to_limit),
              mesh, element, logical_coords, element_size, neighbor_data);
@@ -1213,8 +1237,9 @@ void test_minmod_limiter_two_lower_xi_neighbors() noexcept {
     };
   };
 
+  const double tvb_constant = 0.0;
   const Limiters::Minmod<2, tmpl::list<ScalarTag>> minmod(
-      Limiters::MinmodType::LambdaPi1);
+      Limiters::MinmodType::LambdaPi1, tvb_constant);
 
   // Make two left neighbors with different mean values
   const auto neighbor_data_two_means =
@@ -1286,8 +1311,9 @@ void test_minmod_limiter_four_upper_xi_neighbors() noexcept {
         };
       };
 
+  const double tvb_constant = 0.0;
   const Limiters::Minmod<3, tmpl::list<ScalarTag>> minmod(
-      Limiters::MinmodType::LambdaPi1);
+      Limiters::MinmodType::LambdaPi1, tvb_constant);
 
   // Make four right neighbors with different mean values
   const auto neighbor_data_two_means =
