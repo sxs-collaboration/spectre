@@ -109,12 +109,12 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
   /// \brief The linear weight given to each neighbor
   ///
   /// This linear weight gets combined with the oscillation indicator to
-  /// compute the weight for each WENO estimated solution. Larger values are
-  /// better suited for problems with strong shocks, and smaller values are
-  /// better suited to smooth problems.
+  /// compute the weight for each WENO estimated solution. The standard value
+  /// in the literature is 0.001; larger values may be better suited for
+  /// problems with strong shocks, and smaller values may be better suited to
+  /// smooth problems.
   struct NeighborWeight {
     using type = double;
-    static type default_value() noexcept { return 0.001; }
     static type lower_bound() noexcept { return 1e-6; }
     static type upper_bound() noexcept { return 0.1; }
     static constexpr Options::String help = {
