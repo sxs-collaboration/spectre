@@ -34,8 +34,6 @@ NumericalFlux:
 
 Limiter:
   Minmod:
-    # Uncomment line below to turn off the limiter:
-    # DisableForDebugging: True
     Type: LambdaPiN
     # The optimal value of the TVB constant is problem-dependent.
     # This test uses 0 to favor robustness over accuracy.
