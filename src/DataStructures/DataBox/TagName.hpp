@@ -31,14 +31,14 @@ CREATE_HAS_TYPE_ALIAS_V(base)
 
 /*!
  * \ingroup DataBoxGroup
- * \brief Get the name of a DataBoxTag, including prefixes
+ * \brief Get the name of a DataBox tag, including prefixes
  *
  * \details
- * Given a DataBoxTag returns the name of the DataBoxTag as a std::string. If
- * the DataBoxTag is also a PrefixTag then the prefix is added.
+ * Given a DataBox tag returns the name of the DataBox tag as a std::string. If
+ * the DataBox tag is also a PrefixTag then the prefix is added.
  *
- * \tparam Tag the DataBoxTag whose name to get
- * \return string holding the DataBoxTag's name
+ * \tparam Tag the DataBox tag whose name to get
+ * \return string holding the DataBox tag's name
  */
 template <typename Tag>
 std::string tag_name() noexcept {
