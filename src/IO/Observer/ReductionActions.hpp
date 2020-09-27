@@ -449,22 +449,23 @@ struct WriteReductionData {
                  Tags::NodesThatContributedReductions, Tags::ReductionDataLock,
                  Tags::H5FileLock>(
           make_not_null(&box),
-          [&nodes_contributed, &reduction_data, &reduction_names_map,
-           &reduction_data_lock, &reduction_file_lock, &observation_id,
-           &observations_registered_with_id, &sender_node_number](
-              const gsl::not_null<
-                  db::item_type<Tags::ReductionData<ReductionDatums...>>*>
-                  reduction_data_ptr,
-              const gsl::not_null<
-                  std::unordered_map<ObservationId, std::vector<std::string>>*>
-                  reduction_names_map_ptr,
-              const gsl::not_null<std::unordered_map<
-                  ObservationId, std::unordered_set<size_t>>*>
-                  nodes_contributed_ptr,
-              const gsl::not_null<Parallel::NodeLock*> reduction_data_lock_ptr,
-              const gsl::not_null<Parallel::NodeLock*> reduction_file_lock_ptr,
-              const std::unordered_map<ObservationKey, std::set<size_t>>&
-                  nodes_registered_for_reductions) noexcept {
+          [
+            &nodes_contributed, &reduction_data, &reduction_names_map,
+            &reduction_data_lock, &reduction_file_lock, &observation_id,
+            &observations_registered_with_id, &sender_node_number
+          ](const gsl::not_null<
+                typename Tags::ReductionData<ReductionDatums...>::type*>
+                reduction_data_ptr,
+            const gsl::not_null<
+                std::unordered_map<ObservationId, std::vector<std::string>>*>
+                reduction_names_map_ptr,
+            const gsl::not_null<
+                std::unordered_map<ObservationId, std::unordered_set<size_t>>*>
+                nodes_contributed_ptr,
+            const gsl::not_null<Parallel::NodeLock*> reduction_data_lock_ptr,
+            const gsl::not_null<Parallel::NodeLock*> reduction_file_lock_ptr,
+            const std::unordered_map<ObservationKey, std::set<size_t>>&
+                nodes_registered_for_reductions) noexcept {
             const ObservationKey& key{observation_id.observation_key()};
             ASSERT(nodes_registered_for_reductions.find(key) !=
                        nodes_registered_for_reductions.end(),
