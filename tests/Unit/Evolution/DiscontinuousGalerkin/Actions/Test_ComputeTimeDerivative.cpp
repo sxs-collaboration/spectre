@@ -167,11 +167,10 @@ struct BoundaryTerms : tt::ConformsTo<dg::protocols::NumericalFlux> {
   using variables_tags = tmpl::list<Var1, Var2<Dim>>;
   using variables_tag = Tags::Variables<variables_tags>;
 
-  using package_field_tags =
-      tmpl::push_back<tmpl::append<db::split_tag<db::add_tag_prefix<
-                                       ::Tags::NormalDotFlux, variables_tag>>,
-                                   variables_tags>,
-                      MaxAbsCharSpeed>;
+  using package_field_tags = tmpl::push_back<
+      tmpl::append<db::wrap_tags_in<::Tags::NormalDotFlux, variables_tags>,
+                   variables_tags>,
+      MaxAbsCharSpeed>;
   using package_extra_tags = tmpl::list<>;
 
   using argument_tags = tmpl::push_back<tmpl::append<

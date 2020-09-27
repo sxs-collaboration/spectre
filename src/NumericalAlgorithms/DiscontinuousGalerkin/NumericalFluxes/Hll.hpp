@@ -74,17 +74,16 @@ struct Hll : tt::ConformsTo<dg::protocols::NumericalFlux> {
 
   using variables_tags = typename System::variables_tag::tags_list;
 
-  using package_field_tags = tmpl::append<
-      db::split_tag<db::add_tag_prefix<::Tags::NormalDotFlux, variables_tag>>,
-      db::split_tag<variables_tag>,
-      tmpl::list<LargestIngoingSpeed, LargestOutgoingSpeed>>;
+  using package_field_tags =
+      tmpl::append<db::wrap_tags_in<::Tags::NormalDotFlux, variables_tags>,
+                   variables_tags,
+                   tmpl::list<LargestIngoingSpeed, LargestOutgoingSpeed>>;
   using package_extra_tags = tmpl::list<>;
 
-  using argument_tags =
-      tmpl::push_back<tmpl::append<db::split_tag<db::add_tag_prefix<
-                                       ::Tags::NormalDotFlux, variables_tag>>,
-                                   db::split_tag<variables_tag>>,
-                      char_speeds_tag>;
+  using argument_tags = tmpl::push_back<
+      tmpl::append<db::wrap_tags_in<::Tags::NormalDotFlux, variables_tags>,
+                   variables_tags>,
+      char_speeds_tag>;
 
  private:
   template <typename VariablesTagList, typename NormalDotFluxTagList>
@@ -210,20 +209,18 @@ struct Hll : tt::ConformsTo<dg::protocols::NumericalFlux> {
 
   template <class... Args>
   void package_data(const Args&... args) const noexcept {
-    package_data_helper<
-        db::split_tag<variables_tag>,
-        db::split_tag<db::add_tag_prefix<::Tags::NormalDotFlux,
-                                         variables_tag>>>::function(args...);
+    package_data_helper<variables_tags,
+                        db::wrap_tags_in<::Tags::NormalDotFlux,
+                                         variables_tags>>::function(args...);
   }
 
   template <class... Args>
   void operator()(const Args&... args) const noexcept {
     call_operator_helper<
-        db::split_tag<
-            db::add_tag_prefix<::Tags::NormalDotNumericalFlux, variables_tag>>,
-        db::split_tag<variables_tag>,
-        db::split_tag<db::add_tag_prefix<::Tags::NormalDotFlux,
-                                         variables_tag>>>::function(args...);
+        db::wrap_tags_in<::Tags::NormalDotNumericalFlux, variables_tags>,
+        variables_tags,
+        db::wrap_tags_in<::Tags::NormalDotFlux,
+                         variables_tags>>::function(args...);
   }
 };
 
