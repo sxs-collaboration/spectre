@@ -8,7 +8,6 @@ set(LIBRARY_SOURCES
   Test_DataBox.cpp
   Test_DataBoxDocumentation.cpp
   Test_DataBoxPrefixes.cpp
-  Test_DataBoxTag.cpp
   Test_Deferred.cpp
   Test_PrefixHelpers.cpp
   Test_TagName.cpp
