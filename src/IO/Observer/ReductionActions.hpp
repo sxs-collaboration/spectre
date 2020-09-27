@@ -181,6 +181,62 @@ struct ContributeReductionData {
     }
   }
 };
+
+/*!
+ * Add docs
+ */
+struct ContributeStringForPrinting {
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex, typename... Ts,
+      Requires<tmpl::list_contains_v<DbTagsList, Tags::ReductionData<Ts...>> and
+               tmpl::list_contains_v<
+                   DbTagsList, Tags::ReductionObserversContributed>> = nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
+                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/,
+                    const observers::ObservationId& observation_id,
+                    Parallel::ReductionData<Ts...>&& reduction_data) noexcept {
+    db::mutate<Tags::ReductionData<Ts...>, Tags::ReductionObserversContributed>(
+        make_not_null(&box),
+        [&observation_id, reduction_data = std::move(reduction_data), &cache](
+            const gsl::not_null<std::unordered_map<
+                ObservationId, Parallel::ReductionData<Ts...>>*>
+                reduction_data_map,
+            const gsl::not_null<
+                std::unordered_map<observers::ObservationId, size_t>*>
+                reduction_observers_contributed,
+            const std::unordered_set<ArrayComponentId>&
+                reduction_component_ids) mutable noexcept {
+          auto& contribute_count =
+              (*reduction_observers_contributed)[observation_id];
+          if (reduction_data_map->count(observation_id) == 0) {
+            reduction_data_map->emplace(observation_id,
+                                        std::move(reduction_data));
+            contribute_count = 1;
+          } else {
+            reduction_data_map->operator[](observation_id)
+                .combine(std::move(reduction_data));
+            contribute_count++;
+          }
+
+          // Check if we have received all reduction data from the registered
+          // elements. If so, we reduce to the local ObserverWriter nodegroup.
+          if (contribute_count == reduction_component_ids.size()) {
+            const auto node_id = Parallel::my_node();
+            auto& local_writer = *Parallel::get_parallel_component<
+                                      ObserverWriter<Metavariables>>(cache)
+                                      .ckLocalBranch();
+            Parallel::threaded_action<ThreadedActions::PrintReductionData>(
+                local_writer, observation_id,
+                std::move((*reduction_data_map)[observation_id]));
+            reduction_data_map->erase(observation_id);
+            reduction_observers_contributed->erase(observation_id);
+          }
+        },
+        db::get<Tags::ReductionArrayComponentIds>(box));
+  }
+};
 }  // namespace Actions
 
 namespace ThreadedActions {
@@ -592,6 +648,157 @@ struct WriteReductionData {
     }
   }
 };
+
+/*!
+ * \ingroup ObserversGroup
+ * \brief Collect the reduction data from the Observer group on the
+ * ObserverWriter nodegroup before sending to node 0 for printing to screen.
+ */
+struct PrintReductionData {
+ private:
+  static void append_to_reduction_data(
+      const gsl::not_null<std::vector<std::string>*> all_reduction_data,
+      const std::string str) noexcept {
+    all_reduction_data->push_back(str);
+  }
+
+  static void append_to_reduction_data(
+      const gsl::not_null<std::vector<std::string>*> all_reduction_data,
+      const std::vector<std::string>& str_vec) noexcept {
+    all_reduction_data->insert(all_reduction_data->end(), str_vec.begin(),
+                               str_vec.end());
+  }
+
+  template <typename... Ts, size_t... Is>
+  static void print_data(std::tuple<Ts...>&& data,
+                         std::index_sequence<Is...> /*meta*/) noexcept {
+    static_assert(
+        sizeof...(Ts) > 0,
+        "Must be reducing at least one piece of data in print_data()");
+
+    std::vector<std::string> str_vec{};
+    EXPAND_PACK_LEFT_TO_RIGHT(
+        append_to_reduction_data(&str_vec, std::get<Is>(data)));
+    for (const auto& str : str_vec) {
+      Parallel::printf(str + "\n");
+    }
+  }
+
+ public:
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex, typename... ReductionDatums,
+      Requires<tmpl::list_contains_v<
+                   DbTagsList, Tags::ReductionData<ReductionDatums...>> and
+               tmpl::list_contains_v<
+                   DbTagsList, Tags::ReductionObserversContributed>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
+                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<CmiNodeLock*> node_lock,
+                    const observers::ObservationId& observation_id,
+                    Parallel::ReductionData<ReductionDatums...>&&
+                        in_reduction_data) noexcept {
+    bool print_to_screen = false;
+    Parallel::lock(node_lock);
+
+    const auto expected_calls_from_this_node = [&box,
+                                                &observation_id]() noexcept {
+      const auto hash = observation_id.observation_type_hash();
+      const auto& registered_reduction_observers =
+          db::get<Tags::ReductionObserversRegistered>(box);
+      return (registered_reduction_observers.count(hash) == 1)
+                 ? registered_reduction_observers.at(hash).size()
+                 : 0;
+    }();
+
+    const auto expected_calls_from_other_nodes = [&box,
+                                                  &observation_id]() noexcept {
+      const auto hash = observation_id.observation_type_hash();
+      const auto& registered_reduction_observers =
+          db::get<Tags::ReductionObserversRegisteredNodes>(box);
+      return (registered_reduction_observers.count(hash) == 1)
+                 ? registered_reduction_observers.at(hash).size()
+                 : 0;
+    }();
+
+    db::mutate<Tags::ReductionData<ReductionDatums...>,
+               Tags::ReductionObserversContributed>(
+        make_not_null(&box),
+        [&cache, &expected_calls_from_this_node,
+         &expected_calls_from_other_nodes, &in_reduction_data, &observation_id,
+         &print_to_screen](
+            const gsl::not_null<
+                db::item_type<Tags::ReductionData<ReductionDatums...>>*>
+                reduction_data,
+            const gsl::not_null<
+                std::unordered_map<observers::ObservationId, size_t>*>
+                reduction_observers_contributed) noexcept {
+          auto& contribute_count =
+              (*reduction_observers_contributed)[observation_id];
+
+          const auto node_id = Parallel::my_node();
+
+          if (UNLIKELY(node_id == 0 and expected_calls_from_other_nodes == 0 and
+                       expected_calls_from_this_node == 1)) {
+            // Here this Action will be called only once, so we take
+            // a shortcut and just print to screen.
+
+            print_to_screen = true;
+          } else if (reduction_data->count(observation_id) == 0) {
+            // This Action has been called for the first time,
+            // so all we need to do is move the input data to the
+            // reduction_data in the DataBox.
+            reduction_data->operator[](observation_id) =
+                std::move(in_reduction_data);
+            contribute_count = 1;
+          } else if (node_id == 0 and
+                     contribute_count == expected_calls_from_this_node +
+                                             expected_calls_from_other_nodes -
+                                             1) {
+            // This is the final time this Action is called on node 0.
+            // The `-1` in the above `if` statement is because on the final
+            // step, contribute_count (which was incremented at the end of each
+            // previous call) should be one less than the expected number of
+            // calls.
+            in_reduction_data.combine(
+                std::move(reduction_data->operator[](observation_id)));
+            reduction_data->erase(observation_id);
+            reduction_observers_contributed->erase(observation_id);
+            print_to_screen = true;
+          } else {
+            // This Action is being called at least the second time
+            // (but not the final time if on node 0).
+            reduction_data->at(observation_id)
+                .combine(std::move(in_reduction_data));
+            contribute_count++;
+          }
+
+          // Check if we have received all reduction data from the Observer
+          // group. If so we reduce to node 0 for printing.
+          if (node_id != 0 and
+              reduction_observers_contributed->at(observation_id) ==
+                  expected_calls_from_this_node) {
+            Parallel::threaded_action<PrintReductionData>(
+                Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
+                    cache)[0],
+                observation_id,
+                std::move(reduction_data->operator[](observation_id)));
+            reduction_observers_contributed->erase(observation_id);
+            reduction_data->erase(observation_id);
+          }
+        });
+    Parallel::unlock(node_lock);
+
+    if (print_to_screen) {
+      in_reduction_data.finalize();
+      PrintReductionData::print_data(
+          std::move(in_reduction_data.data()),
+          std::make_index_sequence<sizeof...(ReductionDatums)>{});
+    }
+  }
+};
+
 }  // namespace ThreadedActions
 }  // namespace observers
 
