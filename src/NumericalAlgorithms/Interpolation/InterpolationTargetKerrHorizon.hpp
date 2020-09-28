@@ -16,6 +16,7 @@
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -158,9 +159,13 @@ struct KerrHorizon {
       tmpl::append<StrahlkorperTags::items_tags<Frame>,
                    StrahlkorperTags::compute_items_tags<Frame>>;
   using is_sequential = std::false_type;
+
+  using simple_tags = typename StrahlkorperTags::items_tags<Frame>;
+  using compute_tags = typename StrahlkorperTags::compute_items_tags<Frame>;
+
   template <typename DbTags, typename Metavariables>
-  static auto initialize(
-      db::DataBox<DbTags>&& box,
+  static void initialize(
+      const gsl::not_null<db::DataBox<DbTags>*> box,
       const Parallel::GlobalCache<Metavariables>& cache) noexcept {
     const auto& kerr_horizon =
         Parallel::get<Tags::KerrHorizon<InterpolationTargetTag>>(cache);
@@ -173,13 +178,7 @@ struct KerrHorizon {
                 .theta_phi_points(),
             kerr_horizon.mass, kerr_horizon.dimensionless_spin)),
         kerr_horizon.center);
-
-    // Put Strahlkorper and its ComputeItems into a new DataBox.
-    return db::create_from<
-        db::RemoveTags<>,
-        db::AddSimpleTags<StrahlkorperTags::items_tags<Frame>>,
-        db::AddComputeTags<StrahlkorperTags::compute_items_tags<Frame>>>(
-        std::move(box), std::move(strahlkorper));
+    Initialization::mutate_assign<simple_tags>(box, std::move(strahlkorper));
   }
 
   template <typename Metavariables, typename DbTags, typename TemporalId>

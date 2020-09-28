@@ -33,6 +33,7 @@
 #include "Elliptic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
@@ -116,7 +117,7 @@ struct ElementArray {
                          db::add_tag_prefix<
                              ::Tags::FixedSource,
                              typename Metavariables::system::fields_tag>>>,
-                     dg::Actions::InitializeDomain<Dim>,
+                     Actions::SetupDataBox, dg::Actions::InitializeDomain<Dim>,
                      dg::Actions::InitializeInterfaces<
                          typename Metavariables::system,
                          dg::Initialization::slice_tags_to_face<>,
@@ -162,8 +163,10 @@ void test_impose_inhomogeneous_boundary_conditions_on_source(
       {domain_creator.create_domain(),
        domain_creator.initial_refinement_levels(),
        domain_creator.initial_extents(), std::move(source_vars)});
-  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
-  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
+  for (size_t i = 0; i < 3; ++i) {
+    ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                              element_id);
+  }
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Testing);
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);

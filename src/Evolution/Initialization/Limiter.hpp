@@ -30,6 +30,10 @@ namespace Actions {
 ///
 /// - Removes: nothing
 /// - Modifies: nothing
+///
+/// \note This action relies on the `SetupDataBox` aggregated initialization
+/// mechanism, so `Actions::SetupDataBox` must be present in the
+/// `Initialization` phase action list prior to this action.
 template <size_t Dim>
 struct Minmod {
   using simple_tags = db::AddSimpleTags<>;
@@ -43,9 +47,7 @@ struct Minmod {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    return std::make_tuple(
-        merge_into_databox<Minmod, db::AddSimpleTags<>, compute_tags>(
-            std::move(box)));
+    return std::make_tuple(std::move(box));
   }
 };
 }  // namespace Actions

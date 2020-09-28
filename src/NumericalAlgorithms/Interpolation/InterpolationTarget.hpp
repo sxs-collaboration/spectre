@@ -11,6 +11,7 @@
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/InterpolationTargetSendPoints.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -53,12 +54,14 @@ namespace intrp {
 ///      takes a `temporal_id` as an extra argument. `compute_target_points`
 ///      can (optionally) have an additional function
 ///```
-///   static auto initialize(db::DataBox<DbTags>&&,
+///   static auto initialize(const gsl::not_null<db::DataBox<DbTags>*>,
 ///                          const Parallel::GlobalCache<Metavariables>&)
 ///                          noexcept;
 ///```
-///      that adds arbitrary tags to the `DataBox` when the
-///      `InterpolationTarget` is initialized.  If `compute_target_points` has
+///      that mutates arbitrary tags in the `DataBox` when the
+///      `InterpolationTarget` is initialized. Additional simple tags to
+///      include should be put in the typelist `simple_tags` and additional
+///      compute tags in `compute_tags`.  If `compute_target_points` has
 ///      an `initialize` function, it must also have a type alias
 ///      `initialization_tags` which is a `tmpl::list` of the tags that are
 ///      added by `initialize`.
@@ -141,7 +144,8 @@ struct InterpolationTarget {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<intrp::Actions::InitializeInterpolationTarget<
+          tmpl::list<::Actions::SetupDataBox,
+                     intrp::Actions::InitializeInterpolationTarget<
                          Metavariables, InterpolationTargetTag>,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<

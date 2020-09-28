@@ -26,6 +26,7 @@
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Tags.hpp"
@@ -43,11 +44,15 @@ struct mock_characteristic_evolution {
   using replace_these_simple_actions = tmpl::list<>;
   using with_these_simple_actions = tmpl::list<>;
 
-  using initialize_action_list =
-      tmpl::list<Actions::InitializeCharacteristicEvolutionVariables,
-                 Actions::InitializeCharacteristicEvolutionTime,
-                 Actions::InitializeCharacteristicEvolutionScri,
-                 Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+  using initialize_action_list = tmpl::list<
+      ::Actions::SetupDataBox,
+      Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
+      Actions::InitializeCharacteristicEvolutionTime<
+          typename Metavariables::evolved_coordinates_variables_tag,
+          typename Metavariables::evolved_swsh_tag>,
+      Actions::InitializeCharacteristicEvolutionScri<
+          typename Metavariables::scri_values_to_observe>,
+      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
 
@@ -162,10 +167,9 @@ SPECTRE_TEST_CASE(
                                               scri_plus_interpolation_order);
 
   // this should run the initialization
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  for(size_t i = 0; i < 5; ++i) {
+    ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  }
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Evolve);
 

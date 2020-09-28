@@ -60,8 +60,9 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.WriteSimpleData", "[Unit][Observers]") {
       tuples::get<observers::Tags::VolumeFileName>(cache_data);
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{cache_data};
   ActionTesting::emplace_component<obs_writer>(&runner, 0);
-  ActionTesting::next_action<obs_writer>(make_not_null(&runner), 0);
-
+  for(size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<obs_writer>(make_not_null(&runner), 0);
+  }
   runner.set_phase(test_metavariables::Phase::Testing);
 
   const std::string h5_file_name = output_file_prefix + "0.h5";

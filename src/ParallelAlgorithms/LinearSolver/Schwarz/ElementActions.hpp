@@ -42,6 +42,7 @@
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/HasReceivedFromAllMortars.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Actions/CommunicateOverlapFields.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/ComputeTags.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/ElementCenteredSubdomainData.hpp"
@@ -143,6 +144,24 @@ struct InitializeElement {
   using initialization_tags_to_keep = tmpl::list<subdomain_solver_tag>;
   using const_global_cache_tags = tmpl::list<Tags::MaxOverlap<OptionsGroup>>;
 
+  using simple_tags =
+      tmpl::list<Tags::Overlaps<residual_tag, Dim, OptionsGroup>,
+                 SubdomainDataBufferTag<SubdomainData, OptionsGroup>>;
+  using compute_tags = tmpl::list<
+      domain::Tags::InternalDirectionsCompute<Dim>,
+      domain::Tags::BoundaryDirectionsInteriorCompute<Dim>,
+      domain::Tags::InterfaceCompute<domain::Tags::InternalDirections<Dim>,
+                                     domain::Tags::Direction<Dim>>,
+      domain::Tags::InterfaceCompute<
+          domain::Tags::BoundaryDirectionsInterior<Dim>,
+          domain::Tags::Direction<Dim>>,
+      Tags::IntrudingExtentsCompute<Dim, OptionsGroup>,
+      Tags::IntrudingOverlapWidthsCompute<Dim, OptionsGroup>,
+      domain::Tags::LogicalCoordinates<Dim>,
+      Tags::ElementWeightCompute<Dim, OptionsGroup>,
+      domain::Tags::InterfaceCompute<
+          domain::Tags::InternalDirections<Dim>,
+          Tags::IntrudingOverlapWeightCompute<Dim, OptionsGroup>>>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
@@ -153,31 +172,10 @@ struct InitializeElement {
                     const ParallelComponent* const /*meta*/) noexcept {
     const auto& element_mesh = db::get<domain::Tags::Mesh<Dim>>(box);
     const size_t element_num_points = element_mesh.number_of_grid_points();
-    return std::make_tuple(
-        ::Initialization::merge_into_databox<
-            InitializeElement,
-            db::AddSimpleTags<
-                Tags::Overlaps<residual_tag, Dim, OptionsGroup>,
-                SubdomainDataBufferTag<SubdomainData, OptionsGroup>>,
-            db::AddComputeTags<
-                domain::Tags::InternalDirectionsCompute<Dim>,
-                domain::Tags::BoundaryDirectionsInteriorCompute<Dim>,
-                domain::Tags::InterfaceCompute<
-                    domain::Tags::InternalDirections<Dim>,
-                    domain::Tags::Direction<Dim>>,
-                domain::Tags::InterfaceCompute<
-                    domain::Tags::BoundaryDirectionsInterior<Dim>,
-                    domain::Tags::Direction<Dim>>,
-                Tags::IntrudingExtentsCompute<Dim, OptionsGroup>,
-                Tags::IntrudingOverlapWidthsCompute<Dim, OptionsGroup>,
-                domain::Tags::LogicalCoordinates<Dim>,
-                Tags::ElementWeightCompute<Dim, OptionsGroup>,
-                domain::Tags::InterfaceCompute<
-                    domain::Tags::InternalDirections<Dim>,
-                    Tags::IntrudingOverlapWeightCompute<Dim, OptionsGroup>>>>(
-            std::move(box),
-            typename Tags::Overlaps<residual_tag, Dim, OptionsGroup>::type{},
-            SubdomainData{element_num_points}));
+    Initialization::mutate_assign<
+        tmpl::list<SubdomainDataBufferTag<SubdomainData, OptionsGroup>>>(
+        make_not_null(&box), SubdomainData{element_num_points});
+    return std::make_tuple(std::move(box));
   }
 };
 

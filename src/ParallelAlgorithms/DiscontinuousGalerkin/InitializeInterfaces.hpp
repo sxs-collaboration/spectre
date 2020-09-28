@@ -12,7 +12,7 @@
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Tags.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -47,6 +47,17 @@ using exterior_compute_tags = tmpl::list<Tags...>;
 }  // namespace Initialization
 
 namespace Actions {
+
+namespace detail {
+template <typename System, typename = std::void_t<>>
+struct vars_tag {
+  using type = NoSuchType;
+};
+template <typename System>
+struct vars_tag<System, std::void_t<typename System::variables_tag>> {
+  using type = typename System::variables_tag;
+};
+}  // namespace detail
 
 /// \ingroup InitializationGroup
 /// \brief Initialize items related to the interfaces between Elements and on
@@ -95,6 +106,10 @@ namespace Actions {
 ///
 /// - Removes: nothing
 /// - Modifies: nothing
+///
+/// \note This action relies on the `SetupDataBox` aggregated initialization
+/// mechanism, so `Actions::SetupDataBox` must be present in the
+/// `Initialization` phase action list prior to this action.
 template <
     typename System,
     typename SliceTagsToFace = Initialization::slice_tags_to_face<>,
@@ -105,6 +120,10 @@ template <
 struct InitializeInterfaces {
  private:
   static constexpr size_t dim = System::volume_dim;
+
+  using exterior_vars_tag =
+      domain::Tags::Interface<domain::Tags::BoundaryDirectionsExterior<dim>,
+                              typename detail::vars_tag<System>::type>;
 
   template <typename TagToSlice, typename Directions>
   struct make_slice_tag {
@@ -174,6 +193,17 @@ struct InitializeInterfaces {
               tmpl::pin<domain::Tags::BoundaryDirectionsExterior<dim>>>>>>;
 
  public:
+  using simple_tags =
+      tmpl::conditional_t<AddExteriorVariables, tmpl::list<exterior_vars_tag>,
+                          tmpl::list<>>;
+
+  using compute_tags = tmpl::push_front<
+   tmpl::append<face_tags<domain::Tags::InternalDirections<dim>>,
+                face_tags<domain::Tags::BoundaryDirectionsInterior<dim>>,
+                exterior_face_tags>,
+   domain::Tags::InternalDirectionsCompute<dim>,
+   domain::Tags::BoundaryDirectionsInteriorCompute<dim>>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -182,36 +212,20 @@ struct InitializeInterfaces {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using compute_tags = tmpl::push_front<
-        tmpl::append<face_tags<domain::Tags::InternalDirections<dim>>,
-                     face_tags<domain::Tags::BoundaryDirectionsInterior<dim>>,
-                     exterior_face_tags>,
-        domain::Tags::InternalDirectionsCompute<dim>,
-        domain::Tags::BoundaryDirectionsInteriorCompute<dim>>;
-
     if constexpr (AddExteriorVariables) {
-      using system = typename Metavariables::system;
-      using vars_tag = typename system::variables_tag;
-      using exterior_vars_tag =
-          domain::Tags::Interface<domain::Tags::BoundaryDirectionsExterior<dim>,
-                                  vars_tag>;
-
       typename exterior_vars_tag::type exterior_boundary_vars{};
       const auto& mesh = db::get<domain::Tags::Mesh<dim>>(box);
       for (const auto& direction :
            db::get<domain::Tags::Element<dim>>(box).external_boundaries()) {
-        exterior_boundary_vars[direction] = typename vars_tag::type{
-            mesh.slice_away(direction.dimension()).number_of_grid_points()};
+        exterior_boundary_vars[direction] =
+            typename detail::vars_tag<System>::type::type{
+                mesh.slice_away(direction.dimension()).number_of_grid_points()};
       }
-      return std::make_tuple(
-          ::Initialization::merge_into_databox<
-              InitializeInterfaces, db::AddSimpleTags<exterior_vars_tag>,
-              compute_tags>(std::move(box), std::move(exterior_boundary_vars)));
+      ::Initialization::mutate_assign<simple_tags>(
+          make_not_null(&box), std::move(exterior_boundary_vars));
+      return std::make_tuple(std::move(box));
     } else {
-      return std::make_tuple(
-          ::Initialization::merge_into_databox<
-              InitializeInterfaces, db::AddSimpleTags<>, compute_tags>(
-              std::move(box)));
+      return std::make_tuple(std::move(box));
     }
   }
 };

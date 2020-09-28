@@ -33,9 +33,15 @@ namespace Actions {
  *   - nothing
  * - Modifies:
  *   - nothing
+ *
+ * \note This action relies on the `SetupDataBox` aggregated initialization
+ * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
+ * phase action list prior to this action.
  */
 template <typename ComputeTagsList>
 struct AddComputeTags {
+  using compute_tags = ComputeTagsList;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -44,10 +50,7 @@ struct AddComputeTags {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    return std::make_tuple(
-        merge_into_databox<AddComputeTags, db::AddSimpleTags<>,
-                           db::AddComputeTags<ComputeTagsList>>(
-            std::move(box)));
+    return std::make_tuple(std::move(box));
   }
 };
 }  // namespace Actions

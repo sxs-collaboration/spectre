@@ -8,6 +8,7 @@
 
 #include "AlgorithmNodegroup.hpp"
 #include "IO/Importers/Tags.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -39,7 +40,8 @@ struct ElementDataReader {
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<detail::InitializeElementDataReader>>>;
+      tmpl::list<::Actions::SetupDataBox,
+                 detail::InitializeElementDataReader>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -57,6 +59,10 @@ struct ElementDataReader {
 
 namespace detail {
 struct InitializeElementDataReader {
+  using simple_tags =
+      tmpl::list<Tags::RegisteredElements, Tags::ElementDataAlreadyRead>;
+  using compute_tags = tmpl::list<>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -66,17 +72,7 @@ struct InitializeElementDataReader {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using simple_tags = db::AddSimpleTags<Tags::RegisteredElements,
-                                          Tags::ElementDataAlreadyRead>;
-    using compute_tags = db::AddComputeTags<>;
-
-    return std::make_tuple(
-        ::Initialization::merge_into_databox<InitializeElementDataReader,
-                                             simple_tags, compute_tags>(
-            std::move(box),
-            std::unordered_map<observers::ArrayComponentId, std::string>{},
-            std::unordered_set<std::string>{}),
-        true);
+    return std::make_tuple(std::move(box), true);
   }
 };
 }  // namespace detail

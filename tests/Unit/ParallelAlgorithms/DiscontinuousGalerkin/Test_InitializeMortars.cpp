@@ -31,6 +31,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
@@ -75,7 +76,7 @@ struct ElementArray {
                          tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
                                     domain::Tags::InitialExtents<Dim>,
                                     ::Tags::Next<TemporalIdTag>>>,
-                     dg::Actions::InitializeDomain<Dim>,
+                     Actions::SetupDataBox, dg::Actions::InitializeDomain<Dim>,
                      Initialization::Actions::AddComputeTags<tmpl::list<
                          domain::Tags::InternalDirectionsCompute<Dim>,
                          domain::Tags::BoundaryDirectionsInteriorCompute<Dim>,
@@ -95,6 +96,7 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<
+              Actions::SetupDataBox,
               dg::Actions::InitializeMortars<BoundaryScheme<Dim, Asynchronous>>,
               // Remove options so that dependencies for
               // `InitializeMortars` are no longer fulfilled in following
@@ -147,11 +149,16 @@ void test_initialize_mortars(
       &runner, element_id,
       {domain_creator.initial_refinement_levels(),
        domain_creator.initial_extents(), 0});
-  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
-  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
+  for (size_t i = 0; i < 3; ++i) {
+    ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                              element_id);
+  }
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Testing);
-  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                              element_id);
+  }
   const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {
     using tag = std::decay_t<decltype(tag_v)>;
     return ActionTesting::get_databox_tag<element_array, tag>(runner,

@@ -32,6 +32,7 @@
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Tags.hpp"
@@ -49,21 +50,24 @@ struct mock_characteristic_evolution {
   using replace_these_simple_actions = tmpl::list<>;
   using with_these_simple_actions = tmpl::list<>;
 
-  using initialize_action_list =
-      tmpl::list<Actions::InitializeCharacteristicEvolutionVariables,
-                 Actions::InitializeCharacteristicEvolutionTime,
-                 Actions::ReceiveWorldtubeData<Metavariables>,
-                 Actions::InitializeFirstHypersurface,
-                 ::Actions::MutateApply<InitializeGauge>,
-                 ::Actions::MutateApply<GaugeUpdateAngularFromCartesian<
-                     Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>,
-                 ::Actions::MutateApply<GaugeUpdateJacobianFromCoordinates<
-                     Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
-                     Tags::CauchyCartesianCoords>>,
-                 ::Actions::MutateApply<
-                     GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>,
-                 ::Actions::MutateApply<GaugeUpdateOmega>,
-                 Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+  using initialize_action_list = tmpl::list<
+      ::Actions::SetupDataBox,
+      Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
+      Actions::InitializeCharacteristicEvolutionTime<
+          typename Metavariables::evolved_coordinates_variables_tag,
+          typename Metavariables::evolved_swsh_tag>,
+      Actions::ReceiveWorldtubeData<Metavariables>,
+      Actions::InitializeFirstHypersurface,
+      ::Actions::MutateApply<InitializeGauge>,
+      ::Actions::MutateApply<GaugeUpdateAngularFromCartesian<
+          Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>,
+      ::Actions::MutateApply<GaugeUpdateJacobianFromCoordinates<
+          Tags::GaugeC, Tags::GaugeD, Tags::CauchyAngularCoords,
+          Tags::CauchyCartesianCoords>>,
+      ::Actions::MutateApply<
+          GaugeUpdateInterpolator<Tags::CauchyAngularCoords>>,
+      ::Actions::MutateApply<GaugeUpdateOmega>,
+      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
 
@@ -190,7 +194,9 @@ SPECTRE_TEST_CASE(
   ActionTesting::emplace_component<component>(&runner, 0, target_step_size);
 
   // this should run the initialization
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  for(size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  }
   const size_t libsharp_size =
       Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max);
   // manually create and place the boundary data in the box:

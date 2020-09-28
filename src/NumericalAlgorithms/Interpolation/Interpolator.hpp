@@ -6,6 +6,7 @@
 #include "AlgorithmGroup.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -24,7 +25,10 @@ struct Interpolator {
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename metavariables::Phase, metavariables::Phase::Initialization,
-      tmpl::list<Actions::InitializeInterpolator,
+      tmpl::list<::Actions::SetupDataBox,
+                 Actions::InitializeInterpolator<
+                     Tags::VolumeVarsInfo<Metavariables>,
+                     Tags::InterpolatedVarsHolders<Metavariables>>,
                  Parallel::Actions::TerminatePhase>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;

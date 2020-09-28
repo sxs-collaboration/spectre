@@ -26,7 +26,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -62,6 +62,10 @@ namespace Actions {
 ///                     normal_dot_fluxes_tag>
 /// - Removes: nothing
 /// - Modifies: nothing
+///
+/// \note This action relies on the `SetupDataBox` aggregated initialization
+/// mechanism, so `Actions::SetupDataBox` must be present in the
+/// `Initialization` phase action list prior to this action.
 template <typename Metavariables>
 struct DiscontinuousGalerkin {
   static constexpr size_t dim = Metavariables::system::volume_dim;
@@ -120,18 +124,19 @@ struct DiscontinuousGalerkin {
         boundary_exterior_compute_tag<char_speed_tag>>;
 
     template <typename TagsList>
-    static auto initialize(db::DataBox<TagsList>&& box) noexcept {
+    static void initialize(
+        const gsl::not_null<db::DataBox<TagsList>*> box) noexcept {
       const auto& internal_directions =
-          db::get<domain::Tags::InternalDirections<dim>>(box);
+          db::get<domain::Tags::InternalDirections<dim>>(*box);
 
       const auto& boundary_directions =
-          db::get<domain::Tags::BoundaryDirectionsInterior<dim>>(box);
+          db::get<domain::Tags::BoundaryDirectionsInterior<dim>>(*box);
 
       typename interface_tag<normal_dot_fluxes_tag>::type
           normal_dot_fluxes_interface{};
       for (const auto& direction : internal_directions) {
         const auto& interface_num_points =
-            db::get<interface_tag<domain::Tags::Mesh<dim - 1>>>(box)
+            db::get<interface_tag<domain::Tags::Mesh<dim - 1>>>(*box)
                 .at(direction)
                 .number_of_grid_points();
         normal_dot_fluxes_interface[direction].initialize(interface_num_points,
@@ -143,7 +148,7 @@ struct DiscontinuousGalerkin {
           normal_dot_fluxes_boundary_interior{};
       for (const auto& direction : boundary_directions) {
         const auto& boundary_num_points =
-            db::get<interior_boundary_tag<domain::Tags::Mesh<dim - 1>>>(box)
+            db::get<interior_boundary_tag<domain::Tags::Mesh<dim - 1>>>(*box)
                 .at(direction)
                 .number_of_grid_points();
         normal_dot_fluxes_boundary_exterior[direction].initialize(
@@ -151,10 +156,8 @@ struct DiscontinuousGalerkin {
         normal_dot_fluxes_boundary_interior[direction].initialize(
             boundary_num_points, 0.);
       }
-
-      return ::Initialization::merge_into_databox<DiscontinuousGalerkin,
-                                                  simple_tags, compute_tags>(
-          std::move(box), std::move(normal_dot_fluxes_interface),
+      Initialization::mutate_assign<simple_tags>(
+          box, std::move(normal_dot_fluxes_interface),
           std::move(normal_dot_fluxes_boundary_interior),
           std::move(normal_dot_fluxes_boundary_exterior));
     }
@@ -213,15 +216,18 @@ struct DiscontinuousGalerkin {
         boundary_exterior_compute_tag<char_speed_tag>>;
 
     template <typename TagsList>
-    static auto initialize(db::DataBox<TagsList>&& box) noexcept {
-      return ::Initialization::merge_into_databox<DiscontinuousGalerkin,
-                                                  simple_tags, compute_tags>(
-          std::move(box));
-    }
+    static auto initialize(
+        const gsl::not_null<db::DataBox<TagsList>*> /*box*/) noexcept {}
   };
 
   using initialization_tags =
       tmpl::list<domain::Tags::InitialExtents<Metavariables::volume_dim>>;
+
+  using simple_tags =
+      typename Impl<typename Metavariables::system>::simple_tags;
+
+  using compute_tags =
+      typename Impl<typename Metavariables::system>::compute_tags;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
@@ -230,8 +236,8 @@ struct DiscontinuousGalerkin {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    return std::make_tuple(
-        Impl<typename Metavariables::system>::initialize(std::move(box)));
+    Impl<typename Metavariables::system>::initialize(make_not_null(&box));
+    return std::make_tuple(std::move(box));
   }
 };
 }  // namespace Actions

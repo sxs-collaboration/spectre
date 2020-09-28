@@ -22,6 +22,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/CollectDataForFluxes.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
@@ -90,7 +91,7 @@ struct ElementArray {
                   domain::Tags::InitialRefinementLevels<volume_dim>,
                   domain::Tags::InitialExtents<volume_dim>, TemporalIdTag,
                   ::Tags::Next<TemporalIdTag>>>,
-              dg::Actions::InitializeDomain<volume_dim>,
+              Actions::SetupDataBox, dg::Actions::InitializeDomain<volume_dim>,
               Initialization::Actions::AddComputeTags<tmpl::list<
                   domain::Tags::InternalDirectionsCompute<volume_dim>,
                   domain::Tags::BoundaryDirectionsInteriorCompute<volume_dim>,
@@ -187,9 +188,9 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.CollectDataForFluxes",
       &runner, self_id,
       {std::move(initial_refinement_levels), std::move(initial_extents), time,
        time + 1});
-  ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
-  ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
-  ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
+  for (size_t i = 0; i < 4; ++i) {
+    ActionTesting::next_action<element_array>(make_not_null(&runner), self_id);
+  }
   runner.set_phase(Metavariables::Phase::Testing);
   const auto get_tag = [&runner, &self_id](auto tag_v) -> decltype(auto) {
     using tag = std::decay_t<decltype(tag_v)>;

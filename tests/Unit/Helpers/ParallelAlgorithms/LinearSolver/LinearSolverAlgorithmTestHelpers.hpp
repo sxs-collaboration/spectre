@@ -29,6 +29,7 @@
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/Goto.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -36,7 +37,7 @@
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
@@ -191,6 +192,7 @@ struct TestResult {
 };
 
 struct InitializeElement {
+  using simple_tags = tmpl::list<VectorTag, ::Tags::FixedSource<VectorTag>>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
@@ -198,11 +200,9 @@ struct InitializeElement {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const int /*array_index*/, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    return std::make_tuple(
-        ::Initialization::merge_into_databox<
-            InitializeElement,
-            db::AddSimpleTags<VectorTag, ::Tags::FixedSource<VectorTag>>>(
-            std::move(box), get<InitialGuess>(box), get<Source>(box)));
+    Initialization::mutate_assign<simple_tags>(
+        make_not_null(&box), get<InitialGuess>(box), get<Source>(box));
+    return std::make_tuple(std::move(box));
   }
 };
 
@@ -270,7 +270,7 @@ struct ElementArray {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<InitializeElement,
+          tmpl::list<Actions::SetupDataBox, InitializeElement,
                      typename linear_solver::initialize_element,
                      ComputeOperatorAction<fields_tag>,
                      detail::init_preconditioner<preconditioner>,

@@ -11,6 +11,7 @@
 #include "IO/Observer/ArrayComponentId.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/Tags.hpp"                   // IWYU pragma: keep
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -31,7 +32,8 @@ struct observer_component {
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<observers::Actions::Initialize<Metavariables>>>>;
+      tmpl::list<Actions::SetupDataBox,
+                 observers::Actions::Initialize<Metavariables>>>>;
 };
 
 struct Metavariables {
@@ -46,7 +48,9 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Initialize", "[Unit][Observers]") {
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
   ActionTesting::emplace_component<obs_component>(&runner, 0);
-  runner.next_action<obs_component>(0);
+  for (size_t i = 0; i < 2; ++i) {
+    runner.next_action<obs_component>(0);
+  }
 
   CHECK(
       ActionTesting::get_databox_tag<

@@ -14,10 +14,11 @@
 #include "IO/Observer/Actions/RegisterSingleton.hpp"
 #include "Informer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Observe.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -48,7 +49,8 @@ struct ResidualMonitor {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<InitializeResidualMonitor<FieldsTag, OptionsGroup>>>,
+          tmpl::list<::Actions::SetupDataBox,
+                     InitializeResidualMonitor<FieldsTag, OptionsGroup>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase,
           Metavariables::Phase::RegisterWithObserver,
@@ -77,6 +79,10 @@ struct InitializeResidualMonitor {
       LinearSolver::Tags::OrthogonalizationHistory<fields_tag>;
 
  public:
+  using simple_tags =
+      tmpl::list<initial_residual_magnitude_tag, orthogonalization_history_tag>;
+  using compute_tags = tmpl::list<>;
+
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename Metavariables, typename ActionList,
             typename ParallelComponent>
@@ -86,17 +92,11 @@ struct InitializeResidualMonitor {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    return std::make_tuple(
-        ::Initialization::merge_into_databox<
-            InitializeResidualMonitor,
-            db::AddSimpleTags<initial_residual_magnitude_tag,
-                              orthogonalization_history_tag>>(
-            std::move(box),
-            // The `InitializeResidualMagnitude` action populates these tags
-            // with initial values
-            std::numeric_limits<double>::signaling_NaN(),
-            DenseMatrix<double>{}),
-        true);
+    // The `InitializeResidualMagnitude` action populates these tags
+    // with initial values
+    Initialization::mutate_assign<tmpl::list<initial_residual_magnitude_tag>>(
+        make_not_null(&box), std::numeric_limits<double>::signaling_NaN());
+    return std::make_tuple(std::move(box), true);
   }
 };
 

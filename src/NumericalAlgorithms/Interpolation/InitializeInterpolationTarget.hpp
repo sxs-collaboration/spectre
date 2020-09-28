@@ -59,21 +59,35 @@ template <
     typename InterpolationTargetTag, typename DbTags, typename Metavariables,
     Requires<not has_empty_initialization_tags_v<InterpolationTargetTag>> =
         nullptr>
-auto make_initial_box(
-    db::DataBox<DbTags>&& box,
+void mutate_initial_box(
+    const gsl::not_null<db::DataBox<DbTags>*> box,
     const Parallel::GlobalCache<Metavariables>& cache) noexcept {
-  return InterpolationTargetTag::compute_target_points::initialize(
-      std::move(box), cache);
+  InterpolationTargetTag::compute_target_points::initialize(box, cache);
 }
 
 template <
     typename InterpolationTargetTag, typename DbTags, typename Metavariables,
     Requires<has_empty_initialization_tags_v<InterpolationTargetTag>> = nullptr>
-auto make_initial_box(
-    db::DataBox<DbTags>&& box,
-    const Parallel::GlobalCache<Metavariables>& /*cache*/) noexcept {
-  return std::move(box);
-}
+void mutate_initial_box(
+    const gsl::not_null<db::DataBox<DbTags>*> /*box*/,
+    const Parallel::GlobalCache<Metavariables>& /*cache*/) noexcept {}
+
+template <typename InterpolationTargetTag, typename = std::void_t<>,
+          bool = not has_empty_initialization_tags_v<InterpolationTargetTag>>
+struct compute_target_points_tags {
+  using simple_tags = tmpl::list<>;
+  using compute_tags = tmpl::list<>;
+};
+
+template <typename InterpolationTargetTag>
+struct compute_target_points_tags<
+    InterpolationTargetTag,
+    std::void_t<typename InterpolationTargetTag::compute_target_points>, true> {
+  using simple_tags =
+      typename InterpolationTargetTag::compute_target_points::simple_tags;
+  using compute_tags =
+      typename InterpolationTargetTag::compute_target_points::compute_tags;
+};
 
 }  // namespace initialize_interpolation_target_detail
 
@@ -95,6 +109,10 @@ auto make_initial_box(
 /// - Modifies: nothing
 ///
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
+///
+/// \note This action relies on the `SetupDataBox` aggregated initialization
+/// mechanism, so `Actions::SetupDataBox` must be present in the
+/// `Initialization` phase action list prior to this action.
 template <typename Metavariables, typename InterpolationTargetTag>
 struct InitializeInterpolationTarget {
   using TemporalId = typename Metavariables::temporal_id::type;
@@ -111,54 +129,26 @@ struct InitializeInterpolationTarget {
                    typename initialize_interpolation_target_detail::
                        initialization_tags<InterpolationTargetTag>::type>;
 
+  using simple_tags = tmpl::append<
+      return_tag_list_initial,
+      typename initialize_interpolation_target_detail::
+          compute_target_points_tags<InterpolationTargetTag>::simple_tags>;
+  using compute_tags = tmpl::append<
+      typename initialize_interpolation_target_detail::
+          compute_target_points_tags<InterpolationTargetTag>::compute_tags,
+      typename InterpolationTargetTag::compute_items_on_target>;
+
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent,
-            Requires<not tmpl::list_contains_v<
-                DbTagsList, Tags::IndicesOfFilledInterpPoints<TemporalId>>> =
-                nullptr>
+            typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    auto init_box = initialize_interpolation_target_detail::make_initial_box<
-        InterpolationTargetTag>(
-        db::create_from<db::RemoveTags<>,
-                        db::get_items<return_tag_list_initial>>(
-            std::move(box),
-            std::unordered_map<TemporalId, std::unordered_set<size_t>>{},
-            std::unordered_map<TemporalId, std::unordered_set<size_t>>{},
-            std::deque<TemporalId>{}, std::deque<TemporalId>{},
-            std::unordered_map<TemporalId,
-                               Variables<typename InterpolationTargetTag::
-                                             vars_to_interpolate_to_target>>{},
-            Variables<typename InterpolationTargetTag::
-                          vars_to_interpolate_to_target>{}),
-        cache);
-    // compute_items_on_target will depend on compute items added in
-    // make_initial_box, so compute_items_on_target must be added
-    // in a separate step.
-    return std::make_tuple(
-        db::create_from<
-            db::RemoveTags<>, db::AddSimpleTags<>,
-            db::AddComputeTags<
-                typename InterpolationTargetTag::compute_items_on_target>>(
-            std::move(init_box)));
-  }
-
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent,
-            Requires<tmpl::list_contains_v<
-                DbTagsList, Tags::IndicesOfFilledInterpPoints<TemporalId>>> =
-                nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    return {std::move(box)};
+    initialize_interpolation_target_detail::mutate_initial_box<
+        InterpolationTargetTag>(make_not_null(&box), cache);
+    return std::make_tuple(std::move(box));
   }
 };
 

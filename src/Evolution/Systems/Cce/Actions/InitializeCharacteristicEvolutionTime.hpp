@@ -10,7 +10,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Rational.hpp"
@@ -51,34 +51,35 @@ namespace Actions {
  * ::Tags::Variables<metavariables::evolved_swsh_dt_tag>>
  * ```
  * - Removes: nothing
+ *
+ * \note This action relies on the `SetupDataBox` aggregated initialization
+ * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
+ * phase action list prior to this action.
  */
+template <typename EvolvedCoordinatesVariablesTag, typename EvolvedSwshTag>
 struct InitializeCharacteristicEvolutionTime {
   using initialization_tags = tmpl::list<InitializationTags::TargetStepSize>;
   using const_global_cache_tags =
       tmpl::list<::Tags::TimeStepper<TimeStepper>>;
 
+  using evolved_swsh_variables_tag =
+      ::Tags::Variables<tmpl::list<EvolvedSwshTag>>;
+  using simple_tags = tmpl::list<
+      ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
+      ::Tags::Time,
+      ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
+      ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>;
+  using compute_tags = tmpl::list<::Tags::SubstepTimeCompute>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<tmpl::list_contains_v<
-                DbTags, InitializationTags::TargetStepSize>> = nullptr>
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using coordinate_variables_tag =
-        typename Metavariables::evolved_coordinates_variables_tag;
-    using evolved_swsh_variables_tag =
-        ::Tags::Variables<tmpl::list<typename Metavariables::evolved_swsh_tag>>;
-    using evolution_simple_tags = db::AddSimpleTags<
-        ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-        ::Tags::Time, ::Tags::HistoryEvolvedVariables<coordinate_variables_tag>,
-        ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>;
-    using evolution_compute_tags =
-        db::AddComputeTags<::Tags::SubstepTimeCompute>;
-
     const double initial_time_value = db::get<Tags::StartTime>(box);
     const double step_size = db::get<InitializationTags::TargetStepSize>(box);
 
@@ -92,35 +93,18 @@ struct InitializeCharacteristicEvolutionTime {
     TimeStepId second_time_id =
         time_stepper.next_time_id(initial_time_id, fixed_time_step);
 
-    typename ::Tags::HistoryEvolvedVariables<coordinate_variables_tag>::type
-        coordinate_history;
+    typename ::Tags::HistoryEvolvedVariables<
+        EvolvedCoordinatesVariablesTag>::type coordinate_history;
 
     typename ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>::type
         swsh_history;
-    return std::make_tuple(
-        Initialization::merge_into_databox<
-            InitializeCharacteristicEvolutionTime, evolution_simple_tags,
-            evolution_compute_tags, Initialization::MergePolicy::Overwrite>(
-            std::move(box), std::move(initial_time_id),  // NOLINT
-            std::move(second_time_id), fixed_time_step,  // NOLINT
-            initial_time_value, std::move(coordinate_history),
-            std::move(swsh_history)));
-  }
-
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<not tmpl::list_contains_v<
-                DbTags, InitializationTags::TargetStepSize>> = nullptr>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
-      const db::DataBox<DbTags>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    ERROR(
-        "The DataBox is missing required dependency "
-        "`Cce::InitializationTags::TargetStepSize.`");
+    Initialization::mutate_assign<simple_tags>(
+        make_not_null(&box),
+        std::move(initial_time_id),  // NOLINT
+        std::move(second_time_id),   // NOLINT
+        fixed_time_step, initial_time_value, std::move(coordinate_history),
+        std::move(swsh_history));
+    return std::make_tuple(std::move(box));
   }
 };
 

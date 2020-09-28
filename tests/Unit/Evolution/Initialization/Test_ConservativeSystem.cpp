@@ -17,6 +17,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -63,7 +64,10 @@ struct component {
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<initial_tags>,
-                 Initialization::Actions::ConservativeSystem>>>;
+                 Actions::SetupDataBox,
+                 Initialization::Actions::ConservativeSystem<
+                     typename Metavariables::system,
+                     typename Metavariables::equation_of_state_tag>>>>;
 };
 
 template <size_t Dim, bool HasPrimitives>
@@ -106,7 +110,9 @@ void test() noexcept {
                  Spectral::Quadrature::GaussLobatto};
   ActionTesting::emplace_component_and_initialize<comp>(&runner, 0, {mesh});
   // Invoke the ConservativeSystem action on the runner
-  ActionTesting::next_action<comp>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<comp>(make_not_null(&runner), 0);
+  }
   using vars_tag = Tags::Variables<tmpl::list<Var>>;
   using fluxes_tag = db::add_tag_prefix<::Tags::Flux, vars_tag,
                                         tmpl::size_t<Dim>, Frame::Inertial>;

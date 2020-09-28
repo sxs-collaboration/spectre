@@ -7,6 +7,9 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "Domain/Tags.hpp" // IWYU pragma: keep
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -43,51 +46,29 @@ namespace Actions {
 ///   - `Tags::InterpolatedVarsHolders<Metavariables>`
 /// - Removes: nothing
 /// - Modifies: nothing
+///
+/// \note This action relies on the `SetupDataBox` aggregated initialization
+/// mechanism, so `Actions::SetupDataBox` must be present in the
+/// `Initialization` phase action list prior to this action.
+template <typename VolumeVarsInfo, typename InterpolatedVarsHolders>
 struct InitializeInterpolator {
-  template <typename Metavariables>
-  using return_tag_list =
-      tmpl::list<Tags::NumberOfElements,
-                 Tags::VolumeVarsInfo<Metavariables>,
-                 Tags::InterpolatedVarsHolders<Metavariables>>;
+  using return_tag_list = tmpl::list<Tags::NumberOfElements, VolumeVarsInfo,
+                                     InterpolatedVarsHolders>;
 
-  template <
-      typename DbTagsList, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<not tmpl::list_contains_v<DbTagsList, Tags::NumberOfElements> and
-               not tmpl::list_contains_v<
-                   DbTagsList, Tags::VolumeVarsInfo<Metavariables>> and
-               not tmpl::list_contains_v<
-                   DbTagsList, Tags::InterpolatedVarsHolders<Metavariables>>> =
-          nullptr>
+  using simple_tags = return_tag_list;
+  using compute_tags = tmpl::list<>;
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<>,
-                        db::get_items<return_tag_list<Metavariables>>>(
-            std::move(box), 0_st,
-            typename Tags::VolumeVarsInfo<Metavariables>::type{},
-            typename Tags::InterpolatedVarsHolders<Metavariables>::type{}));
-  }
-
-  template <
-      typename DbTagsList, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<tmpl::list_contains_v<DbTagsList, Tags::NumberOfElements> and
-               tmpl::list_contains_v<DbTagsList,
-                                     Tags::VolumeVarsInfo<Metavariables>> and
-               tmpl::list_contains_v<DbTagsList, Tags::InterpolatedVarsHolders<
-                                                     Metavariables>>> = nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    return {std::move(box)};
+    Initialization::mutate_assign<tmpl::list<Tags::NumberOfElements>>(
+        make_not_null(&box), 0_st);
+    return std::make_tuple(std::move(box));
   }
 };
 

@@ -471,8 +471,10 @@ using item_type_if_contained_t =
 // `emplace_component_and_initialize` function.
 template <typename... SimpleTags, typename ComputeTagsList>
 struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
-  using simple_tags = tmpl::list<SimpleTags...>;
-  using compute_tags = ComputeTagsList;
+  // these type aliases must be different from those used by `SetupDataBox` to
+  // avoid a clash.
+  using action_testing_simple_tags = tmpl::list<SimpleTags...>;
+  using action_testing_compute_tags = ComputeTagsList;
   using InitialValues = tuples::TaggedTuple<SimpleTags...>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,

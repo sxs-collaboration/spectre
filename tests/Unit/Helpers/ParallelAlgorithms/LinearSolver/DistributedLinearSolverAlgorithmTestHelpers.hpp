@@ -31,7 +31,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
-#include "NumericalAlgorithms/Convergence/Tags.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -43,7 +43,7 @@
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/Gsl.hpp"
@@ -262,6 +262,8 @@ struct TestResult {
 struct InitializeElement {
   using const_global_cache_tags = tmpl::list<Source>;
 
+  using simple_tags = tmpl::list<fields_tag, sources_tag>;
+  using compute_tags = tmpl::list<>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
@@ -272,12 +274,11 @@ struct InitializeElement {
     const size_t element_index = get_index(element_id);
     const auto& source = gsl::at(get<Source>(box), element_index);
     const size_t num_points = source.size();
+    ::Initialization::mutate_assign<simple_tags>(
+        make_not_null(&box), typename fields_tag::type{num_points, 0.},
+        typename sources_tag::type{source});
 
-    return std::make_tuple(
-        ::Initialization::merge_into_databox<
-            InitializeElement, db::AddSimpleTags<fields_tag, sources_tag>>(
-            std::move(box), typename fields_tag::type{num_points, 0.},
-            typename sources_tag::type{source}));
+    return std::make_tuple(std::move(box));
   }
 };
 
@@ -306,8 +307,8 @@ template <typename Metavariables,
           typename LinearSolverType = typename Metavariables::linear_solver,
           typename PreconditionerType = typename Metavariables::preconditioner>
 using initialization_actions =
-    tmpl::list<dg::Actions::InitializeDomain<1>, InitializeElement,
-               typename LinearSolverType::initialize_element,
+    tmpl::list<Actions::SetupDataBox, dg::Actions::InitializeDomain<1>,
+               InitializeElement, typename LinearSolverType::initialize_element,
                ComputeOperatorAction<fields_tag>,
                helpers::detail::init_preconditioner<PreconditionerType>,
                Initialization::Actions::RemoveOptionsAndTerminatePhase>;

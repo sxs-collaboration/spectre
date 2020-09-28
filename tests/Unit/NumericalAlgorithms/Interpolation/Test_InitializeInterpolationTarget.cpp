@@ -18,6 +18,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
@@ -38,8 +39,9 @@ struct mock_interpolation_target {
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<3>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<intrp::Actions::InitializeInterpolationTarget<
-          Metavariables, InterpolationTargetTag>>>>;
+      tmpl::list<Actions::SetupDataBox,
+                 intrp::Actions::InitializeInterpolationTarget<
+                     Metavariables, InterpolationTargetTag>>>>;
 };
 
 struct Metavariables {
@@ -70,7 +72,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Initialize",
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(&runner, 0);
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  }
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
 

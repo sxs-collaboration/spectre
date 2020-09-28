@@ -37,6 +37,7 @@
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
@@ -54,7 +55,9 @@ struct mock_gh_worldtube_boundary : GhWorldtubeBoundary<Metavariables> {
   using with_these_simple_actions = tmpl::list<>;
 
   using initialize_action_list =
-      tmpl::list<Actions::InitializeGhWorldtubeBoundary>;
+      tmpl::list<::Actions::SetupDataBox,
+                 Actions::InitializeGhWorldtubeBoundary<
+                     typename Metavariables::cce_boundary_communication_tags>>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
 
@@ -78,10 +81,14 @@ struct mock_characteristic_evolution {
   using replace_these_simple_actions = tmpl::list<>;
   using with_these_simple_actions = tmpl::list<>;
 
-  using initialize_action_list =
-      tmpl::list<Actions::InitializeCharacteristicEvolutionVariables,
-                 Actions::InitializeCharacteristicEvolutionTime,
-                 Actions::InitializeCharacteristicEvolutionScri>;
+  using initialize_action_list = tmpl::list<
+      ::Actions::SetupDataBox,
+      Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
+      Actions::InitializeCharacteristicEvolutionTime<
+          typename Metavariables::evolved_coordinates_variables_tag,
+          typename Metavariables::evolved_swsh_tag>,
+      Actions::InitializeCharacteristicEvolutionScri<
+          typename Metavariables::scri_values_to_observe>>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
 
@@ -202,10 +209,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
           std::make_unique<InterfaceManagers::GhLockstep>()));
 
   // this should run the initializations
-  ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<worldtube_component>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 4; ++i) {
+    ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
+  }
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<worldtube_component>(make_not_null(&runner), 0);
+  }
   runner.set_phase(test_metavariables::Phase::Evolve);
 
   // the first request

@@ -28,6 +28,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderScheme.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -160,7 +161,7 @@ struct Metavariables {
   enum class Phase { Initialization, RegisterWithObserver, Solve, Exit };
 
   using initialization_actions = tmpl::list<
-      dg::Actions::InitializeDomain<volume_dim>,
+      Actions::SetupDataBox, dg::Actions::InitializeDomain<volume_dim>,
       dg::Actions::InitializeInterfaces<
           system, dg::Initialization::slice_tags_to_face<>,
           dg::Initialization::slice_tags_to_exterior<>,
@@ -168,7 +169,7 @@ struct Metavariables {
               domain::Tags::BoundaryCoordinates<volume_dim>>,
           dg::Initialization::exterior_compute_tags<>, false, false>,
       typename linear_solver::initialize_element,
-      elliptic::Actions::InitializeSystem,
+      elliptic::Actions::InitializeSystem<system>,
       Initialization::Actions::AddComputeTags<tmpl::list<
           Elasticity::Tags::PotentialEnergyDensityCompute<volume_dim>>>,
       elliptic::Actions::InitializeAnalyticSolution<analytic_solution_tag,
