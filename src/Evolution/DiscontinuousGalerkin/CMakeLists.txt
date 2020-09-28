@@ -7,9 +7,16 @@ spectre_target_headers(
   HEADERS
   DgElementArray.hpp
   InboxTags.hpp
+  LiftFromBoundary.hpp
   MortarData.hpp
   MortarTags.hpp
   ProjectToBoundary.hpp
+  )
+
+spectre_target_sources(
+  Evolution
+  PRIVATE
+  LiftFromBoundary.cpp
   )
 
 spectre_target_sources(
