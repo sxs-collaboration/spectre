@@ -103,15 +103,11 @@ struct WedgeSectionTorus {
   };
   struct UniformRadialGrid {
     using type = bool;
-    static constexpr Options::String help = {
-        "Use uniform radial grid [default: LGL grid]"};
-    static type default_value() noexcept { return false; }
+    static constexpr Options::String help = {"Use uniform radial grid"};
   };
   struct UniformThetaGrid {
     using type = bool;
-    static constexpr Options::String help = {
-        "Use uniform theta grid [default: LGL grid]"};
-    static type default_value() noexcept { return false; }
+    static constexpr Options::String help = {"Use uniform theta grid"};
   };
 
   using options =

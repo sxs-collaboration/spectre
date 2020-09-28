@@ -46,7 +46,6 @@ struct RotatingSchwarzschild : public SphericalMetricData {
     static constexpr Options::String help{
         "The mass of the Schwarzschild black hole"};
     static type lower_bound() noexcept { return 0.0; }
-    static type default_value() noexcept { return 1.0; }
   };
   struct Frequency {
     using type = double;

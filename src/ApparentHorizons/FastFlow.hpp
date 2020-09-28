@@ -63,42 +63,42 @@ class FastFlow {
     using type = FlowType;
     static constexpr Options::String help = {
         "Flow method: Jacobi, Curvature, or Fast"};
-    static type default_value() noexcept { return FlowType::Fast; }
+    static type suggested_value() noexcept { return FlowType::Fast; }
   };
 
   struct Alpha {
     using type = double;
     static constexpr Options::String help = {
         "Alpha parameter in PRD 57, 863 (1998)"};
-    static type default_value() noexcept { return 1.0; }
+    static type suggested_value() noexcept { return 1.0; }
   };
 
   struct Beta {
     using type = double;
     static constexpr Options::String help = {
         "Beta parameter in PRD 57, 863 (1998)"};
-    static type default_value() noexcept { return 0.5; }
+    static type suggested_value() noexcept { return 0.5; }
   };
 
   struct AbsTol {
     using type = double;
     static constexpr Options::String help = {
         "Convergence found if R_{Y_lm} < AbsTol"};
-    static type default_value() noexcept { return 1.e-12; }
+    static type suggested_value() noexcept { return 1.e-12; }
   };
 
   struct TruncationTol {
     using type = double;
     static constexpr Options::String help = {
         "Convergence found if R_{Y_lm} < TruncationTol*R_{mesh}"};
-    static type default_value() noexcept { return 1.e-2; }
+    static type suggested_value() noexcept { return 1.e-2; }
   };
 
   struct DivergenceTol {
     using type = double;
     static constexpr Options::String help = {
         "Fraction that residual can increase before dying"};
-    static type default_value() noexcept { return 1.2; }
+    static type suggested_value() noexcept { return 1.2; }
     static type lower_bound() noexcept { return 1.0; }
   };
 
@@ -106,13 +106,13 @@ class FastFlow {
     using type = size_t;
     static constexpr Options::String help = {
         "Num iterations residual can increase before dying"};
-    static type default_value() noexcept { return 5; }
+    static type suggested_value() noexcept { return 5; }
   };
 
   struct MaxIts {
     using type = size_t;
     static constexpr Options::String help = {"Maximum number of iterations."};
-    static type default_value() noexcept { return 100; }
+    static type suggested_value() noexcept { return 100; }
   };
 
   using options = tmpl::list<Flow, Alpha, Beta, AbsTol, TruncationTol,

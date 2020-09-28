@@ -114,9 +114,6 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
     using type = std::array<bool, VolumeDim>;
     static constexpr Options::String help = {
         "Whether the domain is periodic in each dimension."};
-    static type default_value() noexcept {
-      return make_array<VolumeDim>(false);
-    }
   };
 
   struct InitialLevels {
@@ -135,23 +132,18 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
     using type = std::vector<RefinementRegion<VolumeDim>>;
     static constexpr Options::String help = {
         "h-refined regions.  Later entries take priority."};
-    static type default_value() noexcept { return {}; }
   };
 
   struct RefinedGridPoints {
     using type = std::vector<RefinementRegion<VolumeDim>>;
     static constexpr Options::String help = {
         "p-refined regions.  Later entries take priority."};
-    static type default_value() noexcept { return {}; }
   };
 
   struct BlocksToExclude {
     using type = std::vector<std::array<size_t, VolumeDim>>;
     static constexpr Options::String help = {
         "List of Block indices to exclude, if any."};
-    static type default_value() noexcept {
-      return std::vector<std::array<size_t, VolumeDim>>{};
-    }
   };
 
   using options = tmpl::list<BlockBounds, IsPeriodicIn, InitialLevels,

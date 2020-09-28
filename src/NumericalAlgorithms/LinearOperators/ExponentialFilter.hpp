@@ -92,7 +92,7 @@ class Exponential {
   /// approach is to not compile the filter into the executable.
   struct DisableForDebugging {
     using type = bool;
-    static type default_value() noexcept { return false; }
+    static type suggested_value() noexcept { return false; }
     static constexpr Options::String help = {"Disable the filter"};
   };
 

@@ -118,10 +118,10 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   struct VariablesToObserve {
     static constexpr Options::String help = "Subset of variables to observe";
     using type = std::vector<std::string>;
-    static type default_value() noexcept {
+    static size_t lower_bound_on_size() noexcept { return 1; }
+    static type suggested_value() noexcept {
       return {db::tag_name<Tensors>()...};
     }
-    static size_t lower_bound_on_size() noexcept { return 1; }
   };
 
   using options = tmpl::list<SubfileName, VariablesToObserve>;
@@ -142,7 +142,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
 
   explicit ObserveFields(const std::string& subfile_name,
                          const std::vector<std::string>& variables_to_observe =
-                             VariablesToObserve::default_value(),
+                             {db::tag_name<Tensors>()...},
                          const Options::Context& context = {})
       : subfile_path_("/" + subfile_name),
         variables_to_observe_(variables_to_observe.begin(),

@@ -216,20 +216,17 @@ class KerrSchild : public MarkAsAnalyticSolution {
   struct Mass {
     using type = double;
     static constexpr Options::String help = {"Mass of the black hole"};
-    static type default_value() noexcept { return 1.; }
     static type lower_bound() noexcept { return 0.; }
   };
   struct Spin {
     using type = std::array<double, volume_dim>;
     static constexpr Options::String help = {
         "The [x,y,z] dimensionless spin of the black hole"};
-    static type default_value() noexcept { return {{0., 0., 0.}}; }
   };
   struct Center {
     using type = std::array<double, volume_dim>;
     static constexpr Options::String help = {
         "The [x,y,z] center of the black hole"};
-    static type default_value() noexcept { return {{0., 0., 0.}}; }
   };
   using options = tmpl::list<Mass, Spin, Center>;
   static constexpr Options::String help{

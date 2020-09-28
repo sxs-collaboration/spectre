@@ -151,7 +151,6 @@ struct Gmres {
     using type = size_t;
     static constexpr Options::String help =
         "Iterations to run before restarting";
-    static size_t default_value() noexcept { return 0; }
   };
   struct Verbosity {
     using type = ::Verbosity;

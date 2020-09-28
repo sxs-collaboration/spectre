@@ -95,16 +95,11 @@ class CubicScale final : public TimeDependence<MeshDim> {
   /// \brief The names of the functions of times to be added to the added to the
   /// DataBox.
   ///
-  /// The defaults are `"ExpansionA", "ExpansionB"`.
-  ///
   /// If the two names are same then a linear radial scaling is used instead of
   /// a cubic scaling.
   struct FunctionOfTimeNames {
     using type = std::array<std::string, 2>;
     static constexpr Options::String help = {"Names of the functions of time."};
-    static type default_value() noexcept {
-      return {{"ExpansionA", "ExpansionB"}};
-    }
   };
 
   using options =

@@ -56,7 +56,6 @@ class Rectangle : public DomainCreator<2> {
     using type = std::array<bool, 2>;
     static constexpr Options::String help = {
         "Sequence for [x,y], true if periodic."};
-    static type default_value() noexcept { return make_array<2>(false); }
   };
 
   struct InitialRefinement {
@@ -75,7 +74,6 @@ class Rectangle : public DomainCreator<2> {
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>;
     static constexpr Options::String help = {
         "The time dependence of the moving mesh domain."};
-    static type default_value() noexcept;
   };
 
   using options =

@@ -84,7 +84,6 @@ class Cylinder : public DomainCreator<3> {
     using type = bool;
     static constexpr Options::String help = {
         "True if periodic in the cylindrical z direction."};
-    static type default_value() noexcept { return true; }
   };
 
   struct InitialRefinement {
@@ -103,12 +102,10 @@ class Cylinder : public DomainCreator<3> {
     using type = bool;
     static constexpr Options::String help = {
         "Use equiangular instead of equidistant coordinates."};
-    static type default_value() noexcept { return false; }
   };
 
   struct RadialPartitioning {
     using type = std::vector<double>;
-    static type default_value() noexcept { return std::vector<double>{}; }
     static constexpr Options::String help = {
         "Radial coordinates of the boundaries splitting the outer shell "
         "between InnerRadius and OuterRadius."};
@@ -116,7 +113,6 @@ class Cylinder : public DomainCreator<3> {
 
   struct HeightPartitioning {
     using type = std::vector<double>;
-    static type default_value() noexcept { return std::vector<double>{}; }
     static constexpr Options::String help = {
         "z-coordinates of the boundaries splitting the domain into discs "
         "between LowerBound and UpperBound."};

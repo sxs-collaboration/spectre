@@ -47,7 +47,6 @@ class EveryNIterations : public Trigger<TriggerRegistrars> {
   struct Offset {
     using type = uint64_t;
     static constexpr Options::String help{"First iteration to trigger on."};
-    static type default_value() noexcept { return 0; }
   };
 
   using options = tmpl::list<N, Offset>;

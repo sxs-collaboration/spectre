@@ -58,7 +58,6 @@ struct LinearizedBondiSachs : public SphericalMetricData {
     static constexpr Options::String help{
         "The extraction radius of the spherical solution"};
     static type lower_bound() noexcept { return 0.0; }
-    static type default_value() noexcept { return 20.0; }
   };
   struct Frequency {
     using type = double;

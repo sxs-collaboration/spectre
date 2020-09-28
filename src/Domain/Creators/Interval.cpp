@@ -62,11 +62,6 @@ Domain<1> Interval::create_domain() const noexcept {
   return domain;
 }
 
-std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
-Interval::TimeDependence::default_value() noexcept {
-  return std::make_unique<domain::creators::time_dependence::None<1>>();
-}
-
 std::vector<std::array<size_t, 1>> Interval::initial_extents() const noexcept {
   return {{{initial_number_of_grid_points_in_x_}}};
 }

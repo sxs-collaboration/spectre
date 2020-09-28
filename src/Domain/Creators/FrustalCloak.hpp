@@ -52,25 +52,23 @@ class FrustalCloak : public DomainCreator<3> {
     using type = bool;
     static constexpr Options::String help = {
         "Use equiangular instead of equidistant coordinates."};
-    static constexpr type default_value() noexcept { return false; }
   };
 
   struct ProjectionFactor {
     using type = double;
     static constexpr Options::String help = {"Grid compression factor."};
-    static constexpr type default_value() noexcept { return 1.0; }
   };
 
   struct LengthInnerCube {
     using type = double;
     static constexpr Options::String help = {"Side length of each inner cube."};
-    static constexpr type default_value() noexcept { return 0.0; }
+    static constexpr type lower_bound() noexcept { return 0.0; }
   };
 
   struct LengthOuterCube {
     using type = double;
     static constexpr Options::String help = {"Side length of the outer cube."};
-    static constexpr type default_value() noexcept { return 0.0; }
+    static constexpr type lower_bound() noexcept { return 0.0; }
   };
 
   struct OriginPreimage {

@@ -52,7 +52,6 @@ class Bump : public MarkAsAnalyticSolution {
   struct Center {
     using type = double;
     static constexpr Options::String help{"The center of the bump"};
-    static type default_value() noexcept { return 0.; }
   };
 
   using options = tmpl::list<HalfWidth, Height, Center>;

@@ -96,14 +96,9 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
   };
   /// \brief The names of the functions of times to be added to the added to the
   /// DataBox.
-  ///
-  /// The defaults are `"TranslationX", "TranslationY", "TranslationZ"`.
   struct FunctionOfTimeNames {
     using type = std::array<std::string, MeshDim>;
     static constexpr Options::String help = {"Names of the functions of time."};
-    static type default_value() noexcept {
-      return UniformTranslation::default_function_names();
-    }
   };
 
   using MapForComposition =

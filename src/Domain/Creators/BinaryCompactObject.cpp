@@ -307,11 +307,6 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
   return domain;
 }
 
-std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-BinaryCompactObject::TimeDependence::default_value() noexcept {
-  return std::make_unique<domain::creators::time_dependence::None<3>>();
-}
-
 std::vector<std::array<size_t, 3>> BinaryCompactObject::initial_extents() const
     noexcept {
   return {number_of_blocks_, make_array<3>(initial_grid_points_per_dim_)};

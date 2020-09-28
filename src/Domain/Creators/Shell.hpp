@@ -72,35 +72,33 @@ class Shell : public DomainCreator<3> {
     using type = bool;
     static constexpr Options::String help = {
         "Use equiangular instead of equidistant coordinates."};
-    static constexpr type default_value() noexcept { return true; }
   };
 
   struct AspectRatio {
     using type = double;
     static constexpr Options::String help = {
         "The equatorial compression factor."};
-    static constexpr type default_value() noexcept { return 1.0; }
   };
 
   struct UseLogarithmicMap {
     using type = bool;
     static constexpr Options::String help = {
         "Use a logarithmically spaced radial grid."};
-    static constexpr type default_value() noexcept { return false; }
   };
 
   struct WhichWedges {
     using type = ShellWedges;
     static constexpr Options::String help = {
         "Which wedges to include in the shell."};
-    static constexpr type default_value() noexcept { return ShellWedges::All; }
+    static constexpr type suggested_value() noexcept {
+      return ShellWedges::All;
+    }
   };
 
   struct RadialBlockLayers {
     using type = size_t;
     static constexpr Options::String help = {
         "The number of concentric layers of Blocks to have."};
-    static constexpr type default_value() noexcept { return 1; }
     static type lower_bound() { return 1; }
   };
 

@@ -151,7 +151,7 @@ struct InitialTime {
   using type = double;
   static constexpr Options::String help = {
       "The time at which the evolution is started."};
-  static type default_value() noexcept { return 0.0; }
+  static type suggested_value() noexcept { return 0.0; }
   using group = evolution::OptionTags::Group;
 };
 

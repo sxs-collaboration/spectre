@@ -100,10 +100,10 @@ class HalfSpaceMirror {
     static constexpr Options::String help{
         "Workspace size for numerical integrals. Increase if integrals fail to "
         "reach the prescribed tolerance at large distances relative to the "
-        "beam width. The default values for workspace size and tolerances "
+        "beam width. The suggested values for workspace size and tolerances "
         "should accommodate distances of up to ~100 beam widths."};
     static type lower_bound() noexcept { return 1; }
-    static type default_value() noexcept { return 350; }
+    static type suggested_value() noexcept { return 350; }
   };
 
   struct AbsoluteTolerance {
@@ -111,7 +111,7 @@ class HalfSpaceMirror {
     static constexpr Options::String help{
         "Absolute tolerance for numerical integrals"};
     static type lower_bound() noexcept { return 0.; }
-    static type default_value() noexcept { return 1e-12; }
+    static type suggested_value() noexcept { return 1e-12; }
   };
 
   struct RelativeTolerance {
@@ -120,7 +120,7 @@ class HalfSpaceMirror {
         "Relative tolerance for numerical integrals"};
     static type lower_bound() noexcept { return 0.; }
     static type upper_bound() noexcept { return 1.; }
-    static type default_value() noexcept { return 1e-10; }
+    static type suggested_value() noexcept { return 1e-10; }
   };
 
   using options = tmpl::list<BeamWidth, Material, IntegrationIntervals,

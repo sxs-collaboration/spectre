@@ -72,7 +72,6 @@ struct KerrHorizon {
   };
   struct ThetaVariesFastest {
     using type = bool;
-    static type default_value() noexcept { return true; }
     static constexpr Options::String help = {
         "Chooses theta,phi ordering in 2d array"};
   };

@@ -109,7 +109,7 @@ class ExampleClass {
 
   struct AutoArg {
     using type = Options::Auto<int>;
-    static type default_value() noexcept { return {}; }
+    static type suggested_value() noexcept { return {}; }
     static constexpr Options::String help =
         "Integer that can be automatically chosen";
   };

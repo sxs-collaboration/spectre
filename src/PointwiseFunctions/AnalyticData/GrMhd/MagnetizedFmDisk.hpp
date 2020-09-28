@@ -97,7 +97,7 @@ class MagnetizedFmDisk
     using type = size_t;
     static constexpr Options::String help = {
         "Grid Resolution for b-field normalization."};
-    static type default_value() { return 255; }
+    static type suggested_value() { return 255; }
     static type lower_bound() { return 4; }
   };
 
@@ -119,7 +119,7 @@ class MagnetizedFmDisk
                    double polytropic_constant, double polytropic_exponent,
                    double threshold_density, double inverse_plasma_beta,
                    size_t normalization_grid_res =
-                       BFieldNormGridRes::default_value()) noexcept;
+                       BFieldNormGridRes::suggested_value()) noexcept;
 
   // Overload the variables function from the base class.
   using fm_disk::equation_of_state;

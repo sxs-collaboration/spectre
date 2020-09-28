@@ -65,7 +65,6 @@ class PlaneWave : public MarkAsAnalyticSolution {
     using type = std::array<double, Dim>;
     static constexpr Options::String help = {
         "The initial center of the profile of the wave."};
-    static type default_value() noexcept { return make_array<Dim>(0.0); }
   };
 
   struct Profile {
