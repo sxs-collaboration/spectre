@@ -116,7 +116,7 @@ class Shell : public DomainCreator<3> {
       "purposes. The `aspect_ratio` moves grid points on the shell towards\n"
       "the equator for values greater than 1.0, and towards the poles for\n"
       "positive values less than 1.0. If `UseLogarithmicMap` is set to true,\n"
-      "the radial gridpoints will be spaced uniformly in \f$log(r)\f$. The\n"
+      "the radial gridpoints will be spaced uniformly in log(r). The\n"
       "user may also choose to use only a single wedge (along the -x\n"
       "direction), or four wedges along the x-y plane using the `WhichWedges`\n"
       "option. Using the RadialBlockLayers option, a user may increase the\n"
