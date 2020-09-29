@@ -622,6 +622,7 @@ struct NamedDuplicate {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Options::Parser<tmpl::list<Duplicate, NamedDuplicate>> opts("");
+  opts.parse("");
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }

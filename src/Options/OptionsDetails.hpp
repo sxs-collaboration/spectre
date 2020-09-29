@@ -19,7 +19,6 @@
 #include <utility>
 #include <vector>
 
-#include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/MakeString.hpp"
@@ -215,18 +214,6 @@ struct print {
     value += print_impl<Tag, OptionList>::apply();
   }
   value_type value{};
-};
-
-// TMP function to create an unordered_set of option names.
-struct create_valid_names {
-  using value_type = std::unordered_set<std::string>;
-  value_type value{};
-  template <typename T>
-  void operator()(tmpl::type_<T> /*meta*/) noexcept {
-    const std::string label = name<T>();
-    ASSERT(0 == value.count(label), "Duplicate option name: " << label);
-    value.insert(label);
-  }
 };
 
 template <typename T, typename Metavariables>

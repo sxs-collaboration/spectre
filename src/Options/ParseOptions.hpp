@@ -255,16 +255,12 @@ class Parser {
 
   std::string help_text_{};
   Context context_{};
-  std::unordered_set<std::string> valid_names_{};
   std::unordered_map<std::string, YAML::Node> parsed_options_{};
 };
 
 template <typename OptionList, typename Group>
 Parser<OptionList, Group>::Parser(std::string help_text) noexcept
-    : help_text_(std::move(help_text)),
-      valid_names_(tmpl::for_each<tags_and_subgroups_list>(
-                       Options_detail::create_valid_names{})
-                       .value) {
+    : help_text_(std::move(help_text)) {
   tmpl::for_each<tags_and_subgroups_list>([](auto t) noexcept {
     using T = typename decltype(t)::type;
     const std::string label = name<T>();
@@ -315,6 +311,15 @@ void Parser<OptionList, Group>::parse(const YAML::Node& node) {
     PARSE_ERROR(context_, "'" << node << "' does not look like options.\n"
                               << help());
   }
+
+  std::unordered_set<std::string> valid_names;
+  tmpl::for_each<tags_and_subgroups_list>([&valid_names](auto opt) noexcept {
+    using Opt = tmpl::type_from<decltype(opt)>;
+    const std::string label = name<Opt>();
+    ASSERT(0 == valid_names.count(label), "Duplicate option name: " << label);
+    valid_names.insert(label);
+  });
+
   for (const auto& name_and_value : node) {
     const auto& name = name_and_value.first.as<std::string>();
     const auto& value = name_and_value.second;
@@ -323,7 +328,7 @@ void Parser<OptionList, Group>::parse(const YAML::Node& node) {
     context.column = name_and_value.first.Mark().column;
 
     // Check for invalid key
-    if (1 != valid_names_.count(name)) {
+    if (1 != valid_names.count(name)) {
       PARSE_ERROR(context, "Option '" << name << "' is not a valid option.\n"
                                       << parsing_help(node));
     }
