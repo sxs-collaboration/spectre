@@ -132,6 +132,14 @@ bool minmod_limited_slopes(
 /// between the mean solution values across neighboring cells, but may not
 /// control oscillations within the cells.
 ///
+/// The choice of the TVB constant \f$m\f$ is difficult. Larger values result in
+/// fewer limiter activations, especially near smooth extrema in the solution
+/// --- this can help to avoid incorrectly limiting away these smooth extrema,
+/// but can also result in insufficient limiting of truly spurious oscillations.
+/// The reference uses a value of 50 when presenting the limiter with simple
+/// shock tests, but in general the value \f$m\f$ that optimizes between
+/// robustness and minimal loss of accuracy is problem dependent.
+///
 /// The limiter acts in the `Frame::Logical` coordinates, because in these
 /// coordinates it is straightforward to formulate the algorithm. This means the
 /// limiter can operate on generic deformed grids. However, if the grid is too
@@ -169,10 +177,10 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   };
   /// \brief The TVB constant
   ///
-  /// See `Limiters::Minmod` documentation for details.
+  /// See `Limiters::Minmod` documentation for details. The optimal value of
+  /// this parameter is unfortunately problem-dependent.
   struct TvbConstant {
     using type = double;
-    static type default_value() noexcept { return 0.0; }
     static type lower_bound() noexcept { return 0.0; }
     static constexpr Options::String help = {"TVB constant 'm'"};
   };
@@ -197,10 +205,9 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// \brief Constuct a Minmod slope limiter
   ///
   /// \param minmod_type The type of Minmod slope limiter.
-  /// \param tvb_constant The value of the TVB constant (default: 0).
-  /// \param disable_for_debugging Switch to turn the limiter off (default:
-  //         false).
-  explicit Minmod(MinmodType minmod_type, double tvb_constant = 0.0,
+  /// \param tvb_constant The value of the TVB constant.
+  /// \param disable_for_debugging Switch to turn the limiter off.
+  explicit Minmod(MinmodType minmod_type, double tvb_constant,
                   bool disable_for_debugging = false) noexcept;
 
   Minmod() noexcept = default;

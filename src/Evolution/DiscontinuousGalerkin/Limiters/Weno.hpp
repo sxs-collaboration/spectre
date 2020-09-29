@@ -109,12 +109,12 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
   /// \brief The linear weight given to each neighbor
   ///
   /// This linear weight gets combined with the oscillation indicator to
-  /// compute the weight for each WENO estimated solution. Larger values are
-  /// better suited for problems with strong shocks, and smaller values are
-  /// better suited to smooth problems.
+  /// compute the weight for each WENO estimated solution. The standard value
+  /// in the literature is 0.001; larger values may be better suited for
+  /// problems with strong shocks, and smaller values may be better suited to
+  /// smooth problems.
   struct NeighborWeight {
     using type = double;
-    static type default_value() noexcept { return 0.001; }
     static type lower_bound() noexcept { return 1e-6; }
     static type upper_bound() noexcept { return 0.1; }
     static constexpr Options::String help = {
@@ -125,7 +125,6 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
   /// See `Limiters::Minmod` documentation for details.
   struct TvbConstant {
     using type = double;
-    static type default_value() noexcept { return 0.0; }
     static type lower_bound() noexcept { return 0.0; }
     static constexpr Options::String help = {"TVB constant 'm'"};
   };
@@ -143,8 +142,8 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
       tmpl::list<Type, NeighborWeight, TvbConstant, DisableForDebugging>;
   static constexpr Options::String help = {"A WENO limiter for DG"};
 
-  Weno(WenoType weno_type, double neighbor_linear_weight,
-       double tvb_constant = 0.0, bool disable_for_debugging = false) noexcept;
+  Weno(WenoType weno_type, double neighbor_linear_weight, double tvb_constant,
+       bool disable_for_debugging = false) noexcept;
 
   Weno() noexcept = default;
   Weno(const Weno& /*rhs*/) = default;

@@ -117,8 +117,8 @@ void test_limiting_two_neighbors() noexcept {
   const size_t num_pts = mesh.number_of_grid_points();
 
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
-  // Use non-unity (because that's the default) but close alpha values to make
-  // the math easier but still test thoroughly.
+  // Use non-unity but close alpha values to make the math easier but still
+  // test thoroughly.
   Limiter krivodonova{
       make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
           0.99)};
@@ -255,8 +255,8 @@ void test_limiting_different_values_different_tensors() noexcept {
                        Spectral::Quadrature::GaussLobatto);
   const size_t num_pts = mesh.number_of_grid_points();
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
-  // Use non-unity (because that's the default) but close alpha values to make
-  // the math easier but still test thoroughly.
+  // Use non-unity but close alpha values to make the math easier but still
+  // test thoroughly.
   Limiter krivodonova{
       make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
           0.99)};
@@ -812,8 +812,8 @@ void test_limiting_different_values_different_tensors() noexcept {
                        Spectral::Quadrature::GaussLobatto);
   const size_t num_pts = mesh.number_of_grid_points();
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
-  // Use non-unity (because that's the default) but close alpha values to make
-  // the math easier but still test thoroughly.
+  // Use non-unity but close alpha values to make the math easier but still
+  // test thoroughly.
   Limiter krivodonova{
       make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
           0.99)};
@@ -916,8 +916,8 @@ void run() noexcept {
                        Spectral::Quadrature::GaussLobatto);
   const size_t num_pts = mesh.number_of_grid_points();
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>>>;
-  // Use non-unity (because that's the default) but close alpha values to make
-  // the math easier but still test thoroughly.
+  // Use non-unity but close alpha values to make the math easier but still
+  // test thoroughly.
   Limiter krivodonova{
       make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
           0.99)};
@@ -2542,8 +2542,8 @@ void test_limiting_different_values_different_tensors() noexcept {
   const size_t num_pts = mesh.number_of_grid_points();
   const auto x = logical_coordinates(mesh);
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
-  // Use non-unity (because that's the default) but close alpha values to make
-  // the math easier but still test thoroughly.
+  // Use non-unity but close alpha values to make the math easier but still
+  // test thoroughly.
   Limiter krivodonova{
       make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
           0.99)};
@@ -2773,8 +2773,8 @@ void run() noexcept {
                        Spectral::Quadrature::GaussLobatto);
   const size_t num_pts = mesh.number_of_grid_points();
   using Limiter = Krivodonova<dim, tmpl::list<ScalarTag<0>, VectorTag<dim, 0>>>;
-  // Use non-unity (because that's the default) but close alpha values to make
-  // the math easier but still test thoroughly.
+  // Use non-unity but close alpha values to make the math easier but still
+  // test thoroughly.
   Limiter krivodonova{
       make_array<Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
           0.99)};

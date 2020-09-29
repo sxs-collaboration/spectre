@@ -444,10 +444,6 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
         double, Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>;
     static constexpr Options::String help = {
         "The alpha parameters of the Krivodonova limiter"};
-    static type default_value() noexcept {
-      return make_array<
-          Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(1.0);
-    }
   };
   /*!
    * \brief Turn the limiter off
@@ -557,7 +553,8 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
   std::array<double,
              Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>
       alphas_ = make_array<
-          Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(1.0);
+          Spectral::maximum_number_of_points<Spectral::Basis::Legendre>>(
+          std::numeric_limits<double>::signaling_NaN());
   bool disable_for_debugging_{false};
 };
 
