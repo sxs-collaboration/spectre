@@ -45,7 +45,7 @@ struct DataBox {
 
 namespace db {
 
-namespace DataBox_detail {
+namespace detail {
 template <typename TagList, typename Tag>
 using list_of_matching_tags = tmpl::conditional_t<
     std::is_same_v<Tag, ::Tags::DataBox>, tmpl::list<::Tags::DataBox>,
@@ -97,9 +97,6 @@ using has_no_matching_tag_t = typename has_no_matching_tag<TagList, Tag>::type;
 
 template <typename TagList, typename Tag>
 constexpr bool has_no_matching_tag_v = has_no_matching_tag<TagList, Tag>::value;
-}  // namespace DataBox_detail
-
-
 
 template <class T, class = void>
 struct has_return_type_member : std::false_type {};
@@ -113,7 +110,6 @@ struct has_return_type_member<T, std::void_t<typename T::return_type>>
 template <class T>
 constexpr bool has_return_type_member_v = has_return_type_member<T>::value;
 
-namespace DataBox_detail {
 template <typename T>
 const T& convert_to_const_type(const T& item) noexcept {
   return item;
@@ -224,29 +220,20 @@ struct item_type_impl {
   static_assert(not is_compute_tag_v<Tag>,
                 "Can't call item_type on a compute item because compute items "
                 "cannot be modified.  You probably wanted const_item_type.");
-  using type = DataBox_detail::storage_type<Tag, TagList>;
+  using type = detail::storage_type<Tag, TagList>;
 };
-}  // namespace DataBox_detail
 
-/*!
- * \ingroup DataBoxGroup
- * \brief Get the type that is returned by `get<Tag>`. If it is a base
- * tag then a `TagList` must be passed as a second argument.
- */
+// Get the type that is returned by `get<Tag>`. If it is a base tag then a
+// `TagList` must be passed as a second argument.
 template <typename Tag, typename TagList = NoSuchType>
-using const_item_type =
-    std::decay_t<decltype(DataBox_detail::convert_to_const_type(
-        std::declval<DataBox_detail::storage_type<Tag, TagList>>()))>;
+using const_item_type = std::decay_t<decltype(
+    convert_to_const_type(std::declval<storage_type<Tag, TagList>>()))>;
 
-/*!
- * \ingroup DataBoxGroup
- * \brief Get the type that can be written to the `Tag`. If it is a
- * base tag then a `TagList` must be passed as a second argument.
- */
+// Get the type that can be written to the `Tag`. If it is a base tag then a
+// `TagList` must be passed as a second argument.
 template <typename Tag, typename TagList = NoSuchType>
-using item_type = typename DataBox_detail::item_type_impl<TagList, Tag>::type;
+using item_type = typename item_type_impl<TagList, Tag>::type;
 
-namespace DataBox_detail {
 CREATE_IS_CALLABLE(function)
 CREATE_IS_CALLABLE_V(function)
 
@@ -277,5 +264,5 @@ struct compute_item_type<tmpl::list<Args...>> {
 #endif  // SPECTRE_DEBUG
       Tag::function(std::declval<const_item_type<Args, TagList>>()...));
 };
-}  // namespace DataBox_detail
+}  // namespace detail
 }  // namespace db
