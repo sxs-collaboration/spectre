@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/SpecBoundaryData.hpp"

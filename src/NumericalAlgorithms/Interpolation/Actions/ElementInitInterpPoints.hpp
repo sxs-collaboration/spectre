@@ -7,7 +7,7 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/PointInfoTag.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"

@@ -6,7 +6,6 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/InterpolationTargetVarsFromElement.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTarget.hpp"

@@ -9,7 +9,6 @@
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/Cce/Equations.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"  // IWYU pragma: keep

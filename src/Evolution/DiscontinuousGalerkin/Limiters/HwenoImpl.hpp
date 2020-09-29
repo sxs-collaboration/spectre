@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "DataStructures/ApplyMatrices.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"

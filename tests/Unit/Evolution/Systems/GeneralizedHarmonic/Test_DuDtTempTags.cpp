@@ -5,7 +5,6 @@
 
 #include <string>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/DuDtTempTags.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 

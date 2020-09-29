@@ -6,7 +6,6 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/Requires.hpp"

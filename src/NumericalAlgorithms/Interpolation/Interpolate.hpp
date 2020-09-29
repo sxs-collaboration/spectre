@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <pup.h>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"
 #include "Options/Options.hpp"

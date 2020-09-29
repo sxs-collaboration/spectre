@@ -14,7 +14,6 @@
 #include <unordered_map>
 #include <utility>  // for pair
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Index.hpp"
 #include "DataStructures/ModalVector.hpp"  // IWYU pragma: keep

@@ -8,7 +8,6 @@
 #include <unordered_map>
 #include <utility>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

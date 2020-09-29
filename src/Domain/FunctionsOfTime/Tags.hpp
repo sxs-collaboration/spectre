@@ -8,7 +8,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Tag.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/OptionTags.hpp"
 #include "Options/Options.hpp"

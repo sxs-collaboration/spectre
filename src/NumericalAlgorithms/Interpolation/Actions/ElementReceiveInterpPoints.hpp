@@ -4,7 +4,6 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/IdPair.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Interpolation/PointInfoTag.hpp"
