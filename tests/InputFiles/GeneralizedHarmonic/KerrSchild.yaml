@@ -24,6 +24,7 @@ DomainCreator:
       UseEquiangularMap: true
       AspectRatio: 1.0
       UseLogarithmicMap: true
+      WhichWedges: All
       RadialBlockLayers: 1
 
 AnalyticSolution:
@@ -82,6 +83,13 @@ EventsAndTriggers:
         Offset: 0
   : - ObserveFields:
         SubfileName: VolumeData
+        VariablesToObserve:
+          - SpacetimeMetric
+          - Pi
+          - Phi
+          - PointwiseL2Norm(GaugeConstraint)
+          - PointwiseL2Norm(ThreeIndexConstraint)
+          - PointwiseL2Norm(FourIndexConstraint)
   ? Slabs:
       EvenlySpaced:
         Interval: 5
@@ -104,4 +112,11 @@ ApparentHorizons:
       Center: [0.0, 0.0, 0.0]
     FastFlow:
       Flow: Fast
+      Alpha: 1.0
+      Beta: 0.5
+      AbsTol: 1e-12
+      TruncationTol: 1e-2
+      DivergenceTol: 1.2
+      DivergenceIter: 5
+      MaxIts: 100
     Verbosity: Verbose

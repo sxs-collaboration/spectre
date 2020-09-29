@@ -36,6 +36,7 @@ DomainCreator:
     IsPeriodicIn: [true, true]
     InitialRefinement: [2, 2]
     InitialGridPoints: [4, 4]
+    TimeDependence: None
 
 SpatialDiscretization:
   DiscontinuousGalerkin:
@@ -46,6 +47,7 @@ Filtering:
   ExpFilter0:
     Alpha: 12
     HalfPower: 32
+    DisableForDebugging: false
 
 NumericalFlux:
   UpwindPenalty:

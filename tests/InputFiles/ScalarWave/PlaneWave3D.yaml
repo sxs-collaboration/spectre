@@ -36,6 +36,7 @@ DomainCreator:
     IsPeriodicIn: [true, true, true]
     InitialRefinement: [1, 1, 1]
     InitialGridPoints: [5, 5, 5]
+    TimeDependence: None
 
 SpatialDiscretization:
   DiscontinuousGalerkin:

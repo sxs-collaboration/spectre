@@ -18,6 +18,7 @@ DomainCreator:
     IsPeriodicIn: [false]
     InitialRefinement: [1]
     InitialGridPoints: [3]
+    TimeDependence: None
 
 NumericalFlux:
   InternalPenalty:
@@ -37,7 +38,9 @@ LinearSolver:
 EventsAndTriggers:
   ? EveryNIterations:
       N: 1
+      Offset: 0
   : - ObserveErrorNorms:
         SubfileName: Errors
     - ObserveFields:
         SubfileName: VolumeData
+        VariablesToObserve: [Field, deriv(Field)]

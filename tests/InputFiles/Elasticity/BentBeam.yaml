@@ -24,6 +24,7 @@ DomainCreator:
     IsPeriodicIn: [false, false]
     InitialRefinement: [2, 1]
     InitialGridPoints: [3, 3]
+    TimeDependence: None
 
 NumericalFlux:
   InternalPenalty:
@@ -44,7 +45,9 @@ LinearSolver:
 EventsAndTriggers:
   ? EveryNIterations:
       N: 1
+      Offset: 0
   : - ObserveErrorNorms:
         SubfileName: "element_data"
     - ObserveFields:
         SubfileName: "element_data"
+        VariablesToObserve: [Displacement, Strain]

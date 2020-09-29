@@ -23,6 +23,7 @@ Cce:
   EndTime: 1000.0
   TargetStepSize: 1.0
   BoundaryDataFilename: CceR0257.h5
+  H5IsBondiData: false
   H5Interpolator:
     BarycentricRationalSpanInterpolator:
       MinOrder: 10

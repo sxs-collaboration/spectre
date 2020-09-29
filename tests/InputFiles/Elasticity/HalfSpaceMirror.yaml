@@ -14,6 +14,9 @@ AnalyticSolution:
       # Fused Silica
       BulkModulus: 36.36363636363637
       ShearModulus: 30.76923076923077
+    IntegrationIntervals: 350
+    AbsoluteTolerance: 1e-12
+    RelativeTolerance: 1e-10
 
 DomainCreator:
   Cylinder:
@@ -25,6 +28,8 @@ DomainCreator:
     InitialRefinement: 0
     InitialGridPoints: [3, 3, 4]
     UseEquiangularMap: True
+    RadialPartitioning: []
+    HeightPartitioning: []
 
 NumericalFlux:
   InternalPenalty:
@@ -45,11 +50,14 @@ LinearSolver:
 EventsAndTriggers:
   ? EveryNIterations:
       N: 1
+      Offset: 0
   : - ObserveErrorNorms:
         SubfileName: ErrorNorms
     - ObserveVolumeIntegrals:
         SubfileName: VolumeIntegrals
   ? EveryNIterations:
       N: 10
+      Offset: 0
   : - ObserveFields:
         SubfileName: VolumeData
+        VariablesToObserve: [Displacement, Strain]
