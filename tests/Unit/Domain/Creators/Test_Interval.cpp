@@ -115,7 +115,8 @@ void test_interval_factory() {
             "  UpperBound: [1]\n"
             "  IsPeriodicIn: [True]\n"
             "  InitialGridPoints: [3]\n"
-            "  InitialRefinement: [2]\n");
+            "  InitialRefinement: [2]\n"
+            "  TimeDependence: None\n");
     const auto* interval_creator =
         dynamic_cast<const creators::Interval*>(domain_creator.get());
     test_interval_construction(

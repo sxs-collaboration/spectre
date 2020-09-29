@@ -180,17 +180,6 @@ void test() noexcept {
             initial_time, update_delta_t, outer_boundary, initial_expansion,
             velocity, acceleration, f_of_t_names);
 
-  test_impl(TestHelpers::test_factory_creation<TimeDependence<MeshDim>>(
-                "CubicScale:\n"
-                "  InitialTime: 1.3\n"
-                "  InitialExpirationDeltaT: 2.5\n"
-                "  OuterBoundary: 10.4\n"
-                "  InitialExpansion: [1.0, 1.0]\n"
-                "  Velocity: [-0.1, 0.0]\n"
-                "  Acceleration: [0.0, 0.0]\n"),
-            initial_time, update_delta_t, outer_boundary, initial_expansion,
-            velocity, acceleration, {{"ExpansionA", "ExpansionB"}});
-
   INFO("Check equivalence operators");
   CubicScale<MeshDim> cubic_scale0{
       1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionB"}},

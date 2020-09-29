@@ -71,7 +71,10 @@ SPECTRE_TEST_CASE(
           "BeamWidth: 0.177\n"
           "Material:\n"
           "  BulkModulus: 36.36363636363637\n"
-          "  ShearModulus: 30.76923076923077\n");
+          "  ShearModulus: 30.76923076923077\n"
+          "IntegrationIntervals: 350\n"
+          "AbsoluteTolerance: 1e-12\n"
+          "RelativeTolerance: 1e-10\n");
   CHECK(created_solution == check_solution);
   test_serialization(check_solution);
 

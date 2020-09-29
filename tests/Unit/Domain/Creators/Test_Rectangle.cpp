@@ -154,7 +154,8 @@ void test_rectangle_factory() {
             "  UpperBound: [1,2]\n"
             "  IsPeriodicIn: [True,False]\n"
             "  InitialGridPoints: [3,4]\n"
-            "  InitialRefinement: [2,3]\n");
+            "  InitialRefinement: [2,3]\n"
+            "  TimeDependence: None\n");
     const auto* rectangle_creator =
         dynamic_cast<const creators::Rectangle*>(domain_creator.get());
     test_rectangle_construction(

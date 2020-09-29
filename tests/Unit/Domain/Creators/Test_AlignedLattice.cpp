@@ -50,7 +50,10 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           "  BlockBounds: [[0.1, 2.6, 5.1, 5.2, 7.2]]\n"
           "  IsPeriodicIn: [false]\n"
           "  InitialGridPoints: [3]\n"
-          "  InitialLevels: [2]\n");
+          "  InitialLevels: [2]\n"
+          "  RefinedLevels: []\n"
+          "  RefinedGridPoints: []\n"
+          "  BlocksToExclude: []\n");
   const auto* aligned_blocks_creator_1d =
       dynamic_cast<const creators::AlignedLattice<1>*>(domain_creator_1d.get());
   test_aligned_blocks(*aligned_blocks_creator_1d);
@@ -61,7 +64,10 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           "  BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2, 8.9]]\n"
           "  IsPeriodicIn: [false, true]\n"
           "  InitialGridPoints: [3, 4]\n"
-          "  InitialLevels: [2, 1]\n");
+          "  InitialLevels: [2, 1]\n"
+          "  RefinedLevels: []\n"
+          "  RefinedGridPoints: []\n"
+          "  BlocksToExclude: []\n");
   const auto* aligned_blocks_creator_2d =
       dynamic_cast<const creators::AlignedLattice<2>*>(domain_creator_2d.get());
   test_aligned_blocks(*aligned_blocks_creator_2d);
@@ -72,7 +78,10 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           "  BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2], [-0.2, 3.2]]\n"
           "  IsPeriodicIn: [false, true, false]\n"
           "  InitialGridPoints: [3, 4, 5]\n"
-          "  InitialLevels: [2, 1, 0]\n");
+          "  InitialLevels: [2, 1, 0]\n"
+          "  RefinedLevels: []\n"
+          "  RefinedGridPoints: []\n"
+          "  BlocksToExclude: []\n");
   const auto* aligned_blocks_creator_3d =
       dynamic_cast<const creators::AlignedLattice<3>*>(domain_creator_3d.get());
   test_aligned_blocks(*aligned_blocks_creator_3d);
@@ -85,6 +94,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           "  IsPeriodicIn: [false, false, false]\n"
           "  InitialGridPoints: [3, 4, 5]\n"
           "  InitialLevels: [2, 1, 0]\n"
+          "  RefinedLevels: []\n"
+          "  RefinedGridPoints: []\n"
           "  BlocksToExclude: [[1, 1, 1]]");
   const auto* cubical_shell_creator_3d =
       dynamic_cast<const creators::AlignedLattice<3>*>(
@@ -99,6 +110,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           "  IsPeriodicIn: [false, false, false]\n"
           "  InitialGridPoints: [5, 5, 5]\n"
           "  InitialLevels: [1, 1, 1]\n"
+          "  RefinedLevels: []\n"
+          "  RefinedGridPoints: []\n"
           "  BlocksToExclude: [[1, 1, 1]]");
   const auto* unit_cubical_shell_creator_3d =
       dynamic_cast<const creators::AlignedLattice<3>*>(
@@ -114,9 +127,11 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
         TestHelpers::test_factory_creation<DomainCreator<2>>(
             "AlignedLattice:\n"
             "  BlockBounds: [[70, 71, 72, 73], [90, 91, 92, 93]]\n"
+            "  IsPeriodicIn: [false, false]\n"
             "  InitialGridPoints: [2, 3]\n"
             "  InitialLevels: [0, 0]\n"
             "  BlocksToExclude: [[1, 0]]\n"
+            "  RefinedLevels: []\n"
             "  RefinedGridPoints:\n"
             "  - LowerCornerIndex: [1, 0]\n"
             "    UpperCornerIndex: [3, 2]\n"
@@ -162,9 +177,11 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
         TestHelpers::test_factory_creation<DomainCreator<2>>(
             "AlignedLattice:\n"
             "  BlockBounds: [[70, 71, 72, 73], [90, 91, 92, 93]]\n"
+            "  IsPeriodicIn: [false, false]\n"
             "  InitialGridPoints: [10, 10]\n"
             "  InitialLevels: [2, 5]\n"
             "  BlocksToExclude: [[1, 0]]\n"
+            "  RefinedGridPoints: []\n"
             "  RefinedLevels:\n"
             "  - LowerCornerIndex: [1, 0]\n"
             "    UpperCornerIndex: [3, 2]\n"
@@ -215,6 +232,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice.Error",
           "  IsPeriodicIn: [true, false, false]\n"
           "  InitialGridPoints: [5, 5, 5]\n"
           "  InitialLevels: [1, 1, 1]\n"
+          "  RefinedLevels: []\n"
+          "  RefinedGridPoints: []\n"
           "  BlocksToExclude: [[1, 1, 1]]");
 }
 }  // namespace domain
