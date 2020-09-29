@@ -16,6 +16,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ConstantDensityStar.hpp
+  Solutions.hpp
   )
 
 target_link_libraries(
