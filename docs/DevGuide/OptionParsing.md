@@ -60,13 +60,18 @@ The `Options::Context` is an optional argument to the constructor that should be
 used when the constructor checks for validity of the input. If the input is
 invalid, `PARSE_ERROR` is used to propagate the error message back through the
 options ensuring that the error message will have a full backtrace so it is easy
-for the user to diagnose. Finally, after the `Options::Context` the constructor
-may optionally take the Metavariables struct, which is effectively the compile
-time input file, and the constructor can use the Metavariables for whatever it
-wants, including additional option parsing.
+for the user to diagnose.
 
 Example:
 \snippet Test_CustomTypeConstruction.cpp class_creation_example
+
+Classes may use the Metavariables struct, which is effectively the compile time
+input file, in their parsing by templating the `options` type alias or by taking
+the Metavariables as a final argument to the constructor (after the
+`Options::Context`).
+
+Example:
+\snippet Test_CustomTypeConstruction.cpp class_creation_example_with_metavariables
 
 ## Factory
 
@@ -80,7 +85,8 @@ derived classes that can be created.
 The requested derived class is created in the same way as an
 explicitly constructible class.
 
-## <a name="custom-parsing"></a>Custom parsing
+\anchor custom-parsing
+## Custom parsing
 
 Occasionally, the requirements imposed by the default creation
 mechanism are too stringent.  In these cases, the construction
