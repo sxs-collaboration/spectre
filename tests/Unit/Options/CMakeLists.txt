@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Options")
 
 set(LIBRARY_SOURCES
+  Test_Auto.cpp
   Test_CustomTypeConstruction.cpp
   Test_Factory.cpp
   Test_Options.cpp
