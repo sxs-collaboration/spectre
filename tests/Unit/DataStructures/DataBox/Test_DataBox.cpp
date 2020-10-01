@@ -1241,6 +1241,39 @@ struct TestDataboxMutateApply {
 };
 /// [mutate_apply_struct_definition_example]
 
+struct TestDataboxMutateApplyBase {
+  using return_tags = tmpl::list<test_databox_tags::ScalarTagBase>;
+  using argument_tags = tmpl::list<test_databox_tags::Tag2Base>;
+
+  static void apply(const gsl::not_null<Scalar<DataVector>*> scalar,
+                    const std::string& tag2) noexcept {
+    CHECK(*scalar == Scalar<DataVector>(DataVector(2, 6.)));
+    CHECK(tag2 == "My Sample String"s);
+  }
+};
+
+struct PointerMutateApply {
+  using return_tags = tmpl::list<test_databox_tags::Pointer>;
+  using argument_tags = tmpl::list<test_databox_tags::PointerToCounter,
+                                   test_databox_tags::PointerToSum>;
+  static void apply(const gsl::not_null<std::unique_ptr<int>*> ret,
+                    const int& compute, const int& compute_mutating) noexcept {
+    **ret = 7;
+    CHECK(compute == 7);
+    CHECK(compute_mutating == 14);
+  }
+};
+
+struct PointerMutateApplyBase {
+  using return_tags = tmpl::list<test_databox_tags::PointerBase>;
+  using argument_tags = tmpl::list<test_databox_tags::PointerToCounterBase>;
+  static void apply(const gsl::not_null<std::unique_ptr<int>*> ret,
+                    const int& compute_base) noexcept {
+    **ret = 8;
+    CHECK(compute_base == 8);
+  }
+};
+
 void test_mutate_apply() noexcept {
   INFO("test mutate apply");
   auto box = db::create<
@@ -1274,16 +1307,6 @@ void test_mutate_apply() noexcept {
     /// [mutate_apply_struct_example_stateful]
     db::mutate_apply(TestDataboxMutateApply{}, make_not_null(&box));
     /// [mutate_apply_struct_example_stateful]
-    struct TestDataboxMutateApplyBase {
-      using return_tags = tmpl::list<test_databox_tags::ScalarTagBase>;
-      using argument_tags = tmpl::list<test_databox_tags::Tag2Base>;
-
-      static void apply(const gsl::not_null<Scalar<DataVector>*> scalar,
-                        const std::string& tag2) noexcept {
-        CHECK(*scalar == Scalar<DataVector>(DataVector(2, 6.)));
-        CHECK(tag2 == "My Sample String"s);
-      }
-    };
     db::mutate_apply(TestDataboxMutateApplyBase{}, make_not_null(&box));
 
     CHECK(approx(db::get<test_databox_tags::Tag4>(box)) == 3.14 * 2.0);
@@ -1403,29 +1426,8 @@ void test_mutate_apply() noexcept {
         },
         make_not_null(&box));
 
-    struct PointerMutateApply {
-      using return_tags = tmpl::list<test_databox_tags::Pointer>;
-      using argument_tags = tmpl::list<test_databox_tags::PointerToCounter,
-                                       test_databox_tags::PointerToSum>;
-      static void apply(const gsl::not_null<std::unique_ptr<int>*> ret,
-                        const int& compute,
-                        const int& compute_mutating) noexcept {
-        **ret = 7;
-        CHECK(compute == 7);
-        CHECK(compute_mutating == 14);
-      }
-    };
     db::mutate_apply<PointerMutateApply>(make_not_null(&box));
 
-    struct PointerMutateApplyBase {
-      using return_tags = tmpl::list<test_databox_tags::PointerBase>;
-      using argument_tags = tmpl::list<test_databox_tags::PointerToCounterBase>;
-      static void apply(const gsl::not_null<std::unique_ptr<int>*> ret,
-                        const int& compute_base) noexcept {
-        **ret = 8;
-        CHECK(compute_base == 8);
-      }
-    };
     db::mutate_apply<PointerMutateApplyBase>(make_not_null(&box));
     CHECK(db::get<test_databox_tags::Pointer>(box) == 8);
   }
