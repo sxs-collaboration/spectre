@@ -550,9 +550,10 @@ template <typename Frame>
 struct AreaCompute : Area, db::ComputeTag {
   using base = Area;
   using return_type = double;
-  static double function(const Strahlkorper<Frame>& strahlkorper,
-                         const Scalar<DataVector>& area_element) noexcept {
-    return strahlkorper.ylm_spherepack().definite_integral(
+  static void function(const gsl::not_null<double*> result,
+                       const Strahlkorper<Frame>& strahlkorper,
+                       const Scalar<DataVector>& area_element) noexcept {
+    *result = strahlkorper.ylm_spherepack().definite_integral(
         get(area_element).data());
   }
   using argument_tags =
