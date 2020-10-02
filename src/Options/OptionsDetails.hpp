@@ -125,9 +125,10 @@ struct yaml_type<std::pair<T, U>> {
 };
 
 template <typename S, typename = std::void_t<>>
-struct has_default : std::false_type {};
+struct has_suggested : std::false_type {};
 template <typename S>
-struct has_default<S, std::void_t<decltype(std::declval<S>().default_value())>>
+struct has_suggested<
+    S, std::void_t<decltype(std::declval<S>().suggested_value())>>
     : std::true_type {};
 
 template <typename S, typename = std::void_t<>>
@@ -175,17 +176,17 @@ struct print_impl<Tag, OptionList,
     std::ostringstream ss;
     ss << "  " << name<Tag>() << ":\n"
        << "    " << "type=" << yaml_type<typename Tag::type>::value();
-    if constexpr (has_default<Tag>::value) {
+    if constexpr (has_suggested<Tag>::value) {
       if constexpr (tt::is_a_v<std::unique_ptr, typename Tag::type>) {
         call_with_dynamic_type<
             void, typename Tag::type::element_type::creatable_classes>(
-            Tag::default_value().get(), [&ss](const auto* derived) noexcept {
-              ss << "\n    default=" << std::boolalpha
+            Tag::suggested_value().get(), [&ss](const auto* derived) noexcept {
+              ss << "\n    suggested=" << std::boolalpha
                  << pretty_type::short_name<decltype(*derived)>();
             });
       } else {
-        ss << "\n    default="
-           << (MakeString{} << std::boolalpha << Tag::default_value());
+        ss << "\n    suggested="
+           << (MakeString{} << std::boolalpha << Tag::suggested_value());
       }
     }
     if constexpr (has_lower_bound<Tag>::value) {

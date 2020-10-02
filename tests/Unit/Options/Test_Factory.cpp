@@ -26,7 +26,6 @@ struct TestWithMetavars;
 struct OptionType {
   using type = std::unique_ptr<OptionTest>;
   static constexpr Options::String help = {"The type of OptionTest"};
-  static std::unique_ptr<OptionTest> default_value() noexcept;
 };
 
 class OptionTest {
@@ -100,10 +99,6 @@ class TestWithArg2 : public OptionTest {
  private:
   std::string arg_;
 };
-
-std::unique_ptr<OptionTest> OptionType::default_value() noexcept {
-  return std::make_unique<Test2>();
-}
 
 struct Vector {
   using type = std::vector<std::unique_ptr<OptionTest>>;
@@ -234,22 +229,6 @@ void test_factory_object_map() {
   CHECK(arg.at("B")->name() == "Test2");
   CHECK(arg.at("C")->name() == "Test1");
 }
-
-void test_factory_format() {
-  Options::Parser<tmpl::list<OptionType>> opts("");
-  const std::string expected1{"default=Test1\n"};
-  const std::string expected2{"default=Test2\n"};
-  INFO("Help string:\n"
-       << opts.help() << "\n\nExpected to find:\n"
-       << expected2 << "\nExpected not to find:\n"
-       << expected1);
-  // The compiler puts "(anonymous namespace)::" before the type, but
-  // I don't want to rely on that, so just check that the type is at
-  // the end of the line, which should ensure it is not in a template
-  // parameter or something.
-  CHECK(opts.help().find(expected2) != std::string::npos);
-  CHECK(opts.help().find(expected1) == std::string::npos);
-}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options.Factory", "[Unit][Options]") {
@@ -260,7 +239,6 @@ SPECTRE_TEST_CASE("Unit.Options.Factory", "[Unit][Options]") {
   test_factory_with_metavars();
   test_factory_object_vector();
   test_factory_object_map();
-  test_factory_format();
 }
 
 // [[OutputRegex, In string:.*At line 1 column 1:.Expected a class to
@@ -301,7 +279,7 @@ SPECTRE_TEST_CASE("Unit.Options.Factory.unknown", "[Unit][Options]") {
 }
 
 // [[OutputRegex, In string:.*At line 2 column 1:.You did not specify the
-// option 'Arg']]
+// option \(Arg\)]]
 SPECTRE_TEST_CASE("Unit.Options.Factory.missing_arg", "[Unit][Options]") {
   ERROR_TEST();
   Options::Parser<tmpl::list<OptionType>> opts("");

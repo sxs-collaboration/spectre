@@ -19,8 +19,12 @@ description of the meaning.  The name of the option in the input file
 defaults to the name of the struct (excluding any template parameters
 and scope information), but can be overridden by providing a static
 `name()` function.  Several other pieces of information, such as
-defaults, limits and grouping, may be provided if desired.  This information is
-all included in the generated help output.
+suggestions, limits and grouping, may be provided if desired.  This
+information is all included in the generated help output.
+
+If an option has a suggested value, the value is specified in the
+input file as usual, but a warning will be issued if the specified
+value does not match the suggestion.
 
 Examples:
 \snippet Test_Options.cpp options_example_scalar_struct
