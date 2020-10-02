@@ -40,6 +40,17 @@ class Auto {
 };
 
 template <typename T>
+bool operator==(const Auto<T>& a, const Auto<T>& b) noexcept {
+  return static_cast<const std::optional<T>&>(a) ==
+         static_cast<const std::optional<T>&>(b);
+}
+
+template <typename T>
+bool operator!=(const Auto<T>& a, const Auto<T>& b) noexcept {
+  return not(a == b);
+}
+
+template <typename T>
 std::ostream& operator<<(std::ostream& os, const Auto<T>& x) noexcept {
   const std::optional<T>& value = x;
   if (value) {
