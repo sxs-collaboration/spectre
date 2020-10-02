@@ -14,7 +14,7 @@
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
-#include "Helpers/Evolution/Systems/NewtonianEuler/TimeDerivative.hpp"
+#include "Helpers/Evolution/Systems/NewtonianEuler/TimeDerivativeTerms.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
