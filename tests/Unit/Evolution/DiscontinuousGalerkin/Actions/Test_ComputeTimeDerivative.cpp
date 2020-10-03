@@ -64,7 +64,7 @@ struct PackagedVar2 : db::SimpleTag {
 };
 
 template <size_t Dim, SystemType system_type>
-struct TimeDerivative {
+struct TimeDerivativeTerms {
   struct Var3Squared : db::SimpleTag {
     using type = Scalar<DataVector>;
   };
@@ -211,7 +211,8 @@ struct System {
       tmpl::conditional_t<system_type == SystemType::Conservative, tmpl::list<>,
                           tmpl::list<Var1, Var2<Dim>>>;
 
-  using compute_volume_time_derivative = TimeDerivative<Dim, system_type>;
+  using compute_volume_time_derivative_terms =
+      TimeDerivativeTerms<Dim, system_type>;
 
   using normal_dot_fluxes = NonconservativeNormalDotFlux<Dim>;
 };

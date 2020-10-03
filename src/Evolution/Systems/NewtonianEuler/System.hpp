@@ -43,7 +43,8 @@ struct System {
       Tags::MassDensity<DataVector>, Tags::Velocity<DataVector, Dim>,
       Tags::SpecificInternalEnergy<DataVector>, Tags::Pressure<DataVector>>>;
 
-  using compute_volume_time_derivative = TimeDerivative<Dim, InitialDataType>;
+  using compute_volume_time_derivative_terms =
+      TimeDerivative<Dim, InitialDataType>;
   using volume_fluxes = ComputeFluxes<Dim>;
   using volume_sources = ComputeSources<InitialDataType>;
 

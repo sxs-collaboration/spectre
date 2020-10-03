@@ -45,7 +45,7 @@ struct System {
   using flux_variables = tmpl::list<>;
   using gradient_variables = tmpl::list<Pi, Phi<Dim>, Psi>;
 
-  using compute_volume_time_derivative = TimeDerivative<Dim>;
+  using compute_volume_time_derivative_terms = TimeDerivative<Dim>;
   using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
 
   using compute_largest_characteristic_speed =
