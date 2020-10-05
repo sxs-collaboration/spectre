@@ -43,7 +43,7 @@ struct ObserverWriter;
 
 namespace ThreadedActions {
 /// \cond
-template <ReductionDataAction>
+template <typename ReductionDataAction>
 struct CollectReductionDataOnNode;
 struct WriteReductionData;
 /// \endcond
@@ -80,7 +80,7 @@ struct ContributeReductionDataToWriter;
  * Then, in the `Metavariables` collect them from all observing Actions using
  * the `observers::collect_reduction_data_tags` metafunction.
  */
-template <ReductionDataAction>
+template <typename ReductionDataAction>
 struct ContributeReductionData {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex, typename... Ts>
@@ -191,7 +191,7 @@ namespace ThreadedActions {
  * \brief Gathers all the reduction data from all processing elements/cores on a
  * node.
  */
-template <ReductionDataAction>
+template <typename ReductionDataAction>
 struct CollectReductionDataOnNode {
  public:
   template <typename ParallelComponent, typename DbTagsList,
