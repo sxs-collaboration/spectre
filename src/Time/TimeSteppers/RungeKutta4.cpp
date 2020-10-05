@@ -38,22 +38,22 @@ TimeStepId RungeKutta4::next_time_id(const TimeStepId& current_id,
                  << current_id.step_time() << ")");
       return {current_id.time_runs_forward(), current_id.slab_number(),
               current_id.step_time(), 1,
-              current_id.step_time() + time_step / 2.0};
+              current_id.step_time() + time_step / 2};
     case 1:
       ASSERT(
-          current_id.substep_time() == current_id.step_time() + time_step / 2.0,
+          current_id.substep_time() == current_id.step_time() + time_step / 2,
           "In RK4 substep 1, the substep time ("
               << current_id.substep_time() << ") should equal t0+0.5*dt ("
-              << current_id.step_time() + time_step / 2.0 << ")");
+              << current_id.step_time() + time_step / 2 << ")");
       return {current_id.time_runs_forward(), current_id.slab_number(),
               current_id.step_time(), 2,
-              current_id.step_time() + time_step / 2.0};
+              current_id.step_time() + time_step / 2};
     case 2:
       ASSERT(
-          current_id.substep_time() == current_id.step_time() + time_step / 2.0,
+          current_id.substep_time() == current_id.step_time() + time_step / 2,
           "In RK4 substep 2, the substep time ("
               << current_id.substep_time() << ") should equal t0+0.5*dt ("
-              << current_id.step_time() + time_step / 2.0 << ")");
+              << current_id.step_time() + time_step / 2 << ")");
       return {current_id.time_runs_forward(), current_id.slab_number(),
               current_id.step_time(), 3, current_id.step_time() + time_step};
     case 3:

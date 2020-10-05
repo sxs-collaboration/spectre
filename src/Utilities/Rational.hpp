@@ -8,6 +8,9 @@
 #include <functional>
 #include <iosfwd>
 
+#include "Utilities/Requires.hpp"
+#include "Utilities/TypeTraits/IsInteger.hpp"
+
 /// \cond
 namespace PUP {
 class er;
@@ -23,10 +26,15 @@ class er;
 /// about eight times as fast.
 class Rational {
  public:
-  // clang-tidy: google-explicit-constructor
-  // Treating integers as rationals is desired.
-  Rational(std::int32_t numerator = 0,  // NOLINT
-           std::int32_t denominator = 1) noexcept;
+  Rational() = default;
+  Rational(std::int32_t numerator, std::int32_t denominator) noexcept;
+
+  // Allow implicit conversion of integers to Rationals, but don't
+  // allow doubles to implicitly convert to an integer and then to a
+  // Rational.
+  template <typename T, Requires<tt::is_integer_v<T>> = nullptr>
+  // NOLINTNEXTLINE(google-explicit-constructor,readability-avoid-const-params-in-decls)
+  Rational(const T integral_value) : Rational(integral_value, 1) {}
 
   std::int32_t numerator() const noexcept { return numerator_; }
   std::int32_t denominator() const noexcept { return denominator_; }
