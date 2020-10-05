@@ -181,7 +181,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
         *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
              cache)
              .ckLocalBranch();
-    Parallel::simple_action<observers::Actions::ContributeReductionData>(
+    Parallel::simple_action<observers::Actions::ContributeReductionData<observers::ThreadedActions::WriteReductionData>>(
         local_observer,
         observers::ObservationId(observation_value, subfile_path_ + ".dat"),
         observers::ArrayComponentId{

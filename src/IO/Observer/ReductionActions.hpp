@@ -43,6 +43,7 @@ struct ObserverWriter;
 
 namespace ThreadedActions {
 /// \cond
+template <ReductionDataAction>
 struct CollectReductionDataOnNode;
 struct WriteReductionData;
 /// \endcond
@@ -79,6 +80,7 @@ struct ContributeReductionDataToWriter;
  * Then, in the `Metavariables` collect them from all observing Actions using
  * the `observers::collect_reduction_data_tags` metafunction.
  */
+template <ReductionDataAction>
 struct ContributeReductionData {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex, typename... Ts>
@@ -158,7 +160,7 @@ struct ContributeReductionData {
                                         ObserverWriter<Metavariables>>(cache)
                                         .ckLocalBranch();
               Parallel::threaded_action<
-                  ThreadedActions::CollectReductionDataOnNode>(
+                  ThreadedActions::CollectReductionDataOnNode<ReductionDataAction>(
                   local_writer, observation_id,
                   ArrayComponentId{
                       std::add_pointer_t<ParallelComponent>{nullptr},
@@ -189,6 +191,7 @@ namespace ThreadedActions {
  * \brief Gathers all the reduction data from all processing elements/cores on a
  * node.
  */
+template <ReductionDataAction>
 struct CollectReductionDataOnNode {
  public:
   template <typename ParallelComponent, typename DbTagsList,
@@ -346,7 +349,7 @@ struct CollectReductionDataOnNode {
       if (send_data) {
         auto& my_proxy =
             Parallel::get_parallel_component<ParallelComponent>(cache);
-        Parallel::threaded_action<WriteReductionData>(
+        Parallel::threaded_action<ReductionDataAction>(
             Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
                 cache)[0],
             observation_id,
