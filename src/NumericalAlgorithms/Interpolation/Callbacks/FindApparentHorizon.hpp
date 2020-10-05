@@ -77,7 +77,7 @@ namespace callbacks {
 ///
 /// This is an InterpolationTargetTag::post_interpolation_callback;
 /// see InterpolationTarget for a description of InterpolationTargetTag.
-template <typename InterpolationTargetTag>
+template <typename InterpolationTargetTag, typename Frame>
 struct FindApparentHorizon {
   using observation_types = typename InterpolationTargetTag::
       post_horizon_find_callback::observation_types;
@@ -97,25 +97,22 @@ struct FindApparentHorizon {
 
     const auto& verbosity = db::get<::Tags::Verbosity>(*box);
     const auto& inv_g =
-        db::get<::gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>(*box);
+        db::get<::gr::Tags::InverseSpatialMetric<3, Frame>>(*box);
     const auto& ex_curv =
-        db::get<::gr::Tags::ExtrinsicCurvature<3, Frame::Inertial>>(*box);
+        db::get<::gr::Tags::ExtrinsicCurvature<3, Frame>>(*box);
     const auto& christoffel =
-        db::get<::gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial>>(
-            *box);
+        db::get<::gr::Tags::SpatialChristoffelSecondKind<3, Frame>>(*box);
 
     std::pair<FastFlow::Status, FastFlow::IterInfo> status_and_info;
 
     // Do a FastFlow iteration.
-    db::mutate<::ah::Tags::FastFlow,
-               StrahlkorperTags::Strahlkorper<Frame::Inertial>>(
-        box, [&inv_g, &ex_curv, &christoffel, &status_and_info ](
-                 const gsl::not_null<::FastFlow*> fast_flow,
-                 const gsl::not_null<::Strahlkorper<Frame::Inertial>*>
-                     strahlkorper) noexcept {
-          status_and_info =
-              fast_flow->template iterate_horizon_finder<Frame::Inertial>(
-                  strahlkorper, inv_g, ex_curv, christoffel);
+    db::mutate<::ah::Tags::FastFlow, StrahlkorperTags::Strahlkorper<Frame>>(
+        box,
+        [&inv_g, &ex_curv, &christoffel, &status_and_info ](
+            const gsl::not_null<::FastFlow*> fast_flow,
+            const gsl::not_null<::Strahlkorper<Frame>*> strahlkorper) noexcept {
+          status_and_info = fast_flow->template iterate_horizon_finder<Frame>(
+              strahlkorper, inv_g, ex_curv, christoffel);
         });
 
     // Determine whether we have converged, whether we need another step,
@@ -198,14 +195,14 @@ struct FindApparentHorizon {
     using vars_tags =
         typename InterpolationTargetTag::vars_to_interpolate_to_target;
     db::mutate_apply<tmpl::list<::Tags::Variables<vars_tags>>,
-                     tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Inertial>,
+                     tmpl::list<StrahlkorperTags::Strahlkorper<Frame>,
                                 ::ah::Tags::FastFlow>>(
         [](const gsl::not_null<Variables<vars_tags>*> vars,
-           const Strahlkorper<Frame::Inertial>& strahlkorper,
+           const Strahlkorper<Frame>& strahlkorper,
            const FastFlow& fast_flow) noexcept {
           const size_t L_mesh = fast_flow.current_l_mesh(strahlkorper);
           const auto prolonged_strahlkorper =
-              Strahlkorper<Frame::Inertial>(L_mesh, L_mesh, strahlkorper);
+              Strahlkorper<Frame>(L_mesh, L_mesh, strahlkorper);
           auto new_vars = ::Variables<vars_tags>(
               strahlkorper.ylm_spherepack().physical_size());
 

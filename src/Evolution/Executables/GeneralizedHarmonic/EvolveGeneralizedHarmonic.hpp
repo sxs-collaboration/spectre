@@ -224,7 +224,7 @@ struct EvolutionMetavars {
     using compute_target_points =
         intrp::TargetPoints::ApparentHorizon<AhA, ::Frame::Inertial>;
     using post_interpolation_callback =
-        intrp::callbacks::FindApparentHorizon<AhA>;
+        intrp::callbacks::FindApparentHorizon<AhA, ::Frame::Inertial>;
     using post_horizon_find_callback =
         intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA, AhA>;
   };

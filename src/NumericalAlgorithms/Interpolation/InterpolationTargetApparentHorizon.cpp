@@ -5,14 +5,15 @@
 
 #include <algorithm>
 
+#include "Utilities/GenerateInstantiations.hpp"
+
 /// \cond
 namespace Frame {
 struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace intrp {
-namespace OptionHolders {
+namespace intrp::OptionHolders {
 template <typename Frame>
 ApparentHorizon<Frame>::ApparentHorizon(Strahlkorper<Frame> initial_guess_in,
                                         ::FastFlow fast_flow_in,
@@ -42,14 +43,19 @@ bool operator!=(const ApparentHorizon<Frame>& lhs,
   return not(lhs == rhs);
 }
 
-// So far instantiate for only one frame. But once we
-// have control systems working, we will need this for at
-// least two frames.
-template struct ApparentHorizon<Frame::Inertial>;
-template bool operator==(const ApparentHorizon<Frame::Inertial>& lhs,
-                         const ApparentHorizon<Frame::Inertial>& rhs) noexcept;
-template bool operator!=(const ApparentHorizon<Frame::Inertial>& lhs,
-                         const ApparentHorizon<Frame::Inertial>& rhs) noexcept;
+// Explicit instantiations
+/// \cond
+#define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-}  // namespace OptionHolders
-}  // namespace intrp
+#define INSTANTIATE(_, data)                                                  \
+  template struct ApparentHorizon<FRAME(data)>;                               \
+  template bool operator==(const ApparentHorizon<FRAME(data)>& lhs,           \
+                           const ApparentHorizon<FRAME(data)>& rhs) noexcept; \
+  template bool operator!=(const ApparentHorizon<FRAME(data)>& lhs,           \
+                           const ApparentHorizon<FRAME(data)>& rhs) noexcept;
+GENERATE_INSTANTIATIONS(INSTANTIATE, (::Frame::Inertial))
+
+#undef FRAME
+#undef INSTANTIATE
+/// \endcond
+}  // namespace intrp::OptionHolders
