@@ -19,6 +19,7 @@
 #include "Time/StepChoosers/StepToTimes.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -35,6 +36,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
   using StepToTimes = StepChoosers::StepToTimes<>;
 
   Parallel::register_derived_classes_with_charm<StepChooserType>();
+  Parallel::register_derived_classes_with_charm<TimeSequence<double>>();
 
   const auto requested = [](const double now, std::vector<double> times,
                             const double step) noexcept {
@@ -46,9 +48,11 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
       CAPTURE(impl_times);
       CAPTURE(step);
 
-      const StepToTimes step_to_times(impl_times);
+      using Specified = TimeSequences::Specified<double>;
+      const StepToTimes step_to_times(std::make_unique<Specified>(impl_times));
       const std::unique_ptr<StepChooserType> step_to_times_base =
-          std::make_unique<StepToTimes>(step_to_times);
+          std::make_unique<StepToTimes>(
+              std::make_unique<Specified>(impl_times));
 
       const Parallel::GlobalCache<Metavariables> cache{{}};
       const auto box = db::create<db::AddSimpleTags<Tags::TimeStepId>>(now_id);
@@ -129,5 +133,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
 
   TestHelpers::test_factory_creation<StepChooserType>(
       "StepToTimes:\n"
-      "  Times: [5.0, 3.0, 6.0]");
+      "  Times:\n"
+      "    Specified:\n"
+      "      Values: [5.0, 3.0, 6.0]");
 }

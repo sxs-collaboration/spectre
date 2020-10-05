@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 #include "AlgorithmSingleton.hpp"
@@ -105,6 +106,7 @@
 #include "Time/StepChoosers/StepToTimes.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
+#include "Time/TimeSequence.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
 #include "Utilities/Blas.hpp"
@@ -440,6 +442,8 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &Parallel::register_derived_classes_with_charm<
         StepChooser<metavariables::step_choosers>>,
     &Parallel::register_derived_classes_with_charm<StepController>,
+    &Parallel::register_derived_classes_with_charm<TimeSequence<double>>,
+    &Parallel::register_derived_classes_with_charm<TimeSequence<std::uint64_t>>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<
         Trigger<metavariables::triggers>>};

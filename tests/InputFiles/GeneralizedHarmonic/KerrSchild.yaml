@@ -43,22 +43,26 @@ NumericalFlux:
   UpwindPenalty:
 
 EventsAndTriggers:
-  ? EveryNSlabs:
-      N: 2
-      Offset: 0
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 2
+        Offset: 0
   : - ObserveErrorNorms:
         SubfileName: Errors
-  ? EveryNSlabs:
-      N: 5
-      Offset: 0
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 5
+        Offset: 0
   : - ObserveFields:
         SubfileName: VolumeData
-  ? EveryNSlabs:
-      N: 5
-      Offset: 2
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 5
+        Offset: 2
   : - AhA
-  ? SpecifiedSlabs:
-      Slabs: [3]
+  ? Slabs:
+      Specified:
+        Values: [3]
   : - Completion
 
 Observers:

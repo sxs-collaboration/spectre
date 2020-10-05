@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Slab.cpp
   Time.cpp
+  TimeSequence.cpp
   TimeStepId.cpp
   Utilities.cpp
   )
@@ -24,6 +25,7 @@ spectre_target_headers(
   Slab.hpp
   Tags.hpp
   Time.hpp
+  TimeSequence.hpp
   TimeStepId.hpp
   Utilities.hpp
   )

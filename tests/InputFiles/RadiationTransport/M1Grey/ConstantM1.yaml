@@ -37,13 +37,15 @@ Limiter:
     TvbConstant: 0.0
 
 EventsAndTriggers:
-  ? EveryNSlabs:
-      N: 3
-      Offset: 5
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 3
+        Offset: 5
   : - ObserveErrorNorms:
         SubfileName: Errors
-  ? SpecifiedSlabs:
-      Slabs: [10]
+  ? Slabs:
+      Specified:
+        Values: [10]
   : - Completion
 
 Observers:

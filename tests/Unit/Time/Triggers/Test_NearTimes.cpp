@@ -16,6 +16,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeSequence.hpp"
 #include "Time/Triggers/NearTimes.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -23,6 +24,7 @@
 SPECTRE_TEST_CASE("Unit.Time.Triggers.NearTimes", "[Unit][Time]") {
   using TriggerType = Trigger<tmpl::list<Triggers::Registrars::NearTimes>>;
   Parallel::register_derived_classes_with_charm<TriggerType>();
+  Parallel::register_derived_classes_with_charm<TimeSequence<double>>();
 
   using Direction = Triggers::NearTimes<>::Direction;
   using Unit = Triggers::NearTimes<>::Unit;
@@ -36,7 +38,7 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.NearTimes", "[Unit][Time]") {
             const TimeDelta time_step_in, const double range,
             const Unit unit) noexcept {
       const auto check_calls = [&direction, &expected, &range, &unit](
-          const std::vector<double>& trigger_times, const double time,
+          std::vector<double> trigger_times, const double time,
           const TimeDelta& time_step) noexcept {
         CAPTURE_PRECISE(trigger_times);
         CAPTURE_PRECISE(range);
@@ -45,8 +47,10 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.NearTimes", "[Unit][Time]") {
         CAPTURE_PRECISE(time);
         CAPTURE_PRECISE(time_step);
         const std::unique_ptr<TriggerType> trigger =
-            std::make_unique<Triggers::NearTimes<>>(trigger_times, range, unit,
-                                                    direction);
+            std::make_unique<Triggers::NearTimes<>>(
+                std::make_unique<TimeSequences::Specified<double>>(
+                    std::move(trigger_times)),
+                range, unit, direction);
         const auto sent_trigger = serialize_and_deserialize(trigger);
 
         const auto box =
@@ -101,7 +105,9 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.NearTimes", "[Unit][Time]") {
 
   TestHelpers::test_factory_creation<TriggerType>(
       "NearTimes:\n"
-      "  Times: [2.0, 1.0, 3.0, 2.0]\n"
+      "  Times:\n"
+      "    Specified:\n"
+      "      Values: [2.0, 1.0, 3.0, 2.0]\n"
       "  Range: 0.3\n"
       "  Direction: Before\n"
       "  Unit: Time");

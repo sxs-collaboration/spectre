@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cmath>
+#include <initializer_list>
 #include <limits>
 #include <memory>
 #include <pup.h>
@@ -18,13 +19,15 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/Triggers/SpecifiedTimes.hpp"
+#include "Time/Triggers/Times.hpp"
 #include "Utilities/TMPL.hpp"
 
-SPECTRE_TEST_CASE("Unit.Time.Triggers.SpecifiedTimes", "[Unit][Time]") {
-  using TriggerType = Trigger<tmpl::list<Triggers::Registrars::SpecifiedTimes>>;
+SPECTRE_TEST_CASE("Unit.Time.Triggers.Times", "[Unit][Time]") {
+  using TriggerType = Trigger<tmpl::list<Triggers::Registrars::Times>>;
   Parallel::register_derived_classes_with_charm<TriggerType>();
+  Parallel::register_derived_classes_with_charm<TimeSequence<double>>();
 
   const auto check = [](const double time, const double slab_size,
                         const std::vector<double>& trigger_times,
@@ -38,7 +41,8 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.SpecifiedTimes", "[Unit][Time]") {
     const TimeStepId time_id(false, 12, slab.start() + slab.duration() / 13);
 
     const std::unique_ptr<TriggerType> trigger =
-        std::make_unique<Triggers::SpecifiedTimes<>>(trigger_times);
+        std::make_unique<Triggers::Times<>>(
+            std::make_unique<TimeSequences::Specified<double>>(trigger_times));
     const auto sent_trigger = serialize_and_deserialize(trigger);
 
     const auto box =
@@ -67,6 +71,7 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.SpecifiedTimes", "[Unit][Time]") {
   check(inaccurate_1, 1.0e5, {1.0}, true);
 
   TestHelpers::test_factory_creation<TriggerType>(
-      "SpecifiedTimes:\n"
-      "  Times: [2.0, 1.0, 3.0, 2.0]");
+      "Times:\n"
+      "  Specified:\n"
+      "    Values: [2.0, 1.0, 3.0, 2.0]");
 }

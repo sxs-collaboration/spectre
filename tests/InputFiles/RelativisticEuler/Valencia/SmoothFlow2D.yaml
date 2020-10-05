@@ -46,14 +46,16 @@ VariableFixing:
     DensityCutoff: 1.2e-12
 
 EventsAndTriggers:
-  # ? EveryNSlabs:
-  #     N: 100
-  #     Offset: 0
+  # ? Slabs:
+  #     EvenlySpaced:
+  #       Interval: 100
+  #       Offset: 0
   # : - ObserveFields:
   #       VariablesToObserve: [RestMassDensity]
   # ? PastTime: 1.001
-  ? SpecifiedSlabs:
-      Slabs: [10]
+  ? Slabs:
+      Specified:
+        Values: [10]
   : - Completion
 
 Observers:

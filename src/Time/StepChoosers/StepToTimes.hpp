@@ -3,20 +3,17 @@
 
 #pragma once
 
-#include <algorithm>
-#include <cmath>
-#include <functional>
 #include <limits>
+#include <memory>
 #include <pup.h>
-#include <pup_stl.h>  // IWYU pragma: keep
+#include <pup_stl.h>
 #include <utility>
-#include <vector>
 
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Time/Slab.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/Utilities.hpp"
 #include "Utilities/Registration.hpp"
@@ -58,7 +55,7 @@ class StepToTimes : public StepChooser<StepChooserRegistrars> {
   /// \endcond
 
   struct Times {
-    using type = std::vector<double>;
+    using type = std::unique_ptr<TimeSequence<double>>;
     static constexpr Options::String help{"Times to force steps at"};
   };
 
@@ -72,18 +69,15 @@ class StepToTimes : public StepChooser<StepChooserRegistrars> {
       "the desired time.\n";
   using options = tmpl::list<Times>;
 
-  explicit StepToTimes(std::vector<double> times) noexcept
-      : times_(std::move(times)) {
-    std::sort(times_.begin(), times_.end());
-  }
+  explicit StepToTimes(std::unique_ptr<TimeSequence<double>> times) noexcept
+      : times_(std::move(times)) {}
 
   using argument_tags = tmpl::list<Tags::TimeStepId>;
 
   template <typename Metavariables>
   double operator()(
       const TimeStepId& time_step_id, const double last_step_magnitude,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const
-      noexcept {
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const noexcept {
     const auto& substep_time = time_step_id.substep_time();
     const double now = substep_time.value();
     // Trying to step to a given time might not get us exactly there
@@ -91,20 +85,25 @@ class StepToTimes : public StepChooser<StepChooserRegistrars> {
     // we undershoot.
     const double sloppiness = slab_rounding_error(substep_time);
 
+    const auto goal_times = times_->times_near(now);
+    if (not goal_times[1]) {
+      // No times requested.
+      return std::numeric_limits<double>::infinity();
+    }
+
     double distance_to_next_goal = std::numeric_limits<double>::signaling_NaN();
     if (time_step_id.time_runs_forward()) {
       const auto next_time =
-          std::upper_bound(times_.begin(), times_.end(), now + sloppiness);
-      if (next_time == times_.end()) {
+          *goal_times[1] > now + sloppiness ? goal_times[1] : goal_times[2];
+      if (not next_time) {
         // We've passed all the times.  No restriction.
         return std::numeric_limits<double>::infinity();
       }
       distance_to_next_goal = *next_time - now;
     } else {
       const auto next_time =
-          std::upper_bound(times_.rbegin(), times_.rend(), now - sloppiness,
-                           std::greater<double>{});
-      if (next_time == times_.rend()) {
+          *goal_times[1] < now - sloppiness ? goal_times[1] : goal_times[0];
+      if (not next_time) {
         // We've passed all the times.  No restriction.
         return std::numeric_limits<double>::infinity();
       }
@@ -129,7 +128,7 @@ class StepToTimes : public StepChooser<StepChooserRegistrars> {
   void pup(PUP::er& p) noexcept override { p | times_; }
 
  private:
-  std::vector<double> times_;
+  std::unique_ptr<TimeSequence<double>> times_;
 };
 
 /// \cond

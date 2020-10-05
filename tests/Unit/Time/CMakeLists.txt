@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_Slab.cpp
   Test_Tags.cpp
   Test_Time.cpp
+  Test_TimeSequence.cpp
   Test_TimeStepId.cpp
   Test_Utilities.cpp
   )

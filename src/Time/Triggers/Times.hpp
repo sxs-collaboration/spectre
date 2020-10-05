@@ -3,18 +3,17 @@
 
 #pragma once
 
-#include <algorithm>
 #include <cmath>
-#include <limits>
+#include <memory>
 #include <pup.h>
+#include <pup_stl.h>
 #include <utility>
-#include <vector>
 
 #include "Options/Options.hpp"
+#include "Options/ParseOptions.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
-#include "Time/Slab.hpp"
-#include "Time/Time.hpp"
+#include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/Utilities.hpp"
 #include "Utilities/Registration.hpp"
@@ -29,10 +28,10 @@ struct TimeStepId;
 
 namespace Triggers {
 template <typename TriggerRegistrars>
-class SpecifiedTimes;
+class Times;
 
 namespace Registrars {
-using SpecifiedTimes = Registration::Registrar<Triggers::SpecifiedTimes>;
+using Times = Registration::Registrar<Triggers::Times>;
 }  // namespace Registrars
 
 /// \ingroup EventsAndTriggersGroup
@@ -42,28 +41,20 @@ using SpecifiedTimes = Registration::Registrar<Triggers::SpecifiedTimes>;
 /// \warning This trigger will only fire if it is actually checked at
 /// the times specified.  The StepToTimes StepChooser can be useful
 /// for this.
-template <typename TriggerRegistrars = tmpl::list<Registrars::SpecifiedTimes>>
-class SpecifiedTimes : public Trigger<TriggerRegistrars> {
+template <typename TriggerRegistrars = tmpl::list<Registrars::Times>>
+class Times : public Trigger<TriggerRegistrars> {
  public:
   /// \cond
-  SpecifiedTimes() = default;
-  explicit SpecifiedTimes(CkMigrateMessage* /*unused*/) noexcept {}
+  Times() = default;
+  explicit Times(CkMigrateMessage* /*unused*/) noexcept {}
   using PUP::able::register_constructor;
-  WRAPPED_PUPable_decl_template(SpecifiedTimes);  // NOLINT
+  WRAPPED_PUPable_decl_template(Times);  // NOLINT
   /// \endcond
 
-  struct Times {
-    using type = std::vector<double>;
-    static constexpr Options::String help{"Times to trigger at"};
-  };
-
   static constexpr Options::String help{"Trigger at particular times."};
-  using options = tmpl::list<Times>;
 
-  explicit SpecifiedTimes(std::vector<double> times) noexcept
-      : times_(std::move(times)) {
-    std::sort(times_.begin(), times_.end());
-  }
+  explicit Times(std::unique_ptr<TimeSequence<double>> times) noexcept
+      : times_(std::move(times)) {}
 
   using argument_tags = tmpl::list<Tags::Time, Tags::TimeStepId>;
 
@@ -73,23 +64,28 @@ class SpecifiedTimes : public Trigger<TriggerRegistrars> {
     // because of rounding errors.
     const double sloppiness = slab_rounding_error(substep_time);
 
-    const auto triggered_times = std::equal_range(
-        times_.begin(), times_.end(), now,
-        [&sloppiness](const double a, const double b) noexcept {
-          return a < b - sloppiness;
-        });
-    return triggered_times.first != triggered_times.second;
+    const auto nearby_time = times_->times_near(now)[1];
+    return nearby_time and std::abs(*nearby_time - now) < sloppiness;
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept override { p | times_; }
 
  private:
-  std::vector<double> times_;
+  std::unique_ptr<TimeSequence<double>> times_;
 };
 
 /// \cond
 template <typename TriggerRegistrars>
-PUP::able::PUP_ID SpecifiedTimes<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
+PUP::able::PUP_ID Times<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Triggers
+
+template <typename TriggerRegistrars>
+struct Options::create_from_yaml<Triggers::Times<TriggerRegistrars>> {
+  template <typename Metavariables>
+  static Triggers::Times<TriggerRegistrars> create(const Option& options) {
+    return Triggers::Times<TriggerRegistrars>(
+        options.parse_as<std::unique_ptr<TimeSequence<double>>>());
+  }
+};

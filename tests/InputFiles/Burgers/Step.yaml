@@ -45,7 +45,9 @@ EventsAndTriggers:
           - Increase:
               Factor: 2.0
   ? NearTimes:
-      Times: [0.123456]
+      Times:
+        Specified:
+          Values: [0.123456]
       Range: 4
       Unit: Slab
       Direction: Before
@@ -53,9 +55,12 @@ EventsAndTriggers:
         DelayChange: 0
         StepChoosers:
           - StepToTimes:
-              Times: [0.123456]
-  ? SpecifiedTimes:
-      Times: [0.123456]
+              Times:
+                Specified:
+                  Values: [0.123456]
+  ? Times:
+      Specified:
+        Values: [0.123456]
   : - Completion
 
 Observers:

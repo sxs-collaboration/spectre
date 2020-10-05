@@ -47,8 +47,9 @@ NumericalFlux:
   UpwindPenalty:
 
 EventsAndTriggers:
-  ? SpecifiedSlabs:
-      Slabs: [5]
+  ? Slabs:
+      Specified:
+        Values: [5]
   : - Completion
 
 Observers:
