@@ -5,11 +5,5 @@ spectre_target_headers(
   ParallelLinearSolver
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  ElementActions.hpp
-  Gmres.hpp
-  InitializeElement.hpp
-  ResidualMonitor.hpp
-  ResidualMonitorActions.hpp
+  InboxTags.hpp
   )
-
-add_subdirectory(Tags)

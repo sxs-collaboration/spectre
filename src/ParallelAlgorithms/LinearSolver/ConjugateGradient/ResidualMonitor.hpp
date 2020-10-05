@@ -4,14 +4,14 @@
 #pragma once
 
 #include <cstddef>
+#include <limits>
+#include <tuple>
+#include <utility>
 
 #include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "IO/Observer/Actions/RegisterSingleton.hpp"
-#include "Informer/Tags.hpp"
-#include "Informer/Verbosity.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -40,6 +40,10 @@ struct ResidualMonitor {
       tmpl::list<LinearSolver::Tags::Verbosity<OptionsGroup>,
                  LinearSolver::Tags::ConvergenceCriteria<OptionsGroup>>;
   using metavariables = Metavariables;
+  // The actions in `ResidualMonitorActions.hpp` are invoked as simple actions
+  // on this component as the result of reductions from the actions in
+  // `ElementActions.hpp`. See `LinearSolver::cg::ConjugateGradient` for
+  // details.
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -81,21 +85,16 @@ struct InitializeResidualMonitor {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using compute_tags = db::AddComputeTags<
-        LinearSolver::Tags::MagnitudeCompute<residual_square_tag>,
-        LinearSolver::Tags::HasConvergedCompute<fields_tag, OptionsGroup>>;
     return std::make_tuple(
         ::Initialization::merge_into_databox<
             InitializeResidualMonitor,
-            db::AddSimpleTags<LinearSolver::Tags::IterationId<OptionsGroup>,
-                              residual_square_tag,
-                              initial_residual_magnitude_tag>,
-            compute_tags>(std::move(box),
-                          // The `InitializeResidual` action populates these
-                          // tags with initial values
-                          std::numeric_limits<size_t>::max(),
-                          std::numeric_limits<double>::signaling_NaN(),
-                          std::numeric_limits<double>::signaling_NaN()),
+            db::AddSimpleTags<residual_square_tag,
+                              initial_residual_magnitude_tag>>(
+            std::move(box),
+            // The `InitializeResidual` action populates these tags with initial
+            // values
+            std::numeric_limits<double>::signaling_NaN(),
+            std::numeric_limits<double>::signaling_NaN()),
         true);
   }
 };

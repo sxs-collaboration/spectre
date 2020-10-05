@@ -5,16 +5,20 @@
 
 #include <cstddef>
 #include <limits>
+#include <tuple>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
-#include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 
 /// \cond
+namespace Parallel {
+template <typename Metavariables>
+struct GlobalCache;
+}  // namespace Parallel
 namespace tuples {
 template <typename...>
 class TaggedTuple;
@@ -42,7 +46,7 @@ struct InitializeElement {
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {

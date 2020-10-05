@@ -181,18 +181,12 @@ struct Metavariables {
 
   using register_actions =
       tmpl::list<observers::Actions::RegisterEventsWithObservers,
-                 // We prepare the linear solve here to avoid adding an extra
-                 // phase. We can't do that before registration because the
-                 // `prepare_solve` action may contribute to observers.
-                 typename linear_solver::prepare_solve,
                  Parallel::Actions::TerminatePhase>;
 
-  using solve_actions = tmpl::list<Actions::RunEventsAndTriggers,
-                                   LinearSolver::Actions::TerminateIfConverged<
-                                       typename linear_solver::options_group>,
-                                   typename linear_solver::prepare_step,
-                                   build_linear_operator_actions,
-                                   typename linear_solver::perform_step>;
+  using solve_actions = tmpl::list<
+      typename linear_solver::template solve<tmpl::list<
+          Actions::RunEventsAndTriggers, build_linear_operator_actions>>,
+      Actions::RunEventsAndTriggers, Parallel::Actions::TerminatePhase>;
 
   using dg_element_array = elliptic::DgElementArray<
       Metavariables,

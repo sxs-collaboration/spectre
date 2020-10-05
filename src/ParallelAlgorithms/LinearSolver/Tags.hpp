@@ -21,19 +21,6 @@
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Requires.hpp"
-#include "Utilities/TypeTraits/IsA.hpp"
-
-/// \cond
-namespace LinearSolver {
-namespace Tags {
-template <typename OptionsGroup>
-struct ConvergenceCriteria;
-template <typename OptionsGroup>
-struct Iterations;
-}  // namespace Tags
-}  // namespace LinearSolver
-/// \endcond
 
 /*!
  * \ingroup LinearSolverGroup
@@ -157,24 +144,7 @@ struct Magnitude : db::PrefixTag, db::SimpleTag {
 };
 
 /*!
- * \brief Compute the `LinearSolver::Magnitude` of a tag from its
- * `LinearSolver::MagnitudeSquare`.
- */
-template <typename MagnitudeSquareTag,
-          Requires<tt::is_a_v<MagnitudeSquare, MagnitudeSquareTag>> = nullptr>
-struct MagnitudeCompute : Magnitude<typename MagnitudeSquareTag::tag>,
-                          db::ComputeTag {
-  using base = Magnitude<typename MagnitudeSquareTag::tag>;
-  using return_type = double;
-  static void function(const gsl::not_null<double*> magnitude,
-                       const double magnitude_square) noexcept {
-    *magnitude = sqrt(magnitude_square);
-  }
-  using argument_tags = tmpl::list<MagnitudeSquareTag>;
-};
-
-/*!
- * \brief The prefix for tags related to an orthogonalization procedurce
+ * \brief The prefix for tags related to an orthogonalization procedure
  */
 template <typename Tag>
 struct Orthogonalization : db::PrefixTag, db::SimpleTag {
@@ -236,54 +206,6 @@ struct HasConverged : db::SimpleTag {
     return "HasConverged(" + Options::name<OptionsGroup>() + ")";
   }
   using type = Convergence::HasConverged;
-};
-
-/*!
- * \brief Employs the `LinearSolver::Tags::ConvergenceCriteria` to
- * determine the linear solver has converged.
- */
-template <typename FieldsTag, typename OptionsGroup>
-struct HasConvergedCompute : LinearSolver::Tags::HasConverged<OptionsGroup>,
-                             db::ComputeTag {
- private:
-  using residual_magnitude_tag = LinearSolver::Tags::Magnitude<
-      db::add_tag_prefix<LinearSolver::Tags::Residual, FieldsTag>>;
-  using initial_residual_magnitude_tag =
-      LinearSolver::Tags::Initial<residual_magnitude_tag>;
-
- public:
-  using base = LinearSolver::Tags::HasConverged<OptionsGroup>;
-  using return_type = typename base::type;
-  using argument_tags =
-      tmpl::list<LinearSolver::Tags::ConvergenceCriteria<OptionsGroup>,
-                 LinearSolver::Tags::IterationId<OptionsGroup>,
-                 residual_magnitude_tag, initial_residual_magnitude_tag>;
-  static void function(const gsl::not_null<return_type*> has_converged,
-                       const Convergence::Criteria& convergence_criteria,
-                       const size_t iteration_id,
-                       const double residual_magnitude,
-                       const double initial_residual_magnitude) noexcept {
-    *has_converged = {convergence_criteria, iteration_id, residual_magnitude,
-                      initial_residual_magnitude};
-  }
-};
-
-/// Employs the `LinearSolver::Tags::Iterations` to determine the linear solver
-/// has converged once it has completed a fixed number of iterations.
-template <typename OptionsGroup>
-struct HasConvergedByIterationsCompute
-    : LinearSolver::Tags::HasConverged<OptionsGroup>,
-      db::ComputeTag {
-  using base = LinearSolver::Tags::HasConverged<OptionsGroup>;
-  using return_type = typename base::type;
-  using argument_tags =
-      tmpl::list<LinearSolver::Tags::Iterations<OptionsGroup>,
-                 LinearSolver::Tags::IterationId<OptionsGroup>>;
-  static void function(const gsl::not_null<return_type*> has_converged,
-                       const size_t iterations,
-                       const size_t iteration_id) noexcept {
-    *has_converged = {{iterations, 0., 0.}, iteration_id, 1., 1.};
-  }
 };
 
 }  // namespace Tags
@@ -390,20 +312,3 @@ struct Verbosity : db::SimpleTag {
 };
 }  // namespace Tags
 }  // namespace LinearSolver
-
-namespace Tags {
-
-template <typename OptionsGroup>
-struct NextCompute<LinearSolver::Tags::IterationId<OptionsGroup>>
-    : Next<LinearSolver::Tags::IterationId<OptionsGroup>>, db::ComputeTag {
-  using base = Next<LinearSolver::Tags::IterationId<OptionsGroup>>;
-  using return_type = typename base::type;
-  using argument_tags =
-      tmpl::list<LinearSolver::Tags::IterationId<OptionsGroup>>;
-  static void function(const gsl::not_null<return_type*> next_iteration_id,
-                       const size_t iteration_id) noexcept {
-    *next_iteration_id = iteration_id + 1;
-  }
-};
-
-}  // namespace Tags

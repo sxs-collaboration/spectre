@@ -20,8 +20,11 @@ target_link_libraries(
   INTERFACE
   Convergence
   DataStructures
-  LinearSolver
+  Informer
+  Initialization
   IO
+  LinearSolver
+  Parallel
   Utilities
   )
 

@@ -67,6 +67,10 @@ struct HasConverged {
                double residual_magnitude,
                double initial_residual_magnitude) noexcept;
 
+  /// Construct at a state where `iteration_id` iterations of a total of
+  /// `num_iterations` have completed.
+  HasConverged(size_t num_iterations, size_t iteration_id) noexcept;
+
   explicit operator bool() const noexcept { return static_cast<bool>(reason_); }
 
   /*!
