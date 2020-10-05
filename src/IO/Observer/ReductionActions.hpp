@@ -160,7 +160,7 @@ struct ContributeReductionData {
                                         ObserverWriter<Metavariables>>(cache)
                                         .ckLocalBranch();
               Parallel::threaded_action<
-                  ThreadedActions::CollectReductionDataOnNode<ReductionDataAction>(
+                  ThreadedActions::CollectReductionDataOnNode<ReductionDataAction>>(
                   local_writer, observation_id,
                   ArrayComponentId{
                       std::add_pointer_t<ParallelComponent>{nullptr},
