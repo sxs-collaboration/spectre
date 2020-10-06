@@ -292,6 +292,7 @@ struct Metavariables {
   using system = System<Dim, system_type>;
   using boundary_scheme = ::dg::FirstOrderScheme::FirstOrderScheme<
       Dim, typename system::variables_tag,
+      db::add_tag_prefix<::Tags::dt, typename system::variables_tag>,
       Tags::NumericalFlux<BoundaryTerms<Dim>>, Tags::TimeStepId>;
   using normal_dot_numerical_flux = Tags::NumericalFlux<BoundaryTerms<Dim>>;
   using const_global_cache_tags =

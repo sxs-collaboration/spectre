@@ -59,11 +59,11 @@ struct boundary_data_computer_impl {
  *
  * Computes Eq. (2.20) in \cite Teukolsky2015ega and lifts it to the
  * volume (see `dg::lift_flux`) on all mortars that touch an element. The
- * resulting boundary contributions are added to the DG operator data in
- * `db::add_tag_prefix<TemporalIdTag::template step_prefix, VariablesTag>`.
+ * resulting boundary contributions are added to the DG operator data in the
+ * `DtVariablesTag`.
  */
-template <size_t Dim, typename VariablesTag, typename NumericalFluxComputerTag,
-          typename TemporalIdTag>
+template <size_t Dim, typename VariablesTag, typename DtVariablesTag,
+          typename NumericalFluxComputerTag, typename TemporalIdTag>
 struct FirstOrderScheme {
   static constexpr size_t volume_dim = Dim;
   using variables_tag = VariablesTag;
@@ -71,8 +71,7 @@ struct FirstOrderScheme {
   using NumericalFlux = typename NumericalFluxComputerTag::type;
   using temporal_id_tag = TemporalIdTag;
   using receive_temporal_id_tag = temporal_id_tag;
-  using dt_variables_tag =
-      db::add_tag_prefix<TemporalIdTag::template step_prefix, variables_tag>;
+  using dt_variables_tag = DtVariablesTag;
 
   static_assert(
       tt::assert_conforms_to<NumericalFlux, dg::protocols::NumericalFlux>);

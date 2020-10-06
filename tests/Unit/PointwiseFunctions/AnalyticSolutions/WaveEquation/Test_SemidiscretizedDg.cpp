@@ -144,6 +144,7 @@ struct Metavariables {
   using system = ScalarWave::System<1>;
   using boundary_scheme = dg::FirstOrderScheme::FirstOrderScheme<
       1, typename system::variables_tag,
+      db::add_tag_prefix<::Tags::dt, typename system::variables_tag>,
       Tags::NumericalFlux<ScalarWave::UpwindPenaltyCorrection<1>>,
       Tags::TimeStepId>;
 

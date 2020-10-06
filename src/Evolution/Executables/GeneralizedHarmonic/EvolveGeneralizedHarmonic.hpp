@@ -166,11 +166,13 @@ struct EvolutionMetavars {
   using boundary_scheme = tmpl::conditional_t<
       local_time_stepping,
       dg::FirstOrderScheme::FirstOrderSchemeLts<
-          volume_dim, typename system::variables_tag, normal_dot_numerical_flux,
-          Tags::TimeStepId, time_stepper_tag>,
+          volume_dim, typename system::variables_tag,
+          db::add_tag_prefix<::Tags::dt, typename system::variables_tag>,
+          normal_dot_numerical_flux, Tags::TimeStepId, time_stepper_tag>,
       dg::FirstOrderScheme::FirstOrderScheme<
-          volume_dim, typename system::variables_tag, normal_dot_numerical_flux,
-          Tags::TimeStepId>>;
+          volume_dim, typename system::variables_tag,
+          db::add_tag_prefix<::Tags::dt, typename system::variables_tag>,
+          normal_dot_numerical_flux, Tags::TimeStepId>>;
 
   using analytic_solution_fields = typename system::variables_tag::tags_list;
   using observe_fields = tmpl::append<

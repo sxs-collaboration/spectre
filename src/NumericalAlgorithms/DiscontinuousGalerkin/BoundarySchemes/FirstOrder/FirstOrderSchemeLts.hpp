@@ -74,12 +74,13 @@ struct boundary_data_computer_lts_impl<Dim, VariablesTag,
  * - We need to store the face-normal magnitude in the boundary history, as
  * opposed to the non-LTS case where we can retrieve it when needed.
  */
-template <size_t Dim, typename VariablesTag, typename NumericalFluxComputerTag,
-          typename TemporalIdTag, typename TimeStepperTag>
+template <size_t Dim, typename VariablesTag, typename DtVariablesTag,
+          typename NumericalFluxComputerTag, typename TemporalIdTag,
+          typename TimeStepperTag>
 struct FirstOrderSchemeLts {
  private:
-  using base = FirstOrderScheme<Dim, VariablesTag, NumericalFluxComputerTag,
-                                TemporalIdTag>;
+  using base = FirstOrderScheme<Dim, VariablesTag, DtVariablesTag,
+                                NumericalFluxComputerTag, TemporalIdTag>;
 
  public:
   static constexpr size_t volume_dim = Dim;

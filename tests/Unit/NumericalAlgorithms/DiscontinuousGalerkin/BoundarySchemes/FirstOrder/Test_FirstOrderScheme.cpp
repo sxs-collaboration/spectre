@@ -67,8 +67,6 @@ struct BoundaryContribution : db::SimpleTag, db::PrefixTag {
 
 struct TemporalIdTag : db::SimpleTag {
   using type = int;
-  template <typename Tag>
-  using step_prefix = BoundaryContribution<Tag>;
 };
 
 // Helper function to combine local and remote boundary data to mortar data
@@ -88,9 +86,10 @@ auto make_mortar_data(const dg::MortarId<BoundaryScheme::volume_dim>& mortar_id,
 template <size_t Dim>
 void test_first_order_scheme() {
   CAPTURE(Dim);
-  using boundary_scheme =
-      dg::FirstOrderScheme::FirstOrderScheme<Dim, variables_tag,
-                                             NumericalFluxTag, TemporalIdTag>;
+  using boundary_scheme = dg::FirstOrderScheme::FirstOrderScheme<
+      Dim, variables_tag,
+      db::add_tag_prefix<BoundaryContribution, variables_tag>, NumericalFluxTag,
+      TemporalIdTag>;
 
   using BoundaryData = typename boundary_scheme::BoundaryData;
   using mortar_data_tag = typename boundary_scheme::mortar_data_tag;
