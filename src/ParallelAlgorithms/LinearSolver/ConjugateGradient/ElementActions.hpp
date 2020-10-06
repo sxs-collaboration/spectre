@@ -9,7 +9,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -41,11 +40,12 @@ struct UpdateOperand;
 
 namespace LinearSolver::cg::detail {
 
-template <typename FieldsTag, typename OptionsGroup, typename Label>
+template <typename FieldsTag, typename OptionsGroup, typename Label,
+          typename SourceTag>
 struct PrepareSolve {
  private:
   using fields_tag = FieldsTag;
-  using source_tag = db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
+  using source_tag = SourceTag;
   using operator_applied_to_fields_tag =
       db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
   using operand_tag =

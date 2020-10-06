@@ -42,13 +42,13 @@ struct NormalizeOperandAndUpdateField;
 namespace LinearSolver::gmres::detail {
 
 template <typename FieldsTag, typename OptionsGroup, bool Preconditioned,
-          typename Label>
+          typename Label, typename SourceTag>
 struct PrepareSolve {
  private:
   using fields_tag = FieldsTag;
   using initial_fields_tag =
       db::add_tag_prefix<::Tags::Initial, fields_tag>;
-  using source_tag = db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
+  using source_tag = SourceTag;
   using operator_applied_to_fields_tag =
       db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
   using operand_tag =

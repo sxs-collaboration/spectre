@@ -4,6 +4,7 @@
 #pragma once
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/InitializeElement.hpp"
@@ -62,10 +63,13 @@ namespace LinearSolver::cg {
  * \see Gmres for a linear solver that can invert nonsymmetric operators
  * \f$A\f$.
  */
-template <typename Metavariables, typename FieldsTag, typename OptionsGroup>
+template <typename Metavariables, typename FieldsTag, typename OptionsGroup,
+          typename SourceTag =
+              db::add_tag_prefix<::Tags::FixedSource, FieldsTag>>
 struct ConjugateGradient {
   using fields_tag = FieldsTag;
   using options_group = OptionsGroup;
+  using source_tag = SourceTag;
 
   /// Apply the linear operator to this tag in each iteration
   using operand_tag =
@@ -85,13 +89,12 @@ struct ConjugateGradient {
       tmpl::list<observe_detail::reduction_data>>;
 
   template <typename ApplyOperatorActions, typename Label = OptionsGroup>
-  using solve =
-      tmpl::list<detail::PrepareSolve<FieldsTag, OptionsGroup, Label>,
-                 detail::InitializeHasConverged<FieldsTag, OptionsGroup, Label>,
-                 ApplyOperatorActions,
-                 detail::PerformStep<FieldsTag, OptionsGroup, Label>,
-                 detail::UpdateFieldValues<FieldsTag, OptionsGroup, Label>,
-                 detail::UpdateOperand<FieldsTag, OptionsGroup, Label>>;
+  using solve = tmpl::list<
+      detail::PrepareSolve<FieldsTag, OptionsGroup, Label, SourceTag>,
+      detail::InitializeHasConverged<FieldsTag, OptionsGroup, Label>,
+      ApplyOperatorActions, detail::PerformStep<FieldsTag, OptionsGroup, Label>,
+      detail::UpdateFieldValues<FieldsTag, OptionsGroup, Label>,
+      detail::UpdateOperand<FieldsTag, OptionsGroup, Label>>;
 };
 
 }  // namespace LinearSolver::cg

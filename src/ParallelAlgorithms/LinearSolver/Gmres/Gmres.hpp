@@ -4,6 +4,7 @@
 #pragma once
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/InitializeElement.hpp"
@@ -80,10 +81,13 @@ namespace LinearSolver::gmres {
  * linear operator \f$A\f$ is symmetric.
  */
 template <typename Metavariables, typename FieldsTag, typename OptionsGroup,
-          bool Preconditioned>
+          bool Preconditioned,
+          typename SourceTag =
+              db::add_tag_prefix<::Tags::FixedSource, FieldsTag>>
 struct Gmres {
   using fields_tag = FieldsTag;
   using options_group = OptionsGroup;
+  using source_tag = SourceTag;
   static constexpr bool preconditioned = Preconditioned;
 
   /// Apply the linear operator to this tag in each iteration
@@ -115,7 +119,8 @@ struct Gmres {
 
   template <typename ApplyOperatorActions, typename Label = OptionsGroup>
   using solve = tmpl::list<
-      detail::PrepareSolve<FieldsTag, OptionsGroup, Preconditioned, Label>,
+      detail::PrepareSolve<FieldsTag, OptionsGroup, Preconditioned, Label,
+                           SourceTag>,
       detail::NormalizeInitialOperand<FieldsTag, OptionsGroup, Preconditioned,
                                       Label>,
       detail::PrepareStep<FieldsTag, OptionsGroup, Preconditioned, Label>,
