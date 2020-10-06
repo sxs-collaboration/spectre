@@ -71,9 +71,6 @@ struct InitializeResidualMonitor {
   using initial_residual_magnitude_tag =
       LinearSolver::Tags::Initial<LinearSolver::Tags::Magnitude<
           db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>>;
-  using orthogonalization_iteration_id_tag =
-      LinearSolver::Tags::Orthogonalization<
-          LinearSolver::Tags::IterationId<OptionsGroup>>;
   using orthogonalization_history_tag =
       LinearSolver::Tags::OrthogonalizationHistory<fields_tag>;
 
