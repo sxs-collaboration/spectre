@@ -28,7 +28,6 @@ target_link_libraries(
   Utilities
   )
 
-add_subdirectory(Actions)
 add_subdirectory(AsynchronousSolvers)
 add_subdirectory(ConjugateGradient)
 add_subdirectory(Gmres)

@@ -45,7 +45,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "ParallelAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Elasticity/BentBeam.hpp"

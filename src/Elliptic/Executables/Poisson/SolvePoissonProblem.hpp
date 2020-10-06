@@ -42,7 +42,6 @@
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "ParallelAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/Lorentzian.hpp"

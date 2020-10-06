@@ -40,7 +40,6 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
-#include "ParallelAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/Gsl.hpp"
