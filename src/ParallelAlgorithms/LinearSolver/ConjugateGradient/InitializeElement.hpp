@@ -57,7 +57,7 @@ struct InitializeElement {
             db::AddSimpleTags<Convergence::Tags::IterationId<OptionsGroup>,
                               operator_applied_to_fields_tag, operand_tag,
                               operator_applied_to_operand_tag, residual_tag,
-                              LinearSolver::Tags::HasConverged<OptionsGroup>>>(
+                              Convergence::Tags::HasConverged<OptionsGroup>>>(
             std::move(box),
             // The `PrepareSolve` action populates these tags with initial
             // values, except for `operator_applied_to_fields_tag` which is

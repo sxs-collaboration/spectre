@@ -7,6 +7,7 @@
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Utilities/PrettyType.hpp"
 
 namespace Convergence {
@@ -20,6 +21,18 @@ struct IterationId : db::SimpleTag {
     return "IterationId(" + pretty_type::short_name<Label>() + ")";
   }
   using type = size_t;
+};
+
+/*!
+ * \brief Holds a `Convergence::HasConverged` flag that signals the iterative
+ * algorithm has converged, along with the reason for convergence.
+ */
+template <typename Label>
+struct HasConverged : db::SimpleTag {
+  static std::string name() noexcept {
+    return "HasConverged(" + pretty_type::short_name<Label>() + ")";
+  }
+  using type = Convergence::HasConverged;
 };
 
 }  // namespace Tags

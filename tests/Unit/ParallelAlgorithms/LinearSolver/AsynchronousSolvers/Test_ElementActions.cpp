@@ -149,7 +149,7 @@ SPECTRE_TEST_CASE("Unit.ParallelLinearSolver.Asynchronous.ElementActions",
     CHECK(get_tag(Convergence::Tags::IterationId<TestSolver>{}) ==
           std::numeric_limits<size_t>::max());
     tmpl::for_each<tmpl::list<operator_applied_to_fields_tag, residual_tag,
-                              LinearSolver::Tags::HasConverged<TestSolver>>>(
+                              Convergence::Tags::HasConverged<TestSolver>>>(
         [&tag_is_retrievable](auto tag_v) {
           using tag = tmpl::type_from<decltype(tag_v)>;
           CAPTURE(db::tag_name<tag>());
@@ -164,7 +164,7 @@ SPECTRE_TEST_CASE("Unit.ParallelLinearSolver.Asynchronous.ElementActions",
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     CHECK(get_tag(Convergence::Tags::IterationId<TestSolver>{}) == 0);
-    CHECK_FALSE(get_tag(LinearSolver::Tags::HasConverged<TestSolver>{}));
+    CHECK_FALSE(get_tag(Convergence::Tags::HasConverged<TestSolver>{}));
     ActionTesting::invoke_queued_simple_action<obs_component>(
         make_not_null(&runner), 0);
     ActionTesting::invoke_queued_threaded_action<obs_writer>(
@@ -178,7 +178,7 @@ SPECTRE_TEST_CASE("Unit.ParallelLinearSolver.Asynchronous.ElementActions",
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     CHECK(get_tag(Convergence::Tags::IterationId<TestSolver>{}) == 1);
-    CHECK(get_tag(LinearSolver::Tags::HasConverged<TestSolver>{}));
+    CHECK(get_tag(Convergence::Tags::HasConverged<TestSolver>{}));
     ActionTesting::invoke_queued_simple_action<obs_component>(
         make_not_null(&runner), 0);
     ActionTesting::invoke_queued_threaded_action<obs_writer>(

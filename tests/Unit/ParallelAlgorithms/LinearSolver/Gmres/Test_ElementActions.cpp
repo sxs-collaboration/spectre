@@ -139,7 +139,7 @@ void test_element_actions() {
     CHECK(tag_is_retrievable(preconditioned_operand_tag{}) == Preconditioned);
     CHECK(tag_is_retrievable(preconditioned_basis_history_tag{}) ==
           Preconditioned);
-    CHECK_FALSE(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
+    CHECK_FALSE(get_tag(Convergence::Tags::HasConverged<DummyOptionsGroup>{}));
   }
 
   const auto test_normalize_initial_operand =
@@ -167,7 +167,7 @@ void test_element_actions() {
                               DenseVector<double>(3, 0.5));
         CHECK(get_tag(basis_history_tag{}).size() == 3);
         CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
-        CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}) ==
+        CHECK(get_tag(Convergence::Tags::HasConverged<DummyOptionsGroup>{}) ==
               has_converged);
         CHECK(ActionTesting::get_next_action_index<element_array>(runner, 0) ==
               (has_converged ? 3 : 1));
@@ -219,7 +219,7 @@ void test_element_actions() {
         CHECK_ITERABLE_APPROX(get_tag(VectorTag{}), DenseVector<double>(3, 6.));
         CHECK(get_tag(Convergence::Tags::IterationId<DummyOptionsGroup>{}) ==
               3);
-        CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}) ==
+        CHECK(get_tag(Convergence::Tags::HasConverged<DummyOptionsGroup>{}) ==
               has_converged);
         CHECK(ActionTesting::get_next_action_index<element_array>(runner, 0) ==
               (has_converged ? 3 : 1));

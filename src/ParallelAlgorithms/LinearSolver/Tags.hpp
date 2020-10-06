@@ -182,18 +182,6 @@ struct Preconditioned : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
 };
 
-/*!
- * \brief Holds a `Convergence::HasConverged` flag that signals the linear
- * solver has converged, along with the reason for convergence.
- */
-template <typename OptionsGroup>
-struct HasConverged : db::SimpleTag {
-  static std::string name() noexcept {
-    return "HasConverged(" + Options::name<OptionsGroup>() + ")";
-  }
-  using type = Convergence::HasConverged;
-};
-
 }  // namespace Tags
 
 /*!

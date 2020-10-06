@@ -120,7 +120,7 @@ struct InitializeHasConverged {
                 db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
             .mapped());
 
-    db::mutate<LinearSolver::Tags::HasConverged<OptionsGroup>>(
+    db::mutate<Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [&has_converged](const gsl::not_null<Convergence::HasConverged*>
                              local_has_converged) noexcept {
@@ -286,7 +286,7 @@ struct UpdateOperand {
     auto& has_converged = get<1>(received_data);
 
     db::mutate<operand_tag, Convergence::Tags::IterationId<OptionsGroup>,
-               LinearSolver::Tags::HasConverged<OptionsGroup>>(
+               Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [res_ratio, &has_converged](
             const auto operand, const gsl::not_null<size_t*> iteration_id,
@@ -306,7 +306,7 @@ struct UpdateOperand {
                                        FieldsTag, OptionsGroup, Label>>::value +
         1;
     return {std::move(box), false,
-            get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box)
+            get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                 ? (this_action_index + 1)
                 : prepare_step_index};
   }

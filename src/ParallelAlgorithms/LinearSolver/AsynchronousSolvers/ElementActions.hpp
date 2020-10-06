@@ -127,7 +127,7 @@ struct InitializeElement {
         ::Initialization::merge_into_databox<
             InitializeElement,
             db::AddSimpleTags<Convergence::Tags::IterationId<OptionsGroup>,
-                              LinearSolver::Tags::HasConverged<OptionsGroup>,
+                              Convergence::Tags::HasConverged<OptionsGroup>,
                               operator_applied_to_fields_tag>,
             db::AddComputeTags<
                 LinearSolver::Tags::ResidualCompute<fields_tag, source_tag>>>(
@@ -180,7 +180,7 @@ struct PrepareSolve {
     constexpr size_t iteration_id = 0;
 
     db::mutate<Convergence::Tags::IterationId<OptionsGroup>,
-               LinearSolver::Tags::HasConverged<OptionsGroup>>(
+               Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [](const gsl::not_null<size_t*> local_iteration_id,
            const gsl::not_null<Convergence::HasConverged*> has_converged,
@@ -204,7 +204,7 @@ struct PrepareSolve {
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, PrepareSolve>::value;
     return {std::move(box), false,
-            get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box)
+            get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                 ? (step_end_index + 1)
                 : (this_action_index + 1)};
   }
@@ -233,7 +233,7 @@ struct CompleteStep {
       const ParallelComponent* const /*meta*/) noexcept {
     // Prepare for next iteration
     db::mutate<Convergence::Tags::IterationId<OptionsGroup>,
-               LinearSolver::Tags::HasConverged<OptionsGroup>>(
+               Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [](const gsl::not_null<size_t*> iteration_id,
            const gsl::not_null<Convergence::HasConverged*> has_converged,
@@ -260,7 +260,7 @@ struct CompleteStep {
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, CompleteStep>::value;
     return {std::move(box), false,
-            get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box)
+            get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                 ? (this_action_index + 1)
                 : step_begin_index};
   }

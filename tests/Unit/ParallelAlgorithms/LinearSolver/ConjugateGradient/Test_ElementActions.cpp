@@ -114,7 +114,7 @@ SPECTRE_TEST_CASE(
           CAPTURE(db::tag_name<tag>());
           CHECK(tag_is_retrievable(tag{}));
         });
-    CHECK_FALSE(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
+    CHECK_FALSE(get_tag(Convergence::Tags::HasConverged<DummyOptionsGroup>{}));
   }
 
   const auto test_initialize_has_converged =
@@ -131,7 +131,7 @@ SPECTRE_TEST_CASE(
         inbox[iteration_id] = has_converged;
         REQUIRE(ActionTesting::is_ready<element_array>(runner, 0));
         ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
-        CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}) ==
+        CHECK(get_tag(Convergence::Tags::HasConverged<DummyOptionsGroup>{}) ==
               has_converged);
         CHECK(ActionTesting::get_next_action_index<element_array>(runner, 0) ==
               (has_converged ? 2 : 1));
@@ -167,7 +167,7 @@ SPECTRE_TEST_CASE(
     CHECK(get_tag(LinearSolver::Tags::Operand<VectorTag>{}) ==
           DenseVector<double>(3, 5.));
     CHECK(get_tag(Convergence::Tags::IterationId<DummyOptionsGroup>{}) == 1);
-    CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}) ==
+    CHECK(get_tag(Convergence::Tags::HasConverged<DummyOptionsGroup>{}) ==
           has_converged);
     CHECK(ActionTesting::get_next_action_index<element_array>(runner, 0) ==
           (has_converged ? 2 : 1));

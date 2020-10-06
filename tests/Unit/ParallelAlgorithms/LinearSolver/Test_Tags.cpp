@@ -27,9 +27,6 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
       "LinearOperand(Tag)");
   TestHelpers::db::test_prefix_tag<LinearSolver::Tags::OperatorAppliedTo<Tag>>(
       "LinearOperatorAppliedTo(Tag)");
-  TestHelpers::db::test_simple_tag<
-      LinearSolver::Tags::HasConverged<TestOptionsGroup>>(
-      "HasConverged(TestLinearSolver)");
   TestHelpers::db::test_prefix_tag<LinearSolver::Tags::Residual<Tag>>(
       "LinearResidual(Tag)");
   TestHelpers::db::test_prefix_tag<LinearSolver::Tags::Initial<Tag>>(

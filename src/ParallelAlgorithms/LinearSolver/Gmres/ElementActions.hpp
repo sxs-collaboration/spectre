@@ -150,7 +150,7 @@ struct NormalizeInitialOperand {
     auto& has_converged = get<1>(received_data);
 
     db::mutate<operand_tag, basis_history_tag,
-               LinearSolver::Tags::HasConverged<OptionsGroup>>(
+               Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box), [residual_magnitude, &has_converged](
                                  const auto operand, const auto basis_history,
                                  const gsl::not_null<Convergence::HasConverged*>
@@ -167,7 +167,7 @@ struct NormalizeInitialOperand {
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, NormalizeInitialOperand>::value;
     return {std::move(box), false,
-            get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box)
+            get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                 ? (step_end_index + 1)
                 : (this_action_index + 1)};
   }
@@ -421,7 +421,7 @@ struct NormalizeOperandAndUpdateField {
 
     db::mutate<operand_tag, basis_history_tag, fields_tag,
                Convergence::Tags::IterationId<OptionsGroup>,
-               LinearSolver::Tags::HasConverged<OptionsGroup>>(
+               Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [normalization, &minres, &has_converged](
             const auto operand, const auto basis_history, const auto field,
@@ -454,7 +454,7 @@ struct NormalizeOperandAndUpdateField {
         tmpl::index_of<ActionList, PrepareStep<FieldsTag, OptionsGroup,
                                                Preconditioned, Label>>::value;
     return {std::move(box), false,
-            get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box)
+            get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                 ? (this_action_index + 1)
                 : prepare_step_index};
   }
