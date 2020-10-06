@@ -48,7 +48,7 @@ struct VectorTag : db::SimpleTag {
 };
 
 using fields_tag = VectorTag;
-using initial_residual_magnitude_tag = LinearSolver::Tags::Initial<
+using initial_residual_magnitude_tag = ::Tags::Initial<
     LinearSolver::Tags::Magnitude<LinearSolver::Tags::Residual<fields_tag>>>;
 using orthogonalization_history_tag =
     LinearSolver::Tags::OrthogonalizationHistory<fields_tag>;

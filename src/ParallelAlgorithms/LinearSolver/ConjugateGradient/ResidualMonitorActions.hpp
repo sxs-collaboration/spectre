@@ -41,7 +41,7 @@ struct InitializeResidual {
   using residual_square_tag = LinearSolver::Tags::MagnitudeSquare<
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
   using initial_residual_magnitude_tag =
-      LinearSolver::Tags::Initial<LinearSolver::Tags::Magnitude<
+      ::Tags::Initial<LinearSolver::Tags::Magnitude<
           db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>>;
 
  public:
@@ -129,7 +129,7 @@ struct UpdateResidual {
   using residual_square_tag = LinearSolver::Tags::MagnitudeSquare<
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
   using initial_residual_magnitude_tag =
-      LinearSolver::Tags::Initial<LinearSolver::Tags::Magnitude<
+      ::Tags::Initial<LinearSolver::Tags::Magnitude<
           db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>>;
 
  public:

@@ -36,7 +36,7 @@ struct VectorTag : db::SimpleTag {
 using fields_tag = VectorTag;
 using operator_applied_to_fields_tag =
     LinearSolver::Tags::OperatorAppliedTo<fields_tag>;
-using initial_fields_tag = LinearSolver::Tags::Initial<fields_tag>;
+using initial_fields_tag = ::Tags::Initial<fields_tag>;
 using operand_tag = LinearSolver::Tags::Operand<fields_tag>;
 using preconditioned_operand_tag =
     LinearSolver::Tags::Preconditioned<operand_tag>;

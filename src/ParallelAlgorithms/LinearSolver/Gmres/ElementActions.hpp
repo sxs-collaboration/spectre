@@ -47,7 +47,7 @@ struct PrepareSolve {
  private:
   using fields_tag = FieldsTag;
   using initial_fields_tag =
-      db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
+      db::add_tag_prefix<::Tags::Initial, fields_tag>;
   using source_tag = db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
   using operator_applied_to_fields_tag =
       db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
@@ -375,7 +375,7 @@ struct NormalizeOperandAndUpdateField {
  private:
   using fields_tag = FieldsTag;
   using initial_fields_tag =
-      db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
+      db::add_tag_prefix<::Tags::Initial, fields_tag>;
   using operand_tag =
       db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
   using preconditioned_operand_tag =

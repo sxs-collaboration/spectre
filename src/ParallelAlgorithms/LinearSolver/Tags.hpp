@@ -93,12 +93,6 @@ struct ResidualCompute : db::add_tag_prefix<Residual, FieldsTag>,
   }
 };
 
-template <typename Tag>
-struct Initial : db::PrefixTag, db::SimpleTag {
-  using type = typename Tag::type;
-  using tag = Tag;
-};
-
 /*!
  * \brief The magnitude square \f$\langle \cdot,\cdot\rangle\f$ w.r.t.
  * the `LinearSolver::inner_product`
