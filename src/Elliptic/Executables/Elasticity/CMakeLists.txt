@@ -3,6 +3,7 @@
 
 set(LIBS_TO_LINK
   ConstitutiveRelations
+  Convergence
   CoordinateMaps
   DiscontinuousGalerkin
   DomainCreators

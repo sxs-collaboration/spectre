@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
@@ -43,7 +44,7 @@ struct InitializeElement {
                          operand_tag>>;
   using orthogonalization_iteration_id_tag =
       LinearSolver::Tags::Orthogonalization<
-          LinearSolver::Tags::IterationId<OptionsGroup>>;
+          Convergence::Tags::IterationId<OptionsGroup>>;
   using basis_history_tag =
       LinearSolver::Tags::KrylovSubspaceBasis<operand_tag>;
 
@@ -59,7 +60,7 @@ struct InitializeElement {
                     const ParallelComponent* const /*meta*/) noexcept {
     auto initial_box = ::Initialization::merge_into_databox<
         InitializeElement,
-        db::AddSimpleTags<LinearSolver::Tags::IterationId<OptionsGroup>,
+        db::AddSimpleTags<Convergence::Tags::IterationId<OptionsGroup>,
                           initial_fields_tag, operator_applied_to_fields_tag,
                           operand_tag, operator_applied_to_operand_tag,
                           orthogonalization_iteration_id_tag, basis_history_tag,

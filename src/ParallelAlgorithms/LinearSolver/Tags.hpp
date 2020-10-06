@@ -64,20 +64,6 @@ struct OperatorAppliedTo : db::PrefixTag, db::SimpleTag {
 };
 
 /*!
- * \brief Holds an `IterationId` that identifies a step in the linear solver
- * algorithm
- */
-template <typename OptionsGroup>
-struct IterationId : db::SimpleTag {
-  static std::string name() noexcept {
-    return "IterationId(" + Options::name<OptionsGroup>() + ")";
-  }
-  using type = size_t;
-  template <typename Tag>
-  using step_prefix = OperatorAppliedTo<Tag>;
-};
-
-/*!
  * \brief The residual \f$r=b - Ax\f$
  */
 template <typename Tag>

@@ -11,5 +11,5 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/LinearSolver/AsynchronousSolvers"
   "${LIBRARY_SOURCES}"
-  "DataStructures;IO;ParallelLinearSolver"
+  "Convergence;DataStructures;IO;ParallelLinearSolver"
   )

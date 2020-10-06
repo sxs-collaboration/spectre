@@ -12,7 +12,7 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/LinearSolver/Gmres"
   "${LIBRARY_SOURCES}"
-  "DataStructures;IO;ParallelLinearSolver"
+  "Convergence;DataStructures;IO;ParallelLinearSolver"
   )
 
 add_dependencies(

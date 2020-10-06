@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_Criteria.cpp
   Test_HasConverged.cpp
   Test_Reason.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(

@@ -14,6 +14,7 @@
 #include "DataStructures/DenseVector.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/ElementActions.hpp"
@@ -45,7 +46,7 @@ using operator_applied_to_preconditioned_operand_tag =
     LinearSolver::Tags::OperatorAppliedTo<preconditioned_operand_tag>;
 using orthogonalization_iteration_id_tag =
     LinearSolver::Tags::Orthogonalization<
-        LinearSolver::Tags::IterationId<DummyOptionsGroup>>;
+        Convergence::Tags::IterationId<DummyOptionsGroup>>;
 using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<operand_tag>;
 using preconditioned_basis_history_tag =
     LinearSolver::Tags::KrylovSubspaceBasis<preconditioned_operand_tag>;
@@ -122,7 +123,7 @@ void test_element_actions() {
 
   {
     INFO("InitializeElement");
-    CHECK(get_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}) ==
+    CHECK(get_tag(Convergence::Tags::IterationId<DummyOptionsGroup>{}) ==
           std::numeric_limits<size_t>::max());
     tmpl::for_each<tmpl::list<
         initial_fields_tag, operator_applied_to_fields_tag, operand_tag,
@@ -145,7 +146,7 @@ void test_element_actions() {
       [&runner, &get_tag,
        &set_tag](const Convergence::HasConverged& has_converged) {
         const size_t iteration_id = 0;
-        set_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{},
+        set_tag(Convergence::Tags::IterationId<DummyOptionsGroup>{},
                 iteration_id);
         set_tag(operand_tag{}, DenseVector<double>(3, 2.));
         set_tag(basis_history_tag{},
@@ -182,7 +183,7 @@ void test_element_actions() {
       [&runner, &get_tag,
        &set_tag](const Convergence::HasConverged& has_converged) {
         const size_t iteration_id = 2;
-        set_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{},
+        set_tag(Convergence::Tags::IterationId<DummyOptionsGroup>{},
                 iteration_id);
         set_tag(initial_fields_tag{}, DenseVector<double>(3, -1.));
         set_tag(operand_tag{}, DenseVector<double>(3, 2.));
@@ -216,7 +217,7 @@ void test_element_actions() {
         CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
         // minres * basis_history - initial = 2 * 0.5 + 4 * 1.5 - 1 = 6
         CHECK_ITERABLE_APPROX(get_tag(VectorTag{}), DenseVector<double>(3, 6.));
-        CHECK(get_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}) ==
+        CHECK(get_tag(Convergence::Tags::IterationId<DummyOptionsGroup>{}) ==
               3);
         CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}) ==
               has_converged);
