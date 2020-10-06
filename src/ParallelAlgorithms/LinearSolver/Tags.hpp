@@ -18,8 +18,6 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DenseMatrix.hpp"
 #include "Informer/Verbosity.hpp"
-#include "NumericalAlgorithms/Convergence/Criteria.hpp"
-#include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Utilities/Gsl.hpp"
 
 /*!
@@ -191,22 +189,6 @@ struct Preconditioned : db::PrefixTag, db::SimpleTag {
 namespace OptionTags {
 
 template <typename OptionsGroup>
-struct ConvergenceCriteria {
-  static constexpr Options::String help =
-      "Determine convergence of the linear solve";
-  using type = Convergence::Criteria;
-  using group = OptionsGroup;
-};
-
-template <typename OptionsGroup>
-struct Iterations {
-  static constexpr Options::String help =
-      "Number of iterations to run the solver";
-  using type = size_t;
-  using group = OptionsGroup;
-};
-
-template <typename OptionsGroup>
 struct Verbosity {
   using type = ::Verbosity;
   static constexpr Options::String help = "Logging verbosity";
@@ -217,58 +199,6 @@ struct Verbosity {
 }  // namespace OptionTags
 
 namespace Tags {
-/*!
- * \brief `Convergence::Criteria` that determine the linear solve has converged
- *
- * \note The smallest possible residual magnitude the linear solver can reach is
- * the product between the machine epsilon and the condition number of the
- * linear operator that is being inverted. Smaller residuals are numerical
- * artifacts. Requiring an absolute or relative residual below this limit will
- * likely lead to termination by `MaxIterations`.
- *
- * \note Remember that when the linear operator \f$A\f$ corresponds to a PDE
- * discretization, decreasing the linear solver residual below the
- * discretization error will not improve the numerical solution any further.
- * I.e. the error \f$e_k=x_k-x_\mathrm{analytic}\f$ to an analytic solution
- * will be dominated by the linear solver residual at first, but even if the
- * discretization \f$Ax_k=b\f$ was exactly solved after some iteration \f$k\f$,
- * the discretization residual
- * \f$Ae_k=b-Ax_\mathrm{analytic}=r_\mathrm{discretization}\f$ would still
- * remain. Therefore, ideally choose the absolute or relative residual criteria
- * based on an estimate of the discretization residual.
- */
-template <typename OptionsGroup>
-struct ConvergenceCriteria : db::SimpleTag {
-  static std::string name() noexcept {
-    return "ConvergenceCriteria(" + Options::name<OptionsGroup>() + ")";
-  }
-  using type = Convergence::Criteria;
-  using option_tags =
-      tmpl::list<LinearSolver::OptionTags::ConvergenceCriteria<OptionsGroup>>;
-
-  static constexpr bool pass_metavariables = false;
-  static Convergence::Criteria create_from_options(
-      const Convergence::Criteria& convergence_criteria) noexcept {
-    return convergence_criteria;
-  }
-};
-
-/// A fixed number of iterations to run the linear solver
-template <typename OptionsGroup>
-struct Iterations : db::SimpleTag {
-  static std::string name() noexcept {
-    return "Iterations(" + Options::name<OptionsGroup>() + ")";
-  }
-  using type = size_t;
-
-  static constexpr bool pass_metavariables = false;
-  using option_tags =
-      tmpl::list<LinearSolver::OptionTags::Iterations<OptionsGroup>>;
-  static size_t create_from_options(const size_t iterations) noexcept {
-    return iterations;
-  }
-};
-
 template <typename OptionsGroup>
 struct Verbosity : db::SimpleTag {
   static std::string name() noexcept {

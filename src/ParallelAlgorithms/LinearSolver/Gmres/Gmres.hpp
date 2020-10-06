@@ -71,7 +71,7 @@ namespace LinearSolver::gmres {
  * 4. `StoreOrthogonalization` (on `ResidualMonitor`): Perform a QR
  * decomposition of the Hessenberg matrix to produce a residual vector.
  * Broadcast to `NormalizeOperandAndUpdateField` along with a termination
- * flag if the `LinearSolver::Tags::ConvergenceCriteria` are met.
+ * flag if the `Convergence::Tags::Criteria` are met.
  * 5. `NormalizeOperandAndUpdateField` (on elements): Set the operand \f$q\f$ as
  * the new orthogonal vector and normalize. Use the residual vector and the set
  * of orthogonal vectors to determine the solution \f$x\f$.

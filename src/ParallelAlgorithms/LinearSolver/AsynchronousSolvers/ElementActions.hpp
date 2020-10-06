@@ -112,7 +112,7 @@ struct InitializeElement {
 
  public:
   using const_global_cache_tags =
-      tmpl::list<LinearSolver::Tags::Iterations<OptionsGroup>>;
+      tmpl::list<Convergence::Tags::Iterations<OptionsGroup>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -189,7 +189,7 @@ struct PrepareSolve {
           *has_converged =
               Convergence::HasConverged{num_iterations, iteration_id};
         },
-        get<LinearSolver::Tags::Iterations<OptionsGroup>>(box));
+        get<Convergence::Tags::Iterations<OptionsGroup>>(box));
 
     // Observe the initial residual even if no steps are going to be performed
     const auto& residual = get<residual_tag>(box);
@@ -242,7 +242,7 @@ struct CompleteStep {
           *has_converged =
               Convergence::HasConverged{num_iterations, *iteration_id};
         },
-        get<LinearSolver::Tags::Iterations<OptionsGroup>>(box));
+        get<Convergence::Tags::Iterations<OptionsGroup>>(box));
 
     // Observe element-local residual magnitude
     const size_t completed_iterations =

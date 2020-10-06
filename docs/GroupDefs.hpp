@@ -498,6 +498,24 @@
  * scale badly with increasing grid size, a preconditioner \f$P\f$ is needed
  * in order to make \f$P^{-1}A\f$ easier to invert.
  *
+ * \note The smallest possible residual magnitude the linear solver can reach is
+ * the product between the machine epsilon and the condition number of the
+ * linear operator that is being inverted. Smaller residuals are numerical
+ * artifacts. Requiring an absolute or relative residual below this limit will
+ * likely make the linear solver run until it reaches its maximum number of
+ * iterations.
+ *
+ * \note Remember that when the linear operator \f$A\f$ corresponds to a PDE
+ * discretization, decreasing the linear solver residual below the
+ * discretization error will not improve the numerical solution any further.
+ * I.e. the error \f$e_k=x_k-x_\mathrm{analytic}\f$ to an analytic solution
+ * will be dominated by the linear solver residual at first, but even if the
+ * discretization \f$Ax_k=b\f$ was exactly solved after some iteration \f$k\f$,
+ * the discretization residual
+ * \f$Ae_k=b-Ax_\mathrm{analytic}=r_\mathrm{discretization}\f$ would still
+ * remain. Therefore, ideally choose the absolute or relative residual criteria
+ * based on an estimate of the discretization residual.
+ *
  * In the iterative algorithms we usually don't work with the physical field
  * \f$x\f$ directly. Instead we need to apply the operator to an internal
  * variable defined by the respective algorithm. This variable is exposed as the

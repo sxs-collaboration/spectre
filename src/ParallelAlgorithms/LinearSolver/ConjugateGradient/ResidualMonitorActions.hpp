@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -69,7 +70,7 @@ struct InitializeResidual {
 
     // Determine whether the linear solver has converged
     Convergence::HasConverged has_converged{
-        get<LinearSolver::Tags::ConvergenceCriteria<OptionsGroup>>(box),
+        get<Convergence::Tags::Criteria<OptionsGroup>>(box),
         iteration_id, residual_magnitude, residual_magnitude};
 
     // Do some logging
@@ -164,7 +165,7 @@ struct UpdateResidual {
 
     // Determine whether the linear solver has converged
     Convergence::HasConverged has_converged{
-        get<LinearSolver::Tags::ConvergenceCriteria<OptionsGroup>>(box),
+        get<Convergence::Tags::Criteria<OptionsGroup>>(box),
         completed_iterations, residual_magnitude,
         get<initial_residual_magnitude_tag>(box)};
 

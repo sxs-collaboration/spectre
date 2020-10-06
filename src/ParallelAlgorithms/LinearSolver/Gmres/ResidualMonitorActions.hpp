@@ -12,6 +12,7 @@
 #include "DataStructures/DenseMatrix.hpp"
 #include "DataStructures/DenseVector.hpp"
 #include "Informer/Verbosity.hpp"
+#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
@@ -65,7 +66,7 @@ struct InitializeResidualMagnitude {
 
     // Determine whether the linear solver has already converged
     Convergence::HasConverged has_converged{
-        get<LinearSolver::Tags::ConvergenceCriteria<OptionsGroup>>(box),
+        get<Convergence::Tags::Criteria<OptionsGroup>>(box),
         iteration_id, residual_magnitude, residual_magnitude};
 
     // Do some logging
@@ -183,7 +184,7 @@ struct StoreOrthogonalization {
 
     // Determine whether the linear solver has converged
     Convergence::HasConverged has_converged{
-        get<LinearSolver::Tags::ConvergenceCriteria<OptionsGroup>>(box),
+        get<Convergence::Tags::Criteria<OptionsGroup>>(box),
         completed_iterations, residual_magnitude,
         get<initial_residual_magnitude_tag>(box)};
 
