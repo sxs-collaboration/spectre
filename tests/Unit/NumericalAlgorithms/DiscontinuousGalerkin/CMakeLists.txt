@@ -10,6 +10,7 @@ set(LIBRARY "Test_NumericalDiscontinuousGalerkin")
 set(LIBRARY_SOURCES
   Test_Formulation.cpp
   Test_LiftFlux.cpp
+  Test_MetricIdentityJacobian.cpp
   Test_MortarHelpers.cpp
   Test_NormalDotFlux.cpp
   Test_Protocols.cpp
