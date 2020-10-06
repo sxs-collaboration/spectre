@@ -391,33 +391,7 @@
 
 /*!
  * \defgroup EllipticSystemsGroup Elliptic Systems
- * \brief All available elliptic systems and information on how to implement
- * elliptic systems
- *
- * \details Actions and parallel components may require an elliptic system to
- * expose the following types:
- *
- * - `volume_dim`: The number of spatial dimensions
- * - `fields_tag`: A \ref DataBoxGroup tag that represents the fields being
- * solved for.
- * - `variables_tag`: The variables to compute DG volume contributions and
- * fluxes for. Use `db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>`
- * unless you have a reason not to.
- * - `compute_operator_action`: A struct that computes the bulk contribution to
- * the DG operator. Must expose a `tmpl::list` of `argument_tags` and a static
- * `apply` function that takes the following arguments in this order:
- *   - First, the types of the tensors in
- * `db::add_tag_prefix<Metavariables::temporal_id::step_prefix, variables_tag>`
- * (which represent the linear operator applied to the variables) as not-null
- * pointers.
- *   - Followed by the types of the `argument_tags` as constant references.
- *
- * Actions and parallel components may also require the Metavariables to expose
- * the following types:
- *
- * - `system`: See above.
- * - `temporal_id`: A DataBox tag that identifies steps in the algorithm.
- * Generally use `LinearSolver::Tags::IterationId`.
+ * \brief All available elliptic systems
  */
 
 /*!
@@ -531,22 +505,6 @@
  * computed operator action is written into
  * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
  * LinearSolver::Tags::Operand<...>>` in each step.
- *
- * Each linear solver is expected to expose the following compile-time
- * interface:
- * - `component_list`: A `tmpl::list` that collects the additional parallel
- * components this linear solver uses. The executables will append these to
- * their own `component_list`.
- * - `initialize_element`: An action that initializes the DataBox items
- * required by the linear solver.
- * - `reinitialize_element`: An action that resets the linear solver to its
- * initial state.
- * - `perform_step`: The action to be executed after the linear operator has
- * been applied to the operand and written to the DataBox (see above). It will
- * converge the fields towards their solution and update the operand before
- * handing responsibility back to the algorithm for the next application of the
- * linear operator:
- * \snippet LinearSolverAlgorithmTestHelpers.hpp action_list
  */
 
 /// \defgroup LoggingGroup Logging
