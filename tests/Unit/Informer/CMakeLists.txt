@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Informer")
 
 set(LIBRARY_SOURCES
+  Test_Tags.cpp
   Test_Verbosity.cpp
   )
 

@@ -17,7 +17,7 @@ namespace intrp::OptionHolders {
 template <typename Frame>
 ApparentHorizon<Frame>::ApparentHorizon(Strahlkorper<Frame> initial_guess_in,
                                         ::FastFlow fast_flow_in,
-                                        Verbosity verbosity_in) noexcept
+                                        ::Verbosity verbosity_in) noexcept
     : initial_guess(std::move(initial_guess_in)),
       fast_flow(std::move(fast_flow_in)),    // NOLINT
       verbosity(std::move(verbosity_in)) {}  // NOLINT
