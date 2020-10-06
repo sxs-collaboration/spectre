@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DenseMatrix.hpp"
 #include "DataStructures/DenseVector.hpp"
+#include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -71,7 +72,7 @@ struct InitializeResidualMagnitude {
 
     // Do some logging
     if (UNLIKELY(static_cast<int>(
-                     get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
+                     get<logging::Tags::Verbosity<OptionsGroup>>(cache)) >=
                  static_cast<int>(::Verbosity::Verbose))) {
       Parallel::printf("Linear solver '" +
                            Options::name<OptionsGroup>() +
@@ -80,7 +81,7 @@ struct InitializeResidualMagnitude {
     }
     if (UNLIKELY(has_converged and
                  static_cast<int>(
-                     get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
+                     get<logging::Tags::Verbosity<OptionsGroup>>(cache)) >=
                      static_cast<int>(::Verbosity::Quiet))) {
       Parallel::printf("The linear solver '" +
                            Options::name<OptionsGroup>() +
@@ -190,7 +191,7 @@ struct StoreOrthogonalization {
 
     // Do some logging
     if (UNLIKELY(static_cast<int>(
-                     get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
+                     get<logging::Tags::Verbosity<OptionsGroup>>(cache)) >=
                  static_cast<int>(::Verbosity::Verbose))) {
       Parallel::printf("Linear solver '" +
                            Options::name<OptionsGroup>() +
@@ -199,7 +200,7 @@ struct StoreOrthogonalization {
     }
     if (UNLIKELY(has_converged and
                  static_cast<int>(
-                     get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
+                     get<logging::Tags::Verbosity<OptionsGroup>>(cache)) >=
                      static_cast<int>(::Verbosity::Quiet))) {
       Parallel::printf("The linear solver '" +
                            Options::name<OptionsGroup>() +

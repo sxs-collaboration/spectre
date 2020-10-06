@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DenseMatrix.hpp"
 #include "IO/Observer/Actions/RegisterSingleton.hpp"
+#include "Informer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -38,7 +39,7 @@ template <typename Metavariables, typename FieldsTag, typename OptionsGroup>
 struct ResidualMonitor {
   using chare_type = Parallel::Algorithms::Singleton;
   using const_global_cache_tags =
-      tmpl::list<LinearSolver::Tags::Verbosity<OptionsGroup>,
+      tmpl::list<logging::Tags::Verbosity<OptionsGroup>,
                  Convergence::Tags::Criteria<OptionsGroup>>;
   using metavariables = Metavariables;
   // The actions in `ResidualMonitorActions.hpp` are invoked as simple actions

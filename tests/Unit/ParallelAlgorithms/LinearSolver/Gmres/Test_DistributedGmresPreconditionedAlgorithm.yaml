@@ -51,5 +51,6 @@ ParallelGmres:
 Preconditioner:
   RelaxationParameter: 0.2916330767929102
   Iterations: 65
+  Verbosity: Verbose
 
 ConvergenceReason: AbsoluteResidual

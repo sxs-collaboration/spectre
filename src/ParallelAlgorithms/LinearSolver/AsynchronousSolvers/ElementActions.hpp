@@ -19,6 +19,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
+#include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
@@ -80,7 +81,7 @@ void contribute_to_residual_observation(
       std::vector<std::string>{"Iteration", "Residual"},
       reduction_data{iteration_id, residual_magnitude_square});
   if (UNLIKELY(static_cast<int>(
-                   get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
+                   get<logging::Tags::Verbosity<OptionsGroup>>(cache)) >=
                static_cast<int>(::Verbosity::Verbose))) {
     if (iteration_id == 0) {
       Parallel::printf(
@@ -166,7 +167,7 @@ struct PrepareSolve {
 
  public:
   using const_global_cache_tags =
-      tmpl::list<LinearSolver::Tags::Verbosity<OptionsGroup>>;
+      tmpl::list<logging::Tags::Verbosity<OptionsGroup>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -220,7 +221,7 @@ struct CompleteStep {
 
  public:
   using const_global_cache_tags =
-      tmpl::list<LinearSolver::Tags::Verbosity<OptionsGroup>>;
+      tmpl::list<logging::Tags::Verbosity<OptionsGroup>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,

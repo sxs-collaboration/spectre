@@ -181,38 +181,4 @@ struct Preconditioned : db::PrefixTag, db::SimpleTag {
 };
 
 }  // namespace Tags
-
-/*!
- * \ingroup LinearSolverGroup
- * \brief Option tags related to the iterative linear solver
- */
-namespace OptionTags {
-
-template <typename OptionsGroup>
-struct Verbosity {
-  using type = ::Verbosity;
-  static constexpr Options::String help = "Logging verbosity";
-  using group = OptionsGroup;
-  static type default_value() noexcept { return ::Verbosity::Quiet; }
-};
-
-}  // namespace OptionTags
-
-namespace Tags {
-template <typename OptionsGroup>
-struct Verbosity : db::SimpleTag {
-  static std::string name() noexcept {
-    return "Verbosity(" + Options::name<OptionsGroup>() + ")";
-  }
-  using type = ::Verbosity;
-  using option_tags =
-      tmpl::list<LinearSolver::OptionTags::Verbosity<OptionsGroup>>;
-
-  static constexpr bool pass_metavariables = false;
-  static ::Verbosity create_from_options(
-      const ::Verbosity& verbosity) noexcept {
-    return verbosity;
-  }
-};
-}  // namespace Tags
 }  // namespace LinearSolver
