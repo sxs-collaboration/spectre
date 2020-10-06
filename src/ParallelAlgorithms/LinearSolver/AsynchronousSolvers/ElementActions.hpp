@@ -80,9 +80,8 @@ void contribute_to_residual_observation(
       std::string{"/" + Options::name<OptionsGroup>() + "Residuals"},
       std::vector<std::string>{"Iteration", "Residual"},
       reduction_data{iteration_id, residual_magnitude_square});
-  if (UNLIKELY(static_cast<int>(
-                   get<logging::Tags::Verbosity<OptionsGroup>>(cache)) >=
-               static_cast<int>(::Verbosity::Verbose))) {
+  if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
+               ::Verbosity::Verbose)) {
     if (iteration_id == 0) {
       Parallel::printf(
           "Linear solver '" + Options::name<OptionsGroup>() +

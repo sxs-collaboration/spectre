@@ -75,18 +75,16 @@ struct InitializeResidual {
         iteration_id, residual_magnitude, residual_magnitude};
 
     // Do some logging
-    if (UNLIKELY(static_cast<int>(
-                     get<logging::Tags::Verbosity<OptionsGroup>>(cache)) >=
-                 static_cast<int>(::Verbosity::Verbose))) {
+    if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
+                 ::Verbosity::Verbose)) {
       Parallel::printf("Linear solver '" +
                            Options::name<OptionsGroup>() +
                            "' initialized with residual: %e\n",
                        residual_magnitude);
     }
     if (UNLIKELY(has_converged and
-                 static_cast<int>(
-                     get<logging::Tags::Verbosity<OptionsGroup>>(cache)) >=
-                     static_cast<int>(::Verbosity::Quiet))) {
+                 get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
+                     ::Verbosity::Quiet)) {
       Parallel::printf("The linear solver '" +
                            Options::name<OptionsGroup>() +
                            "' has converged without any iterations: %s\n",
@@ -171,18 +169,16 @@ struct UpdateResidual {
         get<initial_residual_magnitude_tag>(box)};
 
     // Do some logging
-    if (UNLIKELY(static_cast<int>(
-                     get<logging::Tags::Verbosity<OptionsGroup>>(cache)) >=
-                 static_cast<int>(::Verbosity::Verbose))) {
+    if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
+                 ::Verbosity::Verbose)) {
       Parallel::printf("Linear solver '" +
                            Options::name<OptionsGroup>() +
                            "' iteration %zu done. Remaining residual: %e\n",
                        completed_iterations, residual_magnitude);
     }
     if (UNLIKELY(has_converged and
-                 static_cast<int>(
-                     get<logging::Tags::Verbosity<OptionsGroup>>(cache)) >=
-                     static_cast<int>(::Verbosity::Quiet))) {
+                     get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
+                     ::Verbosity::Quiet)) {
       Parallel::printf("The linear solver '" +
                            Options::name<OptionsGroup>() +
                            "' has converged in %zu iterations: %s\n",
