@@ -63,8 +63,9 @@ class ObserveTime;  // IWYU pragma: keep
 template <typename ObservationValueTag, typename EventRegistrars>
 class ObserveTime : public Event<EventRegistrars> {
  private:
-  using ReductionData = Parallel::ReductionData<
-      Parallel::ReductionDatum<std::string, funcl::AssertEqual<>>>; // may want to assertequal on observation value
+  using ReductionData = Parallel::ReductionData<Parallel::ReductionDatum<
+      std::string, funcl::AssertEqual<>>>;  // may want to assertequal on
+                                            // observation value
 
  public:
   /// Unique string tag to identify for this print reduction observation
@@ -97,11 +98,10 @@ class ObserveTime : public Event<EventRegistrars> {
 
   template <typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
-  void operator()(
-      const typename ObservationValueTag::type& observation_value,
-      Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& array_index,
-      const ParallelComponent* const /*meta*/) const noexcept {
+  void operator()(const typename ObservationValueTag::type& observation_value,
+                  Parallel::GlobalCache<Metavariables>& cache,
+                  const ArrayIndex& array_index,
+                  const ParallelComponent* const /*meta*/) const noexcept {
     // Send data to reduction observer
     auto& local_observer =
         *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
@@ -112,13 +112,13 @@ class ObserveTime : public Event<EventRegistrars> {
         "Current time: " +
         std::to_string(static_cast<double>(observation_value));
 
-    Parallel::simple_action<observers::Actions::ContributeReductionData>(
-        local_observer,
-        observers::ObservationId(observation_value, print_tag_),
+    Parallel::simple_action<observers::Actions::ContributeReductionData<
+        observers::ThreadedActions::PrintReductionData>>(
+        local_observer, observers::ObservationId(observation_value, print_tag_),
         observers::ArrayComponentId{
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ArrayIndex>(array_index)},
-        print_tag_, // should NOT be used
+        print_tag_,  // should NOT be used
         std::vector<std::string>{"StringToPrint"},
         ReductionData{info_to_print});
   }
@@ -141,8 +141,8 @@ class ObserveTime : public Event<EventRegistrars> {
 };
 
 template <typename ObservationValueTag, typename EventRegistrars>
-ObserveTime<ObservationValueTag, EventRegistrars>::ObserveTime(const std::string&
-                                                          print_tag) noexcept
+ObserveTime<ObservationValueTag, EventRegistrars>::ObserveTime(
+    const std::string& print_tag) noexcept
     : print_tag_(print_tag) {}
 
 /// \cond
