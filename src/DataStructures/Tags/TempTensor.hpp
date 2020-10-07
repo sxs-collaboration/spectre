@@ -97,6 +97,12 @@ template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
 using Tempijj = TempTensor<N, tnsr::ijj<DataType, SpatialDim, Fr>>;
 template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
           typename DataType = DataVector>
+using TempIjj = TempTensor<N, tnsr::Ijj<DataType, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using Tempijk = TempTensor<N, tnsr::ijk<DataType, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
 using Tempiaa = TempTensor<N, tnsr::iaa<DataType, SpatialDim, Fr>>;
 template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
           typename DataType = DataVector>
@@ -110,5 +116,10 @@ using Tempabb = TempTensor<N, tnsr::abb<DataType, SpatialDim, Fr>>;
 template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
           typename DataType = DataVector>
 using TempabC = TempTensor<N, tnsr::abC<DataType, SpatialDim, Fr>>;
+
+// Rank 4
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using Tempijaa = TempTensor<N, tnsr::ijaa<DataType, SpatialDim, Fr>>;
 // @}
 }  // namespace Tags
