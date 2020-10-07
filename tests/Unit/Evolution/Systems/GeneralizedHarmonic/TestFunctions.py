@@ -58,7 +58,7 @@ def two_index_constraint_term_4_of_11(spacetime_normal_one_form,
 
 
 def two_index_constraint_term_5_of_11(d_gauge_function):
-    return d_gauge_function
+    return d_gauge_function[1:, :]
 
 
 def two_index_constraint_term_6_of_11(spacetime_normal_vector,
@@ -287,7 +287,7 @@ def f_constraint_term_4_of_25(spacetime_normal_one_form,
 
 def f_constraint_term_5_of_25(spacetime_normal_one_form,
                               inverse_spatial_metric, d_gauge_function):
-    d_gauge_function_ij = d_gauge_function[:, 1:]
+    d_gauge_function_ij = d_gauge_function[1:, 1:]
     return np.einsum("a,ij,ij", spacetime_normal_one_form,
                      inverse_spatial_metric, d_gauge_function_ij)
 
@@ -324,14 +324,12 @@ def f_constraint_term_7_of_25(spacetime_normal_one_form,
 
 def f_constraint_term_8_of_25(spacetime_normal_one_form,
                               spacetime_normal_vector, d_gauge_function):
-    d_gauge_function_ab = np.pad(d_gauge_function, ((1, 0), (0, 0)),
-                                 'constant')
+    d_gauge_function[0, :] = 0
     spacetime_normal_vector_I = spacetime_normal_vector[1:]
-    term = -1.0 * np.einsum("b,ab", spacetime_normal_vector,
-                            d_gauge_function_ab)
+    term = -1.0 * np.einsum("b,ab", spacetime_normal_vector, d_gauge_function)
     return term - np.einsum("a,i,b,ib", spacetime_normal_one_form,
                             spacetime_normal_vector_I, spacetime_normal_vector,
-                            d_gauge_function)
+                            d_gauge_function[1:, :])
 
 
 def f_constraint_term_9_of_25(inverse_spatial_metric, phi,

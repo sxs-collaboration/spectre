@@ -100,10 +100,10 @@ void two_index_constraint_add_term_4_of_11(
 template <size_t SpatialDim, typename Frame, typename DataType>
 void two_index_constraint_add_term_5_of_11(
     const gsl::not_null<tnsr::ia<DataType, SpatialDim, Frame>*> constraint,
-    const tnsr::ia<DataType, SpatialDim, Frame>& d_gauge_function) noexcept {
+    const tnsr::ab<DataType, SpatialDim, Frame>& d_gauge_function) noexcept {
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t a = 0; a < SpatialDim + 1; ++a) {
-      constraint->get(i, a) += d_gauge_function.get(i, a);
+      constraint->get(i, a) += d_gauge_function.get(i + 1, a);
     }
   }
 }
@@ -368,13 +368,13 @@ void f_constraint_add_term_5_of_25(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
-    const tnsr::ia<DataType, SpatialDim, Frame>& d_gauge_function) noexcept {
+    const tnsr::ab<DataType, SpatialDim, Frame>& d_gauge_function) noexcept {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t i = 0; i < SpatialDim; ++i) {
       for (size_t j = 0; j < SpatialDim; ++j) {
         constraint->get(a) += spacetime_normal_one_form.get(a) *
                               inverse_spatial_metric.get(i, j) *
-                              d_gauge_function.get(i, j + 1);
+                              d_gauge_function.get(i + 1, j + 1);
       }
     }
   }
@@ -461,18 +461,18 @@ void f_constraint_add_term_8_of_25(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
-    const tnsr::ia<DataType, SpatialDim, Frame>& d_gauge_function) noexcept {
+    const tnsr::ab<DataType, SpatialDim, Frame>& d_gauge_function) noexcept {
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       if (a > 0) {
         constraint->get(a) -=
-            spacetime_normal_vector.get(b) * d_gauge_function.get(a - 1, b);
+            spacetime_normal_vector.get(b) * d_gauge_function.get(a, b);
       }
       for (size_t i = 0; i < SpatialDim; ++i) {
         constraint->get(a) -= spacetime_normal_one_form.get(a) *
                               spacetime_normal_vector.get(i + 1) *
                               spacetime_normal_vector.get(b) *
-                              d_gauge_function.get(i, b);
+                              d_gauge_function.get(i + 1, b);
       }
     }
   }
@@ -1012,7 +1012,7 @@ void gauge_constraint(
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ia<DataType, SpatialDim, Frame> two_index_constraint(
-    const tnsr::ia<DataType, SpatialDim, Frame>& d_gauge_function,
+    const tnsr::ab<DataType, SpatialDim, Frame>& d_gauge_function,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
@@ -1036,7 +1036,7 @@ tnsr::ia<DataType, SpatialDim, Frame> two_index_constraint(
 template <size_t SpatialDim, typename Frame, typename DataType>
 void two_index_constraint(
     const gsl::not_null<tnsr::ia<DataType, SpatialDim, Frame>*> constraint,
-    const tnsr::ia<DataType, SpatialDim, Frame>& d_gauge_function,
+    const tnsr::ab<DataType, SpatialDim, Frame>& d_gauge_function,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
@@ -1121,7 +1121,7 @@ void four_index_constraint(
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::a<DataType, SpatialDim, Frame> f_constraint(
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
-    const tnsr::ia<DataType, SpatialDim, Frame>& d_gauge_function,
+    const tnsr::ab<DataType, SpatialDim, Frame>& d_gauge_function,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
@@ -1146,7 +1146,7 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 void f_constraint(
     const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
-    const tnsr::ia<DataType, SpatialDim, Frame>& d_gauge_function,
+    const tnsr::ab<DataType, SpatialDim, Frame>& d_gauge_function,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
@@ -1347,7 +1347,7 @@ void constraint_energy(
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;   \
   template tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>                     \
   GeneralizedHarmonic::two_index_constraint(                                 \
-      const tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>& d_gauge_function, \
+      const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>& d_gauge_function, \
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                    \
           spacetime_normal_one_form,                                         \
       const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                    \
@@ -1366,7 +1366,7 @@ void constraint_energy(
   template void GeneralizedHarmonic::two_index_constraint(                   \
       const gsl::not_null<tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>*>    \
           constraint,                                                        \
-      const tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>& d_gauge_function, \
+      const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>& d_gauge_function, \
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                    \
           spacetime_normal_one_form,                                         \
       const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                    \
@@ -1385,7 +1385,7 @@ void constraint_energy(
   template tnsr::a<DTYPE(data), DIM(data), FRAME(data)>                      \
   GeneralizedHarmonic::f_constraint(                                         \
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,    \
-      const tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>& d_gauge_function, \
+      const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>& d_gauge_function, \
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                    \
           spacetime_normal_one_form,                                         \
       const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                    \
@@ -1405,7 +1405,7 @@ void constraint_energy(
       const gsl::not_null<tnsr::a<DTYPE(data), DIM(data), FRAME(data)>*>     \
           constraint,                                                        \
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_function,    \
-      const tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>& d_gauge_function, \
+      const tnsr::ab<DTYPE(data), DIM(data), FRAME(data)>& d_gauge_function, \
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>&                    \
           spacetime_normal_one_form,                                         \
       const tnsr::A<DTYPE(data), DIM(data), FRAME(data)>&                    \
