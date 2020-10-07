@@ -419,7 +419,7 @@ struct apply_helper<tmpl::list<Tags...>> {
 };
 }  // namespace Options_detail
 
-// \cond
+/// \cond
 // Doxygen is confused by decltype(auto)
 template <typename OptionList, typename Group>
 template <typename TagList, typename Metavariables, typename F>
@@ -427,7 +427,7 @@ decltype(auto) Parser<OptionList, Group>::apply(F&& func) const {
   return Options_detail::apply_helper<TagList>::template apply<Metavariables>(
       *this, std::forward<F>(func));
 }
-// \endcond
+/// \endcond
 
 template <typename OptionList, typename Group>
 std::string Parser<OptionList, Group>::help() const noexcept {
