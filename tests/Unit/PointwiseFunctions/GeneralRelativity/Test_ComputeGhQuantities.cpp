@@ -23,6 +23,8 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/LogicalCoordinates.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/Side.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
@@ -44,6 +46,7 @@
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/GaugeSource.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpacetimeDerivOfDetSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpacetimeDerivOfNormOfShift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpacetimeDerivativeOfSpacetimeMetric.hpp"
@@ -645,6 +648,129 @@ void test_cov_deriv_extrinsic_curvature(
       "covariant_deriv_extrinsic_curvture", {{{-1., 1.}}}, used_for_size);
 }
 
+template <typename DataType, size_t SpatialDim, typename Frame>
+void test_spatial_ricci_tensor(const DataVector& used_for_size) noexcept {
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::ii<DataType, SpatialDim, Frame> (*)(
+          const tnsr::iaa<DataType, SpatialDim, Frame>&,
+          const tnsr::ijaa<DataType, SpatialDim, Frame>&,
+          const tnsr::II<DataType, SpatialDim, Frame>&)>(
+          &::GeneralizedHarmonic::spatial_ricci_tensor<SpatialDim, Frame,
+                                                       DataType>),
+      "GeneralRelativity.ComputeGhQuantities", "gh_spatial_ricci_tensor",
+      {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
+}
+
+// Test GeneralizedHarmonic::ricci_tensor by comparing to specific values
+// c.f. SpEC
+void test_spatial_ricci_tensor_spec(
+    const size_t grid_size_each_dimension,
+    const std::array<double, 3>& lower_bound,
+    const std::array<double, 3>& upper_bound) noexcept {
+  using frame = Frame::Inertial;
+  constexpr size_t VolumeDim = 3;
+  // Setup grid
+  Mesh<VolumeDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+  const auto coord_map =
+      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+          Affine{-1., 1., lower_bound[0], upper_bound[0]},
+          Affine{-1., 1., lower_bound[1], upper_bound[1]},
+          Affine{-1., 1., lower_bound[2], upper_bound[2]},
+      });
+
+  // Setup coordinates
+  const auto x_logical = logical_coordinates(mesh);
+  const auto x = coord_map(x_logical);
+  const Direction<VolumeDim> direction(1, Side::Upper);  // +y direction
+  const size_t slice_grid_points =
+      mesh.extents().slice_away(direction.dimension()).product();
+  const auto inertial_coords = [&slice_grid_points, &lower_bound]() {
+    tnsr::I<DataVector, VolumeDim, frame> tmp(slice_grid_points, 0.);
+    // +y direction
+    get<1>(tmp) = 0.5;
+    for (size_t i = 0; i < VolumeDim; ++i) {
+      for (size_t j = 0; j < VolumeDim; ++j) {
+        get<0>(tmp)[i * VolumeDim + j] =
+            lower_bound[0] + 0.5 * static_cast<double>(i);
+        get<2>(tmp)[i * VolumeDim + j] =
+            lower_bound[2] + 0.5 * static_cast<double>(j);
+      }
+    }
+    return tmp;
+  }();
+
+  auto local_inverse_spatial_metric =
+      make_with_value<tnsr::II<DataVector, VolumeDim, Frame::Inertial>>(
+          inertial_coords, 0.);
+  auto local_phi =
+      make_with_value<tnsr::iaa<DataVector, VolumeDim, Frame::Inertial>>(
+          inertial_coords, 0.);
+  auto local_d_pi =
+      make_with_value<tnsr::iaa<DataVector, VolumeDim, Frame::Inertial>>(
+          inertial_coords, 0.);
+  auto local_d_phi =
+      make_with_value<tnsr::ijaa<DataVector, VolumeDim, Frame::Inertial>>(
+          inertial_coords, 0.);
+
+  // Setting inverse_spatial_metric with values chosen to reproduce a result
+  // from SpEC
+  for (size_t i = 0; i < get<0>(inertial_coords).size(); ++i) {
+    for (size_t j = 0; j < VolumeDim; ++j) {
+      local_inverse_spatial_metric.get(0, j)[i] = 41.;
+      local_inverse_spatial_metric.get(1, j)[i] = 43.;
+      local_inverse_spatial_metric.get(2, j)[i] = 47.;
+    }
+  }
+  // Setting pi AND phi with values chosen to reproduce a result from SpEC
+  for (size_t i = 0; i < get<0>(inertial_coords).size(); ++i) {
+    for (size_t a = 0; a <= VolumeDim; ++a) {
+      for (size_t b = 0; b <= VolumeDim; ++b) {
+        // local_pi.get(a, b)[i] = 1.;
+        local_phi.get(0, a, b)[i] = 3.;
+        local_phi.get(1, a, b)[i] = 5.;
+        local_phi.get(2, a, b)[i] = 7.;
+      }
+    }
+  }
+  // Setting local_d_phi with values chosen to reproduce a result from SpEC
+  for (size_t i = 0; i < get<0>(inertial_coords).size(); ++i) {
+    for (size_t a = 0; a <= VolumeDim; ++a) {
+      for (size_t b = 0; b <= VolumeDim; ++b) {
+        local_d_pi.get(0, a, b)[i] = 1.;
+        local_d_phi.get(0, 0, a, b)[i] = 3.;
+        local_d_phi.get(0, 1, a, b)[i] = 5.;
+        local_d_phi.get(0, 2, a, b)[i] = 7.;
+        local_d_pi.get(1, a, b)[i] = 53.;
+        local_d_phi.get(1, 0, a, b)[i] = 59.;
+        local_d_phi.get(1, 1, a, b)[i] = 61.;
+        local_d_phi.get(1, 2, a, b)[i] = 67.;
+        local_d_pi.get(2, a, b)[i] = 71.;
+        local_d_phi.get(2, 0, a, b)[i] = 73.;
+        local_d_phi.get(2, 1, a, b)[i] = 79.;
+        local_d_phi.get(2, 2, a, b)[i] = 83.;
+      }
+    }
+  }
+
+  // Call tested function
+  auto local_ricci_3 = GeneralizedHarmonic::spatial_ricci_tensor(
+      local_phi, local_d_phi, local_inverse_spatial_metric);
+
+  // Initialize with values from SpEC
+  auto spec_ricci_3 = local_ricci_3;
+  get<0, 0>(spec_ricci_3) = 153230.;
+  get<0, 1>(spec_ricci_3) = 5283.;
+  get<0, 2>(spec_ricci_3) = -142541.;
+  get<1, 0>(spec_ricci_3) = 5283.;
+  get<1, 1>(spec_ricci_3) = 2497.;
+  get<1, 2>(spec_ricci_3) = -928.;
+  get<2, 2>(spec_ricci_3) = 141189.;
+
+  // Compare with values from SpEC
+  CHECK_ITERABLE_APPROX(local_ricci_3, spec_ricci_3);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
@@ -709,6 +835,13 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
   test_shift_deriv_functions<DataVector, 2, Frame::Inertial>(used_for_size);
   test_shift_deriv_functions<DataVector, 3, Frame::Inertial>(used_for_size);
 
+  test_spatial_ricci_tensor<DataVector, 1, Frame::Grid>(used_for_size);
+  test_spatial_ricci_tensor<DataVector, 2, Frame::Grid>(used_for_size);
+  test_spatial_ricci_tensor<DataVector, 3, Frame::Grid>(used_for_size);
+  test_spatial_ricci_tensor<DataVector, 1, Frame::Inertial>(used_for_size);
+  test_spatial_ricci_tensor<DataVector, 2, Frame::Inertial>(used_for_size);
+  test_spatial_ricci_tensor<DataVector, 3, Frame::Inertial>(used_for_size);
+
   const double mass = 2.;
   const std::array<double, 3> spin{{0.3, 0.5, 0.2}};
   const std::array<double, 3> center{{0.2, 0.3, 0.4}};
@@ -724,6 +857,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
                                     upper_bound);
   test_shift_deriv_functions_analytic(solution, grid_size, lower_bound,
                                       upper_bound);
+  test_spatial_ricci_tensor_spec(grid_size, lower_bound, upper_bound);
 
   // Check that compute items work correctly in the DataBox
   // First, check that the names are correct
