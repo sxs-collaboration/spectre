@@ -264,7 +264,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
   Tensor<double, Symmetry<2, 1>,
          index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
                     SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
-      Hll{}, HHll{};
+      Hll{};
+  Tensor<double, Symmetry<2, 1>,
+         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+      HHll{};
   std::iota(Hll.begin(), Hll.end(), 0.0);
   std::iota(HHll.rbegin(), HHll.rend(), -Hll.size());
   /// [use_tensor_index]
@@ -293,7 +297,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
          index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
                     SpatialIndex<3, UpLo::Lo, Frame::Grid>,
                     SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
-      Hlll{}, HHlll{};
+      Hlll{};
+  Tensor<double, Symmetry<1, 2, 3>,
+         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+      HHlll{};
   std::iota(Hlll.begin(), Hlll.end(), 0.0);
   std::iota(HHlll.rbegin(), HHlll.rend(), -Hlll.size());
   auto Glll = TensorExpressions::evaluate<ti_a_t, ti_b_t, ti_c_t>(
