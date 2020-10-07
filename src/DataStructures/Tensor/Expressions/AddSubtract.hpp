@@ -95,6 +95,17 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
     }
   }
 
+  template <typename LhsStructure, typename... LhsIndices>
+  SPECTRE_ALWAYS_INLINE type get(const size_t lhs_storage_index) const {
+    if constexpr (Sign == 1) {
+      return t1_.template get<LhsStructure, LhsIndices...>(lhs_storage_index) +
+             t2_.template get<LhsStructure, LhsIndices...>(lhs_storage_index);
+    } else {
+      return t1_.template get<LhsStructure, LhsIndices...>(lhs_storage_index) -
+             t2_.template get<LhsStructure, LhsIndices...>(lhs_storage_index);
+    }
+  }
+
   SPECTRE_ALWAYS_INLINE typename T1::type operator[](size_t i) const {
     if constexpr (Sign == 1) {
       return t1_[i] + t2_[i];

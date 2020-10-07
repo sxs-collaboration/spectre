@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Expressions")
 
 set(LIBRARY_SOURCES
+  Test_AddSubtract.cpp
   Test_TensorExpressions.cpp
   )
 
