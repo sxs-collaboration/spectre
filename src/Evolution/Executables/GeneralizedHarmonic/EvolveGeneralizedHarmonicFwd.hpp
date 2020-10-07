@@ -13,6 +13,13 @@ namespace Solutions {
 template <typename GrSolution>
 struct WrappedGr;
 }  // namespace Solutions
+namespace BoundaryConditions {
+namespace Bjorhus {
+struct Freezing;
+struct ConstraintPreserving;
+struct ConstraintPreservingPhysical;
+}  // namespace Bjorhus
+}  // namespace BoundaryConditions
 }  // namespace GeneralizedHarmonic
 namespace gr {
 namespace Solutions {
@@ -24,6 +31,7 @@ template <typename System>
 struct NumericInitialData;
 }  // namespace evolution
 
-template <typename InitialData, typename BoundaryConditions>
+template <typename InitialData, typename BoundaryConditions,
+          bool BjorhusExternalBoundary>
 struct EvolutionMetavars;
 /// \endcond

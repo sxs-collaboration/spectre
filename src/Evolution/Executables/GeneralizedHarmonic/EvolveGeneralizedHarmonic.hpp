@@ -28,6 +28,7 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/NumericInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Bjorhus.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/InitializeDampedHarmonic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Initialize.hpp"
@@ -76,6 +77,7 @@
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
+#include "ParallelAlgorithms/Events/ObserveVolumeIntegrals.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
@@ -124,7 +126,8 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-template <typename InitialData, typename BoundaryConditions>
+template <typename InitialData, typename BoundaryConditions,
+          bool BjorhusExternalBoundary = false>
 struct EvolutionMetavars {
   static constexpr int volume_dim = 3;
   using frame = Frame::Inertial;
@@ -136,8 +139,14 @@ struct EvolutionMetavars {
   using boundary_conditions = BoundaryConditions;
   // Only Dirichlet boundary conditions imposed by an analytic solution are
   // supported right now.
-  using analytic_solution = boundary_conditions;
-  using analytic_solution_tag = Tags::AnalyticSolution<boundary_conditions>;
+  using analytic_solution = tmpl::conditional_t<
+      evolution::is_analytic_solution_v<initial_data>, initial_data,
+      tmpl::conditional_t<
+          evolution::is_analytic_solution_v<boundary_conditions>,
+          boundary_conditions,
+          GeneralizedHarmonic::Solutions::WrappedGr<
+              gr::Solutions::KerrSchild>>>;
+  using analytic_solution_tag = Tags::AnalyticSolution<analytic_solution>;
   using boundary_condition_tag = analytic_solution_tag;
 
   using normal_dot_numerical_flux = Tags::NumericalFlux<
@@ -249,9 +258,12 @@ struct EvolutionMetavars {
 
   // A tmpl::list of tags to be added to the GlobalCache by the
   // metavariables
-  using const_global_cache_tags =
+  using const_global_cache_tags = tmpl::conditional_t<
+      evolution::is_analytic_solution_v<analytic_solution>,
       tmpl::list<analytic_solution_tag, normal_dot_numerical_flux,
-                 time_stepper_tag, Tags::EventsAndTriggers<events, triggers>>;
+                 time_stepper_tag, Tags::EventsAndTriggers<events, triggers>>,
+      tmpl::list<normal_dot_numerical_flux, time_stepper_tag,
+                 Tags::EventsAndTriggers<events, triggers>>>;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::push_back<typename Event<observation_events>::creatable_classes,
@@ -268,16 +280,32 @@ struct EvolutionMetavars {
       evolution::Actions::AddMeshVelocityNonconservative,
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
           domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
-      dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
-      dg::Actions::CollectDataForFluxes<
-          boundary_scheme,
-          domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
+      tmpl::conditional_t<
+          BjorhusExternalBoundary, tmpl::list<>,
+          tmpl::list<
+              dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
+              dg::Actions::CollectDataForFluxes<
+                  boundary_scheme,
+                  domain::Tags::BoundaryDirectionsInterior<volume_dim>>>>,
       dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
-      tmpl::conditional_t<local_time_stepping,
-                          tmpl::list<Actions::RecordTimeStepperData<>,
-                                     Actions::MutateApply<boundary_scheme>>,
-                          tmpl::list<Actions::MutateApply<boundary_scheme>,
-                                     Actions::RecordTimeStepperData<>>>,
+      tmpl::conditional_t<
+          local_time_stepping,
+          tmpl::list<tmpl::conditional_t<
+                         BjorhusExternalBoundary,
+                         tmpl::list<GeneralizedHarmonic::Actions::
+                                        ImposeBjorhusBoundaryConditions<
+                                            EvolutionMetavars>>,
+                         tmpl::list<>>,
+                     Actions::RecordTimeStepperData<>,
+                     Actions::MutateApply<boundary_scheme>>,
+          tmpl::list<Actions::MutateApply<boundary_scheme>,
+                     tmpl::conditional_t<
+                         BjorhusExternalBoundary,
+                         tmpl::list<GeneralizedHarmonic::Actions::
+                                        ImposeBjorhusBoundaryConditions<
+                                            EvolutionMetavars>>,
+                         tmpl::list<>>,
+                     Actions::RecordTimeStepperData<>>>,
       Actions::UpdateU<>>;
 
   enum class Phase {
@@ -310,12 +338,21 @@ struct EvolutionMetavars {
                   volume_dim, frame, DataVector>::base,
               gr::Tags::Shift<volume_dim, frame, DataVector>,
               gr::Tags::Lapse<DataVector>>,
-          dg::Initialization::slice_tags_to_exterior<
-              gr::Tags::SpatialMetric<volume_dim, frame, DataVector>,
-              typename gr::Tags::DetAndInverseSpatialMetricCompute<
-                  volume_dim, frame, DataVector>::base,
-              gr::Tags::Shift<volume_dim, frame, DataVector>,
-              gr::Tags::Lapse<DataVector>>,
+          tmpl::conditional_t<
+              BjorhusExternalBoundary,
+              dg::Initialization::slice_tags_to_exterior<
+                  typename system::variables_tag,
+                  gr::Tags::SpatialMetric<volume_dim, frame, DataVector>,
+                  typename gr::Tags::DetAndInverseSpatialMetricCompute<
+                      volume_dim, frame, DataVector>::base,
+                  gr::Tags::Shift<volume_dim, frame, DataVector>,
+                  gr::Tags::Lapse<DataVector>>,
+              dg::Initialization::slice_tags_to_exterior<
+                  gr::Tags::SpatialMetric<volume_dim, frame, DataVector>,
+                  typename gr::Tags::DetAndInverseSpatialMetricCompute<
+                      volume_dim, frame, DataVector>::base,
+                  gr::Tags::Shift<volume_dim, frame, DataVector>,
+                  gr::Tags::Lapse<DataVector>>>,
           dg::Initialization::face_compute_tags<
               domain::Tags::BoundaryCoordinates<volume_dim, true>,
               GeneralizedHarmonic::Tags::ConstraintGamma0Compute<volume_dim,
@@ -335,11 +372,14 @@ struct EvolutionMetavars {
                                                                  frame>,
               GeneralizedHarmonic::CharacteristicFieldsCompute<volume_dim,
                                                                frame>>,
-          true, true>,
-      Initialization::Actions::AddComputeTags<
-          tmpl::list<evolution::Tags::AnalyticCompute<
-              volume_dim, analytic_solution_tag, analytic_solution_fields>>>,
-      dg::Actions::InitializeMortars<boundary_scheme, true>,
+          !BjorhusExternalBoundary, true>,
+      tmpl::conditional_t<evolution::is_analytic_solution_v<analytic_solution>,
+                          Initialization::Actions::AddComputeTags<
+                              tmpl::list<evolution::Tags::AnalyticCompute<
+                                  volume_dim, analytic_solution_tag,
+                                  analytic_solution_fields>>>,
+                          tmpl::list<>>,
+      dg::Actions::InitializeMortars<boundary_scheme, !BjorhusExternalBoundary>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
@@ -431,7 +471,8 @@ struct EvolutionMetavars {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &disable_openblas_multithreading,
+    &setup_error_handling,
+    &disable_openblas_multithreading,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
     &domain::creators::register_derived_with_charm,
