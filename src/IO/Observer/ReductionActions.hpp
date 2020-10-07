@@ -641,7 +641,7 @@ struct PrintReductionData {
                     const gsl::not_null<Parallel::NodeLock*> node_lock,
                     const observers::ObservationId& observation_id,
                     const size_t sender_node_number,
-                    const std::string& subfile_name,
+                    const std::string& /*subfile_name*/,
                     std::vector<std::string>&& reduction_names,
                     Parallel::ReductionData<ReductionDatums...>&&
                         received_reduction_data) noexcept {
@@ -651,8 +651,7 @@ struct PrintReductionData {
                                                         ReductionDatums...>> and
                   tmpl::list_contains_v<
                       DbTagsList, Tags::NodesThatContributedReductions> and
-                  tmpl::list_contains_v<DbTagsList, Tags::ReductionDataLock> and
-                  tmpl::list_contains_v<DbTagsList, Tags::H5FileLock>) {
+                  tmpl::list_contains_v<DbTagsList, Tags::ReductionDataLock>) {
       // The below gymnastics with pointers is done in order to minimize the
       // time spent locking the entire node, which is necessary because the
       // DataBox does not allow any functions calls, both get and mutate, during
@@ -670,18 +669,16 @@ struct PrintReductionData {
       std::unordered_map<observers::ObservationId, std::unordered_set<size_t>>*
           nodes_contributed = nullptr;
       Parallel::NodeLock* reduction_data_lock = nullptr;
-      Parallel::NodeLock* reduction_file_lock = nullptr;
       size_t observations_registered_with_id =
           std::numeric_limits<size_t>::max();
 
       node_lock->lock();
       db::mutate<Tags::ReductionData<ReductionDatums...>,
                  Tags::ReductionDataNames<ReductionDatums...>,
-                 Tags::NodesThatContributedReductions, Tags::ReductionDataLock,
-                 Tags::H5FileLock>(
+                 Tags::NodesThatContributedReductions, Tags::ReductionDataLock>(
           make_not_null(&box),
           [&nodes_contributed, &reduction_data, &reduction_names_map,
-           &reduction_data_lock, &reduction_file_lock, &observation_id,
+           &reduction_data_lock, &observation_id,
            &observations_registered_with_id, &sender_node_number](
               const gsl::not_null<
                   db::item_type<Tags::ReductionData<ReductionDatums...>>*>
@@ -693,7 +690,6 @@ struct PrintReductionData {
                   ObservationId, std::unordered_set<size_t>>*>
                   nodes_contributed_ptr,
               const gsl::not_null<Parallel::NodeLock*> reduction_data_lock_ptr,
-              const gsl::not_null<Parallel::NodeLock*> reduction_file_lock_ptr,
               const std::unordered_map<ObservationKey, std::set<size_t>>&
                   nodes_registered_for_reductions) noexcept {
             const ObservationKey& key{observation_id.observation_key()};
@@ -715,7 +711,6 @@ struct PrintReductionData {
             reduction_names_map = &*reduction_names_map_ptr;
             nodes_contributed = &*nodes_contributed_ptr;
             reduction_data_lock = &*reduction_data_lock_ptr;
-            reduction_file_lock = &*reduction_file_lock_ptr;
             observations_registered_with_id =
                 nodes_registered_for_reductions.at(key).size();
           },
@@ -774,10 +769,10 @@ struct PrintReductionData {
       // until after we've unlocked the lock. For the same reason, we move the
       // final, reduced result into `received_reduction_data` and
       // `reduction_names`.
-      bool write_to_disk = false;
+      bool print_to_screen = false;
       if (nodes_contributed_to_observation.size() ==
           observations_registered_with_id) {
-        write_to_disk = true;
+        print_to_screen = true;
         received_reduction_data =
             std::move(reduction_data->operator[](observation_id));
         reduction_names =
@@ -788,24 +783,16 @@ struct PrintReductionData {
       }
       reduction_data_lock->unlock();
 
-      if (write_to_disk) {
-        reduction_file_lock->lock();
-        // NOLINTNEXTLINE(bugprone-use-after-move)
+      if (print_to_screen) {
         received_reduction_data.finalize();
-        WriteReductionData::write_data(
-            subfile_name,
-            // NOLINTNEXTLINE(bugprone-use-after-move)
-            std::move(reduction_names),
+        PrintReductionData::print_data(
             std::move(received_reduction_data.data()),
-            Parallel::get<Tags::ReductionFileName>(cache),
             std::make_index_sequence<sizeof...(ReductionDatums)>{});
-        reduction_file_lock->unlock();
       }
     } else {
       (void)node_lock;
       (void)observation_id;
       (void)sender_node_number;
-      (void)subfile_name;
       (void)reduction_names;
       (void)received_reduction_data;
       ERROR("Could not find one of the tags: "
@@ -813,8 +800,8 @@ struct PrintReductionData {
             << ' '
             << pretty_type::get_name<
                    Tags::ReductionDataNames<ReductionDatums...>>()
-            << ", Tags::NodesThatContributedReductions, "
-               "Tags::ReductionDataLock, or Tags::H5FileLock.");
+            << ", Tags::NodesThatContributedReductions, or "
+               "Tags::ReductionDataLock.");
     }
   }
 };
