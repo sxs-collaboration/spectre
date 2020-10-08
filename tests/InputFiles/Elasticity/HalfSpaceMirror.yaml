@@ -1,0 +1,55 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: SolveElasticHalfSpaceMirror
+# Check: parse;execute
+# ExpectedOutput:
+#   ElasticHalfSpaceMirrorReductions.h5
+#   ElasticHalfSpaceMirrorVolume0.h5
+
+AnalyticSolution:
+  HalfSpaceMirror:
+    BeamWidth: 0.177
+    Material:
+      # Fused Silica
+      BulkModulus: 36.36363636363637
+      ShearModulus: 30.76923076923077
+
+DomainCreator:
+  Cylinder:
+    InnerRadius: 0.08
+    OuterRadius: 0.6
+    LowerBound: 0
+    UpperBound: 0.3
+    IsPeriodicInZ: False
+    InitialRefinement: 0
+    InitialGridPoints: [3, 3, 4]
+    UseEquiangularMap: True
+
+NumericalFlux:
+  InternalPenalty:
+    PenaltyParameter: 1
+
+Observers:
+  VolumeFileName: "ElasticHalfSpaceMirrorVolume"
+  ReductionFileName: "ElasticHalfSpaceMirrorReductions"
+
+LinearSolver:
+  GMRES:
+    ConvergenceCriteria:
+      MaxIterations: 1
+      RelativeResidual: 1e-8
+      AbsoluteResidual: 1e-12
+    Verbosity: Verbose
+
+EventsAndTriggers:
+  ? EveryNIterations:
+      N: 1
+  : - ObserveErrorNorms:
+        SubfileName: ErrorNorms
+    - ObserveVolumeIntegrals:
+        SubfileName: VolumeIntegrals
+  ? EveryNIterations:
+      N: 10
+  : - ObserveFields:
+        SubfileName: VolumeData

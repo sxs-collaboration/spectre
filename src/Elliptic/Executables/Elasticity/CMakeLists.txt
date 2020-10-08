@@ -7,6 +7,7 @@ set(LIBS_TO_LINK
   DiscontinuousGalerkin
   DomainCreators
   Elasticity
+  ElasticPotentialEnergy
   Informer
   IO
   LinearOperators
@@ -35,6 +36,19 @@ add_elasticity_executable(
   )
 target_link_libraries(
   SolveElasticBentBeam2D
+  PRIVATE
+  ElasticitySolutions
+  )
+
+# Elasticity system with half-space mirror solution
+add_elasticity_executable(
+  HalfSpaceMirror
+  "Elasticity::FirstOrderSystem<3>"
+  Elasticity::Solutions::HalfSpaceMirror
+  Elasticity::Solutions::HalfSpaceMirror
+  )
+target_link_libraries(
+  SolveElasticHalfSpaceMirror
   PRIVATE
   ElasticitySolutions
   )
