@@ -34,9 +34,9 @@ style="max-width:100%;"></a>
 
 <a href="https://en.wikipedia.org/wiki/C%2B%2B#Standardization"
 rel="nofollow"><img
-src="https://camo.githubusercontent.com/14eafa365535119df0dc48953fd71c5647cc6b90/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f632532422532422d31342d626c75652e737667"
+src="https://img.shields.io/badge/c%2B%2B-17-blue.svg"
 alt="Standard"
-data-canonical-src="https://img.shields.io/badge/c%2B%2B-14-blue.svg"
+data-canonical-src="https://img.shields.io/badge/c%2B%2B-17-blue.svg"
 style="max-width:100%;"></a>
 
 <a href="https://github.com/sxs-collaboration/spectre/actions" rel="nofollow"><img
