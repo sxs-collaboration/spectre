@@ -19,6 +19,11 @@ class Matrix;
 class DataVector;
 template <size_t>
 class Mesh;
+namespace Options {
+class Option;
+template <typename T>
+struct create_from_yaml;
+}  // namespace Options
 /// \endcond
 
 /*!
@@ -547,3 +552,18 @@ const Matrix& linear_filter_matrix(size_t num_points) noexcept;
 const Matrix& linear_filter_matrix(const Mesh<1>& mesh) noexcept;
 
 }  // namespace Spectral
+
+/// \cond
+template <>
+struct Options::create_from_yaml<Spectral::Quadrature> {
+  template <typename Metavariables>
+  static Spectral::Quadrature create(const Options::Option& options) {
+    return create<void>(options);
+  }
+};
+
+template <>
+Spectral::Quadrature
+Options::create_from_yaml<Spectral::Quadrature>::create<void>(
+    const Options::Option& options);
+/// \endcond

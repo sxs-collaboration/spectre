@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
+#include "Framework/TestCreation.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Blas.hpp"
@@ -25,6 +26,13 @@ void test_streaming() {
 
   CHECK(get_output(Spectral::Quadrature::Gauss) == "Gauss");
   CHECK(get_output(Spectral::Quadrature::GaussLobatto) == "GaussLobatto");
+}
+
+void test_creation() {
+  CHECK(Spectral::Quadrature::Gauss ==
+        TestHelpers::test_creation<Spectral::Quadrature>("Gauss"));
+  CHECK(Spectral::Quadrature::GaussLobatto ==
+        TestHelpers::test_creation<Spectral::Quadrature>("GaussLobatto"));
 }
 
 DataVector unit_polynomial(const size_t deg, const DataVector& x) {
@@ -503,6 +511,7 @@ void test_gauss_points_boundary_interpolation_and_lifting() noexcept {
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   test_streaming();
+  test_creation();
   test_exact_differentiation_matrices();
   test_linear_filter();
   test_exact_extrapolation();

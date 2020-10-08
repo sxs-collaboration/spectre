@@ -13,6 +13,8 @@
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Options/Options.hpp"
+#include "Options/ParseOptions.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
@@ -598,4 +600,23 @@ template const DataVector& Spectral::collocation_points<
 template const DataVector& Spectral::quadrature_weights<
     Spectral::Basis::FiniteDifference, Spectral::Quadrature::FaceCentered>(
     size_t) noexcept;
+/// \endcond
+
+/// \cond
+template <>
+Spectral::Quadrature
+Options::create_from_yaml<Spectral::Quadrature>::create<void>(
+    const Options::Option& options) {
+  const auto type_read = options.parse_as<std::string>();
+  if ("Gauss" == type_read) {
+    return Spectral::Quadrature::Gauss;
+  } else if ("GaussLobatto" == type_read) {
+    return Spectral::Quadrature::GaussLobatto;
+  }
+  PARSE_ERROR(options.context(),
+              "Failed to convert \""
+                  << type_read
+                  << "\" to Spectral::Quadrature. Must be one "
+                     "of Gauss or GaussLobatto.");
+}
 /// \endcond
