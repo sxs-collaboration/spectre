@@ -6,6 +6,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Mortars.hpp
+  QuadratureTag.hpp
   )
 
 spectre_target_sources(
