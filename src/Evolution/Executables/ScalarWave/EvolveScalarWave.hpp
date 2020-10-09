@@ -117,11 +117,13 @@ struct EvolutionMetavars {
   using boundary_scheme = tmpl::conditional_t<
       local_time_stepping,
       dg::FirstOrderScheme::FirstOrderSchemeLts<
-          Dim, typename system::variables_tag, normal_dot_numerical_flux,
-          Tags::TimeStepId, time_stepper_tag>,
+          Dim, typename system::variables_tag,
+          db::add_tag_prefix<::Tags::dt, typename system::variables_tag>,
+          normal_dot_numerical_flux, Tags::TimeStepId, time_stepper_tag>,
       dg::FirstOrderScheme::FirstOrderScheme<
-          Dim, typename system::variables_tag, normal_dot_numerical_flux,
-          Tags::TimeStepId>>;
+          Dim, typename system::variables_tag,
+          db::add_tag_prefix<::Tags::dt, typename system::variables_tag>,
+          normal_dot_numerical_flux, Tags::TimeStepId>>;
 
   using step_choosers_common =
       tmpl::list<StepChoosers::Registrars::ByBlock<volume_dim>,

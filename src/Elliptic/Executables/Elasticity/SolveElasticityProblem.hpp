@@ -123,10 +123,11 @@ struct Metavariables {
   // Specify the DG boundary scheme. We use the strong first-order scheme here
   // that only requires us to compute normals dotted into the first-order
   // fluxes.
-  using boundary_scheme =
-      dg::FirstOrderScheme::FirstOrderScheme<volume_dim, linear_operand_tag,
-                                             normal_dot_numerical_flux,
-                                             linear_solver_iteration_id>;
+  using boundary_scheme = dg::FirstOrderScheme::FirstOrderScheme<
+      volume_dim, linear_operand_tag,
+      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
+                         linear_operand_tag>,
+      normal_dot_numerical_flux, linear_solver_iteration_id>;
 
   // Collect events and triggers
   // (public for use by the Charm++ registration code)

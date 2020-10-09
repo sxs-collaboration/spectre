@@ -70,8 +70,6 @@ struct BoundaryContribution : db::SimpleTag, db::PrefixTag {
 
 struct TemporalIdTag : db::SimpleTag {
   using type = int;
-  template <typename Tag>
-  using step_prefix = BoundaryContribution<Tag>;
 };
 
 // Helper function to combine local and remote boundary data to mortar data
@@ -94,8 +92,9 @@ void test_first_order_scheme_lts() {
   CAPTURE(Dim);
   using time_stepper_tag = Tags::TimeStepper<TimeSteppers::AdamsBashforthN>;
   using boundary_scheme = dg::FirstOrderScheme::FirstOrderSchemeLts<
-      Dim, variables_tag, NumericalFluxTag<NumericalFlux>, TemporalIdTag,
-      time_stepper_tag>;
+      Dim, variables_tag,
+      db::add_tag_prefix<BoundaryContribution, variables_tag>,
+      NumericalFluxTag<NumericalFlux>, TemporalIdTag, time_stepper_tag>;
 
   using BoundaryData = typename boundary_scheme::BoundaryData;
   using mortar_data_tag = typename boundary_scheme::mortar_data_tag;
@@ -278,8 +277,9 @@ SPECTRE_TEST_CASE("Unit.DG.FirstOrderScheme.Lts",
 
     using time_stepper_tag = Tags::TimeStepper<TimeSteppers::AdamsBashforthN>;
     using boundary_scheme = dg::FirstOrderScheme::FirstOrderSchemeLts<
-        2, variables_tag, NumericalFluxTag<TestNumericalFlux>, TemporalIdTag,
-        time_stepper_tag>;
+        2, variables_tag,
+        db::add_tag_prefix<BoundaryContribution, variables_tag>,
+        NumericalFluxTag<TestNumericalFlux>, TemporalIdTag, time_stepper_tag>;
 
     using BoundaryData = typename boundary_scheme::BoundaryData;
     using mortar_data_tag = typename boundary_scheme::mortar_data_tag;
