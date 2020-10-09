@@ -28,6 +28,21 @@ function(add_burgers_executable INITIAL_DATA_NAME INITIAL_DATA)
 endfunction(add_burgers_executable)
 
 add_burgers_executable(
+  Bump
+  Burgers::Solutions::Bump
+  )
+
+add_burgers_executable(
+  Linear
+  Burgers::Solutions::Linear
+  )
+
+add_burgers_executable(
   Step
   Burgers::Solutions::Step
+  )
+
+add_burgers_executable(
+  Sinusoid
+  Burgers::AnalyticData::Sinusoid
   )
