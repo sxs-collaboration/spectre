@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <tuple>
 #include <utility>
@@ -17,7 +18,8 @@
 #include "ErrorHandling/Error.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedHarmonic.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/OptionTags.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DhGaugeParameters.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/DhGaugeParameters.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Options.hpp"
@@ -28,40 +30,6 @@
 #include "Utilities/TMPL.hpp"
 
 namespace GeneralizedHarmonic::gauges::Actions {
-/// Option tags for the gauges
-namespace OptionTags {
-/// The rollon start time
-struct DampedHarmonicRollOnStart {
-  using type = double;
-  static std::string name() noexcept { return "RollOnStartTime"; }
-  static constexpr Options::String help{
-      "Simulation time to start rolling on the damped harmonic gauge"};
-  using group = gauges::OptionTags::GaugeGroup;
-};
-
-/// The width of the Gaussian for the gauge rollon
-struct DampedHarmonicRollOnWindow {
-  using type = double;
-  static std::string name() noexcept { return "RollOnTimeWindow"; }
-  static constexpr Options::String help{
-      "The width of the Gaussian that controls how quickly the gauge is "
-      "rolled on."};
-  using group = gauges::OptionTags::GaugeGroup;
-};
-
-/// The width of the Gaussian for the spatial decay of the damped harmonic
-/// gauge.
-template <typename Frame>
-struct DampedHarmonicSpatialDecayWidth {
-  using type = double;
-  static std::string name() noexcept { return "SpatialDecayWidth"; }
-  static constexpr Options::String help{
-      "Spatial width of weight function used in the damped harmonic "
-      "gauge."};
-  using group = gauges::OptionTags::GaugeGroup;
-};
-}  // namespace OptionTags
-
 /*!
  * \brief Initialize the damped harmonic gauge, either with or without a rollon
  * function.
@@ -119,66 +87,32 @@ struct DampedHarmonicSpatialDecayWidth {
 template <size_t Dim, bool UseRollon>
 struct InitializeDampedHarmonic {
  private:
-  struct GaugeHRollOnStartTime : db::SimpleTag {
-    using type = double;
-    using option_tags = tmpl::list<OptionTags::DampedHarmonicRollOnStart>;
-
-    static constexpr bool pass_metavariables = false;
-    static double create_from_options(
-        const double gauge_roll_on_start_time) noexcept {
-      return gauge_roll_on_start_time;
-    }
-  };
-
-  struct GaugeHRollOnTimeWindow : db::SimpleTag {
-    using type = double;
-    using option_tags = tmpl::list<OptionTags::DampedHarmonicRollOnWindow>;
-
-    static constexpr bool pass_metavariables = false;
-    static double create_from_options(
-        const double gauge_roll_on_window) noexcept {
-      return gauge_roll_on_window;
-    }
-  };
-
-  template <typename Frame>
-  struct GaugeHSpatialWeightDecayWidth : db::SimpleTag {
-    using type = double;
-    using option_tags =
-        tmpl::list<OptionTags::DampedHarmonicSpatialDecayWidth<Frame>>;
-
-    static constexpr bool pass_metavariables = false;
-    static double create_from_options(
-        const double gauge_spatial_decay_width) noexcept {
-      return gauge_spatial_decay_width;
-    }
-  };
-
   template <typename Frame>
   struct DampedHarmonicRollonCompute
       : db::ComputeTag,
-        ::Tags::Variables<tmpl::list<Tags::GaugeH<Dim, Frame>,
-                                     Tags::SpacetimeDerivGaugeH<Dim, Frame>>> {
-    using base =
-        ::Tags::Variables<tmpl::list<Tags::GaugeH<Dim, Frame>,
-                                     Tags::SpacetimeDerivGaugeH<Dim, Frame>>>;
+        ::Tags::Variables<tmpl::list<
+            ::GeneralizedHarmonic::Tags::GaugeH<Dim, Frame>,
+            ::GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim, Frame>>> {
+    using base = ::Tags::Variables<tmpl::list<
+        ::GeneralizedHarmonic::Tags::GaugeH<Dim, Frame>,
+        ::GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim, Frame>>>;
     static std::string name() noexcept { return "DampedHarmonicRollonCompute"; }
-    using argument_tags =
-        tmpl::list<Tags::InitialGaugeH<Dim, Frame>,
-                   Tags::SpacetimeDerivInitialGaugeH<Dim, Frame>,
-                   ::gr::Tags::Lapse<DataVector>,
-                   ::gr::Tags::Shift<Dim, Frame, DataVector>,
-                   ::gr::Tags::SpacetimeNormalOneForm<Dim, Frame, DataVector>,
-                   ::gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                   ::gr::Tags::InverseSpatialMetric<Dim, Frame, DataVector>,
-                   ::gr::Tags::SpacetimeMetric<Dim, Frame, DataVector>,
-                   Tags::Pi<Dim, Frame>, Tags::Phi<Dim, Frame>, ::Tags::Time,
-                   GaugeHRollOnStartTime, GaugeHRollOnTimeWindow,
-                   domain::Tags::Coordinates<Dim, Frame>,
-                   GaugeHSpatialWeightDecayWidth<Frame>>;
-    using return_type =
-        Variables<tmpl::list<Tags::GaugeH<Dim, Frame>,
-                             Tags::SpacetimeDerivGaugeH<Dim, Frame>>>;
+    using argument_tags = tmpl::list<
+        ::GeneralizedHarmonic::Tags::InitialGaugeH<Dim, Frame>,
+        ::GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<Dim, Frame>,
+        ::gr::Tags::Lapse<DataVector>,
+        ::gr::Tags::Shift<Dim, Frame, DataVector>,
+        ::gr::Tags::SpacetimeNormalOneForm<Dim, Frame, DataVector>,
+        ::gr::Tags::SqrtDetSpatialMetric<DataVector>,
+        ::gr::Tags::InverseSpatialMetric<Dim, Frame, DataVector>,
+        ::gr::Tags::SpacetimeMetric<Dim, Frame, DataVector>,
+        ::GeneralizedHarmonic::Tags::Pi<Dim, Frame>,
+        ::GeneralizedHarmonic::Tags::Phi<Dim, Frame>, ::Tags::Time,
+        domain::Tags::Coordinates<Dim, Frame>,
+        ::GeneralizedHarmonic::gauges::Tags::DhGaugeParameters<true>>;
+    using return_type = Variables<tmpl::list<
+        ::GeneralizedHarmonic::Tags::GaugeH<Dim, Frame>,
+        ::GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim, Frame>>>;
 
     static void function(
         gsl::not_null<return_type*> h_and_d4_h,
@@ -192,32 +126,35 @@ struct InitializeDampedHarmonic {
         const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
         const tnsr::aa<DataVector, Dim, Frame>& pi,
         const tnsr::iaa<DataVector, Dim, Frame>& phi, double time,
-        double rollon_start_time, double rollon_width,
-        const tnsr::I<DataVector, Dim, Frame>& coords, double sigma_r) noexcept;
+        const tnsr::I<DataVector, Dim, Frame>& coords,
+        const GeneralizedHarmonic::gauges::DhGaugeParameters<true>&
+            parameters) noexcept;
   };
 
   template <typename Frame>
   struct DampedHarmonicCompute
       : db::ComputeTag,
-        ::Tags::Variables<tmpl::list<Tags::GaugeH<Dim, Frame>,
-                                     Tags::SpacetimeDerivGaugeH<Dim, Frame>>> {
-    using base =
-        ::Tags::Variables<tmpl::list<Tags::GaugeH<Dim, Frame>,
-                                     Tags::SpacetimeDerivGaugeH<Dim, Frame>>>;
+        ::Tags::Variables<tmpl::list<
+            ::GeneralizedHarmonic::Tags::GaugeH<Dim, Frame>,
+            ::GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim, Frame>>> {
+    using base = ::Tags::Variables<tmpl::list<
+        ::GeneralizedHarmonic::Tags::GaugeH<Dim, Frame>,
+        ::GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim, Frame>>>;
     static std::string name() noexcept { return "DampedHarmonicCompute"; }
-    using argument_tags =
-        tmpl::list<::gr::Tags::Lapse<DataVector>,
-                   ::gr::Tags::Shift<Dim, Frame, DataVector>,
-                   ::gr::Tags::SpacetimeNormalOneForm<Dim, Frame, DataVector>,
-                   ::gr::Tags::SqrtDetSpatialMetric<DataVector>,
-                   ::gr::Tags::InverseSpatialMetric<Dim, Frame, DataVector>,
-                   ::gr::Tags::SpacetimeMetric<Dim, Frame, DataVector>,
-                   Tags::Pi<Dim, Frame>, Tags::Phi<Dim, Frame>,
-                   domain::Tags::Coordinates<Dim, Frame>,
-                   GaugeHSpatialWeightDecayWidth<Frame>>;
-    using return_type =
-        Variables<tmpl::list<Tags::GaugeH<Dim, Frame>,
-                             Tags::SpacetimeDerivGaugeH<Dim, Frame>>>;
+    using argument_tags = tmpl::list<
+        ::gr::Tags::Lapse<DataVector>,
+        ::gr::Tags::Shift<Dim, Frame, DataVector>,
+        ::gr::Tags::SpacetimeNormalOneForm<Dim, Frame, DataVector>,
+        ::gr::Tags::SqrtDetSpatialMetric<DataVector>,
+        ::gr::Tags::InverseSpatialMetric<Dim, Frame, DataVector>,
+        ::gr::Tags::SpacetimeMetric<Dim, Frame, DataVector>,
+        ::GeneralizedHarmonic::Tags::Pi<Dim, Frame>,
+        ::GeneralizedHarmonic::Tags::Phi<Dim, Frame>,
+        domain::Tags::Coordinates<Dim, Frame>,
+        ::GeneralizedHarmonic::gauges::Tags::DhGaugeParameters<false>>;
+    using return_type = Variables<tmpl::list<
+        ::GeneralizedHarmonic::Tags::GaugeH<Dim, Frame>,
+        ::GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim, Frame>>>;
 
     static void function(
         gsl::not_null<return_type*> h_and_d4_h, const Scalar<DataVector>& lapse,
@@ -228,17 +165,16 @@ struct InitializeDampedHarmonic {
         const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
         const tnsr::aa<DataVector, Dim, Frame>& pi,
         const tnsr::iaa<DataVector, Dim, Frame>& phi,
-        const tnsr::I<DataVector, Dim, Frame>& coords, double sigma_r) noexcept;
+        const tnsr::I<DataVector, Dim, Frame>& coords,
+        const GeneralizedHarmonic::gauges::DhGaugeParameters<false>&
+            parameters) noexcept;
   };
 
  public:
   using frame = Frame::Inertial;
 
-  using const_global_cache_tags = tmpl::append<
-      tmpl::list<GaugeHSpatialWeightDecayWidth<frame>>,
-      tmpl::conditional_t<
-          UseRollon, tmpl::list<GaugeHRollOnStartTime, GaugeHRollOnTimeWindow>,
-          tmpl::list<>>>;
+  using const_global_cache_tags = tmpl::list<
+      GeneralizedHarmonic::gauges::Tags::DhGaugeParameters<UseRollon>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -304,7 +240,10 @@ struct InitializeDampedHarmonic {
           db::get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
               box),
           db::get<GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>>(box),
-          inertial_coords, db::get<GaugeHSpatialWeightDecayWidth<frame>>(box));
+          inertial_coords,
+          db::get<
+              GeneralizedHarmonic::gauges::Tags::DhGaugeParameters<UseRollon>>(
+              box));
 
       // Add gauge tags
       using compute_tags = db::AddComputeTags<DampedHarmonicCompute<frame>>;
@@ -331,6 +270,7 @@ struct InitializeDampedHarmonic {
       const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
       const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
-      double sigma_r) noexcept;
+      const GeneralizedHarmonic::gauges::DhGaugeParameters<false>&
+          parameters) noexcept;
 };
 }  // namespace GeneralizedHarmonic::gauges::Actions

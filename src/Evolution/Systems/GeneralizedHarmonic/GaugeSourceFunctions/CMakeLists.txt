@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   DampedHarmonic.cpp
   DampedWaveHelpers.cpp
+  DhGaugeParameters.cpp
   InitializeDampedHarmonic.cpp
   )
 
@@ -19,9 +20,9 @@ spectre_target_headers(
   HEADERS
   DampedHarmonic.hpp
   DampedWaveHelpers.hpp
+  DhGaugeParameters.hpp
   Gauges.hpp
   InitializeDampedHarmonic.hpp
-  OptionTags.hpp
   )
 
 target_link_libraries(

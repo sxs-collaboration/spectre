@@ -34,10 +34,15 @@ AnalyticSolution:
 
 EvolutionSystem:
   GeneralizedHarmonic:
-    Gauge:
+    # The parameter choices here come from our experience with the Spectral
+    # Einstein Code (SpEC). They should be suitable for evolutions of a
+    # perturbation of a Kerr-Schild black hole.
+    DhGaugeParameters:
       RollOnStartTime: 100000.0
       RollOnTimeWindow: 100.0
       SpatialDecayWidth: 50.0
+      Amplitudes: [1.0, 1.0, 1.0]
+      Exponents: [4, 4, 4]
 
 NumericalFlux:
   UpwindPenalty:

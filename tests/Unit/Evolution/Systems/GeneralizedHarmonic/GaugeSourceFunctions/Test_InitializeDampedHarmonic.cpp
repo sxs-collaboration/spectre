@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
 #include <cstddef>
 #include <random>
 #include <string>
@@ -21,9 +22,12 @@
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedHarmonic.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DhGaugeParameters.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/InitializeDampedHarmonic.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/DhGaugeParameters.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Initialize.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -114,14 +118,24 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
   const double t_start = pdist(*generator) * 0.1;
   const double sigma_t = pdist(*generator) * 0.2;
   const double r_max = pdist(*generator) * 0.7;
+  const std::array<double, 3> amplitudes{{pdist(*generator) * 0.2,
+                                          pdist(*generator) * 0.3,
+                                          pdist(*generator) * 0.4}};
+  const std::array<int, 3> exponents{
+      {idist(*generator), idist(*generator), idist(*generator)}};
 
-  MockRuntimeSystem runner = [r_max, t_start, sigma_t]() {
+  MockRuntimeSystem runner = [r_max, t_start, sigma_t, amplitudes,
+                              exponents]() {
     if constexpr (UseRollon) {
-      return MockRuntimeSystem{{r_max, t_start, sigma_t}};
+      GeneralizedHarmonic::gauges::DhGaugeParameters<true> parameters{
+          t_start, sigma_t, r_max, amplitudes, exponents};
+      return MockRuntimeSystem{{parameters}};
     } else {
       (void)t_start;
       (void)sigma_t;
-      return MockRuntimeSystem{{r_max}};
+      GeneralizedHarmonic::gauges::DhGaugeParameters<false> parameters{
+          r_max, amplitudes, exponents};
+      return MockRuntimeSystem{{parameters}};
     }
   }();
   Mesh<Dim> mesh{5, Spectral::Basis::Legendre,
@@ -228,8 +242,8 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
         time,
         ActionTesting::get_databox_tag<
             comp, domain::Tags::Coordinates<Dim, Frame::Inertial>>(runner, 0),
-        1., 1., 1.,  // amp_coef_{L1, L2, S}
-        4, 4, 4,     // exp_{L1, L2, S}
+        amplitudes[0], amplitudes[1], amplitudes[2],  // amp_coef_{L1, L2, S}
+        exponents[0], exponents[1], exponents[2],     // exp_{L1, L2, S}
         t_start, sigma_t, r_max);
   } else {
     GeneralizedHarmonic::gauges::damped_harmonic(
@@ -258,8 +272,8 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
                                                                         0),
         ActionTesting::get_databox_tag<
             comp, domain::Tags::Coordinates<Dim, Frame::Inertial>>(runner, 0),
-        1., 1., 1.,  // amp_coef_{L1, L2, S}
-        4, 4, 4,     // exp_{L1, L2, S}
+        amplitudes[0], amplitudes[1], amplitudes[2],  // amp_coef_{L1, L2, S}
+        exponents[0], exponents[1], exponents[2],     // exp_{L1, L2, S}
         r_max);
   }
 
@@ -307,29 +321,31 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
                                local_approx);
 }
 
-void test_options() noexcept {
-  Options::Parser<
-      tmpl::list<GeneralizedHarmonic::gauges::Actions::OptionTags::
-                     DampedHarmonicRollOnStart,
-                 GeneralizedHarmonic::gauges::Actions::OptionTags::
-                     DampedHarmonicRollOnWindow,
-                 GeneralizedHarmonic::gauges::Actions::OptionTags::
-                     DampedHarmonicSpatialDecayWidth<Frame::Inertial>>>
-      opts("");
-  opts.parse(
-      "EvolutionSystem:\n"
-      "  GeneralizedHarmonic:\n"
-      "    Gauge:\n"
-      "      RollOnStartTime : 0.\n"
-      "      RollOnTimeWindow : 100.\n"
-      "      SpatialDecayWidth : 50.\n");
-  CHECK(opts.template get<GeneralizedHarmonic::gauges::Actions::OptionTags::
-                              DampedHarmonicRollOnStart>() == 0.);
-  CHECK(opts.template get<GeneralizedHarmonic::gauges::Actions::OptionTags::
-                              DampedHarmonicRollOnWindow>() == 100.);
-  CHECK(opts.template get<
-            GeneralizedHarmonic::gauges::Actions::OptionTags::
-                DampedHarmonicSpatialDecayWidth<Frame::Inertial>>() == 50.);
+template <bool UseRollon>
+void test_create_from_options() noexcept {
+  std::string options =
+      "      SpatialDecayWidth : 50.\n"
+      "      Amplitudes : [1.0, 1.0, 1.0]\n"
+      "      Exponents : [4, 4, 4]\n";
+  if (UseRollon) {
+    options +=
+        "      RollOnStartTime : 0.\n"
+        "      RollOnTimeWindow : 100.\n";
+  }
+
+  auto created = TestHelpers::test_creation<
+      GeneralizedHarmonic::gauges::DhGaugeParameters<UseRollon>,
+      GeneralizedHarmonic::gauges::OptionTags::DhGaugeParameters<UseRollon>>(
+      options);
+
+  if constexpr (UseRollon) {
+    CHECK(created.rollon_start == 0.);
+    CHECK(created.rollon_window == 100.);
+  }
+
+  CHECK(created.spatial_decay_width == 50.);
+  CHECK(created.amplitudes == std::array<double, 3>{{1.0, 1.0, 1.0}});
+  CHECK(created.exponents == std::array<int, 3>{{4, 4, 4}});
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GH.Gauge.InitializeDampedHarmonic",
@@ -343,6 +359,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GH.Gauge.InitializeDampedHarmonic",
   test<2, false>(make_not_null(&generator));
   test<3, false>(make_not_null(&generator));
 
-  test_options();
+  test_create_from_options<true>();
+  test_create_from_options<false>();
+
+  TestHelpers::db::test_simple_tag<
+      GeneralizedHarmonic::gauges::Tags::DhGaugeParameters<true>>(
+      "DhGaugeParameters");
+  TestHelpers::db::test_simple_tag<
+      GeneralizedHarmonic::gauges::Tags::DhGaugeParameters<false>>(
+      "DhGaugeParameters");
 }
 }  // namespace
