@@ -3,18 +3,14 @@
 
 #pragma once
 
-namespace evolution {
 /// \ref protocols related to evolution systems
-namespace protocols {
+namespace evolution::protocols {
 
 /*!
- * \ingroup ProtocolsGroup
- * \brief Indicates the `ConformingType` provides compile-time information for
- * importing numeric initial data for an evolution.
+ *\brief Indicates the `ConformingType` represents the choice to start an
+ * evolution with numeric initial data.
  *
- * Requires the `ConformingType` has these type aliases:
- * - `import_fields`: The list of tags that should be imported from a volume
- * data file
+ * Currently no requirements are imposed on the `ConformingType`.
  *
  * Here's an example of a class that conforms to this protocol:
  *
@@ -22,10 +18,7 @@ namespace protocols {
  */
 struct NumericInitialData {
   template <typename ConformingType>
-  struct test {
-    using import_fields = typename ConformingType::import_fields;
-  };
+  struct test {};
 };
 
-}  // namespace protocols
-}  // namespace evolution
+}  // namespace evolution::protocols

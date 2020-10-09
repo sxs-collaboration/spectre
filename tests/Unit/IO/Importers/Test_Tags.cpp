@@ -21,6 +21,8 @@ struct ExampleVolumeData {
 SPECTRE_TEST_CASE("Unit.IO.Importers.Tags", "[Unit][IO]") {
   TestHelpers::db::test_simple_tag<importers::Tags::RegisteredElements>(
       "RegisteredElements");
+  TestHelpers::db::test_simple_tag<importers::Tags::ElementDataAlreadyRead>(
+      "ElementDataAlreadyRead");
   TestHelpers::db::test_simple_tag<
       importers::Tags::FileName<ExampleVolumeData>>(
       "FileName(ExampleVolumeData)");

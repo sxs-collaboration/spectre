@@ -35,8 +35,10 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/UpwindPenaltyCorrection.hpp"
 #include "Evolution/TypeTraits.hpp"
-#include "IO/Importers/ElementActions.hpp"
-#include "IO/Importers/VolumeDataReader.hpp"
+#include "IO/Importers/Actions/ReadVolumeData.hpp"
+#include "IO/Importers/Actions/ReceiveVolumeData.hpp"
+#include "IO/Importers/Actions/RegisterWithElementDataReader.hpp"
+#include "IO/Importers/ElementDataReader.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -284,7 +286,7 @@ struct EvolutionMetavars {
 
   enum class Phase {
     Initialization,
-    RegisterWithVolumeDataReader,
+    RegisterWithElementDataReader,
     ImportInitialData,
     InitializeInitialDataDependentQuantities,
     InitializeTimeStepperHistory,
@@ -357,7 +359,7 @@ struct EvolutionMetavars {
       intrp::Interpolator<EvolutionMetavars>,
       intrp::InterpolationTarget<EvolutionMetavars, AhA>,
       tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
-                          importers::VolumeDataReader<EvolutionMetavars>,
+                          importers::ElementDataReader<EvolutionMetavars>,
                           tmpl::list<>>,
       DgElementArray<
           EvolutionMetavars,
@@ -366,11 +368,22 @@ struct EvolutionMetavars {
                                      initialization_actions>,
               tmpl::conditional_t<
                   evolution::is_numeric_initial_data_v<initial_data>,
-                  Parallel::PhaseActions<
-                      Phase, Phase::RegisterWithVolumeDataReader,
-                      tmpl::list<
-                          importers::Actions::RegisterWithVolumeDataReader,
-                          Parallel::Actions::TerminatePhase>>,
+                  tmpl::list<
+                      Parallel::PhaseActions<
+                          Phase, Phase::RegisterWithElementDataReader,
+                          tmpl::list<
+                              importers::Actions::RegisterWithElementDataReader,
+                              Parallel::Actions::TerminatePhase>>,
+                      Parallel::PhaseActions<
+                          Phase, Phase::ImportInitialData,
+                          tmpl::list<
+                              importers::Actions::ReadVolumeData<
+                                  evolution::OptionTags::NumericInitialData,
+                                  typename system::variables_tag::tags_list>,
+                              importers::Actions::ReceiveVolumeData<
+                                  evolution::OptionTags::NumericInitialData,
+                                  typename system::variables_tag::tags_list>,
+                              Parallel::Actions::TerminatePhase>>>,
                   tmpl::list<>>,
               Parallel::PhaseActions<
                   Phase, Phase::InitializeInitialDataDependentQuantities,
@@ -387,12 +400,7 @@ struct EvolutionMetavars {
                   Phase, Phase::Evolve,
                   tmpl::list<Actions::RunEventsAndTriggers,
                              Actions::ChangeSlabSize, step_actions,
-                             Actions::AdvanceTime>>>>,
-          tmpl::conditional_t<
-              evolution::is_numeric_initial_data_v<initial_data>,
-              ImportNumericInitialData<Phase, Phase::ImportInitialData,
-                                       initial_data>,
-              ImportNoInitialData>>>>;
+                             Actions::AdvanceTime>>>>>>>;
 
   static constexpr Options::String help{
       "Evolve a generalized harmonic analytic solution.\n\n"
@@ -406,9 +414,9 @@ struct EvolutionMetavars {
     switch (current_phase) {
       case Phase::Initialization:
         return evolution::is_numeric_initial_data_v<initial_data>
-                   ? Phase::RegisterWithVolumeDataReader
+                   ? Phase::RegisterWithElementDataReader
                    : Phase::InitializeInitialDataDependentQuantities;
-      case Phase::RegisterWithVolumeDataReader:
+      case Phase::RegisterWithElementDataReader:
         return Phase::ImportInitialData;
       case Phase::ImportInitialData:
         return Phase::InitializeInitialDataDependentQuantities;

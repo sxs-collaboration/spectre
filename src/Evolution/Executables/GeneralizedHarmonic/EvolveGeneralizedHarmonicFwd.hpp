@@ -20,7 +20,6 @@ struct KerrSchild;
 }  // namespace Solutions
 }  // namespace gr
 namespace evolution {
-template <typename System>
 struct NumericInitialData;
 }  // namespace evolution
 
