@@ -10,6 +10,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 template <size_t Dim>
 // clang-tidy: incorrectly reported redundancy in template expression
@@ -80,14 +81,24 @@ bool operator!=(const Mesh<Dim>& lhs, const Mesh<Dim>& rhs) noexcept {
   return not(lhs == rhs);
 }
 
+template <size_t Dim>
+std::ostream& operator<<(std::ostream& os, const Mesh<Dim>& mesh) noexcept {
+  using ::operator<<;
+  return os << '[' << mesh.extents() << ',' << mesh.basis() << ','
+            << mesh.quadrature() << ']';
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define GEN_OP(op, dim)                           \
   template bool operator op(const Mesh<dim>& lhs, \
                             const Mesh<dim>& rhs) noexcept;
-#define INSTANTIATE_MESH(_, data) \
-  template class Mesh<DIM(data)>; \
-  GEN_OP(==, DIM(data))           \
-  GEN_OP(!=, DIM(data))
+#define INSTANTIATE_MESH(_, data)                     \
+  template class Mesh<DIM(data)>;                     \
+  GEN_OP(==, DIM(data))                               \
+  GEN_OP(!=, DIM(data))                               \
+  template std::ostream& operator<<(std::ostream& os, \
+                                    const Mesh<DIM(data)>& mesh) noexcept;
+
 #define INSTANTIATE_SLICE_AWAY(_, data)                                  \
   template Mesh<DIM(data) - 1> Mesh<DIM(data)>::slice_away(const size_t) \
       const noexcept;

@@ -42,7 +42,10 @@ void test_extents_basis_and_quadrature(
     CHECK(mesh.quadrature(d) == gsl::at(quadrature, d));
     CHECK(gsl::at(mesh.slices(), d) == mesh.slice_through(d));
   }
-  CHECK(get_output(mesh) == get_output(extents));
+  CHECK(get_output(mesh) ==
+        std::string{MakeString{} << '[' << get_output(extents) << ','
+                                 << get_output(mesh.basis()) << ','
+                                 << get_output(mesh.quadrature()) << ']'});
   for (IndexIterator<Dim> index_it(mesh.extents()); index_it; ++index_it) {
     CAPTURE(*index_it);
     Index<Dim> index{};
