@@ -17,6 +17,10 @@ DomainCreator:
     InitialRefinement: [2, 2, 0]
     InitialGridPoints: [2, 2, 2]
 
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+
 AnalyticData:
   CylindricalBlastWave:
     InnerRadius: 0.8

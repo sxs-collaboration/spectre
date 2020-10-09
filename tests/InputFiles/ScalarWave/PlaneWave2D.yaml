@@ -37,6 +37,10 @@ DomainCreator:
     InitialRefinement: [2, 2]
     InitialGridPoints: [4, 4]
 
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+
 # Filtering is being tested by the 2D executable (see EvolveScalarWave.hpp)
 Filtering:
   ExpFilter0:

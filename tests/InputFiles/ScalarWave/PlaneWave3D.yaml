@@ -37,6 +37,10 @@ DomainCreator:
     InitialRefinement: [1, 1, 1]
     InitialGridPoints: [5, 5, 5]
 
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+
 # If filtering is enabled in the executable the filter can be controlled using:
 # Filtering:
 #   ExpFilter0:

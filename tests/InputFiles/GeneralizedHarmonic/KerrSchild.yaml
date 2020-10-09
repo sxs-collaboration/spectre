@@ -44,6 +44,10 @@ EvolutionSystem:
       Amplitudes: [1.0, 1.0, 1.0]
       Exponents: [4, 4, 4]
 
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+
 NumericalFlux:
   UpwindPenalty:
 

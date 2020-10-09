@@ -25,6 +25,10 @@ DomainCreator:
     InitialRefinement: [2]
     InitialGridPoints: [7]
 
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+
 NumericalFlux:
   LocalLaxFriedrichs:
 
