@@ -19,6 +19,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/OptionTags.hpp"
@@ -189,6 +190,40 @@ struct InverseJacobianCompute
       const tnsr::I<DataVector, MapTag::dim, typename MapTag::source_frame>&
           source_coords) noexcept {
     *inv_jacobian = element_map.inv_jacobian(source_coords);
+  }
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// \brief The Jacobian from the source frame to the target frame.
+///
+/// Specifically, \f$\partial x^{i} / \partial \xi^{\bar{i}}\f$, where
+/// \f$\xi^\bar{i}\f$ denotes the source frame and \f$x^i\f$ denotes the target
+/// frame.
+template <size_t Dim, typename SourceFrame, typename TargetFrame>
+struct Jacobian : db::SimpleTag {
+  static std::string name() noexcept {
+    return "Jacobian(" + get_output(SourceFrame{}) + "," +
+           get_output(TargetFrame{}) + ")";
+  }
+  using type = ::Jacobian<DataVector, Dim, SourceFrame, TargetFrame>;
+};
+
+/// \ingroup ComputationalDomainGroup
+/// Computes the Jacobian of the map from the `InverseJacobian<Dim, SourceFrame,
+/// TargetFrame>` tag.
+template <size_t Dim, typename SourceFrame, typename TargetFrame>
+struct JacobianCompute : Jacobian<Dim, SourceFrame, TargetFrame>,
+                         db::ComputeTag {
+  using base = Jacobian<Dim, SourceFrame, TargetFrame>;
+  using return_type = typename base::type;
+  using argument_tags =
+      tmpl::list<InverseJacobian<Dim, SourceFrame, TargetFrame>>;
+  static constexpr auto function(
+      const gsl::not_null<return_type*> jacobian,
+      const ::InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>&
+          inv_jac) noexcept {
+    *jacobian = determinant_and_inverse(inv_jac).second;
   }
 };
 

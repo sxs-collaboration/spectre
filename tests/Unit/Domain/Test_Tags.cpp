@@ -54,6 +54,9 @@ void test_simple_tags() noexcept {
   TestHelpers::db::test_simple_tag<Tags::BoundaryDirectionsExterior<Dim>>(
       "BoundaryDirectionsExterior");
   TestHelpers::db::test_simple_tag<Tags::Direction<Dim>>("Direction");
+  TestHelpers::db::test_simple_tag<
+      Tags::Jacobian<Dim, Frame::Logical, Frame::Inertial>>(
+      "Jacobian(Logical,Inertial)");
 }
 
 template <size_t Dim>
@@ -116,11 +119,15 @@ void test_compute_tags() noexcept {
   TestHelpers::db::test_compute_tag<Tags::MappedCoordinates<
       Tags::ElementMap<Dim>, Tags::Coordinates<Dim, Frame::Logical>>>(
       "InertialCoordinates");
+  TestHelpers::db::test_compute_tag<
+      Tags::JacobianCompute<Dim, Frame::Logical, Frame::Inertial>>(
+      "Jacobian(Logical,Inertial)");
 
   auto map = element_map<Dim>();
   const tnsr::I<DataVector, Dim, Frame::Logical> logical_coords(
       make_array<Dim>(DataVector{-1.0, -0.5, 0.0, 0.5, 1.0}));
   const auto expected_inv_jacobian = map.inv_jacobian(logical_coords);
+  const auto expected_jacobian = map.jacobian(logical_coords);
 
   const auto box = db::create<
       tmpl::list<Tags::ElementMap<Dim, Frame::Grid>,
@@ -128,7 +135,8 @@ void test_compute_tags() noexcept {
       db::AddComputeTags<
           Tags::InverseJacobianCompute<Tags::ElementMap<Dim, Frame::Grid>,
                                        Tags::Coordinates<Dim, Frame::Logical>>,
-          Tags::DetInvJacobianCompute<Dim, Frame::Logical, Frame::Grid>>>(
+          Tags::DetInvJacobianCompute<Dim, Frame::Logical, Frame::Grid>,
+          Tags::JacobianCompute<Dim, Frame::Logical, Frame::Grid>>>(
       std::move(map), logical_coords);
   CHECK_ITERABLE_APPROX(
       (db::get<Tags::InverseJacobian<Dim, Frame::Logical, Frame::Grid>>(box)),
@@ -136,6 +144,9 @@ void test_compute_tags() noexcept {
   CHECK_ITERABLE_APPROX(
       (db::get<Tags::DetInvJacobian<Frame::Logical, Frame::Grid>>(box)),
       determinant(expected_inv_jacobian));
+  CHECK_ITERABLE_APPROX(
+      (db::get<Tags::Jacobian<Dim, Frame::Logical, Frame::Grid>>(box)),
+      expected_jacobian);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Tags", "[Unit][Domain]") {
