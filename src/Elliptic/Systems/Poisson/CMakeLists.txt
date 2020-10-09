@@ -27,5 +27,7 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   GeneralRelativity
+  Utilities
+  INTERFACE
   LinearOperators
   )
