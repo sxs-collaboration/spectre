@@ -79,8 +79,8 @@ RUN add-apt-repository universe \
     && curl https://bootstrap.pypa.io/get-pip.py --output get-pip.py \
     && python2 get-pip.py \
     && apt-get install -y python3-pip python-is-python3 \
-    && pip2 --no-cache-dir install numpy scipy h5py \
-    && pip3 --no-cache-dir install numpy scipy h5py \
+    && pip2 --no-cache-dir install numpy scipy h5py matplotlib \
+    && pip3 --no-cache-dir install numpy scipy h5py matplotlib \
     && pip2 --no-cache-dir install coverxygen beautifulsoup4 pybtex \
     && pip3 --no-cache-dir install coverxygen beautifulsoup4 pybtex \
     && pip2 --no-cache-dir install yapf==0.29.0 futures \
