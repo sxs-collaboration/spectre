@@ -194,7 +194,6 @@ RUN wget https://github.com/include-what-you-use/include-what-you-use/archive/cl
 # We build both Clang and GCC versions of Charm++ so that all our tests can
 # use the same build environment.
 WORKDIR /work
-ARG CHARM_GIT_TAG=v6.8.0
 # Charm doesn't support compiling with clang without symbolic links
 RUN ln -s $(which clang++-10) /usr/local/bin/clang++ \
     && ln -s $(which clang-10) /usr/local/bin/clang \
@@ -211,17 +210,8 @@ RUN ln -s $(which clang++-10) /usr/local/bin/clang++ \
 # building with Charm++ in the `tmp` directories.
 #
 # We do not build  with debug symbols and build with O2 to reduce build size.
-RUN git clone --single-branch --branch ${CHARM_GIT_TAG} --depth 1 \
-      https://github.com/UIUC-PPL/charm \
-    && cd /work/charm \
-    && git checkout ${CHARM_GIT_TAG} \
-    && ./build charm++ multicore-linux64 gcc ${PARALLEL_MAKE_ARG} -g0 -O2  \
-    && ./build charm++ multicore-linux64 clang ${PARALLEL_MAKE_ARG} -g0 -O2 \
-    && wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/Charm/v6.8.patch \
-    && git apply /work/charm/v6.8.patch \
-    && rm /work/charm/v6.8.patch \
-    && rm -r /work/charm/doc /work/charm/examples
-RUN git clone https://github.com/UIUC-PPL/charm charm_6_10_2 \
+RUN git clone --single-branch --branch v6.10.2 --depth 1 \
+        https://github.com/UIUC-PPL/charm charm_6_10_2 \
     && cd /work/charm_6_10_2 \
     && git checkout v6.10.2 \
     && ./build charm++ multicore-linux-x86_64 gcc ${PARALLEL_MAKE_ARG} -g -O0 \
