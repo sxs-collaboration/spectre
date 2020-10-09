@@ -344,6 +344,29 @@ struct UnitNormalVectorCompute : UnitNormalVector<Frame>, db::ComputeTag {
   using return_type = tnsr::I<DataVector, 3, Frame>;
 };
 
+/// Ricci scalar is the two-dimensional intrinsic Ricci scalar curvature
+/// of a Strahlkorper
+struct RicciScalar : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+/// Computes the two-dimensional intrinsic Ricci scalar of a Strahlkorper
+template <typename Frame>
+struct RicciScalarCompute : RicciScalar, db::ComputeTag {
+  using base = RicciScalar;
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<Scalar<DataVector>*>, const tnsr::ii<DataVector, 3, Frame>&,
+      const tnsr::I<DataVector, 3, Frame>&,
+      const tnsr::ii<DataVector, 3, Frame>&,
+      const tnsr::II<DataVector, 3, Frame>&) noexcept>(
+      &StrahlkorperGr::ricci_scalar<Frame>);
+  using argument_tags =
+      tmpl::list<gr::Tags::SpatialRicci<3, Frame, DataVector>,
+                 UnitNormalVector<Frame>, gr::Tags::ExtrinsicCurvature<3>,
+                 gr::Tags::InverseSpatialMetric<3, Frame, DataVector>>;
+  using return_type = Scalar<DataVector>;
+};
+
 // @{
 /// `Tangents(i,j)` is \f$\partial x_{\rm surf}^i/\partial q^j\f$,
 /// where \f$x_{\rm surf}^i\f$ are the Cartesian coordinates of the

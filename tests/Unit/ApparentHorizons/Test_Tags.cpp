@@ -298,6 +298,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
       "IrreducibleMass");
   TestHelpers::db::test_simple_tag<StrahlkorperTags::OneOverOneFormMagnitude>(
       "OneOverOneFormMagnitude");
+  TestHelpers::db::test_simple_tag<StrahlkorperTags::RicciScalar>(
+      "RicciScalar");
   TestHelpers::db::test_simple_tag<
       StrahlkorperTags::UnitNormalOneForm<Frame::Inertial>>(
       "UnitNormalOneForm");
@@ -409,4 +411,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   TestHelpers::db::test_compute_tag<
       StrahlkorperTags::UnitNormalVectorCompute<Frame::Inertial>>(
       "UnitNormalVector");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperTags::RicciScalarCompute<Frame::Inertial>>(
+      "RicciScalar");
 }
