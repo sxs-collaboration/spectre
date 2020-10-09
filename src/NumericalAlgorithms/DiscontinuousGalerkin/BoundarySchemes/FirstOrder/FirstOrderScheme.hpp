@@ -87,8 +87,8 @@ struct FirstOrderScheme {
       detail::boundary_data_computer_impl<Dim, VariablesTag,
                                           NumericalFluxComputerTag>;
 
-  using mortar_data_tag = Tags::SimpleMortarData<typename TemporalIdTag::type,
-                                                 BoundaryData, BoundaryData>;
+  using mortar_data_tag = ::Tags::SimpleMortarData<typename TemporalIdTag::type,
+                                                   BoundaryData, BoundaryData>;
 
   // Only a shortcut
   using magnitude_of_face_normal_tag =
