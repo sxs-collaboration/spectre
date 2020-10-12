@@ -12,6 +12,7 @@
 /// Boundary corrections/numerical fluxes
 namespace Burgers::BoundaryCorrections {
 /// \cond
+class Hll;
 class Rusanov;
 /// \endcond
 
@@ -35,7 +36,7 @@ class BoundaryCorrection : public PUP::able {
   WRAPPED_PUPable_abstract(BoundaryCorrection);  // NOLINT
   /// \endcond
 
-  using creatable_classes = tmpl::list<Rusanov>;
+  using creatable_classes = tmpl::list<Hll, Rusanov>;
 
   virtual std::unique_ptr<BoundaryCorrection> get_clone() const noexcept = 0;
 };

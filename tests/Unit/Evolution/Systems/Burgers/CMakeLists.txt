@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Burgers")
 
 set(LIBRARY_SOURCES
+  BoundaryCorrections/Test_Hll.cpp
   BoundaryCorrections/Test_Rusanov.cpp
   Test_Characteristics.cpp
   Test_Fluxes.cpp

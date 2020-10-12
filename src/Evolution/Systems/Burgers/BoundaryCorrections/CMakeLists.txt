@@ -6,6 +6,7 @@ spectre_target_sources(
   Burgers
   PRIVATE
   RegisterDerived.cpp
+  Hll.cpp
   Rusanov.cpp
   )
 
@@ -15,6 +16,7 @@ spectre_target_headers(
   HEADERS
   BoundaryCorrection.hpp
   Factory.hpp
+  Hll.hpp
   RegisterDerived.hpp
   Rusanov.hpp
   )
