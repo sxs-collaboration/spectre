@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <functional>
 #include <random>
+#include <type_traits>
 
 #include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/ComplexDataVector.hpp"
@@ -131,6 +132,26 @@ struct CheckApply<LocalScalarTag, LocalTensorTag, Dim, Dim> {
     }
     CHECK(apply_matrices(ref_matrices, get(get<LocalScalarTag>(source_data)),
                          source_mesh.extents()) == vector_result);
+
+    // Test multiple independent components in a "vector"
+    using DataType =
+        std::decay_t<decltype(get(get<LocalScalarTag>(source_data)))>;
+    const size_t num_pts = get(get<LocalScalarTag>(source_data)).size();
+    DataType t0{2 * num_pts};
+    for (size_t i = 0; i < num_pts; ++i) {
+      t0[i] = get(get<LocalScalarTag>(source_data))[i];
+      t0[i + num_pts] = 2.0 * t0[i];
+    }
+    DataType expected_t0{2 * get(get<LocalScalarTag>(expected)).size()};
+    for (size_t i = 0; i < get(get<LocalScalarTag>(expected)).size(); ++i) {
+      expected_t0[i] = get(get<LocalScalarTag>(expected))[i];
+      expected_t0[i + get(get<LocalScalarTag>(expected)).size()] =
+          2.0 * expected_t0[i];
+    }
+    CHECK(apply_matrices(ref_matrices, t0, source_mesh.extents()) ==
+          expected_t0);
+    CHECK(apply_matrices<DataType>(ref_matrices, t0, source_mesh.extents()) ==
+          expected_t0);
   }
 };
 

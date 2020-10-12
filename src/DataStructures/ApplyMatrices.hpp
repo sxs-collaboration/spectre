@@ -99,23 +99,30 @@ template <typename ResultType, typename MatrixType, typename VectorType,
 void apply_matrices(const gsl::not_null<ResultType*> result,  // NOLINT
                     const std::array<MatrixType, Dim>& matrices,
                     const VectorType& u, const Index<Dim>& extents) noexcept {
-  ASSERT(u.size() == extents.product(),
-         "Mismatch between extents (" << extents.product() << ") and size ("
-                                      << u.size() << ").");
-  ASSERT(
-      result->size() == apply_matrices_detail::result_size(matrices, extents),
-      "result has wrong size.  Expected "
-          << apply_matrices_detail::result_size(matrices, extents)
-          << ", received " << result->size());
+  const size_t number_of_independent_components = u.size() / extents.product();
+  ASSERT(u.size() == number_of_independent_components * extents.product(),
+         "The size of the vector u ("
+             << u.size()
+             << ") must be a multiple of the number of grid points ("
+             << extents.product() << ").");
+  ASSERT(result->size() ==
+             number_of_independent_components *
+                 apply_matrices_detail::result_size(matrices, extents),
+         "result has wrong size.  Expected "
+             << apply_matrices_detail::result_size(matrices, extents)
+             << ", received " << result->size());
   apply_matrices_detail::Impl<typename VectorType::ElementType, Dim>::apply(
-      result->data(), matrices, u.data(), extents, 1);
+      result->data(), matrices, u.data(), extents,
+      number_of_independent_components);
 }
 
 template <typename MatrixType, typename VectorType, size_t Dim>
 VectorType apply_matrices(const std::array<MatrixType, Dim>& matrices,
                           const VectorType& u,
                           const Index<Dim>& extents) noexcept {
-  VectorType result(apply_matrices_detail::result_size(matrices, extents));
+  const size_t number_of_independent_components = u.size() / extents.product();
+  VectorType result(number_of_independent_components *
+                    apply_matrices_detail::result_size(matrices, extents));
   apply_matrices(make_not_null(&result), matrices, u, extents);
   return result;
 }
@@ -125,7 +132,9 @@ template <typename ResultType, typename MatrixType, typename VectorType,
 ResultType apply_matrices(const std::array<MatrixType, Dim>& matrices,
                           const VectorType& u,
                           const Index<Dim>& extents) noexcept {
-  ResultType result(apply_matrices_detail::result_size(matrices, extents));
+  const size_t number_of_independent_components = u.size() / extents.product();
+  ResultType result(number_of_independent_components *
+                    apply_matrices_detail::result_size(matrices, extents));
   apply_matrices(make_not_null(&result), matrices, u, extents);
   return result;
 }
