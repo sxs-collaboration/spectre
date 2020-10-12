@@ -10,7 +10,7 @@
 #include "Evolution/Systems/Burgers/Characteristics.hpp"
 #include "Evolution/Systems/Burgers/Fluxes.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"  // IWYU pragma: keep
-#include "Evolution/Systems/Burgers/TimeDerivative.hpp"
+#include "Evolution/Systems/Burgers/TimeDerivativeTerms.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup EvolutionSystemsGroup
@@ -30,7 +30,7 @@ struct System {
   using gradient_variables = tmpl::list<>;
   using sourced_variables = tmpl::list<>;
 
-  using compute_volume_time_derivative = TimeDerivative;
+  using compute_volume_time_derivative_terms = TimeDerivativeTerms;
   using volume_fluxes = Fluxes;
 
   using compute_largest_characteristic_speed =

@@ -45,7 +45,7 @@ void fluxes_impl(
  * Newtonian Euler system
  */
 template <size_t Dim, typename InitialDataType>
-struct TimeDerivative {
+struct TimeDerivativeTerms {
  private:
   struct EnthalpyDensity : db::SimpleTag {
     using type = Scalar<DataVector>;
@@ -69,9 +69,10 @@ struct TimeDerivative {
   static void apply(
       // Time derivatives returned by reference. All the tags in the
       // variables_tag in the system struct.
-      const gsl::not_null<Scalar<DataVector>*> dt_mass_density,
-      const gsl::not_null<tnsr::I<DataVector, Dim>*> dt_momentum_density,
-      const gsl::not_null<Scalar<DataVector>*> dt_energy_density,
+      const gsl::not_null<Scalar<DataVector>*> non_flux_terms_dt_mass_density,
+      const gsl::not_null<tnsr::I<DataVector, Dim>*>
+          non_flux_terms_dt_momentum_density,
+      const gsl::not_null<Scalar<DataVector>*> non_flux_terms_dt_energy_density,
 
       // Fluxes returned by reference. Listed in the system struct as
       // flux_variables.
@@ -93,8 +94,9 @@ struct TimeDerivative {
                         energy_density, velocity, pressure);
     if constexpr (not std::is_same_v<SourceTerm, Sources::NoSource>) {
       sources_impl(
-          std::make_tuple(dt_mass_density, dt_momentum_density,
-                          dt_energy_density),
+          std::make_tuple(non_flux_terms_dt_mass_density,
+                          non_flux_terms_dt_momentum_density,
+                          non_flux_terms_dt_energy_density),
           typename InitialDataType::source_term_type::sourced_variables{},
           source, source_term_args...);
     }
@@ -104,9 +106,12 @@ struct TimeDerivative {
       // Time derivatives returned by reference. No source terms or
       // nonconservative products, so not used. All the tags in the
       // variables_tag in the system struct.
-      const gsl::not_null<Scalar<DataVector>*> /*dt_mass_density*/,
-      const gsl::not_null<tnsr::I<DataVector, Dim>*> /*dt_momentum_density*/,
-      const gsl::not_null<Scalar<DataVector>*> /*dt_energy_density*/,
+      const gsl::not_null<
+          Scalar<DataVector>*> /*non_flux_terms_dt_mass_density*/,
+      const gsl::not_null<
+          tnsr::I<DataVector, Dim>*> /*non_flux_terms_dt_momentum_density*/,
+      const gsl::not_null<
+          Scalar<DataVector>*> /*non_flux_terms_dt_energy_density*/,
 
       // Fluxes returned by reference. Listed in the system struct as
       // flux_variables.
@@ -128,7 +133,7 @@ struct TimeDerivative {
   }
 
  private:
-  using dt_vars_list =
+  using non_flux_terms_dt_vars_list =
       tmpl::list<Tags::MassDensityCons, Tags::MomentumDensity<Dim>,
                  Tags::EnergyDensity>;
 
@@ -136,12 +141,14 @@ struct TimeDerivative {
   static void sources_impl(std::tuple<gsl::not_null<Scalar<DataVector>*>,
                                       gsl::not_null<tnsr::I<DataVector, Dim>*>,
                                       gsl::not_null<Scalar<DataVector>*>>
-                               dt_vars,
+                               non_flux_terms_dt_vars,
                            tmpl::list<SourcedVars...> /*meta*/,
                            const SourceTerm& source,
                            const SourceTermArgs&... source_term_args) noexcept {
     source.apply(
-        std::get<tmpl::index_of<dt_vars_list, SourcedVars>::value>(dt_vars)...,
+        std::get<
+            tmpl::index_of<non_flux_terms_dt_vars_list, SourcedVars>::value>(
+            non_flux_terms_dt_vars)...,
         source_term_args...);
   }
 };

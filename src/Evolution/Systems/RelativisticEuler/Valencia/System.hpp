@@ -13,6 +13,7 @@
 #include "Evolution/Systems/RelativisticEuler/Valencia/PrimitiveFromConservative.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Sources.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Tags.hpp"
+#include "Evolution/Systems/RelativisticEuler/Valencia/TimeDerivativeTerms.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -33,6 +34,13 @@ struct System {
   static constexpr size_t thermodynamic_dim =
       EquationOfStateType::thermodynamic_dim;
 
+  using variables_tag = ::Tags::Variables<
+      tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<Dim>>>;
+  using flux_variables =
+      tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<Dim>>;
+  using gradient_variables = tmpl::list<>;
+  // Source for TildeD is zero
+  using sourced_variables = tmpl::list<Tags::TildeTau, Tags::TildeS<Dim>>;
   using primitive_variables_tag = ::Tags::Variables<
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
@@ -40,29 +48,23 @@ struct System {
                  hydro::Tags::SpecificEnthalpy<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, Dim>>>;
-  using variables_tag = ::Tags::Variables<
-      tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<Dim>>>;
-
   using spacetime_variables_tag =
       ::Tags::Variables<gr::tags_for_hydro<Dim, DataVector>>;
+
+  using compute_volume_time_derivative_terms = TimeDerivativeTerms<Dim>;
+  using volume_fluxes = ComputeFluxes<Dim>;
+  using volume_sources = ComputeSources<Dim>;
 
   using conservative_from_primitive = ConservativeFromPrimitive<Dim>;
   using primitive_from_conservative =
       PrimitiveFromConservative<thermodynamic_dim, Dim>;
 
-  template <typename Tag>
-  using magnitude_tag = ::Tags::NonEuclideanMagnitude<
-      Tag, gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
-
   using char_speeds_compute_tag = Tags::CharacteristicSpeedsCompute<Dim>;
   using char_speeds_tag = Tags::CharacteristicSpeeds<Dim>;
 
-  using volume_fluxes = ComputeFluxes<Dim>;
-
-  using volume_sources = ComputeSources<Dim>;
-
-  // source for TildeD is zero.
-  using sourced_variables = tmpl::list<Tags::TildeTau, Tags::TildeS<Dim>>;
+  template <typename Tag>
+  using magnitude_tag = ::Tags::NonEuclideanMagnitude<
+      Tag, gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
 };
 
 }  // namespace Valencia

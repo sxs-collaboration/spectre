@@ -12,7 +12,7 @@ spectre_target_sources(
   Divergence.cpp
   Fluxes.cpp
   Minmod.cpp
-  TimeDerivative.cpp
+  TimeDerivativeTerms.cpp
   )
 
 spectre_target_headers(
@@ -23,7 +23,7 @@ spectre_target_headers(
   Fluxes.hpp
   System.hpp
   Tags.hpp
-  TimeDerivative.hpp
+  TimeDerivativeTerms.hpp
   )
 
 target_link_libraries(

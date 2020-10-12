@@ -26,7 +26,7 @@ class DataVector;
 namespace Burgers {
 /// Computes the time derivative terms needed for the Burgers system, which are
 /// just the fluxes.
-struct TimeDerivative {
+struct TimeDerivativeTerms {
   using temporary_tags = tmpl::list<>;
   using argument_tags = tmpl::list<Tags::U>;
 
@@ -34,7 +34,7 @@ struct TimeDerivative {
       // Time derivatives returned by reference. No source terms or
       // nonconservative products, so not used. All the tags in the
       // variables_tag in the system struct.
-      gsl::not_null<Scalar<DataVector>*> /*dt_vars*/,
+      gsl::not_null<Scalar<DataVector>*> /*non_flux_terms_dt_vars*/,
 
       // Fluxes returned by reference. Listed in the system struct as
       // flux_variables.

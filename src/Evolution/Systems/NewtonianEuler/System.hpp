@@ -13,7 +13,7 @@
 #include "Evolution/Systems/NewtonianEuler/PrimitiveFromConservative.hpp"
 #include "Evolution/Systems/NewtonianEuler/Sources.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
-#include "Evolution/Systems/NewtonianEuler/TimeDerivative.hpp"
+#include "Evolution/Systems/NewtonianEuler/TimeDerivativeTerms.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -43,7 +43,8 @@ struct System {
       Tags::MassDensity<DataVector>, Tags::Velocity<DataVector, Dim>,
       Tags::SpecificInternalEnergy<DataVector>, Tags::Pressure<DataVector>>>;
 
-  using compute_volume_time_derivative = TimeDerivative<Dim, InitialDataType>;
+  using compute_volume_time_derivative_terms =
+      TimeDerivativeTerms<Dim, InitialDataType>;
   using volume_fluxes = ComputeFluxes<Dim>;
   using volume_sources = ComputeSources<InitialDataType>;
 

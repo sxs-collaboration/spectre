@@ -11,14 +11,14 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Evolution/Systems/Burgers/System.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
-#include "Evolution/Systems/Burgers/TimeDerivative.hpp"
+#include "Evolution/Systems/Burgers/TimeDerivativeTerms.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-SPECTRE_TEST_CASE("Unit.Burgers.TimeDerivative", "[Unit][Burgers]") {
+SPECTRE_TEST_CASE("Unit.Burgers.TimeDerivativeTerms", "[Unit][Burgers]") {
   constexpr size_t num_points = 10;
   const Mesh<1> mesh(num_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
@@ -30,7 +30,7 @@ SPECTRE_TEST_CASE("Unit.Burgers.TimeDerivative", "[Unit][Burgers]") {
 
   tnsr::I<DataVector, 1, Frame::Inertial> flux(num_points);
   Scalar<DataVector> dudt{num_points, 0.0};
-  Burgers::TimeDerivative::apply(&dudt, &flux, burgers_u);
+  Burgers::TimeDerivativeTerms::apply(&dudt, &flux, burgers_u);
 
   // dudt should be zero since we have no source terms
   const Scalar<DataVector> dudt_expected{num_points, 0.0};

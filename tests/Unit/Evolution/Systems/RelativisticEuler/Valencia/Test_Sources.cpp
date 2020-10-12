@@ -15,7 +15,7 @@ namespace {
 template <size_t Dim>
 void test_sources(const DataVector& used_for_size) {
   pypp::check_with_random_values<1>(
-      &RelativisticEuler::Valencia::ComputeSources<Dim>::apply, "TestFunctions",
+      &RelativisticEuler::Valencia::ComputeSources<Dim>::apply, "Sources",
       {"source_tilde_tau", "source_tilde_s"}, {{{0.0, 1.0}}}, used_for_size);
 }
 }  // namespace

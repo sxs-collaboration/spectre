@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_PrimitiveFromConservative.cpp
   Test_Sources.cpp
   Test_Tags.cpp
+  Test_TimeDerivativeTerms.cpp
   )
 
 add_test_library(

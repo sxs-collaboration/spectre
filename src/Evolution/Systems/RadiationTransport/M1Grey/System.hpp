@@ -11,6 +11,7 @@
 #include "Evolution/Systems/RadiationTransport/M1Grey/Fluxes.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Sources.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
+#include "Evolution/Systems/RadiationTransport/M1Grey/TimeDerivativeTerms.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -42,7 +43,20 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
   using variables_tag = ::Tags::Variables<
       tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
                  Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...>>;
-
+  using flux_variables =
+      tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
+                 Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...>;
+  using gradient_variables = tmpl::list<>;
+  using sourced_variables =
+      tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
+                 Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...>;
+  using primitive_variables_tag = ::Tags::Variables<tmpl::list<
+      Tags::ClosureFactor<NeutrinoSpecies>...,
+      Tags::TildeP<Frame::Inertial, NeutrinoSpecies>...,
+      Tags::TildeJ<NeutrinoSpecies>..., Tags::TildeHNormal<NeutrinoSpecies>...,
+      Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>...,
+      Tags::M1HydroCouplingNormal<NeutrinoSpecies>...,
+      Tags::M1HydroCouplingSpatial<Frame::Inertial, NeutrinoSpecies>...>>;
   // gr::tags_for_hydro contains all these tags plus SqrtDetSpatialMetric,
   // so it can be used when adding M1 coupling to hydro
   using spacetime_variables_tag = ::Tags::Variables<tmpl::list<
@@ -58,7 +72,6 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
       ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
                     tmpl::size_t<3>, Frame::Inertial>,
       gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>>;
-
   using hydro_variables_tag = ::Tags::Variables<
       tmpl::list<hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, 3>,
@@ -66,28 +79,17 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
                  Tags::GreyAbsorptionOpacity<NeutrinoSpecies>...,
                  Tags::GreyScatteringOpacity<NeutrinoSpecies>...>>;
 
-  using primitive_variables_tag = ::Tags::Variables<tmpl::list<
-      Tags::ClosureFactor<NeutrinoSpecies>...,
-      Tags::TildeP<Frame::Inertial, NeutrinoSpecies>...,
-      Tags::TildeJ<NeutrinoSpecies>..., Tags::TildeHNormal<NeutrinoSpecies>...,
-      Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>...,
-      Tags::M1HydroCouplingNormal<NeutrinoSpecies>...,
-      Tags::M1HydroCouplingSpatial<Frame::Inertial, NeutrinoSpecies>...>>;
-
-  template <typename Tag>
-  using magnitude_tag = ::Tags::NonEuclideanMagnitude<
-      Tag, gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
+  using compute_volume_time_derivative_terms =
+      TimeDerivativeTerms<NeutrinoSpecies...>;
+  using volume_fluxes = ComputeFluxes<NeutrinoSpecies...>;
+  using volume_sources = ComputeSources<NeutrinoSpecies...>;
 
   using char_speeds_compute_tag = Tags::CharacteristicSpeedsCompute;
   using char_speeds_tag = Tags::CharacteristicSpeeds;
 
-  using volume_fluxes = ComputeFluxes<NeutrinoSpecies...>;
-
-  using volume_sources = ComputeSources<NeutrinoSpecies...>;
-
-  using sourced_variables =
-      tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
-                 Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...>;
+  template <typename Tag>
+  using magnitude_tag = ::Tags::NonEuclideanMagnitude<
+      Tag, gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
 };
 }  // namespace M1Grey
 }  // namespace RadiationTransport

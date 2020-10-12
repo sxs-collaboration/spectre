@@ -19,8 +19,8 @@
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Actions/AddMeshVelocityNonconservative.hpp"
-#include "Evolution/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/ComputeTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
@@ -33,6 +33,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Initialize.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/UpwindPenaltyCorrection.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "IO/Importers/Actions/ReadVolumeData.hpp"
@@ -48,6 +49,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderScheme.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/FirstOrder/FirstOrderSchemeLts.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
@@ -131,6 +133,8 @@ struct EvolutionMetavars {
   static constexpr int volume_dim = 3;
   using frame = Frame::Inertial;
   using system = GeneralizedHarmonic::System<volume_dim>;
+  static constexpr dg::Formulation dg_formulation =
+      dg::Formulation::StrongInertial;
   static constexpr bool use_damped_harmonic_rollon = true;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
@@ -262,14 +266,8 @@ struct EvolutionMetavars {
                       typename AhA::post_horizon_find_callback>>;
 
   using step_actions = tmpl::list<
-      dg::Actions::ComputeNonconservativeBoundaryFluxes<
-          domain::Tags::InternalDirections<volume_dim>>,
-      dg::Actions::CollectDataForFluxes<
-          boundary_scheme, domain::Tags::InternalDirections<volume_dim>>,
+      evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
       dg::Actions::SendDataForFluxes<boundary_scheme>,
-      Actions::ComputeTimeDerivative<
-          GeneralizedHarmonic::ComputeDuDt<volume_dim>>,
-      evolution::Actions::AddMeshVelocityNonconservative,
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
           domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,

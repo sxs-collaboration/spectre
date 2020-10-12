@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_M1HydroCoupling.cpp
   Test_Sources.cpp
   Test_Tags.cpp
+  Test_TimeDerivativeTerms.cpp
   )
 
 add_test_library(

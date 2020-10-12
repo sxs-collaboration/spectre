@@ -11,10 +11,10 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
-#include "Evolution/Systems/NewtonianEuler/TimeDerivative.hpp"
+#include "Evolution/Systems/NewtonianEuler/TimeDerivativeTerms.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
-#include "Helpers/Evolution/Systems/NewtonianEuler/TimeDerivative.hpp"
+#include "Helpers/Evolution/Systems/NewtonianEuler/TimeDerivativeTerms.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -23,9 +23,11 @@ namespace {
 // the source terms, only Tensor<DataVector>s and doubles.
 template <typename InitialDataType, size_t Dim = InitialDataType::volume_dim>
 void wrap_time_derivative(
-    const gsl::not_null<Scalar<DataVector>*> dt_mass_density_cons,
-    const gsl::not_null<tnsr::I<DataVector, Dim>*> dt_momentum_density,
-    const gsl::not_null<Scalar<DataVector>*> dt_energy_density,
+    const gsl::not_null<Scalar<DataVector>*>
+        non_flux_terms_dt_mass_density_cons,
+    const gsl::not_null<tnsr::I<DataVector, Dim>*>
+        non_flux_terms_dt_momentum_density,
+    const gsl::not_null<Scalar<DataVector>*> non_flux_terms_dt_energy_density,
 
     const gsl::not_null<tnsr::I<DataVector, Dim>*> mass_density_cons_flux,
     const gsl::not_null<tnsr::IJ<DataVector, Dim>*> momentum_density_flux,
@@ -46,11 +48,12 @@ void wrap_time_derivative(
                     TestHelpers::NewtonianEuler::TestInitialData<
                         TestHelpers::NewtonianEuler::SomeOtherSourceType<Dim>>,
                     InitialDataType>) {
-    get(*dt_mass_density_cons) = -1.0;
+    get(*non_flux_terms_dt_mass_density_cons) = -1.0;
   }
-  NewtonianEuler::TimeDerivative<Dim, InitialDataType>::apply(
-      dt_mass_density_cons, dt_momentum_density, dt_energy_density,
-      mass_density_cons_flux, momentum_density_flux, energy_density_flux,
+  NewtonianEuler::TimeDerivativeTerms<Dim, InitialDataType>::apply(
+      non_flux_terms_dt_mass_density_cons, non_flux_terms_dt_momentum_density,
+      non_flux_terms_dt_energy_density, mass_density_cons_flux,
+      momentum_density_flux, energy_density_flux,
       make_not_null(&enthalpy_density), momentum_density, energy_density,
       velocity, pressure, source_computer, first_arg, second_arg, third_arg,
       fourth_arg);

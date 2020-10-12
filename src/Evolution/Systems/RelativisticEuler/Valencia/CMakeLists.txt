@@ -14,6 +14,7 @@ spectre_target_sources(
   Fluxes.cpp
   PrimitiveFromConservative.cpp
   Sources.cpp
+  TimeDerivativeTerms.cpp
   )
 
 spectre_target_headers(
@@ -29,6 +30,7 @@ spectre_target_headers(
   System.hpp
   Tags.hpp
   TagsDeclarations.hpp
+  TimeDerivativeTerms.hpp
   )
 
 target_link_libraries(

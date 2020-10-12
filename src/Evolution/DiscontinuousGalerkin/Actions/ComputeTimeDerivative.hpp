@@ -106,10 +106,10 @@ namespace evolution::dg::Actions {
  *   - `variables_tag`
  *   - `flux_variables`
  *   - `gradient_variables`
- *   - `compute_volume_time_derivative`
+ *   - `compute_volume_time_derivative_terms`
  *
  * - DataBox:
- *   - Items in `system::compute_volume_time_derivative::argument_tags`
+ *   - Items in `system::compute_volume_time_derivative_terms::argument_tags`
  *   - `domain::Tags::MeshVelocity<Metavariables::volume_dim>`
  *   - `Metavariables::system::variables_tag`
  *   - `Metavariables::system::flux_variables`
@@ -157,7 +157,7 @@ struct ComputeTimeDerivative {
    *    to the equations that do not have a flux term.
    *
    * 2. The volume time derivatives are calculated from
-   *    `System::compute_volume_time_derivative`
+   *    `System::compute_volume_time_derivative_terms`
    *
    *    The source terms and nonconservative products are contributed directly
    *    to the `dt_vars` arguments passed to the time derivative function, while
@@ -229,8 +229,8 @@ ComputeTimeDerivative<Metavariables>::apply(
   using variables_tags = typename system::variables_tag::tags_list;
   using partial_derivative_tags = typename system::gradient_variables;
   using flux_variables = typename system::flux_variables;
-  using compute_volume_time_derivative =
-      typename system::compute_volume_time_derivative;
+  using compute_volume_time_derivative_terms =
+      typename system::compute_volume_time_derivative_terms;
 
   const Mesh<volume_dim>& mesh = db::get<::domain::Tags::Mesh<volume_dim>>(box);
   // Allocate the Variables classes needed for the time derivative
@@ -243,7 +243,7 @@ ComputeTimeDerivative<Metavariables>::apply(
   // obtained using continuous RK methods, and so we will want to reuse
   // buffers. Thus, the volume_terms function returns by reference rather than
   // by value.
-  Variables<typename compute_volume_time_derivative::temporary_tags>
+  Variables<typename compute_volume_time_derivative_terms::temporary_tags>
       temporaries{mesh.number_of_grid_points()};
   Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
                              tmpl::size_t<volume_dim>, Frame::Inertial>>
@@ -252,11 +252,11 @@ ComputeTimeDerivative<Metavariables>::apply(
                              tmpl::size_t<volume_dim>, Frame::Inertial>>
       partial_derivs{mesh.number_of_grid_points()};
 
-  volume_terms<volume_dim, compute_volume_time_derivative>(
+  volume_terms<volume_dim, compute_volume_time_derivative_terms>(
       make_not_null(&box), make_not_null(&volume_fluxes),
       make_not_null(&partial_derivs), make_not_null(&temporaries),
       Metavariables::dg_formulation, variables_tags{},
-      typename compute_volume_time_derivative::argument_tags{});
+      typename compute_volume_time_derivative_terms::argument_tags{});
 
   // The below if-else and fill_mortar_data_for_internal_boundaries are for
   // compatibility with the current boundary schemes. Once the current
