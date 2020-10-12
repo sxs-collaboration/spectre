@@ -6,8 +6,10 @@
 
 #pragma once
 
+#include <cerrno>
 #include <cstring>
 #include <exception>
+#include <fstream>
 #include <ios>
 #include <iterator>
 #include <map>
@@ -36,6 +38,13 @@
 #include "Utilities/TypeTraits/IsStdArrayOfSize.hpp"
 
 namespace Options {
+/// Option parser tag to retrieve the YAML source.  This tag can be
+/// requested without providing it as a template parameter to the
+/// Parser.
+struct InputSource {
+  using type = std::string;
+};
+
 // Defining methods as inline in a different header from the class
 // definition is somewhat strange.  It is done here to minimize the
 // amount of code in the frequently-included Options.hpp file.  The
@@ -161,7 +170,7 @@ class Parser {
   /// Parse a string to obtain options and their values.
   ///
   /// \param options the string holding the YAML formatted options
-  void parse(const std::string& options) noexcept;
+  void parse(std::string options) noexcept;
 
   /// Parse an Option to obtain options and their values.
   void parse(const Option& options);
@@ -250,6 +259,7 @@ class Parser {
 
   std::string help_text_{};
   Context context_{};
+  std::string input_source_{};
   std::unordered_map<std::string, YAML::Node> parsed_options_{};
 };
 
@@ -273,23 +283,28 @@ template <typename OptionList, typename Group>
 void Parser<OptionList, Group>::parse_file(
     const std::string& file_name) noexcept {
   context_.append("In " + file_name);
+  errno = 0;
+  std::ifstream input(file_name);
+  if (not input) {
+    // There is no standard way to get an error message from an
+    // fstream, but this works on many implementations.
+    ERROR("Could not open " << file_name << ": " << strerror(errno));
+  }
+  input_source_.assign(std::istreambuf_iterator(input), {});
   try {
-    parse(YAML::LoadFile(file_name));
-  } catch (const YAML::BadFile& /*e*/) {
-    ERROR("Could not open the input file " << file_name);
+    parse(YAML::Load(input_source_));
   } catch (const YAML::Exception& e) {
     parser_error(e);
-  } catch (const std::ios_base::failure& e) {
-    ERROR("I/O error reading " << file_name << ": " << e.what());
   }
 }
 
 template <typename OptionList, typename Group>
-void Parser<OptionList, Group>::parse(const std::string& options) noexcept {
+void Parser<OptionList, Group>::parse(std::string options) noexcept {
   context_.append("In string");
+  input_source_ = std::move(options);
   try {
-    parse(YAML::Load(options));
-  } catch (YAML::Exception& e) {
+    parse(YAML::Load(input_source_));
+  } catch (const YAML::Exception& e) {
     parser_error(e);
   }
 }
@@ -429,6 +444,14 @@ struct get_impl<Tag, Metavariables, Tag> {
     opts.template check_lower_bound<Tag>(t, option.context());
     opts.template check_upper_bound<Tag>(t, option.context());
     return t;
+  }
+};
+
+template <typename Metavariables>
+struct get_impl<InputSource, Metavariables, InputSource> {
+  template <typename OptionList, typename Group>
+  static InputSource::type apply(const Parser<OptionList, Group>& opts) {
+    return opts.input_source_;
   }
 };
 }  // namespace Options_detail

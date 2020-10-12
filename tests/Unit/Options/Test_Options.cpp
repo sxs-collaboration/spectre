@@ -892,6 +892,13 @@ void test_options_format_bool() noexcept {
   CAPTURE(help);
   CHECK(help.find("suggested=false") != std::string::npos);
 }
+
+void test_options_input_source() noexcept {
+  Options::Parser<tmpl::list<Simple>> parser("");
+  const std::string source = "Simple: 3";
+  parser.parse(source);
+  CHECK(parser.get<Options::InputSource>() == source);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
@@ -916,4 +923,5 @@ SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
   test_options_format();
   test_options_explicit_constructor();
   test_options_format_bool();
+  test_options_input_source();
 }
