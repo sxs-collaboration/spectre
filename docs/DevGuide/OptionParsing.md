@@ -50,8 +50,10 @@ A class that defines `static constexpr Options::String help` and a
 typelist of option structs `options` can be created by the option
 parser.  When the class is requested, the option parser will parse
 each of the options in the `options` list, and then supply them to the
-constructor of the class.  (See [Custom parsing](#custom-parsing)
-below for more general creation mechanisms.)
+constructor of the class.  A class can use Options::Alternatives to
+support more than one possible set of options for its creation.  (See
+[Custom parsing](#custom-parsing) below for more general creation
+mechanisms.)
 
 Unlike option descriptions, which should be brief, the class help
 string has no length limits and should give a description of the class
