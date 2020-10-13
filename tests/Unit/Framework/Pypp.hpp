@@ -7,11 +7,18 @@
 #pragma once
 
 #include <Python.h>
+#include <array>
 #include <boost/range/combine.hpp>
+#include <cstddef>
 #include <stdexcept>
 #include <string>
 
+#include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/PyppFundamentals.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
@@ -21,19 +28,35 @@
 /// Contains all functions for calling python from C++
 namespace pypp {
 namespace detail {
+template <typename R>
+R call_work(PyObject* python_module, PyObject* func, PyObject* args) {
+  PyObject* value = PyObject_CallObject(func, args);
+  Py_DECREF(args);  // NOLINT
+  if (value == nullptr) {
+    Py_DECREF(func);           // NOLINT
+    Py_DECREF(python_module);  // NOLINT
+    PyErr_Print();
+    throw std::runtime_error{"Function returned null"};
+  }
+
+  auto ret = from_py_object<R>(value);
+  Py_DECREF(value);  // NOLINT
+  return ret;
+}
 
 template <typename R, typename = std::nullptr_t>
 struct CallImpl {
   template <typename... Args>
   static R call(const std::string& module_name,
                 const std::string& function_name, const Args&... t) {
-    PyObject* module = PyImport_ImportModule(module_name.c_str());
-    if (module == nullptr) {
+    PyObject* python_module = PyImport_ImportModule(module_name.c_str());
+    if (python_module == nullptr) {
       PyErr_Print();
       throw std::runtime_error{std::string("Could not find python module.\n") +
                                module_name};
     }
-    PyObject* func = PyObject_GetAttrString(module, function_name.c_str());
+    PyObject* func =
+        PyObject_GetAttrString(python_module, function_name.c_str());
     if (func == nullptr or not PyCallable_Check(func)) {
       if (PyErr_Occurred()) {
         PyErr_Print();
@@ -41,111 +64,195 @@ struct CallImpl {
       throw std::runtime_error{"Could not find python function in module.\n"};
     }
     PyObject* args = pypp::make_py_tuple(t...);
-    PyObject* value = PyObject_CallObject(func, args);
-    Py_DECREF(args);  // NOLINT
-    if (value == nullptr) {
-      Py_DECREF(func);    // NOLINT
-      Py_DECREF(module);  // NOLINT
-      PyErr_Print();
-      throw std::runtime_error{"Function returned null"};
-    }
-    auto ret = from_py_object<R>(value);
-    Py_DECREF(value);   // NOLINT
-    Py_DECREF(func);    // NOLINT
-    Py_DECREF(module);  // NOLINT
+    auto ret = call_work<R>(python_module, func, args);
+    Py_DECREF(func);           // NOLINT
+    Py_DECREF(python_module);  // NOLINT
     return ret;
   }
 };
 
-template <typename T>
-struct convert_to_container_of_doubles {};
+template <typename T, typename = std::nullptr_t>
+struct ContainerPackAndUnpack;
 
-template <template <class, class...> class Container, class... Ts>
-struct convert_to_container_of_doubles<Container<DataVector, Ts...>> {
-  using type = Container<double, Ts...>;
+template <>
+struct ContainerPackAndUnpack<DataVector, std::nullptr_t> {
+  using unpacked_container = double;
+  using packed_container = DataVector;
+  using packed_type = packed_container;
+
+  static inline unpacked_container unpack(
+      const packed_container& packed, const size_t grid_point_index) noexcept {
+    ASSERT(grid_point_index < packed.size(),
+           "Trying to slice DataVector of size " << packed.size()
+                                                 << " with grid_point_index "
+                                                 << grid_point_index);
+    return packed[grid_point_index];
+  }
+
+  static inline void pack(const gsl::not_null<packed_container*> packed,
+                          const unpacked_container& unpacked,
+                          const size_t grid_point_index) {
+    (*packed)[grid_point_index] = unpacked;
+  }
+
+  static inline size_t get_size(const packed_container& packed) noexcept {
+    return packed.size();
+  }
 };
 
-template <template <class, class...> class Container, class... Ts>
-struct convert_to_container_of_doubles<Container<ComplexDataVector, Ts...>> {
-  using type = Container<std::complex<double>, Ts...>;
+template <>
+struct ContainerPackAndUnpack<ComplexDataVector, std::nullptr_t> {
+  using unpacked_container = std::complex<double>;
+  using packed_container = ComplexDataVector;
+  using packed_type = packed_container;
+
+  static inline unpacked_container unpack(
+      const packed_type& packed, const size_t grid_point_index) noexcept {
+    ASSERT(grid_point_index < packed.size(),
+           "Trying to slice ComplexDataVector of size "
+               << packed.size() << " with grid_point_index "
+               << grid_point_index);
+    return packed[grid_point_index];
+  }
+
+  static inline void pack(const gsl::not_null<packed_container*> packed,
+                          const unpacked_container& unpacked,
+                          const size_t grid_point_index) {
+    (*packed)[grid_point_index] = unpacked;
+  }
+
+  static inline size_t get_size(const packed_container& packed) noexcept {
+    return packed.size();
+  }
 };
 
-// if it is spin-weighted, just strip off the SpinWeighted for the pypp tests
-template <template <class, class...> class Container, int Spin, class... Ts>
-struct convert_to_container_of_doubles<
-    Container<SpinWeighted<ComplexDataVector, Spin>, Ts...>> {
-  using type = Container<std::complex<double>, Ts...>;
-};
+template <typename T, typename... Ts>
+struct ContainerPackAndUnpack<Tensor<T, Ts...>, std::nullptr_t> {
+  using unpacked_container =
+      Tensor<typename ContainerPackAndUnpack<T>::unpacked_container, Ts...>;
+  using packed_container =
+      Tensor<typename ContainerPackAndUnpack<T>::packed_container, Ts...>;
+  using packed_type = typename ContainerPackAndUnpack<T>::packed_type;
 
-template <size_t Dim>
-struct convert_to_container_of_doubles<std::array<DataVector, Dim>> {
-  using type = std::array<double, Dim>;
-};
-
-template <size_t Dim>
-struct convert_to_container_of_doubles<std::array<ComplexDataVector, Dim>> {
-  using type = std::array<std::complex<double>, Dim>;
-};
-
-template <typename T>
-using convert_to_container_of_doubles_t =
-    typename convert_to_container_of_doubles<T>::type;
-
-template <typename T>
-struct SliceContainerImpl {
-  static auto apply(const T& container_dv, const size_t slice_idx) noexcept {
-    convert_to_container_of_doubles_t<std::decay_t<decltype(container_dv)>>
-        container_double{};
-    ASSERT(slice_idx < container_dv.begin()->size(),
-           "Trying to slice DataVector of size " << container_dv.begin()->size()
-                                                 << "with slice_idx "
-                                                 << slice_idx);
-    for (decltype(auto) double_and_datavector_components :
-         boost::combine(container_double, container_dv)) {
-      boost::get<0>(double_and_datavector_components) =
-          boost::get<1>(double_and_datavector_components)[slice_idx];
+  static inline unpacked_container unpack(
+      const packed_container& packed, const size_t grid_point_index) noexcept {
+    unpacked_container unpacked{};
+    for (size_t storage_index = 0; storage_index < unpacked.size();
+         ++storage_index) {
+      unpacked[storage_index] = ContainerPackAndUnpack<T>::unpack(
+          packed[storage_index], grid_point_index);
     }
-    return container_double;
+    return unpacked;
+  }
+
+  static inline void pack(const gsl::not_null<packed_container*> packed,
+                          const unpacked_container& unpacked,
+                          const size_t grid_point_index) {
+    for (size_t storage_index = 0; storage_index < unpacked.size();
+         ++storage_index) {
+      ContainerPackAndUnpack<T>::pack(make_not_null(&(*packed)[storage_index]),
+                                      unpacked[storage_index],
+                                      grid_point_index);
+    }
+  }
+
+  static inline size_t get_size(const packed_container& packed) noexcept {
+    return ContainerPackAndUnpack<T>::get_size(packed[0]);
+  }
+};
+
+template <typename T, size_t Size>
+struct ContainerPackAndUnpack<std::array<T, Size>, std::nullptr_t> {
+  using unpacked_container =
+      std::array<typename ContainerPackAndUnpack<T>::unpacked_container, Size>;
+  using packed_container =
+      std::array<typename ContainerPackAndUnpack<T>::packed_container, Size>;
+  using packed_type = typename ContainerPackAndUnpack<T>::packed_type;
+
+  static inline unpacked_container unpack(
+      const packed_container& packed, const size_t grid_point_index) noexcept {
+    unpacked_container unpacked{};
+    for (size_t i = 0; i < Size; ++i) {
+      gsl::at(unpacked, i) = ContainerPackAndUnpack<T>::unpack(
+          gsl::at(packed, i), grid_point_index);
+    }
+    return unpacked;
+  }
+
+  static inline void pack(const gsl::not_null<packed_container*> packed,
+                          const unpacked_container& unpacked,
+                          const size_t grid_point_index) {
+    for (size_t i = 0; i < unpacked.size(); ++i) {
+      ContainerPackAndUnpack<T>::pack(make_not_null(&gsl::at(*packed, i)),
+                                      gsl::at(unpacked, i), grid_point_index);
+    }
+  }
+
+  static inline size_t get_size(const packed_container& packed) noexcept {
+    return ContainerPackAndUnpack<T>::get_size(packed[0]);
   }
 };
 
 // scalars are the only sort of spin-weighted type we support.
 template <typename ValueType, int Spin>
-struct SliceContainerImpl<Scalar<SpinWeighted<ValueType, Spin>>> {
-  static auto apply(
-      const Scalar<SpinWeighted<ValueType, Spin>>& spin_weighted_container,
-      const size_t slice_idx) noexcept {
-    convert_to_container_of_doubles_t<Scalar<ValueType>> container_complex{};
-    ASSERT(slice_idx < spin_weighted_container.begin()->size(),
-           "Trying to slice DataVector of size "
-               << spin_weighted_container.begin()->size() << "with slice_idx "
-               << slice_idx);
-    for (const auto& complex_and_datavector_components :
-         boost::combine(container_complex, spin_weighted_container)) {
-      boost::get<0>(complex_and_datavector_components) =
-          boost::get<1>(complex_and_datavector_components).data()[slice_idx];
-    }
-    return container_complex;
-  }
-};
+struct ContainerPackAndUnpack<Scalar<SpinWeighted<ValueType, Spin>>,
+                              std::nullptr_t> {
+  using unpacked_container =
+      Scalar<typename ContainerPackAndUnpack<ValueType>::unpacked_container>;
+  using packed_container = Scalar<SpinWeighted<
+      typename ContainerPackAndUnpack<ValueType>::packed_container, Spin>>;
+  using packed_type = typename ContainerPackAndUnpack<ValueType>::packed_type;
 
-template <>
-struct SliceContainerImpl<double> {
-  static double apply(const double t, const size_t /*slice_index*/) noexcept {
-    return t;
+  static inline unpacked_container unpack(
+      const packed_container& packed, const size_t grid_point_index) noexcept {
+    unpacked_container unpacked{};
+    get(unpacked) = ContainerPackAndUnpack<ValueType>::unpack(
+        get(packed).data(), grid_point_index);
+    return unpacked;
+  }
+
+  static inline void pack(const gsl::not_null<packed_container*> packed,
+                          const unpacked_container& unpacked,
+                          const size_t grid_point_index) {
+    ContainerPackAndUnpack<ValueType>::pack(
+        make_not_null(&(get(*packed).data())), get(unpacked), grid_point_index);
+  }
+
+  static inline size_t get_size(const packed_container& packed) noexcept {
+    return ContainerPackAndUnpack<ValueType>::get_size(packed[0].data());
   }
 };
 
 template <typename T>
-decltype(auto) slice_container_of_datavectors_to_container_of_doubles(
-    const T& in, const size_t slice_index) noexcept {
-  return SliceContainerImpl<T>::apply(in, slice_index);
-}
+struct ContainerPackAndUnpack<
+    T, Requires<std::is_floating_point_v<T> or std::is_integral_v<T>>> {
+  using unpacked_container = T;
+  using packed_container = T;
+  using packed_type = packed_container;
+
+  static inline unpacked_container unpack(
+      const packed_container t, const size_t /*grid_point_index*/) noexcept {
+    return t;
+  }
+
+  static inline void pack(const gsl::not_null<packed_container*> packed,
+                          const unpacked_container unpacked,
+                          const size_t /*grid_point_index*/) {
+    *packed = unpacked;
+  }
+
+  static inline size_t get_size(const packed_container& /*packed*/) noexcept {
+    return 1;
+  }
+};
 
 template <typename R>
 struct CallImpl<
-    R, Requires<(tt::is_a_v<Tensor, R> or tt::is_std_array_v<R>)and std::
-                    is_same_v<typename R::value_type, DataVector>>> {
+    R, Requires<(tt::is_a_v<Tensor, R> or tt::is_std_array_v<R>)and(
+           std::is_same_v<typename ContainerPackAndUnpack<R>::packed_type,
+                          DataVector> or
+           std::is_same_v<typename ContainerPackAndUnpack<R>::packed_type,
+                          ComplexDataVector>)>> {
   template <typename... Args>
   static R call(const std::string& module_name,
                 const std::string& function_name, const Args&... t) {
@@ -153,13 +260,14 @@ struct CallImpl<
                   "Call to python which returns a Tensor of DataVectors must "
                   "pass at least one argument");
 
-    PyObject* module = PyImport_ImportModule(module_name.c_str());
-    if (module == nullptr) {
+    PyObject* python_module = PyImport_ImportModule(module_name.c_str());
+    if (python_module == nullptr) {
       PyErr_Print();
       throw std::runtime_error{std::string("Could not find python module.\n") +
                                module_name};
     }
-    PyObject* func = PyObject_GetAttrString(module, function_name.c_str());
+    PyObject* func =
+        PyObject_GetAttrString(python_module, function_name.c_str());
     if (func == nullptr or not PyCallable_Check(func)) {
       if (PyErr_Occurred()) {
         PyErr_Print();
@@ -167,116 +275,32 @@ struct CallImpl<
       throw std::runtime_error{"Could not find python function in module.\n"};
     }
 
-    const auto put_container_of_doubles_into_container_of_datavector =
-        [](auto& container_dv, const auto& container_double,
-           const size_t slice_idx) noexcept {
-      ASSERT(slice_idx < container_dv.begin()->size(),
-             "Trying to slice DataVector of size "
-                 << container_dv.begin()->size() << "with slice_idx "
-                 << slice_idx);
-      for (decltype(auto) datavector_and_double_components :
-           boost::combine(container_dv, container_double)) {
-        boost::get<0>(datavector_and_double_components)[slice_idx] =
-            boost::get<1>(datavector_and_double_components);
+    const std::array<size_t, sizeof...(Args)> arg_sizes{
+        {ContainerPackAndUnpack<Args>::get_size(t)...}};
+    const size_t npts = *std::max_element(arg_sizes.begin(), arg_sizes.end());
+    for (size_t i = 0; i < arg_sizes.size(); ++i) {
+      if (arg_sizes[i] != 1 and arg_sizes[i] != npts) {
+        ERROR(
+            "Each argument must return size 1 or "
+            << npts
+            << " (the number of points in the DataVector), but argument number "
+            << i << " has size " << arg_sizes[i]);
       }
-    };
-
-    const size_t npts = get_first_argument(t...).begin()->size();
-    auto return_container = make_with_value<R>(
-        DataVector{npts, 0.}, std::numeric_limits<double>::signaling_NaN());
+    }
+    auto return_container =
+        make_with_value<typename ContainerPackAndUnpack<R>::packed_container>(
+            npts, 0.0);
 
     for (size_t s = 0; s < npts; ++s) {
-      PyObject* args = pypp::make_py_tuple(
-          slice_container_of_datavectors_to_container_of_doubles(t, s)...);
-      PyObject* value = PyObject_CallObject(func, args);
-      Py_DECREF(args);  // NOLINT
-      if (value == nullptr) {
-        Py_DECREF(func);    // NOLINT
-        Py_DECREF(module);  // NOLINT
-        PyErr_Print();
-        throw std::runtime_error{"Function returned null"};
-      }
-
-      const auto ret =
-          from_py_object<convert_to_container_of_doubles_t<R>>(value);
-      Py_DECREF(value);  // NOLINT
-      put_container_of_doubles_into_container_of_datavector(return_container,
-                                                            ret, s);
+      PyObject* args =
+          pypp::make_py_tuple(ContainerPackAndUnpack<Args>::unpack(t, s)...);
+      auto ret =
+          call_work<typename ContainerPackAndUnpack<R>::unpacked_container>(
+              python_module, func, args);
+      ContainerPackAndUnpack<R>::pack(make_not_null(&return_container), ret, s);
     }
-    Py_DECREF(func);    // NOLINT
-    Py_DECREF(module);  // NOLINT
-    return return_container;
-  }
-};
-
-template <typename ScalarSpinWeighted>
-struct CallImpl<
-    ScalarSpinWeighted,
-    Requires<(
-        tt::is_a_v<Tensor, ScalarSpinWeighted> or
-        tt::is_std_array_v<ScalarSpinWeighted>) and
-        is_any_spin_weighted_v<typename ScalarSpinWeighted::value_type>>> {
-  template <typename... Args>
-  static ScalarSpinWeighted call(const std::string& module_name,
-                                 const std::string& function_name,
-                                 const Args&... t) {
-    static_assert(sizeof...(Args) > 0,
-                  "Call to python which returns a "
-                  "Scalar<SpinWeighted<ComplexDataVector, N>> "
-                  "should pass at least one argument");
-
-    PyObject* module = PyImport_ImportModule(module_name.c_str());
-    if (module == nullptr) {
-      PyErr_Print();
-      throw std::runtime_error{std::string("Could not find python module.\n") +
-                               module_name};
-    }
-    PyObject* func = PyObject_GetAttrString(module, function_name.c_str());
-    if (func == nullptr or not PyCallable_Check(func)) {
-      if (PyErr_Occurred()) {
-        PyErr_Print();
-      }
-      throw std::runtime_error{"Could not find python function in module.\n"};
-    }
-
-    const auto put_container_of_elements_into_container_of_complexdatavector =
-        [](auto& container_vector, const auto& container_complex,
-           const size_t slice_idx) noexcept {
-      ASSERT(slice_idx < container_vector.begin()->size(),
-             "Trying to slice DataVector of size "
-                 << container_vector.begin()->size() << "with slice_idx "
-                 << slice_idx);
-      for (decltype(auto) vector_and_complex_components :
-           boost::combine(container_vector, container_complex)) {
-        boost::get<0>(vector_and_complex_components).data()[slice_idx] =
-            boost::get<1>(vector_and_complex_components);
-      }
-    };
-
-    const size_t npts = get_first_argument(t...).begin()->size();
-    auto return_container = ScalarSpinWeighted{npts};
-
-    for (size_t s = 0; s < npts; ++s) {
-      PyObject* args = pypp::make_py_tuple(
-          slice_container_of_datavectors_to_container_of_doubles(t, s)...);
-      PyObject* value = PyObject_CallObject(func, args);
-      Py_DECREF(args);  // NOLINT
-      if (value == nullptr) {
-        Py_DECREF(func);    // NOLINT
-        Py_DECREF(module);  // NOLINT
-        PyErr_Print();
-        throw std::runtime_error{"Function returned null"};
-      }
-
-      const auto ret =
-          from_py_object<convert_to_container_of_doubles_t<ScalarSpinWeighted>>(
-              value);
-      Py_DECREF(value);  // NOLINT
-      put_container_of_elements_into_container_of_complexdatavector(
-          return_container, ret, s);
-    }
-    Py_DECREF(func);    // NOLINT
-    Py_DECREF(module);  // NOLINT
+    Py_DECREF(func);           // NOLINT
+    Py_DECREF(python_module);  // NOLINT
     return return_container;
   }
 };
