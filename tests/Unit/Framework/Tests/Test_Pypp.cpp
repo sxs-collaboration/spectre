@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <boost/optional.hpp>
 #include <cmath>
 #include <complex>
 #include <cstddef>
@@ -411,6 +412,35 @@ void test_function_of_time() {
   check(x_d, t);
   check(x_dv, t);
 }
+
+template <template <class> class Optional>
+void test_optional() {
+  const Optional<Scalar<double>> scalar_double_a{Scalar<double>{0.8}};
+  const Optional<Scalar<double>> scalar_double_b{Scalar<double>{1.8}};
+
+  const Optional<Scalar<DataVector>> scalar_datavector_a{
+      Scalar<DataVector>{{{{0.8, 0.7, 0.5}}}}};
+  const Optional<Scalar<DataVector>> scalar_datavector_b{
+      Scalar<DataVector>{{{{1.8, 2.3, 4.2}}}}};
+
+  const auto impl = [](const auto& a, const auto& b) {
+    using T = typename std::decay_t<decltype(a)>::value_type;
+    const auto result_double_double =
+        pypp::call<T>("PyppPyTests", "add_scalars", a, b);
+    CHECK_ITERABLE_APPROX(get(result_double_double), get(T{get(*a) + get(*b)}));
+
+    const auto result_double_none =
+        pypp::call<T>("PyppPyTests", "add_scalars", a, Optional<T>{});
+    CHECK_ITERABLE_APPROX(get(result_double_none), get(*a));
+
+    const auto result_none_double =
+        pypp::call<T>("PyppPyTests", "add_scalars", Optional<T>{}, b);
+    CHECK_ITERABLE_APPROX(get(result_none_double), get(*b));
+  };
+
+  impl(scalar_double_a, scalar_double_b);
+  impl(scalar_datavector_a, scalar_datavector_b);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Pypp", "[Pypp][Unit]") {
@@ -435,4 +465,5 @@ SPECTRE_TEST_CASE("Unit.Pypp", "[Pypp][Unit]") {
   test_einsum<double>(0.);
   test_einsum<DataVector>(DataVector(5));
   test_function_of_time();
+  test_optional<boost::optional>();
 }

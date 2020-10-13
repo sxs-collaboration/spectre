@@ -253,3 +253,11 @@ def mixed_complex_real_function_2(spin_weighted, complex_tensor, real_tensor):
         np.real(spin_weighted * complex_tensor[0] * real_tensor[1]),
         np.imag(complex_tensor[1] * real_tensor[0] / spin_weighted)
     ])
+
+
+def add_scalars(a, b):
+    if a is None:
+        return b
+    if b is None:
+        return a
+    return a + b

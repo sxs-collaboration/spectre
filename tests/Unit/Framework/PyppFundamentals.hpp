@@ -8,6 +8,7 @@
 
 #include <Python.h>
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <initializer_list>
 #include <stdexcept>
@@ -628,6 +629,26 @@ template <typename T>
 struct ToPyObject<Scalar<T>, Requires<is_any_spin_weighted_v<T>>> {
   static PyObject* convert(const Scalar<T>& t) {
     return ToPyObject<typename T::value_type>::convert(get(t).data());
+  }
+};
+
+template <typename T>
+struct FromPyObject<boost::optional<T>> {
+  static boost::optional<T> convert(PyObject* p) {
+    if (p == Py_None) {
+      return boost::optional<T>{};
+    }
+    return FromPyObject<T>::convert(p);
+  }
+};
+
+template <typename T>
+struct ToPyObject<boost::optional<T>> {
+  static PyObject* convert(const boost::optional<T>& t) {
+    if (static_cast<bool>(t)) {
+      return to_py_object(*t);
+    }
+    return Py_None;
   }
 };
 

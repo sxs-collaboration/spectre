@@ -8,6 +8,7 @@
 
 #include <Python.h>
 #include <array>
+#include <boost/optional.hpp>
 #include <boost/range/combine.hpp>
 #include <cstddef>
 #include <stdexcept>
@@ -220,6 +221,48 @@ struct ContainerPackAndUnpack<Scalar<SpinWeighted<ValueType, Spin>>,
 
   static inline size_t get_size(const packed_container& packed) noexcept {
     return ContainerPackAndUnpack<ValueType>::get_size(packed[0].data());
+  }
+};
+
+template <typename T>
+struct ContainerPackAndUnpack<boost::optional<T>, std::nullptr_t> {
+  using unpacked_container =
+      boost::optional<typename ContainerPackAndUnpack<T>::unpacked_container>;
+  using packed_container =
+      boost::optional<typename ContainerPackAndUnpack<T>::packed_container>;
+  using packed_type = typename ContainerPackAndUnpack<T>::packed_type;
+
+  static inline unpacked_container unpack(
+      const packed_container& packed, const size_t grid_point_index) noexcept {
+    if (static_cast<bool>(packed)) {
+      return unpacked_container{
+          ContainerPackAndUnpack<T>::unpack(*packed, grid_point_index)};
+    }
+    return unpacked_container{};
+  }
+
+  static inline void pack(const gsl::not_null<packed_container*> packed,
+                          const unpacked_container& unpacked,
+                          const size_t grid_point_index) {
+    if ((std::is_same_v<packed_type, DataVector> or
+         std::is_same_v<
+             packed_type,
+             ComplexDataVector>)and UNLIKELY(not static_cast<bool>(unpacked))) {
+      throw std::runtime_error(
+          "Returned type is None in one element of the boost::optional's "
+          "packed type (DataVector or ComplexDataVector). We can't support "
+          "this because we can't just make one element of the packed type be "
+          "an invalid optional.");
+    }
+    ContainerPackAndUnpack<T>::pack(make_not_null(&*packed), unpacked,
+                                    grid_point_index);
+  }
+
+  static inline size_t get_size(const packed_container& packed) noexcept {
+    if (static_cast<bool>(packed)) {
+      return ContainerPackAndUnpack<T>::get_size(*packed);
+    }
+    return 1;
   }
 };
 
