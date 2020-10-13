@@ -32,6 +32,57 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
+/// [convert_arbitrary_a]
+struct ClassForConversionTest {
+  double a_;
+  double b_;
+};
+
+struct ConvertClassForConservionTestA {
+  using unpacked_container = double;
+  using packed_container = ClassForConversionTest;
+  using packed_type = double;
+
+  static inline unpacked_container unpack(
+      const packed_container t, const size_t /*grid_point_index*/) noexcept {
+    return t.a_;
+  }
+
+  static inline void pack(const gsl::not_null<packed_container*> packed_t,
+                          const unpacked_container t,
+                          const size_t /*grid_point_index*/) {
+    packed_t->a_ = t;
+  }
+
+  static inline size_t get_size(const packed_container& /*t*/) noexcept {
+    return 1;
+  }
+};
+/// [convert_arbitrary_a]
+
+/// [convert_arbitrary_b]
+struct ConvertClassForConservionTestB {
+  using unpacked_container = double;
+  using packed_container = ClassForConversionTest;
+  using packed_type = double;
+
+  static inline unpacked_container unpack(
+      const packed_container t, const size_t /*grid_point_index*/) noexcept {
+    return t.b_;
+  }
+
+  static inline void pack(const gsl::not_null<packed_container*> packed_t,
+                          const unpacked_container t,
+                          const size_t /*grid_point_index*/) {
+    packed_t->b_ = t;
+  }
+
+  static inline size_t get_size(const packed_container& /*t*/) noexcept {
+    return 1;
+  }
+};
+/// [convert_arbitrary_b]
+
 void test_none() {
   pypp::call<pypp::None>("PyppPyTests", "test_none");
   CHECK_THROWS(pypp::call<pypp::None>("PyppPyTests", "test_numeric", 1, 2));
@@ -442,6 +493,26 @@ void test_optional() {
   impl(scalar_double_a, scalar_double_b);
   impl(scalar_datavector_a, scalar_datavector_b);
 }
+
+void test_custom_conversion() {
+  const Scalar<DataVector> t{DataVector{5, 2.5}};
+  {
+    /// [convert_arbitrary_a_call]
+    const auto result = pypp::call<Scalar<DataVector>,
+                                   tmpl::list<ConvertClassForConservionTestA>>(
+        "PyppPyTests", "custom_conversion", t,
+        ClassForConversionTest{2.0, 3.0});
+    /// [convert_arbitrary_a_call]
+    CHECK(DataVector{5, 5.0} == get(result));
+  }
+  {
+    const auto result = pypp::call<Scalar<DataVector>,
+                                   tmpl::list<ConvertClassForConservionTestB>>(
+        "PyppPyTests", "custom_conversion", t,
+        ClassForConversionTest{2.0, 3.0});
+    CHECK(DataVector{5, 7.5} == get(result));
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Pypp", "[Pypp][Unit]") {
@@ -468,4 +539,5 @@ SPECTRE_TEST_CASE("Unit.Pypp", "[Pypp][Unit]") {
   test_function_of_time();
   test_optional<boost::optional>();
   test_optional<std::optional>();
+  test_custom_conversion();
 }

@@ -261,3 +261,7 @@ def add_scalars(a, b):
     if b is None:
         return a
     return a + b
+
+
+def custom_conversion(t, a):
+    return t * a
