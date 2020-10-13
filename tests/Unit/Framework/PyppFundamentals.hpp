@@ -11,6 +11,7 @@
 #include <boost/optional.hpp>
 #include <cstddef>
 #include <initializer_list>
+#include <optional>
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
@@ -645,6 +646,26 @@ struct FromPyObject<boost::optional<T>> {
 template <typename T>
 struct ToPyObject<boost::optional<T>> {
   static PyObject* convert(const boost::optional<T>& t) {
+    if (static_cast<bool>(t)) {
+      return to_py_object(*t);
+    }
+    return Py_None;
+  }
+};
+
+template <typename T>
+struct FromPyObject<std::optional<T>> {
+  static std::optional<T> convert(PyObject* p) {
+    if (p == Py_None) {
+      return std::optional<T>{};
+    }
+    return FromPyObject<T>::convert(p);
+  }
+};
+
+template <typename T>
+struct ToPyObject<std::optional<T>> {
+  static PyObject* convert(const std::optional<T>& t) {
     if (static_cast<bool>(t)) {
       return to_py_object(*t);
     }

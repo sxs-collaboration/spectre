@@ -8,6 +8,7 @@
 #include <cmath>
 #include <complex>
 #include <cstddef>
+#include <optional>
 #include <random>
 #include <string>
 #include <tuple>
@@ -466,4 +467,5 @@ SPECTRE_TEST_CASE("Unit.Pypp", "[Pypp][Unit]") {
   test_einsum<DataVector>(DataVector(5));
   test_function_of_time();
   test_optional<boost::optional>();
+  test_optional<std::optional>();
 }
