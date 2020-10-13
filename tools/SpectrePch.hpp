@@ -14,7 +14,8 @@
 #include <utility>
 #include <vector>
 
-#include <Utilities/Blaze.hpp>
+// Include PointerVector.hpp since this is what we use to wrap Blaze
+#include <Utilities/PointerVector.hpp>
 #include <blaze/math/typetraits/IsVector.h>
 
 // Include Brigand related headers

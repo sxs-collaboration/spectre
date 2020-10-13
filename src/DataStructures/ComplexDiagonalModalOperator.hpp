@@ -7,17 +7,16 @@
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/DiagonalModalOperator.hpp"
 #include "DataStructures/VectorImpl.hpp"
+#include "Utilities/PointerVector.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 class DiagonalModalOperator;
 class ModalVector;
-class ComplexDiagonalModalOperator;
 /// \endcond
 
-namespace blaze {
-DECLARE_GENERAL_VECTOR_BLAZE_TRAITS(ComplexDiagonalModalOperator);
-}  // namespace blaze
+// IWYU pragma: no_include <blaze/math/expressions/DVecMapExpr.h>
+// IWYU pragma: no_include <blaze/math/typetraits/IsVector.h>
 
 /*!
  * \ingroup DataStructuresGroup
@@ -131,26 +130,27 @@ struct MultTrait<ComplexDiagonalModalOperator, ModalVector> {
   using Type = ComplexModalVector;
 };
 
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION < 6))
 template <typename Operator>
 struct MapTrait<ComplexDiagonalModalOperator, Operator> {
   // Selectively allow unary operations for spectral coefficient operators
-  static_assert(tmpl::list_contains_v<
-                    tmpl::list<blaze::Conj, blaze::Sqrt,
-                               blaze::Bind1st<blaze::Add, std::complex<double>>,
-                               blaze::Bind2nd<blaze::Add, std::complex<double>>,
-                               blaze::Bind1st<blaze::Div, std::complex<double>>,
-                               blaze::Bind2nd<blaze::Div, std::complex<double>>,
-                               blaze::Bind1st<blaze::Sub, std::complex<double>>,
-                               blaze::Bind2nd<blaze::Sub, std::complex<double>>,
-                               blaze::Bind1st<blaze::Add, double>,
-                               blaze::Bind2nd<blaze::Add, double>,
-                               blaze::Bind1st<blaze::Div, double>,
-                               blaze::Bind2nd<blaze::Div, double>,
-                               blaze::Bind1st<blaze::Sub, double>,
-                               blaze::Bind2nd<blaze::Sub, double>>,
-                    Operator>,
-                "This unary operation is not permitted on a "
-                "ComplexDiagonalModalOperator");
+  static_assert(
+      tmpl::list_contains_v<
+          tmpl::list<
+              blaze::Conj, blaze::Sqrt,
+              // these traits are required for operators acting with doubles
+              blaze::AddScalar<ComplexDiagonalModalOperator::ElementType>,
+              blaze::SubScalarRhs<ComplexDiagonalModalOperator::ElementType>,
+              blaze::SubScalarLhs<ComplexDiagonalModalOperator::ElementType>,
+              blaze::DivideScalarByVector<
+                  ComplexDiagonalModalOperator::ElementType>,
+              blaze::AddScalar<DiagonalModalOperator::ElementType>,
+              blaze::SubScalarRhs<DiagonalModalOperator::ElementType>,
+              blaze::SubScalarLhs<DiagonalModalOperator::ElementType>,
+              blaze::DivideScalarByVector<DiagonalModalOperator::ElementType>>,
+          Operator>,
+      "This unary operation is not permitted on a "
+      "ComplexDiagonalModalOperator");
   using Type = ComplexDiagonalModalOperator;
 };
 template <>
@@ -181,6 +181,70 @@ struct MapTrait<ComplexDiagonalModalOperator, ComplexDiagonalModalOperator,
                 "ComplexDiagonalModalOperator.");
   using Type = ComplexDiagonalModalOperator;
 };
+#else
+template <typename Operator>
+struct MapTrait<ComplexDiagonalModalOperator, Operator> {
+  // Selectively allow unary operations for spectral coefficient operators
+  static_assert(
+      tmpl::list_contains_v<
+          tmpl::list<
+              blaze::Conj, blaze::Sqrt,
+              // these traits are required for operators acting with doubles
+              blaze::AddScalar<ComplexDiagonalModalOperator::ElementType>,
+              blaze::SubScalarRhs<ComplexDiagonalModalOperator::ElementType>,
+              blaze::SubScalarLhs<ComplexDiagonalModalOperator::ElementType>,
+              blaze::DivideScalarByVector<
+                  ComplexDiagonalModalOperator::ElementType>,
+              blaze::AddScalar<DiagonalModalOperator::ElementType>,
+              blaze::SubScalarRhs<DiagonalModalOperator::ElementType>,
+              blaze::SubScalarLhs<DiagonalModalOperator::ElementType>,
+              blaze::DivideScalarByVector<DiagonalModalOperator::ElementType>,
+              blaze::Bind1st<blaze::Add, std::complex<double>>,
+              blaze::Bind2nd<blaze::Add, std::complex<double>>,
+              blaze::Bind1st<blaze::Div, std::complex<double>>,
+              blaze::Bind2nd<blaze::Div, std::complex<double>>,
+              blaze::Bind1st<blaze::Sub, std::complex<double>>,
+              blaze::Bind2nd<blaze::Sub, std::complex<double>>,
+              blaze::Bind1st<blaze::Add, double>,
+              blaze::Bind2nd<blaze::Add, double>,
+              blaze::Bind1st<blaze::Div, double>,
+              blaze::Bind2nd<blaze::Div, double>,
+              blaze::Bind1st<blaze::Sub, double>,
+              blaze::Bind2nd<blaze::Sub, double>>,
+          Operator>,
+      "This unary operation is not permitted on a "
+      "ComplexDiagonalModalOperator");
+  using Type = ComplexDiagonalModalOperator;
+};
+template <>
+struct MapTrait<ComplexDiagonalModalOperator, blaze::Imag> {
+  using Type = DiagonalModalOperator;
+};
+template <>
+struct MapTrait<ComplexDiagonalModalOperator, blaze::Real> {
+  using Type = DiagonalModalOperator;
+};
+template <>
+struct MapTrait<DiagonalModalOperator, blaze::Imag> {
+  using Type = DiagonalModalOperator;
+};
+template <>
+struct MapTrait<DiagonalModalOperator, blaze::Real> {
+  using Type = DiagonalModalOperator;
+};
+
+template <typename Operator>
+struct MapTrait<ComplexDiagonalModalOperator, ComplexDiagonalModalOperator,
+                Operator> {
+  // Forbid math operations in this specialization of BinaryMap traits for
+  // ComplexDiagonalModalOperator that are unlikely to be used on spectral
+  // coefficients. Currently no non-arithmetic binary operations are supported.
+  static_assert(tmpl::list_contains_v<tmpl::list<>, Operator>,
+                "This binary operation is not permitted on a "
+                "ComplexDiagonalModalOperator.");
+  using Type = ComplexDiagonalModalOperator;
+};
+#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION < 6))
 }  // namespace blaze
 
 MAKE_STD_ARRAY_VECTOR_BINOPS(ComplexDiagonalModalOperator)

@@ -7,14 +7,10 @@
 
 #include "DataStructures/VectorImpl.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/PointerVector.hpp"
 
-/// \cond
-class DataVector;
-/// \endcond
-
-namespace blaze {
-DECLARE_GENERAL_VECTOR_BLAZE_TRAITS(DataVector);
-}  // namespace blaze
+// IWYU pragma: no_include <blaze/math/expressions/DVecMapExpr.h>
+// IWYU pragma: no_include <blaze/math/typetraits/IsVector.h>
 
 /*!
  * \ingroup DataStructuresGroup
@@ -63,7 +59,7 @@ VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS(DataVector);
 }  // namespace blaze
 
 SPECTRE_ALWAYS_INLINE auto fabs(const DataVector& t) noexcept {
-  return abs(*t);
+  return abs(~t);
 }
 
 MAKE_STD_ARRAY_VECTOR_BINOPS(DataVector)
