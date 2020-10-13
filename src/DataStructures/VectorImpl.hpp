@@ -41,8 +41,8 @@
  * derived classes supporting a chosen set of mathematical operations.
  *
  * In addition, the equivalence operator `==` is inherited from the underlying
- * `blaze::CustomVector` type, and returns true if and only if the size and
- * contents of the two compared vectors are equivalent.
+ * `PointerVector` type, and returns true if and only if the size and contents
+ * of the two compared vectors are equivalent.
  *
  * Template parameters:
  * - `T` is the underlying stored type, e.g. `double`, `std::complex<double>`,
@@ -354,9 +354,9 @@ VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
 /// \endcond
 
 // The case of assigning a type apart from the same VectorImpl or a
-// `blaze::DenseVector` forwards the assignment to the `blaze::CustomVector`
-// base type. In the case of a single compatible value, this fills the vector
-// with that value.
+// `blaze::DenseVector` forwards the assignment to the `PointerVector` base
+// type. In the case of a single compatible value, this fills the vector with
+// that value.
 template <typename T, typename VectorType>
 VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
     const T& rhs) noexcept {

@@ -45,7 +45,7 @@ T&& dereference_wrapper(std::reference_wrapper<T>&& t) {
 /// \cond
 // Add overloads of math functions for reference_wrapper.
 // This is necessary because if a class, say DataVector, inherits from
-// blaze vector types and does not specify the math operators specifically for
+// PointerVector and does not specify the math operators specifically for
 // DataVector then the implicit cast from reference_wrapper<DataVector> to
 // DataVector does not result in finding the math operators.
 //
