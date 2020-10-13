@@ -170,7 +170,7 @@ supplied for each `gsl::not_null` argument to the C++. To perform the test the
 `pypp::check_with_random_values()` function must be called. For example, the
 following checks various C++ functions by calling into `pypp`:
 
-\snippet Test_Pypp.cpp cxx_two_not_null
+\snippet Test_PyppRandomValues.cpp cxx_two_not_null
 
 The corresponding Python functions are:
 

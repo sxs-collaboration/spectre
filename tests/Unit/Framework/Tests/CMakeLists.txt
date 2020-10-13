@@ -6,6 +6,8 @@ set(LIBRARY "Test_Framework")
 set(LIBRARY_SOURCES
   Test_ActionTesting.cpp
   Test_Pypp.cpp
+  Test_PyppAnalyticSolution.cpp
+  Test_PyppRandomValues.cpp
   Test_TestCreation.cpp
   Test_TestHelpers.cpp
   Test_TestingFramework.cpp
