@@ -108,8 +108,8 @@ class Variables<tmpl::list<Tags...>> {
   using const_pointer = const value_type*;
   using allocator_type = std::allocator<value_type>;
   using pointer_type =
-      PointerVector<value_type, blaze_unaligned, blaze_unpadded, transpose_flag,
-                    blaze::DynamicVector<value_type, transpose_flag>>;
+      blaze::CustomVector<value_type, blaze_unaligned, blaze_unpadded,
+                          transpose_flag, blaze::GroupTag<0>, vector_type>;
 
   static_assert(
       std::is_fundamental_v<value_type> or tt::is_a_v<std::complex, value_type>,
@@ -256,10 +256,10 @@ class Variables<tmpl::list<Tags...>> {
   /// Converting constructor for an expression to a Variables class
   // clang-tidy: mark as explicit (we want conversion to Variables)
   template <typename VT, bool VF>
-  Variables(const blaze::Vector<VT, VF>& expression) noexcept;  // NOLINT
+  Variables(const blaze::DenseVector<VT, VF>& expression) noexcept;  // NOLINT
 
   template <typename VT, bool VF>
-  Variables& operator=(const blaze::Vector<VT, VF>& expression) noexcept;
+  Variables& operator=(const blaze::DenseVector<VT, VF>& expression) noexcept;
 
   template <typename... WrappedTags,
             Requires<tmpl2::flat_all<std::is_same_v<
@@ -326,13 +326,13 @@ class Variables<tmpl::list<Tags...>> {
   }
   template <typename VT, bool VF>
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator+(
-      const blaze::Vector<VT, VF>& lhs, const Variables& rhs) noexcept {
-    return ~lhs + rhs.variable_data_;
+      const blaze::DenseVector<VT, VF>& lhs, const Variables& rhs) noexcept {
+    return *lhs + rhs.variable_data_;
   }
   template <typename VT, bool VF>
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator+(
-      const Variables& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
-    return lhs.variable_data_ + ~rhs;
+      const Variables& lhs, const blaze::DenseVector<VT, VF>& rhs) noexcept {
+    return lhs.variable_data_ + *rhs;
   }
 
   template <typename... WrappedTags,
@@ -350,13 +350,13 @@ class Variables<tmpl::list<Tags...>> {
   }
   template <typename VT, bool VF>
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator-(
-      const blaze::Vector<VT, VF>& lhs, const Variables& rhs) noexcept {
-    return ~lhs - rhs.variable_data_;
+      const blaze::DenseVector<VT, VF>& lhs, const Variables& rhs) noexcept {
+    return *lhs - rhs.variable_data_;
   }
   template <typename VT, bool VF>
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator-(
-      const Variables& lhs, const blaze::Vector<VT, VF>& rhs) noexcept {
-    return lhs.variable_data_ - ~rhs;
+      const Variables& lhs, const blaze::DenseVector<VT, VF>& rhs) noexcept {
+    return lhs.variable_data_ - *rhs;
   }
 
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator*(
@@ -408,6 +408,18 @@ class Variables<tmpl::list<Tags...>> {
 
   friend bool operator==(const Variables& lhs, const Variables& rhs) noexcept {
     return lhs.variable_data_ == rhs.variable_data_;
+  }
+
+  template <typename VT, bool TF>
+  friend bool operator==(const Variables& lhs,
+                         const blaze::DenseVector<VT, TF>& rhs) noexcept {
+    return lhs.variable_data_ == *rhs;
+  }
+
+  template <typename VT, bool TF>
+  friend bool operator==(const blaze::DenseVector<VT, TF>& lhs,
+                         const Variables& rhs) noexcept {
+    return *lhs == rhs.variable_data_;
   }
 
   template <class FriendTags>
@@ -593,11 +605,14 @@ Variables<tmpl::list<Tags...>>::Variables(
     : variable_data_impl_(std::move(rhs.variable_data_impl_)),
       size_(rhs.size()),
       number_of_grid_points_(rhs.number_of_grid_points()),
-      variable_data_(variable_data_impl_.get(), size_),
       reference_variable_data_(std::move(rhs.reference_variable_data_)) {
   static_assert(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
+  if (size_ == 0) {
+    return;
+  }
+  variable_data_.reset(variable_data_impl_.get(), size_);
 }
 
 template <typename... Tags>
@@ -658,8 +673,8 @@ constexpr const typename Tag::type& get(const Variables<TagList>& v) noexcept {
 template <typename... Tags>
 template <typename VT, bool VF>
 Variables<tmpl::list<Tags...>>::Variables(
-    const blaze::Vector<VT, VF>& expression) noexcept {
-  initialize((~expression).size() / number_of_independent_components);
+    const blaze::DenseVector<VT, VF>& expression) noexcept {
+  initialize((*expression).size() / number_of_independent_components);
   variable_data_ = expression;
 }
 
@@ -667,8 +682,8 @@ Variables<tmpl::list<Tags...>>::Variables(
 template <typename... Tags>
 template <typename VT, bool VF>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
-    const blaze::Vector<VT, VF>& expression) noexcept {
-  initialize((~expression).size() / number_of_independent_components);
+    const blaze::DenseVector<VT, VF>& expression) noexcept {
+  initialize((*expression).size() / number_of_independent_components);
   variable_data_ = expression;
   return *this;
 }

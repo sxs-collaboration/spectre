@@ -90,7 +90,7 @@ class PiecewisePolynomial : public FunctionOfTime {
     double time{std::numeric_limits<double>::signaling_NaN()};
     value_type derivs_coefs;
 
-    DerivInfo() noexcept = default;
+    DerivInfo() = default;
 
     // Constructor is needed for use of emplace_back of a vector
     // (additionally, the constructor converts the supplied derivs to
