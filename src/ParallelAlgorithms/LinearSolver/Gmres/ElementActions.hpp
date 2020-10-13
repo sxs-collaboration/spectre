@@ -46,8 +46,7 @@ template <typename FieldsTag, typename OptionsGroup, bool Preconditioned,
 struct PrepareSolve {
  private:
   using fields_tag = FieldsTag;
-  using initial_fields_tag =
-      db::add_tag_prefix<::Tags::Initial, fields_tag>;
+  using initial_fields_tag = db::add_tag_prefix<::Tags::Initial, fields_tag>;
   using source_tag = SourceTag;
   using operator_applied_to_fields_tag =
       db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
@@ -143,8 +142,7 @@ struct NormalizeInitialOperand {
       const ParallelComponent* const /*meta*/) noexcept {
     auto received_data = std::move(
         tuples::get<Tags::InitialOrthogonalization<OptionsGroup>>(inboxes)
-            .extract(
-                db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
+            .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
             .mapped());
     const double residual_magnitude = get<0>(received_data);
     auto& has_converged = get<1>(received_data);
@@ -319,8 +317,7 @@ struct OrthogonalizeOperand {
       const ParallelComponent* const /*meta*/) noexcept {
     const double orthogonalization = std::move(
         tuples::get<Tags::Orthogonalization<OptionsGroup>>(inboxes)
-            .extract(
-                db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
+            .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
             .mapped());
 
     db::mutate<operand_tag, orthogonalization_iteration_id_tag>(
@@ -374,8 +371,7 @@ template <typename FieldsTag, typename OptionsGroup, bool Preconditioned,
 struct NormalizeOperandAndUpdateField {
  private:
   using fields_tag = FieldsTag;
-  using initial_fields_tag =
-      db::add_tag_prefix<::Tags::Initial, fields_tag>;
+  using initial_fields_tag = db::add_tag_prefix<::Tags::Initial, fields_tag>;
   using operand_tag =
       db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
   using preconditioned_operand_tag =
@@ -412,8 +408,7 @@ struct NormalizeOperandAndUpdateField {
     // Retrieve reduction data from inbox
     auto received_data = std::move(
         tuples::get<Tags::FinalOrthogonalization<OptionsGroup>>(inboxes)
-            .extract(
-                db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
+            .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
             .mapped());
     const double normalization = get<0>(received_data);
     const auto& minres = get<1>(received_data);

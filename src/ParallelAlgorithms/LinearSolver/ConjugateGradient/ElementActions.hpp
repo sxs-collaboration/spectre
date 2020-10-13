@@ -116,8 +116,7 @@ struct InitializeHasConverged {
       const ParallelComponent* const /*meta*/) noexcept {
     auto has_converged = std::move(
         tuples::get<Tags::InitialHasConverged<OptionsGroup>>(inboxes)
-            .extract(
-                db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
+            .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
             .mapped());
 
     db::mutate<Convergence::Tags::HasConverged<OptionsGroup>>(
@@ -211,8 +210,7 @@ struct UpdateFieldValues {
       const ParallelComponent* const /*meta*/) noexcept {
     const double alpha = std::move(
         tuples::get<Tags::Alpha<OptionsGroup>>(inboxes)
-            .extract(
-                db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
+            .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
             .mapped());
 
     db::mutate<residual_tag, fields_tag>(
@@ -279,8 +277,7 @@ struct UpdateOperand {
       const ParallelComponent* const /*meta*/) noexcept {
     auto received_data = std::move(
         tuples::get<Tags::ResidualRatioAndHasConverged<OptionsGroup>>(inboxes)
-            .extract(
-                db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
+            .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
             .mapped());
     const double res_ratio = get<0>(received_data);
     auto& has_converged = get<1>(received_data);

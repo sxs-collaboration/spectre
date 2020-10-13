@@ -30,8 +30,7 @@ template <typename FieldsTag, typename OptionsGroup, bool Preconditioned>
 struct InitializeElement {
  private:
   using fields_tag = FieldsTag;
-  using initial_fields_tag =
-      db::add_tag_prefix<::Tags::Initial, fields_tag>;
+  using initial_fields_tag = db::add_tag_prefix<::Tags::Initial, fields_tag>;
   using operator_applied_to_fields_tag =
       db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
   using operand_tag =
