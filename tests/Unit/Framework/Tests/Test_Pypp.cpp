@@ -57,9 +57,9 @@ void test_int() {
 }
 
 void test_long() {
-  const auto ret = pypp::call<long>("PyppPyTests", "test_numeric", 3l, 4l);
-  CHECK(ret == 3l * 4l);
-  CHECK_THROWS(pypp::call<double>("PyppPyTests", "test_numeric", 3l, 4l));
+  const auto ret = pypp::call<long>("PyppPyTests", "test_numeric", 3L, 4L);
+  CHECK(ret == 3L * 4L);
+  CHECK_THROWS(pypp::call<double>("PyppPyTests", "test_numeric", 3L, 4L));
   CHECK_THROWS(pypp::call<long>("PyppPyTests", "test_numeric", 3.0, 3.74));
 }
 
@@ -196,7 +196,7 @@ void test_tensor_double() {
     tnsr::AA<double, 3> tnsr{};
     for (size_t i = 0; i < 4; ++i) {
       for (size_t j = 0; j < 4; ++j) {
-        tnsr.get(i, j) = i + j + 1.;
+        tnsr.get(i, j) = static_cast<double>(i) + j + 1.;
       }
     }
     return tnsr;
@@ -206,7 +206,7 @@ void test_tensor_double() {
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = 0; j < 4; ++j) {
         for (size_t k = 0; k < 4; ++k) {
-          tnsr.get(i, j, k) = 2. * (k + 1) * (j + 1) + i + 1.;
+          tnsr.get(i, j, k) = 2. * (k + 1.) * (j + 1.) + i + 1.;
         }
       }
     }
@@ -217,7 +217,7 @@ void test_tensor_double() {
     for (size_t i = 0; i < 4; ++i) {
       for (size_t j = 0; j < 3; ++j) {
         for (size_t k = 0; k < 4; ++k) {
-          tnsr.get(i, j, k) = 2. * (k + 1) * (i + 1) + j + 1.5;
+          tnsr.get(i, j, k) = 2. * (k + 1.) * (i + 1.) + j + 1.5;
         }
       }
     }
@@ -229,7 +229,7 @@ void test_tensor_double() {
       for (size_t j = 0; j < 4; ++j) {
         for (size_t k = 0; k < 4; ++k) {
           for (size_t l = 0; l < 4; ++l) {
-            tnsr.get(i, j, k, l) = 3. * i + j + (k + 1) * (l + 1) + 1.;
+            tnsr.get(i, j, k, l) = 3. * i + j + (k + 1.) * (l + 1.) + 1.;
           }
         }
       }
@@ -297,7 +297,7 @@ void test_tensor_datavector() {
     tnsr::AA<DataVector, 3> tnsr{};
     for (size_t i = 0; i < 4; ++i) {
       for (size_t j = 0; j < 4; ++j) {
-        tnsr.get(i, j) = DataVector(npts, i + j + 1.);
+        tnsr.get(i, j) = DataVector(npts, static_cast<double>(i) + j + 1.);
       }
     }
     return tnsr;
@@ -307,7 +307,8 @@ void test_tensor_datavector() {
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = 0; j < 4; ++j) {
         for (size_t k = 0; k < 4; ++k) {
-          tnsr.get(i, j, k) = DataVector(npts, 2. * (k + 1) * (j + 1) + i + 1.);
+          tnsr.get(i, j, k) =
+              DataVector(npts, 2. * (k + 1.) * (j + 1.) + i + 1.);
         }
       }
     }
@@ -319,7 +320,7 @@ void test_tensor_datavector() {
       for (size_t j = 0; j < 3; ++j) {
         for (size_t k = 0; k < 4; ++k) {
           tnsr.get(i, j, k) =
-              DataVector(npts, 2. * (k + 1) * (i + 1) + j + 1.5);
+              DataVector(npts, 2. * (k + 1.) * (i + 1.) + j + 1.5);
         }
       }
     }
@@ -332,7 +333,7 @@ void test_tensor_datavector() {
         for (size_t k = 0; k < 4; ++k) {
           for (size_t l = 0; l < 4; ++l) {
             tnsr.get(i, j, k, l) =
-                DataVector(npts, 3. * i + j + (k + 1) * (l + 1) + 1.);
+                DataVector(npts, 3. * i + j + (k + 1.) * (l + 1.) + 1.);
           }
         }
       }
