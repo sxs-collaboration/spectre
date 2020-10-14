@@ -1,10 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Every time we've upgraded blaze compatibility in the past, we've had to change
-# vector code, so we should expect to need changes again on each subsequent
-# release, so we specify an exact version requirement.
-find_package(Blaze 3.8 EXACT REQUIRED)
+find_package(Blaze 3.5 REQUIRED)
 
 message(STATUS "Blaze incl: ${BLAZE_INCLUDE_DIR}")
 message(STATUS "Blaze vers: ${BLAZE_VERSION}")

@@ -14,13 +14,9 @@
 #include <utility>
 #include <vector>
 
-#include <ErrorHandling/Assert.hpp>
-#include <Utilities/Blaze.hpp>
-#include <blaze/math/CustomVector.h>
+// Include PointerVector.hpp since this is what we use to wrap Blaze
+#include <Utilities/PointerVector.hpp>
 #include <blaze/math/typetraits/IsVector.h>
-#include <blaze/system/Optimizations.h>
-#include <blaze/system/Version.h>
-#include <blaze/util/typetraits/RemoveConst.h>
 
 // Include Brigand related headers
 #include <Utilities/TMPL.hpp>

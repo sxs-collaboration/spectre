@@ -5,7 +5,6 @@
 
 #include <algorithm>  // IWYU pragma: keep  // for std::fill
 #include <array>
-#include <blaze/math/CustomVector.h>
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
@@ -18,10 +17,10 @@
 #include <type_traits>
 
 #include "ErrorHandling/Assert.hpp"
-#include "Utilities/Blaze.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"  // IWYU pragma: keep
+#include "Utilities/PointerVector.hpp"  // IWYU pragma: keep
 #include "Utilities/PrintHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -41,8 +40,8 @@
  * derived classes supporting a chosen set of mathematical operations.
  *
  * In addition, the equivalence operator `==` is inherited from the underlying
- * `blaze::CustomVector` type, and returns true if and only if the size and
- * contents of the two compared vectors are equivalent.
+ * `PointerVector` type, and returns true if and only if the size and contents
+ * of the two compared vectors are equivalent.
  *
  * Template parameters:
  * - `T` is the underlying stored type, e.g. `double`, `std::complex<double>`,
@@ -70,16 +69,14 @@
  */
 template <typename T, typename VectorType>
 class VectorImpl
-    : public blaze::CustomVector<T, blaze_unaligned, blaze_unpadded,
-                                 blaze::defaultTransposeFlag,
-                                 blaze::GroupTag<0>, VectorType> {
+    : public PointerVector<T, blaze_unaligned, blaze_unpadded,
+                           blaze::defaultTransposeFlag, VectorType> {
  public:
   using value_type = T;
   using size_type = size_t;
   using difference_type = std::ptrdiff_t;
-  using BaseType = blaze::CustomVector<T, blaze_unaligned, blaze_unpadded,
-                                       blaze::defaultTransposeFlag,
-                                       blaze::GroupTag<0>, VectorType>;
+  using BaseType = PointerVector<T, blaze::unaligned, blaze::unpadded,
+                                 blaze::defaultTransposeFlag, VectorType>;
   static constexpr bool transpose_flag = blaze::defaultTransposeFlag;
 
   using ElementType = T;
@@ -101,10 +98,10 @@ class VectorImpl
   /// \attention
   /// upcast should only be used when implementing a derived vector type, not in
   /// calling code
-  const BaseType& operator*() const noexcept {
+  const BaseType& operator~() const noexcept {
     return static_cast<const BaseType&>(*this);
   }
-  BaseType& operator*() noexcept { return static_cast<BaseType&>(*this); }
+  BaseType& operator~() noexcept { return static_cast<BaseType&>(*this); }
   // @}
 
   /// Create with the given size. In debug mode, the vector is initialized to
@@ -185,11 +182,7 @@ class VectorImpl
 
   void set_data_ref(T* const start, const size_t set_size) noexcept {
     owned_data_.reset();
-    if(start == nullptr) {
-      (**this).reset();
-    } else {
-      (**this).reset(start, set_size);
-    }
+    (~*this).reset(start, set_size);
     owning_ = false;
   }
   // @}
@@ -236,14 +229,6 @@ class VectorImpl
 
   SPECTRE_ALWAYS_INLINE void reset_pointer_vector(
       const size_t set_size) noexcept {
-    if(set_size == 0) {
-      return;
-    }
-    if (owned_data_ == nullptr) {
-      ERROR(
-          "VectorImpl::reset_pointer_vector cannot be called when owned_data_ "
-          "is nullptr.");
-    }
     this->reset(owned_data_.get(), set_size);
   }
 };
@@ -284,7 +269,7 @@ template <typename T, typename VectorType>
 VectorImpl<T, VectorType>::VectorImpl(
     VectorImpl<T, VectorType>&& rhs) noexcept {
   owned_data_ = std::move(rhs.owned_data_);
-  **this = std::move(*rhs);
+  ~*this = ~rhs;  // PointerVector is trivially copyable
   owning_ = rhs.owning_;
   rhs.owning_ = true;
   rhs.reset();
@@ -296,7 +281,7 @@ VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
   if (this != &rhs) {
     if (owning_) {
       owned_data_ = std::move(rhs.owned_data_);
-      **this = std::move(*rhs);
+      ~*this = ~rhs; /* PointerVector is trivially copyable */
       owning_ = rhs.owning_;
     } else {
       ASSERT(rhs.size() == size(), "Must copy into same size, not "
@@ -320,14 +305,14 @@ VectorImpl<T, VectorType>::VectorImpl(
     const blaze::DenseVector<VT, VF>& expression)  // NOLINT
     noexcept
     : owned_data_(static_cast<value_type*>(
-                      malloc((*expression).size() * sizeof(value_type))),
+                      malloc((~expression).size() * sizeof(value_type))),
                   &free) {
   static_assert(std::is_same_v<typename VT::ResultType, VectorType>,
                 "You are attempting to assign the result of an expression "
                 "that is not consistent with the VectorImpl type you are "
                 "assigning to.");
-  reset_pointer_vector((*expression).size());
-  **this = expression;
+  reset_pointer_vector((~expression).size());
+  ~*this = expression;
 }
 
 template <typename T, typename VectorType>
@@ -338,29 +323,29 @@ VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
                 "You are attempting to assign the result of an expression "
                 "that is not consistent with the VectorImpl type you are "
                 "assigning to.");
-  if (owning_ and (*expression).size() != size()) {
+  if (owning_ and (~expression).size() != size()) {
     owned_data_.reset(static_cast<value_type*>(
         // NOLINTNEXTLINE(cppcoreguidelines-owning-memory)
-        malloc((*expression).size() * sizeof(value_type))));
-    reset_pointer_vector((*expression).size());
+        malloc((~expression).size() * sizeof(value_type))));
+    reset_pointer_vector((~expression).size());
   } else if (not owning_) {
-    ASSERT((*expression).size() == size(), "Must copy into same size, not "
-                                               << (*expression).size()
+    ASSERT((~expression).size() == size(), "Must copy into same size, not "
+                                               << (~expression).size()
                                                << " into " << size());
   }
-  **this = expression;
+  ~*this = expression;
   return *this;
 }
 /// \endcond
 
 // The case of assigning a type apart from the same VectorImpl or a
-// `blaze::DenseVector` forwards the assignment to the `blaze::CustomVector`
-// base type. In the case of a single compatible value, this fills the vector
-// with that value.
+// `blaze::DenseVector` forwards the assignment to the `PointerVector` base
+// type. In the case of a single compatible value, this fills the vector with
+// that value.
 template <typename T, typename VectorType>
 VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
     const T& rhs) noexcept {
-  **this = rhs;
+  ~*this = rhs;
   return *this;
 }
 
@@ -387,18 +372,6 @@ std::ostream& operator<<(std::ostream& os,
   sequence_print_helper(os, d.begin(), d.end());
   return os;
 }
-
-#define DECLARE_GENERAL_VECTOR_BLAZE_TRAITS(VECTOR_TYPE)         \
-  template <>                                                    \
-  struct IsDenseVector<VECTOR_TYPE> : public blaze::TrueType {}; \
-                                                                 \
-  template <>                                                    \
-  struct IsVector<VECTOR_TYPE> : public blaze::TrueType {};      \
-                                                                 \
-  template <>                                                    \
-  struct CustomTransposeType<VECTOR_TYPE> {                      \
-    using Type = VECTOR_TYPE;                                    \
-  }
 
 /*!
  * \ingroup DataStructuresGroup
@@ -470,6 +443,8 @@ std::ostream& operator<<(std::ostream& os,
  * the type of the operation result (e.g. `DataVector`)
  */
 #define VECTOR_BLAZE_TRAIT_SPECIALIZE_ARITHMETIC_TRAITS(VECTOR_TYPE) \
+  template <>                                                        \
+  struct IsVector<VECTOR_TYPE> : std::true_type {};                  \
   template <>                                                        \
   struct TransposeFlag<VECTOR_TYPE>                                  \
       : BoolConstant<VECTOR_TYPE::transpose_flag> {};                \

@@ -13,6 +13,8 @@
               "\"DataStructures/DenseMatrix.hpp\"", public]},
   { include: ["@<blaze/.*>", private,
               "\"DataStructures/DenseVector.hpp\"", public]},
+  { include: ["@<blaze/.*>", private,
+              "\"Utilities/PointerVector.hpp\"", private]},
 
   { include: ["<ckmessage.h>", private,
               "<charm++.h>", public]},
@@ -96,4 +98,7 @@
               "\"AlgorithmSingleton.hpp\"", public]},
   { include: ["\"ParallelInfo.decl.h\"", private,
               "\"Executables/ParallelInfo/ParallelInfo.decl.h\"", public]},
+
+  { include: ["\"Utilities/PointerVector.hpp\"", private,
+              "\"DataStructures/DataVector.hpp\"", public]},
 ]
