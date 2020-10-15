@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   BouncingBlackHole.cpp
   LinearizedBondiSachs.cpp
+  GaugeWave.cpp
   RotatingSchwarzschild.cpp
   SphericalMetricData.cpp
   TeukolskyWave.cpp
@@ -22,6 +23,7 @@ spectre_target_headers(
   HEADERS
   BouncingBlackHole.hpp
   LinearizedBondiSachs.hpp
+  GaugeWave.hpp
   RotatingSchwarzschild.hpp
   SphericalMetricData.hpp
   TeukolskyWave.hpp

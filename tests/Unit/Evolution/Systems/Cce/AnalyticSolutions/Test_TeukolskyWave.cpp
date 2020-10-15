@@ -29,7 +29,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.TeukolskyWave", "[Unit][Cce]") {
   const double time = duration + extraction_radius + parameter_dist(gen);
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/Cce/AnalyticSolutions/"};
-  boundary_solution.test_spherical_metric(
-      "TeukolskyWave", l_max, time, extraction_radius, amplitude, duration);
+  boundary_solution.test_spherical_metric("TeukolskyWave", l_max, time, approx,
+                                          extraction_radius, amplitude,
+                                          duration);
 }
 }  // namespace Cce::Solutions
