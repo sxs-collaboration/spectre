@@ -115,6 +115,8 @@ class MockRuntimeSystem {
   using GlobalCache = Parallel::GlobalCache<Metavariables>;
   using CacheTuple = tuples::tagged_tuple_from_typelist<
       Parallel::get_const_global_cache_tags<Metavariables>>;
+  using MutableCacheTuple = tuples::tagged_tuple_from_typelist<
+      Parallel::get_mutable_global_cache_tags<Metavariables>>;
 
   using mock_objects_tags =
       tmpl::transform<typename Metavariables::component_list,
@@ -125,9 +127,11 @@ class MockRuntimeSystem {
       tmpl::transform<typename Metavariables::component_list,
                       tmpl::bind<InboxesTag, tmpl::_1>>>;
 
+
   /// Construct from the tuple of GlobalCache objects.
-  explicit MockRuntimeSystem(CacheTuple cache_contents)
-      : mutable_cache_(tuples::TaggedTuple<>{}),
+  explicit MockRuntimeSystem(CacheTuple cache_contents,
+                             MutableCacheTuple mutable_cache_contents = {})
+      : mutable_cache_(serialize_and_deserialize(mutable_cache_contents)),
         // serialize_and_deserialize is not necessary here, but we
         // serialize_and_deserialize to reveal bugs in ActionTesting
         // tests where cache contents are not serializable.
@@ -149,6 +153,17 @@ class MockRuntimeSystem {
   explicit MockRuntimeSystem(tuples::TaggedTuple<Tags...> cache_contents)
       : MockRuntimeSystem(
             tuples::reorder<CacheTuple>(std::move(cache_contents))) {}
+
+  /// Construct from the tuple of GlobalCache and MutableGlobalCache
+  /// objects that might be in a different order.
+  template <typename... CacheTags, typename... MutableCacheTags>
+  MockRuntimeSystem(
+      tuples::TaggedTuple<CacheTags...> cache_contents,
+      tuples::TaggedTuple<MutableCacheTags...> mutable_cache_contents)
+      : MockRuntimeSystem(
+            tuples::reorder<CacheTuple>(std::move(cache_contents)),
+            tuples::reorder<MutableCacheTuple>(
+                std::move(mutable_cache_contents))) {}
 
   /// Emplace a component that does not need to be initialized.
   template <typename Component, typename... Options>
