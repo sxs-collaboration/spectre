@@ -65,9 +65,12 @@ struct Fluxes {
 
 struct Sources {
   using argument_tags = tmpl::list<AnArgument>;
-  static void apply(const gsl::not_null<Scalar<DataVector>*> source_for_field,
-                    const double an_argument,
-                    const Scalar<DataVector>& field) {
+  template <size_t Dim>
+  static void apply(
+      const gsl::not_null<Scalar<DataVector>*> source_for_field,
+      const gsl::not_null<tnsr::i<DataVector, Dim>*> /*source_for_aux_field*/,
+      const double an_argument, const Scalar<DataVector>& field,
+      const tnsr::I<DataVector, Dim>& /*field_flux*/) {
     get(*source_for_field) = get(field) * square(an_argument);
   }
 };
@@ -115,12 +118,12 @@ void test_fluxes_and_sources() {
 
   // Test sources
   Variables<db::wrap_tags_in<::Tags::Source, all_fields>> sources{num_points};
-  elliptic::first_order_sources<primal_fields, auxiliary_fields, Sources>(
-      make_not_null(&sources), vars, 3.);
+  elliptic::first_order_sources<Dim, primal_fields, auxiliary_fields, Sources>(
+      make_not_null(&sources), vars, fluxes, 3.);
   // Check return-by-ref and return-by-value functions are equal
   CHECK(sources ==
-        elliptic::first_order_sources<primal_fields, auxiliary_fields, Sources>(
-            vars, 3.));
+        elliptic::first_order_sources<Dim, primal_fields, auxiliary_fields,
+                                      Sources>(vars, fluxes, 3.));
   // Check computed values
   CHECK(get(get<::Tags::Source<PrimalField>>(sources)) ==
         DataVector{num_points, 18.});

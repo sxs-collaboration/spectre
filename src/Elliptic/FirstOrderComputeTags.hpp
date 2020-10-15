@@ -46,23 +46,25 @@ struct FirstOrderFluxesCompute
   }
 };
 
-template <typename SourcesComputer, typename VariablesTag,
+template <size_t Dim, typename SourcesComputer, typename VariablesTag,
           typename PrimalVariables, typename AuxiliaryVariables>
 struct FirstOrderSourcesCompute
     : db::add_tag_prefix<::Tags::Source, VariablesTag>,
       db::ComputeTag {
   using base = db::add_tag_prefix<::Tags::Source, VariablesTag>;
   using argument_tags =
-      tmpl::push_front<typename SourcesComputer::argument_tags, VariablesTag>;
+      tmpl::push_front<typename SourcesComputer::argument_tags, VariablesTag,
+                       db::add_tag_prefix<::Tags::Flux, VariablesTag,
+                                          tmpl::size_t<Dim>, Frame::Inertial>>;
   using volume_tags = get_volume_tags<SourcesComputer>;
   using return_type = typename base::type;
-  template <typename... SourcesArgs>
+  template <typename Vars, typename Fluxes, typename... SourcesArgs>
   static void function(const gsl::not_null<return_type*> sources,
-                       const typename VariablesTag::type& vars,
+                       const Vars& vars, const Fluxes& fluxes,
                        const SourcesArgs&... sources_args) noexcept {
     *sources = return_type{vars.number_of_grid_points()};
-    elliptic::first_order_sources<PrimalVariables, AuxiliaryVariables,
-                                  SourcesComputer>(sources, vars,
+    elliptic::first_order_sources<Dim, PrimalVariables, AuxiliaryVariables,
+                                  SourcesComputer>(sources, vars, fluxes,
                                                    sources_args...);
   }
 };

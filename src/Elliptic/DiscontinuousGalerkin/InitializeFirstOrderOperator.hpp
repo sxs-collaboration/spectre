@@ -71,7 +71,7 @@ struct InitializeFirstOrderOperator {
                                               vars_tag, PrimalVariables,
                                               AuxiliaryVariables>;
   using sources_compute_tag = elliptic::Tags::FirstOrderSourcesCompute<
-      SourcesComputer, vars_tag, PrimalVariables, AuxiliaryVariables>;
+      Dim, SourcesComputer, vars_tag, PrimalVariables, AuxiliaryVariables>;
 
   using exterior_tags = tmpl::list<
       // On exterior (ghost) boundary faces we compute the fluxes from the

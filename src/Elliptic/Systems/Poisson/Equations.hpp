@@ -110,8 +110,13 @@ struct NonEuclideanFluxes {
  */
 struct Sources {
   using argument_tags = tmpl::list<>;
-  static void apply(const gsl::not_null<Scalar<DataVector>*> source_for_field,
-                    const Scalar<DataVector>& /*field*/) noexcept {
+  template <size_t Dim>
+  static void apply(
+      const gsl::not_null<Scalar<DataVector>*> source_for_field,
+      const gsl::not_null<
+          tnsr::i<DataVector, Dim>*> /*source_for_field_gradient*/,
+      const Scalar<DataVector>& /*field*/,
+      const tnsr::I<DataVector, Dim>& /*field_flux*/) noexcept {
     get(*source_for_field) = 0.;
   }
 };
