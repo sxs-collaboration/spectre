@@ -512,8 +512,11 @@ T tensor_conversion_impl(PyObject* p) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     if (npy_array_dims[i] != static_cast<long>(gsl::at(t_array_dims, i))) {
       throw std::runtime_error{
-          "Mismatch between number of components of ndarray and Tensor in " +
-          std::to_string(i) + "\'th dim"};
+          "Mismatch between number of components of ndarray (" +
+          std::to_string(npy_array_dims[i])  // NOLINT
+          + ") and Tensor of rank " + std::to_string(T::rank()) + " in " +
+          std::to_string(i) + "\'th index with dimension " +
+          std::to_string(static_cast<long>(gsl::at(t_array_dims, i)))};
     }
   }
   auto t = make_with_value<T>(
