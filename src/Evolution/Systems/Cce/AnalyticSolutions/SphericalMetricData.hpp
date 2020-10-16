@@ -197,7 +197,7 @@ struct SphericalMetricData : public WorldtubeData {
    *
    * \details The derived classes provide spherical metric data via the virtual
    * function `SphericalMetricData::spherical_metric()` at a resolution
-   * determined by member variable `l_max_`. This function performs the
+   * determined by the `l_max` argument. This function performs the
    * coordinate transformation using the Jacobian computed from
    * `SphericalMetricData::inverse_jacobian()`.
    */
@@ -214,7 +214,7 @@ struct SphericalMetricData : public WorldtubeData {
    * \details The derived classes provide the time derivative of the spherical
    * metric data via the virtual function
    * `SphericalMetricData::dt_spherical_metric()` at a resolution determined by
-   * member variable `l_max_`. This function performs the coordinate
+   * the `l_max` argument. This function performs the coordinate
    * transformation using the Jacobian computed from
    * `SphericalMetricData::inverse_jacobian()`.
    */
@@ -231,7 +231,7 @@ struct SphericalMetricData : public WorldtubeData {
    * \details The derived classes provide the radial derivative of the spherical
    * metric data via the virtual function
    * `SphericalMetricData::dr_spherical_metric()` at a resolution determined by
-   * member variable `l_max_`. This function performs the additional angular
+   * the `l_max_` argument. This function performs the additional angular
    * derivatives necessary to assemble the full spatial derivative and performs
    * the coordinate transformation to Cartesian coordinates via the Jacobians
    * computed in `SphericalMetricData::inverse_jacobian()` and
