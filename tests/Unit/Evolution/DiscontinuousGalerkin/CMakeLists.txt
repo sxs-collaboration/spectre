@@ -7,6 +7,7 @@ set(LIBRARY "Test_EvolutionDg")
 
 set(LIBRARY_SOURCES
   Actions/Test_ComputeTimeDerivative.cpp
+  Actions/Test_NormalCovectorAndMagnitude.cpp
   Initialization/Test_Mortars.cpp
   Initialization/Test_QuadratureTag.cpp
   Test_InboxTags.cpp
