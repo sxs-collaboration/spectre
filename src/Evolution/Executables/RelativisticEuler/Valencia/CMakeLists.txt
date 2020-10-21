@@ -16,6 +16,7 @@ set(LIBS_TO_LINK
   RelativisticEulerSolutions
   Time
   Options
+  Parallel
   Utilities
   Valencia
   )

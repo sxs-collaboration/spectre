@@ -17,6 +17,7 @@ set(LIBS_TO_LINK
   MathFunctions
   RelativisticEulerSolutions
   Options
+  Parallel
   Time
   Utilities
   ValenciaDivClean

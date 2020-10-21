@@ -17,6 +17,7 @@ set(LIBS_TO_LINK
   LinearOperators
   MathFunctions
   Options
+  Parallel
   Time
   Utilities
   )

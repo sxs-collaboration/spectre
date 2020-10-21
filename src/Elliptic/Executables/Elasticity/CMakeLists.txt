@@ -12,6 +12,7 @@ set(LIBS_TO_LINK
   IO
   LinearOperators
   Options
+  Parallel
   ParallelLinearSolver
   Utilities
   )

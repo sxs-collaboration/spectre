@@ -13,6 +13,7 @@ set(LIBS_TO_LINK
   ScalarWave
   Time
   Options
+  Parallel
   Utilities
   WaveEquationSolutions
   )
