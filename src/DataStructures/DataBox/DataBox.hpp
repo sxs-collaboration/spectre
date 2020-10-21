@@ -799,13 +799,15 @@ db::DataBox<tmpl::list<Tags...>>::reset_compute_items_after_mutate(
     tmpl::list<ComputeItemsToReset...> /*meta*/) noexcept {
   EXPAND_PACK_LEFT_TO_RIGHT(add_reset_compute_item_to_box<ComputeItemsToReset>(
       detail::get_argument_list<ComputeItemsToReset>{}));
-
-  using next_compute_tags_to_reset =
-      tmpl::transform<tmpl::append<tmpl::filter<
-                          typename DataBox<tmpl::list<Tags...>>::edge_list,
-                          std::is_same<tmpl::pin<ComputeItemsToReset>,
-                                       tmpl::get_source<tmpl::_1>>>...>,
-                      tmpl::get_destination<tmpl::_1>>;
+  using current_tags_to_reset = tmpl::list<ComputeItemsToReset...>;
+  using next_compute_tags_to_reset = tmpl::list_difference<
+      tmpl::remove_duplicates<
+          tmpl::transform<tmpl::append<tmpl::filter<
+                              typename DataBox<tmpl::list<Tags...>>::edge_list,
+                              std::is_same<tmpl::pin<ComputeItemsToReset>,
+                                           tmpl::get_source<tmpl::_1>>>...>,
+                          tmpl::get_destination<tmpl::_1>>>,
+      current_tags_to_reset>;
   reset_compute_items_after_mutate(next_compute_tags_to_reset{});
 }
 
@@ -896,12 +898,12 @@ void mutate(const gsl::not_null<DataBox<TagList>*> box, Invokable&& invokable,
       tmpl::append<detail::expand_subitems<mutate_tags_list>,
                    extra_mutated_tags>;
 
-  using first_compute_items_to_reset =
+  using first_compute_items_to_reset = tmpl::remove_duplicates<
       tmpl::transform<tmpl::filter<typename DataBox<TagList>::edge_list,
                                    tmpl::bind<tmpl::list_contains,
                                               tmpl::pin<full_mutated_items>,
                                               tmpl::get_source<tmpl::_1>>>,
-                      tmpl::get_destination<tmpl::_1>>;
+                      tmpl::get_destination<tmpl::_1>>>;
 
   EXPAND_PACK_LEFT_TO_RIGHT(
       box->template mutate_subitem_tags_in_box<MutateTags>(
