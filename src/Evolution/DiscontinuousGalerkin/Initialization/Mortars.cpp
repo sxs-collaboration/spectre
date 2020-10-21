@@ -29,15 +29,26 @@ auto Mortars<Dim, AddFluxBoundaryConditionMortars>::apply_impl(
     const std::unordered_map<Direction<Dim>, Mesh<Dim - 1>>& interface_meshes,
     const std::unordered_map<Direction<Dim>, Mesh<Dim - 1>>&
         boundary_meshes) noexcept
-    -> std::tuple<MortarMap<evolution::dg::MortarData<Dim>>,
-                  MortarMap<Mesh<Dim - 1>>,
-                  MortarMap<std::array<Spectral::MortarSize, Dim - 1>>,
-                  MortarMap<TimeStepId>> {
+    -> std::tuple<
+        MortarMap<evolution::dg::MortarData<Dim>>, MortarMap<Mesh<Dim - 1>>,
+        MortarMap<std::array<Spectral::MortarSize, Dim - 1>>,
+        MortarMap<TimeStepId>,
+        DirectionMap<
+            Dim,
+            std::optional<Variables<tmpl::list<
+                evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
+                evolution::dg::Tags::InternalFace::NormalCovector<Dim>>>>>> {
   MortarMap<evolution::dg::MortarData<Dim>> mortar_data{};
   MortarMap<Mesh<Dim - 1>> mortar_meshes{};
   MortarMap<std::array<Spectral::MortarSize, Dim - 1>> mortar_sizes{};
   MortarMap<TimeStepId> mortar_next_temporal_ids{};
+  DirectionMap<Dim,
+               std::optional<Variables<tmpl::list<
+                   evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
+                   evolution::dg::Tags::InternalFace::NormalCovector<Dim>>>>>
+      normal_covector_quantities{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
+    normal_covector_quantities[direction] = std::nullopt;
     for (const auto& neighbor : neighbors) {
       const auto mortar_id = std::make_pair(direction, neighbor);
       mortar_data[mortar_id];  // Default initialize data
@@ -75,7 +86,8 @@ auto Mortars<Dim, AddFluxBoundaryConditionMortars>::apply_impl(
   }
 
   return {std::move(mortar_data), std::move(mortar_meshes),
-          std::move(mortar_sizes), std::move(mortar_next_temporal_ids)};
+          std::move(mortar_sizes), std::move(mortar_next_temporal_ids),
+          std::move(normal_covector_quantities)};
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

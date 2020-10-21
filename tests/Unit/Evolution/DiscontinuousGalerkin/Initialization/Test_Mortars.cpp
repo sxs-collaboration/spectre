@@ -93,12 +93,18 @@ using MortarMap =
                        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
 
 template <size_t Dim>
-void test_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
-               const Element<Dim>& element, const TimeStepId& time_step_id,
-               const Spectral::Quadrature quadrature,
-               const MortarMap<Dim, Mesh<Dim - 1>>& expected_mortar_meshes,
-               const MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>&
-                   expected_mortar_sizes) {
+void test_impl(
+    const std::vector<std::array<size_t, Dim>>& initial_extents,
+    const Element<Dim>& element, const TimeStepId& time_step_id,
+    const Spectral::Quadrature quadrature,
+    const MortarMap<Dim, Mesh<Dim - 1>>& expected_mortar_meshes,
+    const MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>&
+        expected_mortar_sizes,
+    const DirectionMap<
+        Dim, std::optional<Variables<tmpl::list<
+                 evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
+                 evolution::dg::Tags::InternalFace::NormalCovector<Dim>>>>>&
+        expected_normal_covector_quantities) {
   using metavars = Metavariables<Dim>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{initial_extents};
@@ -142,6 +148,12 @@ void test_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
       CHECK(mortar_next_temporal_ids.at(mortar_id) == time_step_id);
     }
   }
+
+  // Cast result of `operator==` to a bool to trick Catch into not trying to
+  // stream a nested STL container.
+  CHECK(static_cast<bool>(
+      get_tag(evolution::dg::Tags::InternalFace::NormalCovectorAndMagnitude<
+              Dim>{}) == expected_normal_covector_quantities));
 }
 
 template <size_t Dim>
@@ -175,8 +187,15 @@ void test<1>(const Spectral::Quadrature quadrature) {
   const MortarMap<1, std::array<Spectral::MortarSize, 0>> expected_mortar_sizes{
       {boundary_mortar_id, {}}, {interface_mortar_id, {}}};
 
+  const DirectionMap<
+      1, std::optional<Variables<
+             tmpl::list<evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
+                        evolution::dg::Tags::InternalFace::NormalCovector<1>>>>>
+      expected_normal_covector_quantities{{Direction<1>::upper_xi(), {}}};
+
   test_impl(initial_extents, element, time_step_id, quadrature,
-            expected_mortar_meshes, expected_mortar_sizes);
+            expected_mortar_meshes, expected_mortar_sizes,
+            expected_normal_covector_quantities);
 }
 
 template <>
@@ -230,8 +249,16 @@ void test<2>(const Spectral::Quadrature quadrature) {
         {Spectral::MortarSize::Full}};
   }
 
+  const DirectionMap<
+      2, std::optional<Variables<
+             tmpl::list<evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
+                        evolution::dg::Tags::InternalFace::NormalCovector<2>>>>>
+      expected_normal_covector_quantities{{Direction<2>::upper_xi(), {}},
+                                          {Direction<2>::lower_eta(), {}}};
+
   test_impl(initial_extents, element, time_step_id, quadrature,
-            expected_mortar_meshes, expected_mortar_sizes);
+            expected_mortar_meshes, expected_mortar_sizes,
+            expected_normal_covector_quantities);
 }
 
 template <>
@@ -294,8 +321,17 @@ void test<3>(const Spectral::Quadrature quadrature) {
         {Spectral::MortarSize::Full, Spectral::MortarSize::Full}};
   }
 
+  const DirectionMap<
+      3, std::optional<Variables<
+             tmpl::list<evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
+                        evolution::dg::Tags::InternalFace::NormalCovector<3>>>>>
+      expected_normal_covector_quantities{{Direction<3>::upper_xi(), {}},
+                                          {Direction<3>::lower_eta(), {}},
+                                          {Direction<3>::upper_zeta(), {}}};
+
   test_impl(initial_extents, element, time_step_id, quadrature,
-            expected_mortar_meshes, expected_mortar_sizes);
+            expected_mortar_meshes, expected_mortar_sizes,
+            expected_normal_covector_quantities);
 }
 }  // namespace
 
