@@ -164,7 +164,7 @@ class WorldtubeBufferUpdater : public PUP::able {
 
   virtual double get_extraction_radius() const noexcept = 0;
 
-  virtual bool radial_derivatives_need_renormalization() const noexcept = 0;
+  virtual bool has_version_history() const noexcept = 0;
 
   virtual DataVector& get_time_buffer() noexcept = 0;
 };
@@ -226,8 +226,8 @@ class MetricWorldtubeH5BufferUpdater
   /// type.
   DataVector& get_time_buffer() noexcept override { return time_buffer_; }
 
-  bool radial_derivatives_need_renormalization() const noexcept override {
-    return radial_derivatives_need_renormalization_;
+  bool has_version_history() const noexcept override {
+    return has_version_history_;
   }
 
   /// Serialization for Charm++.
@@ -239,7 +239,7 @@ class MetricWorldtubeH5BufferUpdater
                      size_t time_span_start,
                      size_t time_span_end) const noexcept;
 
-  bool radial_derivatives_need_renormalization_ = false;
+  bool has_version_history_ = true;
   double extraction_radius_ = 1.0;
   size_t l_max_ = 0;
 
@@ -313,8 +313,8 @@ class BondiWorldtubeH5BufferUpdater
   /// type.
   DataVector& get_time_buffer() noexcept override { return time_buffer_; }
 
-  bool radial_derivatives_need_renormalization() const noexcept override {
-    return false;
+  bool has_version_history() const noexcept override {
+    return true;
   }
 
   /// Serialization for Charm++.

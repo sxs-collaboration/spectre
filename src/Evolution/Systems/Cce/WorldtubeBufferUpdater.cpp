@@ -98,8 +98,7 @@ MetricWorldtubeH5BufferUpdater::MetricWorldtubeH5BufferUpdater(
   // file format. This line determines whether or not the radial derivatives
   // require renormalization based on whether the SpEC version that produced it
   // was an old one that had a particular normalization bug
-  radial_derivatives_need_renormalization_ =
-      not cce_data_file_.exists<h5::Version>("/VersionHist");
+  has_version_history_ = cce_data_file_.exists<h5::Version>("/VersionHist");
 
   // We assume that the filename has the extraction radius encoded as an
   // integer between the last occurrence of 'R' and the last occurrence of
@@ -215,7 +214,7 @@ bool MetricWorldtubeH5BufferUpdater::time_is_outside_range(
 
 void MetricWorldtubeH5BufferUpdater::pup(PUP::er& p) noexcept {
   p | time_buffer_;
-  p | radial_derivatives_need_renormalization_;
+  p | has_version_history_;
   p | filename_;
   p | l_max_;
   p | extraction_radius_;

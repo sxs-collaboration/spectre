@@ -156,8 +156,8 @@ class DummyBufferUpdater
     return extraction_radius_;
   }
 
-  bool radial_derivatives_need_renormalization() const noexcept override {
-    return apply_normalization_bug_;
+  bool has_version_history() const noexcept override {
+    return not apply_normalization_bug_;
   }
 
   DataVector& get_time_buffer() noexcept override { return time_buffer_; }
@@ -311,8 +311,8 @@ class ReducedDummyBufferUpdater
 
   DataVector& get_time_buffer() noexcept override { return time_buffer_; }
 
-  bool radial_derivatives_need_renormalization() const noexcept override {
-    return false;
+  bool has_version_history() const noexcept override {
+    return true;
   }
 
   void pup(PUP::er& p) noexcept override {

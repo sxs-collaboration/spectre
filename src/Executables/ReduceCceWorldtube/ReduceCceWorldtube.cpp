@@ -208,7 +208,7 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
         time_span_end - time_span_start, i - time_span_start, l_max,
         computation_l_max);
 
-    if (buffer_updater.radial_derivatives_need_renormalization()) {
+    if (not buffer_updater.has_version_history()) {
       Cce::create_bondi_boundary_data_from_unnormalized_spec_modes(
           make_not_null(&boundary_data_variables),
           get<Cce::Tags::detail::SpatialMetric>(coefficients_set),

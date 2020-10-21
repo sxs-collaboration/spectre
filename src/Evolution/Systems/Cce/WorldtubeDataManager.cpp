@@ -181,7 +181,7 @@ bool MetricWorldtubeDataManager::populate_hypersurface_boundary_data(
   // coefficients. This is what the boundary data calculation utility takes
   // as an input, so we now hand off the control flow to the boundary and
   // gauge transform utility
-  if (buffer_updater_->radial_derivatives_need_renormalization()) {
+  if (not buffer_updater_->has_version_history()) {
     create_bondi_boundary_data_from_unnormalized_spec_modes(
         boundary_data_variables,
         get<Tags::detail::SpatialMetric>(interpolated_coefficients_),
