@@ -153,8 +153,8 @@ struct ScriPlusInterpolationManager {
   std::deque<VectorTypeToInterpolate> to_interpolate_values_;
   std::deque<std::pair<double, double>> u_bondi_ranges_;
   std::deque<double> target_times_;
-  size_t vector_size_;
-  size_t target_number_of_points_;
+  size_t vector_size_ = 0;
+  size_t target_number_of_points_ = 0;
   std::unique_ptr<intrp::SpanInterpolator> interpolator_;
 };
 

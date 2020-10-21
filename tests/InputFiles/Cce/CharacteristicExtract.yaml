@@ -27,6 +27,7 @@ Cce:
     BarycentricRationalSpanInterpolator:
       MinOrder: 10
       MaxOrder: 10
+  FixSpecNormalization: False
 
   H5LookaheadTimes: 10000
 

@@ -39,14 +39,16 @@ class DummyBufferUpdater
                      const double extraction_radius,
                      const double coordinate_amplitude,
                      const double coordinate_frequency, const size_t l_max,
-                     const bool apply_normalization_bug = false) noexcept
+                     const bool apply_normalization_bug = false,
+                     const bool has_version_history = true) noexcept
       : time_buffer_{std::move(time_buffer)},
         solution_{solution},
         extraction_radius_{extraction_radius},
         coordinate_amplitude_{coordinate_amplitude},
         coordinate_frequency_{coordinate_frequency},
         l_max_{l_max},
-        apply_normalization_bug_{apply_normalization_bug} {}
+        apply_normalization_bug_{apply_normalization_bug},
+        has_version_history_{has_version_history} {}
 
   WRAPPED_PUPable_decl_template(DummyBufferUpdater);  // NOLINT
 
@@ -157,7 +159,7 @@ class DummyBufferUpdater
   }
 
   bool has_version_history() const noexcept override {
-    return not apply_normalization_bug_;
+    return has_version_history_;
   }
 
   DataVector& get_time_buffer() noexcept override { return time_buffer_; }
@@ -170,6 +172,7 @@ class DummyBufferUpdater
     p | coordinate_frequency_;
     p | l_max_;
     p | apply_normalization_bug_;
+    p | has_version_history_;
   }
 
  private:
@@ -194,6 +197,7 @@ class DummyBufferUpdater
   double coordinate_frequency_;
   size_t l_max_;
   bool apply_normalization_bug_ = false;
+  bool has_version_history_ = true;
 };
 
 class ReducedDummyBufferUpdater
@@ -353,7 +357,8 @@ namespace {
 template <typename DataManager, typename DummyUpdater, typename Generator>
 void test_data_manager_with_dummy_buffer_updater(
     const gsl::not_null<Generator*> gen,
-    const bool apply_normalization_bug = false) noexcept {
+    const bool apply_normalization_bug = false,
+    const bool is_spec_input = true) noexcept {
   UniformCustomDistribution<double> value_dist{0.1, 0.5};
   // first prepare the input for the modal version
   const double mass = value_dist(*gen);
@@ -380,16 +385,32 @@ void test_data_manager_with_dummy_buffer_updater(
   }
 
   DataManager boundary_data_manager;
-  if (not apply_normalization_bug) {
-    boundary_data_manager = DataManager{
-        std::make_unique<DummyUpdater>(time_buffer, solution, extraction_radius,
-                                       amplitude, frequency, l_max),
-        l_max, buffer_size,
-        std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u)};
+  if constexpr (std::is_same_v<DataManager, MetricWorldtubeDataManager>) {
+    if (not apply_normalization_bug) {
+      boundary_data_manager = DataManager{
+          std::make_unique<DummyUpdater>(
+              time_buffer, solution, extraction_radius, amplitude, frequency,
+              l_max, false, is_spec_input),
+          l_max, buffer_size,
+          std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u),
+          is_spec_input};
+    } else {
+      boundary_data_manager = DataManager{
+          std::make_unique<DummyUpdater>(time_buffer, solution,
+                                         extraction_radius, amplitude,
+                                         frequency, l_max, true, false),
+          l_max, buffer_size,
+          std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u),
+          is_spec_input};
+    }
   } else {
+    // avoid compiler warnings in the case where the normalization bug booleans
+    // aren't used.
+    (void)apply_normalization_bug;
+    (void)is_spec_input;
     boundary_data_manager = DataManager{
         std::make_unique<DummyUpdater>(time_buffer, solution, extraction_radius,
-                                       amplitude, frequency, l_max, true),
+                                       amplitude, frequency, l_max, false),
         l_max, buffer_size,
         std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u)};
   }
@@ -762,7 +783,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
     // with normalization bug applied:
     test_data_manager_with_dummy_buffer_updater<MetricWorldtubeDataManager,
                                                 DummyBufferUpdater>(
-        make_not_null(&gen), true);
+        make_not_null(&gen), true, true);
+    test_data_manager_with_dummy_buffer_updater<MetricWorldtubeDataManager,
+                                                DummyBufferUpdater>(
+        make_not_null(&gen), false, true);
+    test_data_manager_with_dummy_buffer_updater<MetricWorldtubeDataManager,
+                                                DummyBufferUpdater>(
+        make_not_null(&gen), false, false);
     test_data_manager_with_dummy_buffer_updater<BondiWorldtubeDataManager,
                                                 ReducedDummyBufferUpdater>(
         make_not_null(&gen));

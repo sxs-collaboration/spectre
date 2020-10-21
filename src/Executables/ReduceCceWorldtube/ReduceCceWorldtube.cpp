@@ -152,10 +152,10 @@ void slice_buffers_to_libsharp_modes(
 // read in the data from a (previously standard) SpEC worldtube file
 // `input_file`, perform the boundary computation, and dump the (considerably
 // smaller) dataset associated with the spin-weighted scalars to `output_file`.
-void perform_cce_worldtube_reduction(const std::string& input_file,
-                                     const std::string& output_file,
-                                     const size_t buffer_depth,
-                                     const size_t l_max_factor) noexcept {
+void perform_cce_worldtube_reduction(
+    const std::string& input_file, const std::string& output_file,
+    const size_t buffer_depth, const size_t l_max_factor,
+    const bool fix_spec_normalization = false) noexcept {
   Cce::MetricWorldtubeH5BufferUpdater buffer_updater{input_file};
   const size_t l_max = buffer_updater.get_l_max();
   // Perform the boundary computation to scalars at twice the input l_max to be
@@ -208,7 +208,7 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
         time_span_end - time_span_start, i - time_span_start, l_max,
         computation_l_max);
 
-    if (not buffer_updater.has_version_history()) {
+    if (not buffer_updater.has_version_history() and fix_spec_normalization) {
       Cce::create_bondi_boundary_data_from_unnormalized_spec_modes(
           make_not_null(&boundary_data_variables),
           get<Cce::Tags::detail::SpatialMetric>(coefficients_set),
@@ -292,6 +292,9 @@ int main(int argc, char** argv) {
       "name of old CCE data file")(
       "output_file", boost::program_options::value<std::string>()->required(),
       "output filename")(
+      "fix_spec_normalization",
+      "Apply corrections associated with documented SpEC "
+      "worldtube file errors")(
       "buffer_depth",
       boost::program_options::value<size_t>()->default_value(2000),
       "number of time steps to load during each call to the file-accessing "
@@ -318,5 +321,6 @@ int main(int argc, char** argv) {
   perform_cce_worldtube_reduction(vars["input_file"].as<std::string>(),
                                   vars["output_file"].as<std::string>(),
                                   vars["buffer_depth"].as<size_t>(),
-                                  vars["lmax_factor"].as<size_t>());
+                                  vars["lmax_factor"].as<size_t>(),
+                                  vars.count("fix_spec_normalization") != 0u);
 }

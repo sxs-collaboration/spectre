@@ -90,7 +90,8 @@ class MetricWorldtubeDataManager : public WorldtubeDataManager {
       std::unique_ptr<WorldtubeBufferUpdater<cce_metric_input_tags>>
           buffer_updater,
       size_t l_max, size_t buffer_depth,
-      std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept;
+      std::unique_ptr<intrp::SpanInterpolator> interpolator,
+      bool fix_spec_normalization) noexcept;
 
   WRAPPED_PUPable_decl_template(MetricWorldtubeDataManager);  // NOLINT
 
@@ -138,6 +139,7 @@ class MetricWorldtubeDataManager : public WorldtubeDataManager {
   mutable size_t time_span_start_ = 0;
   mutable size_t time_span_end_ = 0;
   size_t l_max_ = 0;
+  bool fix_spec_normalization_ = false;
 
   // These buffers are just kept around to avoid allocations; they're
   // updated every time a time is requested

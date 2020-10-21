@@ -28,9 +28,11 @@ MetricWorldtubeDataManager::MetricWorldtubeDataManager(
     std::unique_ptr<WorldtubeBufferUpdater<cce_metric_input_tags>>
         buffer_updater,
     const size_t l_max, const size_t buffer_depth,
-    std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
+    std::unique_ptr<intrp::SpanInterpolator> interpolator,
+    const bool fix_spec_normalization) noexcept
     : buffer_updater_{std::move(buffer_updater)},
       l_max_{l_max},
+      fix_spec_normalization_{fix_spec_normalization},
       interpolated_coefficients_{
           Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)},
       buffer_depth_{buffer_depth},
@@ -181,7 +183,7 @@ bool MetricWorldtubeDataManager::populate_hypersurface_boundary_data(
   // coefficients. This is what the boundary data calculation utility takes
   // as an input, so we now hand off the control flow to the boundary and
   // gauge transform utility
-  if (not buffer_updater_->has_version_history()) {
+  if (not buffer_updater_->has_version_history() and fix_spec_normalization_) {
     create_bondi_boundary_data_from_unnormalized_spec_modes(
         boundary_data_variables,
         get<Tags::detail::SpatialMetric>(interpolated_coefficients_),
@@ -219,7 +221,7 @@ std::unique_ptr<WorldtubeDataManager> MetricWorldtubeDataManager::get_clone()
     const noexcept {
   return std::make_unique<MetricWorldtubeDataManager>(
       buffer_updater_->get_clone(), l_max_, buffer_depth_,
-      interpolator_->get_clone());
+      interpolator_->get_clone(), fix_spec_normalization_);
 }
 
 std::pair<size_t, size_t> MetricWorldtubeDataManager::get_time_span()
@@ -234,6 +236,7 @@ void MetricWorldtubeDataManager::pup(PUP::er& p) noexcept {
   p | l_max_;
   p | buffer_depth_;
   p | interpolator_;
+  p | fix_spec_normalization_;
   if (p.isUnpacking()) {
     time_span_start_ = 0;
     time_span_end_ = 0;

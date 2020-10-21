@@ -190,7 +190,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
           l_max, filename, buffer_size,
           std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3_st,
                                                                        4_st),
-          false));
+          false, false));
 
   // this should run the initializations
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);

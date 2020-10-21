@@ -134,6 +134,16 @@ struct H5IsBondiData {
   using group = Cce;
 };
 
+struct FixSpecNormalization {
+  using type = bool;
+  static constexpr Options::String help{
+      "Set to true if corrections for SpEC data impurities should be applied "
+      "automatically based on the `VersionHist.ver` data set in the H5. "
+      "Typically, this should be set to true if the metric data is created "
+      "from SpEC, and false otherwise."};
+  using group = Cce;
+};
+
 struct GhInterfaceManager {
   using type = std::unique_ptr<InterfaceManagers::GhInterfaceManager>;
   static constexpr Options::String help{
@@ -217,14 +227,14 @@ struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
   using option_tags =
       tmpl::list<OptionTags::LMax, OptionTags::BoundaryDataFilename,
                  OptionTags::H5LookaheadTimes, OptionTags::H5Interpolator,
-                 OptionTags::H5IsBondiData>;
+                 OptionTags::H5IsBondiData, OptionTags::FixSpecNormalization>;
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(
       const size_t l_max, const std::string& filename,
       const size_t number_of_lookahead_times,
       const std::unique_ptr<intrp::SpanInterpolator>& interpolator,
-      const bool h5_is_bondi_data) noexcept {
+      const bool h5_is_bondi_data, const bool fix_spec_normalization) noexcept {
     if (h5_is_bondi_data) {
       return std::make_unique<BondiWorldtubeDataManager>(
           std::make_unique<BondiWorldtubeH5BufferUpdater>(filename), l_max,
@@ -232,7 +242,8 @@ struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
     } else {
       return std::make_unique<MetricWorldtubeDataManager>(
           std::make_unique<MetricWorldtubeH5BufferUpdater>(filename), l_max,
-          number_of_lookahead_times, interpolator->get_clone());
+          number_of_lookahead_times, interpolator->get_clone(),
+          fix_spec_normalization);
     }
   }
 };
