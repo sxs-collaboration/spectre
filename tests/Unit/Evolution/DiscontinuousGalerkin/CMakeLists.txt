@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   Test_LiftFromBoundary.cpp
   Test_MortarData.cpp
   Test_MortarTags.cpp
+  Test_NormalVectorTags.cpp
   Test_ProjectToBoundary.cpp
   )
 
