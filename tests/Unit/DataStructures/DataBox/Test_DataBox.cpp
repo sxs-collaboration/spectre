@@ -242,14 +242,13 @@ void test_databox() noexcept {
     static_assert(
         std::is_same<
             decltype(original_box),
-            const db::DataBox<db::detail::expand_subitems<
+            const db::DataBox<db::detail::expand_subitems<tmpl::append<
                 tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1,
                            test_databox_tags::Tag2>,
                 tmpl::list<test_databox_tags::Tag4Compute,
                            test_databox_tags::Tag5Compute,
                            test_databox_tags::Lambda0Compute,
-                           test_databox_tags::Lambda1Compute>,
-                true>>>::value,
+                           test_databox_tags::Lambda1Compute>>>>>::value,
         "Failed to create original_box");
 
     /// [using_db_get]
