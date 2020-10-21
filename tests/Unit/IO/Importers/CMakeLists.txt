@@ -13,7 +13,7 @@ add_test_library(
   ${LIBRARY}
   "IO/Importers"
   "${LIBRARY_SOURCES}"
-  "Domain;IO;Options"
+  "Domain;IO;Importers;Options"
   )
 
 add_dependencies(
