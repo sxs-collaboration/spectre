@@ -13,15 +13,21 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/InterfaceHelpers.hpp"
+#include "Domain/Structure/Direction.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MetricIdentityJacobian.hpp"
@@ -50,6 +56,22 @@ namespace evolution::dg::Actions {
 namespace detail {
 CREATE_HAS_TYPE_ALIAS(boundary_correction)
 CREATE_HAS_TYPE_ALIAS_V(boundary_correction)
+
+template <bool HasInverseSpatialMetricTag = false>
+struct inverse_spatial_metric_tag_impl {
+  template <typename System>
+  using f = tmpl::list<>;
+};
+
+template <>
+struct inverse_spatial_metric_tag_impl<true> {
+  template <typename System>
+  using f = tmpl::list<typename System::inverse_spatial_metric_tag>;
+};
+
+template <typename System>
+using inverse_spatial_metric_tag = typename inverse_spatial_metric_tag_impl<
+    has_inverse_spatial_metric_tag_v<System>>::template f<System>;
 
 template <bool HasPrimitiveVars = false>
 struct get_primitive_vars {
@@ -379,8 +401,9 @@ struct ComputeTimeDerivative {
   // violated on the boundaries we are definitely in trouble, so it can at least
   // be used as a cheap diagnostic.
   template <typename BoundaryCorrection, typename... PackagedFieldTags,
-            typename... ProjectedFieldTags, size_t Dim, typename DbTagsList,
-            typename... VolumeTags>
+            typename... ProjectedFieldTags,
+            typename... ProjectedFieldTagsForCorrection, size_t Dim,
+            typename DbTagsList, typename... VolumeTags>
   static double dg_package_data(
       const gsl::not_null<Variables<tmpl::list<PackagedFieldTags...>>*>
           packaged_data,
@@ -389,8 +412,8 @@ struct ComputeTimeDerivative {
       const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_covector,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const db::DataBox<DbTagsList>& box,
-      tmpl::list<VolumeTags...> /*meta*/) noexcept {
+      const db::DataBox<DbTagsList>& box, tmpl::list<VolumeTags...> /*meta*/,
+      tmpl::list<ProjectedFieldTagsForCorrection...> /*meta*/) noexcept {
     std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
     if (mesh_velocity.has_value()) {
       normal_dot_mesh_velocity =
@@ -404,8 +427,9 @@ struct ComputeTimeDerivative {
     } else {
       return boundary_correction.dg_package_data(
           make_not_null(&get<PackagedFieldTags>(*packaged_data))...,
-          get<ProjectedFieldTags>(projected_fields)..., unit_normal_covector,
-          mesh_velocity, normal_dot_mesh_velocity, db::get<VolumeTags>(box)...);
+          get<ProjectedFieldTagsForCorrection>(projected_fields)...,
+          unit_normal_covector, mesh_velocity, normal_dot_mesh_velocity,
+          db::get<VolumeTags>(box)...);
     }
   }
 
@@ -823,20 +847,29 @@ void ComputeTimeDerivative<Metavariables>::compute_internal_mortar_data(
   const auto& mortar_meshes = db::get<Tags::MortarMesh<Dim>>(*box);
   const auto& mortar_sizes = db::get<Tags::MortarSize<Dim>>(*box);
   const TimeStepId& temporal_id = db::get<::Tags::TimeStepId>(*box);
+  const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>&
+      moving_mesh_map =
+          db::get<domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                              Frame::Inertial>>(
+              *box);
   const std::unordered_map<Direction<Dim>, tnsr::i<DataVector, Dim>>&
-      face_normals = db::get<domain::Tags::Interface<
+      unnormalized_normal_covectors = db::get<domain::Tags::Interface<
           domain::Tags::InternalDirections<Dim>,
-          ::Tags::Normalized<
-              domain::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>>(
-          *box);
+          domain::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>(*box);
+
   const std::unordered_map<Direction<Dim>,
                            std::optional<tnsr::I<DataVector, Dim>>>&
       face_mesh_velocities = db::get<domain::Tags::Interface<
           domain::Tags::InternalDirections<Dim>,
           domain::Tags::MeshVelocity<Dim, Frame::Inertial>>>(*box);
 
-  Variables<tmpl::append<variables_tags, fluxes_tags, temporary_tags_for_face,
-                         primitive_tags_for_face>>
+  using dg_package_data_projected_tags =
+      tmpl::append<variables_tags, fluxes_tags, temporary_tags_for_face,
+                   primitive_tags_for_face>;
+  Variables<tmpl::remove_duplicates<tmpl::push_back<
+      tmpl::append<dg_package_data_projected_tags,
+                   detail::inverse_spatial_metric_tag<system>>,
+      detail::OneOverNormalVectorMagnitude, detail::NormalVector<Dim>>>>
       fields_on_face{};
   for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
     (void)neighbors_in_direction;  // unused variable
@@ -851,9 +884,9 @@ void ComputeTimeDerivative<Metavariables>::compute_internal_mortar_data(
 
     const auto internal_mortars =
         [&box, &boundary_correction, &element, &face_mesh_velocities,
-         &face_normals, &fields_on_face, &mortar_meshes, &mortar_sizes,
-         &temporal_id, &volume_evolved_vars, &volume_fluxes,
-         &volume_temporaries,
+         &fields_on_face, &mortar_meshes, &mortar_sizes, &moving_mesh_map,
+         &temporal_id, &unnormalized_normal_covectors, &volume_evolved_vars,
+         &volume_fluxes, &volume_temporaries,
          &volume_mesh](const Mesh<Dim - 1>& face_mesh,
                        const Direction<Dim>& local_direction) noexcept {
           // We may not need to bring the volume fluxes or temporaries to the
@@ -901,15 +934,46 @@ void ComputeTimeDerivative<Metavariables>::compute_internal_mortar_data(
                 volume_mesh, local_direction);
           }
 
+          // Normalize the normal vectors. In the case of a time-independent
+          // mesh with no inverse spatial metric tag (i.e. flat background) we
+          // could cache the normal vectors as simple tags in the DataBox as an
+          // optimization. This will require making the
+          // Normalized<UnnormalizedFaceNormal> a simple tag instead of a
+          // compute tag.
+          db::mutate<evolution::dg::Tags::InternalFace::
+                         NormalCovectorAndMagnitude<Dim>>(
+              box, [&fields_on_face, &local_direction, &moving_mesh_map,
+                    &unnormalized_normal_covectors](
+                       const auto normal_covector_and_magnitude_ptr) noexcept {
+                detail::unit_normal_vector_and_covector_and_magnitude<system>(
+                    normal_covector_and_magnitude_ptr,
+                    make_not_null(&fields_on_face), local_direction,
+                    unnormalized_normal_covectors, moving_mesh_map);
+              });
+
           // Perform step 2
+          ASSERT(db::get<evolution::dg::Tags::InternalFace::
+                             NormalCovectorAndMagnitude<Dim>>(*box)
+                     .at(local_direction)
+                     .has_value(),
+                 "The magnitude of the normal vector and the unit normal "
+                 "covector have not been computed, even though they should "
+                 "have been. Direction: "
+                     << local_direction);
+
           Variables<mortar_tags_list> packaged_data{
               face_mesh.number_of_grid_points()};
           // The DataBox is passed in for retrieving the `volume_tags`
           const double max_abs_char_speed_on_face = dg_package_data(
               make_not_null(&packaged_data), boundary_correction,
-              fields_on_face, face_normals.at(local_direction),
+              fields_on_face,
+              get<evolution::dg::Tags::InternalFace::NormalCovector<Dim>>(
+                  *db::get<evolution::dg::Tags::InternalFace::
+                               NormalCovectorAndMagnitude<Dim>>(*box)
+                       .at(local_direction)),
               face_mesh_velocities.at(local_direction), *box,
-              typename BoundaryCorrection::dg_package_data_volume_tags{});
+              typename BoundaryCorrection::dg_package_data_volume_tags{},
+              dg_package_data_projected_tags{});
           (void)max_abs_char_speed_on_face;
 
           // Perform step 3
@@ -921,10 +985,10 @@ void ComputeTimeDerivative<Metavariables>::compute_internal_mortar_data(
             const auto& mortar_size = mortar_sizes.at(mortar_id);
 
             // Project the data from the face to the mortar.
-            // Where no projection is necessary we `std::move` the data directly
-            // to avoid a copy. We can't move the data or modify it in-place
-            // when projecting, because in that case the face may touch two
-            // mortars so we need to keep the data around.
+            // Where no projection is necessary we `std::move` the data
+            // directly to avoid a copy. We can't move the data or modify it
+            // in-place when projecting, because in that case the face may
+            // touch two mortars so we need to keep the data around.
             auto boundary_data_on_mortar =
                 ::dg::needs_projection(face_mesh, mortar_mesh, mortar_size)
                     // NOLINTNEXTLINE(bugprone-use-after-move)
@@ -932,8 +996,8 @@ void ComputeTimeDerivative<Metavariables>::compute_internal_mortar_data(
                                               mortar_mesh, mortar_size)
                     : std::move(packaged_data);
 
-            // Store the boundary data on this side of the mortar in a way that
-            // is agnostic to the type of boundary correction used. This
+            // Store the boundary data on this side of the mortar in a way
+            // that is agnostic to the type of boundary correction used. This
             // currently requires an additional allocation that could be
             // eliminated either by:
             //

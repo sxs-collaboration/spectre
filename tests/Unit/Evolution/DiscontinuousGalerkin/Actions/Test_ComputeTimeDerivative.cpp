@@ -3,7 +3,14 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <charm++.h>
+#include <pup.h>
+
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeImpl.hpp"
+#include "Parallel/CharmPupable.hpp"
 
 namespace TestHelpers::evolution::dg::Actions {
 namespace {
@@ -16,6 +23,16 @@ void test_wrapper() {
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.ComputeTimeDerivative",
                   "[Unit][Evolution][Actions]") {
+  PUPable_reg(
+      SINGLE_ARG(domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                                       domain::CoordinateMaps::Identity<1>>));
+  PUPable_reg(
+      SINGLE_ARG(domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                                       domain::CoordinateMaps::Identity<2>>));
+  PUPable_reg(
+      SINGLE_ARG(domain::CoordinateMap<Frame::Grid, Frame::Inertial,
+                                       domain::CoordinateMaps::Identity<3>>));
+
   // The test is designed to test the `ComputeTimeDerivative` action for DG.
   // This action does a lot:
   //

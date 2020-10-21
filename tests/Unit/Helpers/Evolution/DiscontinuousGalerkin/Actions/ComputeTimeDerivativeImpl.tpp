@@ -18,6 +18,8 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -115,10 +117,10 @@ struct PackagedVar2 : db::SimpleTag {
 };
 
 template <size_t Dim>
-struct SimpleNormalizedFaceNormal
+struct SimpleUnnormalizedFaceNormal
     : db::ComputeTag,
-      ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>> {
-  using base = ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>;
+      domain::Tags::UnnormalizedFaceNormal<Dim> {
+  using base = domain::Tags::UnnormalizedFaceNormal<Dim>;
   using return_type = typename base::type;
   static void function(const gsl::not_null<return_type*> result,
                        const Mesh<Dim - 1>& face_mesh,
@@ -707,6 +709,8 @@ struct component {
       db::add_tag_prefix<::Tags::dt,
                          typename Metavariables::system::variables_tag>,
       Var3, domain::Tags::Mesh<Metavariables::volume_dim>,
+      domain::CoordinateMaps::Tags::CoordinateMap<Metavariables::volume_dim,
+                                                  Frame::Grid, Frame::Inertial>,
       domain::Tags::Interface<
           internal_directions,
           db::add_tag_prefix<
@@ -748,7 +752,7 @@ struct component {
           domain::Tags::InterfaceMesh<Metavariables::volume_dim>>,
       domain::Tags::InterfaceCompute<
           internal_directions,
-          SimpleNormalizedFaceNormal<Metavariables::volume_dim>>,
+          SimpleUnnormalizedFaceNormal<Metavariables::volume_dim>>,
       domain::Tags::InterfaceCompute<
           internal_directions,
           FaceMeshVelocity<Metavariables::volume_dim,
@@ -774,13 +778,16 @@ struct component {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<
+          tmpl::flatten<tmpl::list<
               ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
               ::Actions::SetupDataBox,
-              ::dg::Actions::InitializeMortars<
-                  typename Metavariables::boundary_scheme>,
+              tmpl::conditional_t<Metavariables::use_boundary_correction ==
+                                      UseBoundaryCorrection::No,
+                                  ::dg::Actions::InitializeMortars<
+                                      typename Metavariables::boundary_scheme>,
+                                  tmpl::list<>>,
               ::evolution::dg::Initialization::Mortars<
-                  Metavariables::volume_dim>>>,
+                  Metavariables::volume_dim>>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<
@@ -835,7 +842,7 @@ double dg_package_data(
 template <bool UseMovingMesh, size_t Dim, SystemType system_type,
           UseBoundaryCorrection use_boundary_correction, bool HasPrims>
 void test_impl(const Spectral::Quadrature quadrature,
-               ::dg::Formulation dg_formulation) noexcept {
+               const ::dg::Formulation dg_formulation) noexcept {
   CAPTURE(UseMovingMesh);
   CAPTURE(Dim);
   CAPTURE(system_type);
@@ -973,13 +980,17 @@ void test_impl(const Spectral::Quadrature quadrature,
                                                       0.0);
   }
 
+  const auto grid_to_inertial_map =
+      domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<Dim>{});
+
   const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
   if constexpr (not std::is_same_v<tmpl::list<>, flux_variables>) {
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
         {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3, mesh,
-         normal_dot_fluxes_interface, element, inertial_coords, inv_jac,
-         mesh_velocity, div_mesh_velocity,
+         grid_to_inertial_map->get_clone(), normal_dot_fluxes_interface,
+         element, inertial_coords, inv_jac, mesh_velocity, div_mesh_velocity,
          Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
                                     tmpl::size_t<Dim>, Frame::Inertial>>{
              2, -100.}});
@@ -989,8 +1000,9 @@ void test_impl(const Spectral::Quadrature quadrature,
         ActionTesting::emplace_component_and_initialize<component<metavars>>(
             &runner, neighbor_id,
             {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3,
-             mesh, normal_dot_fluxes_interface, element, inertial_coords,
-             inv_jac, mesh_velocity, div_mesh_velocity,
+             mesh, grid_to_inertial_map->get_clone(),
+             normal_dot_fluxes_interface, element, inertial_coords, inv_jac,
+             mesh_velocity, div_mesh_velocity,
              Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
                                         tmpl::size_t<Dim>, Frame::Inertial>>{
                  2, -100.}});
@@ -1000,16 +1012,17 @@ void test_impl(const Spectral::Quadrature quadrature,
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
         {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3, mesh,
-         normal_dot_fluxes_interface, element, inertial_coords, inv_jac,
-         mesh_velocity, div_mesh_velocity});
+         grid_to_inertial_map->get_clone(), normal_dot_fluxes_interface,
+         element, inertial_coords, inv_jac, mesh_velocity, div_mesh_velocity});
     for (const auto& [direction, neighbor_ids] : neighbors) {
       (void)direction;
       for (const auto& neighbor_id : neighbor_ids) {
         ActionTesting::emplace_component_and_initialize<component<metavars>>(
             &runner, neighbor_id,
             {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3,
-             mesh, normal_dot_fluxes_interface, element, inertial_coords,
-             inv_jac, mesh_velocity, div_mesh_velocity});
+             mesh, grid_to_inertial_map->get_clone(),
+             normal_dot_fluxes_interface, element, inertial_coords, inv_jac,
+             mesh_velocity, div_mesh_velocity});
       }
     }
   }
@@ -1018,8 +1031,10 @@ void test_impl(const Spectral::Quadrature quadrature,
                                                   self_id);
 
   // Initialize both the "old" and "new" mortars
-  ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
-                                                  self_id);
+  if (use_boundary_correction == UseBoundaryCorrection::No) {
+    ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
+                                                    self_id);
+  }
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
                                                   self_id);
   // Start testing the actual dg::ComputeTimeDerivative action
@@ -1275,11 +1290,18 @@ void test_impl(const Spectral::Quadrature quadrature,
     const auto& face_meshes =
         get_tag(domain::Tags::Interface<domain::Tags::InternalDirections<Dim>,
                                         domain::Tags::Mesh<Dim - 1>>{});
-    const auto& face_normals = get_tag(
-        domain::Tags::Interface<
-            domain::Tags::InternalDirections<Dim>,
-            ::Tags::Normalized<
-                domain::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>{});
+    const auto& unnormalized_face_normals =
+        get_tag(domain::Tags::Interface<
+                domain::Tags::InternalDirections<Dim>,
+                domain::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>{});
+    auto face_normals = unnormalized_face_normals;
+    for (auto& direction_and_normal : face_normals) {
+      // GCC-7 gives unused direction warnings if we use structured bindings.
+      const auto normal_magnitude = magnitude(direction_and_normal.second);
+      for (size_t i = 0; i < Dim; ++i) {
+        direction_and_normal.second.get(i) /= get(normal_magnitude);
+      }
+    }
     const auto& face_mesh_velocities =
         get_tag(domain::Tags::Interface<
                 domain::Tags::InternalDirections<Dim>,
