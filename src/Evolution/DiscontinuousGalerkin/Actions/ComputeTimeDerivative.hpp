@@ -18,6 +18,7 @@
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/ProjectToBoundary.hpp"
@@ -281,7 +282,9 @@ template <typename Metavariables>
 struct ComputeTimeDerivative {
  public:
   using inbox_tags =
-      tmpl::list<::dg::FluxesInboxTag<typename Metavariables::boundary_scheme>>;
+      tmpl::list<::dg::FluxesInboxTag<typename Metavariables::boundary_scheme>,
+                 evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                     Metavariables::volume_dim>>;
   using const_global_cache_tags = tmpl::conditional_t<
       detail::has_boundary_correction_v<typename Metavariables::system>,
       tmpl::list<::dg::Tags::Formulation, evolution::Tags::BoundaryCorrection<
@@ -524,9 +527,9 @@ ComputeTimeDerivative<Metavariables>::apply(
     fill_mortar_data_for_internal_boundaries<
         volume_dim, typename Metavariables::boundary_scheme>(
         make_not_null(&box));
-
-    send_data_for_fluxes<ParallelComponent>(make_not_null(&cache), box);
   }
+
+  send_data_for_fluxes<ParallelComponent>(make_not_null(&cache), box);
   return {std::move(box)};
 }
 
@@ -1026,58 +1029,112 @@ template <typename ParallelComponent, typename DbTagsList>
 void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
     const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
     const db::DataBox<DbTagsList>& box) noexcept {
-  using BoundaryScheme = typename Metavariables::boundary_scheme;
-  static constexpr size_t volume_dim = BoundaryScheme::volume_dim;
-  using temporal_id_tag = typename BoundaryScheme::temporal_id_tag;
-  using receive_temporal_id_tag =
-      typename BoundaryScheme::receive_temporal_id_tag;
-  using fluxes_inbox_tag = ::dg::FluxesInboxTag<BoundaryScheme>;
-  using all_mortar_data_tag =
-      ::Tags::Mortars<typename BoundaryScheme::mortar_data_tag, volume_dim>;
-
+  using system = typename Metavariables::system;
+  constexpr size_t volume_dim = Metavariables::volume_dim;
   auto& receiver_proxy =
       Parallel::get_parallel_component<ParallelComponent>(*cache);
-
-  const auto& all_mortar_data = get<all_mortar_data_tag>(box);
   const auto& element = db::get<domain::Tags::Element<volume_dim>>(box);
-  const auto& temporal_id = db::get<temporal_id_tag>(box);
-  const auto& receive_temporal_id = db::get<receive_temporal_id_tag>(box);
-  const auto& mortar_meshes =
-      db::get<::Tags::Mortars<domain::Tags::Mesh<volume_dim - 1>, volume_dim>>(
-          box);
 
-  // Iterate over neighbors
-  for (const auto& [direction, neighbors] : element.neighbors()) {
-    const size_t dimension = direction.dimension();
-    const auto& orientation = neighbors.orientation();
-    const auto direction_from_neighbor = orientation(direction.opposite());
+  if constexpr (detail::has_boundary_correction_v<system>) {
+    const auto& time_step_id = db::get<::Tags::TimeStepId>(box);
+    const auto& all_mortar_data =
+        db::get<evolution::dg::Tags::MortarData<volume_dim>>(box);
 
-    for (const auto& neighbor : neighbors) {
-      const ::dg::MortarId<volume_dim> mortar_id{direction, neighbor};
+    for (const auto& [direction, neighbors] : element.neighbors()) {
+      const auto& orientation = neighbors.orientation();
+      const auto direction_from_neighbor = orientation(direction.opposite());
 
-      // Make a copy of the local boundary data on the mortar to send to the
-      // neighbor
-      ASSERT(all_mortar_data.find(mortar_id) != all_mortar_data.end(),
-             "Mortar data on mortar "
-                 << mortar_id
-                 << " not available for sending. Did you forget to collect "
-                    "the data on mortars?");
-      auto mortar_data_sent_to_neighbor =
-          all_mortar_data.at(mortar_id).local_data(temporal_id);
+      for (const auto& neighbor : neighbors) {
+        const std::pair mortar_id{direction, neighbor};
 
-      // Reorient the data to the neighbor orientation if necessary
-      if (not orientation.is_aligned()) {
-        mortar_data_sent_to_neighbor.orient_on_slice(
-            mortar_meshes.at(mortar_id).extents(), dimension, orientation);
+        std::pair<Mesh<volume_dim - 1>, std::vector<double>>
+            neighbor_boundary_data_on_mortar =
+                *all_mortar_data.at(mortar_id).local_mortar_data();
+        ASSERT(time_step_id == all_mortar_data.at(mortar_id).time_step_id(),
+               "The current time step id of the volume is "
+                   << time_step_id
+                   << "but the time step id on the mortar with mortar id "
+                   << mortar_id << " is "
+                   << all_mortar_data.at(mortar_id).time_step_id());
+
+        // Reorient the data to the neighbor orientation if necessary
+        if (not orientation.is_aligned()) {
+          ERROR("Currently don't support unaligned meshes");
+          // neighbor_boundary_data_on_mortar.orient_on_slice(
+          //     mortar_meshes.at(mortar_id).extents(), direction.dimension(),
+          //     orientation);
+        }
+
+        std::tuple<Mesh<volume_dim - 1>, std::optional<std::vector<double>>,
+                   std::optional<std::vector<double>>, ::TimeStepId>
+            data{neighbor_boundary_data_on_mortar.first,
+                 {},
+                 {std::move(neighbor_boundary_data_on_mortar.second)},
+                 db::get<tmpl::conditional_t<Metavariables::local_time_stepping,
+                                             ::Tags::Next<::Tags::TimeStepId>,
+                                             ::Tags::TimeStepId>>(box)};
+
+        // Send mortar data (the `std::tuple` named `data`) to neighbor
+        Parallel::receive_data<
+            evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                volume_dim>>(
+            receiver_proxy[neighbor], time_step_id,
+            std::make_pair(std::pair{direction_from_neighbor, element.id()},
+                           data));
       }
+    }
+  } else {
+    using BoundaryScheme = typename Metavariables::boundary_scheme;
+    using temporal_id_tag = typename BoundaryScheme::temporal_id_tag;
+    using receive_temporal_id_tag =
+        typename BoundaryScheme::receive_temporal_id_tag;
+    using fluxes_inbox_tag = ::dg::FluxesInboxTag<BoundaryScheme>;
+    using all_mortar_data_tag =
+        ::Tags::Mortars<typename BoundaryScheme::mortar_data_tag, volume_dim>;
 
-      // Send remote data to neighbor
-      Parallel::receive_data<fluxes_inbox_tag>(
-          receiver_proxy[neighbor], temporal_id,
-          std::make_pair(
-              ::dg::MortarId<volume_dim>{direction_from_neighbor, element.id()},
-              std::make_pair(receive_temporal_id,
-                             std::move(mortar_data_sent_to_neighbor))));
+    const auto& all_mortar_data = get<all_mortar_data_tag>(box);
+    const auto& temporal_id = db::get<temporal_id_tag>(box);
+    const auto& receive_temporal_id = db::get<receive_temporal_id_tag>(box);
+    const auto& mortar_meshes = db::get<
+        ::Tags::Mortars<domain::Tags::Mesh<volume_dim - 1>, volume_dim>>(box);
+
+    // Iterate over neighbors
+    for (const auto& direction_and_neighbors : element.neighbors()) {
+      const auto& direction = direction_and_neighbors.first;
+      const size_t dimension = direction.dimension();
+      const auto& neighbors_in_direction = direction_and_neighbors.second;
+      const auto& orientation = neighbors_in_direction.orientation();
+      const auto direction_from_neighbor = orientation(direction.opposite());
+
+      for (const auto& neighbor : neighbors_in_direction) {
+        const ::dg::MortarId<volume_dim> mortar_id{direction, neighbor};
+
+        // Make a copy of the local boundary data on the mortar to send to the
+        // neighbor
+        ASSERT(all_mortar_data.find(mortar_id) != all_mortar_data.end(),
+               "Mortar data on mortar "
+                   << mortar_id
+                   << " not available for sending. Did you forget to collect "
+                      "the data on mortars?");
+        auto neighbor_boundary_data_on_mortar =
+            all_mortar_data.at(mortar_id).local_data(temporal_id);
+
+        // Reorient the data to the neighbor orientation if necessary
+        if (not orientation.is_aligned()) {
+          neighbor_boundary_data_on_mortar.orient_on_slice(
+              mortar_meshes.at(mortar_id).extents(), dimension, orientation);
+        }
+
+        // Send mortar data (named 'neighbor_boundary_data_on_mortar') to
+        // neighbor
+        Parallel::receive_data<fluxes_inbox_tag>(
+            receiver_proxy[neighbor], temporal_id,
+            std::make_pair(
+                ::dg::MortarId<volume_dim>{direction_from_neighbor,
+                                           element.id()},
+                std::make_pair(receive_temporal_id,
+                               std::move(neighbor_boundary_data_on_mortar))));
+      }
     }
   }
 }
