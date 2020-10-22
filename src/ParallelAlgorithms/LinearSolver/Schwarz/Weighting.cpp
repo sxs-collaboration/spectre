@@ -204,9 +204,21 @@ Scalar<DataVector> intruding_weight(
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define INSTANTIATE(r, data)                                                \
+  template void element_weight(                                             \
+      gsl::not_null<Scalar<DataVector>*> weight,                            \
+      const tnsr::I<DataVector, DIM(data), Frame::Logical>& logical_coords, \
+      const std::array<double, DIM(data)>& overlap_widths,                  \
+      const std::unordered_set<Direction<DIM(data)>>& external_boundaries); \
   template Scalar<DataVector> element_weight(                               \
       const tnsr::I<DataVector, DIM(data), Frame::Logical>& logical_coords, \
       const std::array<double, DIM(data)>& overlap_widths,                  \
+      const std::unordered_set<Direction<DIM(data)>>& external_boundaries); \
+  template void intruding_weight(                                           \
+      gsl::not_null<Scalar<DataVector>*> weight,                            \
+      const tnsr::I<DataVector, DIM(data), Frame::Logical>& logical_coords, \
+      const Direction<DIM(data)>& direction,                                \
+      const std::array<double, DIM(data)>& overlap_widths,                  \
+      size_t num_intruding_overlaps,                                        \
       const std::unordered_set<Direction<DIM(data)>>& external_boundaries); \
   template Scalar<DataVector> intruding_weight(                             \
       const tnsr::I<DataVector, DIM(data), Frame::Logical>& logical_coords, \
