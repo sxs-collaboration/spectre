@@ -19,6 +19,7 @@ spectre_target_headers(
   ElementCenteredSubdomainData.hpp
   OverlapHelpers.hpp
   Schwarz.hpp
+  Tags.hpp
   Weighting.hpp
   )
 

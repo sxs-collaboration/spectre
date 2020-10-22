@@ -6,6 +6,7 @@ set(LIBRARY "Test_ParallelSchwarz")
 set(LIBRARY_SOURCES
   Test_ElementCenteredSubdomainData.cpp
   Test_OverlapHelpers.cpp
+  Test_Tags.cpp
   Test_Weighting.cpp
   )
 
