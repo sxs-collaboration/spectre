@@ -17,8 +17,10 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ComputeTags.hpp
+  ElementActions.hpp
   ElementCenteredSubdomainData.hpp
   OverlapHelpers.hpp
+  Protocols.hpp
   Schwarz.hpp
   Tags.hpp
   Weighting.hpp
@@ -27,13 +29,23 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
-  Boost::boost
   DataStructures
   DomainStructure
   ErrorHandling
   Utilities
   INTERFACE
+  Boost::boost
+  Convergence
+  Domain
+  IO
+  Informer
+  Initialization
   LinearSolver
+  Options
+  Parallel
+  ParallelDg
+  ParallelLinearSolver
+  Spectral
   )
 
 add_subdirectory(Actions)
