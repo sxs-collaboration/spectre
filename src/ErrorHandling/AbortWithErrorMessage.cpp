@@ -5,6 +5,7 @@
 
 #include <sstream>
 
+#include "ErrorHandling/Breakpoint.hpp"
 #include "Parallel/Abort.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Printf.hpp"
@@ -27,6 +28,7 @@ void abort_with_error_message(const char* expression, const char* file,
   // case of an executable not using Charm++'s main function the call to abort
   // will segfault before anything is printed.
   Parallel::printf_error(os.str());
+  breakpoint();
   Parallel::abort("");
 }
 
@@ -47,5 +49,6 @@ void abort_with_error_message(const char* file, const int line,
   // case of an executable not using Charm++'s main function the call to abort
   // will segfault before anything is printed.
   Parallel::printf_error(os.str());
+  breakpoint();
   Parallel::abort("");
 }

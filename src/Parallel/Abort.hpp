@@ -26,10 +26,6 @@ namespace Parallel {
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
   CkPrintf("%s\n", message.c_str());
 #pragma GCC diagnostic pop
-  char* const trap_for_debugger = std::getenv("SPECTRE_TRAP_ON_ERROR");
-  if (trap_for_debugger != nullptr) {
-    std::raise(SIGTRAP);
-  }
   CkExit(1);
   // the following call is never reached, but suppresses the warning that
   // a 'noreturn' function does return
