@@ -35,3 +35,5 @@ target_link_libraries(
   INTERFACE
   LinearSolver
   )
+
+add_subdirectory(Actions)

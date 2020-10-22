@@ -17,3 +17,5 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "DataStructures;Domain;DomainStructure;LinearSolver;ParallelSchwarz;Spectral"
   )
+
+add_subdirectory(Actions)
