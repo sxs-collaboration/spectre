@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   AbortWithErrorMessage.cpp
+  Breakpoint.cpp
   FloatingPointExceptions.cpp
   )
 
@@ -18,6 +19,7 @@ spectre_target_headers(
   HEADERS
   AbortWithErrorMessage.hpp
   Assert.hpp
+  Breakpoint.hpp
   Error.hpp
   Exceptions.hpp
   ExpectsAndEnsures.hpp
