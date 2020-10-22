@@ -66,11 +66,8 @@ struct ObservationTimeTag : db::SimpleTag {
 struct MockContributeReductionData {
   struct Results {
     observers::ObservationId observation_id;
-    std::string subfile_name;
     std::vector<std::string> reduction_names;
-    double time;
-    size_t number_of_grid_points;
-    std::vector<double> errors;
+    String info_to_print;
   };
   static Results results;
 
@@ -85,16 +82,8 @@ struct MockContributeReductionData {
                     const std::vector<std::string>& reduction_names,
                     Parallel::ReductionData<Ts...>&& reduction_data) noexcept {
     results.observation_id = observation_id;
-    results.subfile_name = subfile_name;
     results.reduction_names = reduction_names;
-    results.time = std::get<0>(reduction_data.data());
-    results.number_of_grid_points = std::get<1>(reduction_data.data());
-    results.errors.clear();
-    tmpl::for_each<tmpl::range<size_t, 2, sizeof...(Ts)>>([&reduction_data](
-        const auto index_v) noexcept {
-      constexpr size_t index = tmpl::type_from<decltype(index_v)>::value;
-      results.errors.push_back(std::get<index>(reduction_data.data()));
-    });
+    results.info_to_print = std::get<0>(reduction_data.data());
   }
 };
 
