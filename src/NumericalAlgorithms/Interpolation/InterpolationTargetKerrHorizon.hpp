@@ -184,8 +184,14 @@ struct KerrHorizon {
   template <typename Metavariables, typename DbTags, typename TemporalId>
   static tnsr::I<DataVector, 3, Frame> points(
       const db::DataBox<DbTags>& box,
-      const tmpl::type_<Metavariables>& /*meta*/,
+      const tmpl::type_<Metavariables>& metavariables_v,
       const TemporalId& /*temporal_id*/) noexcept {
+    return points(box, metavariables_v);
+  }
+  template <typename Metavariables, typename DbTags>
+  static tnsr::I<DataVector, 3, Frame> points(
+      const db::DataBox<DbTags>& box,
+      const tmpl::type_<Metavariables>& /*meta*/) noexcept {
     const auto& kerr_horizon =
         db::get<Tags::KerrHorizon<InterpolationTargetTag>>(box);
     if (kerr_horizon.theta_varies_fastest_memory_layout) {
@@ -205,12 +211,6 @@ struct KerrHorizon {
       }
       return transposed_coords;
     }
-  }
-  template <typename Metavariables, typename DbTags>
-  static tnsr::I<DataVector, 3, Frame> points(
-      const db::DataBox<DbTags>& box,
-      const tmpl::type_<Metavariables>& /*meta*/) noexcept {
-    return db::get<StrahlkorperTags::CartesianCoords<Frame>>(box);
   }
 };
 
