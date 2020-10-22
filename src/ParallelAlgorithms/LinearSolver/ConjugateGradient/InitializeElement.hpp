@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 
@@ -53,10 +54,10 @@ struct InitializeElement {
     return std::make_tuple(
         ::Initialization::merge_into_databox<
             InitializeElement,
-            db::AddSimpleTags<LinearSolver::Tags::IterationId<OptionsGroup>,
+            db::AddSimpleTags<Convergence::Tags::IterationId<OptionsGroup>,
                               operator_applied_to_fields_tag, operand_tag,
                               operator_applied_to_operand_tag, residual_tag,
-                              LinearSolver::Tags::HasConverged<OptionsGroup>>>(
+                              Convergence::Tags::HasConverged<OptionsGroup>>>(
             std::move(box),
             // The `PrepareSolve` action populates these tags with initial
             // values, except for `operator_applied_to_fields_tag` which is

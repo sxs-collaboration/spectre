@@ -19,8 +19,10 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
+#include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -78,9 +80,8 @@ void contribute_to_residual_observation(
       std::string{"/" + Options::name<OptionsGroup>() + "Residuals"},
       std::vector<std::string>{"Iteration", "Residual"},
       reduction_data{iteration_id, residual_magnitude_square});
-  if (UNLIKELY(static_cast<int>(
-                   get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
-               static_cast<int>(::Verbosity::Verbose))) {
+  if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
+               ::Verbosity::Verbose)) {
     if (iteration_id == 0) {
       Parallel::printf(
           "Linear solver '" + Options::name<OptionsGroup>() +
@@ -111,7 +112,7 @@ struct InitializeElement {
 
  public:
   using const_global_cache_tags =
-      tmpl::list<LinearSolver::Tags::Iterations<OptionsGroup>>;
+      tmpl::list<Convergence::Tags::Iterations<OptionsGroup>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -125,8 +126,8 @@ struct InitializeElement {
     return std::make_tuple(
         ::Initialization::merge_into_databox<
             InitializeElement,
-            db::AddSimpleTags<LinearSolver::Tags::IterationId<OptionsGroup>,
-                              LinearSolver::Tags::HasConverged<OptionsGroup>,
+            db::AddSimpleTags<Convergence::Tags::IterationId<OptionsGroup>,
+                              Convergence::Tags::HasConverged<OptionsGroup>,
                               operator_applied_to_fields_tag>,
             db::AddComputeTags<
                 LinearSolver::Tags::ResidualCompute<fields_tag, source_tag>>>(
@@ -165,7 +166,7 @@ struct PrepareSolve {
 
  public:
   using const_global_cache_tags =
-      tmpl::list<LinearSolver::Tags::Verbosity<OptionsGroup>>;
+      tmpl::list<logging::Tags::Verbosity<OptionsGroup>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -178,8 +179,8 @@ struct PrepareSolve {
       const ParallelComponent* const /*meta*/) noexcept {
     constexpr size_t iteration_id = 0;
 
-    db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>,
-               LinearSolver::Tags::HasConverged<OptionsGroup>>(
+    db::mutate<Convergence::Tags::IterationId<OptionsGroup>,
+               Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [](const gsl::not_null<size_t*> local_iteration_id,
            const gsl::not_null<Convergence::HasConverged*> has_converged,
@@ -188,7 +189,7 @@ struct PrepareSolve {
           *has_converged =
               Convergence::HasConverged{num_iterations, iteration_id};
         },
-        get<LinearSolver::Tags::Iterations<OptionsGroup>>(box));
+        get<Convergence::Tags::Iterations<OptionsGroup>>(box));
 
     // Observe the initial residual even if no steps are going to be performed
     const auto& residual = get<residual_tag>(box);
@@ -203,7 +204,7 @@ struct PrepareSolve {
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, PrepareSolve>::value;
     return {std::move(box), false,
-            get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box)
+            get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                 ? (step_end_index + 1)
                 : (this_action_index + 1)};
   }
@@ -219,7 +220,7 @@ struct CompleteStep {
 
  public:
   using const_global_cache_tags =
-      tmpl::list<LinearSolver::Tags::Verbosity<OptionsGroup>>;
+      tmpl::list<logging::Tags::Verbosity<OptionsGroup>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -231,8 +232,8 @@ struct CompleteStep {
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     // Prepare for next iteration
-    db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>,
-               LinearSolver::Tags::HasConverged<OptionsGroup>>(
+    db::mutate<Convergence::Tags::IterationId<OptionsGroup>,
+               Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [](const gsl::not_null<size_t*> iteration_id,
            const gsl::not_null<Convergence::HasConverged*> has_converged,
@@ -241,11 +242,11 @@ struct CompleteStep {
           *has_converged =
               Convergence::HasConverged{num_iterations, *iteration_id};
         },
-        get<LinearSolver::Tags::Iterations<OptionsGroup>>(box));
+        get<Convergence::Tags::Iterations<OptionsGroup>>(box));
 
     // Observe element-local residual magnitude
     const size_t completed_iterations =
-        get<LinearSolver::Tags::IterationId<OptionsGroup>>(box);
+        get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     const auto& residual = get<residual_tag>(box);
     const double residual_magnitude_square = inner_product(residual, residual);
     contribute_to_residual_observation<OptionsGroup, ParallelComponent>(
@@ -259,7 +260,7 @@ struct CompleteStep {
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, CompleteStep>::value;
     return {std::move(box), false,
-            get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box)
+            get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                 ? (this_action_index + 1)
                 : step_begin_index};
   }

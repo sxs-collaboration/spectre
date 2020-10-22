@@ -14,16 +14,23 @@
 
 namespace {
 
+struct TestGroup {
+  static constexpr Options::String help = "halp";
+};
+
 void test_construct_from_options() noexcept {
-  Options::Parser<tmpl::list<OptionTags::Verbosity>> opts("");
-  opts.parse("Verbosity: Verbose\n");
-  CHECK(opts.get<OptionTags::Verbosity>() == Verbosity::Verbose);
+  Options::Parser<tmpl::list<logging::OptionTags::Verbosity<TestGroup>>> opts(
+      "");
+  opts.parse("TestGroup:\n  Verbosity: Verbose\n");
+  CHECK(opts.get<logging::OptionTags::Verbosity<TestGroup>>() ==
+        Verbosity::Verbose);
 }
 
 void test_construct_from_options_fail() noexcept {
-  Options::Parser<tmpl::list<OptionTags::Verbosity>> opts("");
-  opts.parse("Verbosity: Braggadocious\n");  // Meant to fail.
-  opts.get<OptionTags::Verbosity>();
+  Options::Parser<tmpl::list<logging::OptionTags::Verbosity<TestGroup>>> opts(
+      "");
+  opts.parse("TestGroup:\n  Verbosity: Braggadocious\n");  // Meant to fail.
+  opts.get<logging::OptionTags::Verbosity<TestGroup>>();
 }
 
 void test_ostream() noexcept {
@@ -38,7 +45,6 @@ void test_ostream() noexcept {
 SPECTRE_TEST_CASE("Unit.Informer.Verbosity", "[Informer][Unit]") {
   test_construct_from_options();
   test_ostream();
-  TestHelpers::db::test_simple_tag<Tags::Verbosity>("Verbosity");
 }
 
 // [[OutputRegex, Failed to convert "Braggadocious" to Verbosity]]

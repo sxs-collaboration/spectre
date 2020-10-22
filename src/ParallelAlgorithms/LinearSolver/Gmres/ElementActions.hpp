@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -41,13 +42,12 @@ struct NormalizeOperandAndUpdateField;
 namespace LinearSolver::gmres::detail {
 
 template <typename FieldsTag, typename OptionsGroup, bool Preconditioned,
-          typename Label>
+          typename Label, typename SourceTag>
 struct PrepareSolve {
  private:
   using fields_tag = FieldsTag;
-  using initial_fields_tag =
-      db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
-  using source_tag = db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
+  using initial_fields_tag = db::add_tag_prefix<::Tags::Initial, fields_tag>;
+  using source_tag = SourceTag;
   using operator_applied_to_fields_tag =
       db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
   using operand_tag =
@@ -65,7 +65,7 @@ struct PrepareSolve {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>, operand_tag,
+    db::mutate<Convergence::Tags::IterationId<OptionsGroup>, operand_tag,
                initial_fields_tag, basis_history_tag>(
         make_not_null(&box),
         [](const gsl::not_null<size_t*> iteration_id, const auto operand,
@@ -128,7 +128,7 @@ struct NormalizeInitialOperand {
                        const ArrayIndex& /*array_index*/) noexcept {
     const auto& inbox =
         get<Tags::InitialOrthogonalization<OptionsGroup>>(inboxes);
-    return inbox.find(db::get<LinearSolver::Tags::IterationId<OptionsGroup>>(
+    return inbox.find(db::get<Convergence::Tags::IterationId<OptionsGroup>>(
                box)) != inbox.end();
   }
 
@@ -142,14 +142,13 @@ struct NormalizeInitialOperand {
       const ParallelComponent* const /*meta*/) noexcept {
     auto received_data = std::move(
         tuples::get<Tags::InitialOrthogonalization<OptionsGroup>>(inboxes)
-            .extract(
-                db::get<LinearSolver::Tags::IterationId<OptionsGroup>>(box))
+            .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
             .mapped());
     const double residual_magnitude = get<0>(received_data);
     auto& has_converged = get<1>(received_data);
 
     db::mutate<operand_tag, basis_history_tag,
-               LinearSolver::Tags::HasConverged<OptionsGroup>>(
+               Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box), [residual_magnitude, &has_converged](
                                  const auto operand, const auto basis_history,
                                  const gsl::not_null<Convergence::HasConverged*>
@@ -166,7 +165,7 @@ struct NormalizeInitialOperand {
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, NormalizeInitialOperand>::value;
     return {std::move(box), false,
-            get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box)
+            get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                 ? (step_end_index + 1)
                 : (this_action_index + 1)};
   }
@@ -236,7 +235,7 @@ struct PerformStep {
                            operand_tag>>;
     using orthogonalization_iteration_id_tag =
         LinearSolver::Tags::Orthogonalization<
-            LinearSolver::Tags::IterationId<OptionsGroup>>;
+            Convergence::Tags::IterationId<OptionsGroup>>;
     using basis_history_tag =
         LinearSolver::Tags::KrylovSubspaceBasis<operand_tag>;
 
@@ -269,7 +268,7 @@ struct PerformStep {
             Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
             Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
             Parallel::ReductionDatum<double, funcl::Plus<>>>{
-            get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
+            get<Convergence::Tags::IterationId<OptionsGroup>>(box),
             get<orthogonalization_iteration_id_tag>(box),
             inner_product(get<basis_history_tag>(box)[0],
                           get<operand_tag>(box))},
@@ -290,7 +289,7 @@ struct OrthogonalizeOperand {
       db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
   using orthogonalization_iteration_id_tag =
       LinearSolver::Tags::Orthogonalization<
-          LinearSolver::Tags::IterationId<OptionsGroup>>;
+          Convergence::Tags::IterationId<OptionsGroup>>;
   using basis_history_tag =
       LinearSolver::Tags::KrylovSubspaceBasis<operand_tag>;
 
@@ -304,7 +303,7 @@ struct OrthogonalizeOperand {
                        const Parallel::GlobalCache<Metavariables>& /*cache*/,
                        const ArrayIndex& /*array_index*/) noexcept {
     const auto& inbox = get<Tags::Orthogonalization<OptionsGroup>>(inboxes);
-    return inbox.find(db::get<LinearSolver::Tags::IterationId<OptionsGroup>>(
+    return inbox.find(db::get<Convergence::Tags::IterationId<OptionsGroup>>(
                box)) != inbox.end();
   }
 
@@ -318,8 +317,7 @@ struct OrthogonalizeOperand {
       const ParallelComponent* const /*meta*/) noexcept {
     const double orthogonalization = std::move(
         tuples::get<Tags::Orthogonalization<OptionsGroup>>(inboxes)
-            .extract(
-                db::get<LinearSolver::Tags::IterationId<OptionsGroup>>(box))
+            .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
             .mapped());
 
     db::mutate<operand_tag, orthogonalization_iteration_id_tag>(
@@ -337,7 +335,7 @@ struct OrthogonalizeOperand {
     const auto& next_orthogonalization_iteration_id =
         get<orthogonalization_iteration_id_tag>(box);
     const auto& iteration_id =
-        get<LinearSolver::Tags::IterationId<OptionsGroup>>(box);
+        get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     const bool orthogonalization_complete =
         next_orthogonalization_iteration_id == iteration_id + 1;
     const double local_orthogonalization =
@@ -373,8 +371,7 @@ template <typename FieldsTag, typename OptionsGroup, bool Preconditioned,
 struct NormalizeOperandAndUpdateField {
  private:
   using fields_tag = FieldsTag;
-  using initial_fields_tag =
-      db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
+  using initial_fields_tag = db::add_tag_prefix<::Tags::Initial, fields_tag>;
   using operand_tag =
       db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
   using preconditioned_operand_tag =
@@ -396,7 +393,7 @@ struct NormalizeOperandAndUpdateField {
                        const ArrayIndex& /*array_index*/) noexcept {
     const auto& inbox =
         get<Tags::FinalOrthogonalization<OptionsGroup>>(inboxes);
-    return inbox.find(db::get<LinearSolver::Tags::IterationId<OptionsGroup>>(
+    return inbox.find(db::get<Convergence::Tags::IterationId<OptionsGroup>>(
                box)) != inbox.end();
   }
 
@@ -411,16 +408,15 @@ struct NormalizeOperandAndUpdateField {
     // Retrieve reduction data from inbox
     auto received_data = std::move(
         tuples::get<Tags::FinalOrthogonalization<OptionsGroup>>(inboxes)
-            .extract(
-                db::get<LinearSolver::Tags::IterationId<OptionsGroup>>(box))
+            .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
             .mapped());
     const double normalization = get<0>(received_data);
     const auto& minres = get<1>(received_data);
     auto& has_converged = get<2>(received_data);
 
     db::mutate<operand_tag, basis_history_tag, fields_tag,
-               LinearSolver::Tags::IterationId<OptionsGroup>,
-               LinearSolver::Tags::HasConverged<OptionsGroup>>(
+               Convergence::Tags::IterationId<OptionsGroup>,
+               Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [normalization, &minres, &has_converged](
             const auto operand, const auto basis_history, const auto field,
@@ -453,7 +449,7 @@ struct NormalizeOperandAndUpdateField {
         tmpl::index_of<ActionList, PrepareStep<FieldsTag, OptionsGroup,
                                                Preconditioned, Label>>::value;
     return {std::move(box), false,
-            get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box)
+            get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                 ? (this_action_index + 1)
                 : prepare_step_index};
   }

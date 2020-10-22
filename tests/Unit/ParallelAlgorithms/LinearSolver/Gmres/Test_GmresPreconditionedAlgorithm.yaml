@@ -20,5 +20,6 @@ SerialGmres:
 Preconditioner:
   RelaxationParameter: 0.2857142857142857
   Iterations: 2
+  Verbosity: Verbose
 
 ConvergenceReason: AbsoluteResidual

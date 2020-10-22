@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 set(LIBS_TO_LINK
+  Convergence
   CoordinateMaps
   DiscontinuousGalerkin
   DomainCreators

@@ -49,7 +49,7 @@ struct VectorTag : db::SimpleTag {
 using fields_tag = VectorTag;
 using residual_square_tag = LinearSolver::Tags::MagnitudeSquare<
     LinearSolver::Tags::Residual<fields_tag>>;
-using initial_residual_magnitude_tag = LinearSolver::Tags::Initial<
+using initial_residual_magnitude_tag = ::Tags::Initial<
     LinearSolver::Tags::Magnitude<LinearSolver::Tags::Residual<fields_tag>>>;
 
 template <typename Metavariables>

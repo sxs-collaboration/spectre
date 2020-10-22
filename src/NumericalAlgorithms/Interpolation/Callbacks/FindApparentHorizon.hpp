@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -63,7 +64,7 @@ namespace callbacks {
 /// - Metavariables:
 ///   - `temporal_id`
 /// - DataBox:
-///   - `::Tags::Verbosity`
+///   - `logging::Tags::Verbosity<InterpolationTargetTag>`
 ///   - `::gr::Tags::InverseSpatialMetric<3,Frame>`
 ///   - `::gr::Tags::ExtrinsicCurvature<3,Frame>`
 ///   - `::gr::Tags::SpatialChristoffelSecondKind<3,Frame>`
@@ -95,7 +96,8 @@ struct FindApparentHorizon {
       ERROR("FindApparentHorizon: Found points that are not in any block");
     }
 
-    const auto& verbosity = db::get<::Tags::Verbosity>(*box);
+    const auto& verbosity =
+        db::get<logging::Tags::Verbosity<InterpolationTargetTag>>(*box);
     const auto& inv_g =
         db::get<::gr::Tags::InverseSpatialMetric<3, Frame>>(*box);
     const auto& ex_curv =

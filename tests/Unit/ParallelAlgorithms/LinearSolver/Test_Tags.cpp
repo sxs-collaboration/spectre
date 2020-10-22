@@ -27,16 +27,8 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
       "LinearOperand(Tag)");
   TestHelpers::db::test_prefix_tag<LinearSolver::Tags::OperatorAppliedTo<Tag>>(
       "LinearOperatorAppliedTo(Tag)");
-  TestHelpers::db::test_simple_tag<
-      LinearSolver::Tags::IterationId<TestOptionsGroup>>(
-      "IterationId(TestLinearSolver)");
-  TestHelpers::db::test_simple_tag<
-      LinearSolver::Tags::HasConverged<TestOptionsGroup>>(
-      "HasConverged(TestLinearSolver)");
   TestHelpers::db::test_prefix_tag<LinearSolver::Tags::Residual<Tag>>(
       "LinearResidual(Tag)");
-  TestHelpers::db::test_prefix_tag<LinearSolver::Tags::Initial<Tag>>(
-      "Initial(Tag)");
   TestHelpers::db::test_prefix_tag<LinearSolver::Tags::MagnitudeSquare<Tag>>(
       "LinearMagnitudeSquare(Tag)");
   TestHelpers::db::test_prefix_tag<LinearSolver::Tags::Magnitude<Tag>>(
@@ -50,15 +42,6 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
       LinearSolver::Tags::KrylovSubspaceBasis<Tag>>("KrylovSubspaceBasis(Tag)");
   TestHelpers::db::test_prefix_tag<LinearSolver::Tags::Preconditioned<Tag>>(
       "Preconditioned(Tag)");
-  TestHelpers::db::test_simple_tag<
-      LinearSolver::Tags::ConvergenceCriteria<TestOptionsGroup>>(
-      "ConvergenceCriteria(TestLinearSolver)");
-  TestHelpers::db::test_simple_tag<
-      LinearSolver::Tags::Iterations<TestOptionsGroup>>(
-      "Iterations(TestLinearSolver)");
-  TestHelpers::db::test_simple_tag<
-      LinearSolver::Tags::Verbosity<TestOptionsGroup>>(
-      "Verbosity(TestLinearSolver)");
 
   {
     INFO("ResidualCompute");

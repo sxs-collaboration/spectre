@@ -4,6 +4,7 @@
 #pragma once
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/InitializeElement.hpp"
@@ -71,7 +72,7 @@ namespace LinearSolver::gmres {
  * 4. `StoreOrthogonalization` (on `ResidualMonitor`): Perform a QR
  * decomposition of the Hessenberg matrix to produce a residual vector.
  * Broadcast to `NormalizeOperandAndUpdateField` along with a termination
- * flag if the `LinearSolver::Tags::ConvergenceCriteria` are met.
+ * flag if the `Convergence::Tags::Criteria` are met.
  * 5. `NormalizeOperandAndUpdateField` (on elements): Set the operand \f$q\f$ as
  * the new orthogonal vector and normalize. Use the residual vector and the set
  * of orthogonal vectors to determine the solution \f$x\f$.
@@ -80,10 +81,13 @@ namespace LinearSolver::gmres {
  * linear operator \f$A\f$ is symmetric.
  */
 template <typename Metavariables, typename FieldsTag, typename OptionsGroup,
-          bool Preconditioned>
+          bool Preconditioned,
+          typename SourceTag =
+              db::add_tag_prefix<::Tags::FixedSource, FieldsTag>>
 struct Gmres {
   using fields_tag = FieldsTag;
   using options_group = OptionsGroup;
+  using source_tag = SourceTag;
   static constexpr bool preconditioned = Preconditioned;
 
   /// Apply the linear operator to this tag in each iteration
@@ -115,7 +119,8 @@ struct Gmres {
 
   template <typename ApplyOperatorActions, typename Label = OptionsGroup>
   using solve = tmpl::list<
-      detail::PrepareSolve<FieldsTag, OptionsGroup, Preconditioned, Label>,
+      detail::PrepareSolve<FieldsTag, OptionsGroup, Preconditioned, Label,
+                           SourceTag>,
       detail::NormalizeInitialOperand<FieldsTag, OptionsGroup, Preconditioned,
                                       Label>,
       detail::PrepareStep<FieldsTag, OptionsGroup, Preconditioned, Label>,

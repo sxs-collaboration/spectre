@@ -12,22 +12,31 @@
 enum class Verbosity;
 /// \endcond
 
+/// \ingroup LoggingGroup
+/// Items related to logging
+namespace logging {
 namespace OptionTags {
 /// \ingroup OptionTagsGroup
 /// \ingroup LoggingGroup
+template <typename OptionsGroup>
 struct Verbosity {
   using type = ::Verbosity;
   static constexpr Options::String help{"Verbosity"};
+  using group = OptionsGroup;
 };
 }  // namespace OptionTags
 
 namespace Tags {
 /// \ingroup LoggingGroup
 /// \brief Tag for putting `::Verbosity` in a DataBox.
+template <typename OptionsGroup>
 struct Verbosity : db::SimpleTag {
   using type = ::Verbosity;
-  using option_tags = tmpl::list<OptionTags::Verbosity>;
+  static std::string name() noexcept {
+    return "Verbosity(" + Options::name<OptionsGroup>() + ")";
+  }
 
+  using option_tags = tmpl::list<OptionTags::Verbosity<OptionsGroup>>;
   static constexpr bool pass_metavariables = false;
   static ::Verbosity create_from_options(
       const ::Verbosity& verbosity) noexcept {
@@ -35,3 +44,4 @@ struct Verbosity : db::SimpleTag {
   }
 };
 }  // namespace Tags
+}  // namespace logging

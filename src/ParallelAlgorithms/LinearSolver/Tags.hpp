@@ -18,8 +18,6 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DenseMatrix.hpp"
 #include "Informer/Verbosity.hpp"
-#include "NumericalAlgorithms/Convergence/Criteria.hpp"
-#include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Utilities/Gsl.hpp"
 
 /*!
@@ -64,20 +62,6 @@ struct OperatorAppliedTo : db::PrefixTag, db::SimpleTag {
 };
 
 /*!
- * \brief Holds an `IterationId` that identifies a step in the linear solver
- * algorithm
- */
-template <typename OptionsGroup>
-struct IterationId : db::SimpleTag {
-  static std::string name() noexcept {
-    return "IterationId(" + Options::name<OptionsGroup>() + ")";
-  }
-  using type = size_t;
-  template <typename Tag>
-  using step_prefix = OperatorAppliedTo<Tag>;
-};
-
-/*!
  * \brief The residual \f$r=b - Ax\f$
  */
 template <typename Tag>
@@ -107,12 +91,6 @@ struct ResidualCompute : db::add_tag_prefix<Residual, FieldsTag>,
           operator_applied_to_fields) noexcept {
     *residual = source - operator_applied_to_fields;
   }
-};
-
-template <typename Tag>
-struct Initial : db::PrefixTag, db::SimpleTag {
-  using type = typename Tag::type;
-  using tag = Tag;
 };
 
 /*!
@@ -196,119 +174,5 @@ struct Preconditioned : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
 };
 
-/*!
- * \brief Holds a `Convergence::HasConverged` flag that signals the linear
- * solver has converged, along with the reason for convergence.
- */
-template <typename OptionsGroup>
-struct HasConverged : db::SimpleTag {
-  static std::string name() noexcept {
-    return "HasConverged(" + Options::name<OptionsGroup>() + ")";
-  }
-  using type = Convergence::HasConverged;
-};
-
-}  // namespace Tags
-
-/*!
- * \ingroup LinearSolverGroup
- * \brief Option tags related to the iterative linear solver
- */
-namespace OptionTags {
-
-template <typename OptionsGroup>
-struct ConvergenceCriteria {
-  static constexpr Options::String help =
-      "Determine convergence of the linear solve";
-  using type = Convergence::Criteria;
-  using group = OptionsGroup;
-};
-
-template <typename OptionsGroup>
-struct Iterations {
-  static constexpr Options::String help =
-      "Number of iterations to run the solver";
-  using type = size_t;
-  using group = OptionsGroup;
-};
-
-template <typename OptionsGroup>
-struct Verbosity {
-  using type = ::Verbosity;
-  static constexpr Options::String help = "Logging verbosity";
-  using group = OptionsGroup;
-  static type default_value() noexcept { return ::Verbosity::Quiet; }
-};
-
-}  // namespace OptionTags
-
-namespace Tags {
-/*!
- * \brief `Convergence::Criteria` that determine the linear solve has converged
- *
- * \note The smallest possible residual magnitude the linear solver can reach is
- * the product between the machine epsilon and the condition number of the
- * linear operator that is being inverted. Smaller residuals are numerical
- * artifacts. Requiring an absolute or relative residual below this limit will
- * likely lead to termination by `MaxIterations`.
- *
- * \note Remember that when the linear operator \f$A\f$ corresponds to a PDE
- * discretization, decreasing the linear solver residual below the
- * discretization error will not improve the numerical solution any further.
- * I.e. the error \f$e_k=x_k-x_\mathrm{analytic}\f$ to an analytic solution
- * will be dominated by the linear solver residual at first, but even if the
- * discretization \f$Ax_k=b\f$ was exactly solved after some iteration \f$k\f$,
- * the discretization residual
- * \f$Ae_k=b-Ax_\mathrm{analytic}=r_\mathrm{discretization}\f$ would still
- * remain. Therefore, ideally choose the absolute or relative residual criteria
- * based on an estimate of the discretization residual.
- */
-template <typename OptionsGroup>
-struct ConvergenceCriteria : db::SimpleTag {
-  static std::string name() noexcept {
-    return "ConvergenceCriteria(" + Options::name<OptionsGroup>() + ")";
-  }
-  using type = Convergence::Criteria;
-  using option_tags =
-      tmpl::list<LinearSolver::OptionTags::ConvergenceCriteria<OptionsGroup>>;
-
-  static constexpr bool pass_metavariables = false;
-  static Convergence::Criteria create_from_options(
-      const Convergence::Criteria& convergence_criteria) noexcept {
-    return convergence_criteria;
-  }
-};
-
-/// A fixed number of iterations to run the linear solver
-template <typename OptionsGroup>
-struct Iterations : db::SimpleTag {
-  static std::string name() noexcept {
-    return "Iterations(" + Options::name<OptionsGroup>() + ")";
-  }
-  using type = size_t;
-
-  static constexpr bool pass_metavariables = false;
-  using option_tags =
-      tmpl::list<LinearSolver::OptionTags::Iterations<OptionsGroup>>;
-  static size_t create_from_options(const size_t iterations) noexcept {
-    return iterations;
-  }
-};
-
-template <typename OptionsGroup>
-struct Verbosity : db::SimpleTag {
-  static std::string name() noexcept {
-    return "Verbosity(" + Options::name<OptionsGroup>() + ")";
-  }
-  using type = ::Verbosity;
-  using option_tags =
-      tmpl::list<LinearSolver::OptionTags::Verbosity<OptionsGroup>>;
-
-  static constexpr bool pass_metavariables = false;
-  static ::Verbosity create_from_options(
-      const ::Verbosity& verbosity) noexcept {
-    return verbosity;
-  }
-};
 }  // namespace Tags
 }  // namespace LinearSolver

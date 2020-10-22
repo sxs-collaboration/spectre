@@ -391,33 +391,7 @@
 
 /*!
  * \defgroup EllipticSystemsGroup Elliptic Systems
- * \brief All available elliptic systems and information on how to implement
- * elliptic systems
- *
- * \details Actions and parallel components may require an elliptic system to
- * expose the following types:
- *
- * - `volume_dim`: The number of spatial dimensions
- * - `fields_tag`: A \ref DataBoxGroup tag that represents the fields being
- * solved for.
- * - `variables_tag`: The variables to compute DG volume contributions and
- * fluxes for. Use `db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>`
- * unless you have a reason not to.
- * - `compute_operator_action`: A struct that computes the bulk contribution to
- * the DG operator. Must expose a `tmpl::list` of `argument_tags` and a static
- * `apply` function that takes the following arguments in this order:
- *   - First, the types of the tensors in
- * `db::add_tag_prefix<Metavariables::temporal_id::step_prefix, variables_tag>`
- * (which represent the linear operator applied to the variables) as not-null
- * pointers.
- *   - Followed by the types of the `argument_tags` as constant references.
- *
- * Actions and parallel components may also require the Metavariables to expose
- * the following types:
- *
- * - `system`: See above.
- * - `temporal_id`: A DataBox tag that identifies steps in the algorithm.
- * Generally use `LinearSolver::Tags::IterationId`.
+ * \brief All available elliptic systems
  */
 
 /*!
@@ -524,6 +498,24 @@
  * scale badly with increasing grid size, a preconditioner \f$P\f$ is needed
  * in order to make \f$P^{-1}A\f$ easier to invert.
  *
+ * \note The smallest possible residual magnitude the linear solver can reach is
+ * the product between the machine epsilon and the condition number of the
+ * linear operator that is being inverted. Smaller residuals are numerical
+ * artifacts. Requiring an absolute or relative residual below this limit will
+ * likely make the linear solver run until it reaches its maximum number of
+ * iterations.
+ *
+ * \note Remember that when the linear operator \f$A\f$ corresponds to a PDE
+ * discretization, decreasing the linear solver residual below the
+ * discretization error will not improve the numerical solution any further.
+ * I.e. the error \f$e_k=x_k-x_\mathrm{analytic}\f$ to an analytic solution
+ * will be dominated by the linear solver residual at first, but even if the
+ * discretization \f$Ax_k=b\f$ was exactly solved after some iteration \f$k\f$,
+ * the discretization residual
+ * \f$Ae_k=b-Ax_\mathrm{analytic}=r_\mathrm{discretization}\f$ would still
+ * remain. Therefore, ideally choose the absolute or relative residual criteria
+ * based on an estimate of the discretization residual.
+ *
  * In the iterative algorithms we usually don't work with the physical field
  * \f$x\f$ directly. Instead we need to apply the operator to an internal
  * variable defined by the respective algorithm. This variable is exposed as the
@@ -531,22 +523,6 @@
  * computed operator action is written into
  * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
  * LinearSolver::Tags::Operand<...>>` in each step.
- *
- * Each linear solver is expected to expose the following compile-time
- * interface:
- * - `component_list`: A `tmpl::list` that collects the additional parallel
- * components this linear solver uses. The executables will append these to
- * their own `component_list`.
- * - `initialize_element`: An action that initializes the DataBox items
- * required by the linear solver.
- * - `reinitialize_element`: An action that resets the linear solver to its
- * initial state.
- * - `perform_step`: The action to be executed after the linear operator has
- * been applied to the operand and written to the DataBox (see above). It will
- * converge the fields towards their solution and update the operand before
- * handing responsibility back to the algorithm for the next application of the
- * linear operator:
- * \snippet LinearSolverAlgorithmTestHelpers.hpp action_list
  */
 
 /// \defgroup LoggingGroup Logging

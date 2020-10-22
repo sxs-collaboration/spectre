@@ -9,7 +9,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
+#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -40,11 +40,12 @@ struct UpdateOperand;
 
 namespace LinearSolver::cg::detail {
 
-template <typename FieldsTag, typename OptionsGroup, typename Label>
+template <typename FieldsTag, typename OptionsGroup, typename Label,
+          typename SourceTag>
 struct PrepareSolve {
  private:
   using fields_tag = FieldsTag;
-  using source_tag = db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
+  using source_tag = SourceTag;
   using operator_applied_to_fields_tag =
       db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
   using operand_tag =
@@ -62,7 +63,7 @@ struct PrepareSolve {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>, operand_tag,
+    db::mutate<Convergence::Tags::IterationId<OptionsGroup>, operand_tag,
                residual_tag>(
         make_not_null(&box),
         [](const gsl::not_null<size_t*> iteration_id, const auto operand,
@@ -101,7 +102,7 @@ struct InitializeHasConverged {
                        const Parallel::GlobalCache<Metavariables>& /*cache*/,
                        const ArrayIndex& /*array_index*/) noexcept {
     const auto& inbox = get<Tags::InitialHasConverged<OptionsGroup>>(inboxes);
-    return inbox.find(db::get<LinearSolver::Tags::IterationId<OptionsGroup>>(
+    return inbox.find(db::get<Convergence::Tags::IterationId<OptionsGroup>>(
                box)) != inbox.end();
   }
 
@@ -115,11 +116,10 @@ struct InitializeHasConverged {
       const ParallelComponent* const /*meta*/) noexcept {
     auto has_converged = std::move(
         tuples::get<Tags::InitialHasConverged<OptionsGroup>>(inboxes)
-            .extract(
-                db::get<LinearSolver::Tags::IterationId<OptionsGroup>>(box))
+            .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
             .mapped());
 
-    db::mutate<LinearSolver::Tags::HasConverged<OptionsGroup>>(
+    db::mutate<Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [&has_converged](const gsl::not_null<Convergence::HasConverged*>
                              local_has_converged) noexcept {
@@ -165,7 +165,7 @@ struct PerformStep {
         Parallel::ReductionData<
             Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
             Parallel::ReductionDatum<double, funcl::Plus<>>>{
-            get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
+            get<Convergence::Tags::IterationId<OptionsGroup>>(box),
             local_conj_grad_inner_product},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
         Parallel::get_parallel_component<
@@ -196,7 +196,7 @@ struct UpdateFieldValues {
                        const Parallel::GlobalCache<Metavariables>& /*cache*/,
                        const ArrayIndex& /*array_index*/) noexcept {
     const auto& inbox = get<Tags::Alpha<OptionsGroup>>(inboxes);
-    return inbox.find(db::get<LinearSolver::Tags::IterationId<OptionsGroup>>(
+    return inbox.find(db::get<Convergence::Tags::IterationId<OptionsGroup>>(
                box)) != inbox.end();
   }
 
@@ -210,8 +210,7 @@ struct UpdateFieldValues {
       const ParallelComponent* const /*meta*/) noexcept {
     const double alpha = std::move(
         tuples::get<Tags::Alpha<OptionsGroup>>(inboxes)
-            .extract(
-                db::get<LinearSolver::Tags::IterationId<OptionsGroup>>(box))
+            .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
             .mapped());
 
     db::mutate<residual_tag, fields_tag>(
@@ -233,7 +232,7 @@ struct UpdateFieldValues {
         Parallel::ReductionData<
             Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
             Parallel::ReductionDatum<double, funcl::Plus<>>>{
-            get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
+            get<Convergence::Tags::IterationId<OptionsGroup>>(box),
             local_residual_magnitude_square},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
         Parallel::get_parallel_component<
@@ -264,7 +263,7 @@ struct UpdateOperand {
                        const ArrayIndex& /*array_index*/) noexcept {
     const auto& inbox =
         get<Tags::ResidualRatioAndHasConverged<OptionsGroup>>(inboxes);
-    return inbox.find(db::get<LinearSolver::Tags::IterationId<OptionsGroup>>(
+    return inbox.find(db::get<Convergence::Tags::IterationId<OptionsGroup>>(
                box)) != inbox.end();
   }
 
@@ -278,14 +277,13 @@ struct UpdateOperand {
       const ParallelComponent* const /*meta*/) noexcept {
     auto received_data = std::move(
         tuples::get<Tags::ResidualRatioAndHasConverged<OptionsGroup>>(inboxes)
-            .extract(
-                db::get<LinearSolver::Tags::IterationId<OptionsGroup>>(box))
+            .extract(db::get<Convergence::Tags::IterationId<OptionsGroup>>(box))
             .mapped());
     const double res_ratio = get<0>(received_data);
     auto& has_converged = get<1>(received_data);
 
-    db::mutate<operand_tag, LinearSolver::Tags::IterationId<OptionsGroup>,
-               LinearSolver::Tags::HasConverged<OptionsGroup>>(
+    db::mutate<operand_tag, Convergence::Tags::IterationId<OptionsGroup>,
+               Convergence::Tags::HasConverged<OptionsGroup>>(
         make_not_null(&box),
         [res_ratio, &has_converged](
             const auto operand, const gsl::not_null<size_t*> iteration_id,
@@ -305,7 +303,7 @@ struct UpdateOperand {
                                        FieldsTag, OptionsGroup, Label>>::value +
         1;
     return {std::move(box), false,
-            get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box)
+            get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                 ? (this_action_index + 1)
                 : prepare_step_index};
   }

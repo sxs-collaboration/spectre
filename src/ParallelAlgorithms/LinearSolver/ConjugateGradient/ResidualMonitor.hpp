@@ -12,6 +12,8 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "IO/Observer/Actions/RegisterSingleton.hpp"
+#include "Informer/Tags.hpp"
+#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -37,8 +39,8 @@ template <typename Metavariables, typename FieldsTag, typename OptionsGroup>
 struct ResidualMonitor {
   using chare_type = Parallel::Algorithms::Singleton;
   using const_global_cache_tags =
-      tmpl::list<LinearSolver::Tags::Verbosity<OptionsGroup>,
-                 LinearSolver::Tags::ConvergenceCriteria<OptionsGroup>>;
+      tmpl::list<logging::Tags::Verbosity<OptionsGroup>,
+                 Convergence::Tags::Criteria<OptionsGroup>>;
   using metavariables = Metavariables;
   // The actions in `ResidualMonitorActions.hpp` are invoked as simple actions
   // on this component as the result of reductions from the actions in
@@ -72,7 +74,7 @@ struct InitializeResidualMonitor {
   using residual_square_tag = LinearSolver::Tags::MagnitudeSquare<
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
   using initial_residual_magnitude_tag =
-      LinearSolver::Tags::Initial<LinearSolver::Tags::Magnitude<
+      ::Tags::Initial<LinearSolver::Tags::Magnitude<
           db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>>;
 
  public:

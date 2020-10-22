@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Options/Options.hpp"
@@ -36,9 +37,6 @@ template <typename TemporalId>
 struct TemporalIds;
 }  // namespace Tags
 }  // namespace intrp
-namespace OptionTags {
-struct Verbosity;
-}  // namespace OptionTags
 namespace Tags {
 struct Verbosity;
 }  // namespace Tags
@@ -60,14 +58,18 @@ struct ApparentHorizon {
     static constexpr Options::String help = {"FastFlow options"};
     using type = ::FastFlow;
   };
-  using options = tmpl::list<InitialGuess, FastFlow, ::OptionTags::Verbosity>;
+  struct Verbosity {
+    static constexpr Options::String help = {"Verbosity"};
+    using type = ::Verbosity;
+  };
+  using options = tmpl::list<InitialGuess, FastFlow, Verbosity>;
   static constexpr Options::String help = {
       "Provide an initial guess for the apparent horizon surface\n"
       "(Strahlkorper) and apparent-horizon-finding-algorithm (FastFlow)\n"
       "options."};
 
   ApparentHorizon(Strahlkorper<Frame> initial_guess_in, ::FastFlow fast_flow_in,
-                  Verbosity verbosity_in) noexcept;
+                  ::Verbosity verbosity_in) noexcept;
 
   ApparentHorizon() = default;
   ApparentHorizon(const ApparentHorizon& /*rhs*/) = default;
@@ -81,7 +83,7 @@ struct ApparentHorizon {
 
   Strahlkorper<Frame> initial_guess{};
   ::FastFlow fast_flow{};
-  Verbosity verbosity{Verbosity::Quiet};
+  ::Verbosity verbosity{::Verbosity::Quiet};
 };
 
 template <typename Frame>
@@ -140,7 +142,8 @@ struct ApparentHorizon {
       tmpl::list<Tags::ApparentHorizon<InterpolationTargetTag, Frame>>;
   using initialization_tags =
       tmpl::append<StrahlkorperTags::items_tags<Frame>,
-                   tmpl::list<::ah::Tags::FastFlow, ::Tags::Verbosity>,
+                   tmpl::list<::ah::Tags::FastFlow,
+                              logging::Tags::Verbosity<InterpolationTargetTag>>,
                    StrahlkorperTags::compute_items_tags<Frame>>;
   using is_sequential = std::true_type;
   template <typename DbTags, typename Metavariables>
@@ -155,9 +158,9 @@ struct ApparentHorizon {
     // and verbosity into a new DataBox.
     return db::create_from<
         db::RemoveTags<>,
-        db::AddSimpleTags<
-            tmpl::push_back<StrahlkorperTags::items_tags<Frame>,
-                            ::ah::Tags::FastFlow, ::Tags::Verbosity>>,
+        db::AddSimpleTags<tmpl::push_back<
+            StrahlkorperTags::items_tags<Frame>, ::ah::Tags::FastFlow,
+            logging::Tags::Verbosity<InterpolationTargetTag>>>,
         db::AddComputeTags<StrahlkorperTags::compute_items_tags<Frame>>>(
         std::move(box), options.initial_guess, options.fast_flow,
         options.verbosity);

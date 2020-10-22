@@ -21,6 +21,7 @@ spectre_target_headers(
   Criteria.hpp
   HasConverged.hpp
   Reason.hpp
+  Tags.hpp
   )
 
 target_link_libraries(
@@ -30,4 +31,5 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   Options
+  Utilities
   )

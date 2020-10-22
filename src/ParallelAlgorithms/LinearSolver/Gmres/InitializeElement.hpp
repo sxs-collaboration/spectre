@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
@@ -29,8 +30,7 @@ template <typename FieldsTag, typename OptionsGroup, bool Preconditioned>
 struct InitializeElement {
  private:
   using fields_tag = FieldsTag;
-  using initial_fields_tag =
-      db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
+  using initial_fields_tag = db::add_tag_prefix<::Tags::Initial, fields_tag>;
   using operator_applied_to_fields_tag =
       db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
   using operand_tag =
@@ -43,7 +43,7 @@ struct InitializeElement {
                          operand_tag>>;
   using orthogonalization_iteration_id_tag =
       LinearSolver::Tags::Orthogonalization<
-          LinearSolver::Tags::IterationId<OptionsGroup>>;
+          Convergence::Tags::IterationId<OptionsGroup>>;
   using basis_history_tag =
       LinearSolver::Tags::KrylovSubspaceBasis<operand_tag>;
 
@@ -59,11 +59,11 @@ struct InitializeElement {
                     const ParallelComponent* const /*meta*/) noexcept {
     auto initial_box = ::Initialization::merge_into_databox<
         InitializeElement,
-        db::AddSimpleTags<LinearSolver::Tags::IterationId<OptionsGroup>,
+        db::AddSimpleTags<Convergence::Tags::IterationId<OptionsGroup>,
                           initial_fields_tag, operator_applied_to_fields_tag,
                           operand_tag, operator_applied_to_operand_tag,
                           orthogonalization_iteration_id_tag, basis_history_tag,
-                          LinearSolver::Tags::HasConverged<OptionsGroup>>>(
+                          Convergence::Tags::HasConverged<OptionsGroup>>>(
         std::move(box),
         // The `PrepareSolve` action populates these tags with initial values,
         // except for `operator_applied_to_fields_tag` which is expected to be
