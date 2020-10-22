@@ -26,4 +26,5 @@ target_link_libraries(
   PRIVATE
   ErrorHandling
   Informer
+  Parallel
   )

@@ -16,6 +16,7 @@ set(LIBS_TO_LINK
   M1Grey
   M1GreySolutions
   Options
+  Parallel
   Time
   Utilities
   )

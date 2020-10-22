@@ -11,6 +11,7 @@ set(LIBS_TO_LINK
   LinearOperators
   MathFunctions
   Options
+  Parallel
   ParallelLinearSolver
   Poisson
   Utilities

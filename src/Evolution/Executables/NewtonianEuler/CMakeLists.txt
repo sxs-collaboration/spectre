@@ -18,6 +18,7 @@ set(LIBS_TO_LINK
   NewtonianEulerSolutions
   NewtonianEulerSources
   Options
+  Parallel
   Time
   Utilities
   )

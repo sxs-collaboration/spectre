@@ -13,6 +13,7 @@ set(LIBS_TO_LINK
   Limiters
   LinearOperators
   Options
+  Parallel
   Time
   Utilities
   )

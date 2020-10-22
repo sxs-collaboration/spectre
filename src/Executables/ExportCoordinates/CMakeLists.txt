@@ -8,6 +8,7 @@ set(LIBS_TO_LINK
   Informer
   IO
   Options
+  Parallel
   Time
   Utilities
   )
