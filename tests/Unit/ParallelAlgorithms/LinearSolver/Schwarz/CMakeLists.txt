@@ -4,6 +4,7 @@
 set(LIBRARY "Test_ParallelSchwarz")
 
 set(LIBRARY_SOURCES
+  Test_ComputeTags.cpp
   Test_ElementCenteredSubdomainData.cpp
   Test_OverlapHelpers.cpp
   Test_Tags.cpp
