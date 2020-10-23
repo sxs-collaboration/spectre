@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Affine.cpp
   BulgedCube.cpp
+  CylindricalEndcap.cpp
   DiscreteRotation.cpp
   EquatorialCompression.cpp
   Equiangular.cpp
@@ -33,6 +34,7 @@ spectre_target_headers(
   CoordinateMap.hpp
   CoordinateMap.tpp
   CoordinateMapHelpers.hpp
+  CylindricalEndcap.hpp
   DiscreteRotation.hpp
   EquatorialCompression.hpp
   Equiangular.hpp
@@ -61,6 +63,8 @@ target_link_libraries(
   DomainStructure
   ErrorHandling
   FunctionsOfTime
+  GSL::gsl
+  RootFinding
   )
 
 add_subdirectory(TimeDependent)
