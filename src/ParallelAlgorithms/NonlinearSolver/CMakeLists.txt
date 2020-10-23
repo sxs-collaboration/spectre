@@ -9,6 +9,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Observe.hpp
   Tags.hpp
   )
 
@@ -18,8 +19,15 @@ target_link_libraries(
   ErrorHandling
   Utilities
   INTERFACE
+  Convergence
   DataStructures
+  Informer
+  Initialization
+  IO
+  LinearSolver
   Options
+  Parallel
+  ParallelLinearSolver
   )
 
 add_subdirectory(NewtonRaphson)

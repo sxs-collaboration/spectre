@@ -1,0 +1,28 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Finding the roots of x^3 - x - b, where b is the `Source`
+Source: [1, 2, 3]
+InitialGuess: [0.6, 0.7, 0.8]
+ExpectedResult: [1.324717957244753, 1.521379706804575, 1.6716998816571695]
+
+NewtonRaphson:
+  ConvergenceCriteria:
+    MaxIterations: 8
+    AbsoluteResidual: 1.e-14
+    RelativeResidual: 0
+  Verbosity: Verbose
+  DampingFactor: 1.
+  SufficientDecrease: 1.e-4
+  MaxGlobalizationSteps: 40
+
+LinearSolver:
+  ConvergenceCriteria:
+    MaxIterations: 3
+    AbsoluteResidual: 1.e-14
+    RelativeResidual: 0
+  Verbosity: Quiet
+
+Observers:
+  VolumeFileName: "Test_NewtonRaphsonAlgorithm_Volume"
+  ReductionFileName: "Test_NewtonRaphsonAlgorithm_Reductions"
