@@ -107,23 +107,23 @@ class DormandPrince5 : public TimeStepper::Inherit {
  private:
   // Coefficients from the Dormand-Prince 5 Butcher tableau (e.g. Sec. 7.2
   // of \cite NumericalRecipes).
-  static constexpr double _a2 = 0.2;
-  static constexpr std::array<double, 2> _a3{{3.0 / 40.0, 9.0 / 40.0}};
-  static constexpr std::array<double, 3> _a4{
+  static constexpr double a2_ = 0.2;
+  static constexpr std::array<double, 2> a3_{{3.0 / 40.0, 9.0 / 40.0}};
+  static constexpr std::array<double, 3> a4_{
       {44.0 / 45.0, -56.0 / 15.0, 32.0 / 9.0}};
-  static constexpr std::array<double, 4> _a5{
+  static constexpr std::array<double, 4> a5_{
       {19372.0 / 6561.0, -25360.0 / 2187.0, 64448.0 / 6561.0, -212.0 / 729.0}};
-  static constexpr std::array<double, 5> _a6{{9017.0 / 3168.0, -355.0 / 33.0,
+  static constexpr std::array<double, 5> a6_{{9017.0 / 3168.0, -355.0 / 33.0,
                                               46732.0 / 5247.0, 49.0 / 176.0,
                                               -5103.0 / 18656.0}};
-  static constexpr std::array<double, 6> _b{{35.0 / 384.0, 0.0, 500.0 / 1113.0,
+  static constexpr std::array<double, 6> b_{{35.0 / 384.0, 0.0, 500.0 / 1113.0,
                                              125.0 / 192.0, -2187.0 / 6784.0,
                                              11.0 / 84.0}};
-  static const std::array<Time::rational_t, 5> _c;
+  static const std::array<Time::rational_t, 5> c_;
 
   // Coefficients for dense output, taken from Sec. 7.2 of
   // \cite NumericalRecipes
-  static constexpr std::array<double, 6> _d{
+  static constexpr std::array<double, 6> d_{
       {-12715105075.0 / 11282082432.0, 87487479700.0 / 32700410799.0,
        -10690763975.0 / 1880347072.0, 701980252875.0 / 199316789632.0,
        -1453857185.0 / 822651844.0, 69997945.0 / 29380423.0}};
@@ -156,19 +156,19 @@ void DormandPrince5::update_u(
   };
 
   if (substep == 0) {
-    *u += (_a2 * dt) * history->begin().derivative();
+    *u += (a2_ * dt) * history->begin().derivative();
   } else if (substep < 6) {
     *u = u0;
     if (substep == 1) {
-      increment_u(_a3);
+      increment_u(a3_);
     } else if (substep == 2) {
-      increment_u(_a4);
+      increment_u(a4_);
     } else if (substep == 3) {
-      increment_u(_a5);
+      increment_u(a5_);
     } else if (substep == 4) {
-      increment_u(_a6);
+      increment_u(a6_);
     } else {
-      increment_u(_b);
+      increment_u(b_);
     }
   } else {
     ERROR("Substep in DP5 should be one of 0,1,2,3,4,5, not " << substep);
@@ -206,7 +206,7 @@ void DormandPrince5::dense_update_u(const gsl::not_null<Vars*> u,
   const auto& u0 = history.begin().value();
   Vars u1 = u0;
   for (size_t i = 0; i < 6; ++i) {
-    u1 += (gsl::at(_b, i) * dt) *
+    u1 += (gsl::at(b_, i) * dt) *
           (history.begin() + static_cast<int>(i)).derivative();
   }
 
@@ -232,7 +232,7 @@ void DormandPrince5::dense_update_u(const gsl::not_null<Vars*> u,
                      (rcont3 + output_fraction *
                                    ((rcont2 - dt * l6 - rcont3) +
                                     ((1.0 - output_fraction) * dt) *
-                                        (_d[0] * l1 + _d[1] * l3 + _d[2] * l4 +
-                                         _d[3] * l5 + (_d[4] + _d[5]) * l6))));
+                                        (d_[0] * l1 + d_[1] * l3 + d_[2] * l4 +
+                                         d_[3] * l5 + (d_[4] + d_[5]) * l6))));
 }
 }  // namespace TimeSteppers

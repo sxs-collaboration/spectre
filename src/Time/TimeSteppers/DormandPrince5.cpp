@@ -40,15 +40,15 @@ TimeStepId DormandPrince5::next_time_id(const TimeStepId& current_id,
       ASSERT(t == t0, "In DP5 substep 0, the substep time ("
                           << t << ") should equal t0 (" << t0 << ")");
     } else {
-      ASSERT(t == t0 + gsl::at(_c, step - 1) * time_step,
+      ASSERT(t == t0 + gsl::at(c_, step - 1) * time_step,
              "In DP5 substep " << step << ", the substep time (" << t
                                << ") should equal t0+c[" << step - 1 << "]*dt ("
-                               << t0 + gsl::at(_c, step - 1) * time_step
+                               << t0 + gsl::at(c_, step - 1) * time_step
                                << ")");
     }
     if (step < 5) {
       return {current_id.time_runs_forward(), current_id.slab_number(), t0,
-              step + 1, t0 + gsl::at(_c, step) * time_step};
+              step + 1, t0 + gsl::at(c_, step) * time_step};
     } else {
       return {current_id.time_runs_forward(), current_id.slab_number(),
               t0 + time_step};
@@ -59,15 +59,15 @@ TimeStepId DormandPrince5::next_time_id(const TimeStepId& current_id,
   }
 }
 
-constexpr double DormandPrince5::_a2;
-constexpr std::array<double, 2> DormandPrince5::_a3;
-constexpr std::array<double, 3> DormandPrince5::_a4;
-constexpr std::array<double, 4> DormandPrince5::_a5;
-constexpr std::array<double, 5> DormandPrince5::_a6;
-constexpr std::array<double, 6> DormandPrince5::_b;
-const std::array<Time::rational_t, 5> DormandPrince5::_c = {
+constexpr double DormandPrince5::a2_;
+constexpr std::array<double, 2> DormandPrince5::a3_;
+constexpr std::array<double, 3> DormandPrince5::a4_;
+constexpr std::array<double, 4> DormandPrince5::a5_;
+constexpr std::array<double, 5> DormandPrince5::a6_;
+constexpr std::array<double, 6> DormandPrince5::b_;
+const std::array<Time::rational_t, 5> DormandPrince5::c_ = {
     {{1, 5}, {3, 10}, {4, 5}, {8, 9}, {1, 1}}};
-constexpr std::array<double, 6> DormandPrince5::_d;
+constexpr std::array<double, 6> DormandPrince5::d_;
 }  // namespace TimeSteppers
 
 /// \cond
