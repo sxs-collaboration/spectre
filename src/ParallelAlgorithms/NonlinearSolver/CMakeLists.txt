@@ -15,8 +15,11 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  ErrorHandling
   Utilities
   INTERFACE
   DataStructures
   Options
   )
+
+add_subdirectory(NewtonRaphson)

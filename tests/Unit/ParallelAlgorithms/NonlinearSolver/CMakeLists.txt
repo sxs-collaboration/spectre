@@ -13,3 +13,5 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "DataStructures;Utilities;ParallelNonlinearSolver"
   )
+
+add_subdirectory(NewtonRaphson)
