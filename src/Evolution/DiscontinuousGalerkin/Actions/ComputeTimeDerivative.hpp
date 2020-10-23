@@ -84,6 +84,52 @@ struct get_primitive_vars<true> {
   template <typename BoundaryCorrection>
   using f = typename BoundaryCorrection::dg_package_data_primitive_tags;
 };
+
+// Helper function to get parameter packs so we can forward `Tensor`s instead
+// of `Variables` to the boundary corrections. Returns the maximum absolute
+// char speed on the face, which can be used for setting or monitoring the CFL
+// without having to compute the speeds for each dimension in the volume.
+// Whether using only the face speeds is accurate enough to guarantee
+// stability is yet to be determined. However, if the CFL condition is
+// violated on the boundaries we are definitely in trouble, so it can at least
+// be used as a cheap diagnostic.
+template <typename System, typename BoundaryCorrection,
+          typename... PackagedFieldTags, typename... ProjectedFieldTags,
+          typename... ProjectedFieldTagsForCorrection, size_t Dim,
+          typename DbTagsList, typename... VolumeTags>
+double dg_package_data(
+    const gsl::not_null<Variables<tmpl::list<PackagedFieldTags...>>*>
+        packaged_data,
+    const BoundaryCorrection& boundary_correction,
+    const Variables<tmpl::list<ProjectedFieldTags...>>& projected_fields,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_covector,
+    const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+        mesh_velocity,
+    const db::DataBox<DbTagsList>& box, tmpl::list<VolumeTags...> /*meta*/,
+    tmpl::list<ProjectedFieldTagsForCorrection...> /*meta*/) noexcept {
+  std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
+  if (mesh_velocity.has_value()) {
+    normal_dot_mesh_velocity =
+        dot_product(*mesh_velocity, unit_normal_covector);
+  }
+
+  if constexpr (evolution::dg::Actions::detail::
+                    has_inverse_spatial_metric_tag_v<System>) {
+    return boundary_correction.dg_package_data(
+        make_not_null(&get<PackagedFieldTags>(*packaged_data))...,
+        get<ProjectedFieldTagsForCorrection>(projected_fields)...,
+        unit_normal_covector,
+        get<evolution::dg::Actions::detail::NormalVector<Dim>>(
+            projected_fields),
+        mesh_velocity, normal_dot_mesh_velocity, db::get<VolumeTags>(box)...);
+  } else {
+    return boundary_correction.dg_package_data(
+        make_not_null(&get<PackagedFieldTags>(*packaged_data))...,
+        get<ProjectedFieldTagsForCorrection>(projected_fields)...,
+        unit_normal_covector, mesh_velocity, normal_dot_mesh_velocity,
+        db::get<VolumeTags>(box)...);
+  }
+}
 }  // namespace detail
 
 /*!
@@ -391,47 +437,6 @@ struct ComputeTimeDerivative {
           ::Tags::Flux, typename Metavariables::system::flux_variables,
           tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes,
       const Variables<TemporaryTags>& volume_temporaries) noexcept;
-
-  // Helper function to get parameter packs so we can forward `Tensor`s instead
-  // of `Variables` to the boundary corrections. Returns the maximum absolute
-  // char speed on the face, which can be used for setting or monitoring the CFL
-  // without having to compute the speeds for each dimension in the volume.
-  // Whether using only the face speeds is accurate enough to guarantee
-  // stability is yet to be determined. However, if the CFL condition is
-  // violated on the boundaries we are definitely in trouble, so it can at least
-  // be used as a cheap diagnostic.
-  template <typename BoundaryCorrection, typename... PackagedFieldTags,
-            typename... ProjectedFieldTags,
-            typename... ProjectedFieldTagsForCorrection, size_t Dim,
-            typename DbTagsList, typename... VolumeTags>
-  static double dg_package_data(
-      const gsl::not_null<Variables<tmpl::list<PackagedFieldTags...>>*>
-          packaged_data,
-      const BoundaryCorrection& boundary_correction,
-      const Variables<tmpl::list<ProjectedFieldTags...>>& projected_fields,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_covector,
-      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
-          mesh_velocity,
-      const db::DataBox<DbTagsList>& box, tmpl::list<VolumeTags...> /*meta*/,
-      tmpl::list<ProjectedFieldTagsForCorrection...> /*meta*/) noexcept {
-    std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
-    if (mesh_velocity.has_value()) {
-      normal_dot_mesh_velocity =
-          dot_product(*mesh_velocity, unit_normal_covector);
-    }
-
-    if constexpr (BoundaryCorrection::need_normal_vector) {
-      ERROR(
-          "Not yet able to compute the normal vector, only the normal "
-          "covector.");
-    } else {
-      return boundary_correction.dg_package_data(
-          make_not_null(&get<PackagedFieldTags>(*packaged_data))...,
-          get<ProjectedFieldTagsForCorrection>(projected_fields)...,
-          unit_normal_covector, mesh_velocity, normal_dot_mesh_velocity,
-          db::get<VolumeTags>(box)...);
-    }
-  }
 
   // The below functions will be removed once we've finished writing the new
   // method of handling boundaries.
@@ -921,8 +926,13 @@ void ComputeTimeDerivative<Metavariables>::compute_internal_mortar_data(
                                                 volume_fluxes, volume_mesh,
                                                 local_direction);
           }
-          if constexpr (tmpl::size<temporary_tags_for_face>::value != 0) {
-            project_tensors_to_boundary<temporary_tags_for_face>(
+          if constexpr (tmpl::size<tmpl::append<
+                            temporary_tags_for_face,
+                            detail::inverse_spatial_metric_tag<system>>>::
+                            value != 0) {
+            project_tensors_to_boundary<
+                tmpl::append<temporary_tags_for_face,
+                             detail::inverse_spatial_metric_tag<system>>>(
                 make_not_null(&fields_on_face), volume_temporaries, volume_mesh,
                 local_direction);
           }
@@ -964,16 +974,17 @@ void ComputeTimeDerivative<Metavariables>::compute_internal_mortar_data(
           Variables<mortar_tags_list> packaged_data{
               face_mesh.number_of_grid_points()};
           // The DataBox is passed in for retrieving the `volume_tags`
-          const double max_abs_char_speed_on_face = dg_package_data(
-              make_not_null(&packaged_data), boundary_correction,
-              fields_on_face,
-              get<evolution::dg::Tags::InternalFace::NormalCovector<Dim>>(
-                  *db::get<evolution::dg::Tags::InternalFace::
-                               NormalCovectorAndMagnitude<Dim>>(*box)
-                       .at(local_direction)),
-              face_mesh_velocities.at(local_direction), *box,
-              typename BoundaryCorrection::dg_package_data_volume_tags{},
-              dg_package_data_projected_tags{});
+          const double max_abs_char_speed_on_face =
+              detail::dg_package_data<system>(
+                  make_not_null(&packaged_data), boundary_correction,
+                  fields_on_face,
+                  get<evolution::dg::Tags::InternalFace::NormalCovector<Dim>>(
+                      *db::get<evolution::dg::Tags::InternalFace::
+                                   NormalCovectorAndMagnitude<Dim>>(*box)
+                           .at(local_direction)),
+                  face_mesh_velocities.at(local_direction), *box,
+                  typename BoundaryCorrection::dg_package_data_volume_tags{},
+                  dg_package_data_projected_tags{});
           (void)max_abs_char_speed_on_face;
 
           // Perform step 3
