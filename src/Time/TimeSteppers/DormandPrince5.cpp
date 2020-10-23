@@ -59,15 +59,8 @@ TimeStepId DormandPrince5::next_time_id(const TimeStepId& current_id,
   }
 }
 
-constexpr double DormandPrince5::a2_;
-constexpr std::array<double, 2> DormandPrince5::a3_;
-constexpr std::array<double, 3> DormandPrince5::a4_;
-constexpr std::array<double, 4> DormandPrince5::a5_;
-constexpr std::array<double, 5> DormandPrince5::a6_;
-constexpr std::array<double, 6> DormandPrince5::b_;
 const std::array<Time::rational_t, 5> DormandPrince5::c_ = {
     {{1, 5}, {3, 10}, {4, 5}, {8, 9}, {1, 1}}};
-constexpr std::array<double, 6> DormandPrince5::d_;
 }  // namespace TimeSteppers
 
 /// \cond
