@@ -39,6 +39,9 @@ namespace Cce::InterfaceManagers {
  * time steps via `GhLocalTimeStepping::request_gh_data()` and receives dense
  * output boundary data via
  * `GhLocalTimeStepping::retrieve_and_remove_first_ready_gh_data()`.
+ *
+ * \warning To use this interface manager, the CCE system must evolve using a
+ * local time-stepping compatible stepper, such as `AdamsBashforthN`.
  */
 class GhLocalTimeStepping : public GhInterfaceManager {
  public:
