@@ -52,3 +52,5 @@ target_link_libraries(
   Valencia
   VariableFixing
   )
+
+add_subdirectory(BoundaryCorrections)
