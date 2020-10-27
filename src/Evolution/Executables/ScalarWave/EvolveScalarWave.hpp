@@ -51,6 +51,7 @@
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"      // IWYU pragma: keep
+#include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
@@ -152,6 +153,7 @@ struct EvolutionMetavars {
                      Dim, Tags::Time, observe_fields, analytic_solution_fields>,
                  dg::Events::Registrars::ObserveErrorNorms<
                      Tags::Time, analytic_solution_fields>,
+                 Events::Registrars::ObserveTimeStep<EvolutionMetavars>,
                  Events::Registrars::ChangeSlabSize<slab_choosers>>;
   using triggers = Triggers::time_triggers;
 
