@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   OverlapHelpers.cpp
+  Weighting.cpp
   )
 
 spectre_target_headers(
@@ -18,6 +19,7 @@ spectre_target_headers(
   ElementCenteredSubdomainData.hpp
   OverlapHelpers.hpp
   Schwarz.hpp
+  Weighting.hpp
   )
 
 target_link_libraries(
@@ -26,7 +28,6 @@ target_link_libraries(
   Boost::boost
   DataStructures
   DomainStructure
-  PRIVATE
   ErrorHandling
   Utilities
   INTERFACE

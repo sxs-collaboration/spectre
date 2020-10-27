@@ -60,6 +60,13 @@ SPECTRE_TEST_CASE("Unit.Utilities.Math", "[Unit][Utilities]") {
     test_smoothstep<1>();
     test_smoothstep<2>();
     test_smoothstep<3>();
+    // Test a case that failed in Release builds when a static_cast was missing
+    CHECK_ITERABLE_APPROX(
+        smoothstep<2>(0., 2.,
+                      DataVector({-2., -1.5, -1., -0.5, -0.25, 0., 0.25, 0.5,
+                                  1., 1.5, 2.})),
+        DataVector({0., 0., 0., 0., 0., 0., 1.605224609375e-02, 1.03515625e-01,
+                    0.5, 8.96484375e-01, 1.}));
   }
 
   {

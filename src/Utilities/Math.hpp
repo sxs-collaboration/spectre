@@ -121,8 +121,9 @@ DataType smoothstep(const double lower_edge, const double upper_edge,
           return {0., 0., 0., 0., 35., -84., 70., -20.};
         }
       }(),
-      static_cast<DataType>(
-          clamp((arg - lower_edge) / (upper_edge - lower_edge), 0., 1.)));
+      static_cast<DataType>(clamp(
+          static_cast<DataType>((arg - lower_edge) / (upper_edge - lower_edge)),
+          0., 1.)));
 }
 
 /// \ingroup UtilitiesGroup
