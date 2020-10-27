@@ -21,6 +21,7 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
                         "python 2, which is deprecated. GenerateXdmf.py might "
                         "hang or run very slowly using python 2. Please use "
                         "python 3 instead.")
+
     h5files = [(h5py.File(filename, 'r'), filename)
                for filename in glob.glob(file_prefix + "*.h5")]
 
@@ -254,6 +255,7 @@ def parse_args():
     parser.add_argument(
         '--subfile-name',
         '-d',
+        required=True,
         help="Name of the volume data subfile in the H5 files, excluding the "
         "'.vol' extension")
     parser.add_argument("--stride",
