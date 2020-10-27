@@ -75,7 +75,7 @@ using options_in_group = tmpl::filter<OptionList, is_in_group<tmpl::_1, Group>>;
 // information.
 template <typename T>
 struct yaml_type {
-  static std::string value() noexcept { return pretty_type::get_name<T>(); }
+  static std::string value() noexcept { return pretty_type::short_name<T>(); }
 };
 
 template <typename T>
