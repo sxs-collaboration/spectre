@@ -29,6 +29,10 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
         file_prefix)
 
     element_data = h5files[0][0].get(subfile_name + '.vol')
+    if element_data is None:
+        raise ValueError(("Could not open subfile name '{}.vol'. Available "
+                          "subfiles: {}").format(subfile_name,
+                                                 h5files[0][0].keys()))
     temporal_ids_and_values = [(x,
                                 element_data.get(x).attrs['observation_value'])
                                for x in element_data.keys()]
