@@ -19,40 +19,6 @@
 
 // IWYU pragma: no_include <algorithm>
 
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.DataVector.ExpressionAssignError",
-    "[Unit][DataStructures]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TestHelpers::VectorImpl::vector_ref_test_size_error<DataVector>(
-      TestHelpers::VectorImpl::RefSizeErrorTestKind::ExpressionAssign);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.RefDiffSize",
-                               "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TestHelpers::VectorImpl::vector_ref_test_size_error<DataVector>(
-      TestHelpers::VectorImpl::RefSizeErrorTestKind::Copy);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.MoveRefDiffSize",
-                               "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TestHelpers::VectorImpl::vector_ref_test_size_error<DataVector>(
-      TestHelpers::VectorImpl::RefSizeErrorTestKind::Move);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
 void test_data_vector_unary_math() noexcept {
   /// [test_functions_with_vector_arguments_example]
   const TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};

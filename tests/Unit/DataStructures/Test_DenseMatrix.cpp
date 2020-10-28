@@ -67,11 +67,3 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DenseMatrix", "[DataStructures][Unit]") {
   CHECK(TestHelpers::test_creation<DenseMatrix<double, blaze::rowMajor>>(
             "[[], [], []]") == DenseMatrix<double>(3, 0));
 }
-
-// [[OutputRegex, All matrix columns must have the same size.]]
-SPECTRE_TEST_CASE("Unit.DataStructures.DenseMatrix.InvalidOptions",
-                  "[DataStructures][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<DenseMatrix<double, blaze::rowMajor>>(
-      "[[1], [1, 2], [1, 2]]");
-}

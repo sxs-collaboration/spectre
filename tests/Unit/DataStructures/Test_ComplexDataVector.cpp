@@ -17,42 +17,6 @@
 
 // IWYU pragma: no_include "DataStructures/DenseMatrix.hpp"
 
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.ComplexDataVector.ExpressionAssignError",
-    "[Unit][DataStructures]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TestHelpers::VectorImpl::vector_ref_test_size_error<ComplexDataVector>(
-      TestHelpers::VectorImpl::RefSizeErrorTestKind::ExpressionAssign);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.ComplexDataVector.RefDiffSize",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TestHelpers::VectorImpl::vector_ref_test_size_error<ComplexDataVector>(
-      TestHelpers::VectorImpl::RefSizeErrorTestKind::Copy);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.ComplexDataVector.MoveRefDiffSize",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  TestHelpers::VectorImpl::vector_ref_test_size_error<ComplexDataVector>(
-      TestHelpers::VectorImpl::RefSizeErrorTestKind::Move);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
 void test_complex_data_vector_math() noexcept {
   const TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
   const TestHelpers::VectorImpl::Bound mone_one{{-1.0, 1.0}};
