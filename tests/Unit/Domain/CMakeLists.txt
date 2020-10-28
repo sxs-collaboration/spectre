@@ -27,6 +27,7 @@ set(LIBRARY_SOURCES
   )
 
 add_subdirectory(Amr)
+add_subdirectory(BoundaryConditions)
 add_subdirectory(CoordinateMaps)
 add_subdirectory(Creators)
 add_subdirectory(Structure)
