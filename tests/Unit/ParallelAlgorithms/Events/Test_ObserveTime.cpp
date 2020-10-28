@@ -44,7 +44,7 @@
 // IWYU pragma: no_include "DataStructures/DataBox/Prefixes.hpp"  // for Variables
 
 // IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare dg::Events::ObserveErrorNorms
+// IWYU pragma: no_forward_declare dg::Events::ObserveTime
 namespace PUP {
 class er;
 }  // namespace PUP
