@@ -16,6 +16,9 @@
 #include <vector>
 
 #include "DataStructures/VectorImpl.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Framework/TestingFramework.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/DereferenceWrapper.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
@@ -26,9 +29,6 @@
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/GetFundamentalType.hpp"
 #include "Utilities/TypeTraits/IsComplexOfFundamental.hpp"
-#include "Framework/TestHelpers.hpp"
-#include "Framework/TestingFramework.hpp"
-#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 
 namespace TestHelpers {
 namespace VectorImpl {
@@ -77,6 +77,7 @@ void vector_test_construct_and_assign(
   CHECK(gsl::at(initializer_list_constructed, 0) == generated_value2);
   CHECK(gsl::at(initializer_list_constructed, 1) == generated_value3);
 
+  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
   typename VectorType::value_type raw_ptr[2] = {generated_value2,
                                                 generated_value3};
   const VectorType pointer_size_constructed{
@@ -128,7 +129,8 @@ void vector_test_serialize(tt::get_fundamental_type_t<ValueType> low =
   UniformCustomDistribution<size_t> sdist{2, 20};
 
   const size_t size = sdist(gen);
-  VectorType vector_test{size}, vector_control{size};
+  VectorType vector_test{size};
+  VectorType vector_control{size};
   VectorType vector_ref;
   const auto start_value = make_with_random_values<ValueType>(
       make_not_null(&gen), make_not_null(&dist));
@@ -172,7 +174,7 @@ void vector_test_ref(tt::get_fundamental_type_t<ValueType> low =
   UniformCustomDistribution<size_t> sdist{2, 20};
 
   const size_t size = sdist(gen);
-  VectorType original_vector = make_with_random_values<VectorType>(
+  auto original_vector = make_with_random_values<VectorType>(
       make_not_null(&gen), make_not_null(&dist), VectorType{size});
 
   {
@@ -206,7 +208,7 @@ void vector_test_ref(tt::get_fundamental_type_t<ValueType> low =
     INFO("Check move acts appropriately on both source and target refs")
     VectorType ref_original_vector;
     ref_original_vector.set_data_ref(&original_vector);
-    VectorType generated_vector = make_with_random_values<VectorType>(
+    auto generated_vector = make_with_random_values<VectorType>(
         make_not_null(&gen), make_not_null(&dist), VectorType{size});
     const VectorType generated_vector_copy = generated_vector;
     ref_original_vector = std::move(generated_vector);
@@ -276,13 +278,12 @@ void vector_ref_test_size_error(
   UniformCustomDistribution<size_t> sdist{2, 20};
 
   const size_t size = sdist(gen);
-  VectorType generated_vector = make_with_random_values<VectorType>(
+  auto generated_vector = make_with_random_values<VectorType>(
       make_not_null(&gen), make_not_null(&dist), VectorType{size});
   VectorType ref_generated_vector;
   ref_generated_vector.set_data_ref(&generated_vector);
-  const VectorType larger_generated_vector =
-      make_with_random_values<VectorType>(
-          make_not_null(&gen), make_not_null(&dist), VectorType{size + 1});
+  const auto larger_generated_vector = make_with_random_values<VectorType>(
+      make_not_null(&gen), make_not_null(&dist), VectorType{size + 1});
   // each of the following options should error, the reference should have
   // received the wrong size
   if (test_kind == RefSizeErrorTestKind::Copy) {
@@ -318,11 +319,11 @@ void vector_test_math_after_move(
   const auto sum_generated_values = generated_value1 + generated_value2;
   const auto difference_generated_values = generated_value1 - generated_value2;
 
-  const VectorType vector_math_lhs{size, generated_value1},
-      vector_math_rhs{size, generated_value2};
+  const VectorType vector_math_lhs{size, generated_value1};
+  const VectorType vector_math_rhs{size, generated_value2};
   {
     INFO("Check move assignment and use after move");
-    VectorType from_vector = make_with_random_values<VectorType>(
+    auto from_vector = make_with_random_values<VectorType>(
         make_not_null(&gen), make_not_null(&dist), VectorType{size});
     VectorType to_vector{};
     to_vector = std::move(from_vector);
@@ -350,7 +351,7 @@ void vector_test_math_after_move(
   }
   {
     INFO("Check move constructor and use after move")
-    VectorType from_vector = make_with_random_values<VectorType>(
+    auto from_vector = make_with_random_values<VectorType>(
         make_not_null(&gen), make_not_null(&dist), VectorType{size});
     VectorType to_vector{std::move(from_vector)};
     to_vector = vector_math_lhs + vector_math_rhs;
