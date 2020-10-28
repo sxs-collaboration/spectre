@@ -118,130 +118,30 @@ struct MockObserverComponent {
                                         tmpl::list<>>>;
 };
 
-template <typename System>
 struct Metavariables {
-  using system = System;
   using component_list = tmpl::list<ElementComponent<Metavariables>,
                                     MockObserverComponent<Metavariables>>;
-  using const_global_cache_tags =
-      tmpl::list<Tags::AnalyticSolution<typename System::solution_for_test>>;
+  using const_global_cache_tags = tmpl::list<>; // unused
   enum class Phase { Initialization, Testing, Exit };
 };
 
-// Test systems
-
-struct ScalarSystem {
-  struct ScalarVar : db::SimpleTag {
-    static std::string name() noexcept { return "Scalar"; }
-    using type = Scalar<DataVector>;
-  };
-
-  static constexpr size_t volume_dim = 1;
-  using vars_for_test = tmpl::list<ScalarVar>;
-  struct solution_for_test {
-    template <typename CheckTensor>
-    static void check_data(const CheckTensor& check_tensor) noexcept {
-      check_tensor("Error(Scalar)", ScalarVar{});
-    }
-
-    static tuples::tagged_tuple_from_typelist<vars_for_test> variables(
-        const tnsr::I<DataVector, 1>& x, const double t,
-        const vars_for_test /*meta*/) noexcept {
-      return {Scalar<DataVector>{1.0 - t * get<0>(x)}};
-    }
-
-    void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
-  };
-};
-
-struct ComplicatedSystem {
-  struct ScalarVar : db::SimpleTag {
-    static std::string name() noexcept { return "Scalar"; }
-    using type = Scalar<DataVector>;
-  };
-
-  struct VectorVar : db::SimpleTag {
-    static std::string name() noexcept { return "Vector"; }
-    using type = tnsr::I<DataVector, 2>;
-  };
-
-  struct TensorVar : db::SimpleTag {
-    static std::string name() noexcept { return "Tensor"; }
-    using type = tnsr::ii<DataVector, 2>;
-  };
-
-  struct TensorVar2 : db::SimpleTag {
-    static std::string name() noexcept { return "Tensor2"; }
-    using type = tnsr::ii<DataVector, 2>;
-  };
-
-  static constexpr size_t volume_dim = 2;
-  using vars_for_test = tmpl::list<VectorVar, TensorVar2>;
-  struct solution_for_test {
-    template <typename CheckTensor>
-    static void check_data(const CheckTensor& check_tensor) noexcept {
-      check_tensor("Error(Vector)", VectorVar{});
-      check_tensor("Error(Tensor2)", TensorVar2{});
-    }
-
-    static tuples::tagged_tuple_from_typelist<vars_for_test> variables(
-        const tnsr::I<DataVector, 2>& x, const double t,
-        const vars_for_test /*meta*/) noexcept {
-      auto vector = make_with_value<tnsr::I<DataVector, 2>>(x, 0.0);
-      auto tensor = make_with_value<tnsr::ii<DataVector, 2>>(x, 0.0);
-      // Arbitrary functions
-      get<0>(vector) = 1.0 - t * get<0>(x);
-      get<1>(vector) = 1.0 - t * get<1>(x);
-      get<0, 0>(tensor) = get<0>(x) + get<1>(x);
-      get<0, 1>(tensor) = get<0>(x) - get<1>(x);
-      get<1, 1>(tensor) = get<0>(x) * get<1>(x);
-      return {std::move(vector), std::move(tensor)};
-    }
-
-    void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
-  };
-};
-
-template <typename System, typename ObserveEvent>
+template <typename ObserveEvent>
 void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
-  constexpr size_t volume_dim = System::volume_dim;
   using metavariables = Metavariables<System>;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
-  using coordinates_tag =
-      domain::Tags::Coordinates<volume_dim, Frame::Inertial>;
 
   const typename element_component::array_index array_index(0);
-  const size_t num_points = 5;
   const double observation_time = 2.0;
-  Variables<tmpl::push_back<typename System::vars_for_test, coordinates_tag>>
-      vars(num_points);
-  // Fill the variables with some data.  It doesn't matter much what,
-  // but integers are nice in that we don't have to worry about
-  // roundoff error.
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  std::iota(vars.data(), vars.data() + vars.size(), 1.0);
 
-  const typename System::solution_for_test analytic_solution{};
-  using solution_variables = typename System::vars_for_test;
-  const Variables<db::wrap_tags_in<Tags::Analytic, solution_variables>>
-      solutions{variables_from_tagged_tuple(analytic_solution.variables(
-          get<coordinates_tag>(vars), observation_time, solution_variables{}))};
-  const Variables<solution_variables> errors =
-      vars.template extract_subset<solution_variables>() - solutions;
-
-  ActionTesting::MockRuntimeSystem<metavariables> runner(
-      tuples::TaggedTuple<
-          Tags::AnalyticSolution<typename System::solution_for_test>>{
-          std::move(analytic_solution)});
+  ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
   ActionTesting::emplace_component<element_component>(make_not_null(&runner),
                                                       0);
   ActionTesting::emplace_component<observer_component>(&runner, 0);
 
   const auto box = db::create<db::AddSimpleTags<
-      ObservationTimeTag, Tags::Variables<typename decltype(vars)::tags_list>,
-      db::add_tag_prefix<Tags::Analytic, Tags::Variables<solution_variables>>>>(
-      observation_time, vars, solutions);
+      ObservationTimeTag, Tags::Variables<typename decltype(vars)::tags_list>>>(
+      observation_time, vars);
 
   const auto ids_to_register =
       observers::get_registration_observation_type_and_key(*observe, box);
@@ -259,47 +159,8 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
 
   const auto& results = MockContributeReductionData::results;
   CHECK(results.observation_id.value() == observation_time);
-  CHECK(results.subfile_name == "/reduction0");
-  CHECK(results.reduction_names[0] == "ObservationTimeTag");
-  CHECK(results.time == observation_time);
-  CHECK(results.reduction_names[1] == "NumberOfPoints");
-  CHECK(results.number_of_grid_points == num_points);
-  CHECK(results.reduction_names.size() == results.errors.size() + 2);
-
-  size_t num_tensors_observed = 0;
-  // Clang 6 believes the capture of results to be
-  // incorrect, presumably because it is checking the storage duration
-  // of the object referenced by reduction_results, rather than
-  // reduction_results itself.  gcc (correctly, I believe) requires
-  // the capture.
-#if defined(__clang__) && __clang_major__ > 4
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-lambda-capture"
-#endif  // __clang__
-  System::solution_for_test::check_data([
-    &errors, &num_tensors_observed, &results
-  ](const std::string& name, auto tag) noexcept {
-#if defined(__clang__) && __clang_major__ > 4
-#pragma GCC diagnostic pop
-#endif  // __clang__
-    double expected = 0.0;
-    for (const auto& component : get<decltype(tag)>(errors)) {
-      // The rest of the RMS calculation is done later by the writer.
-      expected += alg::accumulate(square(component), 0.0);
-    }
-
-    CAPTURE(results.reduction_names);
-    CAPTURE(name);
-    const auto it = alg::find(results.reduction_names, name);
-    CHECK(it != results.reduction_names.end());
-    if (it != results.reduction_names.end()) {
-      CHECK(results.errors[static_cast<size_t>(
-                               it - results.reduction_names.begin()) -
-                           2] == expected);
-    }
-    ++num_tensors_observed;
-  });
-  CHECK(results.errors.size() == num_tensors_observed);
+  CHECK(results.reduction_names[0] == "StringToPrint");
+  CHECK(results.info_to_print == "???");
 }
 
 template <typename System>
