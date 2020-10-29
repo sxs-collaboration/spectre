@@ -68,7 +68,7 @@ struct MockContributeReductionData {
   struct Results {
     observers::ObservationId observation_id;
     std::vector<std::string> reduction_names;
-    String info_to_print;
+    std::string info_to_print;
   };
   static Results results;
 
