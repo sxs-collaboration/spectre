@@ -147,7 +147,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   const auto ids_to_register =
       observers::get_registration_observation_type_and_key(*observe, box);
   const observers::ObservationKey expected_observation_key_for_reg(
-      "/reduction0.dat");
+      "PrintTime");
   CHECK(ids_to_register->first == observers::TypeOfObservation::Reduction);
   CHECK(ids_to_register->second == expected_observation_key_for_reg);
 
@@ -167,7 +167,7 @@ void test_system() noexcept {
   INFO("Testing time observation");
   test_observe(
       std::make_unique<dg::Events::ObserveTime<
-          ObservationTimeTag>>("reduction0"));
+          ObservationTimeTag>>("PrintTime"));
 
   INFO("create/serialize");
   using EventType = Event<tmpl::list<dg::Events::Registrars::ObserveTime<
@@ -175,7 +175,7 @@ void test_system() noexcept {
   Parallel::register_derived_classes_with_charm<EventType>();
   const auto factory_event = TestHelpers::test_factory_creation<EventType>(
       "ObserveTime:\n"
-      "  PrintTag: reduction0");
+      "  PrintTag: PrintTime");
   auto serialized_event = serialize_and_deserialize(factory_event);
   test_observe(std::move(serialized_event));
 }
