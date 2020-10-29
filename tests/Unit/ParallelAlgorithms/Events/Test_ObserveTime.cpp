@@ -29,7 +29,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
+#include "ParallelAlgorithms/Events/ObserveTime.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/Algorithm.hpp"
@@ -163,26 +163,24 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   CHECK(results.info_to_print == "???");
 }
 
-template <typename System>
 void test_system() noexcept {
-  INFO(pretty_type::get_name<System>());
-  test_observe<System>(
-      std::make_unique<dg::Events::ObserveErrorNorms<
+  INFO("Testing time observation");
+  test_observe(
+      std::make_unique<dg::Events::ObserveTime<
           ObservationTimeTag, typename System::vars_for_test>>("reduction0"));
 
   INFO("create/serialize");
-  using EventType = Event<tmpl::list<dg::Events::Registrars::ObserveErrorNorms<
+  using EventType = Event<tmpl::list<dg::Events::Registrars::ObserveTime<
       ObservationTimeTag, typename System::vars_for_test>>>;
   Parallel::register_derived_classes_with_charm<EventType>();
   const auto factory_event = TestHelpers::test_factory_creation<EventType>(
-      "ObserveErrorNorms:\n"
-      "  SubfileName: reduction0");
+      "ObserveTime:\n"
+      "  PrintTag: reduction0");
   auto serialized_event = serialize_and_deserialize(factory_event);
-  test_observe<System>(std::move(serialized_event));
+  test_observe(std::move(serialized_event));
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveErrorNorms", "[Unit][Evolution]") {
-  test_system<ScalarSystem>();
-  test_system<ComplicatedSystem>();
+SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveTime", "[Unit][Evolution]") {
+  test_system();
 }
