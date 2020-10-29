@@ -6,10 +6,13 @@
 #include <string>
 
 #include "AlgorithmArray.hpp"
+#include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
+#include "Domain/MinimumGridSpacing.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
@@ -35,11 +38,13 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/TimeTriggers.hpp"
 #include "Utilities/Blas.hpp"
+#include "Utilities/Functional.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -110,7 +115,66 @@ struct ExportCoordinates {
     return std::forward_as_tuple(std::move(box));
   }
 };
+
+struct PrintGlobalMinimumGridSpacing {
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex>
+  static void apply(const db::DataBox<DbTags>& /*box*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/, const double time,
+                    const double global_min_grid_spacing) noexcept {
+    Parallel::printf(
+        "Time: %1.3e, Global inertial minimum grid spacing: %1.3e\n", time,
+        global_min_grid_spacing);
+  }
+};
 }  // namespace Actions
+
+template <typename Metavariables>
+struct SingletonParallelComponent {
+  using chare_type = Parallel::Algorithms::Singleton;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using metavariables = Metavariables;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
+                                        Metavariables::Phase::Initialization,
+                                        tmpl::list<>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
+
+  static void execute_next_phase(
+      const typename Metavariables::Phase /*next_phase*/,
+      const Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
+};
+
+struct FindGlobalMinimumGridSpacing {
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            size_t Dim, typename ActionList,
+            typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& cache,
+      const ElementId<Dim>& element_id, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    const auto& element_proxy =
+        Parallel::get_parallel_component<ParallelComponent>(cache)[element_id];
+    const auto& singleton_proxy = Parallel::get_parallel_component<
+        SingletonParallelComponent<Metavariables>>(cache);
+
+    Parallel::ReductionData<
+        Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
+        Parallel::ReductionDatum<double, funcl::Min<>>>
+        time_and_elemental_min_grid_spacing(
+            get<Tags::Time>(box),
+            get<domain::Tags::MinimumGridSpacing<Dim, Frame::Inertial>>(box));
+    Parallel::contribute_to_reduction<Actions::PrintGlobalMinimumGridSpacing>(
+        std::move(time_and_elemental_min_grid_spacing), element_proxy,
+        singleton_proxy);
+
+    return {std::move(box)};
+  }
+};
 
 template <size_t Dim>
 struct Metavariables {
@@ -143,6 +207,9 @@ struct Metavariables {
                   tmpl::list<
                       Initialization::Actions::TimeAndTimeStep<Metavariables>,
                       evolution::dg::Initialization::Domain<Dim>,
+                      Initialization::Actions::AddComputeTags<
+                          domain::Tags::MinimumGridSpacingCompute<
+                              Dim, Frame::Inertial>>,
                       ::Initialization::Actions::
                           RemoveOptionsAndTerminatePhase>>,
               Parallel::PhaseActions<
@@ -155,9 +222,11 @@ struct Metavariables {
                   typename Metavariables::Phase, Metavariables::Phase::Export,
                   tmpl::list<Actions::AdvanceTime,
                              Actions::ExportCoordinates<Dim>,
+                             FindGlobalMinimumGridSpacing,
                              Actions::RunEventsAndTriggers>>>>,
       observers::Observer<Metavariables>,
-      observers::ObserverWriter<Metavariables>>;
+      observers::ObserverWriter<Metavariables>,
+      SingletonParallelComponent<Metavariables>>;
 
   using observed_reduction_data_tags = tmpl::list<>;
 
