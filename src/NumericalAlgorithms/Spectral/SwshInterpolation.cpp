@@ -13,6 +13,7 @@
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
+#include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
@@ -351,8 +352,12 @@ SwshInterpolator::SwshInterpolator(const DataVector& theta,
 template <int Spin>
 void SwshInterpolator::interpolate(
     const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> interpolated,
-    const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes) const
-    noexcept {
+    const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes)
+    const noexcept {
+  ASSERT(l_max_ != 0,
+         "Attempting to perform interpolation with a default-constructed "
+         "SwshInterpolator. The SwshInterpolator must be constructed with the "
+         "angular coordinates to perform interpolation.");
   interpolated->destructive_resize(cos_theta_.size());
   interpolated->data() = 0.0;
 
@@ -411,8 +416,12 @@ void SwshInterpolator::interpolate(
 template <int Spin>
 void SwshInterpolator::interpolate(
     const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> interpolated,
-    const SpinWeighted<ComplexDataVector, Spin>& libsharp_collocation) const
-    noexcept {
+    const SpinWeighted<ComplexDataVector, Spin>& libsharp_collocation)
+    const noexcept {
+  ASSERT(l_max_ != 0,
+         "Attempting to perform interpolation with a default-constructed "
+         "SwshInterpolator. The SwshInterpolator must be constructed with the "
+         "angular coordinates to perform interpolation.");
   SpinWeighted<ComplexModalVector, Spin> libsharp_modes;
   // this function is 'const', but modifies the internal buffer. The reason to
   // allow it to be 'const' anyways is that no interface makes any assumption
@@ -432,6 +441,11 @@ template <int Spin>
 void SwshInterpolator::direct_evaluation_swsh_at_l_min(
     const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> harmonic,
     const int m) const noexcept {
+  ASSERT(l_max_ != 0,
+         "Attempting to perform spin-weighted evaluation with a "
+         "default-constructed SwshInterpolator. The SwshInterpolator must be "
+         "constructed with the angular coordinates to perform function "
+         "evaluation.");
   const auto& clenshaw_factors = cached_clenshaw_factors<Spin>(l_max_);
   // for this evaluation, we don't worry about recurrence because it will only
   // be called for m between -s and +s, and s should always be small. In
@@ -455,6 +469,11 @@ void SwshInterpolator::evaluate_swsh_at_l_min_plus_one(
     const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> harmonic,
     const SpinWeighted<ComplexDataVector, Spin>& harmonic_at_l_min,
     const int m) const noexcept {
+  ASSERT(l_max_ != 0,
+         "Attempting to perform spin-weighted evaluation with a "
+         "default-constructed SwshInterpolator. The SwshInterpolator must be "
+         "constructed with the angular coordinates to perform function "
+         "evaluation.");
   const auto& clenshaw_factors = cached_clenshaw_factors<Spin>(l_max_);
   const double a = std::abs(Spin + m);
   const double b = std::abs(Spin - m);
@@ -473,6 +492,11 @@ template <int Spin>
 void SwshInterpolator::evaluate_swsh_m_recurrence_at_l_min(
     const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> harmonic,
     const int m) const noexcept {
+  ASSERT(l_max_ != 0,
+         "Attempting to perform spin-weighted evaluation with a "
+         "default-constructed SwshInterpolator. The SwshInterpolator must be "
+         "constructed with the angular coordinates to perform function "
+         "evaluation.");
   const auto& clenshaw_factors = cached_clenshaw_factors<Spin>(l_max_);
   harmonic->data() =
       // this is the right order of the casts, other orders give the wrong
@@ -497,6 +521,11 @@ void SwshInterpolator::clenshaw_sum(
     const SpinWeighted<ComplexDataVector, Spin>& l_min_plus_one_harmonic,
     const SpinWeighted<ComplexModalVector, Spin>& goldberg_modes,
     const int m) const noexcept {
+  ASSERT(l_max_ != 0,
+         "Attempting to perform spin-weighted evaluation with a "
+         "default-constructed SwshInterpolator. The SwshInterpolator must be "
+         "constructed with the angular coordinates to perform function "
+         "evaluation.");
   // Since we need various combinations of the three-term recurrence constants
   // up to two orders higher, we write recurrence results to a cyclic
   // three-element cache

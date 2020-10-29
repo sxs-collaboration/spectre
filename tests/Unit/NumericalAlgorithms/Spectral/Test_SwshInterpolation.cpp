@@ -12,10 +12,41 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
+#include "Utilities/Literals.hpp"
 
 namespace Spectral {
 namespace Swsh {
 namespace {
+
+// [[OutputRegex, Attempting to perform interpolation]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.NumericalAlgorithms.Spectral.SwshInterpolation.InterpolateError",
+    "[Unit][NumericalAlgorithms]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  SwshInterpolator interp{};
+  SpinWeighted<ComplexDataVector, 1> interp_source{
+      number_of_swsh_collocation_points(5_st)};
+  SpinWeighted<ComplexDataVector, 1> interp_target{
+      number_of_swsh_collocation_points(5_st)};
+  interp.interpolate(make_not_null(&interp_target), interp_source);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, Attempting to perform spin-weighted evaluation]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.NumericalAlgorithms.Spectral.SwshInterpolation.EvaluationError",
+    "[Unit][NumericalAlgorithms]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  SwshInterpolator interp{};
+  SpinWeighted<ComplexDataVector, 1> interp_target{
+      number_of_swsh_collocation_points(5_st)};
+  interp.direct_evaluation_swsh_at_l_min(make_not_null(&interp_target), 1);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
 
 template <typename Generator>
 void test_basis_function(const gsl::not_null<Generator*> generator) noexcept {
