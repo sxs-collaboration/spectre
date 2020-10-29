@@ -14,8 +14,7 @@
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
 #include "Utilities/Literals.hpp"
 
-namespace Spectral {
-namespace Swsh {
+namespace Spectral::Swsh {
 namespace {
 
 // [[OutputRegex, Attempting to perform interpolation]]
@@ -95,9 +94,9 @@ void test_interpolation(const gsl::not_null<Generator*> generator) noexcept {
   UniformCustomDistribution<double> theta_dist{0.01, M_PI - 0.01};
   const size_t number_of_target_points = 10;
 
-  const DataVector target_phi = make_with_random_values<DataVector>(
+  const auto target_phi = make_with_random_values<DataVector>(
       generator, make_not_null(&phi_dist), number_of_target_points);
-  const DataVector target_theta = make_with_random_values<DataVector>(
+  const auto target_theta = make_with_random_values<DataVector>(
       generator, make_not_null(&theta_dist), number_of_target_points);
 
   SpinWeighted<ComplexModalVector, spin> generated_modes{
@@ -281,5 +280,4 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshInterpolation",
   test_interpolation<2>(make_not_null(&generator));
 }
 }  // namespace
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh

@@ -24,8 +24,7 @@
 
 /// \cond
 
-namespace Spectral {
-namespace Swsh {
+namespace Spectral::Swsh {
 
 SpinWeightedSphericalHarmonic::SpinWeightedSphericalHarmonic(
     const int spin, const size_t l, const int m) noexcept
@@ -65,7 +64,8 @@ SpinWeightedSphericalHarmonic::SpinWeightedSphericalHarmonic(
   } else {
     // the casts in the reserve are in correct order, but clang-format
     // erroneously requests a change
-    // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+
+    // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
     r_prefactors_.reserve(static_cast<size_t>(static_cast<int>(l) - spin + 1));
     for (int r = 0; r <= (static_cast<int>(l) - spin); ++r) {
       if (r + spin - m >= 0 and static_cast<int>(l) - r + m >= 0) {
@@ -129,7 +129,7 @@ std::complex<double> SpinWeightedSphericalHarmonic::evaluate(
   std::complex<double> accumulator = 0.0;
   const double cos_theta_over_two = cos(0.5 * theta);
   const double sin_theta_over_two = sin(0.5 * theta);
-  double theta_factor;
+  double theta_factor = std::numeric_limits<double>::signaling_NaN();
   for (int r = 0; r <= (static_cast<int>(l_) - spin_); ++r) {
     if (2 * static_cast<int>(l_) > 2 * r + spin_ - m_) {
       theta_factor = pow(cos_theta_over_two, 2 * r + spin_ - m_) *
@@ -188,12 +188,12 @@ struct ClenshawRecurrenceConstants {
     ASSERT(static_cast<int>(l_max) > Spin,
            "l_max must be greater than the spin-weight when computing "
            "ClenshawRecurrenceConstants");
-    double l_plus_k;
-    double l_min_plus_k;
-    double a;
-    double b;
-    int l_min;
-    double prefactor_accumulator;
+    double l_plus_k = std::numeric_limits<double>::signaling_NaN();
+    double l_min_plus_k = std::numeric_limits<double>::signaling_NaN();
+    double a = std::numeric_limits<double>::signaling_NaN();
+    double b = std::numeric_limits<double>::signaling_NaN();
+    int l_min = 0;
+    double prefactor_accumulator = std::numeric_limits<double>::signaling_NaN();
     lambda.reserve(2 * l_max + 1);
     for (int m = -static_cast<int>(l_max); m <= static_cast<int>(l_max); ++m) {
       a = static_cast<double>(std::abs(Spin + m));
@@ -242,7 +242,9 @@ struct ClenshawRecurrenceConstants {
           ((m + gsl::at(lambda, m + static_cast<int>(l_max))) % 2) == 0 ? 1.0
                                                                         : -1.0;
       // this is the right order of the casts, other orders give the wrong
-      // answer NOLINTNEXTLINE(misc-misplaced-widening-cast)
+      // answer
+
+      // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
       harmonic_at_l_min_prefactors[static_cast<size_t>(
           m + static_cast<int>(l_max))] = prefactor_accumulator;
 
@@ -250,7 +252,9 @@ struct ClenshawRecurrenceConstants {
       // harmonics for each m
 
       // this is the right order of the casts, other orders give the wrong
-      // answer NOLINTNEXTLINE(misc-misplaced-widening-cast)
+      // answer
+
+      // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
       harmonic_at_l_min_plus_one_recurrence_prefactors[static_cast<size_t>(
           m + static_cast<int>(l_max))] =
           sqrt((2.0 * (l_min) + 3.0) * (l_min_plus_k + 1.0) *
@@ -260,7 +264,7 @@ struct ClenshawRecurrenceConstants {
     }
     // separate loop because we'll need the lambdas entirely populated for this
     // set of prefactors
-    int lambda_difference;
+    int lambda_difference = 0;
     for (int m = -static_cast<int>(l_max); m <= static_cast<int>(l_max); ++m) {
       if (std::abs(m) > std::abs(Spin)) {
         l_min = std::max(std::abs(m), std::abs(Spin));
@@ -283,7 +287,9 @@ struct ClenshawRecurrenceConstants {
         }
         prefactor_accumulator *= lambda_difference % 2 == 0 ? 1.0 : -1.0;
         // this is the right order of the casts, other orders give the wrong
-        // answer NOLINTNEXTLINE(misc-misplaced-widening-cast)
+        // answer
+
+        // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
         harmonic_m_recurrence_prefactors[static_cast<size_t>(
             m + static_cast<int>(l_max))] = prefactor_accumulator;
       }
@@ -454,7 +460,8 @@ void SwshInterpolator::direct_evaluation_swsh_at_l_min(
   harmonic->data() =
       // clang-tidy: this is the right order of the casts, other orders give the
       // wrong answer
-      // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+
+      // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
       clenshaw_factors.harmonic_at_l_min_prefactors[static_cast<size_t>(
           m + static_cast<int>(l_max_))] *
       (std::complex<double>(1.0, 0.0) * gsl::at(cos_m_phi_, std::abs(m)) +
@@ -481,7 +488,8 @@ void SwshInterpolator::evaluate_swsh_at_l_min_plus_one(
       clenshaw_factors
           // clang-tidy: this is the right order of the casts, other orders give
           // the wrong answer
-          // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+
+          // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
           .harmonic_at_l_min_plus_one_recurrence_prefactors[static_cast<size_t>(
               m + static_cast<int>(l_max_))] *
       harmonic_at_l_min.data() *
@@ -501,7 +509,8 @@ void SwshInterpolator::evaluate_swsh_m_recurrence_at_l_min(
   harmonic->data() =
       // this is the right order of the casts, other orders give the wrong
       // answer
-      // NOLINTNEXTLINE(misc-misplaced-widening-cast)
+
+      // NOLINTNEXTLINE(bugprone-misplaced-widening-cast)
       clenshaw_factors.harmonic_m_recurrence_prefactors[static_cast<size_t>(
           m + static_cast<int>(l_max_))] *
       (sin_theta_ / 2.0) * harmonic->data();
@@ -658,6 +667,5 @@ GENERATE_INSTANTIATIONS(INTERPOLATION_INSTANTIATION, (-2, -1, 0, 1, 2))
 #undef INTERPOLATION_INSTANTIATION
 #undef GET_SPIN
 
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh
 /// \endcond
