@@ -161,6 +161,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   const auto& results = MockContributeReductionData::results;
   CHECK(results.observation_id.value() == observation_time);
   CHECK(results.reduction_names[0] == "StringToPrint");
+  Parallel::printf(results.info_to_print);
 }
 
 void test_system() noexcept {
