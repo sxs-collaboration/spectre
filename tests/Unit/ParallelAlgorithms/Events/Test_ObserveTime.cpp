@@ -54,7 +54,8 @@ class GlobalCache;
 }  // namespace Parallel
 // IWYU pragma: no_forward_declare db::DataBox
 namespace observers::Actions {
-struct ContributeReductionData;
+struct ContributeReductionData<
+        observers::ThreadedActions::PrintReductionData>;
 }  // namespace observers::Actions
 
 namespace {
@@ -106,7 +107,8 @@ template <typename Metavariables>
 struct MockObserverComponent {
   using component_being_mocked = observers::Observer<Metavariables>;
   using replace_these_simple_actions =
-      tmpl::list<observers::Actions::ContributeReductionData>;
+      tmpl::list<observers::Actions::ContributeReductionData<
+        observers::ThreadedActions::PrintReductionData>>;
   using with_these_simple_actions = tmpl::list<MockContributeReductionData>;
 
   using metavariables = Metavariables;
@@ -160,7 +162,6 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   const auto& results = MockContributeReductionData::results;
   CHECK(results.observation_id.value() == observation_time);
   CHECK(results.reduction_names[0] == "StringToPrint");
-  CHECK(results.info_to_print == "???");
 }
 
 void test_system() noexcept {
@@ -181,6 +182,8 @@ void test_system() noexcept {
 }
 }  // namespace
 
+// [[OutputRegex, Current time: ???]]
 SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveTime", "[Unit][Evolution]") {
+  OUTPUT_TEST();
   test_system();
 }
