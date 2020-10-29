@@ -79,7 +79,7 @@ struct MockContributeReductionData {
                     const ArrayIndex& /*array_index*/,
                     const observers::ObservationId& observation_id,
                     observers::ArrayComponentId /*sender_array_id*/,
-                    const std::string& subfile_name,
+                    const std::string& /*subfile_name*/,
                     const std::vector<std::string>& reduction_names,
                     Parallel::ReductionData<Ts...>&& reduction_data) noexcept {
     results.observation_id = observation_id;
