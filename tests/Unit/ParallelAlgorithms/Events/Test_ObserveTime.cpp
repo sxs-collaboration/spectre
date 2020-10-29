@@ -129,7 +129,7 @@ struct Metavariables {
 
 template <typename ObserveEvent>
 void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
-  using metavariables = Metavariables<System>;
+  using metavariables = Metavariables;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
 
@@ -142,8 +142,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   ActionTesting::emplace_component<observer_component>(&runner, 0);
 
   const auto box = db::create<db::AddSimpleTags<
-      ObservationTimeTag, Tags::Variables<typename decltype(vars)::tags_list>>>(
-      observation_time, vars);
+      ObservationTimeTag>>(observation_time);
 
   const auto ids_to_register =
       observers::get_registration_observation_type_and_key(*observe, box);
@@ -168,11 +167,11 @@ void test_system() noexcept {
   INFO("Testing time observation");
   test_observe(
       std::make_unique<dg::Events::ObserveTime<
-          ObservationTimeTag, typename System::vars_for_test>>("reduction0"));
+          ObservationTimeTag>>("reduction0"));
 
   INFO("create/serialize");
   using EventType = Event<tmpl::list<dg::Events::Registrars::ObserveTime<
-      ObservationTimeTag, typename System::vars_for_test>>>;
+      ObservationTimeTag>>>;
   Parallel::register_derived_classes_with_charm<EventType>();
   const auto factory_event = TestHelpers::test_factory_creation<EventType>(
       "ObserveTime:\n"
