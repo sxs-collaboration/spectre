@@ -194,27 +194,9 @@ struct EvolutionMetavars {
                                   volume_dim, frame>>>,
                           tmpl::list<>>>;
 
-  // HACK until we merge in a compute tag StrahlkorperGr::AreaCompute.
-  // For now, simply do a surface integral of unity on the horizon to get the
-  // horizon area.
-  struct Unity : db::SimpleTag {
-    using type = Scalar<DataVector>;
-  };
-
-  struct UnityCompute : Unity, db::ComputeTag {
-    using base = Unity;
-    using return_type = Scalar<DataVector>;
-    static void function(const gsl::not_null<return_type*> result,
-                         const Scalar<DataVector>& used_for_size) noexcept {
-      *result = make_with_value<Scalar<DataVector>>(used_for_size, 1.0);
-    }
-    using argument_tags =
-        tmpl::list<StrahlkorperGr::Tags::AreaElement<Frame::Inertial>>;
-  };
-
   struct AhA {
     using tags_to_observe =
-        tmpl::list<StrahlkorperGr::Tags::SurfaceIntegralCompute<Unity, frame>>;
+        tmpl::list<StrahlkorperGr::Tags::AreaCompute<frame>>;
     using compute_items_on_source = tmpl::list<
         gr::Tags::SpatialMetricCompute<volume_dim, frame, DataVector>,
         ah::Tags::InverseSpatialMetricCompute<volume_dim, frame>,
@@ -225,10 +207,9 @@ struct EvolutionMetavars {
                    gr::Tags::InverseSpatialMetric<volume_dim, frame>,
                    gr::Tags::ExtrinsicCurvature<volume_dim, frame>,
                    gr::Tags::SpatialChristoffelSecondKind<volume_dim, frame>>;
-    using compute_items_on_target =
-        tmpl::append<tmpl::list<StrahlkorperGr::Tags::AreaElementCompute<frame>,
-                                UnityCompute>,
-                     tags_to_observe>;
+    using compute_items_on_target = tmpl::append<
+        tmpl::list<StrahlkorperGr::Tags::AreaElementCompute<frame>>,
+        tags_to_observe>;
     using compute_target_points =
         intrp::TargetPoints::ApparentHorizon<AhA, ::Frame::Inertial>;
     using post_interpolation_callback =
