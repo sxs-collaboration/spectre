@@ -413,7 +413,7 @@ struct TensorExpression<Derived, DataType, Symm, tmpl::list<Indices...>,
   /// \param tensor_index the tensor component to retrieve
   /// \return the value of the DataType of component `tensor_index`
   template <typename... LhsIndices, typename ArrayValueType>
-  SPECTRE_ALWAYS_INLINE type
+  SPECTRE_ALWAYS_INLINE decltype(auto)
   get(const std::array<ArrayValueType, num_tensor_indices>& tensor_index)
       const noexcept {
     if constexpr (tt::is_a_v<Tensor, Derived>) {
@@ -548,7 +548,7 @@ struct TensorExpression<Derived, DataType, Symm, tmpl::list<Indices...>,
   /// \return the value of the DataType of the component at `lhs_storage_index`
   /// in the LHS tensor
   template <typename LhsStructure, typename... LhsIndices>
-  SPECTRE_ALWAYS_INLINE type
+  SPECTRE_ALWAYS_INLINE decltype(auto)
   get(const size_t lhs_storage_index) const noexcept {
     if constexpr (not tt::is_a_v<Tensor, Derived>) {
       return static_cast<const Derived&>(*this)
