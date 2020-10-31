@@ -44,3 +44,4 @@ target_link_libraries(
   )
 
 add_subdirectory(GaugeSourceFunctions)
+add_subdirectory(ConstraintDamping)
