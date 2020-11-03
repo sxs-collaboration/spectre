@@ -25,9 +25,8 @@ namespace Poisson {
  * equation on a flat spatial metric in Cartesian coordinates.
  */
 template <size_t Dim>
-void euclidean_fluxes(
-    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> flux_for_field,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& field_gradient) noexcept;
+void euclidean_fluxes(gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+                      const tnsr::i<DataVector, Dim>& field_gradient) noexcept;
 
 /*!
  * \brief Compute the fluxes \f$F^i=\sqrt{\gamma}\gamma^{ij}\partial_j u(x)\f$
@@ -35,10 +34,10 @@ void euclidean_fluxes(
  */
 template <size_t Dim>
 void non_euclidean_fluxes(
-    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> flux_for_field,
-    const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
+    gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+    const tnsr::II<DataVector, Dim>& inv_spatial_metric,
     const Scalar<DataVector>& det_spatial_metric,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& field_gradient) noexcept;
+    const tnsr::i<DataVector, Dim>& field_gradient) noexcept;
 
 /*!
  * \brief Compute the fluxes \f$F^i_j=\delta^i_j u(x)\f$ for the auxiliary
@@ -47,9 +46,9 @@ void non_euclidean_fluxes(
  * \see Poisson::FirstOrderSystem
  */
 template <size_t Dim>
-void auxiliary_fluxes(gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
-                          flux_for_gradient,
-                      const Scalar<DataVector>& field) noexcept;
+void auxiliary_fluxes(
+    gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
+    const Scalar<DataVector>& field) noexcept;
 
 /*!
  * \brief Compute the fluxes \f$F^i_A\f$ for the Poisson equation on a flat
@@ -61,15 +60,12 @@ template <size_t Dim>
 struct EuclideanFluxes {
   using argument_tags = tmpl::list<>;
   static void apply(
-      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-          flux_for_field,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
-          field_gradient) noexcept {
+      const gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+      const tnsr::i<DataVector, Dim>& field_gradient) noexcept {
     euclidean_fluxes(flux_for_field, field_gradient);
   }
   static void apply(
-      const gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
-          flux_for_gradient,
+      const gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
       const Scalar<DataVector>& field) noexcept {
     auxiliary_fluxes(flux_for_gradient, field);
   }
@@ -89,19 +85,16 @@ struct NonEuclideanFluxes {
       gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
       gr::Tags::DetSpatialMetric<DataVector>>;
   static void apply(
-      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-          flux_for_field,
-      const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
+      const gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+      const tnsr::II<DataVector, Dim>& inv_spatial_metric,
       const Scalar<DataVector>& det_spatial_metric,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
-          field_gradient) noexcept {
+      const tnsr::i<DataVector, Dim>& field_gradient) noexcept {
     non_euclidean_fluxes(flux_for_field, inv_spatial_metric, det_spatial_metric,
                          field_gradient);
   }
   static void apply(
-      const gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
-          flux_for_gradient,
-      const tnsr::II<DataVector, Dim, Frame::Inertial>& /*inv_spatial_metric*/,
+      const gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_gradient,
+      const tnsr::II<DataVector, Dim>& /*inv_spatial_metric*/,
       const Scalar<DataVector>& /*det_spatial_metric*/,
       const Scalar<DataVector>& field) noexcept {
     auxiliary_fluxes(flux_for_gradient, field);
@@ -117,8 +110,13 @@ struct NonEuclideanFluxes {
  */
 struct Sources {
   using argument_tags = tmpl::list<>;
-  static void apply(const gsl::not_null<Scalar<DataVector>*> source_for_field,
-                    const Scalar<DataVector>& /*field*/) noexcept {
+  template <size_t Dim>
+  static void apply(
+      const gsl::not_null<Scalar<DataVector>*> source_for_field,
+      const gsl::not_null<
+          tnsr::i<DataVector, Dim>*> /*source_for_field_gradient*/,
+      const Scalar<DataVector>& /*field*/,
+      const tnsr::I<DataVector, Dim>& /*field_flux*/) noexcept {
     get(*source_for_field) = 0.;
   }
 };

@@ -54,6 +54,8 @@ void verify_solution(
   using primal_fields = typename System::primal_fields;
   using auxiliary_fields = typename System::auxiliary_fields;
 
+  CAPTURE(mesh);
+
   const size_t num_points = mesh.number_of_grid_points();
   const auto logical_coords = logical_coordinates(mesh);
   const auto inertial_coords = coord_map(logical_coords);
@@ -72,10 +74,11 @@ void verify_solution(
   auto div_fluxes = divergence(std::move(fluxes), mesh,
                                coord_map.inv_jacobian(logical_coords));
   auto sources = std::apply(
-      [&solution_fields](const auto&... expanded_sources_args) {
-        return ::elliptic::first_order_sources<primal_fields, auxiliary_fields,
+      [&solution_fields, &fluxes](const auto&... expanded_sources_args) {
+        return ::elliptic::first_order_sources<System::volume_dim,
+                                               primal_fields, auxiliary_fields,
                                                typename System::sources>(
-            solution_fields, expanded_sources_args...);
+            solution_fields, fluxes, expanded_sources_args...);
       },
       sources_args);
   Variables<db::wrap_tags_in<Tags::OperatorAppliedTo, all_fields>>

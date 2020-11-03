@@ -51,6 +51,7 @@ void test_computers(const DataVector& used_for_size) {
   using auxiliary_flux_tag =
       ::Tags::Flux<auxiliary_field_tag, tmpl::size_t<Dim>, Frame::Inertial>;
   using field_source_tag = ::Tags::Source<field_tag>;
+  using auxiliary_source_tag = ::Tags::Source<auxiliary_field_tag>;
 
   const size_t num_points = used_for_size.size();
   {
@@ -133,14 +134,23 @@ void test_computers(const DataVector& used_for_size) {
   }
   {
     INFO("Sources" << Dim << "D");
-    auto box = db::create<db::AddSimpleTags<field_tag, field_source_tag>>(
-        Scalar<DataVector>{num_points, 2.}, Scalar<DataVector>{num_points, 0.});
+    auto box =
+        db::create<db::AddSimpleTags<field_source_tag, auxiliary_source_tag>>(
+            Scalar<DataVector>{num_points,
+                               std::numeric_limits<double>::signaling_NaN()},
+            tnsr::i<DataVector, Dim>{
+                num_points, std::numeric_limits<double>::signaling_NaN()});
 
     const Poisson::Sources sources_computer{};
     using argument_tags = typename Poisson::Sources::argument_tags;
 
-    db::mutate_apply<tmpl::list<field_source_tag>, argument_tags>(
-        sources_computer, make_not_null(&box), get<field_tag>(box));
+    db::mutate_apply<tmpl::list<field_source_tag, auxiliary_source_tag>,
+                     argument_tags>(
+        sources_computer, make_not_null(&box),
+        Scalar<DataVector>{num_points,
+                           std::numeric_limits<double>::signaling_NaN()},
+        tnsr::I<DataVector, Dim>{num_points,
+                                 std::numeric_limits<double>::signaling_NaN()});
     auto expected_field_source = Scalar<DataVector>{num_points, 0.};
     CHECK(get<field_source_tag>(box) == expected_field_source);
   }

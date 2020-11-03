@@ -63,9 +63,13 @@ struct Fluxes {
 
 struct Sources {
   using argument_tags = tmpl::list<AnArgument, BaseArgumentTag>;
-  static void apply(const gsl::not_null<Scalar<DataVector>*> source_for_field,
-                    const double an_argument, const double base_tag_argument,
-                    const Scalar<DataVector>& field) {
+  template <size_t Dim>
+  static void apply(
+      const gsl::not_null<Scalar<DataVector>*> source_for_field,
+      const gsl::not_null<tnsr::i<DataVector, Dim>*> /*source_for_aux_field*/,
+      const double an_argument, const double base_tag_argument,
+      const Scalar<DataVector>& field,
+      const tnsr::I<DataVector, Dim>& /*field_flux*/) {
     get(*source_for_field) =
         get(field) * square(an_argument) + base_tag_argument;
   }
@@ -82,8 +86,8 @@ void test_first_order_compute_tags() {
       elliptic::Tags::FirstOrderFluxesCompute<Dim, Fluxes<Dim>, vars_tag,
                                               primal_vars, auxiliary_vars>;
   using first_order_sources_compute_tag =
-      elliptic::Tags::FirstOrderSourcesCompute<Sources, vars_tag, primal_vars,
-                                               auxiliary_vars>;
+      elliptic::Tags::FirstOrderSourcesCompute<Dim, Sources, vars_tag,
+                                               primal_vars, auxiliary_vars>;
 
   TestHelpers::db::test_compute_tag<first_order_fluxes_compute_tag>(
       "Variables(Flux(FieldTag),Flux(AuxiliaryFieldTag))");

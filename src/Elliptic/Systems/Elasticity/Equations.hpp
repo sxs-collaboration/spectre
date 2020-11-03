@@ -94,7 +94,9 @@ struct Sources {
   using argument_tags = tmpl::list<>;
   static void apply(
       const gsl::not_null<tnsr::I<DataVector, Dim>*> source_for_displacement,
-      const tnsr::I<DataVector, Dim>& /*displacement*/) noexcept {
+      const gsl::not_null<tnsr::ii<DataVector, Dim>*> /*source_for_strain*/,
+      const tnsr::I<DataVector, Dim>& /*displacement*/,
+      const tnsr::IJ<DataVector, Dim>& /*stress*/) noexcept {
     for (size_t d = 0; d < Dim; d++) {
       source_for_displacement->get(d) = 0.;
     }
