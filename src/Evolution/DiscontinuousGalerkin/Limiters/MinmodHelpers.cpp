@@ -73,9 +73,8 @@ double effective_difference_to_neighbor(
     const Side& side,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
-  const auto& externals = element.external_boundaries();
   const auto dir = Direction<VolumeDim>(dim, side);
-  const bool has_neighbors = (externals.find(dir) == externals.end());
+  const bool has_neighbors = element.neighbors().contains(dir);
   if (has_neighbors) {
     const double neighbor_mean = effective_neighbor_means.at(dir);
     const double neighbor_size = effective_neighbor_sizes.at(dir);
