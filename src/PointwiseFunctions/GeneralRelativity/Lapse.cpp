@@ -45,6 +45,11 @@ void lapse(
   template Scalar<DTYPE(data)> gr::lapse(                        \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift, \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>&       \
+          spacetime_metric) noexcept;                            \
+  template void gr::lapse(                                       \
+      const gsl::not_null<Scalar<DTYPE(data)>*> lapse,           \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift, \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>&       \
           spacetime_metric) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
