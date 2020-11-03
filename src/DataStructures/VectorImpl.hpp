@@ -19,6 +19,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/MakeWithValue.hpp"  // IWYU pragma: keep
 #include "Utilities/PointerVector.hpp"  // IWYU pragma: keep
 #include "Utilities/PrintHelpers.hpp"
@@ -201,17 +202,18 @@ class VectorImpl
   void SPECTRE_ALWAYS_INLINE
   destructive_resize(const size_t new_size) noexcept {
     if (UNLIKELY(size() != new_size)) {
-      if (owning_) {
-        // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-        owned_data_ = std::unique_ptr<value_type[], decltype(&free)>{
-            new_size > 0 ? static_cast<value_type*>(
-                               malloc(new_size * sizeof(value_type)))
-                         : nullptr,
-            &free};
-        reset_pointer_vector(new_size);
-      } else {
-        ERROR("may not destructively resize a non-owning vector");
-      }
+      ASSERT(owning_,
+             MakeString{}
+                 << "Attempting to resize a non-owning vector from size: "
+                 << size() << " to size: " << new_size
+                 << " but we may not destructively resize a non-owning vector");
+      // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+      owned_data_ = std::unique_ptr<value_type[], decltype(&free)>{
+          new_size > 0
+              ? static_cast<value_type*>(malloc(new_size * sizeof(value_type)))
+              : nullptr,
+          &free};
+      reset_pointer_vector(new_size);
     }
   }
 

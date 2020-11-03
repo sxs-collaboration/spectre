@@ -50,6 +50,12 @@ void shift(const gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> shift,
   template tnsr::I<DTYPE(data), DIM(data), FRAME(data)> gr::shift(           \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& spacetime_metric, \
       const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          inverse_spatial_metric) noexcept;                                  \
+  template void gr::shift(                                                   \
+      const gsl::not_null<tnsr::I<DTYPE(data), DIM(data), FRAME(data)>*>     \
+          shift,                                                             \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>& spacetime_metric, \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                   \
           inverse_spatial_metric) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),

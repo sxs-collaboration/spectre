@@ -44,6 +44,11 @@ void spatial_metric(
 #define INSTANTIATE(_, data)                                                 \
   template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)> gr::spatial_metric( \
       const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          spacetime_metric) noexcept;                                        \
+  template void gr::spatial_metric(                                          \
+      const gsl::not_null<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>*>    \
+          spatial_metric,                                                    \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data)>&                   \
           spacetime_metric) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),

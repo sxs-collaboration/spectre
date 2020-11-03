@@ -44,10 +44,15 @@ void spacetime_normal_vector(
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                            \
-  template tnsr::A<DTYPE(data), DIM(data), FRAME(data)> \
-  gr::spacetime_normal_vector(                          \
-      const Scalar<DTYPE(data)>& lapse,                 \
+#define INSTANTIATE(_, data)                                               \
+  template tnsr::A<DTYPE(data), DIM(data), FRAME(data)>                    \
+  gr::spacetime_normal_vector(                                             \
+      const Scalar<DTYPE(data)>& lapse,                                    \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift) noexcept; \
+  template void gr::spacetime_normal_vector(                               \
+      const gsl::not_null<tnsr::A<DTYPE(data), DIM(data), FRAME(data)>*>   \
+          spacetime_normal_vector,                                         \
+      const Scalar<DTYPE(data)>& lapse,                                    \
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& shift) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),

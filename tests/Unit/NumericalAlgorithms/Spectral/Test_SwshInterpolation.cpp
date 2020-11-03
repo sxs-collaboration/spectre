@@ -12,10 +12,40 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
+#include "Utilities/Literals.hpp"
 
-namespace Spectral {
-namespace Swsh {
+namespace Spectral::Swsh {
 namespace {
+
+// [[OutputRegex, Attempting to perform interpolation]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.NumericalAlgorithms.Spectral.SwshInterpolation.InterpolateError",
+    "[Unit][NumericalAlgorithms]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  SwshInterpolator interp{};
+  SpinWeighted<ComplexDataVector, 1> interp_source{
+      number_of_swsh_collocation_points(5_st)};
+  SpinWeighted<ComplexDataVector, 1> interp_target{
+      number_of_swsh_collocation_points(5_st)};
+  interp.interpolate(make_not_null(&interp_target), interp_source);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, Attempting to perform spin-weighted evaluation]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.NumericalAlgorithms.Spectral.SwshInterpolation.EvaluationError",
+    "[Unit][NumericalAlgorithms]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  SwshInterpolator interp{};
+  SpinWeighted<ComplexDataVector, 1> interp_target{
+      number_of_swsh_collocation_points(5_st)};
+  interp.direct_evaluation_swsh_at_l_min(make_not_null(&interp_target), 1);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
 
 template <typename Generator>
 void test_basis_function(const gsl::not_null<Generator*> generator) noexcept {
@@ -64,9 +94,9 @@ void test_interpolation(const gsl::not_null<Generator*> generator) noexcept {
   UniformCustomDistribution<double> theta_dist{0.01, M_PI - 0.01};
   const size_t number_of_target_points = 10;
 
-  const DataVector target_phi = make_with_random_values<DataVector>(
+  const auto target_phi = make_with_random_values<DataVector>(
       generator, make_not_null(&phi_dist), number_of_target_points);
-  const DataVector target_theta = make_with_random_values<DataVector>(
+  const auto target_theta = make_with_random_values<DataVector>(
       generator, make_not_null(&theta_dist), number_of_target_points);
 
   SpinWeighted<ComplexModalVector, spin> generated_modes{
@@ -250,5 +280,4 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshInterpolation",
   test_interpolation<2>(make_not_null(&generator));
 }
 }  // namespace
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh
