@@ -16,6 +16,7 @@ DomainCreator:
     TimeDependence:
       UniformTranslation:
         InitialTime: 0.0
+        InitialExpirationDeltaT: 5.0
         Velocity: [0.5, 0.0, 0.0]
         FunctionOfTimeNames: ["TranslationX", "TranslationY", "TranslationZ"]
 

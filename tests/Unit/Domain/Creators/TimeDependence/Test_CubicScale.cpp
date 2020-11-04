@@ -49,13 +49,14 @@ CoordMap<MeshDim> create_coord_map(
 template <size_t MeshDim>
 void test_impl(
     const std::unique_ptr<TimeDependence<MeshDim>>& time_dep_unique_ptr,
-    const double initial_time, const double outer_boundary,
-    const std::array<double, 2>& initial_expansion,
+    const double initial_time, const double update_delta_t,
+    const double outer_boundary, const std::array<double, 2>& initial_expansion,
     const std::array<double, 2>& velocity,
     const std::array<double, 2>& acceleration,
     const std::array<std::string, 2>& f_of_t_names) noexcept {
   MAKE_GENERATOR(gen);
   CAPTURE(initial_time);
+  CAPTURE(update_delta_t);
   CAPTURE(outer_boundary);
   CAPTURE(initial_expansion);
   CAPTURE(velocity);
@@ -152,6 +153,7 @@ void test_impl(
 template <size_t MeshDim>
 void test() noexcept {
   const double initial_time = 1.3;
+  const double update_delta_t = 2.5;
   const double outer_boundary = 10.4;
   const std::array<double, 2> initial_expansion{{1.0, 1.0}};
   const std::array<double, 2> velocity{{-0.1, 0.0}};
@@ -161,71 +163,76 @@ void test() noexcept {
   const std::unique_ptr<
       domain::creators::time_dependence::TimeDependence<MeshDim>>
       time_dep = std::make_unique<CubicScale<MeshDim>>(
-          initial_time, outer_boundary, f_of_t_names, initial_expansion,
-          velocity, acceleration);
-  test_impl(time_dep, initial_time, outer_boundary, initial_expansion, velocity,
-            acceleration, f_of_t_names);
-  test_impl(time_dep->get_clone(), initial_time, outer_boundary,
+          initial_time, update_delta_t, outer_boundary, f_of_t_names,
+          initial_expansion, velocity, acceleration);
+  test_impl(time_dep, initial_time, update_delta_t, outer_boundary,
+            initial_expansion, velocity, acceleration, f_of_t_names);
+  test_impl(time_dep->get_clone(), initial_time, update_delta_t, outer_boundary,
             initial_expansion, velocity, acceleration, f_of_t_names);
 
   test_impl(TestHelpers::test_factory_creation<TimeDependence<MeshDim>>(
                 "CubicScale:\n"
                 "  InitialTime: 1.3\n"
+                "  InitialExpirationDeltaT: 2.5\n"
                 "  OuterBoundary: 10.4\n"
                 "  InitialExpansion: [1.0, 1.0]\n"
                 "  Velocity: [-0.1, 0.0]\n"
                 "  Acceleration: [0.0, 0.0]\n"
                 "  FunctionOfTimeNames: [Expansion0, Expansion1]\n"),
-            initial_time, outer_boundary, initial_expansion, velocity,
-            acceleration, f_of_t_names);
+            initial_time, update_delta_t, outer_boundary, initial_expansion,
+            velocity, acceleration, f_of_t_names);
 
   test_impl(TestHelpers::test_factory_creation<TimeDependence<MeshDim>>(
                 "CubicScale:\n"
                 "  InitialTime: 1.3\n"
+                "  InitialExpirationDeltaT: 2.5\n"
                 "  OuterBoundary: 10.4\n"
                 "  InitialExpansion: [1.0, 1.0]\n"
                 "  Velocity: [-0.1, 0.0]\n"
                 "  Acceleration: [0.0, 0.0]\n"),
-            initial_time, outer_boundary, initial_expansion, velocity,
-            acceleration, {{"ExpansionA", "ExpansionB"}});
+            initial_time, update_delta_t, outer_boundary, initial_expansion,
+            velocity, acceleration, {{"ExpansionA", "ExpansionB"}});
 
   INFO("Check equivalence operators");
   CubicScale<MeshDim> cubic_scale0{
-      1.0,          2.0,           {{"ExpansionA", "ExpansionB"}},
+      1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionB"}},
       {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
   CubicScale<MeshDim> cubic_scale1{
-      1.2,          2.0,           {{"ExpansionA", "ExpansionB"}},
+      1.2,          2.5,           2.0,         {{"ExpansionA", "ExpansionB"}},
       {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
   CubicScale<MeshDim> cubic_scale2{
-      1.0,          3.0,           {{"ExpansionA0", "ExpansionB"}},
+      1.0,          2.5,           3.0,         {{"ExpansionA0", "ExpansionB"}},
       {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
   CubicScale<MeshDim> cubic_scale3{
-      1.0,          2.0,           {{"ExpansionA", "ExpansionB0"}},
+      1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionB0"}},
       {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
   CubicScale<MeshDim> cubic_scale4{
-      1.0,          2.0,           {{"ExpansionC", "ExpansionB"}},
+      1.0,          2.5,           2.0,         {{"ExpansionC", "ExpansionB"}},
       {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
   CubicScale<MeshDim> cubic_scale5{
-      1.0,          2.0,           {{"ExpansionA", "ExpansionC"}},
+      1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionC"}},
       {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
   CubicScale<MeshDim> cubic_scale6{
-      1.0,          2.0,           {{"ExpansionA", "ExpansionB"}},
+      1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionB"}},
       {{3.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
   CubicScale<MeshDim> cubic_scale7{
-      1.0,          2.0,           {{"ExpansionA", "ExpansionB"}},
+      1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionB"}},
       {{1.0, 0.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
   CubicScale<MeshDim> cubic_scale8{
-      1.0,          2.0,           {{"ExpansionA", "ExpansionB"}},
+      1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionB"}},
       {{1.0, 2.0}}, {{-2.0, 3.0}}, {{0.2, 0.9}}};
   CubicScale<MeshDim> cubic_scale9{
-      1.0,          2.0,           {{"ExpansionA", "ExpansionB"}},
+      1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionB"}},
       {{1.0, 2.0}}, {{-1.0, 7.0}}, {{0.2, 0.9}}};
   CubicScale<MeshDim> cubic_scale10{
-      1.0,          2.0,           {{"ExpansionA", "ExpansionB"}},
+      1.0,          2.5,           2.0,         {{"ExpansionA", "ExpansionB"}},
       {{1.0, 2.0}}, {{-1.0, 3.0}}, {{3.2, 0.9}}};
   CubicScale<MeshDim> cubic_scale11{
-      1.0,          2.0,           {{"ExpansionA", "ExpansionB"}},
+      1.0,          2.5,           2.0,          {{"ExpansionA", "ExpansionB"}},
       {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 10.9}}};
+  CubicScale<MeshDim> cubic_scale12{
+      1.0,          2.6,           2.0,         {{"ExpansionA", "ExpansionB"}},
+      {{1.0, 2.0}}, {{-1.0, 3.0}}, {{0.2, 0.9}}};
 
   CHECK(cubic_scale0 == cubic_scale0);
   CHECK_FALSE(cubic_scale0 != cubic_scale0);
@@ -251,6 +258,8 @@ void test() noexcept {
   CHECK_FALSE(cubic_scale0 == cubic_scale10);
   CHECK(cubic_scale0 != cubic_scale11);
   CHECK_FALSE(cubic_scale0 == cubic_scale11);
+  CHECK(cubic_scale0 != cubic_scale12);
+  CHECK_FALSE(cubic_scale0 == cubic_scale12);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.CubicScale",

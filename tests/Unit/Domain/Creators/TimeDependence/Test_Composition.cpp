@@ -114,7 +114,8 @@ void test_impl(
 
 template <typename T>
 void test_composition_1d(const gsl::not_null<T> gen,
-                         const double initial_time) noexcept {
+                         const double initial_time,
+                         const double update_delta_t) noexcept {
   using Composition1d =
       Composition<TimeDependenceCompositionTag<UniformTranslation<1>>,
                   TimeDependenceCompositionTag<UniformTranslation<1>, 1>>;
@@ -126,14 +127,14 @@ void test_composition_1d(const gsl::not_null<T> gen,
 
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
       time_dep0 = std::make_unique<UniformTranslation<1>>(
-          initial_time, velocity0, f_of_t_names0);
+          initial_time, update_delta_t, velocity0, f_of_t_names0);
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
       time_dep1 = std::make_unique<UniformTranslation<1>>(
-          initial_time, velocity1, f_of_t_names1);
+          initial_time, update_delta_t, velocity1, f_of_t_names1);
 
   const std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
       expected_time_dep = std::make_unique<UniformTranslation<1>>(
-          initial_time, velocity0 + velocity1,
+          initial_time, update_delta_t, velocity0 + velocity1,
           std::array<std::string, 1>{{"TranslationX"}});
 
   const std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
@@ -149,7 +150,8 @@ void test_composition_1d(const gsl::not_null<T> gen,
 
 template <typename T>
 void test_composition_2d(const gsl::not_null<T> gen,
-                         const double initial_time) noexcept {
+                         const double initial_time,
+                         const double update_delta_t) noexcept {
   using Composition2d =
       Composition<TimeDependenceCompositionTag<UniformTranslation<2>>,
                   TimeDependenceCompositionTag<UniformTranslation<2>, 1>>;
@@ -163,14 +165,14 @@ void test_composition_2d(const gsl::not_null<T> gen,
 
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
       time_dep0 = std::make_unique<UniformTranslation<2>>(
-          initial_time, velocity0, f_of_t_names0);
+          initial_time, update_delta_t, velocity0, f_of_t_names0);
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
       time_dep1 = std::make_unique<UniformTranslation<2>>(
-          initial_time, velocity1, f_of_t_names1);
+          initial_time, update_delta_t, velocity1, f_of_t_names1);
 
   const std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
       expected_time_dep = std::make_unique<UniformTranslation<2>>(
-          initial_time, velocity0 + velocity1,
+          initial_time, update_delta_t, velocity0 + velocity1,
           std::array<std::string, 2>{{"TranslationX", "TranslationY"}});
 
   const std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
@@ -188,7 +190,8 @@ void test_composition_2d(const gsl::not_null<T> gen,
 
 template <typename T>
 void test_composition_3d(const gsl::not_null<T> gen,
-                         const double initial_time) noexcept {
+                         const double initial_time,
+                         const double update_delta_t) noexcept {
   using Composition3d =
       Composition<TimeDependenceCompositionTag<UniformTranslation<3>>,
                   TimeDependenceCompositionTag<UniformTranslation<3>, 1>>;
@@ -202,14 +205,14 @@ void test_composition_3d(const gsl::not_null<T> gen,
 
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dep0 = std::make_unique<UniformTranslation<3>>(
-          initial_time, velocity0, f_of_t_names0);
+          initial_time, update_delta_t, velocity0, f_of_t_names0);
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dep1 = std::make_unique<UniformTranslation<3>>(
-          initial_time, velocity1, f_of_t_names1);
+          initial_time, update_delta_t, velocity1, f_of_t_names1);
 
   const std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       expected_time_dep = std::make_unique<UniformTranslation<3>>(
-          initial_time, velocity0 + velocity1,
+          initial_time, update_delta_t, velocity0 + velocity1,
           std::array<std::string, 3>{
               {"TranslationX", "TranslationY", "TranslationZ"}});
 
@@ -230,9 +233,10 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.Composition",
                   "[Domain][Unit]") {
   MAKE_GENERATOR(gen);
   const double initial_time = 1.3;
-  test_composition_1d(make_not_null(&gen), initial_time);
-  test_composition_2d(make_not_null(&gen), initial_time);
-  test_composition_3d(make_not_null(&gen), initial_time);
+  const double update_delta_t = 2.5;
+  test_composition_1d(make_not_null(&gen), initial_time, update_delta_t);
+  test_composition_2d(make_not_null(&gen), initial_time, update_delta_t);
+  test_composition_3d(make_not_null(&gen), initial_time, update_delta_t);
 }
 }  // namespace
 }  // namespace time_dependence

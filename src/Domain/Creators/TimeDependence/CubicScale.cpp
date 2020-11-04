@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -28,12 +29,15 @@ namespace creators {
 namespace time_dependence {
 template <size_t MeshDim>
 CubicScale<MeshDim>::CubicScale(
-    const double initial_time, const double outer_boundary,
+    const double initial_time,
+    const std::optional<double> initial_expiration_delta_t,
+    const double outer_boundary,
     std::array<std::string, 2> functions_of_time_names,
     const std::array<double, 2>& initial_expansion,
     const std::array<double, 2>& velocity,
     const std::array<double, 2>& acceleration) noexcept
     : initial_time_(initial_time),
+      initial_expiration_delta_t_(initial_expiration_delta_t),
       outer_boundary_(outer_boundary),
       functions_of_time_names_(std::move(functions_of_time_names)),
       initial_expansion_(initial_expansion),
@@ -41,11 +45,11 @@ CubicScale<MeshDim>::CubicScale(
       acceleration_(acceleration) {}
 
 template <size_t MeshDim>
-std::unique_ptr<TimeDependence<MeshDim>>
-CubicScale<MeshDim>::get_clone() const noexcept {
+std::unique_ptr<TimeDependence<MeshDim>> CubicScale<MeshDim>::get_clone()
+    const noexcept {
   return std::make_unique<CubicScale>(
-      initial_time_, outer_boundary_, functions_of_time_names_,
-      initial_expansion_, velocity_, acceleration_);
+      initial_time_, initial_expiration_delta_t_, outer_boundary_,
+      functions_of_time_names_, initial_expansion_, velocity_, acceleration_);
 }
 
 template <size_t MeshDim>
@@ -70,20 +74,28 @@ CubicScale<MeshDim>::functions_of_time() const noexcept {
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       result{};
+  const double initial_expiration_time =
+      initial_expiration_delta_t_ ? initial_time_ + *initial_expiration_delta_t_
+                                  : std::numeric_limits<double>::max();
+
   // Use a 3rd deriv function of time so that it can be used with a control
   // system.
   result[functions_of_time_names_[0]] =
       std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
-          initial_time_, std::array<DataVector, 4>{{{initial_expansion_[0]},
-                                                    {velocity_[0]},
-                                                    {acceleration_[0]},
-                                                    {0.0}}});
+          initial_time_,
+          std::array<DataVector, 4>{{{initial_expansion_[0]},
+                                     {velocity_[0]},
+                                     {acceleration_[0]},
+                                     {0.0}}},
+          initial_expiration_time);
   result[functions_of_time_names_[1]] =
       std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
-          initial_time_, std::array<DataVector, 4>{{{initial_expansion_[1]},
-                                                    {velocity_[1]},
-                                                    {acceleration_[1]},
-                                                    {0.0}}});
+          initial_time_,
+          std::array<DataVector, 4>{{{initial_expansion_[1]},
+                                     {velocity_[1]},
+                                     {acceleration_[1]},
+                                     {0.0}}},
+          initial_expiration_time);
   return result;
 }
 
@@ -99,6 +111,7 @@ template <size_t Dim>
 bool operator==(const CubicScale<Dim>& lhs,
                 const CubicScale<Dim>& rhs) noexcept {
   return lhs.initial_time_ == rhs.initial_time_ and
+         lhs.initial_expiration_delta_t_ == rhs.initial_expiration_delta_t_ and
          lhs.outer_boundary_ == rhs.outer_boundary_ and
          lhs.functions_of_time_names_ == rhs.functions_of_time_names_ and
          lhs.initial_expansion_ == rhs.initial_expansion_ and
