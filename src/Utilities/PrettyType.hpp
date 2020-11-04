@@ -17,6 +17,7 @@
 #include <sstream>
 #include <stack>
 #include <string>
+#include <type_traits>
 #include <typeinfo>
 #include <unordered_map>
 #include <unordered_set>
@@ -691,12 +692,9 @@ std::string get_runtime_type_name(const T& x) {
   return boost::core::demangle(typeid(x).name());
 }
 
-/*!
- * \ingroup PrettyTypeGroup
- * \brief Extract the "short name" from a name, that is, the name
- * without template parameters or scopes.
- */
-std::string extract_short_name(std::string name);
+namespace detail {
+std::string extract_short_name(const std::string& name) noexcept;
+}  // namespace detail
 
 /*!
  * \ingroup PrettyTypeGroup
@@ -705,6 +703,6 @@ std::string extract_short_name(std::string name);
  */
 template <typename T>
 std::string short_name() {
-  return extract_short_name(get_name<T>());
+  return detail::extract_short_name(typeid(T).name());
 }
 }  // namespace pretty_type

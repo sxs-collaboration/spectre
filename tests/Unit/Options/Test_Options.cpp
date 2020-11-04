@@ -487,7 +487,7 @@ void test_options_map_empty() {
 }
 
 // [[OutputRegex, In string:.*While parsing option Map:.At line 1 column
-// 6:.Failed to convert value to type {std::string: int}: string]]
+// 6:.Failed to convert value to type {string: int}: string]]
 SPECTRE_TEST_CASE("Unit.Options.Map.invalid", "[Unit][Options]") {
   ERROR_TEST();
   Options::Parser<tmpl::list<Map>> opts("");
@@ -496,7 +496,7 @@ SPECTRE_TEST_CASE("Unit.Options.Map.invalid", "[Unit][Options]") {
 }
 
 // [[OutputRegex, In string:.*While parsing option Map:.At line 2 column
-// 6:.Failed to convert value to type {std::string: int}: A: string]]
+// 6:.Failed to convert value to type {string: int}: A: string]]
 SPECTRE_TEST_CASE("Unit.Options.Map.invalid_entry", "[Unit][Options]") {
   ERROR_TEST();
   Options::Parser<tmpl::list<Map>> opts("");
