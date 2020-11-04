@@ -194,6 +194,7 @@ void test() noexcept {
   const size_t num_pts = pow<Dim>(4_st);
   const std::array<double, 3> velocity{{1.2, 0.2, -8.9}};
   const double initial_time = 0.0;
+  const double expiration_time = 2.5;
   const std::array<std::string, 3> functions_of_time_names{
       {"TranslationX", "TranslationY", "TranslationZ"}};
   std::unordered_map<std::string,
@@ -203,8 +204,9 @@ void test() noexcept {
     functions_of_time.insert(std::make_pair(
         gsl::at(functions_of_time_names, i),
         std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-            initial_time, std::array<DataVector, 3>{
-                              {{0.0}, {gsl::at(velocity, i)}, {0.0}}})));
+            initial_time,
+            std::array<DataVector, 3>{{{0.0}, {gsl::at(velocity, i)}, {0.0}}},
+            expiration_time)));
   }
 
   std::vector<Block<Dim>> blocks{1};

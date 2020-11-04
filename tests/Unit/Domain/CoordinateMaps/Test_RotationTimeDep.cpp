@@ -66,7 +66,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.RotationTimeDep",
   const std::array<DataVector, deriv_order + 1> init_func{
       {{1.0}, {-2.0}, {2.0}, {0.0}}};
   std::unordered_map<std::string, FoftPtr> f_of_t_list{};
-  f_of_t_list[f_of_t_name] = std::make_unique<Polynomial>(t, init_func);
+  f_of_t_list[f_of_t_name] =
+      std::make_unique<Polynomial>(t, init_func, final_time + dt);
 
   const CoordinateMaps::TimeDependent::Rotation<spatial_dim> rotation_map{
       f_of_t_name};

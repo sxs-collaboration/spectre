@@ -149,10 +149,10 @@ void test_1d_domains() {
         functions_of_time{};
     functions_of_time["Translation0"] =
         std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-            1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}});
+            1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}, 10.0);
     functions_of_time["Translation1"] =
         std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-            1.0, std::array<DataVector, 3>{{{0.0}, {5.3}, {0.0}}});
+            1.0, std::array<DataVector, 3>{{{0.0}, {5.3}, {0.0}}}, 10.0);
 
     test_domain_construction(domain_from_corners, expected_neighbors,
                              expected_boundaries, expected_logical_to_grid_maps,

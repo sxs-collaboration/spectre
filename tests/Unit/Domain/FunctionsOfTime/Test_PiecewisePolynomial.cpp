@@ -45,13 +45,13 @@ void test(const gsl::not_null<FunctionsOfTime::FunctionOfTime*> f_of_t,
     CHECK(approx(lambdas2[0][1]) == square(t));
 
     t += dt;
-    f_of_t_derived->update(t, {6.0, 0.0});
+    f_of_t_derived->update(t, {6.0, 0.0}, t + dt);
     CHECK(*f_of_t_derived != f_of_t_derived_copy);
   }
   // test time_bounds function
   const auto t_bounds = f_of_t->time_bounds();
   CHECK(t_bounds[0] == 0.0);
-  CHECK(t_bounds[1] == 4.2);
+  CHECK(t_bounds[1] == 4.8);
 }
 
 template <size_t DerivOrder>
@@ -65,7 +65,7 @@ void test_non_const_deriv(
   CHECK(*f_of_t_derived == f_of_t_derived_copy);
   while (t < final_time) {
     t += dt;
-    f_of_t_derived->update(t, {3.0 + t});
+    f_of_t_derived->update(t, {3.0 + t}, t + dt);
     CHECK(*f_of_t_derived != f_of_t_derived_copy);
   }
   const auto lambdas0 = f_of_t->func_and_2_derivs(t);
@@ -120,7 +120,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
         {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
     {
       INFO("Test with simple construction.");
-      FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(t, init_func);
+      FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(t, init_func,
+                                                               t + dt);
       FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t2 =
           serialize_and_deserialize(f_of_t);
 
@@ -131,7 +132,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
       INFO("Test with base class construction.");
       std::unique_ptr<FunctionsOfTime::FunctionOfTime> f_of_t =
           std::make_unique<FunctionsOfTime::PiecewisePolynomial<deriv_order>>(
-              t, init_func);
+              t, init_func, t + dt);
       std::unique_ptr<FunctionsOfTime::FunctionOfTime> f_of_t2 =
           serialize_and_deserialize(f_of_t);
       std::unique_ptr<FunctionsOfTime::FunctionOfTime> f_of_t3 =
@@ -167,7 +168,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
         {{0.0}, {0.0}, {2.0}}};
     {
       INFO("Test with simple construction.");
-      FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(t, init_func);
+      FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(t, init_func,
+                                                               t + dt);
       FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t2 =
           serialize_and_deserialize(f_of_t);
       test_non_const_deriv(make_not_null(&f_of_t), make_not_null(&f_of_t), t,
@@ -179,7 +181,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
       INFO("Test with base class construction.");
       std::unique_ptr<FunctionsOfTime::FunctionOfTime> f_of_t =
           std::make_unique<FunctionsOfTime::PiecewisePolynomial<deriv_order>>(
-              t, init_func);
+              t, init_func, t + dt);
       std::unique_ptr<FunctionsOfTime::FunctionOfTime> f_of_t2 =
           serialize_and_deserialize(f_of_t);
       std::unique_ptr<FunctionsOfTime::FunctionOfTime> f_of_t3 =
@@ -211,12 +213,13 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
     const std::array<DataVector, deriv_order + 1> init_func{
         {{1.0, 1.0}, {3.0, 2.0}, {6.0, 2.0}, {6.0, 0.0}}};
 
-    FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func);
+    FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func,
+                                                             1.1);
     FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t2 =
         serialize_and_deserialize(f_of_t);
 
-    f_of_t.update(2.0, {6.0, 0.0});
-    f_of_t2.update(2.0, {6.0, 0.0});
+    f_of_t.update(2.0, {6.0, 0.0}, 2.1);
+    f_of_t2.update(2.0, {6.0, 0.0}, 2.1);
 
     test_within_roundoff<deriv_order>(f_of_t);
     test_within_roundoff<deriv_order>(f_of_t2);
@@ -233,9 +236,67 @@ SPECTRE_TEST_CASE(
   constexpr size_t deriv_order = 3;
   const std::array<DataVector, deriv_order + 1> init_func{
       {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func);
-  f_of_t.update(2.0, {6.0, 0.0});
-  f_of_t.update(1.0, {6.0, 0.0});
+  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func, 0.1);
+  f_of_t.update(2.0, {6.0, 0.0}, 2.1);
+  f_of_t.update(1.0, {6.0, 0.0}, 2.1);
+}
+
+// [[OutputRegex, expiration_time must be nondecreasing from call to call.
+// Attempted to change expiration time to 1\.1, which precedes the
+// previous expiration time of 2\.1.]]
+SPECTRE_TEST_CASE(
+    "Unit.Domain.FunctionsOfTime.PiecewisePolynomial.BadExpiryTime",
+    "[Domain][Unit]") {
+  ERROR_TEST();
+  // two component system (x**3 and x**2)
+  constexpr size_t deriv_order = 3;
+  const std::array<DataVector, deriv_order + 1> init_func{
+      {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
+  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func, 0.1);
+  f_of_t.update(1.0, {6.0, 0.0}, 2.1);
+  f_of_t.update(2.0, {6.0, 0.0}, 1.1);
+}
+
+// [[OutputRegex, Attempt to update PiecewisePolynomial at a time 1
+// that is earlier than the previous expiration time of 2.]]
+SPECTRE_TEST_CASE(
+    "Unit.Domain.FunctionsOfTime.PiecewisePolynomial.BadUpdateGtExpiry",
+    "[Domain][Unit]") {
+  ERROR_TEST();
+  // two component system (x**3 and x**2)
+  constexpr size_t deriv_order = 3;
+  const std::array<DataVector, deriv_order + 1> init_func{
+      {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
+  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func, 2.0);
+  f_of_t.update(1.0, {6.0, 0.0}, 2.1);
+}
+
+// [[OutputRegex, Attempt to set the expiration time of PiecewisePolynomial
+// to a value 2\.2 that is earlier than the current time 2\.5.]]
+SPECTRE_TEST_CASE(
+    "Unit.Domain.FunctionsOfTime.PiecewisePolynomial.BadUpdateLtExpiry",
+    "[Domain][Unit]") {
+  ERROR_TEST();
+  // two component system (x**3 and x**2)
+  constexpr size_t deriv_order = 3;
+  const std::array<DataVector, deriv_order + 1> init_func{
+      {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
+  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func, 2.0);
+  f_of_t.update(2.5, {6.0, 0.0}, 2.2);
+}
+
+// [[OutputRegex, Attempted to change expiration time to
+// 1\.5, which precedes the previous expiration time of 2.]]
+SPECTRE_TEST_CASE(
+    "Unit.Domain.FunctionsOfTime.PiecewisePolynomial.BadResetExpiry",
+    "[Domain][Unit]") {
+  ERROR_TEST();
+  // two component system (x**3 and x**2)
+  constexpr size_t deriv_order = 3;
+  const std::array<DataVector, deriv_order + 1> init_func{
+      {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
+  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func, 2.0);
+  f_of_t.reset_expiration_time(1.5);
 }
 
 // [[OutputRegex, the number of components trying to be updated \(3\) does not
@@ -248,8 +309,8 @@ SPECTRE_TEST_CASE(
   constexpr size_t deriv_order = 3;
   const std::array<DataVector, deriv_order + 1> init_func{
       {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func);
-  f_of_t.update(1.0, {6.0, 0.0, 0.0});
+  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func, 0.1);
+  f_of_t.update(1.0, {6.0, 0.0, 0.0}, 1.1);
 }
 
 // [[OutputRegex, requested time 0.5 precedes earliest time 1 of times.]]
@@ -261,8 +322,22 @@ SPECTRE_TEST_CASE(
   constexpr size_t deriv_order = 3;
   const std::array<DataVector, deriv_order + 1> init_func{
       {{1.0, 1.0}, {3.0, 2.0}, {6.0, 2.0}, {6.0, 0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func);
-  f_of_t.update(2.0, {6.0, 0.0});
+  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func, 2.0);
+  f_of_t.update(2.0, {6.0, 0.0}, 2.1);
   f_of_t.func(0.5);
+}
+
+// [[OutputRegex, Attempt to evaluate PiecewisePolynomial at a time 2\.2
+// that is after the expiration time 2\.]]
+SPECTRE_TEST_CASE(
+    "Unit.Domain.FunctionsOfTime.PiecewisePolynomial.TimeAfterExpiry",
+    "[Domain][Unit]") {
+  ERROR_TEST();
+  // two component system (x**3 and x**2)
+  constexpr size_t deriv_order = 3;
+  const std::array<DataVector, deriv_order + 1> init_func{
+      {{1.0, 1.0}, {3.0, 2.0}, {6.0, 2.0}, {6.0, 0.0}}};
+  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func, 2.0);
+  f_of_t.func(2.2);
 }
 }  // namespace domain

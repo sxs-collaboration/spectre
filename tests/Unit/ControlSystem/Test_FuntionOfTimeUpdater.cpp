@@ -53,8 +53,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionOfTimeUpdater.Translation",
   // initialize our FunctionOfTime to agree at t=0
   const std::array<DataVector, deriv_order + 1> init_func{
       {{0.0, 0.0}, {amp1 * omega1, amp2 * omega2}, {0.0, 0.0}}};
-  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(t,
-                                                                   init_func);
+  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(t, init_func,
+                                                                   t + dt);
 
   Averager<deriv_order> averager(0.25, false);
   Controller<deriv_order> control_signal;
@@ -82,7 +82,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionOfTimeUpdater.Translation",
     // make the error measurement
     trans_error(&updater, f_of_t, t, inertial_coords);
     // update the FunctionOfTime
-    updater.modify(&f_of_t, t);
+    updater.modify(&f_of_t, t, t + dt);
     // check that Q is within the specified tolerance
     CHECK(fabs(inertial_coords[0] - grid_coords[0] - f_of_t.func(t)[0][0]) <=
           decrease_timescale_threshold);

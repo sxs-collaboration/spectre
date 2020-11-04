@@ -137,6 +137,7 @@ void test() noexcept {
   MAKE_GENERATOR(gen);
   const std::array<double, 3> velocity{{1.2, 0.2, -8.9}};
   const double initial_time = 0.0;
+  const double expiration_time = 5.0;
   const std::array<std::string, 3> functions_of_time_names{
       {"TranslationX", "TranslationY", "TranslationZ"}};
 
@@ -158,15 +159,18 @@ void test() noexcept {
   functions_of_time[functions_of_time_names[0]] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
           initial_time,
-          std::array<DataVector, 3>{{{0.0}, {velocity[0]}, {0.0}}});
+          std::array<DataVector, 3>{{{0.0}, {velocity[0]}, {0.0}}},
+          expiration_time);
   functions_of_time[functions_of_time_names[1]] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
           initial_time,
-          std::array<DataVector, 3>{{{0.0}, {velocity[1]}, {0.0}}});
+          std::array<DataVector, 3>{{{0.0}, {velocity[1]}, {0.0}}},
+          expiration_time);
   functions_of_time[functions_of_time_names[2]] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
           initial_time,
-          std::array<DataVector, 3>{{{0.0}, {velocity[2]}, {0.0}}});
+          std::array<DataVector, 3>{{{0.0}, {velocity[2]}, {0.0}}},
+          expiration_time);
 
   using MapPtr = std::unique_ptr<
       domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>>;

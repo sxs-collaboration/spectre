@@ -23,8 +23,8 @@ class PiecewisePolynomial : public FunctionOfTime {
  public:
   PiecewisePolynomial() = default;
   PiecewisePolynomial(
-      double t,
-      std::array<DataVector, MaxDeriv + 1> initial_func_and_derivs) noexcept;
+      double t, std::array<DataVector, MaxDeriv + 1> initial_func_and_derivs,
+      double expiration_time) noexcept;
 
   ~PiecewisePolynomial() override = default;
   PiecewisePolynomial(PiecewisePolynomial&&) noexcept = default;
@@ -56,12 +56,21 @@ class PiecewisePolynomial : public FunctionOfTime {
   }
 
   /// Updates the `MaxDeriv`th derivative of the function at the given time.
-  /// `updated_max_deriv` is a vector of the `MaxDeriv`ths for each component
-  void update(double time_of_update, DataVector updated_max_deriv) noexcept;
-  /// Returns the domain of validity of the function.
+  /// `updated_max_deriv` is a vector of the `MaxDeriv`ths for each component.
+  /// `next_expiration_time` is the next expiration time.
+  void update(double time_of_update, DataVector updated_max_deriv,
+              double next_expiration_time) noexcept;
+
+  /// Used by `FunctionOfTimeUpdater` to reset the expiration time
+  /// when it decides not to do an update, but instead decides to
+  /// keep the current values valid for longer.
+  void reset_expiration_time(double next_expiration_time) noexcept;
+
+  /// Returns the domain of validity of the function,
+  /// including the extrapolation region.
   std::array<double, 2> time_bounds() const noexcept override {
     return {{deriv_info_at_update_times_.front().time,
-             deriv_info_at_update_times_.back().time}};
+             expiration_time_}};
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -111,6 +120,7 @@ class PiecewisePolynomial : public FunctionOfTime {
   const DerivInfo& deriv_info_from_upper_bound(double t) const noexcept;
 
   std::vector<DerivInfo> deriv_info_at_update_times_;
+  double expiration_time_{std::numeric_limits<double>::lowest()};
 };
 
 template <size_t MaxDeriv>

@@ -1077,7 +1077,7 @@ void test_time_dependent_map() {
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
   functions_of_time["Translation"] =
-      std::make_unique<Polynomial>(initial_time, init_func);
+      std::make_unique<Polynomial>(initial_time, init_func, final_time);
 
   const CoordinateMaps::TimeDependent::Translation trans_map{"Translation"};
 
@@ -1329,6 +1329,7 @@ void test_coords_frame_velocity_jacobians() noexcept {
                                                     trans_map>;
 
   const double initial_time = 0.0;
+  const double final_time   = 2.0;
   const double time = 2.0;
   constexpr size_t deriv_order = 3;
 
@@ -1338,19 +1339,24 @@ void test_coords_frame_velocity_jacobians() noexcept {
       functions_of_time{};
   functions_of_time["trans_x"] = std::make_unique<Polynomial>(
       initial_time,
-      std::array<DataVector, deriv_order + 1>{{{1.0}, {-2.0}, {0.0}, {0.0}}});
+      std::array<DataVector, deriv_order + 1>{{{1.0}, {-2.0}, {0.0}, {0.0}}},
+      final_time);
   functions_of_time["trans_y"] = std::make_unique<Polynomial>(
       initial_time,
-      std::array<DataVector, deriv_order + 1>{{{1.0}, {3.0}, {0.0}, {0.0}}});
+      std::array<DataVector, deriv_order + 1>{{{1.0}, {3.0}, {0.0}, {0.0}}},
+      final_time);
   functions_of_time["trans_z"] = std::make_unique<Polynomial>(
       initial_time,
-      std::array<DataVector, deriv_order + 1>{{{1.0}, {4.5}, {0.0}, {0.0}}});
+      std::array<DataVector, deriv_order + 1>{{{1.0}, {4.5}, {0.0}, {0.0}}},
+      final_time);
   functions_of_time["ExpansionA"] = std::make_unique<Polynomial>(
       initial_time,
-      std::array<DataVector, deriv_order + 1>{{{1.0}, {-0.01}, {0.0}, {0.0}}});
+      std::array<DataVector, deriv_order + 1>{{{1.0}, {-0.01}, {0.0}, {0.0}}},
+      final_time);
   functions_of_time["ExpansionB"] = std::make_unique<Polynomial>(
       initial_time,
-      std::array<DataVector, deriv_order + 1>{{{1.0}, {0.0}, {0.0}, {0.0}}});
+      std::array<DataVector, deriv_order + 1>{{{1.0}, {0.0}, {0.0}, {0.0}}},
+      final_time);
 
   const auto composed_map_1d =
       make_coordinate_map<Frame::Logical, Frame::Inertial>(
