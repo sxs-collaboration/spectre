@@ -27,8 +27,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace domain {
-namespace creators {
-namespace time_dependence {
+namespace creators::time_dependence {
 
 template <size_t MeshDim>
 UniformRotationAboutZAxis<MeshDim>::UniformRotationAboutZAxis(
@@ -134,8 +133,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (2, 3))
 #undef GET_DIM
 #undef INSTANTIATION
 /// \endcond
-}  // namespace time_dependence
-}  // namespace creators
+}  // namespace creators::time_dependence
 
 using Identity = CoordinateMaps::Identity<1>;
 using Rotation2d = CoordinateMaps::TimeDependent::Rotation<2>;

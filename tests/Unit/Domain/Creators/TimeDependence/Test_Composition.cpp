@@ -19,9 +19,7 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Domain/Creators/TimeDependence/TestHelpers.hpp"
 
-namespace domain {
-namespace creators {
-namespace time_dependence {
+namespace domain::creators::time_dependence {
 
 namespace {
 using Translation = domain::CoordinateMaps::TimeDependent::Translation;
@@ -239,6 +237,4 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.Composition",
   test_composition_3d(make_not_null(&gen), initial_time, update_delta_t);
 }
 }  // namespace
-}  // namespace time_dependence
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::time_dependence

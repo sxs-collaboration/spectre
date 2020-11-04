@@ -25,8 +25,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace domain {
-namespace creators {
-namespace time_dependence {
+namespace creators::time_dependence {
 template <size_t MeshDim>
 CubicScale<MeshDim>::CubicScale(
     const double initial_time,
@@ -140,8 +139,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef GET_DIM
-}  // namespace time_dependence
-}  // namespace creators
+}  // namespace creators::time_dependence
 
 INSTANTIATE_MAPS_FUNCTIONS(((CoordinateMaps::TimeDependent::CubicScale<1>),
                             (CoordinateMaps::TimeDependent::CubicScale<2>),

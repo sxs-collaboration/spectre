@@ -19,11 +19,9 @@
 #include "Utilities/ConstantExpressions.hpp"
 
 class DataVector;
-namespace domain {
-namespace FunctionsOfTime {
+namespace domain::FunctionsOfTime {
 class FunctionOfTime;
-}  // namespace FunctionsOfTime
-}  // namespace domain
+}  // namespace domain::FunctionsOfTime
 
 namespace {
 std::array<double, 2> expected_mapped_point(

@@ -29,9 +29,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace domain {
-namespace creators {
-namespace time_dependence {
+namespace domain::creators::time_dependence {
 
 namespace {
 using Identity = domain::CoordinateMaps::Identity<1>;
@@ -244,6 +242,4 @@ SPECTRE_TEST_CASE(
 }
 }  // namespace
 
-}  // namespace time_dependence
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::time_dependence

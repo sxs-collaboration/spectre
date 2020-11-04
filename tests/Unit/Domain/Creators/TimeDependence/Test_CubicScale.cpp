@@ -26,9 +26,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace domain {
-namespace creators {
-namespace time_dependence {
+namespace domain::creators::time_dependence {
 namespace {
 template <size_t MeshDim>
 using CubicScaleMap =
@@ -269,6 +267,4 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.CubicScale",
   test<3>();
 }
 }  // namespace
-}  // namespace time_dependence
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::time_dependence

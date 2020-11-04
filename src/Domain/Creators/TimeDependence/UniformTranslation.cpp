@@ -26,8 +26,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace domain {
-namespace creators {
-namespace time_dependence {
+namespace creators::time_dependence {
 namespace {
 std::array<std::string, 3> default_function_names_impl() noexcept {
   return {{"TranslationX", "TranslationY", "TranslationZ"}};
@@ -184,8 +183,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef GET_DIM
 #undef INSTANTIATION
 /// \endcond
-}  // namespace time_dependence
-}  // namespace creators
+}  // namespace creators::time_dependence
 
 using Translation = CoordinateMaps::TimeDependent::Translation;
 using Translation2d =

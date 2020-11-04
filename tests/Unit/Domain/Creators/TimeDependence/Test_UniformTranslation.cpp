@@ -28,9 +28,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace domain {
-namespace creators {
-namespace time_dependence {
+namespace domain::creators::time_dependence {
 
 namespace {
 using Translation = domain::CoordinateMaps::TimeDependent::Translation;
@@ -373,6 +371,4 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.UniformTranslation",
 }
 }  // namespace
 
-}  // namespace time_dependence
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::time_dependence
