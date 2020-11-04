@@ -84,8 +84,7 @@ DirectionMap<VolumeDim, double> compute_effective_neighbor_sizes(
         neighbor_data) noexcept {
   DirectionMap<VolumeDim, double> result;
   for (const auto& dir : Direction<VolumeDim>::all_directions()) {
-    const auto& externals = element.external_boundaries();
-    const bool neighbors_in_this_dir = (externals.find(dir) == externals.end());
+    const bool neighbors_in_this_dir = element.neighbors().contains(dir);
     if (neighbors_in_this_dir) {
       const double effective_neighbor_size = [&dir, &element,
                                               &neighbor_data]() noexcept {
@@ -120,8 +119,7 @@ DirectionMap<VolumeDim, double> compute_effective_neighbor_means(
         neighbor_data) noexcept {
   DirectionMap<VolumeDim, double> result;
   for (const auto& dir : Direction<VolumeDim>::all_directions()) {
-    const auto& externals = element.external_boundaries();
-    const bool neighbors_in_this_dir = (externals.find(dir) == externals.end());
+    const bool neighbors_in_this_dir = element.neighbors().contains(dir);
     if (neighbors_in_this_dir) {
       const double effective_neighbor_mean =
           [&dir, &element, &neighbor_data, &tensor_storage_index]() noexcept {
