@@ -37,20 +37,32 @@ MetricWorldtubeDataManager::MetricWorldtubeDataManager(
           Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)},
       buffer_depth_{buffer_depth},
       interpolator_{std::move(interpolator)} {
-  if (UNLIKELY(buffer_updater_->get_time_buffer().size() <
-               2 * interpolator_->required_number_of_points_before_and_after() +
-                   buffer_depth)) {
+  if (UNLIKELY(
+          buffer_updater_->get_time_buffer().size() <
+          2 * interpolator_->required_number_of_points_before_and_after())) {
     ERROR(
         "The specified buffer updater doesn't have enough time points to "
-        "supply the requested interpolation buffer. This almost certainly "
+        "supply the requested interpolator. This almost certainly "
         "indicates that the corresponding file hasn't been created properly, "
-        "but might indicate that the `buffer_depth` template parameter is "
-        "too large or the specified Interpolator requests too many points");
+        "but might indicate that the specified Interpolator requests too many "
+        "points");
+  }
+  // This will actually change the buffer depth in the case where the buffer
+  // depth passed to the constructor is too large for the worldtube file size.
+  // In that case, the worldtube data wouldn't be able to fill the buffer, so
+  // here we shrink the buffer depth down to be no larger than the length of the
+  // worldtube file.
+  if (UNLIKELY(buffer_updater_->get_time_buffer().size() <
+               2 * interpolator_->required_number_of_points_before_and_after() +
+                   buffer_depth_)) {
+    buffer_depth_ =
+        buffer_updater_->get_time_buffer().size() -
+        2 * interpolator_->required_number_of_points_before_and_after();
   }
 
   const size_t size_of_buffer =
       square(l_max + 1) *
-      (buffer_depth +
+      (buffer_depth_ +
        2 * interpolator_->required_number_of_points_before_and_after());
   coefficients_buffers_ = Variables<cce_metric_input_tags>{size_of_buffer};
 }
@@ -261,20 +273,31 @@ BondiWorldtubeDataManager::BondiWorldtubeDataManager(
           Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)},
       buffer_depth_{buffer_depth},
       interpolator_{std::move(interpolator)} {
-  if (UNLIKELY(buffer_updater_->get_time_buffer().size() <
-               2 * interpolator_->required_number_of_points_before_and_after() +
-                   buffer_depth)) {
+  if (UNLIKELY(
+          buffer_updater_->get_time_buffer().size() <
+          2 * interpolator_->required_number_of_points_before_and_after())) {
     ERROR(
         "The specified buffer updater doesn't have enough time points to "
-        "supply the requested interpolation buffer. This almost certainly "
+        "supply the requested interpolator. This almost certainly "
         "indicates that the corresponding file hasn't been created properly, "
-        "but might indicate that the `buffer_depth` template parameter is "
-        "too large or the specified SpanInterpolator requests too many "
+        "but might indicate that the specified Interpolator requests too many "
         "points");
+  }
+  // This will actually change the buffer depth in the case where the buffer
+  // depth passed to the constructor is too large for the worldtube file size.
+  // In that case, the worldtube data wouldn't be able to fill the buffer, so
+  // here we shrink the buffer depth down to be no larger than the length of the
+  // worldtube file.
+  if (UNLIKELY(buffer_updater_->get_time_buffer().size() <
+               2 * interpolator_->required_number_of_points_before_and_after() +
+                   buffer_depth_)) {
+    buffer_depth_ =
+        buffer_updater_->get_time_buffer().size() -
+        2 * interpolator_->required_number_of_points_before_and_after();
   }
   coefficients_buffers_ = Variables<cce_bondi_input_tags>{
       square(l_max + 1) *
-      (buffer_depth +
+      (buffer_depth_ +
        2 * interpolator_->required_number_of_points_before_and_after())};
 }
 
