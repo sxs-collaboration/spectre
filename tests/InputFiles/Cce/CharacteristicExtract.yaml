@@ -27,6 +27,7 @@ Cce:
     BarycentricRationalSpanInterpolator:
       MinOrder: 10
       MaxOrder: 10
+  ExtractionRadius: 257.0
   FixSpecNormalization: False
 
   H5LookaheadTimes: 10000
