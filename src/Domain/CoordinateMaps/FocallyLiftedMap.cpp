@@ -267,8 +267,8 @@ template <typename InnerMap>
 std::optional<std::array<double, 3>> FocallyLiftedMap<InnerMap>::inverse(
     const std::array<double, 3>& target_coords) const noexcept {
   // Scale factor taking target_coords to lower_coords.
-  const auto lambda_tilde =
-      inner_map_.lambda_tilde(target_coords, proj_center_);
+  const auto lambda_tilde = inner_map_.lambda_tilde(
+      target_coords, proj_center_, source_is_between_focus_and_target_);
 
   // Cannot find scale factor, so we are out of range of the map.
   if (not lambda_tilde) {

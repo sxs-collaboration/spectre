@@ -422,7 +422,8 @@ class Endcap {
 
   std::optional<double> lambda_tilde(
       const std::array<double, 3>& parent_mapped_target_coords,
-      const std::array<double, 3>& projection_point) const noexcept;
+      const std::array<double, 3>& projection_point,
+      bool source_is_between_focus_and_target) const noexcept;
 
   template <typename T>
   void deriv_lambda_tilde(

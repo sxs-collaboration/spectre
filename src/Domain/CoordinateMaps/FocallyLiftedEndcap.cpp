@@ -320,15 +320,20 @@ void Endcap::dxbar_dsigma(
 
 std::optional<double> Endcap::lambda_tilde(
     const std::array<double, 3>& parent_mapped_target_coords,
-    const std::array<double, 3>& projection_point) const noexcept {
+    const std::array<double, 3>& projection_point,
+    const bool source_is_between_focus_and_target) const noexcept {
   // Try to find lambda_tilde going from target_coords to sphere.
-  // This lambda_tilde should be positive and less than or equal to unity.
-  // If there are two such roots, we choose based on where the points are.
+  // If the target surface is outside the sphere (that is,
+  // source_is_between_focus_and_target is true), then lambda_tilde should be
+  // positive and less than or equal to unity. If the target surface is inside
+  // the sphere, then lambda_tilde should be greater than or equal
+  // to unity. If there are two such roots, we choose based on where the points
+  // are.
   const bool choose_larger_root =
       parent_mapped_target_coords[2] > projection_point[2];
   return FocallyLiftedMapHelpers::try_scale_factor(
       parent_mapped_target_coords, projection_point, center_, radius_,
-      choose_larger_root, false);
+      choose_larger_root, not source_is_between_focus_and_target);
 }
 
 template <typename T>
