@@ -52,7 +52,7 @@ class Event : public PUP::able {
   void run(const db::DataBox<DbTags>& box,
            Parallel::GlobalCache<Metavariables>& cache,
            const ArrayIndex& array_index,
-           const ComponentPointer /*meta*/) noexcept {
+           const ComponentPointer /*meta*/) const noexcept {
     call_with_dynamic_type<void, creatable_classes>(
         this, [&box, &cache, &array_index ](auto* const event) noexcept {
           db::apply(*event, box, cache, array_index, ComponentPointer{});

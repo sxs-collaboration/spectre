@@ -76,6 +76,7 @@
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
+#include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
@@ -212,6 +213,7 @@ struct EvolutionMetavars {
                        typename system::primitive_variables_tag::tags_list>,
           tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
                               analytic_variables_tags, tmpl::list<>>>,
+      Events::Registrars::ObserveTimeStep<EvolutionMetavars>,
       Events::Registrars::ChangeSlabSize<slab_choosers>>>;
   using interpolation_events =
       tmpl::list<intrp::Events::Registrars::Interpolate<
