@@ -33,9 +33,9 @@ namespace TimeSteppers {
 
 /// \ingroup TimeSteppersGroup
 ///
-/// A "strong stability-preserving" 3rd-order Runge-Kutta time-stepper.
-/// Major reference:  J. Hesthaven & T. Warburton, Nodal Discontinuous
-/// Galerkin Methods. section 5.7
+/// A "strong stability-preserving" 3rd-order Runge-Kutta
+/// time-stepper, as described in \cite HesthavenWarburton section
+/// 5.7.
 class RungeKutta3 : public TimeStepper::Inherit {
  public:
   using options = tmpl::list<>;
