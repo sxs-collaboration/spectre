@@ -18,6 +18,7 @@ spectre_target_headers(
   HEADERS
   CharacteristicHelpers.hpp
   Flattener.hpp
+  KxrcfTci.hpp
   )
 
 target_link_libraries(
