@@ -70,12 +70,12 @@ UniformRotationAboutZAxis<MeshDim>::functions_of_time() const noexcept {
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       result{};
-  // We use a `PiecewisePolynomial` with 2 derivs since some transformations
-  // between different frames for moving meshes can require Hessians.
+  // We use a third-order `PiecewisePolynomial` to ensure sufficiently
+  // smooth behavior of the function of time
   result[function_of_time_name_] =
-      std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
+      std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
           initial_time_,
-          std::array<DataVector, 3>{{{0.0}, {angular_velocity_}, {0.0}}},
+          std::array<DataVector, 4>{{{0.0}, {angular_velocity_}, {0.0}, {0.0}}},
           initial_expiration_delta_t_
               ? initial_time_ + *initial_expiration_delta_t_
               : std::numeric_limits<double>::max());
