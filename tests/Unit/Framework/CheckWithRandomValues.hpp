@@ -201,16 +201,15 @@ void check_with_random_values_impl(
   EXPAND_PACK_LEFT_TO_RIGHT(fill_with_random_values(
       make_not_null(&std::get<ArgumentIs>(args)), make_not_null(&generator),
       make_not_null(&(distributions[ArgumentIs]))));
-  const auto result = make_overloader(
-      [&](std::true_type /*is_class*/, auto&& local_f) {
-        return (klass.*local_f)(std::get<ArgumentIs>(args)...);
-      },
-      [&](std::false_type /*is_class*/, auto&& local_f) {
-        return local_f(std::get<ArgumentIs>(args)...);
-      })(
-      std::integral_constant<
-          bool, not std::is_same_v<NoSuchType, std::decay_t<Klass>>>{},
-      std::forward<F>(f));
+  const auto result = [&args, &f, &klass]() noexcept {
+    (void)args;
+    if constexpr (std::is_same_v<NoSuchType, std::decay_t<Klass>>) {
+      (void)klass;
+      return f(std::get<ArgumentIs>(args)...);
+    } else {
+      return (klass.*f)(std::get<ArgumentIs>(args)...);
+    }
+  }();
   INFO("function: " << function_name);
   try {
     CHECK_ITERABLE_CUSTOM_APPROX(
@@ -252,18 +251,13 @@ void check_with_random_values_impl(
   EXPAND_PACK_LEFT_TO_RIGHT(fill_with_random_values(
       make_not_null(&std::get<ResultIs>(results)), make_not_null(&generator),
       make_not_null(&(distributions[0]))));
-  make_overloader(
-      [&](std::true_type /*is_class*/, auto&& local_f) {
-        (klass.*local_f)(make_not_null(&std::get<ResultIs>(results))...,
-                         std::get<ArgumentIs>(args)...);
-      },
-      [&](std::false_type /*is_class*/, auto&& local_f) {
-        local_f(make_not_null(&std::get<ResultIs>(results))...,
-                std::get<ArgumentIs>(args)...);
-      })(
-      std::integral_constant<
-          bool, not std::is_same_v<NoSuchType, std::decay_t<Klass>>>{},
-      std::forward<F>(f));
+  if constexpr (std::is_same_v<NoSuchType, std::decay_t<Klass>>) {
+    f(make_not_null(&std::get<ResultIs>(results))...,
+      std::get<ArgumentIs>(args)...);
+  } else {
+    (klass.*f)(make_not_null(&std::get<ResultIs>(results))...,
+               std::get<ArgumentIs>(args)...);
+  }
   const auto helper = [&module_name, &function_names, &args, &results, &epsilon,
                        &member_args, &used_for_size](auto result_i) {
     (void)member_args;    // avoid compiler warning
