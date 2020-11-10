@@ -55,7 +55,7 @@ using plus_tensor_index = TensorIndex<A::value + B::value>;
  * \brief The available TensorIndex's to use in a TensorExpression
  *
  * Available tensor indices to use in a Tensor Expression.
- * \snippet Test_TensorExpressions.cpp use_tensor_index
+ * \snippet Test_AddSubtract.cpp use_tensor_index
  */
 static TensorIndex<0> ti_a{};
 static TensorIndex<0> ti_A{};
