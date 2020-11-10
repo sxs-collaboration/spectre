@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   PiecewisePolynomial.cpp
+  ReadSpecThirdOrderPiecewisePolynomial.cpp
   RegisterDerivedWithCharm.cpp
   SettleToConstant.cpp
   Tags.cpp
@@ -19,7 +20,9 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   FunctionOfTime.hpp
+  OptionTags.hpp
   PiecewisePolynomial.hpp
+  ReadSpecThirdOrderPiecewisePolynomial.hpp
   RegisterDerivedWithCharm.hpp
   SettleToConstant.hpp
   Tags.hpp
@@ -29,7 +32,9 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+  Options
   Utilities
   PRIVATE
   ErrorHandling
+  IO
   )

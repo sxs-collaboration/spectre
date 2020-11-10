@@ -53,7 +53,7 @@ namespace Initialization {
  * DataBox:
  * - Uses:
  *   - `domain::Tags::InitialExtents<Dim>`
- *   - `domain::Tags::InitialFunctionsOfTime<Dim>`
+ *   - `domain::Tags::InitialFunctionsOfTime<Dim, OverrideCubicFunctionsOfTime>`
  * - Adds:
  *   - `domain::Tags::Mesh<Dim>`
  *   - `domain::Tags::Element<Dim>`
@@ -78,13 +78,16 @@ namespace Initialization {
  * \note This action relies on the `SetupDataBox` aggregated initialization
  * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
  * phase action list prior to this action.
+ * \note If OverrideCubicFunctionsOfTime == true, then cubic functions
+ * of time are overriden via `read_spec_third_order_piecewise_polynomial()`
  */
-template <size_t Dim>
+template <size_t Dim, bool OverrideCubicFunctionsOfTime = false>
 struct Domain {
   using initialization_tags =
       tmpl::list<::domain::Tags::InitialExtents<Dim>,
                  ::domain::Tags::InitialRefinementLevels<Dim>,
-                 ::domain::Tags::InitialFunctionsOfTime<Dim>>;
+                 ::domain::Tags::InitialFunctionsOfTime<
+                     Dim, OverrideCubicFunctionsOfTime>>;
   using const_global_cache_tags = tmpl::list<::domain::Tags::Domain<Dim>>;
 
   using simple_tags =
@@ -129,7 +132,6 @@ struct Domain {
                     const ElementId<Dim>& array_index,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-
     const auto& initial_extents =
         db::get<::domain::Tags::InitialExtents<Dim>>(box);
     const auto& initial_refinement =
