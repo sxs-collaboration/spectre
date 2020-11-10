@@ -100,16 +100,14 @@ void test_variables(const DataType& used_for_size) {
       bh_mass, bh_dimless_spin, rest_mass_density, flow_speed,
       mag_field_strength, polytropic_constant, polytropic_exponent);
 
-  pypp::check_with_random_values<
-      1, BondiHoyleAccretionProxy::hydro_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &BondiHoyleAccretionProxy::hydro_variables<DataType>, accretion,
       "PointwiseFunctions.AnalyticData.GrMhd.BondiHoyleAccretion",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
        "pressure", "lorentz_factor", "specific_enthalpy"},
       {{{-10., 10.}}}, member_variables, used_for_size);
 
-  pypp::check_with_random_values<
-      1, BondiHoyleAccretionProxy::grmhd_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &BondiHoyleAccretionProxy::grmhd_variables<DataType>, accretion,
       "PointwiseFunctions.AnalyticData.GrMhd.BondiHoyleAccretion",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",

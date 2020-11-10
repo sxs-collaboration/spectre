@@ -54,15 +54,11 @@ struct MoustacheProxy : Poisson::Solutions::Moustache<Dim> {
 template <size_t Dim>
 void test_solution() {
   const MoustacheProxy<Dim> solution{};
-  pypp::check_with_random_values<
-      1, tmpl::list<Poisson::Tags::Field,
-                    ::Tags::deriv<Poisson::Tags::Field, tmpl::size_t<Dim>,
-                                  Frame::Inertial>>>(
-      &MoustacheProxy<Dim>::field_variables, solution, "Moustache",
-      {"field", "field_gradient"}, {{{0., 1.}}}, std::make_tuple(),
-      DataVector(5));
-  pypp::check_with_random_values<
-      1, tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>>(
+  pypp::check_with_random_values<1>(&MoustacheProxy<Dim>::field_variables,
+                                    solution, "Moustache",
+                                    {"field", "field_gradient"}, {{{0., 1.}}},
+                                    std::make_tuple(), DataVector(5));
+  pypp::check_with_random_values<1>(
       &MoustacheProxy<Dim>::source_variables, solution, "Moustache", {"source"},
       {{{0., 1.}}}, std::make_tuple(), DataVector(5));
 

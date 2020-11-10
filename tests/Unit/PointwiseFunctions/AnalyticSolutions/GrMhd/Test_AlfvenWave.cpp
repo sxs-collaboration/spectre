@@ -109,8 +109,7 @@ void test_variables(const DataType& used_for_size) {
        0.7 * cos(M_PI_4 + M_PI_2) * sin(0.5 * M_PI_4),
        0.7 * sin(M_PI_4 + M_PI_2)}};
 
-  pypp::check_with_random_values<
-      1, AlfvenWaveProxy::hydro_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &AlfvenWaveProxy::hydro_variables<DataType>,
       AlfvenWaveProxy(wavenumber, pressure, rest_mass_density, adiabatic_index,
                       bkgd_magnetic_field, wave_magnetic_field),
@@ -123,8 +122,7 @@ void test_variables(const DataType& used_for_size) {
                       bkgd_magnetic_field, wave_magnetic_field),
       used_for_size);
 
-  pypp::check_with_random_values<
-      1, AlfvenWaveProxy::grmhd_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &AlfvenWaveProxy::grmhd_variables<DataType>,
       AlfvenWaveProxy(wavenumber, pressure, rest_mass_density, adiabatic_index,
                       bkgd_magnetic_field, wave_magnetic_field),

@@ -499,10 +499,14 @@ void check_with_random_values(
  * specified when debugging a failure with a particular set of random numbers,
  * in general it should be left to the default value.
  */
-template <size_t NumberOfBounds, class F, class T, class... MemberArgs,
-          Requires<not std::is_same_v<
-              typename tt::function_info<cpp20::remove_cvref_t<F>>::return_type,
-              void>> = nullptr>
+template <
+    size_t NumberOfBounds, class F, class T, class... MemberArgs,
+    Requires<not std::is_same_v<typename tt::function_info<
+                                    cpp20::remove_cvref_t<F>>::return_type,
+                                void> and
+             not tt::is_a_v<tuples::TaggedTuple,
+                            typename tt::function_info<cpp20::remove_cvref_t<
+                                F>>::return_type>> = nullptr>
 // The Requires is used so that we can call the std::vector<std::string> with
 // braces and not have it be ambiguous.
 void check_with_random_values(
@@ -569,12 +573,6 @@ void check_with_random_values(
  * functions do not need to support receiving a signaling `NaN` in their return
  * argument to be tested using this function.
  *
- * If `TagsList` is passed as a `tmpl::list`, then `f` is expected to
- * return a TaggedTuple. The result of each python function will be
- * compared with calling `tuples::get` on the result of `f`. The order of the
- * tags within `TagsList` should match the order of the functions in
- * `function_names`
- *
  * \note You must explicitly pass the number of bounds you will be passing as
  * the first template parameter, the rest will be inferred.
  *
@@ -602,8 +600,13 @@ void check_with_random_values(
  * specified when debugging a failure with a particular set of random numbers,
  * in general it should be left to the default value.
  */
-template <size_t NumberOfBounds, typename TagsList = NoSuchType, class F,
-          class T, class... MemberArgs>
+template <size_t NumberOfBounds, class F, class T, class... MemberArgs,
+          Requires<std::is_same_v<typename tt::function_info<
+                                      cpp20::remove_cvref_t<F>>::return_type,
+                                  void> or
+                   tt::is_a_v<tuples::TaggedTuple,
+                              typename tt::function_info<cpp20::remove_cvref_t<
+                                  F>>::return_type>> = nullptr>
 void check_with_random_values(
     F&& f,
     const typename tt::function_info<cpp20::remove_cvref_t<F>>::class_type&
@@ -628,16 +631,18 @@ void check_with_random_values(
       tmpl::transform<tmpl::pop_back<typename f_info::argument_types,
                                      tmpl::size<argument_types>>,
                       TestHelpers_detail::RemoveNotNull<tmpl::_1>>;
+  constexpr bool return_type_is_tagged_tuple =
+      tt::is_a_v<tuples::TaggedTuple, typename f_info::return_type>;
 
   static_assert(
-      number_of_not_null::value != 0 or tt::is_a_v<tmpl::list, TagsList>,
+      number_of_not_null::value != 0 or return_type_is_tagged_tuple,
       "You must either return at least one argument by gsl::not_null when"
       "passing the python function names as a vector<string>, or return by "
       "value using a TaggedTuple. If your function returns by value with a "
       "type that is not a TaggedTuple do not pass the function name as a "
       "vector<string> but just a string.");
   static_assert(std::is_same_v<typename f_info::return_type, void> or
-                    tt::is_a_v<tmpl::list, TagsList>,
+                    return_type_is_tagged_tuple,
                 "The function must either return by gsl::not_null and have a "
                 "void return type, or return by TaggedTuple");
   static_assert(tmpl::size<argument_types>::value != 0,
@@ -648,7 +653,7 @@ void check_with_random_values(
                 "equal to the number of arguments taken by f that are not "
                 "gsl::not_null.");
   if (function_names.size() != number_of_not_null::value and
-      not tt::is_a_v<tmpl::list, TagsList>) {
+      not return_type_is_tagged_tuple) {
     ERROR(
         "If testing a function that returns by gsl::not_null, the number of "
         "python functions passed must be the same as the number of "
@@ -664,13 +669,25 @@ void check_with_random_values(
         gsl::at(lower_and_upper_bounds, NumberOfBounds == 1 ? 0 : i).first,
         gsl::at(lower_and_upper_bounds, NumberOfBounds == 1 ? 0 : i).second};
   }
-  TestHelpers_detail::check_with_random_values_impl(
-      std::forward<F>(f), klass, module_name, function_names, generator,
-      std::move(distributions), member_args, used_for_size, return_types{},
-      argument_types{},
-      std::make_index_sequence<tmpl::size<return_types>::value>{},
-      std::make_index_sequence<tmpl::size<argument_types>::value>{},
-      std::make_index_sequence<sizeof...(MemberArgs)>{}, TagsList{}, epsilon);
+  if constexpr (return_type_is_tagged_tuple) {
+    TestHelpers_detail::check_with_random_values_impl(
+        std::forward<F>(f), klass, module_name, function_names, generator,
+        std::move(distributions), member_args, used_for_size, return_types{},
+        argument_types{},
+        std::make_index_sequence<tmpl::size<return_types>::value>{},
+        std::make_index_sequence<tmpl::size<argument_types>::value>{},
+        std::make_index_sequence<sizeof...(MemberArgs)>{},
+        typename f_info::return_type::tags_list{}, epsilon);
+  } else {
+    TestHelpers_detail::check_with_random_values_impl(
+        std::forward<F>(f), klass, module_name, function_names, generator,
+        std::move(distributions), member_args, used_for_size, return_types{},
+        argument_types{},
+        std::make_index_sequence<tmpl::size<return_types>::value>{},
+        std::make_index_sequence<tmpl::size<argument_types>::value>{},
+        std::make_index_sequence<sizeof...(MemberArgs)>{}, NoSuchType{},
+        epsilon);
+  }
 }
 
 /// \cond

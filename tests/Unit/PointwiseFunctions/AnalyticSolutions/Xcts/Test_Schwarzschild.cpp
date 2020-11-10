@@ -83,8 +83,7 @@ void test_solution(const double mass, const double expected_radius_at_horizon,
   REQUIRE(solution.radius_at_horizon() == approx(expected_radius_at_horizon));
   const double inner_radius = 0.5 * expected_radius_at_horizon;
   const double outer_radius = 2. * expected_radius_at_horizon;
-  pypp::check_with_random_values<
-      1, tmpl::append<field_tags, auxiliary_field_tags>>(
+  pypp::check_with_random_values<1>(
       &SchwarzschildProxy<Coords>::field_variables, solution, "Schwarzschild",
       {"conformal_factor_" + py_functions_suffix,
        "lapse_times_conformal_factor_" + py_functions_suffix,
@@ -93,7 +92,7 @@ void test_solution(const double mass, const double expected_radius_at_horizon,
        "lapse_times_conformal_factor_gradient_" + py_functions_suffix,
        "shift_strain_" + py_functions_suffix},
       {{{inner_radius, outer_radius}}}, std::make_tuple(mass), DataVector(5));
-  pypp::check_with_random_values<1, background_tags>(
+  pypp::check_with_random_values<1>(
       &SchwarzschildProxy<Coords>::background_variables, solution,
       "Schwarzschild",
       {"conformal_spatial_metric_" + py_functions_suffix,
@@ -101,11 +100,11 @@ void test_solution(const double mass, const double expected_radius_at_horizon,
        "extrinsic_curvature_trace_gradient_" + py_functions_suffix,
        "shift_background"},
       {{{inner_radius, outer_radius}}}, std::make_tuple(mass), DataVector(5));
-  pypp::check_with_random_values<1, matter_source_tags>(
+  pypp::check_with_random_values<1>(
       &SchwarzschildProxy<Coords>::matter_source_variables, solution,
       "Schwarzschild", {"energy_density", "stress_trace", "momentum_density"},
       {{{inner_radius, outer_radius}}}, std::make_tuple(mass), DataVector(5));
-  pypp::check_with_random_values<1, fixed_source_tags>(
+  pypp::check_with_random_values<1>(
       &SchwarzschildProxy<Coords>::fixed_source_variables, solution,
       "Schwarzschild",
       {"conformal_factor_fixed_source",

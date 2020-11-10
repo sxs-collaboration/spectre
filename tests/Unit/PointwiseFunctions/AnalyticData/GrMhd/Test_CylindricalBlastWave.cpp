@@ -117,16 +117,14 @@ void test_variables(const DataType& used_for_size) noexcept {
   // Note: I select random numbers in the range {{-1.1, 1.1}} so that
   // sometimes the random points are in the transition region and sometimes
   // in the fixed region.
-  pypp::check_with_random_values<
-      1, CylindricalBlastWaveProxy::hydro_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &CylindricalBlastWaveProxy::hydro_variables<DataType>,
       cylindrical_blast_wave, "CylindricalBlastWave",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
        "pressure", "lorentz_factor", "specific_enthalpy"},
       {{{-1.1, 1.1}}}, member_variables, used_for_size);
 
-  pypp::check_with_random_values<
-      1, CylindricalBlastWaveProxy::grmhd_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &CylindricalBlastWaveProxy::grmhd_variables<DataType>,
       cylindrical_blast_wave, "CylindricalBlastWave",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",

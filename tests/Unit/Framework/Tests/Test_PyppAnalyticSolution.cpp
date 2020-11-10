@@ -64,15 +64,11 @@ SPECTRE_TEST_CASE("Unit.Pypp.AnalyticSolution", "[Pypp][Unit]") {
   const std::array<double, 3> b{{-1.3, 5.6, -0.2}};
   AnalyticSolutionTest solution{a, b};
   const DataVector used_for_size(5);
-  pypp::check_with_random_values<
-      1, tmpl::list<AnalyticSolutionTest::Var1<double>,
-                    AnalyticSolutionTest::Var2<double>>>(
+  pypp::check_with_random_values<1>(
       &AnalyticSolutionTest::solution<double>, solution, "PyppPyTests",
       {"check_solution_scalar", "check_solution_vector"}, {{{-10.0, 10.0}}},
       std::make_tuple(a, b), a);
-  pypp::check_with_random_values<
-      1, tmpl::list<AnalyticSolutionTest::Var1<DataVector>,
-                    AnalyticSolutionTest::Var2<DataVector>>>(
+  pypp::check_with_random_values<1>(
       &AnalyticSolutionTest::solution<DataVector>, solution, "PyppPyTests",
       {"check_solution_scalar", "check_solution_vector"}, {{{-10.0, 10.0}}},
       std::make_tuple(a, b), used_for_size);

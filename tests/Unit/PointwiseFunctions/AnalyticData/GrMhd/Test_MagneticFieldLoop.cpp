@@ -112,8 +112,7 @@ void test_variables(const DataType& used_for_size) noexcept {
       pressure, rest_mass_density, adiabatic_index, advection_velocity,
       magnetic_field_magnitude, inner_radius, outer_radius);
 
-  pypp::check_with_random_values<
-      1, MagneticFieldLoopProxy::hydro_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &MagneticFieldLoopProxy::hydro_variables<DataType>, magnetic_field_loop,
       "MagneticFieldLoop",
       {"compute_rest_mass_density", "spatial_velocity",
@@ -121,8 +120,7 @@ void test_variables(const DataType& used_for_size) noexcept {
        "specific_enthalpy"},
       {{{-1.0, 1.0}}}, member_variables, used_for_size);
 
-  pypp::check_with_random_values<
-      1, MagneticFieldLoopProxy::grmhd_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &MagneticFieldLoopProxy::grmhd_variables<DataType>, magnetic_field_loop,
       "MagneticFieldLoop",
       {"compute_rest_mass_density", "spatial_velocity",

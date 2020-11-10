@@ -110,16 +110,14 @@ void test_variables(const DataType& used_for_size) noexcept {
       rotor_radius, rotor_density, background_density, pressure,
       angular_velocity, magnetic_field, adiabatic_index);
 
-  pypp::check_with_random_values<
-      1, MagneticRotorProxy::hydro_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &MagneticRotorProxy::hydro_variables<DataType>, magnetic_rotor,
       "MagneticRotor",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
        "compute_pressure", "lorentz_factor", "specific_enthalpy"},
       {{{-1.0, 1.0}}}, member_variables, used_for_size);
 
-  pypp::check_with_random_values<
-      1, MagneticRotorProxy::grmhd_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &MagneticRotorProxy::grmhd_variables<DataType>, magnetic_rotor,
       "MagneticRotor",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",

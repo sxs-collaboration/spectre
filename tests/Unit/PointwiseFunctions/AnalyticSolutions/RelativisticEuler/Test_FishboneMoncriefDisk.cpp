@@ -110,16 +110,14 @@ void test_variables(const DataType& used_for_size) noexcept {
       bh_mass, bh_dimless_spin, inner_edge_radius, max_pressure_radius,
       polytropic_constant, polytropic_exponent);
 
-  pypp::check_with_random_values<
-      1, FishboneMoncriefDiskProxy::hydro_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &FishboneMoncriefDiskProxy::hydro_variables<DataType>, disk,
       "FishboneMoncriefDisk",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
        "pressure", "lorentz_factor", "specific_enthalpy"},
       {{{-15., 15.}}}, member_variables, used_for_size);
 
-  pypp::check_with_random_values<
-      1, FishboneMoncriefDiskProxy::grmhd_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &FishboneMoncriefDiskProxy::grmhd_variables<DataType>, disk,
       "FishboneMoncriefDisk",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",

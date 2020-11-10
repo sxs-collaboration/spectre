@@ -101,8 +101,7 @@ void test_variables(const DataType& used_for_size) {
   const double adiabatic_index = 4. / 3.;
   const double perturbation_size = 0.78;
 
-  pypp::check_with_random_values<
-      1, SmoothFlowProxy::hydro_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &SmoothFlowProxy::hydro_variables<DataType>,
       SmoothFlowProxy(mean_velocity, wave_vector, pressure, adiabatic_index,
                       perturbation_size),
@@ -114,8 +113,7 @@ void test_variables(const DataType& used_for_size) {
                       perturbation_size),
       used_for_size);
 
-  pypp::check_with_random_values<
-      1, SmoothFlowProxy::grmhd_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &SmoothFlowProxy::grmhd_variables<DataType>,
       SmoothFlowProxy(mean_velocity, wave_vector, pressure, adiabatic_index,
                       perturbation_size),

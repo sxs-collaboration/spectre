@@ -200,8 +200,7 @@ void test_gauge_wave(const gr::Solutions::GaugeWave<Dim>& solution,
   // Check with random values
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/"};
-  pypp::check_with_random_values<
-      1, typename GaugeWaveProxy<Dim>::template variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &GaugeWaveProxy<Dim>::template test_variables<DataType>,
       GaugeWaveProxy<Dim>(amplitude, wavelength), "GaugeWave",
       {"gauge_wave_lapse", "gauge_wave_dt_lapse", "gauge_wave_d_lapse",

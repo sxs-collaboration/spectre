@@ -92,8 +92,7 @@ void test_variables(const DataType& used_for_size) {
   const double polytropic_exponent = 4. / 3.;
   const double mag_field_strength = 2.3;
 
-  pypp::check_with_random_values<
-      1, BondiMichelProxy::hydro_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &BondiMichelProxy::hydro_variables<DataType>,
       BondiMichelProxy(mass, sonic_radius, sonic_density, polytropic_exponent,
                        mag_field_strength),
@@ -106,8 +105,7 @@ void test_variables(const DataType& used_for_size) {
                       mag_field_strength),
       used_for_size);
 
-  pypp::check_with_random_values<
-      1, BondiMichelProxy::grmhd_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &BondiMichelProxy::grmhd_variables<DataType>,
       BondiMichelProxy(mass, sonic_radius, sonic_density, polytropic_exponent,
                        mag_field_strength),

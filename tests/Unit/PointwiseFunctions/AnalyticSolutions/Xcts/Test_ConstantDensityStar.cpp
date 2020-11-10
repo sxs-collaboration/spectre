@@ -54,18 +54,18 @@ void test_solution(const double density, const double radius,
                    const std::string& options) {
   const ConstantDensityStarProxy solution(density, radius);
   const double test_radius = 2. * radius;
-  pypp::check_with_random_values<1, field_tags>(
+  pypp::check_with_random_values<1>(
       &ConstantDensityStarProxy::field_variables, solution,
       "ConstantDensityStar", {"conformal_factor", "conformal_factor_gradient"},
       {{{-test_radius, test_radius}}}, std::make_tuple(density, radius),
       DataVector(5));
-  pypp::check_with_random_values<1, initial_tags>(
+  pypp::check_with_random_values<1>(
       &ConstantDensityStarProxy::initial_variables, solution,
       "ConstantDensityStar",
       {"initial_conformal_factor", "initial_conformal_factor_gradient"},
       {{{-test_radius, test_radius}}}, std::make_tuple(density, radius),
       DataVector(5));
-  pypp::check_with_random_values<1, source_tags>(
+  pypp::check_with_random_values<1>(
       &ConstantDensityStarProxy::source_variables, solution,
       "ConstantDensityStar", {"conformal_factor_source"},
       {{{-test_radius, test_radius}}}, std::make_tuple(density, radius),

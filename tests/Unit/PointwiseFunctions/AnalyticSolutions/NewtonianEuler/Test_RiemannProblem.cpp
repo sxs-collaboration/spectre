@@ -53,8 +53,7 @@ void test_solution(const std::array<double, Dim> left_velocity,
   // new parameters in the star region must be given in the python modules.
   RiemannProblemProxy<Dim> solution(1.4, 0.5, 1.0, left_velocity, 1.0, 0.125,
                                     right_velocity, 0.1, 1.e-6);
-  pypp::check_with_random_values<
-      1, typename RiemannProblemProxy<Dim>::template variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &RiemannProblemProxy<Dim>::template primitive_variables<DataType>,
       solution, "RiemannProblem",
       {"mass_density", "velocity", "pressure", "specific_internal_energy"},

@@ -62,8 +62,7 @@ void test_solution(const DataType& used_for_size,
 
   SmoothFlowProxy<Dim> solution(mean_velocity, wave_vector, pressure,
                                 adiabatic_index, perturbation_size);
-  pypp::check_with_random_values<
-      1, typename SmoothFlowProxy<Dim>::template variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &SmoothFlowProxy<Dim>::template primitive_variables<DataType>, solution,
       "Hydro.SmoothFlow",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",

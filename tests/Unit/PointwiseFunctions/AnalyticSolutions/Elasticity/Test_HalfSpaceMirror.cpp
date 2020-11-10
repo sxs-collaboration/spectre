@@ -83,16 +83,13 @@ SPECTRE_TEST_CASE(
       constitutive_relation{36.36363636363637, 30.76923076923077};
   const HalfSpaceMirrorProxy solution{0.177, constitutive_relation, 350, 1e-11,
                                       1e-11};
-  pypp::check_with_random_values<1,
-                                 tmpl::list<Elasticity::Tags::Displacement<dim>,
-                                            Elasticity::Tags::Strain<dim>>>(
+  pypp::check_with_random_values<1>(
       &HalfSpaceMirrorProxy::field_variables, solution,
       "AnalyticSolutions.Elasticity.HalfSpaceMirror",
       {"displacement", "strain"}, {{{0., 3.}}},
       std::make_tuple(0.177, 36.36363636363637, 30.76923076923077),
       DataVector(5), 1e-10);
-  pypp::check_with_random_values<
-      1, tmpl::list<Tags::FixedSource<Elasticity::Tags::Displacement<dim>>>>(
+  pypp::check_with_random_values<1>(
       &HalfSpaceMirrorProxy::source_variables, solution,
       "AnalyticSolutions.Elasticity.HalfSpaceMirror", {"source"}, {{{0., 3.}}},
       std::make_tuple(), DataVector(5), 1e-10);
