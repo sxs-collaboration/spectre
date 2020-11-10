@@ -18,7 +18,8 @@
 #   and input file below.
 # - Add a file ${HOME}/.charmrunrc that does the following (replace
 #   ${SPECTRE_BUILD_DIR}/../ with the path to your spectre checkout):
-#    source ${SPECTRE_BUILD_DIR}/../support/Environments/ocean_clang_lb.sh
+#    source /etc/profile.d/lmod.sh
+#    source ${SPECTRE_BUILD_DIR}/../support/Environments/ocean_clang.sh
 #    spectre_load_modules
 #
 # NOTE: The executable will not be copied from the build directory, so if you
