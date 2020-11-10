@@ -38,7 +38,6 @@
 #include <boost/vmd/is_empty.hpp>
 // IWYU pragma: end_exports
 
-#include <initializer_list>
 #include <limits>
 #include <random>
 #include <string>
@@ -152,14 +151,9 @@ void check_with_random_values_impl(
   // Note: generator and distributions cannot be const.
   std::tuple<ArgumentTypes...> args{
       make_with_value<ArgumentTypes>(used_for_size, 0.0)...};
-  // We fill with random values after initialization because the order of
-  // evaluation is not guaranteed for a constructor call and so then knowing
-  // the seed would not lead to reproducible results.
-  (void)std::initializer_list<char>{(
-      (void)fill_with_random_values(
-          make_not_null(&std::get<ArgumentIs>(args)), make_not_null(&generator),
-          make_not_null(&(distributions[ArgumentIs]))),
-      '0')...};
+  EXPAND_PACK_LEFT_TO_RIGHT(fill_with_random_values(
+      make_not_null(&std::get<ArgumentIs>(args)), make_not_null(&generator),
+      make_not_null(&(distributions[ArgumentIs]))));
 
   size_t count = 0;
   tmpl::for_each<TagsList>([&f, &klass, &args, &used_for_size, &member_args,
@@ -204,14 +198,9 @@ void check_with_random_values_impl(
   using ResultType = typename f_info::return_type;
   std::tuple<ArgumentTypes...> args{
       make_with_value<ArgumentTypes>(used_for_size, 0.0)...};
-  // We fill with random values after initialization because the order of
-  // evaluation is not guaranteed for a constructor call and so then knowing the
-  // seed would not lead to reproducible results.
-  (void)std::initializer_list<char>{(
-      (void)fill_with_random_values(
-          make_not_null(&std::get<ArgumentIs>(args)), make_not_null(&generator),
-          make_not_null(&(distributions[ArgumentIs]))),
-      '0')...};
+  EXPAND_PACK_LEFT_TO_RIGHT(fill_with_random_values(
+      make_not_null(&std::get<ArgumentIs>(args)), make_not_null(&generator),
+      make_not_null(&(distributions[ArgumentIs]))));
   const auto result = make_overloader(
       [&](std::true_type /*is_class*/, auto&& local_f) {
         return (klass.*local_f)(std::get<ArgumentIs>(args)...);
@@ -257,22 +246,12 @@ void check_with_random_values_impl(
       make_with_value<ReturnTypes>(used_for_size, 0.0)...};
   std::tuple<ArgumentTypes...> args{
       make_with_value<ArgumentTypes>(used_for_size, 0.0)...};
-  // We fill with random values after initialization because the order of
-  // evaluation is not guaranteed for a constructor call and so then knowing the
-  // seed would not lead to reproducible results.
-  (void)std::initializer_list<char>{(
-      (void)fill_with_random_values(
-          make_not_null(&std::get<ArgumentIs>(args)), make_not_null(&generator),
-          make_not_null(&(distributions[ArgumentIs]))),
-      '0')...};
-  // We intentionally do not set the return value to signaling NaN so that not
-  // all of our functions need to be able to handle the cases where they
-  // receive a NaN. Instead, we fill the return value with random numbers.
-  (void)std::initializer_list<char>{(
-      (void)fill_with_random_values(make_not_null(&std::get<ResultIs>(results)),
-                                    make_not_null(&generator),
-                                    make_not_null(&(distributions[0]))),
-      '0')...};
+  EXPAND_PACK_LEFT_TO_RIGHT(fill_with_random_values(
+      make_not_null(&std::get<ArgumentIs>(args)), make_not_null(&generator),
+      make_not_null(&(distributions[ArgumentIs]))));
+  EXPAND_PACK_LEFT_TO_RIGHT(fill_with_random_values(
+      make_not_null(&std::get<ResultIs>(results)), make_not_null(&generator),
+      make_not_null(&(distributions[0]))));
   make_overloader(
       [&](std::true_type /*is_class*/, auto&& local_f) {
         (klass.*local_f)(make_not_null(&std::get<ResultIs>(results))...,
@@ -304,10 +283,8 @@ void check_with_random_values_impl(
       INFO("Python call failed: " << e.what());
       CHECK(false);
     }
-    return '0';
   };
-  (void)std::initializer_list<char>{
-      helper(std::integral_constant<size_t, ResultIs>{})...};
+  EXPAND_PACK_LEFT_TO_RIGHT(helper(std::integral_constant<size_t, ResultIs>{}));
 }
 }  // namespace TestHelpers_detail
 
