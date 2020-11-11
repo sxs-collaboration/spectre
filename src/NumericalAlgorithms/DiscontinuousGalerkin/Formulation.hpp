@@ -5,6 +5,14 @@
 
 #include <iosfwd>
 
+/// \cond
+namespace Options {
+class Option;
+template <typename T>
+struct create_from_yaml;
+}  // namespace Options
+/// \endcond
+
 namespace dg {
 /*!
  * \ingroup DiscontinuousGalerkinGroup
@@ -27,3 +35,17 @@ enum class Formulation { StrongInertial, WeakInertial };
 
 std::ostream& operator<<(std::ostream& os, Formulation t) noexcept;
 }  // namespace dg
+
+/// \cond
+template <>
+struct Options::create_from_yaml<dg::Formulation> {
+  template <typename Metavariables>
+  static dg::Formulation create(const Options::Option& options) {
+    return create<void>(options);
+  }
+};
+
+template <>
+dg::Formulation Options::create_from_yaml<dg::Formulation>::create<void>(
+    const Options::Option& options);
+/// \endcond

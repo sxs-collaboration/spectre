@@ -4,8 +4,10 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 
 #include <ostream>
+#include <string>
 
 #include "ErrorHandling/Error.hpp"
+#include "Options/ParseOptions.hpp"
 
 namespace dg {
 std::ostream& operator<<(std::ostream& os, const Formulation t) noexcept {
@@ -19,3 +21,20 @@ std::ostream& operator<<(std::ostream& os, const Formulation t) noexcept {
   }
 }
 }  // namespace dg
+
+/// \cond
+template <>
+dg::Formulation Options::create_from_yaml<dg::Formulation>::create<void>(
+    const Options::Option& options) {
+  const auto type_read = options.parse_as<std::string>();
+  if ("StrongInertial" == type_read) {
+    return dg::Formulation::StrongInertial;
+  } else if ("WeakInertial" == type_read) {
+    return dg::Formulation::WeakInertial;
+  }
+  PARSE_ERROR(options.context(), "Failed to convert \""
+                                     << type_read
+                                     << "\" to dg::Formulation. Must be one "
+                                        "of StrongInertial or WeakInertial.");
+}
+/// \endcond

@@ -131,7 +131,7 @@ struct ImposeDirichletBoundaryConditions {
                 typename system::variables_tag::type::tags_list{}));
           }
         },
-        make_not_null(&box), db::get<Tags::Time>(box),
+        make_not_null(&box), db::get<::Tags::Time>(box),
         get<typename Metavariables::boundary_condition_tag>(cache),
         db::get<domain::Tags::Interface<
             domain::Tags::BoundaryDirectionsExterior<VolumeDim>,
@@ -195,7 +195,7 @@ struct ImposeDirichletBoundaryConditions {
                 tmpl::list<system>{});
           }
         },
-        make_not_null(&box), db::get<Tags::Time>(box),
+        make_not_null(&box), db::get<::Tags::Time>(box),
         get<typename Metavariables::boundary_condition_tag>(cache),
         db::get<domain::Tags::Interface<
             domain::Tags::BoundaryDirectionsExterior<VolumeDim>,

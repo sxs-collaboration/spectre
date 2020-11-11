@@ -102,9 +102,8 @@ struct SendDataForFluxes {
     const auto& element = db::get<domain::Tags::Element<volume_dim>>(box);
     const auto& temporal_id = db::get<temporal_id_tag>(box);
     const auto& receive_temporal_id = db::get<receive_temporal_id_tag>(box);
-    const auto& mortar_meshes =
-        db::get<Tags::Mortars<domain::Tags::Mesh<volume_dim - 1>, volume_dim>>(
-            box);
+    const auto& mortar_meshes = db::get<
+        ::Tags::Mortars<domain::Tags::Mesh<volume_dim - 1>, volume_dim>>(box);
 
     // Iterate over neighbors
     for (const auto& direction_and_neighbors : element.neighbors()) {
@@ -285,16 +284,15 @@ struct ReceiveDataForFluxes<
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     db::mutate<all_mortar_data_tag,
-               Tags::Mortars<receive_temporal_id_tag, volume_dim>>(
+               ::Tags::Mortars<receive_temporal_id_tag, volume_dim>>(
         make_not_null(&box),
-        [&inboxes](
-            const gsl::not_null<typename all_mortar_data_tag::type*>
-                mortar_data,
-            const gsl::not_null<typename Tags::Mortars<receive_temporal_id_tag,
-                                                       volume_dim>::type*>
-                neighbor_next_temporal_ids,
-            const typename receive_temporal_id_tag::type&
-                local_next_temporal_id) noexcept {
+        [&inboxes](const gsl::not_null<typename all_mortar_data_tag::type*>
+                       mortar_data,
+                   const gsl::not_null<typename ::Tags::Mortars<
+                       receive_temporal_id_tag, volume_dim>::type*>
+                       neighbor_next_temporal_ids,
+                   const typename receive_temporal_id_tag::type&
+                       local_next_temporal_id) noexcept {
           auto& inbox = tuples::get<fluxes_inbox_tag>(inboxes);
           for (auto received_data = inbox.begin();
                received_data != inbox.end() and
@@ -354,7 +352,7 @@ struct ReceiveDataForFluxes<
     const auto& inbox = tuples::get<fluxes_inbox_tag>(inboxes);
     const auto& local_next_temporal_id = db::get<receive_temporal_id_tag>(box);
     const auto& mortars_next_temporal_id =
-        db::get<Tags::Mortars<receive_temporal_id_tag, volume_dim>>(box);
+        db::get<::Tags::Mortars<receive_temporal_id_tag, volume_dim>>(box);
     for (const auto& mortar_id_next_temporal_id : mortars_next_temporal_id) {
       const auto& mortar_id = mortar_id_next_temporal_id.first;
       // If on an external boundary

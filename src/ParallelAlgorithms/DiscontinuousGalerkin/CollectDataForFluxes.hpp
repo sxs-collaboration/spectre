@@ -100,9 +100,11 @@ struct CollectDataForFluxes<BoundaryScheme, domain::Tags::InternalDirections<
         domain::Tags::Interface<domain::Tags::InternalDirections<volume_dim>,
                                 domain::Tags::Mesh<volume_dim - 1>>>(box);
     const auto& mortar_meshes =
-        get<Tags::Mortars<domain::Tags::Mesh<volume_dim - 1>, volume_dim>>(box);
+        get<::Tags::Mortars<domain::Tags::Mesh<volume_dim - 1>, volume_dim>>(
+            box);
     const auto& mortar_sizes =
-        get<Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>>(box);
+        get<::Tags::Mortars<::Tags::MortarSize<volume_dim - 1>, volume_dim>>(
+            box);
     const auto& temporal_id = get<temporal_id_tag>(box);
     for (const auto& direction_and_neighbors : element.neighbors()) {
       const auto& direction = direction_and_neighbors.first;

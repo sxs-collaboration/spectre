@@ -4,6 +4,7 @@
 add_subdirectory(Actions)
 add_subdirectory(BoundarySchemes)
 add_subdirectory(NumericalFluxes)
+add_subdirectory(Tags)
 
 set(LIBRARY "Test_NumericalDiscontinuousGalerkin")
 

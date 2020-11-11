@@ -68,7 +68,8 @@ struct ComputeNonconservativeBoundaryFluxes {
     using variables_tag = typename system::variables_tag;
 
     using interface_normal_dot_fluxes_tag = domain::Tags::Interface<
-        DirectionsTag, db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>>;
+        DirectionsTag,
+        db::add_tag_prefix<::Tags::NormalDotFlux, variables_tag>>;
 
     db::mutate_apply<
         tmpl::list<interface_normal_dot_fluxes_tag>,

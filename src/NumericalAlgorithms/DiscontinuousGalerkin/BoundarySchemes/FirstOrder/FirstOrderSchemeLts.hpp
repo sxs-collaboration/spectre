@@ -100,8 +100,8 @@ struct FirstOrderSchemeLts {
   using boundary_data_computer = detail::boundary_data_computer_lts_impl<
       volume_dim, variables_tag, numerical_flux_computer_tag, BoundaryData>;
 
-  using mortar_data_tag = Tags::BoundaryHistory<BoundaryData, BoundaryData,
-                                                typename variables_tag::type>;
+  using mortar_data_tag = ::Tags::BoundaryHistory<BoundaryData, BoundaryData,
+                                                  typename variables_tag::type>;
 
   using return_tags =
       tmpl::list<variables_tag, ::Tags::Mortars<mortar_data_tag, Dim>>;
