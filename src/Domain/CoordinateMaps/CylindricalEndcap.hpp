@@ -48,6 +48,11 @@ namespace domain::CoordinateMaps {
  * mapped to a point on sphere 1 and \f$\bar{z}=+1\f$ is mapped to a
  * point on sphere 2.
  *
+ * Note that Sphere 1 and Sphere 2 are not equivalent, because the
+ * mapped portion of Sphere 1 is bounded by a plane of constant
+ * \f$z\f$ but the mapped portion of Sphere 2 is not (except for
+ * special choices of \f$C_1\f$, \f$C_2\f$, and \f$P\f$).
+ *
  * CylindricalEndcap is intended to be composed with Wedge2D maps to
  * construct a portion of a cylindrical domain for a binary system.
  *
@@ -55,14 +60,17 @@ namespace domain::CoordinateMaps {
  * \cite Buchman:2012dw.
  * CylindricalEndcap is used to construct the blocks labeled 'CA
  * wedge', 'EA wedge', 'CB wedge', 'EE wedge', and 'EB wedge' in
- * Figure 20 of that paper.
+ * Figure 20 of that paper.  Note that 'CA wedge', 'CB wedge', and
+ * 'EE wedge' have Sphere 1 contained in Sphere 2, and 'EA wedge'
+ * and 'EB wedge' have Sphere 2 contained in Sphere 1.
  *
  * CylindricalEndcap is implemented using `FocallyLiftedMap`
  * and `FocallyLiftedInnerMaps::Endcap`; see those classes for details.
  *
  * ### Restrictions on map parameters.
  *
- * We demand that Sphere 1 is fully contained inside Sphere 2. It is
+ * We demand that either Sphere 1 is fully contained inside Sphere 2, or
+ * that Sphere 2 is fully contained inside Sphere 1. It is
  * possible to construct a valid map without this assumption, but the
  * assumption simplifies the code, and the expected use cases obey
  * this restriction.
@@ -96,24 +104,33 @@ namespace domain::CoordinateMaps {
  * In addition to invertibility and the two additional restrictions
  * already mentioned above, we demand a few more restrictions on the
  * map parameters to simplify the logic for the expected use cases and
- * to ensure that jacobians do not get too large. We demand:
+ * to ensure that jacobians do not get too large. The numbers in the
+ * restrictions below were chosen empirically so that the unit tests pass
+ * with errors less than 100 times machine roundoff; we do not expect to
+ * run into these restrictions in normal usage. We demand:
  *
  * - \f$P\f$ is not too close to the edge of the invertibility cone.
  *   Here we demand that the angle between \f$P\f$ and \f$S\f$
- *   is less than \f$0.95 (\pi/2-\theta)\f$ (note that if this
+ *   is less than \f$0.85 (\pi/2-\theta)\f$ (note that if this
  *   angle is exactly \f$\pi/2-\theta\f$ it is exactly on the
- *   invertibility cone); The 0.95 was chosen empirically based on
+ *   invertibility cone); The 0.85 was chosen empirically based on
  *   unit tests.
- * - \f$P\f$ is contained in sphere 2.
- * - \f$P\f$ is to the left of \f$z_\mathrm{P}\f$.
  * - \f$z_\mathrm{P}\f$ is not too close to the center or the edge of sphere 1.
- *   Here we demand that \f$0.1 \leq \cos(\theta) \leq 0.9\f$, where
- *   the values 0.1 and 0.9 were chosen empirically based on unit tests.
- * - If a line segment is drawn between \f$P\f$ and any point on the
- *   intersection circle (the circle where sphere 1 intersects the
- *   plane \f$z=z_\mathrm{P}\f$), the angle between the line segment and
- *   the z-axis is smaller than \f$\pi/3\f$.
- *
+ *   Here we demand that \f$0.2 \leq \cos(\theta) \leq 0.95\f$, where
+ *   the values 0.2 and 0.95 were chosen empirically based on unit tests.
+ * - \f$P\f$ is contained in sphere 2.
+ * - If sphere 2 is contained in sphere 1, then
+ *   - \f$0.25 R_1 \leq R_2 \leq 0.85 (R_1 - |C_1-C_2|)\f$,
+ *     This prevents the two spheres from having a very narrow space between
+ *     them, and it prevents sphere 2 from being very small.
+ *   - \f$|P - C_2| < 0.1 R_2\f$, i.e. \f$P\f$ is near the center of sphere 2.
+ * - If sphere 1 is contained in sphere 2, then
+ *   - \f$ R_2 \geq 1.01 (R_1 + |C_1-C_2|)\f$, where the 1.01
+ *     prevents the spheres from (barely) touching.
+ *   - If a line segment is drawn between \f$P\f$ and any point on the
+ *     intersection circle (the circle where sphere 1 intersects the
+ *     plane \f$z=z_\mathrm{P}\f$), the angle between the line segment
+ *     and the z-axis is smaller than \f$\pi/3\f$.
  */
 class CylindricalEndcap {
  public:

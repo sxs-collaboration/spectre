@@ -21,8 +21,24 @@ CylindricalEndcap::CylindricalEndcap(const std::array<double, 3>& center_one,
                                      const std::array<double, 3>& proj_center,
                                      double radius_one, double radius_two,
                                      double z_plane) noexcept
-    : impl_(center_two, proj_center, radius_two,
-            FocallyLiftedInnerMaps::Endcap(center_one, radius_one, z_plane)) {
+    : impl_(
+          center_two, proj_center, radius_two,
+          [&center_one, &center_two, &radius_one, &radius_two]() noexcept {
+            const double dist_spheres =
+                sqrt(square(center_one[0] - center_two[0]) +
+                     square(center_one[1] - center_two[1]) +
+                     square(center_one[2] - center_two[2]));
+            // If sphere 1 is contained in sphere 2, then the source (sphere 1)
+            // is always between the projection point and the target (sphere 2).
+            // Otherwise, if sphere 2 is contained in sphere 1, then the source
+            // (sphere 1) is not between the projection point and the target
+            // (sphere 2).
+            //
+            // Note that below we ASSERT that sphere 1 is contained in sphere 2
+            // or vice versa.
+            return dist_spheres + radius_one < radius_two;
+          }(),
+          FocallyLiftedInnerMaps::Endcap(center_one, radius_one, z_plane)) {
 #ifdef SPECTRE_DEBUG
   // There are two types of sanity checks here on the map parameters.
   // 1) ASSERTS that guarantee that the map is invertible.
@@ -37,14 +53,14 @@ CylindricalEndcap::CylindricalEndcap(const std::array<double, 3>& center_one,
   //    very large or ill-conditioned Jacobians, or both.  We want to
   //    avoid such cases.
   // b) We do not want to waste effort testing the map for parameters
-  //    that we don't expect to be used.  For example, we demand
-  //    here that proj_center and sphere_one are contained within
-  //    sphere_two, but the map should still be valid for some choices
-  //    of parameters where sphere_one and sphere_two are disjoint;
+  //    that we don't expect to be used.  For example, we demand here
+  //    that sphere_one is contained within sphere_two or vice versa,
+  //    but the map should still be valid for some choices of
+  //    parameters where sphere_one and sphere_two are disjoint;
   //    allowing those parameter choices would involve much more
   //    complicated logic to determine whether the map produces shapes
-  //    with sharp angles or large jacobians, and it would involve more
-  //    complicated unit tests to cover those possibilities.
+  //    with sharp angles or large jacobians, and it would involve
+  //    more complicated unit tests to cover those possibilities.
 
   // First test for invertibility.
 
@@ -110,26 +126,41 @@ CylindricalEndcap::CylindricalEndcap(const std::array<double, 3>& center_one,
          "testing would be needed to ensure that jacobians are not "
          "ill-conditioned.");
 
-  ASSERT(abs(cos_theta) <= 0.9,
+  ASSERT(abs(cos_theta) <= 0.95,
          "z_plane is too far from the center of sphere_one. "
              << "cos_theta = " << cos_theta
-             << ". If |cos_theta| > 1 the map is singular.  If 0.9 < "
+             << ". If |cos_theta| > 1 the map is singular.  If 0.95 < "
                 "|cos_theta| < 1 then the map is not singular, but the "
                 "jacobians are likely to be large and the map has not been "
                 "tested for these parameters.");
-  ASSERT(abs(cos_theta) >= 0.1,
-         "z_plane is too close to the center of sphere_one. "
-             << "cos_theta = " << cos_theta
-             << ". The map is not singular, but the jacobians are likely to be "
-                "large and the map has not been tested for this choice of "
-                "parameters.");
+  ASSERT(
+      abs(cos_theta) >= 0.2,
+      "z_plane is too close to the center of sphere_one. "
+          << "cos_theta = " << cos_theta
+          << ". The map is not singular, but the jacobians are likely to be "
+             "large "
+             "and the map has not been tested for this choice of parameters.");
 
   const double dist_spheres = sqrt(square(center_one[0] - center_two[0]) +
                                    square(center_one[1] - center_two[1]) +
                                    square(center_one[2] - center_two[2]));
-  ASSERT(dist_spheres + radius_one < radius_two,
+  ASSERT(dist_spheres + radius_one < radius_two or
+             dist_spheres + radius_two < radius_one,
          "The map has been tested only for the case when "
-         "sphere_one is contained inside sphere_two");
+         "sphere_one is contained inside sphere_two or sphere_two is contained "
+         "inside sphere_one. radius_one = "
+             << radius_one << ", radius_two = " << radius_two
+             << ", dist_spheres = " << dist_spheres);
+
+  // Check if we are too close to singular.  We do this check
+  // separately from the earlier similar check because this check may
+  // be changed in the future based on further testing and further
+  // logic that may be added (for example we may want to change the
+  // 0.85 to some other number), but the previous check (without the
+  // 0.85) is a hard limit that should always be obeyed.
+  ASSERT(acos(abs(cos_alpha)) < abs(0.85 * asin(cos_theta)),
+         "Parameters are close to where the map becomes "
+         "non-invertible.  The map has not been tested for this case.");
 
   const double proj_radius_two_squared =
       square(center_two[0] - proj_center[0]) +
@@ -137,38 +168,64 @@ CylindricalEndcap::CylindricalEndcap(const std::array<double, 3>& center_one,
       square(center_two[2] - proj_center[2]);
   ASSERT(proj_radius_two_squared < square(radius_two),
          "The map has been tested only for the case when "
-         "proj_center is contained inside sphere_two");
+         "proj_center is contained inside sphere_two. We have "
+             << proj_radius_two_squared << " vs " << square(radius_two)
+             << ", diff = " << proj_radius_two_squared - square(radius_two));
 
-  // Check if we are too close to singular.  We do this check
-  // separately from the earlier similar check because this check may
-  // be changed in the future based on further testing and further
-  // logic that may be added (for example we may want to change the
-  // 0.95 to some other number), but the previous check (without the
-  // 0.95) is a hard limit that should always be obeyed.
-  ASSERT(acos(abs(cos_alpha)) < abs(0.95 * asin(cos_theta)),
-         "Parameters are close to where the map becomes "
-         "non-invertible.  The map has not been tested for this case.");
+  if (dist_spheres + radius_two < radius_one) {
+    // sphere_two is contained in sphere_one
 
-  // Check if opening angle is small enough.
-  const double max_opening_angle = M_PI / 3.0;
-  const double max_proj_center_z = z_plane - radius_one *
-                                                 sqrt(1.0 - square(cos_theta)) /
-                                                 tan(max_opening_angle);
-  ASSERT(proj_center[2] < max_proj_center_z,
-         "proj_center is too close to z_plane. The "
-         "map has not been tested for this case.");
-  // Let a line segment be drawn between the projection point and any
-  // point on the intersection circle (the circle where sphere 1
-  // intersects z_plane). Consider the angle between that line segment
-  // and the z axis, and let beta be the maximum of that angle (over all points
-  // on the intersection circle).  We demand that beta is less than a certain
-  // maximum opening angle.
-  const double tan_beta = sqrt(square(center_one[0] - proj_center[0]) +
-                               square(center_one[1] - proj_center[1])) /
-                          (max_proj_center_z - proj_center[2]);
-  ASSERT(tan_beta < tan(max_opening_angle),
-         "Opening angle is too large. The map has not "
-         "been tested for this case.");
+    // We keep this as a separate condition because we may change the
+    // number 0.85 in the future if we ever have reason to do so.
+    ASSERT(radius_two <= 0.85 * (radius_one - dist_spheres) and
+               radius_two >= 0.25 * radius_one,
+           "If sphere_two is contained in sphere_one, the "
+           "map has been tested only for the case when sphere_two is not "
+           "too small or two large. Here radius_two="
+               << radius_two << ", radius_one=" << radius_one << ", distance="
+               << dist_spheres << ", and the requirement is that "
+               << 0.85 * (radius_one - dist_spheres) - radius_two
+               << " is positive");
+
+    // We keep this as a separate condition because we may change the
+    // number 0.1 in the future if we have reason to do so.
+    ASSERT(proj_radius_two_squared <= square(0.1 * radius_two),
+           "The map has been tested only for the case when "
+           "proj_center is sufficiently contained inside sphere_two. We have"
+               << proj_radius_two_squared << " vs " << square(0.1 * radius_two)
+               << ", diff = "
+               << proj_radius_two_squared - square(0.1 * radius_two));
+  } else {
+    // sphere_one is contained in sphere_two.
+
+    ASSERT(1.01 * (dist_spheres + radius_one) <= radius_two,
+           "The map has been tested only for the case when "
+           "sphere_one is suficiently contained inside sphere_two, without the "
+           "two spheres almost touching. "
+               << radius_one << ", radius_two = " << radius_two
+               << ", dist_spheres = " << dist_spheres);
+
+    // Check if opening angle is small enough.  (Note that this check
+    // is not needed if sphere_two is contained in sphere_one; in that
+    // case, the condition that proj_center is contained in sphere_two
+    // was found to be sufficient for preventing large map errors.)
+    const double max_opening_angle = M_PI / 3.0;
+    const double max_proj_center_z =
+        z_plane -
+        radius_one * sqrt(1.0 - square(cos_theta)) / tan(max_opening_angle);
+    ASSERT(proj_center[2] < max_proj_center_z,
+           "proj_center " << proj_center[2] << " is too close to z_plane "
+                          << z_plane
+                          << ". max_proj_center_z = " << max_proj_center_z
+                          << " and radius_one = " << radius_one
+                          << ". The map has not been tested for this case.");
+    const double tan_beta = sqrt(square(center_one[0] - proj_center[0]) +
+                                 square(center_one[1] - proj_center[1])) /
+                            (max_proj_center_z - proj_center[2]);
+    ASSERT(tan_beta < tan(max_opening_angle),
+           "opening angle is too large. The map has not "
+           "been tested for this case.");
+  }
 #endif
 }
 
