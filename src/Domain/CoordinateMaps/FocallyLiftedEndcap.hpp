@@ -436,10 +436,6 @@ class Endcap {
 
   static bool is_identity() noexcept { return false; }
 
-  static bool projection_source_is_between_focus_and_target() noexcept {
-    return true;
-  }
-
  private:
   friend bool operator==(const Endcap& lhs, const Endcap& rhs) noexcept;
   std::array<double, 3> center_{};
