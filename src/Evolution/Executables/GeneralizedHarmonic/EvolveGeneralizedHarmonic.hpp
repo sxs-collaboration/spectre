@@ -28,6 +28,7 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/NumericInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/InitializeDampedHarmonic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Initialize.hpp"
@@ -303,21 +304,21 @@ struct EvolutionMetavars {
               gr::Tags::Lapse<DataVector>>,
           dg::Initialization::face_compute_tags<
               domain::Tags::BoundaryCoordinates<volume_dim, true>,
-              GeneralizedHarmonic::Tags::ConstraintGamma0Compute<volume_dim,
-                                                                 frame>,
-              GeneralizedHarmonic::Tags::ConstraintGamma1Compute<volume_dim,
-                                                                 frame>,
-              GeneralizedHarmonic::Tags::ConstraintGamma2Compute<volume_dim,
-                                                                 frame>,
+              GeneralizedHarmonic::ConstraintDamping::Tags::
+                  ConstraintGamma0Compute<volume_dim, frame>,
+              GeneralizedHarmonic::ConstraintDamping::Tags::
+                  ConstraintGamma1Compute<volume_dim, frame>,
+              GeneralizedHarmonic::ConstraintDamping::Tags::
+                  ConstraintGamma2Compute<volume_dim, frame>,
               GeneralizedHarmonic::CharacteristicFieldsCompute<volume_dim,
                                                                frame>>,
           dg::Initialization::exterior_compute_tags<
-              GeneralizedHarmonic::Tags::ConstraintGamma0Compute<volume_dim,
-                                                                 frame>,
-              GeneralizedHarmonic::Tags::ConstraintGamma1Compute<volume_dim,
-                                                                 frame>,
-              GeneralizedHarmonic::Tags::ConstraintGamma2Compute<volume_dim,
-                                                                 frame>,
+              GeneralizedHarmonic::ConstraintDamping::Tags::
+                  ConstraintGamma0Compute<volume_dim, frame>,
+              GeneralizedHarmonic::ConstraintDamping::Tags::
+                  ConstraintGamma1Compute<volume_dim, frame>,
+              GeneralizedHarmonic::ConstraintDamping::Tags::
+                  ConstraintGamma2Compute<volume_dim, frame>,
               GeneralizedHarmonic::CharacteristicFieldsCompute<volume_dim,
                                                                frame>>,
           true, true>,

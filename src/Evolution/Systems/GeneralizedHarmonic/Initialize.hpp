@@ -15,6 +15,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Constraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
@@ -114,9 +115,12 @@ struct InitializeGhAnd3Plus1Variables {
         gr::Tags::SpacetimeNormalVectorCompute<Dim, frame, DataVector>,
         gr::Tags::InverseSpacetimeMetricCompute<Dim, frame, DataVector>,
         GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<Dim, frame>,
-        GeneralizedHarmonic::Tags::ConstraintGamma0Compute<Dim, frame>,
-        GeneralizedHarmonic::Tags::ConstraintGamma1Compute<Dim, frame>,
-        GeneralizedHarmonic::Tags::ConstraintGamma2Compute<Dim, frame>>;
+        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0Compute<
+            Dim, frame>,
+        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1Compute<
+            Dim, frame>,
+        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2Compute<
+            Dim, frame>>;
 
     return std::make_tuple(
         Initialization::merge_into_databox<InitializeGhAnd3Plus1Variables,

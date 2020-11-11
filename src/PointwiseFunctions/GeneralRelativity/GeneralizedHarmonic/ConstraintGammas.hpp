@@ -10,6 +10,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ContainerHelpers.hpp"
@@ -30,16 +31,15 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 /// \endcond
 
-namespace GeneralizedHarmonic {
-namespace Tags {
+namespace GeneralizedHarmonic::ConstraintDamping::Tags {
 /*!
  * \brief Compute items to compute constraint-damping parameters for a
  * single-BH evolution.
  *
  * \details Can be retrieved using
- * `GeneralizedHarmonic::Tags::ConstraintGamma0`,
- * `GeneralizedHarmonic::Tags::ConstraintGamma1`, and
- * `GeneralizedHarmonic::Tags::ConstraintGamma2`.
+ * `GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0`,
+ * `GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1`, and
+ * `GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2`.
  */
 template <size_t SpatialDim, typename Frame>
 struct ConstraintGamma0Compute : ConstraintGamma0, db::ComputeTag {
@@ -92,5 +92,4 @@ struct ConstraintGamma2Compute : ConstraintGamma2, db::ComputeTag {
 
   using base = ConstraintGamma2;
 };
-}  // namespace Tags
-}  // namespace GeneralizedHarmonic
+}  // namespace GeneralizedHarmonic::ConstraintDamping::Tags

@@ -16,9 +16,6 @@ struct Pi;
 template <size_t Dim, typename Frame = Frame::Inertial>
 struct Phi;
 
-struct ConstraintGamma0;
-struct ConstraintGamma1;
-struct ConstraintGamma2;
 template <size_t Dim, typename Frame = Frame::Inertial>
 struct InitialGaugeH;
 template <size_t Dim, typename Frame = Frame::Inertial>

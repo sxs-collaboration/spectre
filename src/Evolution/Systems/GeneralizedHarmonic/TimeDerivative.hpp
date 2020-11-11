@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
@@ -85,11 +86,12 @@ template <size_t Dim>
 struct TimeDerivative {
  public:
   using temporary_tags = tmpl::list<>;
-  using argument_tags =
-      tmpl::list<gr::Tags::SpacetimeMetric<Dim>, Tags::Pi<Dim>, Tags::Phi<Dim>,
-                 Tags::ConstraintGamma0, Tags::ConstraintGamma1,
-                 Tags::ConstraintGamma2, Tags::GaugeH<Dim>,
-                 Tags::SpacetimeDerivGaugeH<Dim>>;
+  using argument_tags = tmpl::list<
+      gr::Tags::SpacetimeMetric<Dim>, Tags::Pi<Dim>, Tags::Phi<Dim>,
+      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0,
+      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
+      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
+      Tags::GaugeH<Dim>, Tags::SpacetimeDerivGaugeH<Dim>>;
 
   static void apply(
       gsl::not_null<tnsr::aa<DataVector, Dim>*> dt_spacetime_metric,

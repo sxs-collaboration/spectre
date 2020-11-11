@@ -23,6 +23,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/LogicalCoordinates.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -734,14 +735,14 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
       GeneralizedHarmonic::Tags::TraceExtrinsicCurvatureCompute<
           3, Frame::Inertial>>("TraceExtrinsicCurvature");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::ConstraintGamma0Compute<3, Frame::Inertial>>(
-      "ConstraintGamma0");
+      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0Compute<
+          3, Frame::Inertial>>("ConstraintGamma0");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::ConstraintGamma1Compute<3, Frame::Inertial>>(
-      "ConstraintGamma1");
+      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1Compute<
+          3, Frame::Inertial>>("ConstraintGamma1");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::ConstraintGamma2Compute<3, Frame::Inertial>>(
-      "ConstraintGamma2");
+      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2Compute<
+          3, Frame::Inertial>>("ConstraintGamma2");
   TestHelpers::db::test_compute_tag<
       GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<3,
                                                              Frame::Inertial>>(

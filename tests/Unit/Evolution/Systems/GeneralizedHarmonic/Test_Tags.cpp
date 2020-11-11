@@ -5,6 +5,8 @@
 
 #include <string>
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 
@@ -18,11 +20,14 @@ void test_simple_tags() {
       "Pi");
   TestHelpers::db::test_simple_tag<GeneralizedHarmonic::Tags::Phi<Dim, Frame>>(
       "Phi");
-  TestHelpers::db::test_simple_tag<GeneralizedHarmonic::Tags::ConstraintGamma0>(
+  TestHelpers::db::test_simple_tag<
+      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0>(
       "ConstraintGamma0");
-  TestHelpers::db::test_simple_tag<GeneralizedHarmonic::Tags::ConstraintGamma1>(
+  TestHelpers::db::test_simple_tag<
+      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>(
       "ConstraintGamma1");
-  TestHelpers::db::test_simple_tag<GeneralizedHarmonic::Tags::ConstraintGamma2>(
+  TestHelpers::db::test_simple_tag<
+      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>(
       "ConstraintGamma2");
   TestHelpers::db::test_simple_tag<
       GeneralizedHarmonic::Tags::GaugeH<Dim, Frame>>("GaugeH");

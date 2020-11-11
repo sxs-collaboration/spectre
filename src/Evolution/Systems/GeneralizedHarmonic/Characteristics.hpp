@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -75,8 +76,8 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim, Frame>,
   using base = Tags::CharacteristicSpeeds<Dim, Frame>;
   using type = typename base::type;
   using argument_tags = tmpl::list<
-      Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<Dim, Frame, DataVector>,
+      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
+      gr::Tags::Lapse<DataVector>, gr::Tags::Shift<Dim, Frame, DataVector>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>>;
 
   using return_type = typename base::type;
@@ -163,7 +164,7 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim, Frame>,
   using base = Tags::CharacteristicFields<Dim, Frame>;
   using return_type = typename base::type;
   using argument_tags = tmpl::list<
-      Tags::ConstraintGamma2,
+      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
       gr::Tags::InverseSpatialMetric<Dim, Frame, DataVector>,
       gr::Tags::SpacetimeMetric<Dim, Frame, DataVector>, Tags::Pi<Dim, Frame>,
       Tags::Phi<Dim, Frame>,
@@ -213,9 +214,9 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
   using base = Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>;
   using return_type = typename base::type;
   using argument_tags = tmpl::list<
-      Tags::ConstraintGamma2, Tags::VSpacetimeMetric<Dim, Frame>,
-      Tags::VZero<Dim, Frame>, Tags::VPlus<Dim, Frame>,
-      Tags::VMinus<Dim, Frame>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
+      Tags::VSpacetimeMetric<Dim, Frame>, Tags::VZero<Dim, Frame>,
+      Tags::VPlus<Dim, Frame>, Tags::VMinus<Dim, Frame>,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>>;
 
   static constexpr auto function = static_cast<void (*)(
@@ -234,10 +235,10 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
  */
 template <size_t Dim, typename Frame>
 struct ComputeLargestCharacteristicSpeed {
-  using argument_tags =
-      tmpl::list<Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
-                 gr::Tags::Shift<Dim, Frame, DataVector>,
-                 gr::Tags::SpatialMetric<Dim, Frame, DataVector>>;
+  using argument_tags = tmpl::list<
+      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
+      gr::Tags::Lapse<DataVector>, gr::Tags::Shift<Dim, Frame, DataVector>,
+      gr::Tags::SpatialMetric<Dim, Frame, DataVector>>;
   static double apply(
       const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, Dim, Frame>& shift,
