@@ -78,7 +78,7 @@ void check_impl(
 template <class DampingFunctionType, class T, class... MemberArgs>
 void check(std::unique_ptr<DampingFunctionType> in_gh_damping_function,
            const std::string& python_function_prefix, const T& used_for_size,
-           const std::array<std::pair<double, double>, 1> random_value_bounds,
+           const std::array<std::pair<double, double>, 1>& random_value_bounds,
            const MemberArgs&... member_args) noexcept {
   detail::check_impl(
       std::unique_ptr<
@@ -93,7 +93,7 @@ void check(std::unique_ptr<DampingFunctionType> in_gh_damping_function,
 template <class DampingFunctionType, class T, class... MemberArgs>
 void check(DampingFunctionType in_gh_damping_function,
            const std::string& python_function_prefix, const T& used_for_size,
-           const std::array<std::pair<double, double>, 1> random_value_bounds,
+           const std::array<std::pair<double, double>, 1>& random_value_bounds,
            const MemberArgs&... member_args) noexcept {
   detail::check_impl(
       std::unique_ptr<

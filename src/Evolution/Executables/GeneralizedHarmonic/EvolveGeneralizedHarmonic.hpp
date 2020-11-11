@@ -28,6 +28,7 @@
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/NumericInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/InitializeDampedHarmonic.hpp"
@@ -241,9 +242,15 @@ struct EvolutionMetavars {
 
   // A tmpl::list of tags to be added to the GlobalCache by the
   // metavariables
-  using const_global_cache_tags =
-      tmpl::list<analytic_solution_tag, normal_dot_numerical_flux,
-                 time_stepper_tag, Tags::EventsAndTriggers<events, triggers>>;
+  using const_global_cache_tags = tmpl::list<
+      analytic_solution_tag, normal_dot_numerical_flux, time_stepper_tag,
+      Tags::EventsAndTriggers<events, triggers>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
+          volume_dim, frame>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
+          volume_dim, frame>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
+          volume_dim, frame>>;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::push_back<typename Event<observation_events>::creatable_classes,
@@ -295,30 +302,24 @@ struct EvolutionMetavars {
               typename gr::Tags::DetAndInverseSpatialMetricCompute<
                   volume_dim, frame, DataVector>::base,
               gr::Tags::Shift<volume_dim, frame, DataVector>,
-              gr::Tags::Lapse<DataVector>>,
+              gr::Tags::Lapse<DataVector>,
+              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0,
+              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
+              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>,
           dg::Initialization::slice_tags_to_exterior<
               gr::Tags::SpatialMetric<volume_dim, frame, DataVector>,
               typename gr::Tags::DetAndInverseSpatialMetricCompute<
                   volume_dim, frame, DataVector>::base,
               gr::Tags::Shift<volume_dim, frame, DataVector>,
-              gr::Tags::Lapse<DataVector>>,
+              gr::Tags::Lapse<DataVector>,
+              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0,
+              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
+              GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>,
           dg::Initialization::face_compute_tags<
               domain::Tags::BoundaryCoordinates<volume_dim, true>,
-              GeneralizedHarmonic::ConstraintDamping::Tags::
-                  ConstraintGamma0Compute<volume_dim, frame>,
-              GeneralizedHarmonic::ConstraintDamping::Tags::
-                  ConstraintGamma1Compute<volume_dim, frame>,
-              GeneralizedHarmonic::ConstraintDamping::Tags::
-                  ConstraintGamma2Compute<volume_dim, frame>,
               GeneralizedHarmonic::CharacteristicFieldsCompute<volume_dim,
                                                                frame>>,
           dg::Initialization::exterior_compute_tags<
-              GeneralizedHarmonic::ConstraintDamping::Tags::
-                  ConstraintGamma0Compute<volume_dim, frame>,
-              GeneralizedHarmonic::ConstraintDamping::Tags::
-                  ConstraintGamma1Compute<volume_dim, frame>,
-              GeneralizedHarmonic::ConstraintDamping::Tags::
-                  ConstraintGamma2Compute<volume_dim, frame>,
               GeneralizedHarmonic::CharacteristicFieldsCompute<volume_dim,
                                                                frame>>,
           true, true>,
@@ -423,10 +424,12 @@ struct EvolutionMetavars {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &disable_openblas_multithreading,
+    &setup_error_handling,
+    &disable_openblas_multithreading,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
     &domain::creators::register_derived_with_charm,
+    &GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<
         Event<metavariables::events>>,
     &Parallel::register_derived_classes_with_charm<

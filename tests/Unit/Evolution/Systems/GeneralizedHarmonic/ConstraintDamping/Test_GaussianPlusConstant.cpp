@@ -48,6 +48,18 @@ void test_gaussian_plus_constant_random(
   TestHelpers::GeneralizedHarmonic::ConstraintDamping::check(
       std::move(gauss_plus_const), "gaussian_plus_constant", used_for_size,
       {{{-1.0, 1.0}}}, constant, amplitude, width, center);
+
+  std::unique_ptr<GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<
+      VolumeDim, Fr>>
+      gauss_plus_const_unique_ptr =
+          std::make_unique<GeneralizedHarmonic::ConstraintDamping::
+                               GaussianPlusConstant<VolumeDim, Fr>>(
+              constant, amplitude, width, center);
+
+  TestHelpers::GeneralizedHarmonic::ConstraintDamping::check(
+      std::move(gauss_plus_const_unique_ptr->get_clone()),
+      "gaussian_plus_constant", used_for_size, {{{-1.0, 1.0}}}, constant,
+      amplitude, width, center);
 }
 }  // namespace
 

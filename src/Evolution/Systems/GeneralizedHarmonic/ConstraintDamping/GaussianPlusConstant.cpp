@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <memory>
 #include <pup.h>
 #include <pup_stl.h>
 
@@ -67,6 +68,12 @@ void GaussianPlusConstant<VolumeDim, Fr>::pup(PUP::er& p) {
   p | inverse_width_;
   p | center_;
 }
+
+template <size_t VolumeDim, typename Fr>
+auto GaussianPlusConstant<VolumeDim, Fr>::get_clone() const noexcept
+    -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> {
+  return std::make_unique<GaussianPlusConstant<VolumeDim, Fr>>(*this);
+}
 }  // namespace GeneralizedHarmonic::ConstraintDamping
 
 /// \cond
@@ -78,7 +85,10 @@ void GaussianPlusConstant<VolumeDim, Fr>::pup(PUP::er& p) {
           const double constant, const double amplitude, const double width,  \
           const std::array<double, DIM(data)>& center) noexcept;              \
   template void GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant< \
-      DIM(data), FRAME(data)>::pup(PUP::er& p);
+      DIM(data), FRAME(data)>::pup(PUP::er& p);                               \
+  template auto GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant< \
+      DIM(data), FRAME(data)>::get_clone() const noexcept                     \
+      ->std::unique_ptr<DampingFunction<DIM(data), FRAME(data)>>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 #undef DIM

@@ -21,6 +21,7 @@
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedHarmonic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DhGaugeParameters.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/InitializeDampedHarmonic.hpp"
@@ -42,6 +43,7 @@
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 template <size_t Dim, typename Metavariables>
@@ -126,16 +128,65 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
 
   MockRuntimeSystem runner = [r_max, t_start, sigma_t, amplitudes,
                               exponents]() {
+    // Make DampingFunctions for the constraint damping parameters
+    // Note: these parameters are taken from SpEC single-black-hole simulations
+    constexpr double constant_02 = 0.001;
+    constexpr double amplitude_0 = 3.0;
+    constexpr double amplitude_2 = 1.0;
+    constexpr double constant_1 = -1.0;
+    constexpr double amplitude_1 = 0.0;
+    constexpr double width = 11.3137084989848;  // sqrt(128.0)
+    std::array<double, Dim> center{};
+    center.fill(0.0);
+    auto damping_function_0 =
+        std::make_unique<GeneralizedHarmonic::ConstraintDamping::
+                             GaussianPlusConstant<Dim, Frame::Inertial>>(
+            constant_02, amplitude_0, width, center);
+    auto damping_function_1 =
+        std::make_unique<GeneralizedHarmonic::ConstraintDamping::
+                             GaussianPlusConstant<Dim, Frame::Inertial>>(
+            constant_1, amplitude_1, width, center);
+    auto damping_function_2 =
+        std::make_unique<GeneralizedHarmonic::ConstraintDamping::
+                             GaussianPlusConstant<Dim, Frame::Inertial>>(
+            constant_02, amplitude_2, width, center);
+
     if constexpr (UseRollon) {
       GeneralizedHarmonic::gauges::DhGaugeParameters<true> parameters{
           t_start, sigma_t, r_max, amplitudes, exponents};
-      return MockRuntimeSystem{{parameters}};
+
+      tuples::TaggedTuple<
+          GeneralizedHarmonic::gauges::Tags::DhGaugeParameters<true>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
+              Dim, Frame::Inertial>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
+              Dim, Frame::Inertial>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
+              Dim, Frame::Inertial>>
+          global_cache{parameters, std::move(damping_function_0),
+                       std::move(damping_function_1),
+                       std::move(damping_function_2)};
+
+      return MockRuntimeSystem{std::move(global_cache)};
     } else {
       (void)t_start;
       (void)sigma_t;
       GeneralizedHarmonic::gauges::DhGaugeParameters<false> parameters{
           r_max, amplitudes, exponents};
-      return MockRuntimeSystem{{parameters}};
+
+      tuples::TaggedTuple<
+          GeneralizedHarmonic::gauges::Tags::DhGaugeParameters<false>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
+              Dim, Frame::Inertial>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
+              Dim, Frame::Inertial>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
+              Dim, Frame::Inertial>>
+          global_cache{parameters, std::move(damping_function_0),
+                       std::move(damping_function_1),
+                       std::move(damping_function_2)};
+
+      return MockRuntimeSystem{std::move(global_cache)};
     }
   }();
   Mesh<Dim> mesh{5, Spectral::Basis::Legendre,

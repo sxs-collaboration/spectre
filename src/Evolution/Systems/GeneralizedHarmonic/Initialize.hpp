@@ -96,6 +96,14 @@ template <size_t Dim>
 struct InitializeGhAnd3Plus1Variables {
   using frame = Frame::Inertial;
 
+  using const_global_cache_tags = tmpl::list<
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
+          Dim, frame>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
+          Dim, frame>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
+          Dim, frame>>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
