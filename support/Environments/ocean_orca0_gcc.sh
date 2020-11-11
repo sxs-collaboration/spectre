@@ -32,7 +32,7 @@ spectre_unload_modules() {
     spack unload boost@1.69.0
     spack unload hdf5@1.10.5~hl
     spack unload openblas@0.3.5
-    module unload orca0/charm
+    module unload orca0/charm-6.10.2-libs
     module unload orca0/python/3.7.0
 }
 
@@ -54,7 +54,7 @@ spectre_load_modules() {
     spack load boost@1.69.0
     spack load hdf5@1.10.5~hl
     spack load openblas@0.3.5
-    module load orca0/charm
+    module load orca0/charm-6.10.2-libs
     module load orca0/python/3.7.0
 }
 
