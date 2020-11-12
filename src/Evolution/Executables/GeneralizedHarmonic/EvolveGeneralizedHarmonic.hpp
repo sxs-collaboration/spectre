@@ -259,7 +259,6 @@ struct EvolutionMetavars {
 
   using step_actions = tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
-      dg::Actions::SendDataForFluxes<boundary_scheme>,
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
           domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,

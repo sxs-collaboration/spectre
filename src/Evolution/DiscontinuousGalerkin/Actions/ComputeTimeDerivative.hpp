@@ -24,6 +24,8 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
+#include "Parallel/GlobalCache.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/FluxCommunication.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -32,11 +34,6 @@ namespace tuples {
 template <typename...>
 class TaggedTuple;
 }  // namespace tuples
-
-namespace Parallel {
-template <typename Metavariables>
-class GlobalCache;
-}  // namespace Parallel
 /// \endcond
 
 namespace evolution::dg::Actions {
@@ -134,13 +131,15 @@ template <typename Metavariables>
 struct ComputeTimeDerivative {
  public:
   using const_global_cache_tags = tmpl::list<::dg::Tags::Formulation>;
+  using inbox_tags =
+      tmpl::list<::dg::FluxesInboxTag<typename Metavariables::boundary_scheme>>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* /*meta*/) noexcept;  // NOLINT const
 
@@ -215,6 +214,11 @@ struct ComputeTimeDerivative {
   template <size_t VolumeDim, typename BoundaryScheme, typename DbTagsList>
   static void fill_mortar_data_for_internal_boundaries(
       gsl::not_null<db::DataBox<DbTagsList>*> box) noexcept;
+
+  template <typename ParallelComponent, typename DbTagsList>
+  static void send_data_for_fluxes(
+      gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
+      const db::DataBox<DbTagsList>& box) noexcept;
 };
 
 template <typename Metavariables>
@@ -224,7 +228,7 @@ std::tuple<db::DataBox<DbTagsList>&&>
 ComputeTimeDerivative<Metavariables>::apply(
     db::DataBox<DbTagsList>& box,
     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+    Parallel::GlobalCache<Metavariables>& cache,
     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
     const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
   static constexpr size_t volume_dim = Metavariables::volume_dim;
@@ -285,6 +289,8 @@ ComputeTimeDerivative<Metavariables>::apply(
   // Compute internal boundary quantities
   fill_mortar_data_for_internal_boundaries<
       volume_dim, typename Metavariables::boundary_scheme>(make_not_null(&box));
+
+  send_data_for_fluxes<ParallelComponent>(make_not_null(&cache), box);
   return {std::move(box)};
 }
 
@@ -586,6 +592,67 @@ void ComputeTimeDerivative<Metavariables>::
             all_mortar_data->at(mortar_id).local_insert(
                 temporal_id, std::move(boundary_data_on_mortar));
           });
+    }
+  }
+}
+
+template <typename Metavariables>
+template <typename ParallelComponent, typename DbTagsList>
+void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
+    const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
+    const db::DataBox<DbTagsList>& box) noexcept {
+  using BoundaryScheme = typename Metavariables::boundary_scheme;
+  static constexpr size_t volume_dim = BoundaryScheme::volume_dim;
+  using temporal_id_tag = typename BoundaryScheme::temporal_id_tag;
+  using receive_temporal_id_tag =
+      typename BoundaryScheme::receive_temporal_id_tag;
+  using fluxes_inbox_tag = ::dg::FluxesInboxTag<BoundaryScheme>;
+  using all_mortar_data_tag =
+      ::Tags::Mortars<typename BoundaryScheme::mortar_data_tag, volume_dim>;
+
+  auto& receiver_proxy =
+      Parallel::get_parallel_component<ParallelComponent>(*cache);
+
+  const auto& all_mortar_data = get<all_mortar_data_tag>(box);
+  const auto& element = db::get<domain::Tags::Element<volume_dim>>(box);
+  const auto& temporal_id = db::get<temporal_id_tag>(box);
+  const auto& receive_temporal_id = db::get<receive_temporal_id_tag>(box);
+  const auto& mortar_meshes =
+      db::get<::Tags::Mortars<domain::Tags::Mesh<volume_dim - 1>, volume_dim>>(
+          box);
+
+  // Iterate over neighbors
+  for (const auto& [direction, neighbors] : element.neighbors()) {
+    const size_t dimension = direction.dimension();
+    const auto& orientation = neighbors.orientation();
+    const auto direction_from_neighbor = orientation(direction.opposite());
+
+    for (const auto& neighbor : neighbors) {
+      const ::dg::MortarId<volume_dim> mortar_id{direction, neighbor};
+
+      // Make a copy of the local boundary data on the mortar to send to the
+      // neighbor
+      ASSERT(all_mortar_data.find(mortar_id) != all_mortar_data.end(),
+             "Mortar data on mortar "
+                 << mortar_id
+                 << " not available for sending. Did you forget to collect "
+                    "the data on mortars?");
+      auto mortar_data_sent_to_neighbor =
+          all_mortar_data.at(mortar_id).local_data(temporal_id);
+
+      // Reorient the data to the neighbor orientation if necessary
+      if (not orientation.is_aligned()) {
+        mortar_data_sent_to_neighbor.orient_on_slice(
+            mortar_meshes.at(mortar_id).extents(), dimension, orientation);
+      }
+
+      // Send remote data to neighbor
+      Parallel::receive_data<fluxes_inbox_tag>(
+          receiver_proxy[neighbor], temporal_id,
+          std::make_pair(
+              ::dg::MortarId<volume_dim>{direction_from_neighbor, element.id()},
+              std::make_pair(receive_temporal_id,
+                             std::move(mortar_data_sent_to_neighbor))));
     }
   }
 }

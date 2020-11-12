@@ -131,7 +131,6 @@ struct Component {
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<
               evolution::dg::Actions::ComputeTimeDerivative<Metavariables>,
-              dg::Actions::SendDataForFluxes<boundary_scheme>,
               dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
               Actions::MutateApply<boundary_scheme>>>>;
 };
@@ -246,12 +245,12 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
                            Metavariables::Phase::Testing);
 
   // The neighbors only have to get as far as sending data
-  for (size_t i = 0; i < 2; ++i) {
+  for (size_t i = 0; i < 1; ++i) {
     runner.next_action<component>(left_id);
     runner.next_action<component>(right_id);
   }
 
-  for (size_t i = 0; i < 4; ++i) {
+  for (size_t i = 0; i < 3; ++i) {
     runner.next_action<component>(self_id);
   }
 
