@@ -30,10 +30,13 @@ target_link_libraries(
   PUBLIC
   Boost::boost
   DataStructures
+  DiscontinuousGalerkin
   Domain
   DomainStructure
+  ErrorHandling
   Options
   Spectral
+  Time
   Utilities
   PRIVATE
   LinearOperators
