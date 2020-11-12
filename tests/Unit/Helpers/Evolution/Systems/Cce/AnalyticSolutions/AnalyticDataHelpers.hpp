@@ -46,7 +46,7 @@ struct SphericalSolutionWrapper : public SphericalSolution {
 
   template <typename... Args>
   void test_spherical_metric(const std::string python_file, const size_t l_max,
-                             const double time,
+                             const double time, Approx custom_approx,
                              const Args... args) const noexcept {
     const size_t size =
         Spectral::Swsh::number_of_swsh_collocation_points(l_max);
@@ -102,13 +102,13 @@ struct SphericalSolutionWrapper : public SphericalSolution {
         CAPTURE(b);
         const auto& lhs = local_spherical_metric.get(a, b);
         const auto& rhs = py_spherical_metric.get(a, b);
-        CHECK_ITERABLE_APPROX(lhs, rhs);
-        const auto& dr_lhs = local_dr_spherical_metric.get(a, b);
-        const auto& dr_rhs = py_dr_spherical_metric.get(a, b);
-        CHECK_ITERABLE_APPROX(dr_lhs, dr_rhs);
+        CHECK_ITERABLE_CUSTOM_APPROX(lhs, rhs, custom_approx);
         const auto& dt_lhs = local_dt_spherical_metric.get(a, b);
         const auto& dt_rhs = py_dt_spherical_metric.get(a, b);
-        CHECK_ITERABLE_APPROX(dt_lhs, dt_rhs);
+        CHECK_ITERABLE_CUSTOM_APPROX(dt_lhs, dt_rhs, custom_approx);
+        const auto& dr_lhs = local_dr_spherical_metric.get(a, b);
+        const auto& dr_rhs = py_dr_spherical_metric.get(a, b);
+        CHECK_ITERABLE_CUSTOM_APPROX(dr_lhs, dr_rhs, custom_approx);
       }
     }
   }

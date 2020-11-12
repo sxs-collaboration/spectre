@@ -5,6 +5,7 @@ set(LIBRARY "Test_Cce_AnalyticSolutions")
 
 set(LIBRARY_SOURCES
   Test_BouncingBlackHole.cpp
+  Test_GaugeWave.cpp
   Test_LinearizedBondiSachs.cpp
   Test_RotatingSchwarzschild.cpp
   Test_TeukolskyWave.cpp
