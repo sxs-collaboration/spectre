@@ -7,6 +7,8 @@
 #include <sstream>
 #include <string>
 
+#include "Utilities/StlStreamDeclarations.hpp"
+
 /*!
  * \ingroup UtilitiesGroup
  * \brief Make a string by streaming into object.
