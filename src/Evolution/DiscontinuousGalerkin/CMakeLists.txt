@@ -9,6 +9,7 @@ spectre_target_headers(
   InboxTags.hpp
   MortarData.hpp
   MortarTags.hpp
+  ProjectToBoundary.hpp
   )
 
 spectre_target_sources(
