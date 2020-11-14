@@ -26,6 +26,10 @@ AnalyticSolution:
     MeanVelocity: [0.1, 0.2, 0.15]
     ComovingEnergyDensity: 1.0
 
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+
 NumericalFlux:
   LocalLaxFriedrichs:
 

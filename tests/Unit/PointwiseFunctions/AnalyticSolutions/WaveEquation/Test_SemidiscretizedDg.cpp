@@ -139,8 +139,6 @@ struct Component {
 
 struct Metavariables {
   static constexpr size_t volume_dim = 1;
-  static constexpr dg::Formulation dg_formulation =
-      dg::Formulation::StrongInertial;
   using system = ScalarWave::System<1>;
   using boundary_scheme = dg::FirstOrderScheme::FirstOrderScheme<
       1, typename system::variables_tag,
@@ -162,7 +160,8 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
   using component = Component<Metavariables>;
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {ScalarWave::UpwindPenaltyCorrection<1>{}}};
+      {ScalarWave::UpwindPenaltyCorrection<1>{},
+       ::dg::Formulation::StrongInertial}};
 
   const Slab slab(time, time + 1.0);
   const TimeStepId current_time(true, 0, slab.start());

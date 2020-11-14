@@ -19,6 +19,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/Formulation.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -132,6 +133,8 @@ namespace evolution::dg::Actions {
 template <typename Metavariables>
 struct ComputeTimeDerivative {
  public:
+  using const_global_cache_tags = tmpl::list<::dg::Tags::Formulation>;
+
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
@@ -255,7 +258,7 @@ ComputeTimeDerivative<Metavariables>::apply(
   volume_terms<volume_dim, compute_volume_time_derivative_terms>(
       make_not_null(&box), make_not_null(&volume_fluxes),
       make_not_null(&partial_derivs), make_not_null(&temporaries),
-      Metavariables::dg_formulation, variables_tags{},
+      db::get<::dg::Tags::Formulation>(box), variables_tags{},
       typename compute_volume_time_derivative_terms::argument_tags{});
 
   // The below if-else and fill_mortar_data_for_internal_boundaries are for

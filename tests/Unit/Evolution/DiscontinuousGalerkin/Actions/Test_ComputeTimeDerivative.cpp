@@ -286,8 +286,6 @@ struct component {
 
 template <size_t Dim, SystemType SystemTypeIn>
 struct Metavariables {
-  static constexpr dg::Formulation dg_formulation =
-      dg::Formulation::StrongInertial;
   static constexpr size_t volume_dim = Dim;
   static constexpr SystemType system_type = SystemTypeIn;
   using system = System<Dim, system_type>;
@@ -305,6 +303,8 @@ struct Metavariables {
 
 template <bool UseMovingMesh, size_t Dim, SystemType system_type>
 void test_impl() noexcept {
+
+  const ::dg::Formulation dg_formulation = ::dg::Formulation::StrongInertial;
   using metavars = Metavariables<Dim, system_type>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   // The reference element in 2d denoted by X below:
@@ -349,7 +349,7 @@ void test_impl() noexcept {
   MockRuntimeSystem runner{
       {std::vector<std::array<size_t, Dim>>{make_array<Dim>(2_st),
                                             make_array<Dim>(3_st)},
-       typename metavars::normal_dot_numerical_flux::type{}}};
+       typename metavars::normal_dot_numerical_flux::type{}, dg_formulation}};
 
   const Mesh<Dim> mesh{2, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto};

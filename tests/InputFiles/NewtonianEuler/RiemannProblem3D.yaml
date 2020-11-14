@@ -18,6 +18,10 @@ DomainCreator:
     InitialRefinement: [4, 0, 0]
     InitialGridPoints: [2, 2, 2]
 
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+
 AnalyticSolution:
   RiemannProblem:
     AdiabaticIndex: 1.4

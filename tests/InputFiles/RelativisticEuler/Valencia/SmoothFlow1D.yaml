@@ -26,6 +26,10 @@ AnalyticSolution:
     AdiabaticIndex: 1.4
     PerturbationSize: 0.8
 
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+
 NumericalFlux:
   LocalLaxFriedrichs:
 
