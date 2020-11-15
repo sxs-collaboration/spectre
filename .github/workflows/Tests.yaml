@@ -71,12 +71,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Install Python dependencies
         run: |
           pip3 install \
             GitPython~=3.1.11 \
             PyYAML~=5.3.1 \
-      - name: Check python formatting
+      - name: Test tools
+        run: |
+          python3 -m unittest discover -p 'Test_*' tests.tools -v
+      - name: Check Python formatting
         run: |
           cd $GITHUB_WORKSPACE
           ./tools/CheckPythonFormatting.sh
