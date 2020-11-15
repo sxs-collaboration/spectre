@@ -1,7 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Continuous integration tests that pull requests are required to pass
+# Continuous integration tests that pull requests are required to pass. This
+# workflow also triggers a version release every month.
 name: Tests
 
 # Set any defaults for the runs below.
@@ -28,6 +29,23 @@ on:
   push:
     branches-ignore:
       - gh-pages
+  # Once a month we run the tests and release a new version (see the dev guide
+  # on "Automatic versioning"). The scheduled workflow always runs on the
+  # repository's default branch (`develop`).
+  # The automatic versioning is not yet enabled so we have some time to test the
+  # release workflow. Releases can be created with the `workflow_dispatch`
+  # trigger (see below).
+  # schedule:
+  #   - cron: '0 0 1 * *'
+  # Also allow running the workflow manually. This can be used to manually
+  # release a version. (see the dev guide on "Automatic versioning")
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: >
+          Enter a version name YYYY.MM.DD[.TWEAK] to create a release on success
+        required: false
+        default: ''
 
 jobs:
   # Make sure no commits are prefixed with `fixup` or similar keywords. See
@@ -83,7 +101,10 @@ jobs:
         run: |
           pip3 install \
             GitPython~=3.1.11 \
+            PyGithub~=1.53 \
             PyYAML~=5.3.1 \
+            tqdm~=4.51.0 \
+            uplink~=0.9.2
       - name: Test tools
         run: |
           python3 -m unittest discover -p 'Test_*' tests.tools -v
@@ -102,6 +123,24 @@ jobs:
       - name: Check metadata
         run: |
           python3 tools/CheckMetadata.py
+      - name: Check the metadata is consistent with the releases
+        # No need to check this on forks. They would need to set a Zenodo token
+        # for this test. Also disable on PRs because they don't have access to
+        # the repo's secrets.
+        if: >
+          github.repository == 'sxs-collaboration/spectre'
+            && github.event_name != 'pull_request'
+        run: |
+          python3 .github/scripts/Release.py prepare -vv --check-only \
+            --zenodo-token ${{ secrets.ZENODO_READONLY_TOKEN }} \
+            --github-token ${{ secrets.GITHUB_TOKEN }}
+          python3 .github/scripts/Release.py publish -vv --check-only \
+            --zenodo-token ${{ secrets.ZENODO_READONLY_TOKEN }} \
+            --github-token ${{ secrets.GITHUB_TOKEN }}
+      - name: Check release notes
+        run: |
+          python3 tools/CompileReleaseNotes.py -vv \
+            --github-token ${{ secrets.GITHUB_TOKEN }}
 
   # Lint with clang-tidy. We check only code that changed relative to the
   # nearest common ancestor commit with `sxs-collaboration/spectre/develop`.
@@ -508,3 +547,139 @@ jobs:
           make EvolveBurgersStep -j2
 
           ctest -j2 -R InputFiles.Burgers.Step.yaml
+
+  # Release a new version on scheduled or manual events when the tests pass.
+  # Only enable this on the `sxs-collaboration/spectre` repository (not on
+  # forks).
+  release_version:
+    name: Release version
+    runs-on: ubuntu-latest
+    # Run in the container so we can build docs and tests
+    container:
+      image: sxscollaboration/spectrebuildenv:latest
+    if: >
+      github.repository == 'sxs-collaboration/spectre' &&
+        github.ref == 'refs/heads/develop' &&
+        (github.event_name == 'schedule'
+          || (github.event_name == 'workflow_dispatch'
+            && github.event.inputs.release_version != ''))
+    needs:
+      - check_files_and_formatting
+      - doc_check
+      - unit_tests
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install Python dependencies
+        run: |
+          pip3 install \
+            GitPython~=3.1.11 \
+            PyGithub~=1.53 \
+            PyYAML~=5.3.1 \
+            tqdm~=4.51.0 \
+            uplink~=0.9.2
+      # We use the current date as tag name, unless a tag name was specified
+      # as input to the `workflow_dispatch` event
+      - name: Determine release version
+        id: get_version
+        run: |
+          INPUT_RELEASE_VERSION=${{ github.event.inputs.release_version }}
+          RELEASE_VERSION=${INPUT_RELEASE_VERSION:-$(date +'%Y.%m.%d')}
+          echo "Release version is: ${RELEASE_VERSION}"
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
+      - name: Validate release version
+        run: |
+          VERSION_PATTERN="^([0-9]{4})\.([0-9]{2})\.([0-9]{2})(\.[0-9]+)?$"
+          if [[ $RELEASE_VERSION =~ $VERSION_PATTERN ]]; then
+            if [ $(date +'%Y') != ${BASH_REMATCH[1]} ] ||
+            [ $(date +'%m') != ${BASH_REMATCH[2]} ] ||
+            [ $(date +'%d') != ${BASH_REMATCH[3]} ]; then
+              TODAY=$(date +'%Y.%m.%d')
+              echo "'$RELEASE_VERSION' doesn't match current date '$TODAY'"
+            fi
+          else
+            echo "'$RELEASE_VERSION' doesn't match '$VERSION_PATTERN'"
+            exit 1
+          fi
+          if [ $(git tag -l "v$RELEASE_VERSION") ]; then
+            echo "Tag 'v$RELEASE_VERSION' already exists"
+            exit 1
+          fi
+          if [ $(git rev-parse HEAD) == $(git rev-parse origin/release) ]; then
+            echo "Nothing changed since last release $(git describe release)."
+            exit 1
+          fi
+      - name: Reserve Zenodo DOI and prepare repository
+        run: |
+          python3 .github/scripts/Release.py prepare -vv \
+            --version $RELEASE_VERSION \
+            --zenodo-token ${{ secrets.ZENODO_READWRITE_TOKEN }} \
+            --github-token ${{ secrets.GITHUB_TOKEN }}
+          git diff
+      - name: Compile release notes
+        run: |
+          python3 tools/CompileReleaseNotes.py -v -o /work/release_notes.md \
+            --github-token ${{ secrets.GITHUB_TOKEN }}
+      # Push a commit with the new version to the branch we're on (should be
+      # `develop` unless the workflow was triggered manually on another branch).
+      # The push won't trigger the workflow again because GitHub prevents
+      # actions from triggering workflows (this uses the default GITHUB_TOKEN).
+      - name: Commit and push
+        run: |
+          git config user.name sxs-bot
+          git config user.email sxs-bot@black-holes.org
+          git commit -a -m "Prepare release $RELEASE_VERSION"
+          git show HEAD
+          git status
+          git push
+          git push origin HEAD:release
+      - name: Tag and release
+        uses: actions/create-release@v1
+        env:
+          # If we need this event to trigger other workflows we could use a
+          # personal access token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.RELEASE_VERSION }}
+          release_name: Release ${{ env.RELEASE_VERSION }}
+          body_path: /work/release_notes.md
+      # The release is now public on GitHub. We build the release documentation
+      # from the archive and also build an executable to make sure the archive
+      # is functional.
+      - name: Build release documentation and an executable
+        working-directory: /work
+        run: |
+          wget https://github.com/${{ github.repository }}/archive/v${RELEASE_VERSION}.tar.gz -O spectre.tar.gz
+          tar -xzf spectre.tar.gz && mv spectre-* spectre
+          mkdir build && cd build
+          cmake \
+            -D CMAKE_C_COMPILER=clang \
+            -D CMAKE_CXX_COMPILER=clang++ \
+            -D CMAKE_Fortran_COMPILER=gfortran-8 \
+            -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang \
+            -D OVERRIDE_ARCH=x86-64 \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D DEBUG_SYMBOLS=OFF \
+            ../spectre
+          make doc-check
+          make -j2 ExportCoordinates1D
+          ctest -R InputFiles.ExportCoordinates.Input1D.yaml.execute
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          publish_dir: /work/build/docs/html
+          cname: spectre-code.org
+          publish_branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          force_orphan: true
+      # This action currently doesn't publish the Zenodo record automatically.
+      # Instead it prints a link to the website where we can go and hit the
+      # "Publish" button when everything looks correct. Once we're convinced the
+      # automation works well enough we can add the `--auto-publish` flag to
+      # the command below.
+      - name: Publish to Zenodo
+        run: |
+          python3 .github/scripts/Release.py publish -vv \
+            --zenodo-token ${{ secrets.ZENODO_PUBLISH_TOKEN }} \
+            --github-token ${{ secrets.GITHUB_TOKEN }}
