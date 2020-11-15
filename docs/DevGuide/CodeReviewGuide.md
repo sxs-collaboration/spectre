@@ -8,7 +8,8 @@ Code must follow the
 <a href="https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md">C++ Core Guidelines</a>
 and the [Google style guide](https://google.github.io/styleguide/cppguide.html).
 If the Google style guide disagrees with the Core Guidelines, follow the Core
-Guidelines.
+Guidelines. Python code must also follow the
+[Google style guide](https://google.github.io/styleguide/pyguide.html).
 
 Here we summarize what we view as the more important portions of the guides.
 
