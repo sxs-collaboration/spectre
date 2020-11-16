@@ -42,6 +42,32 @@ struct AnalyticCompute
   }
 };
 
+/*!
+ * \brief Use the `AnalyticDataTag` to compute the analytic data for the
+ * tags in `AnalyticFieldsTagList`.
+ */
+template <size_t Dim, typename AnalyticDataTag, typename AnalyticFieldsTagList>
+struct AnalyticDataCompute
+    : db::add_tag_prefix<::Tags::Analytic,
+                         ::Tags::Variables<AnalyticFieldsTagList>>,
+      db::ComputeTag {
+  using base = db::add_tag_prefix<::Tags::Analytic,
+                                  ::Tags::Variables<AnalyticFieldsTagList>>;
+  using return_type = typename base::type;
+  using argument_tags =
+      tmpl::list<AnalyticDataTag,
+                 domain::Tags::Coordinates<Dim, Frame::Inertial>>;
+  static void function(const gsl::not_null<return_type*> analytic_data,
+                       const db::detail::const_item_type<AnalyticDataTag>&
+                           analytic_data_computer,
+                       const tnsr::I<DataVector, Dim, Frame::Inertial>&
+                           inertial_coords) noexcept {
+    *analytic_data =
+        variables_from_tagged_tuple(analytic_data_computer.variables(
+            inertial_coords, AnalyticFieldsTagList{}));
+  }
+};
+
 // @{
 /*!
  * \brief For each `Tag` in `TagsList`, compute its difference from the
