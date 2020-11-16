@@ -6,8 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "Domain/Tags.hpp" // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"

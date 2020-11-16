@@ -8,7 +8,6 @@
 #include <array>
 #include <cstddef>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"

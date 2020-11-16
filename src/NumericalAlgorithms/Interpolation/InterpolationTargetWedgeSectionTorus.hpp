@@ -16,6 +16,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
+/// \cond
 namespace PUP {
 class er;
 }  // namespace PUP
@@ -29,6 +30,7 @@ template <typename TemporalId>
 struct TemporalIds;
 }  // namespace Tags
 }  // namespace intrp
+/// \endcond
 
 namespace intrp {
 

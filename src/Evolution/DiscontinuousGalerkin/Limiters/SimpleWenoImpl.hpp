@@ -12,7 +12,6 @@
 #include <unordered_map>
 #include <utility>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"

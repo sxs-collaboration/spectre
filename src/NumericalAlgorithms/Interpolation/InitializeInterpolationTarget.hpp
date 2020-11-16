@@ -8,7 +8,6 @@
 #include <unordered_set>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/Requires.hpp"

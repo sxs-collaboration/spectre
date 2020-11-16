@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <pup.h>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/InterpolationTargetVarsFromElement.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"

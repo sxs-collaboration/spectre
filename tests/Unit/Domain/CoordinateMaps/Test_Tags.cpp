@@ -5,7 +5,6 @@
 
 #include <string>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"

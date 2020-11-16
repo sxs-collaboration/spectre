@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -580,8 +580,8 @@ void ComputeTimeDerivative<Metavariables>::
 
       // Store the boundary data on this side of the mortar
       db::mutate<all_mortar_data_tag>(
-          box, [&mortar_id, &temporal_id, &boundary_data_on_mortar](
-                   const gsl::not_null<db::item_type<all_mortar_data_tag>*>
+          box, [&mortar_id, &temporal_id, &boundary_data_on_mortar ](
+                   const gsl::not_null<typename all_mortar_data_tag::type*>
                        all_mortar_data) noexcept {
             all_mortar_data->at(mortar_id).local_insert(
                 temporal_id, std::move(boundary_data_on_mortar));

@@ -188,14 +188,15 @@ struct InterfaceApplyImpl<DirectionsTag, tmpl::list<ArgumentTags...>,
             typename... ExtraArgs,
             Requires<is_apply_callable_v<
                 InterfaceInvokable,
-                const db::const_item_type<ArgumentTags, DbTagsList>&...,
+                const db::detail::const_item_type<ArgumentTags, DbTagsList>&...,
                 ExtraArgs...>> = nullptr>
   static constexpr auto apply(InterfaceInvokable&& interface_invokable,
                               const db::DataBox<DbTagsList>& box,
                               ExtraArgs&&... extra_args) noexcept {
     using interface_return_type =
         std::decay_t<decltype(InterfaceInvokable::apply(
-            std::declval<db::const_item_type<ArgumentTags, DbTagsList>>()...,
+            std::declval<
+                db::detail::const_item_type<ArgumentTags, DbTagsList>>()...,
             std::declval<ExtraArgs&&>()...))>;
     return DispatchInterfaceInvokable<true, interface_return_type,
                                       DirectionsTag, VolumeTagsList,
@@ -208,13 +209,14 @@ struct InterfaceApplyImpl<DirectionsTag, tmpl::list<ArgumentTags...>,
             typename... ExtraArgs,
             Requires<not is_apply_callable_v<
                 InterfaceInvokable,
-                const db::const_item_type<ArgumentTags, DbTagsList>&...,
+                const db::detail::const_item_type<ArgumentTags, DbTagsList>&...,
                 ExtraArgs...>> = nullptr>
   static constexpr auto apply(InterfaceInvokable&& interface_invokable,
                               const db::DataBox<DbTagsList>& box,
                               ExtraArgs&&... extra_args) noexcept {
     using interface_return_type = std::decay_t<decltype(interface_invokable(
-        std::declval<db::const_item_type<ArgumentTags, DbTagsList>>()...,
+        std::declval<
+            db::detail::const_item_type<ArgumentTags, DbTagsList>>()...,
         std::declval<ExtraArgs&&>()...))>;
     return DispatchInterfaceInvokable<false, interface_return_type,
                                       DirectionsTag, VolumeTagsList,

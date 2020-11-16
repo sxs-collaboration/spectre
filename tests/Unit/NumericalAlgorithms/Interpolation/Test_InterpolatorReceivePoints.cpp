@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/IdPair.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"

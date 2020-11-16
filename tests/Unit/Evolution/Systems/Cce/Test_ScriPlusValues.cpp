@@ -33,9 +33,9 @@ struct WrapScriPlusComputationImpl<FixedLMax, FixedNumberOfRadialPoints,
 template <size_t FixedLMax, size_t FixedNumberOfRadialPoints, typename Mutator>
 using WrapScriPlusComputation = WrapScriPlusComputationImpl<
     FixedLMax, FixedNumberOfRadialPoints, Mutator,
-    typename db::item_type<tmpl::front<typename Mutator::return_tags>>,
+    typename tmpl::front<typename Mutator::return_tags>::type,
     tmpl::transform<typename Mutator::tensor_argument_tags,
-                    tmpl::bind<db::item_type, tmpl::_1>>>;
+                    tmpl::bind<tmpl::type_from, tmpl::_1>>>;
 
 void pypp_test_scri_plus_computation_steps() noexcept {
   pypp::SetupLocalPythonEnvironment local_python_env{"Evolution/Systems/Cce/"};

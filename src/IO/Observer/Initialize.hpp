@@ -4,7 +4,6 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Tags.hpp"
@@ -61,13 +60,18 @@ struct Initialize {
   static auto helper(tmpl::list<ReductionTags...> /*meta*/) noexcept {
     return std::make_tuple(
         db::create<simple_tags>(
-            db::item_type<Tags::ExpectedContributorsForObservations>{},
-            db::item_type<Tags::ContributorsOfReductionData>{},
-            db::item_type<Tags::ContributorsOfTensorData>{},
-            db::item_type<Tags::TensorData>{},
-            db::item_type<ReductionTags>{}...,
-            db::item_type<
-                detail::reduction_data_to_reduction_names<ReductionTags>>{}...),
+            std::unordered_map<ObservationKey,
+                               std::unordered_set<ArrayComponentId>>{},
+            std::unordered_map<ObservationId,
+                               std::unordered_set<ArrayComponentId>>{},
+            std::unordered_map<ObservationId,
+                               std::unordered_set<ArrayComponentId>>{},
+            std::unordered_map<observers::ObservationId,
+                               std::unordered_map<observers::ArrayComponentId,
+                                                  ElementVolumeData>>{},
+            typename ReductionTags::type{}...,
+            typename detail::reduction_data_to_reduction_names<
+                ReductionTags>::type{}...),
         true);
   }
 };
@@ -118,16 +122,22 @@ struct InitializeWriter {
   static auto helper(tmpl::list<ReductionTags...> /*meta*/) noexcept {
     return std::make_tuple(
         db::create<simple_tags>(
-            db::item_type<Tags::ExpectedContributorsForObservations>{},
-            db::item_type<Tags::ContributorsOfReductionData>{},
+            std::unordered_map<ObservationKey,
+                               std::unordered_set<ArrayComponentId>>{},
+            std::unordered_map<ObservationId,
+                               std::unordered_set<ArrayComponentId>>{},
             Parallel::NodeLock{},
-            db::item_type<Tags::ContributorsOfTensorData>{},
-            Parallel::NodeLock{}, db::item_type<Tags::TensorData>{},
-            db::item_type<Tags::NodesExpectedToContributeReductions>{},
-            db::item_type<Tags::NodesThatContributedReductions>{},
-            Parallel::NodeLock{}, db::item_type<ReductionTags>{}...,
-            db::item_type<
-                detail::reduction_data_to_reduction_names<ReductionTags>>{}...),
+            std::unordered_map<ObservationId,
+                               std::unordered_set<ArrayComponentId>>{},
+            Parallel::NodeLock{},
+            std::unordered_map<observers::ObservationId,
+                               std::unordered_map<observers::ArrayComponentId,
+                                                  ElementVolumeData>>{},
+            std::unordered_map<ObservationKey, std::set<size_t>>{},
+            std::unordered_map<ObservationId, std::unordered_set<size_t>>{},
+            Parallel::NodeLock{}, typename ReductionTags::type{}...,
+            typename detail::reduction_data_to_reduction_names<
+                ReductionTags>::type{}...),
         true);
   }
 };

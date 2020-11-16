@@ -4,7 +4,6 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/ElementReceiveInterpPoints.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"

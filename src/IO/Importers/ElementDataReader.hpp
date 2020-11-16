@@ -73,7 +73,8 @@ struct InitializeElementDataReader {
     return std::make_tuple(
         ::Initialization::merge_into_databox<InitializeElementDataReader,
                                              simple_tags, compute_tags>(
-            std::move(box), db::item_type<Tags::RegisteredElements>{},
+            std::move(box),
+            std::unordered_map<observers::ArrayComponentId, std::string>{},
             std::unordered_set<std::string>{}),
         true);
   }

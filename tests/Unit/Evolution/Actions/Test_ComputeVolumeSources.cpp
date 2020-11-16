@@ -8,8 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -26,7 +24,6 @@
 // IWYU pragma: no_include <unordered_map>
 
 // IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
-// IWYU pragma: no_forward_declare db::DataBox
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {

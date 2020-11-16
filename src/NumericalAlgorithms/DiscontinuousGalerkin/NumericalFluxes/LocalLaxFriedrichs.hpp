@@ -5,11 +5,11 @@
 
 #include <cstddef>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/VariablesTag.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/Gsl.hpp"
@@ -58,18 +58,16 @@ struct LocalLaxFriedrichs : tt::ConformsTo<dg::protocols::NumericalFlux> {
 
   using variables_tags = typename System::variables_tag::tags_list;
 
-  using package_field_tags =
-      tmpl::push_back<tmpl::append<db::split_tag<db::add_tag_prefix<
-                                       ::Tags::NormalDotFlux, variables_tag>>,
-                                   db::split_tag<variables_tag>>,
-                      MaxAbsCharSpeed>;
+  using package_field_tags = tmpl::push_back<
+      tmpl::append<db::wrap_tags_in<::Tags::NormalDotFlux, variables_tags>,
+                   variables_tags>,
+      MaxAbsCharSpeed>;
   using package_extra_tags = tmpl::list<>;
 
-  using argument_tags =
-      tmpl::push_back<tmpl::append<db::split_tag<db::add_tag_prefix<
-                                       ::Tags::NormalDotFlux, variables_tag>>,
-                                   db::split_tag<variables_tag>>,
-                      char_speeds_tag>;
+  using argument_tags = tmpl::push_back<
+      tmpl::append<db::wrap_tags_in<::Tags::NormalDotFlux, variables_tags>,
+                   variables_tags>,
+      char_speeds_tag>;
 
  private:
   template <typename VariablesTagList, typename NormalDotFluxTagList>
@@ -151,20 +149,18 @@ struct LocalLaxFriedrichs : tt::ConformsTo<dg::protocols::NumericalFlux> {
 
   template <class... Args>
   void package_data(const Args&... args) const noexcept {
-    package_data_helper<
-        db::split_tag<variables_tag>,
-        db::split_tag<db::add_tag_prefix<::Tags::NormalDotFlux,
-                                         variables_tag>>>::apply(args...);
+    package_data_helper<variables_tags,
+                        db::wrap_tags_in<::Tags::NormalDotFlux,
+                                         variables_tags>>::apply(args...);
   }
 
   template <class... Args>
   void operator()(const Args&... args) const noexcept {
     call_operator_helper<
-        db::split_tag<
-            db::add_tag_prefix<::Tags::NormalDotNumericalFlux, variables_tag>>,
-        db::split_tag<variables_tag>,
-        db::split_tag<db::add_tag_prefix<::Tags::NormalDotFlux,
-                                         variables_tag>>>::apply(args...);
+        db::wrap_tags_in<::Tags::NormalDotNumericalFlux, variables_tags>,
+        variables_tags,
+        db::wrap_tags_in<::Tags::NormalDotFlux,
+                         variables_tags>>::apply(args...);
   }
 };
 

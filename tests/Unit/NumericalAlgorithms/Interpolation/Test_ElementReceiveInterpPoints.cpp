@@ -6,7 +6,7 @@
 #include <boost/optional/optional_io.hpp>
 #include <cstddef>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"

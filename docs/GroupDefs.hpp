@@ -179,7 +179,7 @@
  *
  * and an example of a compute tag with a function pointer:
  *
- * \snippet Test_DataBox.cpp databox_compute_item_tag_example
+ * \snippet Test_DataBox.cpp databox_mutating_compute_item_tag
  *
  * If the compute item's tag is inline then the compute item is of the form:
  *

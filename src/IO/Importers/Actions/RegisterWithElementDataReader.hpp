@@ -88,8 +88,9 @@ struct RegisterElementWithSelf {
                     const std::string& grid_name) noexcept {
     db::mutate<Tags::RegisteredElements>(
         make_not_null(&box),
-        [&array_component_id, &grid_name](
-            const gsl::not_null<db::item_type<Tags::RegisteredElements>*>
+        [&array_component_id, &grid_name ](
+            const gsl::not_null<
+                std::unordered_map<observers::ArrayComponentId, std::string>*>
                 registered_elements) noexcept {
           (*registered_elements)[array_component_id] = grid_name;
         });

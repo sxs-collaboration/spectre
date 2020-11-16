@@ -10,7 +10,6 @@
 #include <unordered_set>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Index.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"

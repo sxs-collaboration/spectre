@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceComputeTags.hpp"

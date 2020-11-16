@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <limits>
 
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
@@ -71,8 +70,8 @@ void verify_solution(
             solution_fields, fluxes_computer, expanded_fluxes_args...);
       },
       fluxes_args);
-  auto div_fluxes = divergence(std::move(fluxes), mesh,
-                               coord_map.inv_jacobian(logical_coords));
+  auto div_fluxes =
+      divergence(fluxes, mesh, coord_map.inv_jacobian(logical_coords));
   auto sources = std::apply(
       [&solution_fields, &fluxes](const auto&... expanded_sources_args) {
         return ::elliptic::first_order_sources<System::volume_dim,

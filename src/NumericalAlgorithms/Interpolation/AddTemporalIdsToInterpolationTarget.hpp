@@ -6,7 +6,6 @@
 #include <algorithm>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"

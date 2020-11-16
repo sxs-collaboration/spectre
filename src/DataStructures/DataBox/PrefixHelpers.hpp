@@ -22,8 +22,8 @@ struct Variables;
 namespace db {
 
 /// \ingroup DataBoxTagsGroup
-/// \brief Create a new list of Tags by wrapping each tag in `TagList` using the
-/// `Wrapper`.
+/// \brief Create a new `tmpl::list` of tags by wrapping each tag in `TagList`
+/// in `Wrapper<_, Args...>`.
 template <template <typename...> class Wrapper, typename TagList,
           typename... Args>
 using wrap_tags_in =
@@ -43,10 +43,9 @@ struct add_tag_prefix_impl<Prefix, Tags::Variables<TagList>, Args...> {
 }  // namespace detail
 
 /// \ingroup DataBoxTagsGroup
-/// Wrap `Tag` in `Prefix<_, Args...>`, unless `Tag` is a `::Tags::Variables`,
-/// in which case this creates a new ::Tags::Variables from the tags of
-/// VariablesTag, wrapping each tag with Prefix, which may have additional
-/// template arguments Args.
+/// Wrap `Tag` in `Prefix<_, Args...>`, unless `Tag` is a Tags::Variables,
+/// in which case this creates a new Tags::Variables, wrapping each tag in
+/// `Tag::tags_list` with `Prefix<_, Args...>`.
 template <template <typename...> class Prefix, typename Tag, typename... Args>
 using add_tag_prefix =
     typename detail::add_tag_prefix_impl<Prefix, Tag, Args...>::type;
@@ -70,7 +69,7 @@ struct remove_tag_prefix_impl<Tags::Variables<TagList>> {
 
 /// \ingroup DataBoxTagsGroup
 /// Remove the outer prefix from a prefixed tag `Tag`, or remove the outer
-/// prefix of each tag in a variables tag if `Tag` is a `Tags::Variables`.
+/// prefix of each tag in `Tag::tags_list` if `Tag` is a Tags::Variables.
 template <typename Tag>
 using remove_tag_prefix = typename detail::remove_tag_prefix_impl<Tag>::type;
 
@@ -94,9 +93,9 @@ struct remove_all_prefixes_impl<Tags::Variables<TagList>> {
 };
 }  // namespace detail
 
-/// \ingroup DataBoxGroup
+/// \ingroup DataBoxTagsGroup
 /// Completely remove all prefix tags from a Tag, or all prefixes from
-/// the tags in the tag list of a `Tags::Variables`.
+/// the tags in `Tag::tags_list` if `Tag` is a Tags::Variables.
 template <typename Tag>
 using remove_all_prefixes =
     typename detail::remove_all_prefixes_impl<Tag>::type;

@@ -8,7 +8,6 @@
 #include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"

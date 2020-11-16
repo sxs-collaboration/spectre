@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"

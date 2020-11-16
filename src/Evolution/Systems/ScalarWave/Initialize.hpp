@@ -4,8 +4,6 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/EagerMath/Norms.hpp"
 #include "DataStructures/Variables.hpp"
 #include "ErrorHandling/Assert.hpp"
