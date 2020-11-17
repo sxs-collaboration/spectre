@@ -181,7 +181,8 @@ long_lines_exclude() {
     grep -Ev 'https?://' | \
         grep -v '// IWYU pragma:' | \
         grep -v '// NOLINT' | \
-        grep -v '\\snippet'
+        grep -v '\\snippet' | \
+        grep -v '\\image'
 }
 long_lines() {
     whitelist "$1" \
@@ -220,6 +221,8 @@ long_lines_test() {
     test_check pass foo.cpp "xxx https://${eighty}x"$'\n'
     test_check pass foo.cpp "linted;  // NOLINT(${eighty})"$'\n'
     test_check pass foo.cpp "// NOLINTNEXTLINE(${eighty})"$'\n'
+    test_check pass foo.cpp "// \\snippet ${eighty}"$'\n'
+    test_check pass foo.cpp "// \\image ${eighty}"$'\n'
 }
 standard_checks+=(long_lines)
 
