@@ -50,6 +50,10 @@ function(SETUP_TARGET_FOR_COVERAGE
   if (NOT IS_ABSOLUTE ${OUTPUT_PATH})
     set(OUTPUT_PATH ${CMAKE_BINARY_DIR}/${OUTPUT_PATH})
   endif()
+  if(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git)
+    message(FATAL_ERROR, "Not running in a git repo so we can't do "
+      "code coverage")
+  endif()
 
   set(multiValueArgs TESTRUNNER_ARGS DEPENDS IGNORE_COV)
   cmake_parse_arguments(

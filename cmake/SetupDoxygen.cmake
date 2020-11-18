@@ -124,7 +124,8 @@ ${DOCS_POST_PROCESS_COMMAND} && exit \${generate_docs_exit}\n"
   # Use [coverxygen](https://github.com/psycofdj/coverxygen) to check the level
   # of documentation coverage.
   find_python_module(coverxygen FALSE)
-  if (LCOV AND GENHTML AND SED AND PY_COVERXYGEN)
+  if (LCOV AND GENHTML AND SED AND PY_COVERXYGEN
+      AND EXISTS ${CMAKE_SOURCE_DIR}/.git)
     set(DOX_COVERAGE_OUTPUT "${CMAKE_BINARY_DIR}/docs/html/doc_coverage/")
     add_custom_target(
       doc-coverage
@@ -187,7 +188,8 @@ ${DOCS_POST_PROCESS_COMMAND} && exit \${generate_docs_exit}\n"
 
       COMMENT "SpECTRE Documentation Coverage"
       )
-  endif(LCOV AND GENHTML AND SED AND PY_COVERXYGEN)
+  endif(LCOV AND GENHTML AND SED AND PY_COVERXYGEN
+    AND EXISTS ${CMAKE_SOURCE_DIR}/.git)
 else(DOXYGEN_FOUND)
   message(WARNING "Doxygen is needed to build the documentation.")
 endif (DOXYGEN_FOUND)

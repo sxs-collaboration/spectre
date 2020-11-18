@@ -28,7 +28,7 @@ else()
   )
 endif()
 
-if(CLANG_FORMAT_BIN)
+if(CLANG_FORMAT_BIN AND EXISTS ${CMAKE_SOURCE_DIR}/.git)
   set(CLANG_FORMAT_FOUND 1)
   get_filename_component(CLANG_FORMAT_NAME ${CLANG_FORMAT_BIN} NAME)
   add_custom_target(

@@ -8,8 +8,20 @@
 formaline_archive_name=spectre_$1
 formaline_dir=@CMAKE_BINARY_DIR@/tmp/
 pushd @CMAKE_SOURCE_DIR@ >/dev/null
-git ls-tree --full-tree --name-only HEAD \
-    | xargs tar -czf ${formaline_dir}/${formaline_archive_name}.tar.gz
+if [ -d "./.git" ]; then
+    git ls-tree --full-tree --name-only HEAD \
+        | xargs tar -czf ${formaline_dir}/${formaline_archive_name}.tar.gz
+else
+    # Since we can't record all the files in the repo (because there is
+    # no repo), we have to manually save a list of files to avoid trying
+    # to archive build dirs created inside the source dir.
+    #
+    # When running in a git repo we explicitly call into git to get the list
+    # of files just in case files or directories were added to the repo
+    # since the last time CMake ran. This should be very, very rare.
+    tar -czf ${formaline_dir}/${formaline_archive_name}.tar.gz \
+        @SPECTRE_FORMALINE_LOCATIONS_SHELL@
+fi
 popd >/dev/null
 
 pushd @CMAKE_BINARY_DIR@/tmp >/dev/null
