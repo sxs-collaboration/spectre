@@ -11,6 +11,7 @@ set(LIBS_TO_LINK
   GeneralRelativity
   GeneralizedHarmonic
   GeneralizedHarmonicGaugeSourceFunctions
+  GhConstraintDamping
   IO
   Informer
   Interpolation

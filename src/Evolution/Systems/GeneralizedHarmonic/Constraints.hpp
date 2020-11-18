@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Utilities/ContainerHelpers.hpp"
@@ -547,7 +548,8 @@ struct FConstraintCompute : FConstraint<SpatialDim, Frame>, db::ComputeTag {
       Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>,
       ::Tags::deriv<Pi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
       ::Tags::deriv<Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
-      ConstraintGamma2, ThreeIndexConstraint<SpatialDim, Frame>>;
+      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
+      ThreeIndexConstraint<SpatialDim, Frame>>;
 
   using return_type = tnsr::a<DataVector, SpatialDim, Frame>;
 
@@ -589,7 +591,8 @@ struct TwoIndexConstraintCompute : TwoIndexConstraint<SpatialDim, Frame>,
       Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>,
       ::Tags::deriv<Pi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
       ::Tags::deriv<Phi<SpatialDim, Frame>, tmpl::size_t<SpatialDim>, Frame>,
-      ConstraintGamma2, ThreeIndexConstraint<SpatialDim, Frame>>;
+      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
+      ThreeIndexConstraint<SpatialDim, Frame>>;
 
   using return_type = tnsr::ia<DataVector, SpatialDim, Frame>;
 

@@ -11,6 +11,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Protocols.hpp"
 #include "Options/Options.hpp"
@@ -225,7 +226,8 @@ struct UpwindPenaltyCorrection : tt::ConformsTo<dg::protocols::NumericalFlux> {
       Tags::VSpacetimeMetric<Dim, Frame::Inertial>,
       Tags::VZero<Dim, Frame::Inertial>, Tags::VPlus<Dim, Frame::Inertial>,
       Tags::VMinus<Dim, Frame::Inertial>,
-      Tags::CharacteristicSpeeds<Dim, Frame::Inertial>, Tags::ConstraintGamma2,
+      Tags::CharacteristicSpeeds<Dim, Frame::Inertial>,
+      ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
       ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
 
   void package_data(

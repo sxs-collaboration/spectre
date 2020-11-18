@@ -24,6 +24,9 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/DampingFunction.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/GaussianPlusConstant.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Constraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
@@ -686,14 +689,14 @@ void test_constraint_compute_items(
     const std::array<double, 3>& upper_bound) noexcept {
   // Check that compute items are named correctly
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::ConstraintGamma0Compute<3, Frame::Inertial>>(
-      "ConstraintGamma0");
+      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0Compute<
+          3, Frame::Inertial>>("ConstraintGamma0");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::ConstraintGamma1Compute<3, Frame::Inertial>>(
-      "ConstraintGamma1");
+      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1Compute<
+          3, Frame::Inertial>>("ConstraintGamma1");
   TestHelpers::db::test_compute_tag<
-      GeneralizedHarmonic::Tags::ConstraintGamma2Compute<3, Frame::Inertial>>(
-      "ConstraintGamma2");
+      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2Compute<
+          3, Frame::Inertial>>("ConstraintGamma2");
   TestHelpers::db::test_compute_tag<
       GeneralizedHarmonic::Tags::GaugeHImplicitFrom3p1QuantitiesCompute<
           3, Frame::Inertial>>("GaugeH");
@@ -838,6 +841,16 @@ void test_constraint_compute_items(
                                     time_deriv_gauge_source,
                                     deriv_gauge_source);
 
+  // Make DampingFunctions for the constraint damping parameters
+  // Note: these parameters are taken from SpEC single-black-hole simulations
+  constexpr double constant_02 = 0.001;
+  constexpr double amplitude_0 = 3.0;
+  constexpr double amplitude_2 = 1.0;
+  constexpr double constant_1 = -1.0;
+  constexpr double amplitude_1 = 0.0;
+  constexpr double width = 11.3137084989848;  // sqrt(128.0)
+  const std::array<double, 3> center{{0.0, 0.0, 0.0}};
+
   // Insert into databox
   const auto box = db::create<
       db::AddSimpleTags<
@@ -863,18 +876,24 @@ void test_constraint_compute_items(
           ::Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
                         tmpl::size_t<3>, Frame::Inertial>,
           ::Tags::deriv<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                        tmpl::size_t<3>, Frame::Inertial>>,
+                        tmpl::size_t<3>, Frame::Inertial>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
+              3, Frame::Inertial>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
+              3, Frame::Inertial>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
+              3, Frame::Inertial>>,
       db::AddComputeTags<
-          GeneralizedHarmonic::Tags::ConstraintGamma0Compute<3,
-                                                             Frame::Inertial>,
-          GeneralizedHarmonic::Tags::ConstraintGamma1Compute<3,
-                                                             Frame::Inertial>,
-          GeneralizedHarmonic::Tags::ConstraintGamma2Compute<3,
-                                                             Frame::Inertial>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0Compute<
+              3, Frame::Inertial>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1Compute<
+              3, Frame::Inertial>,
+          GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2Compute<
+              3, Frame::Inertial>,
           gr::Tags::SpacetimeNormalOneFormCompute<3, Frame::Inertial,
                                                   DataVector>,
-          gr::Tags::SpacetimeNormalVectorCompute<3,
-                                                 Frame::Inertial, DataVector>,
+          gr::Tags::SpacetimeNormalVectorCompute<3, Frame::Inertial,
+                                                 DataVector>,
           gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Inertial,
                                                       DataVector>,
           gr::Tags::InverseSpacetimeMetricCompute<3, Frame::Inertial,
@@ -906,18 +925,48 @@ void test_constraint_compute_items(
       x, spatial_metric, lapse, shift, deriv_spatial_metric, deriv_lapse,
       deriv_shift, time_deriv_spatial_metric, time_deriv_lapse,
       time_deriv_shift, deriv_gauge_source, time_deriv_gauge_source,
-      deriv_spacetime_metric, deriv_phi, deriv_pi);
+      deriv_spacetime_metric, deriv_phi, deriv_pi,
+      std::move(
+          static_cast<std::unique_ptr<GeneralizedHarmonic::ConstraintDamping::
+                                          DampingFunction<3, Frame::Inertial>>>(
+              std::make_unique<GeneralizedHarmonic::ConstraintDamping::
+                                   GaussianPlusConstant<3, Frame::Inertial>>(
+                  constant_02, amplitude_0, width, center))),
+      std::move(
+          static_cast<std::unique_ptr<GeneralizedHarmonic::ConstraintDamping::
+                                          DampingFunction<3, Frame::Inertial>>>(
+              std::make_unique<GeneralizedHarmonic::ConstraintDamping::
+                                   GaussianPlusConstant<3, Frame::Inertial>>(
+                  constant_1, amplitude_1, width, center))),
+      std::move(
+          static_cast<std::unique_ptr<GeneralizedHarmonic::ConstraintDamping::
+                                          DampingFunction<3, Frame::Inertial>>>(
+              std::make_unique<GeneralizedHarmonic::ConstraintDamping::
+                                   GaussianPlusConstant<3, Frame::Inertial>>(
+                  constant_02, amplitude_2, width, center))));
 
   // Compute tested quantities locally
   Scalar<DataVector> gamma0{};
-  GeneralizedHarmonic::Tags::ConstraintGamma0Compute<
-      3, Frame::Inertial>::function(make_not_null(&gamma0), x);
+  GeneralizedHarmonic::ConstraintDamping::Tags::
+      ConstraintGamma0Compute<3, Frame::Inertial>::function(
+          make_not_null(&gamma0),
+          GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<
+              3, Frame::Inertial>{constant_02, amplitude_0, width, center},
+          x);
   Scalar<DataVector> gamma1{};
-  GeneralizedHarmonic::Tags::ConstraintGamma1Compute<
-      3, Frame::Inertial>::function(make_not_null(&gamma1), x);
+  GeneralizedHarmonic::ConstraintDamping::Tags::
+      ConstraintGamma1Compute<3, Frame::Inertial>::function(
+          make_not_null(&gamma1),
+          GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<
+              3, Frame::Inertial>{constant_1, amplitude_1, width, center},
+          x);
   Scalar<DataVector> gamma2{};
-  GeneralizedHarmonic::Tags::ConstraintGamma2Compute<
-      3, Frame::Inertial>::function(make_not_null(&gamma2), x);
+  GeneralizedHarmonic::ConstraintDamping::Tags::
+      ConstraintGamma2Compute<3, Frame::Inertial>::function(
+          make_not_null(&gamma2),
+          GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<
+              3, Frame::Inertial>{constant_02, amplitude_2, width, center},
+          x);
 
   const auto four_index_constraint =
       GeneralizedHarmonic::four_index_constraint(deriv_phi);
@@ -940,9 +989,12 @@ void test_constraint_compute_items(
       det_spatial_metric);
 
   // Check that their compute items in databox furnish identical values
-  CHECK(db::get<GeneralizedHarmonic::Tags::ConstraintGamma0>(box) == gamma0);
-  CHECK(db::get<GeneralizedHarmonic::Tags::ConstraintGamma1>(box) == gamma1);
-  CHECK(db::get<GeneralizedHarmonic::Tags::ConstraintGamma2>(box) == gamma2);
+  CHECK(db::get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0>(
+            box) == gamma0);
+  CHECK(db::get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>(
+            box) == gamma1);
+  CHECK(db::get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>(
+            box) == gamma2);
   CHECK(db::get<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>>(box) ==
         gauge_source);
   CHECK(

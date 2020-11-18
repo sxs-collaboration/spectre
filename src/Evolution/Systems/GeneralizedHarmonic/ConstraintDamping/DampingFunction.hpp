@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -38,8 +39,8 @@ class DampingFunction : public PUP::able {
   WRAPPED_PUPable_abstract(DampingFunction);  // NOLINT
 
   DampingFunction() = default;
-  DampingFunction(const DampingFunction& /*rhs*/) = delete;
-  DampingFunction& operator=(const DampingFunction& /*rhs*/) = delete;
+  DampingFunction(const DampingFunction& /*rhs*/) = default;
+  DampingFunction& operator=(const DampingFunction& /*rhs*/) = default;
   DampingFunction(DampingFunction&& /*rhs*/) noexcept = default;
   DampingFunction& operator=(DampingFunction&& /*rhs*/) noexcept = default;
   ~DampingFunction() override = default;
@@ -51,6 +52,9 @@ class DampingFunction : public PUP::able {
   virtual Scalar<DataVector> operator()(
       const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept = 0;
   //@}
+
+  virtual auto get_clone() const noexcept
+      -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> = 0;
 };
 }  // namespace GeneralizedHarmonic::ConstraintDamping
 

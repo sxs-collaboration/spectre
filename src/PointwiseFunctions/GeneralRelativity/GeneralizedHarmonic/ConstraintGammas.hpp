@@ -10,6 +10,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ContainerHelpers.hpp"
@@ -30,67 +31,82 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 /// \endcond
 
-namespace GeneralizedHarmonic {
-namespace Tags {
+namespace GeneralizedHarmonic::ConstraintDamping::Tags {
 /*!
- * \brief Compute items to compute constraint-damping parameters for a
- * single-BH evolution.
+ * \brief Computes the constraint damping parameter \f$\gamma_0\f$ from the
+ * coordinates and a DampingFunction.
  *
  * \details Can be retrieved using
- * `GeneralizedHarmonic::Tags::ConstraintGamma0`,
- * `GeneralizedHarmonic::Tags::ConstraintGamma1`, and
- * `GeneralizedHarmonic::Tags::ConstraintGamma2`.
+ * `GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0`.
  */
 template <size_t SpatialDim, typename Frame>
 struct ConstraintGamma0Compute : ConstraintGamma0, db::ComputeTag {
   using argument_tags =
-      tmpl::list<domain::Tags::Coordinates<SpatialDim, Frame>>;
-
+      tmpl::list<DampingFunctionGamma0<SpatialDim, Frame>,
+                 domain::Tags::Coordinates<SpatialDim, Frame>>;
   using return_type = Scalar<DataVector>;
 
   static constexpr void function(
       const gsl::not_null<Scalar<DataVector>*> gamma,
+      const ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<
+          SpatialDim, Frame>& damping_function,
       const tnsr::I<DataVector, SpatialDim, Frame>& coords) noexcept {
     destructive_resize_components(gamma, get<0>(coords).size());
-    get(*gamma) =
-        3. * exp(-0.0078125 * get(dot_product(coords, coords))) + 0.001;
+    get(*gamma) = get(damping_function(coords));
   }
 
   using base = ConstraintGamma0;
 };
-/// \copydoc ConstraintGamma0Compute
+
+/*!
+ * \brief Computes the constraint damping parameter \f$\gamma_1\f$ from the
+ * coordinates and a DampingFunction.
+ *
+ * \details Can be retrieved using
+ * `GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1`.
+ */
 template <size_t SpatialDim, typename Frame>
 struct ConstraintGamma1Compute : ConstraintGamma1, db::ComputeTag {
   using argument_tags =
-      tmpl::list<domain::Tags::Coordinates<SpatialDim, Frame>>;
-
+      tmpl::list<DampingFunctionGamma1<SpatialDim, Frame>,
+                 domain::Tags::Coordinates<SpatialDim, Frame>>;
   using return_type = Scalar<DataVector>;
 
   static constexpr void function(
       const gsl::not_null<Scalar<DataVector>*> gamma1,
+      const ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<
+          SpatialDim, Frame>& damping_function,
       const tnsr::I<DataVector, SpatialDim, Frame>& coords) noexcept {
     destructive_resize_components(gamma1, get<0>(coords).size());
-    get(*gamma1) = -1.;
+    get(*gamma1) = get(damping_function(coords));
   }
 
   using base = ConstraintGamma1;
 };
-/// \copydoc ConstraintGamma0Compute
+
+/*!
+ * \brief Computes the constraint damping parameter \f$\gamma_2\f$ from the
+ * coordinates and a DampingFunction.
+ *
+ * \details Can be retrieved using
+ * `GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2`.
+ */
 template <size_t SpatialDim, typename Frame>
 struct ConstraintGamma2Compute : ConstraintGamma2, db::ComputeTag {
   using argument_tags =
-      tmpl::list<domain::Tags::Coordinates<SpatialDim, Frame>>;
-
+      tmpl::list<DampingFunctionGamma2<SpatialDim, Frame>,
+                 domain::Tags::Coordinates<SpatialDim, Frame>>;
   using return_type = Scalar<DataVector>;
 
   static constexpr void function(
       const gsl::not_null<Scalar<DataVector>*> gamma,
+      const ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<
+          SpatialDim, Frame>& damping_function,
       const tnsr::I<DataVector, SpatialDim, Frame>& coords) noexcept {
     destructive_resize_components(gamma, get<0>(coords).size());
-    get(*gamma) = exp(-0.0078125 * get(dot_product(coords, coords))) + 0.001;
+    get(*gamma) = get(damping_function(coords));
   }
 
   using base = ConstraintGamma2;
 };
-}  // namespace Tags
-}  // namespace GeneralizedHarmonic
+}  // namespace GeneralizedHarmonic::ConstraintDamping::Tags

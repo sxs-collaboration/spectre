@@ -72,8 +72,9 @@ class GaussianPlusConstant : public DampingFunction<VolumeDim, Fr> {
 
   GaussianPlusConstant() = default;
   ~GaussianPlusConstant() override = default;
-  GaussianPlusConstant(const GaussianPlusConstant& /*rhs*/) = delete;
-  GaussianPlusConstant& operator=(const GaussianPlusConstant& /*rhs*/) = delete;
+  GaussianPlusConstant(const GaussianPlusConstant& /*rhs*/) = default;
+  GaussianPlusConstant& operator=(const GaussianPlusConstant& /*rhs*/) =
+      default;
   GaussianPlusConstant(GaussianPlusConstant&& /*rhs*/) noexcept = default;
   GaussianPlusConstant& operator=(GaussianPlusConstant&& /*rhs*/) noexcept =
       default;
@@ -82,6 +83,9 @@ class GaussianPlusConstant : public DampingFunction<VolumeDim, Fr> {
       const tnsr::I<double, VolumeDim, Fr>& x) const noexcept override;
   Scalar<DataVector> operator()(
       const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept override;
+
+  auto get_clone() const noexcept
+      -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> override;
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) override;  // NOLINT

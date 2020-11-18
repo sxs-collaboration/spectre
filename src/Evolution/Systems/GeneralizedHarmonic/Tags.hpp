@@ -41,16 +41,6 @@ struct Phi : db::SimpleTag {
   using type = tnsr::iaa<DataVector, Dim, Frame>;
 };
 
-struct ConstraintGamma0 : db::SimpleTag {
-  using type = Scalar<DataVector>;
-};
-struct ConstraintGamma1 : db::SimpleTag {
-  using type = Scalar<DataVector>;
-};
-struct ConstraintGamma2 : db::SimpleTag {
-  using type = Scalar<DataVector>;
-};
-
 /*!
  * \brief Gauge source function for the generalized harmonic system.
  *

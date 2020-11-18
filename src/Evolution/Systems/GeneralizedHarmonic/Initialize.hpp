@@ -15,6 +15,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Constraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
@@ -95,6 +96,14 @@ template <size_t Dim>
 struct InitializeGhAnd3Plus1Variables {
   using frame = Frame::Inertial;
 
+  using const_global_cache_tags = tmpl::list<
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
+          Dim, frame>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
+          Dim, frame>,
+      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
+          Dim, frame>>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -114,9 +123,12 @@ struct InitializeGhAnd3Plus1Variables {
         gr::Tags::SpacetimeNormalVectorCompute<Dim, frame, DataVector>,
         gr::Tags::InverseSpacetimeMetricCompute<Dim, frame, DataVector>,
         GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<Dim, frame>,
-        GeneralizedHarmonic::Tags::ConstraintGamma0Compute<Dim, frame>,
-        GeneralizedHarmonic::Tags::ConstraintGamma1Compute<Dim, frame>,
-        GeneralizedHarmonic::Tags::ConstraintGamma2Compute<Dim, frame>>;
+        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0Compute<
+            Dim, frame>,
+        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1Compute<
+            Dim, frame>,
+        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2Compute<
+            Dim, frame>>;
 
     return std::make_tuple(
         Initialization::merge_into_databox<InitializeGhAnd3Plus1Variables,
