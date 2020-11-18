@@ -21,6 +21,7 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
                         "python 2, which is deprecated. GenerateXdmf.py might "
                         "hang or run very slowly using python 2. Please use "
                         "python 3 instead.")
+
     h5files = [(h5py.File(filename, 'r'), filename)
                for filename in glob.glob(file_prefix + "*.h5")]
 
@@ -28,6 +29,10 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
         file_prefix)
 
     element_data = h5files[0][0].get(subfile_name + '.vol')
+    if element_data is None:
+        raise ValueError(("Could not open subfile name '{}.vol'. Available "
+                          "subfiles: {}").format(subfile_name,
+                                                 h5files[0][0].keys()))
     temporal_ids_and_values = [(x,
                                 element_data.get(x).attrs['observation_value'])
                                for x in element_data.keys()]
@@ -254,6 +259,7 @@ def parse_args():
     parser.add_argument(
         '--subfile-name',
         '-d',
+        required=True,
         help="Name of the volume data subfile in the H5 files, excluding the "
         "'.vol' extension")
     parser.add_argument("--stride",
