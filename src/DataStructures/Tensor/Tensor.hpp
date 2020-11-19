@@ -261,27 +261,27 @@ class Tensor<X, Symm, IndexList<Indices...>> {
 
   // @{
   /// Retrieve a TensorExpression object with the index structure passed in
-  template <typename... N,
-            Requires<std::conjunction_v<tt::is_tensor_index<N>...> and
-                     tmpl::is_set<N...>::value> = nullptr>
-  SPECTRE_ALWAYS_INLINE constexpr TE<tmpl::list<N...>> operator()(
+  template <typename... N>
+  SPECTRE_ALWAYS_INLINE constexpr auto operator()(
       N... /*meta*/) const noexcept {
-    return TE<tmpl::list<N...>>(*this);
-  }
-
-  template <typename... N,
-            Requires<std::conjunction_v<tt::is_tensor_index<N>...> and
-                     not tmpl::is_set<N...>::value> = nullptr>
-  SPECTRE_ALWAYS_INLINE constexpr auto operator()(N... /*meta*/) const noexcept
-      -> decltype(
-          TensorExpressions::detail::fully_contract<
-              TE, replace_indices<tmpl::list<N...>, repeated<tmpl::list<N...>>>,
-              0, tmpl::size<repeated<tmpl::list<N...>>>>(*this)) {
-    using args_list = tmpl::list<N...>;
-    using repeated_args_list = repeated<args_list>;
-    return TensorExpressions::detail::fully_contract<
-        TE, replace_indices<args_list, repeated_args_list>, 0,
-        tmpl::size<repeated_args_list>>(*this);
+    static_assert((... and tt::is_tensor_index<N>::value),
+                  "The tensor expression must be created using TensorIndex "
+                  "objects to represent generic indices, e.g. ti_a, ti_b, "
+                  "etc.");
+    static_assert(tmpl::is_set<N...>::value,
+                  "Cannot create a tensor expression with a repeated generic "
+                  "index. If you intend to contract, ensure that the indices "
+                  "to contract have opposite valences.");
+    static_assert(std::is_same_v<tmpl::integral_list<UpLo, N::valence...>,
+                                 tmpl::integral_list<UpLo, Indices::ul...>>,
+                  "The valences of the generic indices in the expression do "
+                  "not match the valences of the indices in the Tensor.");
+    static_assert((... and (N::is_spacetime ==
+                            (Indices::index_type == IndexType::Spacetime))),
+                  "The index types (SpatialIndex or SpacetimeIndex) of the "
+                  "generic indices in the expression do not match the index "
+                  "types of the indices in the Tensor.");
+    return TensorExpressions::contract(TE<tmpl::list<N...>>{*this});
   }
   // @}
 

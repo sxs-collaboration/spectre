@@ -22,13 +22,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
   CHECK(lhs_scalar.get() == 1.3);
 
   Tensor<double, Symmetry<1, 1>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
       All{};
   std::iota(All.begin(), All.end(), 0.0);
   Tensor<double, Symmetry<2, 1>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
       Hll{};
   std::iota(Hll.begin(), Hll.end(), 0.0);
   /// [use_tensor_index]
@@ -39,8 +39,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
   auto Gll3 = TensorExpressions::evaluate<ti_a_t, ti_b_t>(
       All(ti_a, ti_b) + Hll(ti_b, ti_a) + All(ti_b, ti_a) - Hll(ti_b, ti_a));
   /// [use_tensor_index]
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
       CHECK(Gll.get(i, j) == All.get(i, j) + Hll.get(i, j));
       CHECK(Gll2.get(i, j) == All.get(i, j) + Hll.get(j, i));
       CHECK(Gll3.get(i, j) == 2.0 * All.get(i, j));
@@ -48,15 +48,15 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
   }
   // Test 3 indices add subtract
   Tensor<double, Symmetry<1, 1, 2>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
       Alll{};
   std::iota(Alll.begin(), Alll.end(), 0.0);
   Tensor<double, Symmetry<1, 2, 3>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
       Hlll{};
   std::iota(Hlll.begin(), Hlll.end(), 0.0);
   auto Glll = TensorExpressions::evaluate<ti_a_t, ti_b_t, ti_c_t>(
@@ -66,9 +66,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
   auto Glll3 = TensorExpressions::evaluate<ti_a_t, ti_b_t, ti_c_t>(
       Alll(ti_a, ti_b, ti_c) + Hlll(ti_b, ti_a, ti_c) + Alll(ti_b, ti_a, ti_c) -
       Hlll(ti_b, ti_a, ti_c));
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      for (int k = 0; k < 3; ++k) {
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      for (int k = 0; k < 4; ++k) {
         CHECK(Glll.get(i, j, k) == Alll.get(i, j, k) + Hlll.get(i, j, k));
         CHECK(Glll2.get(i, j, k) == Alll.get(i, j, k) + Hlll.get(j, i, k));
         CHECK(Glll3.get(i, j, k) == 2.0 * Alll.get(i, j, k));
