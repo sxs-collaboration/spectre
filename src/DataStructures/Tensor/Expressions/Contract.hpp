@@ -26,30 +26,36 @@ using indices_contractible = std::integral_constant<
               I1::index_type == I2::index_type>;
 
 template <typename T, typename X, typename SymmList, typename IndexList,
-          typename Args>
-struct ComputeContractedTypeImpl;
+          typename TensorIndexList>
+struct ContractedTypeImpl;
 
 template <typename T, typename X, template <typename...> class SymmList,
-          typename IndexList, typename Args, typename... Symm>
-struct ComputeContractedTypeImpl<T, X, SymmList<Symm...>, IndexList, Args> {
-  using type =
-      TensorExpression<T, X, Symmetry<Symm::value...>, IndexList, Args>;
+          typename IndexList, typename TensorIndexList, typename... Symm>
+struct ContractedTypeImpl<T, X, SymmList<Symm...>, IndexList, TensorIndexList> {
+  using type = TensorExpression<T, X, Symmetry<Symm::value...>, IndexList,
+                                TensorIndexList>;
 };
 
-template <typename ReplacedArg1, typename ReplacedArg2, typename T, typename X,
-          typename Symm, typename IndexList, typename Args>
-using ComputeContractedType = typename ComputeContractedTypeImpl<
-    T, X,
-    tmpl::erase<tmpl::erase<Symm, tmpl::index_of<
-                                      Args, TensorIndex<ReplacedArg2::value>>>,
-                tmpl::index_of<Args, TensorIndex<ReplacedArg1::value>>>,
-    tmpl::erase<
-        tmpl::erase<IndexList,
-                    tmpl::index_of<Args, TensorIndex<ReplacedArg2::value>>>,
-        tmpl::index_of<Args, TensorIndex<ReplacedArg1::value>>>,
-    tmpl::erase<tmpl::erase<Args, tmpl::index_of<
-                                      Args, TensorIndex<ReplacedArg2::value>>>,
-                tmpl::index_of<Args, TensorIndex<ReplacedArg1::value>>>>::type;
+template <size_t FirstContractedIndexPos, size_t SecondContractedIndexPos,
+          typename T, typename X, typename Symm, typename IndexList,
+          typename TensorIndexList>
+struct ContractedType {
+  static_assert(FirstContractedIndexPos < SecondContractedIndexPos,
+                "The position of the first provided index to contract must be "
+                "less than the position of the second index to contract.");
+  using contracted_symmetry =
+      tmpl::erase<tmpl::erase<Symm, tmpl::size_t<SecondContractedIndexPos>>,
+                  tmpl::size_t<FirstContractedIndexPos>>;
+  using contracted_index_list = tmpl::erase<
+      tmpl::erase<IndexList, tmpl::size_t<SecondContractedIndexPos>>,
+      tmpl::size_t<FirstContractedIndexPos>>;
+  using contracted_tensorindex_list = tmpl::erase<
+      tmpl::erase<TensorIndexList, tmpl::size_t<SecondContractedIndexPos>>,
+      tmpl::size_t<FirstContractedIndexPos>>;
+  using type = typename ContractedTypeImpl<T, X, contracted_symmetry,
+                                           contracted_index_list,
+                                           contracted_tensorindex_list>::type;
+};
 
 template <size_t I, size_t Index1, size_t Index2, typename... LhsIndices,
           typename T, typename S>
@@ -72,35 +78,46 @@ static SPECTRE_ALWAYS_INLINE decltype(auto) compute_contraction(S tensor_index,
 /*!
  * \ingroup TensorExpressionsGroup
  */
-template <typename ReplacedArg1, typename ReplacedArg2, typename T, typename X,
-          typename Symm, typename IndexList, typename ArgsList>
+template <size_t FirstContractedIndexPos, size_t SecondContractedIndexPos,
+          typename T, typename X, typename Symm, typename IndexList,
+          typename ArgsList>
 struct TensorContract
-    : public TensorExpression<TensorContract<ReplacedArg1, ReplacedArg2, T, X,
-                                             Symm, IndexList, ArgsList>,
-                              X,
-                              typename detail::ComputeContractedType<
-                                  ReplacedArg1, ReplacedArg2, T, X, Symm,
-                                  IndexList, ArgsList>::symmetry,
-                              typename detail::ComputeContractedType<
-                                  ReplacedArg1, ReplacedArg2, T, X, Symm,
-                                  IndexList, ArgsList>::index_list,
-                              typename detail::ComputeContractedType<
-                                  ReplacedArg1, ReplacedArg2, T, X, Symm,
-                                  IndexList, ArgsList>::args_list> {
-  static constexpr size_t Index1 =
-      tmpl::index_of<ArgsList, TensorIndex<ReplacedArg1::value>>::value;
-  static constexpr size_t Index2 =
-      tmpl::index_of<ArgsList, TensorIndex<ReplacedArg2::value>>::value;
-  using CI1 = tmpl::at_c<IndexList, Index1>;
-  using CI2 = tmpl::at_c<IndexList, Index2>;
+    : public TensorExpression<
+          TensorContract<FirstContractedIndexPos, SecondContractedIndexPos, T,
+                         X, Symm, IndexList, ArgsList>,
+          X,
+          typename detail::ContractedType<FirstContractedIndexPos,
+                                          SecondContractedIndexPos, T, X, Symm,
+                                          IndexList, ArgsList>::type::symmetry,
+          typename detail::ContractedType<
+              FirstContractedIndexPos, SecondContractedIndexPos, T, X, Symm,
+              IndexList, ArgsList>::type::index_list,
+          typename detail::ContractedType<
+              FirstContractedIndexPos, SecondContractedIndexPos, T, X, Symm,
+              IndexList, ArgsList>::type::args_list> {
+  // First and second \ref SpacetimeIndex "TensorIndexType"s to contract.
+  // "first" and "second" here refer to the position of the indices to contract
+  // in the list of indices, with "first" denoting leftmost
+  //
+  // e.g. `R(ti_A, ti_b, ti_a)` :
+  // - `first_contracted_index` refers to the
+  //   \ref SpacetimeIndex "TensorIndexType" refered to by `ti_A`
+  // - `second_contracted_index` refers to the
+  //   \ref SpacetimeIndex "TensorIndexType" refered to by `ti_a`
+  using first_contracted_index = tmpl::at_c<IndexList, FirstContractedIndexPos>;
+  using second_contracted_index =
+      tmpl::at_c<IndexList, SecondContractedIndexPos>;
   static_assert(tmpl::size<Symm>::value > 1 and
                     tmpl::size<IndexList>::value > 1,
                 "Cannot contract indices on a Tensor with rank less than 2");
-  static_assert(detail::indices_contractible<CI1, CI2>::value,
+  static_assert(detail::indices_contractible<first_contracted_index,
+                                             second_contracted_index>::value,
                 "Cannot contract the requested indices.");
 
-  using new_type = detail::ComputeContractedType<ReplacedArg1, ReplacedArg2, T,
-                                                 X, Symm, IndexList, ArgsList>;
+  using new_type =
+      typename detail::ContractedType<FirstContractedIndexPos,
+                                      SecondContractedIndexPos, T, X, Symm,
+                                      IndexList, ArgsList>::type;
 
   using type = X;
   using symmetry = typename new_type::symmetry;
@@ -116,23 +133,25 @@ struct TensorContract
   SPECTRE_ALWAYS_INLINE void fill_contracting_tensor_index(
       std::array<size_t, Rank>& tensor_index_in,
       const std::array<size_t, num_tensor_indices>& tensor_index) const {
-    if constexpr (I < Index1) {
+    if constexpr (I < FirstContractedIndexPos) {
       tensor_index_in[I] = tensor_index[I];
       fill_contracting_tensor_index<I + 1>(tensor_index_in, tensor_index);
-    } else if constexpr (I == Index1) {
+    } else if constexpr (I == FirstContractedIndexPos) {
       // 10000 is for the slot that will be set later. Easy to debug.
       tensor_index_in[I] = 10000;
       fill_contracting_tensor_index<I + 1>(tensor_index_in, tensor_index);
-    } else if constexpr (I > Index1 and I <= Index2 and I < Rank - 1) {
+    } else if constexpr (I > FirstContractedIndexPos and
+                         I <= SecondContractedIndexPos and I < Rank - 1) {
       // tensor_index is Rank - 2 since it shouldn't be called for Rank 2 case
       // 20000 is for the slot that will be set later. Easy to debug.
-      tensor_index_in[I] = I == Index2 ? 20000 : tensor_index[I - 1];
+      tensor_index_in[I] =
+          I == SecondContractedIndexPos ? 20000 : tensor_index[I - 1];
       fill_contracting_tensor_index<I + 1>(tensor_index_in, tensor_index);
-    } else if constexpr (I > Index2 and I < Rank - 1) {
+    } else if constexpr (I > SecondContractedIndexPos and I < Rank - 1) {
       // Left as Rank - 2 since it should never be called for the Rank 2 case
       tensor_index_in[I] = tensor_index[I - 2];
       fill_contracting_tensor_index<I + 1>(tensor_index_in, tensor_index);
-    } else if constexpr (I == Index2) {
+    } else if constexpr (I == SecondContractedIndexPos) {
       tensor_index_in[I] = 20000;
     } else {
       tensor_index_in[I] = tensor_index[I - 2];
@@ -147,8 +166,10 @@ struct TensorContract
     // Manually unrolled for loops to compute the tensor_index from the
     // new_tensor_index
     fill_contracting_tensor_index<0>(tensor_index, new_tensor_index);
-    return detail::compute_contraction<CI1::dim - 1, Index1, Index2,
-                                       LhsIndices...>(tensor_index, t_);
+    return detail::compute_contraction<first_contracted_index::dim - 1,
+                                       FirstContractedIndexPos,
+                                       SecondContractedIndexPos, LhsIndices...>(
+        tensor_index, t_);
   }
 
   template <typename LhsStructure, typename... LhsIndices>
@@ -157,7 +178,7 @@ struct TensorContract
     const std::array<size_t, num_tensor_indices>& new_tensor_index =
         LhsStructure::template get_canonical_tensor_index<num_tensor_indices>(
             lhs_storage_index);
-    return get<LhsStructure, LhsIndices...>(new_tensor_index);
+    return get<LhsIndices...>(new_tensor_index);
   }
 
  private:
@@ -168,29 +189,85 @@ struct TensorContract
 
 /*!
  * \ingroup TensorExpressionsGroup
+ * \brief Returns the positions of the first indices to contract in an
+ * expression
+ *
+ * \details Given a list of values that represent an expression's generic index
+ * encodings, this function looks to see if it can find a pair of values that
+ * encode one generic index and the generic index with opposite valence, such as
+ * `ti_A_t` and `ti_a_t`. This denotes a pair of indices that will need to be
+ * contracted. If there exists more than one such pair of indices in the
+ * expression, the first pair of values found will be returned.
+ *
+ * For example, if we have tensor \f${R^{ab}}_{ab}\f$ represented by the tensor
+ * expression, `R(ti_A, ti_B, ti_a, ti_b)`, then this will return the positions
+ * of the pair of values encoding `ti_A_t` and `ti_a_t`, which would be (0, 2)
+ *
+ * @param tensorindex_values the TensorIndex values of a tensor expression
+ * @return the positions of the first pair of TensorIndex values to contract
  */
-template <size_t ReplacedArg1, size_t ReplacedArg2, typename T, typename X,
-          typename Symm, typename IndexList, typename Args>
-SPECTRE_ALWAYS_INLINE auto contract(
-    const TensorExpression<T, X, Symm, IndexList, Args>& t) {
-  return TensorContract<tmpl::size_t<ReplacedArg1>,
-                        tmpl::size_t<ReplacedArg2>, T, X, Symm, IndexList,
-                        Args>(~t);
+template <size_t NumIndices>
+SPECTRE_ALWAYS_INLINE static constexpr std::pair<size_t, size_t>
+get_first_index_positions_to_contract(
+    const std::array<size_t, NumIndices>& tensorindex_values) noexcept {
+  for (size_t i = 0; i < tensorindex_values.size(); ++i) {
+    const size_t current_value = gsl::at(tensorindex_values, i);
+    const size_t opposite_value_to_find =
+        get_tensorindex_value_with_opposite_valence(current_value);
+    for (size_t j = i + 1; j < tensorindex_values.size(); ++j) {
+      if (opposite_value_to_find == gsl::at(tensorindex_values, j)) {
+        // We found both the lower and upper version of a generic index in the
+        // list of generic indices, so we return this pair's positions
+        return std::pair{i, j};
+      }
+    }
+  }
+  // We couldn't find a single pair of indices that needs to be contracted
+  return std::pair{std::numeric_limits<size_t>::max(),
+                   std::numeric_limits<size_t>::max()};
 }
 
-namespace detail {
-// Helper struct to allow contractions by using repeated indices in operator()
-// calls to tensor.
-template <template <typename> class TE, typename ReplacedArgList, size_t I,
-          typename TotalContracted, typename T>
-SPECTRE_ALWAYS_INLINE static constexpr auto fully_contract(const T& t) {
-  if constexpr (I == 2 * (TotalContracted::value - 1)) {
-    return contract<ti_contracted_t<I>::value, ti_contracted_t<I + 1>::value>(
-        TE<ReplacedArgList>(t));
+/*!
+ * \ingroup TensorExpressionsGroup
+ * \brief Creates a contraction expression from a tensor expression if there are
+ * any indices to contract
+ *
+ * \details If there are no indices to contract, the input TensorExpression is
+ * simply returned. Otherwise, a contraction expression is created for
+ * contracting one pair of upper and lower indices. If there is more than one
+ * pair of indices to contract, subsequent contraction expressions are
+ * recursively created, nesting one contraction expression inside another.
+ *
+ * For example, if we have tensor \f${R^{ab}}_{ab}\f$ represented by the tensor
+ * expression, `R(ti_A, ti_B, ti_a, ti_b)`, then one contraction expression is
+ * created to represent contracting \f${R^{ab}}_ab\f$ to \f${R^b}_b\f$, and a
+ * second to represent contracting \f${R^b}_b\f$ to the scalar, \f${R}\f$.
+ *
+ * @param t the TensorExpression to potentially contract
+ * @return the input tensor expression or a contraction expression of the input
+ */
+template <typename T, typename X, typename Symm, typename IndexList,
+          typename... TensorIndices>
+SPECTRE_ALWAYS_INLINE static constexpr auto contract(
+    const TensorExpression<T, X, Symm, IndexList, tmpl::list<TensorIndices...>>&
+        t) noexcept {
+  constexpr std::array<size_t, sizeof...(TensorIndices)> tensorindex_values = {
+      {TensorIndices::value...}};
+  constexpr std::pair first_index_positions_to_contract =
+      get_first_index_positions_to_contract(tensorindex_values);
+  constexpr std::pair no_indices_to_contract_sentinel{
+      std::numeric_limits<size_t>::max(), std::numeric_limits<size_t>::max()};
+
+  if constexpr (first_index_positions_to_contract ==
+                no_indices_to_contract_sentinel) {
+    // There aren't any indices to contract, so we just return the input
+    return ~t;
   } else {
-    return contract<ti_contracted_t<I>::value, ti_contracted_t<I + 1>::value>(
-        fully_contract<TE, ReplacedArgList, I + 2, TotalContracted>(t));
+    // We have a pair of indices to be contract
+    return contract(
+        TensorContract<first_index_positions_to_contract.first,
+                       first_index_positions_to_contract.second, T, X, Symm,
+                       IndexList, tmpl::list<TensorIndices...>>{t});
   }
 }
-}  // namespace detail
 }  // namespace TensorExpressions

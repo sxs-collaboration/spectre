@@ -17,6 +17,37 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"  // IWYU pragma: keep
 
+// The below values are used to separate upper indices from lower indices and
+// spatial indices from spacetime indices.
+//
+// Tensor expressions perform as many calculations as possible in a constexpr
+// context, which means working with fundamental types, specifically integer
+// types, is easiest. By using sentinel values defined in one location we can
+// easily control the encoding without having magic values floating around in
+// many places. Furthermore, encoding all the information in the `size_t` means
+// that when a failure occurs in one of the constexpr calculations it is
+// reasonably easy to debug because, while encoded, the full type information is
+// present. This approach can effectively be thought of as using specific bits
+// in the `size_t` to mark information, using the size_t more as a bitfield than
+// anything else. For human readability, we use base-10 numbers instead of
+// base-2 values that would truly set individual bits.
+//
+// Spacetime indices are represented by values [0, `spatial_sentinel`) and
+// spatial indices are represented by values
+// [`spatial_sentinel`, `max_sentinel`). Lower spacetime indices are represented
+// by values [0, `upper_sentinel`), and upper spacetime indices are represented
+// by values [`upper_sentinel`, `spatial_sentinel`). Lower spatial indices are
+// represented by values
+// [`spatial_sentinel`, `spatial_sentinel` + `upper_sentinel`), and upper
+// spatial indices are represented by values
+// [`spatial_sentinel` + `upper_sentinel`, `max_sentinel`). Values equal to or
+// above `max_sentinel` are considered invalid for representing an index.
+static constexpr size_t spatial_sentinel = 1000;
+static constexpr size_t upper_sentinel = 500;
+static constexpr size_t upper_spatial_sentinel =
+    spatial_sentinel + upper_sentinel;
+static constexpr size_t max_sentinel = 2000;
+
 /*!
  * \ingroup TensorExpressionsGroup
  * \brief Represents the indices in a TensorExpression
@@ -31,23 +62,49 @@
  * `ti_a` and `ti_b` are place holders for objects of type `TensorIndex<0>` and
  * `TensorIndex<1>` respectively.
  */
-template <std::size_t I>
+template <std::size_t I, Requires<(I < max_sentinel)> = nullptr>
 struct TensorIndex {
   using value_type = std::size_t;
   using type = TensorIndex<I>;
   static constexpr value_type value = I;
+  static constexpr UpLo valence =
+      ((I < upper_sentinel) or
+       (I >= spatial_sentinel and I < upper_spatial_sentinel))
+          ? UpLo::Lo
+          : UpLo::Up;
+  static constexpr bool is_spacetime = I < spatial_sentinel;
 };
 
-/// \ingroup TensorExpressionsGroup
-/// Given an `TensorIndex<size_t>` return `TensorIndex<size_t + 1>`
-/// \tparam T the args to increment
-template <typename T>
-using next_tensor_index = TensorIndex<T::value + 1>;
-
-/// \ingroup TensorExpressionsGroup
-/// Metafunction to return the sum of two TensorIndex's
-template <typename A, typename B>
-using plus_tensor_index = TensorIndex<A::value + B::value>;
+/*!
+ * \ingroup TensorExpressionsGroup
+ * \brief Returns the TensorIndex value of with opposite valence.
+ *
+ * \details The input value represents a TensorIndex value, which encodes
+ * both the valence of the index and whether the index is spacetime or
+ * spatial. This function returns the value that corresponds to the encoding of
+ * the TensorIndex with the same index type, but opposite valence.
+ *
+ * For example, 0 is the TensorIndex value for `ti_a_t`. If `i == 0`,
+ * then 500 will be returned, which is the TensorIndex value for `ti_A_t`.
+ * If `i == 500` (representing `ti_A_t`), then 0 (representing `ti_a_t`) is
+ * returned.
+ *
+ * @param i a TensorIndex value that represents a generic index
+ * @return the TensorIndex value that encodes the generic index with the
+ * opposite valence
+ */
+SPECTRE_ALWAYS_INLINE static constexpr size_t
+get_tensorindex_value_with_opposite_valence(const size_t i) noexcept {
+  assert(i < max_sentinel);  // NOLINT
+  if ((i >= upper_sentinel and i < spatial_sentinel) or
+      (i >= upper_spatial_sentinel)) {
+    // `i` represents an upper index, so return the lower index's encoding
+    return i - upper_sentinel;
+  } else {
+    // `i` represents a lower index, so return the upper index's encoding
+    return i + upper_sentinel;
+  }
+}
 
 // @{
 /*!
@@ -58,29 +115,29 @@ using plus_tensor_index = TensorIndex<A::value + B::value>;
  * \snippet Test_AddSubtract.cpp use_tensor_index
  */
 static TensorIndex<0> ti_a{};
-static TensorIndex<0> ti_A{};
+static TensorIndex<upper_sentinel> ti_A{};
 static TensorIndex<1> ti_b{};
-static TensorIndex<1> ti_B{};
+static TensorIndex<upper_sentinel + 1> ti_B{};
 static TensorIndex<2> ti_c{};
-static TensorIndex<2> ti_C{};
+static TensorIndex<upper_sentinel + 2> ti_C{};
 static TensorIndex<3> ti_d{};
-static TensorIndex<3> ti_D{};
+static TensorIndex<upper_sentinel + 3> ti_D{};
 static TensorIndex<4> ti_e{};
-static TensorIndex<4> ti_E{};
+static TensorIndex<upper_sentinel + 4> ti_E{};
 static TensorIndex<5> ti_f{};
-static TensorIndex<5> ti_F{};
+static TensorIndex<upper_sentinel + 5> ti_F{};
 static TensorIndex<6> ti_g{};
-static TensorIndex<6> ti_G{};
+static TensorIndex<upper_sentinel + 6> ti_G{};
 static TensorIndex<7> ti_h{};
-static TensorIndex<7> ti_H{};
-static TensorIndex<8> ti_i{};
-static TensorIndex<8> ti_I{};
-static TensorIndex<9> ti_j{};
-static TensorIndex<9> ti_J{};
-static TensorIndex<10> ti_k{};
-static TensorIndex<10> ti_K{};
-static TensorIndex<11> ti_l{};
-static TensorIndex<11> ti_L{};
+static TensorIndex<upper_sentinel + 7> ti_H{};
+static TensorIndex<spatial_sentinel> ti_i{};
+static TensorIndex<upper_spatial_sentinel> ti_I{};
+static TensorIndex<spatial_sentinel + 1> ti_j{};
+static TensorIndex<upper_spatial_sentinel + 1> ti_J{};
+static TensorIndex<spatial_sentinel + 2> ti_k{};
+static TensorIndex<upper_spatial_sentinel + 2> ti_K{};
+static TensorIndex<spatial_sentinel + 3> ti_l{};
+static TensorIndex<upper_spatial_sentinel + 3> ti_L{};
 
 using ti_a_t = decltype(ti_a);
 using ti_A_t = decltype(ti_A);
@@ -107,18 +164,6 @@ using ti_K_t = decltype(ti_K);
 using ti_l_t = decltype(ti_l);
 using ti_L_t = decltype(ti_L);
 // @}
-
-/// \cond HIDDEN_SYMBOLS
-/// \ingroup TensorExpressionsGroup
-/// Type alias used when Tensor Expressions manipulate indices. These are used
-/// to denote contracted as opposed to free indices.
-template <int I>
-using ti_contracted_t = TensorIndex<static_cast<size_t>(I + 1000)>;
-
-/// \ingroup TensorExpressionsGroup
-template <int I>
-TensorIndex<static_cast<size_t>(I + 1000)> ti_contracted();
-/// \endcond
 
 namespace tt {
 /*!
@@ -174,14 +219,14 @@ template <typename Element, typename Iteration, typename Lhs, typename Rhs,
 struct generate_transformation_helper {
   using tensor_index_to_find = tmpl::at<RhsWithOnlyLhs, IndexInLhs>;
   using index_to_replace_with = tmpl::index_of<Rhs, tensor_index_to_find>;
-  using type = TensorIndex<index_to_replace_with::value>;
+  using type = tmpl::size_t<index_to_replace_with::value>;
 };
 
 template <typename Element, typename Iteration, typename Lhs, typename Rhs,
           typename RhsWithOnlyLhs>
 struct generate_transformation_helper<Element, Iteration, Lhs, Rhs,
                                       RhsWithOnlyLhs, tmpl::no_such_type_> {
-  using type = TensorIndex<Iteration::value>;
+  using type = tmpl::size_t<Iteration::value>;
 };
 
 template <typename State, typename Element, typename Iteration, typename Lhs,
@@ -217,55 +262,6 @@ using generate_transformation = tmpl::enumerated_fold<
     detail::generate_transformation_impl<tmpl::_state, tmpl::_element, tmpl::_3,
                                          tmpl::pin<Lhs>, tmpl::pin<Rhs>,
                                          tmpl::pin<RhsOnyWithLhs>>>;
-
-namespace detail {
-template <typename Seq, typename S, typename E>
-struct repeated_helper {
-  using type = typename std::conditional<
-      std::is_same<tmpl::count_if<Seq, std::is_same<E, tmpl::_1>>,
-                   tmpl::size_t<2>>::value and
-          std::is_same<tmpl::index_of<S, E>, tmpl::no_such_type_>::value,
-      tmpl::push_back<S, E>, S>::type;
-};
-}  // namespace detail
-
-/*!
- * \ingroup TensorExpressionsGroup
- * Returns a list of all the types that occurred more than once in List.
- */
-template <typename List>
-using repeated = tmpl::fold<
-    List, tmpl::list<>,
-    detail::repeated_helper<tmpl::pin<List>, tmpl::_state, tmpl::_element>>;
-
-namespace detail {
-template <typename List, typename Element, typename R>
-using index_replace = tmpl::replace_at<
-    tmpl::replace_at<List, tmpl::index_of<List, Element>, R>,
-    tmpl::index_of<tmpl::replace_at<List, tmpl::index_of<List, Element>, R>,
-                   Element>,
-    next_tensor_index<R>>;
-
-/// \cond HIDDEN_SYMBOLS
-template <typename List, typename ReplaceList, int I>
-struct replace_indices_impl
-    : replace_indices_impl<
-          index_replace<List, tmpl::front<ReplaceList>, ti_contracted_t<2 * I>>,
-          tmpl::pop_front<ReplaceList>, I + 1> {};
-/// \endcond
-
-template <typename List, int I>
-struct replace_indices_impl<List, tmpl::list<>, I> {
-  using type = List;
-};
-}  // namespace detail
-
-/*!
- * \ingroup TensorExpressionsGroup
- */
-template <typename List, typename ReplaceList>
-using replace_indices =
-    typename detail::replace_indices_impl<List, ReplaceList, 0>::type;
 
 /// \ingroup TensorExpressionsGroup
 /// \brief Marks a class as being a TensorExpression
