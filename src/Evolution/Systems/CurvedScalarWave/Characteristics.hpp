@@ -232,7 +232,14 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
  */
 template <size_t SpatialDim>
 struct ComputeLargestCharacteristicSpeed {
-  using argument_tags = tmpl::list<Tags::CharacteristicSpeeds<SpatialDim>>;
-  static double apply(const std::array<DataVector, 4>& char_speeds) noexcept;
+  using argument_tags = tmpl::list<
+      Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
+      gr::Tags::Shift<SpatialDim, Frame::Inertial, DataVector>,
+      gr::Tags::SpatialMetric<SpatialDim, Frame::Inertial, DataVector>>;
+  static double apply(
+      const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
+      const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
+      const tnsr::ii<DataVector, SpatialDim, Frame::Inertial>&
+          spatial_metric) noexcept;
 };
 }  // namespace CurvedScalarWave

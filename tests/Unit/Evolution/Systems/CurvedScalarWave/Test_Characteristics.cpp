@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -17,6 +18,9 @@
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "Helpers/DataStructures/RandomUnitNormal.hpp"
+#include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
+#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 
 namespace {
@@ -229,34 +233,71 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.Characteristics",
   test_characteristics_compute_tags<1>();
   test_characteristics_compute_tags<2>();
   test_characteristics_compute_tags<3>();
+}
 
-  CHECK(CurvedScalarWave::ComputeLargestCharacteristicSpeed<1>::apply(
-            {{DataVector{1., -4., 3.4, 2., 5.},
-              DataVector{22., -8., 190., 6., 4.},
-              DataVector{1., -7., 31., 2., 5.},
-              DataVector{7., 8.9, 4., 2., 1.}}}) == 190.);
-  CHECK(CurvedScalarWave::ComputeLargestCharacteristicSpeed<1>::apply(
-            {{DataVector{1., 4., 3., 2., 5.}, DataVector{2., 8., -10., 6., 4.},
-              DataVector{1., 7., 3., -11., 5.},
-              DataVector{7., 3., 4., 2., 1.}}}) == 11.);
+namespace {
+template <size_t SpatialDim>
+void check_max_char_speed(const DataVector& used_for_size) noexcept {
+  CAPTURE(SpatialDim);
+  MAKE_GENERATOR(gen);
 
-  CHECK(CurvedScalarWave::ComputeLargestCharacteristicSpeed<2>::apply(
-            {{DataVector{1., -4., 3.4, 2., 5.},
-              DataVector{22., -8., 190., 6., 4.},
-              DataVector{1., -7., 31., 2., 5.},
-              DataVector{7., 8.9, 4., 2., 1.}}}) == 190.);
-  CHECK(CurvedScalarWave::ComputeLargestCharacteristicSpeed<2>::apply(
-            {{DataVector{1., 4., 3., 2., 5.}, DataVector{2., 8., -10., 6., 4.},
-              DataVector{1., 7., 3., -11., 5.},
-              DataVector{7., 3., 4., 2., 1.}}}) == 11.);
+  // Fraction of times the test can randomly fail
+  const double failure_tolerance = 1e-10;
+  // Minimum fraction of the claimed result that must be found in some
+  // random trial
+  const double check_minimum = 0.9;
+  // Minimum fraction of the claimed result that can be found in any
+  // random trial (generally only important for 1D where the random
+  // vector will point along the maximum speed direction)
+  const double check_maximum = 1.0 + 1e-12;
 
-  CHECK(CurvedScalarWave::ComputeLargestCharacteristicSpeed<3>::apply(
-            {{DataVector{1., -4., 3.4, 2., 5.},
-              DataVector{22., -8., 190., 6., 4.},
-              DataVector{1., -7., 31., 2., 5.},
-              DataVector{7., 8.9, 4., 2., 1.}}}) == 190.);
-  CHECK(CurvedScalarWave::ComputeLargestCharacteristicSpeed<3>::apply(
-            {{DataVector{1., 4., 3., 2., 5.}, DataVector{2., 8., -10., 6., 4.},
-              DataVector{1., 7., 3., -11., 5.},
-              DataVector{7., 3., 4., 2., 1.}}}) == 11.);
+  const double trial_failure_rate =
+      SpatialDim == 1
+          ? 0.1  // correct value is 0.0, but cannot take log of that
+          : (SpatialDim == 2 ? 1.0 - 2.0 * acos(check_minimum) / M_PI
+                             : check_minimum);
+
+  const size_t num_trials =
+      static_cast<size_t>(log(failure_tolerance) / log(trial_failure_rate)) + 1;
+
+  const auto lapse = TestHelpers::gr::random_lapse(&gen, used_for_size);
+  const auto shift =
+      TestHelpers::gr::random_shift<SpatialDim>(&gen, used_for_size);
+  const auto spatial_metric =
+      TestHelpers::gr::random_spatial_metric<SpatialDim>(&gen, used_for_size);
+  std::uniform_real_distribution<> gamma_1_dist(-5.0, 5.0);
+  const auto gamma_1 = make_with_random_values<Scalar<DataVector>>(
+      make_not_null(&gen), make_not_null(&gamma_1_dist), used_for_size);
+  const double max_char_speed =
+      CurvedScalarWave::ComputeLargestCharacteristicSpeed<SpatialDim>::apply(
+          gamma_1, lapse, shift, spatial_metric);
+
+  double maximum_observed = -std::numeric_limits<double>::infinity();
+  for (size_t i = 0; i < num_trials; ++i) {
+    const auto unit_one_form = raise_or_lower_index(
+        random_unit_normal(&gen, spatial_metric), spatial_metric);
+
+    const auto characteristic_speeds = CurvedScalarWave::characteristic_speeds(
+        gamma_1, lapse, shift, unit_one_form);
+
+    double max_speed_in_chosen_direction =
+        -std::numeric_limits<double>::infinity();
+    for (const auto& speed : characteristic_speeds) {
+      max_speed_in_chosen_direction =
+          std::max(max_speed_in_chosen_direction, max(abs(speed)));
+    }
+
+    CHECK(max_speed_in_chosen_direction <= max_char_speed * check_maximum);
+    maximum_observed =
+        std::max(maximum_observed, max_speed_in_chosen_direction);
+  }
+  CHECK(maximum_observed >= check_minimum * max_char_speed);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.CurvedScalarWave.MaxCharSpeed",
+                  "[Unit][Evolution]") {
+  check_max_char_speed<1>(DataVector(5));
+  check_max_char_speed<2>(DataVector(5));
+  check_max_char_speed<3>(DataVector(5));
 }
