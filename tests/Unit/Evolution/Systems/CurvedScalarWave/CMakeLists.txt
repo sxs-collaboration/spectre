@@ -6,9 +6,9 @@ set(LIBRARY "Test_CurvedScalarWave")
 set(LIBRARY_SOURCES
   Test_Constraints.cpp
   Test_Characteristics.cpp
-  Test_DuDt.cpp
   Test_Tags.cpp
-  Test_UpwindFlux.cpp
+  Test_TimeDerivative.cpp
+  Test_UpwindPenaltyCorrection.cpp
   )
 
 add_test_library(
