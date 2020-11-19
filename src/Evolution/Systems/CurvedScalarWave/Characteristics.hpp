@@ -229,10 +229,29 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
 
 /*!
  * \brief Computes the largest magnitude of the characteristic speeds.
+ *
+ * \details Returns the magnitude of the largest characteristic speed
+ * along any direction at a given point in space, considering all
+ * characteristic fields. This is useful, for e.g., in computing the
+ * Courant factor. The coordinate characteristic speeds for this system are
+ * \f$\{-(1+\gamma_1)n_k N^k, -n_k N^k, -n_k N^k \pm N\}\f$. At any point
+ * in space, these are maximized when the normal vector is parallel to the
+ * shift vector, i.e. \f$ n^j = N^j / \sqrt{N^i N_i}\f$, and \f$ n_k N^k
+ * = g_{jk} N^j N^k / \sqrt{N^i N_i} = \sqrt{N^i N_i} =\f$
+ * `magnitude(shift, spatial_metric)`. The maximum characteristic speed
+ * is therefore calculated as \f$ \rm{max}(\vert 1+\gamma_1\vert\sqrt{N^i
+ * N_i},\, \sqrt{N^i N_i}+\vert N\vert) \f$.
  */
 template <size_t SpatialDim>
 struct ComputeLargestCharacteristicSpeed {
-  using argument_tags = tmpl::list<Tags::CharacteristicSpeeds<SpatialDim>>;
-  static double apply(const std::array<DataVector, 4>& char_speeds) noexcept;
+  using argument_tags = tmpl::list<
+      Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
+      gr::Tags::Shift<SpatialDim, Frame::Inertial, DataVector>,
+      gr::Tags::SpatialMetric<SpatialDim, Frame::Inertial, DataVector>>;
+  static double apply(
+      const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
+      const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
+      const tnsr::ii<DataVector, SpatialDim, Frame::Inertial>&
+          spatial_metric) noexcept;
 };
 }  // namespace CurvedScalarWave
