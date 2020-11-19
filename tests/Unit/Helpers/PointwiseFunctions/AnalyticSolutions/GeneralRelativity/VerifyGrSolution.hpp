@@ -20,6 +20,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Constraints.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/DuDtTempTags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
 #include "Evolution/TypeTraits.hpp"  // IWYU pragma: keep
@@ -238,8 +239,99 @@ void verify_time_independent_einstein_solution(
       make_with_value<tnsr::aa<DataVector, 3, Frame::Inertial>>(x, 0.0);
   auto dt_phi =
       make_with_value<tnsr::iaa<DataVector, 3, Frame::Inertial>>(x, 0.0);
+  Variables<tmpl::list<
+      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
+      GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
+      GeneralizedHarmonic::Tags::Gamma1Gamma2,
+      GeneralizedHarmonic::Tags::PiTwoNormals,
+      GeneralizedHarmonic::Tags::NormalDotOneIndexConstraint,
+      GeneralizedHarmonic::Tags::Gamma1Plus1,
+      GeneralizedHarmonic::Tags::PiOneNormal<3>,
+      GeneralizedHarmonic::Tags::GaugeConstraint<3, Frame::Inertial>,
+      GeneralizedHarmonic::Tags::PhiTwoNormals<3>,
+      GeneralizedHarmonic::Tags::ShiftDotThreeIndexConstraint<3>,
+      GeneralizedHarmonic::Tags::PhiOneNormal<3>,
+      GeneralizedHarmonic::Tags::PiSecondIndexUp<3>,
+      GeneralizedHarmonic::Tags::ThreeIndexConstraint<3, Frame::Inertial>,
+      GeneralizedHarmonic::Tags::PhiFirstIndexUp<3>,
+      GeneralizedHarmonic::Tags::PhiThirdIndexUp<3>,
+      GeneralizedHarmonic::Tags::SpacetimeChristoffelFirstKindThirdIndexUp<3>,
+      gr::Tags::Lapse<DataVector>,
+      gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
+      gr::Tags::DetSpatialMetric<DataVector>,
+      gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial, DataVector>,
+      gr::Tags::SpacetimeChristoffelFirstKind<3, Frame::Inertial, DataVector>,
+      gr::Tags::SpacetimeChristoffelSecondKind<3, Frame::Inertial, DataVector>,
+      gr::Tags::TraceSpacetimeChristoffelFirstKind<3, Frame::Inertial,
+                                                   DataVector>,
+      gr::Tags::SpacetimeNormalVector<3, Frame::Inertial, DataVector>,
+      gr::Tags::SpacetimeNormalOneForm<3, Frame::Inertial, DataVector>,
+      gr::Tags::DerivativesOfSpacetimeMetric<3, Frame::Inertial, DataVector>>>
+      buffer(mesh.number_of_grid_points());
+
   GeneralizedHarmonic::TimeDerivative<3>::apply(
       make_not_null(&dt_psi), make_not_null(&dt_pi), make_not_null(&dt_phi),
+      make_not_null(
+          &get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>(
+              buffer)),
+      make_not_null(
+          &get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>(
+              buffer)),
+      make_not_null(&get<GeneralizedHarmonic::Tags::Gamma1Gamma2>(buffer)),
+      make_not_null(&get<GeneralizedHarmonic::Tags::PiTwoNormals>(buffer)),
+      make_not_null(
+          &get<GeneralizedHarmonic::Tags::NormalDotOneIndexConstraint>(buffer)),
+      make_not_null(&get<GeneralizedHarmonic::Tags::Gamma1Plus1>(buffer)),
+      make_not_null(&get<GeneralizedHarmonic::Tags::PiOneNormal<3>>(buffer)),
+      make_not_null(
+          &get<GeneralizedHarmonic::Tags::GaugeConstraint<3, Frame::Inertial>>(
+              buffer)),
+      make_not_null(&get<GeneralizedHarmonic::Tags::PhiTwoNormals<3>>(buffer)),
+      make_not_null(
+          &get<GeneralizedHarmonic::Tags::ShiftDotThreeIndexConstraint<3>>(
+              buffer)),
+      make_not_null(&get<GeneralizedHarmonic::Tags::PhiOneNormal<3>>(buffer)),
+      make_not_null(
+          &get<GeneralizedHarmonic::Tags::PiSecondIndexUp<3>>(buffer)),
+      make_not_null(&get<GeneralizedHarmonic::Tags::ThreeIndexConstraint<
+                        3, Frame::Inertial>>(buffer)),
+      make_not_null(
+          &get<GeneralizedHarmonic::Tags::PhiFirstIndexUp<3>>(buffer)),
+      make_not_null(
+          &get<GeneralizedHarmonic::Tags::PhiThirdIndexUp<3>>(buffer)),
+      make_not_null(
+          &get<GeneralizedHarmonic::Tags::
+                   SpacetimeChristoffelFirstKindThirdIndexUp<3>>(buffer)),
+      make_not_null(&get<gr::Tags::Lapse<DataVector>>(buffer)),
+      make_not_null(
+          &get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(buffer)),
+      make_not_null(
+          &get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(
+              buffer)),
+      make_not_null(
+          &get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
+              buffer)),
+      make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(buffer)),
+      make_not_null(&get<gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial,
+                                                          DataVector>>(buffer)),
+      make_not_null(
+          &get<gr::Tags::SpacetimeChristoffelFirstKind<3, Frame::Inertial,
+                                                       DataVector>>(buffer)),
+      make_not_null(
+          &get<gr::Tags::SpacetimeChristoffelSecondKind<3, Frame::Inertial,
+                                                        DataVector>>(buffer)),
+      make_not_null(&get<gr::Tags::TraceSpacetimeChristoffelFirstKind<
+                        3, Frame::Inertial, DataVector>>(buffer)),
+      make_not_null(
+          &get<gr::Tags::SpacetimeNormalVector<3, Frame::Inertial, DataVector>>(
+              buffer)),
+      make_not_null(&get<gr::Tags::SpacetimeNormalOneForm<3, Frame::Inertial,
+                                                          DataVector>>(buffer)),
+      make_not_null(
+          &get<gr::Tags::DerivativesOfSpacetimeMetric<3, Frame::Inertial,
+                                                      DataVector>>(buffer)),
       d_psi, d_pi, d_phi, psi, pi, phi, gamma0, gamma1, gamma2, gauge_function,
       d4_H);
 
