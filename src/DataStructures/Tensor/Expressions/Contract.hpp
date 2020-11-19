@@ -26,19 +26,19 @@ using indices_contractible = std::integral_constant<
               I1::index_type == I2::index_type>;
 
 template <typename T, typename X, typename SymmList, typename IndexList,
-          typename ArgsList>
+          typename TensorIndexList>
 struct ContractedTypeImpl;
 
 template <typename T, typename X, template <typename...> class SymmList,
-          typename IndexList, typename ArgsList, typename... Symm>
-struct ContractedTypeImpl<T, X, SymmList<Symm...>, IndexList, ArgsList> {
-  using type =
-      TensorExpression<T, X, Symmetry<Symm::value...>, IndexList, ArgsList>;
+          typename IndexList, typename TensorIndexList, typename... Symm>
+struct ContractedTypeImpl<T, X, SymmList<Symm...>, IndexList, TensorIndexList> {
+  using type = TensorExpression<T, X, Symmetry<Symm::value...>, IndexList,
+                                TensorIndexList>;
 };
 
 template <size_t FirstContractedIndexPos, size_t SecondContractedIndexPos,
           typename T, typename X, typename Symm, typename IndexList,
-          typename ArgsList>
+          typename TensorIndexList>
 struct ContractedType {
   static_assert(FirstContractedIndexPos < SecondContractedIndexPos,
                 "The position of the first provided index to contract must be "
@@ -49,9 +49,9 @@ struct ContractedType {
   using contracted_index_list = tmpl::erase<
       tmpl::erase<IndexList, tmpl::size_t<SecondContractedIndexPos>>,
       tmpl::size_t<FirstContractedIndexPos>>;
-  using contracted_tensorindex_list =
-      tmpl::erase<tmpl::erase<ArgsList, tmpl::size_t<SecondContractedIndexPos>>,
-                  tmpl::size_t<FirstContractedIndexPos>>;
+  using contracted_tensorindex_list = tmpl::erase<
+      tmpl::erase<TensorIndexList, tmpl::size_t<SecondContractedIndexPos>>,
+      tmpl::size_t<FirstContractedIndexPos>>;
   using type = typename ContractedTypeImpl<T, X, contracted_symmetry,
                                            contracted_index_list,
                                            contracted_tensorindex_list>::type;
