@@ -95,12 +95,23 @@ struct TensorContract
           typename detail::ContractedType<
               FirstContractedIndexPos, SecondContractedIndexPos, T, X, Symm,
               IndexList, ArgsList>::type::args_list> {
-  using CI1 = tmpl::at_c<IndexList, FirstContractedIndexPos>;
-  using CI2 = tmpl::at_c<IndexList, SecondContractedIndexPos>;
+  // First and second \ref SpacetimeIndex "TensorIndexType"s to contract.
+  // "first" and "second" here refer to the position of the indices to contract
+  // in the list of indices, with "first" denoting leftmost
+  //
+  // e.g. `R(ti_A, ti_b, ti_a)` :
+  // - `first_contracted_index` refers to the
+  //   \ref SpacetimeIndex "TensorIndexType" refered to by `ti_A`
+  // - `second_contracted_index` refers to the
+  //   \ref SpacetimeIndex "TensorIndexType" refered to by `ti_a`
+  using first_contracted_index = tmpl::at_c<IndexList, FirstContractedIndexPos>;
+  using second_contracted_index =
+      tmpl::at_c<IndexList, SecondContractedIndexPos>;
   static_assert(tmpl::size<Symm>::value > 1 and
                     tmpl::size<IndexList>::value > 1,
                 "Cannot contract indices on a Tensor with rank less than 2");
-  static_assert(detail::indices_contractible<CI1, CI2>::value,
+  static_assert(detail::indices_contractible<first_contracted_index,
+                                             second_contracted_index>::value,
                 "Cannot contract the requested indices.");
 
   using new_type =
@@ -155,7 +166,8 @@ struct TensorContract
     // Manually unrolled for loops to compute the tensor_index from the
     // new_tensor_index
     fill_contracting_tensor_index<0>(tensor_index, new_tensor_index);
-    return detail::compute_contraction<CI1::dim - 1, FirstContractedIndexPos,
+    return detail::compute_contraction<first_contracted_index::dim - 1,
+                                       FirstContractedIndexPos,
                                        SecondContractedIndexPos, LhsIndices...>(
         tensor_index, t_);
   }
