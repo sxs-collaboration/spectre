@@ -438,3 +438,71 @@ jobs:
           # We get occasional random timeouts, repeat tests to see if
           # it is a random timeout or systematic
           ctest -j2 --output-on-failure -L inputfiles --repeat after-timeout:3
+      - name: Test formaline tar can be built
+        if: matrix.build_type == 'Debug'
+        working-directory: /work/build
+        run: >
+          # We only run the formaline tests in debug mode to reduce total
+          # build time in CI. We do run for all compilers, though, because
+          # formaline injects data at the linking stage, which means we are
+          # somewhat tied to the compiler version.
+
+          make EvolveBurgersStep -j2
+
+          if [ ! -f ./bin/EvolveBurgersStep ]; then
+            echo "Could not find the executable EvolveBurgersStep";
+            echo "which we use for testing formaline";
+            exit 1
+          fi
+
+          # We disable ASAN's leak sanitizer because Charm++ has false
+          # positives that would cause the build to fail. We disable
+          # leak sanitizer for the ctest runs inside CMake anyway.
+
+          ASAN_OPTIONS=detect_leaks=0 ./bin/EvolveBurgersStep
+          --dump-source-tree-as spectre_src --dump-only
+
+          mkdir spectre_src;
+          mv spectre_src.tar.gz spectre_src;
+          cd spectre_src;
+          tar xf spectre_src.tar.gz;
+          mkdir build;
+          cd build
+
+          if [[ ${{ matrix.compiler }} =~ (gcc|clang)-([0-9\.]+) ]]; then
+            CC=${BASH_REMATCH[1]}-${BASH_REMATCH[2]};
+            CHARM_CC=${BASH_REMATCH[1]};
+            if [[ ${BASH_REMATCH[1]} = gcc ]]; then
+              CXX=g++-${BASH_REMATCH[2]};
+              FC=gfortran-${BASH_REMATCH[2]};
+            else
+              CXX=clang++-${BASH_REMATCH[2]};
+              FC=gfortran-8;
+            fi
+          fi
+
+          MEMORY_ALLOCATOR=${{ matrix.MEMORY_ALLOCATOR }};
+          USE_PCH=${{ matrix.use_pch }};
+
+          cmake
+          -D CMAKE_C_COMPILER=${CC}
+          -D CMAKE_CXX_COMPILER=${CXX}
+          -D CMAKE_Fortran_COMPILER=${FC}
+          -D CMAKE_CXX_FLAGS="${CXXFLAGS} ${{ matrix.EXTRA_CXX_FLAGS }}"
+          -D OVERRIDE_ARCH=x86-64
+          -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-${CHARM_CC}
+          -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -D DEBUG_SYMBOLS=OFF
+          -D RUN_TESTS_IN_TEST_EXECUTABLES=OFF
+          -D STRIP_SYMBOLS=ON
+          -D STUB_EXECUTABLE_OBJECT_FILES=ON
+          -D STUB_LIBRARY_OBJECT_FILES=ON
+          -D USE_PCH=${USE_PCH}
+          -D USE_CCACHE=OFF
+          -D BUILD_PYTHON_BINDINGS=OFF
+          -D MEMORY_ALLOCATOR=${MEMORY_ALLOCATOR:-'SYSTEM'}
+          ..
+
+          make EvolveBurgersStep -j2
+
+          ctest -j2 -R InputFiles.Burgers.Step.yaml
