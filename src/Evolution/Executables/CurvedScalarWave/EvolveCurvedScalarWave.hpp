@@ -22,6 +22,7 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
+#include "Evolution/Systems/CurvedScalarWave/BoundaryConditions.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Equations.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Initialize.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
@@ -118,8 +119,8 @@ struct EvolutionMetavars {
       dg::Formulation::StrongInertial;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = true;
+  static constexpr bool bjorhus_external_boundary = true;
   static constexpr bool moving_mesh = true;
-  static constexpr bool bjorhus_external_boundary = false;
   using boundary_condition_tag = initial_data_tag;
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<CurvedScalarWave::UpwindPenaltyCorrection<Dim>>;
@@ -204,11 +205,24 @@ struct EvolutionMetavars {
                   domain::Tags::BoundaryDirectionsInterior<volume_dim>>>,
           tmpl::list<>>,
       dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
-      tmpl::conditional_t<local_time_stepping,
-                          tmpl::list<Actions::RecordTimeStepperData<>,
-                                     Actions::MutateApply<boundary_scheme>>,
-                          tmpl::list<Actions::MutateApply<boundary_scheme>,
-                                     Actions::RecordTimeStepperData<>>>,
+      tmpl::conditional_t<
+          local_time_stepping,
+          tmpl::list<tmpl::conditional_t<
+                         bjorhus_external_boundary,
+                         tmpl::list<CurvedScalarWave::Actions::
+                                        ImposeBjorhusBoundaryConditions<
+                                            EvolutionMetavars>>,
+                         tmpl::list<>>,
+                     Actions::RecordTimeStepperData<>,
+                     Actions::MutateApply<boundary_scheme>>,
+          tmpl::list<Actions::MutateApply<boundary_scheme>,
+                     tmpl::conditional_t<
+                         bjorhus_external_boundary,
+                         tmpl::list<CurvedScalarWave::Actions::
+                                        ImposeBjorhusBoundaryConditions<
+                                            EvolutionMetavars>>,
+                         tmpl::list<>>,
+                     Actions::RecordTimeStepperData<>>>,
       Actions::UpdateU<>,
       tmpl::conditional_t<
           use_filtering,
