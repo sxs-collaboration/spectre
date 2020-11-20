@@ -89,8 +89,9 @@ void test_h5_initialization(const gsl::not_null<Generator*> gen) noexcept {
           false, false));
 
   // this should run the initialization
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 3; ++i) {
+    ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  }
   ActionTesting::set_phase(make_not_null(&runner),
                            H5Metavariables::Phase::Evolve);
   // check that the h5 data manager copied out of the databox has the correct
@@ -137,8 +138,9 @@ void test_gh_initialization() noexcept {
           std::make_unique<InterfaceManagers::GhLockstep>()));
 
   // this should run the initialization
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 3; ++i) {
+    ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  }
   runner.set_phase(GhMetavariables::Phase::Evolve);
   // check that the GH data manager copied out of the databox has the correct
   // properties that we can examine without running the other actions

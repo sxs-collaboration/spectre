@@ -26,6 +26,7 @@
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/InitializeSystem.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -80,15 +81,18 @@ struct ElementArray {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<
-                         domain::Tags::InitialRefinementLevels<Dim>,
-                         domain::Tags::InitialExtents<Dim>,
-                         linear_operator_applied_to_fields_tag<Dim>>>,
-                     dg::Actions::InitializeDomain<Dim>>>,
+          tmpl::list<
+              ActionTesting::InitializeDataBox<
+                  tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
+                             domain::Tags::InitialExtents<Dim>,
+                             linear_operator_applied_to_fields_tag<Dim>>>,
+              Actions::SetupDataBox, dg::Actions::InitializeDomain<Dim>>>,
 
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing,
-                             tmpl::list<elliptic::Actions::InitializeSystem>>>;
+                             tmpl::list<Actions::SetupDataBox,
+                                        elliptic::Actions::InitializeSystem<
+                                            typename Metavariables::system>>>>;
 };
 
 template <size_t Dim>
@@ -121,12 +125,16 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
         {domain_creator.initial_refinement_levels(),
          domain_creator.initial_extents(),
          typename linear_operator_applied_to_fields_tag<1>::type{4}});
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              element_id);
+    for (size_t i = 0; i < 2; ++i) {
+      ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                                element_id);
+    }
     ActionTesting::set_phase(make_not_null(&runner),
                              metavariables::Phase::Testing);
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              element_id);
+    for (size_t i = 0; i < 2; ++i) {
+      ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                                element_id);
+    }
     const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {
       using tag = std::decay_t<decltype(tag_v)>;
       return ActionTesting::get_databox_tag<element_array, tag>(runner,
@@ -161,12 +169,16 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
         {domain_creator.initial_refinement_levels(),
          domain_creator.initial_extents(),
          typename linear_operator_applied_to_fields_tag<2>::type{12}});
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              element_id);
+    for (size_t i = 0; i < 2; ++i) {
+      ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                                element_id);
+    }
     ActionTesting::set_phase(make_not_null(&runner),
                              metavariables::Phase::Testing);
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              element_id);
+    for (size_t i = 0; i < 2; ++i) {
+      ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                                element_id);
+    }
     const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {
       using tag = std::decay_t<decltype(tag_v)>;
       return ActionTesting::get_databox_tag<element_array, tag>(runner,
@@ -205,12 +217,16 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
         {domain_creator.initial_refinement_levels(),
          domain_creator.initial_extents(),
          typename linear_operator_applied_to_fields_tag<3>::type{24}});
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              element_id);
+    for (size_t i = 0; i < 2; ++i) {
+      ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                                element_id);
+    }
     ActionTesting::set_phase(make_not_null(&runner),
                              metavariables::Phase::Testing);
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              element_id);
+    for (size_t i = 0; i < 2; ++i) {
+      ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                                element_id);
+    }
     const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {
       using tag = std::decay_t<decltype(tag_v)>;
       return ActionTesting::get_databox_tag<element_array, tag>(runner,

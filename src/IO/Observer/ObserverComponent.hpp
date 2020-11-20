@@ -8,9 +8,11 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/Tags.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace observers {
@@ -29,7 +31,8 @@ struct Observer {
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename metavariables::Phase, metavariables::Phase::Initialization,
-      tmpl::list<Actions::Initialize<Metavariables>>>>;
+      tmpl::list<::Actions::SetupDataBox, Actions::Initialize<Metavariables>,
+                 Initialization::Actions::RemoveOptionsAndTerminatePhase>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -52,7 +55,9 @@ struct ObserverWriter {
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename metavariables::Phase, metavariables::Phase::Initialization,
-      tmpl::list<Actions::InitializeWriter<Metavariables>>>>;
+      tmpl::list<::Actions::SetupDataBox,
+                 Actions::InitializeWriter<Metavariables>,
+                 Initialization::Actions::RemoveOptionsAndTerminatePhase>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 

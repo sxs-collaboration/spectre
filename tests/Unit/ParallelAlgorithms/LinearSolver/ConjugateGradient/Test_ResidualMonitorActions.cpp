@@ -21,6 +21,7 @@
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Reason.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitor.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitorActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Observe.hpp"
@@ -66,8 +67,9 @@ struct MockResidualMonitor {
           Metavariables, fields_tag, TestLinearSolver>::const_global_cache_tags;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<LinearSolver::cg::detail::InitializeResidualMonitor<
-          fields_tag, TestLinearSolver>>>>;
+      tmpl::list<Actions::SetupDataBox,
+                 LinearSolver::cg::detail::InitializeResidualMonitor<
+                     fields_tag, TestLinearSolver>>>>;
 };
 
 // This is used to receive action calls from the residual monitor
@@ -109,7 +111,9 @@ SPECTRE_TEST_CASE(
 
   // Setup mock residual monitor
   ActionTesting::emplace_component<residual_monitor>(&runner, 0);
-  ActionTesting::next_action<residual_monitor>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<residual_monitor>(make_not_null(&runner), 0);
+  }
 
   // Setup mock element array
   ActionTesting::emplace_component<element_array>(&runner, 0);

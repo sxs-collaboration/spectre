@@ -19,6 +19,7 @@
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
@@ -74,8 +75,9 @@ struct mock_interpolation_target {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<intrp::Actions::InitializeInterpolationTarget<
-              Metavariables, InterpolationTargetTag>>>,
+          tmpl::list<Actions::SetupDataBox,
+                     intrp::Actions::InitializeInterpolationTarget<
+                         Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
 };
@@ -126,7 +128,10 @@ struct mock_interpolator {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<intrp::Actions::InitializeInterpolator>>,
+          tmpl::list<Actions::SetupDataBox,
+                     intrp::Actions::InitializeInterpolator<
+                         intrp::Tags::VolumeVarsInfo<Metavariables>,
+                         intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
 
@@ -158,9 +163,13 @@ void test_interpolation_target(
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
-  ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
+  }
   ActionTesting::emplace_component<target_component>(&runner, 0);
-  ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
+  }
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   Slab slab(0.0, 1.0);

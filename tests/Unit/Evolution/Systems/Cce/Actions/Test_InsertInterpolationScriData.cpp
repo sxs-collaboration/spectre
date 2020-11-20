@@ -20,6 +20,7 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
@@ -71,11 +72,15 @@ struct mock_characteristic_evolution {
   using replace_these_simple_actions = tmpl::list<>;
   using with_these_simple_actions = tmpl::list<>;
 
-  using initialize_action_list =
-      tmpl::list<Actions::InitializeCharacteristicEvolutionVariables,
-                 Actions::InitializeCharacteristicEvolutionTime,
-                 Actions::InitializeCharacteristicEvolutionScri,
-                 Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+  using initialize_action_list = tmpl::list<
+      ::Actions::SetupDataBox,
+      Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
+      Actions::InitializeCharacteristicEvolutionTime<
+          typename Metavariables::evolved_coordinates_variables_tag,
+          typename Metavariables::evolved_swsh_tag>,
+      Actions::InitializeCharacteristicEvolutionScri<
+          typename Metavariables::scri_values_to_observe>,
+      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
 
@@ -179,10 +184,9 @@ SPECTRE_TEST_CASE(
       &runner, 0, target_step_size, buffer_size);
 
   // the initialization actions
-  ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
-  ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 5; ++i) {
+    ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
+  }
   runner.set_phase(test_metavariables::Phase::Evolve);
   // five steps to create then put the data in each of the interpolation
   // queues

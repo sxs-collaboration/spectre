@@ -19,9 +19,10 @@
 #include "Evolution/Initialization/InitialData.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"  // Needs to be included somewhere and here seems most natural.
 #include "Parallel/GlobalCache.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/NoSuchType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -63,7 +64,41 @@ namespace Actions {
 ///
 /// - Removes: nothing
 /// - Modifies: nothing
+///
+/// \note This action relies on the `SetupDataBox` aggregated initialization
+/// mechanism, so `Actions::SetupDataBox` must be present in the
+/// `Initialization` phase action list prior to this action.
+template <typename System, typename EquationOfStateTag = NoSuchType>
 struct ConservativeSystem {
+ private:
+  static_assert(System::is_in_flux_conservative_form,
+                "System is not in flux conservative form");
+
+  static constexpr size_t dim = System::volume_dim;
+
+  using variables_tag = typename System::variables_tag;
+  using fluxes_tag = db::add_tag_prefix<::Tags::Flux, variables_tag,
+                                        tmpl::size_t<dim>, Frame::Inertial>;
+  using sources_tag = db::add_tag_prefix<::Tags::Source, variables_tag>;
+
+  template <typename LocalSystem,
+            bool = LocalSystem::has_primitive_and_conservative_vars>
+  struct simple_tags_impl {
+    using type = tmpl::list<variables_tag, fluxes_tag, sources_tag>;
+  };
+
+  template <typename LocalSystem>
+  struct simple_tags_impl<LocalSystem, true> {
+    using type = tmpl::list<variables_tag, fluxes_tag, sources_tag,
+                            typename System::primitive_variables_tag,
+                            EquationOfStateTag>;
+  };
+
+ public:
+  using simple_tags = typename simple_tags_impl<System>::type;
+
+  using compute_tags = db::AddComputeTags<>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -72,47 +107,29 @@ struct ConservativeSystem {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using system = typename Metavariables::system;
-    static_assert(system::is_in_flux_conservative_form,
-                  "System is not in flux conservative form");
-    static constexpr size_t dim = system::volume_dim;
-    using variables_tag = typename system::variables_tag;
-    using fluxes_tag = db::add_tag_prefix<::Tags::Flux, variables_tag,
-                                          tmpl::size_t<dim>, Frame::Inertial>;
-    using sources_tag = db::add_tag_prefix<::Tags::Source, variables_tag>;
-    using simple_tags =
-        db::AddSimpleTags<variables_tag, fluxes_tag, sources_tag>;
-    using compute_tags = db::AddComputeTags<>;
-
     const size_t num_grid_points =
         db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
     typename variables_tag::type vars(num_grid_points);
     typename fluxes_tag::type fluxes(num_grid_points);
     typename sources_tag::type sources(num_grid_points);
 
-    if constexpr (system::has_primitive_and_conservative_vars) {
-      using PrimitiveVars = typename system::primitive_variables_tag::type;
+    if constexpr (System::has_primitive_and_conservative_vars) {
+      using PrimitiveVars = typename System::primitive_variables_tag::type;
 
       PrimitiveVars primitive_vars{
           db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points()};
       auto equation_of_state =
           db::get<::Tags::AnalyticSolutionOrData>(box).equation_of_state();
-
-      return std::make_tuple(
-          merge_into_databox<
-              ConservativeSystem,
-              tmpl::push_back<simple_tags,
-                              typename system::primitive_variables_tag,
-                              typename Metavariables::equation_of_state_tag>,
-              compute_tags>(std::move(box), std::move(vars), std::move(fluxes),
-                            std::move(sources), std::move(primitive_vars),
-                            std::move(equation_of_state)));
+      Initialization::mutate_assign<simple_tags>(
+          make_not_null(&box), std::move(vars), std::move(fluxes),
+          std::move(sources), std::move(primitive_vars),
+          std::move(equation_of_state));
     } else {
-      return std::make_tuple(
-          merge_into_databox<ConservativeSystem, simple_tags, compute_tags>(
-              std::move(box), std::move(vars), std::move(fluxes),
-              std::move(sources)));
+      Initialization::mutate_assign<simple_tags>(
+          make_not_null(&box), std::move(vars), std::move(fluxes),
+          std::move(sources));
     }
+    return std::make_tuple(std::move(box));
   }
 };
 }  // namespace Actions

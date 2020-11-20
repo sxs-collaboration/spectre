@@ -16,6 +16,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
@@ -78,8 +79,9 @@ struct mock_interpolation_target {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<intrp::Actions::InitializeInterpolationTarget<
-              Metavariables, InterpolationTargetTag>>>,
+          tmpl::list<Actions::SetupDataBox,
+                     intrp::Actions::InitializeInterpolationTarget<
+                         Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
   using replace_these_simple_actions = tmpl::list<
@@ -121,7 +123,9 @@ void test_add_temporal_ids() {
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {domain_creator.create_domain()}};
   ActionTesting::emplace_component<target_component>(&runner, 0);
-  ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
+  }
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   CHECK(ActionTesting::get_databox_tag<

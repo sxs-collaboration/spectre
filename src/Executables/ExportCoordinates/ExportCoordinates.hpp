@@ -26,6 +26,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -205,6 +206,7 @@ struct Metavariables {
                   typename Metavariables::Phase,
                   Metavariables::Phase::Initialization,
                   tmpl::list<
+                      Actions::SetupDataBox,
                       Initialization::Actions::TimeAndTimeStep<Metavariables>,
                       evolution::dg::Initialization::Domain<Dim>,
                       Initialization::Actions::AddComputeTags<

@@ -17,7 +17,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -38,6 +38,10 @@ namespace Actions {
 /*!
  * \brief Initialize DataBox tags for building the first-order elliptic DG
  * operator
+ *
+ * \note This action relies on the `SetupDataBox` aggregated initialization
+ * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
+ * phase action list prior to this action.
  */
 template <size_t Dim, typename FluxesComputer, typename SourcesComputer,
           typename VariablesTag, typename PrimalVariables,
@@ -88,6 +92,14 @@ struct InitializeFirstOrderOperator {
                           div_fluxes_tag>>;
 
  public:
+  using simple_tags = tmpl::list<exterior_vars_tag>;
+  using compute_tags = tmpl::flatten<tmpl::list<
+      fluxes_compute_tag, sources_compute_tag,
+      ::Tags::DivVariablesCompute<fluxes_tag, inv_jacobian_tag>,
+      face_tags<domain::Tags::InternalDirections<volume_dim>>,
+      face_tags<domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
+      exterior_tags>>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -106,16 +118,9 @@ struct InitializeFirstOrderOperator {
       exterior_boundary_vars[direction] = typename vars_tag::type{
           mesh.slice_away(direction.dimension()).number_of_grid_points()};
     }
-    using compute_tags = tmpl::flatten<tmpl::list<
-        fluxes_compute_tag, sources_compute_tag,
-        ::Tags::DivVariablesCompute<fluxes_tag, inv_jacobian_tag>,
-        face_tags<domain::Tags::InternalDirections<volume_dim>>,
-        face_tags<domain::Tags::BoundaryDirectionsInterior<volume_dim>>,
-        exterior_tags>>;
-    return std::make_tuple(
-        ::Initialization::merge_into_databox<
-            InitializeFirstOrderOperator, db::AddSimpleTags<exterior_vars_tag>,
-            compute_tags>(std::move(box), std::move(exterior_boundary_vars)));
+    Initialization::mutate_assign<simple_tags>(
+        make_not_null(&box), std::move(exterior_boundary_vars));
+    return std::make_tuple(std::move(box));
   }
 };
 }  // namespace Actions

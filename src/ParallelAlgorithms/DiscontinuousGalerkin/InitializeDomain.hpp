@@ -21,7 +21,7 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -58,6 +58,10 @@ namespace Actions {
  *   - `Tags::MinimumGridSpacingCompute<Dim, Frame::Inertial>>`
  * - Removes: nothing
  * - Modifies: nothing
+ *
+ * \note This action relies on the `SetupDataBox` aggregated initialization
+ * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
+ * phase action list prior to this action.
  */
 template <size_t Dim>
 struct InitializeDomain {
@@ -65,33 +69,29 @@ struct InitializeDomain {
       tmpl::list<domain::Tags::InitialExtents<Dim>,
                  domain::Tags::InitialRefinementLevels<Dim>>;
 
+  using simple_tags =
+      tmpl::list<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+                 domain::Tags::ElementMap<Dim>>;
+  using compute_tags = tmpl::append<db::AddComputeTags<
+      domain::Tags::LogicalCoordinates<Dim>,
+      domain ::Tags::MappedCoordinates<
+          domain::Tags::ElementMap<Dim>,
+          domain ::Tags::Coordinates<Dim, Frame::Logical>>,
+      domain ::Tags::InverseJacobianCompute<
+          domain ::Tags::ElementMap<Dim>,
+          domain::Tags::Coordinates<Dim, Frame::Logical>>,
+      domain::Tags::DetInvJacobianCompute<Dim, Frame::Logical, Frame::Inertial>,
+      domain::Tags::MinimumGridSpacingCompute<Dim, Frame::Inertial>>>;
+
   template <
       typename DataBox, typename... InboxTags, typename Metavariables,
-      typename ActionList, typename ParallelComponent,
-      Requires<tmpl::all<initialization_tags,
-                         tmpl::bind<db::tag_is_retrievable, tmpl::_1,
-                                    tmpl::pin<DataBox>>>::value> = nullptr>
+      typename ActionList, typename ParallelComponent>
   static auto apply(DataBox& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ElementId<Dim>& array_index,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using simple_tags =
-        db::AddSimpleTags<domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
-                          domain::Tags::ElementMap<Dim>>;
-    using compute_tags = tmpl::append<db::AddComputeTags<
-        domain::Tags::LogicalCoordinates<Dim>,
-        domain ::Tags::MappedCoordinates<
-            domain::Tags::ElementMap<Dim>,
-            domain ::Tags::Coordinates<Dim, Frame::Logical>>,
-        domain ::Tags::InverseJacobianCompute<
-            domain ::Tags::ElementMap<Dim>,
-            domain::Tags::Coordinates<Dim, Frame::Logical>>,
-        domain::Tags::DetInvJacobianCompute<Dim, Frame::Logical,
-                                            Frame::Inertial>,
-        domain::Tags::MinimumGridSpacingCompute<Dim, Frame::Inertial>>>;
-
     const auto& initial_extents =
         db::get<domain::Tags::InitialExtents<Dim>>(box);
     const auto& initial_refinement =
@@ -112,28 +112,11 @@ struct InitializeDomain {
     }
     ElementMap<Dim, Frame::Inertial> element_map{
         element_id, my_block.stationary_map().get_clone()};
+    Initialization::mutate_assign<simple_tags>(
+        make_not_null(&box), std::move(mesh), std::move(element),
+        std::move(element_map));
 
-    return std::make_tuple(
-        ::Initialization::merge_into_databox<InitializeDomain, simple_tags,
-                                             compute_tags>(
-            std::move(box), std::move(mesh), std::move(element),
-            std::move(element_map)));
-  }
-
-  template <
-      typename DataBox, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<not tmpl::all<initialization_tags,
-                             tmpl::bind<db::tag_is_retrievable, tmpl::_1,
-                                        tmpl::pin<DataBox>>>::value> = nullptr>
-  static std::tuple<DataBox&&> apply(
-      DataBox& /*box*/, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    ERROR(
-        "Dependencies not fulfilled. Did you forget to terminate the phase "
-        "after removing options?");
+    return std::make_tuple(std::move(box));
   }
 };
 }  // namespace Actions

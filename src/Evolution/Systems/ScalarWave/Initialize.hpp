@@ -13,7 +13,7 @@
 #include "Evolution/Systems/ScalarWave/System.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 
 namespace ScalarWave {
 namespace Actions {
@@ -33,8 +33,20 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies: nothing
 ///
+/// \note This action relies on the `SetupDataBox` aggregated initialization
+/// mechanism, so `Actions::SetupDataBox` must be present in the
+/// `Initialization` phase action list prior to this action.
 template <size_t Dim>
 struct InitializeConstraints {
+  using simple_tags = tmpl::list<ScalarWave::Tags::ConstraintGamma2>;
+
+  using compute_tags = tmpl::list<
+      ScalarWave::Tags::OneIndexConstraintCompute<Dim>,
+      ScalarWave::Tags::TwoIndexConstraintCompute<Dim>,
+      ::Tags::PointwiseL2NormCompute<ScalarWave::Tags::OneIndexConstraint<Dim>>,
+      ::Tags::PointwiseL2NormCompute<
+          ScalarWave::Tags::TwoIndexConstraint<Dim>>>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -46,19 +58,11 @@ struct InitializeConstraints {
                     const ParallelComponent* const /*meta*/) noexcept {
     const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
     Scalar<DataVector> gamma_2{mesh.number_of_grid_points(), 0.};
-    using compute_tags =
-        db::AddComputeTags<ScalarWave::Tags::OneIndexConstraintCompute<Dim>,
-                           ScalarWave::Tags::TwoIndexConstraintCompute<Dim>,
-                           ::Tags::PointwiseL2NormCompute<
-                               ScalarWave::Tags::OneIndexConstraint<Dim>>,
-                           ::Tags::PointwiseL2NormCompute<
-                               ScalarWave::Tags::TwoIndexConstraint<Dim>>>;
 
-    return std::make_tuple(
-        Initialization::merge_into_databox<
-            InitializeConstraints,
-            db::AddSimpleTags<ScalarWave::Tags::ConstraintGamma2>,
-            compute_tags>(std::move(box), std::move(gamma_2)));
+    Initialization::mutate_assign<simple_tags>(make_not_null(&box),
+                                               std::move(gamma_2));
+
+    return std::make_tuple(std::move(box));
   }
 };
 }  // namespace Actions

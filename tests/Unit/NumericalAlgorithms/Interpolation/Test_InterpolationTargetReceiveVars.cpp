@@ -22,6 +22,7 @@
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetReceiveVars.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
@@ -244,7 +245,10 @@ struct mock_interpolator {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<intrp::Actions::InitializeInterpolator>>,
+          tmpl::list<Actions::SetupDataBox,
+                     intrp::Actions::InitializeInterpolator<
+                         intrp::Tags::VolumeVarsInfo<Metavariables>,
+                         intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
 
@@ -308,7 +312,9 @@ void test_interpolation_target_receive_vars() noexcept {
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {domain_creator.create_domain()}};
   ActionTesting::emplace_component<interp_component>(&runner, 0);
-  ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
+  }
   ActionTesting::emplace_component_and_initialize<target_component>(
       &runner, 0,
       {std::unordered_map<temporal_id_type, std::unordered_set<size_t>>{},

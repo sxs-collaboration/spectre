@@ -26,6 +26,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Utilities/TMPL.hpp"
@@ -47,7 +48,7 @@ struct ElementArray {
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<dg::Actions::InitializeDomain<Dim>,
+          tmpl::list<Actions::SetupDataBox, dg::Actions::InitializeDomain<Dim>,
                      // Remove options so that dependencies for
                      // `InitializeDomain` are no longer fulfilled in following
                      // iterations of the action list. Else `merge_into_databox`
@@ -106,8 +107,10 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
                               domain_creator.initial_extents()});
     ActionTesting::set_phase(make_not_null(&runner),
                              metavariables::Phase::Testing);
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              element_id);
+    for (size_t i = 0; i < 2; ++i) {
+      ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                                element_id);
+    }
     const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {
       using tag = std::decay_t<decltype(tag_v)>;
       return ActionTesting::get_databox_tag<element_array, tag>(runner,
@@ -175,8 +178,10 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
                               domain_creator.initial_extents()});
     ActionTesting::set_phase(make_not_null(&runner),
                              metavariables::Phase::Testing);
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              element_id);
+    for (size_t i = 0; i < 2; ++i) {
+      ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                                element_id);
+    }
     const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {
       using tag = std::decay_t<decltype(tag_v)>;
       return ActionTesting::get_databox_tag<element_array, tag>(runner,
@@ -247,8 +252,10 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
                               domain_creator.initial_extents()});
     ActionTesting::set_phase(make_not_null(&runner),
                              metavariables::Phase::Testing);
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              element_id);
+    for (size_t i = 0; i < 2; ++i) {
+      ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                                element_id);
+    }
     const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {
       using tag = std::decay_t<decltype(tag_v)>;
       return ActionTesting::get_databox_tag<element_array, tag>(runner,

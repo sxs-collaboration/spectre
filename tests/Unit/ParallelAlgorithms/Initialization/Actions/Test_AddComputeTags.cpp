@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
@@ -49,6 +50,7 @@ struct Component {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<
+              Actions::SetupDataBox,
               Initialization::Actions::AddComputeTags<SquareNumberCompute>>>>;
 };
 
@@ -69,7 +71,9 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Initialization.AddComputeTags",
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
-  runner.template next_action<component>(0);
+  for (size_t i = 0; i < 2; ++i) {
+    runner.template next_action<component>(0);
+  }
 
   CHECK(ActionTesting::tag_is_retrievable<component, SquareNumber>(runner, 0));
 }

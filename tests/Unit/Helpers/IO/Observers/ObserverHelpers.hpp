@@ -13,6 +13,7 @@
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Utilities/Functional.hpp"
@@ -66,7 +67,8 @@ struct observer_component {
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<observers::Actions::Initialize<Metavariables>>>>;
+      tmpl::list<Actions::SetupDataBox,
+                 observers::Actions::Initialize<Metavariables>>>>;
 };
 
 template <typename Metavariables>
@@ -85,7 +87,8 @@ struct observer_writer_component {
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<observers::Actions::InitializeWriter<Metavariables>>>>;
+      tmpl::list<Actions::SetupDataBox,
+                 observers::Actions::InitializeWriter<Metavariables>>>>;
 };
 
 using l2_error_datum = Parallel::ReductionDatum<double, funcl::Plus<>,

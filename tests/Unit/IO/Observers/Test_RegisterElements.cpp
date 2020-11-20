@@ -41,10 +41,13 @@ void check_observer_registration() {
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
   ActionTesting::emplace_component<obs_component>(&runner, 0);
-  ActionTesting::next_action<obs_component>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<obs_component>(make_not_null(&runner), 0);
+  }
   ActionTesting::emplace_component<obs_writer>(&runner, 0);
-  ActionTesting::next_action<obs_writer>(make_not_null(&runner), 0);
-
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<obs_writer>(make_not_null(&runner), 0);
+  }
   // Specific IDs have no significance, just need different IDs.
   const std::vector<ElementId<2>> element_ids{{1, {{{1, 0}, {1, 0}}}},
                                               {1, {{{1, 1}, {1, 0}}}},

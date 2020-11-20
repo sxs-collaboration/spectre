@@ -41,6 +41,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/DiscontinuousGalerkin/CollectDataForFluxes.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/FluxCommunication.hpp"
@@ -158,10 +159,10 @@ struct lts_component {
           domain::Tags::BoundaryDirectionsInterior<Dim>,
           domain::Tags::InterfaceMesh<Dim>>>;
   using init_mortars_tags =
-      tmpl::list<::Tags::Mortars<::Tags::Next<TemporalIdTag>, Dim>,
-                 ::Tags::Mortars<MortarDataTag<Dim>, Dim>,
+      tmpl::list<::Tags::Mortars<MortarDataTag<Dim>, Dim>,
                  ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
-                 ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>>;
+                 ::Tags::Mortars<::Tags::MortarSize<Dim - 1>, Dim>,
+                 ::Tags::Mortars<::Tags::Next<TemporalIdTag>, Dim>>;
   using db_tags_list =
       tmpl::append<simple_tags, init_mortars_tags, compute_tags>;
 
@@ -173,6 +174,7 @@ struct lts_component {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<
+              Actions::SetupDataBox,
               dg::Actions::InitializeMortars<DgBoundaryScheme<Dim>, false>,
               dg::Actions::CollectDataForFluxes<
                   DgBoundaryScheme<Dim>, domain::Tags::InternalDirections<Dim>>,
@@ -304,7 +306,8 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
   insert_neighbor(make_not_null(&runner), right_element, 0);
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Testing);
-
+  // SetupDataBox
+  ActionTesting::next_action<my_component>(make_not_null(&runner), self_id);
   const auto get_tag = [&runner, &self_id](auto tag_v) -> decltype(auto) {
     using tag = std::decay_t<decltype(tag_v)>;
     return ActionTesting::get_databox_tag<my_component, tag>(runner, self_id);
@@ -324,6 +327,9 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
         mortar_next_temporal_ids->at(left_mortar_id) = left_steps.front();
         mortar_next_temporal_ids->at(right_mortar_id) = right_steps.front();
       });
+  // SetupDataBox
+  ActionTesting::next_action<my_component>(make_not_null(&runner), left_id);
+  ActionTesting::next_action<my_component>(make_not_null(&runner), right_id);
   // InitializeMortars on neighbors
   ActionTesting::next_action<my_component>(make_not_null(&runner), left_id);
   set_next_temporal_id<my_component>(make_not_null(&runner), left_id, 1);

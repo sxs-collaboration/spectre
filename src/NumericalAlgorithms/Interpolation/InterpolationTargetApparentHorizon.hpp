@@ -17,6 +17,7 @@
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -146,9 +147,15 @@ struct ApparentHorizon {
                               logging::Tags::Verbosity<InterpolationTargetTag>>,
                    StrahlkorperTags::compute_items_tags<Frame>>;
   using is_sequential = std::true_type;
+
+  using simple_tags =
+      tmpl::push_back<StrahlkorperTags::items_tags<Frame>, ::ah::Tags::FastFlow,
+                      logging::Tags::Verbosity<InterpolationTargetTag>>;
+  using compute_tags = typename StrahlkorperTags::compute_items_tags<Frame>;
+
   template <typename DbTags, typename Metavariables>
-  static auto initialize(
-      db::DataBox<DbTags>&& box,
+  static void initialize(
+      const gsl::not_null<db::DataBox<DbTags>*> box,
       const Parallel::GlobalCache<Metavariables>& cache) noexcept {
     const auto& options =
         Parallel::get<Tags::ApparentHorizon<InterpolationTargetTag, Frame>>(
@@ -156,14 +163,8 @@ struct ApparentHorizon {
 
     // Put Strahlkorper and its ComputeItems, FastFlow,
     // and verbosity into a new DataBox.
-    return db::create_from<
-        db::RemoveTags<>,
-        db::AddSimpleTags<tmpl::push_back<
-            StrahlkorperTags::items_tags<Frame>, ::ah::Tags::FastFlow,
-            logging::Tags::Verbosity<InterpolationTargetTag>>>,
-        db::AddComputeTags<StrahlkorperTags::compute_items_tags<Frame>>>(
-        std::move(box), options.initial_guess, options.fast_flow,
-        options.verbosity);
+    Initialization::mutate_assign<simple_tags>(
+        box, options.initial_guess, options.fast_flow, options.verbosity);
   }
 
   template <typename Metavariables, typename DbTags, typename TemporalId>

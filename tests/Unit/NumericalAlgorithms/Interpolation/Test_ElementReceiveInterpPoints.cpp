@@ -20,6 +20,7 @@
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetLineSegment.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Time/Tags.hpp"
 
@@ -39,7 +40,9 @@ struct mock_element {
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<intrp::Actions::ElementInitInterpPoints>>>;
+      tmpl::list<Actions::SetupDataBox,
+                 intrp::Actions::ElementInitInterpPoints<
+                     intrp::Tags::InterpPointInfo<Metavariables>>>>>;
   using initial_databox = db::compute_databox_type<
       tmpl::list<intrp::Tags::InterpPointInfo<Metavariables>>>;
   using component_being_mocked =
@@ -58,8 +61,9 @@ struct mock_interpolation_target {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<intrp::Actions::InitializeInterpolationTarget<
-              Metavariables, InterpolationTargetTag>>>,
+          tmpl::list<Actions::SetupDataBox,
+                     intrp::Actions::InitializeInterpolationTarget<
+                         Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Registration,
           tmpl::list<
@@ -128,11 +132,17 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Initialization);
   ActionTesting::emplace_component<target_component_a>(&runner, 0);
-  ActionTesting::next_action<target_component_a>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<target_component_a>(make_not_null(&runner), 0);
+  }
   ActionTesting::emplace_component<target_component_b>(&runner, 0);
-  ActionTesting::next_action<target_component_b>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<target_component_b>(make_not_null(&runner), 0);
+  }
   ActionTesting::emplace_component<elem_component>(&runner, 0);
-  ActionTesting::next_action<elem_component>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<elem_component>(make_not_null(&runner), 0);
+  }
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Registration);
 

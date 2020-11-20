@@ -37,9 +37,15 @@ namespace Actions {
 ///   - `intrp::Tags::InterpPointInfo<Metavariables>`
 /// - Removes: nothing
 /// - Modifies: nothing
+///
+/// \note This action relies on the `SetupDataBox` aggregated initialization
+/// mechanism, so `Actions::SetupDataBox` must be present in the
+/// `Initialization` phase action list prior to this action.
+template <typename InterpPointInfoTag>
 struct ElementInitInterpPoints {
-  template <typename DbTags, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename Metavariables,
+  using simple_tags = tmpl::list<InterpPointInfoTag>;
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
@@ -47,26 +53,9 @@ struct ElementInitInterpPoints {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    // It appears that clang-tidy is unhappy with 'if constexpr',
-    // hence the directives below.
-    if constexpr (tmpl::list_contains_v<
-                      // NOLINTNEXTLINE clang-tidy wants extra braces.
-                      DbTags, intrp::Tags::InterpPointInfo<Metavariables>>) {
-      ERROR(
-          "Found 'intrp::Tags::InterpPointInfo<Metavariables>' in DataBox, but "
-          "it should not be there because ElementInitInterpPoints adds it.");
-      return std::forward_as_tuple(std::move(box));
-    } else {  // NOLINT clang-tidy thinks 'if' and 'else' not indented the same
-      using point_info_type = tuples::tagged_tuple_from_typelist<
-          db::wrap_tags_in<Tags::point_info_detail::WrappedPointInfoTag,
-                           typename Metavariables::interpolation_target_tags,
-                           Metavariables>>;
-      return std::make_tuple(
-          db::create_from<
-              db::RemoveTags<>,
-              db::AddSimpleTags<intrp::Tags::InterpPointInfo<Metavariables>>>(
-              std::move(box), point_info_type{}));
-    }
+    // Here we only want the `InterpPointInfoTag` default constructed, which was
+    // done in `SetupDataBox`
+    return std::make_tuple(std::move(box));
   }
 };
 }  // namespace Actions

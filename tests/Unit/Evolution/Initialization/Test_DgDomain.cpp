@@ -31,6 +31,7 @@
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -164,7 +165,8 @@ struct Component {
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<evolution::dg::Initialization::Domain<dim>,
+        tmpl::list<::Actions::SetupDataBox,
+                     evolution::dg::Initialization::Domain<dim>,
                      Actions::IncrementTime, Actions::IncrementTime>>>;
 };
 
@@ -228,7 +230,9 @@ void test() noexcept {
        std::move(clone_unique_ptrs(functions_of_time)), initial_time});
   runner.set_phase(metavars::Phase::Testing);
   CHECK(ActionTesting::get_next_action_index<component>(runner, self_id) == 0);
-  ActionTesting::next_action<component>(make_not_null(&runner), self_id);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<component>(make_not_null(&runner), self_id);
+  }
 
   // Set up data to be used for checking correctness
   const auto logical_to_grid_map = create_affine_map<Dim, Frame::Grid>();

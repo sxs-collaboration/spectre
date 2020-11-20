@@ -26,6 +26,7 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
 #include "Time/Slab.hpp"
@@ -91,9 +92,11 @@ struct ElementArray {
               tmpl::conditional_t<
                   use_moving_mesh,
                   tmpl::list<
+                      Actions::SetupDataBox,
                       Initialization::Actions::TimeAndTimeStep<Metavariables>,
                       evolution::dg::Initialization::Domain<Dim>>,
-                  tmpl::list<dg::Actions::InitializeDomain<Dim>>>,
+                  tmpl::list<Actions::SetupDataBox,
+                             dg::Actions::InitializeDomain<Dim>>>,
               ActionTesting::InitializeDataBox<tmpl::append<
                   tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
                              domain::Tags::InitialExtents<Dim>, vars_tag,
@@ -109,14 +112,16 @@ struct ElementArray {
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<dg::Actions::InitializeInterfaces<
-              System<Dim>, dg::Initialization::slice_tags_to_face<vars_tag>,
-              dg::Initialization::slice_tags_to_exterior<other_vars_tag>,
-              dg::Initialization::face_compute_tags<
-                  SomeComputeTagCompute<vars_tag>>,
-              dg::Initialization::exterior_compute_tags<
-                  SomeComputeTagCompute<other_vars_tag>>,
-              true, use_moving_mesh>>>>;
+          tmpl::list<
+              Actions::SetupDataBox,
+              dg::Actions::InitializeInterfaces<
+                  System<Dim>, dg::Initialization::slice_tags_to_face<vars_tag>,
+                  dg::Initialization::slice_tags_to_exterior<other_vars_tag>,
+                  dg::Initialization::face_compute_tags<
+                      SomeComputeTagCompute<vars_tag>>,
+                  dg::Initialization::exterior_compute_tags<
+                      SomeComputeTagCompute<other_vars_tag>>,
+                  true, use_moving_mesh>>>>;
 };
 
 template <size_t Dim, bool UseMovingMesh>
@@ -206,7 +211,10 @@ void create_runner_and_run_tests(
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
-  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                              element_id);
+  }
 
   check_compute_items(runner, element_id);
 }

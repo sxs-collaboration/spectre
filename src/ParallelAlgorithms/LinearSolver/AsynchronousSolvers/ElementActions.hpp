@@ -29,7 +29,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -114,6 +114,12 @@ struct InitializeElement {
   using const_global_cache_tags =
       tmpl::list<Convergence::Tags::Iterations<OptionsGroup>>;
 
+  using simple_tags = tmpl::list<Convergence::Tags::IterationId<OptionsGroup>,
+                                 Convergence::Tags::HasConverged<OptionsGroup>,
+                                 operator_applied_to_fields_tag>;
+  using compute_tags =
+      tmpl::list<LinearSolver::Tags::ResidualCompute<fields_tag, source_tag>>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -123,20 +129,13 @@ struct InitializeElement {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    return std::make_tuple(
-        ::Initialization::merge_into_databox<
-            InitializeElement,
-            db::AddSimpleTags<Convergence::Tags::IterationId<OptionsGroup>,
-                              Convergence::Tags::HasConverged<OptionsGroup>,
-                              operator_applied_to_fields_tag>,
-            db::AddComputeTags<
-                LinearSolver::Tags::ResidualCompute<fields_tag, source_tag>>>(
-            std::move(box),
-            // The `PrepareSolve` action populates these tags with initial
-            // values, except for `operator_applied_to_fields_tag` which is
-            // expected to be updated in every iteration of the algorithm
-            std::numeric_limits<size_t>::max(), Convergence::HasConverged{},
-            typename operator_applied_to_fields_tag::type{}));
+    // The `PrepareSolve` action populates these tags with initial
+    // values, except for `operator_applied_to_fields_tag` which is
+    // expected to be updated in every iteration of the algorithm
+    Initialization::mutate_assign<
+        tmpl::list<Convergence::Tags::IterationId<OptionsGroup>>>(
+        make_not_null(&box), std::numeric_limits<size_t>::max());
+    return std::make_tuple(std::move(box));
   }
 };
 

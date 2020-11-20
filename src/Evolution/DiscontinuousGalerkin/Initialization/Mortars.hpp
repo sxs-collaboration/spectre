@@ -22,6 +22,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"
@@ -75,6 +76,11 @@ struct Mortars {
  public:
   using initialization_tags = tmpl::list<::domain::Tags::InitialExtents<Dim>>;
 
+  using simple_tags =
+      tmpl::list<Tags::MortarData<Dim>, Tags::MortarMesh<Dim>,
+                 Tags::MortarSize<Dim>, Tags::MortarNextTemporalId<Dim>>;
+  using compute_tags = tmpl::list<>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -84,15 +90,7 @@ struct Mortars {
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     if constexpr (db::tag_is_retrievable_v<::domain::Tags::InitialExtents<Dim>,
-                                           db::DataBox<DbTagsList>> and
-                  not db::tag_is_retrievable_v<Tags::MortarData<Dim>,
-                                               db::DataBox<DbTagsList>> and
-                  not db::tag_is_retrievable_v<Tags::MortarMesh<Dim>,
-                                               db::DataBox<DbTagsList>> and
-                  not db::tag_is_retrievable_v<Tags::MortarSize<Dim>,
-                                               db::DataBox<DbTagsList>> and
-                  not db::tag_is_retrievable_v<Tags::MortarNextTemporalId<Dim>,
-                                               db::DataBox<DbTagsList>>) {
+                                           db::DataBox<DbTagsList>>) {
       auto [mortar_data, mortar_meshes, mortar_sizes,
             mortar_next_temporal_ids] =
           apply_impl(db::get<::domain::Tags::InitialExtents<Dim>>(box),
@@ -104,26 +102,15 @@ struct Mortars {
                      db::get<::domain::Tags::Interface<
                          ::domain::Tags::BoundaryDirectionsInterior<Dim>,
                          ::domain::Tags::Mesh<Dim - 1>>>(box));
-      return std::make_tuple(
-          db::create_from<
-              db::RemoveTags<>,
-              db::AddSimpleTags<Tags::MortarData<Dim>, Tags::MortarMesh<Dim>,
-                                Tags::MortarSize<Dim>,
-                                Tags::MortarNextTemporalId<Dim>>>(
-              std::move(box), std::move(mortar_data), std::move(mortar_meshes),
-              std::move(mortar_sizes), std::move(mortar_next_temporal_ids)));
+      ::Initialization::mutate_assign<simple_tags>(
+          make_not_null(&box), std::move(mortar_data), std::move(mortar_meshes),
+          std::move(mortar_sizes), std::move(mortar_next_temporal_ids));
+      return std::make_tuple(std::move(box));
     } else {
-      if (not db::tag_is_retrievable_v<::domain::Tags::InitialExtents<Dim>,
-                                       db::DataBox<DbTagsList>>) {
-        ERROR(
-            "Missing a tag in the DataBox. Did you forget to terminate the "
-            "phase after removing options? The missing tag is "
-            "'domain::Tags::InitialExtents<Dim>'.");
-      }
       ERROR(
-          "One of the tags being added already exists in the DataBox. The tags "
-          "being added are: Tags::MortarData, Tags::MortarMesh, "
-          "Tags::MortarSize, Tags::MortarNextTemporalId");
+          "Missing a tag in the DataBox. Did you forget to terminate the "
+          "phase after removing options? The missing tag is "
+          "'domain::Tags::InitialExtents<Dim>'.");
       return std::forward_as_tuple(std::move(box));
     }
   }

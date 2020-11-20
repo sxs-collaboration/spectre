@@ -22,6 +22,7 @@
 #include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -116,10 +117,15 @@ struct mock_interpolator {
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<intrp::Actions::InitializeInterpolator>>>;
+      tmpl::list<Actions::SetupDataBox,
+                 ::intrp::Actions::InitializeInterpolator<
+                     intrp::Tags::VolumeVarsInfo<Metavariables>,
+                     intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>>;
   using initial_databox = db::compute_databox_type<
-      typename ::intrp::Actions::InitializeInterpolator::
-          template return_tag_list<Metavariables>>;
+      typename ::intrp::Actions::InitializeInterpolator<
+          intrp::Tags::VolumeVarsInfo<Metavariables>,
+          intrp::Tags::InterpolatedVarsHolders<Metavariables>>::
+          return_tag_list>;
 };
 
 template <typename Metavariables, typename InterpolationTargetTag>

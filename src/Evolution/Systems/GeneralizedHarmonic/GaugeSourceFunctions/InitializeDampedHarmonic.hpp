@@ -23,7 +23,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Options.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -83,6 +83,10 @@ namespace GeneralizedHarmonic::gauges::Actions {
  * - Removes: nothing
  * - Modifies:
  *   - `GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>`
+ *
+ * \note This action relies on the `SetupDataBox` aggregated initialization
+ * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
+ * phase action list prior to this action.
  */
 template <size_t Dim, bool UseRollon>
 struct InitializeDampedHarmonic {
@@ -176,6 +180,17 @@ struct InitializeDampedHarmonic {
   using const_global_cache_tags = tmpl::list<
       GeneralizedHarmonic::gauges::Tags::DhGaugeParameters<UseRollon>>;
 
+  using simple_tags = tmpl::conditional_t<
+      UseRollon,
+      tmpl::list<
+          GeneralizedHarmonic::Tags::InitialGaugeH<Dim, frame>,
+          GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<Dim, frame>>,
+      tmpl::list<>>;
+
+  using compute_tags =
+      tmpl::conditional_t<UseRollon, DampedHarmonicRollonCompute<frame>,
+                          DampedHarmonicCompute<frame>>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -210,20 +225,11 @@ struct InitializeDampedHarmonic {
           db::get<GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>>(box),
           db::get<domain::Tags::Mesh<Dim>>(box), inverse_jacobian);
 
-      // Add gauge tags
-      using compute_tags =
-          db::AddComputeTags<DampedHarmonicRollonCompute<frame>>;
-
-      // Finally, insert gauge related quantities to the box
-      return std::make_tuple(
-          Initialization::merge_into_databox<
-              InitializeDampedHarmonic,
-              db::AddSimpleTags<
-                  GeneralizedHarmonic::Tags::InitialGaugeH<Dim, frame>,
-                  GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<
-                      Dim, frame>>,
-              compute_tags>(std::move(box), std::move(initial_gauge_h),
-                            std::move(initial_d4_gauge_h)));
+      // Finally, update gauge related quantities in the box
+      Initialization::mutate_assign<simple_tags>(make_not_null(&box),
+                                                 std::move(initial_gauge_h),
+                                                 std::move(initial_d4_gauge_h));
+      return std::make_tuple(std::move(box));
     } else {
       const double initial_time =
           db::get<::Initialization::Tags::InitialTime>(box);
@@ -246,11 +252,7 @@ struct InitializeDampedHarmonic {
               box));
 
       // Add gauge tags
-      using compute_tags = db::AddComputeTags<DampedHarmonicCompute<frame>>;
-      return std::make_tuple(
-          Initialization::merge_into_databox<InitializeDampedHarmonic,
-                                             db::AddSimpleTags<>, compute_tags>(
-              std::move(box)));
+      return std::make_tuple(std::move(box));
     }
   }
 

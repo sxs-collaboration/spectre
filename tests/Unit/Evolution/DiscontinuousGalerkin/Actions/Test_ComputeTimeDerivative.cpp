@@ -27,6 +27,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "Time/Tags.hpp"
@@ -275,6 +276,7 @@ struct component {
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<
               ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
+              Actions::SetupDataBox,
               dg::Actions::InitializeMortars<
                   typename Metavariables::boundary_scheme>>>,
       Parallel::PhaseActions<
@@ -420,6 +422,9 @@ void test_impl() noexcept {
          normal_dot_fluxes_interface, element, inv_jac, mesh_velocity,
          div_mesh_velocity});
   }
+  // Setup the DataBox
+  ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
+                                                  self_id);
   // Initialize the mortars
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
                                                   self_id);

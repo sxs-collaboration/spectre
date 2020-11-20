@@ -9,6 +9,7 @@
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
@@ -19,11 +20,9 @@
 
 /// \cond
 class DataVector;
-namespace intrp {
-namespace Tags {
+namespace intrp::Tags {
 struct NumberOfElements;
-}  // namespace Tags
-}  // namespace intrp
+}  // namespace intrp::Tags
 /// \endcond
 
 namespace {
@@ -36,12 +35,17 @@ struct mock_interpolator {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<intrp::Actions::InitializeInterpolator>>,
+          tmpl::list<Actions::SetupDataBox,
+                     ::intrp::Actions::InitializeInterpolator<
+                         intrp::Tags::VolumeVarsInfo<Metavariables>,
+                         intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Registration, tmpl::list<>>>;
   using initial_databox = db::compute_databox_type<
-      typename ::intrp::Actions::InitializeInterpolator::
-          template return_tag_list<Metavariables>>;
+      typename ::intrp::Actions::InitializeInterpolator<
+          intrp::Tags::VolumeVarsInfo<Metavariables>,
+          intrp::Tags::InterpolatedVarsHolders<Metavariables>>::
+          return_tag_list>;
   using component_being_mocked = intrp::Interpolator<Metavariables>;
 };
 
@@ -85,7 +89,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
-  ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
+  }
   ActionTesting::emplace_component<elem_component>(&runner, 0);
   // There is no next_action on elem_component, so we don't call it here.
   ActionTesting::set_phase(make_not_null(&runner),

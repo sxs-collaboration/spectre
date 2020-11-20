@@ -13,6 +13,7 @@
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -57,8 +58,10 @@ struct ElementArray {
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<elliptic::Actions::InitializeAnalyticSolution<
-              AnalyticSolutionTag<Dim>, tmpl::list<ScalarFieldTag>>>>>;
+          tmpl::list<
+              Actions::SetupDataBox,
+              elliptic::Actions::InitializeAnalyticSolution<
+                  AnalyticSolutionTag<Dim>, tmpl::list<ScalarFieldTag>>>>>;
 };
 
 template <size_t Dim>
@@ -81,7 +84,10 @@ void test_initialize_analytic_solution(
       &runner, element_id, {inertial_coords});
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Testing);
-  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<element_array>(make_not_null(&runner),
+                                              element_id);
+  }
   CHECK_ITERABLE_APPROX(
       get(ActionTesting::get_databox_tag<element_array,
                                          ::Tags::Analytic<ScalarFieldTag>>(

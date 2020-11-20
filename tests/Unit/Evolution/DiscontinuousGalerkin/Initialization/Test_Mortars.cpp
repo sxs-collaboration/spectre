@@ -26,6 +26,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace evolution::dg {
@@ -70,8 +71,9 @@ struct component {
               ActionTesting::InitializeDataBox<simple_tags, compute_tags>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing,
-                             tmpl::list<evolution::dg::Initialization::Mortars<
-                                 Metavariables::volume_dim>>>>;
+                             tmpl::list<Actions::SetupDataBox,
+                                        evolution::dg::Initialization::Mortars<
+                                            Metavariables::volume_dim>>>>;
 };
 
 template <size_t Dim>
@@ -105,6 +107,9 @@ void test_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
 
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
+  // Run the SetupDataBox action
+  ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
+                                                  element.id());
   // Run the Mortars initialization action
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
                                                   element.id());

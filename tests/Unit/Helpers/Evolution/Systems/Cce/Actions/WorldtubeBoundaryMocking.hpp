@@ -12,6 +12,7 @@
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
+#include "Parallel/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -43,7 +44,9 @@ struct mock_h5_worldtube_boundary {
           mock_characteristic_evolution<test_metavariables>>>;
 
   using initialize_action_list =
-      tmpl::list<Actions::InitializeH5WorldtubeBoundary,
+      tmpl::list<::Actions::SetupDataBox,
+                 Actions::InitializeH5WorldtubeBoundary<
+                     typename Metavariables::cce_boundary_communication_tags>,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
@@ -74,7 +77,9 @@ struct mock_gh_worldtube_boundary {
           mock_characteristic_evolution<test_metavariables>>>;
 
   using initialize_action_list =
-      tmpl::list<Actions::InitializeGhWorldtubeBoundary,
+      tmpl::list<::Actions::SetupDataBox,
+                 Actions::InitializeGhWorldtubeBoundary<
+                     typename Metavariables::cce_boundary_communication_tags>,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;

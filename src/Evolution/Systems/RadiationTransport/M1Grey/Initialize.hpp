@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -41,7 +42,17 @@ namespace RadiationTransport {
 namespace M1Grey {
 namespace Actions {
 
+template <typename System>
 struct InitializeM1Tags {
+  using evolved_variables_tag = typename System::variables_tag;
+  using hydro_variables_tag = typename System::hydro_variables_tag;
+  using m1_variables_tag = typename System::primitive_variables_tag;
+  // List of variables to be created... does NOT include
+  // evolved_variables_tag because the evolved variables
+  // are created by the ConservativeSystem initialization.
+  using simple_tags = tmpl::list<hydro_variables_tag, m1_variables_tag>;
+  using compute_tags = tmpl::list<>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -50,22 +61,11 @@ struct InitializeM1Tags {
                     const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using system = typename Metavariables::system;
-    using evolved_variables_tag = typename system::variables_tag;
-    using hydro_variables_tag = typename system::hydro_variables_tag;
-    using m1_variables_tag = typename system::primitive_variables_tag;
-    // List of variables to be created... does NOT include
-    // evolved_variables_tag because the evolved variables
-    // are created by the ConservativeSystem initialization.
-    using simple_tags =
-        db::AddSimpleTags<hydro_variables_tag, m1_variables_tag>;
-    using compute_tags = db::AddComputeTags<>;
-
     using EvolvedVars = typename evolved_variables_tag::type;
     using HydroVars = typename hydro_variables_tag::type;
     using M1Vars = typename m1_variables_tag::type;
 
-    static constexpr size_t dim = system::volume_dim;
+    static constexpr size_t dim = System::volume_dim;
     const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
     const size_t num_grid_points =
         db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
@@ -87,11 +87,11 @@ struct InitializeM1Tags {
         initial_time, typename hydro_variables_tag::tags_list{}));
 
     M1Vars m1_variables{num_grid_points, -1.};
+    Initialization::mutate_assign<simple_tags>(make_not_null(&box),
+                                               std::move(hydro_variables),
+                                               std::move(m1_variables));
 
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
-            std::move(box), std::move(hydro_variables),
-            std::move(m1_variables)));
+    return std::make_tuple(std::move(box));
   }
 };
 

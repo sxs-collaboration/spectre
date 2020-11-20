@@ -59,6 +59,22 @@ template <size_t Dim>
 struct InitializeConstraints {
   using frame = Frame::Inertial;
 
+  using compute_tags = tmpl::flatten<db::AddComputeTags<
+      GeneralizedHarmonic::Tags::GaugeConstraintCompute<Dim, frame>,
+      // following tags added to observe constraints
+      ::Tags::PointwiseL2NormCompute<
+          GeneralizedHarmonic::Tags::GaugeConstraint<Dim, frame>>,
+      ::Tags::PointwiseL2NormCompute<
+          GeneralizedHarmonic::Tags::ThreeIndexConstraint<Dim, frame>>,
+      // The 4-index constraint is only implemented in 3d
+      tmpl::conditional_t<
+          Dim == 3,
+          tmpl::list<
+              GeneralizedHarmonic::Tags::FourIndexConstraintCompute<Dim, frame>,
+              ::Tags::PointwiseL2NormCompute<
+                  GeneralizedHarmonic::Tags::FourIndexConstraint<Dim, frame>>>,
+          tmpl::list<>>>>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -68,33 +84,26 @@ struct InitializeConstraints {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using compute_tags = tmpl::flatten<db::AddComputeTags<
-        GeneralizedHarmonic::Tags::GaugeConstraintCompute<Dim, frame>,
-        // following tags added to observe constraints
-        ::Tags::PointwiseL2NormCompute<
-            GeneralizedHarmonic::Tags::GaugeConstraint<Dim, frame>>,
-        ::Tags::PointwiseL2NormCompute<
-            GeneralizedHarmonic::Tags::ThreeIndexConstraint<Dim, frame>>,
-        // The 4-index constraint is only implemented in 3d
-        tmpl::conditional_t<
-            Dim == 3,
-            tmpl::list<GeneralizedHarmonic::Tags::FourIndexConstraintCompute<
-                           Dim, frame>,
-                       ::Tags::PointwiseL2NormCompute<
-                           GeneralizedHarmonic::Tags::FourIndexConstraint<
-                               Dim, frame>>>,
-            tmpl::list<>>>>;
-
-    return std::make_tuple(
-        Initialization::merge_into_databox<InitializeConstraints,
-                                           db::AddSimpleTags<>, compute_tags>(
-            std::move(box)));
+    return std::make_tuple(std::move(box));
   }
 };
 
 template <size_t Dim>
 struct InitializeGhAnd3Plus1Variables {
   using frame = Frame::Inertial;
+  using compute_tags = db::AddComputeTags<
+      gr::Tags::SpatialMetricCompute<Dim, frame, DataVector>,
+      gr::Tags::DetAndInverseSpatialMetricCompute<Dim, frame, DataVector>,
+      gr::Tags::ShiftCompute<Dim, frame, DataVector>,
+      gr::Tags::LapseCompute<Dim, frame, DataVector>,
+      gr::Tags::SqrtDetSpatialMetricCompute<Dim, frame, DataVector>,
+      gr::Tags::SpacetimeNormalOneFormCompute<Dim, frame, DataVector>,
+      gr::Tags::SpacetimeNormalVectorCompute<Dim, frame, DataVector>,
+      gr::Tags::InverseSpacetimeMetricCompute<Dim, frame, DataVector>,
+      GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<Dim, frame>,
+      ConstraintDamping::Tags::ConstraintGamma0Compute<Dim, frame>,
+      ConstraintDamping::Tags::ConstraintGamma1Compute<Dim, frame>,
+      ConstraintDamping::Tags::ConstraintGamma2Compute<Dim, frame>>;
 
   using const_global_cache_tags = tmpl::list<
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
@@ -113,27 +122,7 @@ struct InitializeGhAnd3Plus1Variables {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using compute_tags = db::AddComputeTags<
-        gr::Tags::SpatialMetricCompute<Dim, frame, DataVector>,
-        gr::Tags::DetAndInverseSpatialMetricCompute<Dim, frame, DataVector>,
-        gr::Tags::ShiftCompute<Dim, frame, DataVector>,
-        gr::Tags::LapseCompute<Dim, frame, DataVector>,
-        gr::Tags::SqrtDetSpatialMetricCompute<Dim, frame, DataVector>,
-        gr::Tags::SpacetimeNormalOneFormCompute<Dim, frame, DataVector>,
-        gr::Tags::SpacetimeNormalVectorCompute<Dim, frame, DataVector>,
-        gr::Tags::InverseSpacetimeMetricCompute<Dim, frame, DataVector>,
-        GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<Dim, frame>,
-        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0Compute<
-            Dim, frame>,
-        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1Compute<
-            Dim, frame>,
-        GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2Compute<
-            Dim, frame>>;
-
-    return std::make_tuple(
-        Initialization::merge_into_databox<InitializeGhAnd3Plus1Variables,
-                                           db::AddSimpleTags<>, compute_tags>(
-            std::move(box)));
+    return std::make_tuple(std::move(box));
   }
 };
 
