@@ -4,6 +4,14 @@
 # Continuous integration tests that pull requests are required to pass
 name: Tests
 
+# Set any defaults for the runs below.
+# - use bash as the default shell since this is almost certainly what
+#   is always expected. We use regular expressions in a few places
+#   that rely on bash.
+defaults:
+  run:
+    shell: bash
+
 # Note that by default the jobs only run on the base repository, testing pull
 # requests and merge commits. Enable GitHub Actions in your fork's repository
 # settings to also run the tests on every push to one of your branches.
@@ -388,9 +396,6 @@ jobs:
           -D MEMORY_ALLOCATOR=${MEMORY_ALLOCATOR:-'SYSTEM'}
           --warn-uninitialized
           $GITHUB_WORKSPACE 2>&1 | tee CMakeOutput.txt 2>&1
-
-        # Make sure this runs in bash so the regex matching works
-        shell: bash
       - name: Check for CMake warnings
         working-directory: /work/build
         run: |
