@@ -94,6 +94,7 @@ struct Mortars {
       auto [mortar_data, mortar_meshes, mortar_sizes,
             mortar_next_temporal_ids] =
           apply_impl(db::get<::domain::Tags::InitialExtents<Dim>>(box),
+                     Spectral::Quadrature::GaussLobatto,
                      db::get<::domain::Tags::Element<Dim>>(box),
                      db::get<::Tags::TimeStepId>(box),
                      db::get<::domain::Tags::Interface<
@@ -122,7 +123,8 @@ struct Mortars {
                     MortarMap<TimeStepId>>
   apply_impl(
       const std::vector<std::array<size_t, Dim>>& initial_extents,
-      const Element<Dim>& element, const TimeStepId& next_temporal_id,
+      Spectral::Quadrature quadrature, const Element<Dim>& element,
+      const TimeStepId& next_temporal_id,
       const std::unordered_map<Direction<Dim>, Mesh<Dim - 1>>& interface_meshes,
       const std::unordered_map<Direction<Dim>, Mesh<Dim - 1>>&
           boundary_meshes) noexcept;

@@ -139,7 +139,7 @@ struct Domain {
     const ElementId<Dim> element_id{array_index};
     const auto& my_block = domain.blocks()[element_id.block_id()];
     Mesh<Dim> mesh = ::domain::Initialization::create_initial_mesh(
-        initial_extents, element_id);
+        initial_extents, element_id, Spectral::Quadrature::GaussLobatto);
     Element<Dim> element = ::domain::Initialization::create_initial_element(
         element_id, my_block, initial_refinement);
     ElementMap<Dim, Frame::Grid> element_map{
