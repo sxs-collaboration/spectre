@@ -32,7 +32,7 @@ namespace Solutions {
  * \brief Fluid disk orbiting a Kerr black hole
  *
  * The Fishbone-Moncrief solution to the 3D relativistic Euler system
- * \cite fishbone1976apj, representing the isentropic flow of a thick fluid disk
+ * \cite Fishbone1976apj, representing the isentropic flow of a thick fluid disk
  * orbiting a Kerr black hole. In Boyer-Lindquist coordinates
  * \f$(t, r, \theta, \phi)\f$, the flow is assumed to be purely toroidal,
  *
