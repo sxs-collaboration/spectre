@@ -528,7 +528,7 @@ template Index<3> read_extents<3>(const hid_t group_id,
       const std::string& name) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_WRITE_DATA,
-                        (double, int, unsigned int, long, unsigned long,
+                        (float, double, int, unsigned int, long, unsigned long,
                          long long, unsigned long long, char))
 
 #define INSTANTIATE_ATTRIBUTE(_, DATA)                                 \
@@ -551,7 +551,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_ATTRIBUTE,
       const hid_t group_id, const std::string& dataset_name) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_READ_SCALAR,
-                        (double, int, unsigned int, long, unsigned long,
+                        (float, double, int, unsigned int, long, unsigned long,
                          long long, unsigned long long, char),
                         (0))
 
@@ -561,7 +561,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_READ_SCALAR,
       const hid_t group_id, const std::string& dataset_name) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_READ_VECTOR,
-                        (double, int, unsigned int, long, unsigned long,
+                        (float, double, int, unsigned int, long, unsigned long,
                          long long, unsigned long long, char),
                         (1))
 

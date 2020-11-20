@@ -517,24 +517,41 @@ SPECTRE_TEST_CASE("Unit.IO.H5.ReadData", "[Unit][IO][H5]") {
                                  h5::AccessType::ReadWrite);
   const hid_t group_id = my_group.id();
 
+  // Test writing rank1 datasets
   {
-    // Test writing and reading a DataVector as a rank-1 dataset
     const DataVector rank1_data{1.0, 2.0, 3.0};
-    h5::write_data(group_id, rank1_data, "rank1_dataset");
-    DataVector rank1_data_from_file =
-        h5::read_data<1, DataVector>(group_id, "rank1_dataset");
+    const std::string dataset_name{"rank1_dataset_datavector"};
+    h5::write_data(group_id, rank1_data, dataset_name);
+    const auto rank1_data_from_file =
+        h5::read_data<1, DataVector>(group_id, dataset_name);
     CHECK(rank1_data_from_file == rank1_data);
   }
+  const auto test_rank1_data = [&group_id](const auto& rank1_data,
+                                           const std::vector<size_t>& extents,
+                                           const std::string& dataset_name) {
+    h5::write_data(group_id, rank1_data, extents, dataset_name);
+    const auto rank1_data_from_file =
+        h5::read_data<1, std::decay_t<decltype(rank1_data)>>(group_id,
+                                                             dataset_name);
+    CHECK(rank1_data_from_file == rank1_data);
+  };
+  test_rank1_data(std::vector<double>{1.0, 2.0, 3.0}, std::vector<size_t>{3},
+                  "rank1_dataset_vector_double");
+  test_rank1_data(std::vector<float>{1.0, 2.0, 3.0}, std::vector<size_t>{3},
+                  "rank1_dataset_vector_float");
 
   // Test writing and reading `std::vector`s from rank-0 to rank-3
   using all_type_list =
       tmpl::list<double, int, unsigned int, long, unsigned long, long long,
                  unsigned long long>;
 
-  h5::write_data(group_id, std::vector<double>{1.0}, {}, "scalar_dataset");
-  double scalar_data_from_file =
-      h5::read_data<0, double>(group_id, "scalar_dataset");
-  CHECK(scalar_data_from_file == 1.0);
+  h5::write_data(group_id, std::vector<double>{1.0 / 3.0}, {},
+                 "scalar_dataset");
+  CHECK(h5::read_data<0, double>(group_id, "scalar_dataset") == 1.0 / 3.0);
+  h5::write_data(group_id, std::vector<float>{1.0 / 3.0}, {},
+                 "scalar_dataset_float");
+  CHECK(h5::read_data<0, float>(group_id, "scalar_dataset_float") ==
+        static_cast<float>(1.0 / 3.0));
 
   tmpl::for_each<all_type_list>([&group_id](auto x) noexcept {
     using DataType = typename decltype(x)::type;
