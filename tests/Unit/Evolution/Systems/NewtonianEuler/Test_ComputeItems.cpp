@@ -12,7 +12,6 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/NewtonianEuler/ComputeItems.hpp"
-#include "Evolution/Systems/NewtonianEuler/SoundSpeedSquared.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/TestHelpers.hpp"

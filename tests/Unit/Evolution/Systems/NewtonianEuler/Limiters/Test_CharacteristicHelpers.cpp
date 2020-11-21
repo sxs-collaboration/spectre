@@ -4,8 +4,8 @@
 #include "Framework/TestingFramework.hpp"
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/Systems/NewtonianEuler/ComputeItems.hpp"
 #include "Evolution/Systems/NewtonianEuler/Limiters/CharacteristicHelpers.hpp"
-#include "Evolution/Systems/NewtonianEuler/SoundSpeedSquared.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Limiters/TestHelpers.hpp"

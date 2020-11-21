@@ -6,6 +6,11 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -83,6 +88,41 @@ tnsr::II<DataType, Dim, Fr> ram_pressure(
   return result;
 }
 
+template <typename DataType, size_t ThermodynamicDim>
+void sound_speed_squared(
+    const gsl::not_null<Scalar<DataType>*> result,
+    const Scalar<DataType>& mass_density,
+    const Scalar<DataType>& specific_internal_energy,
+    const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
+        equation_of_state) noexcept {
+  destructive_resize_components(result, get_size(get(mass_density)));
+  if constexpr (ThermodynamicDim == 1) {
+    get(*result) =
+        get(equation_of_state.chi_from_density(mass_density)) +
+        get(equation_of_state.kappa_times_p_over_rho_squared_from_density(
+            mass_density));
+  } else if constexpr (ThermodynamicDim == 2) {
+    get(*result) =
+        get(equation_of_state.chi_from_density_and_energy(
+            mass_density, specific_internal_energy)) +
+        get(equation_of_state
+                .kappa_times_p_over_rho_squared_from_density_and_energy(
+                    mass_density, specific_internal_energy));
+  }
+}
+
+template <typename DataType, size_t ThermodynamicDim>
+Scalar<DataType> sound_speed_squared(
+    const Scalar<DataType>& mass_density,
+    const Scalar<DataType>& specific_internal_energy,
+    const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
+        equation_of_state) noexcept {
+  Scalar<DataType> result{};
+  sound_speed_squared(make_not_null(&result), mass_density,
+                      specific_internal_energy, equation_of_state);
+  return result;
+}
+
 template <typename DataType, size_t Dim, typename Fr>
 void specific_kinetic_energy(
     const gsl::not_null<Scalar<DataType>*> result,
@@ -99,7 +139,6 @@ Scalar<DataType> specific_kinetic_energy(
 }
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE_SCALAR_ARGS(_, data)                             \
   template void internal_energy_density(                             \
@@ -112,7 +151,9 @@ Scalar<DataType> specific_kinetic_energy(
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALAR_ARGS, (double, DataVector))
 
-#define INSTANTIATE(_, data)                                                  \
+#define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
+
+#define INSTANTIATE_TNSR_ARGS(_, data)                                        \
   template void kinetic_energy_density(                                       \
       const gsl::not_null<Scalar<DTYPE(data)>*> result,                       \
       const Scalar<DTYPE(data)>& mass_density,                                \
@@ -139,12 +180,34 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALAR_ARGS, (double, DataVector))
   template Scalar<DTYPE(data)> specific_kinetic_energy(                       \
       const tnsr::I<DTYPE(data), DIM(data)>& velocity) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE_TNSR_ARGS, (double, DataVector), (1, 2, 3))
 
-#undef DTYPE
 #undef DIM
+
+#define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
+
+#define INSTANTIATE_SOUND_SPEED_SQUARED(_, data)                        \
+  template void sound_speed_squared(                                    \
+      const gsl::not_null<Scalar<DTYPE(data)>*> result,                 \
+      const Scalar<DTYPE(data)>& mass_density,                          \
+      const Scalar<DTYPE(data)>& specific_internal_energy,              \
+      const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>& \
+          equation_of_state) noexcept;                                  \
+  template Scalar<DTYPE(data)> sound_speed_squared(                     \
+      const Scalar<DTYPE(data)>& mass_density,                          \
+      const Scalar<DTYPE(data)>& specific_internal_energy,              \
+      const EquationsOfState::EquationOfState<false, THERMO_DIM(data)>& \
+          equation_of_state) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_SOUND_SPEED_SQUARED, (double, DataVector),
+                        (1, 2))
+
+#undef THERMO_DIM
+#undef DTYPE
+
+#undef INSTANTIATE_SOUND_SPEED_SQUARED
 #undef INSTANTIATE_SCALAR_ARGS
-#undef INSTANTIATE
+#undef INSTANTIATE_TNSR_ARGS
 
 }  // namespace NewtonianEuler
 /// \endcond

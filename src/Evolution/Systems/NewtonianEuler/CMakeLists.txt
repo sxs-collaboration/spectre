@@ -13,7 +13,6 @@ spectre_target_sources(
   ConservativeFromPrimitive.cpp
   Fluxes.cpp
   PrimitiveFromConservative.cpp
-  SoundSpeedSquared.cpp
   )
 
 spectre_target_headers(
@@ -25,7 +24,6 @@ spectre_target_headers(
   ConservativeFromPrimitive.hpp
   Fluxes.hpp
   PrimitiveFromConservative.hpp
-  SoundSpeedSquared.hpp
   Sources.hpp
   System.hpp
   Tags.hpp
