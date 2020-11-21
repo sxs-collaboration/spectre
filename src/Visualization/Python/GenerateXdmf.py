@@ -115,10 +115,17 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
                 (extents_x - 1) * (extents_y - 1) *
                 (extents_z - 1 if dimensionality == 3 else 1))
 
-            data_item = (
-                "        <DataItem Dimensions=\" %d\" "
-                "NumberType=\"Double\" Precision=\"8\" Format=\"HDF5\">\n" %
-                (numpoints))
+            def data_item(data_type):
+                assert (
+                    data_type == np.dtype('float64')
+                    or data_type == np.dtype('float32')
+                ), ("Data type must be either a 32-bit or 64-bit float but got "
+                    + str(data_type))
+                return (
+                    "        <DataItem Dimensions=\" %d\" "
+                    "NumberType=\"%s\" Precision=\"8\" Format=\"HDF5\">\n" %
+                    (numpoints, "Double"
+                     if data_type == np.dtype('float64') else "Float"))
 
             # Set up vectors
             if dimensionality == 3:
@@ -170,13 +177,17 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
                 xdmf_output += "      <Geometry Type=\"X_Y_Z\">\n"
             else:
                 xdmf_output += "      <Geometry Type=\"X_Y\">\n"
-            xdmf_output += (data_item + Grid_path + "/" + coordinates +
-                            "_x\n        </DataItem>\n")
-            xdmf_output += (data_item + Grid_path + "/" + coordinates +
-                            "_y\n        </DataItem>\n")
+            xdmf_output += (
+                data_item(h5temporal.get(coordinates + '_x').dtype) +
+                Grid_path + "/" + coordinates + "_x\n        </DataItem>\n")
+            xdmf_output += (
+                data_item(h5temporal.get(coordinates + '_y').dtype) +
+                Grid_path + "/" + coordinates + "_y\n        </DataItem>\n")
             if dimensionality == 3:
-                xdmf_output += (data_item + Grid_path + "/" + coordinates +
-                                "_z\n        </DataItem>\n")
+                xdmf_output += (
+                    data_item(h5temporal.get(coordinates + '_z').dtype) +
+                    Grid_path + "/" + coordinates +
+                    "_z\n        </DataItem>\n")
             xdmf_output += "      </Geometry>\n"
             # Everything that isn't a coordinate is a "component"
             components = list(h5temporal.keys())
@@ -204,9 +215,10 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
                         (vector))
                     xdmf_output += data_item_vec
                     for index in ["_x", "_y", "_z"]:
-                        xdmf_output += (data_item + Grid_path + "/%s" %
-                                        (vector) + index + "\n" +
-                                        "        </DataItem>\n")
+                        xdmf_output += (
+                            data_item(h5temporal.get(vector + index).dtype) +
+                            Grid_path + "/%s" % (vector) + index + "\n" +
+                            "        </DataItem>\n")
                     xdmf_output += "        </DataItem>\n"
                     xdmf_output += "      </Attribute>\n"
                 elif (component.endswith("_y") or component.endswith("_z")):
@@ -220,8 +232,9 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
                         "      <Attribute Name=\"%s\" "
                         "AttributeType=\"Scalar\" Center=\"Node\">\n" %
                         (component))
-                    xdmf_output += data_item + Grid_path + (
-                        "/%s\n" % component) + "        </DataItem>\n"
+                    xdmf_output += data_item(
+                        h5temporal.get(component).dtype) + Grid_path + (
+                            "/%s\n" % component) + "        </DataItem>\n"
                     xdmf_output += "      </Attribute>\n"
             xdmf_output += "    </Grid>\n"
 
