@@ -13,6 +13,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/StaticCache.hpp"
 
 namespace Spectral {
@@ -66,7 +67,7 @@ template <ComplexRepresentation Representation>
 const CollocationMetadata<Representation>& cached_collocation_metadata(
     const size_t l_max) noexcept {
   const static auto lazy_collocation_cache =
-      make_static_cache<CacheRange<0, collocation_maximum_l_max>>(
+      make_static_cache<CacheRange<0_st, collocation_maximum_l_max>>(
           [](const size_t generator_l_max) noexcept {
             return CollocationMetadata<Representation>{generator_l_max};
           });

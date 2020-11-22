@@ -8,6 +8,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/StaticCache.hpp"
 
 /// \cond HIDDEN_SYMBOLS
@@ -32,8 +33,9 @@ const Matrix& Exponential<FilterIndex>::filter_matrix(const Mesh<1>& mesh) const
   };
 
   const static auto cache = make_static_cache<
-      CacheRange<
-          1, Spectral::maximum_number_of_points<Spectral::Basis::Legendre> + 1>,
+      CacheRange<1_st,
+                 Spectral::maximum_number_of_points<Spectral::Basis::Legendre> +
+                     1>,
       CacheEnumeration<Spectral::Basis, Spectral::Basis::Legendre,
                        Spectral::Basis::Chebyshev>,
       CacheEnumeration<Spectral::Quadrature, Spectral::Quadrature::Gauss,

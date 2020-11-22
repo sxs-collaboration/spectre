@@ -13,15 +13,16 @@
 #include "Utilities/TypeTraits/IsInteger.hpp"
 
 /// \ingroup UtilitiesGroup
-/// Range of values for StaticCache indices.  The `Start` is inclusive
+/// Range of integral values for StaticCache indices.  The `Start` is inclusive
 /// and the `End` is exclusive.  The range must not be empty.
-template <size_t Start, size_t End>
+template <auto Start, auto End>
 struct CacheRange {
+  static_assert(std::is_same_v<decltype(Start), decltype(End)>);
   static_assert(Start < End, "CacheRange must include at least one value");
-  constexpr static size_t start = Start;
-  constexpr static size_t end = End;
-  constexpr static size_t size = end - start;
-  using value_type = size_t;
+  constexpr static auto start = Start;
+  constexpr static auto end = End;
+  constexpr static auto size = end - start;
+  using value_type = std::remove_cv_t<decltype(start)>;
 };
 
 /// \ingroup UtilitiesGroup
@@ -39,7 +40,7 @@ struct CacheEnumeration {
 /// A cache of objects intended to be stored in a static variable.
 ///
 /// Objects can be accessed via a combination of several `size_t` and `enum`
-/// arguments. The range of each `size_t` argument is specified via a template
+/// arguments. The range of each integral argument is specified via a template
 /// parameter of type `CacheRange<start, end>`, giving the first and
 /// one-past-last values for the range. Each `enum` argument is specified by a
 /// template parameter of type `CacheEnumeration<EnumerationType, Members...>`
@@ -86,19 +87,20 @@ class StaticCache {
             Requires<not std::is_enum<T1>::value> = nullptr>
   auto generate_tuple(const T1 parameter) const noexcept {
     static_assert(
-        tt::is_integer_v<std::decay_t<T1>>,
+        tt::is_integer_v<std::remove_cv_t<T1>>,
         "The parameter passed for a CacheRange must be an integer type.");
-    return std::make_tuple(static_cast<size_t>(parameter),
-                           std::integral_constant<size_t, Range::start>{},
-                           std::make_index_sequence<Range::size>{});
+    return std::make_tuple(
+        static_cast<typename Range::value_type>(parameter),
+        std::integral_constant<typename Range::value_type, Range::start>{},
+        std::make_integer_sequence<typename Range::value_type, Range::size>{});
   }
 
   template <typename Range, typename T1,
             Requires<std::is_enum<T1>::value> = nullptr>
-  std::tuple<std::decay_t<T1>, Range> generate_tuple(const T1 parameter) const
-      noexcept {
+  std::tuple<std::remove_cv_t<T1>, Range> generate_tuple(
+      const T1 parameter) const noexcept {
     static_assert(
-        std::is_same<typename Range::value_type, std::decay_t<T1>>::value,
+        std::is_same<typename Range::value_type, std::remove_cv_t<T1>>::value,
         "Mismatched enum parameter type and cached type.");
     return {parameter, Range{}};
   }
@@ -109,18 +111,23 @@ class StaticCache {
     return cached_object;
   }
 
-  template <typename... IntegralConstantValues, size_t IndexOffset,
-            size_t... Is, typename... Args>
+  template <typename... IntegralConstantValues, auto IndexOffset, auto... Is,
+            typename... Args>
   const T& unwrap_cache(
-      std::tuple<size_t, std::integral_constant<size_t, IndexOffset>,
-                 std::index_sequence<Is...>>
+      std::tuple<
+          std::remove_cv_t<decltype(IndexOffset)>,
+          std::integral_constant<std::remove_cv_t<decltype(IndexOffset)>,
+                                 IndexOffset>,
+          std::integer_sequence<std::remove_cv_t<decltype(IndexOffset)>, Is...>>
           parameter0,
       Args... parameters) const noexcept {
     if (UNLIKELY(IndexOffset > std::get<0>(parameter0) or
-                 std::get<0>(parameter0) >= IndexOffset + sizeof...(Is))) {
-      ERROR("Index out of range: " << IndexOffset
-                                   << " <= " << std::get<0>(parameter0) << " < "
-                                   << IndexOffset + sizeof...(Is));
+                 std::get<0>(parameter0) >=
+                     IndexOffset +
+                         static_cast<decltype(IndexOffset)>(sizeof...(Is)))) {
+      ERROR("Index out of range: "
+            << IndexOffset << " <= " << std::get<0>(parameter0) << " < "
+            << IndexOffset + static_cast<decltype(IndexOffset)>(sizeof...(Is)));
     }
     // note that the act of assigning to the specified function pointer type
     // fixes the template arguments that need to be inferred.
@@ -129,7 +136,8 @@ class StaticCache {
         sizeof...(Is)>
         cache{{&StaticCache<Generator, T, Ranges...>::unwrap_cache<
             IntegralConstantValues...,
-            std::integral_constant<size_t, Is + IndexOffset>>...}};
+            std::integral_constant<decltype(IndexOffset),
+                                   Is + IndexOffset>>...}};
     // The array `cache` holds pointers to member functions, so we dereference
     // the pointer and invoke it on `this`.
     return (this->*gsl::at(cache, std::get<0>(parameter0) - IndexOffset))(
@@ -174,8 +182,8 @@ class StaticCache {
 /// Create a StaticCache, inferring the cached type from the generator.
 template <typename... Ranges, typename Generator>
 auto make_static_cache(Generator&& generator) noexcept {
-  using CachedType = std::decay_t<decltype(
+  using CachedType = std::remove_cv_t<decltype(
       generator(std::declval<typename Ranges::value_type>()...))>;
-  return StaticCache<std::decay_t<Generator>, CachedType, Ranges...>(
+  return StaticCache<std::remove_cv_t<Generator>, CachedType, Ranges...>(
       std::forward<Generator>(generator));
 }

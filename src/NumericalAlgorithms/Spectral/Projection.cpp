@@ -14,6 +14,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/StaticCache.hpp"
 
 namespace Spectral {
@@ -51,10 +52,10 @@ const Matrix& projection_matrix_mortar_to_element(
       const static auto cache = make_static_cache<
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>,
+          CacheRange<2_st, maximum_number_of_points<Basis::Legendre> + 1>,
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>(
+          CacheRange<2_st, maximum_number_of_points<Basis::Legendre> + 1>>(
           [](const Quadrature quadrature_element, const size_t extents_element,
              const Quadrature quadrature_mortar,
              const size_t extents_mortar) noexcept {
@@ -92,10 +93,10 @@ const Matrix& projection_matrix_mortar_to_element(
       const static auto cache = make_static_cache<
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>,
+          CacheRange<2_st, maximum_number_of_points<Basis::Legendre> + 1>,
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>([](
+          CacheRange<2_st, maximum_number_of_points<Basis::Legendre> + 1>>([](
           const Quadrature quadrature_element, const size_t extents_element,
           const Quadrature quadrature_mortar,
           const size_t extents_mortar) noexcept {
@@ -172,10 +173,10 @@ const Matrix& projection_matrix_mortar_to_element(
       const static auto cache = make_static_cache<
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>,
+          CacheRange<2_st, maximum_number_of_points<Basis::Legendre> + 1>,
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>([](
+          CacheRange<2_st, maximum_number_of_points<Basis::Legendre> + 1>>([](
           const Quadrature quadrature_element, const size_t extents_element,
           const Quadrature quadrature_mortar,
           const size_t extents_mortar) noexcept {
@@ -253,10 +254,10 @@ const Matrix& projection_matrix_element_to_mortar(
       const static auto cache = make_static_cache<
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>,
+          CacheRange<2_st, maximum_number_of_points<Basis::Legendre> + 1>,
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>(
+          CacheRange<2_st, maximum_number_of_points<Basis::Legendre> + 1>>(
           make_interpolators([](const DataVector& x) noexcept { return x; }));
       return cache(mortar_mesh.quadrature(0), mortar_mesh.extents(0),
                    element_mesh.quadrature(0), element_mesh.extents(0));
@@ -266,10 +267,10 @@ const Matrix& projection_matrix_element_to_mortar(
       const static auto cache = make_static_cache<
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>,
+          CacheRange<2_st, maximum_number_of_points<Basis::Legendre> + 1>,
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>(
+          CacheRange<2_st, maximum_number_of_points<Basis::Legendre> + 1>>(
           make_interpolators([](const DataVector& x) noexcept {
             return DataVector(0.5 * (x + 1.));
           }));
@@ -281,10 +282,10 @@ const Matrix& projection_matrix_element_to_mortar(
       const static auto cache = make_static_cache<
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>,
+          CacheRange<2_st, maximum_number_of_points<Basis::Legendre> + 1>,
           CacheEnumeration<Quadrature, Quadrature::Gauss,
                            Quadrature::GaussLobatto>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>(
+          CacheRange<2_st, maximum_number_of_points<Basis::Legendre> + 1>>(
           make_interpolators([](const DataVector& x) noexcept {
             return DataVector(0.5 * (x - 1.));
           }));

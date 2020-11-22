@@ -12,6 +12,7 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/StaticCache.hpp"
 
 // IWYU pragma: no_forward_declare SpinWeighted
@@ -51,7 +52,7 @@ template <typename DerivativeKind, int Spin>
 const ComplexDiagonalModalOperator& cached_derivative_factors(
     const size_t l_max) noexcept {
   const static auto lazy_derivative_operator_cache =
-      make_static_cache<CacheRange<0, swsh_derivative_maximum_l_max>>(
+      make_static_cache<CacheRange<0_st, swsh_derivative_maximum_l_max>>(
           [](const size_t generator_l_max) noexcept {
             return derivative_factors<DerivativeKind, Spin>(generator_l_max);
           });

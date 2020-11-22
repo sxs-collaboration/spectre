@@ -8,7 +8,9 @@
 #include <utility>
 #include <vector>
 
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/StaticCache.hpp"
 
@@ -47,7 +49,7 @@ std::ostream& operator<<(std::ostream& os, Animal t) noexcept {
 SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
   /// [static_cache]
   const static auto cache =
-      make_static_cache<CacheRange<0, 3>, CacheRange<3, 5>>(
+      make_static_cache<CacheRange<0_st, 3_st>, CacheRange<3_st, 5_st>>(
           [](const size_t a, const size_t b) noexcept { return a + b; });
   CHECK(cache(0, 3) == 3);  // smallest entry
   CHECK(cache(2, 4) == 6);  // largest entry
@@ -55,11 +57,11 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
 
   std::vector<std::pair<size_t, size_t>> calls;
   const auto cache2 =
-      make_static_cache<CacheRange<0, 3>, CacheRange<3, 5>>([&calls](
-          const size_t a, const size_t b) noexcept {
-        calls.emplace_back(a, b);
-        return a + b;
-      });
+      make_static_cache<CacheRange<0_st, 3_st>, CacheRange<3_st, 5_st>>(
+          [&calls](const size_t a, const size_t b) noexcept {
+            calls.emplace_back(a, b);
+            return a + b;
+          });
   // cache is lazy, shouldn't have called at all before retrieving
   CHECK(calls.empty());
 
@@ -140,6 +142,12 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
   ](const Color color) noexcept { return std::string{MakeString{} << color}; });
   CHECK(simple_enum_cache(Color::Red) == "Red");
   /// [static_cache_with_enum]
+
+  const auto int_cache = make_static_cache<CacheRange<-5, 10>>(
+      [](const int val) noexcept { return pow<3>(val); });
+  CHECK(int_cache(-3) == -27);
+  CHECK(int_cache(2) == 8);
+
   const auto enum_cache = make_static_cache<
       CacheEnumeration<Color, Color::Red, Color::Green, Color::Purple>>(
       enum_generator_tuple);
@@ -150,7 +158,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
 
   const auto enum_size_t_cache = make_static_cache<
       CacheEnumeration<Color, Color::Red, Color::Green, Color::Purple>,
-      CacheRange<3, 5>>(enum_generator_tuple);
+      CacheRange<3_st, 5_st>>(enum_generator_tuple);
   for (const auto color : {Color::Red, Color::Green, Color::Purple}) {
     CHECK(enum_size_t_cache(color, 3) ==
           std::make_tuple(3, static_cast<size_t>(color) + 1, 3));
@@ -161,7 +169,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
   /// [static_cache_with_enum_and_numeric]
   const auto simple_enum_size_t_enum_cache = make_static_cache<
       CacheEnumeration<Color, Color::Red, Color::Green, Color::Purple>,
-      CacheRange<3, 5>,
+      CacheRange<3_st, 5_st>,
       CacheEnumeration<Animal, Animal::Goldendoodle, Animal::Labradoodle,
                        Animal::Poodle>>(
       [](const Color color, const size_t value, const Animal animal) noexcept {
@@ -174,7 +182,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
   /// [static_cache_with_enum_and_numeric]
   const auto enum_size_t_enum_cache = make_static_cache<
       CacheEnumeration<Color, Color::Red, Color::Green, Color::Purple>,
-      CacheRange<3, 5>,
+      CacheRange<3_st, 5_st>,
       CacheEnumeration<Animal, Animal::Goldendoodle, Animal::Labradoodle,
                        Animal::Poodle>>(enum_generator_tuple);
   for (const auto color : {Color::Red, Color::Green, Color::Purple}) {
