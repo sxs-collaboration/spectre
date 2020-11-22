@@ -13,5 +13,6 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/Poisson/"
   "${LIBRARY_SOURCES}"
-  "CoordinateMaps;DataStructures;Domain;PoissonSolutions;Spectral;Utilities"
+  "CoordinateMaps;DataStructures;Domain;Poisson\
+;PoissonSolutions;Spectral;Utilities"
   )
