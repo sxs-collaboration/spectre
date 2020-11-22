@@ -43,6 +43,7 @@ environment differently, read on!
 * [NumPy](http://www.numpy.org/) 1.10 or later
 * [SciPy](https://www.scipy.org)
 * [matplotlib](https://matplotlib.org/)
+* [PyYAML](https://pyyaml.org/)
 
 #### Optional:
 * [Pybind11](https://pybind11.readthedocs.io) 2.6.0 or later for SpECTRE Python
