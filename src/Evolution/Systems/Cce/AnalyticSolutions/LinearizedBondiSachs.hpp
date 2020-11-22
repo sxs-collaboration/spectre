@@ -67,6 +67,9 @@ struct LinearizedBondiSachs : public SphericalMetricData {
     static type lower_bound() noexcept { return 0.0; }
   };
 
+  static constexpr Options::String help{
+    "A linearized Bondi-Sachs analytic solution"};
+
   using options = tmpl::list<InitialModes, ExtractionRadius, Frequency>;
 
   WRAPPED_PUPable_decl_template(LinearizedBondiSachs);  // NOLINT

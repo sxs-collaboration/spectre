@@ -8,6 +8,7 @@
 #include <optional>
 #include <string>
 
+#include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachs.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
 #include "Evolution/Systems/Cce/Initialize/NoIncomingRadiation.hpp"
@@ -118,6 +119,40 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
 
   TestHelpers::test_creation<std::unique_ptr<::Cce::InitializeJ::InitializeJ>,
                              Cce::OptionTags::InitializeJ>("InverseCubic");
+  TestHelpers::test_creation<std::unique_ptr<::Cce::Solutions::WorldtubeData>,
+                             Cce::OptionTags::AnalyticSolution>(
+      "BouncingBlackHole:\n"
+      "  Period: 40.0\n"
+      "  ExtractionRadius: 30.0\n"
+      "  Mass: 1.0\n"
+      "  Amplitude: 2.0");
+  TestHelpers::test_creation<std::unique_ptr<::Cce::Solutions::WorldtubeData>,
+                             Cce::OptionTags::AnalyticSolution>(
+      "GaugeWave:\n"
+      "  ExtractionRadius: 40.0\n"
+      "  Mass: 1.0\n"
+      "  Frequency: 0.5\n"
+      "  Amplitude: 0.1\n"
+      "  PeakTime: 50.0\n"
+      "  Duration: 10.0");
+  TestHelpers::test_creation<std::unique_ptr<::Cce::Solutions::WorldtubeData>,
+                             Cce::OptionTags::AnalyticSolution>(
+      "LinearizedBondiSachs:\n"
+      "  ExtractionRadius: 40.0\n"
+      "  InitialModes: [[0.20, 0.10], [0.08, 0.04]]\n"
+      "  Frequency: 0.2");
+  TestHelpers::test_creation<std::unique_ptr<::Cce::Solutions::WorldtubeData>,
+                             Cce::OptionTags::AnalyticSolution>(
+      "RotatingSchwarzschild:\n"
+      "  ExtractionRadius: 20.0\n"
+      "  Mass: 1.0\n"
+      "  Frequency: 0.0");
+  TestHelpers::test_creation<std::unique_ptr<::Cce::Solutions::WorldtubeData>,
+                             Cce::OptionTags::AnalyticSolution>(
+      "TeukolskyWave:\n"
+      "  ExtractionRadius: 40.0\n"
+      "  Amplitude: 0.1\n"
+      "  Duration: 3.0");
 
   const std::string filename = "OptionTagsTestCceR0100.h5";
   if (file_system::check_if_file_exists(filename)) {
