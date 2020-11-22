@@ -73,6 +73,8 @@ struct TeukolskyWave : public SphericalMetricData {
 
   std::unique_ptr<WorldtubeData> get_clone() const noexcept override;
 
+  void pup(PUP::er& p) noexcept override;
+
  private:
   /*
    * The A coefficient is calculated as

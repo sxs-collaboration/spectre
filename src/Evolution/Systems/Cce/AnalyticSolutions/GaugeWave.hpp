@@ -101,6 +101,9 @@ struct GaugeWave : public SphericalMetricData {
             double amplitude, double peak_time, double duration) noexcept;
 
   std::unique_ptr<WorldtubeData> get_clone() const noexcept override;
+
+  void pup(PUP::er& p) noexcept override;
+
  private:
   double coordinate_wave_function(double time) const noexcept;
 

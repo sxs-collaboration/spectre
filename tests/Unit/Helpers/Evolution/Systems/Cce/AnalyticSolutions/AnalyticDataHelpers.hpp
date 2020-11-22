@@ -15,6 +15,7 @@
 #include "Evolution/Systems/Cce/AnalyticSolutions/SphericalMetricData.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Framework/Pypp.hpp"
+#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfLapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfShift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfLapse.hpp"
@@ -111,6 +112,23 @@ struct SphericalSolutionWrapper : public SphericalSolution {
         CHECK_ITERABLE_CUSTOM_APPROX(dr_lhs, dr_rhs, custom_approx);
       }
     }
+  }
+
+  void test_serialize_and_deserialize(const size_t l_max,
+                                      const double time) noexcept {
+    const size_t size =
+        Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+    tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>
+        expected_spherical_metric{size};
+    this->spherical_metric(make_not_null(&expected_spherical_metric), l_max,
+                           time);
+    auto serialized_and_deserialized_solution =
+        serialize_and_deserialize(*this);
+    tnsr::aa<DataVector, 3, ::Frame::Spherical<::Frame::Inertial>>
+        local_spherical_metric{size};
+    serialized_and_deserialized_solution.spherical_metric(
+        make_not_null(&local_spherical_metric), l_max, time);
+    CHECK(expected_spherical_metric == local_spherical_metric);
   }
 
  protected:

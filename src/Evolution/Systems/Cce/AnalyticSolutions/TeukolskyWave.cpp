@@ -311,6 +311,12 @@ void TeukolskyWave::variables_impl(
        4.0 * pow<4>(time - extraction_radius_));
 }
 
+void TeukolskyWave::pup(PUP::er& p) noexcept {
+  SphericalMetricData::pup(p);
+  p | amplitude_;
+  p | duration_;
+}
+
 PUP::able::PUP_ID TeukolskyWave::my_PUP_ID = 0;
 /// \endcond
 }  // namespace Cce::Solutions

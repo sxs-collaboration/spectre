@@ -113,6 +113,12 @@ void RotatingSchwarzschild::variables_impl(
   get(*news).data() = 0.0;
 }
 
+void RotatingSchwarzschild::pup(PUP::er& p) noexcept {
+  SphericalMetricData::pup(p);
+  p | mass_;
+  p | frequency_;
+}
+
 PUP::able::PUP_ID RotatingSchwarzschild::my_PUP_ID = 0;
 /// \endcond
 }  // namespace Cce::Solutions

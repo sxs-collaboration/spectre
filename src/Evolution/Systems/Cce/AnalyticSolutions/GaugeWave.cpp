@@ -200,6 +200,15 @@ void GaugeWave::variables_impl(
   get(*news).data() = 0.0;
 }
 
+void GaugeWave::pup(PUP::er& p) noexcept {
+  SphericalMetricData::pup(p);
+  p | mass_;
+  p | frequency_;
+  p | amplitude_;
+  p | peak_time_;
+  p | duration_;
+}
+
 PUP::able::PUP_ID GaugeWave::my_PUP_ID = 0;
 /// \endcond
 }  // namespace Cce::Solutions
