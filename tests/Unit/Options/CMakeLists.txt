@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_CustomTypeConstruction.cpp
   Test_Factory.cpp
   Test_Options.cpp
+  Test_StdComplex.cpp
   )
 
 add_test_library(

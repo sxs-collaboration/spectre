@@ -20,6 +20,7 @@ spectre_target_headers(
   Options.hpp
   OptionsDetails.hpp
   ParseOptions.hpp
+  StdComplex.hpp
   )
 
 target_link_libraries(

@@ -14,6 +14,7 @@
 #include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Options/StdComplex.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
