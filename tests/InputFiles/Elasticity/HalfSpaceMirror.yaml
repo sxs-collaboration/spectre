@@ -1,13 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: SolveElasticHalfSpaceMirror
+# Executable: SolveElasticity3D
 # Check: parse;execute
 # ExpectedOutput:
 #   ElasticHalfSpaceMirrorReductions.h5
 #   ElasticHalfSpaceMirrorVolume0.h5
 
-AnalyticSolution:
+Background:
   HalfSpaceMirror:
     BeamWidth: 0.177
     Material:
@@ -17,6 +17,9 @@ AnalyticSolution:
     IntegrationIntervals: 350
     AbsoluteTolerance: 1e-12
     RelativeTolerance: 1e-10
+
+InitialGuess:
+  Zero:
 
 DomainCreator:
   Cylinder:

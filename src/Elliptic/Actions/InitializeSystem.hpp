@@ -26,15 +26,12 @@ namespace Actions {
  *
  * The system fields are initially set to zero.
  *
- * \note Currently the sources are always retrieved from an analytic solution.
- *
  * Uses:
- * - Metavariables:
- *   - `analytic_solution_tag`
  * - System:
  *   - `fields_tag`
  *   - `primal_fields`
  * - DataBox:
+ *   - `BackgroundTag`
  *   - `Tags::Mesh<Dim>`
  *   - `Tags::Coordinates<Dim, Frame::Inertial>`
  *
@@ -47,7 +44,7 @@ namespace Actions {
  * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
  * phase action list prior to this action.
  */
-template <typename System>
+template <typename System, typename BackgroundTag>
 struct InitializeSystem {
   using fields_tag = typename System::fields_tag;
   using fixed_sources_tag =
@@ -60,7 +57,7 @@ struct InitializeSystem {
             size_t Dim, typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& cache,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ElementId<Dim>& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -89,16 +86,15 @@ struct InitializeSystem {
                   num_grid_points, 0.};
         });
 
-    // Retrieve the sources of the elliptic system from the analytic solution,
-    // which defines the problem we want to solve.
-    // We need only retrieve sources for the primal fields, since the auxiliary
-    // fields will never be sourced.
+    // Retrieve the fixed-sources of the elliptic system from the background,
+    // which (along with the boundary conditions) define the problem we want to
+    // solve. We need only retrieve sources for the primal fields, since the
+    // auxiliary fields will never be sourced.
     typename fixed_sources_tag::type fixed_sources{num_grid_points, 0.};
-    fixed_sources.assign_subset(
-        Parallel::get<typename Metavariables::analytic_solution_tag>(cache)
-            .variables(inertial_coords,
-                       db::wrap_tags_in<::Tags::FixedSource,
-                                        typename System::primal_fields>{}));
+    fixed_sources.assign_subset(db::get<BackgroundTag>(box).variables(
+        inertial_coords, db::wrap_tags_in<::Tags::FixedSource,
+                                          typename System::primal_fields>{}));
+
     Initialization::mutate_assign<simple_tags>(
         make_not_null(&box), std::move(fields), std::move(fixed_sources));
     return std::make_tuple(std::move(box));
