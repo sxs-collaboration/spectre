@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   ApplyMatrices.cpp
   DynamicBuffer.cpp
+  FloatingPointType.cpp
   Index.cpp
   IndexIterator.cpp
   LeviCivitaIterator.cpp
@@ -33,6 +34,7 @@ spectre_target_headers(
   DiagonalModalOperator.hpp
   DynamicBuffer.hpp
   FixedHashMap.hpp
+  FloatingPointType.hpp
   GeneralIndexIterator.hpp
   IdPair.hpp
   Index.hpp

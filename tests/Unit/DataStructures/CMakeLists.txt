@@ -21,6 +21,7 @@ set(LIBRARY_SOURCES
   Test_DiagonalModalOperator.cpp
   Test_DynamicBuffer.cpp
   Test_FixedHashMap.cpp
+  Test_FloatingPointType.cpp
   Test_GeneralIndexIterator.cpp
   Test_IdPair.cpp
   Test_Index.cpp
