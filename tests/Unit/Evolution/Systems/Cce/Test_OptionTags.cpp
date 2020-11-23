@@ -8,7 +8,13 @@
 #include <optional>
 #include <string>
 
+#include "Evolution/Systems/Cce/AnalyticBoundaryDataManager.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/BouncingBlackHole.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/GaugeWave.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachs.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/RotatingSchwarzschild.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/TeukolskyWave.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
 #include "Evolution/Systems/Cce/Initialize/NoIncomingRadiation.hpp"
@@ -63,6 +69,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<
       Cce::Tags::InterfaceManagerInterpolationStrategy>(
       "InterfaceManagerInterpolationStrategy");
+  TestHelpers::db::test_simple_tag<Cce::Tags::AnalyticBoundaryDataManager>(
+      "AnalyticBoundaryDataManager");
   TestHelpers::db::test_simple_tag<Cce::Tags::InitializeJ>("InitializeJ");
 
   CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::LMax>("8") == 8_st);
@@ -162,8 +170,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       gr::Solutions::KerrSchild{1.0, {{0.2, 0.2, 0.2}}, {{0.0, 0.0, 0.0}}},
       filename, 4.0, 100.0, 0.0, 0.1, 8);
 
-  TestHelpers::db::test_simple_tag<Cce::Tags::H5WorldtubeBoundaryDataManager>(
-      "H5WorldtubeBoundaryDataManager");
   CHECK(Cce::Tags::H5WorldtubeBoundaryDataManager::create_from_options(
             8, filename, 3, std::make_unique<intrp::CubicSpanInterpolator>(),
             false, true, std::nullopt)
@@ -202,6 +208,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
 
   CHECK(Cce::InitializationTags::TargetStepSize::create_from_options(0.2) ==
         0.2);
+  CHECK(Cce::Tags::AnalyticBoundaryDataManager::create_from_options(
+            10.0, 8,
+            std::make_unique<Cce::Solutions::RotatingSchwarzschild>(10.0, 1.0,
+                                                                    0.5))
+            .get_l_max() == 8);
 
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);

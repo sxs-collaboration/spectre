@@ -8,6 +8,8 @@
 #include <optional>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Evolution/Systems/Cce/AnalyticBoundaryDataManager.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterpolationStrategies.hpp"
@@ -153,6 +155,13 @@ struct FixSpecNormalization {
       "automatically based on the `VersionHist.ver` data set in the H5. "
       "Typically, this should be set to true if the metric data is created "
       "from SpEC, and false otherwise."};
+  using group = Cce;
+};
+
+struct AnalyticSolution {
+  using type = std::unique_ptr<Solutions::WorldtubeData>;
+  static constexpr Options::String help{
+      "Analytic worldtube data for tests of CCE."};
   using group = Cce;
 };
 
@@ -497,5 +506,20 @@ struct InitializeJ : db::SimpleTag {
   }
 };
 
+/// A tag that constructs a `AnalyticBoundaryDataManager` from options
+struct AnalyticBoundaryDataManager : db::SimpleTag {
+  using type = ::Cce::AnalyticBoundaryDataManager;
+  using option_tags = tmpl::list<OptionTags::ExtractionRadius, OptionTags::LMax,
+                                 OptionTags::AnalyticSolution>;
+
+  static constexpr bool pass_metavariables = false;
+  static Cce::AnalyticBoundaryDataManager create_from_options(
+      const double extraction_radius, const size_t l_max,
+      const std::unique_ptr<Cce::Solutions::WorldtubeData>&
+          worldtube_data) noexcept {
+    return ::Cce::AnalyticBoundaryDataManager(l_max, extraction_radius,
+                                              worldtube_data->get_clone());
+  }
+};
 }  // namespace Tags
 }  // namespace Cce

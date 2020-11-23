@@ -60,8 +60,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<Cce::Tags::JbarQMinus2EthBeta>(
       "JbarQMinus2EthBeta");
   TestHelpers::db::test_simple_tag<Cce::Tags::BondiR>("R");
-  TestHelpers::db::test_simple_tag<Cce::Tags::AnalyticBoundaryDataManager>(
-      "AnalyticBoundaryDataManager");
 
   TestHelpers::db::test_simple_tag<Cce::Tags::Psi0>("Psi0");
   TestHelpers::db::test_simple_tag<Cce::Tags::Psi1>("Psi1");
