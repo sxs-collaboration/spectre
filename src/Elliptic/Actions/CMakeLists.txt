@@ -6,5 +6,5 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   InitializeAnalyticSolution.hpp
-  InitializeSystem.hpp
+  InitializeFixedSources.hpp
   )
