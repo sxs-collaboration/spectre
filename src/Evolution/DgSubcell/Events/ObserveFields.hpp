@@ -138,10 +138,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       " * Tensors listed in Tensors template parameter\n"
       " * Error(*) = errors in AnalyticSolutionTensors\n"
       "            = value - analytic solution\n"
-      "\n"
-      "Warning: Currently, only one volume observation event can be\n"
-      "triggered at a given time.  Causing multiple events to run at once\n"
-      "will produce unpredictable results.";
+      "\n";
 
   ObserveFields() = default;
 
