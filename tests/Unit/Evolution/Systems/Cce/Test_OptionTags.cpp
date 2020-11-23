@@ -178,6 +178,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(Cce::Tags::StartTimeFromFile::create_from_options(
             std::optional<double>{3.3}, "OptionTagsTestCceR0100.h5", false) ==
         3.3);
+  CHECK(Cce::Tags::SpecifiedStartTime::create_from_options(
+            std::optional<double>(2.0)) == 2.0);
 
   CHECK(Cce::Tags::EndTimeFromFile::create_from_options(
             std::optional<double>{}, "OptionTagsTestCceR0100.h5", false) ==
@@ -185,6 +187,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(Cce::Tags::EndTimeFromFile::create_from_options(
             std::optional<double>{2.2}, "OptionTagsTestCceR0100.h5", false) ==
         2.2);
+  CHECK(Cce::Tags::SpecifiedEndTime::create_from_options(
+            std::optional<double>(40.0)) == 40.0);
 
   CHECK(Cce::Tags::ObservationLMax::create_from_options(5_st) == 5_st);
   CHECK(Cce::InitializationTags::TargetStepSize::create_from_options(0.2) ==

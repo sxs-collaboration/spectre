@@ -375,8 +375,14 @@ struct SpecifiedStartTime : Tags::StartTime, db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::StartTime>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double start_time) noexcept {
-    return start_time;
+  static double create_from_options(
+      const std::optional<double> start_time) noexcept {
+    if (not start_time.has_value()) {
+      ERROR(
+          "The start time must be explicitly specified for the tag "
+          "`SpecifiedStartTime`");
+    }
+    return *start_time;
   }
 };
 
@@ -403,7 +409,7 @@ struct EndTimeFromFile : Tags::EndTime, db::SimpleTag {
     if (is_bondi_data) {
       BondiWorldtubeH5BufferUpdater h5_boundary_updater{filename};
       const auto& time_buffer = h5_boundary_updater.get_time_buffer();
-        return time_buffer[time_buffer.size() - 1];
+      return time_buffer[time_buffer.size() - 1];
     } else {
       MetricWorldtubeH5BufferUpdater h5_boundary_updater{filename};
       const auto& time_buffer = h5_boundary_updater.get_time_buffer();
@@ -431,8 +437,14 @@ struct SpecifiedEndTime : Tags::EndTime, db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::EndTime>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double end_time) noexcept {
-    return end_time;
+  static double create_from_options(
+      const std::optional<double> end_time) noexcept {
+    if (not end_time.has_value()) {
+      ERROR(
+          "The end time must be explicitly specified for the tag "
+          "`SpecifiedEndTime`");
+    }
+    return *end_time;
   }
 };
 
@@ -466,8 +478,7 @@ struct InterfaceManagerInterpolationStrategy : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::GhInterfaceManager>;
 
   static constexpr bool pass_metavariables = false;
-  static InterfaceManagers::InterpolationStrategy
-  create_from_options(
+  static InterfaceManagers::InterpolationStrategy create_from_options(
       const std::unique_ptr<InterfaceManagers::GhInterfaceManager>&
           interface_manager) noexcept {
     return interface_manager->get_interpolation_strategy();
