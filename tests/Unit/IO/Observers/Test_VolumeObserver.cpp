@@ -249,7 +249,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
                               std::get<0>(volume_data_fakes)[1]} ==
           read_extents[i]);
     for (const auto& tensor_component : std::get<1>(volume_data_fakes)) {
-      CHECK(tensor_component.data ==
+      CHECK(std::get<DataVector>(tensor_component.data) ==
             DataVector(
                 &(read_tensor_data[tensor_component.name][points_processed]),
                 stride));

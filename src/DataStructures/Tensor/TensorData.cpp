@@ -8,13 +8,22 @@
 #include <pup_stl.h>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/PupStlCpp17.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/StdHelpers.hpp"  // std::vector ostream
 
-TensorComponent::TensorComponent(std::string n, DataVector d) noexcept
-    : name(std::move(n)), data(std::move(d)) {}
+TensorComponent::TensorComponent(std::string in_name,
+                                 DataVector in_data) noexcept
+    : name(std::move(in_name)), data(std::move(in_data)) {}
+
+TensorComponent::TensorComponent(std::string in_name,
+                                 std::vector<float> in_data) noexcept
+    : name(std::move(in_name)), data(std::move(in_data)) {}
 
 void TensorComponent::pup(PUP::er& p) noexcept {
   p | name;
@@ -22,7 +31,15 @@ void TensorComponent::pup(PUP::er& p) noexcept {
 }
 
 std::ostream& operator<<(std::ostream& os, const TensorComponent& t) noexcept {
-  return os << "(" << t.name << ", " << t.data << ")";
+  if (t.data.index() == 0) {
+    return os << "(" << t.name << ", " << std::get<DataVector>(t.data) << ")";
+  } else if (t.data.index() == 1) {
+    return os << "(" << t.name << ", " << std::get<std::vector<float>>(t.data)
+              << ")";
+  } else {
+    ERROR("Unknown index value (" << t.data.index()
+                                  << ") in std::variant of tensor component.");
+  }
 }
 
 bool operator==(const TensorComponent& lhs,

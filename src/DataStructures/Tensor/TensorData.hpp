@@ -7,6 +7,7 @@
 #include <iosfwd>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
@@ -28,11 +29,12 @@ class er;
  */
 struct TensorComponent {
   TensorComponent() = default;
-  TensorComponent(std::string n, DataVector d) noexcept;
+  TensorComponent(std::string in_name, DataVector in_data) noexcept;
+  TensorComponent(std::string in_name, std::vector<float> in_data) noexcept;
 
   void pup(PUP::er& p) noexcept;  // NOLINT
   std::string name{};
-  DataVector data{};
+  std::variant<DataVector, std::vector<float>> data{};
 };
 
 std::ostream& operator<<(std::ostream& os, const TensorComponent& t) noexcept;

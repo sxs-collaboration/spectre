@@ -179,7 +179,8 @@ void test_observe(
             });
         CHECK(it != tensor_data->end());
         if (it != tensor_data->end()) {
-          CHECK(it->data == interpolant.interpolate(expected));
+          CHECK(std::get<DataVector>(it->data) ==
+                interpolant.interpolate(expected));
         }
         ++num_components_observed;
       };
