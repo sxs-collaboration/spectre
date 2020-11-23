@@ -188,7 +188,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",
       l_max, 1, output_news_libsharp_modes);
   CHECK_ITERABLE_APPROX(output_news.data(), get(expected_news).data());
   CHECK(approx(output_news_data[0]) == time);
-  CHECK(data_set_name == "/expected_news");
+  CHECK(data_set_name == "/News_expected");
 }
 }  // namespace
 }  // namespace Cce
