@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
 #include <cstddef>
 #include <pup.h>
 #include <string>
@@ -13,17 +14,20 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
-#include "Elliptic/Actions/InitializeFixedSources.hpp"
+#include "Elliptic/Actions/InitializeFields.hpp"
 #include "Elliptic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 
@@ -31,16 +35,22 @@ struct ScalarFieldTag : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
-struct System {
-  using fields_tag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
-  using primal_fields = tmpl::list<ScalarFieldTag>;
+struct AuxiliaryFieldTag : db::SimpleTag {
+  using type = tnsr::i<DataVector, 1>;
 };
 
-struct Background {
-  static tuples::TaggedTuple<Tags::FixedSource<ScalarFieldTag>> variables(
+struct System {
+  using fields_tag =
+      Tags::Variables<tmpl::list<ScalarFieldTag, AuxiliaryFieldTag>>;
+};
+
+struct InitialGuess {
+  static tuples::TaggedTuple<ScalarFieldTag, AuxiliaryFieldTag> variables(
       const tnsr::I<DataVector, 1>& x,
-      tmpl::list<Tags::FixedSource<ScalarFieldTag>> /*meta*/) noexcept {
-    return {Scalar<DataVector>{get<0>(x)}};
+      tmpl::list<ScalarFieldTag, AuxiliaryFieldTag> /*meta*/) noexcept {
+    Scalar<DataVector> scalar_field{2. * get<0>(x)};
+    tnsr::i<DataVector, 1> aux_field{3. * get<0>(x)};
+    return {std::move(scalar_field), std::move(aux_field)};
   }
   // NOLINTNEXTLINE
   void pup(PUP::er& /*p*/) noexcept {}
@@ -59,24 +69,24 @@ struct ElementArray {
                          tmpl::list<domain::Tags::InitialRefinementLevels<1>,
                                     domain::Tags::InitialExtents<1>>>,
                      Actions::SetupDataBox, dg::Actions::InitializeDomain<1>>>,
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<elliptic::Actions::InitializeFixedSources<
-              typename Metavariables::system,
-              elliptic::Tags::Background<Background>>>>>;
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing,
+                             tmpl::list<elliptic::Actions::InitializeFields<
+                                 typename Metavariables::system,
+                                 elliptic::Tags::InitialGuess<InitialGuess>>>>>;
 };
 
 struct Metavariables {
   using system = System;
   using component_list = tmpl::list<ElementArray<Metavariables>>;
   using const_global_cache_tags =
-      tmpl::list<elliptic::Tags::Background<Background>>;
+      tmpl::list<elliptic::Tags::InitialGuess<InitialGuess>>;
   enum class Phase { Initialization, Testing, Exit };
 };
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeFixedSources",
+SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeFields",
                   "[Unit][Elliptic][Actions]") {
   domain::creators::register_derived_with_charm();
   // Which element we work with does not matter for this test
@@ -86,7 +96,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeFixedSources",
 
   using element_array = ElementArray<Metavariables>;
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {std::make_unique<Background>(), domain_creator.create_domain()}};
+      {std::make_unique<InitialGuess>(), domain_creator.create_domain()}};
   ActionTesting::emplace_component_and_initialize<element_array>(
       &runner, element_id,
       {domain_creator.initial_refinement_levels(),
@@ -104,8 +114,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeFixedSources",
                                                               element_id);
   };
 
+  // Test against the expression implemented above
   const auto& inertial_coords =
       get_tag(domain::Tags::Coordinates<1, Frame::Inertial>{});
-  CHECK(get(get_tag(::Tags::FixedSource<ScalarFieldTag>{})) ==
-        get<0>(inertial_coords));
+  CHECK(get(get_tag(ScalarFieldTag{})) == 2. * get<0>(inertial_coords));
+  CHECK(get<0>(get_tag(AuxiliaryFieldTag{})) == 3. * get<0>(inertial_coords));
 }

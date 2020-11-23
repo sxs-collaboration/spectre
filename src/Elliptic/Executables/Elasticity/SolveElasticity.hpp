@@ -9,6 +9,7 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
+#include "Elliptic/Actions/InitializeFields.hpp"
 #include "Elliptic/Actions/InitializeFixedSources.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
@@ -183,6 +184,7 @@ struct Metavariables {
               domain::Tags::BoundaryCoordinates<volume_dim>>,
           dg::Initialization::exterior_compute_tags<>, false, false>,
       typename linear_solver::initialize_element,
+      elliptic::Actions::InitializeFields<system, initial_guess_tag>,
       elliptic::Actions::InitializeFixedSources<system, background_tag>,
       Initialization::Actions::AddComputeTags<tmpl::list<
           Elasticity::Tags::ConstitutiveRelationReference<volume_dim,
