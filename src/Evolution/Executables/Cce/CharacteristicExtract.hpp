@@ -3,6 +3,13 @@
 
 #pragma once
 
+#include "Evolution/Systems/Cce/AnalyticSolutions/BouncingBlackHole.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/GaugeWave.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachs.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/RotatingSchwarzschild.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/SphericalMetricData.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/TeukolskyWave.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
@@ -29,6 +36,7 @@
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 
+template <template <typename> class BoundaryComponent>
 struct EvolutionMetavars {
   using system = Cce::System;
 
@@ -88,7 +96,7 @@ struct EvolutionMetavars {
   using cce_angular_coordinate_tags =
       tmpl::list<Cce::Tags::CauchyAngularCoords>;
 
-  using cce_boundary_component = Cce::H5WorldtubeBoundary<EvolutionMetavars>;
+  using cce_boundary_component = BoundaryComponent<EvolutionMetavars>;
 
   using component_list =
       tmpl::list<observers::ObserverWriter<EvolutionMetavars>,
@@ -116,7 +124,8 @@ struct EvolutionMetavars {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &disable_openblas_multithreading,
+    &setup_error_handling,
+    &disable_openblas_multithreading,
     &Parallel::register_derived_classes_with_charm<
         Cce::InitializeJ::InitializeJ>,
     &Parallel::register_derived_classes_with_charm<
@@ -125,7 +134,9 @@ static const std::vector<void (*)()> charm_init_node_funcs{
         Cce::WorldtubeBufferUpdater<Cce::cce_bondi_input_tags>>,
     &Parallel::register_derived_classes_with_charm<Cce::WorldtubeDataManager>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
-    &Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>};
+    &Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>,
+    &Parallel::register_derived_classes_with_charm<
+        Cce::Solutions::WorldtubeData>};
 
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
