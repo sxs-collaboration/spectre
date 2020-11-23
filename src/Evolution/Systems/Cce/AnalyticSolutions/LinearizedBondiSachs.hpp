@@ -12,6 +12,7 @@
 #include "DataStructures/SpinWeighted.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/SphericalMetricData.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
+#include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Options/StdComplex.hpp"
@@ -24,8 +25,69 @@ class DataVector;
 class ComplexDataVector;
 /// \endcond
 
-namespace Cce {
-namespace Solutions {
+namespace Cce::Solutions {
+namespace LinearizedBondiSachs_detail {
+namespace InitializeJ {
+// First hypersurface Initialization for the
+// `Cce::Solutions::LinearizedBondiSachs` analytic solution.
+//
+// This initialization procedure should not be used except when the
+// `Cce::Solutions::LinearizedBondiSachs` analytic solution is used,
+// as a consequence, this initial data generator is deliberately not
+// option-creatable; it should only be obtained from the `get_initialize_j`
+// function of `Cce::InitializeJ::LinearizedBondiSachs`.
+struct LinearizedBondiSachs : ::Cce::InitializeJ::InitializeJ {
+  WRAPPED_PUPable_decl_template(LinearizedBondiSachs);  // NOLINT
+  explicit LinearizedBondiSachs(CkMigrateMessage* /*unused*/) noexcept {}
+
+  LinearizedBondiSachs() = default;
+
+  LinearizedBondiSachs(double start_time, double frequency,
+                       std::complex<double> c_2a, std::complex<double> c_2b,
+                       std::complex<double> c_3a,
+                       std::complex<double> c_3b) noexcept;
+
+  std::unique_ptr<InitializeJ> get_clone() const noexcept override;
+
+  void operator()(
+      gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
+      gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_cauchy_coordinates,
+      gsl::not_null<
+          tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
+          angular_cauchy_coordinates,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
+      const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, size_t l_max,
+      size_t number_of_radial_points) const noexcept override;
+
+  void pup(PUP::er& /*p*/) noexcept override;
+ private:
+  std::complex<double> c_2a_ = std::numeric_limits<double>::signaling_NaN();
+  std::complex<double> c_2b_ = std::numeric_limits<double>::signaling_NaN();
+  std::complex<double> c_3a_ = std::numeric_limits<double>::signaling_NaN();
+  std::complex<double> c_3b_ = std::numeric_limits<double>::signaling_NaN();
+  double frequency_ = std::numeric_limits<double>::signaling_NaN();
+  double time_ = std::numeric_limits<double>::signaling_NaN();
+};
+}  // namespace InitializeJ
+
+// combine the (2,2) and (3,3) modes to collocation values for
+// `bondi_quantity`
+template <int Spin, typename FactorType>
+void assign_components_from_l_factors(
+    gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> bondi_quantity,
+    const FactorType& l_2_factor, const FactorType& l_3_factor, size_t l_max,
+    double frequency, double time) noexcept;
+
+// combine the (2,2) and (3,3) modes to time derivative collocation values for
+// `bondi_quantity`
+template <int Spin>
+void assign_du_components_from_l_factors(
+    gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> du_bondi_quantity,
+    const std::complex<double>& l_2_factor,
+    const std::complex<double>& l_3_factor, size_t l_max, double frequency,
+    double time) noexcept;
+}  // namespace LinearizedBondiSachs_detail
 
 /*!
  * \brief Computes the analytic data for a Linearized solution to the
@@ -50,7 +112,7 @@ namespace Solutions {
  */
 struct LinearizedBondiSachs : public SphericalMetricData {
   struct InitialModes {
-    using type = std::vector<std::complex<double>>;
+    using type = std::array<std::complex<double>, 2>;
     static constexpr Options::String help{
         "The initial modes of the Robinson-Trautman scalar"};
   };
@@ -80,31 +142,16 @@ struct LinearizedBondiSachs : public SphericalMetricData {
   // NOLINTNEXTLINE(hicpp-use-equals-default,modernize-use-equals-default)
   LinearizedBondiSachs() noexcept {}
 
-  LinearizedBondiSachs(const std::vector<std::complex<double>>& mode_constants,
-                       double extraction_radius, double frequency) noexcept;
+  LinearizedBondiSachs(
+      const std::array<std::complex<double>, 2>& mode_constants,
+      double extraction_radius, double frequency) noexcept;
 
   std::unique_ptr<WorldtubeData> get_clone() const noexcept override;
 
   void pup(PUP::er& p) noexcept override;
 
- private:
-  // combine the (2,2) and (3,3) modes to collocation values for
-  // `bondi_quantity`
-  template <int Spin>
-  void assign_components_from_l_factors(
-      gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> bondi_quantity,
-      const std::complex<double>& l_2_factor,
-      const std::complex<double>& l_3_factor, size_t l_max, double time) const
-      noexcept;
-
-  // combine the (2,2) and (3,3) modes to time derivative collocation values for
-  // `bondi_quantity`
-  template <int Spin>
-  void assign_du_components_from_l_factors(
-      gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> du_bondi_quantity,
-      const std::complex<double>& l_2_factor,
-      const std::complex<double>& l_3_factor, size_t l_max, double time) const
-      noexcept;
+  std::unique_ptr<Cce::InitializeJ::InitializeJ> get_initialize_j(
+      double start_time) const noexcept override;
 
  protected:
   /// A no-op as the linearized solution does not have substantial shared
@@ -121,7 +168,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    * \f[
    * J = \sqrt{12} ({}_2 Y_{2\,2} + {}_2 Y_{2\, -2})
    *  \mathrm{Re}(J_2(r) e^{i \nu u})
-   * + \sqrt{30} ({}_2 Y_{3\,3} - {}_2 Y_{3\, -3})
+   * + \sqrt{60} ({}_2 Y_{3\,3} - {}_2 Y_{3\, -3})
    * \mathrm{Re}(J_3(r) e^{i \nu u}),
    * \f]
    *
@@ -198,7 +245,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    * \f[
    * \partial_r J = \sqrt{12} ({}_2 Y_{2\,2} + {}_2 Y_{2\, -2})
    *  \mathrm{Re}(\partial_r J_2(r) e^{i \nu u})
-   * + \sqrt{30} ({}_2 Y_{3\,3} - {}_2 Y_{3\, -3})
+   * + \sqrt{60} ({}_2 Y_{3\,3} - {}_2 Y_{3\, -3})
    * \mathrm{Re}(\partial_r J_3(r) e^{i \nu u}),
    * \f]
    *
@@ -276,7 +323,7 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    * \f[
    * \partial_u J = \sqrt{12} ({}_2 Y_{2\,2} + {}_2 Y_{2\, -2})
    *  \mathrm{Re}(i \nu J_2(r)  e^{i \nu u})
-   * + \sqrt{30} ({}_2 Y_{3\,3} - {}_2 Y_{3\, -3})
+   * + \sqrt{60} ({}_2 Y_{3\,3} - {}_2 Y_{3\, -3})
    * \mathrm{Re}(i \nu J_3(r) e^{i \nu u}),
    * \f]
    *
@@ -493,9 +540,9 @@ struct LinearizedBondiSachs : public SphericalMetricData {
    * \cite Barkett2019uae,
    *
    * \f{align*}{
-   * N = \frac{1}{4 \sqrt{3}} ({}_{-2} Y_{2\, 2} + {}_{-2} Y_{2\,-2})
+   * N = \frac{1}{2 \sqrt{3}} ({}_{-2} Y_{2\, 2} + {}_{-2} Y_{2\,-2})
    * \Re\left(i \nu^3 C_{2 b} e^{i \nu u}\right)
-   * + \frac{1}{2 \sqrt{15}} ({}_{-2} Y_{3\, 3} - {}_{-2} Y_{3\, -3})
+   * + \frac{1}{\sqrt{15}} ({}_{-2} Y_{3\, 3} - {}_{-2} Y_{3\, -3})
    * \Re\left(- \nu^4 C_{3 b} e^{i \nu u} \right)
    * \f}
    */
@@ -511,5 +558,4 @@ struct LinearizedBondiSachs : public SphericalMetricData {
 
   double frequency_ = 0.0;
 };
-}  // namespace Solutions
-}  // namespace Cce
+}  // namespace Cce::Solutions

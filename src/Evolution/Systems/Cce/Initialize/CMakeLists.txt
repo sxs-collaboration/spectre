@@ -17,5 +17,6 @@ spectre_target_headers(
   InitializeJ.hpp
   InverseCubic.hpp
   NoIncomingRadiation.hpp
+  RegisterInitializeJWithCharm.hpp
   ZeroNonSmooth.hpp
   )

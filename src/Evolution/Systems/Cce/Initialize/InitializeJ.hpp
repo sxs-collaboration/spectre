@@ -80,9 +80,9 @@ struct GaugeAdjustInitialJ {
 };
 
 /// \cond
+struct InverseCubic;
 struct NoIncomingRadiation;
 struct ZeroNonSmooth;
-struct InverseCubic;
 /// \endcond
 
 /*!
