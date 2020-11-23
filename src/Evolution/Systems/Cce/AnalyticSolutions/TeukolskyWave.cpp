@@ -205,8 +205,9 @@ void TeukolskyWave::spherical_metric(
 
   get<1, 3>(*spherical_metric) = 0.0;
   get<2, 3>(*spherical_metric) = 0.0;
-  get<1, 1>(*spherical_metric) = 3.0 * square(local_cos_theta);
-  get<1, 2>(*spherical_metric) = -6.0 * local_sin_theta * local_cos_theta *
+  get<1, 1>(*spherical_metric) =
+      1.0 + coefficient_a * (2.0 - 3.0 * square(local_sin_theta));
+  get<1, 2>(*spherical_metric) = -3.0 * local_sin_theta * local_cos_theta *
                                  extraction_radius_ * coefficient_b;
   get<2, 2>(*spherical_metric) =
       (1.0 + 3.0 * square(local_sin_theta) * coefficient_c - coefficient_a) *
@@ -239,12 +240,13 @@ void TeukolskyWave::dr_spherical_metric(
     dr_spherical_metric->get(0, a) = 0.0;
   }
 
-  get<1, 1>(*dr_spherical_metric) = 0.0;
+  get<1, 1>(*dr_spherical_metric) =
+      dr_coefficient_a * (2.0 - 3.0 * square(local_sin_theta));
   get<1, 3>(*dr_spherical_metric) = 0.0;
   get<2, 3>(*dr_spherical_metric) = 0.0;
 
   get<1, 2>(*dr_spherical_metric) =
-      -6.0 * local_sin_theta * local_cos_theta *
+      -3.0 * local_sin_theta * local_cos_theta *
       (coefficient_b + extraction_radius_ * dr_coefficient_b);
   get<2, 2>(*dr_spherical_metric) =
       (2.0 *
@@ -281,10 +283,11 @@ void TeukolskyWave::dt_spherical_metric(
     dt_spherical_metric->get(0, a) = 0.0;
   }
 
-  get<1, 1>(*dt_spherical_metric) = 0.0;
+  get<1, 1>(*dt_spherical_metric) =
+      dt_coefficient_a * (2.0 - 3.0 * square(local_sin_theta));
   get<1, 3>(*dt_spherical_metric) = 0.0;
   get<2, 3>(*dt_spherical_metric) = 0.0;
-  get<1, 2>(*dt_spherical_metric) = -6.0 * local_sin_theta * local_cos_theta *
+  get<1, 2>(*dt_spherical_metric) = -3.0 * local_sin_theta * local_cos_theta *
                                     extraction_radius_ * dt_coefficient_b;
   get<2, 2>(*dt_spherical_metric) =
       ((-dt_coefficient_a + 3.0 * square(local_sin_theta) * dt_coefficient_c) *
@@ -303,7 +306,7 @@ void TeukolskyWave::variables_impl(
     tmpl::type_<Tags::News> /*meta*/) const noexcept {
   const auto local_sin_theta = sin_theta(l_max);
   get(*news).data() =
-      std::complex<double>{6.0, 0.0} * square(local_sin_theta) * amplitude_ *
+      -std::complex<double>{6.0, 0.0} * square(local_sin_theta) * amplitude_ *
       exp(-square(time - extraction_radius_) / square(duration_)) *
       (time - extraction_radius_) / pow<10>(duration_) *
       (15.0 * pow<4>(duration_) -

@@ -222,7 +222,7 @@ struct TeukolskyWave : public SphericalMetricData {
    *
    * \f{align*}{
    * g_{tt} &= -1\\
-   * g_{rr} &= (1 + f_{rr}) \\
+   * g_{rr} &= (1 + A f_{rr}) \\
    * g_{r \theta} &= 2 B f_{r \theta} r\\
    * g_{\theta \theta} &= (1 + C f_{\theta \theta}^{(C)}
    * + A f_{\theta \theta}^{(A)}) r^2\\
@@ -295,7 +295,8 @@ struct TeukolskyWave : public SphericalMetricData {
    * form
    *
    * \f{align*}{
-   * \partial_r g_{r \theta} &= 2 f_{r \theta} (B + r \partial_r B)\\
+   * \partial_r g_{rr} &= f_{r r} \partial_r A \\
+   * \partial_r g_{r \theta} &= f_{r \theta} (B + r \partial_r B)\\
    * \partial_r g_{\theta \theta} &= 2 (1 + C f_{\theta \theta}^{(C)}
    * + A f_{\theta \theta}^{(A)}) r
    * + (\partial_r C f_{\theta \theta}^{(C)}
@@ -347,7 +348,8 @@ struct TeukolskyWave : public SphericalMetricData {
    * form
    *
    * \f{align*}{
-   * \partial_t g_{r \theta} &= 2 f_{r \theta} r \partial_t B\\
+   * \partial_t g_{rr} &= f_{r r} \partial_t A \\
+   * \partial_t g_{r \theta} &= f_{r \theta} r \partial_t B\\
    * \partial_t g_{\theta \theta} &=
    * (\partial_t C f_{\theta \theta}^{(C)}
    * + \partial_t A f_{\theta \theta}^{(A)}) r^2 \\
@@ -393,7 +395,7 @@ struct TeukolskyWave : public SphericalMetricData {
    * \details The value of the news is
    *
    * \f{align*}{
-   * N = - \frac{3 \sin^2 \theta}{4} \partial_u^5 F(u)
+   * N = \frac{3 \sin^2 \theta}{4} \partial_u^5 F(u)
    * \f}
    *
    * where \f$F(u)\f$ is the pulse profile, taken to be
@@ -405,7 +407,7 @@ struct TeukolskyWave : public SphericalMetricData {
    * So, the news expands to
    *
    * \f[
-   * N = \frac{6 a e^{-u^2/k^2} u}{k^{10}} \left(15 k^4 - 20 k^2 u^2
+   * N = -\frac{6 a e^{-u^2/k^2} u}{k^{10}} \left(15 k^4 - 20 k^2 u^2
    * + 4 u^4\right)
    * \f]
    *
