@@ -88,7 +88,8 @@ struct mock_characteristic_evolution {
           typename Metavariables::evolved_coordinates_variables_tag,
           typename Metavariables::evolved_swsh_tag>,
       Actions::InitializeCharacteristicEvolutionScri<
-          typename Metavariables::scri_values_to_observe>>;
+          typename Metavariables::scri_values_to_observe,
+          typename Metavariables::cce_boundary_component>>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
 

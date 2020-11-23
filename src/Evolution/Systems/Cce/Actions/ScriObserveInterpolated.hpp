@@ -27,6 +27,10 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
+/// \cond
+template <typename Metavariables>
+struct AnalyticWorldtubeBoundary;
+/// \endcond
 namespace Actions {
 namespace detail {
 // Provide a nicer name for the output h5 files for some of the uglier
@@ -64,7 +68,10 @@ void correct_weyl_scalars_for_inertial_time(
  * \details This uses the `ScriPlusInterpolationManager` to perform the
  * interpolations of all requested scri quantities (determined by
  * `scri_values_to_observe` in the metavariables), and write them to disk using
- * `observers::threadedActions::WriteSimpleData`.
+ * `observers::threadedActions::WriteSimpleData`. When using an analytic
+ * worldtube solution, this action also uses the `AnalyticBoundaryDataManager`
+ * to output the expected News value at the appropriate asymptotically inertial
+ * time.
  *
  * \note This action also uses the `Tags::EthInertialRetardedTime`, interpolated
  * to the inertial frame, to perform the coordinate transformations presented in
@@ -202,6 +209,13 @@ struct ScriObserveInterpolated {
                 make_not_null(&goldberg_modes), make_not_null(&data_to_write),
                 file_legend, l_max, observation_l_max, cache);
           });
+      // output the expected news associated with the time value interpolated at
+      // scri+.
+      if constexpr (tmpl::list_contains_v<DbTags,
+                                          Tags::AnalyticBoundaryDataManager>) {
+        db::get<Tags::AnalyticBoundaryDataManager>(box)
+            .template write_news<ParallelComponent>(cache, interpolation_time);
+      }
     }
     return std::forward_as_tuple(std::move(box));
   }

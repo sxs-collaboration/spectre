@@ -17,6 +17,11 @@
 #include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionVariables.hpp"
 #include "Evolution/Systems/Cce/Actions/InsertInterpolationScriData.hpp"
 #include "Evolution/Systems/Cce/Actions/ScriObserveInterpolated.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/BouncingBlackHole.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/GaugeWave.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachs.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/RotatingSchwarzschild.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/TeukolskyWave.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
@@ -87,7 +92,8 @@ struct mock_observer {
   using replace_these_simple_actions = tmpl::list<>;
   using with_these_simple_actions = tmpl::list<>;
 
-  using const_global_cache_tags = tmpl::list<observers::Tags::VolumeFileName>;
+  using const_global_cache_tags =
+      tmpl::list<observers::Tags::VolumeFileName, Tags::ObservationLMax>;
   using initialize_action_list =
       tmpl::list<::Actions::SetupDataBox,
                  observers::Actions::InitializeWriter<Metavariables>>;
@@ -119,7 +125,8 @@ struct mock_characteristic_evolution {
           typename Metavariables::evolved_coordinates_variables_tag,
           typename Metavariables::evolved_swsh_tag>,
       Actions::InitializeCharacteristicEvolutionScri<
-          typename Metavariables::scri_values_to_observe>,
+          typename Metavariables::scri_values_to_observe,
+          typename Metavariables::cce_boundary_component>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
@@ -188,6 +195,8 @@ struct test_metavariables {
                  Tags::EthInertialRetardedTime>;
 
   using observed_reduction_data_tags = tmpl::list<>;
+  using cce_boundary_component =
+      Cce::AnalyticWorldtubeBoundary<test_metavariables>;
 
   using component_list =
       tmpl::list<mock_characteristic_evolution<test_metavariables>,
@@ -221,6 +230,8 @@ ComplexDataVector compute_expected_field_from_pypp(
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
                   "[Unit][Cce]") {
   Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_derived_classes_with_charm<
+      Cce::Solutions::WorldtubeData>();
   using evolution_component = mock_characteristic_evolution<test_metavariables>;
   using observation_component = mock_observer<test_metavariables>;
   pypp::SetupLocalPythonEnvironment local_python_env{
@@ -231,7 +242,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
 
   const size_t number_of_radial_points = 6;
   const size_t l_max = 6;
-  const size_t observation_l_max = 3;
   const size_t scri_output_density = 1;
   const std::string filename = "ScriObserveInterpolatedTest_CceVolumeOutput";
 
@@ -239,14 +249,24 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
   const double target_step_size = 0.1;
   const size_t scri_interpolation_size = 3;
 
+  const double amplitude = 0.01 * value_dist(gen);
+  const double duration = 50.0;
+  const double extraction_radius = 100.0;
+  Solutions::TeukolskyWave analytic_solution{extraction_radius, amplitude,
+                                             duration};
+  const AnalyticBoundaryDataManager analytic_manager{
+    l_max, extraction_radius, analytic_solution.get_clone()};
+
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
-      {start_time, filename, l_max, number_of_radial_points,
-       std::make_unique<::TimeSteppers::RungeKutta3>(), scri_output_density,
-       observation_l_max}};
+      {start_time, filename, l_max, l_max, number_of_radial_points,
+       std::make_unique<::TimeSteppers::RungeKutta3>(), scri_output_density}};
 
   runner.set_phase(test_metavariables::Phase::Initialization);
+  // Serialize and deserialize to get around the lack of implicit copy
+  // constructor.
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size, scri_interpolation_size);
+      &runner, 0, target_step_size, scri_interpolation_size,
+      serialize_and_deserialize(analytic_manager));
   if (file_system::check_if_file_exists(filename + "0.h5")) {
     file_system::rm(filename + "0.h5", true);
   }
@@ -364,7 +384,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
             const auto expected_goldberg_modes =
                 Spectral::Swsh::libsharp_to_goldberg_modes(
                     Spectral::Swsh::swsh_transform(l_max, 1, expected), l_max);
-            for (size_t j = 0; j < square(observation_l_max + 1); ++j) {
+            for (size_t j = 0; j < square(l_max + 1); ++j) {
               CHECK(data_matrix(i, 2 * j + 1) ==
                     interpolation_approx(
                         real(expected_goldberg_modes.data()[j])));
@@ -374,6 +394,23 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
             }
           }
         });
+    const auto& dataset = read_file.get<h5::Dat>("/News_expected");
+    const Matrix data_matrix = dataset.get_data();
+    for (size_t i = 1; i < data_matrix.rows(); ++i) {
+      const ComplexModalVector analytic_news_modes =
+          Spectral::Swsh::libsharp_to_goldberg_modes(
+              Spectral::Swsh::swsh_transform(
+                  l_max, 1,
+                  get(get<Tags::News>(analytic_solution.variables(
+                      l_max, data_matrix(i, 0), tmpl::list<Tags::News>{})))),
+              l_max)
+              .data();
+      CAPTURE(i);
+      for (size_t j = 0; j < square(l_max + 1); ++j) {
+        CHECK(data_matrix(i, 2 * j + 1) == real(analytic_news_modes.data()[j]));
+        CHECK(data_matrix(i, 2 * j + 2) == imag(analytic_news_modes.data()[j]));
+      }
+    }
   }
   if (file_system::check_if_file_exists(filename + "0.h5")) {
     file_system::rm(filename + "0.h5", true);

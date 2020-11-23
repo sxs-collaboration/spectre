@@ -34,6 +34,7 @@
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
+#include "Utilities/NoSuchType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -52,7 +53,7 @@ struct mock_characteristic_evolution {
           typename Metavariables::evolved_coordinates_variables_tag,
           typename Metavariables::evolved_swsh_tag>,
       Actions::InitializeCharacteristicEvolutionScri<
-          typename Metavariables::scri_values_to_observe>,
+          typename Metavariables::scri_values_to_observe, NoSuchType>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;

@@ -78,7 +78,8 @@ struct mock_characteristic_evolution {
           typename Metavariables::evolved_coordinates_variables_tag,
           typename Metavariables::evolved_swsh_tag>,
       Actions::InitializeCharacteristicEvolutionScri<
-          typename Metavariables::scri_values_to_observe>,
+          typename Metavariables::scri_values_to_observe,
+          typename Metavariables::cce_boundary_component>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
@@ -183,7 +184,8 @@ SPECTRE_TEST_CASE(
                                                               1.0, frequency)};
   runner.set_phase(test_metavariables::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size, scri_plus_interpolation_order);
+      &runner, 0, target_step_size, scri_plus_interpolation_order,
+      serialize_and_deserialize(analytic_manager));
   // Serialize and deserialize to get around the lack of implicit copy
   // constructor.
   ActionTesting::emplace_component<worldtube_component>(
