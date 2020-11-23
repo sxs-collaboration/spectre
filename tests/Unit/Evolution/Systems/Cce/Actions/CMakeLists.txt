@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Cce_Actions")
 
 set(LIBRARY_SOURCES
+  Test_AnalyticBoundaryCommunication.cpp
   Test_CalculateScriInputs.cpp
   Test_CharacteristicEvolutionBondiCalculations.cpp
   Test_InitializeFirstHypersurface.cpp
@@ -31,6 +32,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   Cce
+  CceAnalyticSolutions
   GeneralRelativitySolutions
   Interpolation
   )

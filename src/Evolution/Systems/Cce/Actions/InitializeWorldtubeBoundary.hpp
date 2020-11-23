@@ -163,5 +163,44 @@ struct InitializeWorldtubeBoundary<GhWorldtubeBoundary<Metavariables>>
   using typename base_type::initialization_tags;
   using typename base_type::initialization_tags_to_keep;
 };
+
+/*!
+ * \ingroup ActionsGroup
+ * \brief Initializes an AnalyticWorldtubeBoundary
+ *
+ * \details Uses:
+ * - initialization tag
+ * `Cce::Tags::AnalyticBoundaryDataManager`,
+ * - const global cache tags `Tags::LMax`,
+ * `Tags::ExtractionRadius`.
+ *
+ * Databox changes:
+ * - Adds:
+ *   - `Tags::Variables<typename
+ *     Metavariables::cce_boundary_communication_tags>`
+ * - Removes: nothing
+ * - Modifies: nothing
+ *
+ * \note This action relies on the `SetupDataBox` aggregated initialization
+ * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
+ * phase action list prior to this action.
+ */
+template <typename Metavariables>
+struct InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>
+    : public detail::InitializeWorldtubeBoundaryBase<
+          InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>,
+          Tags::AnalyticBoundaryDataManager,
+          typename Metavariables::cce_boundary_communication_tags> {
+  using base_type = detail::InitializeWorldtubeBoundaryBase<
+      InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>,
+      Tags::AnalyticBoundaryDataManager,
+      typename Metavariables::cce_boundary_communication_tags>;
+  using base_type::apply;
+  using typename base_type::simple_tags;
+  using const_global_cache_tags =
+      tmpl::list<Tags::LMax, Tags::SpecifiedEndTime, Tags::SpecifiedStartTime>;
+  using typename base_type::initialization_tags;
+  using typename base_type::initialization_tags_to_keep;
+};
 }  // namespace Actions
 }  // namespace Cce

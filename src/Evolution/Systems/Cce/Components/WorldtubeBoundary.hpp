@@ -98,6 +98,49 @@ struct H5WorldtubeBoundary
   using typename base_type::phase_dependent_action_list;
   using end_time_tag = Tags::EndTimeFromFile;
 };
+
+/*!
+ * \brief Component that supplies CCE worldtube boundary data sourced from an
+ * analytic solution.
+ *
+ * \details The \ref DataBoxGroup associated with the worldtube boundary
+ * component contains a data manager (e.g. `AnalyticBoundaryDataManager`) that
+ * contains the analytic solution being provided. The data manager handles
+ * computation of the analytic solution boundary data when requested via
+ * the simple action `BoundaryComputeAndSendToEvolution`, at which point it will
+ * send the required collection of boundary quantities to the identified
+ * 'CharacteristicEvolution' component. It is assumed that the simple action
+ * `BoundaryComputeAndSendToEvolution` will only be called during the
+ * `Evolve` phase.
+ *
+ * Uses const global tags:
+ * - `Tags::LMax`
+ * - `Tags::SpecifiedEndTime`
+ *
+ * `Metavariables` must contain:
+ * - the `enum` `Phase` with at least `Initialization` and `Evolve` phases.
+ * - a type alias `cce_boundary_communication_tags` for the set of tags to send
+ *   from the worldtube to the evolution component. This will typically be
+ *   `Cce::Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>`.
+ */
+template <class Metavariables>
+struct AnalyticWorldtubeBoundary
+    : public WorldtubeComponentBase<AnalyticWorldtubeBoundary<Metavariables>,
+                                    Metavariables> {
+  using base_type =
+      WorldtubeComponentBase<AnalyticWorldtubeBoundary<Metavariables>,
+                             Metavariables>;
+  using base_type::execute_next_phase;
+  using base_type::initialize;
+  using typename base_type::chare_type;
+  using typename base_type::const_global_cache_tag_list;
+  using typename base_type::initialization_tags;
+  using typename base_type::metavariables;
+  using typename base_type::options;
+  using typename base_type::phase_dependent_action_list;
+  using end_time_tag = Tags::SpecifiedEndTime;
+};
+
 /*!
  * \brief Component that supplies CCE worldtube boundary data sourced from a
  * running GH system.
