@@ -9,6 +9,7 @@
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/Actions/UpdateGauge.hpp"
@@ -50,6 +51,9 @@ using swsh_boundary_tags_to_compute = tmpl::list<Tags::GaugeC, Tags::GaugeD>;
 using swsh_volume_tags_to_compute = tmpl::list<Tags::BondiJ>;
 
 template <typename Metavariables>
+struct dummy_boundary {};
+
+template <typename Metavariables>
 struct mock_characteristic_evolution {
   using simple_tags = db::AddSimpleTags<
       ::Tags::Variables<real_boundary_tags_to_compute>,
@@ -60,6 +64,7 @@ struct mock_characteristic_evolution {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
+  using const_global_cache_tags = tmpl::list<Tags::InitializeJ>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -100,8 +105,8 @@ SPECTRE_TEST_CASE(
 
   using component = mock_characteristic_evolution<metavariables>;
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {l_max, number_of_radial_points,
-       std::make_unique<InitializeJ::InverseCubic>()}};
+      {std::make_unique<InitializeJ::InverseCubic>(), l_max,
+       number_of_radial_points}};
 
   Variables<real_boundary_tags_to_compute> real_variables{
       Spectral::Swsh::number_of_swsh_collocation_points(l_max)};

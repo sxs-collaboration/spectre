@@ -8,6 +8,8 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
+#include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
@@ -117,6 +119,11 @@ struct WorldtubeData : public PUP::able {
   }
 
   void pup(PUP::er& p) noexcept override;
+
+  virtual std::unique_ptr<Cce::InitializeJ::InitializeJ> get_initialize_j(
+      const double /*start_time*/) const noexcept {
+    return std::make_unique<Cce::InitializeJ::InverseCubic>();
+  };
 
  protected:
   template <typename Tag>

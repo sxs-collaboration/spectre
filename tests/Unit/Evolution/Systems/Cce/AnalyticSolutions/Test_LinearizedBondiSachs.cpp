@@ -374,6 +374,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearizedBondiSachs",
   }
   Solutions::TestHelpers::check_adm_metric_quantities(
       boundary_data, spacetime_metric, dt_spacetime_metric, d_spacetime_metric);
+  Solutions::TestHelpers::test_initialize_j(
+      l_max, 5_st, extraction_radius, time,
+      std::make_unique<InitializeJ::InverseCubic>(),
+      boundary_solution.get_clone());
 }
 }  // namespace
 }  // namespace Cce::Solutions

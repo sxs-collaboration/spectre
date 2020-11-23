@@ -41,8 +41,7 @@
 namespace Cce {
 namespace {
 template <typename Metavariables>
-struct mock_analytic_worldtube_boundary
-    : AnalyticWorldtubeBoundary<Metavariables> {
+struct mock_analytic_worldtube_boundary {
   using component_being_mocked = AnalyticWorldtubeBoundary<Metavariables>;
   using replace_these_simple_actions = tmpl::list<>;
   using with_these_simple_actions = tmpl::list<>;

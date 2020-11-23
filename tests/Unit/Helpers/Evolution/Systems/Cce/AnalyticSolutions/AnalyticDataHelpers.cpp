@@ -11,7 +11,10 @@
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/Systems/Cce/AnalyticBoundaryDataManager.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/SphericalMetricData.hpp"
+#include "Evolution/Systems/Cce/BoundaryData.hpp"
+#include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -303,4 +306,47 @@ extract_dr_bondi_scalars_from_cartesian_metric(
   return {dr_bondi_beta, dr_bondi_u, dr_bondi_w, dr_bondi_j};
 }
 
+void test_initialize_j(
+    const size_t l_max, const size_t number_of_radial_points,
+    const double extraction_radius, const double time,
+    const std::unique_ptr<InitializeJ::InitializeJ> expected_initialize_j,
+    const std::unique_ptr<WorldtubeData> analytic_solution) noexcept {
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+  Variables<Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>
+      boundary_variables{number_of_angular_points};
+  AnalyticBoundaryDataManager analytic_manager{l_max, extraction_radius,
+                                               analytic_solution->get_clone()};
+  analytic_manager.populate_hypersurface_boundary_data(
+      make_not_null(&boundary_variables), time);
+  Scalar<SpinWeighted<ComplexDataVector, 2>> expected_j{
+      number_of_angular_points * number_of_radial_points};
+  Scalar<SpinWeighted<ComplexDataVector, 2>> test_j{number_of_angular_points *
+                                                    number_of_radial_points};
+  tnsr::i<DataVector, 3> expected_cartesian_coordinates{
+      number_of_angular_points};
+  tnsr::i<DataVector, 3> test_cartesian_coordinates{number_of_angular_points};
+  tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>
+      expected_angular_coordinates{number_of_angular_points};
+  tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>
+      test_angular_coordinates{number_of_angular_points};
+  (*(analytic_solution->get_initialize_j(time)))(
+      make_not_null(&test_j), make_not_null(&test_cartesian_coordinates),
+      make_not_null(&test_angular_coordinates),
+      get<Tags::BoundaryValue<Tags::BondiJ>>(boundary_variables),
+      get<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(boundary_variables),
+      get<Tags::BoundaryValue<Tags::BondiR>>(boundary_variables), l_max,
+      number_of_radial_points);
+  (*expected_initialize_j)(
+      make_not_null(&expected_j),
+      make_not_null(&expected_cartesian_coordinates),
+      make_not_null(&expected_angular_coordinates),
+      get<Tags::BoundaryValue<Tags::BondiJ>>(boundary_variables),
+      get<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(boundary_variables),
+      get<Tags::BoundaryValue<Tags::BondiR>>(boundary_variables), l_max,
+      number_of_radial_points);
+  CHECK(test_j == expected_j);
+  CHECK(test_cartesian_coordinates == expected_cartesian_coordinates);
+  CHECK(test_angular_coordinates == expected_angular_coordinates);
+}
 }  // namespace Cce::Solutions::TestHelpers
