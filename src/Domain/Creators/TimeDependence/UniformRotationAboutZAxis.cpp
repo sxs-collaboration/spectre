@@ -5,7 +5,9 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <unordered_map>
@@ -25,14 +27,15 @@
 #include "Utilities/Gsl.hpp"
 
 namespace domain {
-namespace creators {
-namespace time_dependence {
+namespace creators::time_dependence {
 
 template <size_t MeshDim>
 UniformRotationAboutZAxis<MeshDim>::UniformRotationAboutZAxis(
-    const double initial_time, const double angular_velocity,
-    std::string function_of_time_name) noexcept
+    const double initial_time,
+    const std::optional<double> initial_expiration_delta_t,
+    const double angular_velocity, std::string function_of_time_name) noexcept
     : initial_time_(initial_time),
+      initial_expiration_delta_t_(initial_expiration_delta_t),
       angular_velocity_(angular_velocity),
       function_of_time_name_(std::move(function_of_time_name)) {}
 
@@ -40,7 +43,8 @@ template <size_t MeshDim>
 std::unique_ptr<TimeDependence<MeshDim>>
 UniformRotationAboutZAxis<MeshDim>::get_clone() const noexcept {
   return std::make_unique<UniformRotationAboutZAxis>(
-      initial_time_, angular_velocity_, function_of_time_name_);
+      initial_time_, initial_expiration_delta_t_, angular_velocity_,
+      function_of_time_name_);
 }
 
 template <size_t MeshDim>
@@ -71,7 +75,10 @@ UniformRotationAboutZAxis<MeshDim>::functions_of_time() const noexcept {
   result[function_of_time_name_] =
       std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
           initial_time_,
-          std::array<DataVector, 3>{{{0.0}, {angular_velocity_}, {0.0}}});
+          std::array<DataVector, 3>{{{0.0}, {angular_velocity_}, {0.0}}},
+          initial_expiration_delta_t_
+              ? initial_time_ + *initial_expiration_delta_t_
+              : std::numeric_limits<double>::max());
   return result;
 }
 
@@ -99,6 +106,7 @@ template <size_t Dim>
 bool operator==(const UniformRotationAboutZAxis<Dim>& lhs,
                 const UniformRotationAboutZAxis<Dim>& rhs) noexcept {
   return lhs.initial_time_ == rhs.initial_time_ and
+         lhs.initial_expiration_delta_t_ == rhs.initial_expiration_delta_t_ and
          lhs.angular_velocity_ == rhs.angular_velocity_ and
          lhs.function_of_time_name_ == rhs.function_of_time_name_;
 }
@@ -125,8 +133,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (2, 3))
 #undef GET_DIM
 #undef INSTANTIATION
 /// \endcond
-}  // namespace time_dependence
-}  // namespace creators
+}  // namespace creators::time_dependence
 
 using Identity = CoordinateMaps::Identity<1>;
 using Rotation2d = CoordinateMaps::TimeDependent::Rotation<2>;

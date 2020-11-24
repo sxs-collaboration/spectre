@@ -138,13 +138,15 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Minmod",
               CubicScaleMap{10.0, "Expansion", "Expansion"});
 
   const double initial_time = 0.0;
+  const double expiration_time = 2.5;
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
   functions_of_time.insert(std::make_pair(
       "Expansion",
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time, std::array<DataVector, 3>{{{0.0}, {1.0}, {0.0}}})));
+          initial_time, std::array<DataVector, 3>{{{0.0}, {1.0}, {0.0}}},
+          expiration_time)));
 
   auto var = Scalar<DataVector>(mesh.number_of_grid_points(), 1234.);
 

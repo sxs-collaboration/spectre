@@ -53,10 +53,13 @@ class FunctionOfTimeUpdater {
 
   /// Computes the control signal, updates the FunctionOfTime and updates the
   /// TimescaleTuner
+  /// `expiration_time` is the time at which the FunctionOfTime is supposed
+  /// to expire, i.e. the time by which we demand that `modify` is
+  /// called again.
   void modify(
       gsl::not_null<domain::FunctionsOfTime::PiecewisePolynomial<DerivOrder>*>
           f_of_t,
-      double time) noexcept;
+      double time, double expiration_time) noexcept;
 
  private:
   Averager<DerivOrder> averager_;

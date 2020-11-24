@@ -155,13 +155,17 @@ void test_bbh_time_dependent_factory() {
           "    TimeDependence:\n"
           "      UniformTranslation:\n"
           "        InitialTime: 1.0\n"
+          "        InitialExpirationDeltaT: 9.0\n"
           "        Velocity: [2.3, -0.3, 0.5]\n"
           "        FunctionOfTimeNames: [TranslationX, TranslationY, "
           "TranslationZ]");
   const std::array<double, 4> times_to_check{{0.0, 4.4, 7.8}};
 
   constexpr double initial_time = 0.0;
+  constexpr double expiration_time = 10.0;
   constexpr double expected_time = 1.0; // matches InitialTime: 1.0 above
+  constexpr double expected_update_delta_t =
+      9.0;  // matches InitialExpirationDeltaT: 9.0 above
   std::array<DataVector, 3> function_of_time_coefficients_x{
       {{0.0}, {2.3}, {0.0}}};
   const std::array<DataVector, 3> function_of_time_coefficients_y{
@@ -177,27 +181,30 @@ void test_bbh_time_dependent_factory() {
           std::pair<std::string,
                     domain::FunctionsOfTime::PiecewisePolynomial<2>>{
               "TranslationX"s,
-              {expected_time, function_of_time_coefficients_x}},
+              {expected_time, function_of_time_coefficients_x,
+               expected_time + expected_update_delta_t}},
           std::pair<std::string,
                     domain::FunctionsOfTime::PiecewisePolynomial<2>>{
               "TranslationY"s,
-              {expected_time, function_of_time_coefficients_y}},
+              {expected_time, function_of_time_coefficients_y,
+               expected_time + expected_update_delta_t}},
           std::pair<std::string,
                     domain::FunctionsOfTime::PiecewisePolynomial<2>>{
               "TranslationZ"s,
-              {expected_time, function_of_time_coefficients_z}});
+              {expected_time, function_of_time_coefficients_z,
+               expected_time + expected_update_delta_t}});
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
   functions_of_time["TranslationX"] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time, function_of_time_coefficients_x);
+          initial_time, function_of_time_coefficients_x, expiration_time);
   functions_of_time["TranslationY"] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time, function_of_time_coefficients_y);
+          initial_time, function_of_time_coefficients_y, expiration_time);
   functions_of_time["TranslationZ"] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time, function_of_time_coefficients_z);
+          initial_time, function_of_time_coefficients_z, expiration_time);
 
   for (const double time : times_to_check) {
     test_binary_compact_object_construction(

@@ -116,6 +116,7 @@ void test() noexcept {
 
   const std::array<double, 3> velocity{{1.2, 0.2, -8.9}};
   const double initial_time = 0.0;
+  const double expiration_time = 4.5;
   // In 1d, the helper function create_coord_map will only use the first name,
   // i.e., TranslationX. In 2d, it uses the first two names, TranslationX and
   // TranslationY.
@@ -143,15 +144,18 @@ void test() noexcept {
   functions_of_time[functions_of_time_names[0]] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
           initial_time,
-          std::array<DataVector, 3>{{{0.0}, {velocity[0]}, {0.0}}});
+          std::array<DataVector, 3>{{{0.0}, {velocity[0]}, {0.0}}},
+          expiration_time);
   functions_of_time[functions_of_time_names[1]] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
           initial_time,
-          std::array<DataVector, 3>{{{0.0}, {velocity[1]}, {0.0}}});
+          std::array<DataVector, 3>{{{0.0}, {velocity[1]}, {0.0}}},
+          expiration_time);
   functions_of_time[functions_of_time_names[2]] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
           initial_time,
-          std::array<DataVector, 3>{{{0.0}, {velocity[2]}, {0.0}}});
+          std::array<DataVector, 3>{{{0.0}, {velocity[2]}, {0.0}}},
+          expiration_time);
 
   using MapPtr = std::unique_ptr<
       domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>>;

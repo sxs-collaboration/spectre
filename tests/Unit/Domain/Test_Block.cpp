@@ -142,7 +142,7 @@ void test_block_time_dependent() {
 
     functions_of_time["Translation"] =
         std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
-            0.0, std::array<DataVector, 3>{{{0.0}, {1.0}, {0.0}}});
+            0.0, std::array<DataVector, 3>{{{0.0}, {1.0}, {0.0}}}, 2.5);
 
     // Test external boundaries:
     CHECK((block.external_boundaries().size()) == 2 * Dim);

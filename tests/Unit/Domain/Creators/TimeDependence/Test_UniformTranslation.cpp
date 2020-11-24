@@ -28,9 +28,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace domain {
-namespace creators {
-namespace time_dependence {
+namespace domain::creators::time_dependence {
 
 namespace {
 using Translation = domain::CoordinateMaps::TimeDependent::Translation;
@@ -170,10 +168,11 @@ void test(const std::unique_ptr<TimeDependence<MeshDim>>& time_dep_unique_ptr,
 
 void test_equivalence() noexcept {
   {
-    UniformTranslation<1> ut0{1.0, {{2.0}}, {{"TranslationX"}}};
-    UniformTranslation<1> ut1{1.2, {{2.0}}, {{"TranslationX"}}};
-    UniformTranslation<1> ut2{1.0, {{3.0}}, {{"TranslationX"}}};
-    UniformTranslation<1> ut3{1.0, {{2.0}}, {{"TranslationY"}}};
+    UniformTranslation<1> ut0{1.0, 2.5, {{2.0}}, {{"TranslationX"}}};
+    UniformTranslation<1> ut1{1.2, 2.5, {{2.0}}, {{"TranslationX"}}};
+    UniformTranslation<1> ut2{1.0, 2.5, {{3.0}}, {{"TranslationX"}}};
+    UniformTranslation<1> ut3{1.0, 2.5, {{2.0}}, {{"TranslationY"}}};
+    UniformTranslation<1> ut4{1.0, 2.6, {{2.0}}, {{"TranslationX"}}};
     CHECK(ut0 == ut0);
     CHECK_FALSE(ut0 != ut0);
     CHECK(ut0 != ut1);
@@ -182,20 +181,24 @@ void test_equivalence() noexcept {
     CHECK_FALSE(ut0 == ut2);
     CHECK(ut0 != ut3);
     CHECK_FALSE(ut0 == ut3);
+    CHECK(ut0 != ut4);
+    CHECK_FALSE(ut0 == ut4);
   }
   {
     UniformTranslation<2> ut0{
-        1.0, {{2.0, 4.0}}, {{"TranslationX", "TranslationY"}}};
+        1.0, 2.5, {{2.0, 4.0}}, {{"TranslationX", "TranslationY"}}};
     UniformTranslation<2> ut1{
-        1.2, {{2.0, 4.0}}, {{"TranslationX", "TranslationY"}}};
+        1.2, 2.5, {{2.0, 4.0}}, {{"TranslationX", "TranslationY"}}};
     UniformTranslation<2> ut2{
-        1.0, {{3.0, 4.0}}, {{"TranslationX", "TranslationY"}}};
+        1.0, 2.5, {{3.0, 4.0}}, {{"TranslationX", "TranslationY"}}};
     UniformTranslation<2> ut3{
-        1.0, {{2.0, 5.0}}, {{"TranslationX", "TranslationY"}}};
+        1.0, 2.5, {{2.0, 5.0}}, {{"TranslationX", "TranslationY"}}};
     UniformTranslation<2> ut4{
-        1.0, {{2.0, 4.0}}, {{"TranslationZ", "TranslationY"}}};
+        1.0, 2.5, {{2.0, 4.0}}, {{"TranslationZ", "TranslationY"}}};
     UniformTranslation<2> ut5{
-        1.0, {{2.0, 4.0}}, {{"TranslationX", "TranslationZ"}}};
+        1.0, 2.5, {{2.0, 4.0}}, {{"TranslationX", "TranslationZ"}}};
+    UniformTranslation<2> ut6{
+        1.0, 2.6, {{2.0, 4.0}}, {{"TranslationX", "TranslationY"}}};
     CHECK(ut0 == ut0);
     CHECK_FALSE(ut0 != ut0);
     CHECK(ut0 != ut1);
@@ -208,40 +211,55 @@ void test_equivalence() noexcept {
     CHECK_FALSE(ut0 == ut4);
     CHECK(ut0 != ut5);
     CHECK_FALSE(ut0 == ut5);
+    CHECK(ut0 != ut6);
+    CHECK_FALSE(ut0 == ut6);
   }
   {
     UniformTranslation<3> ut0{
         1.0,
+        2.5,
         {{2.0, 4.0, 6.0}},
         {{"TranslationX", "TranslationY", "TranslationZ"}}};
     UniformTranslation<3> ut1{
         1.2,
+        2.5,
         {{2.0, 4.0, 6.0}},
         {{"TranslationX", "TranslationY", "TranslationZ"}}};
     UniformTranslation<3> ut2{
         1.0,
+        2.5,
         {{3.0, 4.0, 6.0}},
         {{"TranslationX", "TranslationY", "TranslationZ"}}};
     UniformTranslation<3> ut3{
         1.0,
+        2.5,
         {{2.0, 5.0, 6.0}},
         {{"TranslationX", "TranslationY", "TranslationZ"}}};
     UniformTranslation<3> ut4{
         1.0,
+        2.5,
         {{2.0, 4.0, 7.0}},
         {{"TranslationX", "TranslationY", "TranslationZ"}}};
     UniformTranslation<3> ut5{
         1.0,
+        2.5,
         {{2.0, 4.0, 6.0}},
         {{"TranslationW", "TranslationY", "TranslationZ"}}};
     UniformTranslation<3> ut6{
         1.0,
+        2.5,
         {{2.0, 4.0, 6.0}},
         {{"TranslationX", "TranslationW", "TranslationZ"}}};
     UniformTranslation<3> ut7{
         1.0,
+        2.5,
         {{2.0, 4.0, 6.0}},
         {{"TranslationX", "TranslationY", "TranslationW"}}};
+    UniformTranslation<3> ut8{
+        1.0,
+        2.6,
+        {{2.0, 4.0, 6.0}},
+        {{"TranslationX", "TranslationY", "TranslationZ"}}};
     CHECK(ut0 == ut0);
     CHECK_FALSE(ut0 != ut0);
     CHECK(ut0 != ut1);
@@ -258,12 +276,15 @@ void test_equivalence() noexcept {
     CHECK_FALSE(ut0 == ut6);
     CHECK(ut0 != ut7);
     CHECK_FALSE(ut0 == ut7);
+    CHECK(ut0 != ut8);
+    CHECK_FALSE(ut0 == ut8);
   }
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.UniformTranslation",
                   "[Domain][Unit]") {
   const double initial_time = 1.3;
+  const double update_delta_t = 2.5;
 
   {
     // 1d
@@ -271,13 +292,14 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.UniformTranslation",
     const std::array<std::string, 1> f_of_t_names{{"TranslationInX"}};
     const std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
         time_dep = std::make_unique<UniformTranslation<1>>(
-            initial_time, velocity, f_of_t_names);
+            initial_time, update_delta_t, velocity, f_of_t_names);
     test(time_dep, initial_time, f_of_t_names);
     test(time_dep->get_clone(), initial_time, f_of_t_names);
 
     test(TestHelpers::test_factory_creation<TimeDependence<1>>(
              "UniformTranslation:\n"
              "  InitialTime: 1.3\n"
+             "  InitialExpirationDeltaT: 2.5\n"
              "  Velocity: [2.4]\n"
              "  FunctionOfTimeNames: [TranslationInX]\n"),
          initial_time, f_of_t_names);
@@ -285,6 +307,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.UniformTranslation",
     test(TestHelpers::test_factory_creation<TimeDependence<1>>(
              "UniformTranslation:\n"
              "  InitialTime: 1.3\n"
+             "  InitialExpirationDeltaT: 2.5\n"
              "  Velocity: [2.4]\n"),
          initial_time, {{"TranslationX"}});
   }
@@ -296,13 +319,14 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.UniformTranslation",
         {"TranslationInX", "TranslationInY"}};
     const std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
         time_dep = std::make_unique<UniformTranslation<2>>(
-            initial_time, velocity, f_of_t_names);
+            initial_time, update_delta_t, velocity, f_of_t_names);
     test(time_dep, initial_time, f_of_t_names);
     test(time_dep->get_clone(), initial_time, f_of_t_names);
 
     test(TestHelpers::test_factory_creation<TimeDependence<2>>(
              "UniformTranslation:\n"
              "  InitialTime: 1.3\n"
+             "  InitialExpirationDeltaT: 2.5\n"
              "  Velocity: [2.4, 3.1]\n"
              "  FunctionOfTimeNames: [TranslationInX, TranslationInY]\n"),
          initial_time, f_of_t_names);
@@ -310,6 +334,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.UniformTranslation",
     test(TestHelpers::test_factory_creation<TimeDependence<2>>(
              "UniformTranslation:\n"
              "  InitialTime: 1.3\n"
+             "  InitialExpirationDeltaT: 2.5\n"
              "  Velocity: [2.4, 3.1]\n"),
          initial_time, {{"TranslationX", "TranslationY"}});
   }
@@ -321,13 +346,14 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.UniformTranslation",
         {"TranslationInX", "TranslationInY", "TranslationInZ"}};
     const std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
         time_dep = std::make_unique<UniformTranslation<3>>(
-            initial_time, velocity, f_of_t_names);
+            initial_time, update_delta_t, velocity, f_of_t_names);
     test(time_dep, initial_time, f_of_t_names);
     test(time_dep->get_clone(), initial_time, f_of_t_names);
 
     test(TestHelpers::test_factory_creation<TimeDependence<3>>(
              "UniformTranslation:\n"
              "  InitialTime: 1.3\n"
+             "  InitialExpirationDeltaT: Auto\n"
              "  Velocity: [2.4, 3.1, -1.2]\n"
              "  FunctionOfTimeNames: [TranslationInX, TranslationInY, "
              "TranslationInZ]\n"),
@@ -336,6 +362,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.UniformTranslation",
     test(TestHelpers::test_factory_creation<TimeDependence<3>>(
              "UniformTranslation:\n"
              "  InitialTime: 1.3\n"
+             "  InitialExpirationDeltaT: Auto\n"
              "  Velocity: [2.4, 3.1, -1.2]\n"),
          initial_time, {{"TranslationX", "TranslationY", "TranslationZ"}});
   }
@@ -344,6 +371,4 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.UniformTranslation",
 }
 }  // namespace
 
-}  // namespace time_dependence
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::time_dependence

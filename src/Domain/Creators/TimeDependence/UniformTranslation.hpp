@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -15,6 +16,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/Creators/TimeDependence/GenerateCoordinateMap.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -79,6 +81,14 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
     static constexpr Options::String help = {
         "The initial time of the functions of time"};
   };
+  /// \brief The time interval for updates of the functions of time.
+  struct InitialExpirationDeltaT {
+    using type = Options::Auto<double>;
+    static constexpr Options::String help = {
+        "The time interval for updates of the functions of time. If "
+        "Auto, then the functions of time do not expire, nor can they be "
+        "updated."};
+  };
   /// \brief The \f$x\f$-, \f$y\f$-, and \f$z\f$-velocity.
   struct Velocity {
     using type = std::array<double, MeshDim>;
@@ -106,7 +116,8 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
               domain::CoordinateMaps::TimeDependent::ProductOf3Maps<
                   Translation, Translation, Translation>>>>>;
 
-  using options = tmpl::list<InitialTime, Velocity, FunctionOfTimeNames>;
+  using options = tmpl::list<InitialTime, InitialExpirationDeltaT, Velocity,
+                             FunctionOfTimeNames>;
 
   static constexpr Options::String help = {
       "A spatially uniform translation initialized with a constant velocity."};
@@ -119,6 +130,7 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
   UniformTranslation& operator=(UniformTranslation&&) noexcept = default;
 
   UniformTranslation(double initial_time,
+                     std::optional<double> initial_expiration_delta_t,
                      const std::array<double, MeshDim>& velocity,
                      std::array<std::string, MeshDim> functions_of_time_names =
                          default_function_names()) noexcept;
@@ -147,6 +159,7 @@ class UniformTranslation final : public TimeDependence<MeshDim> {
                          const UniformTranslation<LocalDim>& rhs) noexcept;
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
+  std::optional<double> initial_expiration_delta_t_{};
   std::array<double, MeshDim> velocity_{};
   std::array<std::string, MeshDim> functions_of_time_names_{};
 };

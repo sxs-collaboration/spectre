@@ -138,6 +138,7 @@ void test_interval_factory() {
             "  TimeDependence:\n"
             "    UniformTranslation:\n"
             "      InitialTime: 1.0\n"
+            "      InitialExpirationDeltaT: 9.0\n"
             "      Velocity: [2.3]\n"
             "      FunctionOfTimeNames: [TranslationX]");
     const auto* interval_creator =
@@ -152,7 +153,7 @@ void test_interval_factory() {
             std::pair<std::string,
                       domain::FunctionsOfTime::PiecewisePolynomial<2>>{
                 "TranslationX",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}}}),
+                {1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}, 10.0}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
             CoordinateMaps::TimeDependent::Translation{"TranslationX"}));
   }

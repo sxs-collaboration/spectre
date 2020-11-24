@@ -85,13 +85,15 @@ std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
 make_single_expansion_functions_of_time() noexcept {
   const double initial_time = 0.0;
+  const double expiration_time = 10.0;
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
   functions_of_time.insert(std::make_pair(
       "Expansion",
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time, std::array<DataVector, 3>{{{0.0}, {1.0}, {0.0}}})));
+          initial_time, std::array<DataVector, 3>{{{0.0}, {1.0}, {0.0}}},
+          expiration_time)));
   return functions_of_time;
 }
 

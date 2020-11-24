@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -14,6 +15,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -59,6 +61,14 @@ class CubicScale final : public TimeDependence<MeshDim> {
     static constexpr Options::String help = {
         "The initial time of the functions of time"};
   };
+  /// \brief The initial time interval for updates of the functions of time.
+  struct InitialExpirationDeltaT {
+    using type = Options::Auto<double>;
+    static constexpr Options::String help = {
+        "The initial time interval for updates of the functions of time. If "
+        "Auto, then the functions of time do not expire, nor can they be "
+        "updated."};
+  };
   /// \brief The outer boundary or pivot point of the
   /// `domain::CoordinateMaps::TimeDependent::CubicScale` map
   struct OuterBoundary {
@@ -97,8 +107,9 @@ class CubicScale final : public TimeDependence<MeshDim> {
     }
   };
 
-  using options = tmpl::list<InitialTime, OuterBoundary, FunctionOfTimeNames,
-                             InitialExpansion, Velocity, Acceleration>;
+  using options =
+      tmpl::list<InitialTime, InitialExpirationDeltaT, OuterBoundary,
+                 FunctionOfTimeNames, InitialExpansion, Velocity, Acceleration>;
 
   static constexpr Options::String help = {
       "A spatial radial scaling either based on a cubic scaling or a simple\n"
@@ -118,6 +129,7 @@ class CubicScale final : public TimeDependence<MeshDim> {
   CubicScale& operator=(CubicScale&&) noexcept = default;
 
   CubicScale(double initial_time,
+             std::optional<double> initial_expiration_delta_t,
              double outer_boundary,
              std::array<std::string, 2> functions_of_time_names,
              const std::array<double, 2>& initial_expansion,
@@ -146,6 +158,7 @@ class CubicScale final : public TimeDependence<MeshDim> {
                          const CubicScale<LocalDim>& rhs) noexcept;
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
+  std::optional<double> initial_expiration_delta_t_{};
   double outer_boundary_{std::numeric_limits<double>::signaling_NaN()};
   std::array<std::string, 2> functions_of_time_names_{};
   std::array<double, 2> initial_expansion_{};

@@ -296,7 +296,7 @@ void fuzzy_test_block_and_element_logical_coordinates_time_dependent_brick(
     const size_t n_pts) noexcept {
   const auto uniform_translation =
       domain::creators::time_dependence::UniformTranslation<3>(
-          0.0, {{0.1, 0.2, 0.3}});
+          0.0, 2.5, {{0.1, 0.2, 0.3}});
   const auto brick = domain::creators::Brick(
       {{-0.1, -0.2, -0.3}}, {{0.1, 0.2, 0.3}}, {{false, false, false}},
       {{0, 0, 0}}, {{3, 3, 3}}, uniform_translation.get_clone());

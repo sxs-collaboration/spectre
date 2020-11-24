@@ -27,6 +27,7 @@ namespace {
 void cubic_scale_non_invertible(const double a0, const double b0,
                                 const double outer_boundary) noexcept {
   double t = 4.0;
+  const double delta_t = 20.0;
   constexpr size_t deriv_order = 2;
 
   const std::array<DataVector, deriv_order + 1> init_func_a{
@@ -37,8 +38,10 @@ void cubic_scale_non_invertible(const double a0, const double b0,
   using Polynomial = domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>;
   using FoftPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
   std::unordered_map<std::string, FoftPtr> f_of_t_list{};
-  f_of_t_list["expansion_a"] = std::make_unique<Polynomial>(t, init_func_a);
-  f_of_t_list["expansion_b"] = std::make_unique<Polynomial>(t, init_func_b);
+  f_of_t_list["expansion_a"] =
+      std::make_unique<Polynomial>(t, init_func_a, t + delta_t);
+  f_of_t_list["expansion_b"] =
+      std::make_unique<Polynomial>(t, init_func_b, t + delta_t);
 
   const FoftPtr& expansion_a_base = f_of_t_list.at("expansion_a");
   const FoftPtr& expansion_b_base = f_of_t_list.at("expansion_b");
@@ -75,8 +78,10 @@ void test_boundaries() {
         domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>;
     using FoftPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
     std::unordered_map<std::string, FoftPtr> f_of_t_list{};
-    f_of_t_list["expansion_a"] = std::make_unique<Polynomial>(t, init_func_a);
-    f_of_t_list["expansion_b"] = std::make_unique<Polynomial>(t, init_func_b);
+    f_of_t_list["expansion_a"] =
+        std::make_unique<Polynomial>(t, init_func_a, final_time);
+    f_of_t_list["expansion_b"] =
+        std::make_unique<Polynomial>(t, init_func_b, final_time);
 
     const FoftPtr& expansion_a_base = f_of_t_list.at("expansion_a");
     const FoftPtr& expansion_b_base = f_of_t_list.at("expansion_b");
@@ -166,10 +171,10 @@ void test(const bool linear_expansion) {
         domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>;
     using FoftPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
     std::unordered_map<std::string, FoftPtr> f_of_t_list{};
-    f_of_t_list["expansion_a"] =
-        std::make_unique<Polynomial>(initial_time, init_func_a);
-    f_of_t_list["expansion_b"] =
-        std::make_unique<Polynomial>(initial_time, init_func_b);
+    f_of_t_list["expansion_a"] = std::make_unique<Polynomial>(
+        initial_time, init_func_a, final_time);
+    f_of_t_list["expansion_b"] = std::make_unique<Polynomial>(
+        initial_time, init_func_b, final_time);
 
     const FoftPtr& expansion_a_base = f_of_t_list.at("expansion_a");
     const FoftPtr& expansion_b_base = f_of_t_list.at("expansion_b");

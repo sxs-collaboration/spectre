@@ -36,7 +36,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.TimeDependent.Translation",
   using Polynomial = domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>;
   using FoftPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
   std::unordered_map<std::string, FoftPtr> f_of_t_list{};
-  f_of_t_list["translation"] = std::make_unique<Polynomial>(t, init_func);
+  f_of_t_list["translation"] =
+      std::make_unique<Polynomial>(t, init_func, final_time + dt);
 
   const FoftPtr& f_of_t = f_of_t_list.at("translation");
 

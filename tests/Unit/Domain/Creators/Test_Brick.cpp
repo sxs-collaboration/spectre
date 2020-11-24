@@ -263,6 +263,7 @@ void test_brick_factory() {
             "  TimeDependence:\n"
             "    UniformTranslation:\n"
             "      InitialTime: 1.0\n"
+            "      InitialExpirationDeltaT: 9.0\n"
             "      Velocity: [2.3, -0.3, 0.5]\n"
             "      FunctionOfTimeNames: [TranslationX, TranslationY, "
             "TranslationZ]");
@@ -282,15 +283,15 @@ void test_brick_factory() {
             std::pair<std::string,
                       domain::FunctionsOfTime::PiecewisePolynomial<2>>{
                 "TranslationX",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}}},
+                {1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}, 10.0}},
             std::pair<std::string,
                       domain::FunctionsOfTime::PiecewisePolynomial<2>>{
                 "TranslationY",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {-0.3}, {0.0}}}}},
+                {1.0, std::array<DataVector, 3>{{{0.0}, {-0.3}, {0.0}}}, 10.0}},
             std::pair<std::string,
                       domain::FunctionsOfTime::PiecewisePolynomial<2>>{
                 "TranslationZ",
-                {1.0, std::array<DataVector, 3>{{{0.0}, {0.5}, {0.0}}}}}),
+                {1.0, std::array<DataVector, 3>{{{0.0}, {0.5}, {0.0}}}, 10.0}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
             Translation3D{Translation{"TranslationX"},
                           Translation{"TranslationY"},

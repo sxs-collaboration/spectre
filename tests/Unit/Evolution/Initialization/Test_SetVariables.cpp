@@ -152,7 +152,7 @@ template <size_t Dim, typename Metavariables>
 auto emplace_component(
     const gsl::not_null<ActionTesting::MockRuntimeSystem<Metavariables>*>
         runner,
-    const double initial_time) {
+    const double initial_time, const double expiration_time) {
   using comp = component<Dim, Metavariables>;
 
   const auto logical_coords = logical_coordinates(Mesh<Dim>{
@@ -173,7 +173,8 @@ auto emplace_component(
   functions_of_time.insert(std::make_pair(
       expansion_factor,
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-          initial_time, std::array<DataVector, 3>{{{1.0}, {-0.1}, {0.0}}})));
+          initial_time, std::array<DataVector, 3>{{{1.0}, {-0.1}, {0.0}}},
+          expiration_time)));
   Variables<tmpl::list<Var>> var(get<0>(logical_coords).size(), 8.9999);
   Variables<tmpl::list<PrimVar>> prim_var(get<0>(logical_coords).size(),
                                           9.9999);
@@ -214,8 +215,9 @@ void test_analytic_solution() noexcept {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{{SystemAnalyticSolution{}}};
   const double initial_time = 1.3;
-  const auto inertial_coords =
-      emplace_component<Dim>(make_not_null(&runner), initial_time);
+  const double expiration_time = 2.5;
+  const auto inertial_coords = emplace_component<Dim>(
+      make_not_null(&runner), initial_time, expiration_time);
   Variables<tmpl::list<Var>> var(get<0>(inertial_coords).size(), 8.9999);
   Variables<tmpl::list<PrimVar>> prim_var(get<0>(inertial_coords).size(),
                                           9.9999);
@@ -257,8 +259,9 @@ void test_analytic_data() noexcept {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{{SystemAnalyticData{}}};
   const double initial_time = 1.3;
-  const auto inertial_coords =
-      emplace_component<Dim>(make_not_null(&runner), initial_time);
+  const double expiration_time = 2.5;
+  const auto inertial_coords = emplace_component<Dim>(
+      make_not_null(&runner), initial_time, expiration_time);
   Variables<tmpl::list<Var>> var(get<0>(inertial_coords).size(), 8.9999);
   Variables<tmpl::list<PrimVar>> prim_var(get<0>(inertial_coords).size(),
                                           9.9999);

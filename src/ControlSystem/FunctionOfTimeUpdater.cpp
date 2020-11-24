@@ -28,7 +28,7 @@ void FunctionOfTimeUpdater<DerivOrder>::modify(
     const gsl::not_null<
         domain::FunctionsOfTime::PiecewisePolynomial<DerivOrder>*>
         f_of_t,
-    const double time) noexcept {
+    const double time, const double expiration_time) noexcept {
   if (averager_(time)) {
     std::array<DataVector, DerivOrder + 1> q_and_derivs = averager_(time).get();
     // get the time offset due to averaging
@@ -39,8 +39,11 @@ void FunctionOfTimeUpdater<DerivOrder>::modify(
     const DataVector control_signal =
         controller_(timescale_tuner_.current_timescale(), q_and_derivs,
                     t_offset_of_q, t_offset_of_qdot);
-    f_of_t->update(averager_.last_time_updated(), control_signal);
+    f_of_t->update(averager_.last_time_updated(), control_signal,
+                   expiration_time);
     timescale_tuner_.update_timescale({{q_and_derivs[0], q_and_derivs[1]}});
+  } else {
+    f_of_t->reset_expiration_time(expiration_time);
   }
 }
 

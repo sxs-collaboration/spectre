@@ -133,8 +133,8 @@ struct ReadSpecThirdOrderPiecewisePolynomial {
         }
       }
       spec_functions_of_time[spectre_name] =
-          domain::FunctionsOfTime::PiecewisePolynomial<3>(start_time,
-                                                          initial_coefficients);
+          domain::FunctionsOfTime::PiecewisePolynomial<3>(
+              start_time, initial_coefficients, start_time);
 
       // Loop over the remaining times, updating the function of time
       DataVector highest_derivative(number_of_components);
@@ -148,8 +148,8 @@ struct ReadSpecThirdOrderPiecewisePolynomial {
             highest_derivative[a] =
                 dat_data(row, 5 + (max_deriv + 1) * a + max_deriv);
           }
-          spec_functions_of_time[spectre_name].update(time_last_updated,
-                                                      highest_derivative);
+          spec_functions_of_time[spectre_name].update(
+              time_last_updated, highest_derivative, time_last_updated);
         } else {
           file.reset();
           ERROR("Non-monotonic time found in FunctionOfTime data. "

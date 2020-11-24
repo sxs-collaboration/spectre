@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -17,6 +18,7 @@
 #include "Domain/Creators/TimeDependence/GenerateCoordinateMap.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -81,6 +83,14 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
     static constexpr Options::String help = {
         "The initial time of the function of time"};
   };
+  /// \brief The time interval for updates of the functions of time.
+  struct InitialExpirationDeltaT {
+    using type = Options::Auto<double>;
+    static constexpr Options::String help = {
+        "The initial time interval for updates of the functions of time. If "
+        "Auto, then the functions of time do not expire, nor can they be "
+        "updated."};
+  };
   /// \brief The \f$x\f$-, \f$y\f$-, and \f$z\f$-velocity.
   struct AngularVelocity {
     using type = double;
@@ -104,7 +114,8 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
                                      domain::CoordinateMaps::TimeDependent::
                                          ProductOf2Maps<Rotation, Identity>>>>;
 
-  using options = tmpl::list<InitialTime, AngularVelocity, FunctionOfTimeName>;
+  using options = tmpl::list<InitialTime, InitialExpirationDeltaT,
+                             AngularVelocity, FunctionOfTimeName>;
 
   static constexpr Options::String help = {
       "A spatially uniform rotation about the z axis initialized with a "
@@ -120,7 +131,8 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
       default;
 
   UniformRotationAboutZAxis(
-      double initial_time, double angular_velocity,
+      double initial_time, std::optional<double> initial_expiration_delta_t,
+      double angular_velocity,
       std::string function_of_time_name = "RotationAngle") noexcept;
 
   auto get_clone() const noexcept
@@ -146,6 +158,7 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
       const UniformRotationAboutZAxis<LocalDim>& rhs) noexcept;
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
+  std::optional<double> initial_expiration_delta_t_{};
   double angular_velocity_{std::numeric_limits<double>::signaling_NaN()};
   std::string function_of_time_name_{};
 };

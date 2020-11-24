@@ -39,10 +39,12 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller", "[ControlSystem][Unit]") {
   std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
       std::make_unique<
           domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>>(
-          t, std::array<DataVector, deriv_order + 1>{
-                 {{std::sin(freq * t)},
-                  {freq * std::cos(freq * t)},
-                  {-square(freq) * std::sin(freq * t)}}});
+          t,
+          std::array<DataVector, deriv_order + 1>{
+              {{std::sin(freq * t)},
+               {freq * std::cos(freq * t)},
+               {-square(freq) * std::sin(freq * t)}}},
+          t + dt);
   auto& f_of_t_derived =
       dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>&>(
           *f_of_t);
@@ -71,7 +73,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller", "[ControlSystem][Unit]") {
                                         t_offset, t_offset);
 
     t += dt;
-    f_of_t_derived.update(t, {U});
+    f_of_t_derived.update(t, {U}, t + dt);
 
     // update the timescale
     tst.update_timescale({{q_and_derivs[0], q_and_derivs[1]}});
@@ -108,10 +110,12 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets",
   std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
       std::make_unique<
           domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>>(
-          t, std::array<DataVector, deriv_order + 1>{
-                 {{std::sin(freq * t)},
-                  {freq * std::cos(freq * t)},
-                  {-square(freq) * std::sin(freq * t)}}});
+          t,
+          std::array<DataVector, deriv_order + 1>{
+              {{std::sin(freq * t)},
+               {freq * std::cos(freq * t)},
+               {-square(freq) * std::sin(freq * t)}}},
+          t + dt);
   auto& f_of_t_derived =
       dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>&>(
           *f_of_t);
@@ -153,7 +157,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets",
         control_signal(tst.current_timescale(), avg_qs, t_offset, t_offset);
 
     t += dt;
-    f_of_t_derived.update(t, {U});
+    f_of_t_derived.update(t, {U}, t + dt);
 
     // update the timescale
     tst.update_timescale({{avg_qs[0], avg_qs[1]}});
@@ -190,10 +194,12 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets_DontAverageQ",
   std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
       std::make_unique<
           domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>>(
-          t, std::array<DataVector, deriv_order + 1>{
-                 {{std::sin(freq * t)},
-                  {freq * std::cos(freq * t)},
-                  {-square(freq) * std::sin(freq * t)}}});
+          t,
+          std::array<DataVector, deriv_order + 1>{
+              {{std::sin(freq * t)},
+               {freq * std::cos(freq * t)},
+               {-square(freq) * std::sin(freq * t)}}},
+          t + dt);
   auto& f_of_t_derived =
       dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>&>(
           *f_of_t);
@@ -237,7 +243,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets_DontAverageQ",
         control_signal(tst.current_timescale(), avg_qs, q_t_offset, t_offset);
 
     t += dt;
-    f_of_t_derived.update(t, {U});
+    f_of_t_derived.update(t, {U}, t + dt);
 
     // update the timescale
     tst.update_timescale({{avg_qs[0], avg_qs[1]}});

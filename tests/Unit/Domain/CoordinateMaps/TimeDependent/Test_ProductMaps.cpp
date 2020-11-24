@@ -159,7 +159,8 @@ void test_product_of_2_maps_time_dep() noexcept {
   using Polynomial = domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>;
   using FoftPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
   std::unordered_map<std::string, FoftPtr> functions_of_time{};
-  functions_of_time[f_of_t_name] = std::make_unique<Polynomial>(0.0, init_func);
+  functions_of_time[f_of_t_name] =
+      std::make_unique<Polynomial>(0.0, init_func, 4.0);
 
   {
     // Test one time-dependent and one time-independent map case.
@@ -232,10 +233,12 @@ void test_product_of_2_maps_time_dep() noexcept {
 
     functions_of_time[f_of_t_name_x] = std::make_unique<Polynomial>(
         0.0,
-        std::array<DataVector, deriv_order + 1>{{{1.0}, {-3.0}, {2.0}, {0.0}}});
+        std::array<DataVector, deriv_order + 1>{{{1.0}, {-3.0}, {2.0}, {0.0}}},
+        4.0);
     functions_of_time[f_of_t_name_y] = std::make_unique<Polynomial>(
         0.0,
-        std::array<DataVector, deriv_order + 1>{{{1.0}, {2.4}, {2.0}, {0.0}}});
+        std::array<DataVector, deriv_order + 1>{{{1.0}, {2.4}, {2.0}, {0.0}}},
+        4.0);
 
     const double x_source_a = -1.0;
     const double x_source_b = 1.0;
@@ -435,13 +438,16 @@ void test_product_of_3_maps() noexcept {
   std::unordered_map<std::string, FoftPtr> functions_of_time{};
   functions_of_time[f_of_t_name_x] = std::make_unique<Polynomial>(
       0.0,
-      std::array<DataVector, deriv_order + 1>{{{1.0}, {-3.0}, {1.3}, {0.0}}});
+      std::array<DataVector, deriv_order + 1>{{{1.0}, {-3.0}, {1.3}, {0.0}}},
+      4.0);
   functions_of_time[f_of_t_name_y] = std::make_unique<Polynomial>(
       0.0,
-      std::array<DataVector, deriv_order + 1>{{{1.0}, {2.4}, {2.0}, {0.0}}});
+      std::array<DataVector, deriv_order + 1>{{{1.0}, {2.4}, {2.0}, {0.0}}},
+      4.0);
   functions_of_time[f_of_t_name_z] = std::make_unique<Polynomial>(
       0.0,
-      std::array<DataVector, deriv_order + 1>{{{1.0}, {0.4}, {4.0}, {0.0}}});
+      std::array<DataVector, deriv_order + 1>{{{1.0}, {0.4}, {4.0}, {0.0}}},
+      4.0);
 
   {
     // Test one time-dependent and two time-independent map case.

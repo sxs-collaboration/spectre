@@ -29,6 +29,10 @@ class FunctionOfTime : public PUP::able {
   virtual auto get_clone() const noexcept
       -> std::unique_ptr<FunctionOfTime> = 0;
 
+  /// Returns the domain of validity of the function.
+  /// For FunctionsOfTime that allow a small amount of time extrapolation,
+  /// `time_bounds` tells you the bounds including the allowed extrapolation
+  /// interval.
   virtual std::array<double, 2> time_bounds() const noexcept = 0;
 
   virtual std::array<DataVector, 1> func(double t) const noexcept = 0;

@@ -656,10 +656,11 @@ void test_boundary_coordinates_moving_mesh() {
   const std::array<DataVector, 3> init_func_a{{{1.0}, {-0.1}, {0.0}}};
   const std::array<DataVector, 3> init_func_b{{{1.0}, {0.0}, {0.0}}};
   const double initial_time = 0.0;
+  const double expiration_time = 10.0;
   functions_of_time["ExpansionA"] =
-      std::make_unique<Polynomial>(initial_time, init_func_a);
+      std::make_unique<Polynomial>(initial_time, init_func_a, expiration_time);
   functions_of_time["ExpansionB"] =
-      std::make_unique<Polynomial>(initial_time, init_func_b);
+      std::make_unique<Polynomial>(initial_time, init_func_b, expiration_time);
 
   const auto perform_checks = [&functions_of_time, &times_to_check](
                                   const auto& element_id,
