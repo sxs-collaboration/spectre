@@ -11,6 +11,7 @@ spectre_target_sources(
   BouncingBlackHole.cpp
   LinearizedBondiSachs.cpp
   GaugeWave.cpp
+  RobinsonTrautman.cpp
   RotatingSchwarzschild.cpp
   SphericalMetricData.cpp
   TeukolskyWave.cpp
@@ -24,6 +25,7 @@ spectre_target_headers(
   BouncingBlackHole.hpp
   LinearizedBondiSachs.hpp
   GaugeWave.hpp
+  RobinsonTrautman.hpp
   RotatingSchwarzschild.hpp
   SphericalMetricData.hpp
   TeukolskyWave.hpp

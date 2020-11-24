@@ -12,6 +12,7 @@
 #include "Evolution/Systems/Cce/AnalyticSolutions/BouncingBlackHole.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/GaugeWave.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachs.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/RobinsonTrautman.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/RotatingSchwarzschild.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/TeukolskyWave.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
@@ -137,6 +138,18 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "  ExtractionRadius: 40.0\n"
       "  InitialModes: [[0.20, 0.10], [0.08, 0.04]]\n"
       "  Frequency: 0.2");
+  TestHelpers::test_option_tag<Cce::OptionTags::AnalyticSolution>(
+      "RobinsonTrautman:\n"
+      "  InitialModes:\n"
+      "    - [0.0, 0.0]\n"
+      "    - [0.0, 0.0]\n"
+      "    - [0.0, 0.0]\n"
+      "    - [0.0, 0.0]\n"
+      "    - [1.0, 0.5]\n"
+      "  ExtractionRadius: 20.0\n"
+      "  LMax: 16\n"
+      "  Tolerance: 1e-10\n"
+      "  StartTime: 0.0");
   TestHelpers::test_option_tag<Cce::OptionTags::AnalyticSolution>(
       "RotatingSchwarzschild:\n"
       "  ExtractionRadius: 20.0\n"

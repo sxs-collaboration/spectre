@@ -23,12 +23,14 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace Cce {
+/// Analytic solutions for CCE worldtube data and corresponding waveform News
 namespace Solutions {
 
 /// \cond
 class BouncingBlackHole;
 class GaugeWave;
 class LinearizedBondiSachs;
+class RobinsonTrautman;
 class RotatingSchwarzschild;
 class TeukolskyWave;
 /// \endcond
@@ -71,7 +73,7 @@ class TeukolskyWave;
 struct WorldtubeData : public PUP::able {
   using creatable_classes =
       tmpl::list<BouncingBlackHole, GaugeWave, LinearizedBondiSachs,
-                 RotatingSchwarzschild, TeukolskyWave>;
+                 RobinsonTrautman, RotatingSchwarzschild, TeukolskyWave>;
 
   /// The set of available tags provided by the analytic solution
   using tags = tmpl::list<

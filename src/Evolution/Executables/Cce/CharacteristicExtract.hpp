@@ -6,6 +6,7 @@
 #include "Evolution/Systems/Cce/AnalyticSolutions/BouncingBlackHole.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/GaugeWave.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachs.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/RobinsonTrautman.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/RotatingSchwarzschild.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/SphericalMetricData.hpp"
 #include "Evolution/Systems/Cce/AnalyticSolutions/TeukolskyWave.hpp"
