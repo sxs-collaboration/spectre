@@ -263,7 +263,8 @@ def parse_args():
     parser.add_argument(
         '--file-prefix',
         required=True,
-        help="The common prefix of the H5 volume files to load")
+        help="The common prefix of the H5 volume files to load, excluding "
+        "the node number integer(s)")
     parser.add_argument(
         '--output',
         '-o',
