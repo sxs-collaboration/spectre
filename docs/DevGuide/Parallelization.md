@@ -56,7 +56,10 @@ specify the following:
   for one of the test executables is:
   \snippet Test_AlgorithmCore.cpp component_list_example
 - `using const_global_cache_tags`: a `tmpl::list` of tags that are
-  used to place items in the GlobalCache.  The alias may be
+  used to place const items in the GlobalCache.  The alias may be
+  omitted if the list is empty.
+- `using mutable_global_cache_tags`: a `tmpl::list` of tags that are
+  used to place mutable items in the GlobalCache.  The alias may be
   omitted if the list is empty.
 - `Phase`: an `enum class` that must contain at least `Initialization` and
   `Exit`. Phases are described in the next section.
@@ -201,12 +204,16 @@ Each %Parallel Component struct must have the following type aliases:
 5. `using const_global_cache_tags` is set to a `tmpl::list` of tags
    that are required by the `allocate_array` function of an array
    component, or simple actions called on the parallel component.
-   These tags correspond to items that are stored in the
+   These tags correspond to const items that are stored in the
    Parallel::GlobalCache (of which there is one copy per Charm++
    node).  The alias can be omitted if the list is empty.  (See
    `array_allocation_tags` below for specifying tags needed for the
    `allocate_array` function, but will not be added to the
    Parallel::GlobalCache.)
+6. `using mutable_global_cache_tags` is set to a `tmpl::list` of tags
+   that correspond to mutable items that are stored in the
+   Parallel::GlobalCache (of which there is one copy per Charm++
+   core).  The alias can be omitted if the list is empty.
 
 \note Array parallel components must also specify the type alias `using
 array_index`, which is set to the type that indexes the %Parallel Component
@@ -563,6 +570,107 @@ All elements of the array must call the same reductions in the same order. It is
 calls on all array elements occurred in the same order. It is **undefined**
 behavior if the contribute calls are made in different orders on different array
 elements.
+
+# Mutable items in the GlobalCache
+
+Most items in the GlobalCache are constant, and are specified
+by type aliases called `const_global_cache_tags` as
+described above. However, the GlobalCache can also store mutable
+items. Because of asynchronous execution, care must be taken when
+mutating items in the GlobalCache, as described below.
+
+A mutable item can be of any type, as long as that type is something
+that can be checked for whether it is "up-to-date".  Here "up-to-date"
+means that the item can be safely used (even read-only) without
+needing to be mutated first. For example, a mutable item might be a
+function of time that knows the range of times for which it is valid;
+the mutable item is then deemed up-to-date if it will be called for a
+time within its range of validity, and it is deemed not up-to-date if
+it will be called for a time outside its range of validity.  Thus the
+up-to-date status of a mutable item is determined by both the state of
+the item itself and by the code that wishes to use that item.
+
+## 1. Specification of mutable GlobalCache items
+
+Mutable GlobalCache items are specified by a
+type alias `mutable_global_cache_tags`, which is treated the same way
+as `const_global_cache_tags` for const items.
+
+## 2. Use of mutable GlobalCache items
+
+### 1. Checking if the item is up-to-date
+
+Because execution is asynchronous, any code that uses a mutable item
+in the GlobalCache must first check whether that item is up-to-date.
+The information about whether an item is up-to-date is assumed to be
+stored in the item itself.  For example, a mutable object stored in
+the GlobalCache might have type `std::map<temporal_id,T>` (for some
+type `T`), and then any code that uses the stored object can check
+whether an entry exists for a particular `temporal_id`.  To avoid
+race conditions, it is
+important that up-to-date checks are based on something that is
+independent of the order of mutation (like a `temporal_id`, and not
+like checking the size of a vector).
+
+To check an item, use the function
+`Parallel::mutable_cache_item_is_ready`, which returns a bool
+indicating whether the item is up-to-date.  If the item is up-to-date,
+then it can be used.  `Parallel::mutable_cache_item_is_ready` takes a
+lambda as an argument.  This lambda is passed a single argument: a
+const reference to the item being retrieved.  The lambda should
+determine whether the item is up-to-date. If so, it should return a
+default_constructed `std::optional<CkCallback>`; if not, it should
+return a `std::optional<CkCallback>` to a callback function that will
+be called on the next `Parallel::mutate` of that item. The callback
+will typically check again if the item is up-to-date and if so will
+execute some code that gets the item via `Parallel::get`.
+
+For the case of iterable actions, `Parallel::mutable_cache_item_is_ready`
+is typically called from the `is_ready` function of the iterable action,
+and the callback is `perform_algorithm()`.  In the example below, the
+vector is considered up-to-date if it is non-empty:
+
+\snippet Test_AlgorithmGlobalCache.cpp check_mutable_cache_item_is_ready
+
+Note that `Parallel::mutable_cache_item_is_ready` is called on a local
+core and does no parallel communication.
+
+### 2. Retrieving the item
+
+The item is retrieved using `Parallel::get` just like for constant items.
+For example, to retrieve the item `Tags::VectorOfDoubles`:
+\snippet Test_AlgorithmGlobalCache.cpp retrieve_mutable_cache_item
+
+Note that `Parallel::get` is called on a local core and does no
+parallel communication.
+
+Whereas we support getting *non-mutable* items in the GlobalCache from
+a DataBox via `db::get`, we intentionally do not support
+`db::get` of *mutable* items in the GlobalCache from a DataBox.
+The reason is that mutable
+items should be retrieved only after a `Parallel::mutable_cache_item_is_ready`
+check, and being able to retrieve a mutable item from a DataBox makes it
+difficult to enforce that check, especially when automatically-executing
+compute items are considered.
+
+## 3. Modifying a mutable GlobalCache item
+
+To modify a mutable item, pass `Parallel::mutate` two template
+parameters: the tag to mutate, and a struct with an `apply` function
+that does the mutating. `Parallel::mutate` takes two arguments:
+a proxy to the GlobalCache, and a tuple that is passed into the
+mutator function.  For the following example,
+
+\snippet Test_AlgorithmGlobalCache.cpp mutate_global_cache_item
+
+the mutator function is defined as below:
+\snippet Test_AlgorithmGlobalCache.cpp mutate_global_cache_item_mutator
+
+`Parallel::mutate` broadcasts to every core, where it calls the
+mutator function and then calls all the callbacks that have been set
+on that core by `Parallel::mutable_cache_item_is_ready`.  The
+`Parallel::mutate` operation is guaranteed to be thread-safe without
+any further action by the developer.
 
 # Charm++ Node and Processor Level Initialization Functions {#dev_guide_parallelization_charm_node_processor_level_initialization}
 

@@ -33,11 +33,13 @@ endfunction()
 
 add_algorithm_test(Test_AlgorithmCore)
 add_algorithm_test(Test_AlgorithmBadBoxApply)
+add_algorithm_test(Test_AlgorithmGlobalCache)
 add_algorithm_test(Test_AlgorithmNestedApply1)
 add_algorithm_test(Test_AlgorithmNestedApply2)
 add_algorithm_test(Test_AlgorithmParallel)
 add_algorithm_test(Test_AlgorithmNodelock)
 add_algorithm_test(Test_AlgorithmReduction)
+add_algorithm_test(Test_GlobalCache)
 
 # Test GlobalCache
 add_charm_module(Test_GlobalCache)
@@ -47,27 +49,12 @@ add_dependencies(
   module_GlobalCache
   )
 
-add_spectre_executable(
-  Test_GlobalCache
-  Test_GlobalCache.cpp
-  )
-
 add_dependencies(
   Test_GlobalCache
   module_Test_GlobalCache
   )
 
-target_link_libraries(
-  Test_GlobalCache
-  PRIVATE
-  ErrorHandling
-  Informer
-  Parallel
-  )
-
 add_dependencies(test-executables Test_GlobalCache)
-
-spectre_add_catch_tests(Test_GlobalCache "")
 
 # Add integration tests. For tests that result in a failure it is necessary to
 # redirect output from stderr to stdout. However, it was necessary at least on
@@ -106,6 +93,23 @@ function(add_algorithm_test TEST_NAME REGEX_TO_MATCH)
   endif()
 endfunction()
 
+function(add_algorithm_test_with_input_file TEST_NAME INPUT_FILE_DIR)
+  add_test(
+    NAME "\"Integration.Parallel.${TEST_NAME}\""
+    COMMAND
+    ${SHELL_EXECUTABLE}
+    -c
+    "${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} --input-file \
+     ${CMAKE_SOURCE_DIR}/tests/${INPUT_FILE_DIR}/Test_${TEST_NAME}.yaml 2>&1"
+    )
+    set_tests_properties(
+      "\"Integration.Parallel.${TEST_NAME}\""
+      PROPERTIES
+      TIMEOUT 10
+      LABELS "integration"
+      ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+endfunction()
+
 add_algorithm_test("AlgorithmCore" "")
 add_algorithm_test(
   "AlgorithmBadBoxApply"
@@ -124,6 +128,9 @@ function is not invoked via a proxy, which we do not allow.")
 add_algorithm_test("AlgorithmParallel" "")
 add_algorithm_test("AlgorithmReduction" "")
 add_algorithm_test("AlgorithmNodelock" "")
+add_algorithm_test("GlobalCache" "")
+
+add_algorithm_test_with_input_file("AlgorithmGlobalCache" "Unit/Parallel")
 
 # Tests that do not require their own Chare setup and can work with the
 # unit tests

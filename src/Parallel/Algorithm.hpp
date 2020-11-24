@@ -688,7 +688,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                         Algorithm_detail::is_is_ready_callable_t<
                             local_this_action, this_databox,
                             tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                            Parallel::GlobalCache<metavariables>,
+                            Parallel::GlobalCache<metavariables>&,
                             array_index>{},
                         local_this_action{}, box)) {
                   take_next_action = false;
@@ -712,7 +712,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                         Algorithm_detail::is_is_ready_callable_t<
                             local_this_action, this_databox,
                             tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                            Parallel::GlobalCache<metavariables>,
+                            Parallel::GlobalCache<metavariables>&,
                             array_index>{},
                         local_this_action{}, box)) {
                   take_next_action = false;
@@ -753,7 +753,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                         Algorithm_detail::is_is_ready_callable_t<
                             local_this_action, this_databox,
                             tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                            Parallel::GlobalCache<metavariables>,
+                            Parallel::GlobalCache<metavariables>&,
                             array_index>{},
                         local_this_action{}, box)) {
                   take_next_action = false;

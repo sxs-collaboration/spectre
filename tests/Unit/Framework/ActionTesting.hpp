@@ -1651,7 +1651,8 @@ class MockRuntimeSystem {
 
   /// Construct from the tuple of GlobalCache objects.
   explicit MockRuntimeSystem(CacheTuple cache_contents)
-      : cache_(std::move(cache_contents)) {
+      : mutable_cache_(tuples::TaggedTuple<>{}),
+        cache_(std::move(cache_contents), &mutable_cache_) {
     tmpl::for_each<typename Metavariables::component_list>([this](
                                                                auto component) {
       using Component = tmpl::type_from<decltype(component)>;
@@ -1913,6 +1914,7 @@ class MockRuntimeSystem {
   }
 
  private:
+  Parallel::MutableGlobalCache<Metavariables> mutable_cache_{};
   GlobalCache cache_{};
   Inboxes inboxes_{};
   TupleOfMockDistributedObjects local_algorithms_{};
