@@ -7,8 +7,12 @@ temp_files=()
 trap 'rm -r "${temp_files[@]}"' EXIT
 
 pushd @CMAKE_SOURCE_DIR@ >/dev/null
-git_commit_hash=`@GIT_EXECUTABLE@ describe --abbrev=0 --always --tags`
-git_branch=`@GIT_EXECUTABLE@ rev-parse --abbrev-ref HEAD`
+git_commit_hash="NOT_IN_GIT_REPO"
+git_branch="NOT_IN_GIT_REPO"
+if [ -d "./.git" ]; then
+    git_commit_hash=`@GIT_EXECUTABLE@ describe --abbrev=0 --always --tags`
+    git_branch=`@GIT_EXECUTABLE@ rev-parse --abbrev-ref HEAD`
+fi
 popd >/dev/null
 
 # Create a copy of InfoAtLink.cpp based on the output filename.

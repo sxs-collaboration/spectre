@@ -1,19 +1,26 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+find_package(Git)
+
 # Get the current working branch and commit hash
-execute_process(
-    COMMAND git rev-parse --abbrev-ref HEAD
+if(EXISTS ${CMAKE_SOURCE_DIR}/.git AND Git_FOUND)
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     OUTPUT_VARIABLE GIT_BRANCH
     OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-execute_process(
-    COMMAND git describe --abbrev=0 --always --tags
+    )
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} describe --abbrev=0 --always --tags
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     OUTPUT_VARIABLE GIT_COMMIT_HASH
     OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+    )
+else()
+  set(GIT_BRANCH "NOT_IN_GIT_REPO")
+  set(GIT_COMMIT_HASH "NOT_IN_GIT_REPO")
+endif()
 
 message(STATUS "\nUseful Information:")
 message(STATUS "Git Branch: " ${GIT_BRANCH})
