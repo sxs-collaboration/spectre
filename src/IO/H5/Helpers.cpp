@@ -115,13 +115,60 @@ template <typename T>
 void write_data(const hid_t group_id, const std::vector<T>& data,
                 const std::vector<size_t>& extents,
                 const std::string& name) noexcept {
+  std::vector<hsize_t> chunk_size(extents.size());
+  for (size_t i = 0; i < chunk_size.size(); ++i) {
+    // Setting the target number of bytes per chunk to a power of 2 is important
+    // for reducing the cost of writing to disk. Setting to a non-power of 2
+    // increases the compression overhead by ~>10x.
+    constexpr size_t target_number_of_bytes_per_chunk = 131'072;
+    chunk_size[i] = target_number_of_bytes_per_chunk / sizeof(T) > extents[i]
+                        ? extents[i]
+                        : target_number_of_bytes_per_chunk / sizeof(T);
+  }
+
   const std::vector<hsize_t> dims(extents.begin(), extents.end());
   const hid_t space_id = H5Screate_simple(dims.size(), dims.data(), nullptr);
   CHECK_H5(space_id, "Failed to create dataspace");
   const hid_t contained_type = h5::h5_type<tt::get_fundamental_type_t<T>>();
+
+  // Check for available filters and write with GZIP+shuffle if available
+  const bool use_gzip_filter = []() {
+    if (not static_cast<bool>(H5Zfilter_avail(H5Z_FILTER_DEFLATE))) {
+      return false;
+    }
+    unsigned int filter_info = 0;
+    const auto status = H5Zget_filter_info(H5Z_FILTER_DEFLATE, &filter_info);
+    return status >= 0 and (filter_info & H5Z_FILTER_CONFIG_ENCODE_ENABLED) and
+           (filter_info & H5Z_FILTER_CONFIG_DECODE_ENABLED);
+  }();
+  const bool use_shuffle_filter = []() {
+    if (not static_cast<bool>(H5Zfilter_avail(H5Z_FILTER_SHUFFLE))) {
+      return false;
+    }
+    unsigned int filter_info = 0;
+    const auto status = H5Zget_filter_info(H5Z_FILTER_SHUFFLE, &filter_info);
+    return status >= 0 and (filter_info & H5Z_FILTER_CONFIG_ENCODE_ENABLED) and
+           (filter_info & H5Z_FILTER_CONFIG_DECODE_ENABLED);
+  }();
+
+  hid_t property_list = h5::h5p_default();
+  // We can't compress a single number. Since there's not much to reduce anyway,
+  // we just skip compression.
+  if (not extents.empty() and use_gzip_filter) {
+    property_list = H5Pcreate(H5P_DATASET_CREATE);
+    if (use_shuffle_filter) {
+      CHECK_H5(H5Pset_shuffle(property_list),
+               "Failed to enable shuffle filter on dataset " << name);
+    }
+    CHECK_H5(H5Pset_deflate(property_list, 5),
+             "Failed to enable gzip filter on dataset " << name);
+    CHECK_H5(H5Pset_chunk(property_list, chunk_size.size(), chunk_size.data()),
+             "Failed to set chunk size on dataset " << name);
+  }
+
   const hid_t dataset_id =
       H5Dcreate2(group_id, name.c_str(), contained_type, space_id,
-                 h5::h5p_default(), h5::h5p_default(), h5::h5p_default());
+                 h5::h5p_default(), property_list, h5::h5p_default());
   CHECK_H5(dataset_id, "Failed to create dataset");
   CHECK_H5(H5Dwrite(dataset_id, contained_type, h5::h5s_all(), h5::h5s_all(),
                     h5::h5p_default(), static_cast<const void*>(data.data())),
