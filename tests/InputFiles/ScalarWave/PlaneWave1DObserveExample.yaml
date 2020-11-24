@@ -84,6 +84,8 @@ EventsAndTriggers:
         SubfileName: VolumePsiPiPhiEvery50Slabs
         VariablesToObserve: ["Psi", "Pi", "Phi"]
         InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double, Float, Float]
 # [observe_event_trigger]
 
 Observers:

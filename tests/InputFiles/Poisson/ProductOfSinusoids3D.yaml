@@ -57,3 +57,5 @@ EventsAndTriggers:
         SubfileName: VolumeData
         VariablesToObserve: [Field]
         InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double]

@@ -93,6 +93,8 @@ EventsAndTriggers:
           - PointwiseL2Norm(ThreeIndexConstraint)
           - PointwiseL2Norm(FourIndexConstraint)
         InterpolateToMesh: None
+        CoordinatesFloatingPointType: Double
+        FloatingPointTypes: [Double]
   ? Slabs:
       Specified:
         Values: [2]

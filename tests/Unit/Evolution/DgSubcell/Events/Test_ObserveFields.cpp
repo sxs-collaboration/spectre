@@ -238,15 +238,21 @@ void test_observe(
           const std::string& component, const DataVector& expected) noexcept {
         CAPTURE(*tensor_data);
         CAPTURE(component);
+        const DataVector interpolated_expected =
+            interpolant.interpolate(expected);
         const auto it =
             alg::find_if(*tensor_data, [name = element_name + "/" + component](
                                            const TensorComponent& tc) noexcept {
               return tc.name == name;
             });
         CHECK(it != tensor_data->end());
-        if (it != tensor_data->end()) {
-          CHECK(std::get<DataVector>(it->data) ==
-                interpolant.interpolate(expected));
+        if (component.substr(0, 6) == "Tensor" or
+            component.substr(6, 7) == "Tensor2") {
+          CHECK(std::get<std::vector<float>>(it->data) ==
+                std::vector<float>{interpolated_expected.begin(),
+                                   interpolated_expected.end()});
+        } else {
+          CHECK(std::get<DataVector>(it->data) == interpolated_expected);
         }
         ++num_components_observed;
       };

@@ -10,13 +10,14 @@
 #include <pup.h>
 #include <string>
 #include <type_traits>
-#include <unordered_set>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/FloatingPointType.hpp"
 #include "DataStructures/Tensor/TensorData.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
@@ -124,8 +125,37 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         "on a new mesh.";
   };
 
+  /// The floating point type/precision with which to write the data to disk.
+  ///
+  /// Must be specified once for all data or individually for each variable
+  /// being observed.
+  struct FloatingPointTypes {
+    static constexpr Options::String help =
+        "The floating point type/precision with which to write the data to "
+        "disk.\n\n"
+        "Must be specified once for all data or individually  for each "
+        "variable being observed.";
+    using type = std::vector<FloatingPointType>;
+    static size_t upper_bound_on_size() noexcept {
+      return sizeof...(Tensors) + sizeof...(AnalyticSolutionTensors) +
+             sizeof...(NonSolutionTensors);
+    }
+    static size_t lower_bound_on_size() noexcept { return 1; }
+  };
+
+  /// The floating point type/precision with which to write the coordinates to
+  /// disk.
+  struct CoordinatesFloatingPointType {
+    static constexpr Options::String help =
+        "The floating point type/precision with which to write the coordinates "
+        "to disk.";
+    using type = FloatingPointType;
+  };
+
   using options =
-      tmpl::list<SubfileName, VariablesToObserve, InterpolateToMesh>;
+      tmpl::list<SubfileName, CoordinatesFloatingPointType, FloatingPointTypes,
+                 VariablesToObserve, InterpolateToMesh>;
+
   static constexpr Options::String help =
       "Observe volume tensor fields.\n"
       "\n"
@@ -137,30 +167,12 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
 
   ObserveFields() = default;
 
-  explicit ObserveFields(const std::string& subfile_name,
-                         const std::vector<std::string>& variables_to_observe,
-                         std::optional<Mesh<VolumeDim>> interpolation_mesh = {},
-                         const Options::Context& context = {})
-      : subfile_path_("/" + subfile_name),
-        variables_to_observe_(variables_to_observe.begin(),
-                              variables_to_observe.end()),
-        interpolation_mesh_(interpolation_mesh) {
-    using ::operator<<;
-    const std::unordered_set<std::string> valid_tensors{
-        db::tag_name<Tensors>()...};
-    for (const auto& name : variables_to_observe_) {
-      if (valid_tensors.count(name) != 1) {
-        PARSE_ERROR(
-            context,
-            name << " is not an available variable.  Available variables:\n"
-                 << (std::vector<std::string>{db::tag_name<Tensors>()...}));
-      }
-      if (alg::count(variables_to_observe, name) != 1) {
-        PARSE_ERROR(context, name << " specified multiple times");
-      }
-    }
-    variables_to_observe_.insert(coordinates_tag::name());
-  }
+  ObserveFields(const std::string& subfile_name,
+                FloatingPointType coordinates_floating_point_type,
+                const std::vector<FloatingPointType>& floating_point_types,
+                const std::vector<std::string>& variables_to_observe,
+                std::optional<Mesh<VolumeDim>> interpolation_mesh = {},
+                const Options::Context& context = {});
 
   using argument_tags = tmpl::flatten<tmpl::list<
       ObservationValueTag, domain::Tags::Mesh<VolumeDim>, coordinates_tag,
@@ -214,7 +226,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
             typename ParallelComponent>
   static void call_operator_impl(
       const std::string& subfile_path,
-      const std::unordered_set<std::string>& variables_to_observe,
+      const std::unordered_map<std::string, FloatingPointType>&
+          variables_to_observe,
       const std::optional<Mesh<VolumeDim>>& interpolation_mesh,
       const typename ObservationValueTag::type& observation_value,
       const Mesh<VolumeDim>& mesh,
@@ -264,10 +277,20 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
                                               const auto& tensor) noexcept {
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
       if (variables_to_observe.count(db::tag_name<tensor_tag>()) == 1) {
+        const auto floating_point_type =
+            variables_to_observe.at(db::tag_name<tensor_tag>());
         for (size_t i = 0; i < tensor.size(); ++i) {
-          components.emplace_back(element_name + db::tag_name<tensor_tag>() +
-                                      tensor.component_suffix(i),
-                                  interpolant.interpolate(tensor[i]));
+          const auto tensor_component = interpolant.interpolate(tensor[i]);
+          if (floating_point_type == FloatingPointType::Float) {
+            components.emplace_back(element_name + db::tag_name<tensor_tag>() +
+                                        tensor.component_suffix(i),
+                                    std::vector<float>{tensor_component.begin(),
+                                                       tensor_component.end()});
+          } else {
+            components.emplace_back(element_name + db::tag_name<tensor_tag>() +
+                                        tensor.component_suffix(i),
+                                    tensor_component);
+          }
         }
       }
     };
@@ -279,23 +302,32 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         tmpl::type_<NonSolutionTensors>{}, non_solution_tensors));
 
     if (analytic_solutions.has_value()) {
-      const auto record_errors = [&components, &element_name,
-                                  &analytic_solutions, &interpolant,
-                                  &variables_to_observe](
-                                     const auto tensor_tag_v,
-                                     const auto& tensor) noexcept {
-        using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
-        if (variables_to_observe.count(db::tag_name<tensor_tag>()) == 1) {
-          for (size_t i = 0; i < tensor.size(); ++i) {
-            DataVector error = tensor[i] - get<::Tags::Analytic<tensor_tag>>(
-                                               analytic_solutions->get())[i];
-            components.emplace_back(element_name + "Error(" +
-                                        db::tag_name<tensor_tag>() + ")" +
-                                        tensor.component_suffix(i),
-                                    interpolant.interpolate(error));
-          }
-        }
-      };
+      const auto record_errors =
+          [&analytic_solutions, &components, &element_name, &interpolant,
+           &variables_to_observe](const auto tensor_tag_v,
+                                  const auto& tensor) noexcept {
+            using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
+            if (variables_to_observe.count(db::tag_name<tensor_tag>()) == 1) {
+              const auto floating_point_type =
+                  variables_to_observe.at(db::tag_name<tensor_tag>());
+              for (size_t i = 0; i < tensor.size(); ++i) {
+                DataVector error = interpolant.interpolate(
+                    DataVector(tensor[i] - get<::Tags::Analytic<tensor_tag>>(
+                                               analytic_solutions->get())[i]));
+                if (floating_point_type == FloatingPointType::Float) {
+                  components.emplace_back(
+                      element_name + "Error(" + db::tag_name<tensor_tag>() +
+                          ")" + tensor.component_suffix(i),
+                      std::vector<float>{error.begin(), error.end()});
+                } else {
+                  components.emplace_back(element_name + "Error(" +
+                                              db::tag_name<tensor_tag>() + ")" +
+                                              tensor.component_suffix(i),
+                                          std::move(error));
+                }
+              }
+            }
+          };
       EXPAND_PACK_LEFT_TO_RIGHT(record_errors(
           tmpl::type_<AnalyticSolutionTensors>{}, analytic_solution_tensors));
 
@@ -347,9 +379,66 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
 
  private:
   std::string subfile_path_;
-  std::unordered_set<std::string> variables_to_observe_{};
+  std::unordered_map<std::string, FloatingPointType> variables_to_observe_{};
   std::optional<Mesh<VolumeDim>> interpolation_mesh_{};
 };
+
+template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
+          typename... AnalyticSolutionTensors, typename... NonSolutionTensors>
+ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
+              tmpl::list<AnalyticSolutionTensors...>,
+              tmpl::list<NonSolutionTensors...>>::
+    ObserveFields(const std::string& subfile_name,
+                  const FloatingPointType coordinates_floating_point_type,
+                  const std::vector<FloatingPointType>& floating_point_types,
+                  const std::vector<std::string>& variables_to_observe,
+                  std::optional<Mesh<VolumeDim>> interpolation_mesh,
+                  const Options::Context& context)
+    : subfile_path_("/" + subfile_name),
+      variables_to_observe_([&context, &floating_point_types,
+                             &variables_to_observe]() {
+        if (floating_point_types.size() != 1 and
+            floating_point_types.size() != variables_to_observe.size()) {
+          PARSE_ERROR(context, "The number of floating point types specified ("
+                                   << floating_point_types.size()
+                                   << ") must be 1 or the number of variables "
+                                      "specified for observing ("
+                                   << variables_to_observe.size() << ")");
+        }
+        std::unordered_map<std::string, FloatingPointType> result{};
+        for (size_t i = 0; i < variables_to_observe.size(); ++i) {
+          result[variables_to_observe[i]] = floating_point_types.size() == 1
+                                                ? floating_point_types[0]
+                                                : floating_point_types[i];
+          ASSERT(
+              result.at(variables_to_observe[i]) == FloatingPointType::Float or
+                  result.at(variables_to_observe[i]) ==
+                      FloatingPointType::Double,
+              "Floating point type for variable '"
+                  << variables_to_observe[i]
+                  << "' must be either Float or Double.");
+        }
+        return result;
+      }()),
+      interpolation_mesh_(interpolation_mesh) {
+  using ::operator<<;
+  const std::unordered_set<std::string> valid_tensors{
+      db::tag_name<Tensors>()...};
+  for (const auto& [name, floating_point_type] : variables_to_observe_) {
+    (void)floating_point_type;
+    if (valid_tensors.count(name) != 1) {
+      PARSE_ERROR(
+          context,
+          name << " is not an available variable.  Available variables:\n"
+               << (std::vector<std::string>{db::tag_name<Tensors>()...}));
+    }
+    if (alg::count(variables_to_observe, name) != 1) {
+      PARSE_ERROR(context, name << " specified multiple times");
+    }
+  }
+  variables_to_observe_[coordinates_tag::name()] =
+      coordinates_floating_point_type;
+}
 
 /// \cond
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
