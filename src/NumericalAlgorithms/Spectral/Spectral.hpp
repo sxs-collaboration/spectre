@@ -404,7 +404,7 @@ const Matrix& integration_matrix(const Mesh<1>& mesh) noexcept;
  *
  * \warning For each target point located outside of the logical coordinate
  * interval covered by `BasisType` (often \f$[-1,1]\f$), the resulting matrix
- * performs polynomial extrapolation instead of interpolation. The extapolation
+ * performs polynomial extrapolation instead of interpolation. The extrapolation
  * will be correct but may suffer from reduced accuracy, especially for
  * higher-order polynomials (i.e., larger values of `num_points`).
  *
