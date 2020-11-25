@@ -8,6 +8,7 @@ See LICENSE.txt for details.
 Table of Contents
 <ul>
 <li class="level1"><a href="#intro_sec">Introduction</a></li>
+<li class="level1"><a href="versioning_and_releases.html">Versioning and Releases</a></li>
 <li class="level1"><a href="installation.html">Installation</a></li>
 <li class="level1"><a href="installation_on_clusters.html">Installation on clusters</a></li>
 <li class="level1"><a href="tutorials.html">User tutorials</a></li>
