@@ -67,6 +67,8 @@ std::vector<double> AdamsBashforthN::get_coefficients_impl(
 std::vector<double> AdamsBashforthN::variable_coefficients(
     const std::vector<double>& steps) noexcept {
   const size_t order = steps.size();  // "k" in below equations
+  std::vector<double> result;
+  result.reserve(order);
 
   // The `steps` vector contains the relative step sizes:
   //   steps = {dt_{n-k+1}/dt_n, ..., dt_n/dt_n}
@@ -75,66 +77,35 @@ std::vector<double> AdamsBashforthN::variable_coefficients(
   //                        (dt_n + ... + dt_{n-k+1})/dt_n)
   // (Where the ell_j are the Lagrange interpolating polynomials.)
 
-  // Calculate coefficients of the numerators of the Lagrange interpolating
-  // polynomial, in the standard form.
-  std::vector<std::vector<double>> polynomials(order,
-                                               std::vector<double>(order, 0.));
-  for (auto& poly : polynomials) {
-    poly[0] = 1.;
-  }
-  {
-    double step_sum = 0.;
+  std::vector<double> poly(order);
+  double step_sum_j = 0.0;
+  for (size_t j = 0; j < order; ++j) {
+    // Calculate coefficients of the Lagrange interpolating polynomials,
+    // in the standard a_0 + a_1 t + a_2 t^2 + ... form.
+    std::fill(poly.begin(), poly.end(), 0.0);
+
+    step_sum_j += steps[order - j - 1];
+    poly[0] = 1.0;
+
+    double step_sum_m = 0.0;
     for (size_t m = 0; m < order; ++m) {
-      const double step = steps[order - m - 1];
-      step_sum += step;
-      for (size_t j = 0; j < order; ++j) {
-        if (m == j) {
-          continue;
-        }
-        auto& poly = polynomials[j];
-        for (size_t i = m + (m > j ? 0 : 1); i > 0; --i) {
-          poly[i] = poly[i - 1] - step_sum * poly[i];
-        }
-        poly[0] *= -step_sum;
+      step_sum_m += steps[order - m - 1];
+      if (m == j) {
+        continue;
       }
+      const double denom = 1.0 / (step_sum_j - step_sum_m);
+      for (size_t i = m < j ? m + 1 : m; i > 0; --i) {
+        poly[i] = (poly[i - 1] - poly[i] * step_sum_m) * denom;
+      }
+      poly[0] *= -step_sum_m * denom;
     }
-  }
 
-  // Calculate the denominators of the Lagrange interpolating polynomials.
-  std::vector<double> denominators;
-  denominators.reserve(order);
-  for (size_t j = 0; j < order; ++j) {
-    double denom = 1.;
-    double step_sum = 0.;
-    for (size_t m = 0; m < j; ++m) {
-      const double step = steps[order - j + m - 1];
-      step_sum += step;
-      denom *= step_sum;
-    }
-    step_sum = 0.;
-    for (size_t m = 0; m < order - j - 1; ++m) {
-      const double step = steps[order - j - m - 2];
-      step_sum += step;
-      denom *= step_sum;
-    }
-    denominators.push_back(denom);
-  }
-
-  // At this point, the Lagrange interpolating polynomials are given by:
-  //   ell_j(t; ...) = +/- sum_m t^m polynomials[j][m] / denominators[j]
-
-  // Integrate, term by term.
-  std::vector<double> result;
-  result.reserve(order);
-  double overall_sign = order % 2 == 0 ? -1. : 1.;
-  for (size_t j = 0; j < order; ++j) {
-    const auto& poly = polynomials[j];
+    // Integrate, term by term.
     double integral = 0.;
     for (size_t i = 0; i < order; ++i) {
       integral += poly[i] / (i + 1.);
     }
-    result.push_back(overall_sign * integral / denominators[j]);
-    overall_sign = -overall_sign;
+    result.push_back(integral);
   }
   return result;
 }
