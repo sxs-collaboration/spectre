@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include "Time/TimeStepId.hpp"
+#include "Utilities/Math.hpp"
 
 namespace TimeSteppers {
 
@@ -51,7 +52,7 @@ std::vector<double> AdamsBashforthN::get_coefficients_impl(
   const size_t order = steps.size();
   ASSERT(order >= 1 and order <= maximum_order, "Bad order" << order);
   if (std::all_of(steps.begin(), steps.end(),
-                  [=](const double s) { return s == 1.; })) {
+                  [&steps](const double s) { return s == steps[0]; })) {
     return constant_coefficients(order);
   }
 
@@ -64,11 +65,11 @@ std::vector<double> AdamsBashforthN::variable_coefficients(
   std::vector<double> result;
   result.reserve(order);
 
-  // The `steps` vector contains the relative step sizes:
-  //   steps = {dt_{n-k+1}/dt_n, ..., dt_n/dt_n}
+  // The `steps` vector contains the step sizes:
+  //   steps = {dt_{n-k+1}, ..., dt_n}
   // Our goal is to calculate, for each j, the coefficient given by
-  //   \int_0^1 dt ell_j(t; 1, (dt_n + dt_{n-1})/dt_n, ...,
-  //                        (dt_n + ... + dt_{n-k+1})/dt_n)
+  //   \int_0^1 dt ell_j(t dt_n; dt_n, dt_n + dt_{n-1}, ...,
+  //                             dt_n + ... + dt_{n-k+1})
   // (Where the ell_j are the Lagrange interpolating polynomials.)
 
   std::vector<double> poly(order);
@@ -94,12 +95,11 @@ std::vector<double> AdamsBashforthN::variable_coefficients(
       poly[0] *= -step_sum_m * denom;
     }
 
-    // Integrate, term by term.
-    double integral = 0.;
-    for (size_t i = 0; i < order; ++i) {
-      integral += poly[i] / (i + 1.0);
+    // Integrate p(t dt_n), term by term.
+    for (size_t m = 0; m < order; ++m) {
+      poly[m] /= m + 1.0;
     }
-    result.push_back(integral);
+    result.push_back(evaluate_polynomial(poly, steps.back()));
   }
   return result;
 }

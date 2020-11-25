@@ -355,12 +355,6 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
                           const ApproximateTimeDelta& b) noexcept {
       return a.value() < b.value();
     }
-
-    friend double operator/(
-        const TimeDelta& a,
-        const AdamsBashforthN::ApproximateTimeDelta& b) noexcept {
-      return a.value() / b.value();
-    }
   };
 
   size_t order_ = 3;
@@ -790,9 +784,9 @@ std::vector<double> AdamsBashforthN::get_coefficients(
   // is not necessarily cheap depending on the iterator type.
   steps.reserve(maximum_order);
   for (auto t = times_begin; std::next(t) != times_end; ++t) {
-    steps.push_back((*std::next(t) - *t) / step);
+    steps.push_back((*std::next(t) - *t).value());
   }
-  steps.push_back(1.);
+  steps.push_back(step.value());
   return get_coefficients_impl(steps);
 }
 }  // namespace TimeSteppers
