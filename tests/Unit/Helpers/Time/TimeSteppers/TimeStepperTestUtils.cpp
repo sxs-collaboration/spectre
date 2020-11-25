@@ -518,10 +518,12 @@ void check_dense_output(const TimeStepper& stepper) noexcept {
       // Some time steppers special-case the endpoints of the
       // interval, so check just inside to trigger the main dense
       // output path.
+      CHECK(get_dense(time_step, 0.0) == local_approx(1.));
       CHECK(get_dense(time_step, std::numeric_limits<double>::epsilon() *
                                      time_step.value()) == local_approx(1.));
       CHECK(get_dense(time_step, (1. - std::numeric_limits<double>::epsilon()) *
                                      time.value()) == local_approx(y));
+      CHECK(get_dense(time_step, time.value()) == local_approx(y));
     }
   }
 
