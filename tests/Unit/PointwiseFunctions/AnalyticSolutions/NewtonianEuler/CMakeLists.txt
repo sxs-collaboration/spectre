@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_IsentropicVortex.cpp
   Test_LaneEmdenStar.cpp
   Test_RiemannProblem.cpp
+  Test_SmoothFlow.cpp
   )
 
 add_test_library(

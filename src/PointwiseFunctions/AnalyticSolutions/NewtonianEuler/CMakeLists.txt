@@ -11,6 +11,7 @@ spectre_target_sources(
   IsentropicVortex.cpp
   LaneEmdenStar.cpp
   RiemannProblem.cpp
+  SmoothFlow.cpp
   )
 
 spectre_target_headers(
@@ -20,6 +21,7 @@ spectre_target_headers(
   IsentropicVortex.hpp
   LaneEmdenStar.hpp
   RiemannProblem.hpp
+  SmoothFlow.hpp
   Solutions.hpp
   )
 
@@ -28,6 +30,8 @@ target_link_libraries(
   PUBLIC
   DataStructures
   ErrorHandling
+  Hydro
+  HydroSolutions
   NewtonianEuler
   Options
   )
