@@ -385,7 +385,7 @@ void test_data_manager_with_dummy_buffer_updater(
   const double target_time = 50.0 * value_dist(*gen);
 
   const size_t buffer_size = 4;
-  const size_t l_max = 12;
+  const size_t l_max = 8;
 
   DataVector time_buffer{30};
   for (size_t i = 0; i < time_buffer.size(); ++i) {
@@ -604,8 +604,8 @@ void test_reduced_spec_worldtube_buffer_updater(
 
   const size_t buffer_size = 4;
   const size_t interpolator_length = 3;
-  const size_t file_l_max = 12;
-  const size_t computation_l_max = 14;
+  const size_t file_l_max = 8;
+  const size_t computation_l_max = 10;
 
   Variables<cce_bondi_input_tags> coefficients_buffers_from_file{
       (buffer_size + 2 * interpolator_length) * square(computation_l_max + 1)};
@@ -643,8 +643,8 @@ void test_reduced_spec_worldtube_buffer_updater(
   // scoped to close the file
   {
     Cce::ReducedWorldtubeModeRecorder recorder{filename};
-    for (size_t t = 0; t < 30; ++t) {
-      const double time = 0.01 * t + target_time - .15;
+    for (size_t t = 0; t < 20; ++t) {
+      const double time = 0.01 * t + target_time - 0.1;
       TestHelpers::create_fake_time_varying_modal_data(
           make_not_null(&spatial_metric_coefficients),
           make_not_null(&dt_spatial_metric_coefficients),
@@ -736,13 +736,13 @@ void test_reduced_spec_worldtube_buffer_updater(
   time_span_end = 0;
   const auto& time_buffer = buffer_updater.get_time_buffer();
   for (size_t i = 0; i < time_buffer.size(); ++i) {
-    CHECK(time_buffer[i] == approx(target_time - .15 + 0.01 * i));
+    CHECK(time_buffer[i] == approx(target_time - 0.1 + 0.01 * i));
   }
   const auto& time_buffer_from_serialized =
       serialized_and_deserialized_updater.get_time_buffer();
   for (size_t i = 0; i < time_buffer.size(); ++i) {
     CHECK(time_buffer_from_serialized[i] ==
-          approx(target_time - .15 + 0.01 * i));
+          approx(target_time - 0.1 + 0.01 * i));
   }
 
   const ReducedDummyBufferUpdater dummy_buffer_updater{
