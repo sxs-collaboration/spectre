@@ -3,8 +3,14 @@
 
 cmake_minimum_required(VERSION 3.8.0)
 
-# Fortran below is needed for SPHEREPACK.
-project(SpECTRE VERSION 0.0.0 LANGUAGES CXX C Fortran)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
+# Determine the project version and other metadata
+include(SpectreLoadMetadata)
+
+# Set up the project. Notes:
+# - Fortran is needed for SPHEREPACK
+project(${SPECTRE_NAME} VERSION ${SPECTRE_VERSION} LANGUAGES CXX C Fortran)
 
 # Policies
 # The `cmake_minimum_required` above sets policies to `NEW` that are compatible
@@ -19,8 +25,6 @@ endif ()
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 site_name(HOSTNAME)
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 include(SpectreInitializeVariables)
 
