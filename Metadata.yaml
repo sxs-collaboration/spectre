@@ -1,0 +1,282 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+Name: SpECTRE
+
+License: MIT
+
+Homepage: https://spectre-code.org/
+
+GitHub: sxs-collaboration/spectre
+
+Version: 2020.12.07
+
+PublicationDate: 2020-12-07
+
+Doi: 10.5281/zenodo.4290405
+
+ZenodoId: 4290405
+
+Description: |
+  SpECTRE is an open-source code for multi-scale, multi-physics problems
+  in astrophysics and gravitational physics. In the future, we hope that
+  it can be applied to problems across discipline boundaries in fluid
+  dynamics, geoscience, plasma physics, nuclear physics, and
+  engineering. It runs at petascale and is designed for future exascale
+  computers.
+
+  SpECTRE is being developed in support of our collaborative Simulating
+  eXtreme Spacetimes (SXS) research program into the multi-messenger
+  astrophysics of neutron star mergers, core-collapse supernovae, and
+  gamma-ray bursts.
+
+Keywords:
+  - Software
+  - Astrophysics
+  - General Relativity
+  - Numerical Relativity
+  - Multiphysics
+  - Gravitational Waves
+  - Discontinuous Galerkin
+  - Finite Difference
+  - Finite Volume
+
+Affiliations:
+  - &aei
+    Max Planck Institute for Gravitational Physics (Albert Einstein Institute),
+    Am Mühlenberg 1, Potsdam 14476, Germany
+  - &caltech
+    Theoretical Astrophysics, Walter Burke Institute for Theoretical
+    Physics, California Institute of Technology, Pasadena, CA 91125, USA
+  - &cornell
+    Cornell Center for Astrophysics and Planetary Science, Cornell University,
+    Ithaca, New York 14853, USA
+  - &fullerton
+    Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
+    Astronomy, California State University, Fullerton, Fullerton, California
+    92831, USA
+  - &new_hampshire
+    Department of Physics & Astronomy, University of New Hampshire, 9 Library
+    Way, Durham NH 03824, USA
+
+Authors:
+  Description: |
+    We maintain three tiers of authors for the code as a whole: Core, Developers
+    and Contributors. The full author list for the SpECTRE DOI is built by
+    concatenating all authors in the order they are listed here.
+
+    The primary goal of this author list is to recognize infrastructure work
+    that does not or cannot have any science papers and results associated with
+    it. Through authorship on the SpECTRE DOI such work gains recognition that
+    holds value in academia. Authorship on the SpECTRE DOI does not directly
+    entitle a person for authorship rights on other publications. Authorship
+    rights on publications related to SpECTRE are governed by our publication
+    policy.
+
+    Note that the placement of authors in these tiers is inherently a subjective
+    topic since we are forced to compare different projects people work on.
+    Nevertheless, having guidelines and some way of promoting healthy and
+    constructive discussions is vital for ensuring the collaborative aspect of
+    the code is healthy.
+
+  Core:
+    Description: |
+      For the time a Developer serves as Core developer they take on some
+      project-management responsibilities, such as initiating and signing off on
+      code reviews, maintaining compatibility with third-party libraries,
+      maintaining the CI/CD infrastructure and overseeing the code as a whole.
+
+      Guidelines on becoming a Core developer:
+
+      - Have at least 4-5 major infrastructure contributions, each taking
+        roughly 4-5 weeks of full-time work for an existing Core developer.
+      - Seek out PRs to review and volunteer when calls for a reviewer are
+        made.
+      - Reach out to any of the existing Core developers and express your
+        interest in taking on the responsibilities that come with this role. The
+        Core developers will discuss the request and either appoint you to Core
+        developer or provide you with feedback on what they think remains to be
+        done.
+
+      Note that most people will not end up in the Core developer list since a
+      lot of work will lead to science results and authorship on science papers,
+      which pay dividends for the work. Supervising students and postdocs does
+      not count towards Core developer status.
+
+      Guidelines on stepping down as Core developer:
+
+      - After a Core developer leaves the project they will remain in this tier
+        for at least as long as they were already in the Core tier before they
+        left, or for three years, whichever is longer. At that point the Core
+        developers will discuss if the person should be moved to the Developer
+        tier, where they will stay indefinitely.
+      - A Core developer can step down from the Core developer role at any time.
+
+      The author list order is decided by the Core developers.
+    List:
+      - Name: Deppe, Nils
+        Orcid: 0000-0003-4557-4115
+        Affiliations: [*caltech]
+        GitHub: nilsdeppe
+      - Name: Throwe, William
+        Orcid: 0000-0001-5059-4378
+        Affiliations: [*cornell]
+        GitHub: wthrowe
+      - Name: Kidder, Lawrence E.
+        Orcid: 0000-0001-5392-7342
+        Affiliations: [*cornell]
+        GitHub: kidder
+      - Name: Fischer, Nils L.
+        Orcid: 0000-0002-5767-3949
+        Affiliations: [*aei]
+        GitHub: nilsleiffischer
+
+  Developers:
+    Description: |
+      Developers have contributed major features to SpECTRE and remain in this
+      list indefinitely unless they wish to be removed.
+
+      Guidelines on becoming a Developer:
+
+      - Do some code review, does not need to be self-initiated.
+      - Somewhere around 40 commits and 10k-15k lines of code should trigger a
+        discussion among the Core developers to move someone from Contributors
+        to Developers. These are guidelines and being above or below these
+        arbitrary cutoffs does not automatically include or exclude you. E.g.
+        someone doing complicated low-level code will likely become a Developer
+        with far fewer lines of code contributed.
+      - Anyone supervising a Core developer or two Developers may be considered
+        for Developer status. Whether to be placed as Developer or Contributor
+        will depend on how active the supervision is. If most of the supervision
+        is coming from the Core developers then Contributor status is
+        appropriate. This will be discussed with the person supervising the Core
+        developer and/or Developers.
+
+      This author list is ordered by last name.
+    List:
+      - Name: Armaza, Cristóbal
+        Orcid: 0000-0002-1791-0743
+        Affiliations: [*cornell]
+        GitHub: carmaza
+      - Name: Bonilla, Gabriel S.
+        Orcid: 0000-0003-4502-528X
+        Affiliations: [*cornell]
+        GitHub: gsb76
+      - Name: Hébert, François
+        Orcid: 0000-0001-9009-6955
+        Affiliations: [*caltech]
+        GitHub: fmahebert
+      - Name: Kumar, Prayush
+        Orcid: 0000-0001-5523-4603
+        Affiliations: [*cornell]
+        GitHub: prayush
+      - Name: Lovelace, Geoffrey
+        Orcid: 0000-0002-7084-1070
+        Affiliations: [*fullerton]
+        GitHub: geoffrey4444
+      - Name: Moxon, Jordan
+        Orcid: 0000-0001-9891-8677
+        Affiliations: [*caltech]
+        GitHub: moxcodes
+      - Name: O'Shea, Eamonn
+        Affiliations: [*cornell]
+        GitHub: osheamonn
+      - Name: Pfeiffer, Harald P.
+        Orcid: 0000-0001-9288-519X
+        Affiliations: [*aei]
+        GitHub: haraldp271
+      - Name: Scheel, Mark A.
+        Orcid: 0000-0001-6656-9134
+        Affiliations: [*caltech]
+        GitHub: markscheel
+      - Name: Teukolsky, Saul A.
+        Orcid: 0000-0001-9765-4526
+        Affiliations: [*caltech, *cornell]
+        GitHub: teukolsky
+
+  Contributors:
+    Description: |
+      Anyone who has contributed to SpECTRE will be added to this list and
+      remain a Contributor indefinitely unless they wish to be removed.
+
+      Guidelines on becoming a Contributor:
+
+      - See our guidelines in `docs/CONTRIBUTING.md` for information on how to
+        get involved with SpECTRE development.
+      - Having any PR merged qualifies for this list. If multiple people worked
+        on the PR together, e.g. several undergraduate students contributing to
+        a single PR, all persons involved will become a Contributor.
+      - Supervising a project that results in a merged PR qualifies for this
+        list. The supervision must be active, i.e. not primarily done by the
+        Core developers.
+      - Having an idea for a contribution does not count towards any contributor
+        status. There must be active supervision of the person(s) implementing
+        the idea, such as advice on debugging, how to best implement the idea,
+        etc. The supervision is what will be counted for contributor status.
+        Generally, a paper is written where the person who came up with the idea
+        is a co-author, which is how credit is given for the idea. An example is
+        suggesting "We should try reconstruction scheme X" without continued
+        guidance throughout the implementation process would not be counted for
+        contributor status.
+
+      This author list is ordered by last name.
+    List:
+      - Name: Anantpurkar, Isha
+        Orcid: 0000-0002-5814-4109
+        Affiliations: [*cornell]
+        GitHub: isha1810
+      - Name: Boyle, Michael
+        Orcid: 0000-0002-5075-5116
+        Affiliations: [*cornell]
+        GitHub: moble
+      - Name: Foucart, Francois
+        Orcid: 0000-0003-4617-4738
+        Affiliations: [*new_hampshire]
+        GitHub: ffoucart
+      - Name: Giesler, Matthew
+        Orcid: 0000-0003-2300-893X
+        Affiliations: [*cornell]
+        GitHub: mgiesler
+      - Name: Iozzo, Dante A. B.
+        Orcid: 0000-0002-7244-1900
+        Affiliations: [*cornell]
+        GitHub: "10220"
+      - Name: Legred, Isaac
+        Orcid: 0000-0002-9523-9617
+        Affiliations: [*caltech]
+        GitHub: isaaclegred
+      - Name: Li, Dongjun
+        Orcid: 0000-0002-1962-680X
+        Affiliations: [*caltech]
+        GitHub: dongjun826
+      - Name: Macedo, Alexandra
+        Orcid: 0000-0001-5139-9013
+        Affiliations: [*fullerton]
+        GitHub: macedo22
+      - Name: Melchor, Denyz
+        Orcid: 0000-0002-7854-1953
+        Affiliations: [*fullerton]
+        GitHub: denyzamelchor
+      - Name: Morales, Marlo
+        Orcid: 0000-0002-0593-4318
+        Affiliations: [*fullerton]
+        GitHub: MarloMo
+      - Name: Ramirez, Teresita
+        Orcid: 0000-0003-0994-115X
+        Affiliations: [*fullerton]
+        GitHub: trami18
+      - Name: Rüter, Hannes R.
+        Orcid: 0000-0002-3442-5360
+        Affiliations: [*aei]
+        GitHub: hrueter
+      - Name: Sanchez, Jennifer
+        Orcid: 0000-0002-5335-4924
+        Affiliations: [*fullerton]
+        GitHub: jennifersanchez
+      - Name: Thomas, Sierra
+        Orcid: 0000-0003-3574-2090
+        Affiliations: [*fullerton]
+        GitHub: sierracthomas
+      - Name: Wlodarczyk, Tom
+        Affiliations: [*aei]
+        GitHub: tomwlodarczyk
