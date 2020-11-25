@@ -11,14 +11,14 @@
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Hydro/SmoothFlow.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-namespace RelativisticEuler {
-namespace Solutions {
+namespace RelativisticEuler::Solutions {
 
 /*!
  * \brief Smooth wave propagating in Minkowski spacetime.
@@ -51,49 +51,13 @@ namespace Solutions {
  * where the pressure is held constant.
  */
 template <size_t Dim>
-class SmoothFlow : virtual public MarkAsAnalyticSolution {
+class SmoothFlow : virtual public MarkAsAnalyticSolution,
+                   private hydro::Solutions::SmoothFlow<Dim, true> {
+  using smooth_flow = hydro::Solutions::SmoothFlow<Dim, true>;
+
  public:
-  using equation_of_state_type = EquationsOfState::IdealFluid<true>;
+  using options = typename smooth_flow::options;
 
-  /// The mean flow velocity.
-  struct MeanVelocity {
-    using type = std::array<double, Dim>;
-    static constexpr Options::String help = {"The mean flow velocity."};
-  };
-
-  /// The wave vector of the profile.
-  struct WaveVector {
-    using type = std::array<double, Dim>;
-    static constexpr Options::String help = {"The wave vector of the profile."};
-  };
-
-  /// The constant pressure throughout the fluid.
-  struct Pressure {
-    using type = double;
-    static constexpr Options::String help = {
-        "The constant pressure throughout the fluid."};
-    static type lower_bound() noexcept { return 0.0; }
-  };
-
-  /// The adiabatic index for the ideal fluid.
-  struct AdiabaticIndex {
-    using type = double;
-    static constexpr Options::String help = {
-        "The adiabatic index for the ideal fluid."};
-    static type lower_bound() noexcept { return 1.0; }
-  };
-
-  /// The perturbation amplitude of the rest mass density of the fluid.
-  struct PerturbationSize {
-    using type = double;
-    static constexpr Options::String help = {
-        "The perturbation size of the rest mass density."};
-    static type lower_bound() noexcept { return -1.0; }
-    static type upper_bound() noexcept { return 1.0; }
-  };
-
-  using options = tmpl::list<MeanVelocity, WaveVector, Pressure, AdiabaticIndex,
-                             PerturbationSize>;
   static constexpr Options::String help = {
       "Smooth flow in Minkowski spacetime."};
 
@@ -108,54 +72,19 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
              const std::array<double, Dim>& wavevector, double pressure,
              double adiabatic_index, double perturbation_size) noexcept;
 
-  explicit SmoothFlow(CkMigrateMessage* /*unused*/) noexcept {}
+  explicit SmoothFlow(CkMigrateMessage* msg) noexcept;
 
-  // @{
-  /// Retrieve hydro variable at `(x, t)`
-  template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, Dim>& x, double t,
-      tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
+  using smooth_flow::equation_of_state;
+  using typename smooth_flow::equation_of_state_type;
 
-  template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, Dim>& x, double t,
-      tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
-      noexcept
-      -> tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>;
-
-  template <typename DataType>
-  auto variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-                 tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>;
-
-  template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, Dim>& x, double /*t*/,
-      tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim>> /*meta*/) const
-      noexcept
-      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, Dim>>;
-
-  template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, Dim>& x, double /*t*/,
-      tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
-
-  template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, Dim>& x, double t,
-      tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
-  // @}
+  // Overload the variables function from the base class.
+  using smooth_flow::variables;
 
   /// Retrieve a collection of hydro variables at `(x, t)`
   template <typename DataType, typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, Dim>& x,
-                                         double t,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
+  tuples::TaggedTuple<Tags...> variables(
+      const tnsr::I<DataType, Dim>& x, const double t,
+      tmpl::list<Tags...> /*meta*/) const noexcept {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
@@ -172,10 +101,6 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
 
-  const EquationsOfState::IdealFluid<true>& equation_of_state() const noexcept {
-    return equation_of_state_;
-  }
-
  private:
   template <size_t SpatialDim>
   friend bool
@@ -183,26 +108,10 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
       const SmoothFlow<SpatialDim>& lhs,
       const SmoothFlow<SpatialDim>& rhs) noexcept;
 
-  // Computes the phase.
-  template <typename DataType>
-  DataType k_dot_x_minus_vt(const tnsr::I<DataType, Dim>& x, double t) const
-      noexcept;
-
-  std::array<double, Dim> mean_velocity_ =
-      make_array<Dim>(std::numeric_limits<double>::signaling_NaN());
-  std::array<double, Dim> wavevector_ =
-      make_array<Dim>(std::numeric_limits<double>::signaling_NaN());
-  double pressure_ = std::numeric_limits<double>::signaling_NaN();
-  double adiabatic_index_ = std::numeric_limits<double>::signaling_NaN();
-  double perturbation_size_ = std::numeric_limits<double>::signaling_NaN();
-  // The angular frequency.
-  double k_dot_v_ = std::numeric_limits<double>::signaling_NaN();
-  EquationsOfState::IdealFluid<true> equation_of_state_{};
   gr::Solutions::Minkowski<Dim> background_spacetime_{};
 };
 
 template <size_t Dim>
 bool operator!=(const SmoothFlow<Dim>& lhs,
                 const SmoothFlow<Dim>& rhs) noexcept;
-}  // namespace Solutions
-}  // namespace RelativisticEuler
+}  // namespace RelativisticEuler::Solutions

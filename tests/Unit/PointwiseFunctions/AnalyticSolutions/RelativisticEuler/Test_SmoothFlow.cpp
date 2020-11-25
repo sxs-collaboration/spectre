@@ -65,9 +65,9 @@ void test_solution(const DataType& used_for_size,
   pypp::check_with_random_values<
       1, typename SmoothFlowProxy<Dim>::template variables_tags<DataType>>(
       &SmoothFlowProxy<Dim>::template primitive_variables<DataType>, solution,
-      "SmoothFlow",
+      "Hydro.SmoothFlow",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
-       "pressure", "lorentz_factor", "specific_enthalpy"},
+       "pressure", "lorentz_factor", "specific_enthalpy_relativistic"},
       {{{-15., 15.}}},
       std::make_tuple(mean_velocity, wave_vector, pressure, adiabatic_index,
                       perturbation_size),
@@ -127,7 +127,7 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.SmoothFlow",
     "[Unit][PointwiseFunctions]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
-      "PointwiseFunctions/AnalyticSolutions/RelativisticEuler"};
+      "PointwiseFunctions/AnalyticSolutions/"};
   test_solution<1>(std::numeric_limits<double>::signaling_NaN(), {{-0.3}},
                    "[-0.3]", {{0.4}}, "[0.4]");
   test_solution<1>(DataVector(5), {{-0.3}}, "[-0.3]", {{0.4}}, "[0.4]");
