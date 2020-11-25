@@ -76,3 +76,15 @@ endfunction(add_kh_instability_executable)
 
 add_kh_instability_executable(2)
 add_kh_instability_executable(3)
+
+function(add_smooth_flow_executable DIM)
+  add_newtonian_euler_executable(
+    SmoothFlow
+    ${DIM}
+    NewtonianEuler::Solutions::SmoothFlow<${DIM}>
+    )
+endfunction(add_smooth_flow_executable)
+
+add_smooth_flow_executable(1)
+add_smooth_flow_executable(2)
+add_smooth_flow_executable(3)

@@ -17,6 +17,8 @@ class IsentropicVortex;
 class LaneEmdenStar;
 template <size_t Dim>
 class RiemannProblem;
+template <size_t Dim>
+class SmoothFlow;
 }  // namespace Solutions
 }  // namespace NewtonianEuler
 
