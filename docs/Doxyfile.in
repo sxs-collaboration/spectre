@@ -23,7 +23,10 @@ MULTILINE_CPP_IS_BRIEF = YES
 
 TAB_SIZE               = 2
 
-ALIASES                = "semantics=<p></p><i>Semantics:</i>" \
+ALIASES                = "spectreversion=@SPECTRE_VERSION@" \
+                         "spectredoi=@SPECTRE_DOI@" \
+                         "spectrezenodoid=@SPECTRE_ZENODO_ID@" \
+                         "semantics=<p></p><i>Semantics:</i>" \
                          "metareturns=<p></p><i>Returns:</i> " \
                          "return=<p></p><i>Returns:</i> " \
                          "requires=<p></p><i>Requires:</i> " \
