@@ -27,9 +27,9 @@ namespace Solutions {
  * solution with constant pressure and uniform spatial velocity provided
  * that the rest mass density satisfies the advection equation
  *
- * \f{align*}
+ * \f{align*}{
  * \partial_t\rho + v^i\partial_i\rho = 0,
- * f}
+ * \f}
  *
  * and the specific internal energy is a function of the rest mass density only,
  * \f$\epsilon = \epsilon(\rho)\f$. For testing purposes, this class implements
@@ -39,7 +39,7 @@ namespace Solutions {
  * coordinates \f$(x, y, z)\f$, and using dimensionless units, the primitive
  * variables at a given time \f$t\f$ are then
  *
- * \f{align*}
+ * \f{align*}{
  * \rho(\vec{x},t) &= 1 + A \sin(\vec{k}\cdot(\vec{x} - \vec{v}t)) \\
  * \vec{v}(\vec{x},t) &= [v_x, v_y, v_z]^{T},\\
  * P(\vec{x},t) &= P, \\
