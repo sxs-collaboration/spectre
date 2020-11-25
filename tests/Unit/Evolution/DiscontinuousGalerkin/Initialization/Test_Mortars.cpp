@@ -102,8 +102,9 @@ void test_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
   ActionTesting::emplace_component_and_initialize<component<metavars>>(
       &runner, element.id(),
       {time_step_id, element,
-       domain::Initialization::create_initial_mesh(initial_extents,
-                                                   element.id(), {})});
+       domain::Initialization::create_initial_mesh(
+           initial_extents, element.id(), Spectral::Quadrature::GaussLobatto,
+           {})});
 
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 

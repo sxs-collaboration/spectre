@@ -24,7 +24,8 @@ namespace evolution::dg::Initialization {
 template <size_t Dim, bool AddFluxBoundaryConditionMortars>
 auto Mortars<Dim, AddFluxBoundaryConditionMortars>::apply_impl(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
-    const Element<Dim>& element, const TimeStepId& next_temporal_id,
+    const Spectral::Quadrature quadrature, const Element<Dim>& element,
+    const TimeStepId& next_temporal_id,
     const std::unordered_map<Direction<Dim>, Mesh<Dim - 1>>& interface_meshes,
     const std::unordered_map<Direction<Dim>, Mesh<Dim - 1>>&
         boundary_meshes) noexcept
@@ -41,11 +42,12 @@ auto Mortars<Dim, AddFluxBoundaryConditionMortars>::apply_impl(
       const auto mortar_id = std::make_pair(direction, neighbor);
       mortar_data[mortar_id];  // Default initialize data
       mortar_meshes.emplace(
-          mortar_id, ::dg::mortar_mesh(
-                         interface_meshes.at(direction),
-                         ::domain::Initialization::create_initial_mesh(
-                             initial_extents, neighbor, neighbors.orientation())
-                             .slice_away(direction.dimension())));
+          mortar_id,
+          ::dg::mortar_mesh(interface_meshes.at(direction),
+                            ::domain::Initialization::create_initial_mesh(
+                                initial_extents, neighbor, quadrature,
+                                neighbors.orientation())
+                                .slice_away(direction.dimension())));
       mortar_sizes.emplace(
           mortar_id,
           ::dg::mortar_size(element.id(), neighbor, direction.dimension(),

@@ -129,7 +129,8 @@ struct InitializeMortars {
             dg::mortar_mesh(
                 interface_meshes.at(direction),
                 domain::Initialization::create_initial_mesh(
-                    initial_extents, neighbor, neighbors.orientation())
+                    initial_extents, neighbor,
+                    Spectral::Quadrature::GaussLobatto, neighbors.orientation())
                     .slice_away(direction.dimension())));
         mortar_sizes.emplace(
             mortar_id,

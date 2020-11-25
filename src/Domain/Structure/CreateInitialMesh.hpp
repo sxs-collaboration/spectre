@@ -16,8 +16,7 @@ template <size_t Dim>
 struct OrientationMap;
 /// \endcond
 
-namespace domain {
-namespace Initialization {
+namespace domain::Initialization {
 /// \ingroup InitializationGroup
 /// \brief Construct the initial Mesh of an Element.
 ///
@@ -28,11 +27,11 @@ namespace Initialization {
 ///
 /// \param initial_extents the initial extents of each Block in the Domain
 /// \param element_id id of an Element or its neighbor
+/// \param quadrature the quadrature rule/grid point distribution
 /// \param orientation OrientationMap of (neighboring) `element_id`
 template <size_t Dim>
 Mesh<Dim> create_initial_mesh(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
-    const ElementId<Dim>& element_id,
+    const ElementId<Dim>& element_id, Spectral::Quadrature quadrature,
     const OrientationMap<Dim>& orientation = {}) noexcept;
-}  // namespace Initialization
-}  // namespace domain
+}  // namespace domain::Initialization
