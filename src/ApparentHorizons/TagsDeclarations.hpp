@@ -49,6 +49,9 @@ struct UnitNormalVectorCompute;
 struct RicciScalar;
 template <typename Frame>
 struct RicciScalarCompute;
+struct YlmSpherepack;
+template <typename Frame>
+struct YlmSpherepackCompute;
 
 }  // namespace StrahlkorperTags
 

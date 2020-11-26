@@ -366,6 +366,25 @@ struct RicciScalarCompute : RicciScalar, db::ComputeTag {
   using return_type = Scalar<DataVector>;
 };
 
+/// Stores a `YlmSpherepack` object for computing gradients and integrals on a
+/// `Strahlkorper`
+struct YlmSpherepack : db::SimpleTag {
+  using type = ::YlmSpherepack;
+};
+
+/// Computes a `YlmSpherepack` object for computing gradients and integrals on
+/// a `Strahlkorper`
+template <typename Frame>
+struct YlmSpherepackCompute : YlmSpherepack, db::ComputeTag {
+  using base = YlmSpherepack;
+  static const ::YlmSpherepack& function(
+      const ::Strahlkorper<Frame>& strahlkorper) noexcept {
+    return strahlkorper.ylm_spherepack();
+  }
+  using argument_tags = tmpl::list<Strahlkorper<Frame>>;
+  using return_type = ::YlmSpherepack;
+};
+
 // @{
 /// `Tangents(i,j)` is \f$\partial x_{\rm surf}^i/\partial q^j\f$,
 /// where \f$x_{\rm surf}^i\f$ are the Cartesian coordinates of the
