@@ -527,12 +527,10 @@ void check_boundary_dense_output(const LtsTimeStepper& stepper) noexcept {
         slab.duration() * 4 / 9}}};
 
   Time t = slab.start();
-  double y = 0.;
   Time next_check = t + dt[0][0];
   std::array<Time, 2> next{{t, t}};
   for (;;) {
-    const auto side = static_cast<size_t>(
-        std::min_element(next.cbegin(), next.cend()) - next.cbegin());
+    const size_t side = next[0] <= next[1] ? 0 : 1;
 
     if (side == 0) {
       history.local_insert(make_time_id(next[0]), get_value());
@@ -545,13 +543,12 @@ void check_boundary_dense_output(const LtsTimeStepper& stepper) noexcept {
 
     gsl::at(next, side) += this_dt;
 
-    if (*std::min_element(next.cbegin(), next.cend()) == next_check) {
+    if (std::min(next[0], next[1]) == next_check) {
       const double dense_result =
           stepper.boundary_dense_output(coupling, history, next_check.value());
       const double delta = stepper.compute_boundary_delta(
           coupling, make_not_null(&history), next_check - t);
       CHECK(dense_result == approx(delta));
-      y += delta;
       if (next_check.is_at_slab_boundary()) {
         break;
       }
