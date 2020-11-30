@@ -125,6 +125,8 @@ struct WorldtubeData : public PUP::able {
     return std::make_unique<Cce::InitializeJ::InverseCubic>();
   };
 
+  virtual bool use_noninertial_news() const noexcept { return false; }
+
  protected:
   template <typename Tag>
   const auto& cache_or_compute(const size_t output_l_max,

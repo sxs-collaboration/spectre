@@ -105,9 +105,13 @@ void correct_weyl_scalars_for_inertial_time(
  * - Modifies: `InterpolagionManager<ComplexDataVector, Tag>` for each `Tag` in
  * `Metavariables::scri_values_to_observe`
  */
-template <typename ObserverWriterComponent>
+template <typename ObserverWriterComponent, typename BoundaryComponent>
 struct ScriObserveInterpolated {
-  using const_global_cache_tags = tmpl::list<Tags::ObservationLMax>;
+  using const_global_cache_tags = tmpl::flatten<
+      tmpl::list<Tags::ObservationLMax,
+                 std::conditional_t<
+                     tt::is_a_v<AnalyticWorldtubeBoundary, BoundaryComponent>,
+                     tmpl::list<Tags::OutputNoninertialNews>, tmpl::list<>>>>;
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -213,8 +217,11 @@ struct ScriObserveInterpolated {
       // scri+.
       if constexpr (tmpl::list_contains_v<DbTags,
                                           Tags::AnalyticBoundaryDataManager>) {
-        db::get<Tags::AnalyticBoundaryDataManager>(box)
-            .template write_news<ParallelComponent>(cache, interpolation_time);
+        if (not db::get<Tags::OutputNoninertialNews>(box)) {
+          db::get<Tags::AnalyticBoundaryDataManager>(box)
+              .template write_news<ParallelComponent>(cache,
+                                                      interpolation_time);
+        }
       }
     }
     return std::forward_as_tuple(std::move(box));

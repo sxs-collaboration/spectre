@@ -60,6 +60,40 @@ struct InsertIntoInterpolationManagerImpl<::Tags::Multiplies<LhsTag, RhsTag>> {
                                        get(rhs_data).data());
   }
 };
+
+template <typename Tag, typename ParallelComponent, typename Metavariables>
+void output_impl(const size_t observation_l_max, const size_t l_max,
+                 const TimeStepId& time_id, const typename Tag::type& tag_data,
+                 Parallel::GlobalCache<Metavariables>& cache) noexcept {
+  std::vector<double> data_to_write(2 * square(observation_l_max + 1) + 1);
+  std::vector<std::string> file_legend;
+  file_legend.reserve(2 * square(observation_l_max + 1) + 1);
+  file_legend.emplace_back("time");
+  for (int l = 0; l <= static_cast<int>(observation_l_max); ++l) {
+    for (int m = -l; m <= l; ++m) {
+      file_legend.push_back(MakeString{} << "Real Y_" << l << "," << m);
+      file_legend.push_back(MakeString{} << "Imag Y_" << l << "," << m);
+    }
+  }
+  auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
+  auto observer_proxy = Parallel::get_parallel_component<
+      observers::ObserverWriter<Metavariables>>(
+      cache)[static_cast<size_t>(Parallel::my_node(*my_proxy.ckLocal()))];
+  // swsh transform
+  const ComplexModalVector goldberg_modes =
+      Spectral::Swsh::libsharp_to_goldberg_modes(
+          Spectral::Swsh::swsh_transform(l_max, 1, get(tag_data)), l_max)
+          .data();
+
+  data_to_write[0] = time_id.substep_time().value();
+  for (size_t i = 0; i < square(observation_l_max + 1); ++i) {
+    data_to_write[2 * i + 1] = real(goldberg_modes[i]);
+    data_to_write[2 * i + 2] = imag(goldberg_modes[i]);
+  }
+  Parallel::threaded_action<observers::ThreadedActions::WriteSimpleData>(
+      observer_proxy, file_legend, data_to_write,
+      "/" + db::tag_name<Tag>() + "_Noninertial");
+}
 }  // namespace detail
 
 /*!
@@ -88,19 +122,34 @@ struct InsertIntoInterpolationManagerImpl<::Tags::Multiplies<LhsTag, RhsTag>> {
  * - Adds: nothing
  * - Removes: nothing
  */
-template <typename Tag>
+template <typename Tag, typename BoundaryComponent>
 struct InsertInterpolationScriData {
-  using const_global_cache_tags =
-      tmpl::list<InitializationTags::ScriOutputDensity>;
+  using const_global_cache_tags = tmpl::flatten<
+      tmpl::list<InitializationTags::ScriOutputDensity,
+                 std::conditional_t<
+                     tt::is_a_v<AnalyticWorldtubeBoundary, BoundaryComponent>,
+                     tmpl::list<Tags::OutputNoninertialNews>, tmpl::list<>>>>;
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
+    if constexpr(tt::is_a_v<AnalyticWorldtubeBoundary, BoundaryComponent>) {
+      if (db::get<Tags::OutputNoninertialNews>(box) and
+          db::get<::Tags::TimeStepId>(box).substep() == 0 and
+          std::is_same_v<Tag, Tags::News>) {
+        detail::output_impl<Tags::News, ParallelComponent>(
+            db::get<Tags::ObservationLMax>(box), db::get<Tags::LMax>(box),
+            db::get<::Tags::TimeStepId>(box), db::get<Tags::News>(box), cache);
+        db::get<Tags::AnalyticBoundaryDataManager>(box)
+            .template write_news<ParallelComponent>(
+                cache, db::get<::Tags::TimeStepId>(box).substep_time().value());
+      }
+    }
     if (db::get<::Tags::TimeStepId>(box).substep() == 0) {
       // insert the data points into the interpolator.
       db::mutate_apply<detail::InsertIntoInterpolationManagerImpl<Tag>>(
