@@ -229,6 +229,11 @@ void TestArrayChare<Metavariables>::run_test_one() noexcept {
   SPECTRE_PARALLEL_REQUIRE(
       6 == Parallel::get<animal_base>(local_cache).number_of_legs());
 
+  const auto local_cache_from_proxy =
+      local_cache.get_this_proxy().ckLocalBranch();
+  SPECTRE_PARALLEL_REQUIRE(local_cache_from_proxy ==
+                           global_cache_proxy_.ckLocalBranch());
+
   // Mutate the weight to 150.
   Parallel::mutate<weight, modify_value<double>>(global_cache_proxy_, 150.0);
   run_test_two();

@@ -6,7 +6,9 @@
 
 #pragma once
 
+#include <charm++.h>
 #include <optional>
+#include <pup.h>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -267,6 +269,7 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
           tmpl::bind<Parallel::proxy_from_parallel_component, tmpl::_1>>>;
 
  public:
+  using proxy_type = CProxy_GlobalCache<Metavariables>;
   /// Access to the Metavariables template parameter
   using metavariables = Metavariables;
   /// Typelist of the ParallelComponents stored in the GlobalCache
@@ -332,6 +335,9 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   /// `args` as subsequent arguments.
   template <typename GlobalCacheTag, typename Function, typename... Args>
   void mutate(const std::tuple<Args...>& args) noexcept;
+
+  /// Retrieve the proxy to the global cache
+  proxy_type get_this_proxy() noexcept;
 
  private:
   // clang-tidy: false positive, redundant declaration
@@ -440,6 +446,12 @@ void GlobalCache<Metavariables>::mutate(
     // version that bypasses proxies.  Just call the function.
     mutable_global_cache_->template mutate<GlobalCacheTag, Function>(args);
   }
+}
+
+template <typename Metavariables>
+typename Parallel::GlobalCache<Metavariables>::proxy_type
+GlobalCache<Metavariables>::get_this_proxy() noexcept {
+  return this->thisProxy;
 }
 
 // @{
