@@ -137,6 +137,8 @@ class MutableGlobalCache : public CBase_MutableGlobalCache<Metavariables> {
   template <typename GlobalCacheTag, typename Function>
   bool mutable_cache_item_is_ready(const Function& function) noexcept;
 
+  void pup(PUP::er& p) noexcept override;  // NOLINT
+
  private:
   tuples::tagged_tuple_from_typelist<
       get_mutable_global_cache_tag_storage<Metavariables>>
@@ -218,6 +220,11 @@ void MutableGlobalCache<Metavariables>::mutate(
   }
   std::get<1>(tuples::get<tag>(mutable_global_cache_)).clear();
   std::get<1>(tuples::get<tag>(mutable_global_cache_)).shrink_to_fit();
+}
+
+template <typename Metavariables>
+void MutableGlobalCache<Metavariables>::pup(PUP::er& p) noexcept {
+  p | mutable_global_cache_;
 }
 
 /// \ingroup ParallelGroup

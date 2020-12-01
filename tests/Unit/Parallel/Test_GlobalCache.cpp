@@ -404,6 +404,25 @@ void Test_GlobalCache<Metavariables>::run_single_core_test() noexcept {
   SPECTRE_PARALLEL_REQUIRE(30 == Parallel::get<animal>(cache).number_of_legs());
   SPECTRE_PARALLEL_REQUIRE(30 ==
                            Parallel::get<animal_base>(cache).number_of_legs());
+
+  Parallel::MutableGlobalCache<TestMetavariables>
+      serialized_and_deserialized_mutable_cache =
+          serialize_and_deserialize(mutable_cache);
+  Parallel::GlobalCache<TestMetavariables> cache_with_serialized_mutable_cache(
+      tuples::tagged_tuple_from_typelist<const_tag_list>{
+          "Nobody", 178, 2.2, std::make_unique<Square>()},
+      &serialized_and_deserialized_mutable_cache);
+  SPECTRE_PARALLEL_REQUIRE(
+      150 == Parallel::get<weight>(cache_with_serialized_mutable_cache));
+  SPECTRE_PARALLEL_REQUIRE(
+      "isaac@newton.com" ==
+      Parallel::get<email>(cache_with_serialized_mutable_cache));
+  SPECTRE_PARALLEL_REQUIRE(
+      30 == Parallel::get<animal>(cache_with_serialized_mutable_cache)
+                .number_of_legs());
+  SPECTRE_PARALLEL_REQUIRE(
+      30 == Parallel::get<animal_base>(cache_with_serialized_mutable_cache)
+                .number_of_legs());
 }
 
 template <typename Metavariables>
