@@ -3,9 +3,19 @@
 
 #include "Domain/Block.hpp"
 
+#include <cstddef>
 #include <ios>
+#include <memory>
+#include <ostream>
 #include <pup.h>  // IWYU pragma: keep
+#include <typeinfo>
+#include <utility>
 
+#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
@@ -19,15 +29,39 @@ Block<VolumeDim>::Block(
     std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, Frame::Inertial,
                                               VolumeDim>>&& stationary_map,
     const size_t id,
-    DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors) noexcept
+    DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors,
+    DirectionMap<VolumeDim, std::unique_ptr<
+                                domain::BoundaryConditions::BoundaryCondition>>
+        external_boundary_conditions) noexcept
     : stationary_map_(std::move(stationary_map)),
       id_(id),
       neighbors_(std::move(neighbors)) {
+  ASSERT(external_boundary_conditions.empty() or
+             external_boundary_conditions.size() ==
+                 2 * VolumeDim - neighbors_.size(),
+         "Must have either no boundary conditions or one boundary condition "
+         "for each external boundary.");
   // Loop over Directions to search which Directions were not set to neighbors_,
   // set these Directions to external_boundaries_.
   for (const auto& direction : Direction<VolumeDim>::all_directions()) {
     if (neighbors_.find(direction) == neighbors_.end()) {
-      external_boundaries_.emplace(std::move(direction));
+      ASSERT(external_boundary_conditions.empty() or
+                 external_boundary_conditions.contains(direction),
+             "Specifying boundary conditions but the external direction "
+                 << direction << " in block " << id_
+                 << " does not have a specified boundary condition.");
+      if (external_boundary_conditions.contains(direction)) {
+        external_boundary_conditions_[direction] =
+            std::move(external_boundary_conditions.at(direction));
+      } else {
+        // Fill with a nullptr for now so we don't break existing code.
+        external_boundary_conditions_[direction] = nullptr;
+        // We cannot enable this error message until boundary conditions are
+        // enabled everywhere in the code, unfortunately.
+        // ERROR("Couldn't find boundary condition for external boundary "
+        //       << direction);
+      }
+      external_boundaries_.emplace(direction);
     }
   }
 }
@@ -83,6 +117,7 @@ void Block<VolumeDim>::pup(PUP::er& p) noexcept {
   p | id_;
   p | neighbors_;
   p | external_boundaries_;
+  p | external_boundary_conditions_;
 }
 
 template <size_t VolumeDim>
@@ -98,8 +133,19 @@ std::ostream& operator<<(std::ostream& os,
 template <size_t VolumeDim>
 bool operator==(const Block<VolumeDim>& lhs,
                 const Block<VolumeDim>& rhs) noexcept {
+  // Since the external boundary conditions are all abstract base classes we
+  // can't compare them, but we check that the typeid matches between LHS and
+  // RHS.
   return lhs.id() == rhs.id() and lhs.neighbors() == rhs.neighbors() and
          lhs.external_boundaries() == rhs.external_boundaries() and
+         alg::all_of(
+             rhs.external_boundaries(),
+             [&lhs, &rhs](const Direction<VolumeDim>& dir) noexcept {
+               return lhs.external_boundary_conditions().contains(dir) and
+                      rhs.external_boundary_conditions().contains(dir) and
+                      typeid(lhs.external_boundary_conditions().at(dir)) ==
+                          typeid(rhs.external_boundary_conditions().at(dir));
+             }) and
          lhs.is_time_dependent() == rhs.is_time_dependent() and
          (lhs.is_time_dependent()
               ? (lhs.moving_mesh_logical_to_grid_map() ==
