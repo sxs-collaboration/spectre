@@ -100,6 +100,8 @@ struct add_new_stored_double {
 // Global variables to make sure that certain functions have been called.
 size_t number_of_calls_to_use_stored_double_is_ready = 0;
 size_t number_of_calls_to_use_stored_double_apply = 0;
+size_t number_of_calls_to_check_and_use_stored_double_is_ready = 0;
+size_t number_of_calls_to_check_and_use_stored_double_apply = 0;
 
 struct finalize {
   template <typename ParallelComponent, typename... DbTags,
@@ -113,6 +115,42 @@ struct finalize {
     SPECTRE_PARALLEL_REQUIRE(number_of_calls_to_use_stored_double_is_ready ==
                              2);
     SPECTRE_PARALLEL_REQUIRE(number_of_calls_to_use_stored_double_apply == 1);
+    SPECTRE_PARALLEL_REQUIRE(
+        number_of_calls_to_check_and_use_stored_double_is_ready == 2);
+    SPECTRE_PARALLEL_REQUIRE(
+        number_of_calls_to_check_and_use_stored_double_apply == 1);
+  }
+};
+
+struct simple_action_check_and_use_stored_double {
+  template <typename ParallelComponent, typename... DbTags,
+            typename Metavariables, typename ArrayIndex>
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/) noexcept {
+    ++number_of_calls_to_check_and_use_stored_double_is_ready;
+    auto& this_proxy =
+        Parallel::get_parallel_component<ParallelComponent>(cache);
+    auto callback = CkCallback(
+        Parallel::index_from_parallel_component<ParallelComponent>::
+            template simple_action<simple_action_check_and_use_stored_double>(),
+        this_proxy);
+    const bool is_ready =
+        ::Parallel::mutable_cache_item_is_ready<Tags::VectorOfDoubles>(
+            cache,
+            [&callback](const std::vector<double>& VectorOfDoubles)
+                -> std::optional<CkCallback> {
+              return VectorOfDoubles.empty()
+                         ? std::optional<CkCallback>(callback)
+                         : std::optional<CkCallback>{};
+            });
+
+    if (is_ready) {
+      ++number_of_calls_to_check_and_use_stored_double_apply;
+      const std::vector<double> expected_result{42.0};
+      SPECTRE_PARALLEL_REQUIRE(Parallel::get<Tags::VectorOfDoubles>(cache) ==
+                               expected_result);
+    }
   }
 };
 
@@ -163,7 +201,7 @@ struct use_stored_double {
 
 }  // namespace mutate_cache
 
-// We have two ParallelComponents:
+// We have three ParallelComponents:
 //
 // 1) MutateCacheComponent mutates the value in the GlobalCache using
 //    simple_actions, and then tests that the value in the GlobalCache
@@ -173,6 +211,11 @@ struct use_stored_double {
 //    is_ready function checks the size of the value in the
 //    GlobalCache.  If the size is correct, then its apply function
 //    verifies that the value is correct.
+//
+// 3) CheckAndUseMutatedCacheComponent has a simple_action that checks
+//    the size of the value in the GlobalCache, and then if the size
+//    is correct, it verifies that its value is correct.
+//
 template <class Metavariables>
 struct MutateCacheComponent {
   using chare_type = Parallel::Algorithms::Singleton;
@@ -227,16 +270,47 @@ struct UseMutatedCacheComponent {
   }
 };
 
+template <class Metavariables>
+struct CheckAndUseMutatedCacheComponent {
+  using chare_type = Parallel::Algorithms::Singleton;
+  using metavariables = Metavariables;
+  using mutable_global_cache_tags =
+      tmpl::list<mutate_cache::Tags::VectorOfDoubles>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Initialization,
+                             tmpl::list<mutate_cache::Actions::initialize>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
+
+  static void execute_next_phase(
+      const typename Metavariables::Phase next_phase,
+      const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
+    auto& local_cache = *(global_cache.ckLocalBranch());
+    Parallel::get_parallel_component<CheckAndUseMutatedCacheComponent>(
+        local_cache)
+        .start_phase(next_phase);
+    if (next_phase == Metavariables::Phase::MutableCacheSimpleActionStart) {
+      Parallel::simple_action<
+          mutate_cache::Actions::simple_action_check_and_use_stored_double>(
+          Parallel::get_parallel_component<CheckAndUseMutatedCacheComponent>(
+              local_cache));
+    }
+  }
+};
+
 struct TestMetavariables {
   using component_list =
       tmpl::list<MutateCacheComponent<TestMetavariables>,
-                 UseMutatedCacheComponent<TestMetavariables>>;
+                 UseMutatedCacheComponent<TestMetavariables>,
+                 CheckAndUseMutatedCacheComponent<TestMetavariables>>;
 
   static constexpr Options::String help =
       "An executable for testing mutable items in the GlobalCache.";
 
   enum class Phase {
     Initialization,
+    MutableCacheSimpleActionStart,
     MutableCacheStart,
     MutableCacheFinish,
     Exit
@@ -248,6 +322,8 @@ struct TestMetavariables {
           TestMetavariables>& /*cache_proxy*/) noexcept {
     switch (current_phase) {
       case Phase::Initialization:
+        return Phase::MutableCacheSimpleActionStart;
+      case Phase::MutableCacheSimpleActionStart:
         return Phase::MutableCacheStart;
       case Phase::MutableCacheStart:
         return Phase::MutableCacheFinish;
