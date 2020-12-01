@@ -44,3 +44,4 @@ target_link_libraries(
   )
 
 add_subdirectory(NumericalFluxes)
+add_subdirectory(SubdomainOperator)

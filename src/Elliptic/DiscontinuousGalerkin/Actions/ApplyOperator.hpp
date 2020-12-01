@@ -170,7 +170,7 @@ struct PrepareAndSendMortarData<System, Linearized, TemporalIdTag, VarsTag,
     const auto apply_boundary_condition =
         [&boundary_condition, &box](const Direction<Dim>& direction,
                                     const auto... fields_and_fluxes) noexcept {
-          elliptic::apply_boundary_condition<Linearized>(
+          elliptic::apply_boundary_condition<Linearized, void>(
               *boundary_condition, box, direction, fields_and_fluxes...);
         };
 
@@ -443,7 +443,7 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
     const auto apply_boundary_condition =
         [&boundary_condition, &box](const Direction<Dim>& direction,
                                     const auto... fields_and_fluxes) noexcept {
-          elliptic::apply_boundary_condition<false>(
+          elliptic::apply_boundary_condition<false, void>(
               *boundary_condition, box, direction, fields_and_fluxes...);
         };
 

@@ -30,36 +30,47 @@ namespace elliptic {
  * involve storing a subset of arguments that don't change during an elliptic
  * solve in direction-maps in the DataBox, and slicing other arguments to the
  * interface every time the boundary conditions are applied.
+ *
+ * Doesn't currently support:
+ * volume tag on overlaps -> either all or none of the map keys are applied
  */
-template <bool Linearized, size_t Dim, typename Registrars, typename DbTagsList,
+template <bool Linearized, typename ArgsTransform, size_t Dim,
+          typename Registrars, typename DbTagsList, typename MapKeys,
           typename... FieldsAndFluxes>
 void apply_boundary_condition(
     const elliptic::BoundaryConditions::BoundaryCondition<Dim, Registrars>&
         boundary_condition,
-    const db::DataBox<DbTagsList>& box, const Direction<Dim>& direction,
+    const db::DataBox<DbTagsList>& box, const MapKeys& map_keys_to_direction,
     const gsl::not_null<FieldsAndFluxes*>... fields_and_fluxes) noexcept {
   call_with_dynamic_type<
       void, typename elliptic::BoundaryConditions::BoundaryCondition<
                 Dim, Registrars>::creatable_classes>(
-      &boundary_condition, [&direction, &box, &fields_and_fluxes...](
-                               const auto* const derived) noexcept {
+      &boundary_condition,
+      [&map_keys_to_direction, &box,
+       &fields_and_fluxes...](const auto* const derived) noexcept {
         using Derived = std::decay_t<std::remove_pointer_t<decltype(derived)>>;
-        using argument_tags =
-            tmpl::conditional_t<Linearized,
-                                typename Derived::argument_tags_linearized,
-                                typename Derived::argument_tags>;
         using volume_tags =
             tmpl::conditional_t<Linearized,
                                 typename Derived::volume_tags_linearized,
                                 typename Derived::volume_tags>;
-        elliptic::util::apply_at<
-            tmpl::transform<
-                argument_tags,
-                make_interface_tag<
-                    tmpl::_1,
-                    tmpl::pin<domain::Tags::BoundaryDirectionsInterior<Dim>>,
-                    tmpl::pin<volume_tags>>>,
-            volume_tags>(
+        using argument_tags = tmpl::transform<
+            tmpl::conditional_t<Linearized,
+                                typename Derived::argument_tags_linearized,
+                                typename Derived::argument_tags>,
+            make_interface_tag<
+                tmpl::_1,
+                tmpl::pin<domain::Tags::BoundaryDirectionsInterior<Dim>>,
+                tmpl::pin<volume_tags>>>;
+        using argument_tags_transformed =
+            tmpl::conditional_t<std::is_same_v<ArgsTransform, void>,
+                                argument_tags,
+                                tmpl::transform<argument_tags, ArgsTransform>>;
+        using volume_tags_transformed =
+            tmpl::conditional_t<std::is_same_v<ArgsTransform, void>,
+                                volume_tags,
+                                tmpl::transform<volume_tags, ArgsTransform>>;
+        elliptic::util::apply_at<argument_tags_transformed,
+                                 volume_tags_transformed>(
             [&derived, &fields_and_fluxes...](const auto&... args) noexcept {
               if constexpr (Linearized) {
                 derived->apply_linearized(args..., fields_and_fluxes...);
@@ -67,7 +78,7 @@ void apply_boundary_condition(
                 derived->apply(args..., fields_and_fluxes...);
               }
             },
-            box, direction);
+            box, map_keys_to_direction);
       });
 }
 }  // namespace elliptic

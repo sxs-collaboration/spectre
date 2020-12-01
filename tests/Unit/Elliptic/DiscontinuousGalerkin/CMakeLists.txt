@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(NumericalFluxes)
+add_subdirectory(SubdomainOperator)
 
 set(LIBRARY "Test_EllipticDG")
 
