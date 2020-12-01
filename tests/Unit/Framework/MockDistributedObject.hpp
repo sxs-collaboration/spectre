@@ -298,8 +298,7 @@ class MockDistributedObject {
             db::AddSimpleTags<Parallel::Tags::GlobalCacheImpl<metavariables>>,
             db::AddComputeTags<db::wrap_tags_in<Parallel::Tags::FromGlobalCache,
                                                 all_cache_tags>>>(
-            static_cast<const Parallel::GlobalCache<metavariables>*>(
-                global_cache_)),
+            global_cache_),
         std::forward<Options>(opts)...);
   }
 

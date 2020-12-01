@@ -595,7 +595,7 @@ struct GlobalCache : db::BaseTag {};
 
 template <class Metavariables>
 struct GlobalCacheImpl : GlobalCache, db::SimpleTag {
-  using type = const Parallel::GlobalCache<Metavariables>*;
+  using type = Parallel::GlobalCache<Metavariables>*;
   static std::string name() noexcept { return "GlobalCache"; }
 };
 
@@ -617,6 +617,33 @@ struct FromGlobalCache : CacheTag, db::ComputeTag {
 };
 }  // namespace Tags
 }  // namespace Parallel
+
+namespace PUP {
+
+/// \ingroup ParallelGroup
+/// Serialization of a pointer to the global cache for Charm++
+template <typename Metavariables>
+inline void pup(PUP::er& p,  // NOLINT
+                Parallel::GlobalCache<Metavariables>*& t) noexcept {
+  typename Parallel::GlobalCache<Metavariables>::proxy_type
+      local_const_global_cache_proxy;
+  if (p.isUnpacking()) {
+    p | local_const_global_cache_proxy;
+    t = local_const_global_cache_proxy.ckLocalBranch();
+  } else {
+    local_const_global_cache_proxy = t->get_this_proxy();
+    p | local_const_global_cache_proxy;
+  }
+}
+
+/// \ingroup ParallelGroup
+/// Serialization of a pointer to the global cache for Charm++
+template <typename Metavariables>
+inline void operator|(PUP::er& p,  // NOLINT
+                      Parallel::GlobalCache<Metavariables>*& t) {
+  pup(p, t);
+}
+}  // namespace PUP
 
 #define CK_TEMPLATES_ONLY
 #include "Parallel/GlobalCache.def.h"
