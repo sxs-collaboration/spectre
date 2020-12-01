@@ -48,6 +48,28 @@ void take_step(
   *time = time_id.substep_time();
 }
 
+template <typename F>
+void take_step_and_check_error(
+    const gsl::not_null<Time*> time, const gsl::not_null<double*> y,
+    const gsl::not_null<double*> y_error,
+    const gsl::not_null<TimeSteppers::History<double, double>*> history,
+    const TimeStepper& stepper, F&& rhs, const TimeDelta& step_size) noexcept {
+  TimeStepId time_id(step_size.is_positive(), 0, *time);
+  for (uint64_t substep = 0; substep < stepper.number_of_substeps_for_error();
+       ++substep) {
+    CHECK(time_id.substep() == substep);
+    history->insert(time_id, *y, rhs(*y, time_id.substep_time().value()));
+    bool error_updated = stepper.update_u(y, y_error, history, step_size);
+    if (substep != stepper.number_of_substeps_for_error() - 1) {
+      CAPTURE(substep);
+      CHECK_FALSE(error_updated);
+    }
+    time_id = stepper.next_time_id_for_error(time_id, step_size);
+  }
+  CHECK(time_id.substep_time() - *time == step_size);
+  *time = time_id.substep_time();
+}
+
 template <typename F1, typename F2>
 void initialize_history(
     Time time,
@@ -154,6 +176,59 @@ void integrate_test_explicit_time_dependence(const TimeStepper& stepper,
     take_step(&time, &y, &history, stepper, rhs, step_size);
     // This check needs a looser tolerance for lower-order time steppers.
     CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
+  }
+  // Make sure history is being cleaned up.  The limit of 20 is
+  // arbitrary, but much larger than the order of any integrators we
+  // care about and much smaller than the number of time steps in the
+  // test.
+  CHECK(history.size() < 20);
+}
+
+void integrate_error_test(const TimeStepper& stepper,
+                          const size_t number_of_past_steps,
+                          const double integration_time, const double epsilon,
+                          const size_t num_steps,
+                          const double error_factor) noexcept {
+  auto analytic = [](const double t) noexcept { return sin(t); };
+  auto rhs = [](const double v, const double /*t*/) noexcept {
+               return sqrt(1. - square(v));
+             };
+
+  const Slab slab = integration_time > 0
+      ? Slab::with_duration_from_start(0., integration_time)
+      : Slab::with_duration_to_end(0., -integration_time);
+  const TimeDelta step_size = integration_time > 0
+      ? slab.duration() / num_steps
+      : -slab.duration() / num_steps;
+
+  Time time = integration_time > 0 ? slab.start() : slab.end();
+  double y = analytic(time.value());
+  TimeSteppers::History<double, double> history;
+
+  initialize_history(time, make_not_null(&history), analytic, rhs, step_size,
+                     number_of_past_steps);
+  double y_error = std::numeric_limits<double>::signaling_NaN();
+  double previous_y = std::numeric_limits<double>::signaling_NaN();
+  double previous_time = std::numeric_limits<double>::signaling_NaN();
+  for (uint64_t i = 0; i < num_steps; ++i) {
+    take_step_and_check_error(make_not_null(&time), make_not_null(&y),
+                              make_not_null(&y_error), make_not_null(&history),
+                              stepper, rhs, step_size);
+    // This check needs a looser tolerance for lower-order time steppers.
+    CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
+
+    // check that the error measure is a reasonable estimate of the deviation
+    // from the analytic solution. This solution is smooth, so the error should
+    // be dominated by the stepper.
+    if (i > num_steps / 2) {
+      REQUIRE(static_cast<bool>(y_error));
+      double local_error = abs((y - analytic(time.value())) -
+                               (previous_y - analytic(previous_time)));
+      CHECK(local_error < std::max(abs(y_error), 1e-14));
+      CHECK(local_error > abs(error_factor * y_error));
+    }
+    previous_y = y;
+    previous_time = time.value();
   }
   // Make sure history is being cleaned up.  The limit of 20 is
   // arbitrary, but much larger than the order of any integrators we

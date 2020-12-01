@@ -74,11 +74,18 @@ class DormandPrince5 : public TimeStepper::Inherit {
                 const TimeDelta& time_step) const noexcept;
 
   template <typename Vars, typename DerivVars>
+  bool update_u(gsl::not_null<Vars*> u, gsl::not_null<Vars*> u_error,
+                gsl::not_null<History<Vars, DerivVars>*> history,
+                const TimeDelta& time_step) const noexcept;
+
+  template <typename Vars, typename DerivVars>
   void dense_update_u(gsl::not_null<Vars*> u,
                       const History<Vars, DerivVars>& history,
                       double time) const noexcept;
 
   uint64_t number_of_substeps() const noexcept override;
+
+  uint64_t number_of_substeps_for_error() const noexcept override;
 
   size_t number_of_past_steps() const noexcept override;
 
@@ -86,6 +93,10 @@ class DormandPrince5 : public TimeStepper::Inherit {
 
   TimeStepId next_time_id(const TimeStepId& current_id,
                           const TimeDelta& time_step) const noexcept override;
+
+  TimeStepId next_time_id_for_error(
+      const TimeStepId& current_id,
+      const TimeDelta& time_step) const noexcept override;
 
   template <typename Vars, typename DerivVars>
   bool can_change_step_size(
@@ -119,7 +130,13 @@ class DormandPrince5 : public TimeStepper::Inherit {
   static constexpr std::array<double, 6> b_{{35.0 / 384.0, 0.0, 500.0 / 1113.0,
                                              125.0 / 192.0, -2187.0 / 6784.0,
                                              11.0 / 84.0}};
-  static const std::array<Time::rational_t, 5> c_;
+  // Coefficients for the embedded method, for generating an error measure
+  // during adaptive stepping (e.g. Sec. 7.2 of \cite NumericalRecipes).
+  static constexpr std::array<double, 7> b_alt_{
+      {5179.0 / 57600.0, 0.0, 7571.0 / 16695.0, 393.0 / 640.0,
+       -92097.0 / 339200.0, 187.0 / 2100.0, 1.0 / 40.0}};
+
+  static const std::array<Time::rational_t, 6> c_;
 
   // Coefficients for dense output, taken from Sec. 7.2 of
   // \cite NumericalRecipes
@@ -178,6 +195,54 @@ void DormandPrince5::update_u(
   if (history->size() == number_of_substeps()) {
     history->mark_unneeded(history->end());
   }
+}
+
+template <typename Vars, typename DerivVars>
+bool DormandPrince5::update_u(
+    const gsl::not_null<Vars*> u, const gsl::not_null<Vars*> u_error,
+    const gsl::not_null<History<Vars, DerivVars>*> history,
+    const TimeDelta& time_step) const noexcept {
+  const size_t substep = history->size() - 1;
+  const auto& u0 = history->begin().value();
+  const double dt = time_step.value();
+
+  const auto increment_u = [&history, &dt](const auto& coeffs,
+                                           auto local_u) noexcept {
+    for (size_t i = 0; i < coeffs.size(); ++i) {
+      *local_u += (gsl::at(coeffs, i) * dt) *
+                  (history->begin() + static_cast<int>(i)).derivative();
+    }
+  };
+  if (substep == 0) {
+    *u += (a2_ * dt) * history->begin().derivative();
+  } else if (substep < 7) {
+    *u = u0;
+    if (substep == 1) {
+      increment_u(a3_, u);
+    } else if (substep == 2) {
+      increment_u(a4_, u);
+    } else if (substep == 3) {
+      increment_u(a5_, u);
+    } else if (substep == 4) {
+      increment_u(a6_, u);
+    } else if (substep == 5) {
+      increment_u(b_, u);
+    } else {
+      increment_u(b_, u);
+      *u_error = u0;
+      increment_u(b_alt_, u_error);
+      *u_error = *u - *u_error;
+    }
+  } else {
+    ERROR("Substep in adaptive DP5 should be one of 0,1,2,3,4,5,6, not "
+          << substep);
+  }
+
+  // Clean up old history
+  if (history->size() == number_of_substeps_for_error()) {
+    history->mark_unneeded(history->end());
+  }
+  return substep == 6;
 }
 
 template <typename Vars, typename DerivVars>

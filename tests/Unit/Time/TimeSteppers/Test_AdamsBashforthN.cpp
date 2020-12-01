@@ -38,6 +38,15 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
       TimeStepperTestUtils::integrate_test(stepper, start_points, 1., epsilon);
       TimeStepperTestUtils::integrate_test_explicit_time_dependence(
           stepper, start_points, 1., epsilon);
+      if (start_points > 0) {
+        CAPTURE(order);
+        const double large_step_epsilon =
+            std::max(1.0e3 * std::pow(2.0e-2, start_points + 1), 1e-14);
+        TimeStepperTestUtils::integrate_error_test(
+            stepper, start_points, 1.0, large_step_epsilon, 20, 1.0e-4);
+        TimeStepperTestUtils::integrate_error_test(
+            stepper, start_points, -1.0, large_step_epsilon, 20, 1.0e-4);
+      }
     }
     TimeStepperTestUtils::check_convergence_order(stepper, order);
     TimeStepperTestUtils::check_dense_output(stepper, order);

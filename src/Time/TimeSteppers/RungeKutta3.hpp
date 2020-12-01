@@ -55,11 +55,18 @@ class RungeKutta3 : public TimeStepper::Inherit {
                 const TimeDelta& time_step) const noexcept;
 
   template <typename Vars, typename DerivVars>
+  bool update_u(gsl::not_null<Vars*> u, gsl::not_null<Vars*> u_error,
+                gsl::not_null<History<Vars, DerivVars>*> history,
+                const TimeDelta& time_step) const noexcept;
+
+  template <typename Vars, typename DerivVars>
   void dense_update_u(gsl::not_null<Vars*> u,
                       const History<Vars, DerivVars>& history,
                       double time) const noexcept;
 
   uint64_t number_of_substeps() const noexcept override;
+
+  uint64_t number_of_substeps_for_error() const noexcept override;
 
   size_t number_of_past_steps() const noexcept override;
 
@@ -67,6 +74,10 @@ class RungeKutta3 : public TimeStepper::Inherit {
 
   TimeStepId next_time_id(const TimeStepId& current_id,
                           const TimeDelta& time_step) const noexcept override;
+
+  TimeStepId next_time_id_for_error(
+      const TimeStepId& current_id,
+      const TimeDelta& time_step) const noexcept override;
 
   template <typename Vars, typename DerivVars>
   bool can_change_step_size(
@@ -142,6 +153,40 @@ void RungeKutta3::update_u(
   if (history->size() == number_of_substeps()) {
     history->mark_unneeded(history->end());
   }
+}
+
+template <typename Vars, typename DerivVars>
+bool RungeKutta3::update_u(
+    const gsl::not_null<Vars*> u, const gsl::not_null<Vars*> u_error,
+    const gsl::not_null<History<Vars, DerivVars>*> history,
+    const TimeDelta& time_step) const noexcept {
+  const size_t substep = history->size() - 1;
+  // error estimate is only available when completing a full step
+  if(substep != 2) {
+    update_u(u, history, time_step);
+  } else {
+    const auto& vars = (history->end() - 1).value();
+    const auto& dt_vars = (history->end() - 1).derivative();
+    const auto& U0 = history->begin().value();
+    // from (5.32) of Hesthaven
+    // u^(n+1) = (1/3)*( u^n + 2*v^(2) + 2*dt*RHS(v^(2),t^n + (1/2)*dt) )
+    // On entry V = v^(2), U0 = u^n, rhs0 = RHS(v^(2),t^n + (1/2)*dt),
+    // time = t^n + (1/2)*dt
+    *u += (1.0 / 3.0) * (U0 - vars + 2.0 * time_step.value() * dt_vars);
+    // On exit v = u^(n+1), time = t^n + dt
+
+    // error is estimated by comparing the order 3 step result with an order 2
+    // estimate. See e.g. Chapter II.4 of Harrier, Norsett, and Wagner 1993
+    *u_error = *u - U0 -
+               time_step.value() * 0.5 *
+                   (history->begin().derivative() +
+                    (history->begin() + 1).derivative());
+    // Clean up old history
+    if (history->size() == number_of_substeps()) {
+      history->mark_unneeded(history->end());
+    }
+  }
+  return substep == 2;
 }
 
 template <typename Vars, typename DerivVars>
