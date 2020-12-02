@@ -13,13 +13,13 @@ set(LIBRARY_SOURCES
   Observers/Test_RegisterSingleton.cpp
   Observers/Test_Tags.cpp
   Observers/Test_ObservationId.cpp
-  Observers/Test_ReductionObserver.cpp
-  Observers/Test_TypeOfObservation.cpp
-  Observers/Test_VolumeObserver.cpp
-  Observers/Test_WriteSimpleData.cpp
-  Test_H5.cpp
-  Test_StellarCollapseEos.cpp
-  Test_VolumeData.cpp
+# Observers/Test_ReductionObserver.cpp
+# Observers/Test_TypeOfObservation.cpp
+# Observers/Test_VolumeObserver.cpp
+# Observers/Test_WriteSimpleData.cpp
+# Test_H5.cpp
+# Test_StellarCollapseEos.cpp
+# Test_VolumeData.cpp
   )
 
 add_test_library(

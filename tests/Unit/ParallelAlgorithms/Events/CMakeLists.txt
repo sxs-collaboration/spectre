@@ -4,10 +4,11 @@
 set(LIBRARY "Test_ParallelAlgorithmsEvents")
 
 set(LIBRARY_SOURCES
-  Test_ObserveErrorNorms.cpp
-  Test_ObserveFields.cpp
-  Test_ObserveTimeStep.cpp
-  Test_ObserveVolumeIntegrals.cpp
+# Test_ObserveErrorNorms.cpp
+# Test_ObserveFields.cpp
+# Test_ObserveTimeStep.cpp
+# Test_ObserveVolumeIntegrals.cpp
+  Test_ObserveTime.cpp
   )
 
 add_test_library(

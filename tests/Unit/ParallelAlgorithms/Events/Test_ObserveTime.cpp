@@ -161,7 +161,6 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   const auto& results = MockContributeReductionData::results;
   CHECK(results.observation_id.value() == observation_time);
   CHECK(results.reduction_names[0] == "StringToPrint");
-  Parallel::printf(results.info_to_print);
 }
 
 void test_system() noexcept {
@@ -182,8 +181,9 @@ void test_system() noexcept {
 }
 }  // namespace
 
-// [[OutputRegex, Current time: ???]]
+// [[OutputRegex, Current time:]]
 SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveTime", "[Unit][Evolution]") {
   OUTPUT_TEST();
+//  Parallel::printf("Current time: obama");
   test_system();
 }
