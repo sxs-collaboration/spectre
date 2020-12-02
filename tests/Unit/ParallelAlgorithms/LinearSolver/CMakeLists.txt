@@ -75,6 +75,7 @@ function(add_distributed_linear_solver_algorithm_test TEST_NAME)
     )
 endfunction()
 
+add_subdirectory(Actions)
 add_subdirectory(AsynchronousSolvers)
 add_subdirectory(ConjugateGradient)
 add_subdirectory(Gmres)
