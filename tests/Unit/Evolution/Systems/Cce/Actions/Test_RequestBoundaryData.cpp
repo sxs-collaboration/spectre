@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -194,7 +195,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
           l_max, filename, buffer_size,
           std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3_st,
                                                                        4_st),
-          false, false));
+          false, false, std::optional<double>{}));
 
   // this should run the initializations
   for (size_t i = 0; i < 4; ++i) {

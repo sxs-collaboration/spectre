@@ -71,7 +71,8 @@ std::pair<size_t, size_t> create_span_for_time_value(
 }  // namespace detail
 
 MetricWorldtubeH5BufferUpdater::MetricWorldtubeH5BufferUpdater(
-    const std::string& cce_data_filename) noexcept
+    const std::string& cce_data_filename,
+    const std::optional<double> extraction_radius) noexcept
     : cce_data_file_{cce_data_filename}, filename_{cce_data_filename} {
   get<Tags::detail::InputDataSet<Tags::detail::SpatialMetric>>(dataset_names_) =
       "/g";
@@ -108,7 +109,9 @@ MetricWorldtubeH5BufferUpdater::MetricWorldtubeH5BufferUpdater(
   const std::string text_radius =
       cce_data_filename.substr(r_pos + 1, dot_pos - r_pos - 1);
   try {
-    extraction_radius_ = stod(text_radius);
+    extraction_radius_ = static_cast<bool>(extraction_radius)
+                             ? *extraction_radius
+                             : std::stod(text_radius);
   } catch (const std::invalid_argument&) {
     ERROR(
         "The CCE filename must encode the extraction radius as an integer "
@@ -262,7 +265,8 @@ void MetricWorldtubeH5BufferUpdater::update_buffer(
 }
 
 BondiWorldtubeH5BufferUpdater::BondiWorldtubeH5BufferUpdater(
-    const std::string& cce_data_filename) noexcept
+    const std::string& cce_data_filename,
+    const std::optional<double> extraction_radius) noexcept
     : cce_data_file_{cce_data_filename}, filename_{cce_data_filename} {
   get<Tags::detail::InputDataSet<
       Spectral::Swsh::Tags::SwshTransform<Tags::BondiBeta>>>(dataset_names_) =
@@ -295,13 +299,14 @@ BondiWorldtubeH5BufferUpdater::BondiWorldtubeH5BufferUpdater(
   const std::string text_radius =
       cce_data_filename.substr(r_pos + 1, dot_pos - r_pos - 1);
   try {
-    extraction_radius_ = stod(text_radius);
+    extraction_radius_ = static_cast<bool>(extraction_radius)
+                             ? *extraction_radius
+                             : std::stod(text_radius);
   } catch (const std::invalid_argument&) {
-    ERROR(
-        "The CCE filename must encode the extraction radius as an integer "
-        "between the first instance of 'R' and the first instance of '.' (SpEC "
-        "CCE filename format). Provided filename : "
-        << cce_data_filename);
+    // the extraction radius is typically not used in the Bondi system, so we
+    // don't error if it isn't parsed from the filename. Instead, we'll just
+    // error if the invalid extraction radius value is ever retrieved using
+    // `get_extraction_radius`.
   }
 
   const auto& u_data = cce_data_file_.get<h5::Dat>("/U");

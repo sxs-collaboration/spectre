@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -22,6 +23,7 @@
 #include "IO/H5/Version.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Parallel/PupStlCpp17.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -177,11 +179,12 @@ class MetricWorldtubeH5BufferUpdater
   MetricWorldtubeH5BufferUpdater() = default;
 
   /// The constructor takes the filename of the SpEC h5 file that will be used
-  /// for boundary data. Note that this assumes that the input data has
-  /// correctly-normalized radial derivatives, and that the extraction radius is
-  /// encoded as an integer in the filename.
+  /// for boundary data. The extraction radius can either be passed in directly,
+  /// or if it takes the value `std::nullopt`, then the extraction radius is
+  /// retrieved as an integer in the filename.
   explicit MetricWorldtubeH5BufferUpdater(
-      const std::string& cce_data_filename) noexcept;
+      const std::string& cce_data_filename,
+      std::optional<double> extraction_radius = std::nullopt) noexcept;
 
   WRAPPED_PUPable_decl_template(MetricWorldtubeH5BufferUpdater);  // NOLINT
 
@@ -211,7 +214,7 @@ class MetricWorldtubeH5BufferUpdater
   /// retrieves the l_max of the input file
   size_t get_l_max() const noexcept override { return l_max_; }
 
-  /// retrieves the extraction radius encoded in the filename
+  /// retrieves the extraction radius
   double get_extraction_radius() const noexcept override {
     return extraction_radius_;
   }
@@ -239,7 +242,7 @@ class MetricWorldtubeH5BufferUpdater
                      size_t time_span_end) const noexcept;
 
   bool has_version_history_ = true;
-  double extraction_radius_ = 1.0;
+  double extraction_radius_ = std::numeric_limits<double>::signaling_NaN();
   size_t l_max_ = 0;
 
   h5::H5File<h5::AccessType::ReadOnly> cce_data_file_;
@@ -262,11 +265,12 @@ class BondiWorldtubeH5BufferUpdater
   BondiWorldtubeH5BufferUpdater() = default;
 
   /// The constructor takes the filename of the SpEC h5 file that will be used
-  /// for boundary data. Note that this assumes that the input data has
-  /// correctly-normalized radial derivatives, and that the extraction radius is
-  /// encoded as an integer in the filename.
+  /// for boundary data. The extraction radius can either be passed in directly,
+  /// or if it takes the value `std::nullopt`, then the extraction radius is
+  /// retrieved as an integer in the filename.
   explicit BondiWorldtubeH5BufferUpdater(
-      const std::string& cce_data_filename) noexcept;
+      const std::string& cce_data_filename,
+      std::optional<double> extraction_radius = std::nullopt) noexcept;
 
   WRAPPED_PUPable_decl_template(BondiWorldtubeH5BufferUpdater);  // NOLINT
 
@@ -298,9 +302,16 @@ class BondiWorldtubeH5BufferUpdater
   /// retrieves the l_max of the input file
   size_t get_l_max() const noexcept override { return l_max_; }
 
-  /// retrieves the extraction radius encoded in the filename
+  /// retrieves the extraction radius. In most normal circumstances, this will
+  /// not be needed for Bondi data.
   double get_extraction_radius() const noexcept override {
-    return extraction_radius_;
+    if (not static_cast<bool>(extraction_radius_)) {
+      ERROR(
+          "Extraction radius has not been set, and was not successfully parsed "
+          "from the filename. The extraction radius has been used, so must be "
+          "set either by the input file or via the filename.");
+    }
+    return *extraction_radius_;
   }
 
   /// The time buffer is supplied by non-const reference to allow views to
@@ -325,7 +336,7 @@ class BondiWorldtubeH5BufferUpdater
                      size_t time_span_start, size_t time_span_end,
                      bool is_real) const noexcept;
 
-  double extraction_radius_ = 1.0;
+  std::optional<double> extraction_radius_ = std::nullopt;
   size_t l_max_ = 0;
 
   h5::H5File<h5::AccessType::ReadOnly> cce_data_file_;

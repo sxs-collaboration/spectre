@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <limits>
+#include <optional>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
@@ -15,6 +16,7 @@
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/Printf.hpp"
 
 namespace Cce {
 namespace OptionTags {
@@ -73,8 +75,19 @@ struct NumberOfRadialPoints {
 
 struct ExtractionRadius {
   using type = double;
+  static constexpr Options::String help{"Extraction radius of the CCE system."};
+  using group = Cce;
+};
+
+struct StandaloneExtractionRadius {
+  static std::string name() noexcept { return "ExtractionRadius"; }
+  using type = Options::Auto<double>;
+
   static constexpr Options::String help{
-      "Extraction radius from the GH system."};
+    "Extraction radius of the CCE system for a standalone run. This may be "
+    "set to \"Auto\" to infer the radius from the filename (often used for "
+    "SpEC worldtube data). This option is unused if `H5IsBondiData` is "
+    "`true`, and should be \"Auto\" for such runs."};
   using group = Cce;
 };
 
@@ -227,22 +240,35 @@ struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
   using option_tags =
       tmpl::list<OptionTags::LMax, OptionTags::BoundaryDataFilename,
                  OptionTags::H5LookaheadTimes, OptionTags::H5Interpolator,
-                 OptionTags::H5IsBondiData, OptionTags::FixSpecNormalization>;
+                 OptionTags::H5IsBondiData, OptionTags::FixSpecNormalization,
+                 OptionTags::StandaloneExtractionRadius>;
 
   static constexpr bool pass_metavariables = false;
   static type create_from_options(
       const size_t l_max, const std::string& filename,
       const size_t number_of_lookahead_times,
       const std::unique_ptr<intrp::SpanInterpolator>& interpolator,
-      const bool h5_is_bondi_data, const bool fix_spec_normalization) noexcept {
+      const bool h5_is_bondi_data, const bool fix_spec_normalization,
+      const std::optional<double> extraction_radius) noexcept {
     if (h5_is_bondi_data) {
+      if (static_cast<bool>(extraction_radius)) {
+        Parallel::printf(
+            "Warning: Option ExtractionRadius is set to a specific value and "
+            "H5IsBondiData is set to `true` -- the ExtractionRadius will not "
+            "be used, because all radius information is specified in the input "
+            "file for the Bondi worldtube data format. It is recommended to "
+            "set `ExtractionRadius` to `\"Auto\"` to make the input file "
+            "clearer.");
+      }
       return std::make_unique<BondiWorldtubeDataManager>(
-          std::make_unique<BondiWorldtubeH5BufferUpdater>(filename), l_max,
-          number_of_lookahead_times, interpolator->get_clone());
+          std::make_unique<BondiWorldtubeH5BufferUpdater>(filename,
+                                                          extraction_radius),
+          l_max, number_of_lookahead_times, interpolator->get_clone());
     } else {
       return std::make_unique<MetricWorldtubeDataManager>(
-          std::make_unique<MetricWorldtubeH5BufferUpdater>(filename), l_max,
-          number_of_lookahead_times, interpolator->get_clone(),
+          std::make_unique<MetricWorldtubeH5BufferUpdater>(filename,
+                                                           extraction_radius),
+          l_max, number_of_lookahead_times, interpolator->get_clone(),
           fix_spec_normalization);
     }
   }

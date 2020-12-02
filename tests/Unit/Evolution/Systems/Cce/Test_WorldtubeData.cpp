@@ -36,7 +36,7 @@ class DummyBufferUpdater
  public:
   DummyBufferUpdater(DataVector time_buffer,
                      const gr::Solutions::KerrSchild& solution,
-                     const double extraction_radius,
+                     const std::optional<double> extraction_radius,
                      const double coordinate_amplitude,
                      const double coordinate_frequency, const size_t l_max,
                      const bool apply_normalization_bug = false,
@@ -99,7 +99,8 @@ class DummyBufferUpdater
           make_not_null(&dr_shift_coefficients),
           make_not_null(&lapse_coefficients),
           make_not_null(&dt_lapse_coefficients),
-          make_not_null(&dr_lapse_coefficients), solution_, extraction_radius_,
+          make_not_null(&dr_lapse_coefficients), solution_,
+          extraction_radius_.value_or(default_extraction_radius_),
           coordinate_amplitude_, coordinate_frequency_,
           time_buffer_[time_index + *time_span_start], l_max_, true,
           apply_normalization_bug_);
@@ -155,7 +156,7 @@ class DummyBufferUpdater
   size_t get_l_max() const noexcept override { return l_max_; }
 
   double get_extraction_radius() const noexcept override {
-    return extraction_radius_;
+    return extraction_radius_.value_or(default_extraction_radius_);
   }
 
   bool has_version_history() const noexcept override {
@@ -170,6 +171,7 @@ class DummyBufferUpdater
     p | extraction_radius_;
     p | coordinate_amplitude_;
     p | coordinate_frequency_;
+    p | default_extraction_radius_;
     p | l_max_;
     p | apply_normalization_bug_;
     p | has_version_history_;
@@ -192,7 +194,8 @@ class DummyBufferUpdater
 
   DataVector time_buffer_;
   gr::Solutions::KerrSchild solution_;
-  double extraction_radius_;
+  std::optional<double> extraction_radius_;
+  double default_extraction_radius_ = 100.0;
   double coordinate_amplitude_;
   double coordinate_frequency_;
   size_t l_max_;
@@ -205,7 +208,7 @@ class ReducedDummyBufferUpdater
  public:
   ReducedDummyBufferUpdater(DataVector time_buffer,
                             const gr::Solutions::KerrSchild& solution,
-                            const double extraction_radius,
+                            const std::optional<double> extraction_radius,
                             const double coordinate_amplitude,
                             const double coordinate_frequency,
                             const size_t l_max,
@@ -269,7 +272,8 @@ class ReducedDummyBufferUpdater
           make_not_null(&dr_shift_coefficients),
           make_not_null(&lapse_coefficients),
           make_not_null(&dt_lapse_coefficients),
-          make_not_null(&dr_lapse_coefficients), solution_, extraction_radius_,
+          make_not_null(&dr_lapse_coefficients), solution_,
+          extraction_radius_.value_or(default_extraction_radius_),
           coordinate_amplitude_, coordinate_frequency_,
           time_buffer_[time_index + *time_span_start], l_max_, false);
 
@@ -278,7 +282,7 @@ class ReducedDummyBufferUpdater
           dt_spatial_metric_coefficients, dr_spatial_metric_coefficients,
           shift_coefficients, dt_shift_coefficients, dr_shift_coefficients,
           lapse_coefficients, dt_lapse_coefficients, dr_lapse_coefficients,
-          extraction_radius_, l_max);
+          extraction_radius_.value_or(default_extraction_radius_), l_max);
       tmpl::for_each<tmpl::transform<
           cce_bondi_input_tags, tmpl::bind<db::remove_tag_prefix, tmpl::_1>>>(
           [this, &boundary_variables, &buffers, &time_index, &time_span_end,
@@ -310,7 +314,7 @@ class ReducedDummyBufferUpdater
   size_t get_l_max() const noexcept override { return l_max_; }
 
   double get_extraction_radius() const noexcept override {
-    return extraction_radius_;
+    return extraction_radius_.value_or(default_extraction_radius_);
   }
 
   DataVector& get_time_buffer() noexcept override { return time_buffer_; }
@@ -343,7 +347,8 @@ class ReducedDummyBufferUpdater
 
   DataVector time_buffer_;
   gr::Solutions::KerrSchild solution_;
-  double extraction_radius_ = 1.0;
+  std::optional<double> extraction_radius_;
+  double default_extraction_radius_ = 100.0;
   double coordinate_amplitude_ = 0.0;
   double coordinate_frequency_ = 0.0;
   size_t l_max_ = 0;
@@ -357,8 +362,12 @@ namespace {
 template <typename DataManager, typename DummyUpdater, typename Generator>
 void test_data_manager_with_dummy_buffer_updater(
     const gsl::not_null<Generator*> gen,
-    const bool apply_normalization_bug = false,
-    const bool is_spec_input = true) noexcept {
+    const bool apply_normalization_bug = false, const bool is_spec_input = true,
+    const std::optional<double> extraction_radius = std::nullopt) noexcept {
+  // note that the default_extraction_radius is what will be reported
+  // from the buffer updater when the extraction_radius is the default
+  // `std::nullopt`.
+  const double default_extraction_radius = 100.0;
   UniformCustomDistribution<double> value_dist{0.1, 0.5};
   // first prepare the input for the modal version
   const double mass = value_dist(*gen);
@@ -368,7 +377,6 @@ void test_data_manager_with_dummy_buffer_updater(
       {value_dist(*gen), value_dist(*gen), value_dist(*gen)}};
   gr::Solutions::KerrSchild solution{mass, spin, center};
 
-  const double extraction_radius = 100.0;
 
   // acceptable parameters for the fake sinusoid variation in the input
   // parameters
@@ -377,7 +385,7 @@ void test_data_manager_with_dummy_buffer_updater(
   const double target_time = 50.0 * value_dist(*gen);
 
   const size_t buffer_size = 4;
-  const size_t l_max = 12;
+  const size_t l_max = 8;
 
   DataVector time_buffer{30};
   for (size_t i = 0; i < time_buffer.size(); ++i) {
@@ -445,15 +453,16 @@ void test_data_manager_with_dummy_buffer_updater(
       make_not_null(&shift_coefficients), make_not_null(&dt_shift_coefficients),
       make_not_null(&dr_shift_coefficients), make_not_null(&lapse_coefficients),
       make_not_null(&dt_lapse_coefficients),
-      make_not_null(&dr_lapse_coefficients), solution, extraction_radius,
-      amplitude, frequency, target_time, l_max, false);
+      make_not_null(&dr_lapse_coefficients), solution,
+      extraction_radius.value_or(default_extraction_radius), amplitude,
+      frequency, target_time, l_max, false);
 
   create_bondi_boundary_data(
       make_not_null(&expected_boundary_variables), spatial_metric_coefficients,
       dt_spatial_metric_coefficients, dr_spatial_metric_coefficients,
       shift_coefficients, dt_shift_coefficients, dr_shift_coefficients,
       lapse_coefficients, dt_lapse_coefficients, dr_lapse_coefficients,
-      extraction_radius, l_max);
+      extraction_radius.value_or(default_extraction_radius), l_max);
   Approx angular_derivative_approx =
       Approx::custom()
           .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
@@ -474,7 +483,8 @@ void test_data_manager_with_dummy_buffer_updater(
 
 template <typename Generator>
 void test_spec_worldtube_buffer_updater(
-    const gsl::not_null<Generator*> gen) noexcept {
+    const gsl::not_null<Generator*> gen,
+    const bool extraction_radius_in_filename) noexcept {
   UniformCustomDistribution<double> value_dist{0.1, 0.5};
   // first prepare the input for the modal version
   const double mass = value_dist(*gen);
@@ -500,7 +510,9 @@ void test_spec_worldtube_buffer_updater(
       (buffer_size + 2 * interpolator_length) * square(l_max + 1)};
   Variables<cce_metric_input_tags> expected_coefficients_buffers{
       (buffer_size + 2 * interpolator_length) * square(l_max + 1)};
-  const std::string filename = "BoundaryDataH5Test_CceR0100.h5";
+  const std::string filename = extraction_radius_in_filename
+                                   ? "BoundaryDataH5Test_CceR0100.h5"
+                                   : "BoundaryDataH5Test.h5";
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
   }
@@ -508,7 +520,10 @@ void test_spec_worldtube_buffer_updater(
                                extraction_radius, frequency, amplitude, l_max);
 
   // request an appropriate buffer
-  MetricWorldtubeH5BufferUpdater buffer_updater{filename};
+  auto buffer_updater =
+      extraction_radius_in_filename
+          ? MetricWorldtubeH5BufferUpdater{filename}
+          : MetricWorldtubeH5BufferUpdater{filename, extraction_radius};
   auto serialized_and_deserialized_updater =
       serialize_and_deserialize(buffer_updater);
   size_t time_span_start = 0;
@@ -563,11 +578,13 @@ void test_spec_worldtube_buffer_updater(
             get<tag>(coefficients_buffers_from_serialized);
         CHECK_ITERABLE_APPROX(test_lhs, test_rhs_from_serialized);
       });
+  CHECK(buffer_updater.get_extraction_radius() == 100.0);
 }
 
 template <typename Generator>
 void test_reduced_spec_worldtube_buffer_updater(
-    const gsl::not_null<Generator*> gen) noexcept {
+    const gsl::not_null<Generator*> gen,
+    const bool extraction_radius_in_filename) noexcept {
   UniformCustomDistribution<double> value_dist{0.1, 0.5};
   // first prepare the input for the modal version
   const double mass = value_dist(*gen);
@@ -577,7 +594,7 @@ void test_reduced_spec_worldtube_buffer_updater(
       {value_dist(*gen), value_dist(*gen), value_dist(*gen)}};
   gr::Solutions::KerrSchild solution{mass, spin, center};
 
-  const double extraction_radius = 10.0;
+  const double extraction_radius = 100.0;
 
   // acceptable parameters for the fake sinusoid variation in the input
   // parameters
@@ -587,8 +604,8 @@ void test_reduced_spec_worldtube_buffer_updater(
 
   const size_t buffer_size = 4;
   const size_t interpolator_length = 3;
-  const size_t file_l_max = 12;
-  const size_t computation_l_max = 14;
+  const size_t file_l_max = 8;
+  const size_t computation_l_max = 10;
 
   Variables<cce_bondi_input_tags> coefficients_buffers_from_file{
       (buffer_size + 2 * interpolator_length) * square(computation_l_max + 1)};
@@ -612,7 +629,9 @@ void test_reduced_spec_worldtube_buffer_updater(
       boundary_data_variables{number_of_angular_points};
 
   // write times to file for several steps before and after the target time
-  const std::string filename = "BoundaryDataH5Test_CceR0100.h5";
+  const std::string filename = extraction_radius_in_filename
+      ? "BoundaryDataH5Test_CceR0100.h5"
+      : "BoundaryDataH5Test.h5";
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
   }
@@ -624,8 +643,8 @@ void test_reduced_spec_worldtube_buffer_updater(
   // scoped to close the file
   {
     Cce::ReducedWorldtubeModeRecorder recorder{filename};
-    for (size_t t = 0; t < 30; ++t) {
-      const double time = 0.01 * t + target_time - .15;
+    for (size_t t = 0; t < 20; ++t) {
+      const double time = 0.01 * t + target_time - 0.1;
       TestHelpers::create_fake_time_varying_modal_data(
           make_not_null(&spatial_metric_coefficients),
           make_not_null(&dt_spatial_metric_coefficients),
@@ -687,7 +706,10 @@ void test_reduced_spec_worldtube_buffer_updater(
     }
   }
   // request an appropriate buffer
-  BondiWorldtubeH5BufferUpdater buffer_updater{filename};
+  auto buffer_updater =
+      extraction_radius_in_filename
+          ? BondiWorldtubeH5BufferUpdater{filename}
+          : BondiWorldtubeH5BufferUpdater{filename, extraction_radius};
   auto serialized_and_deserialized_updater =
       serialize_and_deserialize(buffer_updater);
   size_t time_span_start = 0;
@@ -714,13 +736,13 @@ void test_reduced_spec_worldtube_buffer_updater(
   time_span_end = 0;
   const auto& time_buffer = buffer_updater.get_time_buffer();
   for (size_t i = 0; i < time_buffer.size(); ++i) {
-    CHECK(time_buffer[i] == approx(target_time - .15 + 0.01 * i));
+    CHECK(time_buffer[i] == approx(target_time - 0.1 + 0.01 * i));
   }
   const auto& time_buffer_from_serialized =
       serialized_and_deserialized_updater.get_time_buffer();
   for (size_t i = 0; i < time_buffer.size(); ++i) {
     CHECK(time_buffer_from_serialized[i] ==
-          approx(target_time - .15 + 0.01 * i));
+          approx(target_time - 0.1 + 0.01 * i));
   }
 
   const ReducedDummyBufferUpdater dummy_buffer_updater{
@@ -754,6 +776,7 @@ void test_reduced_spec_worldtube_buffer_updater(
         CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs_from_serialized,
                                      modal_approx);
       });
+  CHECK(buffer_updater.get_extraction_radius() == 100.0);
 }
 }  // namespace
 
@@ -772,8 +795,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
   MAKE_GENERATOR(gen);
   {
     INFO("Testing buffer updaters");
-    test_spec_worldtube_buffer_updater(make_not_null(&gen));
-    test_reduced_spec_worldtube_buffer_updater(make_not_null(&gen));
+    test_spec_worldtube_buffer_updater(make_not_null(&gen), true);
+    test_spec_worldtube_buffer_updater(make_not_null(&gen), false);
+    test_reduced_spec_worldtube_buffer_updater(make_not_null(&gen), true);
+    test_reduced_spec_worldtube_buffer_updater(make_not_null(&gen), false);
   }
   {
     INFO("Testing data managers");
@@ -790,6 +815,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
     test_data_manager_with_dummy_buffer_updater<MetricWorldtubeDataManager,
                                                 DummyBufferUpdater>(
         make_not_null(&gen), false, false);
+    // check the case for an explicitly provided extraction radius.
+    test_data_manager_with_dummy_buffer_updater<MetricWorldtubeDataManager,
+                                                DummyBufferUpdater>(
+        make_not_null(&gen), false, false, 200.0);
     test_data_manager_with_dummy_buffer_updater<BondiWorldtubeDataManager,
                                                 ReducedDummyBufferUpdater>(
         make_not_null(&gen));

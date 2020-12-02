@@ -79,6 +79,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
           "3") == 3_st);
   CHECK(TestHelpers::test_creation<double, Cce::OptionTags::ExtractionRadius>(
             "100.0") == 100.0);
+  CHECK(TestHelpers::test_creation<std::optional<double>,
+                                   Cce::OptionTags::ExtractionRadius>(
+            "100.0") == std::optional<double>{100.0});
 
   CHECK(TestHelpers::test_creation<std::optional<double>,
                                    Cce::OptionTags::EndTime>("4.0") ==
@@ -128,7 +131,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "H5WorldtubeBoundaryDataManager");
   CHECK(Cce::Tags::H5WorldtubeBoundaryDataManager::create_from_options(
             8, filename, 3, std::make_unique<intrp::CubicSpanInterpolator>(),
-            false, true)
+            false, true, std::nullopt)
             ->get_l_max() == 8);
 
   CHECK(Cce::Tags::LMax::create_from_options(8u) == 8u);
