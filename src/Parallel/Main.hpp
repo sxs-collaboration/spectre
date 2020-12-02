@@ -264,6 +264,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
       Parallel::create_from_options<Metavariables>(options_,
                                                    const_global_cache_tags{}),
       mutable_global_cache_proxy_, &mutable_global_cache_dependency);
+  global_cache_proxy_.set_main_proxy(this->thisProxy);
 
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       the_parallel_components;

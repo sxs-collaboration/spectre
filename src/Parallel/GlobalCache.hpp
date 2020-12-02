@@ -16,6 +16,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -26,6 +27,7 @@
 #include "Utilities/TypeTraits/IsA.hpp"
 
 #include "Parallel/GlobalCache.decl.h"
+#include "Parallel/Main.decl.h"
 
 namespace Parallel {
 
@@ -289,6 +291,7 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
 
  public:
   using proxy_type = CProxy_GlobalCache<Metavariables>;
+  using main_proxy_type = CProxy_Main<Metavariables>;
   /// Access to the Metavariables template parameter
   using metavariables = Metavariables;
   /// Typelist of the ParallelComponents stored in the GlobalCache
@@ -372,6 +375,14 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
 
   void pup(PUP::er& p) noexcept override;  // NOLINT
 
+  /// Entry method to set the proxy to the Main chare. This should be only
+  /// called once.
+  void set_main_proxy(const main_proxy_type& main_proxy) noexcept;
+
+  /// Retrieve the proxy to the Main chare (or std::nullopt if the proxy has not
+  /// been set).
+  std::optional<main_proxy_type> get_main_proxy() noexcept;
+
  private:
   // clang-tidy: false positive, redundant declaration
   template <typename GlobalCacheTag, typename MV>
@@ -412,6 +423,7 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   MutableGlobalCache<Metavariables>* mutable_global_cache_{nullptr};
   CProxy_MutableGlobalCache<Metavariables> mutable_global_cache_proxy_{};
   bool parallel_components_have_been_set_{false};
+  std::optional<main_proxy_type> main_proxy_;
 };
 
 template <typename Metavariables>
@@ -487,6 +499,23 @@ GlobalCache<Metavariables>::get_this_proxy() noexcept {
   return this->thisProxy;
 }
 
+template <typename Metavariables>
+void GlobalCache<Metavariables>::set_main_proxy(
+    const main_proxy_type& main_proxy) noexcept {
+  if (not main_proxy_.has_value()) {
+    main_proxy_ = main_proxy;
+  } else {
+    ERROR("The main proxy has already been set, and cannot be set twice.");
+  }
+}
+
+template <typename Metavariables>
+std::optional<
+    typename Parallel::GlobalCache<Metavariables>::main_proxy_type>
+GlobalCache<Metavariables>::get_main_proxy() noexcept {
+  return main_proxy_;
+}
+
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
@@ -496,6 +525,7 @@ void GlobalCache<Metavariables>::pup(PUP::er& p) noexcept {
   p | const_global_cache_;
   p | parallel_components_;
   p | mutable_global_cache_proxy_;
+  p | main_proxy_;
   p | parallel_components_have_been_set_;
   if (not p.isUnpacking() and mutable_global_cache_ != nullptr) {
     ERROR(
