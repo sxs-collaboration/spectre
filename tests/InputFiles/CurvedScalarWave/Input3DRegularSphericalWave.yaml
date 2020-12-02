@@ -1,0 +1,76 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveCurvedRegularSphericalWave3D
+# Check: parse;execute
+# Timeout: 1000
+# ExpectedOutput:
+#   CurvedScalarWave3DRegSphWaveVolume0.h5
+
+AnalyticData:
+  ScalarWaveGr:
+    Background:
+      Mass: 1.
+      Spin: [0., 0., 0.]
+      Center: [0., 0., 0.]
+    ScalarField:
+      Profile:
+        Gaussian:
+          Amplitude: 1.
+          Width: 1.
+          Center: 3.
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.002
+  InitialSlabSize: 0.01
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 3
+  StepChoosers:
+    - Constant: 0.05
+    - Increase:
+        Factor: 2
+    - Cfl:
+        SafetyFactor: 0.2
+  StepController: BinaryFraction
+
+DomainCreator:
+    Shell:
+      InnerRadius: 1.9
+      OuterRadius: 10.0
+      InitialRefinement: 2
+      InitialGridPoints: [6, 6]
+      UseEquiangularMap: true
+      AspectRatio: 1.0
+      UseLogarithmicMap: true
+      RadialBlockLayers: 4
+
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+
+NumericalFlux:
+  UpwindPenaltyCorrection:
+
+# Filtering is being tested by the 3D executable (see EvolveCurvedScalarWave.hpp)
+Filtering:
+  ExpFilter0:
+    Alpha: 12
+    HalfPower: 32
+
+EventsAndTriggers:
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 5
+        Offset: 0
+  : - ObserveFields:
+        SubfileName: VolumeData
+  ? Slabs:
+      Specified:
+        Values: [5]
+  : - Completion
+
+Observers:
+  VolumeFileName: "CurvedScalarWave3DRegSphWaveVolume"
+  ReductionFileName: "CurvedScalarWave3DRegSphWaveReductions"

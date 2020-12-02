@@ -8,8 +8,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/Systems/CurvedScalarWave/Equations.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
+#include "Evolution/Systems/CurvedScalarWave/TimeDerivative.hpp"
 #include "Helpers/Evolution/Systems/CurvedScalarWave/TestHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -34,8 +34,7 @@ tnsr::I<DataVector, Dim> make_shift(const DataVector& used_for_size) {
 template <size_t Dim>
 tnsr::II<DataVector, Dim> make_inverse_spatial_metric(
     const DataVector& used_for_size) {
-  auto metric =
-      make_with_value<tnsr::II<DataVector, Dim>>(used_for_size, 0.);
+  auto metric = make_with_value<tnsr::II<DataVector, Dim>>(used_for_size, 0.);
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = i; j < Dim; ++j) {
       metric.get(i, j) =
@@ -94,11 +93,11 @@ calculate_du_dt(const DataVector& used_for_size) {
   auto dt_pi = make_with_value<Scalar<DataVector>>(used_for_size, 0.);
   auto dt_phi = make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(
       used_for_size, 0.);
-  CurvedScalarWave::ComputeDuDt<Dim>::apply(
+  CurvedScalarWave::TimeDerivative<Dim>::apply(
       make_not_null(&dt_pi), make_not_null(&dt_phi), make_not_null(&dt_psi),
-      make_pi(used_for_size), make_phi<Dim>(used_for_size),
-      make_d_psi<Dim>(used_for_size), make_d_pi<Dim>(used_for_size),
-      make_d_phi<Dim>(used_for_size), make_lapse(used_for_size),
+      make_d_pi<Dim>(used_for_size), make_d_phi<Dim>(used_for_size),
+      make_d_psi<Dim>(used_for_size), make_pi(used_for_size),
+      make_phi<Dim>(used_for_size), make_lapse(used_for_size),
       make_shift<Dim>(used_for_size), make_deriv_lapse<Dim>(used_for_size),
       make_deriv_shift<Dim>(used_for_size),
       make_inverse_spatial_metric<Dim>(used_for_size),

@@ -9,6 +9,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -152,11 +153,15 @@ evolved_fields_from_characteristic_fields(
 
 template <size_t SpatialDim>
 double ComputeLargestCharacteristicSpeed<SpatialDim>::apply(
-    const std::array<DataVector, 4>& char_speeds) noexcept {
-  std::array<double, 4> max_speeds{
-      {max(abs(char_speeds[0])), max(abs(char_speeds[1])),
-       max(abs(char_speeds[2])), max(abs(char_speeds[3]))}};
-  return *std::max_element(max_speeds.begin(), max_speeds.end());
+    const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
+    const tnsr::ii<DataVector, SpatialDim, Frame::Inertial>&
+        spatial_metric) noexcept {
+  const auto shift_magnitude = magnitude(shift, spatial_metric);
+  return std::max(
+      max(abs(1. + get(gamma_1)) * get(shift_magnitude)),  // v(VPsi)
+      max(get(shift_magnitude) +
+          abs(get(lapse))));  // v(VZero), v(VPlus),v(VMinus)
 }
 }  // namespace CurvedScalarWave
 
