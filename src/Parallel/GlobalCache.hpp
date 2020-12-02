@@ -346,6 +346,8 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   /// Retrieve the proxy to the global cache
   proxy_type get_this_proxy() noexcept;
 
+  void pup(PUP::er& p) noexcept override;  // NOLINT
+
  private:
   // clang-tidy: false positive, redundant declaration
   template <typename GlobalCacheTag, typename MV>
@@ -460,6 +462,28 @@ typename Parallel::GlobalCache<Metavariables>::proxy_type
 GlobalCache<Metavariables>::get_this_proxy() noexcept {
   return this->thisProxy;
 }
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
+#endif  // defined(__GNUC__) && !defined(__clang__)
+template <typename Metavariables>
+void GlobalCache<Metavariables>::pup(PUP::er& p) noexcept {
+  p | const_global_cache_;
+  p | parallel_components_;
+  p | mutable_global_cache_proxy_;
+  p | parallel_components_have_been_set_;
+  if (not p.isUnpacking() and mutable_global_cache_ != nullptr) {
+    ERROR(
+        "Cannot serialize the const global cache when the mutable global cache "
+        "is set to a local pointer. If this occurs in a unit test, avoid the "
+        "serialization. If this occurs in a production executable, be sure "
+        "that the MutableGlobalCache is accessed by a charm proxy.");
+  }
+}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif  // defined(__GNUC__) && !defined(__clang__)
 
 // @{
 /// \ingroup ParallelGroup

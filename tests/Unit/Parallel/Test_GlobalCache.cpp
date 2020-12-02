@@ -248,6 +248,22 @@ void TestArrayChare<Metavariables>::run_test_one() noexcept {
                                     serialized_and_deserialized_local_cache)
                                     .number_of_sides());
 
+  CkMigrateMessage empty_message{};
+  Parallel::GlobalCache<TestMetavariables>
+      serialized_and_deserialized_global_cache{&empty_message};
+  serialize_and_deserialize(
+      make_not_null(&serialized_and_deserialized_global_cache), local_cache);
+  SPECTRE_PARALLEL_REQUIRE(
+      "Nobody" ==
+      Parallel::get<name>(serialized_and_deserialized_global_cache));
+  SPECTRE_PARALLEL_REQUIRE(
+      178 == Parallel::get<age>(serialized_and_deserialized_global_cache));
+  SPECTRE_PARALLEL_REQUIRE(
+      2.2 == Parallel::get<height>(serialized_and_deserialized_global_cache));
+  SPECTRE_PARALLEL_REQUIRE(4 == Parallel::get<shape_of_nametag>(
+                                    serialized_and_deserialized_global_cache)
+                                    .number_of_sides());
+
   // Mutate the weight to 150.
   Parallel::mutate<weight, modify_value<double>>(global_cache_proxy_, 150.0);
   run_test_two();
@@ -405,9 +421,13 @@ void Test_GlobalCache<Metavariables>::run_single_core_test() noexcept {
   SPECTRE_PARALLEL_REQUIRE(30 ==
                            Parallel::get<animal_base>(cache).number_of_legs());
 
+  // Check the serialization of the mutable global cache
+  CkMigrateMessage empty_message{};
   Parallel::MutableGlobalCache<TestMetavariables>
-      serialized_and_deserialized_mutable_cache =
-          serialize_and_deserialize(mutable_cache);
+      serialized_and_deserialized_mutable_cache{&empty_message};
+  serialize_and_deserialize(
+      make_not_null(&serialized_and_deserialized_mutable_cache), mutable_cache);
+
   Parallel::GlobalCache<TestMetavariables> cache_with_serialized_mutable_cache(
       tuples::tagged_tuple_from_typelist<const_tag_list>{
           "Nobody", 178, 2.2, std::make_unique<Square>()},
