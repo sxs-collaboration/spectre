@@ -582,9 +582,9 @@ bool operator==(
   if (a.size_ != b.size_) {
     return false;
   }
-  for (const auto& key_and_value : a) {
-    const auto found_in_b = b.find(key_and_value.first);
-    if (found_in_b == b.end() or found_in_b->second != key_and_value.second) {
+  for (const auto& [key, value] : a) {
+    const auto found_in_b = b.find(key);
+    if (found_in_b == b.end() or found_in_b->second != value) {
       return false;
     }
   }
