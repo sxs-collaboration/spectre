@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <utility>
 
+#include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/TMPL.hpp"
@@ -52,10 +53,12 @@ struct LhsTensorSymmAndIndices<
           rhs_tensorindex_values.begin(),
           alg::find(rhs_tensorindex_values, lhs_tensorindex_values[Ints]))...}};
 
-  // Desired LHS Tensor's Symmetry and typelist of TensorIndexTypes
+  // Desired LHS Tensor's Symmetry, typelist of TensorIndexTypes, and Structure
   using symmetry =
       Symmetry<tmpl::at_c<RhsSymmetry, lhs_to_rhs_map[Ints]>::value...>;
   using tensorindextype_list =
       tmpl::list<tmpl::at_c<RhsTensorIndexTypeList, lhs_to_rhs_map[Ints]>...>;
+  using structure = Tensor_detail::Structure<
+      symmetry, tmpl::at_c<RhsTensorIndexTypeList, lhs_to_rhs_map[Ints]>...>;
 };
 }  // namespace TensorExpressions
