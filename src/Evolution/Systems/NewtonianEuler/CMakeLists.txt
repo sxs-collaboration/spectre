@@ -9,10 +9,15 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Characteristics.cpp
-  ComputeItems.cpp
   ConservativeFromPrimitive.cpp
   Fluxes.cpp
+  InternalEnergyDensity.cpp
+  KineticEnergyDensity.cpp
+  MachNumber.cpp
   PrimitiveFromConservative.cpp
+  RamPressure.cpp
+  SoundSpeedSquared.cpp
+  SpecificKineticEnergy.cpp
   )
 
 spectre_target_headers(
@@ -20,11 +25,16 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Characteristics.hpp
-  ComputeItems.hpp
   ConservativeFromPrimitive.hpp
   Fluxes.hpp
+  InternalEnergyDensity.hpp
+  KineticEnergyDensity.hpp
+  MachNumber.hpp
   PrimitiveFromConservative.hpp
+  RamPressure.hpp
+  SoundSpeedSquared.hpp
   Sources.hpp
+  SpecificKineticEnergy.hpp
   System.hpp
   Tags.hpp
   TagsDeclarations.hpp

@@ -3,15 +3,21 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <random>
+
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Evolution/Systems/NewtonianEuler/ComputeItems.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/NewtonianEuler/Limiters/CharacteristicHelpers.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Limiters/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 
