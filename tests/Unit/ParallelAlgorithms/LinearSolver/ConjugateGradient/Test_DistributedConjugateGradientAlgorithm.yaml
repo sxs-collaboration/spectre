@@ -18,6 +18,7 @@ DomainCreator:
     IsPeriodicIn: [false]
     InitialRefinement: [1]
     InitialGridPoints: [3]
+    TimeDependence: None
 
 LinearOperator:
   - [[ 5.305164769729845,  0.848826363156775, -0.742723067762178],
