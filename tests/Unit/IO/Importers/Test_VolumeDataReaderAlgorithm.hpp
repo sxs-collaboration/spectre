@@ -13,8 +13,6 @@
 #include <tuple>
 #include <vector>
 
-#include "AlgorithmArray.hpp"
-#include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -32,6 +30,8 @@
 #include "IO/Importers/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Parallel/Algorithms/AlgorithmArray.hpp"
+#include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"

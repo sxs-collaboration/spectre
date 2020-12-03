@@ -6,9 +6,9 @@
 #include <string>
 #include <unordered_set>
 
-#include "AlgorithmNodegroup.hpp"
 #include "IO/Importers/Tags.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"

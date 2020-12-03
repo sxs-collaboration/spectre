@@ -11,13 +11,13 @@
 #include <unordered_set>
 #include <vector>
 
-#include "AlgorithmArray.hpp"
-#include "AlgorithmGroup.hpp"
-#include "AlgorithmNodegroup.hpp"
-#include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Parallel/Algorithms/AlgorithmArray.hpp"
+#include "Parallel/Algorithms/AlgorithmGroup.hpp"
+#include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
+#include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Info.hpp"

@@ -16,11 +16,11 @@
 #include <string>
 #include <tuple>
 
-#include "AlgorithmArray.hpp"
-#include "AlgorithmGroup.hpp"
-#include "AlgorithmNodegroup.hpp"
-#include "AlgorithmSingleton.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Parallel/Algorithms/AlgorithmArray.hpp"
+#include "Parallel/Algorithms/AlgorithmGroup.hpp"
+#include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
+#include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/Exit.hpp"
 #include "Parallel/GlobalCache.hpp"

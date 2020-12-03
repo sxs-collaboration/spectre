@@ -14,11 +14,11 @@
 #include <utility>
 #include <vector>
 
-#include "AlgorithmArray.hpp"
-#include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Parallel/Algorithms/AlgorithmArray.hpp"
+#include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"

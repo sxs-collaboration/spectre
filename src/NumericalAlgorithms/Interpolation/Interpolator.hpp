@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "AlgorithmGroup.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Parallel/Algorithms/AlgorithmGroup.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"

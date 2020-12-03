@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "AlgorithmSingleton.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
@@ -23,6 +22,7 @@
 #include "NumericalAlgorithms/Interpolation/LinearSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Tags.hpp"

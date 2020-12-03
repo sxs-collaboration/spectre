@@ -182,7 +182,8 @@ long_lines_exclude() {
         grep -v '// IWYU pragma:' | \
         grep -v '// NOLINT' | \
         grep -v '\\snippet' | \
-        grep -v '\\image'
+        grep -v '\\image' | \
+        grep -v 'a href='
 }
 long_lines() {
     whitelist "$1" \

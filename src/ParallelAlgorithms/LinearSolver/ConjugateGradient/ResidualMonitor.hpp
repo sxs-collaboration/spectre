@@ -8,13 +8,13 @@
 #include <tuple>
 #include <utility>
 
-#include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "IO/Observer/Actions/RegisterSingleton.hpp"
 #include "Informer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"

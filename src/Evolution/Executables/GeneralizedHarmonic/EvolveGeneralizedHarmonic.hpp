@@ -7,7 +7,6 @@
 #include <cstdint>
 #include <vector>
 
-#include "AlgorithmSingleton.hpp"
 #include "ApparentHorizons/ComputeItems.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -71,6 +70,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
