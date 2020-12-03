@@ -16,6 +16,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
@@ -414,13 +415,36 @@ void test_impl() noexcept {
          normal_dot_fluxes_interface, element, inv_jac, mesh_velocity,
          div_mesh_velocity,
          Variables<db::wrap_tags_in<::Tags::Flux, flux_tags, tmpl::size_t<Dim>,
-                                    Frame::Inertial>>{2, -100.0}});
+                                    Frame::Inertial>>{2, -100.}});
+    for (const auto& [direction, neighbor_ids] : neighbors) {
+      (void)direction;
+      for (const auto& neighbor_id : neighbor_ids) {
+        ActionTesting::emplace_component_and_initialize<component<metavars>>(
+            &runner, neighbor_id,
+            {time_step_id, evolved_vars, dt_evolved_vars, var3, mesh,
+             normal_dot_fluxes_interface, element, inv_jac, mesh_velocity,
+             div_mesh_velocity,
+             Variables<db::wrap_tags_in<::Tags::Flux, flux_tags,
+                                        tmpl::size_t<Dim>, Frame::Inertial>>{
+                 2, -100.}});
+      }
+    }
   } else {
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
         {time_step_id, evolved_vars, dt_evolved_vars, var3, mesh,
          normal_dot_fluxes_interface, element, inv_jac, mesh_velocity,
          div_mesh_velocity});
+    for (const auto& [direction, neighbor_ids] : neighbors) {
+      (void)direction;
+      for (const auto& neighbor_id : neighbor_ids) {
+        ActionTesting::emplace_component_and_initialize<component<metavars>>(
+            &runner, neighbor_id,
+            {time_step_id, evolved_vars, dt_evolved_vars, var3, mesh,
+             normal_dot_fluxes_interface, element, inv_jac, mesh_velocity,
+             div_mesh_velocity});
+      }
+    }
   }
   // Setup the DataBox
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
