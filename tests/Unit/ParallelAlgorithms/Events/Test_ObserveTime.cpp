@@ -54,7 +54,7 @@ class GlobalCache;
 }  // namespace Parallel
 // IWYU pragma: no_forward_declare db::DataBox
 namespace observers::Actions {
-struct ContributeReductionData<
+template <> struct ContributeReductionData<
         observers::ThreadedActions::PrintReductionData>;
 }  // namespace observers::Actions
 

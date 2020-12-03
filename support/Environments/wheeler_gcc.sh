@@ -60,7 +60,7 @@ spectre_run_cmake() {
     fi
     spectre_load_modules
     cmake -D CHARM_ROOT=$CHARM_ROOT \
-          -D CMAKE_BUILD_TYPE=Release \
+          -D CMAKE_BUILD_TYPE=Debug \
           -D CMAKE_Fortran_COMPILER=gfortran \
           -D MEMORY_ALLOCATOR=SYSTEM \
           -D BUILD_PYTHON_BINDINGS=on \
