@@ -15,7 +15,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/NewtonianEuler/Characteristics.hpp"
-#include "Evolution/Systems/NewtonianEuler/SoundSpeedSquared.hpp"
+#include "Evolution/Systems/NewtonianEuler/ComputeItems.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

@@ -17,7 +17,7 @@
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Evolution/Systems/NewtonianEuler/Characteristics.hpp"
-#include "Evolution/Systems/NewtonianEuler/SoundSpeedSquared.hpp"
+#include "Evolution/Systems/NewtonianEuler/ComputeItems.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/Pypp.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"

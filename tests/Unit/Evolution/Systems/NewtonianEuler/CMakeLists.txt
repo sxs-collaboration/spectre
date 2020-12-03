@@ -5,10 +5,10 @@ set(LIBRARY "Test_NewtonianEuler")
 
 set(LIBRARY_SOURCES
   Test_Characteristics.cpp
+  Test_ComputeItems.cpp
   Test_ConservativeFromPrimitive.cpp
   Test_Fluxes.cpp
   Test_PrimitiveFromConservative.cpp
-  Test_SoundSpeedSquared.cpp
   Test_Sources.cpp
   Test_Tags.cpp
   Test_TimeDerivativeTerms.cpp

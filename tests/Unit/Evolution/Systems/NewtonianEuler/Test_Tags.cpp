@@ -46,6 +46,20 @@ void test_tags() noexcept {
   TestHelpers::db::test_simple_tag<NewtonianEuler::Tags::VMomentum<Dim>>(
       "VMomentum");
   TestHelpers::db::test_simple_tag<NewtonianEuler::Tags::VPlus>("VPlus");
+  TestHelpers::db::test_simple_tag<
+      NewtonianEuler::Tags::InternalEnergyDensity<DataVector>>(
+      "InternalEnergyDensity");
+  TestHelpers::db::test_simple_tag<
+      NewtonianEuler::Tags::KineticEnergyDensity<DataVector>>(
+      "KineticEnergyDensity");
+  TestHelpers::db::test_simple_tag<
+      NewtonianEuler::Tags::MachNumber<DataVector>>("MachNumber");
+  TestHelpers::db::test_simple_tag<
+      NewtonianEuler::Tags::RamPressure<DataVector, Dim, Frame::Grid>>(
+      "Grid_RamPressure");
+  TestHelpers::db::test_simple_tag<
+      NewtonianEuler::Tags::SpecificKineticEnergy<DataVector>>(
+      "SpecificKineticEnergy");
   TestHelpers::db::test_base_tag<NewtonianEuler::Tags::SourceTermBase>(
       "SourceTermBase");
   TestHelpers::db::test_simple_tag<
