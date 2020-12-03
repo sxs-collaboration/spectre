@@ -7,13 +7,15 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/LinearSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Utilities/VectorAlgebra.hpp"
 
 namespace Cce {
 namespace {
 
-template <typename VectorType>
+template <typename VectorType, bool test_serialization>
 void test_interpolate_quadratic() {
   MAKE_GENERATOR(generator);
   UniformCustomDistribution<double> value_dist{0.1, 1.0};
@@ -23,7 +25,7 @@ void test_interpolate_quadratic() {
   const size_t vector_size = 5;
   const size_t data_points = 40;
 
-  const VectorType random_vector = make_with_random_values<VectorType>(
+  const auto random_vector = make_with_random_values<VectorType>(
       make_not_null(&generator), make_not_null(&value_dist), vector_size);
 
   UniformCustomDistribution<double> time_dist{-0.03, 0.03};
@@ -50,13 +52,19 @@ void test_interpolate_quadratic() {
   for (size_t i = 0; i < data_points; ++i) {
     // this will give random times that are nonetheless guaranteed to be
     // monotonically increasing
-    const DataVector time_vector = make_with_random_values<DataVector>(
+    const auto time_vector = make_with_random_values<DataVector>(
         make_not_null(&generator), make_not_null(&time_dist), vector_size);
     interpolation_manager.insert_data(
         time_vector + i * 0.1,
         random_vector *
             (1.0 + linear_coefficient * (i * 0.1 + time_vector) +
              quadratic_coefficient * square(i * 0.1 + time_vector)));
+    // serialize the manager halfway through the process to make sure everything
+    // still works after serialization; it should only be necessary to serialize
+    // once to confirm the correct behavior.
+    if (test_serialization and i == data_points / 2) {
+      interpolation_manager = serialize_and_deserialize(interpolation_manager);
+    }
 
     // only demand accuracy when the interpolation is reasonable
     if (i > 3 and i < data_points - 5) {
@@ -98,14 +106,14 @@ void test_interpolate_quadratic() {
           4, vector_size,
           std::make_unique<intrp::BarycentricRationalSpanInterpolator>(7u, 9u)};
 
-  const VectorType multiplies_random_vector =
+  const auto multiplies_random_vector =
       make_with_random_values<VectorType>(
           make_not_null(&generator), make_not_null(&value_dist), vector_size);
 
   for (size_t i = 0; i < data_points; ++i) {
     // this will give random times that are nonetheless guaranteed to be
     // monotonically increasing
-    const DataVector time_vector = make_with_random_values<DataVector>(
+    const auto time_vector = make_with_random_values<DataVector>(
         make_not_null(&generator), make_not_null(&time_dist), vector_size);
     multiplication_interpolation_manager.insert_data(
         time_vector + i * 0.1,
@@ -206,8 +214,11 @@ void test_interpolate_quadratic() {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ScriPlusInterpolationManager",
                   "[Unit][Evolution]") {
-  test_interpolate_quadratic<DataVector>();
-  test_interpolate_quadratic<ComplexDataVector>();
+  Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>();
+  test_interpolate_quadratic<DataVector, false>();
+  test_interpolate_quadratic<ComplexDataVector, false>();
+  test_interpolate_quadratic<DataVector, true>();
+  test_interpolate_quadratic<ComplexDataVector, true>();
 }
 }  // namespace
 }  // namespace Cce
