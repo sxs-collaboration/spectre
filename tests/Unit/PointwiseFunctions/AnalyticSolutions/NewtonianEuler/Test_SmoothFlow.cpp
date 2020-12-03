@@ -13,14 +13,13 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/ParseOptions.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/SmoothFlow.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/SmoothFlow.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -30,8 +29,8 @@
 namespace {
 
 template <size_t Dim>
-struct SmoothFlowProxy : RelativisticEuler::Solutions::SmoothFlow<Dim> {
-  using RelativisticEuler::Solutions::SmoothFlow<Dim>::SmoothFlow;
+struct SmoothFlowProxy : NewtonianEuler::Solutions::SmoothFlow<Dim> {
+  using NewtonianEuler::Solutions::SmoothFlow<Dim>::SmoothFlow;
 
   template <typename DataType>
   using variables_tags =
@@ -39,14 +38,27 @@ struct SmoothFlowProxy : RelativisticEuler::Solutions::SmoothFlow<Dim> {
                  hydro::Tags::SpatialVelocity<DataType, Dim>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
-                 hydro::Tags::LorentzFactor<DataType>,
                  hydro::Tags::SpecificEnthalpy<DataType>>;
 
   template <typename DataType>
+  using ne_variables_tags =
+      tmpl::list<NewtonianEuler::Tags::MassDensity<DataType>,
+                 NewtonianEuler::Tags::Velocity<DataType, Dim>,
+                 NewtonianEuler::Tags::SpecificInternalEnergy<DataType>,
+                 NewtonianEuler::Tags::Pressure<DataType>>;
+
+  template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
-  primitive_variables(const tnsr::I<DataType, Dim>& x, double t) const
-      noexcept {
+  primitive_variables(const tnsr::I<DataType, Dim>& x,
+                      const double t) const noexcept {
     return this->variables(x, t, variables_tags<DataType>{});
+  }
+
+  template <typename DataType>
+  tuples::tagged_tuple_from_typelist<ne_variables_tags<DataType>>
+  ne_primitive_variables(const tnsr::I<DataType, Dim>& x,
+                         const double t) const noexcept {
+    return this->variables(x, t, ne_variables_tags<DataType>{});
   }
 };
 
@@ -67,43 +79,24 @@ void test_solution(const DataType& used_for_size,
       &SmoothFlowProxy<Dim>::template primitive_variables<DataType>, solution,
       "Hydro.SmoothFlow",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
-       "pressure", "lorentz_factor", "specific_enthalpy_relativistic"},
+       "pressure", "specific_enthalpy"},
+      {{{-15., 15.}}},
+      std::make_tuple(mean_velocity, wave_vector, pressure, adiabatic_index,
+                      perturbation_size),
+      used_for_size);
+  pypp::check_with_random_values<
+      1, typename SmoothFlowProxy<Dim>::template ne_variables_tags<DataType>>(
+      &SmoothFlowProxy<Dim>::template ne_primitive_variables<DataType>,
+      solution, "Hydro.SmoothFlow",
+      {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
+       "pressure"},
       {{{-15., 15.}}},
       std::make_tuple(mean_velocity, wave_vector, pressure, adiabatic_index,
                       perturbation_size),
       used_for_size);
 
-  // Test a few of the GR components to make sure that the implementation
-  // correctly forwards to the background solution. Not meant to be extensive.
-  const auto coords =
-      make_with_value<tnsr::I<DataType, Dim>>(used_for_size, 1.0);
-  const double dummy_time = 1.1;
-  const gr::Solutions::Minkowski<Dim> minkowski{};
-  CHECK_ITERABLE_APPROX(
-      get<gr::Tags::Lapse<DataType>>(minkowski.variables(
-          coords, dummy_time, tmpl::list<gr::Tags::Lapse<DataType>>{})),
-      get<gr::Tags::Lapse<DataType>>(solution.variables(
-          coords, dummy_time, tmpl::list<gr::Tags::Lapse<DataType>>{})));
-  CHECK_ITERABLE_APPROX(
-      (get<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>(minkowski.variables(
-          coords, dummy_time,
-          tmpl::list<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>{}))),
-      (get<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>(solution.variables(
-          coords, dummy_time,
-          tmpl::list<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>{}))));
-  CHECK_ITERABLE_APPROX(
-      (get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>(
-          minkowski.variables(
-              coords, dummy_time,
-              tmpl::list<
-                  gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>{}))),
-      (get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>(
-          solution.variables(coords, dummy_time,
-                             tmpl::list<gr::Tags::SpatialMetric<
-                                 Dim, Frame::Inertial, DataType>>{}))));
-
   const auto solution_from_options =
-      TestHelpers::test_creation<RelativisticEuler::Solutions::SmoothFlow<Dim>>(
+      TestHelpers::test_creation<NewtonianEuler::Solutions::SmoothFlow<Dim>>(
           "MeanVelocity: " + mean_velocity_opt +
           "\n"
           "WaveVector: " +
@@ -114,7 +107,7 @@ void test_solution(const DataType& used_for_size,
           "PerturbationSize: 0.78");
   CHECK(solution == solution_from_options);
 
-  RelativisticEuler::Solutions::SmoothFlow<Dim> solution_to_move(
+  NewtonianEuler::Solutions::SmoothFlow<Dim> solution_to_move(
       mean_velocity, wave_vector, pressure, adiabatic_index, perturbation_size);
 
   test_move_semantics(std::move(solution_to_move),
@@ -124,7 +117,7 @@ void test_solution(const DataType& used_for_size,
 }  // namespace
 
 SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.SmoothFlow",
+    "Unit.PointwiseFunctions.AnalyticSolutions.NewtonianEuler.SmoothFlow",
     "[Unit][PointwiseFunctions]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/"};

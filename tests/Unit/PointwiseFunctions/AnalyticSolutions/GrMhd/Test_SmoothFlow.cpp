@@ -106,10 +106,9 @@ void test_variables(const DataType& used_for_size) {
       &SmoothFlowProxy::hydro_variables<DataType>,
       SmoothFlowProxy(mean_velocity, wave_vector, pressure, adiabatic_index,
                       perturbation_size),
-      "TestFunctions",
-      {"smooth_flow_rest_mass_density", "smooth_flow_spatial_velocity",
-       "smooth_flow_specific_internal_energy", "smooth_flow_pressure",
-       "smooth_flow_lorentz_factor", "smooth_flow_specific_enthalpy"},
+      "GrMhd.SmoothFlow",
+      {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
+       "pressure", "lorentz_factor", "specific_enthalpy_relativistic"},
       {{{-15., 15.}}},
       std::make_tuple(mean_velocity, wave_vector, pressure, adiabatic_index,
                       perturbation_size),
@@ -120,11 +119,10 @@ void test_variables(const DataType& used_for_size) {
       &SmoothFlowProxy::grmhd_variables<DataType>,
       SmoothFlowProxy(mean_velocity, wave_vector, pressure, adiabatic_index,
                       perturbation_size),
-      "TestFunctions",
-      {"smooth_flow_rest_mass_density", "smooth_flow_spatial_velocity",
-       "smooth_flow_specific_internal_energy", "smooth_flow_pressure",
-       "smooth_flow_lorentz_factor", "smooth_flow_specific_enthalpy",
-       "smooth_flow_magnetic_field", "smooth_flow_divergence_cleaning_field"},
+      "GrMhd.SmoothFlow",
+      {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
+       "pressure", "lorentz_factor", "specific_enthalpy_relativistic",
+       "magnetic_field", "divergence_cleaning_field"},
       {{{-15., 15.}}},
       std::make_tuple(mean_velocity, wave_vector, pressure, adiabatic_index,
                       perturbation_size),
@@ -176,7 +174,7 @@ void test_solution() noexcept {
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.GrMhd.SmoothFlow",
                   "[Unit][PointwiseFunctions]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
-      "PointwiseFunctions/AnalyticSolutions/GrMhd"};
+      "PointwiseFunctions/AnalyticSolutions/"};
 
   test_create_from_options();
   test_serialize();

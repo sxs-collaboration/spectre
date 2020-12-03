@@ -31,6 +31,13 @@ def pressure(x, t, mean_velocity, wave_vector, pressure, adiabatic_index,
 
 def specific_enthalpy(x, t, mean_velocity, wave_vector, pressure,
                       adiabatic_index, density_amplitude):
+    return adiabatic_index * specific_internal_energy(
+        x, t, mean_velocity, wave_vector, pressure, adiabatic_index,
+        density_amplitude)
+
+
+def specific_enthalpy_relativistic(x, t, mean_velocity, wave_vector, pressure,
+                                   adiabatic_index, density_amplitude):
     return 1.0 + adiabatic_index * specific_internal_energy(
         x, t, mean_velocity, wave_vector, pressure, adiabatic_index,
         density_amplitude)

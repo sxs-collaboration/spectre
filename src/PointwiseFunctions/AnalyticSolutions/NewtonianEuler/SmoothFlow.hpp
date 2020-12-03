@@ -8,23 +8,22 @@
 #include <pup.h>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
+#include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Hydro/SmoothFlow.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
-#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-namespace RelativisticEuler::Solutions {
-
+namespace NewtonianEuler::Solutions {
 /*!
- * \brief Smooth wave propagating in Minkowski spacetime.
+ * \brief Smooth density wave advecting across the domain.
  *
- * The relativistic Euler equations in Minkowski spacetime accept a
- * solution with constant pressure and uniform spatial velocity provided
+ * A solution with constant pressure and uniform spatial velocity provided
  * that the rest mass density satisfies the advection equation
  *
  * \f{align*}{
@@ -52,14 +51,14 @@ namespace RelativisticEuler::Solutions {
  */
 template <size_t Dim>
 class SmoothFlow : virtual public MarkAsAnalyticSolution,
-                   private hydro::Solutions::SmoothFlow<Dim, true> {
-  using smooth_flow = hydro::Solutions::SmoothFlow<Dim, true>;
+                   private hydro::Solutions::SmoothFlow<Dim, false> {
+  using smooth_flow = hydro::Solutions::SmoothFlow<Dim, false>;
 
  public:
   using options = typename smooth_flow::options;
 
   static constexpr Options::String help = {
-      "Smooth flow in Minkowski spacetime."};
+      "Smooth density wave advecting across a domain."};
 
   SmoothFlow() = default;
   SmoothFlow(const SmoothFlow& /*rhs*/) = delete;
@@ -76,9 +75,45 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
 
   using smooth_flow::equation_of_state;
   using typename smooth_flow::equation_of_state_type;
+  using source_term_type = Sources::NoSource;
 
   // Overload the variables function from the base class.
   using smooth_flow::variables;
+
+  template <typename DataType>
+  tuples::TaggedTuple<Tags::MassDensity<DataType>> variables(
+      const tnsr::I<DataType, Dim>& x, const double t,
+      tmpl::list<Tags::MassDensity<DataType>> /*meta*/) const noexcept {
+    return {tuples::get<hydro::Tags::RestMassDensity<DataType>>(
+        variables(x, t, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}))};
+  }
+
+  template <typename DataType>
+  tuples::TaggedTuple<Tags::Velocity<DataType, Dim>> variables(
+      const tnsr::I<DataType, Dim>& x, const double t,
+      tmpl::list<Tags::Velocity<DataType, Dim>> /*meta*/) const noexcept {
+    return {tuples::get<hydro::Tags::SpatialVelocity<DataType, Dim>>(variables(
+        x, t, tmpl::list<hydro::Tags::SpatialVelocity<DataType, Dim>>{}))};
+  }
+
+  template <typename DataType>
+  tuples::TaggedTuple<Tags::Pressure<DataType>> variables(
+      const tnsr::I<DataType, Dim>& x, const double t,
+      tmpl::list<Tags::Pressure<DataType>> /*meta*/) const noexcept {
+    return {tuples::get<hydro::Tags::Pressure<DataType>>(
+        variables(x, t, tmpl::list<hydro::Tags::Pressure<DataType>>{}))};
+  }
+
+  template <typename DataType>
+  tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>> variables(
+      const tnsr::I<DataType, Dim>& x, const double t,
+      tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/)
+      const noexcept {
+    return {
+        tuples::get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables(
+            x, t,
+            tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{}))};
+  }
 
   /// Retrieve a collection of hydro variables at `(x, t)`
   template <typename DataType, typename... Tags>
@@ -88,14 +123,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
-    return {get<Tags>(variables(x, t, tmpl::list<Tags>{}))...};
-  }
-
-  /// Retrieve the metric variables
-  template <typename DataType, typename Tag>
-  tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, Dim>& x, double t,
-                                     tmpl::list<Tag> /*meta*/) const noexcept {
-    return background_spacetime_.variables(x, t, tmpl::list<Tag>{});
+    return {tuples::get<Tags>(variables(x, t, tmpl::list<Tags>{}))...};
   }
 
   // clang-tidy: no runtime references
@@ -107,11 +135,9 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   operator==(  // NOLINT (clang-tidy: readability-redundant-declaration)
       const SmoothFlow<SpatialDim>& lhs,
       const SmoothFlow<SpatialDim>& rhs) noexcept;
-
-  gr::Solutions::Minkowski<Dim> background_spacetime_{};
 };
 
 template <size_t Dim>
 bool operator!=(const SmoothFlow<Dim>& lhs,
                 const SmoothFlow<Dim>& rhs) noexcept;
-}  // namespace RelativisticEuler::Solutions
+}  // namespace NewtonianEuler::Solutions

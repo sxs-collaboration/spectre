@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/SmoothFlow.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/SmoothFlow.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -18,7 +18,7 @@
 #include "Utilities/Numeric.hpp"
 
 /// \cond
-namespace RelativisticEuler::Solutions {
+namespace NewtonianEuler::Solutions {
 
 template <size_t Dim>
 SmoothFlow<Dim>::SmoothFlow(const std::array<double, Dim>& mean_velocity,
@@ -34,17 +34,15 @@ SmoothFlow<Dim>::SmoothFlow(CkMigrateMessage* msg) noexcept
 
 template <size_t Dim>
 void SmoothFlow<Dim>::pup(PUP::er& p) noexcept {
-  hydro::Solutions::SmoothFlow<Dim, true>::pup(p);
-  p | background_spacetime_;
+  smooth_flow::pup(p);
 }
 
 template <size_t Dim>
 bool operator==(const SmoothFlow<Dim>& lhs,
                 const SmoothFlow<Dim>& rhs) noexcept {
-  using smooth_flow = hydro::Solutions::SmoothFlow<Dim, true>;
+  using smooth_flow = hydro::Solutions::SmoothFlow<Dim, false>;
   return *static_cast<const smooth_flow*>(&lhs) ==
-             *static_cast<const smooth_flow*>(&rhs) and
-         lhs.background_spacetime_ == rhs.background_spacetime_;
+         *static_cast<const smooth_flow*>(&rhs);
 }
 
 template <size_t Dim>
@@ -66,5 +64,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (1, 2, 3))
 
 #undef INSTANTIATE_CLASS
 #undef DIM
-}  // namespace RelativisticEuler::Solutions
+}  // namespace NewtonianEuler::Solutions
 /// \endcond
