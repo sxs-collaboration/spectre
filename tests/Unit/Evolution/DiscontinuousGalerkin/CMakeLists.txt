@@ -23,7 +23,7 @@ add_test_library(
   ${LIBRARY}
   "Evolution/DiscontinuousGalerkin/"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;Evolution"
+  "Boost::boost;Evolution;EvolutionDgActionsHelpers"
   )
 
 add_dependencies(
