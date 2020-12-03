@@ -7,11 +7,11 @@
 
 namespace TestHelpers::evolution::dg::Actions {
 namespace {
-template <SystemType system_type>
+template <SystemType system_type, UseBoundaryCorrection use_boundary_correction>
 void test_wrapper() {
-  test<system_type, 1>();
-  test<system_type, 2>();
-  test<system_type, 3>();
+  test<system_type, use_boundary_correction, 1>();
+  test<system_type, use_boundary_correction, 2>();
+  test<system_type, use_boundary_correction, 3>();
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.ComputeTimeDerivative",
@@ -41,8 +41,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.ComputeTimeDerivative",
   // compilation across multiple translation units by having the test be defined
   // in ComputeTimeDerivativeImpl.tpp.
 
-  test_wrapper<SystemType::Nonconservative>();
-  test_wrapper<SystemType::Conservative>();
+  test_wrapper<SystemType::Nonconservative, UseBoundaryCorrection::No>();
+  test_wrapper<SystemType::Conservative, UseBoundaryCorrection::No>();
+
+  test_wrapper<SystemType::Conservative, UseBoundaryCorrection::Yes>();
+  test_wrapper<SystemType::Nonconservative, UseBoundaryCorrection::Yes>();
+  test_wrapper<SystemType::Mixed, UseBoundaryCorrection::Yes>();
 }
 }  // namespace
 }  // namespace TestHelpers::evolution::dg::Actions

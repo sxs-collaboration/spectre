@@ -9,6 +9,15 @@ set(LIBRARY_SOURCES
   InstantiateBcOld1d.cpp
   InstantiateBcOld2d.cpp
   InstantiateBcOld3d.cpp
+  InstantiateCons1d.cpp
+  InstantiateCons2d.cpp
+  InstantiateCons3d.cpp
+  InstantiateMixed1d.cpp
+  InstantiateMixed2d.cpp
+  InstantiateMixed3d.cpp
+  InstantiateNoncons1d.cpp
+  InstantiateNoncons2d.cpp
+  InstantiateNoncons3d.cpp
   SystemType.cpp
   )
 
