@@ -16,7 +16,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "Parallel/Algorithm.hpp"  // IWYU pragma: keep
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
