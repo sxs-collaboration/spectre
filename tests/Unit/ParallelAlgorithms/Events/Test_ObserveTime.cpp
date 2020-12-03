@@ -54,8 +54,8 @@ class GlobalCache;
 }  // namespace Parallel
 // IWYU pragma: no_forward_declare db::DataBox
 namespace observers::Actions {
-template <> struct ContributeReductionData<
-        observers::ThreadedActions::PrintReductionData>;
+template <typename T>
+struct ContributeReductionData;
 }  // namespace observers::Actions
 
 namespace {
@@ -181,9 +181,6 @@ void test_system() noexcept {
 }
 }  // namespace
 
-// [[OutputRegex, Current time:]]
 SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveTime", "[Unit][Evolution]") {
-  OUTPUT_TEST();
-//  Parallel::printf("Current time: obama");
   test_system();
 }
