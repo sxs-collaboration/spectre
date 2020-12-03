@@ -14,6 +14,15 @@ spectre_target_headers(
   Tags.hpp
   )
 
+target_link_libraries(
+  ${LIBRARY}
+  INTERFACE
+  DataStructures
+  Domain
+  LinearOperators
+  Utilities
+  )
+
 add_subdirectory(Actions)
 add_subdirectory(DiscontinuousGalerkin)
 add_subdirectory(Executables)

@@ -18,5 +18,5 @@ add_test_library(
   ${LIBRARY}
   "Elliptic/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Utilities"
+  "DataStructures;Elliptic;LinearOperators;Utilities"
   )

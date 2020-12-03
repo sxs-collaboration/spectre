@@ -9,6 +9,8 @@ set(LIBS_TO_LINK
   DomainCreators
   Elasticity
   ElasticPotentialEnergy
+  Elliptic
+  EllipticDg
   Informer
   IO
   LinearOperators
