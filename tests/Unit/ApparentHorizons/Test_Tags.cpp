@@ -300,6 +300,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
       "OneOverOneFormMagnitude");
   TestHelpers::db::test_simple_tag<StrahlkorperTags::RicciScalar>(
       "RicciScalar");
+  TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::SpinFunction>(
+      "SpinFunction");
   TestHelpers::db::test_simple_tag<
       StrahlkorperTags::UnitNormalOneForm<Frame::Inertial>>(
       "UnitNormalOneForm");
@@ -414,4 +416,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   TestHelpers::db::test_compute_tag<
       StrahlkorperTags::RicciScalarCompute<Frame::Inertial>>(
       "RicciScalar");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperGr::Tags::SpinFunctionCompute<Frame::Inertial>>(
+      "SpinFunction");
 }

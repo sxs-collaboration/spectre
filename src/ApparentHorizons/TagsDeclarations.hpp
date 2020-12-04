@@ -64,6 +64,9 @@ struct AreaCompute;
 struct IrreducibleMass;
 template <typename Frame>
 struct IrreducibleMassCompute;
+struct SpinFunction;
+template <typename Frame>
+struct SpinFunctionCompute;
 
 }  // namespace Tags
 }  // namespace StrahlkorperGr
