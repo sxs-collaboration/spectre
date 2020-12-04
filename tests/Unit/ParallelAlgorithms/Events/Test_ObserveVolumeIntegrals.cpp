@@ -153,7 +153,8 @@ std::unique_ptr<DomainCreator<SpatialDim>> domain_creator() noexcept;
 template <>
 std::unique_ptr<DomainCreator<1>> domain_creator() noexcept {
   return std::make_unique<domain::creators::Interval>(
-      domain::creators::Interval({{-0.5}}, {{0.5}}, {{false}}, {{0}}, {{4}}));
+      domain::creators::Interval({{-0.5}}, {{0.5}}, {{0}}, {{4}}, {{false}},
+                                 nullptr));
 }
 
 template <>

@@ -20,8 +20,10 @@
 #include "Domain/Creators/AlignedLattice.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/OptionTags.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 
@@ -44,16 +46,18 @@ void test_aligned_blocks(
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
-  const auto domain_creator_1d =
-      TestHelpers::test_factory_creation<DomainCreator<1>>(
-          "AlignedLattice:\n"
-          "  BlockBounds: [[0.1, 2.6, 5.1, 5.2, 7.2]]\n"
-          "  IsPeriodicIn: [false]\n"
-          "  InitialGridPoints: [3]\n"
-          "  InitialLevels: [2]\n"
-          "  RefinedLevels: []\n"
-          "  RefinedGridPoints: []\n"
-          "  BlocksToExclude: []\n");
+  const auto domain_creator_1d = TestHelpers::test_factory_creation<
+      DomainCreator<1>, domain::OptionTags::DomainCreator<1>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithBoundaryConditions<1>>(
+      "AlignedLattice:\n"
+      "  BlockBounds: [[0.1, 2.6, 5.1, 5.2, 7.2]]\n"
+      "  IsPeriodicIn: [false]\n"
+      "  InitialGridPoints: [3]\n"
+      "  InitialLevels: [2]\n"
+      "  RefinedLevels: []\n"
+      "  RefinedGridPoints: []\n"
+      "  BlocksToExclude: []\n");
   const auto* aligned_blocks_creator_1d =
       dynamic_cast<const creators::AlignedLattice<1>*>(domain_creator_1d.get());
   test_aligned_blocks(*aligned_blocks_creator_1d);

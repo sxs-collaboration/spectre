@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -27,20 +28,19 @@ struct Logical;
 
 namespace domain::creators {
 Interval::Interval(
-    typename LowerBound::type lower_x, typename UpperBound::type upper_x,
-    typename IsPeriodicIn::type is_periodic_in_x,
-    typename InitialRefinement::type initial_refinement_level_x,
-    typename InitialGridPoints::type initial_number_of_grid_points_in_x,
+    std::array<double, 1> lower_x, std::array<double, 1> upper_x,
+    std::array<size_t, 1> initial_refinement_level_x,
+    std::array<size_t, 1> initial_number_of_grid_points_in_x,
+    std::array<bool, 1> is_periodic_in_x,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
         time_dependence) noexcept
-    // clang-tidy: trivially copyable
-    : lower_x_(std::move(lower_x)),                        // NOLINT
-      upper_x_(std::move(upper_x)),                        // NOLINT
-      is_periodic_in_x_(std::move(is_periodic_in_x)),      // NOLINT
-      initial_refinement_level_x_(                         // NOLINT
-          std::move(initial_refinement_level_x)),          // NOLINT
-      initial_number_of_grid_points_in_x_(                 // NOLINT
-          std::move(initial_number_of_grid_points_in_x)),  // NOLINT
+    : lower_x_(lower_x),
+      upper_x_(upper_x),
+      is_periodic_in_x_(is_periodic_in_x),
+      initial_refinement_level_x_(initial_refinement_level_x),
+      initial_number_of_grid_points_in_x_(initial_number_of_grid_points_in_x),
+      lower_boundary_condition_(nullptr),
+      upper_boundary_condition_(nullptr),
       time_dependence_(std::move(time_dependence)) {
   if (time_dependence_ == nullptr) {
     time_dependence_ =
@@ -48,13 +48,74 @@ Interval::Interval(
   }
 }
 
+Interval::Interval(
+    std::array<double, 1> lower_x, std::array<double, 1> upper_x,
+    std::array<size_t, 1> initial_refinement_level_x,
+    std::array<size_t, 1> initial_number_of_grid_points_in_x,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        lower_boundary_condition,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        upper_boundary_condition,
+    std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>
+        time_dependence,
+    const Options::Context& context)
+    : lower_x_(lower_x),
+      upper_x_(upper_x),
+      is_periodic_in_x_{{false}},
+      initial_refinement_level_x_(initial_refinement_level_x),
+      initial_number_of_grid_points_in_x_(initial_number_of_grid_points_in_x),
+      lower_boundary_condition_(std::move(lower_boundary_condition)),
+      upper_boundary_condition_(std::move(upper_boundary_condition)),
+      time_dependence_(std::move(time_dependence)) {
+  if (time_dependence_ == nullptr) {
+    time_dependence_ =
+        std::make_unique<domain::creators::time_dependence::None<1>>();
+  }
+  using domain::BoundaryConditions::is_periodic;
+  if (is_periodic(lower_boundary_condition_) !=
+      is_periodic(upper_boundary_condition_)) {
+    PARSE_ERROR(
+        context,
+        "Both the upper and lower boundary condition must be set to periodic "
+        "if imposing periodic boundary conditions.");
+  }
+  if (is_periodic(lower_boundary_condition_)) {
+    is_periodic_in_x_[0] = true;
+    lower_boundary_condition_ = nullptr;
+    upper_boundary_condition_ = nullptr;
+  }
+}
+
 Domain<1> Interval::create_domain() const noexcept {
+  std::vector<DirectionMap<
+      1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions_all_blocks{};
+  if (lower_boundary_condition_ != nullptr or
+      upper_boundary_condition_ != nullptr) {
+    ASSERT(lower_boundary_condition_ != nullptr and
+               upper_boundary_condition_ != nullptr,
+           "Both upper and lower boundary conditions must be specified, or "
+           "neither.");
+    ASSERT(not is_periodic_in_x_[0],
+           "Can't specify both periodic and boundary conditions. Did you "
+           "introduce a new constructor to reach this state?");
+    DirectionMap<1,
+                 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
+        boundary_conditions{};
+    boundary_conditions[Direction<1>::lower_xi()] =
+        lower_boundary_condition_->get_clone();
+    boundary_conditions[Direction<1>::upper_xi()] =
+        upper_boundary_condition_->get_clone();
+    boundary_conditions_all_blocks.push_back(std::move(boundary_conditions));
+  }
+
   Domain<1> domain{
       make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           CoordinateMaps::Affine{-1., 1., lower_x_[0], upper_x_[0]}),
       std::vector<std::array<size_t, 2>>{{{1, 2}}},
       is_periodic_in_x_[0] ? std::vector<PairOfFaces>{{{1}, {2}}}
-                           : std::vector<PairOfFaces>{}};
+                           : std::vector<PairOfFaces>{},
+      std::move(boundary_conditions_all_blocks)};
   if (not time_dependence_->is_none()) {
     domain.inject_time_dependent_map_for_block(
         0, std::move(time_dependence_->block_maps(1)[0]));

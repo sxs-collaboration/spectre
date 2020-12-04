@@ -192,7 +192,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InhomogeneousBoundaryConditions",
     // -0.5       1.5
     const ElementId<1> element_id{0, {{SegmentId{2, 0}}}};
     const domain::creators::Interval domain_creator{
-        {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
+        {{-0.5}}, {{1.5}}, {{2}}, {{4}}, {{false}}, nullptr};
 
     // Expected boundary contribution to source in element X:
     // [ -24 0 0 0 | -> xi

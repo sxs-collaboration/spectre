@@ -258,8 +258,8 @@ void test_1d() {
   // Reference element:
   // [ |X| | ]-> xi
   const ElementId<1> element_id{0, {{SegmentId{2, 1}}}};
-  const domain::creators::Interval domain_creator{
-      {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
+  const domain::creators::Interval domain_creator{{{-0.5}}, {{1.5}},   {{2}},
+                                                  {{4}},    {{false}}, nullptr};
   // Register the coordinate map for serialization
   PUPable_reg(
       SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,

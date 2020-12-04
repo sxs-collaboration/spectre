@@ -15,6 +15,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/DistributedLinearSolverAlgorithmTestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -190,6 +191,9 @@ struct Metavariables {
   static constexpr const char* const help{
       "Test the Schwarz linear solver algorithm"};
   static constexpr size_t volume_dim = 1;
+  using system =
+      TestHelpers::domain::BoundaryConditions::SystemWithoutBoundaryConditions<
+          volume_dim>;
 
   using linear_solver =
       LinearSolver::Schwarz::Schwarz<helpers_distributed::fields_tag,
@@ -210,7 +214,8 @@ struct Metavariables {
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &domain::creators::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<
-        Metavariables::linear_solver::subdomain_solver>};
+        Metavariables::linear_solver::subdomain_solver>,
+    &TestHelpers::domain::BoundaryConditions::register_derived_with_charm};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 
