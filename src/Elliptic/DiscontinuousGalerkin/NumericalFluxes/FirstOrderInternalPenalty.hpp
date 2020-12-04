@@ -50,10 +50,8 @@ namespace elliptic::dg::NumericalFluxes {
  *
  * \see `elliptic::dg::NumericalFluxes::FirstOrderInternalPenalty` for details
  */
-DataVector penalty(const DataVector& element_size, const size_t num_points,
-                   const double penalty_parameter) noexcept {
-  return penalty_parameter * square(num_points) / element_size;
-}
+DataVector penalty(const DataVector& element_size, size_t num_points,
+                   double penalty_parameter) noexcept;
 
 /*!
  * \ingroup DiscontinuousGalerkinGroup

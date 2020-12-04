@@ -12,7 +12,7 @@ add_test_library(
   ${LIBRARY}
   "Elliptic/Actions/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Domain;ErrorHandling"
+  "CoordinateMaps;DataStructures;Domain;DomainCreators;DomainStructure;Elliptic;ErrorHandling;Parallel;AnalyticSolutions;Utilities"
   )
 
 add_dependencies(

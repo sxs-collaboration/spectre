@@ -12,5 +12,5 @@ add_test_library(
   ${LIBRARY}
   "Elliptic/Systems/Elasticity/"
   "${LIBRARY_SOURCES}"
-  "ConstitutiveRelations;Elasticity"
+  "ConstitutiveRelations;DataStructures;Domain;Elasticity;LinearOperators;Utilities"
   )

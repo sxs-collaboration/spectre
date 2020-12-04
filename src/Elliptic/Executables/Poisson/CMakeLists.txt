@@ -6,6 +6,8 @@ set(LIBS_TO_LINK
   CoordinateMaps
   DiscontinuousGalerkin
   DomainCreators
+  Elliptic
+  EllipticDg
   Informer
   IO
   LinearOperators

@@ -15,7 +15,7 @@ add_test_library(
   ${LIBRARY}
   "Elliptic/DiscontinuousGalerkin/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Domain;ErrorHandling"
+  "DataStructures;Domain;DomainStructure;EllipticDg;ErrorHandling;Parallel;Utilities"
   )
 
 add_dependencies(

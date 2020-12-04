@@ -11,7 +11,7 @@ add_test_library(
   ${LIBRARY}
   "Elliptic/DiscontinuousGalerkin/NumericalFluxes"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Domain;ErrorHandling"
+  "DataStructures;DiscontinuousGalerkin;Domain;EllipticDg;ErrorHandling;Spectral;Utilities"
   )
 
 add_dependencies(

@@ -11,5 +11,5 @@ add_test_library(
   ${LIBRARY}
   "Elliptic/Triggers/"
   "${LIBRARY_SOURCES}"
-  "DataStructures"
+  "DataStructures;Elliptic;Parallel;EventsAndTriggers;Utilities"
   )
