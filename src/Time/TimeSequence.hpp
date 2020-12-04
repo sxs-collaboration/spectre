@@ -79,7 +79,6 @@ class EvenlySpaced : public TimeSequence<T> {
   struct Offset {
     static constexpr Options::String help = "Offset of sequence";
     using type = T;
-    static constexpr T default_value() noexcept { return 0; }
   };
 
   static constexpr Options::String help = "A sequence of evenly spaced times.";

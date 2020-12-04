@@ -58,7 +58,6 @@ class Brick : public DomainCreator<3> {
     using type = std::array<bool, 3>;
     static constexpr Options::String help = {
         "Sequence for [x,y,z], true if periodic."};
-    static type default_value() noexcept { return make_array<3>(false); }
   };
 
   struct InitialRefinement {
@@ -78,7 +77,6 @@ class Brick : public DomainCreator<3> {
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>;
     static constexpr Options::String help = {
         "The time dependence of the moving mesh domain."};
-    static type default_value() noexcept;
   };
 
   using options =

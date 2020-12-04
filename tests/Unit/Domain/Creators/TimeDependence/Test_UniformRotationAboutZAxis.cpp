@@ -205,13 +205,6 @@ SPECTRE_TEST_CASE(
              "  AngularVelocity: 2.4\n"
              "  FunctionOfTimeName: RotationAngle\n"),
          initial_time, f_of_t_name);
-
-    test(TestHelpers::test_factory_creation<TimeDependence<2>>(
-             "UniformRotationAboutZAxis:\n"
-             "  InitialTime: 1.3\n"
-             "  InitialExpirationDeltaT: 2.5\n"
-             "  AngularVelocity: 2.4\n"),
-         initial_time, "RotationAngle");
   }
 
   {
@@ -229,13 +222,6 @@ SPECTRE_TEST_CASE(
              "  AngularVelocity: 2.4\n"
              "  FunctionOfTimeName: RotationAngle\n"),
          initial_time, f_of_t_name);
-
-    test(TestHelpers::test_factory_creation<TimeDependence<3>>(
-             "UniformRotationAboutZAxis:\n"
-             "  InitialTime: 1.3\n"
-             "  InitialExpirationDeltaT: Auto\n"
-             "  AngularVelocity: 2.4\n"),
-         initial_time, "RotationAngle");
   }
 
   test_equivalence();

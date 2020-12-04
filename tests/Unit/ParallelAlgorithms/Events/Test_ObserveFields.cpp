@@ -186,7 +186,8 @@ struct ScalarSystem {
                                 solution_for_test::vars_for_test>;
   static constexpr auto creation_string_for_test =
       "ObserveFields:\n"
-      "  SubfileName: element_data";
+      "  SubfileName: element_data\n"
+      "  VariablesToObserve: [Scalar]";
   static ObserveEvent make_test_object() noexcept {
     return ObserveEvent{"element_data"};
   }

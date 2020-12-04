@@ -312,7 +312,12 @@ void test_shell_factory_equiangular() {
           "  InnerRadius: 1\n"
           "  OuterRadius: 3\n"
           "  InitialRefinement: 2\n"
-          "  InitialGridPoints: [2,3]\n");
+          "  InitialGridPoints: [2,3]\n"
+          "  UseEquiangularMap: true\n"
+          "  AspectRatio: 1.0\n"
+          "  UseLogarithmicMap: false\n"
+          "  WhichWedges: All\n"
+          "  RadialBlockLayers: 1\n");
   const double inner_radius = 1.0;
   const double outer_radius = 3.0;
   const size_t refinement_level = 2;
@@ -330,7 +335,11 @@ void test_shell_factory_equidistant() {
       "  OuterRadius: 3\n"
       "  InitialRefinement: 2\n"
       "  InitialGridPoints: [2,3]\n"
-      "  UseEquiangularMap: false\n");
+      "  UseEquiangularMap: false\n"
+      "  AspectRatio: 1.0\n"
+      "  UseLogarithmicMap: false\n"
+      "  WhichWedges: All\n"
+      "  RadialBlockLayers: 1\n");
   const double inner_radius = 1.0;
   const double outer_radius = 3.0;
   const size_t refinement_level = 2;
@@ -366,7 +375,10 @@ void test_shell_factory_aspect_ratio() {
       "  InitialRefinement: 2\n"
       "  InitialGridPoints: [2,3]\n"
       "  UseEquiangularMap: false\n"
-      "  AspectRatio: 2.0        \n");
+      "  AspectRatio: 2.0        \n"
+      "  UseLogarithmicMap: false\n"
+      "  WhichWedges: All\n"
+      "  RadialBlockLayers: 1\n");
   const double inner_radius = 1.0;
   const double outer_radius = 3.0;
   const size_t refinement_level = 2;
@@ -406,7 +418,9 @@ void test_shell_factory_logarithmic_map() {
       "  InitialGridPoints: [2,3]\n"
       "  UseEquiangularMap: false\n"
       "  AspectRatio: 2.0        \n"
-      "  UseLogarithmicMap: true\n");
+      "  UseLogarithmicMap: true\n"
+      "  WhichWedges: All\n"
+      "  RadialBlockLayers: 1\n");
   const double inner_radius = 1.0;
   const double outer_radius = 3.0;
   const size_t refinement_level = 2;
@@ -430,7 +444,8 @@ void test_shell_factory_wedges_four_on_equator() {
       "  UseEquiangularMap: false\n"
       "  AspectRatio: 2.0        \n"
       "  UseLogarithmicMap: true\n"
-      "  WhichWedges: FourOnEquator\n");
+      "  WhichWedges: FourOnEquator\n"
+      "  RadialBlockLayers: 1\n");
   const double inner_radius = 1.0;
   const double outer_radius = 3.0;
   const size_t refinement_level = 2;
@@ -455,7 +470,8 @@ void test_shell_factory_wedges_one_along_minus_x() {
       "  UseEquiangularMap: true\n"
       "  AspectRatio: 2.7        \n"
       "  UseLogarithmicMap: false\n"
-      "  WhichWedges: OneAlongMinusX \n");
+      "  WhichWedges: OneAlongMinusX \n"
+      "  RadialBlockLayers: 1\n");
   const double inner_radius = 2.0;
   const double outer_radius = 3.0;
   const size_t refinement_level = 2;
@@ -580,6 +596,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell", "[Domain][Unit]") {
         "  UseEquiangularMap: false\n"
         "  AspectRatio: 2.0        \n"
         "  UseLogarithmicMap: true\n"
+        "  WhichWedges: All\n"
         "  RadialBlockLayers: 6\n");
   }
   {

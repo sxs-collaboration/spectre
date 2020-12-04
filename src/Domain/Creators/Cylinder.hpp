@@ -84,7 +84,6 @@ class Cylinder : public DomainCreator<3> {
     using type = bool;
     static constexpr Options::String help = {
         "True if periodic in the cylindrical z direction."};
-    static type default_value() noexcept { return true; }
   };
 
   struct InitialRefinement {
@@ -103,12 +102,10 @@ class Cylinder : public DomainCreator<3> {
     using type = bool;
     static constexpr Options::String help = {
         "Use equiangular instead of equidistant coordinates."};
-    static type default_value() noexcept { return false; }
   };
 
   struct RadialPartitioning {
     using type = std::vector<double>;
-    static type default_value() noexcept { return std::vector<double>{}; }
     static constexpr Options::String help = {
         "Radial coordinates of the boundaries splitting the outer shell "
         "between InnerRadius and OuterRadius."};
@@ -116,7 +113,6 @@ class Cylinder : public DomainCreator<3> {
 
   struct HeightPartitioning {
     using type = std::vector<double>;
-    static type default_value() noexcept { return std::vector<double>{}; }
     static constexpr Options::String help = {
         "z-coordinates of the boundaries splitting the domain into discs "
         "between LowerBound and UpperBound."};
@@ -133,8 +129,8 @@ class Cylinder : public DomainCreator<3> {
       "The cylinder can be partitioned radially into multiple cylindrical \n"
       "shells as well as partitioned along the cylinder's height into \n"
       "multiple disks. Including this partitioning, the number of Blocks is \n"
-      "given by \f$ (1 + 4*(1+n_s)) * (1+n_z) \f$, where \f$n_s\f$ is the \n"
-      "length of RadialPartitioning and \f$n_z\f$ the length of \n"
+      "given by (1 + 4*(1+n_s)) * (1+n_z), where n_s is the \n"
+      "length of RadialPartitioning and n_z the length of \n"
       "HeightPartitioning.\n"
       "The circularity of the wedge changes from 0 to 1 within the first \n"
       "shell. The partitionings are empty by default.\n"

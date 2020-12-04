@@ -303,13 +303,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.UniformTranslation",
              "  Velocity: [2.4]\n"
              "  FunctionOfTimeNames: [TranslationInX]\n"),
          initial_time, f_of_t_names);
-
-    test(TestHelpers::test_factory_creation<TimeDependence<1>>(
-             "UniformTranslation:\n"
-             "  InitialTime: 1.3\n"
-             "  InitialExpirationDeltaT: 2.5\n"
-             "  Velocity: [2.4]\n"),
-         initial_time, {{"TranslationX"}});
   }
 
   {
@@ -330,13 +323,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.UniformTranslation",
              "  Velocity: [2.4, 3.1]\n"
              "  FunctionOfTimeNames: [TranslationInX, TranslationInY]\n"),
          initial_time, f_of_t_names);
-
-    test(TestHelpers::test_factory_creation<TimeDependence<2>>(
-             "UniformTranslation:\n"
-             "  InitialTime: 1.3\n"
-             "  InitialExpirationDeltaT: 2.5\n"
-             "  Velocity: [2.4, 3.1]\n"),
-         initial_time, {{"TranslationX", "TranslationY"}});
   }
 
   {
@@ -358,13 +344,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.UniformTranslation",
              "  FunctionOfTimeNames: [TranslationInX, TranslationInY, "
              "TranslationInZ]\n"),
          initial_time, f_of_t_names);
-
-    test(TestHelpers::test_factory_creation<TimeDependence<3>>(
-             "UniformTranslation:\n"
-             "  InitialTime: 1.3\n"
-             "  InitialExpirationDeltaT: Auto\n"
-             "  Velocity: [2.4, 3.1, -1.2]\n"),
-         initial_time, {{"TranslationX", "TranslationY", "TranslationZ"}});
   }
 
   test_equivalence();

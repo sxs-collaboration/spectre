@@ -15,7 +15,6 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 #include <yaml-cpp/yaml.h>
@@ -24,6 +23,8 @@
 #include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Options/OptionsDetails.hpp"
+#include "Parallel/Printf.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -223,12 +224,6 @@ class Parser {
   void check_upper_bound_on_size(const typename T::type& t,
                                  const Context& context) const;
 
-  /// Returns the default value or errors if there is no default.
-  ///
-  /// \tparam T the option struct
-  template <typename T>
-  typename T::type get_default() const;
-
   /// If the options has a lower bound, check it is satisfied.
   ///
   /// Note: Lower bounds are >=, not just >.
@@ -255,16 +250,12 @@ class Parser {
 
   std::string help_text_{};
   Context context_{};
-  std::unordered_set<std::string> valid_names_{};
   std::unordered_map<std::string, YAML::Node> parsed_options_{};
 };
 
 template <typename OptionList, typename Group>
 Parser<OptionList, Group>::Parser(std::string help_text) noexcept
-    : help_text_(std::move(help_text)),
-      valid_names_(tmpl::for_each<tags_and_subgroups_list>(
-                       Options_detail::create_valid_names{})
-                       .value) {
+    : help_text_(std::move(help_text)) {
   tmpl::for_each<tags_and_subgroups_list>([](auto t) noexcept {
     using T = typename decltype(t)::type;
     const std::string label = name<T>();
@@ -315,6 +306,19 @@ void Parser<OptionList, Group>::parse(const YAML::Node& node) {
     PARSE_ERROR(context_, "'" << node << "' does not look like options.\n"
                               << help());
   }
+
+  // Use an ordered container so the missing options are reported in
+  // the order they are given in the help string.
+  std::vector<std::string> valid_names;
+  valid_names.reserve(tmpl::size<tags_and_subgroups_list>{});
+  tmpl::for_each<tags_and_subgroups_list>([&valid_names](auto opt) noexcept {
+    using Opt = tmpl::type_from<decltype(opt)>;
+    const std::string label = name<Opt>();
+    ASSERT(alg::find(valid_names, label) == valid_names.end(),
+           "Duplicate option name: " << label);
+    valid_names.push_back(label);
+  });
+
   for (const auto& name_and_value : node) {
     const auto& name = name_and_value.first.as<std::string>();
     const auto& value = name_and_value.second;
@@ -322,18 +326,35 @@ void Parser<OptionList, Group>::parse(const YAML::Node& node) {
     context.line = name_and_value.first.Mark().line;
     context.column = name_and_value.first.Mark().column;
 
-    // Check for invalid key
-    if (1 != valid_names_.count(name)) {
-      PARSE_ERROR(context, "Option '" << name << "' is not a valid option.\n"
-                                      << parsing_help(node));
-    }
-
     // Check for duplicate key
     if (0 != parsed_options_.count(name)) {
       PARSE_ERROR(context, "Option '" << name << "' specified twice.\n"
                                       << parsing_help(node));
     }
+
+    // Check for invalid key
+    const auto name_it = alg::find(valid_names, name);
+    if (name_it == valid_names.end()) {
+      PARSE_ERROR(context, "Option '" << name << "' is not a valid option.\n"
+                                      << parsing_help(node));
+    }
+
     parsed_options_.emplace(name, value);
+    valid_names.erase(name_it);
+  }
+
+  if (not valid_names.empty()) {
+    PARSE_ERROR(context_, "You did not specify the option"
+                << (valid_names.size() == 1 ? " " : "s ")
+                << (MakeString{} << valid_names) << "\n" << parsing_help(node));
+  }
+
+  // Any actual warnings will be printed by later calls to get or
+  // apply, but it is not clear how to determine in those functions
+  // whether this message should be printed.
+  if (std::is_same_v<Group, NoSuchType> and context_.top_level) {
+    Parallel::printf_error(
+        "The following options differ from their suggested values:\n");
   }
 }
 
@@ -347,11 +368,6 @@ struct get_impl {
         "Could not find requested option in the list of options provided. Did "
         "you forget to add the option tag to the OptionList?");
     const std::string subgroup_label = name<Subgroup>();
-    if (0 == opts.parsed_options_.count(subgroup_label)) {
-      PARSE_ERROR(opts.context_, "You did not specify the group '"
-                                     << subgroup_label << "'.\n"
-                                     << opts.help());
-    }
     Parser<options_in_group<OptionList, Subgroup>, Subgroup> subgroup_options(
         Subgroup::help);
     subgroup_options.context_ = opts.context_;
@@ -371,23 +387,42 @@ struct get_impl<Tag, Metavariables, Tag> {
         "you forget to add the option tag to the OptionList?");
     const std::string label = name<Tag>();
 
-    if constexpr (Options_detail::has_default<Tag>::value) {
-      Context context;
-      context.append("Checking DEFAULT value for " + name<Tag>());
-      const auto default_value = Tag::default_value();
-      opts.template check_lower_bound_on_size<Tag>(default_value, context);
-      opts.template check_upper_bound_on_size<Tag>(default_value, context);
-      opts.template check_lower_bound<Tag>(default_value, context);
-      opts.template check_upper_bound<Tag>(default_value, context);
-    }
-    if (0 == opts.parsed_options_.count(label)) {
-      return opts.template get_default<Tag>();
-    }
-
     Option option(opts.parsed_options_.find(label)->second, opts.context_);
     option.append_context("While parsing option " + label);
 
     auto t = option.parse_as<typename Tag::type, Metavariables>();
+
+    if constexpr (Options_detail::has_suggested<Tag>::value) {
+      static_assert(
+          std::is_same_v<decltype(Tag::suggested_value()), typename Tag::type>,
+          "Suggested value is not of the same type as the option.");
+
+      // This can be easily relaxed, but using it would require
+      // writing comparison operators for abstract base classes.  If
+      // someone wants this enough to go though the effort of doing
+      // that, it would just require comparing the dereferenced
+      // pointers below to decide whether the suggestion was followed.
+      static_assert(not tt::is_a_v<std::unique_ptr, typename Tag::type>,
+                    "Suggestions are not supported for pointer types.");
+
+      const auto suggested_value = Tag::suggested_value();
+      {
+        Context context;
+        context.append("Checking SUGGESTED value for " + name<Tag>());
+        opts.template check_lower_bound_on_size<Tag>(suggested_value, context);
+        opts.template check_upper_bound_on_size<Tag>(suggested_value, context);
+        opts.template check_lower_bound<Tag>(suggested_value, context);
+        opts.template check_upper_bound<Tag>(suggested_value, context);
+      }
+
+      if (t != suggested_value) {
+        Parallel::printf_error(
+            "%s, line %d:\n  Specified: %s\n  Suggested: %s\n",
+            label, option.context().line + 1,
+            (MakeString{} << std::boolalpha << t),
+            (MakeString{} << std::boolalpha << suggested_value));
+      }
+    }
 
     opts.template check_lower_bound_on_size<Tag>(t, option.context());
     opts.template check_upper_bound_on_size<Tag>(t, option.context());
@@ -475,28 +510,6 @@ void Parser<OptionList, Group>::check_upper_bound_on_size(
     }
   }
 }
-
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
-#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
-template <typename OptionList, typename Group>
-template <typename T>
-typename T::type Parser<OptionList, Group>::get_default() const {
-  if constexpr (Options_detail::has_default<T>::value) {
-    static_assert(
-        std::is_same_v<decltype(T::default_value()), typename T::type>,
-        "Default value is not of the same type as the option.");
-    return T::default_value();
-  } else {
-    PARSE_ERROR(context_, "You did not specify the option '" << name<T>()
-                                                             << "'.\n"
-                                                             << help());
-  }
-}
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
-#pragma GCC diagnostic pop
-#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
 
 template <typename OptionList, typename Group>
 template <typename T>

@@ -94,7 +94,7 @@ struct StandaloneExtractionRadius {
 struct EndTime {
   using type = Options::Auto<double>;
   static constexpr Options::String help{"End time for the Cce Evolution."};
-  static type default_value() noexcept { return {}; }
+  static type suggested_value() noexcept { return {}; }
   using group = Cce;
 };
 
@@ -102,7 +102,7 @@ struct StartTime {
   using type = Options::Auto<double>;
   static constexpr Options::String help{
       "Cce Start time (default to earliest possible time)."};
-  static type default_value() noexcept { return {}; }
+  static type suggested_value() noexcept { return {}; }
   using group = Cce;
 };
 
@@ -124,7 +124,7 @@ struct H5LookaheadTimes {
   using type = size_t;
   static constexpr Options::String help{
       "Number of times steps from the h5 to cache each read."};
-  static size_t default_value() noexcept { return 200; }
+  static size_t suggested_value() noexcept { return 200; }
   using group = Cce;
 };
 
@@ -143,7 +143,6 @@ struct H5IsBondiData {
       "has been the typical format provided by SpEC simulations. Bondi data is "
       "much more efficient for storage size and performance, but both must be "
       "supported for compatibility with current CCE data sources."};
-  static bool default_value() noexcept { return false; }
   using group = Cce;
 };
 
@@ -169,7 +168,7 @@ struct ScriInterpolationOrder {
   using type = size_t;
   static constexpr Options::String help{
       "Order of time interpolation at scri+."};
-  static size_t default_value() noexcept { return 5; }
+  static size_t suggested_value() noexcept { return 5; }
   using group = Cce;
 };
 
@@ -177,7 +176,7 @@ struct ScriOutputDensity {
   using type = size_t;
   static constexpr Options::String help{
       "Number of scri output points per timestep."};
-  static size_t default_value() noexcept { return 1; }
+  static size_t suggested_value() noexcept { return 1; }
   using group = Cce;
 };
 

@@ -236,7 +236,8 @@ void test_brick_factory() {
             "  UpperBound: [1,2,3]\n"
             "  IsPeriodicIn: [True,False,True]\n"
             "  InitialGridPoints: [3,4,3]\n"
-            "  InitialRefinement: [2,3,2]\n");
+            "  InitialRefinement: [2,3,2]\n"
+            "  TimeDependence: None\n");
     const auto* brick_creator =
         dynamic_cast<const creators::Brick*>(domain_creator.get());
     test_brick_construction(

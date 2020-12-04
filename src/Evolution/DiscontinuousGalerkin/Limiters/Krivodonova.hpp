@@ -453,7 +453,7 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
    */
   struct DisableForDebugging {
     using type = bool;
-    static type default_value() noexcept { return false; }
+    static type suggested_value() noexcept { return false; }
     static constexpr Options::String help = {"Disable the limiter"};
   };
 

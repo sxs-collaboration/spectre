@@ -79,11 +79,6 @@ Domain<3> Brick::create_domain() const noexcept {
   return domain;
 }
 
-std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-Brick::TimeDependence::default_value() noexcept {
-  return std::make_unique<domain::creators::time_dependence::None<3>>();
-}
-
 std::vector<std::array<size_t, 3>> Brick::initial_extents() const noexcept {
   return {initial_number_of_grid_points_in_xyz_};
 }

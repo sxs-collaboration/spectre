@@ -226,9 +226,12 @@ void test_cylinder_factory_equiangular() {
       "  OuterRadius: 3.0\n"
       "  LowerBound: -1.2\n"
       "  UpperBound: 3.7\n"
+      "  IsPeriodicInZ: true\n"
       "  InitialRefinement: 2\n"
       "  InitialGridPoints: [2,3,4]\n"
-      "  UseEquiangularMap: true\n");
+      "  UseEquiangularMap: true\n"
+      "  RadialPartitioning: []\n"
+      "  HeightPartitioning: []\n");
 
   const double inner_radius = 1.0;
   const double outer_radius = 3.0;
@@ -268,9 +271,12 @@ void test_cylinder_factory_equidistant() {
       "  OuterRadius: 3.0\n"
       "  LowerBound: -1.2\n"
       "  UpperBound: 3.7\n"
+      "  IsPeriodicInZ: true\n"
       "  InitialRefinement: 2\n"
       "  InitialGridPoints: [2,3,4]\n"
-      "  UseEquiangularMap: false\n");
+      "  UseEquiangularMap: false\n"
+      "  RadialPartitioning: []\n"
+      "  HeightPartitioning: []\n");
 
   const double inner_radius = 1.0;
   const double outer_radius = 3.0;
@@ -313,7 +319,9 @@ void test_cylinder_factory_equiangular_not_periodic_in_z() {
       "  IsPeriodicInZ: false\n"
       "  InitialRefinement: 2\n"
       "  InitialGridPoints: [2,3,4]\n"
-      "  UseEquiangularMap: true\n");
+      "  UseEquiangularMap: true\n"
+      "  RadialPartitioning: []\n"
+      "  HeightPartitioning: []\n");
 
   const double inner_radius = 1.0;
   const double outer_radius = 3.0;
@@ -356,7 +364,9 @@ void test_cylinder_factory_equidistant_not_periodic_in_z() {
       "  IsPeriodicInZ: false\n"
       "  InitialRefinement: 2\n"
       "  InitialGridPoints: [2,3,4]\n"
-      "  UseEquiangularMap: false\n");
+      "  UseEquiangularMap: false\n"
+      "  RadialPartitioning: []\n"
+      "  HeightPartitioning: []\n");
 
   const double inner_radius = 1.0;
   const double outer_radius = 3.0;

@@ -79,7 +79,6 @@ class RotatedRectangles : public DomainCreator<2> {
     using type = std::array<bool, 2>;
     static constexpr Options::String help = {
         "Sequence for [x], true if periodic."};
-    static type default_value() noexcept { return {{false, false}}; }
   };
 
   struct InitialRefinement {

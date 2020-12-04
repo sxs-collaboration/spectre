@@ -124,7 +124,6 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
     using type = double;
     static constexpr Options::String help = {
         "The amplitude of the perturbation producing sources."};
-    static constexpr type default_value() noexcept { return 0.0; }
   };
 
   /// The strength of the vortex.
@@ -154,8 +153,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
                    const std::array<double, Dim>& center,
                    const std::array<double, Dim>& mean_velocity,
                    double strength,
-                   double perturbation_amplitude =
-                       PerturbAmplitude::default_value()) noexcept;
+                   double perturbation_amplitude = 0.0) noexcept;
 
   /// Retrieve a collection of hydrodynamic variables at position x and time t
   template <typename DataType, typename... Tags>

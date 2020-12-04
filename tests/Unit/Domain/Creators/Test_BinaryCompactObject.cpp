@@ -152,6 +152,13 @@ void test_bbh_time_dependent_factory() {
           "    InitialRefinement: 1\n"
           "    InitialGridPoints: 3\n"
           "    UseEquiangularMap: true\n"
+          "    UseProjectiveMap: true\n"
+          "    UseLogarithmicMapOuterSphericalShell: false\n"
+          "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectA: false\n"
+          "    AdditionToObjectARadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectB: false\n"
+          "    AdditionToObjectBRadialRefinementLevel: 0\n"
           "    TimeDependence:\n"
           "      UniformTranslation:\n"
           "        InitialTime: 1.0\n"
@@ -230,7 +237,15 @@ void test_bbh_equiangular_factory() {
           "    RadiusOuterSphere: 25.0\n"
           "    InitialRefinement: 1\n"
           "    InitialGridPoints: 3\n"
-          "    UseEquiangularMap: true\n");
+          "    UseEquiangularMap: true\n"
+          "    UseProjectiveMap: true\n"
+          "    UseLogarithmicMapOuterSphericalShell: false\n"
+          "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectA: false\n"
+          "    AdditionToObjectARadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectB: false\n"
+          "    AdditionToObjectBRadialRefinementLevel: 0\n"
+          "    TimeDependence: None\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
           *binary_compact_object));
@@ -252,9 +267,15 @@ void test_bbh_2_outer_radial_refinements_linear_map_factory() {
           "    RadiusOuterSphere: 25.0\n"
           "    InitialRefinement: 1\n"
           "    InitialGridPoints: 3\n"
-          "    AdditionToObjectBRadialRefinementLevel: 2\n"
           "    UseEquiangularMap: true\n"
-          "    AdditionToOuterLayerRadialRefinementLevel: 2\n");
+          "    UseProjectiveMap: true\n"
+          "    UseLogarithmicMapOuterSphericalShell: false\n"
+          "    AdditionToOuterLayerRadialRefinementLevel: 2\n"
+          "    UseLogarithmicMapObjectA: false\n"
+          "    AdditionToObjectARadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectB: false\n"
+          "    AdditionToObjectBRadialRefinementLevel: 2\n"
+          "    TimeDependence: None\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
           *binary_compact_object));
@@ -277,10 +298,14 @@ void test_bbh_3_outer_radial_refinements_log_map_factory() {
           "    InitialRefinement: 1\n"
           "    InitialGridPoints: 3\n"
           "    UseEquiangularMap: true\n"
+          "    UseProjectiveMap: true\n"
+          "    UseLogarithmicMapOuterSphericalShell: false\n"
+          "    AdditionToOuterLayerRadialRefinementLevel: 3\n"
           "    UseLogarithmicMapObjectA: true\n"
           "    AdditionToObjectARadialRefinementLevel: 3\n"
           "    UseLogarithmicMapObjectB: true\n"
-          "    AdditionToOuterLayerRadialRefinementLevel: 3");
+          "    AdditionToObjectBRadialRefinementLevel: 0\n"
+          "    TimeDependence: None\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
           *binary_compact_object));
@@ -302,7 +327,15 @@ void test_bbh_equidistant_factory() {
           "    RadiusOuterSphere: 25.0\n"
           "    InitialRefinement: 1\n"
           "    InitialGridPoints: 3\n"
-          "    UseEquiangularMap: false\n");
+          "    UseEquiangularMap: false\n"
+          "    UseProjectiveMap: true\n"
+          "    UseLogarithmicMapOuterSphericalShell: false\n"
+          "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectA: false\n"
+          "    AdditionToObjectARadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectB: false\n"
+          "    AdditionToObjectBRadialRefinementLevel: 0\n"
+          "    TimeDependence: None\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
           *binary_compact_object));
@@ -324,7 +357,15 @@ void test_bns_equiangular_factory() {
           "    RadiusOuterSphere: 25.0\n"
           "    InitialRefinement: 1\n"
           "    InitialGridPoints: 3\n"
-          "    UseEquiangularMap: true\n");
+          "    UseEquiangularMap: true\n"
+          "    UseProjectiveMap: true\n"
+          "    UseLogarithmicMapOuterSphericalShell: false\n"
+          "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectA: false\n"
+          "    AdditionToObjectARadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectB: false\n"
+          "    AdditionToObjectBRadialRefinementLevel: 0\n"
+          "    TimeDependence: None\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
           *binary_compact_object));
@@ -346,7 +387,15 @@ void test_bns_equidistant_factory() {
           "    RadiusOuterSphere: 25.0\n"
           "    InitialRefinement: 1\n"
           "    InitialGridPoints: 3\n"
-          "    UseEquiangularMap: false\n");
+          "    UseEquiangularMap: false\n"
+          "    UseProjectiveMap: true\n"
+          "    UseLogarithmicMapOuterSphericalShell: false\n"
+          "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectA: false\n"
+          "    AdditionToObjectARadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectB: false\n"
+          "    AdditionToObjectBRadialRefinementLevel: 0\n"
+          "    TimeDependence: None\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
           *binary_compact_object));
@@ -368,7 +417,15 @@ void test_bhns_equiangular_factory() {
           "    RadiusOuterSphere: 25.0\n"
           "    InitialRefinement: 1\n"
           "    InitialGridPoints: 3\n"
-          "    UseEquiangularMap: true\n");
+          "    UseEquiangularMap: true\n"
+          "    UseProjectiveMap: true\n"
+          "    UseLogarithmicMapOuterSphericalShell: false\n"
+          "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectA: false\n"
+          "    AdditionToObjectARadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectB: false\n"
+          "    AdditionToObjectBRadialRefinementLevel: 0\n"
+          "    TimeDependence: None\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
           *binary_compact_object));
@@ -390,7 +447,15 @@ void test_bhns_equidistant_factory() {
           "    RadiusOuterSphere: 25.0\n"
           "    InitialRefinement: 1\n"
           "    InitialGridPoints: 3\n"
-          "    UseEquiangularMap: false\n");
+          "    UseEquiangularMap: false\n"
+          "    UseProjectiveMap: true\n"
+          "    UseLogarithmicMapOuterSphericalShell: false\n"
+          "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectA: false\n"
+          "    AdditionToObjectARadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectB: false\n"
+          "    AdditionToObjectBRadialRefinementLevel: 0\n"
+          "    TimeDependence: None\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
           *binary_compact_object));
@@ -412,7 +477,15 @@ void test_nsbh_equiangular_factory() {
           "    RadiusOuterSphere: 25.0\n"
           "    InitialRefinement: 1\n"
           "    InitialGridPoints: 3\n"
-          "    UseEquiangularMap: true\n");
+          "    UseEquiangularMap: true\n"
+          "    UseProjectiveMap: true\n"
+          "    UseLogarithmicMapOuterSphericalShell: false\n"
+          "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectA: false\n"
+          "    AdditionToObjectARadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectB: false\n"
+          "    AdditionToObjectBRadialRefinementLevel: 0\n"
+          "    TimeDependence: None\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
           *binary_compact_object));
@@ -434,7 +507,15 @@ void test_nsbh_equidistant_factory() {
           "    RadiusOuterSphere: 25.0\n"
           "    InitialRefinement: 1\n"
           "    InitialGridPoints: 3\n"
-          "    UseEquiangularMap: false\n");
+          "    UseEquiangularMap: false\n"
+          "    UseProjectiveMap: true\n"
+          "    UseLogarithmicMapOuterSphericalShell: false\n"
+          "    AdditionToOuterLayerRadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectA: false\n"
+          "    AdditionToObjectARadialRefinementLevel: 0\n"
+          "    UseLogarithmicMapObjectB: false\n"
+          "    AdditionToObjectBRadialRefinementLevel: 0\n"
+          "    TimeDependence: None\n");
   test_binary_compact_object_construction(
       dynamic_cast<const domain::creators::BinaryCompactObject&>(
           *binary_compact_object));

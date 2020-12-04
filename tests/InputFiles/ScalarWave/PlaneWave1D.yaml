@@ -36,6 +36,7 @@ DomainCreator:
     IsPeriodicIn: [true]
     InitialRefinement: [2]
     InitialGridPoints: [7]
+    TimeDependence: None
 
 SpatialDiscretization:
   DiscontinuousGalerkin:
@@ -58,6 +59,7 @@ EventsAndTriggers:
   ? Slabs:
       EvenlySpaced:
         Interval: 2
+        Offset: 0
   : - ChangeSlabSize:
         DelayChange: 3
         StepChoosers:

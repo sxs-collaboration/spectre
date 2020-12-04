@@ -212,14 +212,12 @@ class BinaryCompactObject : public DomainCreator<3> {
     using type = bool;
     static constexpr Options::String help = {
         "Use equiangular instead of equidistant coordinates."};
-    static type default_value() { return false; }
   };
 
   struct UseProjectiveMap {
     using type = bool;
     static constexpr Options::String help = {
         "Use projective scaling on the frustal cloak."};
-    static type default_value() { return true; }
   };
 
   struct UseLogarithmicMapOuterSphericalShell {
@@ -227,7 +225,6 @@ class BinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "Use a logarithmically spaced radial grid in Layer 5, the outer "
         "spherical shell that covers the wave zone."};
-    static type default_value() noexcept { return false; }
   };
 
   struct AdditionToOuterLayerRadialRefinementLevel {
@@ -236,8 +233,6 @@ class BinaryCompactObject : public DomainCreator<3> {
         "Addition to radial refinement level in Layer 5 (the outer spherical "
         "shell that covers that wave zone), beyond the refinement "
         "level set by InitialRefinement."};
-    static constexpr type default_value() noexcept { return 0; }
-    static type lower_bound() noexcept { return 0; }
   };
 
   struct UseLogarithmicMapObjectA {
@@ -245,7 +240,6 @@ class BinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "Use a logarithmically spaced radial grid in the part of Layer 1 "
         "enveloping Object A (requires ExciseInteriorA == true)"};
-    static type default_value() noexcept { return false; }
   };
 
   struct AdditionToObjectARadialRefinementLevel {
@@ -253,8 +247,6 @@ class BinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "Addition to radial refinement level in the part of Layer 1 enveloping "
         "Object A, beyond the refinement level set by InitialRefinement."};
-    static constexpr type default_value() noexcept { return 0; }
-    static type lower_bound() noexcept { return 0; }
   };
 
   struct UseLogarithmicMapObjectB {
@@ -262,7 +254,6 @@ class BinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "Use a logarithmically spaced radial grid in the part of Layer 1 "
         "enveloping Object B (requires ExciseInteriorB == true)"};
-    static type default_value() noexcept { return false; }
   };
 
   struct AdditionToObjectBRadialRefinementLevel {
@@ -270,8 +261,6 @@ class BinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "Addition to radial refinement level in the part of Layer 1 enveloping "
         "Object B, beyond the refinement level set by InitialRefinement."};
-    static constexpr type default_value() noexcept { return 0; }
-    static type lower_bound() noexcept { return 0; }
   };
 
   struct TimeDependence {
@@ -279,7 +268,6 @@ class BinaryCompactObject : public DomainCreator<3> {
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>;
     static constexpr Options::String help = {
         "The time dependence of the moving mesh domain."};
-    static type default_value() noexcept;
   };
 
   using options = tmpl::list<

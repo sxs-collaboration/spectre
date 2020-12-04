@@ -68,11 +68,13 @@ void test_minmod_option_parsing() noexcept {
   const auto lambda_pi1 =
       TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "Type: LambdaPi1\n"
-          "TvbConstant: 0.0");
+          "TvbConstant: 0.0\n"
+          "DisableForDebugging: False");
   const auto lambda_pi1_tvb =
       TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "Type: LambdaPi1\n"
-          "TvbConstant: 1.0");
+          "TvbConstant: 1.0\n"
+          "DisableForDebugging: False");
   const auto lambda_pi1_disabled =
       TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "Type: LambdaPi1\n"
@@ -81,7 +83,8 @@ void test_minmod_option_parsing() noexcept {
   const auto muscl =
       TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "Type: Muscl\n"
-          "TvbConstant: 0.0");
+          "TvbConstant: 0.0\n"
+          "DisableForDebugging: False");
 
   // Test operators == and !=
   CHECK(lambda_pi1 == lambda_pi1);
@@ -92,11 +95,13 @@ void test_minmod_option_parsing() noexcept {
   const auto lambda_pin_2d =
       TestHelpers::test_creation<Limiters::Minmod<2, tmpl::list<ScalarTag>>>(
           "Type: LambdaPiN\n"
-          "TvbConstant: 0.0");
+          "TvbConstant: 0.0\n"
+          "DisableForDebugging: False");
   const auto lambda_pin_3d = TestHelpers::test_creation<
       Limiters::Minmod<3, tmpl::list<ScalarTag, VectorTag<3>>>>(
       "Type: LambdaPiN\n"
-      "TvbConstant: 10.0");
+      "TvbConstant: 10.0\n"
+      "DisableForDebugging: False");
 
   // Test that creation from options gives correct object
   const Limiters::Minmod<1, tmpl::list<ScalarTag>> expected_lambda_pi1(

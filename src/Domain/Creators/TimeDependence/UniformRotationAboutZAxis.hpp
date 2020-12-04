@@ -98,15 +98,10 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
         "The angular velocity of the map."};
   };
   /// \brief The name of the function of time to be added to the DataBox.
-  ///
-  /// The default is `"RotationAngle"`.
   struct FunctionOfTimeName {
     using type = std::string;
     static constexpr Options::String help = {
         "Name of the rotation angle function of time."};
-    static type default_value() noexcept {
-      return std::string{"RotationAngle"};
-    }
   };
 
   using MapForComposition = detail::generate_coordinate_map_t<

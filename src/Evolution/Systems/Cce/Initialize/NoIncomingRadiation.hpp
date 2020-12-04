@@ -40,7 +40,7 @@ struct NoIncomingRadiation : InitializeJ {
         "Tolerance of initial angular coordinates for CCE"};
     static type lower_bound() noexcept { return 1.0e-14; }
     static type upper_bound() noexcept { return 1.0e-3; }
-    static type default_value() noexcept { return 1.0e-10; }
+    static type suggested_value() noexcept { return 1.0e-10; }
   };
 
   struct MaxIterations {
@@ -49,14 +49,14 @@ struct NoIncomingRadiation : InitializeJ {
         "Number of linearized inversion iterations."};
     static type lower_bound() noexcept { return 10; }
     static type upper_bound() noexcept { return 1000; }
-    static type default_value() noexcept { return 300; }
+    static type suggested_value() noexcept { return 300; }
   };
 
   struct RequireConvergence {
     using type = bool;
     static constexpr Options::String help = {
       "If true, initialization will error if it hits MaxIterations"};
-    static type default_value() noexcept { return false; }
+    static type suggested_value() noexcept { return true; }
   };
 
   using options =

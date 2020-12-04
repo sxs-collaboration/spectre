@@ -52,7 +52,6 @@ class Interval : public DomainCreator<1> {
     using type = std::array<bool, 1>;
     static constexpr Options::String help = {
         "Sequence for [x], true if periodic."};
-    static type default_value() noexcept { return make_array<1>(false); }
   };
   struct InitialRefinement {
     using type = std::array<size_t, 1>;
@@ -69,7 +68,6 @@ class Interval : public DomainCreator<1> {
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<1>>;
     static constexpr Options::String help = {
         "The time dependence of the moving mesh domain."};
-    static type default_value() noexcept;
   };
 
   using options =

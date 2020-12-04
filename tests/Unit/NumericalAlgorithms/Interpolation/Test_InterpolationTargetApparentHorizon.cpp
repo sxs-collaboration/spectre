@@ -71,6 +71,14 @@ SPECTRE_TEST_CASE(
   const auto created_opts = TestHelpers::test_creation<
       intrp::OptionHolders::ApparentHorizon<Frame::Inertial>>(
       "FastFlow:\n"
+      "  Flow: Fast\n"
+      "  Alpha: 1.0\n"
+      "  Beta: 0.5\n"
+      "  AbsTol: 1e-12\n"
+      "  TruncationTol: 1e-2\n"
+      "  DivergenceTol: 1.2\n"
+      "  DivergenceIter: 5\n"
+      "  MaxIts: 100\n"
       "Verbosity: Verbose\n"
       "InitialGuess:\n"
       "  Center: [0.05, 0.06, 0.07]\n"

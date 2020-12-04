@@ -17,6 +17,7 @@ DomainCreator:
     IsPeriodicIn: [false]
     InitialRefinement: [1]
     InitialGridPoints: [4]
+    TimeDependence: None
 
 AnalyticSolution:
   SmoothFlow:
@@ -39,6 +40,7 @@ Limiter:
     # The optimal value of the TVB constant is problem-dependent.
     # This test uses 100 to favor accuracy in the smooth flow.
     TvbConstant: 100.0
+    DisableForDebugging: false
 
 VariableFixing:
   FixConservatives:

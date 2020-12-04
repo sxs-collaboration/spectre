@@ -109,7 +109,6 @@ SPECTRE_TEST_CASE("Unit.Options.Simple.duplicate", "[Unit][Options]") {
   opts.parse(
       "Simple: -4\n"
       "Simple: -3");
-  opts.get<Simple>();
 }
 
 // [[OutputRegex, In string:.*At line 2 column 1:.Option 'SomeName' specified
@@ -120,23 +119,28 @@ SPECTRE_TEST_CASE("Unit.Options.NamedSimple.duplicate", "[Unit][Options]") {
   opts.parse(
       "SomeName: -4\n"
       "SomeName: -3");
-  opts.get<NamedSimple>();
 }
 
-// [[OutputRegex, In string:.*You did not specify the option 'Simple']]
+// [[OutputRegex, In string:.*You did not specify the option \(Simple\)]]
 SPECTRE_TEST_CASE("Unit.Options.Simple.missing", "[Unit][Options]") {
   ERROR_TEST();
   Options::Parser<tmpl::list<Simple>> opts("");
   opts.parse("");
-  opts.get<Simple>();
 }
 
-// [[OutputRegex, In string:.*You did not specify the option 'SomeName']]
+// [[OutputRegex, In string:.*You did not specify the option \(SomeName\)]]
 SPECTRE_TEST_CASE("Unit.Options.NamedSimple.missing", "[Unit][Options]") {
   ERROR_TEST();
   Options::Parser<tmpl::list<NamedSimple>> opts("");
   opts.parse("");
-  opts.get<NamedSimple>();
+}
+
+// [[OutputRegex, In string:.*You did not specify the options
+// \(SomeName,Simple\)]]
+SPECTRE_TEST_CASE("Unit.Options.multiple_missing", "[Unit][Options]") {
+  ERROR_TEST();
+  Options::Parser<tmpl::list<NamedSimple, Simple>> opts("");
+  opts.parse("");
 }
 
 // [[OutputRegex, In string:.*While parsing option Simple:.At line 1 column
@@ -237,7 +241,7 @@ void test_options_grouped() {
 }
 }  // namespace
 
-// [[OutputRegex, In string:.*You did not specify the group 'OuterGroup']]
+// [[OutputRegex, In string:.*You did not specify the option \(OuterGroup\)]]
 SPECTRE_TEST_CASE("Unit.Options.Grouped.missing_outer_group",
                   "[Unit][Options]") {
   ERROR_TEST();
@@ -246,8 +250,8 @@ SPECTRE_TEST_CASE("Unit.Options.Grouped.missing_outer_group",
   opts.get<InnerGroupedTag>();
 }
 
-// [[OutputRegex, In string:.*In group OuterGroup:.You did not specify the group
-// 'InnerGroup']]
+// [[OutputRegex, In string:.*In group OuterGroup:.You did not specify the
+// option \(InnerGroup\)]]
 SPECTRE_TEST_CASE("Unit.Options.Grouped.missing_inner_group",
                   "[Unit][Options]") {
   ERROR_TEST();
@@ -260,26 +264,26 @@ SPECTRE_TEST_CASE("Unit.Options.Grouped.missing_inner_group",
 struct Bounded {
   using type = int;
   static constexpr Options::String help = {
-      "Option with bounds and a default value"};
+      "Option with bounds and a suggested value"};
   // These are optional
-  static type default_value() noexcept { return 3; }
+  static type suggested_value() noexcept { return 3; }
   static type lower_bound() noexcept { return 2; }
   static type upper_bound() noexcept { return 10; }
 };
 /// [options_example_scalar_struct]
 
-void test_options_default_specified() {
-  /// [options_example_scalar_parse]
+void test_options_suggested_followed() {
   Options::Parser<tmpl::list<Bounded>> opts("Overall help text");
   opts.parse("Bounded: 8");
   CHECK(opts.get<Bounded>() == 8);
-  /// [options_example_scalar_parse]
 }
 
-void test_options_default_defaulted() {
-  Options::Parser<tmpl::list<Bounded>> opts("");
-  opts.parse("");
+void test_options_suggested_not_followed() {
+  /// [options_example_scalar_parse]
+  Options::Parser<tmpl::list<Bounded>> opts("Overall help text");
+  opts.parse("Bounded: 3");
   CHECK(opts.get<Bounded>() == 3);
+  /// [options_example_scalar_parse]
 }
 
 // [[OutputRegex, In string:.*While parsing option Bounded:.At line 1 column
@@ -312,36 +316,44 @@ SPECTRE_TEST_CASE("Unit.Options.Bounded.above", "[Unit][Options]") {
   opts.get<Bounded>();
 }
 
-struct BadDefault {
+// [[OutputRegex, Bounded, line 1:.  Specified: 5.  Suggested: 3]]
+SPECTRE_TEST_CASE("Unit.Options.suggestion_warning", "[Unit][Options]") {
+  OUTPUT_TEST();
+  Options::Parser<tmpl::list<Bounded>> opts("");
+  opts.parse("Bounded: 5");
+  opts.get<Bounded>();
+}
+
+struct BadSuggestion {
   using type = int;
   static constexpr Options::String help = {"halp"};
-  static type default_value() noexcept { return 3; }
+  static type suggested_value() noexcept { return 3; }
   static type lower_bound() noexcept { return 4; }
 };
-struct NamedBadDefault {
+struct NamedBadSuggestion {
   using type = int;
   static std::string name() noexcept { return "SomeName"; }
   static constexpr Options::String help = {"halp"};
-  static type default_value() noexcept { return 3; }
+  static type suggested_value() noexcept { return 3; }
   static type lower_bound() noexcept { return 4; }
 };
 
-// [[OutputRegex, Checking DEFAULT value for BadDefault:.Value 3 is below the
-// lower bound of 4]]
-SPECTRE_TEST_CASE("Unit.Options.BadDefault", "[Unit][Options]") {
+// [[OutputRegex, Checking SUGGESTED value for BadSuggestion:.Value 3 is below
+// the lower bound of 4]]
+SPECTRE_TEST_CASE("Unit.Options.BadSuggestion", "[Unit][Options]") {
   ERROR_TEST();
-  Options::Parser<tmpl::list<BadDefault>> opts("");
-  opts.parse("");
-  opts.get<BadDefault>();
+  Options::Parser<tmpl::list<BadSuggestion>> opts("");
+  opts.parse("BadSuggestion: 5");
+  opts.get<BadSuggestion>();
 }
 
-// [[OutputRegex, Checking DEFAULT value for SomeName:.Value 3 is below the
+// [[OutputRegex, Checking SUGGESTED value for SomeName:.Value 3 is below the
 // lower bound of 4]]
-SPECTRE_TEST_CASE("Unit.Options.NamedBadDefault", "[Unit][Options]") {
+SPECTRE_TEST_CASE("Unit.Options.NamedBadSuggestion", "[Unit][Options]") {
   ERROR_TEST();
-  Options::Parser<tmpl::list<NamedBadDefault>> opts("");
-  opts.parse("");
-  opts.get<NamedBadDefault>();
+  Options::Parser<tmpl::list<NamedBadSuggestion>> opts("");
+  opts.parse("SomeName: 5");
+  opts.get<NamedBadSuggestion>();
 }
 
 /// [options_example_vector_struct]
@@ -622,6 +634,7 @@ struct NamedDuplicate {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Options::Parser<tmpl::list<Duplicate, NamedDuplicate>> opts("");
+  opts.parse("");
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
@@ -769,7 +782,7 @@ struct FormatUnorderedMap {
 struct ScalarWithLimits {
   using type = int;
   static constexpr Options::String help = "ScalarHelp";
-  static type default_value() noexcept { return 7; }
+  static type suggested_value() noexcept { return 7; }
   static type lower_bound() noexcept { return 2; }
   static type upper_bound() noexcept { return 8; }
 };
@@ -806,7 +819,7 @@ void test_options_format() {
 Options:
   ScalarWithLimits:
     type=int
-    default=7
+    suggested=7
     min=2
     max=8
     ScalarHelp
@@ -868,16 +881,16 @@ void test_options_explicit_constructor() {
   opts.get<ExplicitObjectTag>();
 }
 
-struct DefaultBool {
+struct SuggestedBool {
   using type = bool;
-  static type default_value() noexcept { return false; }
+  static type suggested_value() noexcept { return false; }
   constexpr static Options::String help = "halp";
 };
 
 void test_options_format_bool() noexcept {
-  const auto help = Options::Parser<tmpl::list<DefaultBool>>("").help();
+  const auto help = Options::Parser<tmpl::list<SuggestedBool>>("").help();
   CAPTURE(help);
-  CHECK(help.find("default=false") != std::string::npos);
+  CHECK(help.find("suggested=false") != std::string::npos);
 }
 }  // namespace
 
@@ -886,8 +899,8 @@ SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
   test_options_simple_success();
   test_options_print_long_help();
   test_options_grouped();
-  test_options_default_specified();
-  test_options_default_defaulted();
+  test_options_suggested_followed();
+  test_options_suggested_not_followed();
   test_options_bounded_lower_bound();
   test_options_bounded_upper_bound();
   test_options_vector_lower_bound();

@@ -120,7 +120,6 @@ class RotatedBricks : public DomainCreator<3> {
     using type = std::array<bool, 3>;
     static constexpr Options::String help = {
         "Sequence in [x,y,z], true if periodic."};
-    static type default_value() noexcept { return {{false, false, false}}; }
   };
 
   struct InitialRefinement {

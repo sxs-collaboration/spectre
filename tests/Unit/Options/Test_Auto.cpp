@@ -36,6 +36,15 @@ void test_class() noexcept {
     CHECK((extracted and *extracted and **extracted == 3));
   }
 
+  CHECK(Options::Auto<int>{} == Options::Auto<int>{});
+  CHECK_FALSE(Options::Auto<int>{} != Options::Auto<int>{});
+  CHECK(Options::Auto<int>{3} == Options::Auto<int>{3});
+  CHECK_FALSE(Options::Auto<int>{3} != Options::Auto<int>{3});
+  CHECK_FALSE(Options::Auto<int>{} == Options::Auto<int>{3});
+  CHECK(Options::Auto<int>{} != Options::Auto<int>{3});
+  CHECK_FALSE(Options::Auto<int>{3} == Options::Auto<int>{4});
+  CHECK(Options::Auto<int>{3} != Options::Auto<int>{4});
+
   CHECK(get_output(Options::Auto<int>{}) == "Auto");
   CHECK(get_output(Options::Auto<int>{3}) == "3");
   CHECK(get_output(Options::Auto<std::vector<int>>{{1, 2}}) ==
@@ -100,7 +109,7 @@ class ExampleClass {
 
   struct AutoArg {
     using type = Options::Auto<int>;
-    static type default_value() noexcept { return {}; }
+    static type suggested_value() noexcept { return {}; }
     static constexpr Options::String help =
         "Integer that can be automatically chosen";
   };

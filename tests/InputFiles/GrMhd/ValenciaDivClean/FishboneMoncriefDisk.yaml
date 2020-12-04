@@ -28,6 +28,7 @@ DomainCreator:
     IsPeriodicIn: [false, false, false]
     InitialRefinement: [0, 0, 0]
     InitialGridPoints: [5, 5, 5]
+    TimeDependence: None
 
 SpatialDiscretization:
   DiscontinuousGalerkin:
@@ -55,6 +56,7 @@ Limiter:
     # The optimal value of the TVB constant is problem-dependent.
     # This test uses 0 to favor robustness over accuracy.
     TvbConstant: 0.0
+    DisableForDebugging: false
 
 VariableFixing:
   FixConservatives:
@@ -74,6 +76,7 @@ EventsAndTriggers:
   ? Slabs:
       EvenlySpaced:
         Interval: 1
+        Offset: 0
   : - ChangeSlabSize:
         # DelayChange: 0 forces a synchronization after every slab.
         # It is more efficient to use a higher value.  This is for
@@ -97,3 +100,4 @@ InterpolationTargets:
     Center: [0.0, 0.0, 0.0]
     Mass: *BhMass
     DimensionlessSpin: [0.0, 0.0, *BhDimlessSpin]
+    ThetaVariesFastest: true

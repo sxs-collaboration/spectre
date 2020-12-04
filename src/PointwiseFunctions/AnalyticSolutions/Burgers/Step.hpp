@@ -41,13 +41,11 @@ class Step : public MarkAsAnalyticSolution {
   struct LeftValue {
     using type = double;
     static type lower_bound() noexcept { return 0.0; }
-    static type default_value() noexcept { return 2.0; }
     static constexpr Options::String help{"The value of U, left of the shock"};
   };
   struct RightValue {
     using type = double;
     static type lower_bound() noexcept { return 0.0; }
-    static type default_value() noexcept { return 1.0; }
     static constexpr Options::String help{"The value of U, right of the shock"};
   };
   struct InitialPosition {

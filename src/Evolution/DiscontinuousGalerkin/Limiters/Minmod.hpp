@@ -190,7 +190,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// approach is to not compile the limiter into the executable.
   struct DisableForDebugging {
     using type = bool;
-    static type default_value() noexcept { return false; }
+    static type suggested_value() noexcept { return false; }
     static constexpr Options::String help = {"Disable the limiter"};
   };
   using options = tmpl::list<Type, TvbConstant, DisableForDebugging>;

@@ -222,7 +222,8 @@ void test_exponential_filter_creation() noexcept {
 
   const auto filter = TestHelpers::test_creation<Filter>(
       "Alpha: 36\n"
-      "HalfPower: 32\n");
+      "HalfPower: 32\n"
+      "DisableForDebugging: False\n");
 
   CHECK(filter == Filter{36.0, 32, false});
   CHECK_FALSE(filter == Filter{35.0, 32, false});

@@ -16,6 +16,7 @@ DomainCreator:
     IsPeriodicIn: [true, true, true]
     InitialRefinement: [2, 2, 0]
     InitialGridPoints: [2, 2, 2]
+    TimeDependence: None
 
 SpatialDiscretization:
   DiscontinuousGalerkin:
@@ -45,6 +46,7 @@ Limiter:
     # The optimal value of the TVB constant is problem-dependent.
     # This test uses 0 to favor robustness over accuracy.
     TvbConstant: 0.0
+    DisableForDebugging: false
 
 VariableFixing:
   FixConservatives:

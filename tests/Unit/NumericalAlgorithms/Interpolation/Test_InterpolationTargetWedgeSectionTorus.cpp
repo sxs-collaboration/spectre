@@ -149,6 +149,7 @@ SPECTRE_TEST_CASE(
           "NumberRadialPoints: 20\n"
           "NumberThetaPoints: 10\n"
           "NumberPhiPoints: 20\n"
+          "UniformRadialGrid: false\n"
           "UniformThetaGrid: true\n");
   CHECK(created_torus == intrp::OptionHolders::WedgeSectionTorus(
                              1.8, 20., 0.785, 2.356, 20, 10, 20, false, true));

@@ -193,7 +193,7 @@ class RiemannProblem : public MarkAsAnalyticSolution {
     using type = double;
     static constexpr Options::String help = {
         "The tolerance for the numerical solution for p star"};
-    static type default_value() noexcept { return 1.e-9; }
+    static type suggested_value() noexcept { return 1.e-9; }
   };
 
   // Any of the two states that constitute the initial data, including
@@ -252,7 +252,7 @@ class RiemannProblem : public MarkAsAnalyticSolution {
       const std::array<double, Dim>& left_velocity, double left_pressure,
       double right_mass_density, const std::array<double, Dim>& right_velocity,
       double right_pressure,
-      double pressure_star_tol = PressureStarTol::default_value()) noexcept;
+      double pressure_star_tol = PressureStarTol::suggested_value()) noexcept;
 
   /// Retrieve a collection of hydrodynamic variables at position `x`
   /// and time `t`
