@@ -27,6 +27,7 @@ if(${ENABLE_WARNINGS})
 -Wnewline-eof;\
 -Wno-documentation-unknown-command;\
 -Wno-mismatched-tags;\
+-Wno-type-limits;\
 -Wno-undefined-var-template;\
 -Wnon-virtual-dtor;\
 -Wold-style-cast;\
