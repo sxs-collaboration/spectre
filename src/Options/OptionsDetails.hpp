@@ -68,7 +68,8 @@ struct is_in_group<Tag, Group, std::void_t<typename Tag::group>>
 
 /// The subset of tags in `OptionList` that are in the hierarchy of `Group`
 template <typename OptionList, typename Group>
-using options_in_group = tmpl::filter<OptionList, is_in_group<tmpl::_1, Group>>;
+using options_in_group =
+    tmpl::filter<OptionList, is_in_group<tmpl::_1, tmpl::pin<Group>>>;
 
 // Display a type in a pseudo-YAML form, leaving out likely irrelevant
 // information.
