@@ -16,8 +16,8 @@
  * \ingroup ParallelGroup
  * \brief Mark derived classes as serializable
  *
- * Any class that derives off of a non-class template base class must contain
- * this macro if it is to be serialized.
+ * Any class that inherits from an abstract base class where the base class is
+ * not a template class must contain this macro if it is to be serialized.
  */
 #define WRAPPED_PUPable_decl_template(className) \
   PUPable_decl_template(SINGLE_ARG(className))  // NOLINT
@@ -26,8 +26,8 @@
  * \ingroup ParallelGroup
  * \brief Mark derived template classes as serializable
  *
- * Any class that derives off of a class template base class must contain
- * this macro if it is to be serialized.
+ * Any class that inherits from an abstract base class where the base class is
+ * a template class must contain this macro if it is to be serialized.
  */
 #define WRAPPED_PUPable_decl_base_template(baseClassName, className) \
   PUPable_decl_base_template(SINGLE_ARG(baseClassName), /* NOLINT */ \
