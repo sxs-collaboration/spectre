@@ -62,7 +62,7 @@ struct SystemBase {
   static constexpr bool has_primitive_and_conservative_vars = HasPrimitives;
   using variables_tag = Var;
 
-  using ComputeTimeDerivative = struct {
+  struct ComputeTimeDerivative {
     template <template <class> class StepPrefix>
     using return_tags = tmpl::list<StepPrefix<Var>>;
 
