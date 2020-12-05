@@ -50,6 +50,16 @@ T serialize_and_deserialize(const T& t) {
   return deserialize<T>(serialize<T>(t).data());
 }
 
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Serializes and deserializes an object `t` of type `T`
+ */
+template <typename T>
+void serialize_and_deserialize(const gsl::not_null<T*> result,
+                               const T& t) noexcept {
+  deserialize<T>(result, serialize<T>(t).data());
+}
+
 /// \ingroup TestingFrameworkGroup
 /// \brief Tests the serialization of comparable types
 /// \example
