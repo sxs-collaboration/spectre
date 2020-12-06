@@ -15,6 +15,8 @@ namespace Convergence {
 
 std::ostream& operator<<(std::ostream& os, const Reason& reason) noexcept {
   switch (reason) {
+    case Reason::NumIterations:
+      return os << "NumIterations";
     case Reason::MaxIterations:
       return os << "MaxIterations";
     case Reason::AbsoluteResidual:
@@ -32,8 +34,10 @@ template <>
 Convergence::Reason
 Options::create_from_yaml<Convergence::Reason>::create<void>(
     const Options::Option& options) {
-  const std::string type_read = options.parse_as<std::string>();
-  if (type_read == get_output(Convergence::Reason::MaxIterations)) {
+  const auto type_read = options.parse_as<std::string>();
+  if (type_read == get_output(Convergence::Reason::NumIterations)) {
+    return Convergence::Reason::NumIterations;
+  } else if (type_read == get_output(Convergence::Reason::MaxIterations)) {
     return Convergence::Reason::MaxIterations;
   } else if (type_read == get_output(Convergence::Reason::AbsoluteResidual)) {
     return Convergence::Reason::AbsoluteResidual;
@@ -43,6 +47,7 @@ Options::create_from_yaml<Convergence::Reason>::create<void>(
   PARSE_ERROR(options.context(),
               "Failed to convert \""
                   << type_read << "\" to Convergence::Reason. Must be one of '"
+                  << get_output(Convergence::Reason::NumIterations) << "', '"
                   << get_output(Convergence::Reason::MaxIterations) << "', '"
                   << get_output(Convergence::Reason::AbsoluteResidual)
                   << "' or '"

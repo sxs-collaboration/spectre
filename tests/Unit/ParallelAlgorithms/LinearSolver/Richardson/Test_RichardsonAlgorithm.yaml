@@ -15,4 +15,4 @@ SerialRichardson:
   RelaxationParameter: 0.2857142857142857
   Verbosity: Verbose
 
-ConvergenceReason: MaxIterations
+ConvergenceReason: NumIterations

@@ -34,8 +34,18 @@ namespace Convergence {
  * refers to the state before the first iteration has begun, i.e. where the
  * `iteration_id` is zero.
  *
- * \returns a `Convergence::Reason` if the criteria are met, or
- * `std::nullopt` otherwise.
+ * \returns A `Convergence::Reason` if the criteria are met, or
+ * `std::nullopt` otherwise. The possible convergence reasons are:
+ *
+ * - `Convergence::Reason::AbsoluteResidual` if the `residual_magnitude`
+ *   meets the convergence criteria's `absolute_residual`.
+ * - `Convergence::Reason::RelativeResidual` if `residual_magnitude /
+ *   initial_residual_magnitude` meets the convergence criteria's
+ *   `relative_residual`.
+ * - `Convergence::Reason::MaxIterations` if the `iteration_id` is the
+ *   convergence_criteria's `max_iterations` or higher. This is often
+ *   interpreted as an error because the algorithm did not converge in the
+ *   alloted number of iterations.
  */
 std::optional<Reason> criteria_match(
     const Criteria& criteria, size_t iteration_id, double residual_magnitude,
@@ -67,7 +77,9 @@ struct HasConverged {
                double initial_residual_magnitude) noexcept;
 
   /// Construct at a state where `iteration_id` iterations of a total of
-  /// `num_iterations` have completed.
+  /// `num_iterations` have completed. Use when the algorithm is intended to run
+  /// for a fixed number of iterations. The convergence `reason()` will be
+  /// `Convergence::Reason::NumIterations`.
   HasConverged(size_t num_iterations, size_t iteration_id) noexcept;
 
   explicit operator bool() const noexcept { return static_cast<bool>(reason_); }

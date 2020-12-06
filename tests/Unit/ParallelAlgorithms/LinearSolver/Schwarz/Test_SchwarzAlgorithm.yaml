@@ -55,7 +55,7 @@ SchwarzSmoother:
     Verbosity: Verbose
     Restart: 0
 
-ConvergenceReason: MaxIterations
+ConvergenceReason: NumIterations
 
 Observers:
   VolumeFileName: "Test_SchwarzAlgorithm_Volume"

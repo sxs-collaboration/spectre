@@ -51,4 +51,4 @@ ParallelRichardson:
   RelaxationParameter: 0.2916330767929102
   Verbosity: Verbose
 
-ConvergenceReason: MaxIterations
+ConvergenceReason: NumIterations

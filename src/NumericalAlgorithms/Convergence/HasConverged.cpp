@@ -42,9 +42,15 @@ HasConverged::HasConverged(const Criteria& criteria, const size_t iteration_id,
 
 HasConverged::HasConverged(const size_t num_iterations,
                            const size_t iteration_id) noexcept
-    : HasConverged(Criteria{num_iterations, 0., 0.}, iteration_id,
-                   std::numeric_limits<double>::max(),
-                   std::numeric_limits<double>::max()) {}
+    : reason_(iteration_id >= num_iterations
+                  ? std::optional(Reason::NumIterations)
+                  : std::nullopt),
+      // Store the target num iterations in the convergence criteria's
+      // max_iterations
+      criteria_(num_iterations, 0, 0),
+      iteration_id_(iteration_id),
+      residual_magnitude_(std::numeric_limits<double>::max()),
+      initial_residual_magnitude_(std::numeric_limits<double>::max()) {}
 
 Reason HasConverged::reason() const noexcept {
   ASSERT(reason_,
@@ -67,6 +73,11 @@ std::ostream& operator<<(std::ostream& os,
                          const HasConverged& has_converged) noexcept {
   if (has_converged) {
     switch (has_converged.reason()) {
+      case Reason::NumIterations:
+        return os << "Reached the target number of iterations ("
+                  // The target num iterations is internally stored in the
+                  // max_iterations field
+                  << has_converged.criteria_.max_iterations << ").";
       case Reason::MaxIterations:
         return os << "Reached the maximum number of iterations ("
                   << has_converged.criteria_.max_iterations << ").";

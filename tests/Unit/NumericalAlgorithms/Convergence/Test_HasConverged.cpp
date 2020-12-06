@@ -93,7 +93,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
     INFO("HasConverged - fixed number of iterations complete")
     const Convergence::HasConverged has_converged{1, 1};
     CHECK(has_converged);
-    CHECK(has_converged.reason() == Convergence::Reason::MaxIterations);
+    CHECK(has_converged.reason() == Convergence::Reason::NumIterations);
     test_serialization(has_converged);
     test_copy_semantics(has_converged);
   }
