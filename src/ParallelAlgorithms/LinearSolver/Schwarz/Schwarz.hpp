@@ -156,6 +156,8 @@ struct Schwarz {
   using component_list = tmpl::list<>;
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
       tmpl::list<async_solvers::reduction_data, detail::reduction_data>>;
+  using subdomain_solver =
+      detail::subdomain_solver<FieldsTag, SubdomainOperator>;
 
   using initialize_element = tmpl::list<
       async_solvers::InitializeElement<FieldsTag, OptionsGroup, SourceTag>,

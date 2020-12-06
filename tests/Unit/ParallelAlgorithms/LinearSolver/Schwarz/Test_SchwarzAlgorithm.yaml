@@ -48,12 +48,19 @@ SchwarzSmoother:
   Iterations: 9
   Verbosity: Verbose
   SubdomainSolver:
-    ConvergenceCriteria:
-      MaxIterations: 5
-      RelativeResidual: 1.e-14
-      AbsoluteResidual: 1.e-14
-    Verbosity: Verbose
-    Restart: None
+    # Testing with a preconditioned Krylov-type subdomain solver
+    Gmres:
+      ConvergenceCriteria:
+        MaxIterations: 1
+        RelativeResidual: 1.e-14
+        AbsoluteResidual: 1.e-14
+      Verbosity: Verbose
+      Restart: None
+      Preconditioner:
+        # Preconditioning with the explicitly-built inverse matrix, so all
+        # subdomain solves should converge immediately
+        ExplicitInverse:
+          EnableResets: True
 
 ConvergenceReason: NumIterations
 
