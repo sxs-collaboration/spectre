@@ -113,15 +113,21 @@ class ExampleClass {
     static constexpr Options::String help =
         "Integer that can be automatically chosen";
   };
+  struct OptionalArg {
+    using type = Options::Auto<double, Options::AutoLabel::None>;
+    static constexpr Options::String help = "Optional parameter";
+  };
 
   static constexpr Options::String help =
       "A class that can automatically choose an argument";
-  using options = tmpl::list<AutoArg>;
+  using options = tmpl::list<AutoArg, OptionalArg>;
 
-  explicit ExampleClass(std::optional<int> auto_arg) noexcept
-      : value(auto_arg ? *auto_arg : -12) {}
+  explicit ExampleClass(std::optional<int> auto_arg,
+                        std::optional<double> opt_arg) noexcept
+      : value(auto_arg ? *auto_arg : -12), optional_value(opt_arg) {}
 
   int value{};
+  std::optional<double> optional_value{};
 };
 /// [example_class]
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8 && __GNUC__ < 11
@@ -146,8 +152,16 @@ class NonCopyableArgument {
 
 void test_use_as_option() noexcept {
   /// [example_create]
-  CHECK(TestHelpers::test_creation<ExampleClass>("AutoArg: 7").value == 7);
-  CHECK(TestHelpers::test_creation<ExampleClass>("AutoArg: Auto").value == -12);
+  const auto example1 = TestHelpers::test_creation<ExampleClass>(
+      "AutoArg: 7\n"
+      "OptionalArg: 10.");
+  CHECK(example1.value == 7);
+  CHECK(example1.optional_value == 10.);
+  const auto example2 = TestHelpers::test_creation<ExampleClass>(
+      "AutoArg: Auto\n"
+      "OptionalArg: None");
+  CHECK(example2.value == -12);
+  CHECK(example2.optional_value == std::nullopt);
   /// [example_create]
 
   // Make sure this compiles.
