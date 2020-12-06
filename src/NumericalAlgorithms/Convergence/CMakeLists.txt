@@ -27,9 +27,10 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
-  Boost::boost
   DataStructures
   ErrorHandling
   Options
   Utilities
+  PRIVATE
+  Parallel
   )

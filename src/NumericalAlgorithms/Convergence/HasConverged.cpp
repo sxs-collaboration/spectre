@@ -3,16 +3,17 @@
 
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 
-#include <boost/optional.hpp>
+#include <optional>
 #include <ostream>
 #include <pup.h>  // IWYU pragma: keep
 
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Parallel/PupStlCpp17.hpp"
 
 namespace Convergence {
 
-boost::optional<Reason> criteria_match(
+std::optional<Reason> criteria_match(
     const Criteria& criteria, const size_t iteration_id,
     const double residual_magnitude,
     const double initial_residual_magnitude) noexcept {
@@ -26,7 +27,7 @@ boost::optional<Reason> criteria_match(
   if (iteration_id >= criteria.max_iterations) {
     return Reason::MaxIterations;
   }
-  return boost::none;
+  return std::nullopt;
 }
 
 HasConverged::HasConverged(const Criteria& criteria, const size_t iteration_id,
@@ -91,21 +92,15 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 void HasConverged::pup(PUP::er& p) noexcept {
-  // Older versions of boost.optional do not have a has_value() method.
-  auto converged = static_cast<bool>(reason_);
-  p | converged;
+  p | reason_;
   p | criteria_;
   p | iteration_id_;
   p | residual_magnitude_;
   p | initial_residual_magnitude_;
-  if (converged and p.isUnpacking()) {
-    reason_ = criteria_match(criteria_, iteration_id_, residual_magnitude_,
-                             initial_residual_magnitude_);
-  }
 }
 
 bool operator==(const HasConverged& lhs, const HasConverged& rhs) noexcept {
-  return lhs.criteria_ == rhs.criteria_ and
+  return lhs.reason_ == rhs.reason_ and lhs.criteria_ == rhs.criteria_ and
          lhs.iteration_id_ == rhs.iteration_id_ and
          lhs.residual_magnitude_ == rhs.residual_magnitude_ and
          lhs.initial_residual_magnitude_ == rhs.initial_residual_magnitude_;

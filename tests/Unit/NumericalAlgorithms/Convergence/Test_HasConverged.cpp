@@ -3,10 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/none.hpp>
-#include <boost/none_t.hpp>
-#include <boost/optional.hpp>
-#include <boost/optional/optional_io.hpp>
+#include <optional>
 #include <string>
 
 #include "ErrorHandling/Error.hpp"
@@ -24,7 +21,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
 
   {
     INFO("Convergence logic");
-    CHECK(Convergence::criteria_match(criteria, 1, 1., 1.) == boost::none);
+    CHECK_FALSE(Convergence::criteria_match(criteria, 1, 1., 1.));
     CHECK(Convergence::criteria_match(criteria, 2, 1., 1.) ==
           Convergence::Reason::MaxIterations);
     CHECK(Convergence::criteria_match(criteria, 1, 0., 1.) ==

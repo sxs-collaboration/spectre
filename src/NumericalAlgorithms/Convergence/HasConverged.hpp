@@ -3,10 +3,9 @@
 
 #pragma once
 
-#include <boost/none.hpp>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <iosfwd>
+#include <optional>
 
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
 #include "NumericalAlgorithms/Convergence/Reason.hpp"
@@ -36,9 +35,9 @@ namespace Convergence {
  * `iteration_id` is zero.
  *
  * \returns a `Convergence::Reason` if the criteria are met, or
- * `boost::none` otherwise.
+ * `std::nullopt` otherwise.
  */
-boost::optional<Reason> criteria_match(
+std::optional<Reason> criteria_match(
     const Criteria& criteria, size_t iteration_id, double residual_magnitude,
     double initial_residual_magnitude) noexcept;
 
@@ -103,10 +102,7 @@ struct HasConverged {
                                   const HasConverged& has_converged) noexcept;
 
  private:
-  // This default initialization is equivalent to boost::none, but works around
-  // a `-Wmaybe-uninitialized` warning on GCC 7 in Release mode
-  boost::optional<Reason> reason_ =
-      boost::make_optional(false, Reason::MaxIterations);
+  std::optional<Reason> reason_{};
   Criteria criteria_{};
   size_t iteration_id_{};
   double residual_magnitude_{};
