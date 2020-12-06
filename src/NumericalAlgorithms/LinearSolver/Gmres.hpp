@@ -76,15 +76,12 @@ DenseVector<double> minimal_residual_vector(
 
 namespace Serial {
 
-template <typename VarsType>
-struct IdentityPreconditioner {
-  VarsType operator()(const VarsType& arg) const noexcept { return arg; }
-};
+/// Indicates the linear solver uses no preconditioner. It may perform
+/// compile-time optimization for this case.
+struct NoPreconditioner {};
 
-struct NoIterationCallback {
-  void operator()(const Convergence::HasConverged& /*has_converged*/) const
-      noexcept {}
-};
+/// Disables the iteration callback at compile-time
+struct NoIterationCallback {};
 
 /*!
  * \brief A serial GMRES iterative solver for nonsymmetric linear systems of
@@ -223,12 +220,12 @@ struct Gmres {
    * approximate solution \f$x\f$.
    */
   template <typename LinearOperator, typename SourceType,
-            typename Preconditioner = IdentityPreconditioner<VarsType>,
+            typename Preconditioner = NoPreconditioner,
             typename IterationCallback = NoIterationCallback>
-  std::pair<Convergence::HasConverged, VarsType> operator()(
+  Convergence::HasConverged solve(
+      gsl::not_null<VarsType*> initial_guess_in_solution_out,
       LinearOperator&& linear_operator, const SourceType& source,
-      const VarsType& initial_guess,
-      Preconditioner&& preconditioner = IdentityPreconditioner<VarsType>{},
+      Preconditioner&& preconditioner = NoPreconditioner{},
       IterationCallback&& iteration_callback = NoIterationCallback{}) const
       noexcept;
 
@@ -263,28 +260,37 @@ struct Gmres {
 template <typename VarsType>
 template <typename LinearOperator, typename SourceType, typename Preconditioner,
           typename IterationCallback>
-std::pair<Convergence::HasConverged, VarsType> Gmres<VarsType>::operator()(
+Convergence::HasConverged Gmres<VarsType>::solve(
+    const gsl::not_null<VarsType*> initial_guess_in_solution_out,
     LinearOperator&& linear_operator, const SourceType& source,
-    const VarsType& initial_guess, Preconditioner&& preconditioner,
+    Preconditioner&& preconditioner,
     IterationCallback&& iteration_callback) const noexcept {
   constexpr bool use_preconditioner =
-      not std::is_same_v<Preconditioner, IdentityPreconditioner<VarsType>>;
+      not std::is_same_v<Preconditioner, NoPreconditioner>;
   constexpr bool use_iteration_callback =
       not std::is_same_v<IterationCallback, NoIterationCallback>;
 
-  auto result = initial_guess;
+  // Could pre-allocate memory for the basis-history vectors here. Not doing
+  // that for now because we don't know how many iterations we'll need.
+  // Estimating the number of iterations and pre-allocating memory is a possible
+  // performance optimization.
+
+  auto& solution = *initial_guess_in_solution_out;
   Convergence::HasConverged has_converged{};
   size_t iteration = 0;
 
   while (not has_converged) {
-    auto& initial_operand = basis_history_[0] =
-        source - linear_operator(result);
+    const auto& initial_guess = *initial_guess_in_solution_out;
+    auto& initial_operand = basis_history_[0];
+    linear_operator(make_not_null(&initial_operand), initial_guess);
+    initial_operand *= -1.;
+    initial_operand += source;
     const double initial_residual_magnitude =
         sqrt(inner_product(initial_operand, initial_operand));
     has_converged = Convergence::HasConverged{convergence_criteria_, iteration,
                                               initial_residual_magnitude,
                                               initial_residual_magnitude};
-    if (use_iteration_callback) {
+    if constexpr (use_iteration_callback) {
       iteration_callback(has_converged);
     }
     if (UNLIKELY(has_converged)) {
@@ -295,12 +301,17 @@ std::pair<Convergence::HasConverged, VarsType> Gmres<VarsType>::operator()(
     residual_history_[0] = initial_residual_magnitude;
     for (size_t k = 0; k < restart_; ++k) {
       auto& operand = basis_history_[k + 1];
-      if (use_preconditioner) {
-        preconditioned_basis_history_[k] = preconditioner(basis_history_[k]);
+      if constexpr (use_preconditioner) {
+        // Begin the preconditioner at an initial guess of 0. Not all
+        // preconditioners take the initial guess into account.
+        preconditioned_basis_history_[k] =
+            make_with_value<VarsType>(initial_operand, 0.);
+        preconditioner.solve(make_not_null(&preconditioned_basis_history_[k]),
+                             linear_operator, basis_history_[k]);
       }
-      operand =
-          linear_operator(use_preconditioner ? preconditioned_basis_history_[k]
-                                             : basis_history_[k]);
+      linear_operator(make_not_null(&operand),
+                      use_preconditioner ? preconditioned_basis_history_[k]
+                                         : basis_history_[k]);
       // Find a new orthogonal basis vector of the Krylov subspace
       gmres::detail::arnoldi_orthogonalize(
           make_not_null(&operand), make_not_null(&orthogonalization_history_),
@@ -315,7 +326,7 @@ std::pair<Convergence::HasConverged, VarsType> Gmres<VarsType>::operator()(
       has_converged = Convergence::HasConverged{
           convergence_criteria_, iteration, abs(residual_history_[k + 1]),
           initial_residual_magnitude};
-      if (use_iteration_callback) {
+      if constexpr (use_iteration_callback) {
         iteration_callback(has_converged);
       }
       if (UNLIKELY(has_converged)) {
@@ -329,14 +340,13 @@ std::pair<Convergence::HasConverged, VarsType> Gmres<VarsType>::operator()(
     // Construct the solution from the orthogonal basis and the minimal residual
     // vector
     for (size_t i = 0; i < minres.size(); ++i) {
-      result +=
+      solution +=
           minres[i] * gsl::at(use_preconditioner ? preconditioned_basis_history_
                                                  : basis_history_,
                               i);
     }
   }
-  // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
-  return {std::move(has_converged), std::move(result)};
+  return has_converged;
 }
 
 }  // namespace Serial

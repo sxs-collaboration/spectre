@@ -268,45 +268,38 @@ struct SolveSubdomain {
     const size_t num_points =
         db::get<domain::Tags::Mesh<Dim>>(box).number_of_grid_points();
     SubdomainOperator subdomain_operator{num_points};
-    auto subdomain_result_buffer =
-        make_with_value<SubdomainData>(subdomain_residual, 0.);
 
     // Construct the subdomain operator
-    const auto apply_subdomain_operator = [&box, &subdomain_result_buffer,
-                                           &subdomain_operator](
-                                              const SubdomainData&
-                                                  arg) noexcept {
+    const auto apply_subdomain_operator =
+        [&box, &subdomain_operator](const gsl::not_null<SubdomainData*> result,
+                                    const SubdomainData& operand) noexcept {
       // The subdomain operator can retrieve any information on the subdomain
       // geometry that is available through the DataBox. The user is responsible
       // for communicating this information across neighbors if necessary.
       db::apply<typename SubdomainOperator::element_operator>(
-          box, arg, make_not_null(&subdomain_result_buffer),
-          make_not_null(&subdomain_operator));
+          box, operand, result, make_not_null(&subdomain_operator));
       tmpl::for_each<tmpl::list<domain::Tags::InternalDirections<Dim>,
                                 domain::Tags::BoundaryDirectionsInterior<Dim>>>(
-          [&box, &arg, &subdomain_result_buffer,
+          [&box, &operand, &result,
            &subdomain_operator](auto directions_v) noexcept {
             using directions = tmpl::type_from<decltype(directions_v)>;
             using face_operator =
                 typename SubdomainOperator::template face_operator<directions>;
             interface_apply<directions, face_operator>(
-                box, arg, make_not_null(&subdomain_result_buffer),
-                make_not_null(&subdomain_operator));
+                box, operand, result, make_not_null(&subdomain_operator));
           });
-      return subdomain_result_buffer;
     };
 
     // Solve the subdomain problem
     const auto& subdomain_solver =
         get<Tags::SubdomainSolverBase<OptionsGroup>>(box);
-    Convergence::HasConverged subdomain_solve_has_converged{};
-    std::tie(subdomain_solve_has_converged, subdomain_result_buffer) =
-        subdomain_solver(
-            apply_subdomain_operator, subdomain_residual,
-            make_with_value<SubdomainData>(subdomain_residual, 0.));
-    // We're re-using the buffer to store the subdomain solution. Re-naming it
-    // here for the code below.
-    auto& subdomain_solution = subdomain_result_buffer;
+    auto subdomain_solve_initial_guess_in_solution_out =
+        make_with_value<SubdomainData>(subdomain_residual, 0.);
+    const auto subdomain_solve_has_converged = subdomain_solver.solve(
+        make_not_null(&subdomain_solve_initial_guess_in_solution_out),
+        apply_subdomain_operator, subdomain_residual);
+    // Re-naming the solution buffer for the code below
+    auto& subdomain_solution = subdomain_solve_initial_guess_in_solution_out;
 
     // Do some logging and observing
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
