@@ -75,6 +75,13 @@ SPECTRE_TEST_CASE("Unit.ParallelSchwarz.ElementCenteredSubdomainData",
     subdomain_data1 /= 2.;
     CHECK(subdomain_data1 == subdomain_data_half);
   }
+  SECTION("Iterate raw data") {
+    CAPTURE(subdomain_data1);
+    CAPTURE(subdomain_data2);
+    std::copy(subdomain_data2.begin(), subdomain_data2.end(),
+              subdomain_data1.begin());
+    CHECK(subdomain_data1 == subdomain_data2);
+  }
   SECTION("Remaining tests") {
     test_serialization(subdomain_data1);
     test_copy_semantics(subdomain_data1);
