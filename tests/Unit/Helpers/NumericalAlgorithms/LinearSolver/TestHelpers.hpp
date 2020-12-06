@@ -11,6 +11,7 @@
 
 #include "DataStructures/DenseMatrix.hpp"
 #include "DataStructures/DenseVector.hpp"
+#include "Options/Options.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/Gsl.hpp"
 
