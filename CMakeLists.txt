@@ -71,6 +71,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(SetupLIBCXX)
 include(SetupCxxFlags)
+include(SetupProfiling)
 include(SetupSanitizers)
 include(SetupListTargets)
 include(AddSpectreExecutable)

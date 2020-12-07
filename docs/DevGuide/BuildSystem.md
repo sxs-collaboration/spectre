@@ -180,6 +180,10 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
     directory.
 - ENABLE_WARNINGS
   - Whether or not warning flags are enabled (default is `ON`)
+- KEEP_FRAME_POINTER
+  - Whether to keep the frame pointer. Needed for profiling or other cases
+    where you need to be able to figure out what the call stack is.
+    (default is `OFF`)
 - MEMORY_ALLOCATOR
   - Set which memory allocator to use. If there are unexplained segfaults or
     other memory issues, it would be worth setting `MEMORY_ALLOCATOR=SYSTEM` to
