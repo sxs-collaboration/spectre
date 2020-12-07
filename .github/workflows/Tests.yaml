@@ -62,14 +62,20 @@ jobs:
   # - Run simple textual checks over files in the repository, e.g. checking for
   #   a license, line length limits etc. See `tools/CheckFiles.sh` for details.
   # - Run format checker for python to make sure the code is formatted correctly
+  # - Check the metadata are consistent
   check_files_and_formatting:
-    name: File and formatting checks
+    name: Files and formatting
     runs-on: ubuntu-latest
     container:
       image: sxscollaboration/spectrebuildenv:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+      - name: Install Python dependencies
+        run: |
+          pip3 install \
+            GitPython~=3.1.11 \
+            PyYAML~=5.3.1 \
       - name: Check python formatting
         run: |
           cd $GITHUB_WORKSPACE
@@ -82,6 +88,9 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           ./tools/CheckFiles.sh
+      - name: Check metadata
+        run: |
+          python3 tools/CheckMetadata.py
 
   # Lint with clang-tidy. We check only code that changed relative to the
   # nearest common ancestor commit with `sxs-collaboration/spectre/develop`.

@@ -7,7 +7,7 @@
 #   git ls-tree --full-tree --name-only HEAD
 set(SPECTRE_FORMALINE_LOCATIONS
   ".clang-format;cmake;CMakeLists.txt;containers;docs;external;"
-  ".github;.gitignore;LICENSE.txt;README.md;src;.style.yapf;"
+  ".github;.gitignore;LICENSE.txt;Metadata.yaml;README.md;src;.style.yapf;"
   "support;tests;tools;.travis;.travis.yml")
 
 find_package(Git)

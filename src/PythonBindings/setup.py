@@ -7,10 +7,10 @@ from distutils.core import setup
 
 setup(
     name='spectre',
-    version='${SpECTRE_VERSION}',
+    version='@SPECTRE_VERSION@',
     description="Python bindings for SpECTRE",
     author="SXS collaboration",
-    url="https://spectre-code.org",
+    url="@SPECTRE_HOMEPAGE@",
     license="MIT",
     packages=['spectre'],
     install_requires=['h5py', 'numpy', 'scipy'],

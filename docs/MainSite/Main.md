@@ -8,6 +8,7 @@ See LICENSE.txt for details.
 Table of Contents
 <ul>
 <li class="level1"><a href="#intro_sec">Introduction</a></li>
+<li class="level1"><a href="versioning_and_releases.html">Versioning and Releases</a></li>
 <li class="level1"><a href="installation.html">Installation</a></li>
 <li class="level1"><a href="installation_on_clusters.html">Installation on clusters</a></li>
 <li class="level1"><a href="tutorials.html">User tutorials</a></li>
@@ -74,6 +75,24 @@ SpECTRE is being developed in support of our collaborative Simulating
 eXtreme Spacetimes (SXS) research program into the multi-messenger
 astrophysics of neutron star mergers, core-collapse supernovae, and
 gamma-ray bursts.
+
+## Citing SpECTRE
+
+Please cite SpECTRE in any publications that make use of its code or data. Cite
+the latest version that you use in your publication. The DOI for this version
+is:
+
+- DOI: [\spectredoi](https://doi.org/\spectredoi)
+
+You can cite this BibTeX entry in your publication:
+
+- [Find BibTeX entry for this version on Zenodo](https://zenodo.org/record/\spectrezenodoid/export/hx)
+
+To aid reproducibility of your scientific results with SpECTRE, we recommend you
+keep track of the version(s) you used and report this information in your
+publication. We also recommend you supply the YAML input files and, if
+appropriate, any additional C++ code you wrote to compile SpECTRE executables as
+supplemental material to the publication.
 
 ## Navigating the Documentation {#navigate_documentation_sec}
 
