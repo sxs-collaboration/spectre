@@ -135,12 +135,18 @@ void test_move_semantics(T&& a, const T& comparison, Args&&... args) {
     // show up.
     ERROR("'a' and 'comparison' must be distinct (but equal in value) objects");
   }
-  T b(std::forward<Args>(args)...);
+  T b{std::forward<Args>(args)...};
   // clang-tidy: use std::forward instead of std::move
   b = std::move(a);  // NOLINT
-  CHECK(b == comparison);
+  {
+    INFO("Test move assignment");
+    CHECK(b == comparison);
+  }
   T c(std::move(b));
-  CHECK(c == comparison);
+  {
+    INFO("Test move construction");
+    CHECK(c == comparison);
+  }
 }
 
 /// Test for move semantics assuming operator== is implemented correctly.
