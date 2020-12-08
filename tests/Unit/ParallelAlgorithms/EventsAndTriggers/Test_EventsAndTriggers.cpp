@@ -64,9 +64,9 @@ void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
 
-  runner.next_action<my_component>(0);
+  ActionTesting::next_action<my_component>(make_not_null(&runner), 0);
 
-  CHECK(runner.algorithms<my_component>()[0].get_terminate() == expected);
+  CHECK(ActionTesting::get_terminate<my_component>(runner, 0) == expected);
 }
 
 void check_trigger(const bool expected, const std::string& trigger_string) {
