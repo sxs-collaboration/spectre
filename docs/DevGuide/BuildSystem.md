@@ -178,6 +178,9 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - Whether or not to use debug symbols (default is `ON`)
   - Disabling debug symbols will reduce compile time and total size of the build
     directory.
+- ENABLE_PROFILING
+  - Enables various options to make profiling SpECTRE easier
+    (default is `OFF`)
 - ENABLE_WARNINGS
   - Whether or not warning flags are enabled (default is `ON`)
 - KEEP_FRAME_POINTER
