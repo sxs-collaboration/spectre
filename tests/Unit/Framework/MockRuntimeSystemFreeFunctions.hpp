@@ -64,7 +64,7 @@ template <typename Component, typename TagsList, typename Metavariables>
 const auto& get_databox(
     const MockRuntimeSystem<Metavariables>& runner,
     const typename Component::array_index& array_index) noexcept {
-  return runner.template algorithms<Component>()
+  return runner.template mock_distributed_objects<Component>()
       .at(array_index)
       .template get_databox<TagsList>();
 }
@@ -72,7 +72,7 @@ const auto& get_databox(
 template <typename Component, typename TagsList, typename Metavariables>
 auto& get_databox(const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
                   const typename Component::array_index& array_index) noexcept {
-  return runner->template algorithms<Component>()
+  return runner->template mock_distributed_objects<Component>()
       .at(array_index)
       .template get_databox<TagsList>();
 }
@@ -93,7 +93,7 @@ template <typename Component, typename Tag, typename Metavariables>
 const auto& get_databox_tag(
     const MockRuntimeSystem<Metavariables>& runner,
     const typename Component::array_index& array_index) noexcept {
-  return runner.template algorithms<Component>()
+  return runner.template mock_distributed_objects<Component>()
       .at(array_index)
       .template get_databox_tag<Tag>();
 }
@@ -124,7 +124,7 @@ auto& get_inbox_tag(
 template <typename Component, typename Tag, typename Metavariables>
 bool box_contains(const MockRuntimeSystem<Metavariables>& runner,
                   const typename Component::array_index& array_index) noexcept {
-  return runner.template algorithms<Component>()
+  return runner.template mock_distributed_objects<Component>()
       .at(array_index)
       .template box_contains<Tag>();
 }
@@ -135,7 +135,7 @@ template <typename Component, typename Tag, typename Metavariables>
 bool tag_is_retrievable(
     const MockRuntimeSystem<Metavariables>& runner,
     const typename Component::array_index& array_index) noexcept {
-  return runner.template algorithms<Component>()
+  return runner.template mock_distributed_objects<Component>()
       .at(array_index)
       .template tag_is_retrievable<Tag>();
 }
@@ -221,7 +221,7 @@ template <typename Component, typename Metavariables>
 bool get_terminate(
     const MockRuntimeSystem<Metavariables>& runner,
     const typename Component::array_index& array_index) noexcept {
-  return runner.template algorithms<Component>()
+  return runner.template mock_distributed_objects<Component>()
       .at(array_index)
       .get_terminate();
 }

@@ -89,7 +89,8 @@ constexpr bool has_initialization_phase_v =
 template <typename Metavariables>
 class MockRuntimeSystem {
  public:
-  // No moving, since MockProxy holds a pointer to us.
+  // No moving, since MockCollectionOfDistributedObjectsProxy holds a pointer to
+  // us.
   MockRuntimeSystem(const MockRuntimeSystem&) = delete;
   MockRuntimeSystem(MockRuntimeSystem&&) = delete;
   MockRuntimeSystem& operator=(const MockRuntimeSystem&) = delete;
@@ -117,7 +118,7 @@ class MockRuntimeSystem {
   using mock_objects_tags =
       tmpl::transform<typename Metavariables::component_list,
                       tmpl::bind<MockDistributedObjectsTag, tmpl::_1>>;
-  using TupleOfMockDistributedObjects =
+  using CollectionOfMockDistributedObjects =
       tuples::tagged_tuple_from_typelist<mock_objects_tags>;
   using Inboxes = tuples::tagged_tuple_from_typelist<
       tmpl::transform<typename Metavariables::component_list,
@@ -127,13 +128,14 @@ class MockRuntimeSystem {
   explicit MockRuntimeSystem(CacheTuple cache_contents)
       : mutable_cache_(tuples::TaggedTuple<>{}),
         cache_(std::move(cache_contents), &mutable_cache_) {
-    tmpl::for_each<typename Metavariables::component_list>([this](
-                                                               auto component) {
-      using Component = tmpl::type_from<decltype(component)>;
-      Parallel::get_parallel_component<Component>(cache_).set_data(
-          &tuples::get<MockDistributedObjectsTag<Component>>(local_algorithms_),
-          &tuples::get<InboxesTag<Component>>(inboxes_));
-    });
+    tmpl::for_each<typename Metavariables::component_list>(
+        [this](auto component) {
+          using Component = tmpl::type_from<decltype(component)>;
+          Parallel::get_parallel_component<Component>(cache_).set_data(
+              &tuples::get<MockDistributedObjectsTag<Component>>(
+                  mock_distributed_objects_),
+              &tuples::get<InboxesTag<Component>>(inboxes_));
+        });
   }
 
   /// Construct from the tuple of GlobalCache objects that might
@@ -147,7 +149,7 @@ class MockRuntimeSystem {
   template <typename Component, typename... Options>
   void emplace_component(const typename Component::array_index& array_index,
                          Options&&... opts) noexcept {
-    algorithms<Component>().emplace(
+    mock_distributed_objects<Component>().emplace(
         array_index,
         MockDistributedObject<Component>(
             array_index, &cache_,
@@ -166,7 +168,7 @@ class MockRuntimeSystem {
       Options&&... opts) noexcept {
     detail::get_initialization<Component>::initialize_databox_action::
         set_initial_values(initial_values);
-    auto iterator_bool = algorithms<Component>().emplace(
+    auto iterator_bool = mock_distributed_objects<Component>().emplace(
         array_index,
         MockDistributedObject<Component>(
             array_index, &cache_,
@@ -188,7 +190,7 @@ class MockRuntimeSystem {
             typename... Args>
   void simple_action(const typename Component::array_index& array_index,
                      Arg0&& arg0, Args&&... args) noexcept {
-    algorithms<Component>()
+    mock_distributed_objects<Component>()
         .at(array_index)
         .template simple_action<Action>(
             std::make_tuple(std::forward<Arg0>(arg0),
@@ -199,7 +201,7 @@ class MockRuntimeSystem {
   template <typename Component, typename Action>
   void simple_action(
       const typename Component::array_index& array_index) noexcept {
-    algorithms<Component>()
+    mock_distributed_objects<Component>()
         .at(array_index)
         .template simple_action<Action>(true);
   }
@@ -212,7 +214,7 @@ class MockRuntimeSystem {
             typename... Args>
   void threaded_action(const typename Component::array_index& array_index,
                        Arg0&& arg0, Args&&... args) noexcept {
-    algorithms<Component>()
+    mock_distributed_objects<Component>()
         .at(array_index)
         .template threaded_action<Action>(
             std::make_tuple(std::forward<Arg0>(arg0),
@@ -223,7 +225,7 @@ class MockRuntimeSystem {
   template <typename Component, typename Action>
   void threaded_action(
       const typename Component::array_index& array_index) noexcept {
-    algorithms<Component>()
+    mock_distributed_objects<Component>()
         .at(array_index)
         .template threaded_action<Action>(true);
   }
@@ -234,7 +236,7 @@ class MockRuntimeSystem {
   template <typename Component>
   bool is_simple_action_queue_empty(
       const typename Component::array_index& array_index) const noexcept {
-    return algorithms<Component>()
+    return mock_distributed_objects<Component>()
         .at(array_index)
         .is_simple_action_queue_empty();
   }
@@ -244,7 +246,9 @@ class MockRuntimeSystem {
   template <typename Component>
   void invoke_queued_simple_action(
       const typename Component::array_index& array_index) noexcept {
-    algorithms<Component>().at(array_index).invoke_queued_simple_action();
+    mock_distributed_objects<Component>()
+        .at(array_index)
+        .invoke_queued_simple_action();
   }
 
   /// Return true if there are no queued threaded actions on the
@@ -252,7 +256,7 @@ class MockRuntimeSystem {
   template <typename Component>
   bool is_threaded_action_queue_empty(
       const typename Component::array_index& array_index) const noexcept {
-    return algorithms<Component>()
+    return mock_distributed_objects<Component>()
         .at(array_index)
         .is_threaded_action_queue_empty();
   }
@@ -262,7 +266,9 @@ class MockRuntimeSystem {
   template <typename Component>
   void invoke_queued_threaded_action(
       const typename Component::array_index& array_index) noexcept {
-    algorithms<Component>().at(array_index).invoke_queued_threaded_action();
+    mock_distributed_objects<Component>()
+        .at(array_index)
+        .invoke_queued_threaded_action();
   }
 
   /// Instead of the next call to `next_action` applying the next action in
@@ -279,22 +285,23 @@ class MockRuntimeSystem {
         "'force_next_action_to_be' for the component and the second template "
         "parameter for the action.");
     bool found_matching_phase = false;
-    const auto invoke_for_phase = [this, &array_index, &found_matching_phase](
-                                      auto phase_dep_v) noexcept {
-      using PhaseDep = decltype(phase_dep_v);
-      constexpr typename Metavariables::Phase phase = PhaseDep::type::phase;
-      using actions_list = typename PhaseDep::type::action_list;
-      auto& distributed_object = this->algorithms<Component>().at(array_index);
-      if (distributed_object.get_phase() == phase) {
-        found_matching_phase = true;
-        distributed_object.force_next_action_to_be(
-            tmpl::conditional_t<
-                std::is_same<tmpl::no_such_type_,
-                             tmpl::index_of<actions_list, Action>>::value,
-                std::integral_constant<size_t, 0>,
-                tmpl::index_of<actions_list, Action>>::value);
-      }
-    };
+    const auto invoke_for_phase =
+        [this, &array_index, &found_matching_phase](auto phase_dep_v) noexcept {
+          using PhaseDep = decltype(phase_dep_v);
+          constexpr typename Metavariables::Phase phase = PhaseDep::type::phase;
+          using actions_list = typename PhaseDep::type::action_list;
+          auto& distributed_object =
+              this->mock_distributed_objects<Component>().at(array_index);
+          if (distributed_object.get_phase() == phase) {
+            found_matching_phase = true;
+            distributed_object.force_next_action_to_be(
+                tmpl::conditional_t<
+                    std::is_same<tmpl::no_such_type_,
+                                 tmpl::index_of<actions_list, Action>>::value,
+                    std::integral_constant<size_t, 0>,
+                    tmpl::index_of<actions_list, Action>>::value);
+          }
+        };
     tmpl::for_each<typename MockDistributedObject<
         Component>::phase_dependent_action_lists>(invoke_for_phase);
     if (not found_matching_phase) {
@@ -303,8 +310,9 @@ class MockRuntimeSystem {
           << pretty_type::short_name<Component>()
           << "'. Maybe you are not in the phase you expected to be in? The "
              "integer value corresponding to the current phase is "
-          << static_cast<int>(
-                 this->algorithms<Component>().at(array_index).get_phase()));
+          << static_cast<int>(this->mock_distributed_objects<Component>()
+                                  .at(array_index)
+                                  .get_phase()));
     }
   }
 
@@ -312,7 +320,9 @@ class MockRuntimeSystem {
   template <typename Component>
   size_t get_next_action_index(
       const typename Component::array_index& array_index) const noexcept {
-    return algorithms<Component>().at(array_index).get_next_action_index();
+    return mock_distributed_objects<Component>()
+        .at(array_index)
+        .get_next_action_index();
   }
 
   /// Invoke the next action in the ActionList on the parallel component
@@ -320,14 +330,14 @@ class MockRuntimeSystem {
   template <typename Component>
   void next_action(
       const typename Component::array_index& array_index) noexcept {
-    algorithms<Component>().at(array_index).next_action();
+    mock_distributed_objects<Component>().at(array_index).next_action();
   }
 
   /// Call is_ready on the next action in the action list as if on the portion
   /// of Component labeled by array_index.
   template <typename Component>
   bool is_ready(const typename Component::array_index& array_index) noexcept {
-    return algorithms<Component>().at(array_index).is_ready();
+    return mock_distributed_objects<Component>().at(array_index).is_ready();
   }
 
   // @{
@@ -363,15 +373,18 @@ class MockRuntimeSystem {
     return result;
   }
 
-  /// Access the mocked algorithms for a component, indexed by array index.
+  /// Access the mocked distributed objects for a component, indexed by array
+  /// index.
   template <typename Component>
-  auto& algorithms() noexcept {
-    return tuples::get<MockDistributedObjectsTag<Component>>(local_algorithms_);
+  auto& mock_distributed_objects() noexcept {
+    return tuples::get<MockDistributedObjectsTag<Component>>(
+        mock_distributed_objects_);
   }
 
   template <typename Component>
-  const auto& algorithms() const noexcept {
-    return tuples::get<MockDistributedObjectsTag<Component>>(local_algorithms_);
+  const auto& mock_distributed_objects() const noexcept {
+    return tuples::get<MockDistributedObjectsTag<Component>>(
+        mock_distributed_objects_);
   }
 
   GlobalCache& cache() noexcept { return cache_; }
@@ -381,7 +394,7 @@ class MockRuntimeSystem {
     tmpl::for_each<mock_objects_tags>(
         [this, &next_phase](auto component_v) noexcept {
           for (auto& object : tuples::get<typename decltype(component_v)::type>(
-                   local_algorithms_)) {
+                   mock_distributed_objects_)) {
             object.second.set_phase(next_phase);
           }
         });
@@ -391,6 +404,6 @@ class MockRuntimeSystem {
   Parallel::MutableGlobalCache<Metavariables> mutable_cache_{};
   GlobalCache cache_{};
   Inboxes inboxes_{};
-  TupleOfMockDistributedObjects local_algorithms_{};
+  CollectionOfMockDistributedObjects mock_distributed_objects_{};
 };
 }  // namespace ActionTesting

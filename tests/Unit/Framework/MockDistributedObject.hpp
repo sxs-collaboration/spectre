@@ -117,15 +117,24 @@ using item_type_if_contained_t =
 /// MockDistributedObject mocks the AlgorithmImpl class. It should not be
 /// considered as part of the user interface.
 ///
-/// The `MockDistributedObject` represents a single chare or distributed object
-/// on a supercomputer which can have methods invoked on it. This class is a
-/// modified implementation of `AlgorithmImpl` and so some of the code is shared
-/// between the two. The main difference is that `MockDistributedObject` has
-/// support for introspection. For example, it is possible to check how many
-/// simple actions are queued, to look at the inboxes, etc. Another key
-/// difference is that `MockDistributedObject` runs only one action in the
-/// action list at a time. This is done in order to provide opportunity for
-/// introspection and checking statements before and after actions are invoked.
+/// `MockDistributedObject` represents an object on a supercomputer
+/// that can have methods invoked on it (possibly) remotely; this is
+/// standard nomenclature in the HPC community, based on the idea that
+/// such objects get distributed among the cores/nodes on an HPC (even
+/// though each object typically lives on only one core).  For
+/// example, an element of an array chare in charm++ is a mock
+/// distributed object, whereas the entire array chare is a collection
+/// of mock distributed objects, each with its own array
+/// index.
+/// `MockDistributedObject` is a modified implementation of
+/// `AlgorithmImpl` and so some of the code is shared between the
+/// two. The main difference is that `MockDistributedObject` has
+/// support for introspection. For example, it is possible to check
+/// how many simple actions are queued, to look at the inboxes,
+/// etc. Another key difference is that `MockDistributedObject` runs
+/// only one action in the action list at a time. This is done in
+/// order to provide opportunity for introspection and checking
+/// statements before and after actions are invoked.
 template <typename Component>
 class MockDistributedObject {
  private:
@@ -149,12 +158,13 @@ class MockDistributedObject {
   template <typename Action, typename... Args>
   class InvokeSimpleAction : public InvokeActionBase {
    public:
-    InvokeSimpleAction(MockDistributedObject* local_alg,
+    InvokeSimpleAction(MockDistributedObject* mock_distributed_object,
                        std::tuple<Args...> args)
-        : local_algorithm_(local_alg), args_(std::move(args)) {}
+        : mock_distributed_object_(mock_distributed_object),
+          args_(std::move(args)) {}
 
-    explicit InvokeSimpleAction(MockDistributedObject* local_alg)
-        : local_algorithm_(local_alg) {}
+    explicit InvokeSimpleAction(MockDistributedObject* mock_distributed_object)
+        : mock_distributed_object_(mock_distributed_object) {}
 
     void invoke_action() noexcept override {
       if (not valid_) {
@@ -170,16 +180,16 @@ class MockDistributedObject {
    private:
     template <typename Arg0, typename... Rest>
     void invoke_action_impl(std::tuple<Arg0, Rest...> args) noexcept {
-      local_algorithm_->simple_action<Action>(std::move(args), true);
+      mock_distributed_object_->simple_action<Action>(std::move(args), true);
     }
 
     template <typename... LocalArgs,
               Requires<sizeof...(LocalArgs) == 0> = nullptr>
     void invoke_action_impl(std::tuple<LocalArgs...> /*args*/) noexcept {
-      local_algorithm_->simple_action<Action>(true);
+      mock_distributed_object_->simple_action<Action>(true);
     }
 
-    MockDistributedObject* local_algorithm_;
+    MockDistributedObject* mock_distributed_object_;
     std::tuple<Args...> args_{};
     bool valid_{true};
   };
@@ -189,12 +199,14 @@ class MockDistributedObject {
   template <typename Action, typename... Args>
   class InvokeThreadedAction : public InvokeActionBase {
    public:
-    InvokeThreadedAction(MockDistributedObject* local_alg,
+    InvokeThreadedAction(MockDistributedObject* mock_distributed_object,
                          std::tuple<Args...> args)
-        : local_algorithm_(local_alg), args_(std::move(args)) {}
+        : mock_distributed_object_(mock_distributed_object),
+          args_(std::move(args)) {}
 
-    explicit InvokeThreadedAction(MockDistributedObject* local_alg)
-        : local_algorithm_(local_alg) {}
+    explicit InvokeThreadedAction(
+        MockDistributedObject* mock_distributed_object)
+        : mock_distributed_object_(mock_distributed_object) {}
 
     void invoke_action() noexcept override {
       if (not valid_) {
@@ -210,16 +222,16 @@ class MockDistributedObject {
    private:
     template <typename Arg0, typename... Rest>
     void invoke_action_impl(std::tuple<Arg0, Rest...> args) noexcept {
-      local_algorithm_->threaded_action<Action>(std::move(args), true);
+      mock_distributed_object_->threaded_action<Action>(std::move(args), true);
     }
 
     template <typename... LocalArgs,
               Requires<sizeof...(LocalArgs) == 0> = nullptr>
     void invoke_action_impl(std::tuple<LocalArgs...> /*args*/) noexcept {
-      local_algorithm_->threaded_action<Action>(true);
+      mock_distributed_object_->threaded_action<Action>(true);
     }
 
-    MockDistributedObject* local_algorithm_;
+    MockDistributedObject* mock_distributed_object_;
     std::tuple<Args...> args_{};
     bool valid_{true};
   };

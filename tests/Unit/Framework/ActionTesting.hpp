@@ -382,18 +382,17 @@ bool InitializeDataBox<tmpl::list<SimpleTags...>,
                        ComputeTagsList>::initial_values_valid_ = false;
 /// \endcond
 
-
 namespace ActionTesting_detail {
 // A mock class for the Charm++ generated CProxyElement_AlgorithmArray (we use
 // an array for everything, so no need to mock groups, nodegroups, singletons).
 template <typename Component, typename InboxTagList>
-class MockArrayElementProxy {
+class MockDistributedObjectProxy {
  public:
   using Inbox = tuples::tagged_tuple_from_typelist<InboxTagList>;
 
-  MockArrayElementProxy(MockDistributedObject<Component>& local_algorithm,
-                        Inbox& inbox)
-      : local_algorithm_(local_algorithm), inbox_(inbox) {}
+  MockDistributedObjectProxy(
+      MockDistributedObject<Component>& mock_distributed_object, Inbox& inbox)
+      : mock_distributed_object_(mock_distributed_object), inbox_(inbox) {}
 
   template <typename InboxTag, typename Data>
   void receive_data(const typename InboxTag::temporal_id& id, Data&& data,
@@ -408,123 +407,133 @@ class MockArrayElementProxy {
 
   template <typename Action, typename... Args>
   void simple_action(std::tuple<Args...> args) noexcept {
-    local_algorithm_.template simple_action<Action>(std::move(args));
+    mock_distributed_object_.template simple_action<Action>(std::move(args));
   }
 
   template <typename Action>
   void simple_action() noexcept {
-    local_algorithm_.template simple_action<Action>();
+    mock_distributed_object_.template simple_action<Action>();
   }
 
   template <typename Action, typename... Args>
   void threaded_action(std::tuple<Args...> args) noexcept {
-    local_algorithm_.template threaded_action<Action>(std::move(args));
+    mock_distributed_object_.template threaded_action<Action>(std::move(args));
   }
 
   template <typename Action>
   void threaded_action() noexcept {
-    local_algorithm_.template threaded_action<Action>();
+    mock_distributed_object_.template threaded_action<Action>();
   }
 
-  void set_terminate(bool t) noexcept { local_algorithm_.set_terminate(t); }
+  void set_terminate(bool t) noexcept {
+    mock_distributed_object_.set_terminate(t);
+  }
 
   // Actions may call this, but since tests step through actions manually it has
   // no effect.
   void perform_algorithm() noexcept {}
   void perform_algorithm(const bool /*restart_if_terminated*/) noexcept {}
 
-  MockDistributedObject<Component>* ckLocal() { return &local_algorithm_; }
+  MockDistributedObject<Component>* ckLocal() {
+    return &mock_distributed_object_;
+  }
 
  private:
-  MockDistributedObject<Component>& local_algorithm_;
+  MockDistributedObject<Component>& mock_distributed_object_;
   Inbox& inbox_;
 };
 
-// A mock class for the Charm++ generated CProxy_AlgorithmArray (we use an array
-// for everything, so no need to mock groups, nodegroups, singletons).
+// A mock class for the Charm++ generated CProxy_AlgorithmArray (we
+// use an array for everything, so no need to mock groups, nodegroups,
+// singletons).
 template <typename Component, typename Index, typename InboxTagList>
-class MockProxy {
+class MockCollectionOfDistributedObjectsProxy {
  public:
   using Inboxes =
       std::unordered_map<Index,
                          tuples::tagged_tuple_from_typelist<InboxTagList>>;
-  using TupleOfMockDistributedObjects =
+  using CollectionOfMockDistributedObjects =
       std::unordered_map<Index, MockDistributedObject<Component>>;
 
-  MockProxy() : inboxes_(nullptr) {}
+  MockCollectionOfDistributedObjectsProxy() : inboxes_(nullptr) {}
 
   template <typename InboxTag, typename Data>
   void receive_data(const typename InboxTag::temporal_id& id, const Data& data,
                     const bool enable_if_disabled = false) {
-    for (const auto& key_value_pair : *local_algorithms_) {
-      MockArrayElementProxy<Component, InboxTagList>(
-          local_algorithms_->at(key_value_pair.first),
+    for (const auto& key_value_pair : *mock_distributed_objects_) {
+      MockDistributedObjectProxy<Component, InboxTagList>(
+          mock_distributed_objects_->at(key_value_pair.first),
           inboxes_->operator[](key_value_pair.first))
           .template receive_data<InboxTag>(id, data, enable_if_disabled);
     }
   }
 
-  void set_data(TupleOfMockDistributedObjects* local_algorithms,
+  void set_data(CollectionOfMockDistributedObjects* mock_distributed_objects,
                 Inboxes* inboxes) {
-    local_algorithms_ = local_algorithms;
+    mock_distributed_objects_ = mock_distributed_objects;
     inboxes_ = inboxes;
   }
 
-  MockArrayElementProxy<Component, InboxTagList> operator[](
+  MockDistributedObjectProxy<Component, InboxTagList> operator[](
       const Index& index) {
-    ASSERT(local_algorithms_->count(index) == 1,
-           "Should have exactly one local algorithm with key '"
-               << index << "' but found " << local_algorithms_->count(index)
-               << ". The known keys are " << keys_of(*local_algorithms_)
-               << ". Did you forget to add a local algorithm when constructing "
+    ASSERT(mock_distributed_objects_->count(index) == 1,
+           "Should have exactly one mock distributed object with key '"
+               << index << "' but found "
+               << mock_distributed_objects_->count(index)
+               << ". The known keys are " << keys_of(*mock_distributed_objects_)
+               << ". Did you forget to add a mock distributed object when "
+                  "constructing "
                   "the MockRuntimeSystem?");
-    return MockArrayElementProxy<Component, InboxTagList>(
-        local_algorithms_->at(index), inboxes_->operator[](index));
+    return MockDistributedObjectProxy<Component, InboxTagList>(
+        mock_distributed_objects_->at(index), inboxes_->operator[](index));
   }
 
   MockDistributedObject<Component>* ckLocalBranch() noexcept {
-    ASSERT(
-        local_algorithms_->size() == 1,
-        "Can only have one algorithm when getting the ckLocalBranch, but have "
-            << local_algorithms_->size());
+    ASSERT(mock_distributed_objects_->size() == 1,
+           "Can only have one mock distributed object when getting the "
+           "ckLocalBranch, but have "
+               << mock_distributed_objects_->size());
     // We always retrieve the 0th local branch because we are assuming running
     // on a single core.
-    return std::addressof(local_algorithms_->at(0));
+    return std::addressof(mock_distributed_objects_->at(0));
   }
 
   template <typename Action, typename... Args>
   void simple_action(std::tuple<Args...> args) noexcept {
-    alg::for_each(
-        *local_algorithms_, [&args](auto& index_and_local_algorithm) noexcept {
-          index_and_local_algorithm.second.template simple_action<Action>(args);
-        });
+    alg::for_each(*mock_distributed_objects_,
+                  [&args](auto& index_and_mock_distributed_object) noexcept {
+                    index_and_mock_distributed_object.second
+                        .template simple_action<Action>(args);
+                  });
   }
 
   template <typename Action>
   void simple_action() noexcept {
-    alg::for_each(
-        *local_algorithms_, [](auto& index_and_local_algorithm) noexcept {
-          index_and_local_algorithm.second.template simple_action<Action>();
-        });
+    alg::for_each(*mock_distributed_objects_,
+                  [](auto& index_and_mock_distributed_object) noexcept {
+                    index_and_mock_distributed_object.second
+                        .template simple_action<Action>();
+                  });
   }
 
   template <typename Action, typename... Args>
   void threaded_action(std::tuple<Args...> args) noexcept {
-    if (local_algorithms_->size() != 1) {
+    if (mock_distributed_objects_->size() != 1) {
       ERROR("NodeGroups must have exactly one element during testing, but have "
-            << local_algorithms_->size());
+            << mock_distributed_objects_->size());
     }
-    local_algorithms_->begin()->second.template threaded_action<Action>(
+    mock_distributed_objects_->begin()->second.template threaded_action<Action>(
         std::move(args));
   }
 
   template <typename Action>
   void threaded_action() noexcept {
-    if (local_algorithms_->size() != 1) {
+    if (mock_distributed_objects_->size() != 1) {
       ERROR("NodeGroups must have exactly one element during testing, but have "
-            << local_algorithms_->size());
+            << mock_distributed_objects_->size());
     }
-    local_algorithms_->begin()->second.template threaded_action<Action>();
+    mock_distributed_objects_->begin()
+        ->second.template threaded_action<Action>();
   }
 
   // clang-tidy: no non-const references
@@ -538,7 +547,7 @@ class MockProxy {
   }
 
  private:
-  TupleOfMockDistributedObjects* local_algorithms_;
+  CollectionOfMockDistributedObjects* mock_distributed_objects_;
   Inboxes* inboxes_;
 };
 }  // namespace ActionTesting_detail
@@ -546,7 +555,7 @@ class MockProxy {
 /// A mock class for the CMake-generated `Parallel::Algorithms::Array`
 struct MockArrayChare {
   template <typename Component, typename Index>
-  using cproxy = ActionTesting_detail::MockProxy<
+  using cproxy = ActionTesting_detail::MockCollectionOfDistributedObjectsProxy<
       Component, Index,
       typename MockDistributedObject<Component>::inbox_tags_list>;
 };
