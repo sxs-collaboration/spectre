@@ -20,9 +20,13 @@ void pup(er& p, std::optional<T>& t) noexcept {  // NOLINT
   if (p.isUnpacking()) {
     p | valid;
     if (valid) {
-      T value{};
-      p | value;
-      t = std::move(value);
+      // default construct in a manner that doesn't require a copy.
+      // This is necessary when holding objects like pair<const Key, unique_ptr>
+      // in unordered map-type structures. The reason this case is tricky is
+      // because the const Key is non-movable while the unique_ptr is
+      // non-copyable. Our only option is in-place construction.
+      t.emplace();
+      p | *t;
     } else {
       t.reset();
     }

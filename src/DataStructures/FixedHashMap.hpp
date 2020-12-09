@@ -4,15 +4,16 @@
 #pragma once
 
 #include <array>
-#include <boost/none.hpp>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <iterator>
+#include <memory>  // std::addressof
+#include <optional>
 #include <pup.h>
 #include <pup_stl.h>
 #include <type_traits>
 
 #include "ErrorHandling/Assert.hpp"
+#include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/BoostHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
@@ -200,7 +201,7 @@ class FixedHashMap {
   std::pair<iterator, bool> insert_or_assign_impl(key_type&& key,
                                                   M&& obj) noexcept;
 
-  using storage_type = std::array<boost::optional<value_type>, MaxSize>;
+  using storage_type = std::array<std::optional<value_type>, MaxSize>;
 
   SPECTRE_ALWAYS_INLINE size_type hash(const key_type& key) const noexcept {
     if constexpr (hash_is_perfect) {
@@ -225,7 +226,7 @@ class FixedHashMap {
   }
 
   SPECTRE_ALWAYS_INLINE static bool is_set(
-      const boost::optional<value_type>& opt) noexcept {
+      const std::optional<value_type>& opt) noexcept {
     return static_cast<bool>(opt);
   }
 
@@ -257,14 +258,14 @@ class FixedHashMapIterator {
     ASSERT(entry_ != nullptr, "Invalid FixedHashMapIterator");
     ASSERT(is_set(*entry_),
            "FixedHashMapIterator points to an invalid value in the map.");
-    // deference pointer, then dereference boost::optional
-    return **entry_;
+    // deference pointer, then dereference std::optional
+    return entry_->value();
   }
   pointer operator->() const noexcept {
     ASSERT(entry_ != nullptr, "Invalid FixedHashMapIterator");
     ASSERT(is_set(*entry_),
            "FixedHashMapIterator points to an invalid value in the map.");
-    return entry_->get_ptr();
+    return std::addressof(entry_->value());
   }
 
   FixedHashMapIterator& operator++() noexcept;
@@ -307,7 +308,7 @@ class FixedHashMapIterator {
     return not(a < b);
   }
 
-  using map_optional_type = boost::optional<std::remove_const_t<ValueType>>;
+  using map_optional_type = std::optional<std::remove_const_t<ValueType>>;
   using optional_type =
       tmpl::conditional_t<std::is_const<ValueType>::value,
                           const map_optional_type, map_optional_type>;
@@ -372,7 +373,7 @@ FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::operator=(
   for (size_t i = 0; i < data_.size(); ++i) {
     const auto& other_optional = gsl::at(other.data_, i);
     if (is_set(other_optional)) {
-      // The boost::optionals cannot be assigned to because they
+      // The std::optionals cannot be assigned to because they
       // contain the map keys, which are const, so we have to replace
       // the contents instead, since that counts as a destroy +
       // initialize.
@@ -395,7 +396,7 @@ FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::operator=(
   for (size_t i = 0; i < data_.size(); ++i) {
     auto& other_optional = gsl::at(other.data_, i);
     if (is_set(other_optional)) {
-      // The boost::optionals cannot be assigned to because they
+      // The std::optionals cannot be assigned to because they
       // contain the map keys, which are const, so we have to replace
       // the contents instead, since that counts as a destroy +
       // initialize.
@@ -419,7 +420,7 @@ template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
 void FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::clear() noexcept {
   for (auto& entry : data_) {
-    entry = boost::none;
+    entry.reset();
   }
   size_ = 0;
 }
@@ -460,7 +461,7 @@ auto FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::erase(
     const const_iterator& pos) noexcept -> iterator {
   auto next_it = &(unconst(pos).get_optional());
   --size_;
-  *next_it = boost::none;
+  next_it->reset();
   // pos now points to an unset entry, advance to next valid one
   do {
     ++next_it;
@@ -482,7 +483,7 @@ size_t FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::erase(
   if (it == data_.end() or not is_set(*it)) {
     return 0;
   }
-  *it = boost::none;
+  it->reset();
   --size_;
   return 1;
 }
@@ -495,7 +496,7 @@ auto FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::at(
   if (it == data_.end() or not is_set(*it)) {
     throw std::out_of_range(get_output(key) + " not in FixedHashMap");
   }
-  return (**it).second;
+  return it->value().second;
 }
 
 template <size_t MaxSize, class Key, class ValueType, class Hash,
@@ -525,7 +526,7 @@ auto FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::operator[](
     ++size_;
     it->emplace(key, mapped_type{});
   }
-  return (**it).second;
+  return it->value().second;
 }
 
 template <size_t MaxSize, class Key, class ValueType, class Hash,
@@ -545,7 +546,7 @@ auto FixedHashMap<MaxSize, Key, ValueType, Hash, KeyEqual>::get_data_entry(
   auto it = data_.begin() + hashed_key;
   if constexpr (not hash_is_perfect) {
     // First search for an existing key.
-    while (not is_set(*it) or (**it).first != key) {
+    while (not is_set(*it) or it->value().first != key) {
       if (++it == data_.end()) {
         it = data_.begin();
       }
@@ -581,9 +582,9 @@ bool operator==(
   if (a.size_ != b.size_) {
     return false;
   }
-  for (const auto& key_and_value : a) {
-    const auto found_in_b = b.find(key_and_value.first);
-    if (found_in_b == b.end() or found_in_b->second != key_and_value.second) {
+  for (const auto& [key, value] : a) {
+    const auto found_in_b = b.find(key);
+    if (found_in_b == b.end() or found_in_b->second != value) {
       return false;
     }
   }
