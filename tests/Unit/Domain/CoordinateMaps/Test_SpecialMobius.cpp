@@ -29,7 +29,7 @@ void test_suite() {  // Set up random number generator
   std::uniform_real_distribution<> mu_dis(-0.85, 0.85);
 
   const double mu = mu_dis(gen);
-  CAPTURE_PRECISE(mu);
+  CAPTURE(mu);
   const CoordinateMaps::SpecialMobius special_mobius_map(mu);
   test_suite_for_map_on_sphere(special_mobius_map);
 }
@@ -45,19 +45,19 @@ void test_map() {
   // to 12 decimal places for mu = 0.96.
   std::uniform_real_distribution<> mu_dis(-0.90, 0.90);
   const double theta = theta_dis(gen);
-  CAPTURE_PRECISE(theta);
+  CAPTURE(theta);
   const double phi = phi_dis(gen);
-  CAPTURE_PRECISE(phi);
+  CAPTURE(phi);
   const double radius = radius_dis(gen);
-  CAPTURE_PRECISE(radius);
+  CAPTURE(radius);
   const double x = radius * sin(theta) * cos(phi);
-  CAPTURE_PRECISE(x);
+  CAPTURE(x);
   const double y = radius * sin(theta) * sin(phi);
-  CAPTURE_PRECISE(y);
+  CAPTURE(y);
   const double z = radius * cos(theta);
-  CAPTURE_PRECISE(z);
+  CAPTURE(z);
   const double mu = mu_dis(gen);
-  CAPTURE_PRECISE(mu);
+  CAPTURE(mu);
   const std::array<double, 3> input_point{{x, y, z}};
   const CoordinateMaps::SpecialMobius special_mobius_map(mu);
   const auto result_point = special_mobius_map(input_point);
@@ -92,7 +92,7 @@ void test_map() {
 void test_large_mu() {
   INFO("Large mu");
   const double mu = 0.95;
-  CAPTURE_PRECISE(mu);
+  CAPTURE(mu);
   // A point on the unit sphere with x=0, y!=z:
   const std::array<double, 3> input_point{{0.0, 0.6, 0.8}};
   const CoordinateMaps::SpecialMobius special_mobius_map(mu);

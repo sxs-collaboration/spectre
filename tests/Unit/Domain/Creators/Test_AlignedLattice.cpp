@@ -164,7 +164,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
       CAPTURE(extents[i]);
       CHECK(expected_blocks.erase({location, extents[i]}) == 1);
     }
-    CAPTURE_PRECISE(expected_blocks);
+    CAPTURE(expected_blocks);
     CHECK(expected_blocks.empty());
   }
 
@@ -214,7 +214,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
       CAPTURE(refinement_levels[i]);
       CHECK(expected_blocks.erase({location, refinement_levels[i]}) == 1);
     }
-    CAPTURE_PRECISE(expected_blocks);
+    CAPTURE(expected_blocks);
     CHECK(expected_blocks.empty());
   }
 }

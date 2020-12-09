@@ -58,7 +58,7 @@ void fuzzy_test_block_and_element_logical_coordinates(
     }
     return ids;
   }();
-  CAPTURE_PRECISE(element_ids);
+  CAPTURE(element_ids);
 
   // Random element logical coords for each point
   const auto element_coords = [&n_pts]() noexcept {
@@ -73,7 +73,7 @@ void fuzzy_test_block_and_element_logical_coordinates(
     }
     return coords;
   }();
-  CAPTURE_PRECISE(element_coords);
+  CAPTURE(element_coords);
 
   // Compute expected map of element_ids to ElementLogicalCoordHolders.
   // This is just re-organizing and re-bookkeeping element_ids and
@@ -197,7 +197,7 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
     }
     return ids;
   }();
-  CAPTURE_PRECISE(block_ids);
+  CAPTURE(block_ids);
 
   // Random block logical coords for each point
   // (block logical coords == element logical coords)
@@ -213,7 +213,7 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
     }
     return coords;
   }();
-  CAPTURE_PRECISE(block_coords);
+  CAPTURE(block_coords);
 
   // Map to inertial coords
   const auto inertial_coords = [

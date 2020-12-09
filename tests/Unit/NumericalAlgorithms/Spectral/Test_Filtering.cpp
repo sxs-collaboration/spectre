@@ -110,7 +110,6 @@ void test_zero_lowest_modes() noexcept {
           to_modal_coefficients(filtered_nodal_coeffs, mesh);
       for (size_t i = 0; i < num_pts; ++i) {
         CAPTURE(i);
-        CAPTURE_PRECISE(filtered_modal_coeffs[i]);
         if (i < number_of_modes_to_filter) {
           CHECK(fabs(filtered_modal_coeffs[i]) < 1.0e-13);
         } else {

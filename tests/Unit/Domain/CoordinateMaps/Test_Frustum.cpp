@@ -28,21 +28,21 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
   std::uniform_real_distribution<> upper_bound_dis(2, 14);
 
   const double lower_x_lower_base = lower_bound_dis(gen);
-  CAPTURE_PRECISE(lower_x_lower_base);
+  CAPTURE(lower_x_lower_base);
   const double lower_y_lower_base = lower_bound_dis(gen);
-  CAPTURE_PRECISE(lower_y_lower_base);
+  CAPTURE(lower_y_lower_base);
   const double upper_x_lower_base = upper_bound_dis(gen);
-  CAPTURE_PRECISE(upper_x_lower_base);
+  CAPTURE(upper_x_lower_base);
   const double upper_y_lower_base = upper_bound_dis(gen);
-  CAPTURE_PRECISE(upper_y_lower_base);
+  CAPTURE(upper_y_lower_base);
   const double lower_x_upper_base = lower_bound_dis(gen);
-  CAPTURE_PRECISE(lower_x_upper_base);
+  CAPTURE(lower_x_upper_base);
   const double lower_y_upper_base = lower_bound_dis(gen);
-  CAPTURE_PRECISE(lower_y_upper_base);
+  CAPTURE(lower_y_upper_base);
   const double upper_x_upper_base = upper_bound_dis(gen);
-  CAPTURE_PRECISE(upper_x_upper_base);
+  CAPTURE(upper_x_upper_base);
   const double upper_y_upper_base = upper_bound_dis(gen);
-  CAPTURE_PRECISE(upper_y_upper_base);
+  CAPTURE(upper_y_upper_base);
 
   for (OrientationMapIterator<3> map_i{}; map_i; ++map_i) {
     const std::array<std::array<double, 2>, 4> face_vertices{
@@ -184,27 +184,27 @@ void test_auto_projective_scale_factor() {
   std::uniform_real_distribution<> logical_dis(-1, 1);
 
   const double lower_x_lower_base = lower_bound_dis(gen);
-  CAPTURE_PRECISE(lower_x_lower_base);
+  CAPTURE(lower_x_lower_base);
   const double lower_y_lower_base = lower_bound_dis(gen);
-  CAPTURE_PRECISE(lower_y_lower_base);
+  CAPTURE(lower_y_lower_base);
   const double upper_x_lower_base = upper_bound_dis(gen);
-  CAPTURE_PRECISE(upper_x_lower_base);
+  CAPTURE(upper_x_lower_base);
   const double upper_y_lower_base = upper_bound_dis(gen);
-  CAPTURE_PRECISE(upper_y_lower_base);
+  CAPTURE(upper_y_lower_base);
   const double lower_x_upper_base = lower_bound_dis(gen);
-  CAPTURE_PRECISE(lower_x_upper_base);
+  CAPTURE(lower_x_upper_base);
   const double lower_y_upper_base = lower_bound_dis(gen);
-  CAPTURE_PRECISE(lower_y_upper_base);
+  CAPTURE(lower_y_upper_base);
   const double upper_x_upper_base = upper_bound_dis(gen);
-  CAPTURE_PRECISE(upper_x_upper_base);
+  CAPTURE(upper_x_upper_base);
   const double upper_y_upper_base = upper_bound_dis(gen);
-  CAPTURE_PRECISE(upper_y_upper_base);
+  CAPTURE(upper_y_upper_base);
   const double xi = logical_dis(gen);
-  CAPTURE_PRECISE(xi);
+  CAPTURE(xi);
   const double eta = logical_dis(gen);
-  CAPTURE_PRECISE(eta);
+  CAPTURE(eta);
   const double zeta = logical_dis(gen);
-  CAPTURE_PRECISE(zeta);
+  CAPTURE(zeta);
 
   const std::array<double, 3> logical_coord{{0.0, 0.0, zeta}};
   const double lower_bound = 2.0;

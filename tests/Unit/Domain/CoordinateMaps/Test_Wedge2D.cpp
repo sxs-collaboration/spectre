@@ -33,27 +33,27 @@ void test_wedge2d_all_orientations(const bool with_equiangular_map) {
   // corners of the wedge.
   const std::array<double, 2> lower_right_corner{{1.0, -1.0}};
   const std::array<double, 2> upper_right_corner{{1.0, 1.0}};
-  CAPTURE_PRECISE(gsl::at(lower_right_corner, 0));
-  CAPTURE_PRECISE(gsl::at(upper_right_corner, 0));
-  CAPTURE_PRECISE(gsl::at(lower_right_corner, 1));
-  CAPTURE_PRECISE(gsl::at(upper_right_corner, 1));
+  CAPTURE(gsl::at(lower_right_corner, 0));
+  CAPTURE(gsl::at(upper_right_corner, 0));
+  CAPTURE(gsl::at(lower_right_corner, 1));
+  CAPTURE(gsl::at(upper_right_corner, 1));
 
   const double random_inner_radius_upper_xi = inner_dis(gen);
-  CAPTURE_PRECISE(random_inner_radius_upper_xi);
+  CAPTURE(random_inner_radius_upper_xi);
   const double random_inner_radius_upper_eta = inner_dis(gen);
-  CAPTURE_PRECISE(random_inner_radius_upper_eta);
+  CAPTURE(random_inner_radius_upper_eta);
   const double random_inner_radius_lower_xi = inner_dis(gen);
-  CAPTURE_PRECISE(random_inner_radius_lower_xi);
+  CAPTURE(random_inner_radius_lower_xi);
   const double random_inner_radius_lower_eta = inner_dis(gen);
-  CAPTURE_PRECISE(random_inner_radius_lower_eta);
+  CAPTURE(random_inner_radius_lower_eta);
   const double random_outer_radius_upper_xi = outer_dis(gen);
-  CAPTURE_PRECISE(random_outer_radius_upper_xi);
+  CAPTURE(random_outer_radius_upper_xi);
   const double random_outer_radius_upper_eta = outer_dis(gen);
-  CAPTURE_PRECISE(random_outer_radius_upper_eta);
+  CAPTURE(random_outer_radius_upper_eta);
   const double random_outer_radius_lower_xi = outer_dis(gen);
-  CAPTURE_PRECISE(random_outer_radius_lower_xi);
+  CAPTURE(random_outer_radius_lower_xi);
   const double random_outer_radius_lower_eta = outer_dis(gen);
-  CAPTURE_PRECISE(random_outer_radius_lower_eta);
+  CAPTURE(random_outer_radius_lower_eta);
 
   const CoordinateMaps::Wedge2D map_upper_xi(
       random_inner_radius_upper_xi, random_outer_radius_upper_xi, 0.0, 1.0,
@@ -111,13 +111,13 @@ void test_wedge2d_all_orientations(const bool with_equiangular_map) {
         approx(-random_inner_radius_lower_eta / sqrt(2.0)));
 
   const double inner_radius = inner_dis(gen);
-  CAPTURE_PRECISE(inner_radius);
+  CAPTURE(inner_radius);
   const double outer_radius = outer_dis(gen);
-  CAPTURE_PRECISE(outer_radius);
+  CAPTURE(outer_radius);
   const double inner_circularity = unit_dis(gen);
-  CAPTURE_PRECISE(inner_circularity);
+  CAPTURE(inner_circularity);
   const double outer_circularity = unit_dis(gen);
-  CAPTURE_PRECISE(outer_circularity);
+  CAPTURE(outer_circularity);
 
   for (OrientationMapIterator<2> map_i{}; map_i; ++map_i) {
     test_suite_for_map_on_unit_cube(CoordinateMaps::Wedge2D{

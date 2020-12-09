@@ -41,12 +41,12 @@ void test_square_general_matrix_linear_solve(
   for (size_t i = 0; i < rows; ++i) {
     operator_matrix(i, i) += 1.0;
   }
-  CAPTURE_PRECISE(operator_matrix);
+  CAPTURE(operator_matrix);
   // the vector b
   auto input_vector = apply_matrices<DataVector, Matrix>(
       {{operator_matrix, Matrix{}}}, expected_solution_vector,
       Index<2>{rows, number_of_rhs});
-  CAPTURE_PRECISE(input_vector);
+  CAPTURE(input_vector);
   // version which copies the matrix, and preserves the input
   DataVector solution_vector{number_of_rhs * rows, 0.0};
   lapack::general_matrix_linear_solve(make_not_null(&solution_vector),

@@ -45,7 +45,7 @@ void test_invert_spec_phys_transform() {
       r += delta_radius * ran(gen);
     }
   }
-  CAPTURE_PRECISE(radius);
+  CAPTURE(radius);
 
   // Initialize a strahlkorper of l_max=l_grid
   const Strahlkorper<Frame::Inertial> sk(l_grid, l_grid, radius, center);

@@ -69,7 +69,7 @@ void check_if_maps_are_equal(
     for (size_t d = 0; d < VolumeDim; ++d) {
       source_point.get(d) = real_dis(gen);
     }
-    CAPTURE_PRECISE(source_point);
+    CAPTURE(source_point);
     CHECK_ITERABLE_APPROX(map_one(source_point, time, functions_of_time),
                           map_two(source_point, time, functions_of_time));
     CHECK_ITERABLE_APPROX(
@@ -258,10 +258,6 @@ void test_coordinate_map_implementation(const Map& map) noexcept {
     }
     return p;
   }();
-
-  for (size_t i = 0; i < Map::dim; ++i) {
-    CAPTURE_PRECISE(gsl::at(test_point, i));
-  }
 
   const auto test_point_tensor = [&test_point]() {
     tnsr::I<double, Map::dim, Frame::Logical> point_as_tensor{};
@@ -477,11 +473,11 @@ void test_suite_for_map_on_sphere(
   std::uniform_real_distribution<> phi_dis(0, 2.0 * M_PI);
 
   const double theta = theta_dis(gen);
-  CAPTURE_PRECISE(theta);
+  CAPTURE(theta);
   const double phi = phi_dis(gen);
-  CAPTURE_PRECISE(phi);
+  CAPTURE(phi);
   const double radius = radius_dis(gen);
-  CAPTURE_PRECISE(radius);
+  CAPTURE(radius);
 
   const std::array<double, 3> random_point{{radius * sin(theta) * cos(phi),
                                             radius * sin(theta) * sin(phi),

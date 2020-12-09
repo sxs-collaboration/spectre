@@ -32,9 +32,9 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.Times", "[Unit][Time]") {
   const auto check = [](const double time, const double slab_size,
                         const std::vector<double>& trigger_times,
                         const bool expected) noexcept {
-    CAPTURE_PRECISE(time);
-    CAPTURE_PRECISE(slab_size);
-    CAPTURE_PRECISE(trigger_times);
+    CAPTURE(time);
+    CAPTURE(slab_size);
+    CAPTURE(trigger_times);
     const auto slab = Slab::with_duration_from_start(0.8 * time, slab_size);
     // None of the arguments here should matter, except that they are
     // based on the correct slab.
