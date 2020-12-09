@@ -38,21 +38,3 @@ set_property(TARGET SpectreFlags
   APPEND PROPERTY
   INTERFACE_COMPILE_OPTIONS
   $<$<COMPILE_LANGUAGE:CXX>:-ftemplate-backtrace-limit=0>)
-
-# We disable thread safety of Boost::shared_ptr since it makes them faster
-# to use and we do not share them between threads. If a thread-safe
-# shared_ptr is desired it must be implemented to work with Charm++'s threads
-# anyway.
-set_property(TARGET SpectreFlags
-  APPEND PROPERTY
-  INTERFACE_COMPILE_DEFINITIONS
-  $<$<COMPILE_LANGUAGE:CXX>:BOOST_SP_DISABLE_THREADS>)
-
-# Override the boost index type to match the STL for Boost.MultiArray
-# (std::ptrdiff_t to std::size_t)
-# Note: This header guard hasn't changed since 2002 so it seems not too insane
-# to rely on.
-set_property(TARGET SpectreFlags
-  APPEND PROPERTY
-  INTERFACE_COMPILE_DEFINITIONS
-  $<$<COMPILE_LANGUAGE:CXX>:BOOST_MULTI_ARRAY_TYPES_RG071801_HPP>)

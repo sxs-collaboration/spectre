@@ -88,3 +88,25 @@ set_property(
   GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
   Boost::boost Boost::program_options
   )
+
+# We disable thread safety of Boost::shared_ptr since it makes them faster
+# to use and we do not share them between threads. If a thread-safe
+# shared_ptr is desired it must be implemented to work with Charm++'s threads
+# anyway.
+set_property(TARGET Boost::boost
+  APPEND PROPERTY
+  INTERFACE_COMPILE_DEFINITIONS
+  $<$<COMPILE_LANGUAGE:CXX>:BOOST_SP_DISABLE_THREADS>)
+
+# Override the boost index type to match the STL for Boost.MultiArray
+# (std::ptrdiff_t to std::size_t)
+# Note: This header guard changed in Boost 1.73.0
+if(Boost_VERSION VERSION_GREATER_EQUAL 1.73.0)
+  set(BOOST_MULTI_ARRAY_TYPES_HEADER_GUARD BOOST_MULTI_ARRAY_TYPES_HPP)
+else()
+  set(BOOST_MULTI_ARRAY_TYPES_HEADER_GUARD BOOST_MULTI_ARRAY_TYPES_RG071801_HPP)
+endif()
+set_property(TARGET Boost::boost
+  APPEND PROPERTY
+  INTERFACE_COMPILE_DEFINITIONS
+  $<$<COMPILE_LANGUAGE:CXX>:${BOOST_MULTI_ARRAY_TYPES_HEADER_GUARD}>)
