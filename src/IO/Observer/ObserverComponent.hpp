@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "AlgorithmGroup.hpp"
-#include "AlgorithmNodegroup.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Algorithms/AlgorithmGroup.hpp"
+#include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"

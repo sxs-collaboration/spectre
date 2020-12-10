@@ -6,7 +6,6 @@
 #include <cstdint>
 #include <vector>
 
-#include "AlgorithmSingleton.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
@@ -66,6 +65,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"

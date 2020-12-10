@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <vector>
 
-#include "AlgorithmArray.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
@@ -14,6 +13,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Tags.hpp"
+#include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"

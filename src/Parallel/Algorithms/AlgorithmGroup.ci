@@ -1,0 +1,37 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+module AlgorithmGroup {
+  include "Utilities/TaggedTuple.hpp";
+  include "Parallel/GlobalCache.decl.h";
+
+  template <typename ParallelComponent, typename SpectreArrayIndex>
+  group[migratable] AlgorithmGroup {
+    entry AlgorithmGroup(
+        Parallel::CProxy_GlobalCache<typename ParallelComponent::metavariables>,
+        tuples::tagged_tuple_from_typelist<
+            typename ParallelComponent::initialization_tags>
+            initialization_items);
+
+    template <typename Action, typename... Args>
+    entry void simple_action(std::tuple<Args...> & args);
+
+    template <typename Action>
+    entry void simple_action();
+
+    template <typename Action, typename Arg>
+    entry[reductiontarget] void reduction_action(Arg arg);
+
+    entry void perform_algorithm();
+
+    entry void perform_algorithm(bool);
+
+    entry void start_phase(typename ParallelComponent::metavariables::Phase);
+
+    template <typename ReceiveTag, typename ReceiveData_t>
+    entry void receive_data(typename ReceiveTag::temporal_id&, ReceiveData_t&,
+                            bool enable_if_disabled = false);
+
+    entry void set_terminate(bool);
+  }
+}

@@ -3,10 +3,10 @@
 
 #include <type_traits>
 
-#include "AlgorithmArray.hpp"
-#include "AlgorithmGroup.hpp"
-#include "AlgorithmNodegroup.hpp"
-#include "AlgorithmSingleton.hpp"
+#include "Parallel/Algorithms/AlgorithmArrayDeclarations.hpp"
+#include "Parallel/Algorithms/AlgorithmGroupDeclarations.hpp"
+#include "Parallel/Algorithms/AlgorithmNodegroupDeclarations.hpp"
+#include "Parallel/Algorithms/AlgorithmSingletonDeclarations.hpp"
 #include "Parallel/TypeTraits.hpp"
 
 namespace PUP {

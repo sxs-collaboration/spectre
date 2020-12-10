@@ -19,6 +19,10 @@
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
+#include "Parallel/Algorithms/AlgorithmArrayDeclarations.hpp"
+#include "Parallel/Algorithms/AlgorithmGroupDeclarations.hpp"
+#include "Parallel/Algorithms/AlgorithmNodegroupDeclarations.hpp"
+#include "Parallel/Algorithms/AlgorithmSingletonDeclarations.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/NodeLock.hpp"
@@ -123,7 +127,11 @@ class AlgorithmImpl;
  * necessary to reproduce the issue.
  */
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>> {
+class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
+    : public ParallelComponent::chare_type::template cbase<
+          ParallelComponent,
+          typename get_array_index<typename ParallelComponent::chare_type>::
+              template f<ParallelComponent>> {
   static_assert(
       sizeof...(PhaseDepActionListsPack) > 0,
       "Must have at least one phase dependent action list "
@@ -175,7 +183,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>> {
   constexpr explicit AlgorithmImpl(CkMigrateMessage* /*msg*/) noexcept;
 
   /// \cond
-  ~AlgorithmImpl();
+  ~AlgorithmImpl() override;
 
   AlgorithmImpl(const AlgorithmImpl& /*unused*/) = delete;
   AlgorithmImpl& operator=(const AlgorithmImpl& /*unused*/) = delete;

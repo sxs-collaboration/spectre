@@ -16,7 +16,6 @@
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
-#include "Parallel/Algorithm.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"

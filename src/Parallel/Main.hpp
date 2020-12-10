@@ -47,7 +47,8 @@ class Main : public CBase_Main<Metavariables> {
   /// \cond HIDDEN_SYMBOLS
   /// The constructor used to register the class
   explicit Main(
-      const Parallel::charmxx::MainChareRegistrationConstructor&) noexcept {}
+      const Parallel::charmxx::
+          MainChareRegistrationConstructor& /*used_for_reg*/) noexcept {}
   ~Main() noexcept override {
     (void)Parallel::charmxx::RegisterChare<
         Main<Metavariables>, CkIndex_Main<Metavariables>>::registrar;

@@ -5,7 +5,6 @@
 
 #include <memory>
 
-#include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "IO/Observer/Actions/RegisterSingleton.hpp"
 #include "IO/Observer/ObservationId.hpp"
@@ -13,6 +12,7 @@
 #include "NumericalAlgorithms/Interpolation/Actions/InterpolationTargetSendPoints.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"

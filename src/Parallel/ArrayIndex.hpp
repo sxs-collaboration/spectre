@@ -83,3 +83,17 @@ using ArrayIndex4D = ArrayIndex<CkIndex4D>;
 using ArrayIndex5D = ArrayIndex<CkIndex5D>;
 using ArrayIndex6D = ArrayIndex<CkIndex6D>;
 }  // namespace Parallel
+
+// These namespaces have silly names because we are subverting the charm++
+// utilities that prepend "CkArrayIndex" to the name of the array index. See
+// comments in Parallel/Algorithms/AlgorithmArray.ci for further explanation.
+
+namespace CkArrayIndexSpectreIndex_detail {
+template <typename Index>
+using ArrayIndex = ::Parallel::ArrayIndex<Index>;
+}  // namespace CkArrayIndexSpectreIndex_detail
+
+namespace SpectreIndex_detail {
+template <typename Index>
+using ArrayIndex = Index;
+}  // namespace SpectreIndex_detail

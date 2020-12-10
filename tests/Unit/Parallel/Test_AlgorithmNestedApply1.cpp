@@ -3,10 +3,10 @@
 
 #include <vector>
 
-#include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"

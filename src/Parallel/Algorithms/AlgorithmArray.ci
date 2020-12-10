@@ -1,0 +1,48 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+module AlgorithmArray {
+  include "Utilities/TaggedTuple.hpp";
+  include "Parallel/GlobalCache.decl.h";
+
+  // note: the array index here is a hack to use our own types in the chare
+  // array index. The way the ci file is parsed as of charm++ 6.10.2 is such
+  // that:
+  // - the array index type in `AlgorithmArray.decl.h` prepends "CkArrayIndex"
+  //   to what appears in the square brackets, which then becomes
+  //   `CkArrayIndexSpectreIndex_detail::ArrayIndex<SpectreArrayIndex>`, which
+  //   refers to our type alias in `Parallel/ArrayIndex.hpp`.
+  // - the array index type in `AlgorithmArray.def.h` is precisely what appears
+  //   in the square brackets, so becomes
+  //   `SpectreIndex_detail::ArrayIndex<SpectreArrayIndex>`, which also refers
+  //   to one of our type aliases in `Parallel/ArrayIndex.hpp`
+  template <typename ParallelComponent, typename SpectreArrayIndex>
+  array[SpectreIndex_detail::ArrayIndex<SpectreArrayIndex>] AlgorithmArray {
+    entry AlgorithmArray(
+        Parallel::CProxy_GlobalCache<typename ParallelComponent::metavariables>,
+        tuples::tagged_tuple_from_typelist<
+            typename ParallelComponent::initialization_tags>
+            initialization_items);
+
+    template <typename Action, typename... Args>
+    entry void simple_action(std::tuple<Args...> & args);
+
+    template <typename Action>
+    entry void simple_action();
+
+    template <typename Action, typename Arg>
+    entry[reductiontarget] void reduction_action(Arg arg);
+
+    entry void perform_algorithm();
+
+    entry void perform_algorithm(bool);
+
+    entry void start_phase(typename ParallelComponent::metavariables::Phase);
+
+    template <typename ReceiveTag, typename ReceiveData_t>
+    entry void receive_data(typename ReceiveTag::temporal_id&, ReceiveData_t&,
+                            bool enable_if_disabled = false);
+
+    entry void set_terminate(bool);
+  }
+}

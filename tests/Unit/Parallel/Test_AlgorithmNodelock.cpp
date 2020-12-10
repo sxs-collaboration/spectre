@@ -11,12 +11,11 @@
 #include <tuple>
 #include <vector>
 
-#include "AlgorithmArray.hpp"
-#include "AlgorithmNodegroup.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "Parallel/Algorithm.hpp"  // IWYU pragma: keep
+#include "Parallel/Algorithms/AlgorithmArray.hpp"
+#include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
