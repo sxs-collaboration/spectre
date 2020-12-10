@@ -17,6 +17,7 @@
 #include "NumericalAlgorithms/Spectral/Projection.hpp"  // for MortarSize
 #include "Time/TimeStepId.hpp"
 
+/// %Tags used for DG evolution scheme.
 namespace evolution::dg::Tags {
 /// Data on mortars, indexed by (Direction, ElementId) pairs
 ///
