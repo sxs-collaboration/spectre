@@ -5,7 +5,7 @@ option(SPECTRE_INPUT_FILE_TEST_TIMEOUT_FACTOR
   "Multiply timeout for input file tests by this factor"
   1)
 
-find_package(PythonInterp REQUIRED)
+find_package(Python REQUIRED)
 
 function(add_single_input_file_test INPUT_FILE EXECUTABLE CHECK_TYPE TIMEOUT)
   # Extract just the name of the input file
@@ -163,10 +163,10 @@ file(
   ${PROJECT_BINARY_DIR}/tmp/InputFileExecuteAndClean.sh
   "\
 #!/bin/sh\n\
-${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v --force \
+${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v --force \
 --input-file $2 --output-dir ${CMAKE_BINARY_DIR}
 ${CMAKE_BINARY_DIR}/bin/$1 --input-file $2 && \
-${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v \
+${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v \
 --input-file $2 --output-dir ${CMAKE_BINARY_DIR}\n"
 )
 

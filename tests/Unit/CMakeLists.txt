@@ -70,13 +70,6 @@ add_dependencies(
   module_Main
   )
 
-target_include_directories(
-  ${executable}
-  SYSTEM
-  PUBLIC ${NUMPY_INCLUDE_DIRS}
-  PUBLIC ${PYTHON_INCLUDE_DIRS}
-  )
-
 add_dependencies(unit-tests ${executable})
 
 option(

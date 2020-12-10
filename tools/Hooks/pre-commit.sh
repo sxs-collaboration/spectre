@@ -25,7 +25,7 @@ found_error=0
 
 ###############################################################################
 # Check the file size
-@PYTHON_EXECUTABLE@ @CMAKE_SOURCE_DIR@/.git/hooks/CheckFileSize.py
+@Python_EXECUTABLE@ @CMAKE_SOURCE_DIR@/.git/hooks/CheckFileSize.py
 [ "$?" -ne 0 ] && found_error=1
 
 printf '%s\0' "${commit_files[@]}" | run_checks "${standard_checks[@]}"
@@ -33,7 +33,7 @@ printf '%s\0' "${commit_files[@]}" | run_checks "${standard_checks[@]}"
 
 ###############################################################################
 # Use git-clang-format to check for any suspicious formatting of code.
-@PYTHON_EXECUTABLE@ @CMAKE_SOURCE_DIR@/.git/hooks/ClangFormat.py
+@Python_EXECUTABLE@ @CMAKE_SOURCE_DIR@/.git/hooks/ClangFormat.py
 
 ###############################################################################
 # Use yapf to check python file formatting, only if it is installed.

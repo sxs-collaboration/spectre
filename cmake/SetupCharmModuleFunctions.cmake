@@ -1,8 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(PythonInterp REQUIRED)
-
 # Add a function to generate the charm interface files for the module.
 function(add_charm_module MODULE)
   # Arguments:

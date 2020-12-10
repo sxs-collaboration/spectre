@@ -30,5 +30,5 @@ file(WRITE
   "CMAKE_C_COMPILER_VERSION: ${CMAKE_C_COMPILER_VERSION}\n"
   "CMAKE_Fortran_COMPILER: ${CMAKE_Fortran_COMPILER}\n"
   "CMAKE_Fortran_COMPILER_VERSION: ${CMAKE_Fortran_COMPILER_VERSION}\n"
-  "Python Version: ${PYTHON_VERSION_STRING}\n"
+  "Python Version: ${Python_VERSION}\n"
   )
