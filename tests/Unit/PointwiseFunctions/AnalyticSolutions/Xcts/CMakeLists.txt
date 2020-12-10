@@ -5,11 +5,12 @@ set(LIBRARY "Test_XctsSolutions")
 
 set(LIBRARY_SOURCES
   Test_ConstantDensityStar.cpp
+  Test_Schwarzschild.cpp
   )
 
 add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/Xcts/"
   "${LIBRARY_SOURCES}"
-  "XctsSolutions;Utilities"
+  "DataStructures;Utilities;Xcts;XctsSolutions"
   )

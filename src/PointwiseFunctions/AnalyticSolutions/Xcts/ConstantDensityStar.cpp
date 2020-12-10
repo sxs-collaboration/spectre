@@ -13,6 +13,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"               // IWYU pragma: keep
+#include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -66,8 +67,7 @@ Scalar<DataVector> compute_piecewise(const Scalar<DataVector>& r,
 }  // namespace
 
 /// \cond
-namespace Xcts {
-namespace Solutions {
+namespace Xcts::Solutions {
 
 ConstantDensityStar::ConstantDensityStar(const double density,
                                          const double radius,
@@ -126,13 +126,14 @@ ConstantDensityStar::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<::Tags::Initial<
-    Xcts::Tags::ConformalFactorGradient<3, Frame::Inertial, DataType>>>
+tuples::TaggedTuple<::Tags::Initial<::Tags::deriv<
+    Xcts::Tags::ConformalFactor<DataType>, tmpl::size_t<3>, Frame::Inertial>>>
 ConstantDensityStar::variables(
     const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<::Tags::Initial<Xcts::Tags::ConformalFactorGradient<
-        3, Frame::Inertial, DataType>>> /*meta*/) const noexcept {
-  return {make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(x, 0.)};
+    tmpl::list<::Tags::Initial<
+        ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
+                      Frame::Inertial>>> /*meta*/) const noexcept {
+  return {make_with_value<tnsr::i<DataType, 3, Frame::Inertial>>(x, 0.)};
 }
 
 template <typename DataType>
@@ -165,33 +166,35 @@ bool operator!=(const ConstantDensityStar& lhs,
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template tuples::TaggedTuple<Xcts::Tags::ConformalFactor<DTYPE(data)>>     \
-  ConstantDensityStar::variables(                                            \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                       \
-      tmpl::list<Xcts::Tags::ConformalFactor<DTYPE(data)>>) const noexcept;  \
-  template tuples::TaggedTuple<                                              \
-      ::Tags::Initial<Xcts::Tags::ConformalFactor<DTYPE(data)>>>             \
-  ConstantDensityStar::variables(                                            \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                       \
-      tmpl::list<::Tags::Initial<Xcts::Tags::ConformalFactor<DTYPE(data)>>>) \
-      const noexcept;                                                        \
-  template tuples::TaggedTuple<::Tags::Initial<                              \
-      Xcts::Tags::ConformalFactorGradient<3, Frame::Inertial, DTYPE(data)>>> \
-  ConstantDensityStar::variables(                                            \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                       \
-      tmpl::list<::Tags::Initial<Xcts::Tags::ConformalFactorGradient<        \
-          3, Frame::Inertial, DTYPE(data)>>>) const noexcept;                \
-  template tuples::TaggedTuple<                                              \
-      ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DTYPE(data)>>>         \
-  ConstantDensityStar::variables(                                            \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                       \
-      tmpl::list<                                                            \
-          ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DTYPE(data)>>>)    \
-      const noexcept;                                                        \
-  template tuples::TaggedTuple<gr::Tags::EnergyDensity<DTYPE(data)>>         \
-  ConstantDensityStar::variables(                                            \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                       \
+#define INSTANTIATE(_, data)                                                  \
+  template tuples::TaggedTuple<Xcts::Tags::ConformalFactor<DTYPE(data)>>      \
+  ConstantDensityStar::variables(                                             \
+      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                        \
+      tmpl::list<Xcts::Tags::ConformalFactor<DTYPE(data)>>) const noexcept;   \
+  template tuples::TaggedTuple<                                               \
+      ::Tags::Initial<Xcts::Tags::ConformalFactor<DTYPE(data)>>>              \
+  ConstantDensityStar::variables(                                             \
+      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                        \
+      tmpl::list<::Tags::Initial<Xcts::Tags::ConformalFactor<DTYPE(data)>>>)  \
+      const noexcept;                                                         \
+  template tuples::TaggedTuple<                                               \
+      ::Tags::Initial<::Tags::deriv<Xcts::Tags::ConformalFactor<DTYPE(data)>, \
+                                    tmpl::size_t<3>, Frame::Inertial>>>       \
+  ConstantDensityStar::variables(                                             \
+      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                        \
+      tmpl::list<::Tags::Initial<                                             \
+          ::Tags::deriv<Xcts::Tags::ConformalFactor<DTYPE(data)>,             \
+                        tmpl::size_t<3>, Frame::Inertial>>>) const noexcept;  \
+  template tuples::TaggedTuple<                                               \
+      ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DTYPE(data)>>>          \
+  ConstantDensityStar::variables(                                             \
+      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                        \
+      tmpl::list<                                                             \
+          ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DTYPE(data)>>>)     \
+      const noexcept;                                                         \
+  template tuples::TaggedTuple<gr::Tags::EnergyDensity<DTYPE(data)>>          \
+  ConstantDensityStar::variables(                                             \
+      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                        \
       tmpl::list<gr::Tags::EnergyDensity<DTYPE(data)>>) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
@@ -199,6 +202,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 #undef DTYPE
 #undef INSTANTIATE
 
-}  // namespace Solutions
-}  // namespace Xcts
+}  // namespace Xcts::Solutions
 /// \endcond

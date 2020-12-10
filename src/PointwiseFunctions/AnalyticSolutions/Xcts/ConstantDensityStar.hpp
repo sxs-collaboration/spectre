@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"     // IWYU pragma: keep
 #include "Elliptic/Systems/Xcts/Tags.hpp"       // IWYU pragma: keep
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -21,8 +22,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace Xcts {
-namespace Solutions {
+namespace Xcts::Solutions {
 
 /*!
  * \brief A constant density star in general relativity
@@ -136,10 +136,12 @@ class ConstantDensityStar {
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
-                 tmpl::list<::Tags::Initial<Xcts::Tags::ConformalFactorGradient<
-                     3, Frame::Inertial, DataType>>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<::Tags::Initial<
-          Xcts::Tags::ConformalFactorGradient<3, Frame::Inertial, DataType>>>;
+                 tmpl::list<::Tags::Initial<
+                     ::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>,
+                                   tmpl::size_t<3>, Frame::Inertial>>> /*meta*/)
+      const noexcept -> tuples::TaggedTuple<
+          ::Tags::Initial<::Tags::deriv<Xcts::Tags::ConformalFactor<DataType>,
+                                        tmpl::size_t<3>, Frame::Inertial>>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
@@ -180,5 +182,4 @@ bool operator==(const ConstantDensityStar& /*lhs*/,
 bool operator!=(const ConstantDensityStar& lhs,
                 const ConstantDensityStar& rhs) noexcept;
 
-}  // namespace Solutions
-}  // namespace Xcts
+}  // namespace Xcts::Solutions

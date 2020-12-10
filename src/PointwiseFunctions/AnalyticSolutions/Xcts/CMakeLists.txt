@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   ConstantDensityStar.cpp
+  Schwarzschild.cpp
   )
 
 spectre_target_headers(
@@ -16,6 +17,8 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   ConstantDensityStar.hpp
+  Schwarzschild.hpp
+  Solutions.hpp
   )
 
 target_link_libraries(
@@ -23,6 +26,8 @@ target_link_libraries(
   PUBLIC
   DataStructures
   ErrorHandling
+  GeneralRelativity
   Options
   Utilities
+  Xcts
   )
