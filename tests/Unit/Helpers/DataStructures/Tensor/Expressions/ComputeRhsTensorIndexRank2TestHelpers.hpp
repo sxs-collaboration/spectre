@@ -18,7 +18,7 @@ namespace TestHelpers::TensorExpressions {
 /// their generic indices
 ///
 /// \details `TensorIndexA` and `TensorIndexB` can be any type of TensorIndex
-/// and are not necessarily `ti_a_t` and `ti_b_t`. The "A" and "B" suffixes just
+/// and are not necessarily `ti_a` and `ti_b`. The "A" and "B" suffixes just
 /// denote the ordering of the generic indices of the RHS tensor expression. In
 /// the RHS tensor expression, it means `TensorIndexA` is the first index used
 /// and `TensorIndexB` is the second index used.
@@ -81,7 +81,7 @@ void test_compute_rhs_tensor_index_rank_2_impl(
 /// - <1, 1> (`test_compute_rhs_tensor_index_rank_2_symmetric`)
 ///
 /// \details `TensorIndexA` and `TensorIndexB` can be any type of TensorIndex
-/// and are not necessarily `ti_a_t` and `ti_b_t`. The "A" and "B" suffixes just
+/// and are not necessarily `ti_a` and `ti_b`. The "A" and "B" suffixes just
 /// denote the ordering of the generic indices of the RHS tensor expression. In
 /// the RHS tensor expression, it means `TensorIndexA` is the first index used
 /// and `TensorIndexB` is the second index used.

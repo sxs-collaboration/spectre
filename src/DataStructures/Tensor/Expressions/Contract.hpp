@@ -319,12 +319,13 @@ struct TensorContract
   /// pair of indices being contracted into the list of contracted LHS
   /// TensorIndexs
   ///
-  /// Example: If we contract RHS tensor \f$R^{a}{}_{bac}\f$ to LHS tensor
-  /// \f$L_{cb}\f$, the RHS list of generic indices (`ArgsList`) is
-  /// `tmpl::list<ti_A_t, ti_b_t, ti_a_t, ti_c_t>` and the LHS generic indices
-  /// (`LhsIndices`) are `ti_c_t, ti_b_t`. `ti_A_t` and `ti_a_t` are inserted
-  /// into `LhsIndices` at their positions from the RHS, which yields:
-  /// `tmpl::list<ti_A_t, ti_c_t, ti_a_t, ti_b_t>`.
+  /// Example: Let `ti_a_t` denote the type of `ti_a`, and apply the same
+  /// convention for other generic indices. If we contract RHS tensor
+  /// \f$R^{a}{}_{bac}\f$ to LHS tensor \f$L_{cb}\f$, the RHS list of generic
+  /// indices (`ArgsList`) is `tmpl::list<ti_A_t, ti_b_t, ti_a_t, ti_c_t>` and
+  /// the LHS generic indices (`LhsIndices`) are `ti_c_t, ti_b_t`. `ti_A_t` and
+  /// `ti_a_t` are inserted into `LhsIndices` at their positions from the RHS,
+  /// which yields: `tmpl::list<ti_A_t, ti_c_t, ti_a_t, ti_b_t>`.
   template <typename... LhsIndices>
   using get_uncontracted_lhs_tensorindex_list = tmpl::append<
       tmpl::front<tmpl::split_at<
@@ -423,8 +424,7 @@ struct TensorContract
   /// to sum for each contracted LHS component's storage index.
   ///
   /// \tparam LhsStructure the Structure of the contracted LHS tensor
-  /// \tparam LhsIndices the TensorIndexs of the contracted LHS tensor, e.g.
-  /// `ti_a_t`, `ti_b_t`, `ti_c_t`
+  /// \tparam LhsIndices the TensorIndexs of the contracted LHS tensor
   /// \param lhs_storage_index the storage index of the contracted LHS tensor
   /// component to retrieve
   /// \return the value of the component at `lhs_storage_index` in the
@@ -473,13 +473,13 @@ struct TensorContract
  * \details Given a list of values that represent an expression's generic index
  * encodings, this function looks to see if it can find a pair of values that
  * encode one generic index and the generic index with opposite valence, such as
- * `ti_A_t` and `ti_a_t`. This denotes a pair of indices that will need to be
+ * `ti_A` and `ti_a`. This denotes a pair of indices that will need to be
  * contracted. If there exists more than one such pair of indices in the
  * expression, the first pair of values found will be returned.
  *
  * For example, if we have tensor \f$R^{ab}{}_{ab}\f$ represented by the tensor
  * expression, `R(ti_A, ti_B, ti_a, ti_b)`, then this will return the positions
- * of the pair of values encoding `ti_A_t` and `ti_a_t`, which would be (0, 2)
+ * of the pair of values encoding `ti_A` and `ti_a`, which would be (0, 2)
  *
  * @param tensorindex_values the TensorIndex values of a tensor expression
  * @return the positions of the first pair of TensorIndex values to contract

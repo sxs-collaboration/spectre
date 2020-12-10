@@ -56,11 +56,12 @@ static constexpr size_t max_sentinel = 2000;
  * Used to denote a tensor index in a tensor slot. This allows the following
  * type of expressions to work:
  * \code{.cpp}
- * auto T = evaluate<ti_a_t, ti_b_t>(F(ti_a, ti_b) + S(ti_b, ti_a));
+ * auto T = evaluate<ti_a, ti_b>(F(ti_a, ti_b) + S(ti_b, ti_a));
  * \endcode
- * where `using ti_a_t = TensorIndex<0>;` and `TensorIndex<0> ti_a;`, that is,
- * `ti_a` and `ti_b` are place holders for objects of type `TensorIndex<0>` and
- * `TensorIndex<1>` respectively.
+ * where `decltype(ti_a) == TensorIndex<0>` and
+ * `decltype(ti_b) == TensorIndex<1>`. That is, `ti_a` and `ti_b` are
+ * placeholders for objects of type `TensorIndex<0>` and `TensorIndex<1>`,
+ * respectively.
  */
 template <std::size_t I, Requires<(I < max_sentinel)> = nullptr>
 struct TensorIndex {
@@ -84,10 +85,9 @@ struct TensorIndex {
  * spatial. This function returns the value that corresponds to the encoding of
  * the TensorIndex with the same index type, but opposite valence.
  *
- * For example, 0 is the TensorIndex value for `ti_a_t`. If `i == 0`,
- * then 500 will be returned, which is the TensorIndex value for `ti_A_t`.
- * If `i == 500` (representing `ti_A_t`), then 0 (representing `ti_a_t`) is
- * returned.
+ * For example, 0 is the TensorIndex value for `ti_a`. If `i == 0`, then 500
+ * will be returned, which is the TensorIndex value for `ti_A`. If `i == 500`
+ * (representing `ti_A`), then 0 (representing `ti_a`) is returned.
  *
  * @param i a TensorIndex value that represents a generic index
  * @return the TensorIndex value that encodes the generic index with the
@@ -114,55 +114,30 @@ get_tensorindex_value_with_opposite_valence(const size_t i) noexcept {
  * Available tensor indices to use in a Tensor Expression.
  * \snippet Test_AddSubtract.cpp use_tensor_index
  */
-static TensorIndex<0> ti_a{};
-static TensorIndex<upper_sentinel> ti_A{};
-static TensorIndex<1> ti_b{};
-static TensorIndex<upper_sentinel + 1> ti_B{};
-static TensorIndex<2> ti_c{};
-static TensorIndex<upper_sentinel + 2> ti_C{};
-static TensorIndex<3> ti_d{};
-static TensorIndex<upper_sentinel + 3> ti_D{};
-static TensorIndex<4> ti_e{};
-static TensorIndex<upper_sentinel + 4> ti_E{};
-static TensorIndex<5> ti_f{};
-static TensorIndex<upper_sentinel + 5> ti_F{};
-static TensorIndex<6> ti_g{};
-static TensorIndex<upper_sentinel + 6> ti_G{};
-static TensorIndex<7> ti_h{};
-static TensorIndex<upper_sentinel + 7> ti_H{};
-static TensorIndex<spatial_sentinel> ti_i{};
-static TensorIndex<upper_spatial_sentinel> ti_I{};
-static TensorIndex<spatial_sentinel + 1> ti_j{};
-static TensorIndex<upper_spatial_sentinel + 1> ti_J{};
-static TensorIndex<spatial_sentinel + 2> ti_k{};
-static TensorIndex<upper_spatial_sentinel + 2> ti_K{};
-static TensorIndex<spatial_sentinel + 3> ti_l{};
-static TensorIndex<upper_spatial_sentinel + 3> ti_L{};
-
-using ti_a_t = decltype(ti_a);
-using ti_A_t = decltype(ti_A);
-using ti_b_t = decltype(ti_b);
-using ti_B_t = decltype(ti_B);
-using ti_c_t = decltype(ti_c);
-using ti_C_t = decltype(ti_C);
-using ti_d_t = decltype(ti_d);
-using ti_D_t = decltype(ti_D);
-using ti_e_t = decltype(ti_e);
-using ti_E_t = decltype(ti_E);
-using ti_f_t = decltype(ti_f);
-using ti_F_t = decltype(ti_F);
-using ti_g_t = decltype(ti_g);
-using ti_G_t = decltype(ti_G);
-using ti_h_t = decltype(ti_h);
-using ti_H_t = decltype(ti_H);
-using ti_i_t = decltype(ti_i);
-using ti_I_t = decltype(ti_I);
-using ti_j_t = decltype(ti_j);
-using ti_J_t = decltype(ti_J);
-using ti_k_t = decltype(ti_k);
-using ti_K_t = decltype(ti_K);
-using ti_l_t = decltype(ti_l);
-using ti_L_t = decltype(ti_L);
+static constexpr TensorIndex<0> ti_a{};
+static constexpr TensorIndex<upper_sentinel> ti_A{};
+static constexpr TensorIndex<1> ti_b{};
+static constexpr TensorIndex<upper_sentinel + 1> ti_B{};
+static constexpr TensorIndex<2> ti_c{};
+static constexpr TensorIndex<upper_sentinel + 2> ti_C{};
+static constexpr TensorIndex<3> ti_d{};
+static constexpr TensorIndex<upper_sentinel + 3> ti_D{};
+static constexpr TensorIndex<4> ti_e{};
+static constexpr TensorIndex<upper_sentinel + 4> ti_E{};
+static constexpr TensorIndex<5> ti_f{};
+static constexpr TensorIndex<upper_sentinel + 5> ti_F{};
+static constexpr TensorIndex<6> ti_g{};
+static constexpr TensorIndex<upper_sentinel + 6> ti_G{};
+static constexpr TensorIndex<7> ti_h{};
+static constexpr TensorIndex<upper_sentinel + 7> ti_H{};
+static constexpr TensorIndex<spatial_sentinel> ti_i{};
+static constexpr TensorIndex<upper_spatial_sentinel> ti_I{};
+static constexpr TensorIndex<spatial_sentinel + 1> ti_j{};
+static constexpr TensorIndex<upper_spatial_sentinel + 1> ti_J{};
+static constexpr TensorIndex<spatial_sentinel + 2> ti_k{};
+static constexpr TensorIndex<upper_spatial_sentinel + 2> ti_K{};
+static constexpr TensorIndex<spatial_sentinel + 3> ti_l{};
+static constexpr TensorIndex<upper_spatial_sentinel + 3> ti_L{};
 // @}
 
 namespace tt {
@@ -538,7 +513,7 @@ struct TensorExpression<Derived, DataType, Symm, tmpl::list<Indices...>,
   /// \tparam LhsStructure the Structure of the Tensor on the LHS of the
   /// TensorExpression
   /// \tparam LhsIndices the TensorIndexs of the Tensor on the LHS of the tensor
-  /// expression, e.g. `ti_a_t`, `ti_b_t`, `ti_c_t`
+  /// expression
   /// \param lhs_storage_index the storage index of the LHS tensor component to
   /// retrieve
   /// \return the value of the DataType of the component at `lhs_storage_index`

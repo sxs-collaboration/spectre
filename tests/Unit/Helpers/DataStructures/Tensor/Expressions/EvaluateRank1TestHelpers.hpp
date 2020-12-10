@@ -23,10 +23,10 @@ namespace TestHelpers::TensorExpressions {
 /// \tparam DataType the type of data being stored in the Tensors
 /// \tparam TensorIndexTypeList the Tensors' typelist containing their
 /// \ref SpacetimeIndex "TensorIndexType"
-/// \param tensorindex the TensorIndex used in the the TensorExpression,
+/// \tparam TensorIndex the TensorIndex used in the the TensorExpression,
 /// e.g. `ti_a`
-template <typename DataType, typename TensorIndexTypeList, typename TensorIndex>
-void test_evaluate_rank_1_impl(const TensorIndex& tensorindex) noexcept {
+template <typename DataType, typename TensorIndexTypeList, auto& TensorIndex>
+void test_evaluate_rank_1_impl() noexcept {
   Tensor<DataType, Symmetry<1>, TensorIndexTypeList> R_a(5_st);
   std::iota(R_a.begin(), R_a.end(), 0.0);
 
@@ -34,7 +34,7 @@ void test_evaluate_rank_1_impl(const TensorIndex& tensorindex) noexcept {
   // Use explicit type (vs auto) so the compiler checks return type of
   // `evaluate`
   const Tensor<DataType, Symmetry<1>, TensorIndexTypeList> L_a =
-      ::TensorExpressions::evaluate<TensorIndex>(R_a(tensorindex));
+      ::TensorExpressions::evaluate<TensorIndex>(R_a(TensorIndex));
 
   const size_t dim = tmpl::at_c<TensorIndexTypeList, 0>::dim;
 
@@ -51,19 +51,19 @@ void test_evaluate_rank_1_impl(const TensorIndex& tensorindex) noexcept {
 /// \tparam DataType the type of data being stored in the Tensors
 /// \tparam TensorIndexType the Tensors' \ref SpacetimeIndex "TensorIndexType"
 /// \tparam Valence the valence of the Tensors' index
-/// \param tensorindex the TensorIndex used in the the TensorExpression,
+/// \tparam TensorIndex the TensorIndex used in the the TensorExpression,
 /// e.g. `ti_a`
 template <typename DataType,
           template <size_t, UpLo, typename> class TensorIndexType, UpLo Valence,
-          typename TensorIndex>
-void test_evaluate_rank_1(const TensorIndex& tensorindex) noexcept {
+          auto& TensorIndex>
+void test_evaluate_rank_1() noexcept {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define CALL_TEST_EVALUATE_RANK_1_IMPL(_, data)                                \
-  test_evaluate_rank_1_impl<                                                   \
-      DataType, index_list<TensorIndexType<DIM(data), Valence, FRAME(data)>>>( \
-      tensorindex);
+#define CALL_TEST_EVALUATE_RANK_1_IMPL(_, data)                               \
+  test_evaluate_rank_1_impl<                                                  \
+      DataType, index_list<TensorIndexType<DIM(data), Valence, FRAME(data)>>, \
+      TensorIndex>();
 
   GENERATE_INSTANTIATIONS(CALL_TEST_EVALUATE_RANK_1_IMPL, (1, 2, 3),
                           (Frame::Grid, Frame::Inertial))

@@ -18,8 +18,8 @@ namespace TestHelpers::TensorExpressions {
 /// their generic indices
 ///
 /// \details `TensorIndexA`, `TensorIndexB`, `TensorIndexC`, and  `TensorIndexD`
-/// can be any type of TensorIndex and are not necessarily `ti_a_t`, `ti_b_t`,
-/// `ti_c_t`, and `ti_d_t`. The "A", "B", "C", and "D" suffixes just denote the
+/// can be any type of TensorIndex and are not necessarily `ti_a`, `ti_b`,
+/// `ti_c`, and `ti_d`. The "A", "B", "C", and "D" suffixes just denote the
 /// ordering of the generic indices of the RHS tensor expression. In the RHS
 /// tensor expression, it means `TensorIndexA` is the first index used,
 /// `TensorIndexB` is the second index used, `TensorIndexC` is the third index

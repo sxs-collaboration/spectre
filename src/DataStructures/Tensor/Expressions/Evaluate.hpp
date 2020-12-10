@@ -28,20 +28,23 @@ namespace TensorExpressions {
  * Given two rank 2 Tensors `R` and `S` with index order (a, b), add them
  * together and generate the resultant LHS Tensor `L` with index order (b, a):
  * \code{.cpp}
- * auto L = TensorExpressions::evaluate<ti_b_t, ti_a_t>(
+ * auto L = TensorExpressions::evaluate<ti_b, ti_a>(
  *     R(ti_a, ti_b) + S(ti_a, ti_b));
  * \endcode
  * \metareturns Tensor
  *
  * This represents evaluating: \f$L_{ba} = \R_{ab} + S_{ab}\f$
  *
- * @tparam LhsTensorIndices the TensorIndex of the Tensor on the LHS of the
- * tensor expression, e.g. `ti_a_t`, `ti_b_t`, `ti_c_t`
+ * Note: `LhsTensorIndices` must be passed by reference because non-type
+ * template parameters cannot be class types until C++20.
+ *
+ * @tparam LhsTensorIndices the TensorIndexs of the Tensor on the LHS of the
+ * tensor expression, e.g. `ti_a`, `ti_b`, `ti_c`
  * @tparam T the type of the RHS TensorExpression
  * @param rhs_te the RHS TensorExpression to be evaluated
  * @return the LHS Tensor with index order specified by LhsTensorIndices
  */
-template <typename... LhsTensorIndices, typename T,
+template <auto&... LhsTensorIndices, typename T,
           Requires<std::is_base_of<Expression, T>::value> = nullptr>
 auto evaluate(const T& rhs_te) {
   static_assert(
@@ -51,14 +54,15 @@ auto evaluate(const T& rhs_te) {
   using rhs = tmpl::transform<tmpl::remove_duplicates<typename T::args_list>,
                               std::decay<tmpl::_1>>;
   static_assert(
-      tmpl::equal_members<tmpl::list<std::decay_t<LhsTensorIndices>...>,
-                          rhs>::value,
+      tmpl::equal_members<
+          tmpl::list<std::decay_t<decltype(LhsTensorIndices)>...>, rhs>::value,
       "All indices on the LHS of a Tensor Expression (that is, those specified "
       "in evaluate<Indices::...>) must be present on the RHS of the expression "
       "as well.");
 
   using rhs_tensorindex_list = typename T::args_list;
-  using lhs_tensorindex_list = tmpl::list<LhsTensorIndices...>;
+  using lhs_tensorindex_list =
+      tmpl::list<std::decay_t<decltype(LhsTensorIndices)>...>;
   using rhs_symmetry = typename T::symmetry;
   using rhs_tensorindextype_list = typename T::index_list;
 
@@ -71,6 +75,6 @@ auto evaluate(const T& rhs_te) {
   // Construct and return LHS tensor
   return Tensor<typename T::type, typename lhs_tensor::symmetry,
                 typename lhs_tensor::tensorindextype_list>(
-      rhs_te, tmpl::list<LhsTensorIndices...>{});
+      rhs_te, lhs_tensorindex_list{});
 }
 }  // namespace TensorExpressions
