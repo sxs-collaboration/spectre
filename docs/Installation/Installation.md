@@ -21,7 +21,7 @@ environment differently, read on!
 
 * [GCC](https://gcc.gnu.org/) 7.0 or later,
 [Clang](https://clang.llvm.org/) 8.0 or later, or AppleClang 11.0.0 or later
-* [CMake](https://cmake.org/) 3.8.0 or later
+* [CMake](https://cmake.org/) 3.12.0 or later
 * [Charm++](http://charm.cs.illinois.edu/) 6.10.2
 * [Git](https://git-scm.com/)
 * BLAS (e.g. [OpenBLAS](http://www.openblas.net))
