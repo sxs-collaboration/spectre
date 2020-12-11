@@ -566,4 +566,16 @@ template <>
 Spectral::Quadrature
 Options::create_from_yaml<Spectral::Quadrature>::create<void>(
     const Options::Option& options);
+
+template <>
+struct Options::create_from_yaml<Spectral::Basis> {
+  template <typename Metavariables>
+  static Spectral::Basis create(const Options::Option& options) {
+    return create<void>(options);
+  }
+};
+
+template <>
+Spectral::Basis Options::create_from_yaml<Spectral::Basis>::create<void>(
+    const Options::Option& options);
 /// \endcond

@@ -24,8 +24,7 @@
 
 namespace Spectral {
 
-std::ostream& operator<<(std::ostream& os,
-                         const Basis& basis) noexcept {
+std::ostream& operator<<(std::ostream& os, const Basis& basis) noexcept {
   switch (basis) {
     case Basis::Legendre:
       return os << "Legendre";
@@ -33,7 +32,8 @@ std::ostream& operator<<(std::ostream& os,
       return os << "Chebyshev";
     case Basis::FiniteDifference:
       return os << "FiniteDifference";
-    default: ERROR("Invalid basis");
+    default:
+      ERROR("Invalid basis");
   }
 }
 
@@ -48,7 +48,8 @@ std::ostream& operator<<(std::ostream& os,
       return os << "CellCentered";
     case Quadrature::FaceCentered:
       return os << "FaceCentered";
-    default: ERROR("Invalid quadrature");
+    default:
+      ERROR("Invalid quadrature");
   }
 }
 
@@ -83,8 +84,8 @@ const auto& precomputed_spectral_quantity(const size_t num_points) noexcept {
 
 template <Basis BasisType, Quadrature QuadratureType>
 struct CollocationPointsAndWeightsGenerator {
-  std::pair<DataVector, DataVector> operator()(const size_t num_points) const
-      noexcept {
+  std::pair<DataVector, DataVector> operator()(
+      const size_t num_points) const noexcept {
     return compute_collocation_points_and_weights<BasisType, QuadratureType>(
         num_points);
   }
@@ -511,7 +512,7 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f,
   const return_type& function_name(const Mesh<1>& mesh) noexcept {       \
     return get_spectral_quantity_for_mesh(                               \
         [](const auto basis, const auto quadrature,                      \
-           const size_t num_points) noexcept->const return_type& {       \
+           const size_t num_points) noexcept -> const return_type& {     \
           return function_name</* NOLINT */ decltype(basis)::value,      \
                                decltype(quadrature)::value>(num_points); \
         },                                                               \
@@ -535,7 +536,7 @@ Matrix interpolation_matrix(const Mesh<1>& mesh,
                             const T& target_points) noexcept {
   return get_spectral_quantity_for_mesh(
       [target_points](const auto basis, const auto quadrature,
-                      const size_t num_points) noexcept->Matrix {
+                      const size_t num_points) noexcept -> Matrix {
         return interpolation_matrix<decltype(basis)::value,
                                     decltype(quadrature)::value>(num_points,
                                                                  target_points);
@@ -612,11 +613,33 @@ Options::create_from_yaml<Spectral::Quadrature>::create<void>(
     return Spectral::Quadrature::Gauss;
   } else if ("GaussLobatto" == type_read) {
     return Spectral::Quadrature::GaussLobatto;
+  } else if ("CellCentered" == type_read) {
+    return Spectral::Quadrature::CellCentered;
+  } else if ("FaceCentered" == type_read) {
+    return Spectral::Quadrature::FaceCentered;
   }
   PARSE_ERROR(options.context(),
               "Failed to convert \""
                   << type_read
                   << "\" to Spectral::Quadrature. Must be one "
-                     "of Gauss or GaussLobatto.");
+                     "of Gauss, GaussLobatto, CellCentered, or FaceCentered.");
+}
+
+template <>
+Spectral::Basis Options::create_from_yaml<Spectral::Basis>::create<void>(
+    const Options::Option& options) {
+  const auto type_read = options.parse_as<std::string>();
+  if ("Chebyshev" == type_read) {
+    return Spectral::Basis::Chebyshev;
+  } else if ("Legendre" == type_read) {
+    return Spectral::Basis::Legendre;
+  } else if ("FiniteDifference" == type_read) {
+    return Spectral::Basis::FiniteDifference;
+  }
+  PARSE_ERROR(options.context(),
+              "Failed to convert \""
+                  << type_read
+                  << "\" to Spectral::Basis. Must be one "
+                     "of Chebyshev, Legendre, or FiniteDifference.");
 }
 /// \endcond

@@ -199,8 +199,8 @@ class Mesh {
    * \see slice_through() The templated overload of this function
    */
   template <size_t SliceDim, Requires<(SliceDim <= Dim)> = nullptr>
-  Mesh<SliceDim> slice_through(const std::array<size_t, SliceDim>& dims) const
-      noexcept;
+  Mesh<SliceDim> slice_through(
+      const std::array<size_t, SliceDim>& dims) const noexcept;
 
   /*!
    * \brief Returns the Meshes representing 1D slices of this Mesh.
