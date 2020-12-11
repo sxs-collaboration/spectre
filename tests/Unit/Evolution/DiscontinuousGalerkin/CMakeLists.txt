@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Actions/Test_ComputeTimeDerivative.cpp
   Initialization/Test_Mortars.cpp
   Initialization/Test_QuadratureTag.cpp
+  Test_BoundaryCorrectionsHelper.cpp
   Test_InboxTags.cpp
   Test_LiftFromBoundary.cpp
   Test_MortarData.cpp
