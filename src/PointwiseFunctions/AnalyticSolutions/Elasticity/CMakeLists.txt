@@ -23,10 +23,13 @@ spectre_target_headers(
 
 target_link_libraries(
   ${LIBRARY}
-  PUBLIC ConstitutiveRelations
-  PUBLIC DataStructures
-  PUBLIC ErrorHandling
-  PUBLIC Integration
-  PUBLIC Utilities
-  PRIVATE GSL::gsl
+  PUBLIC
+  ConstitutiveRelations
+  DataStructures
+  Elasticity
+  ErrorHandling
+  Options
+  Utilities
+  PRIVATE
+  Integration
   )

@@ -127,8 +127,7 @@ SPECTRE_TEST_CASE(
 
   {
     INFO("Test elasticity system with half-space mirror");
-    // Verify that the solution numerically solves the system and that the
-    // discretization error decreases exponentially with polynomial order
+    // Verify that the solution numerically solves the system
     using system = Elasticity::FirstOrderSystem<dim>;
     const typename system::fluxes fluxes_computer{};
     using AffineMap = domain::CoordinateMaps::Affine;
@@ -136,13 +135,13 @@ SPECTRE_TEST_CASE(
         domain::CoordinateMaps::ProductOf3Maps<AffineMap, AffineMap, AffineMap>;
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap3D>
         coord_map{{{-1., 1., 0., 0.5}, {-1., 1., 0., 0.5}, {-1., 1., 0., 0.5}}};
-    FirstOrderEllipticSolutionsTestHelpers::verify_smooth_solution<system>(
-        solution, fluxes_computer, coord_map, 1.e4, 1.,
-        [&constitutive_relation, &coord_map](const Mesh<3>& mesh) {
-          const auto logical_coords = logical_coordinates(mesh);
-          const auto inertial_coords = coord_map(logical_coords);
-          return std::make_tuple(constitutive_relation, inertial_coords);
-        });
+    const Mesh<3> mesh{12, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+    const auto logical_coords = logical_coordinates(mesh);
+    const auto inertial_coords = coord_map(logical_coords);
+    FirstOrderEllipticSolutionsTestHelpers::verify_solution<system>(
+        solution, fluxes_computer, mesh, coord_map, 0.05,
+        std::make_tuple(constitutive_relation, inertial_coords));
   };
 }
 
