@@ -6,7 +6,7 @@
 # directory that are tracked by Git. I.e.
 #   git ls-tree --full-tree --name-only HEAD
 set(SPECTRE_FORMALINE_LOCATIONS
-  ".clang-format;cmake;CMakeLists.txt;containers;docs;external;"
+  ".clang-format;.clang-tidy;cmake;CMakeLists.txt;containers;docs;external;"
   ".github;.gitignore;LICENSE.txt;Metadata.yaml;README.md;src;.style.yapf;"
   "support;tests;tools;.travis;.travis.yml")
 

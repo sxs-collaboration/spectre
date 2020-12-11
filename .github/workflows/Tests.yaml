@@ -146,7 +146,7 @@ jobs:
 
           echo "Running clang-tidy relative to: $UPSTREAM_HASH\n"
 
-          make clang-tidy-hash HASH=$UPSTREAM_HASH
+          make clang-tidy-hash HASH=$UPSTREAM_HASH NUM_THREADS=2
 
   # Build the documentation and check for problems, then upload as a workflow
   # artifact.
