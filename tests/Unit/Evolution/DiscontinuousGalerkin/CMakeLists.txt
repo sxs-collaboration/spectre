@@ -7,6 +7,7 @@ set(LIBRARY "Test_EvolutionDg")
 
 set(LIBRARY_SOURCES
   Actions/Test_ComputeTimeDerivative.cpp
+  Actions/Test_NormalCovectorAndMagnitude.cpp
   Initialization/Test_Mortars.cpp
   Initialization/Test_QuadratureTag.cpp
   Test_BoundaryCorrectionsHelper.cpp
@@ -14,6 +15,7 @@ set(LIBRARY_SOURCES
   Test_LiftFromBoundary.cpp
   Test_MortarData.cpp
   Test_MortarTags.cpp
+  Test_NormalVectorTags.cpp
   Test_ProjectToBoundary.cpp
   )
 

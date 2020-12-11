@@ -10,6 +10,7 @@ spectre_target_headers(
   LiftFromBoundary.hpp
   MortarData.hpp
   MortarTags.hpp
+  NormalVectorTags.hpp
   ProjectToBoundary.hpp
   )
 
