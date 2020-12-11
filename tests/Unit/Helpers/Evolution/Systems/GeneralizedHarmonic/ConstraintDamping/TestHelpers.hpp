@@ -5,13 +5,18 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
+#include <limits>
 #include <memory>
 #include <pup.h>
 #include <string>
 #include <tuple>
 #include <utility>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/DampingFunction.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -34,11 +39,7 @@ void check_impl(
     const std::array<std::pair<double, double>, 1> random_value_bounds,
     const MemberArgs&... member_args) noexcept {
   using GhDampingFunc =
-      ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<VolumeDim,
-                                                                  Fr>;
-  using CallOperatorFunction =
-      Scalar<T> (GhDampingFunc::*)(const tnsr::I<T, VolumeDim, Fr>&)
-          const noexcept;
+      ::GeneralizedHarmonic::ConstraintDamping::DampingFunction<VolumeDim, Fr>;
 
   const auto member_args_tuple = std::make_tuple(member_args...);
   const auto helper =
@@ -46,14 +47,41 @@ void check_impl(
        &used_for_size](
           const std::unique_ptr<GhDampingFunc>& gh_damping_function) noexcept {
         INFO("Testing call operator...")
+
+        // Make a lambda that calls the damping function's call operator
+        // with a hard-coded FunctionsOfTime, since check_with_random_values
+        // cannot convert a FunctionsOfTime into a python type.
+        // The FunctionsOfTime contains a single FunctionOfTime
+        // \f$f(t) = a_0 + a_1 t + a_2 t^2 + a_3 t^3\f$, where
+        // \f$a_0 = 1.0\f$, \f$a_1 = 0.2\f$, \f$a_3 = 0.03,\f$ and
+        // \f$a_4 = 0.004\f$. The corresponding python function should use
+        // the same hard-coded coefficients to evaluate \f$f(t)\f$.
+        // Note that the FunctionOfTime never expires.
+        const auto damping_function_call_operator_helper =
+            [&gh_damping_function](const tnsr::I<T, VolumeDim, Fr>& coordinates,
+                                   const double time) {
+              std::unordered_map<
+                  std::string,
+                  std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
+                  functions_of_time{};
+              functions_of_time["ExpansionFactor"] = std::make_unique<
+                  ::domain::FunctionsOfTime::PiecewisePolynomial<3>>(
+                  0.0,
+                  std::array<DataVector, 4>{{{1.0}, {0.2}, {0.03}, {0.004}}},
+                  std::numeric_limits<double>::max());
+              return gh_damping_function->operator()(coordinates, time,
+                                                     functions_of_time);
+            };
+
         pypp::check_with_random_values<1>(
-            static_cast<CallOperatorFunction>(&GhDampingFunc::operator()),
-            *gh_damping_function, "TestFunctions",
+            &decltype(damping_function_call_operator_helper)::operator(),
+            damping_function_call_operator_helper, "TestFunctions",
             python_function_prefix + "_call_operator", random_value_bounds,
             member_args_tuple, used_for_size);
         INFO("Done testing call operator...")
         INFO("Done\n\n")
       };
+
   helper(in_gh_damping_function);
   helper(serialize_and_deserialize(in_gh_damping_function));
 }

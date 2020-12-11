@@ -5,6 +5,8 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
+#include <memory>
 #include <random>
 #include <string>
 #include <type_traits>
@@ -19,6 +21,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
@@ -57,14 +60,15 @@ struct component {
   using initial_tags = tmpl::conditional_t<
       metavariables::use_rollon,
       tmpl::list<
-          Tags::Time, domain::Tags::Mesh<Dim>,
+          domain::Tags::FunctionsOfTime, Tags::Time, domain::Tags::Mesh<Dim>,
           domain::Tags::Coordinates<Dim, Frame::Inertial>,
           domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                       Frame::Inertial>,
           domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>,
           typename Metavariables::variables_tag>,
       tmpl::list<
-          ::Initialization::Tags::InitialTime, domain::Tags::Mesh<Dim>,
+          ::Initialization::Tags::InitialTime, Tags::Time,
+          domain::Tags::Mesh<Dim>,
           domain::Tags::Coordinates<Dim, Frame::Logical>,
           domain::Tags::Coordinates<Dim, Frame::Inertial>,
           domain::Tags::ElementMap<Metavariables::volume_dim, Frame::Grid>,
@@ -227,7 +231,10 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
   if constexpr (UseRollon) {
     ActionTesting::emplace_component_and_initialize<comp>(
         &runner, 0,
-        {time, mesh, inertial_coords,
+        {std::unordered_map<
+             std::string,
+             std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{},
+         time, mesh, inertial_coords,
          domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
              domain::CoordinateMaps::Identity<Dim>{}),
          inv_jac, evolved_vars});
@@ -239,7 +246,7 @@ void test(const gsl::not_null<std::mt19937*> generator) noexcept {
 
     ActionTesting::emplace_component_and_initialize<comp>(
         &runner, 0,
-        {time, mesh, logical_coords, inertial_coords,
+        {time, time, mesh, logical_coords, inertial_coords,
          ElementMap<Dim, Frame::Grid>{
              ElementId<Dim>{0},
              domain::make_coordinate_map_base<Frame::Logical, Frame::Grid>(

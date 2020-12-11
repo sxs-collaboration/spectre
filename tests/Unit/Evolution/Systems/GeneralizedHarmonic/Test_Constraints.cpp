@@ -22,6 +22,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/DampingFunction.hpp"
@@ -51,6 +52,7 @@
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -851,9 +853,14 @@ void test_constraint_compute_items(
   constexpr double width = 11.3137084989848;  // sqrt(128.0)
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
 
+  std::unordered_map<std::string,
+                     std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
+      functions_of_time{};
+
   // Insert into databox
   const auto box = db::create<
       db::AddSimpleTags<
+          domain::Tags::FunctionsOfTime, ::Tags::Time,
           domain::Tags::Coordinates<3, Frame::Inertial>,
           gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
           gr::Tags::Lapse<DataVector>,
@@ -922,7 +929,10 @@ void test_constraint_compute_items(
           GeneralizedHarmonic::Tags::FConstraintCompute<3, Frame::Inertial>,
           GeneralizedHarmonic::Tags::ConstraintEnergyCompute<3,
                                                              Frame::Inertial>>>(
-      x, spatial_metric, lapse, shift, deriv_spatial_metric, deriv_lapse,
+      std::move(functions_of_time),
+      std::numeric_limits<double>::signaling_NaN(), x,
+
+      spatial_metric, lapse, shift, deriv_spatial_metric, deriv_lapse,
       deriv_shift, time_deriv_spatial_metric, time_deriv_lapse,
       time_deriv_shift, deriv_gauge_source, time_deriv_gauge_source,
       deriv_spacetime_metric, deriv_phi, deriv_pi,
@@ -946,27 +956,33 @@ void test_constraint_compute_items(
                   constant_02, amplitude_2, width, center))));
 
   // Compute tested quantities locally
+  std::unordered_map<std::string,
+                     std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
+      empty_functions_of_time{};
   Scalar<DataVector> gamma0{};
   GeneralizedHarmonic::ConstraintDamping::Tags::
       ConstraintGamma0Compute<3, Frame::Inertial>::function(
           make_not_null(&gamma0),
           GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<
               3, Frame::Inertial>{constant_02, amplitude_0, width, center},
-          x);
+          x, std::numeric_limits<double>::signaling_NaN(),
+          empty_functions_of_time);
   Scalar<DataVector> gamma1{};
   GeneralizedHarmonic::ConstraintDamping::Tags::
       ConstraintGamma1Compute<3, Frame::Inertial>::function(
           make_not_null(&gamma1),
           GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<
               3, Frame::Inertial>{constant_1, amplitude_1, width, center},
-          x);
+          x, std::numeric_limits<double>::signaling_NaN(),
+          empty_functions_of_time);
   Scalar<DataVector> gamma2{};
   GeneralizedHarmonic::ConstraintDamping::Tags::
       ConstraintGamma2Compute<3, Frame::Inertial>::function(
           make_not_null(&gamma2),
           GeneralizedHarmonic::ConstraintDamping::GaussianPlusConstant<
               3, Frame::Inertial>{constant_02, amplitude_2, width, center},
-          x);
+          x, std::numeric_limits<double>::signaling_NaN(),
+          empty_functions_of_time);
 
   const auto four_index_constraint =
       GeneralizedHarmonic::four_index_constraint(deriv_phi);

@@ -8,6 +8,8 @@
 #include <memory>
 #include <pup.h>
 #include <pup_stl.h>
+#include <string>
+#include <unordered_map>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
@@ -15,6 +17,12 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+
+/// \cond
+namespace domain::FunctionsOfTime {
+class FunctionOfTime;
+}  // namespace domain::FunctionsOfTime
+/// \endcond
 
 namespace GeneralizedHarmonic::ConstraintDamping {
 
@@ -51,12 +59,22 @@ Scalar<T> GaussianPlusConstant<VolumeDim, Fr>::apply_call_operator(
 
 template <size_t VolumeDim, typename Fr>
 Scalar<double> GaussianPlusConstant<VolumeDim, Fr>::operator()(
-    const tnsr::I<double, VolumeDim, Fr>& x) const noexcept {
+    const tnsr::I<double, VolumeDim, Fr>& x, const double /*time*/,
+    const std::unordered_map<
+        std::string,
+        std::unique_ptr<
+            domain::FunctionsOfTime::FunctionOfTime>>& /*funtions_of_time*/)
+    const noexcept {
   return apply_call_operator(centered_coordinates(x));
 }
 template <size_t VolumeDim, typename Fr>
 Scalar<DataVector> GaussianPlusConstant<VolumeDim, Fr>::operator()(
-    const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept {
+    const tnsr::I<DataVector, VolumeDim, Fr>& x, const double /*time*/,
+    const std::unordered_map<
+        std::string,
+        std::unique_ptr<
+            domain::FunctionsOfTime::FunctionOfTime>>& /*funtions_of_time*/)
+    const noexcept {
   return apply_call_operator(centered_coordinates(x));
 }
 
@@ -99,10 +117,15 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data)                                            \
-  template Scalar<DTYPE(data)> GeneralizedHarmonic::ConstraintDamping:: \
-      GaussianPlusConstant<DIM(data), FRAME(data)>::operator()(         \
-          const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x)        \
+#define INSTANTIATE(_, data)                                               \
+  template Scalar<DTYPE(data)> GeneralizedHarmonic::ConstraintDamping::    \
+      GaussianPlusConstant<DIM(data), FRAME(data)>::operator()(            \
+          const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x,           \
+          const double /*time*/,                                           \
+          const std::unordered_map<                                        \
+              std::string,                                                 \
+              std::unique_ptr<domain::FunctionsOfTime::                    \
+                                  FunctionOfTime>>& /*functions_of_time*/) \
           const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial),

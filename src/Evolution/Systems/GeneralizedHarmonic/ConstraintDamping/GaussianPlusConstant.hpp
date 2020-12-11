@@ -6,6 +6,9 @@
 #include <array>
 #include <cstddef>
 #include <limits>
+#include <memory>
+#include <string>
+#include <unordered_map>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/DampingFunction.hpp"
@@ -18,6 +21,9 @@ class DataVector;
 namespace PUP {
 class er;
 }  // namespace PUP
+namespace domain::FunctionsOfTime {
+class FunctionOfTime;
+}  // namespace domain::FunctionsOfTime
 /// \endcond
 
 namespace GeneralizedHarmonic::ConstraintDamping {
@@ -80,9 +86,17 @@ class GaussianPlusConstant : public DampingFunction<VolumeDim, Fr> {
       default;
 
   Scalar<double> operator()(
-      const tnsr::I<double, VolumeDim, Fr>& x) const noexcept override;
+      const tnsr::I<double, VolumeDim, Fr>& x, double time,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const noexcept override;
   Scalar<DataVector> operator()(
-      const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept override;
+      const tnsr::I<DataVector, VolumeDim, Fr>& x, double time,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const noexcept override;
 
   auto get_clone() const noexcept
       -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> override;
