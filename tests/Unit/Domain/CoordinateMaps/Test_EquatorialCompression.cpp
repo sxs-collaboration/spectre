@@ -25,7 +25,7 @@ void test_suite() {  // Set up random number generator
   std::uniform_real_distribution<> aspect_ratio_dis(0.1, 10);
 
   const double aspect_ratio = aspect_ratio_dis(gen);
-  CAPTURE_PRECISE(aspect_ratio);
+  CAPTURE(aspect_ratio);
   const CoordinateMaps::EquatorialCompression angular_compression_map(
       aspect_ratio);
   test_suite_for_map_on_unit_cube(angular_compression_map);
@@ -38,13 +38,13 @@ void test_radius() {
   std::uniform_real_distribution<> real_dis(-10, 10);
   std::uniform_real_distribution<> aspect_ratio_dis(0.1, 10);
   const double x = real_dis(gen);
-  CAPTURE_PRECISE(x);
+  CAPTURE(x);
   const double y = real_dis(gen);
-  CAPTURE_PRECISE(y);
+  CAPTURE(y);
   const double z = real_dis(gen);
-  CAPTURE_PRECISE(z);
+  CAPTURE(z);
   const double aspect_ratio = aspect_ratio_dis(gen);
-  CAPTURE_PRECISE(aspect_ratio);
+  CAPTURE(aspect_ratio);
   const std::array<double, 3> input_point{{x, y, z}};
   const CoordinateMaps::EquatorialCompression angular_compression_map(
       aspect_ratio);

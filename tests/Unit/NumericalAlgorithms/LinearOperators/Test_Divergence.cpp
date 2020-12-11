@@ -148,8 +148,6 @@ void test_divergence_impl(
   CHECK(Dim * div_fluxes.size() == fluxes.size());
   for (size_t n = 0; n < div_fluxes.size(); ++n) {
     // clang-tidy: pointer arithmetic
-    CAPTURE_PRECISE(div_fluxes.data()[n] -                         // NOLINT
-                    expected_div_fluxes.data()[n]);                // NOLINT
     CHECK(div_fluxes.data()[n] ==                                  // NOLINT
           approx(expected_div_fluxes.data()[n]).epsilon(1.e-11));  // NOLINT
   }
@@ -257,8 +255,6 @@ void test_divergence_compute_item_impl(
   CHECK(div_fluxes.size() == expected_div_fluxes.size());
   for (size_t n = 0; n < div_fluxes.size(); ++n) {
     // clang-tidy: pointer arithmetic
-    CAPTURE_PRECISE(div_fluxes.data()[n] -                         // NOLINT
-                    expected_div_fluxes.data()[n]);                // NOLINT
     CHECK(div_fluxes.data()[n] ==                                  // NOLINT
           approx(expected_div_fluxes.data()[n]).epsilon(1.e-11));  // NOLINT
   }

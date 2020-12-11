@@ -62,7 +62,6 @@ SPECTRE_TEST_CASE("Unit.Utilities.FractionUtilities.ContinuedFraction",
   {
     std::uniform_real_distribution<> dist(-10., 10.);
     const double value = dist(gen);
-    CAPTURE_PRECISE(value);
     // Set the scale because the fractional part of a negative number
     // (defined as `x - floor(x)`) can be larger than the number.
     auto approx_value = approx.scale(std::abs(std::floor(value)))(value);
@@ -74,8 +73,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.FractionUtilities.ContinuedFraction",
       summer.insert(*source);
       terms.push_back(*source);
       convergents.push_back(boost::rational_cast<double>(summer.value()));
-      CAPTURE_PRECISE(terms);
-      CAPTURE_PRECISE(convergents);
+      CAPTURE(terms);
+      CAPTURE(convergents);
 
       // Convergents to a continued fraction always alternate between
       // over- and underestimates.
@@ -88,8 +87,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.FractionUtilities.ContinuedFraction",
       }
       should_be_smaller = !should_be_smaller;
     }
-    CAPTURE_PRECISE(terms);
-    CAPTURE_PRECISE(convergents);
+    CAPTURE(terms);
+    CAPTURE(convergents);
     CHECK(convergents.back() == approx_value);
   }
 }

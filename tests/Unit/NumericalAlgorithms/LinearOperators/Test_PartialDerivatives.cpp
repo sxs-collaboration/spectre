@@ -277,7 +277,6 @@ void test_partial_derivatives_1d(const Mesh<1>& mesh) {
 
     const auto helper = [&](const auto& du) noexcept {
       for (size_t n = 0; n < du.size(); ++n) {
-        CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
         CHECK(du.data()[n] == approx(expected_du.data()[n]));   // NOLINT
       }
     };
@@ -328,7 +327,6 @@ void test_partial_derivatives_2d(const Mesh<2>& mesh) {
 
       const auto helper = [&](const auto& du) noexcept {
         for (size_t n = 0; n < du.size(); ++n) {
-          CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
           CHECK(du.data()[n] ==                                   // NOLINT
                 approx(expected_du.data()[n]).epsilon(1.e-13));   // NOLINT
         }
@@ -385,7 +383,6 @@ void test_partial_derivatives_3d(const Mesh<3>& mesh) {
 
         const auto helper = [&](const auto& du) noexcept {
           for (size_t n = 0; n < du.size(); ++n) {
-            CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
             CHECK(du.data()[n] ==                                   // NOLINT
                   approx(expected_du.data()[n]).epsilon(1.e-11));
           }
@@ -541,7 +538,6 @@ void test_partial_derivatives_compute_item(
 
   for (size_t n = 0; n < du.size(); ++n) {
     // clang-tidy: pointer arithmetic
-    CAPTURE_PRECISE(du.data()[n] - expected_du.data()[n]);  // NOLINT
     CHECK(du.data()[n] == approx(expected_du.data()[n]));   // NOLINT
   }
 

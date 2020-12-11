@@ -26,13 +26,13 @@ void test_wedge3d_all_directions() {
   std::uniform_real_distribution<> inner_dis(1, 3);
   std::uniform_real_distribution<> outer_dis(5.2, 7);
   const double inner_radius = inner_dis(gen);
-  CAPTURE_PRECISE(inner_radius);
+  CAPTURE(inner_radius);
   const double outer_radius = outer_dis(gen);
-  CAPTURE_PRECISE(outer_radius);
+  CAPTURE(outer_radius);
   const double inner_sphericity = unit_dis(gen);
-  CAPTURE_PRECISE(inner_sphericity);
+  CAPTURE(inner_sphericity);
   const double outer_sphericity = unit_dis(gen);
-  CAPTURE_PRECISE(outer_sphericity);
+  CAPTURE(outer_sphericity);
 
   using WedgeHalves = CoordinateMaps::Wedge3D::WedgeHalves;
   const std::array<WedgeHalves, 3> halves_array = {
@@ -167,30 +167,30 @@ void test_wedge3d_random_radii() {
   const std::array<double, 3> inner_corner{{-1.0, -1.0, -1.0}};
   const std::array<double, 3> outer_corner{{1.0, 1.0, 1.0}};
   const double random_inner_radius_lower_xi = inner_dis(gen);
-  CAPTURE_PRECISE(random_inner_radius_lower_xi);
+  CAPTURE(random_inner_radius_lower_xi);
   const double random_inner_radius_lower_eta = inner_dis(gen);
-  CAPTURE_PRECISE(random_inner_radius_lower_eta);
+  CAPTURE(random_inner_radius_lower_eta);
   const double random_inner_radius_lower_zeta = inner_dis(gen);
-  CAPTURE_PRECISE(random_inner_radius_lower_zeta);
+  CAPTURE(random_inner_radius_lower_zeta);
   const double random_inner_radius_upper_xi = inner_dis(gen);
-  CAPTURE_PRECISE(random_inner_radius_upper_xi);
+  CAPTURE(random_inner_radius_upper_xi);
   const double random_inner_radius_upper_eta = inner_dis(gen);
-  CAPTURE_PRECISE(random_inner_radius_upper_eta);
+  CAPTURE(random_inner_radius_upper_eta);
   const double random_inner_radius_upper_zeta = inner_dis(gen);
-  CAPTURE_PRECISE(random_inner_radius_upper_zeta);
+  CAPTURE(random_inner_radius_upper_zeta);
 
   const double random_outer_radius_lower_xi = outer_dis(gen);
-  CAPTURE_PRECISE(random_outer_radius_lower_xi);
+  CAPTURE(random_outer_radius_lower_xi);
   const double random_outer_radius_lower_eta = outer_dis(gen);
-  CAPTURE_PRECISE(random_outer_radius_lower_eta);
+  CAPTURE(random_outer_radius_lower_eta);
   const double random_outer_radius_lower_zeta = outer_dis(gen);
-  CAPTURE_PRECISE(random_outer_radius_lower_zeta);
+  CAPTURE(random_outer_radius_lower_zeta);
   const double random_outer_radius_upper_xi = outer_dis(gen);
-  CAPTURE_PRECISE(random_outer_radius_upper_xi);
+  CAPTURE(random_outer_radius_upper_xi);
   const double random_outer_radius_upper_eta = outer_dis(gen);
-  CAPTURE_PRECISE(random_outer_radius_upper_eta);
+  CAPTURE(random_outer_radius_upper_eta);
   const double random_outer_radius_upper_zeta = outer_dis(gen);
-  CAPTURE_PRECISE(random_outer_radius_upper_zeta);
+  CAPTURE(random_outer_radius_upper_zeta);
 
   using WedgeHalves = CoordinateMaps::Wedge3D::WedgeHalves;
   const auto wedge_directions = all_wedge_directions();
@@ -240,8 +240,8 @@ void test_wedge3d_random_radii() {
           {real_dis(gen), real_dis(gen), 1.0}};
       const std::array<double, 3> random_inner_face{
           {real_dis(gen), real_dis(gen), -1.0}};
-      CAPTURE_PRECISE(random_outer_face);
-      CAPTURE_PRECISE(random_inner_face);
+      CAPTURE(random_outer_face);
+      CAPTURE(random_inner_face);
 
       if (not with_logarithmic_map) {
         CHECK(map_lower_xi(random_inner_face)[0] ==

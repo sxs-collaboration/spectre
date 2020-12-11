@@ -10,6 +10,7 @@
 #include <charm++.h>
 #include <cstddef>
 #include <exception>
+#include <limits>
 #include <memory>
 #include <string>
 
@@ -27,6 +28,10 @@ RunTests::RunTests(CkArgMsg* msg) {
   register_run_tests_libs();
   Parallel::printf("%s", info_from_build().c_str());
   enable_floating_point_exceptions();
+  Catch::StringMaker<double>::precision =
+      std::numeric_limits<double>::max_digits10;
+  Catch::StringMaker<float>::precision =
+      std::numeric_limits<float>::max_digits10;
   const int result = Catch::Session().run(msg->argc, msg->argv);
   // In the case where we run all the non-failure tests at once we must ensure
   // that we only initialize and finalize the python env once. Initialization is

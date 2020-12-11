@@ -87,8 +87,8 @@ void test_cubic_spline(const F& function, const double lower_bound,
   }
   // Output information on the precision the interpolation achieved when it
   // failed to stay within the given tolerances
-  CAPTURE_PRECISE(max_error);
-  CAPTURE_PRECISE(max_error_interior);
+  CAPTURE(max_error);
+  CAPTURE(max_error_interior);
   // These checks are needed to trigger the max_error captures above
   CHECK(interpolant(max_error_x_value) ==
         custom_approx(function(max_error_x_value)));

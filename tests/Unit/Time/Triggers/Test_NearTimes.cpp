@@ -40,12 +40,12 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.NearTimes", "[Unit][Time]") {
       const auto check_calls = [&direction, &expected, &range, &unit](
           std::vector<double> trigger_times, const double time,
           const TimeDelta& time_step) noexcept {
-        CAPTURE_PRECISE(trigger_times);
-        CAPTURE_PRECISE(range);
-        CAPTURE_PRECISE(static_cast<int>(unit));
-        CAPTURE_PRECISE(static_cast<int>(direction));
-        CAPTURE_PRECISE(time);
-        CAPTURE_PRECISE(time_step);
+        CAPTURE(trigger_times);
+        CAPTURE(range);
+        CAPTURE(static_cast<int>(unit));
+        CAPTURE(static_cast<int>(direction));
+        CAPTURE(time);
+        CAPTURE(time_step);
         const std::unique_ptr<TriggerType> trigger =
             std::make_unique<Triggers::NearTimes<>>(
                 std::make_unique<TimeSequences::Specified<double>>(

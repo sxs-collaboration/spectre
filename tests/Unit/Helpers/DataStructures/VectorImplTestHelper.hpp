@@ -57,7 +57,7 @@ void vector_test_construct_and_assign(
   alg::for_each(value_size_constructed, [
     generated_value1, &value_size_constructed
   ](typename VectorType::value_type element) noexcept {
-    CAPTURE_PRECISE(value_size_constructed);
+    CAPTURE(value_size_constructed);
     CHECK(element == generated_value1);
   });
 

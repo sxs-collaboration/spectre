@@ -34,23 +34,6 @@ void SPECTRE_TEST_REGISTER_FUNCTION() noexcept {}  // NOLINT
 #endif  // SPECTRE_TEST_REGISTER_FUNCTION
 /// \endcond
 
-namespace TestHelpers_detail {
-template <typename T>
-std::string format_capture_precise(const T& t) noexcept {
-  std::ostringstream os;
-  os << std::scientific << std::setprecision(18) << t;
-  return os.str();
-}
-}  // namespace TestHelpers_detail
-
-/*!
- * \ingroup TestingFrameworkGroup
- * \brief Alternative to Catch's CAPTURE that prints more digits.
- */
-#define CAPTURE_PRECISE(variable) \
-  INFO(#variable << ": "          \
-                 << TestHelpers_detail::format_capture_precise(variable))
-
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief A replacement for Catch's TEST_CASE that silences clang-tidy warnings
@@ -161,8 +144,6 @@ template <typename T, typename = std::nullptr_t>
 struct check_iterable_approx {
   // clang-tidy: non-const reference
   static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
-    CAPTURE_PRECISE(a);
-    CAPTURE_PRECISE(b);
     CHECK(a == appx(b));
   }
 };
@@ -183,8 +164,8 @@ struct check_iterable_approx<
                 not tt::is_a_v<std::unordered_set, T>>> {
   // clang-tidy: non-const reference
   static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
-    CAPTURE_PRECISE(a);
-    CAPTURE_PRECISE(b);
+    CAPTURE(a);
+    CAPTURE(b);
     auto a_it = a.begin();
     auto b_it = b.begin();
     CHECK(a_it != a.end());
@@ -211,8 +192,6 @@ struct check_iterable_approx<T, Requires<tt::is_a_v<std::unordered_set, T>>> {
   // clang-tidy: non-const reference
   static void apply(const T& a, const T& b,
                     Approx& /*appx*/ = approx) {  // NOLINT
-    CAPTURE_PRECISE(a);
-    CAPTURE_PRECISE(b);
     // Approximate comparison of unordered sets is difficult
     CHECK(a == b);
   }
@@ -223,8 +202,8 @@ struct check_iterable_approx<
     T, Requires<tt::is_maplike_v<T> and tt::is_iterable_v<T>>> {
   // clang-tidy: non-const reference
   static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
-    CAPTURE_PRECISE(a);
-    CAPTURE_PRECISE(b);
+    CAPTURE(a);
+    CAPTURE(b);
     for (const auto& kv : a) {
       const auto& key = kv.first;
       try {
@@ -278,8 +257,8 @@ struct check_matrix_approx {
     // column, and takes its index as argument.
     CHECK(a.columns() == b.columns());
     for (size_t j = 0; j < a.columns(); j++) {
-      CAPTURE_PRECISE(a);
-      CAPTURE_PRECISE(b);
+      CAPTURE(a);
+      CAPTURE(b);
       auto a_it = a.cbegin(j);
       auto b_it = b.cbegin(j);
       CHECK(a_it != a.cend(j));
