@@ -50,6 +50,7 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   Libsharp
+  Options
   PRIVATE
   Blas
   Boost::boost

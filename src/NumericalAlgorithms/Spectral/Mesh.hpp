@@ -11,6 +11,7 @@
 
 #include "DataStructures/Index.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Options/Options.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
@@ -47,6 +48,34 @@ template <size_t Dim>
 class Mesh {
  public:
   static constexpr size_t dim = Dim;
+
+  struct Extents {
+    using type = size_t;
+    static constexpr Options::String help = {
+        "The number of collocation points per dimension"};
+  };
+
+  struct Basis {
+    using type = Spectral::Basis;
+    static constexpr Options::String help = {
+        "The choice of spectral basis to compute the collocation points"};
+  };
+
+  struct Quadrature {
+    using type = Spectral::Quadrature;
+    static constexpr Options::String help = {
+        "The choice of quadrature to compute the collocation points"};
+  };
+
+  using options = tmpl::list<Extents, Basis, Quadrature>;
+
+  static constexpr Options::String help =
+      "Holds the number of grid points, basis, and quadrature in each "
+      "direction of the computational grid. "
+      "A mesh encapsulates all information necessary to construct the "
+      "placement of grid points in the computational domain. It does so "
+      "through a choice of basis functions, quadrature and number of points "
+      "in each dimension.";
 
   Mesh() noexcept = default;
 
