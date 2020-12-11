@@ -24,6 +24,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/TagsDomain.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -84,9 +85,8 @@ template <size_t Dim, bool OverrideCubicFunctionsOfTime = false>
 struct Domain {
   using initialization_tags =
       tmpl::list<::domain::Tags::InitialExtents<Dim>,
-                 ::domain::Tags::InitialRefinementLevels<Dim>>;
-
-
+                 ::domain::Tags::InitialRefinementLevels<Dim>,
+                 evolution::dg::Tags::Quadrature>;
   using const_global_cache_tags = tmpl::list<::domain::Tags::Domain<Dim>>;
 
   using mutable_global_cache_tags = tmpl::list<::domain::Tags::FunctionsOfTime>;
@@ -143,7 +143,8 @@ struct Domain {
     const ElementId<Dim> element_id{array_index};
     const auto& my_block = domain.blocks()[element_id.block_id()];
     Mesh<Dim> mesh = ::domain::Initialization::create_initial_mesh(
-        initial_extents, element_id, Spectral::Quadrature::GaussLobatto);
+        initial_extents, element_id,
+        db::get<evolution::dg::Tags::Quadrature>(box));
     Element<Dim> element = ::domain::Initialization::create_initial_element(
         element_id, my_block, initial_refinement);
     ElementMap<Dim, Frame::Grid> element_map{

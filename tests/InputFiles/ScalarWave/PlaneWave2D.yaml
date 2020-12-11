@@ -41,6 +41,7 @@ DomainCreator:
 SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
+    Quadrature: GaussLobatto
 
 # Filtering is being tested by the 2D executable (see EvolveScalarWave.hpp)
 Filtering:

@@ -19,6 +19,7 @@
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -74,7 +75,8 @@ struct Mortars {
   using MortarMap = std::unordered_map<Key, MappedType, boost::hash<Key>>;
 
  public:
-  using initialization_tags = tmpl::list<::domain::Tags::InitialExtents<Dim>>;
+  using initialization_tags = tmpl::list<::domain::Tags::InitialExtents<Dim>,
+                                         evolution::dg::Tags::Quadrature>;
 
   using simple_tags =
       tmpl::list<Tags::MortarData<Dim>, Tags::MortarMesh<Dim>,
@@ -94,7 +96,7 @@ struct Mortars {
       auto [mortar_data, mortar_meshes, mortar_sizes,
             mortar_next_temporal_ids] =
           apply_impl(db::get<::domain::Tags::InitialExtents<Dim>>(box),
-                     Spectral::Quadrature::GaussLobatto,
+                     db::get<evolution::dg::Tags::Quadrature>(box),
                      db::get<::domain::Tags::Element<Dim>>(box),
                      db::get<::Tags::TimeStepId>(box),
                      db::get<::domain::Tags::Interface<

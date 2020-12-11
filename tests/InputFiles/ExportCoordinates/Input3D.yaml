@@ -20,6 +20,10 @@ DomainCreator:
         Velocity: [0.5, 0.0, 0.0]
         FunctionOfTimeNames: ["TranslationX", "TranslationY", "TranslationZ"]
 
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Quadrature: GaussLobatto
+
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.01

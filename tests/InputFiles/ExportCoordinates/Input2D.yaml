@@ -20,6 +20,10 @@ DomainCreator:
         Velocity: [0.5, 0.0]
         FunctionOfTimeNames: ["TranslationX", "TranslationY"]
 
+SpatialDiscretization:
+  DiscontinuousGalerkin:
+    Quadrature: GaussLobatto
+
 # To export a time-independent mesh, replace `? PastTime: 1.0` with `Always:`
 EventsAndTriggers:
   ? PastTime: 1.0

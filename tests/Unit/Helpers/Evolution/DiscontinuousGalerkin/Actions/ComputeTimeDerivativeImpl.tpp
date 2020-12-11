@@ -27,6 +27,7 @@
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/ProjectToBoundary.hpp"
@@ -699,7 +700,8 @@ struct component {
       domain::Tags::BoundaryDirectionsInterior<Metavariables::volume_dim>;
 
   using common_simple_tags = tmpl::list<
-      ::Tags::TimeStepId, typename Metavariables::system::variables_tag,
+      ::Tags::TimeStepId, ::evolution::dg::Tags::Quadrature,
+      typename Metavariables::system::variables_tag,
       db::add_tag_prefix<::Tags::dt,
                          typename Metavariables::system::variables_tag>,
       Var3, domain::Tags::Mesh<Metavariables::volume_dim>,
@@ -946,7 +948,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   if constexpr (not std::is_same_v<tmpl::list<>, flux_tags>) {
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
-        {time_step_id, evolved_vars, dt_evolved_vars, var3, mesh,
+        {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3, mesh,
          normal_dot_fluxes_interface, element, inv_jac, mesh_velocity,
          div_mesh_velocity,
          Variables<db::wrap_tags_in<::Tags::Flux, flux_tags, tmpl::size_t<Dim>,
@@ -956,8 +958,8 @@ void test_impl(const Spectral::Quadrature quadrature,
       for (const auto& neighbor_id : neighbor_ids) {
         ActionTesting::emplace_component_and_initialize<component<metavars>>(
             &runner, neighbor_id,
-            {time_step_id, evolved_vars, dt_evolved_vars, var3, mesh,
-             normal_dot_fluxes_interface, element, inv_jac, mesh_velocity,
+            {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3,
+             mesh, normal_dot_fluxes_interface, element, inv_jac, mesh_velocity,
              div_mesh_velocity,
              Variables<db::wrap_tags_in<::Tags::Flux, flux_tags,
                                         tmpl::size_t<Dim>, Frame::Inertial>>{
@@ -967,7 +969,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   } else {
     ActionTesting::emplace_component_and_initialize<component<metavars>>(
         &runner, self_id,
-        {time_step_id, evolved_vars, dt_evolved_vars, var3, mesh,
+        {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3, mesh,
          normal_dot_fluxes_interface, element, inv_jac, mesh_velocity,
          div_mesh_velocity});
     for (const auto& [direction, neighbor_ids] : neighbors) {
@@ -975,8 +977,8 @@ void test_impl(const Spectral::Quadrature quadrature,
       for (const auto& neighbor_id : neighbor_ids) {
         ActionTesting::emplace_component_and_initialize<component<metavars>>(
             &runner, neighbor_id,
-            {time_step_id, evolved_vars, dt_evolved_vars, var3, mesh,
-             normal_dot_fluxes_interface, element, inv_jac, mesh_velocity,
+            {time_step_id, quadrature, evolved_vars, dt_evolved_vars, var3,
+             mesh, normal_dot_fluxes_interface, element, inv_jac, mesh_velocity,
              div_mesh_velocity});
       }
     }

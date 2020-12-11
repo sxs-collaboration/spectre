@@ -20,6 +20,7 @@
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
+#include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -45,7 +46,8 @@ struct component {
   using simple_tags =
       tmpl::list<::Tags::TimeStepId,
                  domain::Tags::Element<Metavariables::volume_dim>,
-                 domain::Tags::Mesh<Metavariables::volume_dim>>;
+                 domain::Tags::Mesh<Metavariables::volume_dim>,
+                 evolution::dg::Tags::Quadrature>;
   using compute_tags = tmpl::list<
       domain::Tags::InternalDirectionsCompute<Metavariables::volume_dim>,
       domain::Tags::InterfaceCompute<
@@ -93,6 +95,7 @@ using MortarMap =
 template <size_t Dim>
 void test_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
                const Element<Dim>& element, const TimeStepId& time_step_id,
+               const Spectral::Quadrature quadrature,
                const MortarMap<Dim, Mesh<Dim - 1>>& expected_mortar_meshes,
                const MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>&
                    expected_mortar_sizes) {
@@ -103,8 +106,8 @@ void test_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
       &runner, element.id(),
       {time_step_id, element,
        domain::Initialization::create_initial_mesh(
-           initial_extents, element.id(), Spectral::Quadrature::GaussLobatto,
-           {})});
+           initial_extents, element.id(), quadrature, {}),
+       quadrature});
 
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
@@ -142,10 +145,10 @@ void test_impl(const std::vector<std::array<size_t, Dim>>& initial_extents,
 }
 
 template <size_t Dim>
-void test();
+void test(Spectral::Quadrature quadrature);
 
 template <>
-void test<1>() {
+void test<1>(const Spectral::Quadrature quadrature) {
   INFO("1D");
   // Reference element is denoted by X, has one internal boundary and one
   // external boundary:
@@ -172,12 +175,12 @@ void test<1>() {
   const MortarMap<1, std::array<Spectral::MortarSize, 0>> expected_mortar_sizes{
       {boundary_mortar_id, {}}, {interface_mortar_id, {}}};
 
-  test_impl(initial_extents, element, time_step_id, expected_mortar_meshes,
-            expected_mortar_sizes);
+  test_impl(initial_extents, element, time_step_id, quadrature,
+            expected_mortar_meshes, expected_mortar_sizes);
 }
 
 template <>
-void test<2>() {
+void test<2>(const Spectral::Quadrature quadrature) {
   INFO("2D");
   // Reference element is denoted by X, has two internal boundaries (east and
   // south) and two external boundaries (west and north):
@@ -213,26 +216,26 @@ void test<2>() {
       std::make_pair(Direction<2>::lower_eta(), south_id);
 
   const MortarMap<2, Mesh<1>> expected_mortar_meshes{
-      {boundary_mortar_id_west, Mesh<1>(2, Spectral::Basis::Legendre,
-                                        Spectral::Quadrature::GaussLobatto)},
-      {boundary_mortar_id_north, Mesh<1>(3, Spectral::Basis::Legendre,
-                                         Spectral::Quadrature::GaussLobatto)},
-      {interface_mortar_id_east, Mesh<1>(2, Spectral::Basis::Legendre,
-                                         Spectral::Quadrature::GaussLobatto)},
-      {interface_mortar_id_south, Mesh<1>(3, Spectral::Basis::Legendre,
-                                          Spectral::Quadrature::GaussLobatto)}};
+      {boundary_mortar_id_west,
+       Mesh<1>(2, Spectral::Basis::Legendre, quadrature)},
+      {boundary_mortar_id_north,
+       Mesh<1>(3, Spectral::Basis::Legendre, quadrature)},
+      {interface_mortar_id_east,
+       Mesh<1>(2, Spectral::Basis::Legendre, quadrature)},
+      {interface_mortar_id_south,
+       Mesh<1>(3, Spectral::Basis::Legendre, quadrature)}};
   MortarMap<2, std::array<Spectral::MortarSize, 1>> expected_mortar_sizes{};
   for (const auto& mortar_id_and_mesh : expected_mortar_meshes) {
     expected_mortar_sizes[mortar_id_and_mesh.first] = {
         {Spectral::MortarSize::Full}};
   }
 
-  test_impl(initial_extents, element, time_step_id, expected_mortar_meshes,
-            expected_mortar_sizes);
+  test_impl(initial_extents, element, time_step_id, quadrature,
+            expected_mortar_meshes, expected_mortar_sizes);
 }
 
 template <>
-void test<3>() {
+void test<3>(const Spectral::Quadrature quadrature) {
   INFO("3D");
   // Neighboring elements in:
   // - upper-xi (right id)
@@ -273,33 +276,36 @@ void test<3>() {
       std::make_pair(Direction<3>::upper_zeta(), top_id);
 
   const MortarMap<3, Mesh<2>> expected_mortar_meshes{
-      {boundary_mortar_id_left, Mesh<2>({{3, 4}}, Spectral::Basis::Legendre,
-                                        Spectral::Quadrature::GaussLobatto)},
-      {boundary_mortar_id_back, Mesh<2>({{2, 4}}, Spectral::Basis::Legendre,
-                                        Spectral::Quadrature::GaussLobatto)},
-      {boundary_mortar_id_bottom, Mesh<2>({{2, 3}}, Spectral::Basis::Legendre,
-                                          Spectral::Quadrature::GaussLobatto)},
-      {interface_mortar_id_right, Mesh<2>({{3, 4}}, Spectral::Basis::Legendre,
-                                          Spectral::Quadrature::GaussLobatto)},
-      {interface_mortar_id_front, Mesh<2>({{2, 4}}, Spectral::Basis::Legendre,
-                                          Spectral::Quadrature::GaussLobatto)},
-      {interface_mortar_id_top, Mesh<2>({{2, 3}}, Spectral::Basis::Legendre,
-                                        Spectral::Quadrature::GaussLobatto)}};
+      {boundary_mortar_id_left,
+       Mesh<2>({{3, 4}}, Spectral::Basis::Legendre, quadrature)},
+      {boundary_mortar_id_back,
+       Mesh<2>({{2, 4}}, Spectral::Basis::Legendre, quadrature)},
+      {boundary_mortar_id_bottom,
+       Mesh<2>({{2, 3}}, Spectral::Basis::Legendre, quadrature)},
+      {interface_mortar_id_right,
+       Mesh<2>({{3, 4}}, Spectral::Basis::Legendre, quadrature)},
+      {interface_mortar_id_front,
+       Mesh<2>({{2, 4}}, Spectral::Basis::Legendre, quadrature)},
+      {interface_mortar_id_top,
+       Mesh<2>({{2, 3}}, Spectral::Basis::Legendre, quadrature)}};
   MortarMap<3, std::array<Spectral::MortarSize, 2>> expected_mortar_sizes{};
   for (const auto& mortar_id_and_mesh : expected_mortar_meshes) {
     expected_mortar_sizes[mortar_id_and_mesh.first] = {
         {Spectral::MortarSize::Full, Spectral::MortarSize::Full}};
   }
 
-  test_impl(initial_extents, element, time_step_id, expected_mortar_meshes,
-            expected_mortar_sizes);
+  test_impl(initial_extents, element, time_step_id, quadrature,
+            expected_mortar_meshes, expected_mortar_sizes);
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.Initialization.Mortars",
                   "[Unit][Evolution]") {
-  test<1>();
-  test<2>();
-  test<3>();
+  for (const auto quadrature :
+       {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}) {
+    test<1>(quadrature);
+    test<2>(quadrature);
+    test<3>(quadrature);
+  }
 }
 }  // namespace evolution::dg

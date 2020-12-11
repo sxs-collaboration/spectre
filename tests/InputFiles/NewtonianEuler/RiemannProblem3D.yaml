@@ -22,6 +22,7 @@ DomainCreator:
 SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
+    Quadrature: GaussLobatto
 
 AnalyticSolution:
   RiemannProblem:

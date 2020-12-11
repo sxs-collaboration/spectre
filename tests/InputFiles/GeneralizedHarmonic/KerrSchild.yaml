@@ -66,6 +66,7 @@ EvolutionSystem:
 SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
+    Quadrature: GaussLobatto
 
 NumericalFlux:
   UpwindPenalty:
