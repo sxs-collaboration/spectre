@@ -43,20 +43,20 @@ EXIT_CODE=0
 # Check for run-clang-tidy, then run-clang-tidy-LLVM_VERSION, and
 # if we can't find those, then just loop over the files one at a time.
 RAN_CLANG_TIDY=no
-for run-clang-tidy in run-clang-tidy run-clang-tidy.py "${RUN_CLANG_TIDY_BIN}" ;
+for run_clang_tidy in run-clang-tidy run-clang-tidy.py "${RUN_CLANG_TIDY_BIN}" ;
 do
-    if command -v "${run-clang-tidy}" > /dev/null 2>&1; then
-        ${run-clang-tidy} -quiet ${THREADING_FLAG} -p ${BUILD_DIR} \
+    if command -v "${run_clang_tidy}" > /dev/null 2>&1; then
+        ${run_clang_tidy} -quiet ${THREADING_FLAG} -p ${BUILD_DIR} \
                           ${ALL_SOURCE_FILES} || EXIT_CODE=1
         RAN_CLANG_TIDY=yes
         break
     fi
 done
 if [ ${RAN_CLANG_TIDY} == no ]; then
-    for file in ${ALL_SOURCE_FILES};
+    for FILENAME in ${ALL_SOURCE_FILES};
     do
         printf "\nChecking file $FILENAME...\n"
-        make clang-tidy FILE=${file} || EXIT_CODE=1
+        make clang-tidy FILE=${FILENAME} || EXIT_CODE=1
     done
 fi
 
