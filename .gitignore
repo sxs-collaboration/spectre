@@ -6,16 +6,19 @@
 # in general arbitrary names are possible and cannot all be ignored.
 /build*
 
-# Temporary editor files
+# Editor configurations
+.vscode
+compile_commands.json
+.idea
+/.devcontainer
+
+# Temporary files
 *~
 *.swp
 \#*\#
 .\#*
 .DS_Store
-.idea
 .dir-locals.el
-.vscode
-compile_commands.json
 .cquery_cached_index
 .ycm_extra_conf.py
 .clangd
