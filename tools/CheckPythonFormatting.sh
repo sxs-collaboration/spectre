@@ -19,7 +19,7 @@ then
            'for details. You can run yapf on a file as:' \
            '  yapf -i PYTHON_FILE.py' \
            'or on the entire repository by running:' \
-           '  ./tools/FormatPythonCode.py' \
+           '  ./tools/FormatPythonCode.sh' \
            'in the SpECTRE root directory.'
     exit 1
 fi
