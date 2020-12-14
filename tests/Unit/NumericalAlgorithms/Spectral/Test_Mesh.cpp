@@ -13,6 +13,7 @@
 #include "DataStructures/IndexIterator.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -242,6 +243,31 @@ void test_serialization() noexcept {
               {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
                 Spectral::Quadrature::GaussLobatto}}});
 }
+
+template <size_t Dim>
+void test_option_parsing() {
+  INFO("Option Parsing creation");
+
+  const std::array<Spectral::Basis, 3> bases{Spectral::Basis::Chebyshev,
+                                             Spectral::Basis::Legendre,
+                                             Spectral::Basis::FiniteDifference};
+  const std::array<Spectral::Quadrature, 4> quadratures{
+      Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto,
+      Spectral::Quadrature::CellCentered, Spectral::Quadrature::FaceCentered};
+
+  for (size_t extent = 0; extent < 12; extent++) {  // extents
+    for (const auto basis : bases) {                // bases
+      for (const auto quadrature : quadratures) {   // quadratures
+        std::stringstream creation_string;
+        creation_string << "Extents: " << extent << "\nBasis: " << basis
+                        << "\nQuadrature: " << quadrature;
+        const auto mesh =
+            TestHelpers::test_creation<Mesh<Dim>>(creation_string.str());
+        CHECK(mesh == Mesh<Dim>{extent, basis, quadrature});
+      }
+    }
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Mesh",
@@ -250,6 +276,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Mesh",
   test_explicit_choices_per_dimension();
   test_equality();
   test_serialization();
+  test_option_parsing<1>();
+  test_option_parsing<2>();
+  test_option_parsing<3>();
 }
 
 // [[OutputRegex, Tried to slice through non-existing dimension]]
@@ -289,4 +318,26 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Mesh",
   mesh3d.slice_through(2, 1, 1);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
+}
+
+// [[OutputRegex, Failed to convert ".*" to Spectral::Basis.]]
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Mesh.WrongBasis",
+                  "[NumericalAlgorithms][Spectral][Unit]") {
+  ERROR_TEST();
+  const std::string creation_string =
+      "Extents: 5\n"
+      "Basis: invalidBasis\n"
+      "Quadrature: Gauss";
+  TestHelpers::test_creation<Mesh<3>>(creation_string);
+}
+
+// [[OutputRegex, Failed to convert ".*" to Spectral::Quadrature.]]
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Mesh.WrongQuadrature",
+                  "[NumericalAlgorithms][Spectral][Unit]") {
+  ERROR_TEST();
+  const std::string creation_string =
+      "Extents: 5\n"
+      "Basis: Chebyshev\n"
+      "Quadrature: invalidQuadrature";
+  TestHelpers::test_creation<Mesh<3>>(creation_string);
 }

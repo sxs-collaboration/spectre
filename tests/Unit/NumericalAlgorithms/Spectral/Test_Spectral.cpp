@@ -23,16 +23,31 @@
 namespace {
 void test_streaming() {
   CHECK(get_output(Spectral::Basis::Legendre) == "Legendre");
+  CHECK(get_output(Spectral::Basis::Chebyshev) == "Chebyshev");
+  CHECK(get_output(Spectral::Basis::FiniteDifference) == "FiniteDifference");
 
   CHECK(get_output(Spectral::Quadrature::Gauss) == "Gauss");
   CHECK(get_output(Spectral::Quadrature::GaussLobatto) == "GaussLobatto");
+  CHECK(get_output(Spectral::Quadrature::CellCentered) == "CellCentered");
+  CHECK(get_output(Spectral::Quadrature::FaceCentered) == "FaceCentered");
 }
 
 void test_creation() {
+  CHECK(Spectral::Basis::Legendre ==
+        TestHelpers::test_creation<Spectral::Basis>("Legendre"));
+  CHECK(Spectral::Basis::Chebyshev ==
+        TestHelpers::test_creation<Spectral::Basis>("Chebyshev"));
+  CHECK(Spectral::Basis::FiniteDifference ==
+        TestHelpers::test_creation<Spectral::Basis>("FiniteDifference"));
+
   CHECK(Spectral::Quadrature::Gauss ==
         TestHelpers::test_creation<Spectral::Quadrature>("Gauss"));
   CHECK(Spectral::Quadrature::GaussLobatto ==
         TestHelpers::test_creation<Spectral::Quadrature>("GaussLobatto"));
+  CHECK(Spectral::Quadrature::CellCentered ==
+        TestHelpers::test_creation<Spectral::Quadrature>("CellCentered"));
+  CHECK(Spectral::Quadrature::FaceCentered ==
+        TestHelpers::test_creation<Spectral::Quadrature>("FaceCentered"));
 }
 
 DataVector unit_polynomial(const size_t deg, const DataVector& x) {
