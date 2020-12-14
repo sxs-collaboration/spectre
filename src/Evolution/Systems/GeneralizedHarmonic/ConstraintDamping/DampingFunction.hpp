@@ -5,12 +5,17 @@
 
 #include <cstddef>
 #include <memory>
+#include <string>
+#include <unordered_map>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Parallel/CharmPupable.hpp"
 
 /// \cond
 class DataVector;
+namespace domain::FunctionsOfTime {
+class FunctionOfTime;
+}  // namespace domain::FunctionsOfTime
 /// \endcond
 
 /// Holds classes implementing DampingFunction (functions \f$R^n \to R\f$).
@@ -48,9 +53,17 @@ class DampingFunction : public PUP::able {
   //@{
   /// Returns the value of the function at the coordinate 'x'.
   virtual Scalar<double> operator()(
-      const tnsr::I<double, VolumeDim, Fr>& x) const noexcept = 0;
+      const tnsr::I<double, VolumeDim, Fr>& x, double time,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const noexcept = 0;
   virtual Scalar<DataVector> operator()(
-      const tnsr::I<DataVector, VolumeDim, Fr>& x) const noexcept = 0;
+      const tnsr::I<DataVector, VolumeDim, Fr>& x, double time,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const noexcept = 0;
   //@}
 
   virtual auto get_clone() const noexcept
