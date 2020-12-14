@@ -93,7 +93,7 @@ void test_contractions_rank3(const DataType& used_for_size) noexcept {
   const auto RiIj_expr = Rlul(ti_i, ti_I, ti_j);
   const Tensor<DataType, Symmetry<1>,
                index_list<SpatialIndex<4, UpLo::Lo, Frame::Grid>>>
-      RiIj_contracted = TensorExpressions::evaluate<ti_j_t>(RiIj_expr);
+      RiIj_contracted = TensorExpressions::evaluate<ti_j>(RiIj_expr);
 
   for (size_t j = 0; j < 4; j++) {
     DataType expected_sum = make_with_value<DataType>(used_for_size, 0.0);
@@ -119,7 +119,7 @@ void test_contractions_rank3(const DataType& used_for_size) noexcept {
   const auto RJLj_expr = Ruul(ti_J, ti_L, ti_j);
   const Tensor<DataType, Symmetry<1>,
                index_list<SpatialIndex<3, UpLo::Up, Frame::Grid>>>
-      RJLj_contracted = TensorExpressions::evaluate<ti_L_t>(RJLj_expr);
+      RJLj_contracted = TensorExpressions::evaluate<ti_L>(RJLj_expr);
 
   for (size_t l = 0; l < 3; l++) {
     DataType expected_sum = make_with_value<DataType>(used_for_size, 0.0);
@@ -145,7 +145,7 @@ void test_contractions_rank3(const DataType& used_for_size) noexcept {
   const auto RBfF_expr = Rulu(ti_B, ti_f, ti_F);
   const Tensor<DataType, Symmetry<1>,
                index_list<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>>
-      RBfF_contracted = TensorExpressions::evaluate<ti_B_t>(RBfF_expr);
+      RBfF_contracted = TensorExpressions::evaluate<ti_B>(RBfF_expr);
 
   for (size_t b = 0; b < 4; b++) {
     DataType expected_sum = make_with_value<DataType>(used_for_size, 0.0);
@@ -172,7 +172,7 @@ void test_contractions_rank3(const DataType& used_for_size) noexcept {
   const auto RiaI_expr = Rllu(ti_i, ti_a, ti_I);
   const Tensor<DataType, Symmetry<1>,
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      RiaI_contracted = TensorExpressions::evaluate<ti_a_t>(RiaI_expr);
+      RiaI_contracted = TensorExpressions::evaluate<ti_a>(RiaI_expr);
 
   for (size_t a = 0; a < 4; a++) {
     DataType expected_sum = make_with_value<DataType>(used_for_size, 0.0);
@@ -207,7 +207,7 @@ void test_contractions_rank4(const DataType& used_for_size) noexcept {
                index_list<SpatialIndex<4, UpLo::Up, Frame::Inertial>,
                           SpatialIndex<3, UpLo::Lo, Frame::Inertial>>>
       RiIKj_contracted =
-          TensorExpressions::evaluate<ti_K_t, ti_j_t>(RiIKj_expr);
+          TensorExpressions::evaluate<ti_K, ti_j>(RiIKj_expr);
 
   for (size_t k = 0; k < 4; k++) {
     for (size_t j = 0; j < 3; j++) {
@@ -239,7 +239,7 @@ void test_contractions_rank4(const DataType& used_for_size) noexcept {
                index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
                           SpacetimeIndex<4, UpLo::Lo, Frame::Grid>>>
       RABac_contracted =
-          TensorExpressions::evaluate<ti_B_t, ti_c_t>(RABac_expr);
+          TensorExpressions::evaluate<ti_B, ti_c>(RABac_expr);
 
   for (size_t b = 0; b < 4; b++) {
     for (size_t c = 0; c < 5; c++) {
@@ -271,7 +271,7 @@ void test_contractions_rank4(const DataType& used_for_size) noexcept {
                index_list<SpatialIndex<4, UpLo::Up, Frame::Grid>,
                           SpatialIndex<3, UpLo::Up, Frame::Grid>>>
       RLJIl_contracted =
-          TensorExpressions::evaluate<ti_J_t, ti_I_t>(RLJIl_expr);
+          TensorExpressions::evaluate<ti_J, ti_I>(RLJIl_expr);
 
   for (size_t j = 0; j < 4; j++) {
     for (size_t i = 0; i < 3; i++) {
@@ -303,7 +303,7 @@ void test_contractions_rank4(const DataType& used_for_size) noexcept {
                index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
       REDdA_contracted =
-          TensorExpressions::evaluate<ti_E_t, ti_A_t>(REDdA_expr);
+          TensorExpressions::evaluate<ti_E, ti_A>(REDdA_expr);
 
   for (size_t e = 0; e < 4; e++) {
     for (size_t a = 0; a < 4; a++) {
@@ -335,7 +335,7 @@ void test_contractions_rank4(const DataType& used_for_size) noexcept {
                index_list<SpatialIndex<3, UpLo::Lo, Frame::Inertial>,
                           SpatialIndex<4, UpLo::Lo, Frame::Inertial>>>
       RkJij_contracted =
-          TensorExpressions::evaluate<ti_k_t, ti_i_t>(RkJij_expr);
+          TensorExpressions::evaluate<ti_k, ti_i>(RkJij_expr);
 
   for (size_t k = 0; k < 3; k++) {
     for (size_t i = 0; i < 4; i++) {
@@ -367,7 +367,7 @@ void test_contractions_rank4(const DataType& used_for_size) noexcept {
                index_list<SpacetimeIndex<4, UpLo::Up, Frame::Inertial>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>>
       RFcgG_contracted =
-          TensorExpressions::evaluate<ti_F_t, ti_c_t>(RFcgG_expr);
+          TensorExpressions::evaluate<ti_F, ti_c>(RFcgG_expr);
 
   for (size_t f = 0; f < 5; f++) {
     for (size_t c = 0; c < 4; c++) {
@@ -399,7 +399,7 @@ void test_contractions_rank4(const DataType& used_for_size) noexcept {
                index_list<SpatialIndex<2, UpLo::Up, Frame::Grid>,
                           SpatialIndex<3, UpLo::Up, Frame::Grid>>>
       RKkIJ_contracted_to_JI =
-          TensorExpressions::evaluate<ti_J_t, ti_I_t>(RKkIJ_expr);
+          TensorExpressions::evaluate<ti_J, ti_I>(RKkIJ_expr);
 
   for (size_t j = 0; j < 2; j++) {
     for (size_t i = 0; i < 3; i++) {
@@ -431,7 +431,7 @@ void test_contractions_rank4(const DataType& used_for_size) noexcept {
                index_list<SpacetimeIndex<2, UpLo::Up, Frame::Grid>,
                           SpacetimeIndex<2, UpLo::Up, Frame::Grid>>>
       RbCBE_contracted_to_EC =
-          TensorExpressions::evaluate<ti_E_t, ti_C_t>(RbCBE_expr);
+          TensorExpressions::evaluate<ti_E, ti_C>(RbCBE_expr);
 
   for (size_t e = 0; e < 3; e++) {
     for (size_t c = 0; c < 3; c++) {
@@ -463,7 +463,7 @@ void test_contractions_rank4(const DataType& used_for_size) noexcept {
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
       RAdba_contracted_to_bd =
-          TensorExpressions::evaluate<ti_b_t, ti_d_t>(RAdba_expr);
+          TensorExpressions::evaluate<ti_b, ti_d>(RAdba_expr);
 
   for (size_t b = 0; b < 4; b++) {
     for (size_t d = 0; d < 4; d++) {
@@ -495,7 +495,7 @@ void test_contractions_rank4(const DataType& used_for_size) noexcept {
                index_list<SpatialIndex<4, UpLo::Lo, Frame::Grid>,
                           SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
       RljJi_contracted_to_il =
-          TensorExpressions::evaluate<ti_i_t, ti_l_t>(RljJi_expr);
+          TensorExpressions::evaluate<ti_i, ti_l>(RljJi_expr);
 
   for (size_t i = 0; i < 4; i++) {
     for (size_t l = 0; l < 3; l++) {
@@ -527,7 +527,7 @@ void test_contractions_rank4(const DataType& used_for_size) noexcept {
                index_list<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>>
       RagDG_contracted_to_Da =
-          TensorExpressions::evaluate<ti_D_t, ti_a_t>(RagDG_expr);
+          TensorExpressions::evaluate<ti_D, ti_a>(RagDG_expr);
 
   for (size_t d = 0; d < 4; d++) {
     for (size_t a = 0; a < 4; a++) {
@@ -559,7 +559,7 @@ void test_contractions_rank4(const DataType& used_for_size) noexcept {
                index_list<SpatialIndex<3, UpLo::Up, Frame::Inertial>,
                           SpatialIndex<3, UpLo::Lo, Frame::Inertial>>>
       RlJiI_contracted_to_Jl =
-          TensorExpressions::evaluate<ti_J_t, ti_l_t>(RlJiI_expr);
+          TensorExpressions::evaluate<ti_J, ti_l>(RlJiI_expr);
 
   for (size_t j = 0; j < 3; j++) {
     for (size_t l = 0; l < 3; l++) {

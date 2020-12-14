@@ -25,9 +25,9 @@ namespace TensorExpressions {
  * \ref SpacetimeIndex "TensorIndexType"s.
  *
  * @tparam RhsTensorIndexList the typelist of TensorIndex of the RHS
- * TensorExpression, e.g. `ti_a_t`, `ti_b_t`, `ti_c_t`
+ * TensorExpression
  * @tparam LhsTensorIndexList the typelist of TensorIndexs of the desired LHS
- * tensor, e.g. `ti_b_t`, `ti_c_t`, `ti_a_t`
+ * tensor
  * @tparam RhsSymmetry the ::Symmetry of the RHS indices
  * @tparam RhsTensorIndexTypeList the RHS TensorExpression's typelist of
  * \ref SpacetimeIndex "TensorIndexType"s

@@ -32,11 +32,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
       Hll{};
   std::iota(Hll.begin(), Hll.end(), 0.0);
   /// [use_tensor_index]
-  auto Gll = TensorExpressions::evaluate<ti_a_t, ti_b_t>(All(ti_a, ti_b) +
-                                                         Hll(ti_a, ti_b));
-  auto Gll2 = TensorExpressions::evaluate<ti_a_t, ti_b_t>(All(ti_a, ti_b) +
-                                                          Hll(ti_b, ti_a));
-  auto Gll3 = TensorExpressions::evaluate<ti_a_t, ti_b_t>(
+  auto Gll = TensorExpressions::evaluate<ti_a, ti_b>(All(ti_a, ti_b) +
+                                                     Hll(ti_a, ti_b));
+  auto Gll2 = TensorExpressions::evaluate<ti_a, ti_b>(All(ti_a, ti_b) +
+                                                      Hll(ti_b, ti_a));
+  auto Gll3 = TensorExpressions::evaluate<ti_a, ti_b>(
       All(ti_a, ti_b) + Hll(ti_b, ti_a) + All(ti_b, ti_a) - Hll(ti_b, ti_a));
   /// [use_tensor_index]
   for (int i = 0; i < 4; ++i) {
@@ -59,11 +59,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
                     SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
       Hlll{};
   std::iota(Hlll.begin(), Hlll.end(), 0.0);
-  auto Glll = TensorExpressions::evaluate<ti_a_t, ti_b_t, ti_c_t>(
+  auto Glll = TensorExpressions::evaluate<ti_a, ti_b, ti_c>(
       Alll(ti_a, ti_b, ti_c) + Hlll(ti_a, ti_b, ti_c));
-  auto Glll2 = TensorExpressions::evaluate<ti_a_t, ti_b_t, ti_c_t>(
+  auto Glll2 = TensorExpressions::evaluate<ti_a, ti_b, ti_c>(
       Alll(ti_a, ti_b, ti_c) + Hlll(ti_b, ti_a, ti_c));
-  auto Glll3 = TensorExpressions::evaluate<ti_a_t, ti_b_t, ti_c_t>(
+  auto Glll3 = TensorExpressions::evaluate<ti_a, ti_b, ti_c>(
       Alll(ti_a, ti_b, ti_c) + Hlll(ti_b, ti_a, ti_c) + Alll(ti_b, ti_a, ti_c) -
       Hlll(ti_b, ti_a, ti_c));
   for (int i = 0; i < 4; ++i) {

@@ -20,8 +20,8 @@ namespace TestHelpers::TensorExpressions {
 /// side tensor
 ///
 /// \details `TensorIndexA`, `TensorIndexB`, `TensorIndexC`, and  `TensorIndexD`
-/// can be any type of TensorIndex and are not necessarily `ti_a_t`, `ti_b_t`,
-/// `ti_c_t`, and `ti_d_t`. The "A", "B", "C", and "D" suffixes just denote the
+/// can be any type of TensorIndex and are not necessarily `ti_a`, `ti_b`,
+/// `ti_c`, and `ti_d`. The "A", "B", "C", and "D" suffixes just denote the
 /// ordering of the generic indices of the RHS tensor expression. In the RHS
 /// tensor expression, it means `TensorIndexA` is the first index used,
 /// `TensorIndexB` is the second index used, `TensorIndexC` is the third index
@@ -37,21 +37,18 @@ namespace TestHelpers::TensorExpressions {
 /// \tparam RhsSymmetry the ::Symmetry of the RHS Tensor
 /// \tparam RhsTensorIndexTypeList the RHS Tensor's typelist of
 /// \ref SpacetimeIndex "TensorIndexType"s
-/// \param tensorindex_a the first TensorIndex used on the RHS of the
+/// \tparam TensorIndexA the first TensorIndex used on the RHS of the
 /// TensorExpression, e.g. `ti_a`
-/// \param tensorindex_b the second TensorIndex used on the RHS of the
+/// \tparam TensorIndexB the second TensorIndex used on the RHS of the
 /// TensorExpression, e.g. `ti_B`
-/// \param tensorindex_c the third TensorIndex used on the RHS of the
+/// \tparam TensorIndexC the third TensorIndex used on the RHS of the
 /// TensorExpression, e.g. `ti_c`
-/// \param tensorindex_d the fourth TensorIndex used on the RHS of the
+/// \tparam TensorIndexD the fourth TensorIndex used on the RHS of the
 /// TensorExpression, e.g. `ti_D`
 template <typename DataType, typename RhsSymmetry,
-          typename RhsTensorIndexTypeList, typename TensorIndexA,
-          typename TensorIndexB, typename TensorIndexC, typename TensorIndexD>
-void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
-                          const TensorIndexB& tensorindex_b,
-                          const TensorIndexC& tensorindex_c,
-                          const TensorIndexD& tensorindex_d) noexcept {
+          typename RhsTensorIndexTypeList, auto& TensorIndexA,
+          auto& TensorIndexB, auto& TensorIndexC, auto& TensorIndexD>
+void test_evaluate_rank_4() noexcept {
   Tensor<DataType, RhsSymmetry, RhsTensorIndexTypeList> R_abcd(5_st);
   std::iota(R_abcd.begin(), R_abcd.end(), 0.0);
 
@@ -72,7 +69,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, RhsSymmetry, RhsTensorIndexTypeList> L_abcd =
       ::TensorExpressions::evaluate<TensorIndexA, TensorIndexB, TensorIndexC,
                                     TensorIndexD>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{abdc} = R_{abcd}
   using L_abdc_symmetry =
@@ -84,7 +81,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_abdc_symmetry, L_abdc_tensorindextype_list> L_abdc =
       ::TensorExpressions::evaluate<TensorIndexA, TensorIndexB, TensorIndexD,
                                     TensorIndexC>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{acbd} = R_{abcd}
   using L_acbd_symmetry =
@@ -96,7 +93,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_acbd_symmetry, L_acbd_tensorindextype_list> L_acbd =
       ::TensorExpressions::evaluate<TensorIndexA, TensorIndexC, TensorIndexB,
                                     TensorIndexD>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{acdb} = R_{abcd}
   using L_acdb_symmetry =
@@ -108,7 +105,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_acdb_symmetry, L_acdb_tensorindextype_list> L_acdb =
       ::TensorExpressions::evaluate<TensorIndexA, TensorIndexC, TensorIndexD,
                                     TensorIndexB>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{adbc} = R_{abcd}
   using L_adbc_symmetry =
@@ -120,7 +117,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_adbc_symmetry, L_adbc_tensorindextype_list> L_adbc =
       ::TensorExpressions::evaluate<TensorIndexA, TensorIndexD, TensorIndexB,
                                     TensorIndexC>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{adcb} = R_{abcd}
   using L_adcb_symmetry =
@@ -132,7 +129,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_adcb_symmetry, L_adcb_tensorindextype_list> L_adcb =
       ::TensorExpressions::evaluate<TensorIndexA, TensorIndexD, TensorIndexC,
                                     TensorIndexB>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{bacd} = R_{abcd}
   using L_bacd_symmetry =
@@ -144,7 +141,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_bacd_symmetry, L_bacd_tensorindextype_list> L_bacd =
       ::TensorExpressions::evaluate<TensorIndexB, TensorIndexA, TensorIndexC,
                                     TensorIndexD>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{badc} = R_{abcd}
   using L_badc_symmetry =
@@ -156,7 +153,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_badc_symmetry, L_badc_tensorindextype_list> L_badc =
       ::TensorExpressions::evaluate<TensorIndexB, TensorIndexA, TensorIndexD,
                                     TensorIndexC>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{bcad} = R_{abcd}
   using L_bcad_symmetry =
@@ -168,7 +165,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_bcad_symmetry, L_bcad_tensorindextype_list> L_bcad =
       ::TensorExpressions::evaluate<TensorIndexB, TensorIndexC, TensorIndexA,
                                     TensorIndexD>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{bcda} = R_{abcd}
   using L_bcda_symmetry =
@@ -180,7 +177,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_bcda_symmetry, L_bcda_tensorindextype_list> L_bcda =
       ::TensorExpressions::evaluate<TensorIndexB, TensorIndexC, TensorIndexD,
                                     TensorIndexA>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{bdac} = R_{abcd}
   using L_bdac_symmetry =
@@ -192,7 +189,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_bdac_symmetry, L_bdac_tensorindextype_list> L_bdac =
       ::TensorExpressions::evaluate<TensorIndexB, TensorIndexD, TensorIndexA,
                                     TensorIndexC>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{bdca} = R_{abcd}
   using L_bdca_symmetry =
@@ -204,7 +201,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_bdca_symmetry, L_bdca_tensorindextype_list> L_bdca =
       ::TensorExpressions::evaluate<TensorIndexB, TensorIndexD, TensorIndexC,
                                     TensorIndexA>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{cabd} = R_{abcd}
   using L_cabd_symmetry =
@@ -216,7 +213,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_cabd_symmetry, L_cabd_tensorindextype_list> L_cabd =
       ::TensorExpressions::evaluate<TensorIndexC, TensorIndexA, TensorIndexB,
                                     TensorIndexD>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{cadb} = R_{abcd}
   using L_cadb_symmetry =
@@ -228,7 +225,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_cadb_symmetry, L_cadb_tensorindextype_list> L_cadb =
       ::TensorExpressions::evaluate<TensorIndexC, TensorIndexA, TensorIndexD,
                                     TensorIndexB>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{cbad} = R_{abcd}
   using L_cbad_symmetry =
@@ -240,7 +237,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_cbad_symmetry, L_cbad_tensorindextype_list> L_cbad =
       ::TensorExpressions::evaluate<TensorIndexC, TensorIndexB, TensorIndexA,
                                     TensorIndexD>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{cbda} = R_{abcd}
   using L_cbda_symmetry =
@@ -252,7 +249,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_cbda_symmetry, L_cbda_tensorindextype_list> L_cbda =
       ::TensorExpressions::evaluate<TensorIndexC, TensorIndexB, TensorIndexD,
                                     TensorIndexA>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{cdab} = R_{abcd}
   using L_cdab_symmetry =
@@ -264,7 +261,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_cdab_symmetry, L_cdab_tensorindextype_list> L_cdab =
       ::TensorExpressions::evaluate<TensorIndexC, TensorIndexD, TensorIndexA,
                                     TensorIndexB>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{cdba} = R_{abcd}
   using L_cdba_symmetry =
@@ -276,7 +273,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_cdba_symmetry, L_cdba_tensorindextype_list> L_cdba =
       ::TensorExpressions::evaluate<TensorIndexC, TensorIndexD, TensorIndexB,
                                     TensorIndexA>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{dabc} = R_{abcd}
   using L_dabc_symmetry =
@@ -288,7 +285,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_dabc_symmetry, L_dabc_tensorindextype_list> L_dabc =
       ::TensorExpressions::evaluate<TensorIndexD, TensorIndexA, TensorIndexB,
                                     TensorIndexC>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{dacb} = R_{abcd}
   using L_dacb_symmetry =
@@ -300,7 +297,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_dacb_symmetry, L_dacb_tensorindextype_list> L_dacb =
       ::TensorExpressions::evaluate<TensorIndexD, TensorIndexA, TensorIndexC,
                                     TensorIndexB>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{dbac} = R_{abcd}
   using L_dbac_symmetry =
@@ -312,7 +309,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_dbac_symmetry, L_dbac_tensorindextype_list> L_dbac =
       ::TensorExpressions::evaluate<TensorIndexD, TensorIndexB, TensorIndexA,
                                     TensorIndexC>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{dbca} = R_{abcd}
   using L_dbca_symmetry =
@@ -324,7 +321,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_dbca_symmetry, L_dbca_tensorindextype_list> L_dbca =
       ::TensorExpressions::evaluate<TensorIndexD, TensorIndexB, TensorIndexC,
                                     TensorIndexA>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{dcab} = R_{abcd}
   using L_dcab_symmetry =
@@ -336,7 +333,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_dcab_symmetry, L_dcab_tensorindextype_list> L_dcab =
       ::TensorExpressions::evaluate<TensorIndexD, TensorIndexC, TensorIndexA,
                                     TensorIndexB>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   // L_{dcba} = R_{abcd}
   using L_dcba_symmetry =
@@ -348,7 +345,7 @@ void test_evaluate_rank_4(const TensorIndexA& tensorindex_a,
   const Tensor<DataType, L_dcba_symmetry, L_dcba_tensorindextype_list> L_dcba =
       ::TensorExpressions::evaluate<TensorIndexD, TensorIndexC, TensorIndexB,
                                     TensorIndexA>(
-          R_abcd(tensorindex_a, tensorindex_b, tensorindex_c, tensorindex_d));
+          R_abcd(TensorIndexA, TensorIndexB, TensorIndexC, TensorIndexD));
 
   const size_t dim_a = tmpl::at_c<RhsTensorIndexTypeList, 0>::dim;
   const size_t dim_b = tmpl::at_c<RhsTensorIndexTypeList, 1>::dim;
