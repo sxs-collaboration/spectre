@@ -37,7 +37,10 @@
 
 namespace helpers = TestObservers_detail;
 
+// [[OutputRegex, Current time: 3.0]]
 SPECTRE_TEST_CASE("Unit.IO.Observers.PrintReduction", "[Unit][Observers]") {
+  OUTPUT_TEST();
+
   using registration_list = tmpl::list<
       observers::Actions::RegisterWithObservers<
           helpers::RegisterObservers<observers::TypeOfObservation::Reduction>>,
