@@ -11,6 +11,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "ErrorHandling/Error.hpp"
@@ -535,6 +536,49 @@ void test_options_unordered_map_success() {
   CHECK(opts.get<UnorderedMap>() == expected);
 }
 
+template <typename... T>
+struct VariantTag {
+  using type = std::variant<T...>;
+  static constexpr Options::String help = {"halp"};
+};
+
+void test_options_variant() {
+  const auto check = [](const std::string& input,
+                        const auto& expected) noexcept {
+    using Tag = tmpl::wrap<std::decay_t<decltype(expected)>, VariantTag>;
+    Options::Parser<tmpl::list<Tag>> opts("");
+    opts.parse("VariantTag: " + input);
+    CHECK(opts.template get<Tag>() == expected);
+  };
+  check("3", std::variant<int>(std::in_place_type_t<int>{}, 3));
+  check("Hello", std::variant<std::string>(std::in_place_type_t<std::string>{},
+                                           "Hello"));
+  check("3", std::variant<int, std::string>(std::in_place_type_t<int>{}, 3));
+  check("Hello", std::variant<int, std::string>(
+                     std::in_place_type_t<std::string>{}, "Hello"));
+  check("3", std::variant<std::string, int>(std::in_place_type_t<std::string>{},
+                                            "3"));
+  check("Hello", std::variant<std::string, int>(
+                     std::in_place_type_t<std::string>{}, "Hello"));
+
+  {
+    const std::string help_text =
+        Options::Parser<tmpl::list<VariantTag<int, std::string>>>("").help();
+    CAPTURE(help_text);
+    CHECK(help_text.find("type=int or string\n") != std::string::npos);
+  }
+}
+
+// [[OutputRegex, While creating a variant:.At line 1 column 13:.Failed to
+// convert value to type int or string]]
+SPECTRE_TEST_CASE("Unit.Options.Format.variant.Error", "[Unit][Options]") {
+  ERROR_TEST();
+  using tag = VariantTag<int, std::string>;
+  Options::Parser<tmpl::list<tag>> opts("");
+  opts.parse("VariantTag: []");
+  opts.get<tag>();
+}
+
 template <typename T>
 struct Wrapped {
   T data;
@@ -917,6 +961,7 @@ SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
   test_options_map_success();
   test_options_map_empty();
   test_options_unordered_map_success();
+  test_options_variant();
   test_options_complex_containers();
   test_options_apply();
   test_options_option_context_default_stream();
