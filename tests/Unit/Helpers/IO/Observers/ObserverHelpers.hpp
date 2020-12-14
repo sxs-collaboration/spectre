@@ -112,6 +112,9 @@ using reduction_data_from_ds_and_vs = Parallel::ReductionData<
     Parallel::ReductionDatum<std::vector<double>, funcl::VectorPlus>,
     l2_error_datum>;
 
+using reduction_data_from_time = Parallel::ReductionData<
+    Parallel::ReductionDatum<std::string, funcl::AssertEqual<>>>;
+
 template <typename RegistrationActionsList>
 struct Metavariables {
   using component_list =
@@ -121,10 +124,13 @@ struct Metavariables {
 
   /// [make_reduction_data_tags]
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
-      tmpl::list<reduction_data_from_doubles, reduction_data_from_vector,
+      tmpl::list<reduction_data_from_time,
+                 reduction_data_from_doubles,
+                 reduction_data_from_vector,
                  reduction_data_from_ds_and_vs>>;
   /// [make_reduction_data_tags]
 
   enum class Phase { Initialization, RegisterWithObservers, Testing, Exit };
 };
 }  // namespace TestObservers_detail
+

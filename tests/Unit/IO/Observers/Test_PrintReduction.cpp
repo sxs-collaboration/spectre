@@ -92,14 +92,15 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.PrintReduction", "[Unit][Observers]") {
 
   const auto make_fake_reduction_data = make_overloader(
       [](const observers::ArrayComponentId& id, const double time,
-         const helpers::reduction_data_from_doubles& /*meta*/) noexcept {
+         const helpers::reduction_data_from_time& /*meta*/) noexcept {
         const auto hashed_id =
             static_cast<double>(std::hash<observers::ArrayComponentId>{}(id));
         constexpr size_t number_of_grid_points = 4;
         const double error0 = 1.0e-10 * hashed_id + time;
         const double error1 = 1.0e-12 * hashed_id + 2.0 * time;
-        return helpers::reduction_data_from_doubles{time, number_of_grid_points,
-                                                    error0, error1};
+        std::string info_to_print =
+        "Current time: " + std::to_string(static_cast<double>(time));
+        return helpers::reduction_data_from_time{info_to_print};
       },
       [](const observers::ArrayComponentId& id, const double time,
          const helpers::reduction_data_from_vector& /*meta*/) noexcept {
@@ -127,18 +128,15 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.PrintReduction", "[Unit][Observers]") {
             time, number_of_grid_points, error0, vector1, vector2, error1};
       });
 
-  tmpl::for_each<tmpl::list<helpers::reduction_data_from_doubles,
-                            helpers::reduction_data_from_vector,
-                            helpers::reduction_data_from_ds_and_vs>>([
+  tmpl::for_each<tmpl::list<helpers::reduction_data_from_time>>([
     &element_ids, &make_fake_reduction_data, &runner, &output_file_prefix
   ](auto reduction_data_v) noexcept {
     using reduction_data = tmpl::type_from<decltype(reduction_data_v)>;
 
     const double time = 3.0;
     const auto legend = make_overloader(
-        [](const helpers::reduction_data_from_doubles& /*meta*/) noexcept {
-          return std::vector<std::string>{"Time", "NumberOfPoints", "Error0",
-                                          "Error1"};
+        [](const helpers::reduction_data_from_time& /*meta*/) noexcept {
+          return std::vector<std::string>{"StringToPrint"};
         },
         [](const helpers::reduction_data_from_vector& /*meta*/) noexcept {
           return std::vector<std::string>{"Time", "NumberOfPoints", "Vec0",
@@ -172,5 +170,6 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.PrintReduction", "[Unit][Observers]") {
     runner.invoke_queued_threaded_action<obs_writer>(0);
 
     runner.invoke_queued_threaded_action<obs_writer>(0);
-    );
+  });
 }
+
