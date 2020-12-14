@@ -8,6 +8,7 @@ set(LIBS_TO_LINK
   DomainCreators
   Elliptic
   EllipticDg
+  Events
   Informer
   IO
   LinearOperators

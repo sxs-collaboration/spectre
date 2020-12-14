@@ -11,6 +11,7 @@ set(LIBS_TO_LINK
   ElasticPotentialEnergy
   Elliptic
   EllipticDg
+  Events
   Informer
   IO
   LinearOperators

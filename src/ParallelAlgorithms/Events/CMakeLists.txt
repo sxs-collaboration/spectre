@@ -22,5 +22,7 @@ target_link_libraries(
   Domain
   DomainStructure
   ErrorHandling
+  Interpolation
+  Options
   Utilities
   )

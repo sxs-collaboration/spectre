@@ -61,3 +61,4 @@ EventsAndTriggers:
   : - ObserveFields:
         SubfileName: VolumeData
         VariablesToObserve: [Displacement, Strain]
+        InterpolateToMesh: None

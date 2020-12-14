@@ -27,8 +27,8 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -187,9 +187,10 @@ struct ScalarSystem {
   static constexpr auto creation_string_for_test =
       "ObserveFields:\n"
       "  SubfileName: element_data\n"
-      "  VariablesToObserve: [Scalar]";
-  static ObserveEvent make_test_object() noexcept {
-    return ObserveEvent{"element_data"};
+      "  VariablesToObserve: [Scalar]\n";
+  static ObserveEvent make_test_object(
+      const std::optional<Mesh<volume_dim>>& interpolating_mesh) noexcept {
+    return ObserveEvent{"element_data", {"Scalar"}, interpolating_mesh};
   }
 };
 
@@ -283,19 +284,24 @@ struct ComplicatedSystem {
   static constexpr auto creation_string_for_test =
       "ObserveFields:\n"
       "  SubfileName: element_data\n"
-      "  VariablesToObserve: [Scalar, Vector, Tensor, Tensor2]";
-  static ObserveEvent make_test_object() noexcept {
+      "  VariablesToObserve: [Scalar, Vector, Tensor, Tensor2]\n";
+
+  static ObserveEvent make_test_object(
+      const std::optional<Mesh<volume_dim>>& interpolating_mesh) noexcept {
     return ObserveEvent("element_data",
-                        {"Scalar", "Vector", "Tensor", "Tensor2"});
+                        {"Scalar", "Vector", "Tensor", "Tensor2"},
+                        interpolating_mesh);
   }
 };
 
 template <typename System, typename ObserveEvent>
-void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
+void test_observe(const std::unique_ptr<ObserveEvent> observe,
+                  const std::optional<Mesh<System::volume_dim>>&
+                      interpolating_mesh) noexcept {
   using metavariables = Metavariables<System>;
-  constexpr size_t volume_dim = System::volume_dim;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
+  static constexpr auto volume_dim = System::volume_dim;
   using coordinates_tag =
       domain::Tags::Coordinates<volume_dim, Frame::Inertial>;
 
@@ -304,6 +310,8 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   const std::string element_name = get_output(element_id);
   const Mesh<volume_dim> mesh(5, Spectral::Basis::Legendre,
                               Spectral::Quadrature::GaussLobatto);
+
+  const intrp::RegularGrid interpolant(mesh, interpolating_mesh.value_or(mesh));
   const double observation_time = 2.0;
   Variables<
       tmpl::push_back<typename System::all_vars_for_test, coordinates_tag>>
@@ -354,28 +362,35 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
             Parallel::ArrayIndex<ElementId<volume_dim>>(array_index)));
   CHECK(results.received_extents.size() == volume_dim);
   CHECK(std::equal(results.received_extents.begin(),
-                   results.received_extents.end(), mesh.extents().begin()));
+                   results.received_extents.end(),
+                   interpolating_mesh.value_or(mesh).extents().begin()));
+  CHECK(std::equal(results.received_basis.begin(), results.received_basis.end(),
+                   interpolating_mesh.value_or(mesh).basis().begin()));
+  CHECK(std::equal(results.received_quadrature.begin(),
+                   results.received_quadrature.end(),
+                   interpolating_mesh.value_or(mesh).quadrature().begin()));
 
   size_t num_components_observed = 0;
   // gcc 6.4.0 gets confused if we try to capture tensor_data by
   // reference and fails to compile because it wants it to be
   // non-const, so we capture a pointer instead.
-  const auto check_component = [&element_name, &num_components_observed,
-                                tensor_data = &results.in_received_tensor_data](
-                                   const std::string& component,
-                                   const DataVector& expected) noexcept {
-    CAPTURE(*tensor_data);
-    CAPTURE(component);
-    const auto it = alg::find_if(
-        *tensor_data,
-        [name = element_name + "/" + component](
-            const TensorComponent& tc) noexcept { return tc.name == name; });
-    CHECK(it != tensor_data->end());
-    if (it != tensor_data->end()) {
-      CHECK(it->data == expected);
-    }
-    ++num_components_observed;
-  };
+  const auto check_component =
+      [&element_name, &num_components_observed,
+       tensor_data = &results.in_received_tensor_data, &interpolant](
+          const std::string& component, const DataVector& expected) noexcept {
+        CAPTURE(*tensor_data);
+        CAPTURE(component);
+        const auto it =
+            alg::find_if(*tensor_data, [name = element_name + "/" + component](
+                                           const TensorComponent& tc) noexcept {
+              return tc.name == name;
+            });
+        CHECK(it != tensor_data->end());
+        if (it != tensor_data->end()) {
+          CHECK(it->data == interpolant.interpolate(expected));
+        }
+        ++num_components_observed;
+      };
   for (size_t i = 0; i < volume_dim; ++i) {
     check_component(
         std::string("InertialCoordinates_") + gsl::at({'x', 'y', 'z'}, i),
@@ -395,27 +410,128 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
 }
 
 template <typename System>
-void test_system() noexcept {
+void test_system(const std::string& mesh_creation_string,
+                 const std::optional<Mesh<System::volume_dim>>&
+                     interpolating_mesh = {}) noexcept {
   INFO(pretty_type::get_name<System>());
   test_observe<System>(std::make_unique<typename System::ObserveEvent>(
-      System::make_test_object()));
-
+                           System::make_test_object(interpolating_mesh)),
+                       interpolating_mesh);
   INFO("create/serialize");
   using EventType = Event<tmpl::list<dg::Events::Registrars::ObserveFields<
       System::volume_dim, ObservationTimeTag,
       typename System::all_vars_for_test,
       typename System::solution_for_test::vars_for_test>>>;
   Parallel::register_derived_classes_with_charm<EventType>();
-  const auto factory_event = TestHelpers::test_factory_creation<EventType>(
-      System::creation_string_for_test);
+  const std::string creation_string =
+      System::creation_string_for_test + mesh_creation_string;
+  const auto factory_event =
+      TestHelpers::test_factory_creation<EventType>(creation_string);
   auto serialized_event = serialize_and_deserialize(factory_event);
-  test_observe<System>(std::move(serialized_event));
+  test_observe<System>(std::move(serialized_event), interpolating_mesh);
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
-  test_system<ScalarSystem>();
-  test_system<ComplicatedSystem>();
+  {
+    INFO("No Interpolation")
+    const std::string interpolating_mesh_str = "  InterpolateToMesh: None";
+    test_system<ScalarSystem>(interpolating_mesh_str);
+    test_system<ComplicatedSystem>(interpolating_mesh_str);
+  }
+
+  {
+    INFO("Interpolate to finer grid")
+    const std::string interpolating_mesh_str =
+        "  InterpolateToMesh:\n"
+        "    Extents: 12\n"
+        "    Basis: Legendre\n"
+        "    Quadrature: GaussLobatto";
+    const Mesh<1> interpolating_mesh_1{12, Spectral::Basis::Legendre,
+                                       Spectral::Quadrature::GaussLobatto};
+    const Mesh<2> interpolating_mesh_2{12, Spectral::Basis::Legendre,
+                                       Spectral::Quadrature::GaussLobatto};
+    test_system<ScalarSystem>(interpolating_mesh_str, interpolating_mesh_1);
+    test_system<ComplicatedSystem>(interpolating_mesh_str,
+                                   interpolating_mesh_2);
+  }
+
+  {
+    INFO("Interpolate to coarser grid")
+    const std::string interpolating_mesh_str =
+        "  InterpolateToMesh:\n"
+        "    Extents: 3\n"
+        "    Basis: Legendre\n"
+        "    Quadrature: GaussLobatto";
+    const Mesh<1> interpolating_mesh_1{3, Spectral::Basis::Legendre,
+                                       Spectral::Quadrature::GaussLobatto};
+    const Mesh<2> interpolating_mesh_2{3, Spectral::Basis::Legendre,
+                                       Spectral::Quadrature::GaussLobatto};
+    test_system<ScalarSystem>(interpolating_mesh_str, interpolating_mesh_1);
+    test_system<ComplicatedSystem>(interpolating_mesh_str,
+                                   interpolating_mesh_2);
+  }
+
+  {
+    INFO("Interpolate to different basis")
+    const std::string interpolating_mesh_str =
+        "  InterpolateToMesh:\n"
+        "    Extents: 5\n"
+        "    Basis: Chebyshev\n"
+        "    Quadrature: GaussLobatto";
+    const Mesh<1> interpolating_mesh_1{5, Spectral::Basis::Chebyshev,
+                                       Spectral::Quadrature::GaussLobatto};
+    const Mesh<2> interpolating_mesh_2{5, Spectral::Basis::Chebyshev,
+                                       Spectral::Quadrature::GaussLobatto};
+    test_system<ScalarSystem>(interpolating_mesh_str, interpolating_mesh_1);
+    test_system<ComplicatedSystem>(interpolating_mesh_str,
+                                   interpolating_mesh_2);
+  }
+
+  {
+    INFO("Interpolate to different quadrature")
+    const std::string interpolating_mesh_str =
+        "  InterpolateToMesh:\n"
+        "    Extents: 5\n"
+        "    Basis: Legendre\n"
+        "    Quadrature: Gauss";
+    const Mesh<1> interpolating_mesh_1{5, Spectral::Basis::Legendre,
+                                       Spectral::Quadrature::Gauss};
+    const Mesh<2> interpolating_mesh_2{5, Spectral::Basis::Legendre,
+                                       Spectral::Quadrature::Gauss};
+    test_system<ScalarSystem>(interpolating_mesh_str, interpolating_mesh_1);
+    test_system<ComplicatedSystem>(interpolating_mesh_str,
+                                   interpolating_mesh_2);
+  }
+
+  {
+    INFO("Interpolate to different extents, basis and quadrature")
+    const std::string interpolating_mesh_str =
+        "  InterpolateToMesh:\n"
+        "    Extents: 8\n"
+        "    Basis: FiniteDifference\n"
+        "    Quadrature: CellCentered";
+    const Mesh<1> interpolating_mesh_1{8, Spectral::Basis::FiniteDifference,
+                                       Spectral::Quadrature::CellCentered};
+    const Mesh<2> interpolating_mesh_2{8, Spectral::Basis::FiniteDifference,
+                                       Spectral::Quadrature::CellCentered};
+    test_system<ScalarSystem>(interpolating_mesh_str, interpolating_mesh_1);
+    test_system<ComplicatedSystem>(interpolating_mesh_str,
+                                   interpolating_mesh_2);
+  }
+
+  {
+    INFO("Interpolate to non-uniform mesh")
+    // test nonuniform mesh, these cannot be parsed yet
+    const Mesh<2> interpolating_mesh(
+        {3, 9}, {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev},
+        {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto});
+
+    test_observe<ComplicatedSystem>(
+        std::make_unique<typename ComplicatedSystem::ObserveEvent>(
+            ComplicatedSystem::make_test_object(interpolating_mesh)),
+        interpolating_mesh);
+  }
 }
 
 // [[OutputRegex, NotAVar is not an available variable.*Scalar]]
@@ -424,7 +540,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields.bad_field",
   ERROR_TEST();
   TestHelpers::test_creation<ScalarSystem::ObserveEvent>(
       "SubfileName: VolumeData\n"
-      "VariablesToObserve: [NotAVar]");
+      "VariablesToObserve: [NotAVar]\n"
+      "InterpolateToMesh: None");
 }
 
 // [[OutputRegex, Scalar specified multiple times]]
@@ -433,5 +550,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields.repeated_field",
   ERROR_TEST();
   TestHelpers::test_creation<ScalarSystem::ObserveEvent>(
       "SubfileName: VolumeData\n"
-      "VariablesToObserve: [Scalar, Scalar]");
+      "VariablesToObserve: [Scalar, Scalar]\n"
+      "InterpolateToMesh: None");
 }

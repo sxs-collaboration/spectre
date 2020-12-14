@@ -67,6 +67,7 @@ EventsAndTriggers:
   : - ObserveFields:
         SubfileName: VolumePsi0And100
         VariablesToObserve: ["Psi"]
+        InterpolateToMesh: None
   ? Slabs:
       EvenlySpaced:
         Interval: 50
@@ -74,6 +75,7 @@ EventsAndTriggers:
   : - ObserveFields:
         SubfileName: VolumePsiPiPhiEvery50Slabs
         VariablesToObserve: ["Psi", "Pi", "Phi"]
+        InterpolateToMesh: None
   ? Slabs:
       Specified:
         Values: [100]
