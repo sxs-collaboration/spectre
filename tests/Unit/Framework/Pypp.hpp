@@ -338,8 +338,8 @@ struct ContainerPackAndUnpack<
   }
 };
 
-template <typename R>
-R call_work(PyObject* python_module, PyObject* func, PyObject* args) {
+template <typename ReturnType>
+ReturnType call_work(PyObject* python_module, PyObject* func, PyObject* args) {
   PyObject* value = PyObject_CallObject(func, args);
   Py_DECREF(args);  // NOLINT
   if (value == nullptr) {
@@ -349,16 +349,17 @@ R call_work(PyObject* python_module, PyObject* func, PyObject* args) {
     throw std::runtime_error{"Function returned null"};
   }
 
-  auto ret = from_py_object<R>(value);
+  auto ret = from_py_object<ReturnType>(value);
   Py_DECREF(value);  // NOLINT
   return ret;
 }
 
-template <typename R, typename ConversionClassList, typename = std::nullptr_t>
+template <typename ReturnType, typename ConversionClassList,
+          typename = std::nullptr_t>
 struct CallImpl {
   template <typename... Args>
-  static R call(const std::string& module_name,
-                const std::string& function_name, const Args&... t) {
+  static ReturnType call(const std::string& module_name,
+                         const std::string& function_name, const Args&... t) {
     PyObject* python_module = PyImport_ImportModule(module_name.c_str());
     if (python_module == nullptr) {
       PyErr_Print();
@@ -374,25 +375,27 @@ struct CallImpl {
       throw std::runtime_error{"Could not find python function in module.\n"};
     }
     PyObject* args = pypp::make_py_tuple(t...);
-    auto ret = call_work<R>(python_module, func, args);
+    auto ret = call_work<ReturnType>(python_module, func, args);
     Py_DECREF(func);           // NOLINT
     Py_DECREF(python_module);  // NOLINT
     return ret;
   }
 };
 
-template <typename R, typename ConversionClassList>
-struct CallImpl<R, ConversionClassList,
-                Requires<(tt::is_a_v<Tensor, R> or tt::is_std_array_v<R>)and(
-                    std::is_same_v<typename ContainerPackAndUnpack<
-                                       R, ConversionClassList>::packed_type,
-                                   DataVector> or
-                    std::is_same_v<typename ContainerPackAndUnpack<
-                                       R, ConversionClassList>::packed_type,
-                                   ComplexDataVector>)>> {
+template <typename ReturnType, typename ConversionClassList>
+struct CallImpl<
+    ReturnType, ConversionClassList,
+    Requires<
+        (tt::is_a_v<Tensor, ReturnType> or tt::is_std_array_v<ReturnType>)and(
+            std::is_same_v<typename ContainerPackAndUnpack<
+                               ReturnType, ConversionClassList>::packed_type,
+                           DataVector> or
+            std::is_same_v<typename ContainerPackAndUnpack<
+                               ReturnType, ConversionClassList>::packed_type,
+                           ComplexDataVector>)>> {
   template <typename... Args>
-  static R call(const std::string& module_name,
-                const std::string& function_name, const Args&... t) {
+  static ReturnType call(const std::string& module_name,
+                         const std::string& function_name, const Args&... t) {
     static_assert(sizeof...(Args) > 0,
                   "Call to python which returns a Tensor of DataVectors must "
                   "pass at least one argument");
@@ -425,15 +428,15 @@ struct CallImpl<R, ConversionClassList,
       }
     }
     auto return_container = make_with_value<typename ContainerPackAndUnpack<
-        R, ConversionClassList>::packed_container>(npts, 0.0);
+        ReturnType, ConversionClassList>::packed_container>(npts, 0.0);
 
     for (size_t s = 0; s < npts; ++s) {
       PyObject* args = pypp::make_py_tuple(
           ContainerPackAndUnpack<Args, ConversionClassList>::unpack(t, s)...);
       auto ret = call_work<typename ContainerPackAndUnpack<
-          R, ConversionClassList>::unpacked_container>(python_module, func,
-                                                       args);
-      ContainerPackAndUnpack<R, ConversionClassList>::pack(
+          ReturnType, ConversionClassList>::unpacked_container>(python_module,
+                                                                func, args);
+      ContainerPackAndUnpack<ReturnType, ConversionClassList>::pack(
           make_not_null(&return_container), ret, s);
     }
     Py_DECREF(func);           // NOLINT
@@ -531,11 +534,11 @@ struct CallImpl<R, ConversionClassList,
 /// `Tensor<DataVector...>` from `pypp::call`, at least one
 /// `Tensor<DataVector...>` must be taken as an argument, as the size of the
 /// returned tensor needs to be deduced.
-template <typename R, typename ConversionClassList = tmpl::list<>,
+template <typename ReturnType, typename ConversionClassList = tmpl::list<>,
           typename... Args>
-R call(const std::string& module_name, const std::string& function_name,
-       const Args&... t) {
-  return detail::CallImpl<R, ConversionClassList>::call(module_name,
-                                                        function_name, t...);
+ReturnType call(const std::string& module_name,
+                const std::string& function_name, const Args&... t) {
+  return detail::CallImpl<ReturnType, ConversionClassList>::call(
+      module_name, function_name, t...);
 }
 }  // namespace pypp
