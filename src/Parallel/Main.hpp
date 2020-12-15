@@ -101,8 +101,6 @@ template <typename Metavariables>
 Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
   Informer::print_startup_info(msg);
 
-  Options::Parser<option_list> options(Metavariables::help);
-
   /// \todo detail::register_events_to_trace();
 
   namespace bpo = boost::program_options;
@@ -189,6 +187,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
     bpo::store(command_line_parser.run(), parsed_command_line_options);
     bpo::notify(parsed_command_line_options);
 
+    Options::Parser<option_list> options(Metavariables::help);
+
     if (parsed_command_line_options.count("help") != 0) {
       Parallel::printf("%s\n%s", command_line_options, options.help());
       Parallel::exit();
@@ -232,23 +232,24 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
         (void)std::initializer_list<char>{((void)args, '0')...};
       });
       if (has_options) {
-        Parallel::printf("%s parsed successfully!\n", input_file);
+        Parallel::printf("\n%s parsed successfully!\n", input_file);
       } else {
         // This is still considered successful, since it means the
         // program would have started.
-        Parallel::printf("No options to check!\n");
+        Parallel::printf("\nNo options to check!\n");
       }
       Parallel::exit();
     }
+
+    options_ = options.template apply<option_list, Metavariables>(
+        [](auto... args) noexcept {
+          return tuples::tagged_tuple_from_typelist<option_list>(
+              std::move(args)...);
+        });
+    Parallel::printf("\nOption parsing completed.\n");
   } catch (const bpo::error& e) {
     ERROR(e.what());
   }
-
-  options_ = options.template apply<option_list, Metavariables>(
-      [](auto... args) noexcept {
-        return tuples::tagged_tuple_from_typelist<option_list>(
-            std::move(args)...);
-      });
 
   mutable_global_cache_proxy_ = CProxy_MutableGlobalCache<Metavariables>::ckNew(
       Parallel::create_from_options<Metavariables>(
