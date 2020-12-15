@@ -7,6 +7,22 @@ spectre_add_python_bindings_test(
   "unit;visualization;python"
   None)
 
+spectre_add_python_bindings_test(
+  "Unit.Visualization.Python.PlotDatFile"
+  Test_PlotDatFile.py
+  "unit;visualization;python"
+  None)
+
+if(${BUILD_PYTHON_BINDINGS})
+  # Test is a bit slow because it writes a bunch of plot files to verify
+  # the argument handling works.
+  set_tests_properties(
+    "\"Unit.Visualization.Python.PlotDatFile\""
+    PROPERTIES
+    TIMEOUT 10
+    )
+endif()
+
 spectre_add_python_test(
   "Unit.Visualization.Python.Render1D"
   Test_Render1D.py
