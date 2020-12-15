@@ -222,7 +222,7 @@
  *
  * Subitems specify requirements on the tags they act on. For example, there
  * could be a requirement that all tags with a certain type are to be treated as
- * a Subitms. Let's say that the `Parent` tag holds a `Variables`, and
+ * a Subitems. Let's say that the `Parent` tag holds a `Variables`, and
  * `Variables` can be used with the Subitems infrastructure to add the nested
  * `Tensor`s. Then all tags that hold a `Variables` will have their subitems
  * added into the DataBox. To add a new type as a subitem the `db::Subitems`
