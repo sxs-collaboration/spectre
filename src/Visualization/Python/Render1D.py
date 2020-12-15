@@ -48,8 +48,8 @@ def parse_cmd_line():
                         type=str,
                         required=True,
                         help="Name of subfile within h5 file containing "
-                        "volume data to be rendered. You must include the "
-                        "'.vol' suffix.")
+                        "volume data to be rendered. Do not include the "
+                        "'.vol' extension.")
     group_vars = parser.add_mutually_exclusive_group(required=True)
     group_vars.add_argument('--var',
                             type=str,
@@ -277,6 +277,7 @@ if __name__ == "__main__":
     else:
         files = args['filename_list']
     subfile_name = args['subfile_name']
+    subfile_name += '.vol'
     if args['list_vars']:
         print_var_names(files, subfile_name)
         sys.exit(0)
