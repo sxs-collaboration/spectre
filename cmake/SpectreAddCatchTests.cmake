@@ -37,6 +37,8 @@
 #               example, to match "some (word) and" you must specify the
 #               string "some \(word\) and".
 
+add_custom_target(unit-tests)
+
 option(SPECTRE_UNIT_TEST_TIMEOUT_FACTOR
   "Multiply timeout for unit tests by this factor"
   1)

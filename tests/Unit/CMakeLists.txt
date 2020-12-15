@@ -77,6 +77,8 @@ target_include_directories(
   PUBLIC ${PYTHON_INCLUDE_DIRS}
   )
 
+add_dependencies(unit-tests ${executable})
+
 option(
   RUN_TESTS_IN_TEST_EXECUTABLES
   "Build RunTests as part of test-executables"
