@@ -147,6 +147,9 @@ struct SubdomainElementOperator {
     const size_t num_elements = matrix_slices.size();
     const size_t num_points_per_element = matrix_slices.begin()->columns();
 
+    // Re-size the result buffer if necessary
+    result->destructive_resize(subdomain_data);
+
     // Assemble full operator matrix
     const auto operator_matrix = combine_matrix_slices(matrix_slices);
 

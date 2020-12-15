@@ -3,10 +3,12 @@
 
 #pragma once
 
-#include <boost/none.hpp>
-#include <boost/optional.hpp>
-#include <boost/optional/optional_io.hpp>
 #include <cstddef>
+#include <memory>
+#include <optional>
+#include <pup.h>
+#include <type_traits>
+#include <utility>
 
 #include "DataStructures/DenseMatrix.hpp"
 #include "DataStructures/DenseVector.hpp"
@@ -15,8 +17,13 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
+#include "NumericalAlgorithms/LinearSolver/LinearSolver.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Registration.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace LinearSolver {
 namespace gmres::detail {
@@ -76,15 +83,25 @@ DenseVector<double> minimal_residual_vector(
 
 namespace Serial {
 
-template <typename VarsType>
-struct IdentityPreconditioner {
-  VarsType operator()(const VarsType& arg) const noexcept { return arg; }
-};
+/// Disables the iteration callback at compile-time
+struct NoIterationCallback {};
 
-struct NoIterationCallback {
-  void operator()(const Convergence::HasConverged& /*has_converged*/) const
-      noexcept {}
+/// \cond
+template <typename VarsType, typename Preconditioner,
+          typename LinearSolverRegistrars>
+struct Gmres;
+/// \endcond
+
+namespace Registrars {
+
+/// Registers the `LinearSolver::Serial::Gmres` linear solver.
+template <typename VarsType>
+struct Gmres {
+  template <typename LinearSolverRegistrars>
+  using f = Serial::Gmres<VarsType, LinearSolver<LinearSolverRegistrars>,
+                          LinearSolverRegistrars>;
 };
+}  // namespace Registrars
 
 /*!
  * \brief A serial GMRES iterative solver for nonsymmetric linear systems of
@@ -120,8 +137,8 @@ struct NoIterationCallback {
  * solver, but note that the solver can stagnate for non-positive-definite
  * operators and is not guaranteed to converge within \f$N_A\f$ iterations
  * anymore. Set the `restart` argument of the constructor to
- * \f$N_\mathrm{restart}\f$ to activate restarting, or set it to zero to
- * deactivate restarting (default behaviour).
+ * \f$N_\mathrm{restart}\f$ to activate restarting, or set it to 'None' to
+ * deactivate restarting.
  *
  * \par Preconditioning:
  * This implementation of the GMRES algorithm also supports preconditioning.
@@ -139,18 +156,27 @@ struct NoIterationCallback {
  * \example
  * \snippet NumericalAlgorithms/LinearSolver/Test_Gmres.cpp gmres_example
  */
-template <typename VarsType>
-struct Gmres {
+template <typename VarsType, typename Preconditioner = NoPreconditioner,
+          typename LinearSolverRegistrars =
+              tmpl::list<Registrars::Gmres<VarsType>>>
+class Gmres final : public PreconditionedLinearSolver<Preconditioner,
+                                                      LinearSolverRegistrars> {
  private:
+  using Base =
+      PreconditionedLinearSolver<Preconditioner, LinearSolverRegistrars>;
+
   struct ConvergenceCriteria {
     using type = Convergence::Criteria;
     static constexpr Options::String help =
         "Determine convergence of the algorithm";
   };
   struct Restart {
-    using type = size_t;
+    using type = Options::Auto<size_t, Options::AutoLabel::None>;
     static constexpr Options::String help =
-        "Iterations to run before restarting";
+        "Iterations to run before restarting, or 'None' to disable restarting. "
+        "Note that the solver is not guaranteed to converge anymore if you "
+        "enable restarting.";
+    static type suggested_value() noexcept { return {}; }
   };
   struct Verbosity {
     using type = ::Verbosity;
@@ -165,29 +191,46 @@ struct Gmres {
       "linear operator A, but will ideally converge to a reasonable\n"
       "approximation of the solution x in only a few iterations.\n"
       "\n"
+      "Preconditioning: Specify a preconditioner to run in every GMRES "
+      "iteration to accelerate the solve, or 'None' to disable "
+      "preconditioning. The choice of preconditioner can be crucial to obtain "
+      "good convergence.\n"
+      "\n"
       "Restarting: It is sometimes helpful to restart the algorithm every\n"
       "N_restart iterations to speed it up. Note that it can stagnate for\n"
       "non-positive-definite matrices and is not guaranteed to converge\n"
       "within N_A iterations anymore when restarting is activated.\n"
       "Activate restarting by setting the 'Restart' option to N_restart, or\n"
-      "deactivate restarting by setting it to zero (default).";
-  using options = tmpl::list<ConvergenceCriteria, Verbosity, Restart>;
+      "deactivate restarting by setting it to 'None'.";
+  using options = tmpl::flatten<tmpl::list<
+      ConvergenceCriteria, Verbosity, Restart,
+      tmpl::conditional_t<std::is_same_v<Preconditioner, NoPreconditioner>,
+                          tmpl::list<>, typename Base::PreconditionerOption>>>;
 
   Gmres(Convergence::Criteria convergence_criteria, ::Verbosity verbosity,
-        size_t restart = 0) noexcept
-      // clang-tidy: trivially copyable
-      : convergence_criteria_(std::move(convergence_criteria)),  // NOLINT
-        verbosity_(std::move(verbosity)),                        // NOLINT
-        restart_(restart > 0 ? restart : convergence_criteria_.max_iterations) {
-    initialize();
-  }
+        std::optional<size_t> restart = std::nullopt,
+        std::optional<typename Base::PreconditionerType> local_preconditioner =
+            std::nullopt,
+        const Options::Context& context = {});
 
   Gmres() = default;
-  Gmres(const Gmres& /*rhs*/) = default;
-  Gmres& operator=(const Gmres& /*rhs*/) = default;
-  Gmres(Gmres&& /*rhs*/) = default;
-  Gmres& operator=(Gmres&& /*rhs*/) = default;
-  ~Gmres() = default;
+  Gmres(Gmres&&) = default;
+  Gmres& operator=(Gmres&&) = default;
+  ~Gmres() override = default;
+
+  Gmres(const Gmres& rhs) noexcept;
+  Gmres& operator=(const Gmres& rhs) noexcept;
+
+  std::unique_ptr<LinearSolver<LinearSolverRegistrars>> get_clone() const
+      noexcept override {
+    return std::make_unique<Gmres>(*this);
+  }
+
+  /// \cond
+  explicit Gmres(CkMigrateMessage* m) noexcept;
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(Gmres);  // NOLINT
+  /// \endcond
 
   void initialize() noexcept {
     orthogonalization_history_.reserve(restart_ + 1);
@@ -201,8 +244,11 @@ struct Gmres {
   const Convergence::Criteria& convergence_criteria() const noexcept {
     return convergence_criteria_;
   }
+  ::Verbosity verbosity() const noexcept { return verbosity_; }
+  size_t restart() const noexcept { return restart_; }
 
-  void pup(PUP::er& p) noexcept {  // NOLINT
+  void pup(PUP::er& p) noexcept override {  // NOLINT
+    Base::pup(p);
     p | convergence_criteria_;
     p | verbosity_;
     p | restart_;
@@ -211,26 +257,18 @@ struct Gmres {
     }
   }
 
-  /*!
-   * \brief Iteratively solve the problem \f$Ax=b\f$ for \f$x\f$ where \f$A\f$
-   * is the `linear_operator` and \f$b\f$ is the `source`, starting \f$x\f$ at
-   * `initial_guess`.
-   *
-   * Optionally provide a `preconditioner` (see class documentation).
-   *
-   * \return An instance of `Convergence::HasConverged` that provides
-   * information on the convergence status of the completed solve, and the
-   * approximate solution \f$x\f$.
-   */
   template <typename LinearOperator, typename SourceType,
-            typename Preconditioner = IdentityPreconditioner<VarsType>,
             typename IterationCallback = NoIterationCallback>
-  std::pair<Convergence::HasConverged, VarsType> operator()(
-      LinearOperator&& linear_operator, const SourceType& source,
-      const VarsType& initial_guess,
-      Preconditioner&& preconditioner = IdentityPreconditioner<VarsType>{},
-      IterationCallback&& iteration_callback = NoIterationCallback{}) const
-      noexcept;
+  Convergence::HasConverged solve(
+      gsl::not_null<VarsType*> initial_guess_in_solution_out,
+      const LinearOperator& linear_operator, const SourceType& source,
+      const IterationCallback& iteration_callback =
+          NoIterationCallback{}) const noexcept;
+
+  void reset() noexcept override {
+    // Nothing to reset. Only call into base class to reset preconditioner.
+    Base::reset();
+  }
 
  private:
   Convergence::Criteria convergence_criteria_{};
@@ -260,31 +298,95 @@ struct Gmres {
   mutable std::vector<VarsType> preconditioned_basis_history_{};
 };
 
-template <typename VarsType>
-template <typename LinearOperator, typename SourceType, typename Preconditioner,
+template <typename VarsType, typename Preconditioner,
+          typename LinearSolverRegistrars>
+Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::Gmres(
+    Convergence::Criteria convergence_criteria, ::Verbosity verbosity,
+    std::optional<size_t> restart,
+    std::optional<typename Base::PreconditionerType> local_preconditioner,
+    const Options::Context& context)
+    // clang-tidy: trivially copyable
+    : Base(std::move(local_preconditioner)),
+      convergence_criteria_(std::move(convergence_criteria)),  // NOLINT
+      verbosity_(std::move(verbosity)),                        // NOLINT
+      restart_(restart.value_or(convergence_criteria_.max_iterations)) {
+  if (restart_ == 0) {
+    PARSE_ERROR(context,
+                "Can't restart every '0' iterations. Set to a nonzero "
+                "number, or to 'None' if you meant to disable restarting.");
+  }
+  initialize();
+}
+
+// Define copy constructors. They don't have to copy the memory buffers but
+// only resize them. They take care of copying the preconditioner by calling
+// into the base class.
+template <typename VarsType, typename Preconditioner,
+          typename LinearSolverRegistrars>
+Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::Gmres(
+    const Gmres& rhs) noexcept
+    : Base(rhs),
+      convergence_criteria_(rhs.convergence_criteria_),
+      verbosity_(rhs.verbosity_),
+      restart_(rhs.restart_) {
+  initialize();
+}
+template <typename VarsType, typename Preconditioner,
+          typename LinearSolverRegistrars>
+Gmres<VarsType, Preconditioner, LinearSolverRegistrars>&
+Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::operator=(
+    const Gmres& rhs) noexcept {
+  Base::operator=(rhs);
+  convergence_criteria_ = rhs.convergence_criteria_;
+  verbosity_ = rhs.verbosity_;
+  restart_ = rhs.restart_;
+  initialize();
+  return *this;
+}
+
+/// \cond
+template <typename VarsType, typename Preconditioner,
+          typename LinearSolverRegistrars>
+Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::Gmres(
+    CkMigrateMessage* m) noexcept
+    : Base(m) {}
+/// \endcond
+
+template <typename VarsType, typename Preconditioner,
+          typename LinearSolverRegistrars>
+template <typename LinearOperator, typename SourceType,
           typename IterationCallback>
-std::pair<Convergence::HasConverged, VarsType> Gmres<VarsType>::operator()(
-    LinearOperator&& linear_operator, const SourceType& source,
-    const VarsType& initial_guess, Preconditioner&& preconditioner,
-    IterationCallback&& iteration_callback) const noexcept {
+Convergence::HasConverged
+Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::solve(
+    const gsl::not_null<VarsType*> initial_guess_in_solution_out,
+    const LinearOperator& linear_operator, const SourceType& source,
+    const IterationCallback& iteration_callback) const noexcept {
   constexpr bool use_preconditioner =
-      not std::is_same_v<Preconditioner, IdentityPreconditioner<VarsType>>;
+      not std::is_same_v<Preconditioner, NoPreconditioner>;
   constexpr bool use_iteration_callback =
       not std::is_same_v<IterationCallback, NoIterationCallback>;
 
-  auto result = initial_guess;
+  // Could pre-allocate memory for the basis-history vectors here. Not doing
+  // that for now because we don't know how many iterations we'll need.
+  // Estimating the number of iterations and pre-allocating memory is a possible
+  // performance optimization.
+
+  auto& solution = *initial_guess_in_solution_out;
   Convergence::HasConverged has_converged{};
   size_t iteration = 0;
 
   while (not has_converged) {
-    auto& initial_operand = basis_history_[0] =
-        source - linear_operator(result);
+    const auto& initial_guess = *initial_guess_in_solution_out;
+    auto& initial_operand = basis_history_[0];
+    linear_operator(make_not_null(&initial_operand), initial_guess);
+    initial_operand *= -1.;
+    initial_operand += source;
     const double initial_residual_magnitude =
         sqrt(inner_product(initial_operand, initial_operand));
     has_converged = Convergence::HasConverged{convergence_criteria_, iteration,
                                               initial_residual_magnitude,
                                               initial_residual_magnitude};
-    if (use_iteration_callback) {
+    if constexpr (use_iteration_callback) {
       iteration_callback(has_converged);
     }
     if (UNLIKELY(has_converged)) {
@@ -295,12 +397,21 @@ std::pair<Convergence::HasConverged, VarsType> Gmres<VarsType>::operator()(
     residual_history_[0] = initial_residual_magnitude;
     for (size_t k = 0; k < restart_; ++k) {
       auto& operand = basis_history_[k + 1];
-      if (use_preconditioner) {
-        preconditioned_basis_history_[k] = preconditioner(basis_history_[k]);
+      if constexpr (use_preconditioner) {
+        if (this->has_preconditioner()) {
+          // Begin the preconditioner at an initial guess of 0. Not all
+          // preconditioners take the initial guess into account.
+          preconditioned_basis_history_[k] =
+              make_with_value<VarsType>(initial_operand, 0.);
+          this->preconditioner().solve(
+              make_not_null(&preconditioned_basis_history_[k]), linear_operator,
+              basis_history_[k]);
+        }
       }
-      operand =
-          linear_operator(use_preconditioner ? preconditioned_basis_history_[k]
-                                             : basis_history_[k]);
+      linear_operator(make_not_null(&operand),
+                      this->has_preconditioner()
+                          ? preconditioned_basis_history_[k]
+                          : basis_history_[k]);
       // Find a new orthogonal basis vector of the Krylov subspace
       gmres::detail::arnoldi_orthogonalize(
           make_not_null(&operand), make_not_null(&orthogonalization_history_),
@@ -315,7 +426,7 @@ std::pair<Convergence::HasConverged, VarsType> Gmres<VarsType>::operator()(
       has_converged = Convergence::HasConverged{
           convergence_criteria_, iteration, abs(residual_history_[k + 1]),
           initial_residual_magnitude};
-      if (use_iteration_callback) {
+      if constexpr (use_iteration_callback) {
         iteration_callback(has_converged);
       }
       if (UNLIKELY(has_converged)) {
@@ -329,15 +440,22 @@ std::pair<Convergence::HasConverged, VarsType> Gmres<VarsType>::operator()(
     // Construct the solution from the orthogonal basis and the minimal residual
     // vector
     for (size_t i = 0; i < minres.size(); ++i) {
-      result +=
-          minres[i] * gsl::at(use_preconditioner ? preconditioned_basis_history_
-                                                 : basis_history_,
-                              i);
+      solution += minres[i] * gsl::at(this->has_preconditioner()
+                                          ? preconditioned_basis_history_
+                                          : basis_history_,
+                                      i);
     }
   }
-  // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
-  return {std::move(has_converged), std::move(result)};
+  return has_converged;
 }
+
+/// \cond
+template <typename VarsType, typename Preconditioner,
+          typename LinearSolverRegistrars>
+// NOLINTNEXTLINE
+PUP::able::PUP_ID
+    Gmres<VarsType, Preconditioner, LinearSolverRegistrars>::my_PUP_ID = 0;
+/// \endcond
 
 }  // namespace Serial
 }  // namespace LinearSolver

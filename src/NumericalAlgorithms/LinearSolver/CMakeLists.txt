@@ -19,6 +19,7 @@ spectre_target_headers(
   Gmres.hpp
   InnerProduct.hpp
   Lapack.hpp
+  LinearSolver.hpp
   )
 
 target_link_libraries(
@@ -28,6 +29,7 @@ target_link_libraries(
   Convergence
   DataStructures
   Options
+  Parallel
   PRIVATE
   Lapack
   )

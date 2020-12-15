@@ -45,6 +45,25 @@ struct ElementCenteredSubdomainData {
       const size_t element_num_points) noexcept
       : element_data{element_num_points} {}
 
+  template <typename UsedForSizeTagsList>
+  void destructive_resize(
+      const ElementCenteredSubdomainData<Dim, UsedForSizeTagsList>&
+          used_for_size) noexcept {
+    if (UNLIKELY(element_data.number_of_grid_points() !=
+                 used_for_size.element_data.number_of_grid_points())) {
+      element_data.initialize(
+          used_for_size.element_data.number_of_grid_points());
+    }
+    for (const auto& [overlap_id, used_for_overlap_size] :
+         used_for_size.overlap_data) {
+      if (UNLIKELY(overlap_data[overlap_id].number_of_grid_points() !=
+                   used_for_overlap_size.number_of_grid_points())) {
+        overlap_data[overlap_id].initialize(
+            used_for_overlap_size.number_of_grid_points());
+      }
+    }
+  }
+
   ElementCenteredSubdomainData(
       Variables<TagsList> local_element_data,
       OverlapMap<Dim, Variables<TagsList>> local_overlap_data) noexcept
