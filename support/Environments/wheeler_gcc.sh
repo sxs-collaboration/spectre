@@ -12,7 +12,7 @@ spectre_unload_modules() {
     module unload blaze/3.7
     module unload boost/1.65.0-gcc-6.4.0
     module unload brigand/master
-    module unload catch/2.1.2
+    module unload catch/2.13.3
     module unload gsl/2.1
     module unload libsharp/1.0.0
     module unload libxsmm/1.8.1
@@ -20,7 +20,8 @@ spectre_unload_modules() {
     module unload papi/5.5.1
     module unload yaml-cpp/master
     module unload openmpi/2.0.1
-    module unload cmake/3.9.4
+    module unload cmake/3.18.2
+    module unload ninja/1.10.0
     module unload doxygen/1.8.13
     module unload git/2.8.4
     module unload lcov/1.13
@@ -34,7 +35,7 @@ spectre_load_modules() {
     module load blaze/3.7
     module load boost/1.65.0-gcc-6.4.0
     module load brigand/master
-    module load catch/2.1.2
+    module load catch/2.13.3
     module load gsl/2.1
     module load libsharp/1.0.0
     module load libxsmm/1.8.1
@@ -42,7 +43,8 @@ spectre_load_modules() {
     module load papi/5.5.1
     module load yaml-cpp/master
     module load openmpi/2.0.1
-    module load cmake/3.9.4
+    module load cmake/3.18.2
+    module load ninja/1.10.0
     module load doxygen/1.8.13
     module load git/2.8.4
     module load lcov/1.13
