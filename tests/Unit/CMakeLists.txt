@@ -109,3 +109,5 @@ if(COVERAGE)
 endif()
 
 add_subdirectory(RunSingleTest)
+
+add_dependencies(test-executables unit-tests)
