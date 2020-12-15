@@ -20,7 +20,17 @@ namespace Convergence {
  *
  * \see Convergence::Criteria
  */
-enum class Reason { MaxIterations, AbsoluteResidual, RelativeResidual };
+enum class Reason {
+  /// Reached the target number of iterations
+  NumIterations,
+  /// Reached the maximum number of iterations. Can be interpreted as an error
+  /// condition.
+  MaxIterations,
+  /// Residual converged below absolute tolerance
+  AbsoluteResidual,
+  /// Residual converged below relative tolerance
+  RelativeResidual
+};
 
 std::ostream& operator<<(std::ostream& os, const Reason& reason) noexcept;
 

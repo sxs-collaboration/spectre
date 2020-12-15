@@ -21,12 +21,14 @@ void test_construct_from_options() noexcept {
 
 SPECTRE_TEST_CASE("Unit.Numerical.Convergence.Reason",
                   "[Unit][NumericalAlgorithms]") {
+  CHECK(get_output(Convergence::Reason::NumIterations) == "NumIterations");
   CHECK(get_output(Convergence::Reason::MaxIterations) == "MaxIterations");
   CHECK(get_output(Convergence::Reason::AbsoluteResidual) ==
         "AbsoluteResidual");
   CHECK(get_output(Convergence::Reason::RelativeResidual) ==
         "RelativeResidual");
 
+  test_construct_from_options<Convergence::Reason::NumIterations>();
   test_construct_from_options<Convergence::Reason::MaxIterations>();
   test_construct_from_options<Convergence::Reason::AbsoluteResidual>();
   test_construct_from_options<Convergence::Reason::RelativeResidual>();
