@@ -100,7 +100,7 @@ def get_h5_files(files):
 
     h5_files = []
     if isinstance(files, str):
-        h5_file_names = glob.glob(files + "*.h5")
+        h5_file_names = glob.glob(files + "[0-9]*.h5")
         assert len(h5_file_names) > 0,\
             "Found no files with prefix {} in directory {}"\
             .format(files, os.getcwd())
