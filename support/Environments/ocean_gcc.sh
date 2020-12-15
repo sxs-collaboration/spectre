@@ -26,7 +26,7 @@ spectre_unload_modules() {
     module unload blaze-3.5-gcc-7.3.0-dtnocst
     module unload brigand-master-gcc-7.3.0-3m5ibui
     module unload libsharp-2018-01-17-gcc-7.3.0-4xamgaw
-    module unload catch-2.4.0-gcc-7.3.0-prvl6kv
+    module unload catch2-2.11.3-gcc-7.3.0-l7lqzrg
     module unload gsl-2.5-gcc-7.3.0-i7icadp
     module unload jemalloc-4.5.0-gcc-7.3.0-wlf2m7r
     module unload libxsmm-1.10-gcc-7.3.0-sjh5yzv
@@ -50,7 +50,7 @@ spectre_load_modules() {
     module load blaze-3.5-gcc-7.3.0-dtnocst
     module load brigand-master-gcc-7.3.0-3m5ibui
     module load libsharp-2018-01-17-gcc-7.3.0-4xamgaw
-    module load catch-2.4.0-gcc-7.3.0-prvl6kv
+    module load catch2-2.11.3-gcc-7.3.0-l7lqzrg
     module load gsl-2.5-gcc-7.3.0-i7icadp
     module load jemalloc-4.5.0-gcc-7.3.0-wlf2m7r
     module load libxsmm-1.10-gcc-7.3.0-sjh5yzv

@@ -24,7 +24,7 @@ spectre_unload_modules() {
     spack unload blaze@3.2
     spack unload brigand@master
     spack unload libsharp@2018-01-17
-    spack unload catch@2.6.1
+    spack unload catch@2.11.3
     spack unload gsl@2.5
     spack unload jemalloc@4.5.0
     spack unload libxsmm@1.10
@@ -46,7 +46,7 @@ spectre_load_modules() {
     spack load blaze@3.2
     spack load brigand@master
     spack load libsharp@2018-01-17
-    spack load catch@2.6.1
+    spack load catch@2.11.3
     spack load gsl@2.5
     spack load jemalloc@4.5.0
     spack load libxsmm@1.10
