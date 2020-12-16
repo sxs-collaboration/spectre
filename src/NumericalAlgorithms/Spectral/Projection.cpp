@@ -134,7 +134,7 @@ const Matrix& projection_matrix_mortar_to_element(
             result *=
                 1. + static_cast<double>(large_index + small_index + 1) / i;
           }
-          result /= pow(2., large_index + 1);
+          result /= pow(2., static_cast<int>(large_index) + 1);
           return result;
         };
 
