@@ -17,6 +17,7 @@
 #include <tuple>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmGroup.hpp"
 #include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
@@ -229,6 +230,40 @@ void TestArrayChare<Metavariables>::run_test_one() noexcept {
   SPECTRE_PARALLEL_REQUIRE(
       6 == Parallel::get<animal_base>(local_cache).number_of_legs());
 
+  const auto local_cache_from_proxy =
+      local_cache.get_this_proxy().ckLocalBranch();
+  SPECTRE_PARALLEL_REQUIRE(local_cache_from_proxy ==
+                           global_cache_proxy_.ckLocalBranch());
+
+  // test the serialization of the caches
+  auto& serialized_and_deserialized_local_cache =
+      *serialize_and_deserialize(global_cache_proxy_.ckLocalBranch());
+  SPECTRE_PARALLEL_REQUIRE(
+      "Nobody" == Parallel::get<name>(serialized_and_deserialized_local_cache));
+  SPECTRE_PARALLEL_REQUIRE(
+      178 == Parallel::get<age>(serialized_and_deserialized_local_cache));
+  SPECTRE_PARALLEL_REQUIRE(
+      2.2 == Parallel::get<height>(serialized_and_deserialized_local_cache));
+  SPECTRE_PARALLEL_REQUIRE(4 == Parallel::get<shape_of_nametag>(
+                                    serialized_and_deserialized_local_cache)
+                                    .number_of_sides());
+
+  CkMigrateMessage empty_message{};
+  Parallel::GlobalCache<TestMetavariables>
+      serialized_and_deserialized_global_cache{&empty_message};
+  serialize_and_deserialize(
+      make_not_null(&serialized_and_deserialized_global_cache), local_cache);
+  SPECTRE_PARALLEL_REQUIRE(
+      "Nobody" ==
+      Parallel::get<name>(serialized_and_deserialized_global_cache));
+  SPECTRE_PARALLEL_REQUIRE(
+      178 == Parallel::get<age>(serialized_and_deserialized_global_cache));
+  SPECTRE_PARALLEL_REQUIRE(
+      2.2 == Parallel::get<height>(serialized_and_deserialized_global_cache));
+  SPECTRE_PARALLEL_REQUIRE(4 == Parallel::get<shape_of_nametag>(
+                                    serialized_and_deserialized_global_cache)
+                                    .number_of_sides());
+
   // Mutate the weight to 150.
   Parallel::mutate<weight, modify_value<double>>(global_cache_proxy_, 150.0);
   run_test_two();
@@ -385,6 +420,29 @@ void Test_GlobalCache<Metavariables>::run_single_core_test() noexcept {
   SPECTRE_PARALLEL_REQUIRE(30 == Parallel::get<animal>(cache).number_of_legs());
   SPECTRE_PARALLEL_REQUIRE(30 ==
                            Parallel::get<animal_base>(cache).number_of_legs());
+
+  // Check the serialization of the mutable global cache
+  CkMigrateMessage empty_message{};
+  Parallel::MutableGlobalCache<TestMetavariables>
+      serialized_and_deserialized_mutable_cache{&empty_message};
+  serialize_and_deserialize(
+      make_not_null(&serialized_and_deserialized_mutable_cache), mutable_cache);
+
+  Parallel::GlobalCache<TestMetavariables> cache_with_serialized_mutable_cache(
+      tuples::tagged_tuple_from_typelist<const_tag_list>{
+          "Nobody", 178, 2.2, std::make_unique<Square>()},
+      &serialized_and_deserialized_mutable_cache);
+  SPECTRE_PARALLEL_REQUIRE(
+      150 == Parallel::get<weight>(cache_with_serialized_mutable_cache));
+  SPECTRE_PARALLEL_REQUIRE(
+      "isaac@newton.com" ==
+      Parallel::get<email>(cache_with_serialized_mutable_cache));
+  SPECTRE_PARALLEL_REQUIRE(
+      30 == Parallel::get<animal>(cache_with_serialized_mutable_cache)
+                .number_of_legs());
+  SPECTRE_PARALLEL_REQUIRE(
+      30 == Parallel::get<animal_base>(cache_with_serialized_mutable_cache)
+                .number_of_legs());
 }
 
 template <typename Metavariables>

@@ -414,8 +414,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                      typename ParallelComponent::initialization_tags>>>,
       db::AddComputeTags<
           db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>>>(
-      static_cast<const Parallel::GlobalCache<metavariables>*>(
-          global_cache_),
+          global_cache_,
       std::move(get<InitializationTags>(initialization_items))...);
 }
 

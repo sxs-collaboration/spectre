@@ -49,7 +49,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
                  db::AddComputeTags<
                      Tags::FromGlobalCache<Tags::IntegerList>,
                      Tags::FromGlobalCache<Tags::UniquePtrIntegerList>>>(
-          &std::as_const(cache));
+          &cache);
   CHECK(db::get<Tags::GlobalCache>(box) == &cache);
   CHECK(std::array<int, 3>{{-1, 3, 7}} == db::get<Tags::IntegerList>(box));
   CHECK(std::array<int, 3>{{1, 5, -8}} ==
@@ -68,7 +68,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   db::mutate<Tags::GlobalCache>(
       make_not_null(&box),
       [&cache2](
-          const gsl::not_null<const Parallel::GlobalCache<Metavars>**> t) {
+          const gsl::not_null<Parallel::GlobalCache<Metavars>**> t) {
         *t = std::addressof(cache2);
       });
 

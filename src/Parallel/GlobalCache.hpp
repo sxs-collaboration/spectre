@@ -6,7 +6,9 @@
 
 #pragma once
 
+#include <charm++.h>
 #include <optional>
+#include <pup.h>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -135,6 +137,8 @@ class MutableGlobalCache : public CBase_MutableGlobalCache<Metavariables> {
   template <typename GlobalCacheTag, typename Function>
   bool mutable_cache_item_is_ready(const Function& function) noexcept;
 
+  void pup(PUP::er& p) noexcept override;  // NOLINT
+
  private:
   tuples::tagged_tuple_from_typelist<
       get_mutable_global_cache_tag_storage<Metavariables>>
@@ -218,6 +222,11 @@ void MutableGlobalCache<Metavariables>::mutate(
   std::get<1>(tuples::get<tag>(mutable_global_cache_)).shrink_to_fit();
 }
 
+template <typename Metavariables>
+void MutableGlobalCache<Metavariables>::pup(PUP::er& p) noexcept {
+  p | mutable_global_cache_;
+}
+
 /// \ingroup ParallelGroup
 /// A Charm++ chare that caches constant data once per Charm++ node or
 /// non-constant data once per Charm++ core.
@@ -267,6 +276,7 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
           tmpl::bind<Parallel::proxy_from_parallel_component, tmpl::_1>>>;
 
  public:
+  using proxy_type = CProxy_GlobalCache<Metavariables>;
   /// Access to the Metavariables template parameter
   using metavariables = Metavariables;
   /// Typelist of the ParallelComponents stored in the GlobalCache
@@ -332,6 +342,11 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   /// `args` as subsequent arguments.
   template <typename GlobalCacheTag, typename Function, typename... Args>
   void mutate(const std::tuple<Args...>& args) noexcept;
+
+  /// Retrieve the proxy to the global cache
+  proxy_type get_this_proxy() noexcept;
+
+  void pup(PUP::er& p) noexcept override;  // NOLINT
 
  private:
   // clang-tidy: false positive, redundant declaration
@@ -441,6 +456,34 @@ void GlobalCache<Metavariables>::mutate(
     mutable_global_cache_->template mutate<GlobalCacheTag, Function>(args);
   }
 }
+
+template <typename Metavariables>
+typename Parallel::GlobalCache<Metavariables>::proxy_type
+GlobalCache<Metavariables>::get_this_proxy() noexcept {
+  return this->thisProxy;
+}
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
+#endif  // defined(__GNUC__) && !defined(__clang__)
+template <typename Metavariables>
+void GlobalCache<Metavariables>::pup(PUP::er& p) noexcept {
+  p | const_global_cache_;
+  p | parallel_components_;
+  p | mutable_global_cache_proxy_;
+  p | parallel_components_have_been_set_;
+  if (not p.isUnpacking() and mutable_global_cache_ != nullptr) {
+    ERROR(
+        "Cannot serialize the const global cache when the mutable global cache "
+        "is set to a local pointer. If this occurs in a unit test, avoid the "
+        "serialization. If this occurs in a production executable, be sure "
+        "that the MutableGlobalCache is accessed by a charm proxy.");
+  }
+}
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif  // defined(__GNUC__) && !defined(__clang__)
 
 // @{
 /// \ingroup ParallelGroup
@@ -583,7 +626,7 @@ struct GlobalCache : db::BaseTag {};
 
 template <class Metavariables>
 struct GlobalCacheImpl : GlobalCache, db::SimpleTag {
-  using type = const Parallel::GlobalCache<Metavariables>*;
+  using type = Parallel::GlobalCache<Metavariables>*;
   static std::string name() noexcept { return "GlobalCache"; }
 };
 
@@ -605,6 +648,33 @@ struct FromGlobalCache : CacheTag, db::ComputeTag {
 };
 }  // namespace Tags
 }  // namespace Parallel
+
+namespace PUP {
+
+/// \ingroup ParallelGroup
+/// Serialization of a pointer to the global cache for Charm++
+template <typename Metavariables>
+inline void pup(PUP::er& p,  // NOLINT
+                Parallel::GlobalCache<Metavariables>*& t) noexcept {
+  typename Parallel::GlobalCache<Metavariables>::proxy_type
+      local_const_global_cache_proxy;
+  if (p.isUnpacking()) {
+    p | local_const_global_cache_proxy;
+    t = local_const_global_cache_proxy.ckLocalBranch();
+  } else {
+    local_const_global_cache_proxy = t->get_this_proxy();
+    p | local_const_global_cache_proxy;
+  }
+}
+
+/// \ingroup ParallelGroup
+/// Serialization of a pointer to the global cache for Charm++
+template <typename Metavariables>
+inline void operator|(PUP::er& p,  // NOLINT
+                      Parallel::GlobalCache<Metavariables>*& t) {
+  pup(p, t);
+}
+}  // namespace PUP
 
 #define CK_TEMPLATES_ONLY
 #include "Parallel/GlobalCache.def.h"
