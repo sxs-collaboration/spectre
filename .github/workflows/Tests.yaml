@@ -322,12 +322,11 @@ jobs:
             build_type: Debug
             PYTHON_EXECUTABLE: /usr/bin/python2
           - compiler: clang-9
-            # The python bindings don't work with shared libs currently, but we
-            # support shared libs, so add at least one build to test that
-            # nothing is very broken with shared libs.
-            build_type: Debug
-            BUILD_PYTHON_BINDINGS: OFF
-            BUILD_SHARED_LIBS: ON
+            build_type: Release
+            # Test building with static libraries. Do so with clang in release
+            # mode because these builds use up little disk space compared to GCC
+            # builds or clang Debug builds
+            BUILD_SHARED_LIBS: OFF
             MEMORY_ALLOCATOR: JEMALLOC
 
     container:
@@ -409,7 +408,7 @@ jobs:
           -D USE_CCACHE=ON
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
           -D PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE:-'/usr/bin/python3'}
-          -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS:-'OFF'}
+          -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS:-'ON'}
           -D ASAN=${ASAN:-'OFF'}
           -D UBSAN_UNDEFINED=${UBSAN_UNDEFINED:-'OFF'}
           -D UBSAN_INTEGER=${UBSAN_INTEGER:-'OFF'}
