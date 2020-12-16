@@ -36,10 +36,6 @@
 namespace {
 template <size_t Dim>
 void test_tags() noexcept {
-  TestHelpers::db::test_simple_tag<domain::Tags::InitialFunctionsOfTime<Dim>>(
-      "InitialFunctionsOfTime");
-  TestHelpers::db::test_simple_tag<domain::Tags::FunctionsOfTime>(
-      "FunctionsOfTime");
   TestHelpers::db::test_simple_tag<
       domain::Tags::CoordinatesMeshVelocityAndJacobians<Dim>>(
       "CoordinatesMeshVelocityAndJacobians");

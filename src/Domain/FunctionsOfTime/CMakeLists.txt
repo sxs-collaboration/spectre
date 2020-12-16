@@ -12,7 +12,6 @@ spectre_target_sources(
   ReadSpecThirdOrderPiecewisePolynomial.cpp
   RegisterDerivedWithCharm.cpp
   SettleToConstant.cpp
-  Tags.cpp
   )
 
 spectre_target_headers(

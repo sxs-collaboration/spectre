@@ -53,14 +53,13 @@ namespace Initialization {
  * DataBox:
  * - Uses:
  *   - `domain::Tags::InitialExtents<Dim>`
- *   - `domain::Tags::InitialFunctionsOfTime<Dim, OverrideCubicFunctionsOfTime>`
+ *   - `domain::Tags::FunctionsOfTime`
  * - Adds:
  *   - `domain::Tags::Mesh<Dim>`
  *   - `domain::Tags::Element<Dim>`
  *   - `domain::Tags::ElementMap<Dim, Frame::Inertial>`
  *   - `domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
  *      Frame::Inertial>`
- *   - `domain::Tags::FunctionsOfTime`
  *   - `domain::Tags::CoordinatesMeshVelocityAndJacobiansCompute<
  *      CoordinateMap<Dim, Frame::Grid, Frame::Inertial>>`
  *   - `domain::Tags::Coordinates<Dim, Frame::Logical>`
@@ -85,17 +84,18 @@ template <size_t Dim, bool OverrideCubicFunctionsOfTime = false>
 struct Domain {
   using initialization_tags =
       tmpl::list<::domain::Tags::InitialExtents<Dim>,
-                 ::domain::Tags::InitialRefinementLevels<Dim>,
-                 ::domain::Tags::InitialFunctionsOfTime<
-                     Dim, OverrideCubicFunctionsOfTime>>;
+                 ::domain::Tags::InitialRefinementLevels<Dim>>;
+
+
   using const_global_cache_tags = tmpl::list<::domain::Tags::Domain<Dim>>;
+
+  using mutable_global_cache_tags = tmpl::list<::domain::Tags::FunctionsOfTime>;
 
   using simple_tags =
       tmpl::list<::domain::Tags::Mesh<Dim>, ::domain::Tags::Element<Dim>,
                  ::domain::Tags::ElementMap<Dim, Frame::Grid>,
-                 ::domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
-                                                               Frame::Inertial>,
-                 ::domain::Tags::FunctionsOfTime>;
+                 ::domain::CoordinateMaps::Tags::CoordinateMap<
+                     Dim, Frame::Grid, Frame::Inertial>>;
 
   using compute_tags = tmpl::list<
       ::domain::Tags::LogicalCoordinates<Dim>,
@@ -106,6 +106,8 @@ struct Domain {
       ::domain::Tags::InverseJacobianCompute<
           ::domain::Tags::ElementMap<Dim, Frame::Grid>,
           ::domain::Tags::Coordinates<Dim, Frame::Logical>>,
+      // Compute tag to retrieve functions of time from global cache.
+      Parallel::Tags::FromGlobalCache<::domain::Tags::FunctionsOfTime>,
       // Compute tags for Frame::Inertial quantities
       ::domain::Tags::CoordinatesMeshVelocityAndJacobiansCompute<
           ::domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
@@ -149,17 +151,6 @@ struct Domain {
                         ? my_block.moving_mesh_logical_to_grid_map().get_clone()
                         : my_block.stationary_map().get_to_grid_frame()};
 
-    const auto& initial_functions_of_time =
-        db::get<::domain::Tags::InitialFunctionsOfTime<Dim>>(box);
-
-    std::unordered_map<
-        std::string, std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
-        functions_of_time{};
-    for (const auto& name_and_function : initial_functions_of_time) {
-      functions_of_time.insert(std::make_pair(
-          name_and_function.first, name_and_function.second->get_clone()));
-    }
-
     std::unique_ptr<
         ::domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>>
         grid_to_inertial_map;
@@ -173,8 +164,7 @@ struct Domain {
     }
     ::Initialization::mutate_assign<simple_tags>(
         make_not_null(&box), std::move(mesh), std::move(element),
-        std::move(element_map), std::move(grid_to_inertial_map),
-        std::move(functions_of_time));
+        std::move(element_map), std::move(grid_to_inertial_map));
 
     return std::make_tuple(std::move(box));
   }
