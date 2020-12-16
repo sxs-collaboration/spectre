@@ -57,6 +57,7 @@ target_link_libraries(
   LinearSolver
   PUBLIC
   Boost::boost
+  CceAnalyticSolutions
   DataStructures
   ErrorHandling
   IO
