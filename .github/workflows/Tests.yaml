@@ -73,6 +73,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      # Some tests involve release tags, which may not have been pushed to
+      # forks. Fetching them here.
+      - name: Fetch upstream tags on forks
+        if: github.repository != 'sxs-collaboration/spectre'
+        run: |
+          git fetch --tags https://github.com/sxs-collaboration/spectre
       - name: Install Python dependencies
         run: |
           pip3 install \
@@ -103,7 +109,7 @@ jobs:
     name: Clang-tidy
     if: >
       (github.event_name == 'pull_request'
-       && github.repository =='sxs-collaboration/spectre'
+       && github.repository == 'sxs-collaboration/spectre'
        && github.base_ref == 'develop')
       || github.ref != 'refs/heads/develop'
     runs-on: ubuntu-latest
