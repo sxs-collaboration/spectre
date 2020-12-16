@@ -127,7 +127,8 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       target_compile_options(${ARG_LIBRARY_NAME}
         PRIVATE -fsized-deallocation)
     endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    # We don't want the 'lib' prefix for python modules, so we set the output name
+    # We don't want the 'lib' prefix for python modules, so we set the output
+    # name
     set_target_properties(
       ${ARG_LIBRARY_NAME}
       PROPERTIES
@@ -135,10 +136,17 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       LIBRARY_OUTPUT_NAME "_${ARG_LIBRARY_NAME}"
       LIBRARY_OUTPUT_DIRECTORY ${MODULE_LOCATION}
       )
+    # We need --no-as-needed since each python module needs to depend on all the
+    # shared libraries in order to run successfully.
+    set(PY_LIB_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS}")
+    if(NOT APPLE)
+      set(PY_LIB_LINK_FLAGS
+        "${CMAKE_CXX_LINK_FLAGS} -Wl,--no-as-needed")
+    endif()
     set_target_properties(
       ${ARG_LIBRARY_NAME}
       PROPERTIES
-      LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS}
+      LINK_FLAGS "${PY_LIB_LINK_FLAGS}"
       )
     set(SPECTRE_PYTHON_MODULE_IMPORT "from ._${ARG_LIBRARY_NAME} import *")
     add_dependencies(test-executables ${ARG_LIBRARY_NAME})

@@ -44,20 +44,65 @@ void CmiError(const char* fmt, ...) {
   va_end(args);  // NOLINT
 }
 
+// Identification on system
+#ifndef CmiMyPe
 int CmiMyPe() { return 0; }
+#endif
+int _Cmi_mype = 0;
+int _Cmi_numpes = 1;
+int _Cmi_mynodesize = 1;
 int _Cmi_mynode = 0;
-std::string info_from_build() { return "build_info"; }
+int _Cmi_numnodes = 1;
+
+// CmiWallTimer support
+double _cpu_speed_factor = 0.0;
+double CmiTimer(void) { return 0.0; }
+#ifndef CmiWallTimer
+double CmiWallTimer(void) { return 0.0; }
+#endif
+
+// We need to maintain Charm-compatibility, which means not marking things with
+// attributes.
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-noreturn"
+// Charm LRTS locks. These should never be called from the python code so we
+// throw an exception if they are.
+LrtsNodeLock LrtsCreateLock() {
+  throw std::runtime_error{
+      "The function 'LrtsCreateLock' is provided for compatibility with "
+      "Charm++ and is not intended to be called."};
+  // clang-tidy wants us to use nullptr but I'm worried that LrtsNodeLock isn't
+  // always a pointer
+  return 0;  // NOLINT
+}
+void LrtsLock(LrtsNodeLock /*lock*/) {
+  throw std::runtime_error{
+      "The function 'LrtsLock' is provided for compatibility with "
+      "Charm++ and is not intended to be called."};
+}
+void LrtsUnlock(LrtsNodeLock /*lock*/) {
+  throw std::runtime_error{
+      "The function 'LrtsUnlock' is provided for compatibility with "
+      "Charm++ and is not intended to be called."};
+}
+int LrtsTryLock(LrtsNodeLock /*lock*/) {
+  throw std::runtime_error{
+      "The function 'LrtsTryLock' is provided for compatibility with "
+      "Charm++ and is not intended to be called."};
+}
+void LrtsDestroyLock(LrtsNodeLock /*lock*/) {
+  throw std::runtime_error{
+      "The function 'LrtsDestroyLock' is provided for compatibility with "
+      "Charm++ and is not intended to be called."};
+}
+
+std::string info_from_build() { return "build_info"; }
 void CmiAbort(const char* msg) {
-#pragma GCC diagnostic pop
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
   fprintf(stderr, "%s", msg);
   abort();
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmissing-noreturn"
 void realCkExit(int exitcode) { exit(exitcode); }
 #pragma GCC diagnostic pop
 
