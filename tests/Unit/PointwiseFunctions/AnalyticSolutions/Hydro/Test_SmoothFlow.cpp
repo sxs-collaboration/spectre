@@ -93,9 +93,7 @@ void test_solution(const DataType& used_for_size,
   SmoothFlowProxy<Dim, IsRelativistic> solution(
       mean_velocity, wave_vector, pressure, adiabatic_index, perturbation_size);
   if constexpr (IsRelativistic) {
-    pypp::check_with_random_values<
-        1, typename SmoothFlowProxy<
-               Dim, IsRelativistic>::template variables_tags<DataType>>(
+    pypp::check_with_random_values<1>(
         &SmoothFlowProxy<Dim, IsRelativistic>::template primitive_variables<
             DataType>,
         solution, "SmoothFlow",
@@ -106,9 +104,7 @@ void test_solution(const DataType& used_for_size,
                         perturbation_size),
         used_for_size);
   } else {
-    pypp::check_with_random_values<
-        1, typename SmoothFlowProxy<
-               Dim, IsRelativistic>::template variables_tags<DataType>>(
+    pypp::check_with_random_values<1>(
         &SmoothFlowProxy<Dim, IsRelativistic>::template primitive_variables<
             DataType>,
         solution, "SmoothFlow",

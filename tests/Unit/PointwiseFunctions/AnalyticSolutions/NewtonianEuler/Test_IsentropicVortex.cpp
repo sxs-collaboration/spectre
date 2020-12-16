@@ -57,9 +57,7 @@ void test_solution(
     const std::string& perturbation_amplitude_option = "") noexcept {
   IsentropicVortexProxy<Dim> vortex(1.43, center, mean_velocity, 3.76,
                                     perturbation_amplitude);
-  pypp::check_with_random_values<
-      1,
-      typename IsentropicVortexProxy<Dim>::template variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &IsentropicVortexProxy<Dim>::template primitive_variables<DataType>,
       vortex, "IsentropicVortex",
       {"mass_density", "velocity", "specific_internal_energy", "pressure"},

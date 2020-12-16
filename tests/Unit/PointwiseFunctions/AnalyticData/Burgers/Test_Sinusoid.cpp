@@ -38,7 +38,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.Burgers.Sinusoid",
   test_move_semantics(Burgers::AnalyticData::Sinusoid{},
                       Burgers::AnalyticData::Sinusoid{});
 
-  pypp::check_with_random_values<1, tmpl::list<Burgers::Tags::U>>(
+  pypp::check_with_random_values<1>(
       &BurgersSinusoidProxy::variables, BurgersSinusoidProxy{},
       "PointwiseFunctions.AnalyticData.Burgers.Sinusoid", {"u_variable"},
       {{{0.0, M_PI}}}, {}, DataVector(5));

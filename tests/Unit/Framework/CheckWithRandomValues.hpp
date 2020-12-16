@@ -38,7 +38,6 @@
 #include <boost/vmd/is_empty.hpp>
 // IWYU pragma: end_exports
 
-#include <initializer_list>
 #include <limits>
 #include <random>
 #include <string>
@@ -152,14 +151,9 @@ void check_with_random_values_impl(
   // Note: generator and distributions cannot be const.
   std::tuple<ArgumentTypes...> args{
       make_with_value<ArgumentTypes>(used_for_size, 0.0)...};
-  // We fill with random values after initialization because the order of
-  // evaluation is not guaranteed for a constructor call and so then knowing
-  // the seed would not lead to reproducible results.
-  (void)std::initializer_list<char>{(
-      (void)fill_with_random_values(
-          make_not_null(&std::get<ArgumentIs>(args)), make_not_null(&generator),
-          make_not_null(&(distributions[ArgumentIs]))),
-      '0')...};
+  EXPAND_PACK_LEFT_TO_RIGHT(fill_with_random_values(
+      make_not_null(&std::get<ArgumentIs>(args)), make_not_null(&generator),
+      make_not_null(&(distributions[ArgumentIs]))));
 
   size_t count = 0;
   tmpl::for_each<TagsList>([&f, &klass, &args, &used_for_size, &member_args,
@@ -204,24 +198,18 @@ void check_with_random_values_impl(
   using ResultType = typename f_info::return_type;
   std::tuple<ArgumentTypes...> args{
       make_with_value<ArgumentTypes>(used_for_size, 0.0)...};
-  // We fill with random values after initialization because the order of
-  // evaluation is not guaranteed for a constructor call and so then knowing the
-  // seed would not lead to reproducible results.
-  (void)std::initializer_list<char>{(
-      (void)fill_with_random_values(
-          make_not_null(&std::get<ArgumentIs>(args)), make_not_null(&generator),
-          make_not_null(&(distributions[ArgumentIs]))),
-      '0')...};
-  const auto result = make_overloader(
-      [&](std::true_type /*is_class*/, auto&& local_f) {
-        return (klass.*local_f)(std::get<ArgumentIs>(args)...);
-      },
-      [&](std::false_type /*is_class*/, auto&& local_f) {
-        return local_f(std::get<ArgumentIs>(args)...);
-      })(
-      std::integral_constant<
-          bool, not std::is_same_v<NoSuchType, std::decay_t<Klass>>>{},
-      std::forward<F>(f));
+  EXPAND_PACK_LEFT_TO_RIGHT(fill_with_random_values(
+      make_not_null(&std::get<ArgumentIs>(args)), make_not_null(&generator),
+      make_not_null(&(distributions[ArgumentIs]))));
+  const auto result = [&args, &f, &klass]() noexcept {
+    (void)args;
+    if constexpr (std::is_same_v<NoSuchType, std::decay_t<Klass>>) {
+      (void)klass;
+      return f(std::get<ArgumentIs>(args)...);
+    } else {
+      return (klass.*f)(std::get<ArgumentIs>(args)...);
+    }
+  }();
   INFO("function: " << function_name);
   try {
     CHECK_ITERABLE_CUSTOM_APPROX(
@@ -257,34 +245,19 @@ void check_with_random_values_impl(
       make_with_value<ReturnTypes>(used_for_size, 0.0)...};
   std::tuple<ArgumentTypes...> args{
       make_with_value<ArgumentTypes>(used_for_size, 0.0)...};
-  // We fill with random values after initialization because the order of
-  // evaluation is not guaranteed for a constructor call and so then knowing the
-  // seed would not lead to reproducible results.
-  (void)std::initializer_list<char>{(
-      (void)fill_with_random_values(
-          make_not_null(&std::get<ArgumentIs>(args)), make_not_null(&generator),
-          make_not_null(&(distributions[ArgumentIs]))),
-      '0')...};
-  // We intentionally do not set the return value to signaling NaN so that not
-  // all of our functions need to be able to handle the cases where they
-  // receive a NaN. Instead, we fill the return value with random numbers.
-  (void)std::initializer_list<char>{(
-      (void)fill_with_random_values(make_not_null(&std::get<ResultIs>(results)),
-                                    make_not_null(&generator),
-                                    make_not_null(&(distributions[0]))),
-      '0')...};
-  make_overloader(
-      [&](std::true_type /*is_class*/, auto&& local_f) {
-        (klass.*local_f)(make_not_null(&std::get<ResultIs>(results))...,
-                         std::get<ArgumentIs>(args)...);
-      },
-      [&](std::false_type /*is_class*/, auto&& local_f) {
-        local_f(make_not_null(&std::get<ResultIs>(results))...,
-                std::get<ArgumentIs>(args)...);
-      })(
-      std::integral_constant<
-          bool, not std::is_same_v<NoSuchType, std::decay_t<Klass>>>{},
-      std::forward<F>(f));
+  EXPAND_PACK_LEFT_TO_RIGHT(fill_with_random_values(
+      make_not_null(&std::get<ArgumentIs>(args)), make_not_null(&generator),
+      make_not_null(&(distributions[ArgumentIs]))));
+  EXPAND_PACK_LEFT_TO_RIGHT(fill_with_random_values(
+      make_not_null(&std::get<ResultIs>(results)), make_not_null(&generator),
+      make_not_null(&(distributions[0]))));
+  if constexpr (std::is_same_v<NoSuchType, std::decay_t<Klass>>) {
+    f(make_not_null(&std::get<ResultIs>(results))...,
+      std::get<ArgumentIs>(args)...);
+  } else {
+    (klass.*f)(make_not_null(&std::get<ResultIs>(results))...,
+               std::get<ArgumentIs>(args)...);
+  }
   const auto helper = [&module_name, &function_names, &args, &results, &epsilon,
                        &member_args, &used_for_size](auto result_i) {
     (void)member_args;    // avoid compiler warning
@@ -304,10 +277,8 @@ void check_with_random_values_impl(
       INFO("Python call failed: " << e.what());
       CHECK(false);
     }
-    return '0';
   };
-  (void)std::initializer_list<char>{
-      helper(std::integral_constant<size_t, ResultIs>{})...};
+  EXPAND_PACK_LEFT_TO_RIGHT(helper(std::integral_constant<size_t, ResultIs>{}));
 }
 }  // namespace TestHelpers_detail
 
@@ -528,10 +499,14 @@ void check_with_random_values(
  * specified when debugging a failure with a particular set of random numbers,
  * in general it should be left to the default value.
  */
-template <size_t NumberOfBounds, class F, class T, class... MemberArgs,
-          Requires<not std::is_same_v<
-              typename tt::function_info<cpp20::remove_cvref_t<F>>::return_type,
-              void>> = nullptr>
+template <
+    size_t NumberOfBounds, class F, class T, class... MemberArgs,
+    Requires<not std::is_same_v<typename tt::function_info<
+                                    cpp20::remove_cvref_t<F>>::return_type,
+                                void> and
+             not tt::is_a_v<tuples::TaggedTuple,
+                            typename tt::function_info<cpp20::remove_cvref_t<
+                                F>>::return_type>> = nullptr>
 // The Requires is used so that we can call the std::vector<std::string> with
 // braces and not have it be ambiguous.
 void check_with_random_values(
@@ -598,12 +573,6 @@ void check_with_random_values(
  * functions do not need to support receiving a signaling `NaN` in their return
  * argument to be tested using this function.
  *
- * If `TagsList` is passed as a `tmpl::list`, then `f` is expected to
- * return a TaggedTuple. The result of each python function will be
- * compared with calling `tuples::get` on the result of `f`. The order of the
- * tags within `TagsList` should match the order of the functions in
- * `function_names`
- *
  * \note You must explicitly pass the number of bounds you will be passing as
  * the first template parameter, the rest will be inferred.
  *
@@ -631,8 +600,13 @@ void check_with_random_values(
  * specified when debugging a failure with a particular set of random numbers,
  * in general it should be left to the default value.
  */
-template <size_t NumberOfBounds, typename TagsList = NoSuchType, class F,
-          class T, class... MemberArgs>
+template <size_t NumberOfBounds, class F, class T, class... MemberArgs,
+          Requires<std::is_same_v<typename tt::function_info<
+                                      cpp20::remove_cvref_t<F>>::return_type,
+                                  void> or
+                   tt::is_a_v<tuples::TaggedTuple,
+                              typename tt::function_info<cpp20::remove_cvref_t<
+                                  F>>::return_type>> = nullptr>
 void check_with_random_values(
     F&& f,
     const typename tt::function_info<cpp20::remove_cvref_t<F>>::class_type&
@@ -657,16 +631,18 @@ void check_with_random_values(
       tmpl::transform<tmpl::pop_back<typename f_info::argument_types,
                                      tmpl::size<argument_types>>,
                       TestHelpers_detail::RemoveNotNull<tmpl::_1>>;
+  constexpr bool return_type_is_tagged_tuple =
+      tt::is_a_v<tuples::TaggedTuple, typename f_info::return_type>;
 
   static_assert(
-      number_of_not_null::value != 0 or tt::is_a_v<tmpl::list, TagsList>,
+      number_of_not_null::value != 0 or return_type_is_tagged_tuple,
       "You must either return at least one argument by gsl::not_null when"
       "passing the python function names as a vector<string>, or return by "
       "value using a TaggedTuple. If your function returns by value with a "
       "type that is not a TaggedTuple do not pass the function name as a "
       "vector<string> but just a string.");
   static_assert(std::is_same_v<typename f_info::return_type, void> or
-                    tt::is_a_v<tmpl::list, TagsList>,
+                    return_type_is_tagged_tuple,
                 "The function must either return by gsl::not_null and have a "
                 "void return type, or return by TaggedTuple");
   static_assert(tmpl::size<argument_types>::value != 0,
@@ -677,7 +653,7 @@ void check_with_random_values(
                 "equal to the number of arguments taken by f that are not "
                 "gsl::not_null.");
   if (function_names.size() != number_of_not_null::value and
-      not tt::is_a_v<tmpl::list, TagsList>) {
+      not return_type_is_tagged_tuple) {
     ERROR(
         "If testing a function that returns by gsl::not_null, the number of "
         "python functions passed must be the same as the number of "
@@ -693,13 +669,25 @@ void check_with_random_values(
         gsl::at(lower_and_upper_bounds, NumberOfBounds == 1 ? 0 : i).first,
         gsl::at(lower_and_upper_bounds, NumberOfBounds == 1 ? 0 : i).second};
   }
-  TestHelpers_detail::check_with_random_values_impl(
-      std::forward<F>(f), klass, module_name, function_names, generator,
-      std::move(distributions), member_args, used_for_size, return_types{},
-      argument_types{},
-      std::make_index_sequence<tmpl::size<return_types>::value>{},
-      std::make_index_sequence<tmpl::size<argument_types>::value>{},
-      std::make_index_sequence<sizeof...(MemberArgs)>{}, TagsList{}, epsilon);
+  if constexpr (return_type_is_tagged_tuple) {
+    TestHelpers_detail::check_with_random_values_impl(
+        std::forward<F>(f), klass, module_name, function_names, generator,
+        std::move(distributions), member_args, used_for_size, return_types{},
+        argument_types{},
+        std::make_index_sequence<tmpl::size<return_types>::value>{},
+        std::make_index_sequence<tmpl::size<argument_types>::value>{},
+        std::make_index_sequence<sizeof...(MemberArgs)>{},
+        typename f_info::return_type::tags_list{}, epsilon);
+  } else {
+    TestHelpers_detail::check_with_random_values_impl(
+        std::forward<F>(f), klass, module_name, function_names, generator,
+        std::move(distributions), member_args, used_for_size, return_types{},
+        argument_types{},
+        std::make_index_sequence<tmpl::size<return_types>::value>{},
+        std::make_index_sequence<tmpl::size<argument_types>::value>{},
+        std::make_index_sequence<sizeof...(MemberArgs)>{}, NoSuchType{},
+        epsilon);
+  }
 }
 
 /// \cond

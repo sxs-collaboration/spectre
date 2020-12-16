@@ -67,8 +67,7 @@ void test_solution(const DataType& used_for_size,
                    const double central_mass_density,
                    const double polytropic_constant) noexcept {
   const LaneEmdenStarProxy star(central_mass_density, polytropic_constant);
-  pypp::check_with_random_values<
-      1, typename LaneEmdenStarProxy::template variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &LaneEmdenStarProxy::template primitive_variables<DataType>, star,
       "LaneEmdenStar",
       {"mass_density", "velocity", "specific_internal_energy", "pressure"},
@@ -78,8 +77,7 @@ void test_solution(const DataType& used_for_size,
       used_for_size);
 
   const auto star_sd = serialize_and_deserialize(star);
-  pypp::check_with_random_values<
-      1, typename LaneEmdenStarProxy::template variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &LaneEmdenStarProxy::template primitive_variables<DataType>, star_sd,
       "LaneEmdenStar",
       {"mass_density", "velocity", "specific_internal_energy", "pressure"},

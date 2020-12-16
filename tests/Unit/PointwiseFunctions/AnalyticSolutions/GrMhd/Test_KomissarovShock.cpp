@@ -174,16 +174,14 @@ void test_variables(const DataType& used_for_size) noexcept {
       std::array<double, 3>{{10., 18.28, 0.}},
       std::array<double, 3>{{10., 14.49, 0.}}, 0.5);
 
-  pypp::check_with_random_values<
-      1, KomissarovShockProxy::hydro_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &KomissarovShockProxy::hydro_variables<DataType>, komissarov_shock,
       "KomissarovShock",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
        "pressure", "lorentz_factor", "specific_enthalpy"},
       {{{-1., 1.}}}, member_variables, used_for_size);
 
-  pypp::check_with_random_values<
-      1, KomissarovShockProxy::grmhd_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &KomissarovShockProxy::grmhd_variables<DataType>, komissarov_shock,
       "KomissarovShock",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",

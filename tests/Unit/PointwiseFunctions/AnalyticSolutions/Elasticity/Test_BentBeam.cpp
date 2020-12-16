@@ -110,19 +110,16 @@ SPECTRE_TEST_CASE(
   CHECK_VARIABLES_APPROX(solution_vars, expected_vars);
   CHECK(solution.potential_energy() == approx(0.075));
 
-  pypp::check_with_random_values<
-      1, tmpl::list<Elasticity::Tags::Displacement<2>,
-                    Elasticity::Tags::Strain<2>, Elasticity::Tags::Stress<2>>>(
+  pypp::check_with_random_values<1>(
       &BentBeamProxy::field_variables, solution,
       "AnalyticSolutions.Elasticity.BentBeam",
       {"displacement", "strain", "stress"}, {{{-5., 5.}}},
       std::make_tuple(5., 1., 0.5, 79.36507936507935, 38.75968992248062),
       DataVector(5));
-  pypp::check_with_random_values<
-      1, tmpl::list<Tags::FixedSource<Elasticity::Tags::Displacement<2>>>>(
-      &BentBeamProxy::source_variables, solution,
-      "AnalyticSolutions.Elasticity.BentBeam", {"source"}, {{{-5., 5.}}},
-      std::make_tuple(), DataVector(5));
+  pypp::check_with_random_values<1>(&BentBeamProxy::source_variables, solution,
+                                    "AnalyticSolutions.Elasticity.BentBeam",
+                                    {"source"}, {{{-5., 5.}}},
+                                    std::make_tuple(), DataVector(5));
 
   using AffineMap = domain::CoordinateMaps::Affine;
   using AffineMap2D =

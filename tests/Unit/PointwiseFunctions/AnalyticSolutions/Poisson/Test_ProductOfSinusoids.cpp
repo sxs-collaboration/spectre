@@ -60,15 +60,11 @@ template <size_t Dim>
 void test_solution(const std::array<double, Dim>& wave_numbers,
                    const std::string& options) {
   const ProductOfSinusoidsProxy<Dim> solution(wave_numbers);
-  pypp::check_with_random_values<
-      1, tmpl::list<Poisson::Tags::Field,
-                    ::Tags::deriv<Poisson::Tags::Field, tmpl::size_t<Dim>,
-                                  Frame::Inertial>>>(
+  pypp::check_with_random_values<1>(
       &ProductOfSinusoidsProxy<Dim>::field_variables, solution,
       "ProductOfSinusoids", {"field", "field_gradient"}, {{{0., 2. * M_PI}}},
       std::make_tuple(wave_numbers), DataVector(5));
-  pypp::check_with_random_values<
-      1, tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>>(
+  pypp::check_with_random_values<1>(
       &ProductOfSinusoidsProxy<Dim>::source_variables, solution,
       "ProductOfSinusoids", {"source"}, {{{0., 2. * M_PI}}},
       std::make_tuple(wave_numbers), DataVector(5));

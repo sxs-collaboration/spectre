@@ -53,15 +53,11 @@ struct LorentzianProxy : Poisson::Solutions::Lorentzian<Dim> {
 template <size_t Dim>
 void test_solution() {
   const LorentzianProxy<Dim> solution{};
-  pypp::check_with_random_values<
-      1, tmpl::list<Poisson::Tags::Field,
-                    ::Tags::deriv<Poisson::Tags::Field, tmpl::size_t<Dim>,
-                                  Frame::Inertial>>>(
-      &LorentzianProxy<Dim>::field_variables, solution, "Lorentzian",
-      {"field", "field_gradient"}, {{{-5., 5.}}}, std::make_tuple(),
-      DataVector(5));
-  pypp::check_with_random_values<
-      1, tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>>(
+  pypp::check_with_random_values<1>(&LorentzianProxy<Dim>::field_variables,
+                                    solution, "Lorentzian",
+                                    {"field", "field_gradient"}, {{{-5., 5.}}},
+                                    std::make_tuple(), DataVector(5));
+  pypp::check_with_random_values<1>(
       &LorentzianProxy<Dim>::source_variables, solution, "Lorentzian",
       {"source"}, {{{-5., 5.}}}, std::make_tuple(), DataVector(5));
 

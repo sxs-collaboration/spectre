@@ -8,8 +8,10 @@
 
 #include <Python.h>
 #include <array>
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <initializer_list>
+#include <optional>
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
@@ -512,8 +514,11 @@ T tensor_conversion_impl(PyObject* p) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     if (npy_array_dims[i] != static_cast<long>(gsl::at(t_array_dims, i))) {
       throw std::runtime_error{
-          "Mismatch between number of components of ndarray and Tensor in " +
-          std::to_string(i) + "\'th dim"};
+          "Mismatch between number of components of ndarray (" +
+          std::to_string(npy_array_dims[i])  // NOLINT
+          + ") and Tensor of rank " + std::to_string(T::rank()) + " in " +
+          std::to_string(i) + "\'th index with dimension " +
+          std::to_string(static_cast<long>(gsl::at(t_array_dims, i)))};
     }
   }
   auto t = make_with_value<T>(
@@ -625,6 +630,46 @@ template <typename T>
 struct ToPyObject<Scalar<T>, Requires<is_any_spin_weighted_v<T>>> {
   static PyObject* convert(const Scalar<T>& t) {
     return ToPyObject<typename T::value_type>::convert(get(t).data());
+  }
+};
+
+template <typename T>
+struct FromPyObject<boost::optional<T>> {
+  static boost::optional<T> convert(PyObject* p) {
+    if (p == Py_None) {
+      return boost::optional<T>{};
+    }
+    return FromPyObject<T>::convert(p);
+  }
+};
+
+template <typename T>
+struct ToPyObject<boost::optional<T>> {
+  static PyObject* convert(const boost::optional<T>& t) {
+    if (static_cast<bool>(t)) {
+      return to_py_object(*t);
+    }
+    return Py_None;
+  }
+};
+
+template <typename T>
+struct FromPyObject<std::optional<T>> {
+  static std::optional<T> convert(PyObject* p) {
+    if (p == Py_None) {
+      return std::optional<T>{};
+    }
+    return FromPyObject<T>::convert(p);
+  }
+};
+
+template <typename T>
+struct ToPyObject<std::optional<T>> {
+  static PyObject* convert(const std::optional<T>& t) {
+    if (static_cast<bool>(t)) {
+      return to_py_object(*t);
+    }
+    return Py_None;
   }
 };
 

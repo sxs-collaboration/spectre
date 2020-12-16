@@ -115,8 +115,7 @@ void test_variables(const DataType& used_for_size) {
       polytropic_constant, polytropic_exponent, threshold_density,
       inverse_plasma_beta);
 
-  pypp::check_with_random_values<
-      1, MagnetizedFmDiskProxy::grmhd_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &MagnetizedFmDiskProxy::grmhd_variables<DataType>, disk,
       "PointwiseFunctions.AnalyticData.GrMhd.MagnetizedFmDisk",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
@@ -155,8 +154,7 @@ void test_variables(const DataType& used_for_size) {
       bh_mass, bh_dimless_spin, inner_edge_radius, max_pressure_radius,
       polytropic_constant, polytropic_exponent, threshold_density, 0.0, 4);
 
-  pypp::check_with_random_values<
-      1, MagnetizedFmDiskProxy::hydro_variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &MagnetizedFmDiskProxy::hydro_variables<DataType>, another_disk,
       "PointwiseFunctions.AnalyticData.GrMhd.MagnetizedFmDisk",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",

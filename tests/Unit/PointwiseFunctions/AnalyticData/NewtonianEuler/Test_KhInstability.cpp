@@ -62,8 +62,7 @@ void test_analytic_data(const DataType& used_for_size) noexcept {
       adiabatic_index, strip_bimedian_height, strip_thickness, strip_density,
       strip_velocity, background_density, background_velocity, pressure,
       perturbation_amplitude, perturbation_width);
-  pypp::check_with_random_values<
-      1, typename KhInstabilityProxy<Dim>::template variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &KhInstabilityProxy<Dim>::template primitive_variables<DataType>, kh_inst,
       "KhInstability",
       {"mass_density", "velocity", "specific_internal_energy", "pressure"},
@@ -90,8 +89,7 @@ void test_analytic_data(const DataType& used_for_size) noexcept {
   test_move_semantics(std::move(kh_inst_to_move), kh_inst);  //  NOLINT
 
   // run post-serialized state through checks with random numbers
-  pypp::check_with_random_values<
-      1, typename KhInstabilityProxy<Dim>::template variables_tags<DataType>>(
+  pypp::check_with_random_values<1>(
       &KhInstabilityProxy<Dim>::template primitive_variables<DataType>,
       serialize_and_deserialize(kh_inst), "KhInstability",
       {"mass_density", "velocity", "specific_internal_energy", "pressure"},
