@@ -243,57 +243,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        compiler: [gcc-7,
-                   gcc-8,
-                   gcc-9,
-                   clang-6.0,
-                   clang-8,
-                   clang-9,
-                   clang-10
-                   ]
+        compiler:
+          - gcc-7
+          - gcc-8
+          - gcc-9
+          - clang-8
+          - clang-9
+          - clang-10
         build_type: [Debug, Release]
-        use_pch: [OFF, ON]
-
-        # Perform a single build with the PCH off to make sure we can
-        # properly configure and build the core libraries when the
-        # PCH is disabled. Building all the tests without the PCH takes
-        # very long and the most we would catch is a missing include of
-        # something that's in the PCH.
-        #
-        # GitHub currently doesn't allow us specifying a list of compilers
-        # or wildcards (e.g. gcc-* means literally gcc-* not gcc-ANYTHING).
-        # We also cannot exclude all the pch:OFF builds and then later
-        # include only one (GitHub applies exclude more aggressively than
-        # include rather than going by ordering).
-        exclude:
-          - use_pch: OFF
-            build_type: Release
-          - use_pch: OFF
-            build_type: Debug
-            compiler: gcc-7
-          - use_pch: OFF
-            build_type: Debug
-            compiler: gcc-8
-          - use_pch: OFF
-            build_type: Debug
-            compiler: gcc-9
-          - use_pch: OFF
-            build_type: Debug
-            compiler: gcc-10
-          - use_pch: OFF
-            build_type: Debug
-            compiler: clang-6.0
-          - use_pch: OFF
-            build_type: Debug
-            compiler: clang-8
-          - use_pch: OFF
-            build_type: Debug
-            compiler: clang-10
+        use_pch: [ON]
         include:
           # Prevent random failures of Debug builds.
           # See issue https://github.com/sxs-collaboration/spectre/issues/1807
           - build_type: Debug
             EXTRA_CXX_FLAGS: "-DBLAZE_USE_VECTORIZATION=0"
+          # Test with ASAN
           - compiler: clang-8
             build_type: Debug
             # When building with ASAN we also need python bindings to be
@@ -310,6 +274,7 @@ jobs:
           - compiler: gcc-8
             build_type: Debug
             PYTHON_EXECUTABLE: /usr/bin/python2
+          # Test a single build with shared libs
           - compiler: clang-9
             # The python bindings don't work with shared libs currently, but we
             # support shared libs, so add at least one build to test that
@@ -318,6 +283,13 @@ jobs:
             BUILD_PYTHON_BINDINGS: OFF
             BUILD_SHARED_LIBS: ON
             MEMORY_ALLOCATOR: JEMALLOC
+          # Add a test without PCH to the build matrix, which only builds core
+          # libraries. Building all the tests without the PCH takes very long
+          # and the most we would catch is a missing include of something that's
+          # in the PCH.
+          - compiler: clang-9
+            build_type: Debug
+            use_pch: OFF
 
     container:
       image: sxscollaboration/spectrebuildenv:latest
