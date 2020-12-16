@@ -17,6 +17,9 @@ add_library(SpectreAllocator INTERFACE)
 option(MEMORY_ALLOCATOR
   "Which allocator to use: SYSTEM, TCMALLOC, JEMALLOC (default)"
   OFF)
+
+set(JEMALLOC_LIB_TYPE "")
+
 # We need to link custom allocators before we link anything else so that
 # any third-party libraries, which generally should all be built as shared
 # libraries, use the allocator that we use. Unfortunately, how exactly
