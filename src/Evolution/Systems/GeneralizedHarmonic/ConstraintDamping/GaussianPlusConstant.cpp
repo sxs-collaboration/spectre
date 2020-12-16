@@ -15,6 +15,7 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -37,45 +38,36 @@ GaussianPlusConstant<VolumeDim, Fr>::GaussianPlusConstant(
 
 template <size_t VolumeDim, typename Fr>
 template <typename T>
-tnsr::I<T, VolumeDim, Fr>
-GaussianPlusConstant<VolumeDim, Fr>::centered_coordinates(
+void GaussianPlusConstant<VolumeDim, Fr>::apply_call_operator(
+    const gsl::not_null<Scalar<T>*> value_at_x,
     const tnsr::I<T, VolumeDim, Fr>& x) const noexcept {
-  tnsr::I<T, VolumeDim, Fr> centered_coords = x;
+  tnsr::I<T, VolumeDim, Fr> centered_coords{x};
   for (size_t i = 0; i < VolumeDim; ++i) {
     centered_coords.get(i) -= gsl::at(center_, i);
   }
-  return centered_coords;
+  dot_product(value_at_x, centered_coords, centered_coords);
+  value_at_x->get() =
+      constant_ + amplitude_ * exp(-value_at_x->get() * square(inverse_width_));
 }
 
 template <size_t VolumeDim, typename Fr>
-template <typename T>
-Scalar<T> GaussianPlusConstant<VolumeDim, Fr>::apply_call_operator(
-    const tnsr::I<T, VolumeDim, Fr>& centered_coords) const noexcept {
-  Scalar<T> result = dot_product(centered_coords, centered_coords);
-  get(result) =
-      constant_ + amplitude_ * exp(-get(result) * square(inverse_width_));
-  return result;
-}
-
-template <size_t VolumeDim, typename Fr>
-Scalar<double> GaussianPlusConstant<VolumeDim, Fr>::operator()(
+void GaussianPlusConstant<VolumeDim, Fr>::operator()(
+    const gsl::not_null<Scalar<double>*> value_at_x,
     const tnsr::I<double, VolumeDim, Fr>& x, const double /*time*/,
     const std::unordered_map<
-        std::string,
-        std::unique_ptr<
-            domain::FunctionsOfTime::FunctionOfTime>>& /*funtions_of_time*/)
-    const noexcept {
-  return apply_call_operator(centered_coordinates(x));
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+    /*funtions_of_time*/) const noexcept {
+  apply_call_operator(value_at_x, x);
 }
 template <size_t VolumeDim, typename Fr>
-Scalar<DataVector> GaussianPlusConstant<VolumeDim, Fr>::operator()(
+void GaussianPlusConstant<VolumeDim, Fr>::operator()(
+    const gsl::not_null<Scalar<DataVector>*> value_at_x,
     const tnsr::I<DataVector, VolumeDim, Fr>& x, const double /*time*/,
     const std::unordered_map<
-        std::string,
-        std::unique_ptr<
-            domain::FunctionsOfTime::FunctionOfTime>>& /*funtions_of_time*/)
-    const noexcept {
-  return apply_call_operator(centered_coordinates(x));
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+    /*funtions_of_time*/) const noexcept {
+  destructive_resize_components(value_at_x, get<0>(x).size());
+  apply_call_operator(value_at_x, x);
 }
 
 template <size_t VolumeDim, typename Fr>
@@ -118,8 +110,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATE(_, data)                                               \
-  template Scalar<DTYPE(data)> GeneralizedHarmonic::ConstraintDamping::    \
+  template void GeneralizedHarmonic::ConstraintDamping::                   \
       GaussianPlusConstant<DIM(data), FRAME(data)>::operator()(            \
+          const gsl::not_null<Scalar<DTYPE(data)>*> value_at_x,            \
           const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x,           \
           const double /*time*/,                                           \
           const std::unordered_map<                                        \

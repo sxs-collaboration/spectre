@@ -85,18 +85,18 @@ class GaussianPlusConstant : public DampingFunction<VolumeDim, Fr> {
   GaussianPlusConstant& operator=(GaussianPlusConstant&& /*rhs*/) noexcept =
       default;
 
-  Scalar<double> operator()(
-      const tnsr::I<double, VolumeDim, Fr>& x, double time,
-      const std::unordered_map<
-          std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept override;
-  Scalar<DataVector> operator()(
-      const tnsr::I<DataVector, VolumeDim, Fr>& x, double time,
-      const std::unordered_map<
-          std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-          functions_of_time) const noexcept override;
+  void operator()(const gsl::not_null<Scalar<double>*> value_at_x,
+                  const tnsr::I<double, VolumeDim, Fr>& x, double time,
+                  const std::unordered_map<
+                      std::string,
+                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+                      functions_of_time) const noexcept override;
+  void operator()(const gsl::not_null<Scalar<DataVector>*> value_at_x,
+                  const tnsr::I<DataVector, VolumeDim, Fr>& x, double time,
+                  const std::unordered_map<
+                      std::string,
+                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+                      functions_of_time) const noexcept override;
 
   auto get_clone() const noexcept
       -> std::unique_ptr<DampingFunction<VolumeDim, Fr>> override;
@@ -119,11 +119,8 @@ class GaussianPlusConstant : public DampingFunction<VolumeDim, Fr> {
   std::array<double, VolumeDim> center_{};
 
   template <typename T>
-  tnsr::I<T, VolumeDim, Fr> centered_coordinates(
-      const tnsr::I<T, VolumeDim, Fr>& x) const noexcept;
-  template <typename T>
-  Scalar<T> apply_call_operator(
-      const tnsr::I<T, VolumeDim, Fr>& centered_coords) const noexcept;
+  void apply_call_operator(const gsl::not_null<Scalar<T>*> value_at_x,
+                           const tnsr::I<T, VolumeDim, Fr>& x) const noexcept;
 };
 
 template <size_t VolumeDim, typename Fr>

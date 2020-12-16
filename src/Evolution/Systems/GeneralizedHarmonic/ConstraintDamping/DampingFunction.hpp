@@ -10,6 +10,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/Gsl.hpp"
 
 /// \cond
 class DataVector;
@@ -52,13 +53,15 @@ class DampingFunction : public PUP::able {
 
   //@{
   /// Returns the value of the function at the coordinate 'x'.
-  virtual Scalar<double> operator()(
+  virtual void operator()(
+      const gsl::not_null<Scalar<double>*> value_at_x,
       const tnsr::I<double, VolumeDim, Fr>& x, double time,
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) const noexcept = 0;
-  virtual Scalar<DataVector> operator()(
+  virtual void operator()(
+      const gsl::not_null<Scalar<DataVector>*> value_at_x,
       const tnsr::I<DataVector, VolumeDim, Fr>& x, double time,
       const std::unordered_map<
           std::string,
