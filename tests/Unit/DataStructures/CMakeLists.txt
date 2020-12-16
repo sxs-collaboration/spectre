@@ -62,9 +62,11 @@ target_link_libraries(
 spectre_add_python_bindings_test(
   "Unit.DataStructures.Python.DataVector"
   Test_DataVector.py
-  "Unit;DataStructures;Python")
+  "Unit;DataStructures;Python"
+  PyDataStructures)
 # [example_add_pybindings_test]
 spectre_add_python_bindings_test(
   "Unit.DataStructures.Python.Matrix"
   Test_Matrix.py
-  "Unit;DataStructures;Python")
+  "Unit;DataStructures;Python"
+  PyDataStructures)

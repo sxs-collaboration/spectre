@@ -23,4 +23,5 @@ add_test_library(
 spectre_add_python_bindings_test(
   "Unit.DataStructures.Tensor.Python.TensorData"
   Test_TensorData.py
-  "Unit;DataStructures;Tensor;Python")
+  "Unit;DataStructures;Tensor;Python"
+  PyDataStructures)

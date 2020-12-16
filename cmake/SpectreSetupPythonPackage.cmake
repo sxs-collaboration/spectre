@@ -308,7 +308,11 @@ endfunction()
 #
 # - TAGS         A semicolon separated list of labels for the test,
 #                e.g. "Unit;DataStructures;Python"
-function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS)
+# - PY_MODULE_DEPENDENCY
+#                The python module that this test depends on
+#                Set to None if there is no python module dependency
+function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS
+    PY_MODULE_DEPENDENCY)
   get_filename_component(FILE "${FILE}" ABSOLUTE)
   string(TOLOWER "${TAGS}" TAGS)
 
@@ -337,6 +341,15 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS)
     LABELS "${TAGS};Python"
     ENVIRONMENT "PYTHONPATH=${SPECTRE_PYTHON_PREFIX_PARENT}:\$PYTHONPATH"
     )
+  # check if this is a unit test, and if so add it to the dependencies
+  foreach(LABEL ${TAGS})
+    string(TOLOWER "${LABEL}" LOWER_LABEL)
+    string(TOLOWER "${PY_MODULE_DEPENDENCY}" LOWER_DEP)
+    if("${LOWER_LABEL}" STREQUAL "unit"
+        AND NOT "${LOWER_DEP}" STREQUAL "none")
+      add_dependencies(unit-tests ${PY_MODULE_DEPENDENCY})
+    endif()
+  endforeach()
 endfunction()
 
 # Register a python test file that uses bindings with ctest.
@@ -347,9 +360,13 @@ endfunction()
 #
 # - TAGS         A semicolon separated list of labels for the test,
 #                e.g. "Unit;DataStructures;Python"
-function(SPECTRE_ADD_PYTHON_BINDINGS_TEST TEST_NAME FILE TAGS)
+# - PY_MODULE_DEPENDENCY
+#                The python module that this test depends on
+#                Set to None if there is no python module dependency
+function(SPECTRE_ADD_PYTHON_BINDINGS_TEST TEST_NAME FILE TAGS
+    PY_MODULE_DEPENDENCY)
   if(NOT BUILD_PYTHON_BINDINGS)
     return()
   endif()
-  spectre_add_python_test(${TEST_NAME} ${FILE} ${TAGS})
+  spectre_add_python_test(${TEST_NAME} ${FILE} "${TAGS}" ${PY_MODULE_DEPENDENCY})
 endfunction()
