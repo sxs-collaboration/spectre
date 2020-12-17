@@ -178,8 +178,15 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - Whether or not to use debug symbols (default is `ON`)
   - Disabling debug symbols will reduce compile time and total size of the build
     directory.
+- ENABLE_PROFILING
+  - Enables various options to make profiling SpECTRE easier
+    (default is `OFF`)
 - ENABLE_WARNINGS
   - Whether or not warning flags are enabled (default is `ON`)
+- KEEP_FRAME_POINTER
+  - Whether to keep the frame pointer. Needed for profiling or other cases
+    where you need to be able to figure out what the call stack is.
+    (default is `OFF`)
 - MEMORY_ALLOCATOR
   - Set which memory allocator to use. If there are unexplained segfaults or
     other memory issues, it would be worth setting `MEMORY_ALLOCATOR=SYSTEM` to
