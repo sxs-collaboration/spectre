@@ -111,6 +111,48 @@ auto logical_partial_derivatives(const Variables<VariableTags>& u,
 // @}
 
 // @{
+/*!
+ * \ingroup NumericalAlgorithmsGroup
+ * \brief Computes the logical partial derivative of a tensor, prepending the
+ * spatial derivative index, e.g. for \f$\partial_i T_{a}{}^{b}\f$ the C++ call
+ * is `get(i, a, b)`.
+ *
+ * There is an overload that accepts a `buffer` of size
+ * `mesh.number_of_grid_points()` or larger. When passed this function performs
+ * no memory allocations, which helps improve performance.
+ *
+ * If you have a `Variables` with several tensors you need to differentiate you
+ * should use the `logical_partial_derivatives` function that operates on
+ * `Variables` since that'll be more efficient.
+ */
+template <typename SymmList, typename IndexList, size_t Dim>
+void logical_partial_derivative(
+    gsl::not_null<TensorMetafunctions::prepend_spatial_index<
+        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        Frame::Logical>*>
+        logical_derivative_of_u,
+    gsl::not_null<gsl::span<double>*> buffer,
+    const Tensor<DataVector, SymmList, IndexList>& u,
+    const Mesh<Dim>& mesh) noexcept;
+
+template <typename SymmList, typename IndexList, size_t Dim>
+void logical_partial_derivative(
+    gsl::not_null<TensorMetafunctions::prepend_spatial_index<
+        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo,
+        Frame::Logical>*>
+        logical_derivative_of_u,
+    const Tensor<DataVector, SymmList, IndexList>& u,
+    const Mesh<Dim>& mesh) noexcept;
+
+template <typename SymmList, typename IndexList, size_t Dim>
+auto logical_partial_derivative(
+    const Tensor<DataVector, SymmList, IndexList>& u,
+    const Mesh<Dim>& mesh) noexcept
+    -> TensorMetafunctions::prepend_spatial_index<
+        Tensor<DataVector, SymmList, IndexList>, Dim, UpLo::Lo, Frame::Logical>;
+// @}
+
+// @{
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Compute the partial derivatives of each variable with respect to
 /// the coordinates of `DerivativeFrame`.
