@@ -236,6 +236,16 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - Write the source tree into HDF5 files written to disk in order to increase
     reproducibility of results.
     (default is `ON`)
+- USE_GIT_HOOKS
+  - Use git hooks to perform certain sanity checks so that small goofs are
+    caught before getting to CI. Most situations where the hooks can cause
+    problems are handled automatically. The exception is when the build
+    directory is inside a (Singularity) container, we use Python 2 and the host
+    machine (where we make the commits) does not have Python 2. Except for these
+    types of cases, we strongly encourage you to keep the hooks enabled since
+    the same checks are performed during CI and there is a good reason why the
+    checks exist in the first place.
+    (default is `ON`)
 - USE_LD
   - Override the automatically chosen linker. The options are `ld`, `gold`, and
     `lld`.
