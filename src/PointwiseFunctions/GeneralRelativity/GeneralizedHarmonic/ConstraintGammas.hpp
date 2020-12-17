@@ -58,8 +58,7 @@ struct ConstraintGamma0Compute : ConstraintGamma0, db::ComputeTag {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) noexcept {
-    destructive_resize_components(gamma, get<0>(coords).size());
-    get(*gamma) = get(damping_function(coords, time, functions_of_time));
+    damping_function(gamma, coords, time, functions_of_time);
   }
 
   using base = ConstraintGamma0;
@@ -89,8 +88,7 @@ struct ConstraintGamma1Compute : ConstraintGamma1, db::ComputeTag {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) noexcept {
-    destructive_resize_components(gamma1, get<0>(coords).size());
-    get(*gamma1) = get(damping_function(coords, time, functions_of_time));
+    damping_function(gamma1, coords, time, functions_of_time);
   }
 
   using base = ConstraintGamma1;
@@ -120,8 +118,7 @@ struct ConstraintGamma2Compute : ConstraintGamma2, db::ComputeTag {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) noexcept {
-    destructive_resize_components(gamma, get<0>(coords).size());
-    get(*gamma) = get(damping_function(coords, time, functions_of_time));
+    damping_function(gamma, coords, time, functions_of_time);
   }
 
   using base = ConstraintGamma2;

@@ -69,8 +69,15 @@ void check_impl(
                   0.0,
                   std::array<DataVector, 4>{{{1.0}, {0.2}, {0.03}, {0.004}}},
                   std::numeric_limits<double>::max());
-              return gh_damping_function->operator()(coordinates, time,
-                                                     functions_of_time);
+              // Default-construct the scalar, to test that the damping
+              // function's call operator correctly resizes it
+              // (in the case T is a DataVector) with
+              // destructive_resize_components()
+              Scalar<T> value_at_coordinates{};
+              gh_damping_function->operator()(
+                  make_not_null(&value_at_coordinates), coordinates, time,
+                  functions_of_time);
+              return value_at_coordinates;
             };
 
         pypp::check_with_random_values<1>(
