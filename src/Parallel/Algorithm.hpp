@@ -180,7 +180,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
       tuples::TaggedTuple<InitializationTags...> initialization_items) noexcept;
 
   /// Charm++ migration constructor, used after a chare is migrated
-  constexpr explicit AlgorithmImpl(CkMigrateMessage* /*msg*/) noexcept;
+  explicit AlgorithmImpl(CkMigrateMessage* /*msg*/) noexcept;
 
   /// \cond
   ~AlgorithmImpl() override;
@@ -419,10 +419,19 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-constexpr AlgorithmImpl<ParallelComponent,
-                        tmpl::list<PhaseDepActionListsPack...>>::
-    AlgorithmImpl(CkMigrateMessage* /*msg*/) noexcept
-    : AlgorithmImpl() {}
+AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    AlgorithmImpl(CkMigrateMessage* msg) noexcept
+    : cbase_type(msg) {
+  if (UNLIKELY(msg == nullptr)) {
+    ERROR(
+        "The AlgorithmImpl has been constructed with a nullptr as a "
+        "CkMigrateMessage* -- most likely this indicates that a constructor "
+        "is being used incorrectly, as the CkMigrateMessage* constructor "
+        "should only be used by the charm framework when migrating. "
+        "Constructing with a nullptr CkMigrateMessage* is dangerous and can "
+        "cause segfaults.");
+  }
+}
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 AlgorithmImpl<ParallelComponent,
