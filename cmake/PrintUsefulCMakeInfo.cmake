@@ -1,30 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(Git)
-
-# Get the current working branch and commit hash
-if(EXISTS ${CMAKE_SOURCE_DIR}/.git AND Git_FOUND)
-  execute_process(
-    COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_BRANCH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-  execute_process(
-    COMMAND ${GIT_EXECUTABLE} describe --abbrev=0 --always --tags
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_COMMIT_HASH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-else()
-  set(GIT_BRANCH "NOT_IN_GIT_REPO")
-  set(GIT_COMMIT_HASH "NOT_IN_GIT_REPO")
-endif()
-
 message(STATUS "\nUseful Information:")
 message(STATUS "Git Branch: " ${GIT_BRANCH})
-message(STATUS "Git Hash: " ${GIT_COMMIT_HASH})
+message(STATUS "Git Hash: " ${GIT_HASH})
 message(STATUS "Build Directory: " ${CMAKE_BINARY_DIR})
 message(STATUS "Source Directory: " ${CMAKE_SOURCE_DIR})
 message(STATUS "Bin Directory: " ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})

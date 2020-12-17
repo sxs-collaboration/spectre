@@ -27,6 +27,7 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 site_name(HOSTNAME)
 
 include(SpectreInitializeVariables)
+include(SpectreGetGitHash)
 
 option(
   DOCS_ONLY
