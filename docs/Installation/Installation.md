@@ -174,19 +174,20 @@ Notes:
 
 ## Using Singularity to obtain a SpECTRE environment
 
-[Singularity](http://singularity.lbl.gov/index.html) is a container alternative
+[Singularity](https://sylabs.io) is a container alternative
 to Docker with better security and nicer integration.
 
 To use Singularity you must:
 
-1. Build [Singularity](http://singularity.lbl.gov/index.html) and add it to your
+1. Build [Singularity](https://sylabs.io) and add it to your
    `$PATH`
 2. `cd` to the directory where you want to store the SpECTRE Singularity image,
    source, and build directories, let's call it WORKDIR. The WORKDIR must be
    somewhere in your home directory. If this does not work for you, follow the
    Singularity instructions on setting up additional [bind
-   points](http://singularity.lbl.gov/docs-mount). Once inside the WORKDIR,
-   clone SpECTRE into `WORKDIR/SPECTRE_ROOT`.
+   points](https://sylabs.io/guides/3.7/user-guide/bind_paths_and_mounts.html) 
+   (version 3.7. For other versions, see the [docs](https://sylabs.io/docs/)). 
+   Once inside the WORKDIR, clone SpECTRE into `WORKDIR/SPECTRE_ROOT`.
 3. Run `sudo singularity build spectre.img
    docker://sxscollaboration/spectrebuildenv:latest`.
 
