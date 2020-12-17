@@ -32,10 +32,6 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.Tags", "[Unit][IO]") {
   TestHelpers::db::test_simple_tag<
       importers::Tags::ObservationValue<ExampleVolumeData>>(
       "ObservationValue(ExampleVolumeData)");
-  TestHelpers::db::test_simple_tag<importers::Tags::FunctionOfTimeFile>(
-      "FunctionOfTimeFile");
-  TestHelpers::db::test_simple_tag<importers::Tags::FunctionOfTimeNameMap>(
-      "FunctionOfTimeNameMap");
 
   Options::Parser<
       tmpl::list<importers::OptionTags::FileName<ExampleVolumeData>,

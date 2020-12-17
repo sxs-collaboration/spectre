@@ -4,7 +4,6 @@
 set(LIBRARY "Test_DataImporter")
 
 set(LIBRARY_SOURCES
-  Test_ReadSpecThirdOrderPiecewisePolynomial.cpp
   Test_Tags.cpp
   Test_VolumeDataReaderActions.cpp
   )
@@ -13,7 +12,7 @@ add_test_library(
   ${LIBRARY}
   "IO/Importers"
   "${LIBRARY_SOURCES}"
-  "Domain;IO;Options"
+  "Domain;IO;Importers;Options"
   )
 
 add_dependencies(

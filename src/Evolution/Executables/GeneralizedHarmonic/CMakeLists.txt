@@ -54,4 +54,5 @@ target_link_libraries(
   EvolveGhKerrSchildNumericInitialData
   PRIVATE
   GeneralRelativitySolutions
+  Importers
   )
