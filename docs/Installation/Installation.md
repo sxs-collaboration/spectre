@@ -45,7 +45,8 @@ environment differently, read on!
 * [matplotlib](https://matplotlib.org/)
 
 #### Optional:
-* [Pybind11](https://pybind11.readthedocs.io) for SpECTRE Python bindings
+* [Pybind11](https://pybind11.readthedocs.io) 2.6.0 or later for SpECTRE Python
+  bindings
 * [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) — to generate
   documentation
 * [Python](https://www.python.org/) with
