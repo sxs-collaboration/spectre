@@ -4,8 +4,11 @@
 spectre_add_python_bindings_test(
   "Unit.Domain.Python.ElementId"
   Test_ElementId.py
-  "Unit;Domain")
+  "Unit;Domain"
+  PyDomain)
+
 spectre_add_python_bindings_test(
   "Unit.Domain.Python.SegmentId"
   Test_SegmentId.py
-  "Unit;Domain")
+  "Unit;Domain"
+  PyDomain)

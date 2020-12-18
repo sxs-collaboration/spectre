@@ -28,7 +28,7 @@ function(add_algorithm_test EXECUTABLE_NAME)
     Utilities
     )
 
-  add_dependencies(test-executables ${EXECUTABLE_NAME})
+  add_dependencies(unit-tests ${EXECUTABLE_NAME})
 endfunction()
 
 add_algorithm_test(Test_AlgorithmCore)
@@ -54,9 +54,7 @@ add_dependencies(
   module_Test_GlobalCache
   )
 
-add_dependencies(test-executables Test_GlobalCache)
-
-# Add integration tests. For tests that result in a failure it is necessary to
+# Add unit tests. For tests that result in a failure it is necessary to
 # redirect output from stderr to stdout. However, it was necessary at least on
 # some systems to do this redirect inside a shell command.
 find_program(SHELL_EXECUTABLE "sh")
@@ -67,7 +65,7 @@ endif()
 
 function(add_algorithm_test TEST_NAME REGEX_TO_MATCH)
   add_test(
-    NAME "\"Integration.Parallel.${TEST_NAME}\""
+    NAME "\"Unit.Parallel.${TEST_NAME}\""
     COMMAND
     ${SHELL_EXECUTABLE}
     -c
@@ -76,38 +74,38 @@ function(add_algorithm_test TEST_NAME REGEX_TO_MATCH)
 
   if("${REGEX_TO_MATCH}" STREQUAL "")
     set_tests_properties(
-      "\"Integration.Parallel.${TEST_NAME}\""
+      "\"Unit.Parallel.${TEST_NAME}\""
       PROPERTIES
       TIMEOUT 10
-      LABELS "integration"
+      LABELS "unit"
       ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
   else()
     set_tests_properties(
-      "\"Integration.Parallel.${TEST_NAME}\""
+      "\"Unit.Parallel.${TEST_NAME}\""
       PROPERTIES
       PASS_REGULAR_EXPRESSION
       "${REGEX_TO_MATCH}"
       TIMEOUT 10
-      LABELS "integration"
+      LABELS "unit"
       ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
   endif()
 endfunction()
 
 function(add_algorithm_test_with_input_file TEST_NAME INPUT_FILE_DIR)
   add_test(
-    NAME "\"Integration.Parallel.${TEST_NAME}\""
+    NAME "\"Unit.Parallel.${TEST_NAME}\""
     COMMAND
     ${SHELL_EXECUTABLE}
     -c
     "${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} --input-file \
      ${CMAKE_SOURCE_DIR}/tests/${INPUT_FILE_DIR}/Test_${TEST_NAME}.yaml 2>&1"
     )
-    set_tests_properties(
-      "\"Integration.Parallel.${TEST_NAME}\""
-      PROPERTIES
-      TIMEOUT 10
-      LABELS "integration"
-      ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+  set_tests_properties(
+    "\"Unit.Parallel.${TEST_NAME}\""
+    PROPERTIES
+    TIMEOUT 10
+    LABELS "unit"
+    ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
 endfunction()
 
 add_algorithm_test("AlgorithmCore" "")

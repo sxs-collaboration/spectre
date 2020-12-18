@@ -4,4 +4,5 @@
 spectre_add_python_bindings_test(
   "Unit.AnalyticSolutions.GeneralRelativity.Python.Tov"
   "Test_Tov.py"
-  "Unit;PointwiseFunctions;Python")
+  "Unit;PointwiseFunctions;Python"
+  PyGeneralRelativitySolutions)
