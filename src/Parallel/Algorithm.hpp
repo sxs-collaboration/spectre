@@ -36,6 +36,7 @@
 #include "Utilities/BoostHelpers.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -674,16 +675,23 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     using databox_phase_type = tmpl::at_c<databox_phase_types, phase_index>;
     using databox_types_this_phase = typename databox_phase_type::databox_types;
 
-    const auto display_databox_error = [this](
-        const size_t line_number) noexcept {
-      ERROR(
-          "The DataBox type being retrieved at algorithm step: "
-          << algorithm_step_ << " in phase " << phase_index
-          << " corresponding to action " << pretty_type::get_name<this_action>()
-          << " on line " << line_number
-          << " is not the correct type but is of variant index " << box_.which()
-          << ". If you are using Goto and Label actions then you are using "
-             "them incorrectly.");
+    const auto display_databox_error = [this](const size_t line_number,
+                                              auto first_type,
+                                              auto... types) noexcept {
+      ERROR("The DataBox type being retrieved at algorithm step: "
+            << algorithm_step_ << " in phase " << phase_index
+            << " corresponding to action "
+            << pretty_type::get_name<this_action>() << " on line "
+            << line_number
+            << " is not the correct type but is of variant index "
+            << box_.which()
+            << ". If you are using Goto and Label actions then you are using "
+               "them incorrectly. \nValid DataBox Types: \n  "
+            << pretty_type::get_name<typename decltype(first_type)::type>()
+            << (MakeString{} << ",\n  "
+                << ...
+                << pretty_type::get_name<typename decltype(types)::type>())
+            << "\nVariant type:\n  " << pretty_type::get_name<variant_boxes>());
     };
 
     // The overload separately handles the first action in the phase from the
@@ -755,7 +763,8 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                         std::as_const(array_index_), actions_list{},
                         std::add_pointer_t<ParallelComponent>{}))>::type{});
               } else {
-                display_databox_error(__LINE__);
+                display_databox_error(__LINE__, tmpl::type_<first_databox>{},
+                                      tmpl::type_<last_databox>{});
               }
               return nullptr;
             },
@@ -796,7 +805,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                         std::as_const(array_index_), actions_list{},
                         std::add_pointer_t<ParallelComponent>{}))>::type{});
               } else {
-                display_databox_error(__LINE__);
+                display_databox_error(__LINE__, tmpl::type_<this_databox>{});
               }
               return nullptr;
             })(std::integral_constant<size_t, iter>{});
