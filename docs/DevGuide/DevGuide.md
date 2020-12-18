@@ -40,6 +40,7 @@ Terms with SpECTRE-specific meanings are defined here.
 Explanations for TMP concepts and patterns known to the greater C++ community
 can be found here.
 - \ref sfinae "SFINAE"
+- \ref brigand "The Brigand TMP library"
 
 ### Foundational Concepts in SpECTRE
 Designed to give the reader an introduction to SpECTRE's most recurring

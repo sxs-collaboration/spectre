@@ -437,17 +437,11 @@ using conditional_t = typename conditional<B>::template type<T, F>;
 }  // namespace brigand
 
 namespace brigand {
-namespace detail {
-template <typename S, typename E>
-struct remove_duplicates_helper {
-  using type = conditional_t<std::is_same_v<index_of<S, E>, no_such_type_>,
-                             push_back<S, E>, S>;
-};
-}  // namespace detail
-
 template <typename List>
 using remove_duplicates =
-    fold<List, list<>, detail::remove_duplicates_helper<_state, _element>>;
+    fold<List, clear<List>,
+         if_<bind<none, _state, defer<std::is_same<_1, parent<_element>>>>,
+             bind<push_back, _state, _element>, _state>>;
 }  // namespace brigand
 
 namespace brigand {
