@@ -243,12 +243,9 @@ struct AddIntValue10 {
         [](const gsl::not_null<int*> count_actions_called) {
           ++*count_actions_called;
         });
-    const bool terminate_algorithm =
-        db::get<Tags::CountActionsCalled>(box) >= 15;
     return std::make_tuple(
         db::create_from<tmpl::list<>, tmpl::list<Tags::Int0>>(std::move(box),
-                                                              10),
-        terminate_algorithm);
+                                                              10));
   }
 };
 
@@ -322,8 +319,11 @@ struct RemoveInt0 {
         [](const gsl::not_null<int*> count_actions_called) {
           ++*count_actions_called;
         });
+    const bool terminate_algorithm =
+        db::get<Tags::CountActionsCalled>(box) >= 15;
     return std::make_tuple(
-        db::create_from<tmpl::list<Tags::Int0>>(std::move(box)));
+        db::create_from<tmpl::list<Tags::Int0>>(std::move(box)),
+        terminate_algorithm);
   }
 };
 
@@ -502,10 +502,8 @@ struct SingletonParallelComponent {
           global_cache) noexcept {
     if (next_phase == Metavariables::Phase::PerformSingletonAlgorithm) {
       auto& local_cache = *(global_cache.ckLocalBranch());
-      /// [perform_algorithm]
       Parallel::get_parallel_component<SingletonParallelComponent>(local_cache)
-          .perform_algorithm();
-      /// [perform_algorithm]
+          .start_phase(next_phase);
       return;
     }
   }
@@ -557,7 +555,7 @@ struct ArrayParallelComponent {
     if (next_phase == Metavariables::Phase::PerformArrayAlgorithm or
         next_phase == Metavariables::Phase::FinalizeArray) {
       Parallel::get_parallel_component<ArrayParallelComponent>(local_cache)
-          .perform_algorithm();
+          .start_phase(next_phase);
     }
   }
 };

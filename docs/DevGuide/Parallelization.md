@@ -484,9 +484,7 @@ component. The algorithm can be explicitly evaluated in a new phase by calling
 \snippet Test_AlgorithmCore.cpp start_phase
 
 Alternatively, to evaluate the algorithm without changing phases the
-`perform_algorithm()` method can be used:
-
-\snippet Test_AlgorithmParallel.cpp perform_algorithm
+`perform_algorithm()` method can be used.
 
 By passing `true` to `perform_algorithm` the algorithm will be restarted if it
 was terminated.
