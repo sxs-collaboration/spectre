@@ -33,33 +33,25 @@ using Affine = domain::CoordinateMaps::Affine;
 using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
-template <size_t VolumeDim>
-auto make_map() noexcept;
-
-template <>
-auto make_map<1>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
-      Affine{-1.0, 1.0, -0.3, 0.7});
+template <size_t Dim>
+auto make_map() noexcept {
+  if constexpr (Dim == 1) {
+    return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+        Affine{-1.0, 1.0, -0.3, 0.7});
+  } else if constexpr (Dim == 2) {
+    return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+        Affine2D{{-1.0, 1.0, -1.0, -0.99}, {-1.0, 1.0, -1.0, -0.99}},
+        domain::CoordinateMaps::Wedge2D{1.0, 2.0, 0.0, 1.0, {}, false});
+  } else {
+    return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+        Affine3D{{-1.0, 1.0, -1.0, -0.99},
+                 {-1.0, 1.0, -1.0, -0.99},
+                 {-1.0, 1.0, -1.0, 1.0}},
+        domain::CoordinateMaps::ProductOf2Maps<domain::CoordinateMaps::Wedge2D,
+                                               Affine>{
+            {1.0, 2.0, 0.0, 1.0, {}, false}, {0.0, 1.0, 0.0, 1.0}});
+  }
 }
-
-template <>
-auto make_map<2>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
-      Affine2D{{-1.0, 1.0, -1.0, -0.99}, {-1.0, 1.0, -1.0, -0.99}},
-      domain::CoordinateMaps::Wedge2D{1.0, 2.0, 0.0, 1.0, {}, false});
-}
-
-template <>
-auto make_map<3>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
-      Affine3D{{-1.0, 1.0, -1.0, -0.99},
-               {-1.0, 1.0, -1.0, -0.99},
-               {-1.0, 1.0, -1.0, 1.0}},
-      domain::CoordinateMaps::ProductOf2Maps<domain::CoordinateMaps::Wedge2D,
-                                             Affine>{
-          {1.0, 2.0, 0.0, 1.0, {}, false}, {0.0, 1.0, 0.0, 1.0}});
-}
-
 
 template <size_t Dim>
 void test(const Mesh<Dim>& mesh) {
