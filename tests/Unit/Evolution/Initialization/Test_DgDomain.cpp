@@ -165,7 +165,7 @@ struct Component {
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-        tmpl::list<::Actions::SetupDataBox,
+          tmpl::list<::Actions::SetupDataBox,
                      evolution::dg::Initialization::Domain<dim>,
                      Actions::IncrementTime, Actions::IncrementTime>>>;
 };

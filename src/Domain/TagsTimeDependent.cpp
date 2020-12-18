@@ -96,7 +96,7 @@ void InertialMeshVelocityCompute<Dim>::function(
   if (not grid_to_inertial_quantities) {
     *mesh_velocity = std::nullopt;
   } else {
-    if (not*mesh_velocity) {
+    if (not *mesh_velocity) {
       *mesh_velocity = typename return_type::value_type{};
     }
     // We use a const_cast to point the data into the existing allocation
