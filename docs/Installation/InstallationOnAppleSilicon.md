@@ -169,7 +169,7 @@ CMAKE_Fortran_COMPILER=gfortran -D BUILD_PYTHON_BINDINGS=ON \
 -D CATCH_INCLUDE_DIR=${SPECTRE_DEPS_ROOT}/Catch2/include/ \
 -D Boost_ROOT=$(brew --prefix boost)/ \
 -D CLANG_TIDY_BIN=$(brew --prefix llvm)/bin/clang-tidy \
--D MACOSX_MIN=12.0 -D BUILD_SHARED_LIBS=OFF \
+-D BUILD_SHARED_LIBS=OFF \
 -DGSL_ROOT=$(brew --prefix gsl)/include \
 -DGSL_LIBRARY=$(brew --prefix gsl)/lib/libgsl.a ..
 ```
