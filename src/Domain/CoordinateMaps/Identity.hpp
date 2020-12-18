@@ -7,8 +7,8 @@
 #pragma once
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
+#include <optional>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
@@ -40,7 +40,7 @@ class Identity {
   std::array<tt::remove_cvref_wrap_t<T>, Dim> operator()(
       const std::array<T, Dim>& source_coords) const noexcept;
 
-  boost::optional<std::array<double, Dim>> inverse(
+  std::optional<std::array<double, Dim>> inverse(
       const std::array<double, Dim>& target_coords) const noexcept;
 
   template <typename T>

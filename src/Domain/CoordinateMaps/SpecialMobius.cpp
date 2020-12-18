@@ -3,9 +3,8 @@
 
 #include "Domain/CoordinateMaps/SpecialMobius.hpp"
 
-#include <boost/none.hpp>
-#include <boost/optional.hpp>
 #include <cmath>
+#include <optional>
 #include <pup.h>
 
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -84,14 +83,14 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> SpecialMobius::operator()(
   return mobius_distortion(source_coords, mu_);
 }
 
-boost::optional<std::array<double, 3>> SpecialMobius::inverse(
+std::optional<std::array<double, 3>> SpecialMobius::inverse(
     const std::array<double, 3>& target_coords) const noexcept {
   // Invert only points inside or on the unit sphere.
   const auto r_squared = magnitude(target_coords);
   if (r_squared <= 1.0 or equal_within_roundoff(r_squared,1.0)) {
     return mobius_distortion(target_coords, -mu_);
   }
-  return boost::none;
+  return std::nullopt;
 }
 
 template <typename T>

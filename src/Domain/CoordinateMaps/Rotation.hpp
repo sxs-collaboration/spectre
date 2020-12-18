@@ -7,9 +7,9 @@
 #pragma once
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <limits>
+#include <optional>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
@@ -63,7 +63,7 @@ class Rotation<2> {
   std::array<tt::remove_cvref_wrap_t<T>, 2> operator()(
       const std::array<T, 2>& source_coords) const noexcept;
 
-  boost::optional<std::array<double, 2>> inverse(
+  std::optional<std::array<double, 2>> inverse(
       const std::array<double, 2>& target_coords) const noexcept;
 
   template <typename T>
@@ -137,7 +137,7 @@ class Rotation<3> {
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
       const std::array<T, 3>& source_coords) const noexcept;
 
-  boost::optional<std::array<double, 3>> inverse(
+  std::optional<std::array<double, 3>> inverse(
       const std::array<double, 3>& target_coords) const noexcept;
 
   template <typename T>

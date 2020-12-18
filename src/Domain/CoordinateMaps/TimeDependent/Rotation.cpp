@@ -64,7 +64,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 2> Rotation<2>::operator()(
                source_coords[1] * rot_matrix(1, 1)}};
 }
 
-boost::optional<std::array<double, 2>> Rotation<2>::inverse(
+std::optional<std::array<double, 2>> Rotation<2>::inverse(
     const std::array<double, 2>& target_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&

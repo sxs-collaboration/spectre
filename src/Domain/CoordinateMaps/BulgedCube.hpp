@@ -6,9 +6,9 @@
 #pragma once
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <limits>
+#include <optional>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
@@ -503,7 +503,7 @@ class BulgedCube {
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
       const std::array<T, 3>& source_coords) const noexcept;
 
-  boost::optional<std::array<double, 3>> inverse(
+  std::optional<std::array<double, 3>> inverse(
       const std::array<double, 3>& target_coords) const noexcept;
 
   template <typename T>

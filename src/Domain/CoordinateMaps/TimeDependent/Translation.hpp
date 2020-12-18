@@ -4,9 +4,9 @@
 #pragma once
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 
@@ -49,7 +49,7 @@ class Translation {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) const noexcept;
 
-  boost::optional<std::array<double, 1>> inverse(
+  std::optional<std::array<double, 1>> inverse(
       const std::array<double, 1>& target_coords, double time,
       const std::unordered_map<
           std::string,

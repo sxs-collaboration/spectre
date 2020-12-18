@@ -56,7 +56,7 @@ void test_block_time_independent() {
     const tnsr::I<double, Dim, Frame::Logical> xi(1.0);
     const tnsr::I<double, Dim, Frame::Inertial> x(1.0);
     CHECK(map(xi) == x);
-    CHECK(map.inverse(x).get() == xi);
+    CHECK(map.inverse(x).value() == xi);
   };
 
   check_block(original_block);
@@ -160,11 +160,10 @@ void test_block_time_dependent() {
     const tnsr::I<double, Dim, Frame::Inertial> x(1.0 + time);
     CHECK(grid_to_inertial_map(logical_to_grid_map(xi), time,
                                functions_of_time) == x);
-    CHECK(
-        logical_to_grid_map
-            .inverse(
-                grid_to_inertial_map.inverse(x, time, functions_of_time).get())
-            .get() == xi);
+    CHECK(logical_to_grid_map
+              .inverse(grid_to_inertial_map.inverse(x, time, functions_of_time)
+                           .value())
+              .value() == xi);
   };
 
   check_block(original_block);

@@ -6,10 +6,9 @@
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
 
 #include <array>
-#include <boost/none.hpp>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <functional>
+#include <optional>
 #include <pup.h>
 #include <utility>
 
@@ -50,7 +49,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Size> apply_map(
 }
 
 template <size_t Size, typename Map1, typename Map2, size_t... Is, size_t... Js>
-boost::optional<std::array<double, Size>> apply_inverse(
+std::optional<std::array<double, Size>> apply_inverse(
     const std::array<double, Size>& coords, const Map1& map1, const Map2& map2,
     const double time,
     const std::unordered_map<
@@ -65,9 +64,9 @@ boost::optional<std::array<double, Size>> apply_inverse(
       map2, std::array<double, sizeof...(Js)>{{coords[Map1::dim + Js]...}},
       time, functions_of_time, domain::is_map_time_dependent_t<Map2>{});
   if (map1_func and map2_func) {
-    return {{{map1_func.get()[Is]..., map2_func.get()[Js]...}}};
+    return {{{map1_func.value()[Is]..., map2_func.value()[Js]...}}};
   } else {
-    return boost::none;
+    return std::nullopt;
   }
 }
 
@@ -148,7 +147,7 @@ ProductOf2Maps<Map1, Map2>::operator()(
 }
 
 template <typename Map1, typename Map2>
-boost::optional<std::array<double, ProductOf2Maps<Map1, Map2>::dim>>
+std::optional<std::array<double, ProductOf2Maps<Map1, Map2>::dim>>
 ProductOf2Maps<Map1, Map2>::inverse(
     const std::array<double, dim>& target_coords, const double time,
     const std::unordered_map<
@@ -266,7 +265,7 @@ ProductOf3Maps<Map1, Map2, Map3>::operator()(
 }
 
 template <typename Map1, typename Map2, typename Map3>
-boost::optional<std::array<double, ProductOf3Maps<Map1, Map2, Map3>::dim>>
+std::optional<std::array<double, ProductOf3Maps<Map1, Map2, Map3>::dim>>
 ProductOf3Maps<Map1, Map2, Map3>::inverse(
     const std::array<double, dim>& target_coords, const double time,
     const std::unordered_map<
@@ -282,9 +281,9 @@ ProductOf3Maps<Map1, Map2, Map3>::inverse(
       map3_, std::array<double, 1>{{target_coords[2]}}, time, functions_of_time,
       domain::is_map_time_dependent_t<Map3>{});
   if (c1 and c2 and c3) {
-    return {{{c1.get()[0], c2.get()[0], c3.get()[0]}}};
+    return {{{c1.value()[0], c2.value()[0], c3.value()[0]}}};
   } else {
-    return boost::none;
+    return std::nullopt;
   }
 }
 

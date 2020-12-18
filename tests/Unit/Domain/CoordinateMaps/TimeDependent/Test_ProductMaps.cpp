@@ -4,9 +4,9 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <unordered_map>
@@ -58,11 +58,11 @@ void test_product_of_2_maps_time_dep(
   CHECK(map2d(point_source_b, time, functions_of_time) == point_target_b);
   CHECK(map2d(point_xi, time, functions_of_time) == point_x);
 
-  CHECK(map2d.inverse(point_target_a, time, functions_of_time).get() ==
+  CHECK(map2d.inverse(point_target_a, time, functions_of_time).value() ==
         point_source_a);
-  CHECK(map2d.inverse(point_target_b, time, functions_of_time).get() ==
+  CHECK(map2d.inverse(point_target_b, time, functions_of_time).value() ==
         point_source_b);
-  CHECK_ITERABLE_APPROX(map2d.inverse(point_x, time, functions_of_time).get(),
+  CHECK_ITERABLE_APPROX(map2d.inverse(point_x, time, functions_of_time).value(),
                         point_xi);
 
   const double inv_jacobian_00 =
@@ -317,11 +317,11 @@ void test_product_of_3_maps_time_dep(
   CHECK(map3d(point_source_b, time, functions_of_time) == point_target_b);
   CHECK(map3d(point_xi, time, functions_of_time) == point_x);
 
-  CHECK(map3d.inverse(point_target_a, time, functions_of_time).get() ==
+  CHECK(map3d.inverse(point_target_a, time, functions_of_time).value() ==
         point_source_a);
-  CHECK(map3d.inverse(point_target_b, time, functions_of_time).get() ==
+  CHECK(map3d.inverse(point_target_b, time, functions_of_time).value() ==
         point_source_b);
-  CHECK_ITERABLE_APPROX(map3d.inverse(point_x, time, functions_of_time).get(),
+  CHECK_ITERABLE_APPROX(map3d.inverse(point_x, time, functions_of_time).value(),
                         point_xi);
 
   const double inv_jacobian_00 =

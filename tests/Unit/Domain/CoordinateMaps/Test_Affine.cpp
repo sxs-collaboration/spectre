@@ -4,8 +4,8 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/optional.hpp>
 #include <memory>
+#include <optional>
 #include <pup.h>
 
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -36,9 +36,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Affine", "[Domain][Unit]") {
   CHECK(affine_map(point_B) == point_b);
   CHECK(affine_map(point_xi) == point_x);
 
-  CHECK(affine_map.inverse(point_a).get() == point_A);
-  CHECK(affine_map.inverse(point_b).get() == point_B);
-  CHECK(affine_map.inverse(point_x).get() == point_xi);
+  CHECK(affine_map.inverse(point_a).value() == point_A);
+  CHECK(affine_map.inverse(point_b).value() == point_B);
+  CHECK(affine_map.inverse(point_x).value() == point_xi);
 
   const double inv_jacobian_00 = (xB - xA) / (xb - xa);
 

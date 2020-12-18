@@ -64,9 +64,9 @@ void test_element_impl(
 
   if (test_inverse) {
     CHECK(element_map.inverse(inertial_point_double) ==
-          composed_map.inverse(inertial_point_double).get());
+          composed_map.inverse(inertial_point_double).value());
     CHECK(element_map_deserialized.inverse(inertial_point_double) ==
-          composed_map.inverse(inertial_point_double).get());
+          composed_map.inverse(inertial_point_double).value());
   }
 
   CHECK_ITERABLE_APPROX(element_map.inv_jacobian(logical_point_dv),

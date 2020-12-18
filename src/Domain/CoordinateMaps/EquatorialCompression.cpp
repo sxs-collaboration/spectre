@@ -126,7 +126,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> EquatorialCompression::operator()(
   return angular_distortion(source_coords, inverse_aspect_ratio_);
 }
 
-boost::optional<std::array<double, 3>> EquatorialCompression::inverse(
+std::optional<std::array<double, 3>> EquatorialCompression::inverse(
     const std::array<double, 3>& target_coords) const noexcept {
   return angular_distortion(target_coords, aspect_ratio_);
 }

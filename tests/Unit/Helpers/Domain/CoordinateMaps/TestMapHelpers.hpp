@@ -392,7 +392,7 @@ void test_coordinate_map_argument_types(
 template <typename Map, typename T>
 void test_inverse_map(const Map& map,
                       const std::array<T, Map::dim>& test_point) noexcept {
-  CHECK_ITERABLE_APPROX(test_point, map.inverse(map(test_point)).get());
+  CHECK_ITERABLE_APPROX(test_point, map.inverse(map(test_point)).value());
 }
 
 /*!

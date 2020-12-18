@@ -4,10 +4,10 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cmath>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 
@@ -79,8 +79,9 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.RotationTimeDep",
         expected_mapped_point(initial_unmapped_point, t)};
     CHECK_ITERABLE_APPROX(rotation_map(initial_unmapped_point, t, f_of_t_list),
                           expected);
-    CHECK_ITERABLE_APPROX(rotation_map.inverse(expected, t, f_of_t_list).get(),
-                          initial_unmapped_point);
+    CHECK_ITERABLE_APPROX(
+        rotation_map.inverse(expected, t, f_of_t_list).value(),
+        initial_unmapped_point);
     CHECK_ITERABLE_APPROX(
         rotation_map.frame_velocity(initial_unmapped_point, t, f_of_t_list),
         expected_frame_velocity(initial_unmapped_point, t));
@@ -89,7 +90,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.RotationTimeDep",
         rotation_map_deserialized(initial_unmapped_point, t, f_of_t_list),
         expected);
     CHECK_ITERABLE_APPROX(
-        rotation_map_deserialized.inverse(expected, t, f_of_t_list).get(),
+        rotation_map_deserialized.inverse(expected, t, f_of_t_list).value(),
         initial_unmapped_point);
     CHECK_ITERABLE_APPROX(rotation_map_deserialized.frame_velocity(
                               initial_unmapped_point, t, f_of_t_list),

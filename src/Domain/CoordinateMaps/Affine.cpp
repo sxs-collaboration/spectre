@@ -32,7 +32,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 1> Affine::operator()(
            length_of_domain_}};
 }
 
-boost::optional<std::array<double, 1>> Affine::inverse(
+std::optional<std::array<double, 1>> Affine::inverse(
     const std::array<double, 1>& target_coords) const noexcept {
   return {{{(length_of_domain_ * target_coords[0] - a_ * B_ + b_ * A_) /
             length_of_range_}}};

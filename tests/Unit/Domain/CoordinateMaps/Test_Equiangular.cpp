@@ -4,8 +4,8 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cmath>
+#include <optional>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
@@ -44,12 +44,12 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Equiangular", "[Domain][Unit]") {
   CHECK(equiangular_map(point_r2)[0] ==
         approx(-0.5 + 2.5 * tan(M_PI_4 * (2.0 * r2 - 1.0) / 3.0)));
 
-  CHECK(equiangular_map.inverse(point_a).get()[0] == approx(point_A[0]));
-  CHECK(equiangular_map.inverse(point_b).get()[0] == approx(point_B[0]));
-  CHECK(equiangular_map.inverse(point_x).get()[0] == approx(point_xi[0]));
-  CHECK(equiangular_map.inverse(point_r1).get()[0] ==
+  CHECK(equiangular_map.inverse(point_a).value()[0] == approx(point_A[0]));
+  CHECK(equiangular_map.inverse(point_b).value()[0] == approx(point_B[0]));
+  CHECK(equiangular_map.inverse(point_x).value()[0] == approx(point_xi[0]));
+  CHECK(equiangular_map.inverse(point_r1).value()[0] ==
         approx(0.5 + 3.0 * atan(0.4 * r1 + 0.2) / M_PI_2));
-  CHECK(equiangular_map.inverse(point_r2).get()[0] ==
+  CHECK(equiangular_map.inverse(point_r2).value()[0] ==
         approx(0.5 + 3.0 * atan(0.4 * r2 + 0.2) / M_PI_2));
 
   CHECK((get<0, 0>(equiangular_map.inv_jacobian(point_A))) *

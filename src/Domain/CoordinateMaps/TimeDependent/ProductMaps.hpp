@@ -4,10 +4,10 @@
 #pragma once
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <functional>
 #include <limits>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -61,7 +61,7 @@ class ProductOf2Maps {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) const noexcept;
 
-  boost::optional<std::array<double, dim>> inverse(
+  std::optional<std::array<double, dim>> inverse(
       const std::array<double, dim>& target_coords, double time,
       const std::unordered_map<
           std::string,
@@ -142,7 +142,7 @@ class ProductOf3Maps {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) const noexcept;
 
-  boost::optional<std::array<double, dim>> inverse(
+  std::optional<std::array<double, dim>> inverse(
       const std::array<double, dim>& target_coords, double time,
       const std::unordered_map<
           std::string,

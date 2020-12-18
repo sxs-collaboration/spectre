@@ -3,12 +3,11 @@
 
 #include "Domain/CoordinateMaps/BulgedCube.hpp"
 
-#include <boost/none.hpp>
-#include <boost/optional.hpp>
 #include <cmath>
 #include <exception>
 #include <functional>  // for std::reference_wrapper
 #include <limits>
+#include <optional>
 #include <pup.h>
 
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
@@ -68,7 +67,7 @@ class RootFunction {
   const double z_sq_;
 };
 
-boost::optional<double> scaling_factor(RootFunction&& rootfunction) noexcept {
+std::optional<double> scaling_factor(RootFunction&& rootfunction) noexcept {
   const double physical_r_squared = rootfunction.get_r_sq();
   try {
     constexpr double tol = 10.0 * std::numeric_limits<double>::epsilon();
@@ -83,7 +82,7 @@ boost::optional<double> scaling_factor(RootFunction&& rootfunction) noexcept {
     rho /= sqrt(physical_r_squared);
     return rho;
   } catch (std::exception& exception) {
-    return boost::none;
+    return std::nullopt;
   }
 }
 }  // namespace
@@ -142,7 +141,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::operator()(
                               dereference_wrapper(source_coords[2]));
 }
 
-boost::optional<std::array<double, 3>> BulgedCube::inverse(
+std::optional<std::array<double, 3>> BulgedCube::inverse(
     const std::array<double, 3>& target_coords) const noexcept {
   const double& physical_x = target_coords[0];
   const double& physical_y = target_coords[1];
@@ -165,16 +164,16 @@ boost::optional<std::array<double, 3>> BulgedCube::inverse(
       ::scaling_factor(
       RootFunction{radius_, sphericity_, physical_r_squared, x_sq, y_sq, z_sq});
   if (not scaling_factor) {
-    return boost::none;
+    return std::nullopt;
   }
   if (use_equiangular_map_) {
-    return {{{2.0 * M_2_PI * atan(physical_x * scaling_factor.get()),
-              2.0 * M_2_PI * atan(physical_y * scaling_factor.get()),
-              2.0 * M_2_PI * atan(physical_z * scaling_factor.get())}}};
+    return {{{2.0 * M_2_PI * atan(physical_x * scaling_factor.value()),
+              2.0 * M_2_PI * atan(physical_y * scaling_factor.value()),
+              2.0 * M_2_PI * atan(physical_z * scaling_factor.value())}}};
   }
-  return {
-      {{physical_x * scaling_factor.get(), physical_y * scaling_factor.get(),
-        physical_z * scaling_factor.get()}}};
+  return {{{physical_x * scaling_factor.value(),
+            physical_y * scaling_factor.value(),
+            physical_z * scaling_factor.value()}}};
 }
 
 template <typename T>

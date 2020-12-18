@@ -63,7 +63,7 @@ class ElementMap {
   tnsr::I<T, Dim, Frame::Logical> inverse(
       tnsr::I<T, Dim, TargetFrame> target_point) const noexcept {
     auto source_point{
-        block_map_->inverse(std::move(target_point)).get()};
+        block_map_->inverse(std::move(target_point)).value()};
     // Apply the affine map to the points
     for (size_t d = 0; d < Dim; ++d) {
       source_point.get(d) =

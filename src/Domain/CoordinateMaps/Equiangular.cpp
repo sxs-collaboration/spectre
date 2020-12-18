@@ -40,7 +40,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 1> Equiangular::operator()(
                                      (-B_ - A_ + 2.0 * source_coords[0])))}};
 }
 
-boost::optional<std::array<double, 1>> Equiangular::inverse(
+std::optional<std::array<double, 1>> Equiangular::inverse(
     const std::array<double, 1>& target_coords) const noexcept {
   return {{{0.5 * (A_ + B_ +
                    length_of_domain_over_m_pi_4_ *

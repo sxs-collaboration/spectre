@@ -19,7 +19,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Identity<Dim>::operator()(
 }
 
 template <size_t Dim>
-boost::optional<std::array<double, Dim>> Identity<Dim>::inverse(
+std::optional<std::array<double, Dim>> Identity<Dim>::inverse(
     const std::array<double, Dim>& target_coords) const noexcept {
   return make_array<double, Dim>(target_coords);
 }

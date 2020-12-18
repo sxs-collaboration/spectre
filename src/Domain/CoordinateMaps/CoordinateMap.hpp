@@ -6,10 +6,10 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <tuple>
@@ -104,11 +104,11 @@ class CoordinateMapBase : public PUP::able {
 
   // @{
   /// Apply the inverse `Maps` to the point(s) `target_point`.
-  /// The returned boost::optional is invalid if the map is not invertible
+  /// The returned std::optional is invalid if the map is not invertible
   /// at `target_point`, or if `target_point` can be easily determined to not
   /// make sense for the map.  An example of the latter is passing a
   /// point with a negative value of z into a positive-z Wedge3D inverse map.
-  virtual boost::optional<tnsr::I<double, Dim, SourceFrame>> inverse(
+  virtual std::optional<tnsr::I<double, Dim, SourceFrame>> inverse(
       tnsr::I<double, Dim, TargetFrame> target_point,
       double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
@@ -312,7 +312,7 @@ class CoordinateMap
 
   // @{
   /// Apply the inverse `Maps...` to the point(s) `target_point`
-  constexpr boost::optional<tnsr::I<double, dim, SourceFrame>> inverse(
+  constexpr std::optional<tnsr::I<double, dim, SourceFrame>> inverse(
       tnsr::I<double, dim, TargetFrame> target_point,
       const double time = std::numeric_limits<double>::signaling_NaN(),
       const std::unordered_map<
@@ -491,7 +491,7 @@ class CoordinateMap
       std::index_sequence<Is...> /*meta*/) const noexcept;
 
   template <typename T, size_t... Is>
-  boost::optional<tnsr::I<T, dim, SourceFrame>> inverse_impl(
+  std::optional<tnsr::I<T, dim, SourceFrame>> inverse_impl(
       tnsr::I<T, dim, TargetFrame>&& target_point, double time,
       const std::unordered_map<
           std::string,
