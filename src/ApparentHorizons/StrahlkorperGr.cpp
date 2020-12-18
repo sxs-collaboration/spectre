@@ -665,7 +665,7 @@ template <typename Frame>
 void spin_function(
     const gsl::not_null<Scalar<DataVector>*> result,
     const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
-    const YlmSpherepack& ylm,
+    const Strahlkorper<Frame>& strahlkorper,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept {
@@ -706,27 +706,28 @@ void spin_function(
 
   // using result as temporary
   DataVector& sin_theta = get(*result);
-  sin_theta = sin(ylm.theta_phi_points()[0]);
+  sin_theta = sin(strahlkorper.ylm_spherepack().theta_phi_points()[0]);
   get(extrinsic_curvature_theta_normal_sin_theta) *= sin_theta;
   get(extrinsic_curvature_phi_normal) *= sin_theta;
 
   // now computing actual result
-  get(*result) =
-      (get<0>(ylm.gradient(get(extrinsic_curvature_phi_normal))) -
-       get<1>(ylm.gradient(get(extrinsic_curvature_theta_normal_sin_theta)))) /
-      (sin_theta * get(area_element));
+  get(*result) = (get<0>(strahlkorper.ylm_spherepack().gradient(
+                      get(extrinsic_curvature_phi_normal))) -
+                  get<1>(strahlkorper.ylm_spherepack().gradient(
+                      get(extrinsic_curvature_theta_normal_sin_theta)))) /
+                 (sin_theta * get(area_element));
 }
 
 template <typename Frame>
 Scalar<DataVector> spin_function(
     const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
-    const YlmSpherepack& ylm,
+    const Strahlkorper<Frame>& strahlkorper,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept {
   Scalar<DataVector> result{};
-  spin_function(make_not_null(&result), tangents, ylm, unit_normal_vector,
-                area_element, extrinsic_curvature);
+  spin_function(make_not_null(&result), tangents, strahlkorper,
+                unit_normal_vector, area_element, extrinsic_curvature);
   return result;
 }
 
@@ -929,14 +930,14 @@ double StrahlkorperGr::euclidean_surface_integral_of_vector(
 template void StrahlkorperGr::spin_function<Frame::Inertial>(
     const gsl::not_null<Scalar<DataVector>*> result,
     const StrahlkorperTags::aliases::Jacobian<Frame::Inertial>& tangents,
-    const YlmSpherepack& ylm,
+    const Strahlkorper<Frame::Inertial>& strahlkorper,
     const tnsr::I<DataVector, 3, Frame::Inertial>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
     const tnsr::ii<DataVector, 3, Frame::Inertial>&
         extrinsic_curvature) noexcept;
 template Scalar<DataVector> StrahlkorperGr::spin_function<Frame::Inertial>(
     const StrahlkorperTags::aliases::Jacobian<Frame::Inertial>& tangents,
-    const YlmSpherepack& ylm,
+    const Strahlkorper<Frame::Inertial>& strahlkorper,
     const tnsr::I<DataVector, 3, Frame::Inertial>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
     const tnsr::ii<DataVector, 3, Frame::Inertial>&

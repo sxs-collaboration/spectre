@@ -599,5 +599,33 @@ struct IrreducibleMassCompute : IrreducibleMass, db::ComputeTag {
 
   using argument_tags = tmpl::list<Area>;
 };
+
+/// The spin function is proportional to the imaginary part of the
+/// Strahlkorper’s complex scalar curvature.
+
+struct SpinFunction : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+/// Calculates the spin function which is proportional to the imaginary part of
+/// the Strahlkorper’s complex scalar curvature.
+template <typename Frame>
+struct SpinFunctionCompute : SpinFunction, db::ComputeTag {
+  using base = SpinFunction;
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<Scalar<DataVector>*>,
+      const StrahlkorperTags::aliases::Jacobian<Frame>&,
+      const Strahlkorper<Frame>&, const tnsr::I<DataVector, 3, Frame>&,
+      const Scalar<DataVector>&,
+      const tnsr::ii<DataVector, 3, Frame>&) noexcept>(
+      &StrahlkorperGr::spin_function<Frame>);
+  using argument_tags =
+      tmpl::list<StrahlkorperTags::Tangents<Frame>,
+                 StrahlkorperTags::Strahlkorper<Frame>,
+                 StrahlkorperTags::UnitNormalVector<Frame>, AreaElement<Frame>,
+                 gr::Tags::ExtrinsicCurvature<3, Frame, DataVector>>;
+  using return_type = Scalar<DataVector>;
+};
+
 }  // namespace Tags
 }  // namespace StrahlkorperGr

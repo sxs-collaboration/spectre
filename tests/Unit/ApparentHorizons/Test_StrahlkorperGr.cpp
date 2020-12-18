@@ -599,8 +599,9 @@ void test_spin_function(const Solution& solution,
   const auto& tangents =
       db::get<StrahlkorperTags::Tangents<Frame::Inertial>>(box);
 
-  const auto spin_function = StrahlkorperGr::spin_function(
-      tangents, ylm, unit_normal_vector, area_element, extrinsic_curvature);
+  const auto spin_function =
+      StrahlkorperGr::spin_function(tangents, strahlkorper, unit_normal_vector,
+                                    area_element, extrinsic_curvature);
 
   auto integrand = spin_function;
   get(integrand) *= get(area_element) * get(spin_function);
@@ -672,8 +673,9 @@ void test_dimensionful_spin_magnitude(
   const auto& tangents =
       db::get<StrahlkorperTags::Tangents<Frame::Inertial>>(box);
 
-  const auto spin_function = StrahlkorperGr::spin_function(
-      tangents, ylm, unit_normal_vector, area_element, extrinsic_curvature);
+  const auto spin_function =
+      StrahlkorperGr::spin_function(tangents, strahlkorper, unit_normal_vector,
+                                    area_element, extrinsic_curvature);
 
   const auto grad_unit_normal_one_form =
       StrahlkorperGr::grad_unit_normal_one_form(
@@ -757,8 +759,9 @@ void test_spin_vector(
   const auto& tangents =
       db::get<StrahlkorperTags::Tangents<Frame::Inertial>>(box);
 
-  const auto spin_function = StrahlkorperGr::spin_function(
-      tangents, ylm, unit_normal_vector, area_element, extrinsic_curvature);
+  const auto spin_function =
+      StrahlkorperGr::spin_function(tangents, strahlkorper, unit_normal_vector,
+                                    area_element, extrinsic_curvature);
 
   const auto ricci_scalar = TestHelpers::Kerr::horizon_ricci_scalar(
       horizon_radius_with_spin_on_z_axis, ylm_with_spin_on_z_axis, ylm, mass,

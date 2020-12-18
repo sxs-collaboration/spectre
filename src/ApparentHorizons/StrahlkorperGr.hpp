@@ -346,7 +346,7 @@ template <typename Frame>
 void spin_function(
     gsl::not_null<Scalar<DataVector>*> result,
     const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
-    const YlmSpherepack& ylm,
+    const Strahlkorper<Frame>& strahlkorper,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept;
@@ -354,7 +354,7 @@ void spin_function(
 template <typename Frame>
 Scalar<DataVector> spin_function(
     const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
-    const YlmSpherepack& ylm,
+    const Strahlkorper<Frame>& strahlkorper,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature) noexcept;
