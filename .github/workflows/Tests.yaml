@@ -424,7 +424,18 @@ jobs:
         if: matrix.use_pch == 'ON'
         working-directory: /work/build
         run: |
-          make -j2 RunTests
+          make -j2 unit-tests
+      - name: Run unit tests
+        if: matrix.use_pch == 'ON'
+        working-directory: /work/build
+        run: |
+          # We get occasional random timeouts, repeat tests to see if
+          # it is a random timeout or systematic.
+          #
+          # We run ctest -L unit before build test-executables to make
+          # sure that all the unit tests are actually built by the
+          # unit-tests target.
+          ctest -j2 -L unit --output-on-failure --repeat after-timeout:3
       # Build the executables in a single thread to reduce memory usage
       # sufficiently so they compile on the GitHub-hosted runners
       - name: Build executables
@@ -444,13 +455,13 @@ jobs:
       - name: Diagnose ccache
         run: |
           ccache -s
-      - name: Run unit tests
+      - name: Run non-unit tests
         if: matrix.use_pch == 'ON'
         working-directory: /work/build
         run: |
           # We get occasional random timeouts, repeat tests to see if
           # it is a random timeout or systematic
-          ctest -j2 --output-on-failure --repeat after-timeout:3
+          ctest -j2 -LE unit --output-on-failure --repeat after-timeout:3
       - name: Run input file tests without PCH
         if: matrix.use_pch == 'OFF'
         working-directory: /work/build
