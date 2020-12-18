@@ -16,8 +16,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
-namespace domain {
-namespace CoordinateMaps {
+namespace domain::CoordinateMaps {
 
 SpecialMobius::SpecialMobius(const double mu) noexcept
     : mu_(mu), is_identity_(mu_ == 0.0) {
@@ -140,5 +139,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
 #undef DTYPE
 #undef INSTANTIATE
 /// \endcond
-}  // namespace CoordinateMaps
-}  // namespace domain
+}  // namespace domain::CoordinateMaps

@@ -16,8 +16,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-namespace domain {
-namespace CoordinateMaps {
+namespace domain::CoordinateMaps {
 
 EquatorialCompression::EquatorialCompression(const double aspect_ratio) noexcept
     : aspect_ratio_(aspect_ratio),
@@ -184,5 +183,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
 #undef DTYPE
 #undef INSTANTIATE
 /// \endcond
-}  // namespace CoordinateMaps
-}  // namespace domain
+}  // namespace domain::CoordinateMaps

@@ -29,9 +29,7 @@
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
-namespace domain {
-namespace CoordinateMaps {
-namespace TimeDependent {
+namespace domain::CoordinateMaps::TimeDependent {
 
 template <size_t Dim>
 CubicScale<Dim>::CubicScale(const double outer_boundary,
@@ -489,6 +487,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
 #undef DTYPE
 #undef INSTANTIATE
 /// \endcond
-}  // namespace TimeDependent
-}  // namespace CoordinateMaps
-}  // namespace domain
+}  // namespace domain::CoordinateMaps::TimeDependent

@@ -8,8 +8,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeArray.hpp"
 
-namespace domain {
-namespace CoordinateMaps {
+namespace domain::CoordinateMaps {
 
 template <size_t Dim>
 template <typename T>
@@ -72,5 +71,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
 #undef INSTANTIATE
 /// \endcond
 
-}  // namespace CoordinateMaps
-}  // namespace domain
+}  // namespace domain::CoordinateMaps

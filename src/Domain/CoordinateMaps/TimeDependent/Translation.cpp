@@ -17,9 +17,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdHelpers.hpp"
 
-namespace domain {
-namespace CoordinateMaps {
-namespace TimeDependent {
+namespace domain::CoordinateMaps::TimeDependent {
 
 Translation::Translation(std::string function_of_time_name) noexcept
     : f_of_t_name_(std::move(function_of_time_name)) {}
@@ -120,6 +118,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
 #undef DTYPE
 #undef INSTANTIATE
 /// \endcond
-}  // namespace TimeDependent
-}  // namespace CoordinateMaps
-}  // namespace domain
+}  // namespace domain::CoordinateMaps::TimeDependent
