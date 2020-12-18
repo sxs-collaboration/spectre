@@ -24,6 +24,7 @@ add_dependencies(
 target_link_libraries(
   ${EXECUTABLE}
   PRIVATE
+  Charmxx::main
   ErrorHandling
   Informer
   Parallel

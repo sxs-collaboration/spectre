@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 if (${BUILD_PYTHON_BINDINGS})
-  set(LIBRARY PyBindings)
+  set(LIBRARY PythonBindings)
 
   add_spectre_library(${LIBRARY})
 
@@ -10,7 +10,8 @@ if (${BUILD_PYTHON_BINDINGS})
     ${LIBRARY}
     PRIVATE
     CharmCompatibility.cpp
-    InfoAtLink.cpp
+    FormalineCompatibility.cpp
+    InfoAtLinkCompatibility.cpp
     )
 
   spectre_target_headers(
@@ -24,7 +25,7 @@ if (${BUILD_PYTHON_BINDINGS})
     ${LIBRARY}
     PRIVATE
     Informer
-    INTERFACE
+    PUBLIC
     Utilities
     )
 endif()

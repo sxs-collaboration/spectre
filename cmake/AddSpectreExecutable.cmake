@@ -42,6 +42,7 @@ function(add_spectre_executable TARGET_NAME)
   target_link_libraries(
     ${TARGET_NAME}
     PRIVATE
+    CharmModuleInit
     SpectreFlags
     )
   install(TARGETS ${TARGET_NAME} OPTIONAL
@@ -111,6 +112,7 @@ function(
     # Link against Boost::program_options for now until we have proper
     # dependency handling for header-only libs
     Boost::program_options
+    Charmxx::main
     ${LINK_LIBS}
     )
 endfunction(add_spectre_parallel_executable)

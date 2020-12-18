@@ -18,6 +18,7 @@ set(INTEGRATION_TEST_LINK_LIBRARIES
   # Link against Boost::program_options for now until we have proper
   # dependency handling for header-only libs
   Boost::program_options
+  Charmxx::main
   Convergence
   DataStructures
   ErrorHandling

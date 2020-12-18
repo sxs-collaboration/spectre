@@ -13,10 +13,5 @@ target_link_libraries(
   ${EXECUTABLE}
   PRIVATE
   DataStructures
-  Informer
-  )
-
-set_target_properties(
-  ${EXECUTABLE}
-  PROPERTIES LINK_FLAGS "-nomain-module -nomain"
+  Parallel # Only for printf
   )

@@ -21,11 +21,6 @@ target_link_libraries(
   Spectral
   )
 
-set_target_properties(
-  ${EXECUTABLE}
-  PROPERTIES LINK_FLAGS "-nomain-module -nomain"
-  )
-
 if(BUILD_TESTING)
   add_dependencies(test-executables ${EXECUTABLE})
 endif()

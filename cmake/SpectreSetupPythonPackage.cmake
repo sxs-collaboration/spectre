@@ -142,26 +142,27 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       CXX__VISIBILITY_PRESET OFF
       VISIBLITY_INLINES_HIDDEN OFF
       )
-    # In order to avoid runtime errors about missing CmiPrintf and other Cmi
-    # (Charm++) functions, we need to link in the whole PyBindings archive.
-    # This is not needed on macOS.
+    # In order to avoid runtime errors about missing compatibility functions
+    # defined in the PythonBindings library, we need to link in the whole
+    # archive. This is not needed on macOS.
     if (APPLE)
       target_link_libraries(
         ${ARG_LIBRARY_NAME}
-        PUBLIC PyBindings
+        PUBLIC PythonBindings
         )
     else()
       target_link_libraries(
         ${ARG_LIBRARY_NAME}
         PUBLIC
         -Wl,--whole-archive
-        PyBindings
+        PythonBindings
         -Wl,--no-whole-archive
         )
     endif()
     target_link_libraries(
       ${ARG_LIBRARY_NAME}
       PRIVATE
+      CharmModuleInit
       SpectreFlags
       )
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
