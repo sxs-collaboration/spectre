@@ -23,39 +23,30 @@ set_property(
   Jemalloc
   )
 
-# Determine whether we are using JEMALLOC as a shared or static library
+# Determine whether we are using JEMALLOC as a shared or static library.
+# Since libraries can be named, e.g. libjemalloc.so.2 we just search for
+# the extension after stripping the directories. It's unlikely jemalloc
+# will rename themselves to "alloc.so" and then we'd have libs like
+# "alloc.so.a"
 get_filename_component(
   JEMALLOC_LIB_NAME
   ${JEMALLOC_LIBRARIES}
   NAME
   )
-get_filename_component(
-  JEMALLOC_LIB_TYPE
-  ${JEMALLOC_LIB_NAME}
-  LAST_EXT
-  )
-while(NOT "${JEMALLOC_LIB_TYPE}" STREQUAL ".so"
-    AND NOT "${JEMALLOC_LIB_TYPE}" STREQUAL ".a"
-    AND NOT "${JEMALLOC_LIB_TYPE}" STREQUAL ".dylib")
-  get_filename_component(
-    JEMALLOC_LIB_NAME
-    ${JEMALLOC_LIB_NAME}
-    NAME_WLE
-    )
-  get_filename_component(
-    JEMALLOC_LIB_TYPE
-    ${JEMALLOC_LIB_NAME}
-    LAST_EXT
-    )
-endwhile()
-
-if("${JEMALLOC_LIB_TYPE}" STREQUAL ".a")
-  set(JEMALLOC_LIB_TYPE STATIC)
-elseif("${JEMALLOC_LIB_TYPE}" STREQUAL ".so" OR
-    "${JEMALLOC_LIB_TYPE}" STREQUAL ".dylib")
-  set(JEMALLOC_LIB_TYPE SHARED)
+if(APPLE)
+  string(FIND "${JEMALLOC_LIB_NAME}" ".dylib" FOUND_SHARED)
 else()
-  message(FATAL_ERROR "Couldn't determine whether JEMALLOC is a static "
-    "or shared/dynamic library.")
+  string(FIND "${JEMALLOC_LIB_NAME}" ".so" FOUND_SHARED)
 endif()
+if(${FOUND_SHARED} STREQUAL -1)
+  string(FIND "${JEMALLOC_LIB_NAME}" ".a" FOUND_STATIC)
+  if(${FOUND_STATIC} EQUAL -1)
+    message(FATAL_ERROR "Failed to determine whether JEMALLOC is a shared or "
+      "static library. Found: ${JEMALLOC_LIBRARIES}")
+  endif()
+  set(JEMALLOC_LIB_TYPE STATIC)
+else()
+  set(JEMALLOC_LIB_TYPE SHARED)
+endif()
+
 mark_as_advanced(JEMALLOC_LIB_TYPE)
