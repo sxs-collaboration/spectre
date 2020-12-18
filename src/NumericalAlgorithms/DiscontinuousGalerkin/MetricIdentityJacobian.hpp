@@ -183,4 +183,65 @@ void metric_identity_jacobian(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
     const Jacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
         jacobian) noexcept;
+
+/*!
+ * \ingroup DiscontinuousGalerkinGroup
+ * \brief Compute the Jacobian, inverse Jacobian, and determinant of the
+ * Jacobian so that they satisfy the metric identities.
+ *
+ * Uses `dg::metric_identity_jacobian()` to compute the determinant of the
+ * Jacobian times the inverse Jacobian. By taking the determinant of this
+ * product, we can isolate \f$J\f$, the determinant of the Jacobian. In \f$d\f$
+ * dimensions, we have:
+ *
+ * \f{align}{
+ *
+ *  \mathrm{det}\left(J\frac{\partial \xi^{\hat{\imath}}}{\partial x^i}\right)
+ *  = J^{d-1}.
+ *
+ * \f}
+ *
+ * We assume the determinant of the Jacobian is positive, which means logical
+ * and inertial coordinates have the same handedness. With this assumption, we
+ * have
+ *
+ * \f{align}{
+ *
+ *  J = \sqrt[(d-1)]{\mathrm{det}\left(J\frac{\partial
+ *      \xi^{\hat{\imath}}}{\partial x^i}\right)}
+ *
+ * \f}
+ *
+ * We can now compute the inverse Jacobian using:
+ *
+ * \f{align}{
+ *
+ * \frac{\partial \xi^{\hat{\imath}}}{\partial x^i}=
+ *  \frac{1}{J}\left(J\frac{\partial \xi^{\hat{\imath}}}{\partial x^i}\right)
+ *
+ * \f}
+ *
+ * This guarantees that multiplying the determinant of the Jacobian by the
+ * inverse Jacobian gives a result that satisfies the metric identities. We also
+ * compute the Jacobian by inverting the inverse Jacobian, which guarantees they
+ * are (numerical) inverses of each other.
+ *
+ * \warning on entry `jacobian` must be the Jacobian to use for computing the
+ * determinant of the Jacobian times the inverse Jacobian so that it satisfies
+ * the metric identities. The `jacobian` can be computed analytically or
+ * numerically, either is fine. On output the `jacobian` is the inverse of the
+ * inverse Jacobian that satisfies the metric identities.
+ */
+template <size_t Dim>
+void metric_identity_jacobian_quantities(
+    gsl::not_null<
+        InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
+        det_jac_times_inverse_jacobian,
+    gsl::not_null<
+        InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
+        inverse_jacobian,
+    gsl::not_null<Jacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
+        jacobian,
+    gsl::not_null<Scalar<DataVector>*> det_jacobian, const Mesh<Dim>& mesh,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) noexcept;
 }  // namespace dg
