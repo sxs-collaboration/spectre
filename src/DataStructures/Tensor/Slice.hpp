@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <boost/range/combine.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <cstddef>
+#include <optional>
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/SliceIterator.hpp"
@@ -65,9 +65,9 @@ Tensor<VectorType, Structure...> data_on_slice(
 
 template <std::size_t VolumeDim, typename VectorType, typename... Structure>
 void data_on_slice(
-    const gsl::not_null<boost::optional<Tensor<VectorType, Structure...>>*>
+    const gsl::not_null<std::optional<Tensor<VectorType, Structure...>>*>
         interface_tensor,
-    const boost::optional<Tensor<VectorType, Structure...>>& volume_tensor,
+    const std::optional<Tensor<VectorType, Structure...>>& volume_tensor,
     const Index<VolumeDim>& element_extents, const size_t sliced_dim,
     const size_t fixed_index) noexcept {
   if (volume_tensor) {
@@ -78,13 +78,13 @@ void data_on_slice(
     data_on_slice(make_not_null(&**interface_tensor), *volume_tensor,
                   element_extents, sliced_dim, fixed_index);
   } else {
-    *interface_tensor = boost::none;
+    *interface_tensor = std::nullopt;
   }
 }
 
 template <std::size_t VolumeDim, typename VectorType, typename... Structure>
-boost::optional<Tensor<VectorType, Structure...>> data_on_slice(
-    const boost::optional<Tensor<VectorType, Structure...>>& volume_tensor,
+std::optional<Tensor<VectorType, Structure...>> data_on_slice(
+    const std::optional<Tensor<VectorType, Structure...>>& volume_tensor,
     const Index<VolumeDim>& element_extents, const size_t sliced_dim,
     const size_t fixed_index) noexcept {
   if (volume_tensor) {
@@ -94,6 +94,6 @@ boost::optional<Tensor<VectorType, Structure...>> data_on_slice(
                   element_extents, sliced_dim, fixed_index);
     return interface_tensor;
   }
-  return boost::none;
+  return std::nullopt;
 }
 // @}

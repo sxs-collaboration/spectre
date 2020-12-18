@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <type_traits>
@@ -436,9 +437,9 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
       const Scalar<DataVector>& var3_squared,
 
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
-      const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const boost::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
       const noexcept {
     *out_normal_dot_flux_var1 = dot_product(flux_var1, normal_covector);
     if (static_cast<bool>(mesh_velocity)) {
@@ -492,9 +493,9 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
       const Scalar<DataVector>& prim_var1,
 
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
-      const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const boost::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
 
       const TimeStepId& time_step_id) const noexcept {
     dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,
@@ -521,9 +522,9 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
       const Scalar<DataVector>& var3_squared,
 
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
-      const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const boost::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
       const noexcept {
     get(*out_normal_dot_flux_var1) =
         get(var1) + get(dot_product(var2, normal_covector));
@@ -575,9 +576,9 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
       const Scalar<DataVector>& var3_squared,
 
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
-      const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const boost::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
       const noexcept {
     get(*out_normal_dot_flux_var1) =
         get(var1) + get(dot_product(var2, normal_covector));
@@ -632,9 +633,9 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
       const Scalar<DataVector>& prim_var1,
 
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
-      const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const boost::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
 
       const TimeStepId& time_step_id) const noexcept {
     dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,
@@ -811,9 +812,9 @@ double dg_package_data(
     const BoundaryCorrection& boundary_correction,
     const Variables<tmpl::list<ProjectedFieldTags...>>& projected_fields,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
-    const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+    const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         mesh_velocity,
-    const boost::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
+    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
     const TagRetriever& get_tag, tmpl::list<VolumeTags...> /*meta*/) noexcept {
   return boundary_correction.dg_package_data(
       make_not_null(&get<PackagedFieldTags>(*packaged_data))...,
@@ -897,8 +898,8 @@ void test_impl(const Spectral::Quadrature quadrature,
     inv_jac.get(i, i) = 1.0;
   }
 
-  boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>> mesh_velocity{};
-  boost::optional<Scalar<DataVector>> div_mesh_velocity{};
+  std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>> mesh_velocity{};
+  std::optional<Scalar<DataVector>> div_mesh_velocity{};
   if (UseMovingMesh) {
     const std::array<double, 3> velocities = {{1.2, -1.4, 0.3}};
     mesh_velocity =
@@ -1197,7 +1198,7 @@ void test_impl(const Spectral::Quadrature quadrature,
           // Compute the normal dot mesh velocity and then the packaged data
           Variables<mortar_tags_list> packaged_data{
               face_mesh.number_of_grid_points()};
-          boost::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
+          std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
 
           if (static_cast<bool>(face_mesh_velocities.at(local_direction))) {
             normal_dot_mesh_velocity =

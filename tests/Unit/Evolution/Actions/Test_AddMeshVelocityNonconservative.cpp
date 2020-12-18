@@ -3,8 +3,8 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/optional.hpp>
 #include <cstddef>
+#include <optional>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -75,7 +75,7 @@ void test() noexcept {
   using metavars = Metavariables<system>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
 
-  boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>> frame_velocity{};
+  std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>> frame_velocity{};
   if (HasMeshVelocity) {
     frame_velocity = tnsr::I<DataVector, Dim, Frame::Inertial>{};
     for (size_t d = 0; d < Dim; ++d) {

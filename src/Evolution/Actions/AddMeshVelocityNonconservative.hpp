@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
+#include <optional>
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -82,7 +82,7 @@ struct AddMeshVelocityNonconservative {
         db::mutate<dt_variable_tag>(
             make_not_null(&box),
             [](const auto dt_var_ptr, const auto& deriv_tensor,
-               const boost::optional<tnsr::I<
+               const std::optional<tnsr::I<
                    DataVector, Metavariables::volume_dim, Frame::Inertial>>&
                    grid_velocity) noexcept {
               for (size_t storage_index = 0;

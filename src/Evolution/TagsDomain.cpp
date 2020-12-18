@@ -3,8 +3,8 @@
 
 #include "Evolution/TagsDomain.hpp"
 
-#include <boost/optional.hpp>
 #include <cstddef>
+#include <optional>
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
@@ -17,8 +17,8 @@
 namespace evolution::domain::Tags {
 template <size_t Dim>
 void DivMeshVelocityCompute<Dim>::function(
-    const gsl::not_null<boost::optional<Scalar<DataVector>>*> div_mesh_velocity,
-    const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+    const gsl::not_null<std::optional<Scalar<DataVector>>*> div_mesh_velocity,
+    const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         mesh_velocity,
     const ::Mesh<Dim>& mesh,
     const ::InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
@@ -28,7 +28,7 @@ void DivMeshVelocityCompute<Dim>::function(
         divergence(*mesh_velocity, mesh, inv_jac_logical_to_inertial);
     return;
   }
-  *div_mesh_velocity = boost::none;
+  *div_mesh_velocity = std::nullopt;
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

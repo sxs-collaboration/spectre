@@ -377,7 +377,7 @@ void test() noexcept {
         (ActionTesting::get_databox_tag<component,
                                         domain::Tags::MeshVelocity<Dim>>(
              runner, self_id))
-            .get(),
+            .value(),
         std::get<3>(expected_coords_mesh_velocity_jacobians));
 
     for (size_t i = 0; i < Dim; ++i) {
@@ -385,7 +385,7 @@ void test() noexcept {
           (ActionTesting::get_databox_tag<component,
                                           domain::Tags::MeshVelocity<Dim>>(
                runner, self_id)
-               .get()
+               .value()
                .get(i)),
           DataVector(num_pts, gsl::at(velocity, i)));
     }

@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <cstddef>
+#include <optional>
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
@@ -29,8 +29,8 @@ struct DivMeshVelocityCompute : db::ComputeTag,
   using return_type = typename base::type;
 
   static void function(
-      gsl::not_null<boost::optional<Scalar<DataVector>>*> div_mesh_velocity,
-      const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+      gsl::not_null<std::optional<Scalar<DataVector>>*> div_mesh_velocity,
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
       const ::Mesh<Dim>& mesh,
       const ::InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&

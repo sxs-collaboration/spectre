@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
+#include <optional>
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -67,7 +67,7 @@ struct AddMeshVelocitySourceTerms {
     db::mutate<dt_variables_tag>(
         make_not_null(&box),
         [](const auto dt_vars_ptr, const auto& vars,
-           const boost::optional<Scalar<DataVector>>&
+           const std::optional<Scalar<DataVector>>&
                div_grid_velocity) noexcept {
           if (div_grid_velocity) {
             *dt_vars_ptr -= vars * get(*div_grid_velocity);

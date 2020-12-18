@@ -209,8 +209,8 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
         ActionTesting::emplace_component_and_initialize<component>(
             &runner, id,
             {current_time, next_time, mesh, element,
-             boost::optional<tnsr::I<DataVector, 1, Frame::Inertial>>{},
-             boost::optional<Scalar<DataVector>>{}, std::move(map),
+             std::optional<tnsr::I<DataVector, 1, Frame::Inertial>>{},
+             std::optional<Scalar<DataVector>>{}, std::move(map),
              std::move(variables), std::move(dt_variables), std::move(gamma_2),
              std::move(normal_dot_fluxes), std::move(mortar_history),
              std::move(mortar_next_temporal_ids), std::move(mortar_meshes),

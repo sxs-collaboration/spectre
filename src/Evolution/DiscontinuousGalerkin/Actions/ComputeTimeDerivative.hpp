@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <optional>
 #include <tuple>
 #include <type_traits>
 #include <unordered_set>
@@ -381,11 +382,11 @@ struct ComputeTimeDerivative {
       const BoundaryCorrection& boundary_correction,
       const Variables<tmpl::list<ProjectedFieldTags...>>& projected_fields,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_covector,
-      const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
       const db::DataBox<DbTagsList>& box,
       tmpl::list<VolumeTags...> /*meta*/) noexcept {
-    boost::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
+    std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
     if (static_cast<bool>(mesh_velocity)) {
       normal_dot_mesh_velocity =
           dot_product(*mesh_velocity, unit_normal_covector);
@@ -616,7 +617,7 @@ void ComputeTimeDerivative<Metavariables>::volume_terms(
             const gsl::not_null<Variables<db::wrap_tags_in<
                 ::Tags::dt, typename variables_tag::tags_list>>*>
                 dt_vars_ptr,
-            const boost::optional<Scalar<DataVector>>&
+            const std::optional<Scalar<DataVector>>&
                 div_mesh_velocity) noexcept {
           tmpl::for_each<flux_variables>([&div_mesh_velocity, &dt_vars_ptr,
                                           &evolved_vars, &mesh_velocity,
@@ -788,7 +789,7 @@ void ComputeTimeDerivative<Metavariables>::compute_internal_mortar_data(
               domain::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>>(
           *box);
   const std::unordered_map<Direction<Dim>,
-                           boost::optional<tnsr::I<DataVector, Dim>>>&
+                           std::optional<tnsr::I<DataVector, Dim>>>&
       face_mesh_velocities = db::get<domain::Tags::Interface<
           domain::Tags::InternalDirections<Dim>,
           domain::Tags::MeshVelocity<Dim, Frame::Inertial>>>(*box);

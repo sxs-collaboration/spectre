@@ -4,8 +4,8 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/optional.hpp>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 
@@ -173,12 +173,12 @@ void test() noexcept {
 
   const auto check_helper = [&box, &mesh]() noexcept {
     if (IsTimeDependent) {
-      const boost::optional<Scalar<DataVector>>& div_frame_velocity =
+      const std::optional<Scalar<DataVector>>& div_frame_velocity =
           db::get<domain::Tags::DivMeshVelocity>(box);
       REQUIRE(static_cast<bool>(div_frame_velocity));
       CHECK(*div_frame_velocity ==
             divergence(
-                db::get<domain::Tags::MeshVelocity<Dim>>(box).get(), mesh,
+                db::get<domain::Tags::MeshVelocity<Dim>>(box).value(), mesh,
                 db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical,
                                                       Frame::Inertial>>(box)));
     } else {
