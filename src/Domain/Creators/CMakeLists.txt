@@ -52,9 +52,9 @@ target_link_libraries(
   PUBLIC
   CoordinateMaps
   DataStructures
+  DomainTimeDependence
   INTERFACE
   Domain
-  DomainTimeDependence
   ErrorHandling
   Options
   )

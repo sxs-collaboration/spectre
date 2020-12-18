@@ -71,3 +71,11 @@ if(DOXYGEN_FOUND)
 else()
   message(STATUS "Doxygen: Not found, documentation cannot be built.")
 endif()
+
+if(BUILD_PYTHON_BINDINGS AND "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
+  message(STATUS
+    "When using the python bindings you must run python as:\n"
+    "   LD_PRELOAD=${JEMALLOC_LIBRARIES} python ...\n"
+    "Alternatively, use the system allocator by setting \n"
+    "-D MEMORY_ALLOCATOR=SYSTEM")
+endif()

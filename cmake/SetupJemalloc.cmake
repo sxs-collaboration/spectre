@@ -22,3 +22,40 @@ set_property(
   GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
   Jemalloc
   )
+
+# Determine whether we are using JEMALLOC as a shared or static library
+get_filename_component(
+  JEMALLOC_LIB_NAME
+  ${JEMALLOC_LIBRARIES}
+  NAME
+  )
+get_filename_component(
+  JEMALLOC_LIB_TYPE
+  ${JEMALLOC_LIB_NAME}
+  LAST_EXT
+  )
+while(NOT "${JEMALLOC_LIB_TYPE}" STREQUAL ".so"
+    AND NOT "${JEMALLOC_LIB_TYPE}" STREQUAL ".a"
+    AND NOT "${JEMALLOC_LIB_TYPE}" STREQUAL ".dylib")
+  get_filename_component(
+    JEMALLOC_LIB_NAME
+    ${JEMALLOC_LIB_NAME}
+    NAME_WLE
+    )
+  get_filename_component(
+    JEMALLOC_LIB_TYPE
+    ${JEMALLOC_LIB_NAME}
+    LAST_EXT
+    )
+endwhile()
+
+if("${JEMALLOC_LIB_TYPE}" STREQUAL ".a")
+  set(JEMALLOC_LIB_TYPE STATIC)
+elseif("${JEMALLOC_LIB_TYPE}" STREQUAL ".so" OR
+    "${JEMALLOC_LIB_TYPE}" STREQUAL ".dylib")
+  set(JEMALLOC_LIB_TYPE SHARED)
+else()
+  message(FATAL_ERROR "Couldn't determine whether JEMALLOC is a static "
+    "or shared/dynamic library.")
+endif()
+mark_as_advanced(JEMALLOC_LIB_TYPE)

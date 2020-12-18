@@ -25,11 +25,21 @@ configure_file(
   "${CMAKE_SOURCE_DIR}/src/PythonBindings/setup.py"
   "${SPECTRE_PYTHON_PREFIX_PARENT}/setup.py")
 
+set(_JEMALLOC_MESSAGE "")
+if(BUILD_PYTHON_BINDINGS AND "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
+  set(_JEMALLOC_MESSAGE
+    "echo 'You must run python as:'\n"
+    "echo 'LD_PRELOAD=${JEMALLOC_LIBRARIES} python ...'\n")
+  string(REPLACE ";" "" _JEMALLOC_MESSAGE "${_JEMALLOC_MESSAGE}")
+endif()
+
 # Write a file to be able to set up the new python path.
 file(WRITE
   "${CMAKE_BINARY_DIR}/tmp/LoadPython.sh"
   "#!/bin/sh\n"
-  "export PYTHONPATH=$PYTHONPATH:${SPECTRE_PYTHON_PREFIX_PARENT}")
+  "export PYTHONPATH=$PYTHONPATH:${SPECTRE_PYTHON_PREFIX_PARENT}\n"
+  ${_JEMALLOC_MESSAGE}
+  )
 configure_file(
   "${CMAKE_BINARY_DIR}/tmp/LoadPython.sh"
   "${CMAKE_BINARY_DIR}/bin/LoadPython.sh")
@@ -56,6 +66,18 @@ add_custom_target(all-pybindings)
 #                 ${CMAKE_SOURCE_DIR}/src) to add to the module. Omit if
 #                 no python files are to be provided.
 function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
+  if(BUILD_PYTHON_BINDINGS AND
+      "${JEMALLOC_LIB_TYPE}" STREQUAL STATIC
+      AND BUILD_SHARED_LIBS)
+    message(FATAL_ERROR
+      "Cannot build python bindings when using a static library JEMALLOC and "
+      "building SpECTRE with shared libraries. Either disable the python "
+      "bindings using -D BUILD_PYTHON_BINDINGS=OFF, switch to a shared/dynamic "
+      "JEMALLOC library, use the system allocator by passing "
+      "-D MEMORY_ALLOCATOR=SYSTEM to CMake, or build SpECTRE using static "
+      "libraries by passing -D BUILD_SHARED_LIBS=OFF to CMake.")
+  endif()
+
   set(SINGLE_VALUE_ARGS MODULE_PATH LIBRARY_NAME)
   set(MULTI_VALUE_ARGS SOURCES PYTHON_FILES)
   cmake_parse_arguments(
@@ -127,7 +149,8 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       target_compile_options(${ARG_LIBRARY_NAME}
         PRIVATE -fsized-deallocation)
     endif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    # We don't want the 'lib' prefix for python modules, so we set the output name
+    # We don't want the 'lib' prefix for python modules, so we set the output
+    # name
     set_target_properties(
       ${ARG_LIBRARY_NAME}
       PROPERTIES
@@ -135,10 +158,17 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       LIBRARY_OUTPUT_NAME "_${ARG_LIBRARY_NAME}"
       LIBRARY_OUTPUT_DIRECTORY ${MODULE_LOCATION}
       )
+    # We need --no-as-needed since each python module needs to depend on all the
+    # shared libraries in order to run successfully.
+    set(PY_LIB_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS}")
+    if(NOT APPLE)
+      set(PY_LIB_LINK_FLAGS
+        "${CMAKE_CXX_LINK_FLAGS} -Wl,--no-as-needed")
+    endif()
     set_target_properties(
       ${ARG_LIBRARY_NAME}
       PROPERTIES
-      LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS}
+      LINK_FLAGS "${PY_LIB_LINK_FLAGS}"
       )
     set(SPECTRE_PYTHON_MODULE_IMPORT "from ._${ARG_LIBRARY_NAME} import *")
     add_dependencies(test-executables ${ARG_LIBRARY_NAME})
@@ -331,6 +361,17 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS
     math(EXPR TIMEOUT "${SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR} * ${TIMEOUT}")
   endif()
 
+  set(_TEST_ENV_VARS
+    "PYTHONPATH=${SPECTRE_PYTHON_PREFIX_PARENT}:\$PYTHONPATH"
+    )
+  if(BUILD_PYTHON_BINDINGS AND
+      "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
+    list(APPEND
+      _TEST_ENV_VARS
+      "LD_PRELOAD=${JEMALLOC_LIBRARIES}"
+      )
+  endif()
+
   # The fail regular expression is what Python.unittest returns when no
   # tests are found to be run. We treat this as a test failure.
   set_tests_properties(
@@ -339,7 +380,7 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS
     FAIL_REGULAR_EXPRESSION "Ran 0 test"
     TIMEOUT ${TIMEOUT}
     LABELS "${TAGS};Python"
-    ENVIRONMENT "PYTHONPATH=${SPECTRE_PYTHON_PREFIX_PARENT}:\$PYTHONPATH"
+    ENVIRONMENT "${_TEST_ENV_VARS}"
     )
   # check if this is a unit test, and if so add it to the dependencies
   foreach(LABEL ${TAGS})
