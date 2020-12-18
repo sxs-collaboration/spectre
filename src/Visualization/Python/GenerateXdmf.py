@@ -23,7 +23,7 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
                         "python 3 instead.")
 
     h5files = [(h5py.File(filename, 'r'), filename)
-               for filename in glob.glob(file_prefix + "*.h5")]
+               for filename in glob.glob(file_prefix + "[0-9]*.h5")]
 
     assert len(h5files) > 0, "No H5 files with prefix '{}' found.".format(
         file_prefix)
