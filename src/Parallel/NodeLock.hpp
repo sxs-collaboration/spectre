@@ -5,6 +5,7 @@
 
 #include <charm++.h>
 #include <converse.h>
+#include <memory>
 #include <pup.h>
 
 namespace Parallel {
@@ -17,8 +18,9 @@ namespace Parallel {
  * \details This structure is a thin wrapper around the charm `CmiNodeLock`, in
  * the <a href="https://charm.readthedocs.io/en/latest/converse/manual.html">
  * Converse library</a>. On construction, this class creates a Converse
- * nodelock, and frees the lock on destruction. When the lock is
- * deserialized, the nodelock is re-created.
+ * nodelock, and frees the lock on destruction.
+ *
+ * \note If a locked NodeLock is serialized, it is deserialized as unlocked.
  */
 class NodeLock {
  public:
@@ -40,10 +42,12 @@ class NodeLock {
 
   void destroy() noexcept;
 
+  bool is_destroyed() noexcept { return nullptr == lock_; }
+
+  ///
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
-  bool destroyed_ = false;
-  CmiNodeLock lock_{};  // NOLINT
+  std::unique_ptr<CmiNodeLock> lock_;
 };
 }  // namespace Parallel
