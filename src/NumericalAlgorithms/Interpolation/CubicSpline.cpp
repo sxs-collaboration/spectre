@@ -8,6 +8,7 @@
 #include <gsl/gsl_spline.h>
 #include <memory>
 #include <pup.h>
+#include <pup_stl.h>
 
 #include "ErrorHandling/Assert.hpp"
 

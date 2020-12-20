@@ -4,6 +4,8 @@
 #include "Domain/Structure/OrientationMap.hpp"
 
 #include <ostream>
+#include <pup.h>
+#include <pup_stl.h>
 #include <set>
 
 #include "Domain/Structure/SegmentId.hpp"  // IWYU pragma: keep

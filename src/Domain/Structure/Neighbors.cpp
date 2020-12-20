@@ -5,6 +5,7 @@
 
 #include <ostream>
 #include <pup.h>  // IWYU pragma: keep
+#include <pup_stl.h>
 
 #include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"

@@ -4,6 +4,7 @@
 #include "DataStructures/Index.hpp"
 
 #include <pup.h>  // IWYU pragma: keep
+#include <pup_stl.h>
 
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep

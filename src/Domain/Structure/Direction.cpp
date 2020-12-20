@@ -4,6 +4,8 @@
 #include "Domain/Structure/Direction.hpp"
 
 #include <ostream>
+#include <pup.h>
+#include <pup_stl.h>
 
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

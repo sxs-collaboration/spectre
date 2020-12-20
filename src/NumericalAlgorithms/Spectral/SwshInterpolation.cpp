@@ -8,6 +8,8 @@
 #include <cmath>
 #include <complex>
 #include <cstddef>
+#include <pup.h>
+#include <pup_stl.h>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"

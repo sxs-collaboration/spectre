@@ -7,6 +7,8 @@
 #include <iterator>
 #include <memory>
 #include <ostream>
+#include <pup.h>
+#include <pup_stl.h>
 #include <utility>  // IWYU pragma: keep
 
 #include "DataStructures/DataVector.hpp"

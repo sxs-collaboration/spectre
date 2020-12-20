@@ -6,6 +6,7 @@
 #include <cmath>
 #include <ostream>
 #include <pup.h>
+#include <pup_stl.h>
 #include <utility>
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
