@@ -111,10 +111,6 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
     endif()
 
     Python_add_library(${ARG_LIBRARY_NAME} MODULE ${ARG_SOURCES})
-    target_link_libraries(
-      ${ARG_LIBRARY_NAME}
-      PUBLIC pybind11::headers
-      )
     set_target_properties(
       ${ARG_LIBRARY_NAME}
       PROPERTIES

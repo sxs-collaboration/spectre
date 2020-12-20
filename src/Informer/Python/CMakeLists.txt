@@ -13,5 +13,7 @@ spectre_python_add_module(
 
 spectre_python_link_libraries(
   ${LIBRARY}
-  PUBLIC Informer
+  PRIVATE
+  Informer
+  pybind11::module
   )

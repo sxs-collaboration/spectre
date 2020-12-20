@@ -52,7 +52,9 @@ call `spectre_python_link_libraries` for every Python module that compiles
 \code
 spectre_python_link_libraries(
   PyExtraDataStructures
-  PUBLIC ExtraDataStructures
+  PRIVATE
+  ExtraDataStructures
+  pybind11::module
   )
 \endcode
 

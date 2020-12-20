@@ -22,6 +22,7 @@ spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE
   DomainCreators
+  pybind11::module
   )
 
 spectre_python_add_dependencies(
