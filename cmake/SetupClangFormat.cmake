@@ -28,7 +28,7 @@ else()
   )
 endif()
 
-if(CLANG_FORMAT_BIN AND EXISTS ${CMAKE_SOURCE_DIR}/.git)
+if(CLANG_FORMAT_BIN AND EXISTS ${CMAKE_SOURCE_DIR}/.git AND Git_FOUND)
   set(CLANG_FORMAT_FOUND 1)
   get_filename_component(CLANG_FORMAT_NAME ${CLANG_FORMAT_BIN} NAME)
   add_custom_target(
@@ -36,7 +36,7 @@ if(CLANG_FORMAT_BIN AND EXISTS ${CMAKE_SOURCE_DIR}/.git)
       COMMAND
       export PATH=${CMAKE_SOURCE_DIR}/tools:$$PATH
       && cd ${CMAKE_SOURCE_DIR}
-      && git ${CLANG_FORMAT_NAME} -f
+      && ${GIT_EXECUTABLE} ${CLANG_FORMAT_NAME} -f
   )
 else()
   set(CLANG_FORMAT_FOUND 0)

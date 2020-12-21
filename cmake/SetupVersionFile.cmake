@@ -1,33 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(Git)
-
-# Get the current working branch and commit hash
-if(EXISTS ${CMAKE_SOURCE_DIR}/.git AND Git_FOUND)
-  execute_process(
-    COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_BRANCH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-  execute_process(
-    COMMAND ${GIT_EXECUTABLE} describe --abbrev=0 --always --tags
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_COMMIT_HASH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-else()
-  set(GIT_BRANCH "NOT_IN_GIT_REPO")
-  set(GIT_COMMIT_HASH "NOT_IN_GIT_REPO")
-endif()
-
 file(WRITE
   "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
   "CMake Version: ${CMAKE_VERSION}\n"
   "SpECTRE Version: ${SpECTRE_VERSION}\n"
-  "SpECTRE branch: ${GIT_BRANCH}\n"
-  "SpECTRE hash: ${GIT_COMMIT_HASH}\n"
+  "Git description: ${GIT_DESCRIPTION}\n"
+  "Git branch: ${GIT_BRANCH}\n"
+  "Git hash: ${GIT_HASH}\n"
   "Hostname: ${HOSTNAME}\n"
   "Host system: ${CMAKE_HOST_SYSTEM}\n"
   "Host system version: ${CMAKE_HOST_SYSTEM_VERSION}\n"

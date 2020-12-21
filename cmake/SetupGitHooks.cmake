@@ -21,8 +21,6 @@ if(USE_GIT_HOOKS)
   if(NOT CHECK_SOURCE_DIR_WRITABLE_RESULT AND EXISTS ${CMAKE_SOURCE_DIR}/.git)
     find_package(PythonInterp REQUIRED)
 
-    find_package(Git REQUIRED)
-
     # We use several client-side git hooks to ensure commits are correct as
     # early as possible.
     configure_file(

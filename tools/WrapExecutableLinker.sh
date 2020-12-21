@@ -7,11 +7,13 @@ temp_files=()
 trap 'rm -r "${temp_files[@]}"' EXIT
 
 pushd @CMAKE_SOURCE_DIR@ >/dev/null
-git_commit_hash="NOT_IN_GIT_REPO"
-git_branch="NOT_IN_GIT_REPO"
-if [ -d "./.git" ]; then
-    git_commit_hash=`@GIT_EXECUTABLE@ describe --abbrev=0 --always --tags`
-    git_branch=`@GIT_EXECUTABLE@ rev-parse --abbrev-ref HEAD`
+git_description="@GIT_DESCRIPTION@"
+git_branch="@GIT_BRANCH@"
+if [ -z "$git_description" ]; then
+    git_description="NOT_IN_GIT_REPO"
+fi
+if [ -z "$git_branch" ]; then
+    git_branch="NOT_IN_GIT_REPO"
 fi
 popd >/dev/null
 
@@ -43,11 +45,11 @@ cp @CMAKE_BINARY_DIR@/Informer/InfoAtLink.cpp "${InfoAtLink_file}"
 if [ -f @CMAKE_BINARY_DIR@/tmp/Formaline.sh ]; then
     . @CMAKE_BINARY_DIR@/tmp/Formaline.sh $(basename "${!oindex}")
     temp_files+=("${formaline_output}" "${formaline_object_output}")
-    "$@" -DGIT_COMMIT_HASH=$git_commit_hash -DGIT_BRANCH=$git_branch \
+    "$@" -DGIT_DESCRIPTION=$git_description -DGIT_BRANCH=$git_branch \
          -I@Boost_INCLUDE_DIRS@ "${InfoAtLink_file}" "${formaline_output}" \
          ${formaline_object_output}
 else
-    "$@" -DGIT_COMMIT_HASH=$git_commit_hash -DGIT_BRANCH=$git_branch \
+    "$@" -DGIT_DESCRIPTION=$git_description -DGIT_BRANCH=$git_branch \
          -I@Boost_INCLUDE_DIRS@ "${InfoAtLink_file}"
 fi
 

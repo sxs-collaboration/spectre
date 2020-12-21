@@ -72,18 +72,13 @@ function(SETUP_TARGET_FOR_COVERAGE
     MESSAGE(FATAL_ERROR "sed not found! Aborting...")
   endif()
 
+  if(NOT GIT_HASH)
+    message(FATAL_ERROR "Git hash not found! Aborting...")
+  endif()
+
   # Set shortcut for output: OUTPUT_PATH/target
   set(OUTPUT ${OUTPUT_PATH}/${TARGET_NAME})
   file(MAKE_DIRECTORY ${OUTPUT_PATH})
-
-  # Retrieve the git commit hash
-  find_package(Git REQUIRED)
-  execute_process(
-      COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-      OUTPUT_VARIABLE GIT_COMMIT_HASH_NO_TAG
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-  )
 
   # Setup code coverage target
   add_custom_target(
@@ -118,7 +113,7 @@ function(SETUP_TARGET_FOR_COVERAGE
       --output-file ${OUTPUT}.filtered.info
       # Generate HTML report
       COMMAND ${GENHTML} --legend --demangle-cpp
-      --title `cd ${CMAKE_SOURCE_DIR} && git rev-parse HEAD`
+      --title ${GIT_HASH}
       -o ${OUTPUT} ${OUTPUT}.filtered.info
       # Customize page headers in generated html to own
       COMMAND find ${OUTPUT} -type f -print | xargs file | grep text |

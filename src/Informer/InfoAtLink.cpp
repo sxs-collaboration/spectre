@@ -9,8 +9,8 @@
 namespace {
 std::string link_date() { return std::string(__TIMESTAMP__); }
 
-std::string git_commit_hash() {
-  return std::string(BOOST_PP_STRINGIZE(GIT_COMMIT_HASH));
+std::string git_description() {
+  return std::string(BOOST_PP_STRINGIZE(GIT_DESCRIPTION));
 }
 
 std::string git_branch() { return std::string(BOOST_PP_STRINGIZE(GIT_BRANCH)); }
@@ -25,7 +25,7 @@ std::string info_from_build() {
     os << "Compiled in directory:        @CMAKE_BINARY_DIR@\n";
     os << "Source directory is:          @CMAKE_SOURCE_DIR@\n";
     os << "Compiled on git branch:       " << git_branch() << "\n";
-    os << "Compiled with git hash:       " << git_commit_hash() << "\n";
+    os << "Compiled on git revision:     " << git_description() << "\n";
     os << "Linked on:                    " << link_date() << "\n";
     return os.str();
   }();
