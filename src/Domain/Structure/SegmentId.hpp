@@ -8,6 +8,7 @@
 
 #include <cstddef>
 #include <iosfwd>
+#include <pup.h>
 
 #include "Domain/Structure/Side.hpp"
 #include "ErrorHandling/Assert.hpp"
@@ -16,9 +17,6 @@
 /// \cond
 template <size_t>
 class ElementId;
-namespace PUP {
-class er;
-}  // namespace PUP
 /// \endcond
 
 /*!

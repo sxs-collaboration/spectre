@@ -6,6 +6,8 @@
 #include <boost/functional/hash.hpp>
 #include <limits>
 #include <ostream>
+#include <pup.h>
+#include <pup_stl.h>
 
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

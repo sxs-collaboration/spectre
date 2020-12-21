@@ -433,7 +433,7 @@ class CoordinateMap
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) override {  // NOLINT
     CoordinateMapBase<SourceFrame, TargetFrame, dim>::pup(p);
-    PUP::pup(p, maps_);
+    p | maps_;
   }
 
  private:

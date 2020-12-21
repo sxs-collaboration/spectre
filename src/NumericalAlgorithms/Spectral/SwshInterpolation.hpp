@@ -14,6 +14,9 @@
 
 /// \cond
 class ComplexDataVector;
+namespace PUP {
+class er;
+}  // namespace PUP
 /// \endcond
 
 namespace Spectral {
