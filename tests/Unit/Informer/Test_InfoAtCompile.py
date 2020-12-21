@@ -1,21 +1,24 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre import Informer as Info
-import unittest
+from spectre import Informer
+try:
+    # Fallback for Py2 that provides `assertRegex`
+    import unittest2 as unittest
+except:
+    import unittest
+
+VERSION_PATTERN = r'\d{4}\.\d{2}\.\d{2}(\.\d+)?'
 
 
 class TestInformer(unittest.TestCase):
     def test_spectre_version(self):
-        num_ver = str(Info.spectre_major_version()) + "." + \
-            str(Info.spectre_minor_version()) + "." + \
-            str(Info.spectre_patch_version())
-        self.assertEqual(num_ver, Info.spectre_version())
+        self.assertRegex(Informer.spectre_version(), VERSION_PATTERN)
 
     # The unit test path is unpredictable, but the last 12 characters must be
     # '/tests/Unit/'
     def test_unit_test_path(self):
-        self.assertEqual(Info.unit_test_path()[-12:], '/tests/Unit/')
+        self.assertEqual(Informer.unit_test_path()[-12:], '/tests/Unit/')
 
 
 if __name__ == '__main__':
