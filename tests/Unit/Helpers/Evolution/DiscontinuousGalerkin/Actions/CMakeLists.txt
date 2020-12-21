@@ -29,6 +29,7 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   Evolution
+  Framework
   DiscontinuousGalerkin
   Domain
   DomainStructure
