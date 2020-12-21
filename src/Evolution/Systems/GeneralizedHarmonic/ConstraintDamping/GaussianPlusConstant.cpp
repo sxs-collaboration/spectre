@@ -26,6 +26,12 @@ class FunctionOfTime;
 /// \endcond
 
 namespace GeneralizedHarmonic::ConstraintDamping {
+/// \cond
+template <size_t VolumeDim, typename Fr>
+GaussianPlusConstant<VolumeDim, Fr>::GaussianPlusConstant(
+    CkMigrateMessage* msg) noexcept
+    : DampingFunction<VolumeDim, Fr>(msg) {}
+/// \endcond
 
 template <size_t VolumeDim, typename Fr>
 GaussianPlusConstant<VolumeDim, Fr>::GaussianPlusConstant(
@@ -90,6 +96,9 @@ auto GaussianPlusConstant<VolumeDim, Fr>::get_clone() const noexcept
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define INSTANTIATE(_, data)                                                  \
+  template GeneralizedHarmonic::ConstraintDamping::                           \
+      GaussianPlusConstant<DIM(data), FRAME(data)>::GaussianPlusConstant(     \
+          CkMigrateMessage* msg) noexcept;                                    \
   template GeneralizedHarmonic::ConstraintDamping::                           \
       GaussianPlusConstant<DIM(data), FRAME(data)>::GaussianPlusConstant(     \
           const double constant, const double amplitude, const double width,  \

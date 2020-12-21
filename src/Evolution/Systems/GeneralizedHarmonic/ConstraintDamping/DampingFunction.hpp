@@ -51,6 +51,8 @@ class DampingFunction : public PUP::able {
   DampingFunction& operator=(DampingFunction&& /*rhs*/) noexcept = default;
   ~DampingFunction() override = default;
 
+  explicit DampingFunction(CkMigrateMessage* msg) noexcept : PUP::able(msg) {}
+
   //@{
   /// Returns the value of the function at the coordinate 'x'.
   virtual void operator()(
