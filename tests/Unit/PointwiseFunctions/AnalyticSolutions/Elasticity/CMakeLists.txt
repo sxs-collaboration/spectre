@@ -6,6 +6,7 @@ set(LIBRARY "Test_ElasticitySolutions")
 set(LIBRARY_SOURCES
   Test_BentBeam.cpp
   Test_HalfSpaceMirror.cpp
+  Test_Zero.cpp
   )
 
 add_test_library(
