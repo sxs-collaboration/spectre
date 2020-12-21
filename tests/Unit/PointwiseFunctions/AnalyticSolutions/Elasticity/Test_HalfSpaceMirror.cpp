@@ -35,8 +35,8 @@
 
 namespace {
 
-struct HalfSpaceMirrorProxy : Elasticity::Solutions::HalfSpaceMirror {
-  using Elasticity::Solutions::HalfSpaceMirror::HalfSpaceMirror;
+struct HalfSpaceMirrorProxy : Elasticity::Solutions::HalfSpaceMirror<> {
+  using Elasticity::Solutions::HalfSpaceMirror<>::HalfSpaceMirror;
 
   using field_tags = tmpl::list<Elasticity::Tags::Displacement<3>,
                                 Elasticity::Tags::Strain<3>>;
@@ -45,13 +45,14 @@ struct HalfSpaceMirrorProxy : Elasticity::Solutions::HalfSpaceMirror {
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
       const tnsr::I<DataVector, 3>& x) const noexcept {
-    return Elasticity::Solutions::HalfSpaceMirror::variables(x, field_tags{});
+    return Elasticity::Solutions::HalfSpaceMirror<>::variables(x, field_tags{});
   }
 
   // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
   tuples::tagged_tuple_from_typelist<source_tags> source_variables(
       const tnsr::I<DataVector, 3>& x) const noexcept {
-    return Elasticity::Solutions::HalfSpaceMirror::variables(x, source_tags{});
+    return Elasticity::Solutions::HalfSpaceMirror<>::variables(x,
+                                                               source_tags{});
   }
 };
 
@@ -60,15 +61,14 @@ struct HalfSpaceMirrorProxy : Elasticity::Solutions::HalfSpaceMirror {
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.Elasticity.HalfSpaceMirror",
     "[PointwiseFunctions][Unit][Elasticity]") {
-  constexpr size_t dim = Elasticity::Solutions::HalfSpaceMirror::volume_dim;
   // Fused silica: E = 72, nu = 0.17
   // => K = E / (3 * (1 - 2 nu)), mu = E / (2 * (1 + nu))
-  const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<dim>
+  const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<3>
       constitutive_relation{36.36363636363637, 30.76923076923077};
-  const Elasticity::Solutions::HalfSpaceMirror check_solution{
+  const Elasticity::Solutions::HalfSpaceMirror<> check_solution{
       0.177, constitutive_relation, 350, 1.e-12, 1.e-10};
   const auto created_solution =
-      TestHelpers::test_creation<Elasticity::Solutions::HalfSpaceMirror>(
+      TestHelpers::test_creation<Elasticity::Solutions::HalfSpaceMirror<>>(
           "BeamWidth: 0.177\n"
           "Material:\n"
           "  BulkModulus: 36.36363636363637\n"
@@ -78,6 +78,7 @@ SPECTRE_TEST_CASE(
           "RelativeTolerance: 1e-10\n");
   CHECK(created_solution == check_solution);
   test_serialization(check_solution);
+  test_copy_semantics(check_solution);
 
   const HalfSpaceMirrorProxy solution{0.177, constitutive_relation, 350, 1e-11,
                                       1e-11};
@@ -130,7 +131,7 @@ SPECTRE_TEST_CASE(
   {
     INFO("Test elasticity system with half-space mirror");
     // Verify that the solution numerically solves the system
-    using system = Elasticity::FirstOrderSystem<dim>;
+    using system = Elasticity::FirstOrderSystem<3>;
     const typename system::fluxes fluxes_computer{};
     using AffineMap = domain::CoordinateMaps::Affine;
     using AffineMap3D =
@@ -152,13 +153,12 @@ SPECTRE_TEST_CASE(
     "Unit.AnalyticSolutions.Elasticity.HalfSpaceMirror.ConvergenceError",
     "[PointwiseFunctions][Unit][Elasticity]") {
   ERROR_TEST();
-  constexpr size_t dim = Elasticity::Solutions::HalfSpaceMirror::volume_dim;
-  const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<dim>
+  const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<3>
       constitutive_relation{36.36363636363637, 30.76923076923077};
   const HalfSpaceMirrorProxy solution{0.177, constitutive_relation, 5, 1e-15,
                                       1e-15};
   const tnsr::I<DataVector, 3> x{{{{0.3}, {1.3}, {2.3}}}};
   const auto solution_vars = variables_from_tagged_tuple(
-      solution.variables(x, tmpl::list<Elasticity::Tags::Displacement<dim>,
-                                       Elasticity::Tags::Strain<dim>>{}));
+      solution.variables(x, tmpl::list<Elasticity::Tags::Displacement<3>,
+                                       Elasticity::Tags::Strain<3>>{}));
 }

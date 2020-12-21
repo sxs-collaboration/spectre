@@ -4,26 +4,60 @@
 #pragma once
 
 #include <limits>
+#include <pup.h>
 
-#include "DataStructures/DataBox/Prefixes.hpp"   // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"      // IWYU pragma: keep
-#include "Elliptic/Systems/Elasticity/Tags.hpp"  // IWYU pragma: keep
+#include "DataStructures/CachedTempBuffer.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Elliptic/Systems/Elasticity/Tags.hpp"
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Elasticity/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
-#include "PointwiseFunctions/Elasticity/ConstitutiveRelations/Tags.hpp"  // IWYU pragma: keep
+#include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
+namespace Elasticity::Solutions {
+
+namespace detail {
+template <typename DataType>
+struct BentBeamVariables {
+  using Cache = CachedTempBuffer<BentBeamVariables, Tags::Displacement<2>,
+                                 Tags::Strain<2>, Tags::Stress<2>,
+                                 ::Tags::FixedSource<Tags::Displacement<2>>>;
+
+  const tnsr::I<DataType, 2>& x;
+  const double length;
+  const double height;
+  const double bending_moment;
+  const ConstitutiveRelations::IsotropicHomogeneous<2>& constitutive_relation;
+
+  void operator()(gsl::not_null<tnsr::I<DataType, 2>*> displacement,
+                  gsl::not_null<Cache*> cache,
+                  Tags::Displacement<2> /*meta*/) const noexcept;
+  void operator()(gsl::not_null<tnsr::ii<DataType, 2>*> strain,
+                  gsl::not_null<Cache*> cache, Tags::Strain<2> /*meta*/) const
+      noexcept;
+  void operator()(gsl::not_null<tnsr::II<DataType, 2>*> stress,
+                  gsl::not_null<Cache*> cache, Tags::Stress<2> /*meta*/) const
+      noexcept;
+  void operator()(
+      gsl::not_null<tnsr::I<DataType, 2>*> fixed_source_for_displacement,
+      gsl::not_null<Cache*> cache,
+      ::Tags::FixedSource<Tags::Displacement<2>> /*meta*/) const noexcept;
+};
+}  // namespace detail
 
 /// \cond
-class DataVector;
-namespace PUP {
-class er;
-}  // namespace PUP
+template <typename Registrars>
+struct BentBeam;
+
+namespace Registrars {
+using BentBeam = ::Registration::Registrar<Solutions::BentBeam>;
+}  // namespace Registrars
 /// \endcond
 
-namespace Elasticity::Solutions {
 /*!
  * \brief A state of pure bending of an elastic beam in 2D
  *
@@ -71,9 +105,9 @@ namespace Elasticity::Solutions {
  * \int_{-L/2}^{L/2} \int_{-H/2}^{H/2} U dy\,dx = \frac{6M^2}{EH^3}L \text{.}
  * \f]
  */
-class BentBeam {
+template <typename Registrars = tmpl::list<Solutions::Registrars::BentBeam>>
+class BentBeam : public AnalyticSolution<2, Registrars> {
  public:
-  static constexpr size_t volume_dim = 2;
   using constitutive_relation_type =
       Elasticity::ConstitutiveRelations::IsotropicHomogeneous<2>;
 
@@ -107,65 +141,83 @@ class BentBeam {
       "towards the positive y-axis. It is measured in units of force."};
 
   BentBeam() = default;
-  BentBeam(const BentBeam&) noexcept = delete;
-  BentBeam& operator=(const BentBeam&) noexcept = delete;
+  BentBeam(const BentBeam&) noexcept = default;
+  BentBeam& operator=(const BentBeam&) noexcept = default;
   BentBeam(BentBeam&&) noexcept = default;
   BentBeam& operator=(BentBeam&&) noexcept = default;
-  ~BentBeam() noexcept = default;
+  ~BentBeam() noexcept override = default;
+
+  /// \cond
+  explicit BentBeam(CkMigrateMessage* /*unused*/) noexcept {}
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(BentBeam);  // NOLINT
+  /// \endcond
 
   BentBeam(double length, double height, double bending_moment,
-           constitutive_relation_type constitutive_relation) noexcept;
+           constitutive_relation_type constitutive_relation) noexcept
+      : length_(length),
+        height_(height),
+        bending_moment_(bending_moment),
+        constitutive_relation_(std::move(constitutive_relation)) {}
 
-  const constitutive_relation_type& constitutive_relation() const noexcept {
+  double length() const noexcept { return length_; }
+  double height() const noexcept { return height_; }
+  double bending_moment() const noexcept { return bending_moment_; }
+
+  const constitutive_relation_type& constitutive_relation() const
+      noexcept override {
     return constitutive_relation_;
   }
 
   /// Return potential energy integrated over the whole beam material
-  double potential_energy() const;
+  double potential_energy() const {
+    return 6. * length_ * square(bending_moment_) /
+           (cube(height_) * constitutive_relation_.youngs_modulus());
+  }
 
-  // @{
-  /// Retrieve variable at coordinates `x`
-  auto variables(const tnsr::I<DataVector, 2>& x,
-                 tmpl::list<Tags::Displacement<2>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<Tags::Displacement<2>>;
-
-  auto variables(const tnsr::I<DataVector, 2>& x,
-                 tmpl::list<Tags::Strain<2>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<Tags::Strain<2>>;
-
-  auto variables(const tnsr::I<DataVector, 2>& x,
-                 tmpl::list<Tags::Stress<2>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<Tags::Stress<2>>;
-
-  static auto variables(
-      const tnsr::I<DataVector, 2>& x,
-      tmpl::list<::Tags::FixedSource<Tags::Displacement<2>>> /*meta*/) noexcept
-      -> tuples::TaggedTuple<::Tags::FixedSource<Tags::Displacement<2>>>;
-  // @}
-
-  /// Retrieve a collection of variables at coordinates `x`
-  template <typename... Tags>
-  tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataVector, 2>& x,
-                                         tmpl::list<Tags...> /*meta*/) const
-      noexcept {
-    static_assert(sizeof...(Tags) > 1,
-                  "The generic template will recurse infinitely if only one "
-                  "tag is being retrieved.");
-    return {tuples::get<Tags>(variables(x, tmpl::list<Tags>{}))...};
+  template <typename DataType, typename... RequestedTags>
+  tuples::TaggedTuple<RequestedTags...> variables(
+      const tnsr::I<DataType, 2>& x,
+      tmpl::list<RequestedTags...> /*meta*/) const noexcept {
+    using VarsComputer = detail::BentBeamVariables<DataType>;
+    typename VarsComputer::Cache cache{
+        get_size(*x.begin()), VarsComputer{x, length_, height_, bending_moment_,
+                                           constitutive_relation_}};
+    return {cache.get_var(RequestedTags{})...};
   }
 
   // clang-tidy: no pass by reference
-  void pup(PUP::er& p) noexcept;  // NOLINT
+  void pup(PUP::er& p) noexcept override {  // NOLINT
+    p | length_;
+    p | height_;
+    p | bending_moment_;
+    p | constitutive_relation_;
+  }
 
  private:
-  friend bool operator==(const BentBeam& lhs, const BentBeam& rhs) noexcept;
-
   double length_{std::numeric_limits<double>::signaling_NaN()};
   double height_{std::numeric_limits<double>::signaling_NaN()};
   double bending_moment_{std::numeric_limits<double>::signaling_NaN()};
   constitutive_relation_type constitutive_relation_{};
 };
 
-bool operator!=(const BentBeam& lhs, const BentBeam& rhs) noexcept;
+/// \cond
+template <typename Registrars>
+PUP::able::PUP_ID BentBeam<Registrars>::my_PUP_ID = 0;  // NOLINT
+/// \endcond
+
+template <typename Registrars>
+bool operator==(const BentBeam<Registrars>& lhs,
+                const BentBeam<Registrars>& rhs) noexcept {
+  return lhs.length() == rhs.length() and lhs.height() == rhs.height() and
+         lhs.bending_moment() == rhs.bending_moment() and
+         lhs.constitutive_relation() == rhs.constitutive_relation();
+}
+
+template <typename Registrars>
+bool operator!=(const BentBeam<Registrars>& lhs,
+                const BentBeam<Registrars>& rhs) noexcept {
+  return not(lhs == rhs);
+}
 
 }  // namespace Elasticity::Solutions

@@ -21,7 +21,6 @@ spectre_target_headers(
   Lorentzian.hpp
   Moustache.hpp
   ProductOfSinusoids.hpp
-  Solutions.hpp
   )
 
 target_link_libraries(
@@ -30,5 +29,6 @@ target_link_libraries(
   DataStructures
   ErrorHandling
   Options
+  Poisson
   Utilities
   )

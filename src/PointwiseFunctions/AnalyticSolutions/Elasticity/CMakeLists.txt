@@ -19,7 +19,6 @@ spectre_target_headers(
   AnalyticSolution.hpp
   BentBeam.hpp
   HalfSpaceMirror.hpp
-  Solutions.hpp
   )
 
 target_link_libraries(
@@ -32,5 +31,6 @@ target_link_libraries(
   Options
   Utilities
   PRIVATE
+  GSL::gsl
   Integration
   )

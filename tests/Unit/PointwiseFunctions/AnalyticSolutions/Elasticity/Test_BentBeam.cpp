@@ -38,8 +38,8 @@
 
 namespace {
 
-struct BentBeamProxy : Elasticity::Solutions::BentBeam {
-  using Elasticity::Solutions::BentBeam::BentBeam;
+struct BentBeamProxy : Elasticity::Solutions::BentBeam<> {
+  using Elasticity::Solutions::BentBeam<>::BentBeam;
 
   using field_tags =
       tmpl::list<Elasticity::Tags::Displacement<2>, Elasticity::Tags::Strain<2>,
@@ -49,14 +49,14 @@ struct BentBeamProxy : Elasticity::Solutions::BentBeam {
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
       const tnsr::I<DataVector, 2>& x) const noexcept {
-    return Elasticity::Solutions::BentBeam::variables(x, field_tags{});
+    return Elasticity::Solutions::BentBeam<>::variables(x, field_tags{});
   }
 
   // check_with_random_values() does not allow for arguments to be static
   // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
   tuples::tagged_tuple_from_typelist<source_tags> source_variables(
       const tnsr::I<DataVector, 2>& x) const noexcept {
-    return Elasticity::Solutions::BentBeam::variables(x, source_tags{});
+    return Elasticity::Solutions::BentBeam<>::variables(x, source_tags{});
   }
 };
 
@@ -65,13 +65,13 @@ struct BentBeamProxy : Elasticity::Solutions::BentBeam {
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.Elasticity.BentBeam",
     "[PointwiseFunctions][Unit][Elasticity]") {
-  const Elasticity::Solutions::BentBeam check_solution{
+  const Elasticity::Solutions::BentBeam<> check_solution{
       5., 1., 0.5,
       // Iron: E=100, nu=0.29
       Elasticity::ConstitutiveRelations::IsotropicHomogeneous<2>{
           79.36507936507935, 38.75968992248062}};
   const auto created_solution =
-      TestHelpers::test_creation<Elasticity::Solutions::BentBeam>(
+      TestHelpers::test_creation<Elasticity::Solutions::BentBeam<>>(
           "Length: 5.\n"
           "Height: 1.\n"
           "BendingMoment: 0.5\n"
@@ -80,6 +80,7 @@ SPECTRE_TEST_CASE(
           "  ShearModulus: 38.75968992248062\n");
   CHECK(created_solution == check_solution);
   test_serialization(check_solution);
+  test_copy_semantics(check_solution);
 
   pypp::SetupLocalPythonEnvironment local_python_env{"PointwiseFunctions"};
   const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<2>
