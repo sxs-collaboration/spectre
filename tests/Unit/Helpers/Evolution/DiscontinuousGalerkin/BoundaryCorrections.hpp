@@ -11,6 +11,7 @@
 #include <string>
 #include <type_traits>
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -28,6 +29,70 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace TestHelpers::evolution::dg {
+namespace detail {
+CREATE_HAS_TYPE_ALIAS(inverse_spatial_metric_tag)
+CREATE_HAS_TYPE_ALIAS_V(inverse_spatial_metric_tag)
+
+template <bool HasInverseSpatialMetricTag = false>
+struct inverse_spatial_metric_tag {
+  template <typename System>
+  using f = tmpl::list<>;
+};
+
+template <>
+struct inverse_spatial_metric_tag<true> {
+  template <typename System>
+  using f = typename System::inverse_spatial_metric_tag;
+};
+
+// On input `inv_spatial_metric` is expected to have components on the interval
+// [0, 1]. The components are rescaled by 0.01, and 1 is added to the diagonal.
+// This is to give an inverse spatial metric of the form:
+//  \delta^{ij} + small^{ij}
+// This is done to give a physically reasonable inverse spatial metric
+template <size_t Dim>
+void adjust_inverse_spatial_metric(
+    const gsl::not_null<tnsr::II<DataVector, Dim>*> inv_spatial_metric) {
+  for (size_t i = 0; i < Dim; ++i) {
+    for (size_t j = i; j < Dim; ++j) {
+      inv_spatial_metric->get(i, j) *= 0.01;
+    }
+  }
+  for (size_t i = 0; i < Dim; ++i) {
+    inv_spatial_metric->get(i, i) += 1.0;
+  }
+}
+
+// On input the `unit_normal_covector` is the unnormalized normal covector. On
+// output `unit_normal_covector` is the normalized (and hence actually unit)
+// normal covector, and `unit_normal_vector` is the unit normal vector. The
+// inverse spatial metric is used for computing the magnitude of the
+// unnormalized normal vector.
+template <size_t Dim>
+void normalize_vector_and_covector(
+    const gsl::not_null<tnsr::i<DataVector, Dim>*> unit_normal_covector,
+    const gsl::not_null<tnsr::I<DataVector, Dim>*> unit_normal_vector,
+    const tnsr::II<DataVector, Dim>& inv_spatial_metric) {
+  for (size_t i = 0; i < Dim; ++i) {
+    unit_normal_vector->get(i) =
+        inv_spatial_metric.get(i, 0) * get<0>(*unit_normal_covector);
+    for (size_t j = 1; j < Dim; ++j) {
+      unit_normal_vector->get(i) +=
+          inv_spatial_metric.get(i, j) * unit_normal_covector->get(j);
+    }
+  }
+
+  const DataVector normal_magnitude =
+      sqrt(get(dot_product(*unit_normal_covector, *unit_normal_vector)));
+  for (auto& t : *unit_normal_covector) {
+    t /= normal_magnitude;
+  }
+  for (auto& t : *unit_normal_vector) {
+    t /= normal_magnitude;
+  }
+}
+}  // namespace detail
+
 /// Indicate if the boundary correction should be zero when the solution is
 /// smooth (should pretty much always be `Yes`)
 enum class ZeroOnSmoothSolution { Yes, No };
@@ -67,7 +132,8 @@ using get_system_primitive_vars = typename get_system_primitive_vars_impl<
     HasPrimitiveVars>::template f<System>;
 
 template <typename BoundaryCorrection, typename... PackageTags,
-          typename... FaceTags, typename... VolumeTags, size_t Dim>
+          typename... FaceTags, typename... VolumeTags,
+          typename... FaceTagsToForward, size_t Dim>
 void call_dg_package_data(
     const gsl::not_null<Variables<tmpl::list<PackageTags...>>*> package_data,
     const BoundaryCorrection& correction,
@@ -75,7 +141,8 @@ void call_dg_package_data(
     const tuples::TaggedTuple<VolumeTags...>& volume_data,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_covector,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
-        mesh_velocity) {
+        mesh_velocity,
+    tmpl::list<FaceTagsToForward...> /*meta*/) {
   std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
   if (mesh_velocity.has_value()) {
     normal_dot_mesh_velocity =
@@ -83,8 +150,33 @@ void call_dg_package_data(
   }
   correction.dg_package_data(
       make_not_null(&get<PackageTags>(*package_data))...,
-      get<FaceTags>(face_variables)..., unit_normal_covector, mesh_velocity,
-      normal_dot_mesh_velocity, get<VolumeTags>(volume_data)...);
+      get<FaceTagsToForward>(face_variables)..., unit_normal_covector,
+      mesh_velocity, normal_dot_mesh_velocity, get<VolumeTags>(volume_data)...);
+}
+
+template <typename BoundaryCorrection, typename... PackageTags,
+          typename... FaceTags, typename... VolumeTags,
+          typename... FaceTagsToForward, size_t Dim>
+void call_dg_package_data(
+    const gsl::not_null<Variables<tmpl::list<PackageTags...>>*> package_data,
+    const BoundaryCorrection& correction,
+    const Variables<tmpl::list<FaceTags...>>& face_variables,
+    const tuples::TaggedTuple<VolumeTags...>& volume_data,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_covector,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& unit_normal_vector,
+    const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+        mesh_velocity,
+    tmpl::list<FaceTagsToForward...> /*meta*/) {
+  std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
+  if (mesh_velocity.has_value()) {
+    normal_dot_mesh_velocity =
+        dot_product(*mesh_velocity, unit_normal_covector);
+  }
+  correction.dg_package_data(make_not_null(&get<PackageTags>(*package_data))...,
+                             get<FaceTagsToForward>(face_variables)...,
+                             unit_normal_covector, unit_normal_vector,
+                             mesh_velocity, normal_dot_mesh_velocity,
+                             get<VolumeTags>(volume_data)...);
 }
 
 template <typename BoundaryCorrection, typename... BoundaryCorrectionTags,
@@ -112,6 +204,10 @@ void test_boundary_correction_impl(
   CAPTURE(use_moving_mesh);
   CAPTURE(dg_formulation);
   CAPTURE(FaceDim);
+  constexpr bool curved_background =
+      detail::has_inverse_spatial_metric_tag_v<System>;
+  CAPTURE(curved_background);
+
   using variables_tags = typename System::variables_tag::tags_list;
   using primitive_variables_tags = detail::get_system_primitive_vars<
       System::has_primitive_and_conservative_vars, System>;
@@ -163,39 +259,99 @@ void test_boundary_correction_impl(
         make_not_null(&gen), make_not_null(&dist), used_for_size);
   }
 
+  using face_tags =
+      tmpl::append<variables_tags, flux_tags, package_temporary_tags,
+                   package_primitive_tags>;
+  using face_tags_with_curved_background = tmpl::conditional_t<
+      curved_background,
+      tmpl::remove_duplicates<tmpl::push_back<
+          face_tags, typename detail::inverse_spatial_metric_tag<
+                         curved_background>::template f<System>>>,
+      face_tags>;
+
   Variables<dg_package_field_tags> interior_package_data{used_for_size.size()};
-  const auto interior_fields_on_face = make_with_random_values<
-      Variables<tmpl::append<variables_tags, flux_tags, package_temporary_tags,
-                             package_primitive_tags>>>(
-      make_not_null(&gen), make_not_null(&dist), used_for_size);
+  auto interior_fields_on_face =
+      make_with_random_values<Variables<face_tags_with_curved_background>>(
+          make_not_null(&gen), make_not_null(&dist), used_for_size);
 
   Variables<dg_package_field_tags> exterior_package_data{used_for_size.size()};
-  const auto exterior_fields_on_face = make_with_random_values<
-      Variables<tmpl::append<variables_tags, flux_tags, package_temporary_tags,
-                             package_primitive_tags>>>(
-      make_not_null(&gen), make_not_null(&dist), used_for_size);
+  auto exterior_fields_on_face =
+      make_with_random_values<Variables<face_tags_with_curved_background>>(
+          make_not_null(&gen), make_not_null(&dist), used_for_size);
 
   // Compute the interior and exterior normal vectors so they are pointing in
   // opposite directions.
   auto interior_unit_normal_covector = make_with_random_values<
       tnsr::i<DataVector, FaceDim + 1, Frame::Inertial>>(
       make_not_null(&gen), make_not_null(&pos_neg_dist), used_for_size);
-  const Scalar<DataVector> interior_normal_magnitude =
-      magnitude(interior_unit_normal_covector);
-  for (auto& t : interior_unit_normal_covector) {
-    t /= get(interior_normal_magnitude);
-  }
-  auto exterior_unit_normal_covector = interior_unit_normal_covector;
-  for (auto& t : exterior_unit_normal_covector) {
-    t *= -1.0;
+  tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>
+      interior_unit_normal_vector{};
+
+  tnsr::i<DataVector, FaceDim + 1, Frame::Inertial>
+      exterior_unit_normal_covector;
+  tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>
+      exterior_unit_normal_vector{};
+  if constexpr (not curved_background) {
+    const Scalar<DataVector> interior_normal_magnitude =
+        magnitude(interior_unit_normal_covector);
+    for (auto& t : interior_unit_normal_covector) {
+      t /= get(interior_normal_magnitude);
+    }
+    exterior_unit_normal_covector = interior_unit_normal_covector;
+    for (auto& t : exterior_unit_normal_covector) {
+      t *= -1.0;
+    }
+  } else {
+    using inv_spatial_metric = typename detail::inverse_spatial_metric_tag<
+        curved_background>::template f<System>;
+    exterior_unit_normal_covector = interior_unit_normal_covector;
+    for (auto& t : exterior_unit_normal_covector) {
+      t *= -1.0;
+    }
+    detail::adjust_inverse_spatial_metric(
+        make_not_null(&get<inv_spatial_metric>(interior_fields_on_face)));
+
+    // make the exterior inverse spatial metric be close to the interior one
+    // since the solution should be smooth. We can't change too much because we
+    // want the spatial metric to have diagonal terms much larger than the
+    // off-diagonal terms.
+    std::uniform_real_distribution<> inv_metric_change_dist(0.999, 1.0);
+    for (size_t i = 0; i < FaceDim + 1; ++i) {
+      for (size_t j = i; j < FaceDim + 1; ++j) {
+        get<inv_spatial_metric>(exterior_fields_on_face).get(i, j) =
+            inv_metric_change_dist(gen) *
+            get<inv_spatial_metric>(interior_fields_on_face).get(i, j);
+      }
+    }
+    detail::normalize_vector_and_covector(
+        make_not_null(&interior_unit_normal_covector),
+        make_not_null(&interior_unit_normal_vector),
+        get<inv_spatial_metric>(interior_fields_on_face));
+    detail::normalize_vector_and_covector(
+        make_not_null(&exterior_unit_normal_covector),
+        make_not_null(&exterior_unit_normal_vector),
+        get<inv_spatial_metric>(exterior_fields_on_face));
   }
 
-  call_dg_package_data(make_not_null(&interior_package_data), correction,
-                       interior_fields_on_face, volume_data,
-                       interior_unit_normal_covector, mesh_velocity);
-  call_dg_package_data(make_not_null(&exterior_package_data), correction,
-                       exterior_fields_on_face, volume_data,
-                       exterior_unit_normal_covector, mesh_velocity);
+  if constexpr (curved_background) {
+    call_dg_package_data(
+        make_not_null(&interior_package_data), correction,
+        interior_fields_on_face, volume_data, interior_unit_normal_covector,
+        interior_unit_normal_vector, mesh_velocity, face_tags{});
+    call_dg_package_data(
+        make_not_null(&exterior_package_data), correction,
+        exterior_fields_on_face, volume_data, exterior_unit_normal_covector,
+        exterior_unit_normal_vector, mesh_velocity, face_tags{});
+  } else {
+    call_dg_package_data(make_not_null(&interior_package_data), correction,
+                         interior_fields_on_face, volume_data,
+                         interior_unit_normal_covector, mesh_velocity,
+                         face_tags{});
+    call_dg_package_data(make_not_null(&exterior_package_data), correction,
+                         exterior_fields_on_face, volume_data,
+                         exterior_unit_normal_covector, mesh_velocity,
+                         face_tags{});
+  }
 
   Variables<dt_variables_tags> boundary_corrections{
       face_mesh.number_of_grid_points()};
@@ -207,6 +363,26 @@ void test_boundary_correction_impl(
     // The strong form should be (WeakForm - (n_i F^i)_{interior}).
     // Since we also test conservation for the weak form we just need to test
     // that the strong form satisfies the above definition.
+
+    if constexpr (curved_background) {
+      call_dg_package_data(
+          make_not_null(&interior_package_data), correction,
+          interior_fields_on_face, volume_data, interior_unit_normal_covector,
+          interior_unit_normal_vector, mesh_velocity, face_tags{});
+      call_dg_package_data(
+          make_not_null(&exterior_package_data), correction,
+          exterior_fields_on_face, volume_data, exterior_unit_normal_covector,
+          exterior_unit_normal_vector, mesh_velocity, face_tags{});
+    } else {
+      call_dg_package_data(make_not_null(&interior_package_data), correction,
+                           interior_fields_on_face, volume_data,
+                           interior_unit_normal_covector, mesh_velocity,
+                           face_tags{});
+      call_dg_package_data(make_not_null(&exterior_package_data), correction,
+                           exterior_fields_on_face, volume_data,
+                           exterior_unit_normal_covector, mesh_velocity,
+                           face_tags{});
+    }
 
     Variables<dt_variables_tags> expected_boundary_corrections{
         face_mesh.number_of_grid_points()};
@@ -242,9 +418,25 @@ void test_boundary_correction_impl(
           "StrongInertial correction is identically zero.");
       Variables<dg_package_field_tags> interior_package_data_opposite_signs{
           used_for_size.size()};
-      call_dg_package_data(make_not_null(&interior_package_data_opposite_signs),
-                           correction, interior_fields_on_face, volume_data,
-                           exterior_unit_normal_covector, mesh_velocity);
+      if constexpr (curved_background) {
+        // If the solution is the same on both sides then the interior and
+        // exterior normal vectors only differ by a sign.
+        for (size_t i = 0; i < FaceDim + 1; ++i) {
+          exterior_unit_normal_vector.get(i) =
+              -interior_unit_normal_vector.get(i);
+          exterior_unit_normal_covector.get(i) =
+              -interior_unit_normal_covector.get(i);
+        }
+        call_dg_package_data(
+            make_not_null(&interior_package_data_opposite_signs), correction,
+            interior_fields_on_face, volume_data, exterior_unit_normal_covector,
+            exterior_unit_normal_vector, mesh_velocity, face_tags{});
+      } else {
+        call_dg_package_data(
+            make_not_null(&interior_package_data_opposite_signs), correction,
+            interior_fields_on_face, volume_data, exterior_unit_normal_covector,
+            mesh_velocity, face_tags{});
+      }
       Variables<dt_variables_tags> zero_boundary_correction{
           face_mesh.number_of_grid_points()};
       call_dg_boundary_terms(make_not_null(&zero_boundary_correction),
@@ -318,7 +510,7 @@ void test_boundary_correction_conservation(
 }
 
 namespace detail {
-template <typename ConversionClassList, typename VariablesTags,
+template <typename System, typename ConversionClassList, typename VariablesTags,
           typename BoundaryCorrection, size_t FaceDim, typename... FaceTags,
           typename... VolumeTags, typename... DgPackageDataTags>
 void test_with_python(
@@ -338,6 +530,8 @@ void test_with_python(
   CAPTURE(dg_formulation);
   CAPTURE(use_moving_mesh);
   REQUIRE(face_mesh.number_of_grid_points() >= 1);
+  constexpr bool curved_background =
+      detail::has_inverse_spatial_metric_tag_v<System>;
   using dg_package_field_tags =
       typename BoundaryCorrection::dg_package_field_tags;
 
@@ -345,17 +539,40 @@ void test_with_python(
   std::uniform_real_distribution<> dist(0.0, 1.0);
   DataVector used_for_size{face_mesh.number_of_grid_points()};
 
+  using face_tags = tmpl::list<FaceTags...>;
+  using face_tags_with_curved_background = tmpl::conditional_t<
+      curved_background,
+      tmpl::remove_duplicates<tmpl::push_back<
+          face_tags, typename TestHelpers::evolution::dg::detail::
+                         inverse_spatial_metric_tag<
+                             curved_background>::template f<System>>>,
+      face_tags>;
+
   Variables<dg_package_field_tags> package_data{used_for_size.size()};
-  const auto fields_on_face =
-      make_with_random_values<Variables<tmpl::list<FaceTags...>>>(
+  auto fields_on_face =
+      make_with_random_values<Variables<face_tags_with_curved_background>>(
           make_not_null(&gen), make_not_null(&dist), used_for_size);
   auto unit_normal_covector = make_with_random_values<
       tnsr::i<DataVector, FaceDim + 1, Frame::Inertial>>(
       make_not_null(&gen), make_not_null(&dist), used_for_size);
-  const auto normal_magnitude = magnitude(unit_normal_covector);
-  for (auto& component : unit_normal_covector) {
-    component /= get(normal_magnitude);
+  tnsr::I<DataVector, FaceDim + 1, Frame::Inertial> unit_normal_vector{};
+
+  if constexpr (not curved_background) {
+    const Scalar<DataVector> normal_magnitude = magnitude(unit_normal_covector);
+    for (auto& t : unit_normal_covector) {
+      t /= get(normal_magnitude);
+    }
+  } else {
+    using inv_spatial_metric = typename detail::inverse_spatial_metric_tag<
+        curved_background>::template f<System>;
+    detail::adjust_inverse_spatial_metric(
+        make_not_null(&get<inv_spatial_metric>(fields_on_face)));
+    detail::normalize_vector_and_covector(
+        make_not_null(&unit_normal_covector),
+        make_not_null(&unit_normal_vector),
+        get<inv_spatial_metric>(fields_on_face));
   }
+
   std::optional<tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>>
       mesh_velocity{};
   if (use_moving_mesh) {
@@ -370,8 +587,16 @@ void test_with_python(
   }
 
   // Call C++ implementation of dg_package_data
-  call_dg_package_data(make_not_null(&package_data), correction, fields_on_face,
-                       volume_data, unit_normal_covector, mesh_velocity);
+  if constexpr (curved_background) {
+    call_dg_package_data(make_not_null(&package_data), correction,
+                         fields_on_face, volume_data, unit_normal_covector,
+                         unit_normal_vector, mesh_velocity,
+                         tmpl::list<FaceTags...>{});
+  } else {
+    call_dg_package_data(make_not_null(&package_data), correction,
+                         fields_on_face, volume_data, unit_normal_covector,
+                         mesh_velocity, tmpl::list<FaceTags...>{});
+  }
 
   // Call python implementation of dg_package_data
   size_t function_name_index = 0;
@@ -379,27 +604,45 @@ void test_with_python(
       [epsilon, &fields_on_face, &function_name_index, &mesh_velocity,
        &normal_dot_mesh_velocity, &package_data,
        &python_dg_package_data_functions, &python_module, &unit_normal_covector,
-       &volume_data](auto package_data_tag_v) {
+       &unit_normal_vector, &volume_data](auto package_data_tag_v) {
         // avoid compiler warnings if there isn't any volume data
         (void)volume_data;
         INFO("Testing package data");
         using package_data_tag = tmpl::type_from<decltype(package_data_tag_v)>;
         using ResultType = typename package_data_tag::type;
+        const std::string tag_name = db::tag_name<package_data_tag>();
+        CAPTURE(tag_name);
         try {
           CAPTURE(python_module);
           CAPTURE(
               gsl::at(python_dg_package_data_functions, function_name_index));
-          const auto python_result =
-              pypp::call<ResultType, ConversionClassList>(
-                  python_module,
-                  gsl::at(python_dg_package_data_functions,
-                          function_name_index),
-                  get<FaceTags>(fields_on_face)..., unit_normal_covector,
-                  mesh_velocity, normal_dot_mesh_velocity,
-                  get<VolumeTags>(volume_data)...);
-          CHECK_ITERABLE_CUSTOM_APPROX(
-              get<package_data_tag>(package_data), python_result,
-              Approx::custom().epsilon(epsilon).scale(1.0));
+          CAPTURE(pretty_type::short_name<ResultType>());
+          if constexpr (curved_background) {
+            const auto python_result =
+                pypp::call<ResultType, ConversionClassList>(
+                    python_module,
+                    gsl::at(python_dg_package_data_functions,
+                            function_name_index),
+                    get<FaceTags>(fields_on_face)..., unit_normal_covector,
+                    unit_normal_vector, mesh_velocity, normal_dot_mesh_velocity,
+                    get<VolumeTags>(volume_data)...);
+            CHECK_ITERABLE_CUSTOM_APPROX(
+                get<package_data_tag>(package_data), python_result,
+                Approx::custom().epsilon(epsilon).scale(1.0));
+          } else {
+            (void)unit_normal_vector;
+            const auto python_result =
+                pypp::call<ResultType, ConversionClassList>(
+                    python_module,
+                    gsl::at(python_dg_package_data_functions,
+                            function_name_index),
+                    get<FaceTags>(fields_on_face)..., unit_normal_covector,
+                    mesh_velocity, normal_dot_mesh_velocity,
+                    get<VolumeTags>(volume_data)...);
+            CHECK_ITERABLE_CUSTOM_APPROX(
+                get<package_data_tag>(package_data), python_result,
+                Approx::custom().epsilon(epsilon).scale(1.0));
+          }
         } catch (const std::exception& e) {
           INFO("On line " << __LINE__ << " Python call to "
                           << gsl::at(python_dg_package_data_functions,
@@ -528,7 +771,7 @@ void test_boundary_correction_with_python(
   for (const auto use_moving_mesh : {false, true}) {
     for (const auto dg_formulation :
          {::dg::Formulation::StrongInertial, ::dg::Formulation::WeakInertial}) {
-      detail::test_with_python<ConversionClassList, variables_tags>(
+      detail::test_with_python<System, ConversionClassList, variables_tags>(
           python_module, python_dg_package_data_functions,
           python_dg_boundary_terms_functions, correction, face_mesh,
           volume_data, use_moving_mesh, dg_formulation, epsilon,

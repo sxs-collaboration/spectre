@@ -41,6 +41,49 @@ def dg_package_data_abs_char_speed(var1, var2, flux_var1, flux_var2,
         return np.abs(volume_double * var1 - normal_dot_mesh_velocity)
 
 
+def dg_package_data_var1_curved(var1, var2, flux_var1, flux_var2,
+                                normal_covector, normal_vector, mesh_velocity,
+                                normal_dot_mesh_velocity, volume_double):
+    return var1
+
+
+def dg_package_data_var1_normal_dot_flux_curved(var1, var2, flux_var1,
+                                                flux_var2, normal_covector,
+                                                normal_vector, mesh_velocity,
+                                                normal_dot_mesh_velocity,
+                                                volume_double):
+    return dg_package_data_var1_normal_dot_flux(var1, var2, flux_var1,
+                                                flux_var2, normal_covector,
+                                                mesh_velocity,
+                                                normal_dot_mesh_velocity,
+                                                volume_double)
+
+
+def dg_package_data_var2_curved(var1, var2, flux_var1, flux_var2,
+                                normal_covector, normal_vector, mesh_velocity,
+                                normal_dot_mesh_velocity, volume_double):
+    return var2
+
+
+def dg_package_data_var2_normal_dot_flux_curved(var1, var2, flux_var1,
+                                                flux_var2, normal_covector,
+                                                normal_vector, mesh_velocity,
+                                                normal_dot_mesh_velocity,
+                                                volume_double):
+    return np.einsum("ij,j->i", flux_var2, normal_covector) + normal_vector
+
+
+def dg_package_data_abs_char_speed_curved(var1, var2, flux_var1, flux_var2,
+                                          normal_covector, normal_vector,
+                                          mesh_velocity,
+                                          normal_dot_mesh_velocity,
+                                          volume_double):
+    return dg_package_data_abs_char_speed(var1, var2, flux_var1, flux_var2,
+                                          normal_covector, mesh_velocity,
+                                          normal_dot_mesh_velocity,
+                                          volume_double)
+
+
 def dg_boundary_terms_var1(var1_int, normal_dot_flux_var1_int, var2_int,
                            normal_dot_flux_var2_int, abs_char_speed_int,
                            var1_ext, normal_dot_flux_var1_ext, var2_ext,
