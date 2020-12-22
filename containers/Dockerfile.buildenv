@@ -219,10 +219,10 @@ RUN git clone --single-branch --branch v6.10.2 --depth 1 \
         https://github.com/UIUC-PPL/charm charm_6_10_2 \
     && cd /work/charm_6_10_2 \
     && git checkout v6.10.2 \
-    && ./build charm++ multicore-linux-x86_64 gcc ${PARALLEL_MAKE_ARG} -g -O0 \
-    && ./build LIBS multicore-linux-x86_64 gcc ${PARALLEL_MAKE_ARG} -g -O0 \
-    && ./build charm++ multicore-linux-x86_64 clang ${PARALLEL_MAKE_ARG} -g -O0 \
-    && ./build LIBS multicore-linux-x86_64 clang ${PARALLEL_MAKE_ARG} -g -O0 \
+    && ./build LIBS multicore-linux-x86_64 gcc \
+      ${PARALLEL_MAKE_ARG} -g -O0 --build-shared \
+    && ./build LIBS multicore-linux-x86_64 clang \
+      ${PARALLEL_MAKE_ARG} -g -O0 --build-shared\
     && rm -r /work/charm_6_10_2/doc /work/charm_6_10_2/examples
 
 # - Set the environment variable SPECTRE_CONTAINER so we can check if we are
