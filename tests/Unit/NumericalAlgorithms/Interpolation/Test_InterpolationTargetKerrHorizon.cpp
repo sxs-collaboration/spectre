@@ -71,7 +71,8 @@ void test_interpolation_target_kerr_horizon(
           "DimensionlessSpin: [0.2, 0.3, 0.4]\n"
           "Lmax: 18\n"
           "Mass: 1.8\n"
-          "ThetaVariesFastest: true");
+          "ThetaVariesFastest: " +
+          std::string(theta_varies_fastest ? "true" : "false"));
   CHECK(created_opts == kerr_horizon_opts);
 
   const auto domain_creator =

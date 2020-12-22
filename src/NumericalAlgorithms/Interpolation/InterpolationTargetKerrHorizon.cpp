@@ -36,12 +36,15 @@ void KerrHorizon::pup(PUP::er& p) noexcept {
   p | center;
   p | mass;
   p | dimensionless_spin;
+  p | theta_varies_fastest_memory_layout;
 }
 
 bool operator==(const KerrHorizon& lhs, const KerrHorizon& rhs) noexcept {
   return lhs.l_max == rhs.l_max and lhs.center == rhs.center and
          lhs.mass == rhs.mass and
-         lhs.dimensionless_spin == rhs.dimensionless_spin;
+         lhs.dimensionless_spin == rhs.dimensionless_spin and
+         lhs.theta_varies_fastest_memory_layout ==
+             rhs.theta_varies_fastest_memory_layout;
 }
 
 bool operator!=(const KerrHorizon& lhs, const KerrHorizon& rhs) noexcept {
