@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "ErrorHandling/Error.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -127,7 +128,11 @@ class MockRuntimeSystem {
   /// Construct from the tuple of GlobalCache objects.
   explicit MockRuntimeSystem(CacheTuple cache_contents)
       : mutable_cache_(tuples::TaggedTuple<>{}),
-        cache_(std::move(cache_contents), &mutable_cache_) {
+        // serialize_and_deserialize is not necessary here, but we
+        // serialize_and_deserialize to reveal bugs in ActionTesting
+        // tests where cache contents are not serializable.
+        cache_(serialize_and_deserialize(cache_contents), &mutable_cache_)
+  {
     tmpl::for_each<typename Metavariables::component_list>(
         [this](auto component) {
           using Component = tmpl::type_from<decltype(component)>;
