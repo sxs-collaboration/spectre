@@ -61,11 +61,12 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.Elasticity.HalfSpaceMirror",
     "[PointwiseFunctions][Unit][Elasticity]") {
   constexpr size_t dim = Elasticity::Solutions::HalfSpaceMirror::volume_dim;
+  // Fused silica: E = 72, nu = 0.17
+  // => K = E / (3 * (1 - 2 nu)), mu = E / (2 * (1 + nu))
+  const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<dim>
+      constitutive_relation{36.36363636363637, 30.76923076923077};
   const Elasticity::Solutions::HalfSpaceMirror check_solution{
-      0.177, Elasticity::ConstitutiveRelations::IsotropicHomogeneous<3>{
-                 // fused silica: E=72, nu=0.17
-                 // K =\frac{E}{3(1-2\nu)}, \mu =\frac{E}{2(1+\nu)}
-                 36.36363636363637, 30.76923076923077}};
+      0.177, constitutive_relation, 350, 1.e-12, 1.e-10};
   const auto created_solution =
       TestHelpers::test_creation<Elasticity::Solutions::HalfSpaceMirror>(
           "BeamWidth: 0.177\n"
@@ -78,22 +79,26 @@ SPECTRE_TEST_CASE(
   CHECK(created_solution == check_solution);
   test_serialization(check_solution);
 
-  pypp::SetupLocalPythonEnvironment local_python_env{"PointwiseFunctions"};
-  const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<dim>
-      constitutive_relation{36.36363636363637, 30.76923076923077};
   const HalfSpaceMirrorProxy solution{0.177, constitutive_relation, 350, 1e-11,
                                       1e-11};
-  pypp::check_with_random_values<1>(
-      &HalfSpaceMirrorProxy::field_variables, solution,
-      "AnalyticSolutions.Elasticity.HalfSpaceMirror",
-      {"displacement", "strain"}, {{{0., 3.}}},
-      std::make_tuple(0.177, 36.36363636363637, 30.76923076923077),
-      DataVector(5), 1e-10);
-  pypp::check_with_random_values<1>(
-      &HalfSpaceMirrorProxy::source_variables, solution,
-      "AnalyticSolutions.Elasticity.HalfSpaceMirror", {"source"}, {{{0., 3.}}},
-      std::make_tuple(), DataVector(5), 1e-10);
-
+  {
+    INFO("Random-value tests");
+    pypp::SetupLocalPythonEnvironment local_python_env{"PointwiseFunctions"};
+    // The accuracy of the random-value tests is limited by the numerical
+    // integrations in both the HalfSpaceMirror solution and the Python
+    // implementation
+    const double eps = 1.e-9;
+    pypp::check_with_random_values<1>(
+        &HalfSpaceMirrorProxy::field_variables, solution,
+        "AnalyticSolutions.Elasticity.HalfSpaceMirror",
+        {"displacement", "strain"}, {{{0., 3.}}},
+        std::make_tuple(0.177, 36.36363636363637, 30.76923076923077),
+        DataVector(5), eps);
+    pypp::check_with_random_values<1>(
+        &HalfSpaceMirrorProxy::source_variables, solution,
+        "AnalyticSolutions.Elasticity.HalfSpaceMirror", {"source"},
+        {{{0., 3.}}}, std::make_tuple(), DataVector(5), eps);
+  }
   {
     INFO(
         "Test that functions behave expectedly at the origin and vanish far "
