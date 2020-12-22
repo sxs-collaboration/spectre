@@ -104,9 +104,18 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2
     && tar -xzf cmake-3.18.2.tar.gz \
     && cd cmake-3.18.2 \
     && ./bootstrap --prefix=/usr/local \
-    && make \
+    && make $PARALLEL_MAKE_ARG\
     && make install \
-    && rm -rf cmake*
+    && cd .. && rm -rf cmake*
+# Also install our minimum required CMake version so we can test it on CI.
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.12.4/cmake-3.12.4.tar.gz \
+    && tar -xzf cmake-3.12.4.tar.gz \
+    && cd cmake-3.12.4 \
+    && mkdir -p /opt/local/cmake/3.12.4 \
+    && ./bootstrap --prefix=/opt/local/cmake/3.12.4 \
+    && make $PARALLEL_MAKE_ARG\
+    && make install \
+    && cd .. && rm -rf cmake*
 
 # We install dependencies not available through apt manually rather than using
 # Spack since Spack ends up building a lot of dependencies from scratch
