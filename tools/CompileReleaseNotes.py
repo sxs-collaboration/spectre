@@ -170,8 +170,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(
         description=("Compile release notes based on merged pull-requests. "
-                     f"Repository: {repo.working_dir}. "
-                     f"Branch: {repo.active_branch}."),
+                     f"Repository: {repo.working_dir}."),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         '--output',
@@ -197,7 +196,7 @@ if __name__ == "__main__":
         dest='to_rev',
         default='HEAD',
         help=("Git revision that marks this release. Can be any commit SHA "
-              "or tag."))
+              "or tag. Defaults to 'HEAD'."))
     parser.add_argument(
         '--github-repository',
         required=False,

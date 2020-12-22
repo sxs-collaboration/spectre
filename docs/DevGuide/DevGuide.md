@@ -57,3 +57,8 @@ Assumes a thorough familiarity and fluency in SpECTRE's usage of TMP.
 ### CoordinateMap Guide
 Methods for creating custom coordinate maps are discussed here.
 - \ref redistributing_gridpoints "Methods for redistributing gridpoints"
+
+### Continuous Integration
+Explanations on our automated tests and deployments can be found here.
+
+- \ref dev_guide_automatic_versioning
