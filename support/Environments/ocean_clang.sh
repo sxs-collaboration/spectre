@@ -22,7 +22,7 @@ spectre_unload_modules() {
     module unload gnu7/7.3.0
     module unload openmpi/1.10.7
     module unload prun/1.2
-    module unload cmake-3.13.1-gcc-7.3.0-r7qr3qo
+    module unload cmake/3.18.5
     module unload git-2.19.2-gcc-7.3.0-jfnpgdh
     module unload blaze-3.7-gcc-7.3.0-6o4boto
     module unload brigand-master-gcc-7.3.0-3m5ibui
@@ -47,7 +47,7 @@ spectre_load_modules() {
     module load prun/1.2
     module load llvm/10.0.1
     source /opt/ohpc/pub/apps/spack/0.12.0/share/spack/setup-env.sh
-    module load cmake-3.13.1-gcc-7.3.0-r7qr3qo
+    module load cmake/3.18.5
     module load git-2.19.2-gcc-7.3.0-jfnpgdh
     module load blaze-3.7-gcc-7.3.0-6o4boto
     module load brigand-master-gcc-7.3.0-3m5ibui
