@@ -38,6 +38,7 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
@@ -164,6 +165,7 @@ struct test_metavariables {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
                   "[Unit][Cce]") {
+  Parallel::register_derived_classes_with_charm<TimeStepper>();
   using evolution_component = mock_characteristic_evolution<test_metavariables>;
   using worldtube_component = mock_gh_worldtube_boundary<test_metavariables>;
   const size_t number_of_radial_points = 10;

@@ -41,6 +41,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -1251,6 +1252,9 @@ void test_impl(const Spectral::Quadrature quadrature,
 template <SystemType system_type, UseBoundaryCorrection use_boundary_correction,
           size_t Dim>
 void test() noexcept {
+  Parallel::register_derived_classes_with_charm<
+      BoundaryCorrection<Dim, use_boundary_correction>>();
+
   const auto invoke_tests_with_quadrature_and_formulation =
       [](const Spectral::Quadrature quadrature,
          const ::dg::Formulation local_dg_formulation) noexcept {

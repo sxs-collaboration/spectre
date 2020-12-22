@@ -12,6 +12,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Framework/TestCreation.hpp"
@@ -158,6 +159,7 @@ void test_interpolation_target_kerr_horizon(
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.KerrHorizon",
                   "[Unit]") {
+  domain::creators::register_derived_with_charm();
   test_interpolation_target_kerr_horizon(true);
   test_interpolation_target_kerr_horizon(false);
 }

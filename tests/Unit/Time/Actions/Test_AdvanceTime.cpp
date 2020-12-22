@@ -11,7 +11,8 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Time/Actions/AdvanceTime.hpp"           // IWYU pragma: keep
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
@@ -139,6 +140,7 @@ void check_abn(const Time& start, const TimeDelta& time_step) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.AdvanceTime", "[Unit][Time][Actions]") {
+  Parallel::register_derived_classes_with_charm<TimeStepper>();
   const Slab slab(0., 1.);
   check_rk3(slab.start(), slab.duration() / 2);
   check_rk3(slab.end(), -slab.duration() / 2);

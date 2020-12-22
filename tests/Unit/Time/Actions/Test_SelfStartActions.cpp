@@ -20,6 +20,7 @@
 #include "Evolution/Conservative/UpdatePrimitives.hpp"  // IWYU pragma: keep
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"   // IWYU pragma: keep
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
@@ -406,6 +407,7 @@ void test_convergence(const size_t order, const bool forward_in_time) noexcept {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.SelfStart", "[Unit][Time][Actions]") {
+  Parallel::register_derived_classes_with_charm<TimeStepper>();
   for (size_t order = 1; order < 5; ++order) {
     CAPTURE(order);
     for (const int step_denominator : {1, -1, 2, -2, 20, -20}) {

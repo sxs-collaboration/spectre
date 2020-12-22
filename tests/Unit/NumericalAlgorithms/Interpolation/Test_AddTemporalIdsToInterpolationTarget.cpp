@@ -10,6 +10,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Tags.hpp"
@@ -216,6 +217,7 @@ void test_add_temporal_ids() {
 }
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
                   "[Unit]") {
+  domain::creators::register_derived_with_charm();
   test_add_temporal_ids<std::true_type>();
   test_add_temporal_ids<std::false_type>();
 }

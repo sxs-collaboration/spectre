@@ -26,6 +26,7 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -86,6 +87,8 @@ struct metavariables {
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.Cce.Actions.InitializeFirstHypersurface",
     "[Unit][Cce]") {
+  Parallel::register_derived_classes_with_charm<InitializeJ::InitializeJ>();
+
   MAKE_GENERATOR(gen);
   // limited l_max distribution because test depends on an analytic
   // basis function with factorials.

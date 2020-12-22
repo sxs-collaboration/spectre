@@ -15,6 +15,7 @@
 #include "DataStructures/IdPair.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/BlockId.hpp"
@@ -162,6 +163,7 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
                   "[Unit]") {
+  domain::creators::register_derived_with_charm();
   using metavars = Metavariables;
   using target_component =
       mock_interpolation_target<metavars,

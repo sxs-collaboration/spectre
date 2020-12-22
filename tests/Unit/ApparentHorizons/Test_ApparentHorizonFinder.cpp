@@ -20,6 +20,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
@@ -395,6 +396,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
                   "[Unit]") {
+  domain::creators::register_derived_with_charm();
   test_apparent_horizon<TestSchwarzschildHorizon>(
       &test_schwarzschild_horizon_called, 3, 3, 1.0, {{0.0, 0.0, 0.0}});
   test_apparent_horizon<TestKerrHorizon>(&test_kerr_horizon_called, 3, 5, 1.1,

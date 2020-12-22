@@ -23,6 +23,7 @@
 #include "Domain/Block.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
@@ -223,6 +224,8 @@ struct MockMetavariables {
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
                   "[Unit]") {
+  domain::creators::register_derived_with_charm();
+
   using metavars = MockMetavariables;
   using temporal_id_type = typename metavars::temporal_id::type;
   using target_component =

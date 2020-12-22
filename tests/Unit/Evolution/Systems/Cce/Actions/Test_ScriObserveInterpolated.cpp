@@ -34,6 +34,7 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -219,6 +220,7 @@ ComplexDataVector compute_expected_field_from_pypp(
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
                   "[Unit][Cce]") {
+  Parallel::register_derived_classes_with_charm<TimeStepper>();
   using evolution_component = mock_characteristic_evolution<test_metavariables>;
   using observation_component = mock_observer<test_metavariables>;
   pypp::SetupLocalPythonEnvironment local_python_env{

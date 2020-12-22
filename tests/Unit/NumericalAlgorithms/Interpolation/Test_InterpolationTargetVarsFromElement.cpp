@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Tags.hpp"
@@ -134,6 +135,8 @@ struct MockMetavariables {
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
                   "[Unit]") {
+  domain::creators::register_derived_with_charm();
+
   using metavars = MockMetavariables;
   using temporal_id_type = typename metavars::temporal_id::type;
   using target_component =

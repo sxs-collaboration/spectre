@@ -21,6 +21,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Tags.hpp"
@@ -42,6 +43,7 @@
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
@@ -412,6 +414,17 @@ void test_create_from_options() noexcept {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GH.Gauge.InitializeDampedHarmonic",
                   "[Unit][Evolution][Actions]") {
+  domain::creators::register_derived_with_charm();
+  Parallel::register_derived_classes_with_charm<
+      GeneralizedHarmonic::ConstraintDamping::DampingFunction<
+          1, Frame::Inertial>>();
+  Parallel::register_derived_classes_with_charm<
+      GeneralizedHarmonic::ConstraintDamping::DampingFunction<
+          2, Frame::Inertial>>();
+  Parallel::register_derived_classes_with_charm<
+      GeneralizedHarmonic::ConstraintDamping::DampingFunction<
+          3, Frame::Inertial>>();
+
   MAKE_GENERATOR(generator);
   test<1, true>(make_not_null(&generator));
   test<2, true>(make_not_null(&generator));

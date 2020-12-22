@@ -19,6 +19,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
@@ -261,6 +262,8 @@ struct MockMetavariables {
 // work together as they are supposed to.
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
                   "[Unit]") {
+  domain::creators::register_derived_with_charm();
+
   using metavars = MockMetavariables;
   using interp_component = mock_interpolator<metavars>;
   using target_a_component =

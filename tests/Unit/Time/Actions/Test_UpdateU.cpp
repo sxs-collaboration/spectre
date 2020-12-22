@@ -16,7 +16,8 @@
 #include "DataStructures/Variables.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Time/Actions/UpdateU.hpp"               // IWYU pragma: keep
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
@@ -101,6 +102,8 @@ struct Metavariables {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
+  Parallel::register_derived_classes_with_charm<TimeStepper>();
+
   const Slab slab(1., 3.);
   const TimeDelta time_step = slab.duration() / 2;
 

@@ -14,6 +14,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Tags.hpp"
@@ -527,6 +528,7 @@ void test_interpolation_target_receive_vars() noexcept {
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.ReceiveVars",
                   "[Unit]") {
+  domain::creators::register_derived_with_charm();
   test_interpolation_target_receive_vars<MockPostInterpolationCallback, 1, 0>();
   test_interpolation_target_receive_vars<MockPostInterpolationCallbackNoCleanup,
                                          0, 0>();

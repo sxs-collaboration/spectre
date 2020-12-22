@@ -19,6 +19,7 @@
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/Rectangle.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
@@ -27,6 +28,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
 #include "Time/Slab.hpp"
@@ -309,6 +311,9 @@ void test_3d() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeInterfaces", "[Unit][Actions]") {
+  domain::creators::register_derived_with_charm();
+  Parallel::register_derived_classes_with_charm<TimeStepper>();
+
   test_1d<false>();
   test_2d<false>();
   test_3d<false>();
