@@ -77,8 +77,9 @@ RUN add-apt-repository universe \
     && apt-get update -y \
     && apt-get install -y curl python2 python2-dev \
     && curl https://bootstrap.pypa.io/get-pip.py --output get-pip.py \
-    && python2 get-pip.py \
+    && python2 get-pip.py && rm get-pip.py \
     && apt-get install -y python3-pip python-is-python3 \
+    && pip3 --no-cache-dir install -U pip \
     && pip2 --no-cache-dir install pybind11~=2.6.1 numpy scipy h5py matplotlib \
     && pip3 --no-cache-dir install pybind11~=2.6.1 numpy scipy h5py matplotlib \
     && pip2 --no-cache-dir install coverxygen beautifulsoup4 pybtex \
