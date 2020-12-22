@@ -31,8 +31,8 @@ if (DOXYGEN_FOUND)
     )
 
   # We need Python for postprocessing the documentation
-  find_package(PythonInterp)
-  if (PYTHONINTERP_FOUND)
+  find_package(Python)
+  if (Python_FOUND)
     include(FindPythonModule)
     find_python_module(bs4 FALSE)
     find_python_module(pybtex FALSE)
@@ -41,7 +41,7 @@ if (DOXYGEN_FOUND)
       # output
       set(
         DOCS_POST_PROCESS_COMMAND
-        "${PYTHON_EXECUTABLE} \
+        "${Python_EXECUTABLE} \
 ${CMAKE_SOURCE_DIR}/docs/config/postprocess_docs.py \
 --html-dir ${PROJECT_BINARY_DIR}/docs/html \
 --references-file ${CMAKE_SOURCE_DIR}/docs/References.bib"
@@ -71,10 +71,10 @@ ${DOCS_POST_PROCESS_COMMAND} && exit \${generate_docs_exit}\n"
         message(WARNING "Pybtex missing. Install with: pip install pybtex")
       endif()
     endif (PY_BS4 AND PY_PYBTEX)
-  else (PYTHONINTERP_FOUND)
+  else (Python_FOUND)
     message(WARNING "Doxygen documentation postprocessing is disabled because a"
     " Python interpreter was not found.")
-  endif (PYTHONINTERP_FOUND)
+  endif (Python_FOUND)
 
   # Parse the command into a CMake list for the `add_custom_target`
   separate_arguments(GENERATE_DOCS_COMMAND)
@@ -130,7 +130,7 @@ ${DOCS_POST_PROCESS_COMMAND} && exit \${generate_docs_exit}\n"
     add_custom_target(
       doc-coverage
 
-      COMMAND ${PYTHON_EXECUTABLE}
+      COMMAND ${Python_EXECUTABLE}
       -m coverxygen
       --xml-dir ${CMAKE_BINARY_DIR}/docs/xml
       --src-dir ${CMAKE_SOURCE_DIR}

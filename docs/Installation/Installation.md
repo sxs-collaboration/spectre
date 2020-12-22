@@ -21,7 +21,7 @@ environment differently, read on!
 
 * [GCC](https://gcc.gnu.org/) 7.0 or later,
 [Clang](https://clang.llvm.org/) 8.0 or later, or AppleClang 11.0.0 or later
-* [CMake](https://cmake.org/) 3.8.0 or later
+* [CMake](https://cmake.org/) 3.12.0 or later
 * [Charm++](http://charm.cs.illinois.edu/) 6.10.2
 * [Git](https://git-scm.com/)
 * BLAS (e.g. [OpenBLAS](http://www.openblas.net))
@@ -45,7 +45,8 @@ environment differently, read on!
 * [matplotlib](https://matplotlib.org/)
 
 #### Optional:
-* [Pybind11](https://pybind11.readthedocs.io) for SpECTRE Python bindings
+* [Pybind11](https://pybind11.readthedocs.io) 2.6.0 or later for SpECTRE Python
+  bindings
 * [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) — to generate
   documentation
 * [Python](https://www.python.org/) with
@@ -166,7 +167,7 @@ Notes:
     `-D BUILD_PYTHON_BINDINGS=ON` to the `cmake` command (see
     \ref spectre_writing_python_bindings). You can specify the Python version,
     interpreter and libraries used for compiling and testing the bindings by
-    setting the `-D PYTHON_EXECUTABLE` to an absolute path such as
+    setting the `-D Python_EXECUTABLE` to an absolute path such as
     `/usr/bin/python3`.
   * When the Docker container gets updated, you can stop it with
     `docker stop CONTAINER_NAME`, remove it with `docker rm CONTAINER_NAME`

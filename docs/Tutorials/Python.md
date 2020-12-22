@@ -13,7 +13,7 @@ relativity without needing to delve into C++.
 First, build SpECTRE with Python bindings enabled by appending the
 `-D BUILD_PYTHON_BINDINGS=ON` flag to the `cmake` command. You can specify the
 Python version, interpreter and libraries used for compiling and testing the
-bindings by setting the `-D PYTHON_EXECUTABLE` to an absolute path such as
+bindings by setting the `-D Python_EXECUTABLE` to an absolute path such as
 `/usr/bin/python3`. You will find that
 a `BUILD_DIR/bin/python` directory is created that contains the Python modules.
 Then, you can install the modules into your Python environment in

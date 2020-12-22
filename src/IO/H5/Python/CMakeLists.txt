@@ -18,8 +18,8 @@ spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
-  Informer
   IO
+  pybind11::module
   )
 
 spectre_python_add_dependencies(

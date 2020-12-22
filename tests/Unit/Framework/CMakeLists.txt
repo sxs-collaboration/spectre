@@ -26,12 +26,6 @@ target_link_libraries(
 
   PUBLIC
   ErrorHandling
-  NumPy
-  PythonLibs
-  )
-
-target_include_directories(
-  ${LIBRARY}
-  SYSTEM
-  PUBLIC ${NUMPY_INCLUDE_DIRS}
+  Python::NumPy
+  Python::Python
   )

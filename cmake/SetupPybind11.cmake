@@ -4,22 +4,26 @@
 option(BUILD_PYTHON_BINDINGS "Build the python bindings for SpECTRE" OFF)
 
 if(BUILD_PYTHON_BINDINGS)
-  # Make sure to find the Python interpreter first, so it is consistent with
-  # the one that pybind11 uses
-  find_package(PythonInterp)
-  find_package(PythonLibs)
-  # Uses `Findpybind11.cmake` to find the headers. Since we can't rely on the
-  # corresponding cmake files to be installed as well we bundle them in
-  # `external/pybind11`.
-  find_package(pybind11 REQUIRED)
+  # Make sure to find Python first so it's consistent with pybind11
+  find_package(Python COMPONENTS Interpreter Development)
 
-  # Load the CMake files from `external/pybind11`
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/external/pybind11/tools")
-  include(pybind11Tools)
+  # Try to find the pybind11-config tool to find pybind11's CMake config files
+  find_program(PYBIND11_CONFIG_TOOL pybind11-config)
+  set(PYBIND11_CMAKEDIR "")
+  if(PYBIND11_CONFIG_TOOL)
+    execute_process(
+      COMMAND "${PYBIND11_CONFIG_TOOL}" "--cmakedir"
+      OUTPUT_VARIABLE PYBIND11_CMAKEDIR
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    message(STATUS "Found pybind11-config tool (${PYBIND11_CONFIG_TOOL}) and "
+      "determined CMake dir: ${PYBIND11_CMAKEDIR}")
+  endif()
+
+  find_package(pybind11 2.6.0 REQUIRED HINTS "${PYBIND11_CMAKEDIR}")
 
   set_property(
     GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
-    pybind11
+    pybind11::headers
     )
 
   message(STATUS "Pybind11 include: ${pybind11_INCLUDE_DIR}")

@@ -43,7 +43,7 @@ option(SPECTRE_UNIT_TEST_TIMEOUT_FACTOR
   "Multiply timeout for unit tests by this factor"
   1)
 
-find_package(PythonInterp REQUIRED)
+find_package(Python REQUIRED)
 
 # Main function - the only one designed to be called from outside this module.
 function(spectre_add_catch_tests TEST_TARGET TEST_LIBS)
@@ -82,7 +82,7 @@ function(spectre_add_catch_tests TEST_TARGET TEST_LIBS)
 
   execute_process(
     COMMAND
-    ${PYTHON_EXECUTABLE}
+    ${Python_EXECUTABLE}
     ${CMAKE_SOURCE_DIR}/cmake/SpectreParseTests.py
     ${ABSOLUTE_SOURCE_FILES}
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tmp

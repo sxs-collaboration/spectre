@@ -418,7 +418,7 @@ jobs:
           -D USE_PCH=${USE_PCH}
           -D USE_CCACHE=ON
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
-          -D PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE:-'/usr/bin/python3'}
+          -D Python_EXECUTABLE=${PYTHON_EXECUTABLE:-'/usr/bin/python3'}
           -D BUILD_SHARED_LIBS=${BUILD_SHARED_LIBS:-'ON'}
           -D ASAN=${ASAN:-'OFF'}
           -D UBSAN_UNDEFINED=${UBSAN_UNDEFINED:-'OFF'}

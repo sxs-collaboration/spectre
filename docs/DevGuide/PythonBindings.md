@@ -16,7 +16,7 @@ provides the `spectre_python_add_module` CMake function to make adding a new
 python module, be it with or without bindings, easy.  The python bindings are
 built only if `-D BUILD_PYTHON_BINDINGS=ON` is passed when invoking cmake.
 You can specify the Python version, interpreter and libraries used for compiling
-and testing the bindings by setting the `-D PYTHON_EXECUTABLE` to an absolute
+and testing the bindings by setting the `-D Python_EXECUTABLE` to an absolute
 path such as `/usr/bin/python3`.
 
 The function `spectre_python_add_module` takes as its first argument the module,
@@ -52,7 +52,9 @@ call `spectre_python_link_libraries` for every Python module that compiles
 \code
 spectre_python_link_libraries(
   PyExtraDataStructures
-  PUBLIC ExtraDataStructures
+  PRIVATE
+  ExtraDataStructures
+  pybind11::module
   )
 \endcode
 

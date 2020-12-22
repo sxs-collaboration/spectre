@@ -109,14 +109,16 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       message(FATAL_ERROR "The LIBRARY_NAME for Python module "
           "'${MODULE_NAME}' must begin with 'Py' but is '${ARG_LIBRARY_NAME}'.")
     endif()
-    # Use pybind11 wrapper around `add_library` to add the Python module.
-    # If we could rely on the pybind11 cmake files being installed with the
-    # headers (instead of bundling them in `external`), then we could use the
-    # plain `add_library` here and link it with the `pybind11::module` target.
-    # Instead, we use the wrapper but have to skip the visibility setting it
-    # performs to make this work with PCH. The corresponding lines are commented
-    # out in `external/pybind11/tools/pybind11Tools.cmake`.
-    pybind11_add_module(${ARG_LIBRARY_NAME} MODULE ${ARG_SOURCES})
+
+    Python_add_library(${ARG_LIBRARY_NAME} MODULE ${ARG_SOURCES})
+    set_target_properties(
+      ${ARG_LIBRARY_NAME}
+      PROPERTIES
+      # These can be turned on once we support them
+      INTERPROCEDURAL_OPTIMIZATION OFF
+      CXX__VISIBILITY_PRESET OFF
+      VISIBLITY_INLINES_HIDDEN OFF
+      )
     # In order to avoid runtime errors about missing CmiPrintf and other Cmi
     # (Charm++) functions, we need to link in the whole PyBindings archive.
     # This is not needed on macOS.
@@ -349,7 +351,7 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS
   add_test(
     NAME "\"${TEST_NAME}\""
     COMMAND
-    ${PYTHON_EXECUTABLE}
+    ${Python_EXECUTABLE}
     ${FILE}
     )
 

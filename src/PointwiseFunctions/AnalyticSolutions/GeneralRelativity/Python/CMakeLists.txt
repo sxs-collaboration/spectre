@@ -14,7 +14,10 @@ spectre_python_add_module(
 
 spectre_python_link_libraries(
   ${LIBRARY}
-  PUBLIC GeneralRelativitySolutions
+  PRIVATE
+  GeneralRelativitySolutions
+  Hydro
+  pybind11::module
   )
 
 spectre_python_add_dependencies(
