@@ -16,8 +16,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-namespace domain {
-namespace CoordinateMaps {
+namespace domain::CoordinateMaps {
 
 EquatorialCompression::EquatorialCompression(const double aspect_ratio) noexcept
     : aspect_ratio_(aspect_ratio),
@@ -126,7 +125,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> EquatorialCompression::operator()(
   return angular_distortion(source_coords, inverse_aspect_ratio_);
 }
 
-boost::optional<std::array<double, 3>> EquatorialCompression::inverse(
+std::optional<std::array<double, 3>> EquatorialCompression::inverse(
     const std::array<double, 3>& target_coords) const noexcept {
   return angular_distortion(target_coords, aspect_ratio_);
 }
@@ -184,5 +183,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
 #undef DTYPE
 #undef INSTANTIATE
 /// \endcond
-}  // namespace CoordinateMaps
-}  // namespace domain
+}  // namespace domain::CoordinateMaps

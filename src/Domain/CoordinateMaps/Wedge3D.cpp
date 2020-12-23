@@ -3,7 +3,6 @@
 
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 
-#include <boost/none.hpp>
 #include <cmath>
 #include <pup.h>
 
@@ -115,7 +114,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Wedge3D::operator()(
   return discrete_rotation(orientation_of_wedge_, std::move(physical_coords));
 }
 
-boost::optional<std::array<double, 3>> Wedge3D::inverse(
+std::optional<std::array<double, 3>> Wedge3D::inverse(
     const std::array<double, 3>& target_coords) const noexcept {
   const std::array<double, 3> physical_coords =
       discrete_rotation(orientation_of_wedge_.inverse_map(), target_coords);
@@ -124,7 +123,7 @@ boost::optional<std::array<double, 3>> Wedge3D::inverse(
   const double& physical_z = physical_coords[2];
 
   if (physical_z < 0.0 or equal_within_roundoff(physical_z, 0.0)) {
-    return boost::none;
+    return std::nullopt;
   }
 
   const double cap_xi = physical_x / physical_z;
@@ -136,7 +135,7 @@ boost::optional<std::array<double, 3>> Wedge3D::inverse(
   // If -sphere_rate_/scaled_frustum_rate_ > 1, then
   // there exists a cone in x,y,z space given by the surface
   // zeta_coefficient=0; the map is singular on this surface.
-  // We return boost::none if we are on or outside this cone.
+  // We return nullopt if we are on or outside this cone.
   // If scaled_frustum_rate_ > 0, then outside the cone
   // corresponds to zeta_coefficient > 0, and if scaled_frustum_rate_
   // < 0, then outside the cone corresponds to zeta_coefficient < 0.
@@ -146,7 +145,7 @@ boost::optional<std::array<double, 3>> Wedge3D::inverse(
       (scaled_frustum_rate_ < 0.0 and scaled_frustum_rate_ > -sphere_rate_ and
        zeta_coefficient < 0.0) or
       equal_within_roundoff(zeta_coefficient, 0.0)) {
-    return boost::none;
+    return std::nullopt;
   }
   const auto z_zero = (scaled_frustum_zero_ + sphere_zero_ * one_over_rho);
   const double zeta =

@@ -8,8 +8,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeArray.hpp"
 
-namespace domain {
-namespace CoordinateMaps {
+namespace domain::CoordinateMaps {
 
 template <size_t Dim>
 template <typename T>
@@ -19,7 +18,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Identity<Dim>::operator()(
 }
 
 template <size_t Dim>
-boost::optional<std::array<double, Dim>> Identity<Dim>::inverse(
+std::optional<std::array<double, Dim>> Identity<Dim>::inverse(
     const std::array<double, Dim>& target_coords) const noexcept {
   return make_array<double, Dim>(target_coords);
 }
@@ -72,5 +71,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
 #undef INSTANTIATE
 /// \endcond
 
-}  // namespace CoordinateMaps
-}  // namespace domain
+}  // namespace domain::CoordinateMaps

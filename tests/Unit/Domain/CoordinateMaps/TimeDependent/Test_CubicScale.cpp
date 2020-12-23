@@ -4,8 +4,8 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <unordered_map>
 
@@ -102,7 +102,7 @@ void test_boundaries() {
       REQUIRE(
           static_cast<bool>(scale_map.inverse(mapped_point, t, f_of_t_list)));
       CHECK_ITERABLE_APPROX(
-          scale_map.inverse(mapped_point, t, f_of_t_list).get(), point_xi);
+          scale_map.inverse(mapped_point, t, f_of_t_list).value(), point_xi);
       t += dt;
     }
   };
@@ -197,11 +197,11 @@ void test(const bool linear_expansion) {
 
       CHECK_ITERABLE_APPROX(scale_map(point_xi, t, f_of_t_list), mapped_point);
       CHECK_ITERABLE_APPROX(
-          scale_map.inverse(mapped_point, t, f_of_t_list).get(), point_xi);
+          scale_map.inverse(mapped_point, t, f_of_t_list).value(), point_xi);
       CHECK_ITERABLE_APPROX(scale_map_deserialized(point_xi, t, f_of_t_list),
                             mapped_point);
       CHECK_ITERABLE_APPROX(
-          scale_map_deserialized.inverse(mapped_point, t, f_of_t_list).get(),
+          scale_map_deserialized.inverse(mapped_point, t, f_of_t_list).value(),
           point_xi);
 
       if (not linear_expansion) {

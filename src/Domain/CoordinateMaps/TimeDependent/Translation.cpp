@@ -17,9 +17,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdHelpers.hpp"
 
-namespace domain {
-namespace CoordinateMaps {
-namespace TimeDependent {
+namespace domain::CoordinateMaps::TimeDependent {
 
 Translation::Translation(std::string function_of_time_name) noexcept
     : f_of_t_name_(std::move(function_of_time_name)) {}
@@ -39,7 +37,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 1> Translation::operator()(
            functions_of_time.at(f_of_t_name_)->func(time)[0][0]}};
 }
 
-boost::optional<std::array<double, 1>> Translation::inverse(
+std::optional<std::array<double, 1>> Translation::inverse(
     const std::array<double, 1>& target_coords, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
@@ -120,6 +118,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
 #undef DTYPE
 #undef INSTANTIATE
 /// \endcond
-}  // namespace TimeDependent
-}  // namespace CoordinateMaps
-}  // namespace domain
+}  // namespace domain::CoordinateMaps::TimeDependent

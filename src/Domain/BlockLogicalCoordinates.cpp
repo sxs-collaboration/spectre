@@ -52,10 +52,10 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
             continue;
           }
           // logical to grid map is time-independent.
-          const auto inv =
-              block.moving_mesh_logical_to_grid_map().inverse(moving_inv.get());
+          const auto inv = block.moving_mesh_logical_to_grid_map().inverse(
+              moving_inv.value());
           if (inv) {
-            x_logical = inv.get();
+            x_logical = inv.value();
           } else {
             continue;  // Not in this block
           }
@@ -74,7 +74,7 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
           const auto inv =
               block.moving_mesh_logical_to_grid_map().inverse(x_frame);
           if (inv) {
-            x_logical = inv.get();
+            x_logical = inv.value();
           } else {
             continue;  // Not in this block
           }
@@ -83,7 +83,7 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
         if constexpr (std::is_same_v<Frame, ::Frame::Inertial>) {
           const auto inv = block.stationary_map().inverse(x_frame);
           if (inv) {
-            x_logical = inv.get();
+            x_logical = inv.value();
           } else {
             continue;  // Not in this block
           }
@@ -101,7 +101,7 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
           }
           const auto inv = block.stationary_map().inverse(x_inertial);
           if (inv) {
-            x_logical = inv.get();
+            x_logical = inv.value();
           } else {
             continue;  // Not in this block
           }

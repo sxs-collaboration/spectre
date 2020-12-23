@@ -7,10 +7,10 @@
 
 #include <algorithm>
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <tuple>
@@ -112,19 +112,19 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::call_impl(
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T, size_t... Is>
-boost::optional<tnsr::I<
-    T, CoordinateMap<SourceFrame, TargetFrame, Maps...>::dim, SourceFrame>>
+std::optional<tnsr::I<T, CoordinateMap<SourceFrame, TargetFrame, Maps...>::dim,
+                      SourceFrame>>
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::inverse_impl(
     tnsr::I<T, dim, TargetFrame>&& target_point, const double time,
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time,
     std::index_sequence<Is...> /*meta*/) const noexcept {
-  boost::optional<std::array<T, dim>> mapped_point(
+  std::optional<std::array<T, dim>> mapped_point(
       make_array<T, dim>(std::move(target_point)));
 
   EXPAND_PACK_LEFT_TO_RIGHT(make_overloader(
-      [](const auto& the_map, boost::optional<std::array<T, dim>>& point,
+      [](const auto& the_map, std::optional<std::array<T, dim>>& point,
          const double /*t*/,
          const std::unordered_map<
              std::string,
@@ -133,11 +133,11 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::inverse_impl(
          const std::false_type /*is_time_independent*/) noexcept {
         if (point) {
           if (LIKELY(not the_map.is_identity())) {
-            point = the_map.inverse(point.get());
+            point = the_map.inverse(point.value());
           }
         }
       },
-      [](const auto& the_map, boost::optional<std::array<T, dim>>& point,
+      [](const auto& the_map, std::optional<std::array<T, dim>>& point,
          const double t,
          const std::unordered_map<
              std::string,
@@ -145,7 +145,7 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::inverse_impl(
              funcs_of_time,
          const std::true_type /*is_time_dependent*/) noexcept {
         if (point) {
-          point = the_map.inverse(point.get(), t, funcs_of_time);
+          point = the_map.inverse(point.value(), t, funcs_of_time);
         }
         // this is the inverse function, so the iterator sequence below is
         // reversed
@@ -155,8 +155,8 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::inverse_impl(
              std::get<sizeof...(Maps) - 1 - Is>(maps_))>{}));
 
   return mapped_point
-             ? tnsr::I<T, dim, SourceFrame>(std::move(mapped_point.get()))
-             : boost::optional<tnsr::I<T, dim, SourceFrame>>{};
+             ? tnsr::I<T, dim, SourceFrame>(std::move(mapped_point.value()))
+             : std::optional<tnsr::I<T, dim, SourceFrame>>{};
 }
 
 namespace detail {

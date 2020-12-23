@@ -4,9 +4,9 @@
 #pragma once
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <limits>
+#include <optional>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
@@ -99,7 +99,7 @@ class SpecialMobius {
       const std::array<T, 3>& source_coords) const noexcept;
 
   /// Returns boost::none for target_coords outside the unit sphere.
-  boost::optional<std::array<double, 3>> inverse(
+  std::optional<std::array<double, 3>> inverse(
       const std::array<double, 3>& target_coords) const noexcept;
 
   template <typename T>

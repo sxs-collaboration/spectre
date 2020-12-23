@@ -10,8 +10,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-namespace domain {
-namespace CoordinateMaps {
+namespace domain::CoordinateMaps {
 
 Rotation<2>::Rotation(const double rotation_angle)
     : rotation_angle_(rotation_angle),
@@ -34,7 +33,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 2> Rotation<2>::operator()(
                source_coords[1] * get<1, 1>(rotation_matrix_)}};
 }
 
-boost::optional<std::array<double, 2>> Rotation<2>::inverse(
+std::optional<std::array<double, 2>> Rotation<2>::inverse(
     const std::array<double, 2>& target_coords) const noexcept {
   return {{{target_coords[0] * get<0, 0>(rotation_matrix_) +
                 target_coords[1] * get<1, 0>(rotation_matrix_),
@@ -129,7 +128,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Rotation<3>::operator()(
                source_coords[2] * get<2, 2>(rotation_matrix_)}};
 }
 
-boost::optional<std::array<double, 3>> Rotation<3>::inverse(
+std::optional<std::array<double, 3>> Rotation<3>::inverse(
     const std::array<double, 3>& target_coords) const noexcept {
   // Inverse rotation matrix is the same as the transpose.
   return {{{target_coords[0] * get<0, 0>(rotation_matrix_) +
@@ -225,5 +224,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3),
 #undef INSTANTIATE
 /// \endcond
 
-}  // namespace CoordinateMaps
-}  // namespace domain
+}  // namespace domain::CoordinateMaps

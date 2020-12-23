@@ -7,9 +7,9 @@
 #pragma once
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <functional>
+#include <optional>
 #include <utility>
 
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -48,7 +48,7 @@ class ProductOf2Maps {
   std::array<tt::remove_cvref_wrap_t<T>, dim> operator()(
       const std::array<T, dim>& source_coords) const noexcept;
 
-  boost::optional<std::array<double, dim>> inverse(
+  std::optional<std::array<double, dim>> inverse(
       const std::array<double, dim>& target_coords) const noexcept;
 
   template <typename T>
@@ -98,7 +98,7 @@ class ProductOf3Maps {
   std::array<tt::remove_cvref_wrap_t<T>, dim> operator()(
       const std::array<T, dim>& source_coords) const noexcept;
 
-  boost::optional<std::array<double, dim>> inverse(
+  std::optional<std::array<double, dim>> inverse(
       const std::array<double, dim>& target_coords) const noexcept;
 
   template <typename T>

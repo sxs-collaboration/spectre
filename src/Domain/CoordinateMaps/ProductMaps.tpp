@@ -6,10 +6,9 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 
 #include <array>
-#include <boost/none.hpp>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <functional>
+#include <optional>
 #include <pup.h>
 #include <utility>
 
@@ -42,7 +41,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Size> apply_call(
 
 template <size_t Size, typename Map1, typename Map2, typename Function,
           size_t... Is, size_t... Js>
-boost::optional<std::array<double, Size>> apply_inverse(
+std::optional<std::array<double, Size>> apply_inverse(
     const std::array<double, Size>& coords, const Map1& map1, const Map2& map2,
     const Function func, std::integer_sequence<size_t, Is...> /*meta*/,
     std::integer_sequence<size_t, Js...> /*meta*/) noexcept {
@@ -51,9 +50,9 @@ boost::optional<std::array<double, Size>> apply_inverse(
   auto map2_func = func(
       std::array<double, sizeof...(Js)>{{coords[Map1::dim + Js]...}}, map2);
   if (map1_func and map2_func) {
-    return {{{map1_func.get()[Is]..., map2_func.get()[Js]...}}};
+    return {{{map1_func.value()[Is]..., map2_func.value()[Js]...}}};
   } else {
-    return boost::none;
+    return std::nullopt;
   }
 }
 
@@ -108,7 +107,7 @@ ProductOf2Maps<Map1, Map2>::operator()(
 }
 
 template <typename Map1, typename Map2>
-boost::optional<std::array<double, ProductOf2Maps<Map1, Map2>::dim>>
+std::optional<std::array<double, ProductOf2Maps<Map1, Map2>::dim>>
 ProductOf2Maps<Map1, Map2>::inverse(
     const std::array<double, dim>& target_coords) const noexcept {
   return product_detail::apply_inverse(
@@ -187,16 +186,16 @@ ProductOf3Maps<Map1, Map2, Map3>::operator()(
 }
 
 template <typename Map1, typename Map2, typename Map3>
-boost::optional<std::array<double, ProductOf3Maps<Map1, Map2, Map3>::dim>>
+std::optional<std::array<double, ProductOf3Maps<Map1, Map2, Map3>::dim>>
 ProductOf3Maps<Map1, Map2, Map3>::inverse(
     const std::array<double, dim>& target_coords) const noexcept {
   auto c1 = map1_.inverse(std::array<double, 1>{{target_coords[0]}});
   auto c2 = map2_.inverse(std::array<double, 1>{{target_coords[1]}});
   auto c3 = map3_.inverse(std::array<double, 1>{{target_coords[2]}});
   if (c1 and c2 and c3) {
-    return {{{c1.get()[0], c2.get()[0], c3.get()[0]}}};
+    return {{{c1.value()[0], c2.value()[0], c3.value()[0]}}};
   } else {
-    return boost::none;
+    return std::nullopt;
   }
 }
 

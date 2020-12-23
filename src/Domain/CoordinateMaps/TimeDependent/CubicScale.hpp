@@ -4,10 +4,10 @@
 #pragma once
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 
@@ -115,7 +115,7 @@ class CubicScale {
 
   /// Returns boost::none if the point is outside the range of the map.
   template <typename T>
-  boost::optional<std::array<tt::remove_cvref_wrap_t<T>, Dim>> inverse(
+  std::optional<std::array<tt::remove_cvref_wrap_t<T>, Dim>> inverse(
       const std::array<T, Dim>& target_coords, double time,
       const std::unordered_map<
           std::string,

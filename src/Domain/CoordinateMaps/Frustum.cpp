@@ -4,7 +4,6 @@
 #include "Domain/CoordinateMaps/Frustum.hpp"
 
 #include <algorithm>
-#include <boost/none.hpp>
 #include <cmath>
 #include <pup.h>
 
@@ -123,7 +122,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Frustum::operator()(
   return discrete_rotation(orientation_of_frustum_, std::move(physical_coords));
 }
 
-boost::optional<std::array<double, 3>> Frustum::inverse(
+std::optional<std::array<double, 3>> Frustum::inverse(
     const std::array<double, 3>& target_coords) const noexcept {
   // physical coords {x,y,z}
   std::array<double, 3> physical_coords =
@@ -138,7 +137,7 @@ boost::optional<std::array<double, 3>> Frustum::inverse(
   // denom0 and denom1 are always positive inside the frustum.
   if (denom0 < 0.0 or equal_within_roundoff(denom0, 0.0) or denom1 < 0.0 or
       equal_within_roundoff(denom1, 0.0)) {
-    return boost::none;
+    return std::nullopt;
   }
 
   logical_coords[0] =

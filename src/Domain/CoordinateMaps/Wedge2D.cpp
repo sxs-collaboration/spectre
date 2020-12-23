@@ -3,7 +3,6 @@
 
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 
-#include <boost/none.hpp>
 #include <cmath>
 #include <pup.h>
 
@@ -70,7 +69,7 @@ std::array<tt::remove_cvref_wrap_t<T>, 2> Wedge2D::operator()(
   return discrete_rotation(orientation_of_wedge_, std::move(physical_coords));
 }
 
-boost::optional<std::array<double, 2>> Wedge2D::inverse(
+std::optional<std::array<double, 2>> Wedge2D::inverse(
     const std::array<double, 2>& target_coords) const noexcept {
   const std::array<double, 2> physical_coords =
       discrete_rotation(orientation_of_wedge_.inverse_map(), target_coords);
@@ -78,7 +77,7 @@ boost::optional<std::array<double, 2>> Wedge2D::inverse(
   const double& physical_y = physical_coords[1];
 
   if (physical_x < 0.0 or equal_within_roundoff(physical_x, 0.0)) {
-    return boost::none;
+    return std::nullopt;
   }
 
   const double cap_eta = physical_y / physical_x;

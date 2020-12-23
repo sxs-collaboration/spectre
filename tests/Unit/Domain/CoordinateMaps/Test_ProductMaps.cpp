@@ -4,9 +4,9 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
@@ -41,7 +41,8 @@ void test_product_two_maps_fail() {
 
     CHECK_FALSE(static_cast<bool>(map.inverse(mapped_point1)));
     CHECK(static_cast<bool>(map.inverse(mapped_point2)));
-    CHECK_ITERABLE_APPROX(map(map.inverse(mapped_point2).get()), mapped_point2);
+    CHECK_ITERABLE_APPROX(map(map.inverse(mapped_point2).value()),
+                          mapped_point2);
   }
 
   {
@@ -56,7 +57,8 @@ void test_product_two_maps_fail() {
 
     CHECK_FALSE(static_cast<bool>(map.inverse(mapped_point1)));
     CHECK(static_cast<bool>(map.inverse(mapped_point2)));
-    CHECK_ITERABLE_APPROX(map(map.inverse(mapped_point2).get()), mapped_point2);
+    CHECK_ITERABLE_APPROX(map(map.inverse(mapped_point2).value()),
+                          mapped_point2);
   }
 }
 void test_product_of_2_maps() {
@@ -95,9 +97,9 @@ void test_product_of_2_maps() {
   CHECK(affine_map_xy(point_B) == point_b);
   CHECK(affine_map_xy(point_xi) == point_x);
 
-  CHECK(affine_map_xy.inverse(point_a).get() == point_A);
-  CHECK(affine_map_xy.inverse(point_b).get() == point_B);
-  CHECK(affine_map_xy.inverse(point_x).get() == point_xi);
+  CHECK(affine_map_xy.inverse(point_a).value() == point_A);
+  CHECK(affine_map_xy.inverse(point_b).value() == point_B);
+  CHECK(affine_map_xy.inverse(point_x).value() == point_xi);
 
   const double inv_jacobian_00 = (xB - xA) / (xb - xa);
   const double inv_jacobian_11 = (yB - yA) / (yb - ya);
@@ -232,9 +234,9 @@ void test_product_of_3_maps() {
   CHECK(affine_map_xyz(point_B) == point_b);
   CHECK(affine_map_xyz(point_xi) == point_x);
 
-  CHECK(affine_map_xyz.inverse(point_a).get() == point_A);
-  CHECK(affine_map_xyz.inverse(point_b).get() == point_B);
-  CHECK(affine_map_xyz.inverse(point_x).get() == point_xi);
+  CHECK(affine_map_xyz.inverse(point_a).value() == point_A);
+  CHECK(affine_map_xyz.inverse(point_b).value() == point_B);
+  CHECK(affine_map_xyz.inverse(point_x).value() == point_xi);
 
   const double inv_jacobian_00 = (xB - xA) / (xb - xa);
   const double inv_jacobian_11 = (yB - yA) / (yb - ya);

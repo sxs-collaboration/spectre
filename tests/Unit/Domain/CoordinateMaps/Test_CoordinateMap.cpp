@@ -4,10 +4,10 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cmath>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <random>
 #include <string>
@@ -119,7 +119,7 @@ void test_single_coordinate_map() {
           first_map(local_coord));
     CHECK((make_array<double, dim>(
               map_base->inverse(tnsr::I<double, dim, Frame::Grid>{local_coord})
-                  .get())) == first_map.inverse(local_coord).get());
+                  .value())) == first_map.inverse(local_coord).value());
 
     const auto expected_jac_no_frame = first_map.jacobian(local_coord);
     Jacobian<double, dim, Frame::Logical, Frame::Grid> local_expected_jac{};
@@ -157,7 +157,7 @@ void test_single_coordinate_map() {
               {{coord[0]}}}))) == first_affine1d(coord));
     CHECK((make_array<double, 1>(
               affine1d.inverse(tnsr::I<double, 1, Frame::Grid>{{{coord[0]}}})
-                  .get())) == first_affine1d.inverse(coord).get());
+                  .value())) == first_affine1d.inverse(coord).value());
 
     CHECK(affine1d.jacobian(source_points).get(0, 0) ==
           first_affine1d.jacobian(coord).get(0, 0));
@@ -203,10 +203,9 @@ void test_single_coordinate_map() {
 
     CHECK((make_array<double, 2>(rotated2d(source_points))) ==
           first_rotated2d(coord));
-    CHECK(
-        (make_array<double, 2>(
-            rotated2d.inverse(tnsr::I<double, 2, Frame::Grid>{coord}).get())) ==
-        first_rotated2d.inverse(coord).get());
+    CHECK((make_array<double, 2>(
+              rotated2d.inverse(tnsr::I<double, 2, Frame::Grid>{coord})
+                  .value())) == first_rotated2d.inverse(coord).value());
 
     const auto expected_jac_inertial = first_rotated2d.jacobian(coord);
     Jacobian<double, 2, Frame::Logical, Frame::Grid> expected_jac_grid{};
@@ -272,8 +271,8 @@ void test_single_coordinate_map() {
     CHECK((make_array<double, 3>(rotated3d
                                      .inverse(tnsr::I<double, 3, Frame::Grid>{
                                          {{coord[0], coord[1], coord[2]}}})
-                                     .get())) ==
-          first_rotated3d.inverse(coord).get());
+                                     .value())) ==
+          first_rotated3d.inverse(coord).value());
 
     const auto expected_jac_inertial = first_rotated3d.jacobian(coord);
     Jacobian<double, 3, Frame::Logical, Frame::Grid> expected_jac_grid{};
@@ -328,7 +327,7 @@ void test_coordinate_map_with_affine_map() {
           approx(map(source_points)[0]));
     CHECK((tnsr::I<double, 1, Frame::Logical>(2.0 / i + -1.0))[0] ==
           approx(map.inverse(tnsr::I<double, 1, Frame::Grid>{1.0 / i + -0.5})
-                     .get()[0]));
+                     .value()[0]));
 
     CHECK(approx(map.inv_jacobian(source_points).get(0, 0)) == 2.0);
     CHECK(approx(map.jacobian(source_points).get(0, 0)) == 0.5);
@@ -360,7 +359,7 @@ void test_coordinate_map_with_affine_map() {
     const auto inv_mapped_point = prod_map2d
                                       .inverse(tnsr::I<double, 2, Frame::Grid>{
                                           {{4.0 / i + 2.0, 8.0 / i + 0.0}}})
-                                      .get();
+                                      .value();
     const auto expected_inv_mapped_point =
         tnsr::I<double, 2, Frame::Grid>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}};
     CHECK(get<0>(expected_inv_mapped_point) ==
@@ -414,7 +413,7 @@ void test_coordinate_map_with_affine_map() {
         prod_map3d
             .inverse(tnsr::I<double, 3, Frame::Grid>{
                 {{4.0 / i + 2.0, 8.0 / i + 0.0, 3.0 + 20.0 / i}}})
-            .get();
+            .value();
     const auto expected_inv_mapped_point = tnsr::I<double, 3, Frame::Grid>{
         {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}};
     CHECK(get<0>(expected_inv_mapped_point) ==
@@ -486,8 +485,9 @@ void test_coordinate_map_with_rotation_map() {
     CHECK((make_array<double, 2>(double_rotated2d
                                      .inverse(tnsr::I<double, 2, Frame::Grid>{
                                          {{coord[0], coord[1]}}})
-                                     .get())) ==
-          first_rotated2d.inverse(second_rotated2d.inverse(coord).get()).get());
+                                     .value())) ==
+          first_rotated2d.inverse(second_rotated2d.inverse(coord).value())
+              .value());
 
     const auto jac = double_rotated2d.jacobian(source_points);
     const auto expected_jac = compose_jacobians(
@@ -533,8 +533,9 @@ void test_coordinate_map_with_rotation_map() {
     CHECK((make_array<double, 3>(double_rotated3d
                                      .inverse(tnsr::I<double, 3, Frame::Grid>{
                                          {{coord[0], coord[1], coord[2]}}})
-                                     .get())) ==
-          first_rotated3d.inverse(second_rotated3d.inverse(coord).get()).get());
+                                     .value())) ==
+          first_rotated3d.inverse(second_rotated3d.inverse(coord).value())
+              .value());
 
     const auto jac = double_rotated3d.jacobian(source_points);
     const auto expected_jac = compose_jacobians(
@@ -979,11 +980,11 @@ void test_coordinate_maps_are_identity() {
     CHECK(get<1>(mapped_point) == get<1>(giant_identity_map(source_point)));
     CHECK(get<2>(mapped_point) == get<2>(giant_identity_map(source_point)));
     CHECK(get<0>(source_point) ==
-          get<0>(giant_identity_map.inverse(mapped_point).get()));
+          get<0>(giant_identity_map.inverse(mapped_point).value()));
     CHECK(get<1>(source_point) ==
-          get<1>(giant_identity_map.inverse(mapped_point).get()));
+          get<1>(giant_identity_map.inverse(mapped_point).value()));
     CHECK(get<2>(source_point) ==
-          get<2>(giant_identity_map.inverse(mapped_point).get()));
+          get<2>(giant_identity_map.inverse(mapped_point).value()));
     const auto wedge_mapped_point = wedge(source_point);
     CHECK(get<0>(wedge_mapped_point) ==
           get<0>(wedge_composed_with_giant_identity(source_point)));
@@ -991,15 +992,15 @@ void test_coordinate_maps_are_identity() {
           get<1>(wedge_composed_with_giant_identity(source_point)));
     CHECK(get<2>(wedge_mapped_point) ==
           get<2>(wedge_composed_with_giant_identity(source_point)));
-    CHECK(get<0>(wedge.inverse(wedge_mapped_point).get()) ==
+    CHECK(get<0>(wedge.inverse(wedge_mapped_point).value()) ==
           get<0>(wedge_composed_with_giant_identity.inverse(wedge_mapped_point)
-                     .get()));
-    CHECK(get<1>(wedge.inverse(wedge_mapped_point).get()) ==
+                     .value()));
+    CHECK(get<1>(wedge.inverse(wedge_mapped_point).value()) ==
           get<1>(wedge_composed_with_giant_identity.inverse(wedge_mapped_point)
-                     .get()));
-    CHECK(get<2>(wedge.inverse(wedge_mapped_point).get()) ==
+                     .value()));
+    CHECK(get<2>(wedge.inverse(wedge_mapped_point).value()) ==
           get<2>(wedge_composed_with_giant_identity.inverse(wedge_mapped_point)
-                     .get()));
+                     .value()));
 
     const auto inv_jac = giant_identity_map.inv_jacobian(source_point);
     CHECK(1.0 == approx(get<0, 0>(inv_jac)));

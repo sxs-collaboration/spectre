@@ -4,9 +4,9 @@
 #pragma once
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <limits>
+#include <optional>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -283,7 +283,7 @@ class Wedge3D {
   /// Here \f$s_0,s_1\f$ and \f$r_0,r_1\f$ are the specified sphericities
   /// and radii of the inner and outer \f$z\f$ surfaces.  The map is singular on
   /// the cone and on the xy plane.
-  boost::optional<std::array<double, 3>> inverse(
+  std::optional<std::array<double, 3>> inverse(
       const std::array<double, 3>& target_coords) const noexcept;
 
   template <typename T>

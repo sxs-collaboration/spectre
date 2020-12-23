@@ -4,10 +4,9 @@
 #include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
 
 #include <array>
-#include <boost/none.hpp>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <pup.h>
 #include <pup_stl.h>
@@ -30,9 +29,7 @@
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
-namespace domain {
-namespace CoordinateMaps {
-namespace TimeDependent {
+namespace domain::CoordinateMaps::TimeDependent {
 
 template <size_t Dim>
 CubicScale<Dim>::CubicScale(const double outer_boundary,
@@ -97,7 +94,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> CubicScale<Dim>::operator()(
 
 template <size_t Dim>
 template <typename T>
-boost::optional<std::array<tt::remove_cvref_wrap_t<T>, Dim>>
+std::optional<std::array<tt::remove_cvref_wrap_t<T>, Dim>>
 CubicScale<Dim>::inverse(
     const std::array<T, Dim>& target_coords, const double time,
     const std::unordered_map<
@@ -117,10 +114,10 @@ CubicScale<Dim>::inverse(
     const double one_over_a_of_t =
         1.0 / functions_of_time.at(f_of_t_a_)->func(time)[0][0];
 
-    // Construct boost::optional to have a default value of an empty array.
-    // Doing just result{} would construct a boost::optional that doesn't hold a
+    // Construct std::optional to have a default value of an empty array.
+    // Doing just result{} would construct a std::optional that doesn't hold a
     // value and so *result would throw an exception.
-    boost::optional<std::array<tt::remove_cvref_wrap_t<T>, Dim>> result{
+    std::optional<std::array<tt::remove_cvref_wrap_t<T>, Dim>> result{
         std::array<tt::remove_cvref_wrap_t<T>, Dim>{}};
     for (size_t i = 0; i < Dim; ++i) {
       gsl::at(*result, i) = one_over_a_of_t * gsl::at(target_coords, i);
@@ -162,7 +159,7 @@ CubicScale<Dim>::inverse(
   // support epsilon above b(t).
   if (UNLIKELY(target_dimensionless_radius >
                b_of_t * (1.0 + 2.0 * std::numeric_limits<double>::epsilon()))) {
-    return boost::none;
+    return std::nullopt;
   }
 
   // For an initial guess, we provide a linearly approximated solution for
@@ -418,7 +415,7 @@ bool operator==(const CubicScale<Dim>& lhs,
 
 #define INSTANTIATE(_, data)                                                 \
   template class CubicScale<DIM(data)>;                                      \
-  template boost::optional<                                                  \
+  template std::optional<                                                    \
       std::array<tt::remove_cvref_wrap_t<double>, DIM(data)>>                \
   CubicScale<DIM(data)>::inverse(                                            \
       const std::array<double, DIM(data)>& target_coords, const double time, \
@@ -426,7 +423,7 @@ bool operator==(const CubicScale<Dim>& lhs,
           std::string,                                                       \
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&         \
           functions_of_time) const noexcept;                                 \
-  template boost::optional<std::array<                                       \
+  template std::optional<std::array<                                         \
       tt::remove_cvref_wrap_t<std::reference_wrapper<const double>>,         \
       DIM(data)>>                                                            \
   CubicScale<DIM(data)>::inverse(                                            \
@@ -490,6 +487,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
 #undef DTYPE
 #undef INSTANTIATE
 /// \endcond
-}  // namespace TimeDependent
-}  // namespace CoordinateMaps
-}  // namespace domain
+}  // namespace domain::CoordinateMaps::TimeDependent

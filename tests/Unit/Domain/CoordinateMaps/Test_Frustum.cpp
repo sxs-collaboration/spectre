@@ -4,9 +4,9 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cmath>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <random>
 
@@ -70,14 +70,14 @@ void test_frustum_fail() noexcept {
 
   // This is outside the mapped frustum, so inverse should either
   // return the correct inverse (which happens to be computable for
-  // this point) or it should return boost::none.
+  // this point) or it should return nullopt.
   const std::array<double, 3> test_mapped_point4{{0.0, 0.0, 9.0}};
 
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point1)));
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point2)));
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point3)));
   if (map.inverse(test_mapped_point4)) {
-    CHECK_ITERABLE_APPROX(map(map.inverse(test_mapped_point4).get()),
+    CHECK_ITERABLE_APPROX(map(map.inverse(test_mapped_point4).value()),
                           test_mapped_point4);
   }
 }

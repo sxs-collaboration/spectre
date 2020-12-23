@@ -7,9 +7,9 @@
 #pragma once
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <limits>
+#include <optional>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -139,7 +139,7 @@ class Wedge2D {
       const std::array<T, 2>& source_coords) const noexcept;
 
   /// Returns invalid if \f$x<=0\f$ (for a \f$+x\f$-oriented `Wedge2D`).
-  boost::optional<std::array<double, 2>> inverse(
+  std::optional<std::array<double, 2>> inverse(
       const std::array<double, 2>& target_coords) const noexcept;
 
   template <typename T>

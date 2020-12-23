@@ -27,7 +27,7 @@ operator()(const std::array<T, VolumeDim>& source_coords) const noexcept {
 }
 
 template <size_t VolumeDim>
-boost::optional<std::array<double, VolumeDim>>
+std::optional<std::array<double, VolumeDim>>
 DiscreteRotation<VolumeDim>::inverse(
     const std::array<double, VolumeDim>& target_coords) const noexcept {
   return discrete_rotation(orientation_.inverse_map(), target_coords);

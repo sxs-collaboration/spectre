@@ -4,9 +4,9 @@
 #pragma once
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <limits>
+#include <optional>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -185,7 +185,7 @@ class Frustum {
   /// the apex of the pyramid, tetrahedron, or triangular prism that is
   /// formed by extending the `Frustum` (for a
   /// \f$z\f$-oriented `Frustum`).
-  boost::optional<std::array<double, 3>> inverse(
+  std::optional<std::array<double, 3>> inverse(
       const std::array<double, 3>& target_coords) const noexcept;
 
   template <typename T>

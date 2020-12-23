@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <boost/preprocessor/punctuation/comma_if.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/tuple/elem.hpp>
 #include <boost/preprocessor/tuple/enum.hpp>
 #include <boost/preprocessor/tuple/size.hpp>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <tuple>
@@ -88,7 +88,7 @@
                   unsigned long,                                             \
                   INSTANTIATE_COORD_MAP_DETAIL_GET_FILLED_INDEX_SEQUENCE(    \
                       data)>) const noexcept;                                \
-  template boost::optional<                                                  \
+  template std::optional<                                                    \
       tnsr::I<double, INSTANTIATE_COORD_MAP_DETAIL_GET_MAPS_DIM(data),       \
               INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data)>>          \
   domain::CoordinateMap<INSTANTIATE_COORD_MAP_DETAIL_GET_SOURCE_FRAME(data), \

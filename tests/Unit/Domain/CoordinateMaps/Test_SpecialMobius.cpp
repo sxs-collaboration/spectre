@@ -4,7 +4,6 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/optional/optional.hpp>
 #include <cmath>
 #include <memory>
 #include <pup.h>
@@ -98,7 +97,7 @@ void test_large_mu() {
   const CoordinateMaps::SpecialMobius special_mobius_map(mu);
   const auto result_point = special_mobius_map(input_point);
   const auto expected_input_point =
-      special_mobius_map.inverse(result_point).get();
+      special_mobius_map.inverse(result_point).value();
   const auto& result_y = result_point[1];
   const auto& result_z = result_point[2];
   // The SpecialMobius map should map the unit sphere to itself:

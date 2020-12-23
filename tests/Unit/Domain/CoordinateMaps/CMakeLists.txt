@@ -26,7 +26,7 @@ add_test_library(
   ${LIBRARY}
   "Domain/CoordinateMaps"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;CoordinateMaps;FunctionsOfTime"
+  "CoordinateMaps;FunctionsOfTime"
   )
 
 add_subdirectory(TimeDependent)

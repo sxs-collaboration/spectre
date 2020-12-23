@@ -4,10 +4,10 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cmath>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <pup.h>
 
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -43,13 +43,13 @@ void test_rotation_3(const CoordinateMaps::Rotation<3>& three_dim_rotation_map,
           approx(gsl::at(eta_hat, i)));
     CHECK(gsl::at(three_dim_rotation_map(zeta), i) ==
           approx(gsl::at(zeta_hat, i)));
-    CHECK(gsl::at(three_dim_rotation_map.inverse(zero_grid).get(), i) ==
+    CHECK(gsl::at(three_dim_rotation_map.inverse(zero_grid).value(), i) ==
           approx(gsl::at(zero_logical, i)));
-    CHECK(gsl::at(three_dim_rotation_map.inverse(xi_hat).get(), i) ==
+    CHECK(gsl::at(three_dim_rotation_map.inverse(xi_hat).value(), i) ==
           approx(gsl::at(xi, i)));
-    CHECK(gsl::at(three_dim_rotation_map.inverse(eta_hat).get(), i) ==
+    CHECK(gsl::at(three_dim_rotation_map.inverse(eta_hat).value(), i) ==
           approx(gsl::at(eta, i)));
-    CHECK(gsl::at(three_dim_rotation_map.inverse(zeta_hat).get(), i) ==
+    CHECK(gsl::at(three_dim_rotation_map.inverse(zeta_hat).value(), i) ==
           approx(gsl::at(zeta, i)));
     CHECK(inv_jac.get(0, i) == approx(gsl::at(xi_hat, i)));
     CHECK(inv_jac.get(1, i) == approx(gsl::at(eta_hat, i)));
@@ -75,8 +75,8 @@ void test_rotation_2() {
   CHECK(half_pi_rotation_map(xi0)[0] == approx(x0[0]));
   CHECK(half_pi_rotation_map(xi0)[1] == approx(x0[1]));
 
-  CHECK(half_pi_rotation_map.inverse(x0).get()[0] == approx(xi0[0]));
-  CHECK(half_pi_rotation_map.inverse(x0).get()[1] == approx(xi0[1]));
+  CHECK(half_pi_rotation_map.inverse(x0).value()[0] == approx(xi0[0]));
+  CHECK(half_pi_rotation_map.inverse(x0).value()[1] == approx(xi0[1]));
 
   const std::array<double, 2> xi1{{1.0, 0.0}};
   const std::array<double, 2> x1{{0.0, 1.0}};
@@ -84,8 +84,8 @@ void test_rotation_2() {
   CHECK(half_pi_rotation_map(xi1)[0] == approx(x1[0]));
   CHECK(half_pi_rotation_map(xi1)[1] == approx(x1[1]));
 
-  CHECK(half_pi_rotation_map.inverse(x1).get()[0] == approx(xi1[0]));
-  CHECK(half_pi_rotation_map.inverse(x1).get()[1] == approx(xi1[1]));
+  CHECK(half_pi_rotation_map.inverse(x1).value()[0] == approx(xi1[0]));
+  CHECK(half_pi_rotation_map.inverse(x1).value()[1] == approx(xi1[1]));
 
   const std::array<double, 2> xi2{{0.0, 1.0}};
   const std::array<double, 2> x2{{-1.0, 0.0}};
@@ -93,8 +93,8 @@ void test_rotation_2() {
   CHECK(half_pi_rotation_map(xi2)[0] == approx(x2[0]));
   CHECK(half_pi_rotation_map(xi2)[1] == approx(x2[1]));
 
-  CHECK(half_pi_rotation_map.inverse(x2).get()[0] == approx(xi2[0]));
-  CHECK(half_pi_rotation_map.inverse(x2).get()[1] == approx(xi2[1]));
+  CHECK(half_pi_rotation_map.inverse(x2).value()[0] == approx(xi2[0]));
+  CHECK(half_pi_rotation_map.inverse(x2).value()[1] == approx(xi2[1]));
 
   const auto inv_jac = half_pi_rotation_map.inv_jacobian(xi2);
   CHECK((get<0, 0>(inv_jac)) == approx(0.0));
