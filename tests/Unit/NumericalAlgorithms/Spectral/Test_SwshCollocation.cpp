@@ -14,8 +14,7 @@
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 
-namespace Spectral {
-namespace Swsh {
+namespace Spectral::Swsh {
 namespace {
 
 // IWYU pragma: no_include <sharp_geomhelpers.h>
@@ -45,9 +44,10 @@ void test_spherical_harmonic_collocation() noexcept {
 
   const int expected_stride = detail::ComplexDataView<Representation>::stride();
 
-  sharp_geom_info* manual_sgi;
+  sharp_geom_info* manual_sgi = nullptr;
   sharp_make_gauss_geom_info(
-      l_max + 1, 2 * l_max + 1, 0.0, expected_stride,
+      static_cast<int>(l_max) + 1, 2 * static_cast<int>(l_max) + 1, 0.0,
+      expected_stride,
       static_cast<unsigned long>(expected_stride) * (2 * l_max + 1),
       &manual_sgi);
 
@@ -147,5 +147,4 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshCollocation",
   ERROR("Failed to trigger ERROR in an error test");
 }
 }  // namespace
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh

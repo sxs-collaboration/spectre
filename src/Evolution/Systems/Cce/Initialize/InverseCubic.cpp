@@ -19,8 +19,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Cce {
-namespace InitializeJ {
+namespace Cce::InitializeJ {
 
 std::unique_ptr<InitializeJ> InverseCubic::get_clone() const
     noexcept {
@@ -81,5 +80,4 @@ void InverseCubic::pup(PUP::er& /*p*/) noexcept {}
 /// \cond
 PUP::able::PUP_ID InverseCubic::my_PUP_ID = 0;
 /// \endcond
-}  // namespace InitializeJ
-}  // namespace Cce
+}  // namespace Cce::InitializeJ

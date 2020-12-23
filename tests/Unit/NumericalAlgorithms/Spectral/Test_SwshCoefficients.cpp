@@ -24,8 +24,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace Spectral {
-namespace Swsh {
+namespace Spectral::Swsh {
 namespace {
 
 void test_swsh_coefficients_class_interface() noexcept {
@@ -49,7 +48,7 @@ void test_swsh_coefficients_class_interface() noexcept {
   CHECK(precomputed_libsharp_lm.l_max() == l_max);
   CHECK(computed_coefficients.l_max() == l_max);
 
-  sharp_alm_info* expected_sharp_alm_info;
+  sharp_alm_info* expected_sharp_alm_info = nullptr;
   sharp_make_triangular_alm_info(l_max, l_max, 1, &expected_sharp_alm_info);
 
   // check that all of the precomputed coefficients, the directly constructed
@@ -275,5 +274,4 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshCoefficients",
   ERROR("Failed to trigger ERROR in an error test");
 }
 }  // namespace
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh

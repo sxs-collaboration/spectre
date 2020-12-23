@@ -12,8 +12,7 @@
 
 // IWYU pragma: no_forward_declare SpinWeighted
 
-namespace Spectral {
-namespace Swsh {
+namespace Spectral::Swsh {
 
 namespace detail {
 template <ComplexRepresentation Representation>
@@ -258,5 +257,4 @@ GENERATE_INSTANTIATIONS(SWSH_INTERPOLATION_INSTANTIATION, (-2, -1, 0, 1, 2))
 #undef SWSH_TRANSFORM_INSTANTIATION
 #undef SWSH_TRANSFORM_UTILITIES_INSTANTIATION
 
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh

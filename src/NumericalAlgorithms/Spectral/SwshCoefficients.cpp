@@ -19,12 +19,11 @@
 
 // IWYU pragma: no_forward_declare SpinWeighted
 
-namespace Spectral {
-namespace Swsh {
+namespace Spectral::Swsh {
 
 CoefficientsMetadata::CoefficientsMetadata(const size_t l_max) noexcept
     : l_max_(l_max) {
-  sharp_alm_info* alm_to_initialize;
+  sharp_alm_info* alm_to_initialize = nullptr;
   sharp_make_triangular_alm_info(l_max, l_max, 1, &alm_to_initialize);
   alm_info_.reset(alm_to_initialize);
 }
@@ -262,5 +261,4 @@ GENERATE_INSTANTIATIONS(LIBSHARP_TO_GOLDBERG_INSTANTIATION, (-2, -1, 0, 1, 2))
 #undef LIBSHARP_TO_GOLDBERG_INSTANTIATION
 #undef GET_SPIN
 
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh

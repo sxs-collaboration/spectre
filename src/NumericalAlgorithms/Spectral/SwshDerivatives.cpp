@@ -16,8 +16,7 @@
 
 // IWYU pragma: no_forward_declare SpinWeighted
 
-namespace Spectral {
-namespace Swsh {
+namespace Spectral::Swsh {
 namespace detail {
 namespace {
 template <typename DerivativeKind, int Spin>
@@ -181,5 +180,4 @@ GENERATE_INSTANTIATIONS(FULL_DERIVATIVE_INSTANTIATION,
 #undef GET_SPIN
 #undef GET_DERIVKIND
 #undef GET_REPRESENTATION
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh
