@@ -14,9 +14,9 @@
 #include <variant>
 #include <vector>
 
-#include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
 

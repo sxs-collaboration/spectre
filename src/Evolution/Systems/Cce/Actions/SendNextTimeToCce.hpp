@@ -10,7 +10,6 @@
 #include "DataStructures/IdPair.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/BlockId.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Evolution/Systems/Cce/Actions/BoundaryComputeAndSendToEvolution.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
@@ -21,6 +20,7 @@
 #include "Parallel/Printf.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 namespace Cce::Actions {
 

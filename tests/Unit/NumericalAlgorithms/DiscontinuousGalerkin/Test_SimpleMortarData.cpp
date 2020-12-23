@@ -7,9 +7,9 @@
 #include <string>
 #include <utility>
 
-#include "ErrorHandling/Error.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Literals.hpp"  // IWYU pragma: keep
 
 // IWYU pragma: no_include <type_traits>  // for __decay_and_strip<>::__type

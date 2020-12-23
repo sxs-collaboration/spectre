@@ -10,11 +10,11 @@
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
-#include "ErrorHandling/Error.hpp"
-#include "ErrorHandling/Exceptions.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 
 namespace {
 double f_free(double x) { return 2.0 - square(x); }

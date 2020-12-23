@@ -7,10 +7,10 @@
 #include <ostream>
 
 #include "DataStructures/DataVector.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Blas.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 /// \cond
 // The 2D and 3D definite integrals have been optimized and are up to 2x faster

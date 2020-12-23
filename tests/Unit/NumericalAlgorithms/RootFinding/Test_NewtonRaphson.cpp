@@ -9,11 +9,11 @@
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
-#include "ErrorHandling/Error.hpp"
-#include "ErrorHandling/Exceptions.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
 

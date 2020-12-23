@@ -14,8 +14,8 @@
 #include <utility>
 #include <yaml-cpp/yaml.h>
 
-#include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 

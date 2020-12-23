@@ -10,8 +10,8 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/Structure.hpp"
-#include "ErrorHandling/Assert.hpp"  // IWYU pragma: keep
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"  // IWYU pragma: keep
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"

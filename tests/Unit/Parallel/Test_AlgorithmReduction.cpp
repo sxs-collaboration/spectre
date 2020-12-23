@@ -15,8 +15,6 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
-#include "ErrorHandling/Error.hpp"
-#include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -28,6 +26,8 @@
 #include "Parallel/Reduction.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"

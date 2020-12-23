@@ -6,7 +6,7 @@
 #include <cmath>
 #include <limits>
 
-#include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 
 // [[OutputRegex, Floating point exception!]]
 SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Invalid",

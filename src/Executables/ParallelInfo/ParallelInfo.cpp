@@ -8,9 +8,9 @@
 #include <ostream>
 #include <string>
 
-#include "ErrorHandling/Error.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Math.hpp"
 #include "Utilities/System/Exit.hpp"
 #include "Utilities/System/ParallelInfo.hpp"

@@ -11,10 +11,10 @@
 #include <tuple>
 #include <utility>
 
-#include "ErrorHandling/Error.hpp"  // IWYU pragma: keep
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"  // IWYU pragma: keep
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"  // IWYU pragma: keep

@@ -11,13 +11,13 @@
 #include <cstddef>
 #include <pup.h>
 
-#include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include "Utilities/Rational.hpp"

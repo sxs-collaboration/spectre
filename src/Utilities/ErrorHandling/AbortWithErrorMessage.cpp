@@ -1,12 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "ErrorHandling/AbortWithErrorMessage.hpp"
+#include "Utilities/ErrorHandling/AbortWithErrorMessage.hpp"
 
 #include <charm++.h>
 #include <sstream>
 
-#include "ErrorHandling/Breakpoint.hpp"
+#include "Utilities/ErrorHandling/Breakpoint.hpp"
 #include "Utilities/System/Abort.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 

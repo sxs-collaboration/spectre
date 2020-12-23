@@ -11,7 +11,7 @@
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Direction.hpp"      // IWYU pragma: keep
 #include "Domain/Structure/DirectionMap.hpp"   // IWYU pragma: keep
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace Frame {

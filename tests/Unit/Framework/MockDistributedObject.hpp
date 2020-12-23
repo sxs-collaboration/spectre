@@ -18,7 +18,6 @@
 #include <tuple>
 #include <utility>
 
-#include "ErrorHandling/Error.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/NodeLock.hpp"
@@ -26,6 +25,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/SimpleActionVisitation.hpp"
 #include "Utilities/BoostHelpers.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/Overloader.hpp"

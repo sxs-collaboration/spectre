@@ -13,10 +13,10 @@
 #include <memory>
 #include <string>
 
-#include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/System/Abort.hpp"
 #include "Utilities/System/Exit.hpp"
 

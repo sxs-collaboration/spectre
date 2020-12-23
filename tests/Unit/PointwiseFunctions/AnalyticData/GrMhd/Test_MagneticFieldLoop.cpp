@@ -11,13 +11,13 @@
 #include "DataStructures/DataBox/Prefixes.hpp"    // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"          // IWYU pragma: keep
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
-#include "ErrorHandling/Error.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagneticFieldLoop.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

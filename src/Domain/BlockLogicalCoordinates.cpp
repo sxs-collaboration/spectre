@@ -11,7 +11,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Domain.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/BlockId.hpp"
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace {

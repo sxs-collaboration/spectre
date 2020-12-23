@@ -19,7 +19,6 @@
 #include "Domain/Structure/Element.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
-#include "ErrorHandling/Assert.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/HwenoImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodTci.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
@@ -32,6 +31,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"

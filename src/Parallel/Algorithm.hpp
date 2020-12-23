@@ -17,8 +17,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
-#include "ErrorHandling/Assert.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/Algorithms/AlgorithmArrayDeclarations.hpp"
 #include "Parallel/Algorithms/AlgorithmGroupDeclarations.hpp"
@@ -33,6 +31,8 @@
 #include "Parallel/SimpleActionVisitation.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "Utilities/BoostHelpers.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"

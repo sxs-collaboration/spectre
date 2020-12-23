@@ -6,7 +6,7 @@
 #include <cmath>
 #include <complex>
 
-#include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/MakeSignalingNan.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.MakeSignalingNaN", "[Unit][Utilities]") {

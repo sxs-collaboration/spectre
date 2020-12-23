@@ -6,7 +6,7 @@
 #include <ios>
 #include <pup.h>  // IWYU pragma: keep
 
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace Frame {

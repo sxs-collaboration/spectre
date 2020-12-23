@@ -24,12 +24,12 @@
 #include <vector>
 #include <yaml-cpp/yaml.h>
 
-#include "ErrorHandling/Assert.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Options/OptionsDetails.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/PrettyType.hpp"

@@ -6,7 +6,7 @@
 #include <type_traits>
 #include <typeinfo>
 
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"

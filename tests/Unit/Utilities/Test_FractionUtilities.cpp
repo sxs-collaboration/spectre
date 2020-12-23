@@ -12,8 +12,8 @@
 #include <set>
 #include <vector>
 
-#include "ErrorHandling/Assert.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/FractionUtilities.hpp"
 
 namespace {

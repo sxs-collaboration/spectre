@@ -14,8 +14,8 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

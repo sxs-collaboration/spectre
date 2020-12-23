@@ -7,9 +7,9 @@
 #include <hdf5.h>
 #include <ostream>
 
-#include "ErrorHandling/Error.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Helpers.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 /// \cond
 namespace h5 {

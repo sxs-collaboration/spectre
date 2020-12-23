@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <utility>
 
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits/IsInteger.hpp"

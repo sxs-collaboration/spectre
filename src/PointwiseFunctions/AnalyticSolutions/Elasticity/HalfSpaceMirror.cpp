@@ -11,12 +11,12 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "ErrorHandling/Error.hpp"
-#include "ErrorHandling/Exceptions.hpp"
 #include "NumericalAlgorithms/Integration/GslQuadAdaptive.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace Elasticity::Solutions {

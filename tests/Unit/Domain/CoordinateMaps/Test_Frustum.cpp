@@ -13,9 +13,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace domain {

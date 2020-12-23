@@ -9,10 +9,10 @@
 #include <utility>
 #include <vector>
 
-#include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

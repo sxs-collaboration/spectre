@@ -16,7 +16,7 @@
 #include <string>
 #include <unordered_set>
 
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StlStreamDeclarations.hpp"
 #include "Utilities/System/Abort.hpp"

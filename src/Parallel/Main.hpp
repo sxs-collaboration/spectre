@@ -12,7 +12,6 @@
 #include <string>
 #include <type_traits>
 
-#include "ErrorHandling/Error.hpp"
 #include "Informer/Informer.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
@@ -22,6 +21,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/TypeTraits.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Formaline.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/System/Exit.hpp"

@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/Deferred.hpp"
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace {

@@ -6,7 +6,7 @@
 #include <ostream>
 #include <string>
 
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 namespace Options {
 

@@ -7,7 +7,7 @@
 #include <complex>
 #include <cstddef>
 
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace intrp {

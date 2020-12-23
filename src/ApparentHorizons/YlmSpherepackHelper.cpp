@@ -4,7 +4,7 @@
 #include <ostream>
 
 #include "ApparentHorizons/YlmSpherepackHelper.hpp"
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 namespace YlmSpherepack_detail {
 

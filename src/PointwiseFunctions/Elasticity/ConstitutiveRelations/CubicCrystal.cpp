@@ -9,7 +9,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 // IWYU pragma: no_forward_declare Tensor

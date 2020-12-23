@@ -6,11 +6,11 @@
 #include <optional>
 #include <string>
 
-#include "ErrorHandling/Error.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Reason.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 
 SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",

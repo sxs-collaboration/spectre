@@ -11,9 +11,9 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/SpecialMobius.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
 namespace domain {

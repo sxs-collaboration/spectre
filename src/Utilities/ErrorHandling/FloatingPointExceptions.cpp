@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 
 #include "Utilities/System/Abort.hpp"
 

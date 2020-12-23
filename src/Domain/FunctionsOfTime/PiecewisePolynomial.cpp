@@ -12,8 +12,8 @@
 #include <utility>  // IWYU pragma: keep
 
 #include "DataStructures/DataVector.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"

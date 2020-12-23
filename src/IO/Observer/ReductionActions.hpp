@@ -11,8 +11,6 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "ErrorHandling/Assert.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
@@ -25,6 +23,8 @@
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"

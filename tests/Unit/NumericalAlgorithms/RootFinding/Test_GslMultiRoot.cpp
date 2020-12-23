@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
-#include "ErrorHandling/Exceptions.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/RootFinding/GslMultiRoot.hpp"
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/GetOutput.hpp"
 
 namespace {

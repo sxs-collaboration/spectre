@@ -16,7 +16,6 @@
 #include <string>
 #include <tuple>
 
-#include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmGroup.hpp"
@@ -28,6 +27,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/System/Exit.hpp"
 #include "Utilities/TMPL.hpp"

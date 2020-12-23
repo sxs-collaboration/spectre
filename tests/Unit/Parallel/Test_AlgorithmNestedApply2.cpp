@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
-#include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -13,6 +12,7 @@
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace db {

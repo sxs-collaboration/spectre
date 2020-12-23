@@ -9,7 +9,7 @@
 #include <pup_stl.h>
 #include <utility>
 
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 namespace TimeSequences {
 template <typename T>

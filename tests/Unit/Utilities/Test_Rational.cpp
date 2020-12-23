@@ -6,8 +6,8 @@
 #include <functional>
 #include <string>
 
-#include "ErrorHandling/Error.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Rational.hpp"
 

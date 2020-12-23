@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <array>
 
-#include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 // [[OutputRegex, There are only 0 real roots]]
 [[noreturn]] SPECTRE_TEST_CASE(

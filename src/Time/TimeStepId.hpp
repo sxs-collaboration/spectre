@@ -11,8 +11,8 @@
 #include <functional>
 #include <iosfwd>
 
-#include "ErrorHandling/Assert.hpp"
 #include "Time/Time.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 namespace PUP {
 class er;

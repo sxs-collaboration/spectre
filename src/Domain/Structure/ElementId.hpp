@@ -14,8 +14,8 @@
 
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/MakeArray.hpp"
 
 /// \cond

@@ -6,8 +6,8 @@
 #include <type_traits>
 #include <utility>
 
-#include "ErrorHandling/Assert.hpp"
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 

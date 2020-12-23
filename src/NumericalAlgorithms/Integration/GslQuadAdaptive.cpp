@@ -9,7 +9,7 @@
 #include <memory>
 #include <pup.h>
 
-#include "ErrorHandling/Exceptions.hpp"
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/MakeString.hpp"
 
 namespace integration {

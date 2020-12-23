@@ -6,10 +6,10 @@
 #include <functional>
 #include <string>
 
-#include "ErrorHandling/Error.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.Slab", "[Unit][Time]") {

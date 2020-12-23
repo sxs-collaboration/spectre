@@ -10,10 +10,10 @@
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "ErrorHandling/Error.hpp"  // IWYU pragma: keep
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"
 

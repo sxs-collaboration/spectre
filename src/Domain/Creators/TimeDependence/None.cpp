@@ -10,7 +10,7 @@
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace domain {

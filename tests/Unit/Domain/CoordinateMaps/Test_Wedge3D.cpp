@@ -10,9 +10,9 @@
 
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 

@@ -14,7 +14,6 @@
 #include <limits>
 #include <type_traits>
 
-#include "ErrorHandling/Assert.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
@@ -22,6 +21,7 @@
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace TimeStepperTestUtils {

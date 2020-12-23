@@ -10,9 +10,9 @@
 #include <regex>
 #include <sstream>
 
-#include "ErrorHandling/Error.hpp"
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Wrappers.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 namespace {
 std::vector<std::string> split_strings(const std::string& s,

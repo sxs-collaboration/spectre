@@ -9,8 +9,8 @@
 #include <pup.h>  // IWYU pragma: keep
 #include <utility>
 
-#include "ErrorHandling/Assert.hpp"
 #include "Utilities/BoostHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 namespace dg {
 

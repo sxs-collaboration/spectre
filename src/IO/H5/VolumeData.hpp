@@ -12,9 +12,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include "ErrorHandling/Error.hpp"
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 /// \cond
 class DataVector;

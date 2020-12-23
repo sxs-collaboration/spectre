@@ -12,7 +12,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
 // Arithmetic operators for std::array<T, Dim>

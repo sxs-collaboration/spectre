@@ -7,7 +7,7 @@
 
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.IncreaseOrDecrease",

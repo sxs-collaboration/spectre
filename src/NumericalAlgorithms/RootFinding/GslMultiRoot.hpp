@@ -13,9 +13,9 @@
 #include <ostream>
 #include <string>
 
-#include "ErrorHandling/Error.hpp"
-#include "ErrorHandling/Exceptions.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"

@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <ostream>
 
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 // NOTE: The definitions of the functions `formaline::get_archive`,
 // `formaline::get_environment_variables`, `formaline::get_library_versions`,

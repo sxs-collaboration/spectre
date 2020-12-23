@@ -6,8 +6,8 @@
 #include <pup.h>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Registration.hpp"
 

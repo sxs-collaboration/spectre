@@ -8,8 +8,8 @@
 #include <pup.h>  // IWYU pragma: keep
 #include <pup_stl.h>
 
-#include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"
 

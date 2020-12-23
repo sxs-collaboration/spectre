@@ -20,8 +20,8 @@
 #include <thread>
 #include <unistd.h>
 
-#include "ErrorHandling/Error.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 // IWYU asks to add <fcntl.h> when it's not there and remove it when it's there.
 // IWYU pragma: no_include <fcntl.h>

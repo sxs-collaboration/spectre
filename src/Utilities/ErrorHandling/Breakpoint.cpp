@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "ErrorHandling/Breakpoint.hpp"
+#include "Utilities/ErrorHandling/Breakpoint.hpp"
 
 #include <csignal>
 
@@ -13,7 +13,7 @@ void breakpoint() noexcept {
   // don't want one thread reenabling the default handler just before another
   // calls raise().
 
-  struct sigaction handler{};
+  struct sigaction handler {};
   handler.sa_handler = SIG_IGN;  // NOLINT
   handler.sa_flags = 0;
   sigemptyset(&handler.sa_mask);

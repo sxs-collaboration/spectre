@@ -9,8 +9,8 @@
 #include <sstream>
 #include <string>
 
-#include "ErrorHandling/AbortWithErrorMessage.hpp"
-#include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/ErrorHandling/AbortWithErrorMessage.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/System/Abort.hpp"
 

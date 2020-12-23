@@ -7,11 +7,11 @@
 #include <tuple>
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
-#include "ErrorHandling/Error.hpp"        // IWYU pragma: keep
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/DataStructures/VectorImplTestHelper.hpp"
-#include "Utilities/DereferenceWrapper.hpp"  // IWYU pragma: keep
+#include "Utilities/DereferenceWrapper.hpp"   // IWYU pragma: keep
+#include "Utilities/ErrorHandling/Error.hpp"  // IWYU pragma: keep
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"        // IWYU pragma: keep

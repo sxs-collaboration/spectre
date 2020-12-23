@@ -9,8 +9,8 @@
 #include "Domain/Structure/ElementId.hpp"       // IWYU pragma: keep
 #include "Domain/Structure/OrientationMap.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Side.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 

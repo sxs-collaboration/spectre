@@ -10,10 +10,10 @@
 #include <utility>
 #include <vector>
 
-#include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace evolution::dg {

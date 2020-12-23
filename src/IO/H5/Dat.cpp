@@ -10,13 +10,13 @@
 #include <ostream>
 
 #include "DataStructures/Matrix.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/Type.hpp"
 #include "IO/H5/Version.hpp"
 #include "IO/H5/Wrappers.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 

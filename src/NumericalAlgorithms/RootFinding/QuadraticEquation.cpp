@@ -6,7 +6,7 @@
 #include <gsl/gsl_poly.h>
 #include <limits>
 
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 double positive_root(const double a, const double b, const double c) noexcept {
   const auto roots = real_roots(a, b, c);

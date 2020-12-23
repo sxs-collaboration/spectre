@@ -6,10 +6,10 @@
 #include <limits>
 #include <pup.h>
 
-#include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 

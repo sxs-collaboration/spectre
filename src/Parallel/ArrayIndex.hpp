@@ -6,7 +6,7 @@
 #include <charm++.h>
 #include <type_traits>
 
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 
 namespace Parallel {

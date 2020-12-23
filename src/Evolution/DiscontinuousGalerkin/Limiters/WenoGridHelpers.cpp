@@ -8,8 +8,8 @@
 #include "Domain/Structure/Direction.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Element.hpp"    // IWYU pragma: keep
 #include "Domain/Structure/Side.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"  // IWYU pragma: keep
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 

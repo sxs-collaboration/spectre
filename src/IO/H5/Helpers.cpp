@@ -12,17 +12,17 @@
 
 #include "DataStructures/BoostMultiArray.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
-#include "ErrorHandling/Error.hpp"
-#include "ErrorHandling/StaticAssert.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/OpenGroup.hpp"
 #include "IO/H5/Type.hpp"
 #include "IO/H5/Wrappers.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/StaticAssert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/StdHelpers.hpp" // IWYU pragma: keep
+#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/GetFundamentalType.hpp"

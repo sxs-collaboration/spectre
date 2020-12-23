@@ -9,7 +9,7 @@
 #include <pup.h>
 #include <tuple>
 
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 // IWYU pragma: no_include <boost/cstdint.hpp>
 

@@ -6,9 +6,9 @@
 #include <ostream>
 #include <string>
 
-#include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 std::ostream& Limiters::operator<<(
     std::ostream& os, const Limiters::MinmodType minmod_type) noexcept {

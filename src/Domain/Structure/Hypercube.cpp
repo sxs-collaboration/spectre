@@ -10,8 +10,8 @@
 #include <ostream>
 
 #include "Domain/Structure/Side.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 template <size_t ElementDim, size_t HypercubeDim>

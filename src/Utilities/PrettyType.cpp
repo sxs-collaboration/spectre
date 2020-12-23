@@ -7,8 +7,8 @@
 #include <string>
 #include <string_view>
 
-#include "ErrorHandling/Assert.hpp"
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace pretty_type::detail {

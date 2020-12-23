@@ -9,12 +9,12 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

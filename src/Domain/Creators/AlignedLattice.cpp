@@ -5,8 +5,8 @@
 
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 

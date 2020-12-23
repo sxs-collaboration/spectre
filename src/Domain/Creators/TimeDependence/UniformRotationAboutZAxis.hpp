@@ -17,9 +17,9 @@
 #include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
 #include "Domain/Creators/TimeDependence/GenerateCoordinateMap.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

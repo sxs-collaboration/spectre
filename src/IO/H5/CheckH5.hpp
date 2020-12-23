@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 /*!
  * \ingroup HDF5Group

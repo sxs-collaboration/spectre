@@ -6,7 +6,7 @@
 #include <algorithm>
 
 #include "DataStructures/Index.hpp"  // IWYU pragma: keep
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 namespace vis::detail {
 std::ostream& operator<<(std::ostream& os, const Topology& topology) noexcept {

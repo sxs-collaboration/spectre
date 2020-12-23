@@ -5,7 +5,7 @@
 
 #include <ostream>
 
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 namespace observers {
 std::ostream& operator<<(std::ostream& os,
