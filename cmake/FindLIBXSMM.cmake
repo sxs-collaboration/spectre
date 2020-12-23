@@ -69,6 +69,13 @@ get_libxsmm_version(
   "#define LIBXSMM_CONFIG_VERSION_UPDATE "
   )
 
+get_libxsmm_version(
+  ${LIBXSMM_INCLUDE_DIRS}/libxsmm_version.h
+  "#define LIBXSMM_CONFIG_VERSION_MAJOR "
+  "#define LIBXSMM_CONFIG_VERSION_MINOR "
+  "#define LIBXSMM_CONFIG_VERSION_UPDATE "
+  )
+
 if("${LIBXSMM_VERSION}" STREQUAL "")
   message(WARNING "Failed to detect LIBXSMM version.")
 endif()
