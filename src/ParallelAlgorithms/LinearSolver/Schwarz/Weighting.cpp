@@ -141,7 +141,7 @@ void intruding_weight(
           return false;
         };
     Scalar<DataVector> corner_weight{num_points};
-    for (const auto& corner : VertexIterator<Dim - 1>{}) {
+    for (const auto corner : VertexIterator<Dim - 1>{}) {
       if (skip_corner(corner)) {
         continue;
       }
@@ -157,7 +157,7 @@ void intruding_weight(
     }
     if constexpr (Dim == 3) {
       Scalar<DataVector> edge_weight{num_points};
-      for (const auto& edge : EdgeIterator<Dim - 1>{}) {
+      for (const auto edge : EdgeIterator<Dim - 1>{}) {
         const size_t d_perp =
             dim_in_volume(dim_in_volume(0, edge.dimension_in_parent()),
                           direction.dimension());

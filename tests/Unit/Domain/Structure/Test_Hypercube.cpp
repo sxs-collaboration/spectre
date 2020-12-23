@@ -28,7 +28,7 @@ void test_hypercube_iterator(
   CHECK(elements_iterator !=
         HypercubeElementsIterator<ElementDim, HypercubeDim>::end());
   size_t i = 0;
-  for (const auto& element : elements_iterator) {
+  for (const auto element : elements_iterator) {
     CAPTURE(i);
     CAPTURE(element);
     CHECK(element == gsl::at(expected_elements, i));
