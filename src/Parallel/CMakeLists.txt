@@ -18,7 +18,6 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Abort.hpp
   Algorithm.hpp
   AlgorithmMetafunctions.hpp
   ArrayIndex.hpp

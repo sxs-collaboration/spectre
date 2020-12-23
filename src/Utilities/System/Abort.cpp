@@ -1,26 +1,14 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Defines function Parallel::abort.
-
-#pragma once
+#include "Utilities/System/Abort.hpp"
 
 #include <charm++.h>
-#include <csignal>
-#include <cstdlib>
 #include <exception>
 #include <string>
 
-namespace Parallel {
-
-/// \ingroup ParallelGroup
-/// Abort the program with an error message.
-///
-/// \details This function calls CkExit with a non-zero argument to indicate a
-/// failure, unless the SPECTRE_TRAP_ON_ERROR environmental variable is set, in
-/// which case it raises SIGTRAP.
-[[noreturn]] inline void abort(const std::string& message) {
+namespace sys {
+void abort(const std::string& message) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-security"
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
@@ -31,5 +19,4 @@ namespace Parallel {
   // a 'noreturn' function does return
   std::terminate();  // LCOV_EXCL_LINE
 }
-
-}  // namespace Parallel
+}  // namespace sys

@@ -16,13 +16,12 @@
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Informer/InfoFromBuild.hpp"
-#include "Parallel/Abort.hpp"
 #include "Parallel/Exit.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/System/Abort.hpp"
 
 RunTests::RunTests(CkArgMsg* msg) {
-  std::set_terminate(
-      []() { Parallel::abort("Called terminate. Aborting..."); });
+  std::set_terminate([]() { sys::abort("Called terminate. Aborting..."); });
   Parallel::printf("%s", info_from_build().c_str());
   enable_floating_point_exceptions();
   const int result = Catch::Session().run(msg->argc, msg->argv);
@@ -34,7 +33,7 @@ RunTests::RunTests(CkArgMsg* msg) {
   if (0 == result) {
     Parallel::exit();
   }
-  Parallel::abort("A catch test has failed.");
+  sys::abort("A catch test has failed.");
 }
 
 #include "tests/Unit/RunTests.def.h"  /// IWYU pragma: keep

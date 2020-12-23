@@ -11,8 +11,6 @@
 
 #include "ErrorHandling/AbortWithErrorMessage.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "Parallel/Abort.hpp"
-#include "Utilities/Literals.hpp"
 
 /*!
  * \ingroup ErrorHandlingGroup

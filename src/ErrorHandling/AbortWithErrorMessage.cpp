@@ -6,8 +6,8 @@
 #include <sstream>
 
 #include "ErrorHandling/Breakpoint.hpp"
-#include "Parallel/Abort.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/System/Abort.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 
 void abort_with_error_message(const char* expression, const char* file,
@@ -28,7 +28,7 @@ void abort_with_error_message(const char* expression, const char* file,
   // will segfault before anything is printed.
   Parallel::printf_error(os.str());
   breakpoint();
-  Parallel::abort("");
+  sys::abort("");
 }
 
 void abort_with_error_message(const char* file, const int line,
@@ -48,5 +48,5 @@ void abort_with_error_message(const char* file, const int line,
   // will segfault before anything is printed.
   Parallel::printf_error(os.str());
   breakpoint();
-  Parallel::abort("");
+  sys::abort("");
 }
