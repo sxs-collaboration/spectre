@@ -16,5 +16,6 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Abort.hpp
+  Exit.hpp
   ParallelInfo.hpp
   )

@@ -25,7 +25,6 @@ spectre_target_headers(
   CharmPupable.hpp
   CharmRegistration.hpp
   CreateFromOptions.hpp
-  Exit.hpp
   GlobalCache.hpp
   InboxInserters.hpp
   InitializationFunctions.hpp

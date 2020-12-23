@@ -16,9 +16,9 @@
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Informer/InfoFromBuild.hpp"
-#include "Parallel/Exit.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/System/Abort.hpp"
+#include "Utilities/System/Exit.hpp"
 
 RunTests::RunTests(CkArgMsg* msg) {
   std::set_terminate([]() { sys::abort("Called terminate. Aborting..."); });
@@ -31,7 +31,7 @@ RunTests::RunTests(CkArgMsg* msg) {
   // is done in the constructor of RunTests.
   pypp::SetupLocalPythonEnvironment::finalize_env();
   if (0 == result) {
-    Parallel::exit();
+    sys::exit();
   }
   sys::abort("A catch test has failed.");
 }

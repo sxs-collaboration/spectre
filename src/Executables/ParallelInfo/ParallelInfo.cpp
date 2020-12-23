@@ -10,9 +10,9 @@
 
 #include "ErrorHandling/Error.hpp"
 #include "Informer/InfoFromBuild.hpp"
-#include "Parallel/Exit.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/Math.hpp"
+#include "Utilities/System/Exit.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 
 /// \cond HIDDEN_SYMBOLS
@@ -61,7 +61,7 @@ void ParallelInfo::start_node_group_check() const {
 
 [[noreturn]] void ParallelInfo::end_report() {
   Parallel::printf("\nReport finished.\n");
-  Parallel::exit();
+  sys::exit();
 }
 
 // Helper print function so that both node and pe group prints can be changed

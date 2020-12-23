@@ -17,10 +17,10 @@
 #include <unordered_set>
 
 #include "ErrorHandling/Error.hpp"
-#include "Parallel/Exit.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StlStreamDeclarations.hpp"
 #include "Utilities/System/Abort.hpp"
+#include "Utilities/System/Exit.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsIterable.hpp"
 #include "Utilities/TypeTraits/IsMaplike.hpp"
@@ -288,7 +288,7 @@ struct check_matrix_approx {
 
 /// \cond HIDDEN_SYMBOLS
 [[noreturn]] inline void spectre_testing_signal_handler(int /*signal*/) {
-  Parallel::exit();
+  sys::exit();
 }
 /// \endcond
 

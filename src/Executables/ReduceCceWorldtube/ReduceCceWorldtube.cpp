@@ -18,7 +18,6 @@
 #include "Evolution/Systems/Cce/WorldtubeBufferUpdater.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
-#include "Parallel/Exit.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

@@ -211,7 +211,7 @@ whose items can be used by any parallel component.
 > enough to call it from just one processor at the end of the
 > computation.
 
-SpECTRE wraps `CkExit` with the function `Parallel::exit`.  As no more
+SpECTRE wraps `CkExit` with the function `sys::exit`.  As no more
 messages are processed by Charm++ after this call, SpECTRE also
 defines a special `Exit` phase that is guaranteed to be executed after
 all messages and entry methods have been processed.
