@@ -154,7 +154,7 @@ RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.7.tar.gz -O bla
     && mv auto/lib/* /usr/local/lib \
     && cd ../ \
     && rm -r libsharp* \
-    && wget https://github.com/hfp/libxsmm/archive/1.9.tar.gz -O libxsmm.tar.gz \
+    && wget https://github.com/hfp/libxsmm/archive/1.16.1.tar.gz -O libxsmm.tar.gz \
     && tar -xzf libxsmm.tar.gz \
     && mv libxsmm-* libxsmm \
     && cd libxsmm \
