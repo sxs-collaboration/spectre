@@ -346,7 +346,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary",
 
   // Local stepping with constant step sizes
   const Slab slab(0., 1.);
-  for (const auto full : {slab.duration(), -slab.duration()}) {
+  for (const auto& full : {slab.duration(), -slab.duration()}) {
     do_lts_test({{full / 4, full / 4}});
     do_lts_test({{full / 4, full / 8}});
     do_lts_test({{full / 8, full / 4}});
