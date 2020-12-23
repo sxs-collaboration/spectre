@@ -72,7 +72,7 @@ void create_fake_time_varying_gh_nodal_data(
   tnsr::I<DataVector, 3> collocation_points{number_of_angular_points};
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     get<0>(collocation_points)[collocation_point.offset] =
         extraction_radius * (1.0 + amplitude * sin(frequency * time)) *
         sin(collocation_point.theta) * cos(collocation_point.phi);
@@ -144,7 +144,7 @@ void create_fake_time_varying_modal_data(
   tnsr::I<DataVector, 3> collocation_points{number_of_angular_points};
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     get<0>(collocation_points)[collocation_point.offset] =
         extraction_radius * (1.0 + amplitude * sin(frequency * time)) *
         sin(collocation_point.theta) * cos(collocation_point.phi);

@@ -54,7 +54,7 @@ struct SphericalSolutionWrapper : public SphericalSolution {
     Scalar<DataVector> cos_theta{size};
     const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
         Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-    for (const auto& collocation_point : collocation) {
+    for (const auto collocation_point : collocation) {
       get(sin_theta)[collocation_point.offset] = sin(collocation_point.theta);
       get(cos_theta)[collocation_point.offset] = cos(collocation_point.theta);
     }

@@ -24,7 +24,7 @@ template <typename DerivativeKind, int Spin>
 ComplexDiagonalModalOperator derivative_factors(const size_t l_max) noexcept {
   ComplexDiagonalModalOperator derivative_factors{
       size_of_libsharp_coefficient_vector(l_max)};
-  for (const auto& mode : cached_coefficients_metadata(l_max)) {
+  for (const auto mode : cached_coefficients_metadata(l_max)) {
     // note that the libsharp transform data is stored as a pair of complex
     // vectors: one for the transform of the real part and one for the transform
     // of the imaginary part of the collocation data.

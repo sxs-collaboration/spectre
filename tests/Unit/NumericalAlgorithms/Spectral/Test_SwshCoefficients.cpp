@@ -104,7 +104,7 @@ void test_swsh_coefficients_class_interface() noexcept {
   size_t offset_counter = 0;
   size_t expected_l = 0;
   size_t expected_m = 0;
-  for (const auto& coefficient_info : precomputed_libsharp_lm) {
+  for (const auto coefficient_info : precomputed_libsharp_lm) {
     CHECK(coefficient_info.transform_of_real_part_offset == offset_counter);
     CHECK(coefficient_info.transform_of_imag_part_offset -
               coefficient_info.transform_of_real_part_offset ==
@@ -157,7 +157,7 @@ void check_goldberg_mode_conversion() {
   for (size_t i = 0; i < number_of_radial_points; ++i) {
     for (int l = 0; l <= static_cast<int>(l_max); ++l) {
       for (int m = -l; m <= l; ++m) {
-        for (const auto& collocation_point :
+        for (const auto collocation_point :
              cached_collocation_metadata<Representation>(l_max)) {
           goldberg_collocation_points
               .data()[collocation_point.offset +
@@ -185,7 +185,7 @@ void check_goldberg_mode_conversion() {
                                swsh_approx);
 
   for (size_t i = 0; i < number_of_radial_points; ++i) {
-    for (const auto& coefficient_info : precomputed_libsharp_lm) {
+    for (const auto coefficient_info : precomputed_libsharp_lm) {
       auto goldberg_mode_plus_m =
           libsharp_mode_to_goldberg_plus_m(coefficient_info, test_modes, i);
       // should be the same value computed using the other interface

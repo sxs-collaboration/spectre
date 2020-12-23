@@ -35,7 +35,7 @@ void WorldtubeData::variables_impl(
     tmpl::type_<Tags::CauchyCartesianCoords> /*meta*/) const noexcept {
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(output_l_max);
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     get<0>(*cartesian_coordinates)[collocation_point.offset] =
         extraction_radius_ * cos(collocation_point.phi) *
         sin(collocation_point.theta);
@@ -54,7 +54,7 @@ void WorldtubeData::variables_impl(
     const noexcept {
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(output_l_max);
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     get<0>(*dr_cartesian_coordinates)[collocation_point.offset] =
         cos(collocation_point.phi) * sin(collocation_point.theta);
     get<1>(*dr_cartesian_coordinates)[collocation_point.offset] =

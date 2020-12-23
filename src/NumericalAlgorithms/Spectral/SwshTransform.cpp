@@ -143,7 +143,7 @@ void interpolate_to_collocation(
   for (size_t i = 0; i < number_of_radial_points; ++i) {
     auto source_coefficient_metadata_iterator =
         cached_coefficients_metadata(source_l_max).begin();
-    for (const auto& coefficient : target_coefficient_metadata) {
+    for (const auto coefficient : target_coefficient_metadata) {
       // first, we advance `source_coefficient_metadata_iterator` to the same
       // mode that is represented by `coefficient`, or to the next mode
       // following `coefficient` that is present in the source resolution, or to

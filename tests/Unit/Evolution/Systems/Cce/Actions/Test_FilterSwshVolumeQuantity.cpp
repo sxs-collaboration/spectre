@@ -89,7 +89,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.FilterSwshVolumeQuantity",
   generated_modes.data() = make_with_random_values<ComplexModalVector>(
       make_not_null(&gen), make_not_null(&coefficient_distribution),
       Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max));
-  for (const auto& mode : Spectral::Swsh::cached_coefficients_metadata(l_max)) {
+  for (const auto mode : Spectral::Swsh::cached_coefficients_metadata(l_max)) {
     if (mode.l < 2) {
       generated_modes.data()[mode.transform_of_real_part_offset] = 0.0;
       generated_modes.data()[mode.transform_of_imag_part_offset] = 0.0;

@@ -59,7 +59,7 @@ void LinearizedBondiSachs::assign_components_from_l_factors(
   const auto& collocation_metadata =
       Spectral::Swsh::cached_collocation_metadata<
           Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation_metadata) {
+  for (const auto collocation_point : collocation_metadata) {
     // assign to collocation points
     const std::complex<double> z_22_factor =
         (y_22.evaluate(collocation_point.theta, collocation_point.phi) +
@@ -93,7 +93,7 @@ void LinearizedBondiSachs::assign_du_components_from_l_factors(
   const auto& collocation_metadata =
       Spectral::Swsh::cached_collocation_metadata<
           Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation_metadata) {
+  for (const auto collocation_point : collocation_metadata) {
     // assign to collocation points
     const std::complex<double> z_22_factor =
         (y_22.evaluate(collocation_point.theta, collocation_point.phi) +

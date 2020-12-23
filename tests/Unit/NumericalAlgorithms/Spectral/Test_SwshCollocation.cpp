@@ -82,7 +82,7 @@ void test_spherical_harmonic_collocation() noexcept {
         precomputed_collocation_value.cend());
   CHECK(precomputed_collocation_value.begin() !=
         precomputed_collocation_value.end());
-  for (const auto& collocation_point : precomputed_collocation_value) {
+  for (const auto collocation_point : precomputed_collocation_value) {
     CHECK(collocation_point.offset == offset_counter);
     CHECK(collocation_point.theta ==
           computed_collocation.theta(offset_counter));

@@ -213,7 +213,7 @@ void test_d_bondi_r_identities(const gsl::not_null<Generator*> gen) noexcept {
   // angular derivatives should be.
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     get(bondi_r).data()[collocation_point.offset] =
         5.0 + sin(collocation_point.theta) * cos(collocation_point.phi);
   }
@@ -257,7 +257,7 @@ void test_d_bondi_r_identities(const gsl::not_null<Generator*> gen) noexcept {
                  du_null_metric, inverse_null_metric, l_max);
   DataVector expected_dtheta_r{number_of_angular_points};
   DataVector expected_dphi_r{number_of_angular_points};
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     expected_dtheta_r[collocation_point.offset] =
         cos(collocation_point.theta) * cos(collocation_point.phi);
     // note 'pfaffian' derivative with the 1/sin(theta)
@@ -336,7 +336,7 @@ void dispatch_to_gh_worldtube_computation_from_analytic(
   tnsr::I<DataVector, 3> collocation_points{number_of_angular_points};
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     get<0>(collocation_points)[collocation_point.offset] =
         extraction_radius * sin(collocation_point.theta) *
         cos(collocation_point.phi);
@@ -394,7 +394,7 @@ void dispatch_to_modal_worldtube_computation_from_analytic(
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   // create the vector of collocation points that we want to interpolate to
   tnsr::I<DataVector, 3> collocation_coordinates{number_of_angular_points};
-  for (const auto& collocation_point :
+  for (const auto collocation_point :
        Spectral::Swsh::cached_collocation_metadata<
            Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max)) {
     get<0>(collocation_coordinates)[collocation_point.offset] =

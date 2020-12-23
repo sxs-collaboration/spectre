@@ -156,7 +156,7 @@ void libsharp_to_goldberg_modes(
 
   const auto& coefficients_metadata = cached_coefficients_metadata(l_max);
   for (size_t i = 0; i < number_of_radial_grid_points; ++i) {
-    for (const auto& coefficient_info : coefficients_metadata) {
+    for (const auto coefficient_info : coefficients_metadata) {
       goldberg_modes->data()[goldberg_mode_index(
           coefficient_info.l_max, coefficient_info.l,
           static_cast<int>(coefficient_info.m), i)] =
@@ -190,7 +190,7 @@ void goldberg_to_libsharp_modes(
   const size_t number_of_radial_grid_points =
       goldberg_modes.data().size() / square(l_max + 1);
   for(size_t i = 0; i < number_of_radial_grid_points; ++i) {
-    for (const auto& mode : cached_coefficients_metadata(l_max)) {
+    for (const auto mode : cached_coefficients_metadata(l_max)) {
       goldberg_modes_to_libsharp_modes_single_pair(
           mode, libsharp_modes, i,
           goldberg_modes.data()[goldberg_mode_index(

@@ -169,7 +169,7 @@ DataVector TeukolskyWave::sin_theta(const size_t l_max) noexcept {
       Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     sin_theta_result[collocation_point.offset] = sin(collocation_point.theta);
   }
   return sin_theta_result;
@@ -180,7 +180,7 @@ DataVector TeukolskyWave::cos_theta(const size_t l_max) noexcept {
       Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     cos_theta_result[collocation_point.offset] = cos(collocation_point.theta);
   }
   return cos_theta_result;

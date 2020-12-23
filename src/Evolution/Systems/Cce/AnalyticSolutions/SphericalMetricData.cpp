@@ -273,7 +273,7 @@ void SphericalMetricData::inverse_jacobian(
     const size_t l_max) const noexcept {
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     // dr/dx   dtheta/dx   dphi/dx * sin(theta)
     get<0, 0>(*inverse_jacobian)[collocation_point.offset] =
         cos(collocation_point.phi) * sin(collocation_point.theta);
@@ -304,7 +304,7 @@ void SphericalMetricData::jacobian(
     const size_t l_max) const noexcept {
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     // dx/dr   dy/dr  dz/dr
     get<0, 0>(*jacobian)[collocation_point.offset] =
         sin(collocation_point.theta) * cos(collocation_point.phi);
@@ -335,7 +335,7 @@ void SphericalMetricData::dr_inverse_jacobian(
     const size_t l_max) const noexcept {
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     // radial derivatives of:
     // dr/dx   dtheta/dx   dphi/dx * sin(theta)
     get<0, 0>(*dr_inverse_jacobian)[collocation_point.offset] = 0.0;
@@ -366,7 +366,7 @@ void SphericalMetricData::dr_jacobian(
     const size_t l_max) noexcept {
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     // dx/dr   dy/dr  dz/dr
     get<0, 0>(*dr_jacobian)[collocation_point.offset] = 0.0;
     get<0, 1>(*dr_jacobian)[collocation_point.offset] = 0.0;

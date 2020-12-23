@@ -94,7 +94,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.BouncingBlackHole",
   const auto& collocation_metadata =
       Spectral::Swsh::cached_collocation_metadata<
           Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation_metadata) {
+  for (const auto collocation_point : collocation_metadata) {
     get<1>(unmapped_coordinates)[collocation_point.offset] =
         extraction_radius * cos(collocation_point.phi) *
         sin(collocation_point.theta);
