@@ -118,7 +118,7 @@ struct CheckApply<LocalScalarTag, LocalTensorTag, Dim, Dim> {
         dest_mesh, powers, fill_value);
     // Using this over CHECK_ITERABLE_APPROX speeds the test up by a
     // factor of 6 or so.
-    for (const auto& p : result - expected) {
+    for (const auto p : result - expected) {
       CHECK_COMPLEX_APPROX(p, 0.0);
     }
     const auto ref_matrices =
@@ -127,7 +127,7 @@ struct CheckApply<LocalScalarTag, LocalTensorTag, Dim, Dim> {
           result);
     const auto vector_result = apply_matrices(
         matrices, get(get<LocalScalarTag>(source_data)), source_mesh.extents());
-    for (const auto& p : vector_result - get(get<LocalScalarTag>(expected))) {
+    for (const auto p : vector_result - get(get<LocalScalarTag>(expected))) {
       CHECK_COMPLEX_APPROX(p, 0.0);
     }
     CHECK(apply_matrices(ref_matrices, get(get<LocalScalarTag>(source_data)),
