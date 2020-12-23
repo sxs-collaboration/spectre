@@ -12,7 +12,6 @@
 #include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/NewtonRaphson/LineSearch.hpp"

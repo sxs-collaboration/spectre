@@ -26,7 +26,6 @@
 #include "Parallel/Algorithms/AlgorithmSingletonDeclarations.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -41,6 +40,7 @@
 #include "Utilities/Overloader.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -571,7 +571,7 @@ constexpr void AlgorithmImpl<
     return;
   }
 #ifdef SPECTRE_CHARM_PROJECTIONS
-  non_action_time_start_ = Parallel::wall_time();
+  non_action_time_start_ = sys::wall_time();
 #endif
   if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
     node_lock_.lock();
@@ -597,7 +597,7 @@ constexpr void AlgorithmImpl<
   }
 #ifdef SPECTRE_CHARM_PROJECTIONS
   traceUserBracketEvent(SPECTRE_CHARM_NON_ACTION_WALLTIME_EVENT_ID,
-                        non_action_time_start_, Parallel::wall_time());
+                        non_action_time_start_, sys::wall_time());
 #endif
 }
 /// \endcond

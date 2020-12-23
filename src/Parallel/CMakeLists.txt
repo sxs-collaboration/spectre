@@ -29,7 +29,6 @@ spectre_target_headers(
   Exit.hpp
   GlobalCache.hpp
   InboxInserters.hpp
-  Info.hpp
   InitializationFunctions.hpp
   Invoke.hpp
   Main.hpp
@@ -55,6 +54,7 @@ target_link_libraries(
   Options
   PUBLIC
   ErrorHandling
+  SystemUtilities
   Utilities
   )
 

@@ -24,6 +24,7 @@
 #include "Parallel/Invoke.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 
 namespace Cce {
 namespace Tags {
@@ -105,7 +106,7 @@ void AnalyticBoundaryDataManager::write_news(
   }
   auto observer_proxy = Parallel::get_parallel_component<
       observers::ObserverWriter<Metavariables>>(
-      cache)[static_cast<size_t>(Parallel::my_node())];
+      cache)[static_cast<size_t>(sys::my_node())];
   Parallel::threaded_action<observers::ThreadedActions::WriteSimpleData>(
       observer_proxy, file_legend, data_to_write, "/expected_news"s);
 }

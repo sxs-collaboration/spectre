@@ -41,6 +41,7 @@
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 
 struct ScalarFieldTag : db::SimpleTag {
@@ -330,8 +331,7 @@ struct ElementArray {
         *(global_cache.ckLocalBranch()));
 
     for (size_t i = 0, which_proc = 0,
-                number_of_procs =
-                    static_cast<size_t>(Parallel::number_of_procs());
+                number_of_procs = static_cast<size_t>(sys::number_of_procs());
          i < number_of_elements<TheGrid>; i++) {
       ElementId<Dim> element_index{i};
       array_proxy[element_index].insert(global_cache, initialization_items,

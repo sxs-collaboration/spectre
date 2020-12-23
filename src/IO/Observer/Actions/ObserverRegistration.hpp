@@ -16,9 +16,9 @@
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -93,7 +93,7 @@ struct RegisterReductionNodeWithWritingNode {
                     const size_t caller_node_id) noexcept {
     if constexpr (tmpl::list_contains_v<
                       DbTagsList, Tags::NodesExpectedToContributeReductions>) {
-      const auto node_id = static_cast<size_t>(Parallel::my_node());
+      const auto node_id = static_cast<size_t>(sys::my_node());
       ASSERT(node_id == 0, "Only node zero, not node "
                                << node_id
                                << ", should be called from another node");
@@ -151,7 +151,7 @@ struct RegisterReductionContributorWithObserverWriter {
                     const ArrayComponentId& id_of_caller) noexcept {
     if constexpr (tmpl::list_contains_v<
                       DbTagsList, Tags::ExpectedContributorsForObservations>) {
-      const auto node_id = static_cast<size_t>(Parallel::my_node());
+      const auto node_id = static_cast<size_t>(sys::my_node());
       db::mutate<Tags::ExpectedContributorsForObservations>(
           make_not_null(&box),
           [&cache, &id_of_caller, &node_id, &observation_key](

@@ -25,6 +25,7 @@ function(add_algorithm_test EXECUTABLE_NAME)
     Informer
     Options
     Parallel
+    SystemUtilities
     Utilities
     )
 
@@ -188,7 +189,7 @@ add_test_library(
   ${LIBRARY}
   "Parallel"
   "${LIBRARY_SOURCES}"
-  "Options"
+  "Options;SystemUtilities"
   )
 
 add_dependencies(

@@ -11,10 +11,10 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace observers {
@@ -55,7 +55,7 @@ struct WriteSimpleData {
     {
       const auto& file_prefix = Parallel::get<Tags::VolumeFileName>(cache);
       h5::H5File<h5::AccessType::ReadWrite> h5file(
-          file_prefix + std::to_string(Parallel::my_node()) + ".h5", true);
+          file_prefix + std::to_string(sys::my_node()) + ".h5", true);
       const size_t version_number = 0;
       auto& output_dataset =
           h5file.try_insert<h5::Dat>(subfile_name, file_legend, version_number);

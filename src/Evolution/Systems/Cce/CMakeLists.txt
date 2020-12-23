@@ -66,6 +66,8 @@ target_link_libraries(
   Options
   Spectral
   Utilities
+  INTERFACE
+  SystemUtilities
   )
 
 add_dependencies(

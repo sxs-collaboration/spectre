@@ -7,8 +7,8 @@
 
 #include "ErrorHandling/Breakpoint.hpp"
 #include "Parallel/Abort.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 
 void abort_with_error_message(const char* expression, const char* file,
                               const int line, const char* pretty_function,
@@ -16,8 +16,7 @@ void abort_with_error_message(const char* expression, const char* file,
   std::ostringstream os;
   os << "\n"
      << "############ ASSERT FAILED ############\n"
-     << "Node: " << Parallel::my_node() << " Proc: " << Parallel::my_proc()
-     << "\n"
+     << "Node: " << sys::my_node() << " Proc: " << sys::my_proc() << "\n"
      << "Line: " << line << " of " << file << "\n"
      << "'" << expression << "' violated!\n"
      << "Function: " << pretty_function << "\n"
@@ -38,8 +37,7 @@ void abort_with_error_message(const char* file, const int line,
   std::ostringstream os;
   os << "\n"
      << "############ ERROR ############\n"
-     << "Node: " << Parallel::my_node() << " Proc: " << Parallel::my_proc()
-     << "\n"
+     << "Node: " << sys::my_node() << " Proc: " << sys::my_proc() << "\n"
      << "Line: " << line << " of " << file << "\n"
      << "Function: " << pretty_function << "\n"
      << message << "\n"

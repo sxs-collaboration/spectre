@@ -11,16 +11,16 @@
 #include "ErrorHandling/Error.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Parallel/Exit.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/Math.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 
 /// \cond HIDDEN_SYMBOLS
 ParallelInfo::ParallelInfo(CkArgMsg* msg) {
   // clang-tidy: do not use pointer arithmetic
   Parallel::printf("Executing '%s' using %d processors.\n",
                    msg->argv[0],  // NOLINT
-                   Parallel::number_of_procs());
+                   sys::number_of_procs());
   if (msg->argc > 1) {
     std::stringstream error_msg;
     error_msg << "Expected zero command line options, not " << msg->argc - 1
@@ -68,9 +68,9 @@ void ParallelInfo::start_node_group_check() const {
 // easily.
 void print_info() {
   // NOLINTNEXTLINE(cppcoreguidelines-init-variables) false positive
-  const int digits_in_node = number_of_digits(Parallel::number_of_nodes() - 1);
+  const int digits_in_node = number_of_digits(sys::number_of_nodes() - 1);
   // NOLINTNEXTLINE(cppcoreguidelines-init-variables) false positive
-  const int digits_in_pe = number_of_digits(Parallel::number_of_procs() - 1);
+  const int digits_in_pe = number_of_digits(sys::number_of_procs() - 1);
   // The format string is generated based on the number of procs and nodes
   // available so that the output is aligned over all nodes and procs
   Parallel::printf(
@@ -81,12 +81,10 @@ void print_info() {
           "d %03d %d %0" +  // procs_on_node, local rank, first proc
           std::to_string(digits_in_node) + "d %03d\n"s  // this node, local rank
       ,
-      Parallel::my_node(), Parallel::my_proc(), Parallel::number_of_procs(),
-      Parallel::number_of_nodes(), Parallel::procs_on_node(Parallel::my_node()),
-      Parallel::my_local_rank(),
-      Parallel::first_proc_on_node(Parallel::my_node()),
-      Parallel::node_of(Parallel::my_proc()),
-      Parallel::local_rank_of(Parallel::my_proc()));
+      sys::my_node(), sys::my_proc(), sys::number_of_procs(),
+      sys::number_of_nodes(), sys::procs_on_node(sys::my_node()),
+      sys::my_local_rank(), sys::first_proc_on_node(sys::my_node()),
+      sys::node_of(sys::my_proc()), sys::local_rank_of(sys::my_proc()));
 }
 
 PeGroupReporter::PeGroupReporter(const CkCallback& cb_start_node_group_check) {

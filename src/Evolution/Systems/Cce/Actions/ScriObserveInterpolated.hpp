@@ -23,6 +23,7 @@
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
@@ -229,7 +230,7 @@ struct ScriObserveInterpolated {
     }
     auto observer_proxy =
         Parallel::get_parallel_component<ObserverWriterComponent>(
-            cache)[static_cast<size_t>(Parallel::my_node())];
+            cache)[static_cast<size_t>(sys::my_node())];
     Parallel::threaded_action<observers::ThreadedActions::WriteSimpleData>(
         observer_proxy, legend, *data_to_write_buffer,
         "/" + detail::ScriOutput<Tag>::name());

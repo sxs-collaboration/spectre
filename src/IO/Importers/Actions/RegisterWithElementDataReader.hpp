@@ -11,7 +11,6 @@
 #include "IO/Importers/Tags.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"

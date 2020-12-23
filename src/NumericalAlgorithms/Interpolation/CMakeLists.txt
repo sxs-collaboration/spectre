@@ -77,6 +77,8 @@ target_link_libraries(
   GSL::gsl
   Options
   Spectral
+  INTERFACE
+  SystemUtilities
   )
 
 add_subdirectory(Actions)

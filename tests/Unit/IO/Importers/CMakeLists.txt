@@ -30,7 +30,7 @@ function(add_algorithm_test TEST_NAME DIM)
     ${HPP_NAME}
     IO/Importers
     Metavariables<${DIM}>
-    "DataStructures;Domain;ErrorHandling;Informer;IO;Options;Parallel"
+    "DataStructures;Domain;ErrorHandling;Informer;IO;Options;Parallel;SystemUtilities"
     )
 
   add_dependencies(test-executables ${EXECUTABLE_NAME})

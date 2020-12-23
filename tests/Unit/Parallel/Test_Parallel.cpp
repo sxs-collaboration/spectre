@@ -7,8 +7,8 @@
 #include <ostream>
 #include <vector>
 
-#include "Parallel/Info.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 
 namespace {
 struct TestStream {
@@ -60,17 +60,17 @@ SPECTRE_TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
 /// [output_test_example]
 
 SPECTRE_TEST_CASE("Unit.Parallel.NodeAndPes", "[Unit][Parallel]") {
-  CHECK(1 == Parallel::number_of_procs());
-  CHECK(0 == Parallel::my_proc());
-  CHECK(1 == Parallel::number_of_nodes());
-  CHECK(0 == Parallel::my_node());
-  CHECK(1 == Parallel::procs_on_node(Parallel::my_node()));
-  CHECK(0 == Parallel::my_local_rank());
-  CHECK(0 == Parallel::first_proc_on_node(Parallel::my_node()));
-  CHECK(0 == Parallel::local_rank_of(Parallel::my_proc()));
-  CHECK(0 == Parallel::node_of(Parallel::my_proc()));
+  CHECK(1 == sys::number_of_procs());
+  CHECK(0 == sys::my_proc());
+  CHECK(1 == sys::number_of_nodes());
+  CHECK(0 == sys::my_node());
+  CHECK(1 == sys::procs_on_node(sys::my_node()));
+  CHECK(0 == sys::my_local_rank());
+  CHECK(0 == sys::first_proc_on_node(sys::my_node()));
+  CHECK(0 == sys::local_rank_of(sys::my_proc()));
+  CHECK(0 == sys::node_of(sys::my_proc()));
   // We check that the wall time is greater than or equal to zero and less
   // than 2 seconds, just to check the function actually returns something.
-  const double walltime = Parallel::wall_time();
+  const double walltime = sys::wall_time();
   CHECK((0 <= walltime and 2 >= walltime));
 }

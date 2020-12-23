@@ -21,7 +21,6 @@
 #include "IO/Observer/Tags.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/Printf.hpp"
@@ -30,6 +29,7 @@
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdHelpers.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -345,8 +345,7 @@ struct CollectReductionDataOnNode {
         Parallel::threaded_action<WriteReductionData>(
             Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
                 cache)[0],
-            observation_id, static_cast<size_t>(Parallel::my_node()),
-            subfile_name,
+            observation_id, static_cast<size_t>(sys::my_node()), subfile_name,
             // NOLINTNEXTLINE(bugprone-use-after-move)
             std::move(reduction_names), std::move(received_reduction_data));
       }

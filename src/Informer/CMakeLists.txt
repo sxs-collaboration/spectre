@@ -48,6 +48,7 @@ target_link_libraries(
   Options
   PRIVATE
   ErrorHandling
+  SystemUtilities
   )
 
 add_subdirectory(Python)

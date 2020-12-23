@@ -20,7 +20,6 @@
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
@@ -30,6 +29,7 @@
 #include "Utilities/Blas.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -261,7 +261,7 @@ struct CheckWasUnpacked {
                     const ParallelComponent* const /*meta*/) noexcept {
     // Check to be sure the algorithm has been packed and unpacked at least a
     // few times during the algorithm and retained functionality
-    if(Parallel::number_of_procs() > 1) {
+    if (sys::number_of_procs() > 1) {
       // If this check fails with slightly too few unpacks counted, it may
       // indicate that the test machine is too fast for the setting used in
       // the balancer in the accompanying CMakeLists.txt. If that is the
@@ -539,8 +539,7 @@ struct ArrayParallelComponent {
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
 
-    for (int i = 0, which_proc = 0,
-             number_of_procs = Parallel::number_of_procs();
+    for (int i = 0, which_proc = 0, number_of_procs = sys::number_of_procs();
          i < number_of_1d_array_elements; ++i) {
       array_proxy[i].insert(global_cache, {}, which_proc);
       which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
