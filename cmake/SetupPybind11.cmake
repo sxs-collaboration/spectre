@@ -19,7 +19,14 @@ if(BUILD_PYTHON_BINDINGS)
       "determined CMake dir: ${PYBIND11_CMAKEDIR}")
   endif()
 
-  find_package(pybind11 2.6.0 REQUIRED HINTS "${PYBIND11_CMAKEDIR}")
+  find_package(pybind11 2.6.0 REQUIRED
+    HINTS
+    ${PYBIND11_CMAKEDIR}
+    ${Python_SITEARCH}
+    ${Python_SITELIB}
+    ${Python_STDARCH}
+    ${Python_STDLIB}
+    )
 
   set_property(
     GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
