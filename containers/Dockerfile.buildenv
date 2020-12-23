@@ -47,6 +47,11 @@ RUN apt-get update -y \
                           libboost-thread-dev libboost-tools-dev libssl-dev \
                           libbenchmark-dev
 
+# Install clang-11
+RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
+    && add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main' \
+    && apt-get update -y && apt-get install -y clang-11
+
 # Install libc++ and jemalloc
 # The second `apt-get update` is to ensure that anything that depends on
 # libc++-dev is properly found. This was an issue on older versions of Ubuntu
