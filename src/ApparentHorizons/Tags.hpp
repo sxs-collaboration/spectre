@@ -627,5 +627,27 @@ struct SpinFunctionCompute : SpinFunction, db::ComputeTag {
   using return_type = Scalar<DataVector>;
 };
 
+/// The approximate-Killing-Vector quasilocal spin magnitude of a Strahlkorper
+/// (see Sec. 2.2 of \cite Boyle2019kee and references therein).
+struct DimensionfulSpinMagnitude : db::SimpleTag {
+  using type = double;
+};
+
+/// Computes the approximate-Killing-Vector quasilocal spin magnitude of a
+/// Strahlkorper
+template <typename Frame>
+struct DimensionfulSpinMagnitudeCompute : DimensionfulSpinMagnitude,
+                                          db::ComputeTag {
+  using base = DimensionfulSpinMagnitude;
+  using return_type = double;
+  static constexpr auto function =
+      &StrahlkorperGr::dimensionful_spin_magnitude<Frame>;
+  using argument_tags =
+      tmpl::list<StrahlkorperTags::RicciScalar, SpinFunction,
+                 gr::Tags::SpatialMetric<3, Frame>,
+                 StrahlkorperTags::Tangents<Frame>,
+                 StrahlkorperTags::Strahlkorper<Frame>, AreaElement<Frame>>;
+};
+
 }  // namespace Tags
 }  // namespace StrahlkorperGr

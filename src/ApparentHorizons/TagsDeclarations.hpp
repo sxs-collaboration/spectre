@@ -67,6 +67,9 @@ struct IrreducibleMassCompute;
 struct SpinFunction;
 template <typename Frame>
 struct SpinFunctionCompute;
+struct DimensionfulSpinMagnitude;
+template <typename Frame>
+struct DimensionfulSpinMagnitudeCompute;
 
 }  // namespace Tags
 }  // namespace StrahlkorperGr
