@@ -165,7 +165,7 @@ Linked on:                    Fri Oct 25 13:26:06 2019
 
 
 Done!
-CkWallTimer in seconds 0.004185
+Wall time in seconds: 0.004185
 Date and time at completion: Fri Oct 25 15:03:05 2019
 
 [Partition 0][Node 0] End of program

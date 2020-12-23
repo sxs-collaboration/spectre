@@ -26,7 +26,7 @@ void Informer::print_exit_info() {
   Parallel::printf(
       "\n"
       "Done!\n"
-      "CkWallTimer in seconds %f\n"
+      "Wall time in seconds: %f\n"
       "Date and time at completion: %s\n",
-      CkWallTimer(), current_date_and_time());
+      sys::wall_time(), current_date_and_time());
 }
