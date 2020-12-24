@@ -30,7 +30,7 @@ Element<VolumeDim> make_element(
     const std::unordered_set<Direction<VolumeDim>>&
         directions_of_external_boundaries = {}) noexcept {
   typename Element<VolumeDim>::Neighbors_t neighbors;
-  for (const auto dir : Direction<VolumeDim>::all_directions()) {
+  for (const auto& dir : Direction<VolumeDim>::all_directions()) {
     // Element has neighbors in directions with internal boundaries
     if (directions_of_external_boundaries.count(dir) == 0) {
       const size_t index =
