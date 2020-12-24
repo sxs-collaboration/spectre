@@ -25,8 +25,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
-namespace grmhd {
-namespace AnalyticData {
+namespace grmhd::AnalyticData {
 
 MagnetizedFmDisk::MagnetizedFmDisk(
     const double bh_mass, const double bh_dimless_spin,
@@ -261,6 +260,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (true, false))
 #undef DTYPE
 #undef NEED_SPACETIME
 #undef INSTANTIATE
-}  // namespace AnalyticData
-}  // namespace grmhd
+}  // namespace grmhd::AnalyticData
 /// \endcond

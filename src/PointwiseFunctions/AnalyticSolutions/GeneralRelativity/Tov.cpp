@@ -144,8 +144,7 @@ vacuum_solution(const DataType& radius, const double total_mass) noexcept {
 
 }  // namespace
 
-namespace gr {
-namespace Solutions {
+namespace gr::Solutions {
 
 TovSolution::TovSolution(
     const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
@@ -282,5 +281,4 @@ void TovSolution::pup(PUP::er& p) noexcept {  // NOLINT
   p | log_enthalpy_interpolant_;
 }
 
-}  // namespace Solutions
-}  // namespace gr
+}  // namespace gr::Solutions

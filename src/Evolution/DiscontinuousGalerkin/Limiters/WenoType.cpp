@@ -27,7 +27,7 @@ std::ostream& Limiters::operator<<(
 template <>
 Limiters::WenoType Options::create_from_yaml<Limiters::WenoType>::create<void>(
     const Options::Option& options) {
-  const std::string weno_type_read = options.parse_as<std::string>();
+  const auto weno_type_read = options.parse_as<std::string>();
   if (weno_type_read == "Hweno") {
     return Limiters::WenoType::Hweno;
   } else if (weno_type_read == "SimpleWeno") {

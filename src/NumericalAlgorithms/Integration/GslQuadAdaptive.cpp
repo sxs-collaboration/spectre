@@ -12,9 +12,7 @@
 #include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/MakeString.hpp"
 
-namespace integration {
-
-namespace detail {
+namespace integration::detail {
 
 GslQuadAdaptiveImpl::GslQuadAdaptiveImpl(const size_t max_intervals) noexcept
     : max_intervals_(max_intervals), gsl_integrand_(gsl_function{}) {
@@ -49,6 +47,4 @@ void check_status_code(const int status_code) {
 
 void disable_gsl_error_handling() noexcept { gsl_set_error_handler_off(); }
 
-}  // namespace detail
-
-}  // namespace integration
+}  // namespace integration::detail

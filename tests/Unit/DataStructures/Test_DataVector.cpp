@@ -107,7 +107,8 @@ void test_norms() noexcept {
   DataVector vector(30);
   fill_with_random_values(make_not_null(&vector), make_not_null(&gen),
                           make_not_null(&dist));
-  double l1norm = 0.0, l2norm = 0.0;
+  double l1norm = 0.0;
+  double l2norm = 0.0;
   for (const double value : vector) {
     l1norm += std::abs(value);
     l2norm += square(value);

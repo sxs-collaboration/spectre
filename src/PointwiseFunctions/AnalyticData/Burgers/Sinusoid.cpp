@@ -14,8 +14,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace Burgers {
-namespace AnalyticData {
+namespace Burgers::AnalyticData {
 template <typename T>
 Scalar<T> Sinusoid::u(const tnsr::I<T, 1>& x) const noexcept {
   return Scalar<T>{sin(get<0>(x))};
@@ -36,8 +35,7 @@ bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/) noexcept {
 bool operator!=(const Sinusoid& lhs, const Sinusoid& rhs) noexcept {
   return not(lhs == rhs);
 }
-}  // namespace AnalyticData
-}  // namespace Burgers
+}  // namespace Burgers::AnalyticData
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 

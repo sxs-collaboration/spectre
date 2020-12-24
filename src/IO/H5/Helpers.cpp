@@ -458,7 +458,8 @@ template <size_t Rank, typename T>
 T read_data(const hid_t group_id, const std::string& dataset_name) noexcept {
   const hid_t dataset_id = open_dataset(group_id, dataset_name);
   const hid_t dataspace_id = open_dataspace(dataset_id);
-  std::array<hsize_t, Rank> size{}, max_size{};
+  std::array<hsize_t, Rank> size{};
+  std::array<hsize_t, Rank> max_size{};
   if (static_cast<int>(Rank) !=
       H5Sget_simple_extent_dims(dataspace_id, nullptr, nullptr)) {
     ERROR("Incorrect rank in get_data(). Expected rank = "
@@ -590,8 +591,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_READ_DATAVECTOR, (DataVector), (1, 2, 3))
 #undef RANK
 }  // namespace h5
 
-namespace h5 {
-namespace detail {
+namespace h5::detail {
 template <size_t Dims>
 hid_t create_extensible_dataset(const hid_t group_id, const std::string& name,
                                 const std::array<hsize_t, Dims>& initial_size,
@@ -630,5 +630,4 @@ template hid_t create_extensible_dataset<3>(
     const std::array<hsize_t, 3>& initial_size,
     const std::array<hsize_t, 3>& chunk_size,
     const std::array<hsize_t, 3>& max_size);
-}  // namespace detail
-}  // namespace h5
+}  // namespace h5::detail

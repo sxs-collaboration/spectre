@@ -29,8 +29,7 @@ std::vector<std::string> split_strings(const std::string& s,
 }
 }  // namespace
 
-namespace h5 {
-namespace detail {
+namespace h5::detail {
 OpenGroup::OpenGroup(hid_t file_id, const std::string& group_name,
                      const h5::AccessType access_type) {
   const std::vector<std::string> path(split_strings(group_name));
@@ -98,5 +97,4 @@ OpenGroup::~OpenGroup() {
   }
 }
 /// \endcond
-}  // namespace detail
-}  // namespace h5
+}  // namespace h5::detail

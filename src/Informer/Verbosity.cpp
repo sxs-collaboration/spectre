@@ -13,7 +13,7 @@
 template <>
 Verbosity Options::create_from_yaml<Verbosity>::create<void>(
     const Options::Option& options) {
-  const std::string type_read = options.parse_as<std::string>();
+  const auto type_read = options.parse_as<std::string>();
   if ("Silent" == type_read) {
     return Verbosity::Silent;
   } else if ("Quiet" == type_read) {

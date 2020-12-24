@@ -17,9 +17,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"
 
-namespace Spectral {
-namespace Swsh {
-namespace detail {
+namespace Spectral::Swsh::detail {
 namespace {
 
 template <ComplexRepresentation Representation>
@@ -258,6 +256,4 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.ComplexDataView",
 #endif
 }
 }  // namespace
-}  // namespace detail
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh::detail

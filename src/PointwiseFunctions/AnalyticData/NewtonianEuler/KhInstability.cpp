@@ -18,8 +18,7 @@
 #include "Utilities/MakeWithValue.hpp"
 
 /// \cond
-namespace NewtonianEuler {
-namespace AnalyticData {
+namespace NewtonianEuler::AnalyticData {
 
 template <size_t Dim>
 KhInstability<Dim>::KhInstability(
@@ -204,6 +203,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (2, 3), (double, DataVector),
 #undef TAG
 #undef DTYPE
 #undef DIM
-}  // namespace AnalyticData
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::AnalyticData
 /// \endcond

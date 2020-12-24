@@ -222,7 +222,7 @@ std::vector<std::string> ls(const std::string& dir_name) {
     dir = opendir(dir_name.c_str());
     // LCOV_EXCL_STOP
   }
-  struct dirent* file;
+  struct dirent* file = nullptr;
   // readdir returns next file in dir
   while (nullptr != (file = readdir(dir))) {
     contents.emplace_back(static_cast<char*>(file->d_name));

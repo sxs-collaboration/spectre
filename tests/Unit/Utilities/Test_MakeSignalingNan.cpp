@@ -11,12 +11,11 @@
 
 SPECTRE_TEST_CASE("Unit.Utilities.MakeSignalingNaN", "[Unit][Utilities]") {
   disable_floating_point_exceptions();
-  auto double_snan = make_signaling_NaN<double>();
+  const auto double_snan = make_signaling_NaN<double>();
   CHECK(std::isnan(double_snan));
-  auto float_snan = make_signaling_NaN<float>();
+  const auto float_snan = make_signaling_NaN<float>();
   CHECK(std::isnan(float_snan));
-  std::complex<double> complex_snan =
-      make_signaling_NaN<std::complex<double>>();
+  const auto complex_snan = make_signaling_NaN<std::complex<double>>();
   CHECK(std::isnan(complex_snan.real()));
   CHECK(std::isnan(complex_snan.imag()));
   enable_floating_point_exceptions();

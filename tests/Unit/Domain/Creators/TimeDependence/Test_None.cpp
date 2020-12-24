@@ -15,9 +15,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace domain {
-namespace creators {
-namespace time_dependence {
+namespace domain::creators::time_dependence {
 
 namespace {
 
@@ -103,6 +101,4 @@ void test_error_functions_of_time() noexcept {
 
 }  // namespace
 
-}  // namespace time_dependence
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::time_dependence

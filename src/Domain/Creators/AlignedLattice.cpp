@@ -10,8 +10,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
-namespace domain {
-namespace creators {
+namespace domain::creators {
 
 using ::operator<<;
 template <size_t VolumeDim>
@@ -142,5 +141,4 @@ template std::ostream& operator<<(
     std::ostream& /*s*/, const RefinementRegion<2>& /*unused*/) noexcept;
 template std::ostream& operator<<(
     std::ostream& /*s*/, const RefinementRegion<3>& /*unused*/) noexcept;
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators
