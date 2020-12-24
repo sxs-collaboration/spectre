@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <memory>
 #include <numeric>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -22,6 +23,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
@@ -294,10 +296,12 @@ struct ComplicatedSystem {
   }
 };
 
-template <typename System, typename ObserveEvent>
-void test_observe(const std::unique_ptr<ObserveEvent> observe,
-                  const std::optional<Mesh<System::volume_dim>>&
-                      interpolating_mesh) noexcept {
+template <typename System, bool AlwaysHasAnalyticSolutions,
+          typename ObserveEvent>
+void test_observe(
+    const std::unique_ptr<ObserveEvent> observe,
+    const std::optional<Mesh<System::volume_dim>>& interpolating_mesh,
+    const bool has_analytic_solutions) noexcept {
   using metavariables = Metavariables<System>;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
@@ -343,8 +347,20 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
   const auto box = db::create<db::AddSimpleTags<
       ObservationTimeTag, domain::Tags::Mesh<volume_dim>,
       Tags::Variables<typename decltype(vars)::tags_list>,
-      db::add_tag_prefix<Tags::Analytic, Tags::Variables<solution_variables>>>>(
-      observation_time, mesh, vars, solutions);
+      tmpl::conditional_t<
+          AlwaysHasAnalyticSolutions,
+          ::Tags::AnalyticSolutions<solution_variables>,
+          ::Tags::AnalyticSolutionsOptional<solution_variables>>>>(
+      observation_time, mesh, vars, [&solutions, &has_analytic_solutions]() {
+        if constexpr (AlwaysHasAnalyticSolutions) {
+          (void)has_analytic_solutions;
+          // NOLINTNEXTLINE(performance-no-automatic-move)
+          return solutions;
+        } else {
+          return has_analytic_solutions ? std::make_optional(solutions)
+                                        : std::nullopt;
+        }
+      }());
 
   observe->run(box, runner.cache(), array_index,
                std::add_pointer_t<element_component>{});
@@ -401,22 +417,29 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
                                                const auto... indices) noexcept {
     check_component(name, get<decltype(tag)>(vars).get(indices...));
   });
-  System::solution_for_test::check_data(
-      [&check_component, &errors](const std::string& name, auto tag,
-                                  const auto... indices) noexcept {
-        check_component(name, get<decltype(tag)>(errors).get(indices...));
-      });
+  if (AlwaysHasAnalyticSolutions or has_analytic_solutions) {
+    System::solution_for_test::check_data(
+        [&check_component, &errors](const std::string& name, auto tag,
+                                    const auto... indices) noexcept {
+          check_component(name, get<decltype(tag)>(errors).get(indices...));
+        });
+  }
   CHECK(results.in_received_tensor_data.size() == num_components_observed);
 }
 
-template <typename System>
-void test_system(const std::string& mesh_creation_string,
-                 const std::optional<Mesh<System::volume_dim>>&
-                     interpolating_mesh = {}) noexcept {
+template <typename System, bool AlwaysHasAnalyticSolutions = true>
+void test_system(
+    const std::string& mesh_creation_string,
+    const std::optional<Mesh<System::volume_dim>>& interpolating_mesh = {},
+    const bool has_analytic_solutions = true) noexcept {
   INFO(pretty_type::get_name<System>());
-  test_observe<System>(std::make_unique<typename System::ObserveEvent>(
-                           System::make_test_object(interpolating_mesh)),
-                       interpolating_mesh);
+  CAPTURE(AlwaysHasAnalyticSolutions);
+  CAPTURE(has_analytic_solutions);
+  CAPTURE(mesh_creation_string);
+  test_observe<System, AlwaysHasAnalyticSolutions>(
+      std::make_unique<typename System::ObserveEvent>(
+          System::make_test_object(interpolating_mesh)),
+      interpolating_mesh, has_analytic_solutions);
   INFO("create/serialize");
   using EventType = Event<tmpl::list<dg::Events::Registrars::ObserveFields<
       System::volume_dim, ObservationTimeTag,
@@ -428,7 +451,8 @@ void test_system(const std::string& mesh_creation_string,
   const auto factory_event =
       TestHelpers::test_factory_creation<EventType>(creation_string);
   auto serialized_event = serialize_and_deserialize(factory_event);
-  test_observe<System>(std::move(serialized_event), interpolating_mesh);
+  test_observe<System, AlwaysHasAnalyticSolutions>(
+      std::move(serialized_event), interpolating_mesh, has_analytic_solutions);
 }
 }  // namespace
 
@@ -436,8 +460,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
   {
     INFO("No Interpolation")
     const std::string interpolating_mesh_str = "  InterpolateToMesh: None";
-    test_system<ScalarSystem>(interpolating_mesh_str);
-    test_system<ComplicatedSystem>(interpolating_mesh_str);
+    INVOKE_TEST_FUNCTION(test_system,
+                         (interpolating_mesh_str, std::nullopt, true),
+                         (ScalarSystem, ComplicatedSystem), (true));
+    INVOKE_TEST_FUNCTION(test_system,
+                         (interpolating_mesh_str, std::nullopt, false),
+                         (ScalarSystem, ComplicatedSystem), (true, false));
   }
 
   {
@@ -447,13 +475,18 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
         "    Extents: 12\n"
         "    Basis: Legendre\n"
         "    Quadrature: GaussLobatto";
-    const Mesh<1> interpolating_mesh_1{12, Spectral::Basis::Legendre,
-                                       Spectral::Quadrature::GaussLobatto};
-    const Mesh<2> interpolating_mesh_2{12, Spectral::Basis::Legendre,
-                                       Spectral::Quadrature::GaussLobatto};
-    test_system<ScalarSystem>(interpolating_mesh_str, interpolating_mesh_1);
+    const Mesh<1> interpolating_mesh_1d{12, Spectral::Basis::Legendre,
+                                        Spectral::Quadrature::GaussLobatto};
+    INVOKE_TEST_FUNCTION(test_system,
+                         (interpolating_mesh_str, interpolating_mesh_1d, true),
+                         (ScalarSystem), (true));
+    INVOKE_TEST_FUNCTION(test_system,
+                         (interpolating_mesh_str, interpolating_mesh_1d, false),
+                         (ScalarSystem), (true, false));
+    const Mesh<2> interpolating_mesh_2d{12, Spectral::Basis::Legendre,
+                                        Spectral::Quadrature::GaussLobatto};
     test_system<ComplicatedSystem>(interpolating_mesh_str,
-                                   interpolating_mesh_2);
+                                   interpolating_mesh_2d);
   }
 
   {
@@ -527,10 +560,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
         {3, 9}, {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev},
         {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto});
 
-    test_observe<ComplicatedSystem>(
+    test_observe<ComplicatedSystem, true>(
         std::make_unique<typename ComplicatedSystem::ObserveEvent>(
             ComplicatedSystem::make_test_object(interpolating_mesh)),
-        interpolating_mesh);
+        interpolating_mesh, true);
   }
 }
 

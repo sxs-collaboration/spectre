@@ -3,7 +3,11 @@
 
 #pragma once
 
+#include <optional>
+
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Serialize.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
@@ -93,5 +97,26 @@ template <typename Tag>
 struct Error : db::PrefixTag, db::SimpleTag {
   using type = typename Tag::type;
   using tag = Tag;
+};
+
+/// Base tag for the analytic solution tensors. Retrieved values can be either
+/// `Variables` or `std::optional<Variables>`.
+///
+/// \see ::Tags::AnalyticSolutions
+struct AnalyticSolutionsBase : db::BaseTag {};
+
+/// The analytic solutions for all `FieldTags`
+template <typename FieldTags>
+struct AnalyticSolutions : AnalyticSolutionsBase, db::SimpleTag {
+  using type = ::Variables<db::wrap_tags_in<Analytic, FieldTags>>;
+};
+
+/// The analytic solutions for all `FieldTags`, or `std::nullopt` if no analytic
+/// solutions are available
+template <typename FieldTags>
+struct AnalyticSolutionsOptional : AnalyticSolutionsBase, db::SimpleTag {
+  static std::string name() noexcept { return "AnalyticSolutions"; }
+  using type =
+      std::optional<::Variables<db::wrap_tags_in<Analytic, FieldTags>>>;
 };
 }  // namespace Tags

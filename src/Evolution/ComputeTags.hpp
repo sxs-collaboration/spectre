@@ -21,12 +21,9 @@ namespace Tags {
  */
 template <size_t Dim, typename AnalyticSolutionTag,
           typename AnalyticFieldsTagList>
-struct AnalyticCompute
-    : db::add_tag_prefix<::Tags::Analytic,
-                         ::Tags::Variables<AnalyticFieldsTagList>>,
-      db::ComputeTag {
-  using base = db::add_tag_prefix<::Tags::Analytic,
-                                  ::Tags::Variables<AnalyticFieldsTagList>>;
+struct AnalyticCompute : ::Tags::AnalyticSolutions<AnalyticFieldsTagList>,
+                         db::ComputeTag {
+  using base = ::Tags::AnalyticSolutions<AnalyticFieldsTagList>;
   using return_type = typename base::type;
   using argument_tags =
       tmpl::list<AnalyticSolutionTag,
