@@ -65,6 +65,13 @@ add_custom_target(all-pybindings)
 # - PYTHON_FILES  List of the python files (relative to
 #                 ${CMAKE_SOURCE_DIR}/src) to add to the module. Omit if
 #                 no python files are to be provided.
+#
+# - PYTHON_EXECUTABLES  List of additional python files that should be exposed
+#                 as executables. Same format as PYTHON_FILES. The only
+#                 difference is that these scripts can be run directly from
+#                 `${CMAKE_BINARY_DIR}/bin`. Note that any Python script can be
+#                 executed from its location in the Python package, even if it's
+#                 not listed in PYTHON_EXECUTABLES.
 function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
   if(BUILD_PYTHON_BINDINGS AND
       "${JEMALLOC_LIB_TYPE}" STREQUAL STATIC
@@ -79,16 +86,23 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
   endif()
 
   set(SINGLE_VALUE_ARGS MODULE_PATH LIBRARY_NAME)
-  set(MULTI_VALUE_ARGS SOURCES PYTHON_FILES)
+  set(MULTI_VALUE_ARGS SOURCES PYTHON_FILES PYTHON_EXECUTABLES)
   cmake_parse_arguments(
     ARG ""
     "${SINGLE_VALUE_ARGS}"
     "${MULTI_VALUE_ARGS}"
     ${ARGN})
+  list(APPEND ARG_PYTHON_FILES ${ARG_PYTHON_EXECUTABLES})
 
   set(MODULE_LOCATION
     "${SPECTRE_PYTHON_PREFIX}/${ARG_MODULE_PATH}/${MODULE_NAME}")
   get_filename_component(MODULE_LOCATION ${MODULE_LOCATION} ABSOLUTE)
+
+  # Module location in Python syntax, e.g. "spectre.Visualization"
+  string(REPLACE "/" ";" PYTHON_MODULE_LOCATION_COMPONENTS "${ARG_MODULE_PATH}")
+  list(PREPEND PYTHON_MODULE_LOCATION_COMPONENTS "spectre")
+  list(APPEND PYTHON_MODULE_LOCATION_COMPONENTS "${MODULE_NAME}")
+  list(JOIN PYTHON_MODULE_LOCATION_COMPONENTS "." PYTHON_MODULE_LOCATION)
 
   # Create list of all the python submodule names
   set(PYTHON_SUBMODULES "")
@@ -208,15 +222,15 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
   foreach(PYTHON_FILE ${ARG_PYTHON_FILES})
     # Configure file
     get_filename_component(PYTHON_FILE_JUST_NAME
-      "${CMAKE_SOURCE_DIR}/src/${PYTHON_FILE}" NAME)
+      "${CMAKE_CURRENT_SOURCE_DIR}/${PYTHON_FILE}" NAME)
     configure_file(
-      "${CMAKE_SOURCE_DIR}/src/${PYTHON_FILE}"
+      "${CMAKE_CURRENT_SOURCE_DIR}/${PYTHON_FILE}"
       "${MODULE_LOCATION}/${PYTHON_FILE_JUST_NAME}"
       )
 
     # Update init file
     get_filename_component(PYTHON_FILE_JUST_NAME_WE
-      "${CMAKE_SOURCE_DIR}/src/${PYTHON_FILE}" NAME_WE)
+      "${CMAKE_CURRENT_SOURCE_DIR}/${PYTHON_FILE}" NAME_WE)
     string(FIND
       ${INIT_FILE_OUTPUT}
       "\"${PYTHON_FILE_JUST_NAME_WE}\""
@@ -227,6 +241,18 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
         "__all__ = [\"${PYTHON_FILE_JUST_NAME_WE}\", "
         INIT_FILE_OUTPUT ${INIT_FILE_OUTPUT})
     endif(${INIT_FILE_CONTAINS_ME} EQUAL -1)
+
+    # Write an executable in `${CMAKE_BINARY_DIR}/bin` that runs the Python
+    # script in the correct Python environment
+    if(${PYTHON_FILE} IN_LIST ARG_PYTHON_EXECUTABLES)
+      configure_file(
+        "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
+        "${CMAKE_BINARY_DIR}/tmp/${PYTHON_FILE_JUST_NAME_WE}")
+      file(COPY "${CMAKE_BINARY_DIR}/tmp/${PYTHON_FILE_JUST_NAME_WE}"
+        DESTINATION "${CMAKE_BINARY_DIR}/bin"
+        FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+          GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+    endif()
   endforeach(PYTHON_FILE ${ARG_PYTHON_FILES})
 
   string(REPLACE ", ]" "]" INIT_FILE_OUTPUT ${INIT_FILE_OUTPUT})
@@ -315,21 +341,6 @@ function (spectre_python_add_dependencies LIBRARY_NAME)
     # Forward all remaining arguments
     ${ARGN}
     )
-endfunction()
-
-# Register a Python file as an executable. It will be symlinked to bin/.
-# - EXECUTABLE_NAME   The name of the executable in bin/
-#
-# - EXECUTABLE_PATH   Path to the Python file within the Python package,
-#                     e.g. "Visualization/GenerateXdmf.py"
-#                     Note this is the path within the Python package that was
-#                     configured by calling `spectre_python_add_module`, _not_
-#                     the path to the Python file in `src/`.
-function (spectre_python_add_executable EXECUTABLE_NAME EXECUTABLE_PATH)
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-    "${SPECTRE_PYTHON_PREFIX}/${EXECUTABLE_PATH}"
-    "${CMAKE_BINARY_DIR}/bin/${EXECUTABLE_NAME}")
 endfunction()
 
 # Register a python test file with ctest.
