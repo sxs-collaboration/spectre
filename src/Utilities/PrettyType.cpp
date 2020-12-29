@@ -62,13 +62,25 @@ std::string_view process_type_or_value(
 }
 
 // A value (such as for a non-type template parameter) encoded as
-// L<type><value>E
+// L<type><value>E or LDnE (nullptr)
 void process_literal(
     const gsl::not_null<std::string_view*> remainder) noexcept {
   remainder->remove_prefix(1);
   if (not ('a' <= (*remainder)[0] and (*remainder)[0] <= 'z')) {
-    // A named enum class
-    process_type_or_value(remainder);
+    if ((*remainder)[0] == 'D') {
+      // decltype(something).  The only valid value of this form
+      // should be nullptr.  The Itanium ABI standard says nullptr is
+      // LDnE, but many compilers mangle it as LDn0E instead.
+      ASSERT(
+          (remainder->size() >= 3 and (*remainder)[1] == 'n' and
+           (*remainder)[2] == 'E') or
+              (remainder->size() >= 4 and (*remainder)[1] == 'n' and
+               (*remainder)[2] == '0' and (*remainder)[3] == 'E'),
+          "Expected nullptr constant (DnE or Dn0E) at start of " << *remainder);
+    } else {
+      // A named enum class
+      process_type_or_value(remainder);
+    }
   }
   remove_until(remainder, "E");
   remainder->remove_prefix(1);
