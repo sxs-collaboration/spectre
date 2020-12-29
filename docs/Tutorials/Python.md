@@ -26,7 +26,15 @@ supports `pip`, for instance in a
 [Anaconda](https://www.anaconda.com/distribution/) environment. You can also get
 access to the SpECTRE Python modules by adding  `BUILD_DIR/bin/python` to your
 `PYTHONPATH`. This is done automatically by sourcing the `LoadPython.sh` file
-with the command `. BUILD_DIR/bin/LoadPython.sh`.
+with the command `. BUILD_DIR/bin/LoadPython.sh`. By default, SpECTRE uses
+`jemalloc` which needs to be pre-loaded for the python bindings to work.
+Therefore, you need to run `LD_PRELOAD=/path/to/libjemalloc.so python`
+to execute python scripts or start python consoles. The path to your preferred
+jemalloc installation is printed out at the end of the `cmake`
+configuration or can be found by running the script
+`BUILD_DIR/bin/LoadPython.sh`. Alternatively, you can use your system's memory
+allocator by appending the flag `-D MEMORY_ALLOCATOR=SYSTEM` to the `cmake`
+command. In this case you will not need to pre-load any libraries.
 
 ## Running Jupyter within the Docker container
 
