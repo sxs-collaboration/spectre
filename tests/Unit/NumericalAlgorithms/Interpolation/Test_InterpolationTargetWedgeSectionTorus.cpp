@@ -12,6 +12,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Framework/TestCreation.hpp"
@@ -139,6 +140,7 @@ void test_r_theta_uniform() noexcept {
 SPECTRE_TEST_CASE(
     "Unit.NumericalAlgorithms.InterpolationTarget.WedgeSectionTorus",
     "[Unit]") {
+  domain::creators::register_derived_with_charm();
   // Check creating the options
   const auto created_torus =
       TestHelpers::test_creation<intrp::OptionHolders::WedgeSectionTorus>(

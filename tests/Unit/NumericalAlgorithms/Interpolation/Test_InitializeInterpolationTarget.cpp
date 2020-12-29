@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Tags.hpp"
@@ -59,6 +60,7 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Initialize",
                   "[Unit]") {
+  domain::creators::register_derived_with_charm();
   using metavars = Metavariables;
   using temporal_id_type = typename metavars::temporal_id::type;
   using component =

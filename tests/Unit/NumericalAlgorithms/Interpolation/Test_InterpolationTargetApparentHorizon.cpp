@@ -14,6 +14,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Framework/TestCreation.hpp"
@@ -53,6 +54,8 @@ struct MockMetavariables {
 
 SPECTRE_TEST_CASE(
     "Unit.NumericalAlgorithms.InterpolationTarget.ApparentHorizon", "[Unit]") {
+  domain::creators::register_derived_with_charm();
+
   // Constants used in this test.
   // We use l_max=12 to get enough points that the surface is
   // represented to roundoff error; for smaller l_max we would need to

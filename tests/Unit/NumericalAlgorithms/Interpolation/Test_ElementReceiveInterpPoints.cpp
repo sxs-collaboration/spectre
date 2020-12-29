@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
@@ -102,6 +103,8 @@ struct MockMetavariables {
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
                   "[Unit]") {
+  domain::creators::register_derived_with_charm();
+
   using metavars = MockMetavariables;
   using target_component_a =
       mock_interpolation_target<metavars,

@@ -16,6 +16,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -70,6 +71,8 @@ struct Component {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
+  Parallel::register_derived_classes_with_charm<TimeStepper>();
+
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       {std::make_unique<TimeSteppers::RungeKutta3>()}};
 

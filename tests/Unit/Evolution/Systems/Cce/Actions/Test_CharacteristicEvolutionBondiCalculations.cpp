@@ -33,6 +33,7 @@
 #include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Tags.hpp"
@@ -157,6 +158,8 @@ struct TestSendToEvolution {
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.Cce.Actions.CharacteristicBondiCalculations",
     "[Unit][Cce]") {
+  Parallel::register_derived_classes_with_charm<InitializeJ::InitializeJ>();
+  Parallel::register_derived_classes_with_charm<TimeStepper>();
   using component = mock_characteristic_evolution<metavariables>;
   const size_t number_of_radial_points = 10;
   const size_t l_max = 8;

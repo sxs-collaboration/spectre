@@ -20,6 +20,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Block.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
@@ -280,6 +281,8 @@ struct MockMetavariables {
 SPECTRE_TEST_CASE(
     "Unit.NumericalAlgorithms.Interpolator.ObserveTimeSeriesOnSurface",
     "[Unit]") {
+  domain::creators::register_derived_with_charm();
+
   const std::string h5_file_prefix = "Test_ObserveTimeSeriesOnSurface";
   const auto h5_file_name = h5_file_prefix + ".h5";
   if (file_system::check_if_file_exists(h5_file_name)) {

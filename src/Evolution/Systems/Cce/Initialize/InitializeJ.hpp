@@ -131,3 +131,7 @@ struct InitializeJ : public PUP::able {
 };
 }  // namespace InitializeJ
 }  // namespace Cce
+
+#include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
+#include "Evolution/Systems/Cce/Initialize/NoIncomingRadiation.hpp"
+#include "Evolution/Systems/Cce/Initialize/ZeroNonSmooth.hpp"
