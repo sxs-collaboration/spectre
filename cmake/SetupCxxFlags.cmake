@@ -38,3 +38,11 @@ set_property(TARGET SpectreFlags
   APPEND PROPERTY
   INTERFACE_COMPILE_OPTIONS
   $<$<COMPILE_LANGUAGE:CXX>:-ftemplate-backtrace-limit=0>)
+
+# By default, the LLVM optimizer assumes floating point exceptions are ignored.
+create_cxx_flag_target("-ffp-exception-behavior=maytrap" SpectreFpExceptions)
+target_link_libraries(
+  SpectreFlags
+  INTERFACE
+  SpectreFpExceptions
+  )

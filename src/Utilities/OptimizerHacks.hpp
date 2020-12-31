@@ -3,6 +3,7 @@
 
 #pragma once
 
+#if defined(__clang__) && __clang__ < 11
 /// \ingroup PeoGroup
 /// Workarounds for optimizer bugs
 namespace optimizer_hacks {
@@ -13,15 +14,13 @@ namespace optimizer_hacks {
 void indicate_value_can_be_changed(void* variable) noexcept;
 }  // namespace optimizer_hacks
 
-#ifdef __clang__
 #define VARIABLE_CAUSES_CLANG_FPE(var) \
   ::optimizer_hacks::indicate_value_can_be_changed(&(var))
-#else  /* __clang__ */
+#else  /* defined(__clang__) && __clang__ < 11 */
 /// \ingroup PeoGroup
 /// Clang's optimizer has a known bug that sometimes produces spurious
 /// FPEs.  This indicates that the variable `var` can trigger that bug
-/// and prevents some optimizations.  (See [the LLVM bug
-/// report](https://llvm.org/bugs/show_bug.cgi?id=18673), which is
-/// effectively WONTFIX.)
+/// and prevents some optimizations.  This is fixed upstream in Clang
+/// 11.
 #define VARIABLE_CAUSES_CLANG_FPE(var) ((void)(var))
-#endif  /* __clang__ */
+#endif  /* defined(__clang__) && __clang__ < 11 */
