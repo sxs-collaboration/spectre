@@ -60,7 +60,7 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
           typename T1::type,
           tmpl::transform<typename T1::symmetry, typename T2::symmetry,
                           tmpl::append<tmpl::max<tmpl::_1, tmpl::_2>>>,
-          typename T1::index_list, tmpl::sort<typename T1::args_list>> {
+          typename T1::index_list, typename T1::args_list> {
   static_assert(std::is_same<typename T1::type, typename T2::type>::value,
                 "Cannot add or subtract Tensors holding different data types.");
   static_assert(
@@ -79,7 +79,7 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
                                    tmpl::append<tmpl::max<tmpl::_1, tmpl::_2>>>;
   using index_list = typename T1::index_list;
   static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
-  using args_list = tmpl::sort<typename T1::args_list>;
+  using args_list = typename T1::args_list;
 
   AddSub(T1 t1, T2 t2) : t1_(std::move(t1)), t2_(std::move(t2)) {}
   ~AddSub() override = default;
