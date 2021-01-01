@@ -114,17 +114,30 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> BulgedCube::operator()(
         1.0 / sqrt(1.0 + square(cap_xi) + square(cap_eta));
     const auto one_over_rho_xi_zeta =
         1.0 / sqrt(1.0 + square(cap_xi) + square(cap_zeta));
-    const auto one_over_rho_eta_zeta =
+    // Making one_over_rho_eta_zeta a ReturnType object instead of an expression
+    // works around a weird issue in GCC-10 release mode (either a bug in the
+    // optimizer or an unusual edge-case in Blaze) where the expressions in
+    // radial_scaling_vector somehow have their internal pointers that should
+    // point to cap_xi, cap_eta, and cap_zeta invalidated. Since the pointer
+    // variable is optimized out it's unclear whether the pointer is set to
+    // nullptr or something else goes wrong.
+    // Note: we don't use a const ReturnType so that we can reuse the allocation
+    // below.
+    ReturnType one_over_rho_eta_zeta =
         1.0 / sqrt(1.0 + square(cap_eta) + square(cap_zeta));
-    const ReturnType radial_scaling_factor =
+    // Note: we don't use a const ReturnType for radial_scaling_factor so that
+    // we can reuse the allocation below.
+    ReturnType radial_scaling_factor =
         radius_ * (1.0 / sqrt(3.0) +
                    sphericity_ * (one_over_rho_eta_zeta + one_over_rho_xi_zeta +
                                   one_over_rho_xi_eta - one_over_rho_xi -
                                   one_over_rho_eta - one_over_rho_zeta));
 
-    ReturnType physical_x = radial_scaling_factor * cap_xi;
+    ReturnType& physical_x = one_over_rho_eta_zeta;
+    physical_x = radial_scaling_factor * cap_xi;
     ReturnType physical_y = radial_scaling_factor * cap_eta;
-    ReturnType physical_z = radial_scaling_factor * cap_zeta;
+    ReturnType& physical_z = radial_scaling_factor;
+    physical_z *= cap_zeta;
     return std::array<ReturnType, 3>{
         {std::move(physical_x), std::move(physical_y), std::move(physical_z)}};
   };
