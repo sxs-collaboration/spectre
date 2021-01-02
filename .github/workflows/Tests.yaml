@@ -411,7 +411,7 @@ jobs:
           -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-${CHARM_CC}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D DEBUG_SYMBOLS=OFF
-          -D RUN_TESTS_IN_TEST_EXECUTABLES=OFF
+          -D UNIT_TESTS_IN_TEST_EXECUTABLES=OFF
           -D STRIP_SYMBOLS=ON
           -D STUB_EXECUTABLE_OBJECT_FILES=ON
           -D STUB_LIBRARY_OBJECT_FILES=ON
@@ -466,19 +466,11 @@ jobs:
         run: |
           ccache -s
       - name: Run non-unit tests
-        if: matrix.use_pch == 'ON'
         working-directory: /work/build
         run: |
           # We get occasional random timeouts, repeat tests to see if
           # it is a random timeout or systematic
           ctest -j2 -LE unit --output-on-failure --repeat after-timeout:3
-      - name: Run input file tests without PCH
-        if: matrix.use_pch == 'OFF'
-        working-directory: /work/build
-        run: |
-          # We get occasional random timeouts, repeat tests to see if
-          # it is a random timeout or systematic
-          ctest -j2 --output-on-failure -L inputfiles --repeat after-timeout:3
       - name: Test formaline tar can be built
         if: matrix.build_type == 'Debug'
         working-directory: /work/build
@@ -534,7 +526,7 @@ jobs:
           -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-${CHARM_CC}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D DEBUG_SYMBOLS=OFF
-          -D RUN_TESTS_IN_TEST_EXECUTABLES=OFF
+          -D UNIT_TESTS_IN_TEST_EXECUTABLES=OFF
           -D STRIP_SYMBOLS=ON
           -D STUB_EXECUTABLE_OBJECT_FILES=ON
           -D STUB_LIBRARY_OBJECT_FILES=ON

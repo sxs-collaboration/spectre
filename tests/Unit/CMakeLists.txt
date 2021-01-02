@@ -72,16 +72,6 @@ add_dependencies(
 
 add_dependencies(unit-tests ${executable})
 
-option(
-  RUN_TESTS_IN_TEST_EXECUTABLES
-  "Build RunTests as part of test-executables"
-  ON
-  )
-
-if (RUN_TESTS_IN_TEST_EXECUTABLES)
-  add_dependencies(test-executables ${executable})
-endif (RUN_TESTS_IN_TEST_EXECUTABLES)
-
 spectre_add_catch_tests(${executable} "${SPECTRE_TESTS_LIBRARIES}")
 
 # Setup code coverage for unit tests
@@ -103,4 +93,12 @@ endif()
 
 add_subdirectory(RunSingleTest)
 
-add_dependencies(test-executables unit-tests)
+option(
+  UNIT_TESTS_IN_TEST_EXECUTABLES
+  "Build unit-tests as part of test-executables"
+  ON
+  )
+
+if (UNIT_TESTS_IN_TEST_EXECUTABLES)
+  add_dependencies(test-executables unit-tests)
+endif (UNIT_TESTS_IN_TEST_EXECUTABLES)
