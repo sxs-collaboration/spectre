@@ -3,6 +3,7 @@
 
 message(STATUS "\nUseful Information:")
 message(STATUS "Git Branch: " ${GIT_BRANCH})
+message(STATUS "Git Description: " ${GIT_DESCRIPTION})
 message(STATUS "Git Hash: " ${GIT_HASH})
 message(STATUS "Build Directory: " ${CMAKE_BINARY_DIR})
 message(STATUS "Source Directory: " ${CMAKE_SOURCE_DIR})
