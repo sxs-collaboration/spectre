@@ -31,13 +31,13 @@ template <typename T>
 using get_volume_tags =
     tmpl::type_from<InterfaceHelpers_detail::get_volume_tags_impl<T>>;
 
-namespace InterfaceHelpers_detail {
-
 template <typename Tag, typename DirectionsTag, typename VolumeTags>
-struct make_interface_tag_impl {
+struct make_interface_tag {
   using type = tmpl::conditional_t<tmpl::list_contains_v<VolumeTags, Tag>, Tag,
                                    domain::Tags::Interface<DirectionsTag, Tag>>;
 };
+
+namespace InterfaceHelpers_detail {
 
 // Retrieve the `argument_tags` from the `InterfaceInvokable` and wrap them in
 // `::Tags::Interface` if they are not listed in
@@ -45,8 +45,8 @@ struct make_interface_tag_impl {
 template <typename InterfaceInvokable, typename DirectionsTag>
 using get_interface_argument_tags = tmpl::transform<
     typename InterfaceInvokable::argument_tags,
-    make_interface_tag_impl<tmpl::_1, tmpl::pin<DirectionsTag>,
-                            tmpl::pin<get_volume_tags<InterfaceInvokable>>>>;
+    make_interface_tag<tmpl::_1, tmpl::pin<DirectionsTag>,
+                       tmpl::pin<get_volume_tags<InterfaceInvokable>>>>;
 
 /// Pull the direction's entry from interface arguments, passing volume
 /// arguments through unchanged.
@@ -100,7 +100,7 @@ struct DispatchInterfaceInvokable<true, InterfaceReturnType, DirectionsTag,
           unmap_interface_args<
               tmpl::list_contains_v<VolumeTagsList, ArgumentTags>>::
               apply(direction,
-                    get<tmpl::type_from<make_interface_tag_impl<
+                    get<tmpl::type_from<make_interface_tag<
                         ArgumentTags, DirectionsTag, VolumeTagsList>>>(box))...,
           extra_args...);
       result.insert({direction, std::move(interface_value)});
@@ -123,7 +123,7 @@ struct DispatchInterfaceInvokable<true, void, DirectionsTag, VolumeTagsList,
           unmap_interface_args<
               tmpl::list_contains_v<VolumeTagsList, ArgumentTags>>::
               apply(direction,
-                    get<tmpl::type_from<make_interface_tag_impl<
+                    get<tmpl::type_from<make_interface_tag<
                         ArgumentTags, DirectionsTag, VolumeTagsList>>>(box))...,
           extra_args...);
     }
@@ -145,7 +145,7 @@ struct DispatchInterfaceInvokable<false, InterfaceReturnType, DirectionsTag,
           unmap_interface_args<
               tmpl::list_contains_v<VolumeTagsList, ArgumentTags>>::
               apply(direction,
-                    get<tmpl::type_from<make_interface_tag_impl<
+                    get<tmpl::type_from<make_interface_tag<
                         ArgumentTags, DirectionsTag, VolumeTagsList>>>(box))...,
           extra_args...);
       result.insert({direction, std::move(interface_value)});
@@ -168,7 +168,7 @@ struct DispatchInterfaceInvokable<false, void, DirectionsTag, VolumeTagsList,
           unmap_interface_args<
               tmpl::list_contains_v<VolumeTagsList, ArgumentTags>>::
               apply(direction,
-                    get<tmpl::type_from<make_interface_tag_impl<
+                    get<tmpl::type_from<make_interface_tag<
                         ArgumentTags, DirectionsTag, VolumeTagsList>>>(box))...,
           extra_args...);
     }
