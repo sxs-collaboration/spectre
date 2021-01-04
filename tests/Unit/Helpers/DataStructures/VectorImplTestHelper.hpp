@@ -12,6 +12,7 @@
 #include <random>
 #include <tuple>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "DataStructures/VectorImpl.hpp"
@@ -425,33 +426,39 @@ enum TestKind { Normal, Strict, Inplace, GivenOrderOfArgumentsOnly };
 namespace detail {
 
 // to choose between possible reference wrappers for the math tests.
-namespace UseRefWrap {
-struct Cref {};
-struct None {};
-struct Ref {};
-}  // namespace UseRefWrap
+enum class UseRefWrap { Cref, None, Ref };
+
+// used so that the `std::variant` items below can have a consistent interface
+template <typename T>
+struct ValueWrapper {
+  explicit ValueWrapper(T value) noexcept : value_{value} {}
+
+  constexpr T get() const noexcept { return value_; }
+ private:
+  T value_;
+};
 
 // Wrap is used to wrap values in a std::reference_wrapper using std::cref and
 // std::ref, or to not wrap at all. This is done to verify that all math
 // operations work transparently with a `std::reference_wrapper` too.
 template <class T>
-decltype(auto) wrap(UseRefWrap::Cref /*meta*/, T& t) noexcept {
-  return std::cref(t);
+std::variant<ValueWrapper<T>, std::reference_wrapper<T>,
+             std::reference_wrapper<const T>>
+wrap(UseRefWrap wrapper, T& t) noexcept {
+  if(wrapper == UseRefWrap::Cref) {
+    return std::cref(t);
+  } else if (wrapper == UseRefWrap::Ref) {
+    return std::ref(t);
+  } else {
+    return ValueWrapper<T>(t);
+  }
 }
 
-template <class T>
-decltype(auto) wrap(UseRefWrap::None /*meta*/, T& t) noexcept {
-  return t;
-}
+constexpr std::array<UseRefWrap, 2> NonConstWrapperList{UseRefWrap::None,
+                                                        UseRefWrap::Ref};
 
-template <class T>
-decltype(auto) wrap(UseRefWrap::Ref /*meta*/, T& t) noexcept {
-  return std::ref(t);
-}
-
-using NonConstWrapperList = tmpl::list<UseRefWrap::None, UseRefWrap::Ref>;
-
-using WrapperList = tmpl::push_front<NonConstWrapperList, UseRefWrap::Cref>;
+constexpr std::array<UseRefWrap, 3> WrapperList{
+    UseRefWrap::None, UseRefWrap::Ref, UseRefWrap::Cref};
 
 // struct used for determining the full number of elements in a vector, array of
 // vectors. Designed for use with `test_element_wise_function`
@@ -500,21 +507,83 @@ struct VectorOrArrayAt {
 // given an explicit template parameter pack `Wraps`, wrap the elements of
 // `operand`, passed by pointer, element-by-element, and return the
 // resulting tuple of wrapped elements.
-template <typename... Wraps, typename... Operands, size_t... Is>
+template <typename... Operands, size_t... Is>
 auto wrap_tuple(std::tuple<Operands...>& operand_values,
+                const std::array<UseRefWrap, sizeof...(Is)>& wraps,
                 std::index_sequence<Is...> /*meta*/) noexcept {
-  return std::make_tuple(wrap(Wraps{}, get<Is>(operand_values))...);
+  return std::make_tuple(wrap(wraps[Is], get<Is>(operand_values))...);
 }
+
+// CHECK forwarding for parameter pack expansion. Return value also required for
+// easy parameter pack use.
+inline int call_check_approx(const double a, const double b,
+                             Approx custom_approx) noexcept {
+  CHECK(custom_approx(a) == b);
+  return 0;
+}
+
+inline int call_check_approx(const std::complex<double> a,
+                             const std::complex<double> b,
+                             Approx custom_approx) noexcept {
+  CHECK(custom_approx(real(a)) == real(b));
+  CHECK(custom_approx(imag(a)) == imag(b));
+  return 0;
+}
+
+template <typename Function, size_t... Is>
+class CheckWrappedOperandsVisitor {
+ public:
+  explicit CheckWrappedOperandsVisitor(const Function function)
+      : function_{function} {}
+
+  template <typename... WrappedOperands>
+  void operator()(WrappedOperands... operands) noexcept {
+    call_impl(operands.get()...);
+  }
+
+ private:
+  template <typename... WrappedOperands>
+  void call_impl(WrappedOperands... operands) noexcept {
+    const size_t size_value =
+        std::max({get_size(operands, VectorOrArraySize{})...});
+    tuple_fold(std::make_tuple(operands...), [&size_value](
+                                                 const auto x) noexcept {
+      if (not(get_size(x, VectorOrArraySize{}) == size_value or
+              get_size(x, VectorOrArraySize{}) == 1)) {
+        ERROR(
+            "inconsistent sized arguments passed "
+            "to CheckWrappedOperandsVisitor");
+      }
+    });
+
+    auto original_arguments = std::make_tuple(operands...);
+    const auto result = function_(operands...);
+    for (size_t i = 0; i < size_value; ++i) {
+      // the arguments which modify their arguments must be passed lvalues
+      auto element_of_arguments = std::make_tuple(get_element(
+          std::get<Is>(original_arguments), i, VectorOrArrayAt{})...);
+      call_check_approx(get_element(result, i, VectorOrArrayAt{}),
+                        function_(std::get<Is>(element_of_arguments)...),
+                        approx);
+      // ensure that the final state of the arguments matches
+      expand_pack(call_check_approx(get_element(operands, i, VectorOrArrayAt{}),
+                                    std::get<Is>(element_of_arguments),
+                                    approx)...);
+    }
+  }
+
+  Function function_;
+};
 
 // given the set of types of operands to test (`Operands`), and a set of
 // reference wrappers (`Wraps`), make each operand with random values according
-// to the bound from `Bounds`. Then, call
-// `CHECK_CUSTOM_ELEMENT_WISE_FUNCTION_APPROX` to test the element wise `func`.
-template <typename Function, typename... Bounds, typename... Wraps,
-          typename... Operands, size_t... Is>
+// to the bound from `Bound`. Then, call
+// `CheckWrappedOperandsVisitor` to test the element wise `function`.
+template <typename Function, typename... Bounds, typename... Operands,
+          size_t... Is>
 void test_function_on_vector_operands(
     const Function& function, const std::tuple<Bounds...>& bounds,
-    const std::tuple<Wraps...>& /*wraps*/,
+    const std::array<UseRefWrap, sizeof...(Is)>& wraps,
     const std::tuple<Operands...>& /*operands*/,
     std::index_sequence<Is...> /*meta*/) noexcept {
   MAKE_GENERATOR(generator);
@@ -529,12 +598,16 @@ void test_function_on_vector_operands(
               tt::get_fundamental_type_t<get_vector_element_type_t<Operands>>>{
               std::get<Is>(bounds)},
           size)...};
-  // wrap the tuple of random values according to the passed in `Wraps`
-  auto wrapped_operands = wrap_tuple<Wraps...>(
-      operand_values, std::make_index_sequence<sizeof...(Bounds)>{});
-  CHECK_CUSTOM_ELEMENT_WISE_FUNCTION_APPROX(
-      function, make_not_null(&wrapped_operands), VectorOrArrayAt{},
-      VectorOrArraySize{});
+  // wrap the tuple of random values according to the passed in `wraps` -- these
+  // will end up being a tuple of std::variant, that we need to choose between
+  // using compile-time logic
+  auto wrapped_operands = wrap_tuple(
+      operand_values, wraps, std::make_index_sequence<sizeof...(Bounds)>{});
+  const auto visitor_helper = [&function](auto... operands) noexcept {
+    CheckWrappedOperandsVisitor<Function, Is...> visitor{function};
+    std::visit(visitor, operands...);
+  };
+  std::apply(visitor_helper, wrapped_operands);
 }
 
 // Set of structs for choosing between execution paths when assembling the
@@ -584,11 +657,11 @@ struct next_choice_for_test_functions_recursion_impl<false, IsFirstAssignment,
 
 // helper function for easily determining the next branch of the call operator
 // for TestFunctionsWithVectorArgumentsImpl
-template <typename VectorList, typename BoundList, TestKind Test>
+template <size_t NumberOfOperands, typename BoundList, TestKind Test>
 using next_choice_for_test_functions_recursion =
     typename next_choice_for_test_functions_recursion_impl<
-        tmpl::size<VectorList>::value == tmpl::size<BoundList>::value,
-        tmpl::size<VectorList>::value == 0 and Test == TestKind::Inplace,
+        NumberOfOperands == tmpl::size<BoundList>::value,
+        NumberOfOperands == 0 and Test == TestKind::Inplace,
         Test == TestKind::GivenOrderOfArgumentsOnly>::type;
 
 // functions to recursively assemble the arguments and wrappers for
@@ -605,11 +678,11 @@ using next_choice_for_test_functions_recursion =
 // `Operands`, so this calls the test function with the function, bounds,
 // reference wrap, and operand type information.
 template <TestKind Test, typename UniqueTypeList, typename FirstOperand,
-          typename... Operands, typename Function, typename... DistBounds,
-          typename... Wraps>
+          typename... Operands, typename Function, typename... DistBounds>
 void assemble_test_function_arguments_and_execute_tests(
     const Function& function, const std::tuple<DistBounds...>& bounds,
-    const std::tuple<Wraps...>& wraps, const std::tuple<Operands...> operands,
+    const std::array<UseRefWrap, sizeof...(Operands)>& wraps,
+    const std::tuple<Operands...> operands,
     TestFunctionsWithVectorArgumentsChoices::Done /*meta*/) noexcept {
   test_function_on_vector_operands(
       function, bounds, wraps, operands,
@@ -620,73 +693,76 @@ void assemble_test_function_arguments_and_execute_tests(
 // `WrapperList` to `wraps`, and an additional type from `UniqueTypeList`
 // to `operands`, and recurse on each option.
 template <TestKind Test, typename UniqueTypeList, typename FirstOperand,
-          typename... Operands, typename Function, typename... DistBounds,
-          typename... Wraps>
+          typename... Operands, typename Function, typename... DistBounds>
 void assemble_test_function_arguments_and_execute_tests(
     const Function& function, const std::tuple<DistBounds...>& bounds,
-    const std::tuple<Wraps...>& wraps, const std::tuple<Operands...>&& operands,
+    const std::array<UseRefWrap, sizeof...(Operands)>& wraps,
+    const std::tuple<Operands...>&& operands,
     TestFunctionsWithVectorArgumentsChoices::Continuing
     /*meta*/) noexcept {
-  tmpl::for_each<WrapperList>([&function, &bounds, &wraps,
-                               &operands ](const auto x) noexcept {
-    tmpl::for_each<UniqueTypeList>([&function, &bounds, &wraps,
-                                    &operands ](const auto y) noexcept {
+  for (size_t i = 0; i < WrapperList.size(); ++i) {
+    tmpl::for_each<UniqueTypeList>([&function, &bounds, &wraps, &operands,
+                                    &i](const auto y) noexcept {
       using next_vector = typename decltype(y)::type;
-      using next_wrap = typename decltype(x)::type;
+      std::array<UseRefWrap, sizeof...(Operands) + 1_st> new_wraps;
+      for(size_t j = 0; j < sizeof...(Operands); ++j) {
+        new_wraps[j] = wraps[j];
+      }
+      new_wraps[new_wraps.size() - 1] = WrapperList[i];
       assemble_test_function_arguments_and_execute_tests<Test, UniqueTypeList,
                                                          FirstOperand>(
-          function, bounds, std::tuple_cat(wraps, std::tuple<next_wrap>{}),
+          function, bounds, new_wraps,
           std::tuple_cat(operands, std::tuple<next_vector>{}),
           detail::next_choice_for_test_functions_recursion<
-              tmpl::list<Wraps..., next_wrap>, tmpl::list<DistBounds...>,
-              Test>{});
+              sizeof...(Operands) + 1_st, tmpl::list<DistBounds...>, Test>{});
     });
-  });
+  }
 }
 
 // case of first operand and inplace test: the left hand operand for inplace
 // tests cannot be const, so the reference wrapper must be chosen
 // accordingly. Also, the left hand size type is fixed to be FirstOperand.
 template <TestKind Test, typename UniqueTypeList, typename FirstOperand,
-          typename... Operands, typename Function, typename... DistBounds,
-          typename... Wraps>
+          typename... Operands, typename Function, typename... DistBounds>
 void assemble_test_function_arguments_and_execute_tests(
     const Function& function, const std::tuple<DistBounds...>& bounds,
-    const std::tuple<Wraps...>& /*wraps*/,
+    const std::array<UseRefWrap, 0>& /*wraps*/,
     const std::tuple<Operands...>&& /*operands*/,
     TestFunctionsWithVectorArgumentsChoices::FirstInplace /*meta*/) noexcept {
-  tmpl::for_each<NonConstWrapperList>([&function,
-                                       &bounds ](const auto x) noexcept {
-    using next_wrap = typename decltype(x)::type;
+  for (size_t i = 0; i < NonConstWrapperList.size(); ++i) {
     assemble_test_function_arguments_and_execute_tests<Test, UniqueTypeList,
                                                        FirstOperand>(
-        function, bounds, std::tuple<next_wrap>{}, std::tuple<FirstOperand>{},
+        function, bounds, std::array<UseRefWrap, 1>{{NonConstWrapperList[i]}},
+        std::tuple<FirstOperand>{},
         detail::next_choice_for_test_functions_recursion<
-            tmpl::list<FirstOperand>, tmpl::list<DistBounds...>, Test>{});
-  });
+            1_st, tmpl::list<DistBounds...>, Test>{});
+  }
 }
 
 // case of TestKind of NoArgumentsCombinations: The Operands are already
 // assembled, we just need to loop through the wrap possibilities.
 template <TestKind Test, typename UniqueTypeList, typename FirstOperand,
           typename... Operands, typename Function, typename... DistBounds,
-          typename... Wraps>
+          size_t NumberOfWraps>
 void assemble_test_function_arguments_and_execute_tests(
     const Function& function, const std::tuple<DistBounds...>& bounds,
-    const std::tuple<Wraps...>& wraps, const std::tuple<Operands...>& operands,
+    const std::array<UseRefWrap, NumberOfWraps>& wraps,
+    const std::tuple<Operands...>& operands,
     TestFunctionsWithVectorArgumentsChoices::
         GivenOrderOfArgumentsOnly /*meta*/) noexcept {
-  tmpl::for_each<NonConstWrapperList>(
-      [&function, &bounds, &wraps, &operands ](const auto x) noexcept {
-        using next_wrap = typename decltype(x)::type;
-        assemble_test_function_arguments_and_execute_tests<Test, UniqueTypeList,
-                                                           FirstOperand>(
-            function, bounds, std::tuple_cat(wraps, std::tuple<next_wrap>{}),
-            operands,
-            detail::next_choice_for_test_functions_recursion<
-                tmpl::list<Wraps..., next_wrap>, tmpl::list<DistBounds...>,
-                Test>{});
-      });
+  for (size_t i = 0; i < NonConstWrapperList.size(); ++i) {
+    std::array<UseRefWrap, NumberOfWraps + 1> new_wraps;
+    for (size_t j = 0; j < NumberOfWraps; ++j) {
+      new_wraps[j] = wraps[j];
+    }
+    new_wraps[new_wraps.size() - 1] = NonConstWrapperList[i];
+
+    assemble_test_function_arguments_and_execute_tests<Test, UniqueTypeList,
+                                                       FirstOperand>(
+        function, bounds, new_wraps, operands,
+        detail::next_choice_for_test_functions_recursion<
+            NumberOfWraps + 1_st, tmpl::list<DistBounds...>, Test>{});
+  }
 }
 
 // dispatch function for the individual tuples of functions and bounds for their
@@ -716,10 +792,10 @@ void test_function_with_vector_arguments_impl(
   assemble_test_function_arguments_and_execute_tests<Test, operand_type_list,
                                                      VectorType0>(
       get<0>(function_and_argument_bounds) /*function*/,
-      get<1>(function_and_argument_bounds) /*tuple of bounds*/, std::tuple<>{},
-      starting_operands{},
-      next_choice_for_test_functions_recursion<
-          tmpl::list<>, tmpl::list<DistBounds...>, Test>{});
+      get<1>(function_and_argument_bounds) /*tuple of bounds*/,
+      std::array<UseRefWrap, 0>{}, starting_operands{},
+      next_choice_for_test_functions_recursion<0_st, tmpl::list<DistBounds...>,
+                                               Test>{});
 }
 }  // namespace detail
 
