@@ -460,9 +460,7 @@ struct TensorContract
   }
 
  private:
-  const std::conditional_t<std::is_base_of<Expression, T>::value, T,
-                           TensorExpression<T, X, Symm, IndexList, ArgsList>>
-      t_;
+  const T t_;
 };
 
 /*!

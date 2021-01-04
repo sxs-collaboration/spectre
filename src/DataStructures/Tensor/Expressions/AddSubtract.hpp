@@ -135,12 +135,7 @@ SPECTRE_ALWAYS_INLINE auto operator+(
   static_assert(tmpl::equal_members<Args1, Args2>::value,
                 "The indices when adding two tensors must be equal. This error "
                 "occurs from expressions like A(_a, _b) + B(_c, _a)");
-  return TensorExpressions::AddSub<
-      tmpl::conditional_t<std::is_base_of<Expression, T1>::value, T1,
-                          TensorExpression<T1, X, Symm1, IndexList1, Args1>>,
-      tmpl::conditional_t<std::is_base_of<Expression, T2>::value, T2,
-                          TensorExpression<T2, X, Symm2, IndexList2, Args2>>,
-      Args1, Args2, 1>(~t1, ~t2);
+  return TensorExpressions::AddSub<T1, T2, Args1, Args2, 1>(~t1, ~t2);
 }
 
 /*!
@@ -157,10 +152,5 @@ SPECTRE_ALWAYS_INLINE auto operator-(
   static_assert(tmpl::equal_members<Args1, Args2>::value,
                 "The indices when adding two tensors must be equal. This error "
                 "occurs from expressions like A(_a, _b) - B(_c, _a)");
-  return TensorExpressions::AddSub<
-      tmpl::conditional_t<std::is_base_of<Expression, T1>::value, T1,
-                          TensorExpression<T1, X, Symm1, IndexList1, Args1>>,
-      tmpl::conditional_t<std::is_base_of<Expression, T2>::value, T2,
-                          TensorExpression<T2, X, Symm2, IndexList2, Args2>>,
-      Args1, Args2, -1>(~t1, ~t2);
+  return TensorExpressions::AddSub<T1, T2, Args1, Args2, -1>(~t1, ~t2);
 }
