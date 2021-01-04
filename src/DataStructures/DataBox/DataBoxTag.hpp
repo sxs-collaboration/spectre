@@ -111,6 +111,16 @@ template <class T>
 constexpr bool has_return_type_member_v = has_return_type_member<T>::value;
 
 template <typename T>
+struct ConvertToConst {
+  using type = const T&;
+};
+
+template <typename T>
+struct ConvertToConst<std::unique_ptr<T>> {
+  using type = const T&;
+};
+
+template <typename T>
 const T& convert_to_const_type(const T& item) noexcept {
   return item;
 }
@@ -226,8 +236,8 @@ struct item_type_impl {
 // Get the type that is returned by `get<Tag>`. If it is a base tag then a
 // `TagList` must be passed as a second argument.
 template <typename Tag, typename TagList = NoSuchType>
-using const_item_type = std::decay_t<decltype(
-    convert_to_const_type(std::declval<storage_type<Tag, TagList>>()))>;
+using const_item_type =
+    typename ConvertToConst<std::decay_t<storage_type<Tag, TagList>>>::type;
 
 // Get the type that can be written to the `Tag`. If it is a base tag then a
 // `TagList` must be passed as a second argument.
