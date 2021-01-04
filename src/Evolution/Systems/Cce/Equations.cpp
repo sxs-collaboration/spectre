@@ -109,17 +109,19 @@ void ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::BondiW>>::apply_impl(
     const SpinWeighted<ComplexDataVector, 1>& eth_r_divided_by_r,
     const SpinWeighted<ComplexDataVector, 0>& k,
     const SpinWeighted<ComplexDataVector, 0>& r) noexcept {
+  // this computation is split over two lines because GCC-10 on release mode
+  // optimizes the long expression templates in such a way to cause segfaults.
   *script_av =
-      (eth_beta * conj(ethbar_j) + 0.5 * ethbar_ethbar_j +
-       j * square(conj(eth_beta)) + j * conj(eth_eth_beta) +
-       0.125 * eth_j_jbar * conj(eth_j_jbar) / (k * (1.0 + j * conj(j))) +
-       0.5 *
-           (1.0 - 0.25 * eth_ethbar_j_jbar - eth_j_jbar * conj(eth_beta) -
-            0.5 * conj(ethbar_j) * ethbar_j - 0.5 * conj(j) * eth_ethbar_j) /
-           k +
-       k * (0.5 - eth_ethbar_beta - eth_beta * conj(eth_beta) -
-            0.25 * q * conj(q)) +
-       0.25 * j * square(conj(q)));
+      eth_beta * conj(ethbar_j) + 0.5 * ethbar_ethbar_j +
+      j * square(conj(eth_beta)) + j * conj(eth_eth_beta) +
+      0.125 * eth_j_jbar * conj(eth_j_jbar) / (k * (1.0 + j * conj(j))) +
+      0.5 *
+          (1.0 - 0.25 * eth_ethbar_j_jbar - eth_j_jbar * conj(eth_beta) -
+           0.5 * conj(ethbar_j) * ethbar_j - 0.5 * conj(j) * eth_ethbar_j) /
+      k;
+  *script_av += k * (0.5 - eth_ethbar_beta - eth_beta * conj(eth_beta) -
+                     0.25 * q * conj(q)) +
+                0.25 * j * square(conj(q));
 
   *regular_integrand_for_w =
       0.5 * (0.5 * (ethbar_dy_u + conj(ethbar_dy_u) +
@@ -194,26 +196,29 @@ void ComputeBondiIntegrand<Tags::RegularIntegrand<Tags::BondiH>>::apply_impl(
                              (k * (1.0 + j * conj(j))) -
                          q));
 
+  // this computation is split over multiple lines because GCC-10 on release
+  // mode optimizes the long expression templates in such a way to cause
+  // segfaults.
   *script_bj =
       0.25 * (2.0 * dy_w -
               conj(j) * eth_u * (conj(j) * dy_j + j * conj(dy_j)) / k +
               1.0 / r + u * ethbar_j * conj(dy_j) -
               0.5 * u * conj(eth_j_jbar) * (conj(j) * dy_j + j * conj(dy_j)) /
                   (1.0 + j * conj(j)) +
-              conj(u) * (conj(ethbar_jbar_dy_j) - j * conj(ethbar_dy_j))) +
-      one_minus_y * 0.25 *
-          (du_r_divided_by_r * dy_j *
-               (conj(j) * (conj(j) * dy_j + j * conj(dy_j)) /
-                    (1.0 + j * conj(j)) -
-                2.0 * conj(dy_j)) -
-           w * (dy_j * conj(dy_j) -
-                0.25 * square((conj(j) * dy_j + j * conj(dy_j))) /
-                    (1.0 + j * conj(j)))) +
+              conj(u) * (conj(ethbar_jbar_dy_j) - j * conj(ethbar_dy_j)));
+  *script_bj +=
       square(one_minus_y) * 0.125 *
-          (0.25 * square(conj(j) * dy_j + j * conj(dy_j)) /
-               (1.0 + j * conj(j)) -
-           dy_j * conj(dy_j)) /
-          r;
+      (0.25 * square(conj(j) * dy_j + j * conj(dy_j)) / (1.0 + j * conj(j)) -
+       dy_j * conj(dy_j)) /
+      r;
+  *script_bj +=
+      one_minus_y * 0.25 *
+      (du_r_divided_by_r * dy_j *
+           (conj(j) * (conj(j) * dy_j + j * conj(dy_j)) / (1.0 + j * conj(j)) -
+            2.0 * conj(dy_j)) -
+       w * (dy_j * conj(dy_j) - 0.25 *
+                                    square((conj(j) * dy_j + j * conj(dy_j))) /
+                                    (1.0 + j * conj(j))));
 
   *script_cj = 0.5 * ethbar_j * k * (eth_beta - 0.5 * q);
 
