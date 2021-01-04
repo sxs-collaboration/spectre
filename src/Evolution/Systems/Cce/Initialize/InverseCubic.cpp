@@ -19,8 +19,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Cce {
-namespace InitializeJ {
+namespace Cce::InitializeJ {
 
 std::unique_ptr<InitializeJ> InverseCubic::get_clone() const
     noexcept {
@@ -60,7 +59,7 @@ void InverseCubic::operator()(
   }
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     get<0>(*angular_cauchy_coordinates)[collocation_point.offset] =
         collocation_point.theta;
     get<1>(*angular_cauchy_coordinates)[collocation_point.offset] =
@@ -81,5 +80,4 @@ void InverseCubic::pup(PUP::er& /*p*/) noexcept {}
 /// \cond
 PUP::able::PUP_ID InverseCubic::my_PUP_ID = 0;
 /// \endcond
-}  // namespace InitializeJ
-}  // namespace Cce
+}  // namespace Cce::InitializeJ

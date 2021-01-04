@@ -12,8 +12,7 @@
 
 // IWYU pragma: no_forward_declare SpinWeighted
 
-namespace Spectral {
-namespace Swsh {
+namespace Spectral::Swsh {
 
 namespace detail {
 template <ComplexRepresentation Representation>
@@ -143,7 +142,7 @@ void interpolate_to_collocation(
   for (size_t i = 0; i < number_of_radial_points; ++i) {
     auto source_coefficient_metadata_iterator =
         cached_coefficients_metadata(source_l_max).begin();
-    for (const auto& coefficient : target_coefficient_metadata) {
+    for (const auto coefficient : target_coefficient_metadata) {
       // first, we advance `source_coefficient_metadata_iterator` to the same
       // mode that is represented by `coefficient`, or to the next mode
       // following `coefficient` that is present in the source resolution, or to
@@ -258,5 +257,4 @@ GENERATE_INSTANTIATIONS(SWSH_INTERPOLATION_INSTANTIATION, (-2, -1, 0, 1, 2))
 #undef SWSH_TRANSFORM_INSTANTIATION
 #undef SWSH_TRANSFORM_UTILITIES_INSTANTIATION
 
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh

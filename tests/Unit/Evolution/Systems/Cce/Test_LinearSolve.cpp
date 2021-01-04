@@ -357,7 +357,7 @@ void test_pole_integration_with_linear_operator(
                           make_not_null(&dist));
   const auto& coefficients_metadata =
       Spectral::Swsh::cached_coefficients_metadata(l_max);
-  for (const auto& mode : coefficients_metadata) {
+  for (const auto mode : coefficients_metadata) {
     if (mode.l > l_max - 2) {
       random_angular_modes.data()[mode.transform_of_real_part_offset] = 0.0;
       random_angular_modes.data()[mode.transform_of_imag_part_offset] = 0.0;

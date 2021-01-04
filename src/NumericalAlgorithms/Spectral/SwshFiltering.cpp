@@ -58,7 +58,7 @@ void filter_swsh_volume_quantity(
                    *to_filter);
     const auto& coefficients_metadata = cached_coefficients_metadata(l_max);
     for (size_t i = 0; i < number_of_radial_grid_points; ++i) {
-      for (const auto& mode : coefficients_metadata) {
+      for (const auto mode : coefficients_metadata) {
         if (mode.l > limit_l) {
           transform_buffer->data()[mode.transform_of_real_part_offset +
                                    i * coefficients_metadata.size()] = 0.0;
@@ -99,7 +99,7 @@ void filter_swsh_boundary_quantity(
         size_of_libsharp_coefficient_vector(l_max));
     swsh_transform(l_max, 1, transform_buffer, *to_filter);
     const auto& coefficients_metadata = cached_coefficients_metadata(l_max);
-    for (const auto& mode : coefficients_metadata) {
+    for (const auto mode : coefficients_metadata) {
       if (mode.l > limit_l) {
         transform_buffer->data()[mode.transform_of_real_part_offset] = 0.0;
         transform_buffer->data()[mode.transform_of_imag_part_offset] = 0.0;

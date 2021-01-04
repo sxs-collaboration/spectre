@@ -19,12 +19,11 @@
 
 // IWYU pragma: no_forward_declare SpinWeighted
 
-namespace Spectral {
-namespace Swsh {
+namespace Spectral::Swsh {
 
 CoefficientsMetadata::CoefficientsMetadata(const size_t l_max) noexcept
     : l_max_(l_max) {
-  sharp_alm_info* alm_to_initialize;
+  sharp_alm_info* alm_to_initialize = nullptr;
   sharp_make_triangular_alm_info(l_max, l_max, 1, &alm_to_initialize);
   alm_info_.reset(alm_to_initialize);
 }
@@ -156,7 +155,7 @@ void libsharp_to_goldberg_modes(
 
   const auto& coefficients_metadata = cached_coefficients_metadata(l_max);
   for (size_t i = 0; i < number_of_radial_grid_points; ++i) {
-    for (const auto& coefficient_info : coefficients_metadata) {
+    for (const auto coefficient_info : coefficients_metadata) {
       goldberg_modes->data()[goldberg_mode_index(
           coefficient_info.l_max, coefficient_info.l,
           static_cast<int>(coefficient_info.m), i)] =
@@ -190,7 +189,7 @@ void goldberg_to_libsharp_modes(
   const size_t number_of_radial_grid_points =
       goldberg_modes.data().size() / square(l_max + 1);
   for(size_t i = 0; i < number_of_radial_grid_points; ++i) {
-    for (const auto& mode : cached_coefficients_metadata(l_max)) {
+    for (const auto mode : cached_coefficients_metadata(l_max)) {
       goldberg_modes_to_libsharp_modes_single_pair(
           mode, libsharp_modes, i,
           goldberg_modes.data()[goldberg_mode_index(
@@ -262,5 +261,4 @@ GENERATE_INSTANTIATIONS(LIBSHARP_TO_GOLDBERG_INSTANTIATION, (-2, -1, 0, 1, 2))
 #undef LIBSHARP_TO_GOLDBERG_INSTANTIATION
 #undef GET_SPIN
 
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh

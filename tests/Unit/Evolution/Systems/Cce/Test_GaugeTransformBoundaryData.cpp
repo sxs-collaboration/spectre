@@ -186,7 +186,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         (void)l_max;
         const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
             Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-        for (const auto& collocation_point : collocation) {
+        for (const auto collocation_point : collocation) {
           get<1>(cauchy_angular_coordinates)[collocation_point.offset] =
               collocation_point.phi + 1.0e-2 * variation_amplitude *
                                           cos(collocation_point.phi) *
@@ -230,7 +230,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         (void)l_max;
         const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
             Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-        for (const auto& collocation_point : collocation) {
+        for (const auto collocation_point : collocation) {
           auto rootfind = RootFinder::toms748(
               [&collocation_point, &variation_amplitude](const double x) {
                 return collocation_point.phi -
@@ -264,7 +264,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         db::get<Tags::CauchyAngularCoords>(forward_transform_box);
     const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
         Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-    for (const auto& collocation_point : collocation) {
+    for (const auto collocation_point : collocation) {
       angular_phi = collocation_point.phi + 1.0e-2 * variation_amplitude *
                                                 cos(collocation_point.phi) *
                                                 sin(collocation_point.theta);

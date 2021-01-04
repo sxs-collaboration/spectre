@@ -41,7 +41,7 @@ void test_angular_filtering() noexcept {
   generated_modes.data() = make_with_random_values<ComplexModalVector>(
       make_not_null(&gen), make_not_null(&coefficient_distribution),
       size_of_libsharp_coefficient_vector(l_max));
-  for (const auto& mode : cached_coefficients_metadata(l_max)) {
+  for (const auto mode : cached_coefficients_metadata(l_max)) {
     if (mode.l < static_cast<size_t>(abs(Spin))) {
       generated_modes.data()[mode.transform_of_real_part_offset] = 0.0;
       generated_modes.data()[mode.transform_of_imag_part_offset] = 0.0;
@@ -59,7 +59,7 @@ void test_angular_filtering() noexcept {
       pre_filter_angular_data.data(), number_of_radial_points)};
 
   // remove the top few modes, emulating the filter process
-  for (const auto& mode : cached_coefficients_metadata(l_max)) {
+  for (const auto mode : cached_coefficients_metadata(l_max)) {
     if (mode.l > (l_max - 3)) {
       generated_modes.data()[mode.transform_of_real_part_offset] = 0.0;
       generated_modes.data()[mode.transform_of_imag_part_offset] = 0.0;

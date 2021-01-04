@@ -54,7 +54,7 @@ void RotatingSchwarzschild::spherical_metric(
 
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     get<0, 0>(*spherical_metric)[collocation_point.offset] =
         -(1.0 - 2.0 * mass_ / extraction_radius_ -
           square(frequency_) * square(extraction_radius_) *
@@ -86,7 +86,7 @@ void RotatingSchwarzschild::dr_spherical_metric(
 
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     get<0, 0>(*dr_spherical_metric)[collocation_point.offset] =
         -(2.0 * mass_ / square(extraction_radius_) -
           2.0 * square(frequency_) * extraction_radius_ *

@@ -673,7 +673,7 @@ void InitializeGauge::apply(
     const size_t l_max) noexcept {
   const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
       Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto& collocation_point : collocation) {
+  for (const auto collocation_point : collocation) {
     get<0>(*angular_cauchy_coordinates)[collocation_point.offset] =
         collocation_point.theta;
     get<1>(*angular_cauchy_coordinates)[collocation_point.offset] =

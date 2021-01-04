@@ -119,7 +119,7 @@ bool MetricWorldtubeDataManager::populate_hypersurface_boundary_data(
   // the swsh interface requirement that the spin-weight be labelled with
   // `SpinWeighted`
   SpinWeighted<ComplexModalVector, 0> spin_weighted_buffer;
-  for (const auto& libsharp_mode :
+  for (const auto libsharp_mode :
        Spectral::Swsh::cached_coefficients_metadata(l_max_)) {
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = i; j < 3; ++j) {
@@ -347,7 +347,7 @@ bool BondiWorldtubeDataManager::populate_hypersurface_boundary_data(
   // the ComplexModalVectors should be provided from the buffer_updater_ in
   // 'Goldberg' format, so we iterate over modes and convert to libsharp
   // format.
-  for (const auto& libsharp_mode :
+  for (const auto libsharp_mode :
        Spectral::Swsh::cached_coefficients_metadata(l_max_)) {
     tmpl::for_each<cce_bondi_input_tags>(
         [this, &libsharp_mode, &interpolate_from_column](auto tag_v) noexcept {
