@@ -175,7 +175,7 @@ namespace dg {
  * The subtraction technique is most commonly used in finite difference codes.
  */
 template <size_t Dim>
-void metric_identity_jacobian(
+void metric_identity_det_jac_times_inv_jac(
     gsl::not_null<
         InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
         det_jac_times_inverse_jacobian,

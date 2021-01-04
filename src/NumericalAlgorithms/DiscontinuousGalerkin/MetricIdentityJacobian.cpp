@@ -25,7 +25,7 @@
 
 namespace {
 template <size_t Dim>
-void metric_identity_jacobian_impl(
+void metric_identity_det_jac_times_inv_jac_impl(
     const gsl::not_null<
         InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
         det_jac_times_inverse_jacobian,
@@ -65,7 +65,7 @@ void metric_identity_jacobian_impl(
   }
 }
 
-void metric_identity_jacobian_impl(
+void metric_identity_det_jac_times_inv_jac_impl(
     const gsl::not_null<
         InverseJacobian<DataVector, 3, Frame::Logical, Frame::Inertial>*>
         det_jac_times_inverse_jacobian,
@@ -221,7 +221,7 @@ void metric_identity_jacobian_impl(
 
 namespace dg {
 template <size_t Dim>
-void metric_identity_jacobian(
+void metric_identity_det_jac_times_inv_jac(
     const gsl::not_null<
         InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>*>
         det_jac_times_inverse_jacobian,
@@ -237,12 +237,12 @@ void metric_identity_jacobian(
     DataVector buffer_component{buffers.data() + num_grid_points,  // NOLINT
                                 num_grid_points};
 
-    metric_identity_jacobian_impl(
+    metric_identity_det_jac_times_inv_jac_impl(
         det_jac_times_inverse_jacobian, make_not_null(&buffer),
         make_not_null(&buffer_component), mesh, inertial_coords, jacobian);
   } else {
-    metric_identity_jacobian_impl(det_jac_times_inverse_jacobian, mesh,
-                                  inertial_coords, jacobian);
+    metric_identity_det_jac_times_inv_jac_impl(det_jac_times_inverse_jacobian,
+                                               mesh, inertial_coords, jacobian);
   }
 }
 
@@ -281,13 +281,14 @@ void metric_identity_jacobian_quantities(
 
   if constexpr (Dim == 3) {
     // use inverse Jacobian as buffer in computation
-    metric_identity_jacobian_impl(det_jac_times_inverse_jacobian,
-                                  make_not_null(&get<0, 0>(*inverse_jacobian)),
-                                  make_not_null(&get<0, 1>(*inverse_jacobian)),
-                                  mesh, inertial_coords, *jacobian);
+    metric_identity_det_jac_times_inv_jac_impl(
+        det_jac_times_inverse_jacobian,
+        make_not_null(&get<0, 0>(*inverse_jacobian)),
+        make_not_null(&get<0, 1>(*inverse_jacobian)), mesh, inertial_coords,
+        *jacobian);
   } else {
-    metric_identity_jacobian_impl(det_jac_times_inverse_jacobian, mesh,
-                                  inertial_coords, *jacobian);
+    metric_identity_det_jac_times_inv_jac_impl(
+        det_jac_times_inverse_jacobian, mesh, inertial_coords, *jacobian);
   }
 
   // Now compute the determinant of the Jacobian, the inverse Jacobian, and the
@@ -321,7 +322,7 @@ void metric_identity_jacobian_quantities(
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                                 \
-  template void metric_identity_jacobian(                                      \
+  template void metric_identity_det_jac_times_inv_jac(                         \
       gsl::not_null<InverseJacobian<DataVector, GET_DIM(data), Frame::Logical, \
                                     Frame::Inertial>*>                         \
           det_jac_times_inverse_jacobian,                                      \

@@ -72,8 +72,8 @@ void test(const Mesh<Dim>& mesh) {
 
     InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial> result{};
 
-    dg::metric_identity_jacobian(make_not_null(&result), mesh, inertial_coords,
-                                 jacobian);
+    dg::metric_identity_det_jac_times_inv_jac(make_not_null(&result), mesh,
+                                              inertial_coords, jacobian);
 
     // Check metric identities are satisfied by taking the numerical divergence
     tnsr::i<DataVector, Dim, Frame::Inertial> divergence_terms{
@@ -120,9 +120,9 @@ void test(const Mesh<Dim>& mesh) {
   InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
       det_jac_times_inverse_jacobian{};
 
-  dg::metric_identity_jacobian(make_not_null(&det_jac_times_inverse_jacobian),
-                               mesh, map(logical_coordinates(mesh)),
-                               map.jacobian(logical_coordinates(mesh)));
+  dg::metric_identity_det_jac_times_inv_jac(
+      make_not_null(&det_jac_times_inverse_jacobian), mesh,
+      map(logical_coordinates(mesh)), map.jacobian(logical_coordinates(mesh)));
 
   Approx coarse_local_approx = Approx::custom().epsilon(1.0e-9).scale(1.);
   for (size_t i = 0; i < Dim; ++i) {
