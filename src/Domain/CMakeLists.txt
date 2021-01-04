@@ -50,6 +50,7 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   Boost::boost
+  CoordinateMaps
   DataStructures
   DomainStructure
   ErrorHandling
@@ -58,7 +59,6 @@ target_link_libraries(
   INTERFACE
   FunctionsOfTime
   Time
-  CoordinateMaps
   DomainCreators
   Spectral
   )

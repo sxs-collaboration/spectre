@@ -28,6 +28,8 @@ target_link_libraries(
   Options
   Spectral
   Utilities
+  PRIVATE
+  Informer
   INTERFACE
   Spectral
   )

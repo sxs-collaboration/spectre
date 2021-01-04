@@ -96,7 +96,6 @@ void LrtsDestroyLock(LrtsNodeLock /*lock*/) {
       "Charm++ and is not intended to be called."};
 }
 
-std::string info_from_build() { return "build_info"; }
 void CmiAbort(const char* msg) {
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
   fprintf(stderr, "%s", msg);

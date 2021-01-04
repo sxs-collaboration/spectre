@@ -34,6 +34,13 @@ spectre_target_headers(
   Verbosity.hpp
   )
 
+# The Darwin linker is not OK with undefined symbols at link time of the
+# library, so we need to appease it. This is needed so compiling InfoAtLink.cpp
+# can be deferred until we link an executable.
+target_link_options(
+  ${LIBRARY}
+  PUBLIC "$<$<PLATFORM_ID:Darwin>:-Wl,-U,_info_from_build>")
+
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
