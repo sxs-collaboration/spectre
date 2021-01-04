@@ -225,6 +225,10 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
     [undefined
     behavior](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html)
     compile flags (`-fsanitize=undefined`) (default is `OFF`)
+- UNIT_TESTS_IN_TEST_EXECUTABLES
+  - Whether to build the `unit-tests` target as part of the `test-executables`
+    target. This is used to build only the non-unit tests in the CI build
+    that doesn't use the PCH. (default is `ON`)
 - USE_CCACHE
   - Use ccache to cache build output so that rebuilding parts of the source tree
     is faster. The cache will use up space on disk, with the default being
