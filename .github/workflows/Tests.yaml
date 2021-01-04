@@ -624,8 +624,10 @@ jobs:
           git commit -a -m "Prepare release $RELEASE_VERSION"
           git show HEAD
           git status
-          git push
+          git tag -a v$RELEASE_VERSION -m "Release $RELEASE_VERSION" HEAD
+          git push origin HEAD:develop
           git push origin HEAD:release
+          git push origin v$RELEASE_VERSION
       - name: Tag and release
         uses: actions/create-release@v1
         env:
