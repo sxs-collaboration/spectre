@@ -1005,6 +1005,43 @@ using ArgumentTags = tmpl::flatten<tmpl::list<Tags...>>;
 template <typename... Tags>
 using AddComputeTags = tmpl::flatten<tmpl::list<Tags...>>;
 
+
+namespace detail {
+template <class ItemsList, class ComputeItemsList>
+struct compute_dbox_type;
+
+template <class... ItemsPack, class ComputeItemsList>
+struct compute_dbox_type<tmpl::list<ItemsPack...>, ComputeItemsList> {
+  using full_items = detail::expand_subitems<tmpl::list<ItemsPack...>>;
+  using full_compute_items = detail::expand_subitems<ComputeItemsList>;
+  using type = DataBox<tmpl::append<full_items, full_compute_items>>;
+};
+}  // namespace detail
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Get all the Tags that are compute items from the `TagList`
+ */
+template <class TagList>
+using get_compute_items = tmpl::filter<TagList, db::is_compute_tag<tmpl::_1>>;
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Get all the Tags that are items from the `TagList`
+ */
+template <class TagList>
+using get_items =
+    tmpl::filter<TagList, tmpl::not_<tmpl::bind<db::is_compute_tag, tmpl::_1>>>;
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Returns the type of the DataBox that would be constructed from the
+ * `TagList` of tags.
+ */
+template <class TagList>
+using compute_databox_type =
+    typename detail::compute_dbox_type<get_items<TagList>,
+                                       get_compute_items<TagList>>::type;
 /*!
  * \ingroup DataBoxGroup
  * \brief Create a new DataBox
@@ -1044,10 +1081,11 @@ SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
 
   using full_items = detail::expand_subitems<AddSimpleTags>;
   using full_compute_items = detail::expand_subitems<AddComputeTags>;
+  using databox_type =
+      compute_databox_type<tmpl::append<AddSimpleTags, AddComputeTags>>;
 
-  return DataBox<tmpl::append<full_items, full_compute_items>>(
-      AddSimpleTags{}, full_items{}, AddComputeTags{}, full_compute_items{},
-      std::forward<Args>(args)...);
+  return databox_type(AddSimpleTags{}, full_items{}, AddComputeTags{},
+                      full_compute_items{}, std::forward<Args>(args)...);
 }
 
 namespace detail {
@@ -1400,40 +1438,4 @@ SPECTRE_ALWAYS_INLINE constexpr void mutate_apply(
   mutate_apply(F{}, box, std::forward<Args>(args)...);
 }
 // @}
-
-/*!
- * \ingroup DataBoxGroup
- * \brief Get all the Tags that are compute items from the `TagList`
- */
-template <class TagList>
-using get_compute_items = tmpl::filter<TagList, db::is_compute_tag<tmpl::_1>>;
-
-/*!
- * \ingroup DataBoxGroup
- * \brief Get all the Tags that are items from the `TagList`
- */
-template <class TagList>
-using get_items =
-    tmpl::filter<TagList, tmpl::not_<tmpl::bind<db::is_compute_tag, tmpl::_1>>>;
-
-namespace detail {
-template <class ItemsList, class ComputeItemsList>
-struct compute_dbox_type;
-
-template <class... ItemsPack, class ComputeItemsList>
-struct compute_dbox_type<tmpl::list<ItemsPack...>, ComputeItemsList> {
-  using type = decltype(db::create<tmpl::list<ItemsPack...>, ComputeItemsList>(
-      std::declval<item_type<ItemsPack>>()...));
-};
-}  // namespace detail
-
-/*!
- * \ingroup DataBoxGroup
- * \brief Returns the type of the DataBox that would be constructed from the
- * `TagList` of tags.
- */
-template <class TagList>
-using compute_databox_type =
-    typename detail::compute_dbox_type<get_items<TagList>,
-                                       get_compute_items<TagList>>::type;
 }  // namespace db
