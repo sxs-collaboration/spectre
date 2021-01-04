@@ -8,6 +8,7 @@
 
 #include "DataStructures/LeviCivitaIterator.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.DataStructures.LeviCivitaIterator",
                   "[DataStructures][Unit]") {

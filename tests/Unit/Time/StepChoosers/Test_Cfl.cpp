@@ -55,7 +55,7 @@ struct Metavariables {
 double get_suggestion(const size_t stepper_order, const double safety_factor,
                       const double characteristic_speed,
                       const DataVector& coordinates) noexcept {
-  const Parallel::GlobalCache<Metavariables> cache{{}};
+  const Parallel::GlobalCache<Metavariables> cache{};
   const auto box = db::create<
       db::AddSimpleTags<
           CharacteristicSpeed, domain::Tags::Coordinates<dim, frame>,

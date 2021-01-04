@@ -54,7 +54,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
           std::make_unique<StepToTimes>(
               std::make_unique<Specified>(impl_times));
 
-      const Parallel::GlobalCache<Metavariables> cache{{}};
+      const Parallel::GlobalCache<Metavariables> cache{};
       const auto box = db::create<db::AddSimpleTags<Tags::TimeStepId>>(now_id);
 
       const double answer = step_to_times(now_id, step, cache);

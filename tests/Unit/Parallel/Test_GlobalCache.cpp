@@ -248,9 +248,8 @@ void TestArrayChare<Metavariables>::run_test_one() noexcept {
                                     serialized_and_deserialized_local_cache)
                                     .number_of_sides());
 
-  CkMigrateMessage empty_message{};
   Parallel::GlobalCache<TestMetavariables>
-      serialized_and_deserialized_global_cache{&empty_message};
+      serialized_and_deserialized_global_cache{};
   serialize_and_deserialize(
       make_not_null(&serialized_and_deserialized_global_cache), local_cache);
   SPECTRE_PARALLEL_REQUIRE(
@@ -422,9 +421,8 @@ void Test_GlobalCache<Metavariables>::run_single_core_test() noexcept {
                            Parallel::get<animal_base>(cache).number_of_legs());
 
   // Check the serialization of the mutable global cache
-  CkMigrateMessage empty_message{};
   Parallel::MutableGlobalCache<TestMetavariables>
-      serialized_and_deserialized_mutable_cache{&empty_message};
+      serialized_and_deserialized_mutable_cache{};
   serialize_and_deserialize(
       make_not_null(&serialized_and_deserialized_mutable_cache), mutable_cache);
 
@@ -504,6 +502,20 @@ void Test_GlobalCache<Metavariables>::exit_if_done(int index) noexcept {
   if (elements_that_are_finished_.size() >= num_elements_) {
     Parallel::exit();
   }
+}
+
+// [[OutputRegex, MutableGlobalCache has been constructed with a nullptr]]
+SPECTRE_TEST_CASE("Unit.Parallel.GlobalCache.NullptrConstructError",
+                  "[Parallel][Unit]") {
+  ERROR_TEST();
+  Parallel::GlobalCache<TestMetavariables>{nullptr};
+}
+
+// [[OutputRegex, MutableGlobalCache has been constructed with a nullptr]]
+SPECTRE_TEST_CASE("Unit.Parallel.MutableGlobalCache.NullptrConstructError",
+                  "[Parallel][Unit]") {
+  ERROR_TEST();
+  Parallel::MutableGlobalCache<TestMetavariables>{nullptr};
 }
 
 // --------- registration stuff below -------

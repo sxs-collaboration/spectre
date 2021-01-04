@@ -41,7 +41,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ByBlock", "[Unit][Time]") {
       std::make_unique<ByBlock>(by_block);
 
   const double current_step = std::numeric_limits<double>::infinity();
-  const Parallel::GlobalCache<Metavariables> cache{{}};
+  const Parallel::GlobalCache<Metavariables> cache{};
   for (size_t block = 0; block < 3; ++block) {
     const Element<volume_dim> element(ElementId<volume_dim>(block), {});
     const auto box =

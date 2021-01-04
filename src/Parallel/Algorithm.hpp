@@ -4,6 +4,7 @@
 #pragma once
 
 #include <boost/variant/variant.hpp>
+#include <charm++.h>
 #include <converse.h>
 #include <cstddef>
 #include <exception>
@@ -25,14 +26,17 @@
 #include "Parallel/Algorithms/AlgorithmSingletonDeclarations.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/SimpleActionVisitation.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "Utilities/BoostHelpers.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -44,16 +48,6 @@
 // IWYU pragma: no_include <array>  // for tuple_size
 
 // IWYU pragma: no_include "Parallel/Algorithm.hpp"  // Include... ourself?
-
-/// \cond
-namespace Parallel {
-namespace Algorithms {
-struct Nodegroup;
-struct Singleton;
-}  // namespace Algorithms
-}  // namespace Parallel
-// IWYU pragma: no_forward_declare db::DataBox
-/// \endcond
 
 namespace Parallel {
 /// \cond
@@ -180,8 +174,27 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
       tuples::TaggedTuple<InitializationTags...> initialization_items) noexcept;
 
   /// Charm++ migration constructor, used after a chare is migrated
-  constexpr explicit AlgorithmImpl(CkMigrateMessage* /*msg*/) noexcept;
+  explicit AlgorithmImpl(CkMigrateMessage* /*msg*/) noexcept;
 
+  void pup(PUP::er& p) noexcept override {  // NOLINT
+#ifdef SPECTRE_CHARM_PROJECTIONS
+    p | non_action_time_start_;
+#endif
+    if (performing_action_) {
+      ERROR("cannot serialize while performing action!");
+    }
+    p | performing_action_;
+    p | phase_;
+    p | algorithm_step_;
+    if constexpr (Parallel::is_node_group_proxy<cproxy_type>::value) {
+      p | node_lock_;
+    }
+    p | terminate_;
+    p | box_;
+    p | inboxes_;
+    p | array_index_;
+    p | global_cache_;
+  }
   /// \cond
   ~AlgorithmImpl() override;
 
@@ -419,10 +432,19 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-constexpr AlgorithmImpl<ParallelComponent,
-                        tmpl::list<PhaseDepActionListsPack...>>::
-    AlgorithmImpl(CkMigrateMessage* /*msg*/) noexcept
-    : AlgorithmImpl() {}
+AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    AlgorithmImpl(CkMigrateMessage* msg) noexcept
+    : cbase_type(msg) {
+  if (UNLIKELY(msg == nullptr)) {
+    ERROR(
+        "The AlgorithmImpl has been constructed with a nullptr as a "
+        "CkMigrateMessage* -- most likely this indicates that a constructor "
+        "is being used incorrectly, as the CkMigrateMessage* constructor "
+        "should only be used by the charm framework when migrating. "
+        "Constructing with a nullptr CkMigrateMessage* is dangerous and can "
+        "cause segfaults.");
+  }
+}
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 AlgorithmImpl<ParallelComponent,
@@ -653,16 +675,23 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     using databox_phase_type = tmpl::at_c<databox_phase_types, phase_index>;
     using databox_types_this_phase = typename databox_phase_type::databox_types;
 
-    const auto display_databox_error = [this](
-        const size_t line_number) noexcept {
-      ERROR(
-          "The DataBox type being retrieved at algorithm step: "
-          << algorithm_step_ << " in phase " << phase_index
-          << " corresponding to action " << pretty_type::get_name<this_action>()
-          << " on line " << line_number
-          << " is not the correct type but is of variant index " << box_.which()
-          << ". If you are using Goto and Label actions then you are using "
-             "them incorrectly.");
+    const auto display_databox_error = [this](const size_t line_number,
+                                              auto first_type,
+                                              auto... types) noexcept {
+      ERROR("The DataBox type being retrieved at algorithm step: "
+            << algorithm_step_ << " in phase " << phase_index
+            << " corresponding to action "
+            << pretty_type::get_name<this_action>() << " on line "
+            << line_number
+            << " is not the correct type but is of variant index "
+            << box_.which()
+            << ". If you are using Goto and Label actions then you are using "
+               "them incorrectly. \nValid DataBox Types: \n  "
+            << pretty_type::get_name<typename decltype(first_type)::type>()
+            << (MakeString{} << ",\n  "
+                << ...
+                << pretty_type::get_name<typename decltype(types)::type>())
+            << "\nVariant type:\n  " << pretty_type::get_name<variant_boxes>());
     };
 
     // The overload separately handles the first action in the phase from the
@@ -734,7 +763,8 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                         std::as_const(array_index_), actions_list{},
                         std::add_pointer_t<ParallelComponent>{}))>::type{});
               } else {
-                display_databox_error(__LINE__);
+                display_databox_error(__LINE__, tmpl::type_<first_databox>{},
+                                      tmpl::type_<last_databox>{});
               }
               return nullptr;
             },
@@ -775,7 +805,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                         std::as_const(array_index_), actions_list{},
                         std::add_pointer_t<ParallelComponent>{}))>::type{});
               } else {
-                display_databox_error(__LINE__);
+                display_databox_error(__LINE__, tmpl::type_<this_databox>{});
               }
               return nullptr;
             })(std::integral_constant<size_t, iter>{});

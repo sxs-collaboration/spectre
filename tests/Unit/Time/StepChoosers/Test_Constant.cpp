@@ -30,7 +30,7 @@ using Constant = StepChoosers::Constant<>;
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Constant", "[Unit][Time]") {
   Parallel::register_derived_classes_with_charm<StepChooserType>();
 
-  const Parallel::GlobalCache<Metavariables> cache{{}};
+  const Parallel::GlobalCache<Metavariables> cache{};
   const auto box = db::create<db::AddSimpleTags<>>();
 
   const Constant constant{5.4};

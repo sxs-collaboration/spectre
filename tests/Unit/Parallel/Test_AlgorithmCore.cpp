@@ -742,4 +742,16 @@ static const std::vector<void (*)()> charm_init_proc_funcs{
 using charmxx_main_component = Parallel::Main<TestMetavariables>;
 /// [charm_main_example]
 
+// [[OutputRegex, AlgorithmImpl has been constructed with a nullptr]]
+SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.NullptrConstructError",
+                  "[Parallel][Unit]") {
+  ERROR_TEST();
+  Parallel::AlgorithmImpl < NoOpsComponent<TestMetavariables>,
+      tmpl::list<
+          Parallel::PhaseActions<typename TestMetavariables::Phase,
+                                 TestMetavariables::Phase::Initialization,
+                                 tmpl::list<add_remove_test::initialize>>>>{
+          nullptr};
+}
+
 #include "Parallel/CharmMain.tpp"  // IWYU pragma: keep

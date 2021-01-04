@@ -108,6 +108,43 @@ function(add_algorithm_test_with_input_file TEST_NAME INPUT_FILE_DIR)
     ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
 endfunction()
 
+# Note that we have a 'balance' here that happens 2.5e4 of times per second just
+# to be completely certain that the desired number of migrations occur during
+# the test (5). This tends to have a lot of fluctuation depending on how quickly
+# the machine manages to execute this fairly short test, and the current balance
+# frequency has been roughly tuned to a) very consistently get at least 5
+# balances (usually gets several dozen), and b) complete the test in a
+# reasonable duration. Balancing too frequently can mean the test time explodes
+# due to balancing so much that the test computation doesn't get much of a
+# chance to execute.
+function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MATCH)
+  add_test(
+    NAME "\"Integration.Parallel.${TEST_NAME}\""
+    COMMAND
+    ${SHELL_EXECUTABLE}
+    -c "${CMAKE_BINARY_DIR}/bin/Test_${EXECUTABLE_NAME} +p2 +balancer \
+     RotateLB +LBPeriod 4.0e-5 +LBDebug 3 2>&1"
+    )
+
+  if("${REGEX_TO_MATCH}" STREQUAL "")
+    set_tests_properties(
+      "\"Integration.Parallel.${TEST_NAME}\""
+      PROPERTIES
+      TIMEOUT 10
+      LABELS "integration"
+      ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+  else()
+    set_tests_properties(
+      "\"Integration.Parallel.${TEST_NAME}\""
+      PROPERTIES
+      PASS_REGULAR_EXPRESSION
+      "${REGEX_TO_MATCH}"
+      TIMEOUT 10
+      LABELS "integration"
+      ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+  endif()
+endfunction()
+
 add_algorithm_test("AlgorithmCore" "")
 add_algorithm_test(
   "AlgorithmBadBoxApply"
@@ -127,6 +164,8 @@ add_algorithm_test("AlgorithmParallel" "")
 add_algorithm_test("AlgorithmReduction" "")
 add_algorithm_test("AlgorithmNodelock" "")
 add_algorithm_test("GlobalCache" "")
+add_algorithm_test_with_balancing("AlgorithmParallelWithBalancing"
+  "AlgorithmParallel" "Objects migrating: 14")
 
 add_algorithm_test_with_input_file("AlgorithmGlobalCache" "Unit/Parallel")
 

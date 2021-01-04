@@ -28,7 +28,7 @@ endif(NOT TARGET Charmxx)
 #       with GCC
 string(
     REGEX REPLACE "<CMAKE_CXX_COMPILER>"
-    "${CHARM_COMPILER} -pthread -module DistributedLB -no-charmrun"
+    "${CHARM_COMPILER} -pthread -module CommonLBs -no-charmrun"
     CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE}")
 
 # When building for trace analysis the PAPI counters passed to charmc
