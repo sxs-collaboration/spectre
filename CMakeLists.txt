@@ -12,6 +12,15 @@ include(SpectreLoadMetadata)
 # - Fortran is needed for SPHEREPACK
 project(${SPECTRE_NAME} VERSION ${SPECTRE_VERSION} LANGUAGES CXX C Fortran)
 
+# Unset the CMake-defined version variable because it strips zeros from the
+# version components, e.g. 2020.12.07 becomes 2020.12.7
+unset(${SPECTRE_NAME}_VERSION)
+# Also unset the version-component variables because they have no meaning in
+# our versioning scheme
+unset(${SPECTRE_NAME}_VERSION_MAJOR)
+unset(${SPECTRE_NAME}_VERSION_MINOR)
+unset(${SPECTRE_NAME}_VERSION_PATCH)
+
 # Policies
 # The `cmake_minimum_required` above sets policies to `NEW` that are compatible
 # with the given minimum cmake version. Here we overwrite policies that we

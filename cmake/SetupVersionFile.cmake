@@ -4,7 +4,7 @@
 file(WRITE
   "${CMAKE_BINARY_DIR}/LibraryVersions.txt"
   "CMake Version: ${CMAKE_VERSION}\n"
-  "SpECTRE Version: ${SpECTRE_VERSION}\n"
+  "SpECTRE Version: ${SPECTRE_VERSION}\n"
   "Git description: ${GIT_DESCRIPTION}\n"
   "Git branch: ${GIT_BRANCH}\n"
   "Git hash: ${GIT_HASH}\n"

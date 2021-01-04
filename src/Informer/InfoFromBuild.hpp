@@ -26,24 +26,6 @@ std::string spectre_version();
 
 /*!
  * \ingroup LoggingGroup
- * \brief Returns major version
- */
-int spectre_major_version();
-
-/*!
- * \ingroup LoggingGroup
- * \brief Returns minor version
- */
-int spectre_minor_version();
-
-/*!
- * \ingroup LoggingGroup
- * \brief Returns patch version
- */
-int spectre_patch_version();
-
-/*!
- * \ingroup LoggingGroup
  * \brief Returns the path to the Unit test directory.
  */
 std::string unit_test_path() noexcept;
