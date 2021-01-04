@@ -87,7 +87,9 @@ PyObject* make_py_tuple(const Args&... t) {
 ///\cond
 template <>
 struct ToPyObject<void, std::nullptr_t> {
-  static PyObject* convert() { return Py_None; }
+  static PyObject* convert() {
+    Py_RETURN_NONE;
+  }
 };
 
 template <typename T>
@@ -649,7 +651,7 @@ struct ToPyObject<boost::optional<T>> {
     if (static_cast<bool>(t)) {
       return to_py_object(*t);
     }
-    return Py_None;
+    Py_RETURN_NONE;
   }
 };
 
@@ -669,7 +671,7 @@ struct ToPyObject<std::optional<T>> {
     if (static_cast<bool>(t)) {
       return to_py_object(*t);
     }
-    return Py_None;
+    Py_RETURN_NONE;
   }
 };
 

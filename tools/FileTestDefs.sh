@@ -418,6 +418,35 @@ pragma_once_test() {
 }
 standard_checks+=(pragma_once)
 
+# Check for 'return Py_None;' in all C++ files
+py_return_none() {
+    is_c++ "$1" && \
+        whitelist "$1" && \
+        staged_grep -q -x '.*return Py_None;.*' "$1"
+}
+py_return_none_report() {
+    echo "Found 'return Py_None;' in files. Use Py_RETURN_NONE instead."
+    pretty_grep ".*return Py_None;.*" "$@"
+}
+py_return_none_test() {
+    test_check pass foo.cpp ''
+    test_check pass foo.hpp ''
+    test_check pass foo.tpp ''
+    test_check fail foo.hpp '  return Py_None;'$'\n'
+    test_check fail foo.cpp '  return Py_None;'$'\n'
+    test_check fail foo.tpp '  return Py_None;'$'\n'
+    test_check fail foo.hpp '//return Py_None;'$'\n'
+    test_check fail foo.cpp '//return Py_None;'$'\n'
+    test_check fail foo.tpp '//return Py_None;'$'\n'
+    test_check fail foo.hpp '  return Py_None; '$'\n'
+    test_check fail foo.cpp '  return Py_None; '$'\n'
+    test_check fail foo.tpp '  return Py_None; '$'\n'
+    test_check pass foo.hpp '//return Py_None'$'\n'
+    test_check pass foo.cpp '//return Py_None'$'\n'
+    test_check pass foo.tpp '//return Py_None'$'\n'
+}
+standard_checks+=(py_return_none)
+
 # Check for a newline at end of file
 final_newline() {
     whitelist "$1" '.h5' '.nojekyll' '.png' '.svg' &&

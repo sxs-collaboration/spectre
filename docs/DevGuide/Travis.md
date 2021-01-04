@@ -69,6 +69,8 @@ if any of the following are true:
     * contains `Ls` (use `List` instead)
     * contains additional text after `/*!` (does not render correctly in
       Doxygen)
+    * contains the string `return Py_None;` (bug prone, use `Py_RETURN_NONE`
+      instead)
   - A `c++` test,
     * uses `TEST_CASE` (use `SPECTRE_TEST_CASE` instead)
     * uses `Approx` (use `approx` instead)
