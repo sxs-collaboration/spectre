@@ -188,7 +188,7 @@ struct InterfaceApplyImpl<DirectionsTag, tmpl::list<ArgumentTags...>,
             typename... ExtraArgs,
             Requires<is_apply_callable_v<
                 InterfaceInvokable,
-                const db::detail::const_item_type<ArgumentTags, DbTagsList>&...,
+                db::detail::const_item_type<ArgumentTags, DbTagsList>...,
                 ExtraArgs...>> = nullptr>
   static constexpr auto apply(InterfaceInvokable&& interface_invokable,
                               const db::DataBox<DbTagsList>& box,
@@ -209,7 +209,7 @@ struct InterfaceApplyImpl<DirectionsTag, tmpl::list<ArgumentTags...>,
             typename... ExtraArgs,
             Requires<not is_apply_callable_v<
                 InterfaceInvokable,
-                const db::detail::const_item_type<ArgumentTags, DbTagsList>&...,
+                db::detail::const_item_type<ArgumentTags, DbTagsList>...,
                 ExtraArgs...>> = nullptr>
   static constexpr auto apply(InterfaceInvokable&& interface_invokable,
                               const db::DataBox<DbTagsList>& box,

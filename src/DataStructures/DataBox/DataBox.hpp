@@ -289,7 +289,7 @@ class DataBox<tmpl::list<Tags...>>
   /// Retrieve the tag `Tag`, should be called by the free function db::get
   template <typename Tag,
             Requires<not std::is_same_v<Tag, ::Tags::DataBox>> = nullptr>
-  auto get() const noexcept -> const detail::const_item_type<Tag, tags_list>&;
+  auto get() const noexcept -> detail::const_item_type<Tag, tags_list>;
 
   /// Retrieve the tag `Tag`, should be called by the free function db::get
   template <typename Tag,
@@ -921,7 +921,7 @@ void mutate(const gsl::not_null<DataBox<TagList>*> box, Invokable&& invokable,
 template <typename... Tags>
 template <typename Tag, Requires<not std::is_same_v<Tag, ::Tags::DataBox>>>
 SPECTRE_ALWAYS_INLINE auto DataBox<tmpl::list<Tags...>>::get() const noexcept
-    -> const detail::const_item_type<Tag, tags_list>& {
+    -> detail::const_item_type<Tag, tags_list> {
   DEBUG_STATIC_ASSERT(
       not detail::has_no_matching_tag_v<tags_list, Tag>,
       "Found no tags in the DataBox that match the tag being retrieved.");
@@ -1200,8 +1200,7 @@ static constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
                             tmpl::list<ArgumentTags...> /*meta*/,
                             Args&&... args) noexcept {
   if constexpr (is_apply_callable_v<
-                    F, const const_item_type<ArgumentTags, BoxTags>&...,
-                    Args...>) {
+                    F, const_item_type<ArgumentTags, BoxTags>..., Args...>) {
     return F::apply(::db::get<ArgumentTags>(box)...,
                     std::forward<Args>(args)...);
   } else if constexpr (::tt::is_callable_v<
@@ -1306,13 +1305,12 @@ SPECTRE_ALWAYS_INLINE constexpr void mutate_apply(
       "inside mutate_apply.");
   if constexpr (is_apply_callable_v<
                     F, const gsl::not_null<item_type<ReturnTags, BoxTags>*>...,
-                    const const_item_type<ArgumentTags, BoxTags>&...,
-                    Args...>) {
+                    const_item_type<ArgumentTags, BoxTags>..., Args...>) {
     ::db::mutate<ReturnTags...>(
         box,
         [
         ](const gsl::not_null<item_type<ReturnTags, BoxTags>*>... mutated_items,
-          const const_item_type<ArgumentTags, BoxTags>&... args_items,
+          const_item_type<ArgumentTags, BoxTags>... args_items,
           decltype(std::forward<Args>(args))... l_args) noexcept {
           return std::decay_t<F>::apply(mutated_items..., args_items...,
                                         std::forward<Args>(l_args)...);
@@ -1321,12 +1319,12 @@ SPECTRE_ALWAYS_INLINE constexpr void mutate_apply(
   } else if constexpr (
       ::tt::is_callable_v<
           F, const gsl::not_null<item_type<ReturnTags, BoxTags>*>...,
-          const const_item_type<ArgumentTags, BoxTags>&..., Args...>) {
+          const_item_type<ArgumentTags, BoxTags>..., Args...>) {
     ::db::mutate<ReturnTags...>(
         box,
         [&f](const gsl::not_null<
                  item_type<ReturnTags, BoxTags>*>... mutated_items,
-             const const_item_type<ArgumentTags, BoxTags>&... args_items,
+             const_item_type<ArgumentTags, BoxTags>... args_items,
              decltype(std::forward<Args>(args))... l_args) noexcept {
           return f(mutated_items..., args_items...,
                    std::forward<Args>(l_args)...);
@@ -1335,7 +1333,7 @@ SPECTRE_ALWAYS_INLINE constexpr void mutate_apply(
   } else {
     error_function_not_callable<
         F, gsl::not_null<item_type<ReturnTags, BoxTags>*>...,
-        const const_item_type<ArgumentTags, BoxTags>&..., Args...>();
+        const_item_type<ArgumentTags, BoxTags>..., Args...>();
   }
 }
 }  // namespace detail

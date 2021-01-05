@@ -5,7 +5,9 @@
 
 #include <array>
 #include <cstddef>
+#include <functional>
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <pup.h>
 #include <string>
@@ -348,61 +350,61 @@ void test_databox() noexcept {
     using DbTags = decltype(box)::tags_list;
     static_assert(
         std::is_same_v<db::detail::const_item_type<test_databox_tags::Pointer>,
-                       int>,
+                       const int&>,
         "Wrong type for const_item_type on unique_ptr simple item");
     static_assert(
         std::is_same_v<
             decltype(db::get<test_databox_tags::Pointer>(box)),
-            const db::detail::const_item_type<test_databox_tags::Pointer>&>,
+            db::detail::const_item_type<test_databox_tags::Pointer>>,
         "Wrong type for get on unique_ptr simple item");
     CHECK(db::get<test_databox_tags::Pointer>(box) == 3);
 
     static_assert(
         std::is_same_v<
             db::detail::const_item_type<test_databox_tags::PointerBase, DbTags>,
-            int>,
+            const int&>,
         "Wrong type for const_item_type on unique_ptr simple item by base");
     static_assert(
         std::is_same_v<decltype(db::get<test_databox_tags::PointerBase>(box)),
-                       const db::detail::const_item_type<
-                           test_databox_tags::PointerBase, DbTags>&>,
+                       db::detail::const_item_type<
+                           test_databox_tags::PointerBase, DbTags>>,
         "Wrong type for get on unique_ptr simple item by base");
     CHECK(db::get<test_databox_tags::PointerBase>(box) == 3);
 
     static_assert(
         std::is_same_v<
             db::detail::const_item_type<test_databox_tags::PointerToCounter>,
-            int>,
+            const int&>,
         "Wrong type for const_item_type on unique_ptr compute item");
     static_assert(
-        std::is_same_v<decltype(
-                           db::get<test_databox_tags::PointerToCounter>(box)),
-                       const db::detail::const_item_type<
-                           test_databox_tags::PointerToCounter>&>,
+        std::is_same_v<
+            decltype(db::get<test_databox_tags::PointerToCounter>(box)),
+            db::detail::const_item_type<test_databox_tags::PointerToCounter>>,
         "Wrong type for get on unique_ptr compute item");
     CHECK(db::get<test_databox_tags::PointerToCounter>(box) == 4);
 
     static_assert(
         std::is_same_v<db::detail::const_item_type<
                            test_databox_tags::PointerToCounterBase, DbTags>,
-                       int>,
+                       const int&>,
         "Wrong type for const_item_type on unique_ptr compute item by base");
     static_assert(
         std::is_same_v<
             decltype(db::get<test_databox_tags::PointerToCounterBase>(box)),
-            const db::detail::const_item_type<
-                test_databox_tags::PointerToCounterBase, DbTags>&>,
+            db::detail::const_item_type<test_databox_tags::PointerToCounterBase,
+                                        DbTags>>,
         "Wrong type for get on unique_ptr compute item by base");
     CHECK(db::get<test_databox_tags::PointerToCounterBase>(box) == 4);
 
     static_assert(
         std::is_same_v<
-            db::detail::const_item_type<test_databox_tags::PointerToSum>, int>,
+            db::detail::const_item_type<test_databox_tags::PointerToSum>,
+            const int&>,
         "Wrong type for const_item_type on unique_ptr");
     static_assert(
-        std::is_same_v<decltype(db::get<test_databox_tags::PointerToSum>(box)),
-                       const db::detail::const_item_type<
-                           test_databox_tags::PointerToSum>&>,
+        std::is_same_v<
+            decltype(db::get<test_databox_tags::PointerToSum>(box)),
+            db::detail::const_item_type<test_databox_tags::PointerToSum>>,
         "Wrong type for get on unique_ptr");
     CHECK(db::get<test_databox_tags::PointerToSum>(box) == 8);
   }
@@ -703,6 +705,19 @@ void test_apply() noexcept {
     }
   };
   db::apply<PointerApplyCallable>(original_box);
+
+  {
+    INFO("Test apply with optional reference argument");
+    db::apply<tmpl::list<test_databox_tags::Tag1, test_databox_tags::Tag1>>(
+        [](const std::optional<
+               std::reference_wrapper<const std::vector<double>>>
+               optional_ref,
+           const auto& const_ref) {
+          REQUIRE(optional_ref.has_value());
+          CHECK(optional_ref->get() == const_ref);
+        },
+        original_box);
+  }
 }
 
 struct Var1 : db::SimpleTag {
@@ -1903,8 +1918,8 @@ struct Subitems<Parent<N>> {
   }
 
   template <typename Subtag>
-  static detail::const_item_type<Subtag> create_compute_item(
-      const detail::const_item_type<tag>& parent_value) noexcept {
+  static std::decay_t<detail::const_item_type<Subtag>> create_compute_item(
+      detail::const_item_type<tag> parent_value) noexcept {
     // clang-tidy: do not use const_cast
     // We need a non-const object to set up the aliasing since in the
     // simple-item case the alias can be used to modify the original
@@ -1929,8 +1944,8 @@ struct Subitems<ParentCompute<N>> {
   }
 
   template <typename Subtag>
-  static detail::const_item_type<Subtag> create_compute_item(
-      const detail::const_item_type<tag>& parent_value) noexcept {
+  static std::decay_t<detail::const_item_type<Subtag>> create_compute_item(
+      detail::const_item_type<tag> parent_value) noexcept {
     // clang-tidy: do not use const_cast
     // We need a non-const object to set up the aliasing since in the
     // simple-item case the alias can be used to modify the original
