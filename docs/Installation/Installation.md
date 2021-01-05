@@ -36,7 +36,7 @@ environment differently, read on!
 * [libsharp](https://github.com/Libsharp/libsharp) should be built with
   support disabled for openmp and mpi, as we want all of our parallelism to
   be accomplished via Charm++.
-* [LIBXSMM](https://github.com/hfp/libxsmm)
+* [LIBXSMM](https://github.com/hfp/libxsmm) version 1.16.1 or later
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp) version 0.6.3 is
   recommended. Building with shared library support is also recommended.
 * [Python](https://www.python.org/) 2.7, or 3.5 or later
