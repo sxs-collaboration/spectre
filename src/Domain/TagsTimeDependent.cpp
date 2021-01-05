@@ -10,8 +10,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace domain {
-namespace Tags {
+namespace domain::Tags {
 template <size_t Dim>
 void InertialFromGridCoordinatesCompute<Dim>::function(
     const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
@@ -105,8 +104,8 @@ void InertialMeshVelocityCompute<Dim>::function(
     // effectively unpacking the tuple. This is safe because the output
     // of a compute tag is immutable.
     for (size_t i = 0; i < Dim; ++i) {
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
       mesh_velocity->value().operator[](i).set_data_ref(
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
           &const_cast<DataVector&>(
               std::get<3>(*grid_to_inertial_quantities).get(i)));
     }
@@ -124,5 +123,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
 #undef DIM
-}  // namespace Tags
-}  // namespace domain
+}  // namespace domain::Tags
