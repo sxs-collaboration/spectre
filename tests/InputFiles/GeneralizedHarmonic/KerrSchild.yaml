@@ -90,6 +90,7 @@ EventsAndTriggers:
           - PointwiseL2Norm(GaugeConstraint)
           - PointwiseL2Norm(ThreeIndexConstraint)
           - PointwiseL2Norm(FourIndexConstraint)
+        InterpolateToMesh: None
   ? Slabs:
       EvenlySpaced:
         Interval: 5

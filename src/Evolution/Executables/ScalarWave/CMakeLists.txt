@@ -5,6 +5,7 @@ set(LIBS_TO_LINK
   CoordinateMaps
   DiscontinuousGalerkin
   DomainCreators
+  Events
   Evolution
   IO
   Informer

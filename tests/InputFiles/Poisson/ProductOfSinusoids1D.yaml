@@ -44,3 +44,4 @@ EventsAndTriggers:
     - ObserveFields:
         SubfileName: VolumeData
         VariablesToObserve: [Field, deriv(Field)]
+        InterpolateToMesh: None

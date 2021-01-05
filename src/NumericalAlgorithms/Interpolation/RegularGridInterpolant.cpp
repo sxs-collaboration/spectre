@@ -3,8 +3,7 @@
 
 #include "RegularGridInterpolant.hpp"
 
-#include "Domain/LogicalCoordinates.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
@@ -25,7 +24,7 @@ RegularGrid<Dim>::RegularGrid(
       // constructed matrix is given instead, apply_matrices does no work.
       if (source_mesh_1d != target_mesh_1d) {
         gsl::at(interpolation_matrices_, d) = Spectral::interpolation_matrix(
-            source_mesh_1d, get<0>(logical_coordinates(target_mesh_1d)));
+            source_mesh_1d, Spectral::collocation_points(target_mesh_1d));
       }
       number_of_target_points_ *= target_mesh_1d.number_of_grid_points();
     } else {

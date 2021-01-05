@@ -12,7 +12,6 @@
 #include "DataStructures/Matrix.hpp"  // IWYU pragma: keep
 #include "DataStructures/Variables.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/MakeArray.hpp"
 
 // IWYU pragma: no_forward_declare Variables
 
@@ -56,8 +55,7 @@ class RegularGrid {
   /// coordinates which will override the default coordinates of `target_mesh`.
   RegularGrid(const Mesh<Dim>& source_mesh, const Mesh<Dim>& target_mesh,
               const std::array<DataVector, Dim>&
-                  override_target_mesh_with_1d_logical_coords =
-                      make_array<Dim>(DataVector())) noexcept;
+                  override_target_mesh_with_1d_logical_coords = {}) noexcept;
 
   RegularGrid();
 
@@ -70,8 +68,8 @@ class RegularGrid {
   void interpolate(gsl::not_null<Variables<TagsList>*> result,
                    const Variables<TagsList>& vars) const noexcept;
   template <typename TagsList>
-  Variables<TagsList> interpolate(const Variables<TagsList>& vars) const
-      noexcept;
+  Variables<TagsList> interpolate(
+      const Variables<TagsList>& vars) const noexcept;
   //@}
 
   //@{

@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <initializer_list>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <type_traits>
@@ -22,11 +23,14 @@
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "IO/Observer/VolumeActions.hpp"      // IWYU pragma: keep
+#include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/PupStlCpp17.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -78,11 +82,15 @@ class ObserveFields;  // IWYU pragma: keep
  * \ingroup DiscontinuousGalerkinGroup
  * \brief %Observe volume tensor fields.
  *
- * Writes volume quantities:
+ * A class that writes volume quantities to an h5 file during the simulation.
+ * The observed quantitites are:
  * - `InertialCoordinates`
  * - Tensors listed in `Tensors` template parameter
  * - `Error(*)` = errors in `AnalyticSolutionTensors` =
  *   \f$\text{value} - \text{analytic solution}\f$
+ *
+ * The user may specify an `interpolation_mesh` to which the
+ * data is interpolated.
  */
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
           typename... AnalyticSolutionTensors, typename EventRegistrars,
@@ -121,7 +129,20 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     static size_t lower_bound_on_size() noexcept { return 1; }
   };
 
-  using options = tmpl::list<SubfileName, VariablesToObserve>;
+  struct InterpolateToMesh {
+    using type = Options::Auto<Mesh<VolumeDim>, Options::AutoLabel::None>;
+    static constexpr Options::String help =
+        "An optional mesh to which the variables are interpolated. This mesh "
+        "specifies any number of collocation points, basis, and quadrature on "
+        "which the observed quantities are evaluated. If no mesh is given, the "
+        "results will be evaluated on the mesh the simulation runs on. The "
+        "user may add several ObserveField Events e.g. with and without an "
+        "interpolating mesh to output the data both on the original mesh and "
+        "on a new mesh.";
+  };
+
+  using options =
+      tmpl::list<SubfileName, VariablesToObserve, InterpolateToMesh>;
   static constexpr Options::String help =
       "Observe volume tensor fields.\n"
       "\n"
@@ -138,12 +159,13 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   ObserveFields() = default;
 
   explicit ObserveFields(const std::string& subfile_name,
-                         const std::vector<std::string>& variables_to_observe =
-                             {db::tag_name<Tensors>()...},
+                         const std::vector<std::string>& variables_to_observe,
+                         std::optional<Mesh<VolumeDim>> interpolation_mesh = {},
                          const Options::Context& context = {})
       : subfile_path_("/" + subfile_name),
         variables_to_observe_(variables_to_observe.begin(),
-                              variables_to_observe.end()) {
+                              variables_to_observe.end()),
+        interpolation_mesh_(interpolation_mesh) {
     using ::operator<<;
     const std::unordered_set<std::string> valid_tensors{
         db::tag_name<Tensors>()...};
@@ -184,6 +206,11 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     const std::string element_name =
         MakeString{} << ElementId<VolumeDim>(array_index) << '/';
 
+    // if no interpolation_mesh is provided, the interpolation is essentially
+    // ignored by the RegularGridInterpolant except for a single copy.
+    const intrp::RegularGrid interpolant(mesh,
+                                         interpolation_mesh_.value_or(mesh));
+
     // Remove tensor types, only storing individual components.
     std::vector<TensorComponent> components;
     // This is larger than we need if we are only observing some
@@ -196,14 +223,16 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
             NonSolutionTensors::type::size()...},
         0_st));
 
-    const auto record_tensor_components = [ this, &components, &element_name ](
-        const auto tensor_tag_v, const auto& tensor) noexcept {
+    const auto record_tensor_components = [this, &components, &element_name,
+                                           &interpolant](
+                                              const auto tensor_tag_v,
+                                              const auto& tensor) noexcept {
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
       if (variables_to_observe_.count(db::tag_name<tensor_tag>()) == 1) {
         for (size_t i = 0; i < tensor.size(); ++i) {
           components.emplace_back(element_name + db::tag_name<tensor_tag>() +
                                       tensor.component_suffix(i),
-                                  tensor[i]);
+                                  interpolant.interpolate(tensor[i]));
         }
       }
     };
@@ -214,9 +243,9 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     EXPAND_PACK_LEFT_TO_RIGHT(record_tensor_components(
         tmpl::type_<NonSolutionTensors>{}, non_solution_tensors));
 
-    const auto record_errors = [ this, &components, &element_name ](
-        const auto tensor_tag_v, const auto& tensor,
-        const auto& analytic_tensor) noexcept {
+    const auto record_errors = [this, &components, &element_name, &interpolant](
+                                   const auto tensor_tag_v, const auto& tensor,
+                                   const auto& analytic_tensor) noexcept {
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
       if (variables_to_observe_.count(db::tag_name<tensor_tag>()) == 1) {
         for (size_t i = 0; i < tensor.size(); ++i) {
@@ -224,7 +253,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
           components.emplace_back(element_name + "Error(" +
                                       db::tag_name<tensor_tag>() + ")" +
                                       tensor.component_suffix(i),
-                                  std::move(error));
+                                  interpolant.interpolate(error));
         }
       }
     };
@@ -246,8 +275,9 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ElementId<VolumeDim>>(array_index)),
-        std::move(components), mesh.extents(), mesh.basis(),
-        mesh.quadrature());
+        std::move(components), interpolation_mesh_.value_or(mesh).extents(),
+        interpolation_mesh_.value_or(mesh).basis(),
+        interpolation_mesh_.value_or(mesh).quadrature());
   }
 
   using observation_registration_tags = tmpl::list<>;
@@ -262,11 +292,13 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     Event<EventRegistrars>::pup(p);
     p | subfile_path_;
     p | variables_to_observe_;
+    p | interpolation_mesh_;
   }
 
  private:
   std::string subfile_path_;
   std::unordered_set<std::string> variables_to_observe_{};
+  std::optional<Mesh<VolumeDim>> interpolation_mesh_{};
 };
 
 /// \cond
