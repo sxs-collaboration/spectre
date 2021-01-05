@@ -547,10 +547,33 @@ prevent_cpp_includes_test() {
 }
 standard_checks+=(prevent_cpp_includes)
 
+# Prevent editing RunSingleTest files. We may need to occasionally update these
+# files, but it's at least less than once a year.
+#
+# This check is not added to the standard checks because the existence of the
+# CMakeLists file itself is okay, it's just not supposed to be changed. We add
+# the check only when running tests and to the commit hook since we don't want
+# people to change the file (and it's easily accidentally committed).
+prevent_run_single_test_changes() {
+    [[ $1 =~ "RunSingleTest/CMakeLists.txt" ]]
+}
+prevent_run_single_test_changes_report() {
+    echo "Found changes to RunSingleTest/CMakeLists.txt"
+    pretty_grep "include .*\.cpp" "$@"
+}
+prevent_run_single_test_changes_test() {
+    test_check pass ./tests/Unit/RunSingleTest/Test.cpp ''
+    test_check pass src/Domain/Blah.cpp ''
+    test_check pass ./src/Domain/Blah.cpp ''
+    test_check fail ./tests/Unit/RunSingleTest/CMakeLists.txt ''
+    test_check fail RunSingleTest/CMakeLists.txt ''
+    test_check fail ../RunSingleTest/CMakeLists.txt ''
+}
+
 # if test is enabled: redefines staged_grep to run tests on files that
 # are not in git
 [ "$1" = --test ] && staged_grep() { grep "$@"; } && \
-    run_tests "${standard_checks[@]}"
+    run_tests "${standard_checks[@]}" prevent_run_single_test_changes
 
 # True result for sourcing
 :
