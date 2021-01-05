@@ -49,9 +49,6 @@ struct Product<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>>
 
   Product(const T1& t1, const T2& t2) : t1_(t1), t2_(t2) {}
 
-  // TODO: The args will need to be reduced in a careful manner, which means
-  // they need to be reduced together, then split at the correct length so that
-  // the indexing is correct.
   template <typename... LhsIndices, typename U>
   SPECTRE_ALWAYS_INLINE type
   get(const std::array<U, num_tensor_indices>& tensor_index) const {

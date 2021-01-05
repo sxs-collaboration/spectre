@@ -78,6 +78,7 @@ if any of the following are true:
     Python-binding directory,
     * does not list a `C++` file that is present in the directory
     * lists a `C++` file that is not present in the directory
+  - A `c++` or `python` file contains a `TODO` (case-insensitive) comment
   - The file `tests/Unit/RunSingleTest/CMakeLists.txt` wasn't modified
   - A python file is not formatted according to the `.style.yapf` file in the
     root of the repository.

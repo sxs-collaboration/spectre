@@ -81,6 +81,8 @@ pretty_grep() {
 # Utility functions for checks classifying a file based on its name
 is_includible() { [[ $1 =~ \.hpp$ ]] || [[ $1 =~ \.tpp$ ]] ; }
 is_c++() { [[ $1 =~ \.cpp$ ]] || [[ $1 =~ \.hpp$ ]] || [[ $1 =~ \.tpp$ ]] ; }
+is_c++_or_python() { [[ $1 =~ \.cpp$ ]] || [[ $1 =~ \.hpp$ ]] \
+                         || [[ $1 =~ \.tpp$ ]] || [[ $1 =~ \.py$ ]] ; }
 
 # Utility function for checks that returns false if the first argument
 # matches any of the shell regexes passed as subsequent arguments.
