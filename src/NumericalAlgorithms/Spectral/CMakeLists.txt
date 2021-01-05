@@ -56,3 +56,5 @@ target_link_libraries(
   Boost::boost
   Lapack
   )
+
+add_subdirectory(Python)

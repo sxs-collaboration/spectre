@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 from spectre import DataStructures as ds
+from spectre.Spectral import Basis, Quadrature
 import spectre.IO.H5 as spectre_h5
 from spectre import Informer
 import unittest
@@ -57,8 +58,8 @@ class TestVolumeData(unittest.TestCase):
         observation_ids = [0, 1]
         observation_values = {0: 7.0, 1: 1.3}
         grid_names = ["grid_1", "grid_2"]
-        basis = ds.Legendre
-        quad = ds.Gauss
+        basis = Basis.Legendre
+        quad = Quadrature.Gauss
 
         # Insert .vol file to h5 file
         self.h5_file.insert_vol("/element_data", version=0)

@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory("Python")
+
 set(LIBRARY "Test_Spectral")
 
 set(LIBRARY_SOURCES

@@ -2,9 +2,8 @@
 # See LICENSE.txt for details.
 
 from spectre.DataStructures import (DataVector, ExtentsAndTensorVolumeData,
-                                    TensorComponent, Legendre, Gauss,
-                                    ElementVolumeData)
-
+                                    TensorComponent, ElementVolumeData)
+from spectre.Spectral import Basis, Quadrature
 import unittest
 import numpy as np
 import numpy.testing as npt
@@ -70,8 +69,8 @@ class TestTensorData(unittest.TestCase):
                                              DataVector([1.5, 1.1]))
         tensor_component_2 = TensorComponent("tensor component two",
                                              DataVector([7.1, 5]))
-        basis = Legendre
-        quad = Gauss
+        basis = Basis.Legendre
+        quad = Quadrature.Gauss
         element_data = ElementVolumeData(
             [1, 2, 3, 4], [tensor_component_1, tensor_component_2],
             [basis, basis], [quad, quad])
