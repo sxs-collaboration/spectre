@@ -71,6 +71,7 @@ target_link_libraries(
   ApparentHorizons
   Blas
   Boost::boost
+  DataStructures
   Domain
   DomainStructure
   ErrorHandling
@@ -84,3 +85,4 @@ target_link_libraries(
 add_subdirectory(Actions)
 add_subdirectory(Callbacks)
 add_subdirectory(Events)
+add_subdirectory(Python)
