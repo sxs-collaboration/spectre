@@ -297,9 +297,11 @@ jobs:
           - gcc-7
           - gcc-8
           - gcc-9
+          - gcc-10
           - clang-8
           - clang-9
           - clang-10
+          - clang-11
         build_type: [Debug, Release]
         use_pch: [ON]
         include:
@@ -339,6 +341,16 @@ jobs:
           - compiler: clang-9
             build_type: Debug
             use_pch: OFF
+        exclude:
+          # The following tests segfault in release mode:
+          # - Unit.Evolution.Systems.Cce.Equations
+          # - Unit.Evolution.Systems.Cce.InitializeJ
+          # - Unit.Evolution.Systems.Cce.NewmanPenrose
+          # Test_BulgedCube is fixed. This is either a GCC-10 optimizer bug or
+          # some weird Blaze behavior with GCC-10.
+          - use_pch: ON
+            build_type: Release
+            compiler: gcc-10
 
     container:
       image: sxscollaboration/spectrebuildenv:latest
