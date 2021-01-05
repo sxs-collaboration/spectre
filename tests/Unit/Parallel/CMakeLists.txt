@@ -119,7 +119,7 @@ endfunction()
 # chance to execute.
 function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MATCH)
   add_test(
-    NAME "\"Integration.Parallel.${TEST_NAME}\""
+    NAME "\"Unit.Parallel.${TEST_NAME}\""
     COMMAND
     ${SHELL_EXECUTABLE}
     -c "${CMAKE_BINARY_DIR}/bin/Test_${EXECUTABLE_NAME} +p2 +balancer \
@@ -128,19 +128,19 @@ function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MA
 
   if("${REGEX_TO_MATCH}" STREQUAL "")
     set_tests_properties(
-      "\"Integration.Parallel.${TEST_NAME}\""
+      "\"Unit.Parallel.${TEST_NAME}\""
       PROPERTIES
       TIMEOUT 10
-      LABELS "integration"
+      LABELS "unit"
       ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
   else()
     set_tests_properties(
-      "\"Integration.Parallel.${TEST_NAME}\""
+      "\"Unit.Parallel.${TEST_NAME}\""
       PROPERTIES
       PASS_REGULAR_EXPRESSION
       "${REGEX_TO_MATCH}"
       TIMEOUT 10
-      LABELS "integration"
+      LABELS "unit"
       ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
   endif()
 endfunction()
