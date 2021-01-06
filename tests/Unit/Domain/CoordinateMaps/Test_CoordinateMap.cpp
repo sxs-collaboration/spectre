@@ -676,7 +676,7 @@ void test_coordinate_map_with_rotation_wedge() {
   const auto second_map =
       Wedge2D(3.0, 7.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
-                  {Direction<2>::lower_eta(), Direction<2>::lower_xi()}}},
+                  {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}},
               false);
 
   const auto composed_map =

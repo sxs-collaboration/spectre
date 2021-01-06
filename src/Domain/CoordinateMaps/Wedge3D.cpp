@@ -6,6 +6,7 @@
 #include <cmath>
 #include <pup.h>
 
+#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -51,6 +52,11 @@ Wedge3D::Wedge3D(const double radius_inner, const double radius_outer,
              (with_logarithmic_map_ and sphericity_inner_ == 1.0 and
               sphericity_outer_ == 1.0),
          "The logarithmic map is only supported for spherical wedges.");
+  ASSERT(
+      get(determinant(discrete_rotation_jacobian(orientation_of_wedge_))) > 0.0,
+      "Wedge3D rotations must be done in such a manner that the sign of "
+      "the determinant of the discrete rotation is positive. This is to "
+      "preserve handedness of the coordinates.");
   if (with_logarithmic_map_) {
     scaled_frustum_zero_ = 0.0;
     sphere_zero_ = 0.5 * (log(radius_outer * radius_inner));

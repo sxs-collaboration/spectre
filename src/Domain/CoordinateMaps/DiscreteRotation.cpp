@@ -3,6 +3,7 @@
 
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 
+#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -12,12 +13,21 @@
 #include "Utilities/MakeWithValue.hpp"
 
 namespace domain::CoordinateMaps {
-
 template <size_t VolumeDim>
 DiscreteRotation<VolumeDim>::DiscreteRotation(
     OrientationMap<VolumeDim> orientation) noexcept
     : orientation_(std::move(orientation)),
-      is_identity_(orientation_ == OrientationMap<VolumeDim>{}) {}
+      is_identity_(orientation_ == OrientationMap<VolumeDim>{}) {
+  if constexpr (VolumeDim > 1) {
+    // We allow reversing the direction of the axes in 1d to make testing
+    // non-aligned blocks possible in 1d, which is easier than testing them in
+    // 2d and 3d.
+    ASSERT(get(determinant(discrete_rotation_jacobian(orientation_))) > 0.0,
+           "Discrete rotations must be done in such a manner that the sign of "
+           "the determinant of the discrete rotation is positive. This is to "
+           "preserve handedness of the coordinates.");
+  }
+}
 
 template <size_t VolumeDim>
 template <typename T>

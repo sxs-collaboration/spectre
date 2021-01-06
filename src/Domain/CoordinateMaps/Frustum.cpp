@@ -7,6 +7,7 @@
 #include <cmath>
 #include <pup.h>
 
+#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -65,6 +66,11 @@ Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
   ASSERT(upper_bound > lower_bound,
          "The lower bound for a coordinate must be numerically less"
          " than the upper bound for that coordinate.");
+  ASSERT(get(determinant(discrete_rotation_jacobian(orientation_of_frustum_))) >
+             0.0,
+         "Frustum rotations must be done in such a manner that the sign of "
+         "the determinant of the discrete rotation is positive. This is to "
+         "preserve handedness of the coordinates.");
   sigma_x_ = 0.25 * (lower_x_upper_base + upper_x_upper_base +
                      lower_x_lower_base + upper_x_lower_base);
   delta_x_zeta_ = 0.25 * (lower_x_upper_base + upper_x_upper_base -

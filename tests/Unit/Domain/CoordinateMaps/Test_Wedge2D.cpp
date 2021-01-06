@@ -8,6 +8,7 @@
 #include <optional>
 #include <random>
 
+#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -63,7 +64,7 @@ void test_wedge2d_all_orientations(const bool with_equiangular_map) {
   const CoordinateMaps::Wedge2D map_upper_eta(
       random_inner_radius_upper_eta, random_outer_radius_upper_eta, 0.0, 1.0,
       OrientationMap<2>{std::array<Direction<2>, 2>{
-          {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
+          {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
       with_equiangular_map);
   const CoordinateMaps::Wedge2D map_lower_xi(
       random_inner_radius_lower_xi, random_outer_radius_lower_xi, 0.0, 1.0,
@@ -73,7 +74,7 @@ void test_wedge2d_all_orientations(const bool with_equiangular_map) {
   const CoordinateMaps::Wedge2D map_lower_eta(
       random_inner_radius_lower_eta, random_outer_radius_lower_eta, 0.0, 1.0,
       OrientationMap<2>{std::array<Direction<2>, 2>{
-          {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
+          {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
       with_equiangular_map);
   CHECK(map_lower_eta != map_lower_xi);
   CHECK(map_upper_eta != map_lower_eta);
@@ -82,11 +83,11 @@ void test_wedge2d_all_orientations(const bool with_equiangular_map) {
   CHECK(map_upper_xi(lower_right_corner)[0] ==
         approx(random_outer_radius_upper_xi / sqrt(2.0)));
   CHECK(map_upper_eta(lower_right_corner)[1] ==
-        approx(random_outer_radius_upper_eta / sqrt(2.0)));
+        approx(-random_outer_radius_upper_eta / sqrt(2.0)));
   CHECK(map_lower_xi(upper_right_corner)[0] ==
         approx(-random_outer_radius_lower_xi / sqrt(2.0)));
   CHECK(map_lower_eta(upper_right_corner)[1] ==
-        approx(-random_outer_radius_lower_eta / sqrt(2.0)));
+        approx(random_outer_radius_lower_eta / sqrt(2.0)));
 
   // Check that random points on the edges of the reference square map to the
   // correct edges of the wedge.
@@ -100,7 +101,7 @@ void test_wedge2d_all_orientations(const bool with_equiangular_map) {
   CHECK(magnitude(map_upper_eta(random_right_edge)) ==
         approx(random_outer_radius_upper_eta));
   CHECK(map_upper_eta(random_left_edge)[1] ==
-        approx(random_inner_radius_upper_eta / sqrt(2.0)));
+        approx(-random_inner_radius_upper_eta / sqrt(2.0)));
   CHECK(magnitude(map_lower_xi(random_right_edge)) ==
         approx(random_outer_radius_lower_xi));
   CHECK(map_lower_xi(random_left_edge)[0] ==
@@ -108,7 +109,7 @@ void test_wedge2d_all_orientations(const bool with_equiangular_map) {
   CHECK(magnitude(map_lower_eta(random_right_edge)) ==
         approx(random_outer_radius_lower_eta));
   CHECK(map_lower_eta(random_left_edge)[1] ==
-        approx(-random_inner_radius_lower_eta / sqrt(2.0)));
+        approx(random_inner_radius_lower_eta / sqrt(2.0)));
 
   const double inner_radius = inner_dis(gen);
   CAPTURE(inner_radius);
@@ -120,6 +121,9 @@ void test_wedge2d_all_orientations(const bool with_equiangular_map) {
   CAPTURE(outer_circularity);
 
   for (OrientationMapIterator<2> map_i{}; map_i; ++map_i) {
+    if (get(determinant(discrete_rotation_jacobian(*map_i))) < 0.0) {
+      continue;
+    }
     test_suite_for_map_on_unit_cube(CoordinateMaps::Wedge2D{
         inner_radius, outer_radius, inner_circularity, outer_circularity,
         map_i(), with_equiangular_map});
@@ -165,7 +169,7 @@ void test_equality() {
   const auto wedge2d_orientation_map_changed = CoordinateMaps::Wedge2D(
       0.2, 4.0, 0.0, 1.0,
       OrientationMap<2>{std::array<Direction<2>, 2>{
-          {Direction<2>::upper_eta(), Direction<2>::upper_xi()}}},
+          {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
       true);
   const auto wedge2d_use_equiangular_map_changed =
       CoordinateMaps::Wedge2D(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, false);

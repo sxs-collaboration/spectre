@@ -8,6 +8,7 @@
 #include <memory>
 #include <pup.h>
 
+#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -95,10 +96,16 @@ void test_3d() {
 void test_with_orientation() {
   INFO("With orientation");
   for (OrientationMapIterator<2> map_i{}; map_i; ++map_i) {
+    if (get(determinant(discrete_rotation_jacobian(*map_i))) < 0.0) {
+      continue;
+    }
     const CoordinateMaps::DiscreteRotation<2> coord_map{map_i()};
     test_suite_for_map_on_unit_cube(coord_map);
   }
   for (OrientationMapIterator<3> map_i{}; map_i; ++map_i) {
+    if (get(determinant(discrete_rotation_jacobian(*map_i))) < 0.0) {
+      continue;
+    }
     const CoordinateMaps::DiscreteRotation<3> coord_map{map_i()};
     test_suite_for_map_on_unit_cube(coord_map);
   }

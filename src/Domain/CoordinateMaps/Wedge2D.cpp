@@ -6,6 +6,8 @@
 #include <cmath>
 #include <pup.h>
 
+#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
@@ -41,6 +43,11 @@ Wedge2D::Wedge2D(double radius_inner, double radius_outer,
                  ((1.0 - circularity_inner) / sqrt(2.0) + circularity_inner),
          "The arguments passed into the constructor for Wedge2D result in an "
          "object where the outer surface is pierced by the inner surface.");
+  ASSERT(
+      get(determinant(discrete_rotation_jacobian(orientation_of_wedge_))) > 0.0,
+      "Wedge2D rotations must be done in such a manner that the sign of "
+      "the determinant of the discrete rotation is positive. This is to "
+      "preserve handedness of the coordinates.");
   scaled_trapezoid_zero_ =
       0.5 / sqrt(2.0) * ((1.0 - circularity_outer) * radius_outer +
                          (1.0 - circularity_inner) * radius_inner);

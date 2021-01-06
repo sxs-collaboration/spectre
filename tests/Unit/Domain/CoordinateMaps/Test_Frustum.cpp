@@ -10,6 +10,7 @@
 #include <pup.h>
 #include <random>
 
+#include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -45,6 +46,9 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
   CAPTURE(upper_y_upper_base);
 
   for (OrientationMapIterator<3> map_i{}; map_i; ++map_i) {
+    if (get(determinant(discrete_rotation_jacobian(*map_i))) < 0.0) {
+      continue;
+    }
     const std::array<std::array<double, 2>, 4> face_vertices{
         {{{lower_x_lower_base, lower_y_lower_base}},
          {{upper_x_lower_base, upper_y_lower_base}},
