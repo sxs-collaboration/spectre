@@ -577,6 +577,12 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          # Using a personal access token with admin privileges here so this
+          # action can push to protected branches. Note that this also means
+          # that the pushes can trigger additional workflows (GitHub only
+          # prevents pushes with the default GITHUB_TOKEN from triggering
+          # additional workflows).
+          token: ${{ secrets.GH_TOKEN_RELEASE }}
       - name: Install Python dependencies
         run: |
           pip3 install \
@@ -627,10 +633,10 @@ jobs:
         run: |
           python3 tools/CompileReleaseNotes.py -v -o /work/release_notes.md \
             --github-token ${{ secrets.GITHUB_TOKEN }}
-      # Push a commit with the new version to the branch we're on (should be
-      # `develop` unless the workflow was triggered manually on another branch).
-      # The push won't trigger the workflow again because GitHub prevents
-      # actions from triggering workflows (this uses the default GITHUB_TOKEN).
+      # Push a commit tagged with the new version to `develop` and `release`.
+      # The push will trigger the workflow again because we're using a personal
+      # access token. The triggered workflow will build and deploy the
+      # documentation so we don't need to do that here.
       - name: Commit and push
         run: |
           git config user.name sxs-bot
@@ -642,45 +648,14 @@ jobs:
           git push origin HEAD:develop
           git push origin HEAD:release
           git push origin v$RELEASE_VERSION
-      - name: Tag and release
+      - name: Create release on GitHub
         uses: actions/create-release@v1
         env:
-          # If we need this event to trigger other workflows we could use a
-          # personal access token
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_RELEASE }}
         with:
           tag_name: v${{ env.RELEASE_VERSION }}
           release_name: Release ${{ env.RELEASE_VERSION }}
           body_path: /work/release_notes.md
-      # The release is now public on GitHub. We build the release documentation
-      # from the archive and also build an executable to make sure the archive
-      # is functional.
-      - name: Build release documentation and an executable
-        working-directory: /work
-        run: |
-          wget https://github.com/${{ github.repository }}/archive/v${RELEASE_VERSION}.tar.gz -O spectre.tar.gz
-          tar -xzf spectre.tar.gz && mv spectre-* spectre
-          mkdir build && cd build
-          cmake \
-            -D CMAKE_C_COMPILER=clang \
-            -D CMAKE_CXX_COMPILER=clang++ \
-            -D CMAKE_Fortran_COMPILER=gfortran-8 \
-            -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang \
-            -D OVERRIDE_ARCH=x86-64 \
-            -D CMAKE_BUILD_TYPE=Release \
-            -D DEBUG_SYMBOLS=OFF \
-            ../spectre
-          make doc-check
-          make -j2 ExportCoordinates1D
-          ctest -R InputFiles.ExportCoordinates.Input1D.yaml.execute
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          publish_dir: /work/build/docs/html
-          cname: spectre-code.org
-          publish_branch: gh-pages
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          force_orphan: true
       # This action currently doesn't publish the Zenodo record automatically.
       # Instead it prints a link to the website where we can go and hit the
       # "Publish" button when everything looks correct. Once we're convinced the
