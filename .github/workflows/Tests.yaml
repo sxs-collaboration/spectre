@@ -248,14 +248,9 @@ jobs:
   doc_deploy:
     name: Deploy documentation
     needs: doc_check
-    # Enabling documentation deployment only on pushes to
-    # sxs-collaboration/spectre for now, since the action requires a personal
-    # access token until the issue linked below is resolved. Once the action
-    # can use the standard `GITHUB_TOKEN` we can enable this job also on forks.
-    if: >-
+    if: >
       github.event_name == 'push'
-      && github.ref == 'refs/heads/develop'
-      && github.repository == 'sxs-collaboration/spectre'
+        && github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
