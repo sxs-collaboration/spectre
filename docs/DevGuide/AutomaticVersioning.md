@@ -5,16 +5,16 @@ See LICENSE.txt for details.
 
 # Automatic versioning {#dev_guide_automatic_versioning}
 
-Our automated tests tag and publish a release automatically on a monthly
-schedule. The automation is implemented as a [GitHub
+Our automated tests can tag and publish a release automatically when requested.
+The automation is implemented as a [GitHub
 Actions](https://docs.github.com/actions) workflow in the file
 `.github/workflows/Tests.yaml`.
 
-# Manually creating releases
+## Creating releases
 
-The GitHub workflow responsible for automatic versioning also allows creating
-a release manually. To create a release, follow the instructions to manually
-run a workflow:
+The GitHub workflow responsible for automated testing also allows creating a
+release when dispatched manually. To create a release, follow the instructions
+to manually run a workflow:
 
 - [Manually running a workflow on GitHub](https://docs.github.com/actions/managing-workflow-runs/manually-running-a-workflow)
 
@@ -23,7 +23,7 @@ branch _and_ type in a valid release version name. The workflow will only create
 the release if the version name matches the format defined above and if it
 matches the date at the time the "Release version" job runs.
 
-# Release notes
+## Release notes
 
 The release notes are compiled automatically based on the activity in the
 repository since the last release. They will contain a list of merged

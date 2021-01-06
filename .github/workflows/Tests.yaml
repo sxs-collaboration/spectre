@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 # Continuous integration tests that pull requests are required to pass. This
-# workflow also triggers a version release every month.
+# workflow can also be dispatched manually to tag and release versions.
 name: Tests
 
 # Set any defaults for the runs below.
@@ -29,16 +29,8 @@ on:
   push:
     branches-ignore:
       - gh-pages
-  # Once a month we run the tests and release a new version (see the dev guide
-  # on "Automatic versioning"). The scheduled workflow always runs on the
-  # repository's default branch (`develop`).
-  # The automatic versioning is not yet enabled so we have some time to test the
-  # release workflow. Releases can be created with the `workflow_dispatch`
-  # trigger (see below).
-  # schedule:
-  #   - cron: '0 0 1 * *'
-  # Also allow running the workflow manually. This can be used to manually
-  # release a version. (see the dev guide on "Automatic versioning")
+  # Allow running the workflow manually to run tests and optionally release a
+  # version on success (see the dev guide on "Automatic versioning")
   workflow_dispatch:
     inputs:
       release_version:
@@ -552,7 +544,7 @@ jobs:
 
           ctest -j2 -R InputFiles.Burgers.Step.yaml
 
-  # Release a new version on scheduled or manual events when the tests pass.
+  # Release a new version on manual events when requested and the tests pass.
   # Only enable this on the `sxs-collaboration/spectre` repository (not on
   # forks).
   release_version:
@@ -561,11 +553,10 @@ jobs:
     environment: release
     runs-on: ubuntu-latest
     if: >
-      github.repository == 'sxs-collaboration/spectre' &&
-        github.ref == 'refs/heads/develop' &&
-        (github.event_name == 'schedule'
-          || (github.event_name == 'workflow_dispatch'
-            && github.event.inputs.release_version != ''))
+      github.repository == 'sxs-collaboration/spectre'
+        && github.ref == 'refs/heads/develop'
+        && github.event_name == 'workflow_dispatch'
+        && github.event.inputs.release_version != ''
     needs:
       - check_files_and_formatting
       - doc_check
