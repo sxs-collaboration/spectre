@@ -126,8 +126,19 @@ jobs:
             --github-token ${{ secrets.GITHUB_TOKEN }}
       - name: Check release notes
         run: |
-          python3 tools/CompileReleaseNotes.py -vv \
+          python3 tools/CompileReleaseNotes.py -vv -o release_notes.md \
             --github-token ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload release notes
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-notes
+          path: release_notes.md
+      # GitHub doesn't display artifacts until the workflow has completed, so we
+      # print the release notes here to be able to review them before approving
+      # a release
+      - name: Print release notes
+        run: |
+          cat release_notes.md
 
   # Lint with clang-tidy. We check only code that changed relative to the
   # nearest common ancestor commit with `sxs-collaboration/spectre/develop`.
@@ -610,10 +621,12 @@ jobs:
             --zenodo-token ${{ secrets.ZENODO_READWRITE_TOKEN }} \
             --github-token ${{ secrets.GITHUB_TOKEN }}
           git diff
-      - name: Compile release notes
-        run: |
-          python3 tools/CompileReleaseNotes.py -v -o $HOME/release_notes.md \
-            --github-token ${{ secrets.GITHUB_TOKEN }}
+      - name: Download release notes
+        uses: actions/download-artifact@v2
+        id: release-notes
+        with:
+          name: release-notes
+          path: ~/release-notes
       # Push a commit tagged with the new version to `develop` and `release`.
       # The push will trigger the workflow again because we're using a personal
       # access token. The triggered workflow will build and deploy the
@@ -636,7 +649,8 @@ jobs:
         with:
           tag_name: v${{ env.RELEASE_VERSION }}
           release_name: Release ${{ env.RELEASE_VERSION }}
-          body_path: ${{ env.HOME }}/release_notes.md
+          body_path: >-
+            ${{ steps.release-notes.outputs.download-path }}/release_notes.md
       # This action currently doesn't publish the Zenodo record automatically.
       # Instead it prints a link to the website where we can go and hit the
       # "Publish" button when everything looks correct. Once we're convinced the
