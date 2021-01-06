@@ -12,11 +12,13 @@
 #include <fstream>
 #include <ios>
 #include <iterator>
+#include <limits>
 #include <map>
 #include <ostream>
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -205,6 +207,15 @@ class Parser {
   template <typename TagList, typename Metavariables = NoSuchType, typename F>
   decltype(auto) apply(F&& func) const;
 
+  /// Call a function with the typelist of parsed options (i.e., the
+  /// supplied option list with the chosen branches of any
+  /// Alternatives inlined) and the option values as arguments.
+  ///
+  /// \return the result of the function call.  This must have the
+  /// same type for all valid sets of parsed arguments.
+  template <typename Metavariables = NoSuchType, typename F>
+  decltype(auto) apply_all(F&& func) const;
+
   /// Get the help string
   std::string help() const noexcept;
 
@@ -215,6 +226,22 @@ class Parser {
   static_assert(tt::is_a<tmpl::list, OptionList>::value,
                 "The OptionList template parameter to Options must be a "
                 "tmpl::list<...>.");
+
+  // All options that could be specified, including those that have
+  // alternatives and are therefore not required.
+  using all_possible_options = tmpl::remove_duplicates<
+      typename Options_detail::flatten_alternatives<OptionList>::type>;
+
+  static_assert(
+      std::is_same_v<
+          typename Options_detail::flatten_alternatives<OptionList>::type,
+          OptionList> or
+          tmpl::all<
+              all_possible_options,
+              std::is_same<tmpl::_1, Options_detail::find_subgroup<
+                                         tmpl::_1, tmpl::pin<Group>>>>::value,
+      "Option parser cannot handle Alternatives and options with groups "
+      "simultaneously.");
 
   /// All top-level options and top-level groups of options. Every option in
   /// `OptionList` is either in this list or in the hierarchy of one of the
@@ -265,16 +292,34 @@ class Parser {
   /// Error message when failed to parse an input file.
   [[noreturn]] void parser_error(const YAML::Exception& e) const noexcept;
 
+  template <typename ChosenOptions, typename RemainingOptions, typename F>
+  auto call_with_chosen_alternatives_impl(F&& func,
+                                          std::vector<size_t> choices) const;
+
+  template <typename F>
+  auto call_with_chosen_alternatives(F&& func) const {
+    return call_with_chosen_alternatives_impl<tmpl::list<>, OptionList>(
+        std::forward<F>(func), alternative_choices_);
+  }
+
   std::string help_text_{};
   Context context_{};
   std::string input_source_{};
   std::unordered_map<std::string, YAML::Node> parsed_options_{};
+
+  // The choices made for option alternatives in a depth-first order.
+  // Starting from the front of the option list, when reaching the
+  // first Alternatives object, replace it with the options in the nth
+  // choice, where n is the *last* element of this vector.  Continue
+  // processing from the start of those options, using the second to
+  // last value here for the next choice, and so on.
+  std::vector<size_t> alternative_choices_{};
 };
 
 template <typename OptionList, typename Group>
 Parser<OptionList, Group>::Parser(std::string help_text) noexcept
     : help_text_(std::move(help_text)) {
-  tmpl::for_each<tags_and_subgroups_list>([](auto t) noexcept {
+  tmpl::for_each<all_possible_options>([](auto t) noexcept {
     using T = typename decltype(t)::type;
     const std::string label = name<T>();
     ASSERT(label.size() <= max_label_size_,
@@ -323,6 +368,65 @@ void Parser<OptionList, Group>::parse(const Option& options) {
   parse(options.node());
 }
 
+namespace Options_detail {
+// Attempts to match the given_options against OptionList, choosing
+// between any alternatives to maximize the number of matches.
+// Returns the highest number of matches and the choices required to
+// obtain that number.  (See the description of
+// Parser::alternative_choices_ for the format of the choices.)
+//
+// In the case of multiple equally good matches, the choice between
+// them will be given as std::numeric_limits<size_t>::max().  This may
+// cause a failure later or may be ignored if a better choice is
+// found.
+//
+// This does not handle groups correctly, but we disallow alternatives
+// when groups are present so there is only one possible choice that
+// this function could make.
+template <typename OptionList>
+std::pair<int, std::vector<size_t>> choose_alternatives(
+    const std::unordered_set<std::string>& given_options) noexcept {
+  int num_matched = 0;
+  std::vector<size_t> alternative_choices{};
+  tmpl::for_each<OptionList>([&alternative_choices, &num_matched,
+                              &given_options](auto opt) noexcept {
+    using Opt = tmpl::type_from<decltype(opt)>;
+    if constexpr (not tt::is_a_v<Options::Alternatives, Opt>) {
+      if (given_options.count(name<Opt>()) == 1) {
+        ++num_matched;
+      }
+    } else {
+      int most_matches = 0;
+      std::vector<size_t> best_alternatives{std::numeric_limits<size_t>::max()};
+
+      size_t alternative_number = 0;
+      tmpl::for_each<Opt>([&alternative_number, &best_alternatives,
+                           &most_matches,
+                           &given_options](auto alternative) noexcept {
+        using Alternative = tmpl::type_from<decltype(alternative)>;
+        auto alternative_match =
+            choose_alternatives<Alternative>(given_options);
+        if (alternative_match.first > most_matches) {
+          most_matches = alternative_match.first;
+          alternative_match.second.push_back(alternative_number);
+          best_alternatives = std::move(alternative_match.second);
+        } else if (alternative_match.first == most_matches) {
+          // Two equally good matches
+          best_alternatives.clear();
+          best_alternatives.push_back(std::numeric_limits<size_t>::max());
+        }
+        ++alternative_number;
+      });
+      num_matched += most_matches;
+      alternative_choices.insert(alternative_choices.begin(),
+                                 best_alternatives.begin(),
+                                 best_alternatives.end());
+    }
+  });
+  return {num_matched, std::move(alternative_choices)};
+}
+}  // namespace Options_detail
+
 template <typename OptionList, typename Group>
 void Parser<OptionList, Group>::parse(const YAML::Node& node) {
   if (not(node.IsMap() or node.IsNull())) {
@@ -330,16 +434,38 @@ void Parser<OptionList, Group>::parse(const YAML::Node& node) {
                               << help());
   }
 
-  // Use an ordered container so the missing options are reported in
-  // the order they are given in the help string.
-  std::vector<std::string> valid_names;
-  valid_names.reserve(tmpl::size<tags_and_subgroups_list>{});
-  tmpl::for_each<tags_and_subgroups_list>([&valid_names](auto opt) noexcept {
-    using Opt = tmpl::type_from<decltype(opt)>;
-    const std::string label = name<Opt>();
-    ASSERT(alg::find(valid_names, label) == valid_names.end(),
-           "Duplicate option name: " << label);
-    valid_names.push_back(label);
+  std::unordered_set<std::string> given_options{};
+  for (const auto& name_and_value : node) {
+    given_options.insert(name_and_value.first.as<std::string>());
+  }
+
+  alternative_choices_ =
+      Options_detail::choose_alternatives<OptionList>(given_options).second;
+  if (alg::any_of(alternative_choices_, [](const size_t x) noexcept {
+        return x == std::numeric_limits<size_t>::max();
+      })) {
+    PARSE_ERROR(context_, "Cannot decide between alternative options.\n"
+                              << parsing_help(node));
+  }
+
+  auto valid_names = call_with_chosen_alternatives([](auto option_list_v) {
+    using option_list = decltype(option_list_v);
+    using top_level_options_and_groups =
+        tmpl::remove_duplicates<tmpl::transform<
+            option_list, Options_detail::find_subgroup<tmpl::_1, Group>>>;
+    // Use an ordered container so the missing options are reported in
+    // the order they are given in the help string.
+    std::vector<std::string> result;
+    result.reserve(tmpl::size<top_level_options_and_groups>{});
+    tmpl::for_each<top_level_options_and_groups>(
+        [&result](auto opt) noexcept {
+          using Opt = tmpl::type_from<decltype(opt)>;
+          const std::string label = name<Opt>();
+          ASSERT(alg::find(result, label) == result.end(),
+                 "Duplicate option name: " << label);
+          result.push_back(label);
+        });
+    return result;
   });
 
   for (const auto& name_and_value : node) {
@@ -358,6 +484,17 @@ void Parser<OptionList, Group>::parse(const YAML::Node& node) {
     // Check for invalid key
     const auto name_it = alg::find(valid_names, name);
     if (name_it == valid_names.end()) {
+      tmpl::for_each<all_possible_options>([this, &context, &name,
+                                            &node](auto tag) {
+        using Tag = tmpl::type_from<decltype(tag)>;
+        if (name == Options::name<Tag>()) {
+          PARSE_ERROR(context,
+                      "Option '"
+                          << name
+                          << "' is unused because of other provided options.\n"
+                          << parsing_help(node));
+        }
+      });
       PARSE_ERROR(context, "Option '" << name << "' is not a valid option.\n"
                                       << parsing_help(node));
     }
@@ -405,12 +542,16 @@ struct get_impl<Tag, Metavariables, Tag> {
   template <typename OptionList, typename Group>
   static typename Tag::type apply(const Parser<OptionList, Group>& opts) {
     static_assert(
-        tmpl::list_contains_v<OptionList, Tag>,
+        tmpl::list_contains_v<
+            typename Parser<OptionList, Group>::all_possible_options, Tag>,
         "Could not find requested option in the list of options provided. Did "
         "you forget to add the option tag to the OptionList?");
     const std::string label = name<Tag>();
 
-    Option option(opts.parsed_options_.find(label)->second, opts.context_);
+    const auto supplied_option = opts.parsed_options_.find(label);
+    ASSERT(supplied_option != opts.parsed_options_.end(),
+           "Requested option from alternative that was not supplied.");
+    Option option(supplied_option->second, opts.context_);
     option.append_context("While parsing option " + label);
 
     auto t = option.parse_as<typename Tag::type, Metavariables>();
@@ -492,6 +633,19 @@ template <typename TagList, typename Metavariables, typename F>
 decltype(auto) Parser<OptionList, Group>::apply(F&& func) const {
   return Options_detail::apply_helper<TagList>::template apply<Metavariables>(
       *this, std::forward<F>(func));
+}
+
+template <typename OptionList, typename Group>
+template <typename Metavariables, typename F>
+decltype(auto) Parser<OptionList, Group>::apply_all(F&& func) const {
+  return call_with_chosen_alternatives([this, &func](
+                                           auto chosen_alternatives /*meta*/) {
+    using ChosenAlternatives = decltype(chosen_alternatives);
+    return this->apply<ChosenAlternatives, Metavariables>([&func](
+                                                              auto&&... args) {
+      return std::forward<F>(func)(ChosenAlternatives{}, std::move(args)...);
+    });
+  });
 }
 /// \endcond
 
@@ -612,6 +766,46 @@ template <typename OptionList, typename Group>
          "IsPeriodicIn: [true]\n\nSee an example input file for help.");
 }
 
+template <typename OptionList, typename Group>
+template <typename ChosenOptions, typename RemainingOptions, typename F>
+auto Parser<OptionList, Group>::call_with_chosen_alternatives_impl(
+    F&& func, std::vector<size_t> choices) const {
+  if constexpr (std::is_same_v<RemainingOptions, tmpl::list<>>) {
+    return std::forward<F>(func)(ChosenOptions{});
+  } else {
+    using next_option = tmpl::front<RemainingOptions>;
+    using remaining_options = tmpl::pop_front<RemainingOptions>;
+
+    if constexpr (not tt::is_a_v<Options::Alternatives, next_option>) {
+      return call_with_chosen_alternatives_impl<
+          tmpl::push_back<ChosenOptions, next_option>, remaining_options>(
+          std::forward<F>(func), std::move(choices));
+    } else {
+      using Result =
+          decltype(call_with_chosen_alternatives_impl<
+                   ChosenOptions,
+                   tmpl::append<tmpl::front<next_option>, remaining_options>>(
+              std::forward<F>(func), std::move(choices)));
+
+      const size_t choice = choices.back();
+      choices.pop_back();
+
+      Result result{};
+      size_t alternative_number = 0;
+      tmpl::for_each<next_option>([this, &alternative_number, &choice, &choices,
+                                   &func, &result](auto alternative) {
+        using Alternative = tmpl::type_from<decltype(alternative)>;
+        if (choice == alternative_number++) {
+          result = this->call_with_chosen_alternatives_impl<
+              ChosenOptions, tmpl::append<Alternative, remaining_options>>(
+              std::forward<F>(func), std::move(choices));
+        }
+      });
+      return result;
+    }
+  }
+}
+
 namespace Options_detail {
 template <typename T, typename Metavariables, typename = std::void_t<>>
 struct get_options_list {
@@ -630,10 +824,25 @@ T create_from_yaml<T>::create(const Option& options) {
   Parser<typename Options_detail::get_options_list<T, Metavariables>::type>
       parser(T::help);
   parser.parse(options);
-  return parser.template apply<typename Options_detail::get_options_list<
-      T, Metavariables>::type>([&options](auto&&... args) {
-    if constexpr (std::is_constructible<T, decltype(std::move(args))...,
+  return parser.template apply_all<Metavariables>([&options](
+                                                      auto parsed_options,
+                                                      auto&&... args) {
+    if constexpr (std::is_constructible<T, decltype(parsed_options),
+                                        decltype(std::move(args))...,
                                         const Context&, Metavariables>{}) {
+      return T(parsed_options, std::move(args)..., options.context(),
+               Metavariables{});
+    } else if constexpr (std::is_constructible<T, decltype(parsed_options),
+                                               decltype(std::move(args))...,
+                                               const Context&>{}) {
+      return T(parsed_options, std::move(args)..., options.context());
+    } else if constexpr (std::is_constructible<T, decltype(parsed_options),
+                                               decltype(
+                                                   std::move(args))...>{}) {
+      return T(parsed_options, std::move(args)...);
+    } else if constexpr (std::is_constructible<T, decltype(std::move(args))...,
+                                               const Context&,
+                                               Metavariables>{}) {
       return T(std::move(args)..., options.context(), Metavariables{});
     } else if constexpr (std::is_constructible<T, decltype(std::move(args))...,
                                                const Context&>{}) {

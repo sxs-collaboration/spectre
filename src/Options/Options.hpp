@@ -167,4 +167,29 @@ template <typename T>
 std::string name() noexcept {
   return Options_detail::name_helper<T>::name();
 }
+
+/// Provide multiple ways to construct a class.
+///
+/// This type may be included in an option list along with option
+/// tags.  When creating the class, the parser will choose one of the
+/// lists of options to use, depending on the user input.
+///
+/// The class must be prepared to accept any of the possible
+/// alternatives as arguments to its constructor.  To disambiguate
+/// multiple alternatives with the same types, a constructor may take
+/// the full list of option tags expected as its first argument.
+///
+/// \snippet Test_Options.cpp alternatives
+template <typename... AlternativeLists>
+struct Alternatives {
+  static_assert(sizeof...(AlternativeLists) >= 2,
+                "Option alternatives must provide at least two alternatives.");
+  static_assert(
+      tmpl::all<tmpl::list<tt::is_a<tmpl::list, AlternativeLists>...>>::value,
+      "Option alternatives must be given as tmpl::lists.");
+  static_assert(
+      tmpl::none<
+          tmpl::list<std::is_same<tmpl::list<>, AlternativeLists>...>>::value,
+      "All option alternatives must have at least one option.");
+};
 }  // namespace Options

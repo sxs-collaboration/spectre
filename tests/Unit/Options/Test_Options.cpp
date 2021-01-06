@@ -943,6 +943,245 @@ void test_options_input_source() noexcept {
   parser.parse(source);
   CHECK(parser.get<Options::InputSource>() == source);
 }
+
+void check_for_lines(const std::string& text,
+                     const std::vector<std::string>& lines) noexcept {
+  CAPTURE(text);
+  const std::string search_text = "\n" + text + "\n";
+  size_t pos = 0;
+  for (const auto& line : lines) {
+    CAPTURE(line);
+    pos = search_text.find("\n" + line + "\n");
+    if (pos == search_text.npos) {
+      CHECK(false);
+      // After failing to find a line none of the remaining lines will
+      // be found after it (because we are at the end of the string),
+      // so avoid printing an error for each of them.
+      break;
+    }
+  }
+}
+
+struct Alternatives {
+  struct A {
+    using type = double;
+    static constexpr Options::String help = "halp";
+  };
+
+  struct B {
+    using type = int;
+    static constexpr Options::String help = "halp";
+  };
+
+  struct C {
+    using type = int;
+    static constexpr Options::String help = "halp";
+  };
+
+  struct D {
+    using type = std::vector<int>;
+    static constexpr Options::String help = "halp";
+  };
+
+  struct E {
+    using type = bool;
+    static constexpr Options::String help = "halp";
+  };
+
+  struct F {
+    using type = std::string;
+    static constexpr Options::String help = "halp";
+  };
+
+  static constexpr Options::String help = "halp";
+  Alternatives() = default;
+
+/// [alternatives]
+  using options = tmpl::list<
+      A, Options::Alternatives<tmpl::list<B>, tmpl::list<C>, tmpl::list<D, E>>,
+      F>;
+  Alternatives(tmpl::list<A, B, F> /*meta*/, double a, int b, std::string f)
+      : a_(a), b_(b), f_(std::move(f)) {}
+  Alternatives(tmpl::list<A, C, F> /*meta*/, double a, int c, std::string f)
+      : a_(a), c_(c), f_(std::move(f)) {}
+  Alternatives(double a, std::vector<int> d, bool e, std::string f)
+      : a_(a), d_(std::move(d)), e_(e), f_(std::move(f)) {}
+/// [alternatives]
+
+  double a_{-1.0};
+  int b_{-1};
+  int c_{-1};
+  std::vector<int> d_{};
+  bool e_{false};
+  std::string f_{};
+};
+
+struct AlternativesTag {
+  using type = Alternatives;
+  static constexpr Options::String help = "halp";
+};
+
+struct NestedAlternatives {
+  struct A {
+    using type = int;
+    static constexpr Options::String help = "halp";
+  };
+
+  struct B {
+    using type = double;
+    static constexpr Options::String help = "halp";
+  };
+
+  struct C {
+    using type = std::string;
+    static constexpr Options::String help = "halp";
+  };
+
+  struct D {
+    using type = std::vector<int>;
+    static constexpr Options::String help = "halp";
+  };
+
+  struct E {
+    using type = bool;
+    static constexpr Options::String help = "halp";
+  };
+
+  static constexpr Options::String help = "halp";
+  using options = tmpl::list<Options::Alternatives<
+      tmpl::list<A, Options::Alternatives<tmpl::list<B>, tmpl::list<C>>>,
+      tmpl::list<D, E>>>;
+
+  NestedAlternatives() = default;
+  NestedAlternatives(int a, double b) : a_(a), b_(b) {}
+  NestedAlternatives(int a, std::string c) : a_(a), c_(std::move(c)) {}
+  NestedAlternatives(std::vector<int> d, bool e) : d_(std::move(d)), e_(e) {}
+
+  int a_{-1};
+  double b_{-1.0};
+  std::string c_{};
+  std::vector<int> d_{};
+  bool e_{false};
+};
+
+struct NestedAlternativesTag {
+  using type = NestedAlternatives;
+  static constexpr Options::String help = "halp";
+};
+
+void test_options_alternatives() noexcept {
+  {
+    Options::Parser<tmpl::list<AlternativesTag>> parser("");
+    parser.parse(
+        "AlternativesTag:\n"
+        "  A: 7.8\n"
+        "  B: 4\n"
+        "  F: first\n");
+    const auto result = parser.get<AlternativesTag>();
+    CHECK(result.a_ == 7.8);
+    CHECK(result.b_ == 4);
+    CHECK(result.c_ == -1);
+    CHECK(result.d_.empty());
+    CHECK(result.e_ == false);
+    CHECK(result.f_ == "first");
+  }
+  {
+    Options::Parser<tmpl::list<AlternativesTag>> parser("");
+    parser.parse(
+        "AlternativesTag:\n"
+        "  C: 5\n"
+        "  A: 7.8\n"
+        "  F: second\n");
+    const auto result = parser.get<AlternativesTag>();
+    CHECK(result.a_ == 7.8);
+    CHECK(result.b_ == -1);
+    CHECK(result.c_ == 5);
+    CHECK(result.d_.empty());
+    CHECK(result.e_ == false);
+    CHECK(result.f_ == "second");
+  }
+  {
+    Options::Parser<tmpl::list<AlternativesTag>> parser("");
+    parser.parse(
+        "AlternativesTag:\n"
+        "  A: 7.8\n"
+        "  D: [2, 3, 5, 7, 11]\n"
+        "  E: true\n"
+        "  F: third\n");
+    const auto result = parser.get<AlternativesTag>();
+    CHECK(result.a_ == 7.8);
+    CHECK(result.b_ == -1);
+    CHECK(result.c_ == -1);
+    CHECK(result.d_ == std::vector<int>{2, 3, 5, 7, 11});
+    CHECK(result.e_ == true);
+    CHECK(result.f_ == "third");
+  }
+
+  {
+    Options::Parser<tmpl::list<NestedAlternativesTag>> parser("");
+    parser.parse(
+        "NestedAlternativesTag:\n"
+        "  A: 3\n"
+        "  B: 7.8\n");
+    const auto result = parser.get<NestedAlternativesTag>();
+    CHECK(result.a_ == 3);
+    CHECK(result.b_ == 7.8);
+    CHECK(result.c_.empty());
+    CHECK(result.d_.empty());
+    CHECK(result.e_ == false);
+  }
+  {
+    Options::Parser<tmpl::list<NestedAlternativesTag>> parser("");
+    parser.parse(
+        "NestedAlternativesTag:\n"
+        "  C: hi\n"
+        "  A: 3\n");
+    const auto result = parser.get<NestedAlternativesTag>();
+    CHECK(result.a_ == 3);
+    CHECK(result.b_ == -1.0);
+    CHECK(result.c_ == "hi");
+    CHECK(result.d_.empty());
+    CHECK(result.e_ == false);
+  }
+  {
+    Options::Parser<tmpl::list<NestedAlternativesTag>> parser("");
+    parser.parse(
+        "NestedAlternativesTag:\n"
+        "  D: [2, 3, 5, 7, 11]\n"
+        "  E: true\n");
+    const auto result = parser.get<NestedAlternativesTag>();
+    CHECK(result.a_ == -1);
+    CHECK(result.b_ == -1.0);
+    CHECK(result.c_.empty());
+    CHECK(result.d_ == std::vector<int>{2, 3, 5, 7, 11});
+    CHECK(result.e_ == true);
+  }
+
+  // clang-format off
+  check_for_lines(Options::Parser<Alternatives::options>("").help(),
+                  {"Options:",
+                   "  A:",
+                   "  EITHER",
+                   "    B:",
+                   "  OR",
+                   "    C:",
+                   "  OR",
+                   "    D:",
+                   "    E:",
+                   "  F:"});
+  check_for_lines(Options::Parser<NestedAlternatives::options>("").help(),
+                  {"Options:",
+                   "  EITHER",
+                   "    A:",
+                   "    EITHER",
+                   "      B:",
+                   "    OR",
+                   "      C:",
+                   "  OR",
+                   "    D:",
+                   "    E:"});
+  // clang-format on
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
@@ -969,4 +1208,5 @@ SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
   test_options_explicit_constructor();
   test_options_format_bool();
   test_options_input_source();
+  test_options_alternatives();
 }
