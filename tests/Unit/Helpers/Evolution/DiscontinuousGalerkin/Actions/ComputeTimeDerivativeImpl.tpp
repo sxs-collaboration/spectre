@@ -786,6 +786,7 @@ struct Metavariables {
   static constexpr UseBoundaryCorrection use_boundary_correction =
       UseBoundaryCorrectionIn;
   static constexpr bool use_moving_mesh = UseMovingMesh;
+  static constexpr bool local_time_stepping = false;
   using system =
       System<Dim, system_type, use_boundary_correction, HasPrimitiveVariables>;
   using boundary_scheme = ::dg::FirstOrderScheme::FirstOrderScheme<
@@ -1236,6 +1237,21 @@ void test_impl(const Spectral::Quadrature quadrature,
                               ->second,
                           compute_expected_mortar_data(mortar_id_east.first,
                                                        mortar_id_east.second));
+    CHECK_ITERABLE_APPROX(
+        *std::get<2>(
+            ActionTesting::get_inbox_tag<
+                component<metavars>,
+                ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                    Dim>>(runner, mortar_id_east.second)
+                .at(time_step_id)
+                .at(std::pair{
+                    element.neighbors()
+                        .at(mortar_id_east.first)
+                        .orientation()(mortar_id_east.first.opposite()),
+                    element.id()})),
+        compute_expected_mortar_data(mortar_id_east.first,
+                                     mortar_id_east.second));
+
     if constexpr (Dim > 1) {
       const auto mortar_id_south =
           std::make_pair(Direction<Dim>::lower_eta(), south_id);
@@ -1245,6 +1261,20 @@ void test_impl(const Spectral::Quadrature quadrature,
               .local_mortar_data()
               ->second,
           compute_expected_mortar_data(Direction<Dim>::lower_eta(), south_id));
+      CHECK_ITERABLE_APPROX(
+          *std::get<2>(
+              ActionTesting::get_inbox_tag<
+                  component<metavars>,
+                  ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                      Dim>>(runner, mortar_id_south.second)
+                  .at(time_step_id)
+                  .at(std::pair{
+                      element.neighbors()
+                          .at(mortar_id_south.first)
+                          .orientation()(mortar_id_south.first.opposite()),
+                      element.id()})),
+          compute_expected_mortar_data(mortar_id_south.first,
+                                       mortar_id_south.second));
     }
   }
 }
