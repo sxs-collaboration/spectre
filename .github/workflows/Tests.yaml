@@ -264,24 +264,14 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: docs-html
-      - name: Add custom domain
-        if: github.repository == 'sxs-collaboration/spectre'
-        working-directory: ./docs-html
-        run: |
-          echo "spectre-code.org" > CNAME
       - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v2
-        env:
-          # There's an issue with using the `GITHUB_TOKEN` for gh-pages
-          # deployment as of Jan 8, 2020, so we use a personal access token
-          # instead until the issue is resolved. See:
-          # https://github.community/t5/GitHub-Actions/Github-action-not-triggering-gh-pages-upon-push/td-p/26869
-          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PERSONAL_TOKEN: ${{ secrets.GH_PAGES_DEPLOY_TOKEN }}
-          PUBLISH_BRANCH: gh-pages
-          PUBLISH_DIR: docs-html
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          forceOrphan: true
+          publish_dir: docs-html
+          cname: spectre-code.org
+          publish_branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          force_orphan: true
 
   # Build all test executables and run unit tests on a variety of compiler
   # configurations.
