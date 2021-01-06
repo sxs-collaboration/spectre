@@ -91,12 +91,7 @@ jobs:
           git fetch --tags https://github.com/sxs-collaboration/spectre
       - name: Install Python dependencies
         run: |
-          pip3 install \
-            GitPython~=3.1.11 \
-            PyGithub~=1.53 \
-            PyYAML~=5.3.1 \
-            tqdm~=4.51.0 \
-            uplink~=0.9.2
+          pip3 install -r .github/scripts/requirements-release.txt
       - name: Test tools
         run: |
           python3 -m unittest discover -p 'Test_*' tests.tools -v
@@ -576,12 +571,7 @@ jobs:
           python-version: '3.8'
       - name: Install Python dependencies
         run: |
-          pip3 install \
-            GitPython~=3.1.11 \
-            PyGithub~=1.53 \
-            PyYAML~=5.3.1 \
-            tqdm~=4.51.0 \
-            uplink~=0.9.2
+          pip3 install -r .github/scripts/requirements-release.txt
       # We use the current date as tag name, unless a tag name was specified
       # as input to the `workflow_dispatch` event
       - name: Determine release version
