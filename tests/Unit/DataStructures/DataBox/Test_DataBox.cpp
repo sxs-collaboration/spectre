@@ -802,6 +802,10 @@ struct ScalarTag4 : db::SimpleTag {
 struct VectorTag4 : db::SimpleTag {
   using type = tnsr::I<DataVector, 3>;
 };
+struct IncompleteType; // Forward declare, do not define on purpose.
+struct TagForIncompleteType : db::SimpleTag {
+  using type = IncompleteType;
+};
 }  // namespace test_databox_tags
 
 namespace {
@@ -1481,6 +1485,13 @@ static_assert(
             test_databox_tags::MultiplyScalarByTwoCompute,
             test_databox_tags::ScalarTag2, test_databox_tags::VectorTag2>>>,
     "Failed testing db::compute_databox_type");
+
+static_assert(
+    std::is_same_v<
+        db::compute_databox_type<
+            tmpl::list<test_databox_tags::TagForIncompleteType>>,
+        db::DataBox<tmpl::list<test_databox_tags::TagForIncompleteType>>>,
+    "Failed testing db::compute_databox_type for incomplete type");
 
 void multiply_by_two_mutate(const gsl::not_null<std::vector<double>*> t,
                             const double value) {
