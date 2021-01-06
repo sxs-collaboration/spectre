@@ -560,9 +560,6 @@ jobs:
     # Running in a protected environment that provides the necessary secrets
     environment: release
     runs-on: ubuntu-latest
-    # Run in the container so we can build docs and tests
-    container:
-      image: sxscollaboration/spectrebuildenv:latest
     if: >
       github.repository == 'sxs-collaboration/spectre' &&
         github.ref == 'refs/heads/develop' &&
@@ -583,6 +580,9 @@ jobs:
           # prevents pushes with the default GITHUB_TOKEN from triggering
           # additional workflows).
           token: ${{ secrets.GH_TOKEN_RELEASE }}
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
       - name: Install Python dependencies
         run: |
           pip3 install \
@@ -631,7 +631,7 @@ jobs:
           git diff
       - name: Compile release notes
         run: |
-          python3 tools/CompileReleaseNotes.py -v -o /work/release_notes.md \
+          python3 tools/CompileReleaseNotes.py -v -o $HOME/release_notes.md \
             --github-token ${{ secrets.GITHUB_TOKEN }}
       # Push a commit tagged with the new version to `develop` and `release`.
       # The push will trigger the workflow again because we're using a personal
@@ -655,7 +655,7 @@ jobs:
         with:
           tag_name: v${{ env.RELEASE_VERSION }}
           release_name: Release ${{ env.RELEASE_VERSION }}
-          body_path: /work/release_notes.md
+          body_path: ${{ env.HOME }}/release_notes.md
       # This action currently doesn't publish the Zenodo record automatically.
       # Instead it prints a link to the website where we can go and hit the
       # "Publish" button when everything looks correct. Once we're convinced the
