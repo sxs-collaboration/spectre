@@ -131,7 +131,7 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::inverse_impl(
              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
          /*funcs_of_time*/,
          const std::false_type /*is_time_independent*/) noexcept {
-        if (point) {
+        if (point.has_value()) {
           if (LIKELY(not the_map.is_identity())) {
             point = the_map.inverse(point.value());
           }
@@ -144,7 +144,7 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::inverse_impl(
              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
              funcs_of_time,
          const std::true_type /*is_time_dependent*/) noexcept {
-        if (point) {
+        if (point.has_value()) {
           point = the_map.inverse(point.value(), t, funcs_of_time);
         }
         // this is the inverse function, so the iterator sequence below is

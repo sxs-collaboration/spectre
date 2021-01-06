@@ -49,7 +49,7 @@ std::optional<std::array<double, Size>> apply_inverse(
       func(std::array<double, sizeof...(Is)>{{coords[Is]...}}, map1);
   auto map2_func = func(
       std::array<double, sizeof...(Js)>{{coords[Map1::dim + Js]...}}, map2);
-  if (map1_func and map2_func) {
+  if (map1_func.has_value() and map2_func.has_value()) {
     return {{{map1_func.value()[Is]..., map2_func.value()[Js]...}}};
   } else {
     return std::nullopt;
@@ -192,7 +192,7 @@ ProductOf3Maps<Map1, Map2, Map3>::inverse(
   auto c1 = map1_.inverse(std::array<double, 1>{{target_coords[0]}});
   auto c2 = map2_.inverse(std::array<double, 1>{{target_coords[1]}});
   auto c3 = map3_.inverse(std::array<double, 1>{{target_coords[2]}});
-  if (c1 and c2 and c3) {
+  if (c1.has_value() and c2.has_value() and c3.has_value()) {
     return {{{c1.value()[0], c2.value()[0], c3.value()[0]}}};
   } else {
     return std::nullopt;
