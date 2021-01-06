@@ -41,15 +41,16 @@ class TestCompileReleaseNotes(unittest.TestCase):
     def test_get_merged_pull_requests(self):
         repo = git.Repo(path=__file__, search_parent_directories=True)
         last_release = get_last_release(repo)
-        merged_prs = get_merged_pull_requests(repo,
-                                              from_rev=(str(last_release) +
-                                                        '~1'),
-                                              to_rev=last_release)
+        last_merge_commit = next(
+            repo.iter_commits(rev=last_release, min_parents=2))
+        merged_prs = get_merged_pull_requests(
+            repo,
+            from_rev=(str(last_merge_commit) + '~1'),
+            to_rev=last_merge_commit)
         self.assertTrue(
             len(merged_prs) > 0,
-            (f"The last release '{last_release}' should be a merge commit, "
-             "so we should have been able to parse its corresponding "
-             "pull request."))
+            ("Failed to parse pull request corresponding to last merge "
+             f"commit before release {last_release}: '{last_merge_commit}' "))
 
     def test_get_upgrade_instructions(self):
         upgrade_instructions = get_upgrade_instructions(
