@@ -557,6 +557,8 @@ jobs:
   # forks).
   release_version:
     name: Release version
+    # Running in a protected environment that provides the necessary secrets
+    environment: release
     runs-on: ubuntu-latest
     # Run in the container so we can build docs and tests
     container:
