@@ -213,9 +213,9 @@ void test() noexcept {
         }
       }
 
-      REQUIRE(static_cast<bool>(
-          db::get<domain::Tags::CoordinatesMeshVelocityAndJacobians<Dim>>(
-              box)));
+      REQUIRE(
+          db::get<domain::Tags::CoordinatesMeshVelocityAndJacobians<Dim>>(box)
+              .has_value());
 
       for (size_t i = 0; i < Dim; ++i) {
         // Check that the `const_cast`s and set_data_ref inside the compute tag

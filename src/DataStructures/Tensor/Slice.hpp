@@ -70,7 +70,7 @@ void data_on_slice(
     const std::optional<Tensor<VectorType, Structure...>>& volume_tensor,
     const Index<VolumeDim>& element_extents, const size_t sliced_dim,
     const size_t fixed_index) noexcept {
-  if (volume_tensor) {
+  if (volume_tensor.has_value()) {
     if (not(*interface_tensor)) {
       *interface_tensor = Tensor<VectorType, Structure...>{
           element_extents.slice_away(sliced_dim).product()};
@@ -87,7 +87,7 @@ std::optional<Tensor<VectorType, Structure...>> data_on_slice(
     const std::optional<Tensor<VectorType, Structure...>>& volume_tensor,
     const Index<VolumeDim>& element_extents, const size_t sliced_dim,
     const size_t fixed_index) noexcept {
-  if (volume_tensor) {
+  if (volume_tensor.has_value()) {
     Tensor<VectorType, Structure...> interface_tensor(
         element_extents.slice_away(sliced_dim).product());
     data_on_slice(make_not_null(&interface_tensor), *volume_tensor,

@@ -442,21 +442,21 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
       const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
       const noexcept {
     *out_normal_dot_flux_var1 = dot_product(flux_var1, normal_covector);
-    if (static_cast<bool>(mesh_velocity)) {
+    if (mesh_velocity.has_value()) {
       get(*out_normal_dot_flux_var1) -=
           get(var1) * get(dot_product(*mesh_velocity, normal_covector));
     }
     for (size_t i = 0; i < Dim; ++i) {
       out_normal_dot_flux_var2->get(i) =
           flux_var2.get(i, 0) * normal_covector.get(0);
-      if (static_cast<bool>(mesh_velocity)) {
+      if (mesh_velocity.has_value()) {
         out_normal_dot_flux_var2->get(i) -=
             var2.get(i) * get<0>(*mesh_velocity) * normal_covector.get(0);
       }
       for (size_t j = 1; j < Dim; ++j) {
         out_normal_dot_flux_var2->get(i) +=
             flux_var2.get(i, j) * normal_covector.get(j);
-        if (static_cast<bool>(mesh_velocity)) {
+        if (mesh_velocity.has_value()) {
           out_normal_dot_flux_var2->get(i) -=
               var2.get(i) * mesh_velocity->get(j) * normal_covector.get(j);
         }
@@ -467,7 +467,7 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
 
     get(*max_abs_char_speed) = 2.0 * max(get(var3_squared));
 
-    if (static_cast<bool>(normal_dot_mesh_velocity)) {
+    if (normal_dot_mesh_velocity.has_value()) {
       get(*max_abs_char_speed) += get(*normal_dot_mesh_velocity);
     }
     return max(get(*max_abs_char_speed));
@@ -528,21 +528,21 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
       const noexcept {
     get(*out_normal_dot_flux_var1) =
         get(var1) + get(dot_product(var2, normal_covector));
-    if (static_cast<bool>(mesh_velocity)) {
+    if (mesh_velocity.has_value()) {
       get(*out_normal_dot_flux_var1) -=
           get(dot_product(*mesh_velocity, normal_covector));
     }
     for (size_t i = 0; i < Dim; ++i) {
       out_normal_dot_flux_var2->get(i) =
           normal_covector.get(i) * normal_covector.get(0) * var2.get(0);
-      if (static_cast<bool>(mesh_velocity)) {
+      if (mesh_velocity.has_value()) {
         out_normal_dot_flux_var2->get(i) -=
             var2.get(i) * get<0>(*mesh_velocity) * normal_covector.get(0);
       }
       for (size_t j = 1; j < Dim; ++j) {
         out_normal_dot_flux_var2->get(i) +=
             normal_covector.get(i) * normal_covector.get(j) * var2.get(j);
-        if (static_cast<bool>(mesh_velocity)) {
+        if (mesh_velocity.has_value()) {
           out_normal_dot_flux_var2->get(i) -=
               var2.get(i) * mesh_velocity->get(j) * normal_covector.get(j);
         }
@@ -553,7 +553,7 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
 
     get(*max_abs_char_speed) = 2.0 * max(get(var3_squared));
 
-    if (static_cast<bool>(normal_dot_mesh_velocity)) {
+    if (normal_dot_mesh_velocity.has_value()) {
       get(*max_abs_char_speed) += get(*normal_dot_mesh_velocity);
     }
     return max(get(*max_abs_char_speed));
@@ -582,21 +582,21 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
       const noexcept {
     get(*out_normal_dot_flux_var1) =
         get(var1) + get(dot_product(var2, normal_covector));
-    if (static_cast<bool>(mesh_velocity)) {
+    if (mesh_velocity.has_value()) {
       get(*out_normal_dot_flux_var1) -=
           get(dot_product(*mesh_velocity, normal_covector));
     }
     for (size_t i = 0; i < Dim; ++i) {
       out_normal_dot_flux_var2->get(i) =
           flux_var2.get(i, 0) * normal_covector.get(0);
-      if (static_cast<bool>(mesh_velocity)) {
+      if (mesh_velocity.has_value()) {
         out_normal_dot_flux_var2->get(i) -=
             var2.get(i) * get<0>(*mesh_velocity) * normal_covector.get(0);
       }
       for (size_t j = 1; j < Dim; ++j) {
         out_normal_dot_flux_var2->get(i) +=
             flux_var2.get(i, j) * normal_covector.get(j);
-        if (static_cast<bool>(mesh_velocity)) {
+        if (mesh_velocity.has_value()) {
           out_normal_dot_flux_var2->get(i) -=
               var2.get(i) * mesh_velocity->get(j) * normal_covector.get(j);
         }
@@ -607,7 +607,7 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
 
     get(*max_abs_char_speed) = 2.0 * max(get(var3_squared));
 
-    if (static_cast<bool>(normal_dot_mesh_velocity)) {
+    if (normal_dot_mesh_velocity.has_value()) {
       get(*max_abs_char_speed) += get(*normal_dot_mesh_velocity);
     }
     return max(get(*max_abs_char_speed));
@@ -1200,7 +1200,7 @@ void test_impl(const Spectral::Quadrature quadrature,
               face_mesh.number_of_grid_points()};
           std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
 
-          if (static_cast<bool>(face_mesh_velocities.at(local_direction))) {
+          if (face_mesh_velocities.at(local_direction).has_value()) {
             normal_dot_mesh_velocity =
                 dot_product(*face_mesh_velocities.at(local_direction),
                             face_normals.at(local_direction));

@@ -175,7 +175,7 @@ void test() noexcept {
     if (IsTimeDependent) {
       const std::optional<Scalar<DataVector>>& div_frame_velocity =
           db::get<domain::Tags::DivMeshVelocity>(box);
-      REQUIRE(static_cast<bool>(div_frame_velocity));
+      REQUIRE(div_frame_velocity.has_value());
       CHECK(*div_frame_velocity ==
             divergence(
                 db::get<domain::Tags::MeshVelocity<Dim>>(box).value(), mesh,
@@ -184,8 +184,7 @@ void test() noexcept {
     } else {
       // In the time-independent case, check that the divergence of the mesh
       // velocity is not set.
-      CHECK_FALSE(
-          static_cast<bool>(db::get<domain::Tags::DivMeshVelocity>(box)));
+      CHECK_FALSE(db::get<domain::Tags::DivMeshVelocity>(box).has_value());
     }
   };
   check_helper();

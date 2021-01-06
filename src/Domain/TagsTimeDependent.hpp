@@ -33,7 +33,7 @@ namespace Tags {
 ///
 /// The type is a `std::optional`, which, when is not valid, signals that the
 /// mesh is not moving. Thus,
-/// `static_cast<bool>(coordinates_velocity_and_jacobian)` can be used to check
+/// `coordinates_velocity_and_jacobian.has_value()` can be used to check
 /// if the mesh is moving.
 template <size_t Dim>
 struct CoordinatesMeshVelocityAndJacobians : db::SimpleTag {

@@ -387,7 +387,7 @@ struct ComputeTimeDerivative {
       const db::DataBox<DbTagsList>& box,
       tmpl::list<VolumeTags...> /*meta*/) noexcept {
     std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
-    if (static_cast<bool>(mesh_velocity)) {
+    if (mesh_velocity.has_value()) {
       normal_dot_mesh_velocity =
           dot_product(*mesh_velocity, unit_normal_covector);
     }
@@ -610,7 +610,7 @@ void ComputeTimeDerivative<Metavariables>::volume_terms(
   // Add volume terms for moving meshes
   if (const auto& mesh_velocity =
           db::get<::domain::Tags::MeshVelocity<Dim>>(*box);
-      static_cast<bool>(mesh_velocity)) {
+      mesh_velocity.has_value()) {
     db::mutate<db::add_tag_prefix<::Tags::dt, variables_tag>>(
         box,
         [&evolved_vars, &mesh_velocity, &volume_fluxes](

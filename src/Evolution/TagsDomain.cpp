@@ -23,7 +23,7 @@ void DivMeshVelocityCompute<Dim>::function(
     const ::Mesh<Dim>& mesh,
     const ::InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
         inv_jac_logical_to_inertial) noexcept {
-  if (mesh_velocity) {
+  if (mesh_velocity.has_value()) {
     *div_mesh_velocity =
         divergence(*mesh_velocity, mesh, inv_jac_logical_to_inertial);
     return;

@@ -70,7 +70,7 @@ struct AddMeshVelocityNonconservative {
     const auto& mesh_velocity =
         db::get<::domain::Tags::MeshVelocity<Metavariables::volume_dim>>(box);
 
-    if (static_cast<bool>(mesh_velocity)) {
+    if (mesh_velocity.has_value()) {
       tmpl::for_each<variables_tags>([&box, &mesh_velocity](
                                          auto variables_tag_v) noexcept {
         using variable_tag = typename decltype(variables_tag_v)::type;

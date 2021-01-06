@@ -90,25 +90,28 @@ void test_variables_slice() noexcept {
         get<TestHelpers::Tags::Vector<VectorType>>(expected_vars_sliced_in_z));
 
   INFO("Test slice of a std::optional<Tensor>");
-  REQUIRE(data_on_slice(
-      std::make_optional(get<TestHelpers::Tags::Vector<VectorType>>(vars)),
-      extents, 0, x_offset));
+  REQUIRE(data_on_slice(std::make_optional(
+                            get<TestHelpers::Tags::Vector<VectorType>>(vars)),
+                        extents, 0, x_offset)
+              .has_value());
   CHECK(data_on_slice(std::make_optional(
                           get<TestHelpers::Tags::Vector<VectorType>>(vars)),
                       extents, 0, x_offset)
             .value() ==
         get<TestHelpers::Tags::Vector<VectorType>>(expected_vars_sliced_in_x));
-  REQUIRE(data_on_slice(
-      std::make_optional(get<TestHelpers::Tags::Vector<VectorType>>(vars)),
-      extents, 1, y_offset));
+  REQUIRE(data_on_slice(std::make_optional(
+                            get<TestHelpers::Tags::Vector<VectorType>>(vars)),
+                        extents, 1, y_offset)
+              .has_value());
   CHECK(data_on_slice(std::make_optional(
                           get<TestHelpers::Tags::Vector<VectorType>>(vars)),
                       extents, 1, y_offset)
             .value() ==
         get<TestHelpers::Tags::Vector<VectorType>>(expected_vars_sliced_in_y));
-  REQUIRE(data_on_slice(
-      std::make_optional(get<TestHelpers::Tags::Vector<VectorType>>(vars)),
-      extents, 2, z_offset));
+  REQUIRE(data_on_slice(std::make_optional(
+                            get<TestHelpers::Tags::Vector<VectorType>>(vars)),
+                        extents, 2, z_offset)
+              .has_value());
   CHECK(data_on_slice(std::make_optional(
                           get<TestHelpers::Tags::Vector<VectorType>>(vars)),
                       extents, 2, z_offset)
@@ -117,29 +120,30 @@ void test_variables_slice() noexcept {
 
   CHECK_FALSE(
       data_on_slice(std::optional<tnsr::I<VectorType, 3, Frame::Inertial>>{},
-                    extents, 0, x_offset));
+                    extents, 0, x_offset)
+          .has_value());
 
   // Test not_null<boost::option<Tensor>>
   using TensorType = tnsr::I<VectorType, 3>;
   auto optional_tensor = std::make_optional(TensorType{});
-  CHECK(optional_tensor);
+  CHECK(optional_tensor.has_value());
   data_on_slice(make_not_null(&optional_tensor), std::optional<TensorType>{},
                 extents, 0, x_offset);
-  CHECK_FALSE(optional_tensor);
+  CHECK_FALSE(optional_tensor.has_value());
 
   data_on_slice(
       make_not_null(&optional_tensor),
       std::make_optional(get<TestHelpers::Tags::Vector<VectorType>>(vars)),
       extents, 0, x_offset);
-  REQUIRE(optional_tensor);
+  REQUIRE(optional_tensor.has_value());
   CHECK(optional_tensor.value() ==
         get<TestHelpers::Tags::Vector<VectorType>>(expected_vars_sliced_in_x));
 
   optional_tensor = std::nullopt;
-  CHECK_FALSE(optional_tensor);
+  CHECK_FALSE(optional_tensor.has_value());
   data_on_slice(make_not_null(&optional_tensor), std::optional<TensorType>{},
                 extents, 0, x_offset);
-  CHECK_FALSE(optional_tensor);
+  CHECK_FALSE(optional_tensor.has_value());
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Slice",

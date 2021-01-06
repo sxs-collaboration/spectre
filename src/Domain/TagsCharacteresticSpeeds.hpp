@@ -41,7 +41,7 @@ struct CharSpeedCompute : CharSpeedsComputeTag::base, db::ComputeTag {
     // don't know which of the `ts` it is, and thus we need the unit normal
     // covector to be passed explicitly.
     CharSpeedsComputeTag::function(result, ts...);
-    if (static_cast<bool>(grid_velocity)) {
+    if (grid_velocity.has_value()) {
       const Scalar<DataVector> normal_dot_velocity =
           dot_product(*grid_velocity, unit_normal_covector);
       for (size_t i = 0; i < result->size(); ++i) {

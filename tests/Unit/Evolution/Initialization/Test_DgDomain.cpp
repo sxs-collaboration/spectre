@@ -297,10 +297,11 @@ void test() noexcept {
       }
     }
 
-    REQUIRE(static_cast<bool>(
+    REQUIRE(
         ActionTesting::get_databox_tag<
             component, domain::Tags::CoordinatesMeshVelocityAndJacobians<Dim>>(
-            runner, self_id)));
+            runner, self_id)
+            .has_value());
     const auto& coordinates_mesh_velocity_and_jacobians =
         *ActionTesting::get_databox_tag<
             component, domain::Tags::CoordinatesMeshVelocityAndJacobians<Dim>>(
@@ -479,14 +480,14 @@ void test() noexcept {
             runner, self_id)),
         expected_logical_to_inertial_det_inv_jacobian);
 
-    CHECK_FALSE(static_cast<bool>(
-        ActionTesting::get_databox_tag<component,
-                                       domain::Tags::MeshVelocity<Dim>>(
-            runner, self_id)));
-    CHECK_FALSE(static_cast<bool>(
-        ActionTesting::get_databox_tag<component,
-                                       domain::Tags::DivMeshVelocity>(
-            runner, self_id)));
+    CHECK_FALSE(ActionTesting::get_databox_tag<component,
+                                               domain::Tags::MeshVelocity<Dim>>(
+                    runner, self_id)
+                    .has_value());
+    CHECK_FALSE(ActionTesting::get_databox_tag<component,
+                                               domain::Tags::DivMeshVelocity>(
+                    runner, self_id)
+                    .has_value());
   };
 
   if (TimeDependent) {

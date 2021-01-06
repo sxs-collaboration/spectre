@@ -69,7 +69,7 @@ struct AddMeshVelocitySourceTerms {
         [](const auto dt_vars_ptr, const auto& vars,
            const std::optional<Scalar<DataVector>>&
                div_grid_velocity) noexcept {
-          if (div_grid_velocity) {
+          if (div_grid_velocity.has_value()) {
             *dt_vars_ptr -= vars * get(*div_grid_velocity);
           }
         },
