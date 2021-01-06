@@ -34,8 +34,9 @@ The option type can be any type understood natively by yaml-cpp
 (fundamentals, `std::string`, and `std::map`, `std::vector`,
 `std::list`, `std::array`, and `std::pair` of parsable types) and
 types SpECTRE adds support for.  SpECTRE adds `std::unordered_map`
-(but only with ordered keys), and various classes marked as
-constructible in their declarations.
+(but only with ordered keys), `std::variant` (with alternatives tested
+in order), and various classes marked as constructible in their
+declarations.
 
 An option tag can be placed in a group by adding a `group` type alias to the
 struct. The alias should refer to a type that, like option tags, defines a help

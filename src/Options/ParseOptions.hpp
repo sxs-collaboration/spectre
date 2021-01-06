@@ -18,6 +18,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <variant>
 #include <vector>
 #include <yaml-cpp/yaml.h>
 
@@ -81,6 +82,10 @@ inline void Option::set_node(YAML::Node node) noexcept {
   context_.column = node_->Mark().column;
 }
 
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
+#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
 template <typename T, typename Metavariables>
 T Option::parse_as() const {
   try {
@@ -138,6 +143,9 @@ T Option::parse_as() const {
     ERROR("Unexpected exception: " << e.what());
   }
 }
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
+#pragma GCC diagnostic pop
+#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
 
 namespace Options_detail {
 template <typename T, typename Metavariables, typename Subgroup>
@@ -646,6 +654,59 @@ struct create_from_yaml<std::unordered_map<K, V, H, P>> {
     for (auto it = ordered.begin(); it != ordered.end();) {
       auto node = ordered.extract(it++);
       result.emplace(std::move(node.key()), std::move(node.mapped()));
+    }
+    return result;
+  }
+};
+
+namespace Options_detail {
+// To get the full parse backtrace for a variant parse error the
+// failure should occur inside a nested call to parse_as.  This is a
+// type that will produce the correct error by failing to parse.
+template <typename... T>
+struct variant_parse_error {};
+
+template <typename... T>
+struct yaml_type<variant_parse_error<T...>> : yaml_type<std::variant<T...>> {};
+}  // namespace Options_detail
+
+template <typename... T>
+struct create_from_yaml<Options::Options_detail::variant_parse_error<T...>> {
+  template <typename Metavariables>
+  [[noreturn]] static Options::Options_detail::variant_parse_error<T...> create(
+      const Option& options) {
+    throw YAML::BadConversion(options.node().Mark());
+  }
+};
+
+template <typename... T>
+struct create_from_yaml<std::variant<T...>> {
+  using Result = std::variant<T...>;
+  static_assert(std::is_same_v<tmpl::list<T...>,
+                               tmpl::remove_duplicates<tmpl::list<T...>>>,
+                "Cannot parse variants with duplicate types.");
+
+  template <typename Metavariables>
+  static Result create(const Option& options) {
+    Result result{};
+    bool constructed = false;
+    const auto try_parse =
+        [&constructed, &options, &result](auto alternative_v) {
+      using Alternative = tmpl::type_from<decltype(alternative_v)>;
+      if (constructed) {
+        return;
+      }
+      try {
+        result = options.parse_as<Alternative, Metavariables>();
+        constructed = true;
+      } catch (...) {
+        // This alternative failed, but a later one may succeed.
+      }
+    };
+    EXPAND_PACK_LEFT_TO_RIGHT(try_parse(tmpl::type_<T>{}));
+    if (not constructed) {
+      options
+          .parse_as<Options_detail::variant_parse_error<T...>, Metavariables>();
     }
     return result;
   }

@@ -17,6 +17,7 @@
 #include <type_traits>
 #include <unordered_set>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "Options/Options.hpp"
@@ -122,6 +123,23 @@ template <typename T, typename U>
 struct yaml_type<std::pair<T, U>> {
   static std::string value() noexcept {
     return "[" + yaml_type<T>::value() + ", " + yaml_type<U>::value() + "]";
+  }
+};
+
+template <typename... T>
+struct yaml_type<std::variant<T...>> {
+  static std::string value() noexcept {
+    bool first = true;
+    std::string result;
+    const auto add_type = [&first, &result](auto alternative) noexcept {
+      if (not first) {
+        result += " or ";
+      }
+      first = false;
+      result += yaml_type<tmpl::type_from<decltype(alternative)>>::value();
+    };
+    EXPAND_PACK_LEFT_TO_RIGHT(add_type(tmpl::type_<T>{}));
+    return result;
   }
 };
 
