@@ -4,8 +4,8 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -66,7 +66,7 @@ template <bool HasMeshVelocity>
 void test() {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
 
-  boost::optional<Scalar<DataVector>> div_frame_velocity{};
+  std::optional<Scalar<DataVector>> div_frame_velocity{};
   if (HasMeshVelocity) {
     div_frame_velocity = Scalar<DataVector>{{{{5., 6.}}}};
   }

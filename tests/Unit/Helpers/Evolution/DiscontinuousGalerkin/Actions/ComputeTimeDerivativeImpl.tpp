@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <type_traits>
@@ -436,26 +437,26 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
       const Scalar<DataVector>& var3_squared,
 
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
-      const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const boost::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
       const noexcept {
     *out_normal_dot_flux_var1 = dot_product(flux_var1, normal_covector);
-    if (static_cast<bool>(mesh_velocity)) {
+    if (mesh_velocity.has_value()) {
       get(*out_normal_dot_flux_var1) -=
           get(var1) * get(dot_product(*mesh_velocity, normal_covector));
     }
     for (size_t i = 0; i < Dim; ++i) {
       out_normal_dot_flux_var2->get(i) =
           flux_var2.get(i, 0) * normal_covector.get(0);
-      if (static_cast<bool>(mesh_velocity)) {
+      if (mesh_velocity.has_value()) {
         out_normal_dot_flux_var2->get(i) -=
             var2.get(i) * get<0>(*mesh_velocity) * normal_covector.get(0);
       }
       for (size_t j = 1; j < Dim; ++j) {
         out_normal_dot_flux_var2->get(i) +=
             flux_var2.get(i, j) * normal_covector.get(j);
-        if (static_cast<bool>(mesh_velocity)) {
+        if (mesh_velocity.has_value()) {
           out_normal_dot_flux_var2->get(i) -=
               var2.get(i) * mesh_velocity->get(j) * normal_covector.get(j);
         }
@@ -466,7 +467,7 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
 
     get(*max_abs_char_speed) = 2.0 * max(get(var3_squared));
 
-    if (static_cast<bool>(normal_dot_mesh_velocity)) {
+    if (normal_dot_mesh_velocity.has_value()) {
       get(*max_abs_char_speed) += get(*normal_dot_mesh_velocity);
     }
     return max(get(*max_abs_char_speed));
@@ -492,9 +493,9 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
       const Scalar<DataVector>& prim_var1,
 
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
-      const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const boost::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
 
       const TimeStepId& time_step_id) const noexcept {
     dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,
@@ -521,27 +522,27 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
       const Scalar<DataVector>& var3_squared,
 
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
-      const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const boost::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
       const noexcept {
     get(*out_normal_dot_flux_var1) =
         get(var1) + get(dot_product(var2, normal_covector));
-    if (static_cast<bool>(mesh_velocity)) {
+    if (mesh_velocity.has_value()) {
       get(*out_normal_dot_flux_var1) -=
           get(dot_product(*mesh_velocity, normal_covector));
     }
     for (size_t i = 0; i < Dim; ++i) {
       out_normal_dot_flux_var2->get(i) =
           normal_covector.get(i) * normal_covector.get(0) * var2.get(0);
-      if (static_cast<bool>(mesh_velocity)) {
+      if (mesh_velocity.has_value()) {
         out_normal_dot_flux_var2->get(i) -=
             var2.get(i) * get<0>(*mesh_velocity) * normal_covector.get(0);
       }
       for (size_t j = 1; j < Dim; ++j) {
         out_normal_dot_flux_var2->get(i) +=
             normal_covector.get(i) * normal_covector.get(j) * var2.get(j);
-        if (static_cast<bool>(mesh_velocity)) {
+        if (mesh_velocity.has_value()) {
           out_normal_dot_flux_var2->get(i) -=
               var2.get(i) * mesh_velocity->get(j) * normal_covector.get(j);
         }
@@ -552,7 +553,7 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
 
     get(*max_abs_char_speed) = 2.0 * max(get(var3_squared));
 
-    if (static_cast<bool>(normal_dot_mesh_velocity)) {
+    if (normal_dot_mesh_velocity.has_value()) {
       get(*max_abs_char_speed) += get(*normal_dot_mesh_velocity);
     }
     return max(get(*max_abs_char_speed));
@@ -575,27 +576,27 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
       const Scalar<DataVector>& var3_squared,
 
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
-      const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const boost::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
       const noexcept {
     get(*out_normal_dot_flux_var1) =
         get(var1) + get(dot_product(var2, normal_covector));
-    if (static_cast<bool>(mesh_velocity)) {
+    if (mesh_velocity.has_value()) {
       get(*out_normal_dot_flux_var1) -=
           get(dot_product(*mesh_velocity, normal_covector));
     }
     for (size_t i = 0; i < Dim; ++i) {
       out_normal_dot_flux_var2->get(i) =
           flux_var2.get(i, 0) * normal_covector.get(0);
-      if (static_cast<bool>(mesh_velocity)) {
+      if (mesh_velocity.has_value()) {
         out_normal_dot_flux_var2->get(i) -=
             var2.get(i) * get<0>(*mesh_velocity) * normal_covector.get(0);
       }
       for (size_t j = 1; j < Dim; ++j) {
         out_normal_dot_flux_var2->get(i) +=
             flux_var2.get(i, j) * normal_covector.get(j);
-        if (static_cast<bool>(mesh_velocity)) {
+        if (mesh_velocity.has_value()) {
           out_normal_dot_flux_var2->get(i) -=
               var2.get(i) * mesh_velocity->get(j) * normal_covector.get(j);
         }
@@ -606,7 +607,7 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
 
     get(*max_abs_char_speed) = 2.0 * max(get(var3_squared));
 
-    if (static_cast<bool>(normal_dot_mesh_velocity)) {
+    if (normal_dot_mesh_velocity.has_value()) {
       get(*max_abs_char_speed) += get(*normal_dot_mesh_velocity);
     }
     return max(get(*max_abs_char_speed));
@@ -632,9 +633,9 @@ struct BoundaryTerms final : tt::ConformsTo<::dg::protocols::NumericalFlux>,
       const Scalar<DataVector>& prim_var1,
 
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
-      const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const boost::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
 
       const TimeStepId& time_step_id) const noexcept {
     dg_package_data(out_normal_dot_flux_var1, out_normal_dot_flux_var2,
@@ -812,9 +813,9 @@ double dg_package_data(
     const BoundaryCorrection& boundary_correction,
     const Variables<tmpl::list<ProjectedFieldTags...>>& projected_fields,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
-    const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+    const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         mesh_velocity,
-    const boost::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
+    const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity,
     const TagRetriever& get_tag, tmpl::list<VolumeTags...> /*meta*/) noexcept {
   return boundary_correction.dg_package_data(
       make_not_null(&get<PackagedFieldTags>(*packaged_data))...,
@@ -898,8 +899,8 @@ void test_impl(const Spectral::Quadrature quadrature,
     inv_jac.get(i, i) = 1.0;
   }
 
-  boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>> mesh_velocity{};
-  boost::optional<Scalar<DataVector>> div_mesh_velocity{};
+  std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>> mesh_velocity{};
+  std::optional<Scalar<DataVector>> div_mesh_velocity{};
   if (UseMovingMesh) {
     const std::array<double, 3> velocities = {{1.2, -1.4, 0.3}};
     mesh_velocity =
@@ -1198,9 +1199,9 @@ void test_impl(const Spectral::Quadrature quadrature,
           // Compute the normal dot mesh velocity and then the packaged data
           Variables<mortar_tags_list> packaged_data{
               face_mesh.number_of_grid_points()};
-          boost::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
+          std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
 
-          if (static_cast<bool>(face_mesh_velocities.at(local_direction))) {
+          if (face_mesh_velocities.at(local_direction).has_value()) {
             normal_dot_mesh_velocity =
                 dot_product(*face_mesh_velocities.at(local_direction),
                             face_normals.at(local_direction));

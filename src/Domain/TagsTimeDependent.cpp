@@ -10,20 +10,19 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace domain {
-namespace Tags {
+namespace domain::Tags {
 template <size_t Dim>
 void InertialFromGridCoordinatesCompute<Dim>::function(
     const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
         target_coords,
     const tnsr::I<DataVector, Dim, Frame::Grid>& source_coords,
-    const boost::optional<std::tuple<
+    const std::optional<std::tuple<
         tnsr::I<DataVector, Dim, Frame::Inertial>,
         ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
         ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
         tnsr::I<DataVector, Dim, Frame::Inertial>>>&
         grid_to_inertial_quantities) noexcept {
-  if (not grid_to_inertial_quantities) {
+  if (not grid_to_inertial_quantities.has_value()) {
     // We use a const_cast to point the data into the existing allocation
     // inside `source_coords` to avoid copying. This is safe because the output
     // of a compute tag is immutable.
@@ -52,13 +51,13 @@ void ElementToInertialInverseJacobian<Dim>::function(
         inv_jac_logical_to_inertial,
     const ::InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Grid>&
         inv_jac_logical_to_grid,
-    const boost::optional<std::tuple<
+    const std::optional<std::tuple<
         tnsr::I<DataVector, Dim, Frame::Inertial>,
         ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
         ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
         tnsr::I<DataVector, Dim, Frame::Inertial>>>&
         grid_to_inertial_quantities) noexcept {
-  if (not grid_to_inertial_quantities) {
+  if (not grid_to_inertial_quantities.has_value()) {
     // We use a const_cast to point the data into the existing allocation
     // inside `inv_jac_logical_to_grid` to avoid copying. This is safe because
     // the output of a compute tag is immutable.
@@ -88,16 +87,16 @@ void ElementToInertialInverseJacobian<Dim>::function(
 template <size_t Dim>
 void InertialMeshVelocityCompute<Dim>::function(
     const gsl::not_null<return_type*> mesh_velocity,
-    const boost::optional<std::tuple<
+    const std::optional<std::tuple<
         tnsr::I<DataVector, Dim, Frame::Inertial>,
         ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
         ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
         tnsr::I<DataVector, Dim, Frame::Inertial>>>&
         grid_to_inertial_quantities) noexcept {
-  if (not grid_to_inertial_quantities) {
-    *mesh_velocity = boost::none;
+  if (not grid_to_inertial_quantities.has_value()) {
+    *mesh_velocity = std::nullopt;
   } else {
-    if (not*mesh_velocity) {
+    if (not *mesh_velocity) {
       *mesh_velocity = typename return_type::value_type{};
     }
     // We use a const_cast to point the data into the existing allocation
@@ -105,9 +104,10 @@ void InertialMeshVelocityCompute<Dim>::function(
     // effectively unpacking the tuple. This is safe because the output
     // of a compute tag is immutable.
     for (size_t i = 0; i < Dim; ++i) {
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-      mesh_velocity->get().operator[](i).set_data_ref(&const_cast<DataVector&>(
-          std::get<3>(*grid_to_inertial_quantities).get(i)));
+      mesh_velocity->value().operator[](i).set_data_ref(
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+          &const_cast<DataVector&>(
+              std::get<3>(*grid_to_inertial_quantities).get(i)));
     }
   }
 }
@@ -123,5 +123,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef INSTANTIATE
 #undef DIM
-}  // namespace Tags
-}  // namespace domain
+}  // namespace domain::Tags

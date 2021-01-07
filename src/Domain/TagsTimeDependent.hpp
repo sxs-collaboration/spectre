@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -31,13 +31,13 @@ namespace Tags {
 /// frame, the Jacobian from the Grid to the Inertial frame, and the Inertial
 /// mesh velocity.
 ///
-/// The type is a `boost::optional`, which, when is not valid, signals that the
+/// The type is a `std::optional`, which, when is not valid, signals that the
 /// mesh is not moving. Thus,
-/// `static_cast<bool>(coordinates_velocity_and_jacobian)` can be used to check
+/// `coordinates_velocity_and_jacobian.has_value()` can be used to check
 /// if the mesh is moving.
 template <size_t Dim>
 struct CoordinatesMeshVelocityAndJacobians : db::SimpleTag {
-  using type = boost::optional<std::tuple<
+  using type = std::optional<std::tuple<
       tnsr::I<DataVector, Dim, Frame::Inertial>,
       ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
       ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
@@ -71,7 +71,7 @@ struct CoordinatesMeshVelocityAndJacobiansCompute
       *result = grid_to_inertial_map.coords_frame_velocity_jacobians(
           source_coords, time, functions_of_time);
     } else {
-      *result = boost::none;
+      *result = std::nullopt;
     }
   }
 
@@ -92,7 +92,7 @@ struct InertialFromGridCoordinatesCompute
   static void function(
       gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> target_coords,
       const tnsr::I<DataVector, Dim, Frame::Grid>& source_coords,
-      const boost::optional<std::tuple<
+      const std::optional<std::tuple<
           tnsr::I<DataVector, Dim, Frame::Inertial>,
           ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
           ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
@@ -118,7 +118,7 @@ struct ElementToInertialInverseJacobian
           inv_jac_logical_to_inertial,
       const ::InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Grid>&
           inv_jac_logical_to_grid,
-      const boost::optional<std::tuple<
+      const std::optional<std::tuple<
           tnsr::I<DataVector, Dim, Frame::Inertial>,
           ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
           ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
@@ -132,16 +132,16 @@ struct ElementToInertialInverseJacobian
 
 /// The mesh velocity
 ///
-/// The type is a `boost::optional`, which when it is not set indicates that the
+/// The type is a `std::optional`, which when it is not set indicates that the
 /// mesh is not moving.
 template <size_t Dim, typename Frame = ::Frame::Inertial>
 struct MeshVelocity : db::SimpleTag {
-  using type = boost::optional<tnsr::I<DataVector, Dim, Frame>>;
+  using type = std::optional<tnsr::I<DataVector, Dim, Frame>>;
 };
 
 /// Computes the Inertial mesh velocity from `CoordinatesVelocityAndJacobians`
 ///
-/// The type is a `boost::optional`, which when it is not set indicates that the
+/// The type is a `std::optional`, which when it is not set indicates that the
 /// mesh is not moving.
 template <size_t Dim>
 struct InertialMeshVelocityCompute : MeshVelocity<Dim, Frame::Inertial>,
@@ -151,7 +151,7 @@ struct InertialMeshVelocityCompute : MeshVelocity<Dim, Frame::Inertial>,
 
   static void function(
       gsl::not_null<return_type*> mesh_velocity,
-      const boost::optional<std::tuple<
+      const std::optional<std::tuple<
           tnsr::I<DataVector, Dim, Frame::Inertial>,
           ::InverseJacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
           ::Jacobian<DataVector, Dim, Frame::Grid, Frame::Inertial>,
@@ -163,7 +163,7 @@ struct InertialMeshVelocityCompute : MeshVelocity<Dim, Frame::Inertial>,
 
 /// The divergence of the mesh velocity
 struct DivMeshVelocity : db::SimpleTag {
-  using type = boost::optional<Scalar<DataVector>>;
+  using type = std::optional<Scalar<DataVector>>;
   static std::string name() noexcept { return "div(MeshVelocity)"; }
 };
 }  // namespace Tags

@@ -90,7 +90,7 @@ void test() noexcept {
   const ElementId<dim> self_id(1);
   MockRuntimeSystem runner{{}};
 
-  boost::optional<tnsr::I<DataVector, dim, Frame::Inertial>> mesh_velocity{};
+  std::optional<tnsr::I<DataVector, dim, Frame::Inertial>> mesh_velocity{};
   if (UseMovingMesh) {
     mesh_velocity =
         tnsr::I<DataVector, dim, Frame::Inertial>{{{{1.2}, {-1.4}}}};

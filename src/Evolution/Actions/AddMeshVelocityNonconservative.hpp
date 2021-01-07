@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
+#include <optional>
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -70,7 +70,7 @@ struct AddMeshVelocityNonconservative {
     const auto& mesh_velocity =
         db::get<::domain::Tags::MeshVelocity<Metavariables::volume_dim>>(box);
 
-    if (static_cast<bool>(mesh_velocity)) {
+    if (mesh_velocity.has_value()) {
       tmpl::for_each<variables_tags>([&box, &mesh_velocity](
                                          auto variables_tag_v) noexcept {
         using variable_tag = typename decltype(variables_tag_v)::type;
@@ -82,7 +82,7 @@ struct AddMeshVelocityNonconservative {
         db::mutate<dt_variable_tag>(
             make_not_null(&box),
             [](const auto dt_var_ptr, const auto& deriv_tensor,
-               const boost::optional<tnsr::I<
+               const std::optional<tnsr::I<
                    DataVector, Metavariables::volume_dim, Frame::Inertial>>&
                    grid_velocity) noexcept {
               for (size_t storage_index = 0;

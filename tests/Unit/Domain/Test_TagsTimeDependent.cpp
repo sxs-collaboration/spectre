@@ -4,8 +4,6 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/optional.hpp>
-#include <boost/optional/optional_io.hpp>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -215,9 +213,9 @@ void test() noexcept {
         }
       }
 
-      REQUIRE(static_cast<bool>(
-          db::get<domain::Tags::CoordinatesMeshVelocityAndJacobians<Dim>>(
-              box)));
+      REQUIRE(
+          db::get<domain::Tags::CoordinatesMeshVelocityAndJacobians<Dim>>(box)
+              .has_value());
 
       for (size_t i = 0; i < Dim; ++i) {
         // Check that the `const_cast`s and set_data_ref inside the compute tag
@@ -273,7 +271,7 @@ void test() noexcept {
                   .data());
       }
       CHECK_ITERABLE_APPROX(
-          db::get<domain::Tags::MeshVelocity<Dim>>(box).get(),
+          db::get<domain::Tags::MeshVelocity<Dim>>(box).value(),
           std::get<3>(expected_coords_mesh_velocity_jacobians));
     } else {
       tnsr::I<DataVector, Dim, Frame::Inertial> expected_coords{num_pts};

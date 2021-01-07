@@ -4,8 +4,8 @@
 #pragma once
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
+#include <optional>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
@@ -32,7 +32,7 @@ struct CharSpeedCompute : CharSpeedsComputeTag::base, db::ComputeTag {
   template <typename... Ts, typename T, size_t NumberOfCharSpeeds>
   static void function(
       const gsl::not_null<std::array<T, NumberOfCharSpeeds>*> result,
-      const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           grid_velocity,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_covector,
       const Ts&... ts) noexcept {
@@ -41,7 +41,7 @@ struct CharSpeedCompute : CharSpeedsComputeTag::base, db::ComputeTag {
     // don't know which of the `ts` it is, and thus we need the unit normal
     // covector to be passed explicitly.
     CharSpeedsComputeTag::function(result, ts...);
-    if (static_cast<bool>(grid_velocity)) {
+    if (grid_velocity.has_value()) {
       const Scalar<DataVector> normal_dot_velocity =
           dot_product(*grid_velocity, unit_normal_covector);
       for (size_t i = 0; i < result->size(); ++i) {

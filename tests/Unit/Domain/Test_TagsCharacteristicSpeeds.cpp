@@ -4,9 +4,9 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -103,7 +103,7 @@ void test_tags() {
   const DataVector used_for_size(5);
 
   std::unordered_map<Direction<Dim>,
-                     boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>>
+                     std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>>
       mesh_velocity{};
   std::unordered_map<Direction<Dim>, tnsr::I<DataVector, Dim, Frame::Inertial>>
       coordinates{};
@@ -115,7 +115,7 @@ void test_tags() {
           make_with_random_values<tnsr::I<DataVector, Dim, Frame::Inertial>>(
               make_not_null(&generator), make_not_null(&dist), used_for_size);
     } else {
-      mesh_velocity[direction] = boost::none;
+      mesh_velocity[direction] = std::nullopt;
     }
     coordinates[direction] =
         make_with_random_values<tnsr::I<DataVector, Dim, Frame::Inertial>>(
