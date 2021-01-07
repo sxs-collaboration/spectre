@@ -16,15 +16,12 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
+#include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 
 namespace evolution::dg::Actions::detail {
-CREATE_HAS_TYPE_ALIAS(inverse_spatial_metric_tag)
-CREATE_HAS_TYPE_ALIAS_V(inverse_spatial_metric_tag)
-
 struct OneOverNormalVectorMagnitude : db::SimpleTag {
   using type = Scalar<DataVector>;
 };

@@ -23,7 +23,9 @@
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
+#include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
@@ -43,7 +45,6 @@
 #include "ParallelAlgorithms/DiscontinuousGalerkin/FluxCommunication.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 
 /// \cond
 namespace tuples {
@@ -53,85 +54,6 @@ class TaggedTuple;
 /// \endcond
 
 namespace evolution::dg::Actions {
-namespace detail {
-CREATE_HAS_TYPE_ALIAS(boundary_correction)
-CREATE_HAS_TYPE_ALIAS_V(boundary_correction)
-
-template <bool HasInverseSpatialMetricTag = false>
-struct inverse_spatial_metric_tag_impl {
-  template <typename System>
-  using f = tmpl::list<>;
-};
-
-template <>
-struct inverse_spatial_metric_tag_impl<true> {
-  template <typename System>
-  using f = tmpl::list<typename System::inverse_spatial_metric_tag>;
-};
-
-template <typename System>
-using inverse_spatial_metric_tag = typename inverse_spatial_metric_tag_impl<
-    has_inverse_spatial_metric_tag_v<System>>::template f<System>;
-
-template <bool HasPrimitiveVars = false>
-struct get_primitive_vars {
-  template <typename BoundaryCorrection>
-  using f = tmpl::list<>;
-};
-
-template <>
-struct get_primitive_vars<true> {
-  template <typename BoundaryCorrection>
-  using f = typename BoundaryCorrection::dg_package_data_primitive_tags;
-};
-
-// Helper function to get parameter packs so we can forward `Tensor`s instead
-// of `Variables` to the boundary corrections. Returns the maximum absolute
-// char speed on the face, which can be used for setting or monitoring the CFL
-// without having to compute the speeds for each dimension in the volume.
-// Whether using only the face speeds is accurate enough to guarantee
-// stability is yet to be determined. However, if the CFL condition is
-// violated on the boundaries we are definitely in trouble, so it can at least
-// be used as a cheap diagnostic.
-template <typename System, typename BoundaryCorrection,
-          typename... PackagedFieldTags, typename... ProjectedFieldTags,
-          typename... ProjectedFieldTagsForCorrection, size_t Dim,
-          typename DbTagsList, typename... VolumeTags>
-double dg_package_data(
-    const gsl::not_null<Variables<tmpl::list<PackagedFieldTags...>>*>
-        packaged_data,
-    const BoundaryCorrection& boundary_correction,
-    const Variables<tmpl::list<ProjectedFieldTags...>>& projected_fields,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_covector,
-    const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
-        mesh_velocity,
-    const db::DataBox<DbTagsList>& box, tmpl::list<VolumeTags...> /*meta*/,
-    tmpl::list<ProjectedFieldTagsForCorrection...> /*meta*/) noexcept {
-  std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
-  if (mesh_velocity.has_value()) {
-    normal_dot_mesh_velocity =
-        dot_product(*mesh_velocity, unit_normal_covector);
-  }
-
-  if constexpr (evolution::dg::Actions::detail::
-                    has_inverse_spatial_metric_tag_v<System>) {
-    return boundary_correction.dg_package_data(
-        make_not_null(&get<PackagedFieldTags>(*packaged_data))...,
-        get<ProjectedFieldTagsForCorrection>(projected_fields)...,
-        unit_normal_covector,
-        get<evolution::dg::Actions::detail::NormalVector<Dim>>(
-            projected_fields),
-        mesh_velocity, normal_dot_mesh_velocity, db::get<VolumeTags>(box)...);
-  } else {
-    return boundary_correction.dg_package_data(
-        make_not_null(&get<PackagedFieldTags>(*packaged_data))...,
-        get<ProjectedFieldTagsForCorrection>(projected_fields)...,
-        unit_normal_covector, mesh_velocity, normal_dot_mesh_velocity,
-        db::get<VolumeTags>(box)...);
-  }
-}
-}  // namespace detail
-
 /*!
  * \brief Computes the time derivative for a DG time step.
  *
