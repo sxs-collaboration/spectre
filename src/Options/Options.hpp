@@ -72,7 +72,7 @@ inline std::ostream& operator<<(std::ostream& s, const Context& c) noexcept {
   do {                                                                  \
     if ((context).top_level) {                                          \
       /* clang-tidy: macro arg in parentheses */                        \
-      ERROR("\n" << (context) << m); /* NOLINT */                       \
+      ERROR_NO_TRACE("\n" << (context) << m); /* NOLINT */              \
     } else {                                                            \
       std::ostringstream avoid_name_collisions_PARSE_ERROR;             \
       /* clang-tidy: macro arg in parentheses */                        \

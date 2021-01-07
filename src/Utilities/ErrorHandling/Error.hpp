@@ -61,3 +61,19 @@
                m + /* NOLINT */                                               \
                "\n#######################################\n"s);               \
   } while (false)
+
+/*!
+ * \ingroup ErrorHandlingGroup
+ * \brief Same as ERROR but does not print a backtrace. Intended to be used for
+ * user errors, such as incorrect values in an input file.
+ */
+#define ERROR_NO_TRACE(m)                                                  \
+  do {                                                                     \
+    disable_floating_point_exceptions();                                   \
+    std::ostringstream avoid_name_collisions_ERROR;                        \
+    /* clang-tidy: macro arg in parentheses */                             \
+    avoid_name_collisions_ERROR << m; /* NOLINT */                         \
+    abort_with_error_message_no_trace(                                     \
+        __FILE__, __LINE__, static_cast<const char*>(__PRETTY_FUNCTION__), \
+        avoid_name_collisions_ERROR.str());                                \
+  } while (false)
