@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(LIBXSMM REQUIRED)
+find_package(LIBXSMM 1.16.1 REQUIRED)
 
 message(STATUS "LIBXSMM libs: " ${LIBXSMM_LIBRARIES})
 message(STATUS "LIBXSMM incl: " ${LIBXSMM_INCLUDE_DIRS})
