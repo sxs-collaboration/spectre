@@ -10,4 +10,5 @@ spectre_target_headers(
   ComputeTimeDerivativeHelpers.hpp
   NormalCovectorAndMagnitude.hpp
   PackageDataImpl.hpp
+  VolumeTermsImpl.hpp
   )
