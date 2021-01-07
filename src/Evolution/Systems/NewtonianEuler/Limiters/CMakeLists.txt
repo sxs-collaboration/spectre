@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   CharacteristicHelpers.cpp
   Flattener.cpp
+  VariablesToLimit.cpp
   )
 
 spectre_target_headers(
@@ -19,6 +20,7 @@ spectre_target_headers(
   CharacteristicHelpers.hpp
   Flattener.hpp
   KxrcfTci.hpp
+  VariablesToLimit.hpp
   )
 
 target_link_libraries(
