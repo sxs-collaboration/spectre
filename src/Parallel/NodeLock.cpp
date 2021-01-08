@@ -5,7 +5,7 @@
 
 #include <converse.h>
 
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace Parallel {

@@ -13,11 +13,11 @@
 #include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 
 namespace NonlinearSolver::observe_detail {
 
@@ -58,8 +58,7 @@ void contribute_to_reduction_observer(
   Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>(
       // Node 0 is always the writer, so directly call the component on that
       // node
-      reduction_writer[0], observation_id,
-      static_cast<size_t>(Parallel::my_node()),
+      reduction_writer[0], observation_id, static_cast<size_t>(sys::my_node()),
       std::string{"/" + Options::name<OptionsGroup>() + "Residuals"},
       std::vector<std::string>{"Iteration", "GlobalizationStep", "Residual",
                                "StepLength"},

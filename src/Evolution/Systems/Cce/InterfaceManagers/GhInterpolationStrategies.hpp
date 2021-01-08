@@ -4,9 +4,8 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Time/Tags.hpp"
-
+#include "Utilities/ErrorHandling/Error.hpp"
 
 namespace Cce {
 /// Contains utilities for collecting, interpolating, and providing worldtube

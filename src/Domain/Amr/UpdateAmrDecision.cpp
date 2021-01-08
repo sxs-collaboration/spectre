@@ -8,7 +8,7 @@
 #include "Domain/Structure/Element.hpp"    // IWYU pragma: keep
 #include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Neighbors.hpp"  // IWYU pragma: keep
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 

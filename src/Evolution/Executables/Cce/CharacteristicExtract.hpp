@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
@@ -28,6 +27,7 @@
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Blas.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 
 struct EvolutionMetavars {
   using system = Cce::System;

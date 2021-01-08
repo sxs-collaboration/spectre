@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <charm++.h>
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>

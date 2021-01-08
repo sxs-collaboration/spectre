@@ -13,7 +13,7 @@
 #include <libxsmm.h>
 #endif  // ifndef SPECTRE_DEBUG
 
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace blas_detail {

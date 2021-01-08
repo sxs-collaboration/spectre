@@ -9,7 +9,7 @@
 #include <set>
 
 #include "Domain/Structure/SegmentId.hpp"  // IWYU pragma: keep
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 namespace {
 template <size_t VolumeDim>

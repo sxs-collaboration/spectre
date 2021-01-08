@@ -12,7 +12,7 @@
 #include <ostream>
 #include <vector>
 
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 /*!
  * \ingroup SpectralGroup

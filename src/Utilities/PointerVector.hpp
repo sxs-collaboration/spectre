@@ -10,8 +10,8 @@
 #include <functional>
 
 // The Utilities/Blaze.hpp configures Blaze
-#include "ErrorHandling/Assert.hpp"
 #include "Utilities/Blaze.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 #include <blaze/math/CustomVector.h>
 #include <blaze/system/Optimizations.h>

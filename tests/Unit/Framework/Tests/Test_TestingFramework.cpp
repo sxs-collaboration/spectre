@@ -5,7 +5,7 @@
 
 #include <cmath>
 
-#include "Parallel/Abort.hpp"
+#include "Utilities/System/Abort.hpp"
 
 SPECTRE_TEST_CASE("Unit.TestingFramework.Approx", "[Unit]") {
   /// [approx_test]
@@ -37,5 +37,5 @@ SPECTRE_TEST_CASE("Unit.TestingFramework.Approx", "[Unit]") {
 // [[OutputRegex, I failed]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.TestingFramework.Abort", "[Unit]") {
   ERROR_TEST();
-  Parallel::abort("I failed");
+  sys::abort("I failed");
 }

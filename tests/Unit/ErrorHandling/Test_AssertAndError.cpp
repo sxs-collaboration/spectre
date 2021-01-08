@@ -3,8 +3,8 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include "ErrorHandling/Assert.hpp"
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 /// [assertion_test_example]
 // [[OutputRegex, Testing assert]]

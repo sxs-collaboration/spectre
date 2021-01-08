@@ -18,7 +18,6 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Abort.hpp
   Algorithm.hpp
   AlgorithmMetafunctions.hpp
   ArrayIndex.hpp
@@ -26,10 +25,8 @@ spectre_target_headers(
   CharmPupable.hpp
   CharmRegistration.hpp
   CreateFromOptions.hpp
-  Exit.hpp
   GlobalCache.hpp
   InboxInserters.hpp
-  Info.hpp
   InitializationFunctions.hpp
   Invoke.hpp
   Main.hpp
@@ -55,6 +52,7 @@ target_link_libraries(
   Options
   PUBLIC
   ErrorHandling
+  SystemUtilities
   Utilities
   )
 

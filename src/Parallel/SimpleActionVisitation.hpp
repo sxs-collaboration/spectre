@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"

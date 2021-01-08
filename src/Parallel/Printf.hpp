@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits/IsStreamable.hpp"
 

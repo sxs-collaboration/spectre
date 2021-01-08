@@ -3,7 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include "ErrorHandling/AbortWithErrorMessage.hpp"
+#include "Utilities/ErrorHandling/AbortWithErrorMessage.hpp"
 
 // [[OutputRegex, 'a == b' violated!]]
 [[noreturn]] SPECTRE_TEST_CASE(

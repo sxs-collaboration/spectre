@@ -8,7 +8,7 @@
 
 #include <iterator>
 
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 /// Evaluate the jth Lagrange interpolating polynomial with the given
 /// control points where j is the index of index_point.

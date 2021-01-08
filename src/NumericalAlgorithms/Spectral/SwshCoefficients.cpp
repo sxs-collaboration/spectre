@@ -10,8 +10,8 @@
 #include <utility>
 
 #include "DataStructures/SpinWeighted.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"

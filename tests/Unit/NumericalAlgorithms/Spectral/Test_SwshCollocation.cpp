@@ -8,11 +8,11 @@
 #include <random>
 #include <sharp_cxx.h>
 
-#include "ErrorHandling/Error.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 namespace Spectral::Swsh {
 namespace {

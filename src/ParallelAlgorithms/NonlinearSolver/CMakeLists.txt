@@ -28,6 +28,7 @@ target_link_libraries(
   Options
   Parallel
   ParallelLinearSolver
+  SystemUtilities
   )
 
 add_subdirectory(NewtonRaphson)

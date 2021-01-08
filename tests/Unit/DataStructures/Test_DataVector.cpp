@@ -7,11 +7,11 @@
 #include <tuple>
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
-#include "ErrorHandling/Error.hpp"        // IWYU pragma: keep
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/DataStructures/VectorImplTestHelper.hpp"
-#include "Utilities/DereferenceWrapper.hpp"  // IWYU pragma: keep
+#include "Utilities/DereferenceWrapper.hpp"   // IWYU pragma: keep
+#include "Utilities/ErrorHandling/Error.hpp"  // IWYU pragma: keep
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"        // IWYU pragma: keep
@@ -107,7 +107,8 @@ void test_norms() noexcept {
   DataVector vector(30);
   fill_with_random_values(make_not_null(&vector), make_not_null(&gen),
                           make_not_null(&dist));
-  double l1norm = 0.0, l2norm = 0.0;
+  double l1norm = 0.0;
+  double l2norm = 0.0;
   for (const double value : vector) {
     l1norm += std::abs(value);
     l2norm += square(value);

@@ -6,8 +6,8 @@
 #include <stdexcept>
 #include <string>
 
-#include "ErrorHandling/Exceptions.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 
 SPECTRE_TEST_CASE("Unit.ErrorHandling.Exceptions.convergence_error",
                   "[ErrorHandling][Unit]") {

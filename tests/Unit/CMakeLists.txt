@@ -61,6 +61,7 @@ target_link_libraries(
   Framework
   Informer
   Options
+  SystemUtilities
   Utilities
   )
 

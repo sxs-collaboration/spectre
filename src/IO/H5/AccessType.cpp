@@ -5,7 +5,7 @@
 
 #include <ostream>
 
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 namespace h5 {
 std::ostream& operator<<(std::ostream& os, const AccessType t) noexcept {

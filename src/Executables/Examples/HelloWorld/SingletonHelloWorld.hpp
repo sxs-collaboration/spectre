@@ -7,16 +7,16 @@
 /// [executable_example_includes]
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 /// [executable_example_includes]
 
@@ -50,8 +50,8 @@ struct PrintMessage {
                     const Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) {
     Parallel::printf("Hello %s from process %d on node %d!\n",
-                     Parallel::get<Tags::Name>(cache), Parallel::my_proc(),
-                     Parallel::my_node());
+                     Parallel::get<Tags::Name>(cache), sys::my_proc(),
+                     sys::my_node());
   }
 };
 }  // namespace Actions

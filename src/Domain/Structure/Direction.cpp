@@ -7,7 +7,7 @@
 #include <pup.h>
 #include <pup_stl.h>
 
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 /// \cond

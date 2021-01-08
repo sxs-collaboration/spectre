@@ -7,10 +7,10 @@
 #include <sharp_cxx.h>
 #include <utility>
 
-#include "ErrorHandling/Assert.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StaticCache.hpp"

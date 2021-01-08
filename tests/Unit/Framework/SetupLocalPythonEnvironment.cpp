@@ -15,10 +15,10 @@
 #include <numpy/arrayobject.h>  // IWYU pragma: keep
 #include <pydebug.h>
 
-#include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Framework/PyppFundamentals.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Informer/InfoFromBuild.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 
 /// \cond
 namespace pypp {

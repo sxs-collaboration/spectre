@@ -8,8 +8,8 @@
 #include <ostream>
 
 #include "DataStructures/Variables.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond

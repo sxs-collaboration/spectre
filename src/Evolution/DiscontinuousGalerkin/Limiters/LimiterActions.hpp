@@ -14,10 +14,10 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Tags.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace Limiters {

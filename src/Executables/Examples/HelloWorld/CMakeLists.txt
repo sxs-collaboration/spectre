@@ -4,6 +4,7 @@
 set(LIBS_TO_LINK
   Informer
   Options
+  SystemUtilities
   Utilities
   )
 

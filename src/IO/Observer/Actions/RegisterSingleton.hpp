@@ -9,13 +9,13 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace observers::Actions {
@@ -58,7 +58,7 @@ struct RegisterSingletonWithObserverWriter {
     Parallel::simple_action<Actions::RegisterReductionNodeWithWritingNode>(
         Parallel::get_parallel_component<
             observers::ObserverWriter<Metavariables>>(cache)[0],
-        observation_key, static_cast<size_t>(Parallel::my_node()));
+        observation_key, static_cast<size_t>(sys::my_node()));
     return {std::move(box), true};
   }
 };

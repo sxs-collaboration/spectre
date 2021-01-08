@@ -11,8 +11,6 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "ErrorHandling/Assert.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
@@ -21,15 +19,17 @@
 #include "IO/Observer/Tags.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdHelpers.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -345,8 +345,7 @@ struct CollectReductionDataOnNode {
         Parallel::threaded_action<WriteReductionData>(
             Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
                 cache)[0],
-            observation_id, static_cast<size_t>(Parallel::my_node()),
-            subfile_name,
+            observation_id, static_cast<size_t>(sys::my_node()), subfile_name,
             // NOLINTNEXTLINE(bugprone-use-after-move)
             std::move(reduction_names), std::move(received_reduction_data));
       }

@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 // part of GSL, but GSL depends on Expects and Ensures...
 #ifndef UNLIKELY

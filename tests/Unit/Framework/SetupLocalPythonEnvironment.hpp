@@ -39,9 +39,9 @@ struct SetupLocalPythonEnvironment {
 // in python 2. As such it needs to be factored into its own function which
 // returns either nullptr or void depending on the version.
 #if PY_MAJOR_VERSION == 3
-  std::nullptr_t init_numpy();
+  static std::nullptr_t init_numpy();
 #else
-  void init_numpy();
+  static void init_numpy();
 #endif
   static bool initialized;
   static bool finalized;

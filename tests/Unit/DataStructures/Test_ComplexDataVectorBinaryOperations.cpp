@@ -11,9 +11,9 @@
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "ErrorHandling/Error.hpp"  // IWYU pragma: keep
 #include "Helpers/DataStructures/VectorImplTestHelper.hpp"
-#include "Utilities/DereferenceWrapper.hpp"  // IWYU pragma: keep
+#include "Utilities/DereferenceWrapper.hpp"   // IWYU pragma: keep
+#include "Utilities/ErrorHandling/Error.hpp"  // IWYU pragma: keep
 #include "Utilities/Functional.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep

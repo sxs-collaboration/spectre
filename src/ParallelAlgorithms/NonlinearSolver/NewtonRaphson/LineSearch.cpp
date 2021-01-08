@@ -4,8 +4,8 @@
 #include <cmath>
 #include <cstddef>
 
-#include "ErrorHandling/Assert.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 namespace NonlinearSolver::newton_raphson {
 

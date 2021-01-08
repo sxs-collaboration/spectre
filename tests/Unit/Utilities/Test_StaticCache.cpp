@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/StaticCache.hpp"
 

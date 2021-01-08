@@ -13,11 +13,11 @@
 #include <tuple>
 #include <utility>
 
-#include "ErrorHandling/Assert.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Time/Time.hpp"  // IWYU pragma: keep
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace TimeSteppers {

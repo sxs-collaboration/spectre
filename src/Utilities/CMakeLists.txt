@@ -86,6 +86,8 @@ target_link_libraries(
   Libxsmm
   )
 
+add_subdirectory(ErrorHandling)
+add_subdirectory(System)
 add_subdirectory(TypeTraits)
 
 if (NOT USE_FORMALINE)

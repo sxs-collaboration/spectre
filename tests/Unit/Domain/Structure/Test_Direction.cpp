@@ -10,8 +10,8 @@
 
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Side.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 

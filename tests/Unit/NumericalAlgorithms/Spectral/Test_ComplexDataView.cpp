@@ -10,16 +10,14 @@
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "ErrorHandling/Error.hpp"  // IWYU pragma: keep
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"
 
-namespace Spectral {
-namespace Swsh {
-namespace detail {
+namespace Spectral::Swsh::detail {
 namespace {
 
 template <ComplexRepresentation Representation>
@@ -258,6 +256,4 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.ComplexDataView",
 #endif
 }
 }  // namespace
-}  // namespace detail
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh::detail

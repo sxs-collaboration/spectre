@@ -26,3 +26,9 @@ spectre_target_headers(
   FloatingPointExceptions.hpp
   StaticAssert.hpp
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PUBLIC
+  SystemUtilities
+  )

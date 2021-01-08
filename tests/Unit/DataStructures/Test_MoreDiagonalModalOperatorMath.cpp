@@ -11,8 +11,8 @@
 
 #include "DataStructures/DiagonalModalOperator.hpp"
 #include "DataStructures/ModalVector.hpp"  // IWYU pragma: keep
-#include "ErrorHandling/Error.hpp"         // IWYU pragma: keep
 #include "Helpers/DataStructures/VectorImplTestHelper.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"  // IWYU pragma: keep
 #include "Utilities/Functional.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep

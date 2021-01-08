@@ -7,8 +7,8 @@
 #include <ostream>
 #include <pup.h>
 
-#include "ErrorHandling/Assert.hpp"
 #include "Time/Time.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 Slab::Slab(const double start, const double end) noexcept
     : start_(start), end_(end) {

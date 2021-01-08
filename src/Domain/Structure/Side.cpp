@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 #include "Domain/Structure/Side.hpp"
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 #include <ostream>
 

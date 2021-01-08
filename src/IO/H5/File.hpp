@@ -17,13 +17,13 @@
 #include <typeinfo>
 #include <vector>
 
-#include "ErrorHandling/Error.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Header.hpp"  // IWYU pragma: keep
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/PrettyType.hpp"
 

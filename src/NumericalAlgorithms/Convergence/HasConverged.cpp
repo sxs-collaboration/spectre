@@ -7,9 +7,9 @@
 #include <ostream>
 #include <pup.h>  // IWYU pragma: keep
 
-#include "ErrorHandling/Assert.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Parallel/PupStlCpp17.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 namespace Convergence {
 

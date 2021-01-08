@@ -7,7 +7,7 @@
 #include <pup.h>  // IWYU pragma: keep
 
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 

@@ -10,12 +10,10 @@
 
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
-namespace domain {
-namespace creators {
-namespace time_dependence {
+namespace domain::creators::time_dependence {
 template <size_t MeshDim>
 std::unique_ptr<TimeDependence<MeshDim>> None<MeshDim>::get_clone() const
     noexcept {
@@ -68,6 +66,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef GET_DIM
 #undef INSTANTIATION
 /// \endcond
-}  // namespace time_dependence
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::time_dependence

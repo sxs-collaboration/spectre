@@ -12,11 +12,11 @@
 #include "DataStructures/Variables.hpp"    // IWYU pragma: keep
 #include "Domain/Structure/Direction.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/ElementId.hpp"  // IWYU pragma: keep
-#include "ErrorHandling/Assert.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 

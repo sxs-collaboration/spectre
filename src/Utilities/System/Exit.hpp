@@ -1,18 +1,14 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Defines function Parallel::exit.
-
 #pragma once
 
 #include <charm++.h>
 #include <exception>
 
-/// Contains functions that forward to Charm++ parallel functions.
-namespace Parallel {
+namespace sys {
 
-/// \ingroup ParallelGroup
+/// \ingroup SystemUtilitiesGroup
 /// \brief Exit the program normally.
 /// This should only be called once over all processors.
 [[noreturn]] inline void exit() {
@@ -22,4 +18,4 @@ namespace Parallel {
   std::terminate();  // LCOV_EXCL_LINE
 }
 
-}  // namespace Parallel
+}  // namespace sys

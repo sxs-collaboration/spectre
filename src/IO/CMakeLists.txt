@@ -32,6 +32,7 @@ target_link_libraries(
   Informer
   INTERFACE
   Spectral
+  SystemUtilities
   )
 
 add_subdirectory(H5)

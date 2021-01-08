@@ -13,11 +13,9 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
@@ -25,8 +23,10 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Printf.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -77,9 +77,9 @@ struct nodegroup_initialize {
                         db::AddSimpleTags<Tags::vector_of_array_indexs,
                                           Tags::total_receives_on_node>>(
             std::move(box),
-            std::vector<int>(static_cast<size_t>(
-                number_of_1d_array_elements_per_core *
-                Parallel::procs_on_node(Parallel::my_node()))),
+            std::vector<int>(
+                static_cast<size_t>(number_of_1d_array_elements_per_core *
+                                    sys::procs_on_node(sys::my_node()))),
             0),
         true);
   }
@@ -118,7 +118,7 @@ struct nodegroup_receive {
                        const gsl::not_null<int*> total_receives_on_node) {
           if (static_cast<int>(array_indexs->size()) !=
               number_of_1d_array_elements_per_core *
-                  Parallel::procs_on_node(Parallel::my_node())) {
+                  sys::procs_on_node(sys::my_node())) {
             (*array_indexs)[static_cast<size_t>(id_of_array)]++;
           }
           std::for_each(array_indexs->begin(), array_indexs->end(),
@@ -140,15 +140,14 @@ struct nodegroup_check_first_result {
                   "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(db::get<Tags::total_receives_on_node>(box) ==
                              number_of_1d_array_elements_per_core *
-                                 Parallel::procs_on_node(Parallel::my_node()));
+                                 sys::procs_on_node(sys::my_node()));
     decltype(auto) v = db::get<Tags::vector_of_array_indexs>(box);
     SPECTRE_PARALLEL_REQUIRE(static_cast<int>(v.size()) ==
                              number_of_1d_array_elements_per_core *
-                                 Parallel::procs_on_node(Parallel::my_node()));
+                                 sys::procs_on_node(sys::my_node()));
     std::for_each(v.begin(), v.end(), [](const int& value) {
-      SPECTRE_PARALLEL_REQUIRE(
-          value == number_of_1d_array_elements_per_core *
-                       Parallel::procs_on_node(Parallel::my_node()));
+      SPECTRE_PARALLEL_REQUIRE(value == number_of_1d_array_elements_per_core *
+                                            sys::procs_on_node(sys::my_node()));
     });
   }
 };
@@ -169,7 +168,7 @@ struct nodegroup_threaded_receive {
                        const gsl::not_null<int*> total_receives_on_node) {
           if (static_cast<int>(array_indexs->size()) !=
               number_of_1d_array_elements_per_core *
-                  Parallel::procs_on_node(Parallel::my_node())) {
+                  sys::procs_on_node(sys::my_node())) {
             (*array_indexs)[static_cast<size_t>(id_of_array)]++;
           }
           std::for_each(array_indexs->begin(), array_indexs->end(),
@@ -192,15 +191,15 @@ struct nodegroup_check_threaded_result {
                   "The ParallelComponent is not deduced to be the right type");
     SPECTRE_PARALLEL_REQUIRE(db::get<Tags::total_receives_on_node>(box) ==
                              2 * number_of_1d_array_elements_per_core *
-                                 Parallel::procs_on_node(Parallel::my_node()));
+                                 sys::procs_on_node(sys::my_node()));
     decltype(auto) v = db::get<Tags::vector_of_array_indexs>(box);
     SPECTRE_PARALLEL_REQUIRE(static_cast<int>(v.size()) ==
                              number_of_1d_array_elements_per_core *
-                                 Parallel::procs_on_node(Parallel::my_node()));
+                                 sys::procs_on_node(sys::my_node()));
     std::for_each(v.begin(), v.end(), [](const int& value) {
-      SPECTRE_PARALLEL_REQUIRE(
-          value == 2 * number_of_1d_array_elements_per_core *
-                       Parallel::procs_on_node(Parallel::my_node()));
+      SPECTRE_PARALLEL_REQUIRE(value ==
+                               2 * number_of_1d_array_elements_per_core *
+                                   sys::procs_on_node(sys::my_node()));
     });
   }
 };
@@ -269,9 +268,9 @@ struct ArrayParallelComponent {
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
 
     int which_proc = 0;
-    const int number_of_procs = Parallel::number_of_procs();
+    const int number_of_procs = sys::number_of_procs();
     for (int i = 0;
-         i < number_of_1d_array_elements_per_core * Parallel::number_of_procs();
+         i < number_of_1d_array_elements_per_core * sys::number_of_procs();
          ++i) {
       array_proxy[i].insert(global_cache, {}, which_proc);
       which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;

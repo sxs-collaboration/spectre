@@ -6,9 +6,9 @@
 #include <ostream>
 #include <string>
 
-#include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 std::ostream& Limiters::operator<<(
     std::ostream& os, const Limiters::MinmodType minmod_type) noexcept {
@@ -30,7 +30,7 @@ template <>
 Limiters::MinmodType
 Options::create_from_yaml<Limiters::MinmodType>::create<void>(
     const Options::Option& options) {
-  const std::string minmod_type_read = options.parse_as<std::string>();
+  const auto minmod_type_read = options.parse_as<std::string>();
   if (minmod_type_read == "LambdaPi1") {
     return Limiters::MinmodType::LambdaPi1;
   } else if (minmod_type_read == "LambdaPiN") {

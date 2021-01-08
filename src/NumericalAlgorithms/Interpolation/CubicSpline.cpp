@@ -10,7 +10,7 @@
 #include <pup.h>
 #include <pup_stl.h>
 
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 namespace intrp {
 CubicSpline::CubicSpline(std::vector<double> x_values,

@@ -19,6 +19,7 @@ target_link_libraries(
   DataStructuresHelpers
   Options
   Parallel
+  SystemUtilities
   Utilities
 
   PRIVATE

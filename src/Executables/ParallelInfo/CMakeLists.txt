@@ -27,4 +27,5 @@ target_link_libraries(
   ErrorHandling
   Informer
   Parallel
+  SystemUtilities
   )

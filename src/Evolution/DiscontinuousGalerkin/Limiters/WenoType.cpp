@@ -6,9 +6,9 @@
 #include <ostream>
 #include <string>
 
-#include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 std::ostream& Limiters::operator<<(
     std::ostream& os, const Limiters::WenoType weno_type) noexcept {
@@ -27,7 +27,7 @@ std::ostream& Limiters::operator<<(
 template <>
 Limiters::WenoType Options::create_from_yaml<Limiters::WenoType>::create<void>(
     const Options::Option& options) {
-  const std::string weno_type_read = options.parse_as<std::string>();
+  const auto weno_type_read = options.parse_as<std::string>();
   if (weno_type_read == "Hweno") {
     return Limiters::WenoType::Hweno;
   } else if (weno_type_read == "SimpleWeno") {

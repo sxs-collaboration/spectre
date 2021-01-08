@@ -13,20 +13,19 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
-namespace grmhd {
-namespace AnalyticData {
+namespace grmhd::AnalyticData {
 
 MagnetizedFmDisk::MagnetizedFmDisk(
     const double bh_mass, const double bh_dimless_spin,
@@ -261,6 +260,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (true, false))
 #undef DTYPE
 #undef NEED_SPACETIME
 #undef INSTANTIATE
-}  // namespace AnalyticData
-}  // namespace grmhd
+}  // namespace grmhd::AnalyticData
 /// \endcond

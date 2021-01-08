@@ -10,13 +10,13 @@
 #include <ostream>
 
 #include "DataStructures/Matrix.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/Type.hpp"
 #include "IO/H5/Version.hpp"
 #include "IO/H5/Wrappers.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 
@@ -110,7 +110,8 @@ Dat::~Dat() { CHECK_H5(H5Dclose(dataset_id_), "Failed to close dataset"); }
 void Dat::append_impl(const hsize_t number_of_rows,
                       const std::vector<double>& data) {
   {
-    std::array<hsize_t, 2> read_size{}, read_max_size{};
+    std::array<hsize_t, 2> read_size{};
+    std::array<hsize_t, 2> read_max_size{};
     const hid_t dataspace_id = H5Dget_space(dataset_id_);
     CHECK_H5(dataspace_id, "Failed to get dataspace for appending");
     if (2 != H5Sget_simple_extent_dims(dataspace_id, read_size.data(),
@@ -210,7 +211,8 @@ Matrix Dat::get_data() const {
   const hid_t dataspace_id = H5Dget_space(dataset_id_);
   CHECK_H5(dataspace_id, "Failed to get dataspace");
 
-  std::array<hsize_t, 2> size{}, max_size{};
+  std::array<hsize_t, 2> size{};
+  std::array<hsize_t, 2> max_size{};
   if (2 !=
       H5Sget_simple_extent_dims(dataspace_id, size.data(), max_size.data())) {
     ERROR("Incorrect dimension in get_data()");  // LCOV_EXCL_LINE
@@ -250,7 +252,8 @@ Matrix Dat::get_data_subset(const std::vector<size_t>& these_columns,
 
   const hid_t dataspace_id = H5Dget_space(dataset_id_);
   CHECK_H5(dataspace_id, "Failed to get dataspace");
-  std::array<hsize_t, 2> size{}, max_size{};
+  std::array<hsize_t, 2> size{};
+  std::array<hsize_t, 2> max_size{};
   if (2 !=
       H5Sget_simple_extent_dims(dataspace_id, size.data(), max_size.data())) {
     ERROR("Incorrect dimension in get_data()");  // LCOV_EXCL_LINE

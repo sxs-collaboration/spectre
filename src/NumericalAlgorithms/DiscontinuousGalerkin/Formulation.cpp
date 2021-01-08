@@ -6,8 +6,8 @@
 #include <ostream>
 #include <string>
 
-#include "ErrorHandling/Error.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 namespace dg {
 std::ostream& operator<<(std::ostream& os, const Formulation t) noexcept {

@@ -10,9 +10,9 @@
 #include <tuple>
 #include <utility>
 
-#include "ErrorHandling/Assert.hpp"
-#include "ErrorHandling/StaticAssert.hpp"
 #include "Utilities/ConstantExpressions.hpp"  // IWYU pragma: keep  // for pow<>
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/StaticAssert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Math.hpp"
 

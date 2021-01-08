@@ -9,9 +9,9 @@
 #include <functional>
 #include <ostream>
 
-#include "ErrorHandling/Assert.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 
 TimescaleTuner::TimescaleTuner(DataVector initial_timescale,

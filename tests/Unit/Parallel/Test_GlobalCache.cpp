@@ -16,20 +16,20 @@
 #include <string>
 #include <tuple>
 
-#include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmGroup.hpp"
 #include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Parallel/Exit.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/System/Exit.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -500,7 +500,7 @@ template <typename Metavariables>
 void Test_GlobalCache<Metavariables>::exit_if_done(int index) noexcept {
   elements_that_are_finished_.insert(index);
   if (elements_that_are_finished_.size() >= num_elements_) {
-    Parallel::exit();
+    sys::exit();
   }
 }
 

@@ -21,7 +21,6 @@
 #include "Domain/Structure/Element.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Side.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/SimpleWenoImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
@@ -31,6 +30,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"

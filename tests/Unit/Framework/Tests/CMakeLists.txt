@@ -17,7 +17,7 @@ add_test_library(
   ${LIBRARY}
   "Framework/Tests"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;DataStructures;ErrorHandling"
+  "Boost::boost;DataStructures;SystemUtilities"
   )
 
 add_dependencies(

@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <string>
 
-#include "ErrorHandling/Assert.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 std::string wrap_text(std::string str, const size_t line_length,
                       const std::string& indentation) noexcept {

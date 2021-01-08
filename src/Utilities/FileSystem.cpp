@@ -20,8 +20,8 @@
 #include <thread>
 #include <unistd.h>
 
-#include "ErrorHandling/Error.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 // IWYU asks to add <fcntl.h> when it's not there and remove it when it's there.
 // IWYU pragma: no_include <fcntl.h>
@@ -222,7 +222,7 @@ std::vector<std::string> ls(const std::string& dir_name) {
     dir = opendir(dir_name.c_str());
     // LCOV_EXCL_STOP
   }
-  struct dirent* file;
+  struct dirent* file = nullptr;
   // readdir returns next file in dir
   while (nullptr != (file = readdir(dir))) {
     contents.emplace_back(static_cast<char*>(file->d_name));

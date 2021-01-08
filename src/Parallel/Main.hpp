@@ -12,19 +12,19 @@
 #include <string>
 #include <type_traits>
 
-#include "ErrorHandling/Error.hpp"
 #include "Informer/Informer.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/CreateFromOptions.hpp"
-#include "Parallel/Exit.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/TypeTraits.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Formaline.hpp"
 #include "Utilities/Overloader.hpp"
+#include "Utilities/System/Exit.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -191,7 +191,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
 
     if (parsed_command_line_options.count("help") != 0) {
       Parallel::printf("%s\n%s", command_line_options, options.help());
-      Parallel::exit();
+      sys::exit();
     }
 
     if (parsed_command_line_options.count("dump-source-tree-as") != 0) {
@@ -212,7 +212,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
                        formaline::get_library_versions());
     }
     if (parsed_command_line_options.count("dump-only") != 0) {
-      Parallel::exit();
+      sys::exit();
     }
 
     std::string input_file;
@@ -238,7 +238,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept {
         // program would have started.
         Parallel::printf("\nNo options to check!\n");
       }
-      Parallel::exit();
+      sys::exit();
     }
 
     options_ = options.template apply<option_list, Metavariables>(
@@ -396,7 +396,7 @@ void Main<Metavariables>::execute_next_phase() noexcept {
       current_phase_, global_cache_proxy_);
   if (Metavariables::Phase::Exit == current_phase_) {
     Informer::print_exit_info();
-    Parallel::exit();
+    sys::exit();
   }
   tmpl::for_each<component_list>([this](auto parallel_component) noexcept {
     tmpl::type_from<decltype(parallel_component)>::execute_next_phase(

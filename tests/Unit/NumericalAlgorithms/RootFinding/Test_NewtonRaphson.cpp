@@ -9,11 +9,11 @@
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
-#include "ErrorHandling/Error.hpp"
-#include "ErrorHandling/Exceptions.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
 
@@ -228,8 +228,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.NewtonRaphson",
     return std::make_pair(constant[i] - square(x), -2. * x);
   };
 
-  const auto root = RootFinder::newton_raphson(func_and_deriv_lambda, guess,
-                                               lower, upper, digits);
+  RootFinder::newton_raphson(func_and_deriv_lambda, guess, lower, upper,
+                             digits);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }

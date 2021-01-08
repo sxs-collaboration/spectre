@@ -13,12 +13,12 @@
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -110,7 +110,7 @@ struct ObserveTimeSeriesOnSurface {
         proxy[0],
         observers::ObservationId(temporal_id.substep_time().value(),
                                  pretty_type::get_name<ObservationType>()),
-        static_cast<size_t>(Parallel::my_node()),
+        static_cast<size_t>(sys::my_node()),
         std::string{"/" + pretty_type::short_name<InterpolationTargetTag>()},
         detail::make_legend(TagsToObserve{}),
         detail::make_reduction_data(box, temporal_id.substep_time().value(),

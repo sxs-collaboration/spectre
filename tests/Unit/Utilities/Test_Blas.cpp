@@ -5,7 +5,7 @@
 
 #include "Utilities/Test_Blas.hpp"
 
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 // [[OutputRegex, TRANSA must be upper or lower case N, T, or C. See the BLAS
 // documentation for help.]]

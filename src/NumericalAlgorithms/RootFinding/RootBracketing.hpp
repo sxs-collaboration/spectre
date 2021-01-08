@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
-#include "ErrorHandling/Error.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace RootFinder {

@@ -6,7 +6,6 @@
 #include <limits>
 #include <memory>
 
-#include "ErrorHandling/Error.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -14,6 +13,7 @@
 #include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Time.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.BinaryFraction", "[Unit][Time]") {
   Parallel::register_derived_classes_with_charm<StepController>();

@@ -16,11 +16,11 @@
 #include <string>
 #include <unordered_set>
 
-#include "ErrorHandling/Error.hpp"
-#include "Parallel/Abort.hpp"
-#include "Parallel/Exit.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StlStreamDeclarations.hpp"
+#include "Utilities/System/Abort.hpp"
+#include "Utilities/System/Exit.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
 #include "Utilities/TypeTraits/IsIterable.hpp"
 #include "Utilities/TypeTraits/IsMaplike.hpp"
@@ -288,7 +288,7 @@ struct check_matrix_approx {
 
 /// \cond HIDDEN_SYMBOLS
 [[noreturn]] inline void spectre_testing_signal_handler(int /*signal*/) {
-  Parallel::exit();
+  sys::exit();
 }
 /// \endcond
 
@@ -335,11 +335,10 @@ struct check_matrix_approx {
     ERROR_TEST();        \
   } while (false)
 #else
-#include "Parallel/Abort.hpp"
-#define ASSERTION_TEST()                                        \
-  do {                                                          \
-    ERROR_TEST();                                               \
-    Parallel::abort("### No ASSERT tests in release mode ###"); \
+#define ASSERTION_TEST()                                   \
+  do {                                                     \
+    ERROR_TEST();                                          \
+    sys::abort("### No ASSERT tests in release mode ###"); \
   } while (false)
 #endif
 

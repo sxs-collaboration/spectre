@@ -1,9 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 
-#include "Parallel/Abort.hpp"
+#include "Utilities/System/Abort.hpp"
 
 #include <csignal>
 
@@ -20,7 +20,7 @@ auto old_mask = _mm_getcsr();
 #endif
 
 [[noreturn]] void fpe_signal_handler(int /*signal*/) {
-  Parallel::abort("Floating point exception!");  // LCOV_EXCL_LINE
+  sys::abort("Floating point exception!");  // LCOV_EXCL_LINE
 }
 }  // namespace
 

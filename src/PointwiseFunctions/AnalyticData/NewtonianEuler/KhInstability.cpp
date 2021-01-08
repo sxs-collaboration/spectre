@@ -9,17 +9,16 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 /// \cond
-namespace NewtonianEuler {
-namespace AnalyticData {
+namespace NewtonianEuler::AnalyticData {
 
 template <size_t Dim>
 KhInstability<Dim>::KhInstability(
@@ -204,6 +203,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (2, 3), (double, DataVector),
 #undef TAG
 #undef DTYPE
 #undef DIM
-}  // namespace AnalyticData
-}  // namespace NewtonianEuler
+}  // namespace NewtonianEuler::AnalyticData
 /// \endcond

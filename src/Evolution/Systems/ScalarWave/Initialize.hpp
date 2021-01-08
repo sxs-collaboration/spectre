@@ -6,7 +6,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/EagerMath/Norms.hpp"
 #include "DataStructures/Variables.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Systems/ScalarWave/Constraints.hpp"
@@ -14,6 +13,7 @@
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 namespace ScalarWave {
 namespace Actions {

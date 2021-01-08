@@ -11,7 +11,7 @@
 #include <limits>
 
 #include "DataStructures/DataVector.hpp"
-#include "ErrorHandling/Exceptions.hpp"
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/MakeString.hpp"
 
 namespace RootFinder {

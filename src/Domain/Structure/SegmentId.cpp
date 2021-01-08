@@ -7,8 +7,8 @@
 #include <ostream>
 #include <pup.h>
 
-#include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 SegmentId::SegmentId(const size_t refinement_level, const size_t index) noexcept
     : block_id_(0), refinement_level_(refinement_level), index_(index) {

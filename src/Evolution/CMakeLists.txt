@@ -40,6 +40,8 @@ target_link_libraries(
   Utilities
   PRIVATE
   LinearOperators
+  INTERFACE
+  SystemUtilities
   )
 
 add_dependencies(

@@ -11,8 +11,8 @@
 #include <pup.h>
 
 #include "Domain/Structure/Side.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 
 /// \cond
 template <size_t>
