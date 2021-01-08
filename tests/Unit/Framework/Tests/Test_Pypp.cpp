@@ -4,7 +4,6 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/optional.hpp>
 #include <cmath>
 #include <complex>
 #include <cstddef>
@@ -537,7 +536,6 @@ SPECTRE_TEST_CASE("Unit.Pypp", "[Pypp][Unit]") {
   test_einsum<double>(0.);
   test_einsum<DataVector>(DataVector(5));
   test_function_of_time();
-  test_optional<boost::optional>();
   test_optional<std::optional>();
   test_custom_conversion();
 }
