@@ -66,8 +66,9 @@ void test_weak_divergence_random_jacobian(const Mesh<Dim>& mesh) {
   InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
       det_jac_times_inverse_jacobian{};
 
-  dg::metric_identity_jacobian(make_not_null(&det_jac_times_inverse_jacobian),
-                               mesh, inertial_coords, jacobian);
+  dg::metric_identity_det_jac_times_inv_jac(
+      make_not_null(&det_jac_times_inverse_jacobian), mesh, inertial_coords,
+      jacobian);
   // Generate constant fluxes that aren't all the same.
   Variables<flux_tags> fluxes{mesh.number_of_grid_points(), 2.0};
   tmpl::for_each<flux_tags>([&fluxes](auto tag_v) noexcept {
@@ -180,8 +181,9 @@ void test_weak_divergence_constant_jacobian(const Mesh<Dim>& mesh) {
   InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
       det_jac_times_inverse_jacobian{};
 
-  dg::metric_identity_jacobian(make_not_null(&det_jac_times_inverse_jacobian),
-                               mesh, inertial_coords, jacobian);
+  dg::metric_identity_det_jac_times_inv_jac(
+      make_not_null(&det_jac_times_inverse_jacobian), mesh, inertial_coords,
+      jacobian);
   const auto det_jacobian = determinant(jacobian);
   for (size_t i = 0; i < Dim; ++i) {
     for (size_t j = 0; j < Dim; ++j) {
@@ -247,7 +249,7 @@ void test_weak_divergence_constant_jacobian(const Mesh<Dim>& mesh) {
       InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
           gl_det_jac_times_inverse_jacobian{};
 
-      dg::metric_identity_jacobian(
+      dg::metric_identity_det_jac_times_inv_jac(
           make_not_null(&gl_det_jac_times_inverse_jacobian), gl_mesh,
           gl_inertial_coords, gl_jacobian);
 

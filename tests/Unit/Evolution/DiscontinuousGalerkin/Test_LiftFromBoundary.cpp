@@ -141,8 +141,9 @@ void test(const double eps) {
 
   InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
       det_jac_times_inverse_jacobian{volume_mesh.number_of_grid_points()};
-  dg::metric_identity_jacobian(make_not_null(&det_jac_times_inverse_jacobian),
-                               volume_mesh, inertial_coords, volume_jacobian);
+  dg::metric_identity_det_jac_times_inv_jac(
+      make_not_null(&det_jac_times_inverse_jacobian), volume_mesh,
+      inertial_coords, volume_jacobian);
 
   Variables<db::wrap_tags_in<
       Tags::div, typename std::decay_t<decltype(volume_fluxes)>::tags_list>>
