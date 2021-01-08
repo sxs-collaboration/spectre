@@ -3,7 +3,6 @@
 
 #include "ControlSystem/Averager.hpp"
 
-#include <boost/none.hpp>
 #include <ostream>
 
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -28,7 +27,7 @@ Averager<DerivOrder>::Averager(Averager&& rhs) noexcept
     : avg_tscale_frac_(std::move(rhs.avg_tscale_frac_)),
       average_0th_deriv_of_q_(std::move(rhs.average_0th_deriv_of_q_)),
       averaged_values_(std::move(rhs.averaged_values_)),
-      boost_none_(std::move(rhs.boost_none_)),
+      nullopt_(std::move(rhs.nullopt_)),
       times_(std::move(rhs.times_)),
       raw_qs_(std::move(rhs.raw_qs_)),
       weight_k_(std::move(rhs.weight_k_)),
@@ -40,7 +39,7 @@ Averager<DerivOrder>& Averager<DerivOrder>::operator=(Averager&& rhs) noexcept {
     avg_tscale_frac_ = std::move(rhs.avg_tscale_frac_);
     average_0th_deriv_of_q_ = std::move(rhs.average_0th_deriv_of_q_);
     averaged_values_ = std::move(rhs.averaged_values_);
-    boost_none_ = std::move(rhs.boost_none_);
+    nullopt_ = std::move(rhs.nullopt_);
     times_ = std::move(rhs.times_);
     raw_qs_ = std::move(rhs.raw_qs_);
     weight_k_ = std::move(rhs.weight_k_);
@@ -50,17 +49,17 @@ Averager<DerivOrder>& Averager<DerivOrder>::operator=(Averager&& rhs) noexcept {
 }
 
 template <size_t DerivOrder>
-const boost::optional<std::array<DataVector, DerivOrder + 1>>&
+const std::optional<std::array<DataVector, DerivOrder + 1>>&
 Averager<DerivOrder>::operator()(const double time) const noexcept {
   if (times_.size() > DerivOrder and time == times_[0]) {
     return averaged_values_;
   }
-  return boost_none_;
+  return nullopt_;
 }
 
 template <size_t DerivOrder>
 void Averager<DerivOrder>::clear() noexcept {
-  averaged_values_ = boost::none;
+  averaged_values_ = std::nullopt;
   times_.clear();
   raw_qs_.clear();
   weight_k_ = 0.0;
