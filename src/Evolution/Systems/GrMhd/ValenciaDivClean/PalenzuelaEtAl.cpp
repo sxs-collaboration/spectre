@@ -3,7 +3,6 @@
 
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
 
-#include <boost/none.hpp>
 #include <cmath>
 #include <exception>
 #include <limits>
@@ -96,7 +95,7 @@ class FunctionOfX {
 }  // namespace
 
 template <size_t ThermodynamicDim>
-boost::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
+std::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
     const double /*initial_guess_pressure*/, const double total_energy_density,
     const double momentum_density_squared,
     const double momentum_density_dot_magnetic_field,
@@ -125,7 +124,7 @@ boost::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
                             absolute_tolerance_, relative_tolerance_,
                             max_iterations_);
   } catch (std::exception& exception) {
-    return boost::none;
+    return std::nullopt;
   }
   const double lorentz_factor =
       f_of_x.lorentz_factor(specific_enthalpy_times_lorentz_factor);
@@ -150,18 +149,18 @@ boost::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
 }  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
 
 #define THERMODIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATION(_, data)                                                 \
-  template boost::optional<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes:: \
-                               PrimitiveRecoveryData>                          \
-  grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl::apply<    \
-      THERMODIM(data)>(                                                        \
-      const double /*initial_guess_pressure*/,                                 \
-      const double total_energy_density,                                       \
-      const double momentum_density_squared,                                   \
-      const double momentum_density_dot_magnetic_field,                        \
-      const double magnetic_field_squared,                                     \
-      const double rest_mass_density_times_lorentz_factor,                     \
-      const EquationsOfState::EquationOfState<true, THERMODIM(data)>&          \
+#define INSTANTIATION(_, data)                                               \
+  template std::optional<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes:: \
+                             PrimitiveRecoveryData>                          \
+  grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl::apply<  \
+      THERMODIM(data)>(                                                      \
+      const double /*initial_guess_pressure*/,                               \
+      const double total_energy_density,                                     \
+      const double momentum_density_squared,                                 \
+      const double momentum_density_dot_magnetic_field,                      \
+      const double magnetic_field_squared,                                   \
+      const double rest_mass_density_times_lorentz_factor,                   \
+      const EquationsOfState::EquationOfState<true, THERMODIM(data)>&        \
           equation_of_state) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
