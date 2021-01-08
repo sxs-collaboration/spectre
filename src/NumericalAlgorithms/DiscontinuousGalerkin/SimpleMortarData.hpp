@@ -3,13 +3,12 @@
 
 #pragma once
 
-#include <boost/none.hpp>
-#include <boost/optional.hpp>
 #include <ostream>
+#include <optional>
 #include <pup.h>  // IWYU pragma: keep
 #include <utility>
 
-#include "Utilities/BoostHelpers.hpp"  // IWYU pragma: keep
+#include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 
 namespace dg {
@@ -46,15 +45,15 @@ class SimpleMortarData {
 
  private:
   TemporalId temporal_id_{};
-  boost::optional<LocalVars> local_data_{};
-  boost::optional<RemoteVars> remote_data_{};
+  std::optional<LocalVars> local_data_{};
+  std::optional<RemoteVars> remote_data_{};
 };
 
 template <typename TemporalId, typename LocalVars, typename RemoteVars>
 void SimpleMortarData<TemporalId, LocalVars, RemoteVars>::local_insert(
     TemporalId temporal_id, LocalVars vars) noexcept {
-  ASSERT(not local_data_, "Already received local data.");
-  ASSERT(not remote_data_ or temporal_id == temporal_id_,
+  ASSERT(not local_data_.has_value(), "Already received local data.");
+  ASSERT(not remote_data_.has_value() or temporal_id == temporal_id_,
          "Received local data at " << temporal_id
                                    << ", but already have remote data at "
                                    << temporal_id_);
@@ -65,8 +64,8 @@ void SimpleMortarData<TemporalId, LocalVars, RemoteVars>::local_insert(
 template <typename TemporalId, typename LocalVars, typename RemoteVars>
 void SimpleMortarData<TemporalId, LocalVars, RemoteVars>::remote_insert(
     TemporalId temporal_id, RemoteVars vars) noexcept {
-  ASSERT(not remote_data_, "Already received remote data.");
-  ASSERT(not local_data_ or temporal_id == temporal_id_,
+  ASSERT(not remote_data_.has_value(), "Already received remote data.");
+  ASSERT(not local_data_.has_value() or temporal_id == temporal_id_,
          "Received remote data at " << temporal_id
                                     << ", but already have local data at "
                                     << temporal_id_);
@@ -77,14 +76,14 @@ void SimpleMortarData<TemporalId, LocalVars, RemoteVars>::remote_insert(
 template <typename TemporalId, typename LocalVars, typename RemoteVars>
 std::pair<LocalVars, RemoteVars>
 SimpleMortarData<TemporalId, LocalVars, RemoteVars>::extract() noexcept {
-  ASSERT(local_data_ and remote_data_,
+  ASSERT(local_data_.has_value() and remote_data_.has_value(),
          "Tried to extract boundary data, but do not have "
              << (local_data_ ? "remote" : remote_data_ ? "local" : "any")
              << " data.");
   auto result =
       std::make_pair(std::move(*local_data_), std::move(*remote_data_));
-  local_data_ = boost::none;
-  remote_data_ = boost::none;
+  local_data_ = std::nullopt;
+  remote_data_ = std::nullopt;
   return result;
 }
 

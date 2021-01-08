@@ -131,7 +131,7 @@ struct Correction final {
       }
     }
 
-    if (static_cast<bool>(normal_dot_mesh_velocity)) {
+    if (normal_dot_mesh_velocity.has_value()) {
       get(*packaged_abs_char_speed) =
           abs(volume_double * get(var1) - get(*normal_dot_mesh_velocity));
     } else {
