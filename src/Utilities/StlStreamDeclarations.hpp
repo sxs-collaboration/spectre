@@ -19,6 +19,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <tuple>
 #include <unordered_map>
@@ -76,3 +77,6 @@ std::ostream& operator<<(std::ostream& os,
 
 template <typename T, typename U>
 std::ostream& operator<<(std::ostream& os, const std::pair<T, U>& t) noexcept;
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::optional<T>& t) noexcept;
