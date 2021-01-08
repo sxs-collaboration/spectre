@@ -69,6 +69,8 @@ if any of the following are true:
     * contains `Ls` (use `List` instead)
     * contains additional text after `/*!` (does not render correctly in
       Doxygen)
+    * contains the string `return Py_None;` (bug prone, use `Py_RETURN_NONE`
+      instead)
   - A `c++` test,
     * uses `TEST_CASE` (use `SPECTRE_TEST_CASE` instead)
     * uses `Approx` (use `approx` instead)
@@ -76,6 +78,8 @@ if any of the following are true:
     Python-binding directory,
     * does not list a `C++` file that is present in the directory
     * lists a `C++` file that is not present in the directory
+  - A `c++` or `python` file contains a `TODO` (case-insensitive) comment
+  - The file `tests/Unit/RunSingleTest/CMakeLists.txt` wasn't modified
   - A python file is not formatted according to the `.style.yapf` file in the
     root of the repository.
 * RUN_CLANG_TIDY runs the script `.travis/RunClangTidy.sh` which runs

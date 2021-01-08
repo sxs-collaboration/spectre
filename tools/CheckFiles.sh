@@ -144,6 +144,60 @@ check_cmakelists_for_extra_cxx_test() {
 }
 ci_checks+=(check_cmakelists_for_extra_cxx)
 
+# Check for "to do" comments because these should be issues instead
+prevent_todo_comments() {
+    regex="//[[:space:]]*TODO.*\|.*\*[[:space:]]*TODO.*\|.*#[[:space:]]*TODO.*"
+    is_c++_or_python "$1" \
+        && staged_grep -q -i "${regex}" "$1"
+}
+prevent_todo_comments_report() {
+    regex="//[[:space:]]*TODO.*\|.*\*[[:space:]]*TODO.*\|.*#[[:space:]]*TODO.*"
+    echo "Found TODO comments. Please file issues instead."
+    pretty_grep -i "${regex}" "$@"
+}
+prevent_todo_comments_test() {
+    test_check pass foo.hpp ''
+    test_check pass foo.cpp ''
+    test_check pass foo.tpp ''
+    test_check pass foo.tpp 'christodoulou'
+    test_check fail foo.hpp '// TODO blah'
+    test_check fail foo.cpp '// TODO blah'
+    test_check fail foo.tpp '// TODO blah'
+    test_check fail foo.hpp '// TODO: blah'
+    test_check fail foo.hpp '//TODO blah'
+    test_check fail foo.hpp '//TODO'
+    test_check fail foo.hpp ' * TODO blah'
+    test_check fail foo.hpp ' * TODO: blah'
+    test_check fail foo.hpp ' *TODO blah'
+    test_check fail foo.hpp ' *TODO'
+    test_check fail foo.hpp '// todo blah'
+    test_check fail foo.hpp '// todo: blah'
+    test_check fail foo.hpp '//todo blah'
+    test_check fail foo.hpp '//todo'
+    test_check fail foo.hpp ' * todo blah'
+    test_check fail foo.hpp ' * todo: blah'
+    test_check fail foo.hpp ' *todo blah'
+    test_check fail foo.hpp ' *todo'
+    test_check fail foo.hpp '// Todo blah'
+    test_check fail foo.hpp '// Todo: blah'
+    test_check fail foo.hpp '//Todo blah'
+    test_check fail foo.hpp '//Todo'
+    test_check fail foo.hpp ' * Todo blah'
+    test_check fail foo.hpp ' * Todo: blah'
+    test_check fail foo.hpp ' *Todo blah'
+    test_check fail foo.hpp ' *Todo'
+    test_check pass foo.py 'christodoulou'
+    test_check fail foo.py '#TODO: blah'
+    test_check fail foo.py '  #TODO: blah'
+    test_check fail foo.py '# TODO: blah'
+    test_check fail foo.py '  # TODO: blah'
+    test_check fail foo.py '#TODO blah'
+    test_check fail foo.py '  #TODO blah'
+    test_check fail foo.py '# TODO blah'
+    test_check fail foo.py '  # TODO blah'
+}
+ci_checks+=(prevent_todo_comments)
+
 if [ "$1" = --test ] ; then
     run_tests "${ci_checks[@]}"
     exit 0

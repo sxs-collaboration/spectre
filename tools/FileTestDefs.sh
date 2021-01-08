@@ -81,6 +81,8 @@ pretty_grep() {
 # Utility functions for checks classifying a file based on its name
 is_includible() { [[ $1 =~ \.hpp$ ]] || [[ $1 =~ \.tpp$ ]] ; }
 is_c++() { [[ $1 =~ \.cpp$ ]] || [[ $1 =~ \.hpp$ ]] || [[ $1 =~ \.tpp$ ]] ; }
+is_c++_or_python() { [[ $1 =~ \.cpp$ ]] || [[ $1 =~ \.hpp$ ]] \
+                         || [[ $1 =~ \.tpp$ ]] || [[ $1 =~ \.py$ ]] ; }
 
 # Utility function for checks that returns false if the first argument
 # matches any of the shell regexes passed as subsequent arguments.
@@ -418,6 +420,35 @@ pragma_once_test() {
 }
 standard_checks+=(pragma_once)
 
+# Check for 'return Py_None;' in all C++ files
+py_return_none() {
+    is_c++ "$1" && \
+        whitelist "$1" && \
+        staged_grep -q -x '.*return Py_None;.*' "$1"
+}
+py_return_none_report() {
+    echo "Found 'return Py_None;' in files. Use Py_RETURN_NONE instead."
+    pretty_grep ".*return Py_None;.*" "$@"
+}
+py_return_none_test() {
+    test_check pass foo.cpp ''
+    test_check pass foo.hpp ''
+    test_check pass foo.tpp ''
+    test_check fail foo.hpp '  return Py_None;'$'\n'
+    test_check fail foo.cpp '  return Py_None;'$'\n'
+    test_check fail foo.tpp '  return Py_None;'$'\n'
+    test_check fail foo.hpp '//return Py_None;'$'\n'
+    test_check fail foo.cpp '//return Py_None;'$'\n'
+    test_check fail foo.tpp '//return Py_None;'$'\n'
+    test_check fail foo.hpp '  return Py_None; '$'\n'
+    test_check fail foo.cpp '  return Py_None; '$'\n'
+    test_check fail foo.tpp '  return Py_None; '$'\n'
+    test_check pass foo.hpp '//return Py_None'$'\n'
+    test_check pass foo.cpp '//return Py_None'$'\n'
+    test_check pass foo.tpp '//return Py_None'$'\n'
+}
+standard_checks+=(py_return_none)
+
 # Check for a newline at end of file
 final_newline() {
     whitelist "$1" '.h5' '.nojekyll' '.png' '.svg' &&
@@ -518,10 +549,33 @@ prevent_cpp_includes_test() {
 }
 standard_checks+=(prevent_cpp_includes)
 
+# Prevent editing RunSingleTest files. We may need to occasionally update these
+# files, but it's at least less than once a year.
+#
+# This check is not added to the standard checks because the existence of the
+# CMakeLists file itself is okay, it's just not supposed to be changed. We add
+# the check only when running tests and to the commit hook since we don't want
+# people to change the file (and it's easily accidentally committed).
+prevent_run_single_test_changes() {
+    [[ $1 =~ "RunSingleTest/CMakeLists.txt" ]]
+}
+prevent_run_single_test_changes_report() {
+    echo "Found changes to RunSingleTest/CMakeLists.txt"
+    pretty_grep "include .*\.cpp" "$@"
+}
+prevent_run_single_test_changes_test() {
+    test_check pass ./tests/Unit/RunSingleTest/Test.cpp ''
+    test_check pass src/Domain/Blah.cpp ''
+    test_check pass ./src/Domain/Blah.cpp ''
+    test_check fail ./tests/Unit/RunSingleTest/CMakeLists.txt ''
+    test_check fail RunSingleTest/CMakeLists.txt ''
+    test_check fail ../RunSingleTest/CMakeLists.txt ''
+}
+
 # if test is enabled: redefines staged_grep to run tests on files that
 # are not in git
 [ "$1" = --test ] && staged_grep() { grep "$@"; } && \
-    run_tests "${standard_checks[@]}"
+    run_tests "${standard_checks[@]}" prevent_run_single_test_changes
 
 # True result for sourcing
 :

@@ -28,7 +28,8 @@ found_error=0
 @Python_EXECUTABLE@ @CMAKE_SOURCE_DIR@/.git/hooks/CheckFileSize.py
 [ "$?" -ne 0 ] && found_error=1
 
-printf '%s\0' "${commit_files[@]}" | run_checks "${standard_checks[@]}"
+printf '%s\0' "${commit_files[@]}" | \
+    run_checks "${standard_checks[@]}" prevent_run_single_test_changes
 [ $? -ne 0 ] && found_error=1
 
 ###############################################################################

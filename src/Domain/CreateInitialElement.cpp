@@ -37,7 +37,6 @@ Element<VolumeDim> create_initial_element(
           const Direction<VolumeDim>& direction) noexcept {
     const auto& block_neighbor = neighbors_of_block.at(direction);
     const auto& orientation = block_neighbor.orientation();
-    // TODO(): An illustration of what is happening here would be useful
     const auto direction_in_neighbor = orientation(direction);
 
     // SegmentIds of the current element using the neighbor's axes.
