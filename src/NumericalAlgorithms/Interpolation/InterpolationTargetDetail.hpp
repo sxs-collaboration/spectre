@@ -434,7 +434,7 @@ template <typename InterpolationTargetTag, typename DbTags, size_t VolumeDim,
 void set_up_interpolation(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const TemporalId& temporal_id,
-    const std::vector<boost::optional<
+    const std::vector<std::optional<
         IdPair<domain::BlockId,
                tnsr::I<double, VolumeDim, typename ::Frame::Logical>>>>&
         block_logical_coords) noexcept {
@@ -460,7 +460,7 @@ void set_up_interpolation(
         // Set the indices of invalid points.
         indices_of_invalid_points->erase(temporal_id);
         for (size_t i = 0; i < block_logical_coords.size(); ++i) {
-          if (not block_logical_coords[i]) {
+          if (not block_logical_coords[i].has_value()) {
             (*indices_of_invalid_points)[temporal_id].insert(i);
           }
         }

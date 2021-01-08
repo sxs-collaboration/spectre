@@ -4,8 +4,8 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
-#include <boost/optional/optional_io.hpp>
 #include <cstddef>
+#include <optional>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -37,6 +37,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

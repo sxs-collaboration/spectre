@@ -38,7 +38,7 @@ struct ElementReceiveInterpPoints {
       db::DataBox<DbTags>& box,
       Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
-      std::vector<boost::optional<
+      std::vector<std::optional<
           IdPair<domain::BlockId, tnsr::I<double, Metavariables::volume_dim,
                                           typename ::Frame::Logical>>>>&&
           block_logical_coords) noexcept {

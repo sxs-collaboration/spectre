@@ -3,8 +3,8 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/optional/optional_io.hpp>
 #include <cstddef>
+#include <optional>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -149,7 +149,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Registration);
 
-  using point_info_type = std::vector<boost::optional<
+  using point_info_type = std::vector<std::optional<
       IdPair<domain::BlockId, tnsr::I<double, metavars::volume_dim,
                                       typename ::Frame::Logical>>>>;
 
@@ -220,8 +220,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
     const size_t number_of_points = expected.size();
     CHECK(result.size() == number_of_points);
     for (size_t i = 0; i < number_of_points; ++i) {
-      CHECK(result[i].get().id == expected[i].get().id);
-      CHECK_ITERABLE_APPROX(result[i].get().data, expected[i].get().data);
+      CHECK(result[i].value().id == expected[i].value().id);
+      CHECK_ITERABLE_APPROX(result[i].value().data, expected[i].value().data);
     }
   };
 

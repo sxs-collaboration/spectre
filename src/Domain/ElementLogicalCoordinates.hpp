@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <cstddef>
+#include <optional>
 #include <unordered_map>
 #include <vector>
 
@@ -88,7 +88,7 @@ struct ElementLogicalCoordHolder {
 template <size_t Dim>
 auto element_logical_coordinates(
     const std::vector<ElementId<Dim>>& element_ids,
-    const std::vector<boost::optional<IdPair<
+    const std::vector<std::optional<IdPair<
         domain::BlockId, tnsr::I<double, Dim, typename Frame::Logical>>>>&
         block_coord_holders) noexcept
     -> std::unordered_map<ElementId<Dim>, ElementLogicalCoordHolder<Dim>>;

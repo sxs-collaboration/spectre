@@ -68,11 +68,11 @@ struct SendNextTimeToCce {
             db::get<intrp::Tags::InterpPointInfo<Metavariables>>(box));
     const std::vector<ElementId<Metavariables::volume_dim>> element_ids{
         {array_index}};
-    std::vector<boost::optional<IdPair<
+    std::vector<std::optional<IdPair<
         domain::BlockId, tnsr::I<double, 3_st, typename ::Frame::Logical>>>>
         first_valid_block_logical_coords;
     for (const auto& coordinate : block_logical_coords) {
-      if (static_cast<bool>(coordinate)) {
+      if (coordinate.has_value()) {
         first_valid_block_logical_coords.push_back(coordinate);
         break;
       }

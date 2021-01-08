@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
+#include <optional>
 #include <vector>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -21,7 +21,7 @@ struct PointInfoTag {
   /// logical coordinates) that need to be interpolated onto for a
   /// given `InterpolationTarget`.  Only a subset of those points
   /// will be contained in the `Element` that uses this Tag.
-  using type = std::vector<boost::optional<IdPair<
+  using type = std::vector<std::optional<IdPair<
       domain::BlockId, tnsr::I<double, VolumeDim, typename ::Frame::Logical>>>>;
 };
 }  // namespace Vars
