@@ -15,6 +15,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Blas.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdArrayHelpers.hpp"

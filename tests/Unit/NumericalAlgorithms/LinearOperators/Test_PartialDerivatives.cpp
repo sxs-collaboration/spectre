@@ -120,6 +120,42 @@ using two_vars = tmpl::list<Var1<Dim>, Var2>;
 template <size_t Dim>
 using one_var = tmpl::list<Var1<Dim>>;
 
+template <typename GradientTags, typename VariableTags, size_t Dim>
+void test_logical_partial_derivative_per_tensor(
+    const std::array<Variables<GradientTags>, Dim>& du,
+    const Variables<VariableTags>& u, const Mesh<Dim>& mesh) {
+  tmpl::for_each<GradientTags>([&du, &mesh, &u](auto gradient_tag_v) noexcept {
+    using gradient_tag = tmpl::type_from<decltype(gradient_tag_v)>;
+    const auto single_du =
+        logical_partial_derivative(get<gradient_tag>(u), mesh);
+    for (size_t storage_index = 0; storage_index < get<gradient_tag>(u).size();
+         ++storage_index) {
+      for (size_t d = 0; d < Dim; ++d) {
+        const auto deriv_tensor_index =
+            prepend(get<gradient_tag>(u).get_tensor_index(storage_index), d);
+        CHECK_ITERABLE_APPROX(single_du.get(deriv_tensor_index),
+                              get<gradient_tag>(gsl::at(du, d))[storage_index]);
+      }
+    }
+    std::decay_t<decltype(single_du)> single_du_not_null{};
+    DataVector buffer{mesh.number_of_grid_points()};
+    gsl::span<double> buffer_view{buffer.data(), buffer.size()};
+    logical_partial_derivative(make_not_null(&single_du_not_null),
+                               make_not_null(&buffer_view),
+                               get<gradient_tag>(u), mesh);
+    CHECK_ITERABLE_APPROX(single_du_not_null, single_du);
+
+    // Check we can do derivatives when the components of `u` aren't contiguous
+    // in memory.
+    // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
+    std::decay_t<decltype(get<gradient_tag>(u))> non_contiguous_u =
+        get<gradient_tag>(u);
+    const auto non_contiguous_single_du =
+        logical_partial_derivative(get<gradient_tag>(u), mesh);
+    CHECK_ITERABLE_APPROX(non_contiguous_single_du, single_du);
+  });
+}
+
 template <typename VariableTags, typename GradientTags = VariableTags>
 void test_logical_partial_derivatives_1d(const Mesh<1>& mesh) {
   const size_t number_of_grid_points = mesh.number_of_grid_points();
@@ -149,6 +185,9 @@ void test_logical_partial_derivatives_1d(const Mesh<1>& mesh) {
     std::array<Variables<GradientTags>, 1> du{};
     logical_partial_derivatives(make_not_null(&du), u, mesh);
     helper(du);
+    // We've checked that du is correct, now test that taking derivatives of
+    // individual tensors gets the matching result.
+    test_logical_partial_derivative_per_tensor(du, u, mesh);
   }
 }
 
@@ -194,6 +233,9 @@ void test_logical_partial_derivatives_2d(const Mesh<2>& mesh) {
   std::array<Variables<GradientTags>, 2> du{};
   logical_partial_derivatives(make_not_null(&du), u, mesh);
   helper(du);
+  // We've checked that du is correct, now test that taking derivatives of
+  // individual tensors gets the matching result.
+  test_logical_partial_derivative_per_tensor(du, u, mesh);
 }
 
 template <typename VariableTags, typename GradientTags = VariableTags>
@@ -248,6 +290,9 @@ void test_logical_partial_derivatives_3d(const Mesh<3>& mesh) {
   std::array<Variables<GradientTags>, 3> du{};
   logical_partial_derivatives(make_not_null(&du), u, mesh);
   helper(du);
+  // We've checked that du is correct, now test that taking derivatives of
+  // individual tensors gets the matching result.
+  test_logical_partial_derivative_per_tensor(du, u, mesh);
 }
 
 template <typename VariableTags, typename GradientTags = VariableTags>

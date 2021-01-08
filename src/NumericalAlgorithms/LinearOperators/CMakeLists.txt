@@ -14,6 +14,7 @@ spectre_target_sources(
   ExponentialFilter.cpp
   IndefiniteIntegral.cpp
   Linearize.cpp
+  PartialDerivatives.cpp
   MeanValue.cpp
   )
 
