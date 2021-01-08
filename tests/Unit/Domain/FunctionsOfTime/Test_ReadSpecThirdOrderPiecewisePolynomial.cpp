@@ -35,6 +35,11 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
+
+struct Metavariables {
+  static constexpr size_t volume_dim = 3;
+};
+
 void test_options() noexcept {
   CHECK(
       db::tag_name<domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile>() ==
@@ -274,7 +279,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
       };
 
   const auto& functions_of_time =
-      domain::Tags::InitialFunctionsOfTime<3, true>::create_from_options(
+      domain::Tags::FunctionsOfTime::create_from_options<Metavariables>(
           created_domain_creator, created_function_of_time_file,
           created_function_of_time_name_map);
   check_read_functions_of_time(functions_of_time, expected_functions);
@@ -286,7 +291,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
           domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>(
           "{ExpansionFactor: ExpansionFactor}");
   const auto& functions_of_time_expansion =
-      domain::Tags::InitialFunctionsOfTime<3, true>::create_from_options(
+      domain::Tags::FunctionsOfTime::create_from_options<Metavariables>(
           created_domain_creator, created_function_of_time_file,
           created_function_of_time_name_map_expansion);
 

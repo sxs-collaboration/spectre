@@ -87,6 +87,8 @@ struct ElementArray {
       tmpl::conditional_t<use_moving_mesh,
                           tmpl::list<Tags::TimeStepper<TimeStepper>>,
                           tmpl::list<>>>;
+  using mutable_global_cache_tags = tmpl::conditional_t<
+      use_moving_mesh, tmpl::list<domain::Tags::FunctionsOfTime>, tmpl::list<>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -108,8 +110,7 @@ struct ElementArray {
                       tmpl::list<Initialization::Tags::InitialTime,
                                  Initialization::Tags::InitialTimeDelta,
                                  Initialization::Tags::InitialSlabSize<
-                                     Metavariables::local_time_stepping>,
-                                 domain::Tags::InitialFunctionsOfTime<Dim>>,
+                                     Metavariables::local_time_stepping>>,
                       tmpl::list<>>>>>>,
 
       Parallel::PhaseActions<
@@ -196,7 +197,8 @@ void create_runner_and_run_tests(
   using element_array = typename Metavariables::element_array;
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       {domain_creator.create_domain(),
-       std::make_unique<TimeSteppers::RungeKutta3>()}};
+       std::make_unique<TimeSteppers::RungeKutta3>()},
+      {domain_creator.functions_of_time()}};
   constexpr size_t num_points =
       Metavariables::dim == 1 ? 4 : Metavariables::dim == 2 ? 12 : 24;
   typename vars_tag::type vars{num_points, 0.};
@@ -206,8 +208,7 @@ void create_runner_and_run_tests(
       typename Metavariables::element_array>(
       &runner, element_id,
       {domain_creator.initial_refinement_levels(),
-       domain_creator.initial_extents(), vars, other_vars, 0.0, 0.1, 0.1,
-       domain_creator.functions_of_time()});
+       domain_creator.initial_extents(), vars, other_vars, 0.0, 0.1, 0.1});
 
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);

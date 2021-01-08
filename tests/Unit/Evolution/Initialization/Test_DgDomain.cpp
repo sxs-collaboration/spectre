@@ -152,11 +152,11 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<dim>;
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<dim>>;
+  using mutable_global_cache_tags = tmpl::list<domain::Tags::FunctionsOfTime>;
 
   using simple_tags =
       db::AddSimpleTags<domain::Tags::InitialExtents<dim>,
-                        domain::Tags::InitialRefinementLevels<dim>,
-                        domain::Tags::InitialFunctionsOfTime<dim>, Tags::Time>;
+                        domain::Tags::InitialRefinementLevels<dim>, Tags::Time>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -225,11 +225,11 @@ void test() noexcept {
   }
 
   const ElementId<Dim> self_id(0);
-  ActionTesting::MockRuntimeSystem<metavars> runner{{std::move(domain)}};
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      {std::move(domain)}, {std::move(clone_unique_ptrs(functions_of_time))}};
+
   ActionTesting::emplace_component_and_initialize<component>(
-      &runner, self_id,
-      {initial_extents, initial_refinement,
-       std::move(clone_unique_ptrs(functions_of_time)), initial_time});
+      &runner, self_id, {initial_extents, initial_refinement, initial_time});
   runner.set_phase(metavars::Phase::Testing);
   CHECK(ActionTesting::get_next_action_index<component>(runner, self_id) == 0);
   for (size_t i = 0; i < 2; ++i) {
