@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <deque>
 #include <memory>
+#include <optional>
 #include <tuple>
 
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -73,11 +73,11 @@ class GhLockstep : public GhInterfaceManager {
   /// \brief Requests are ignored by this implementation, so this is a no-op.
   void request_gh_data(const TimeStepId& /*time_id*/) noexcept override {}
 
-  /// \brief Return a `boost::optional<std::tuple>` of the least recently
+  /// \brief Return a `std::optional<std::tuple>` of the least recently
   /// submitted generalized harmonic boundary data if any exists and removes it
-  /// from the internal `std::deque`, otherwise returns `boost::none`.
+  /// from the internal `std::deque`, otherwise returns `std::nullopt`.
   auto retrieve_and_remove_first_ready_gh_data() noexcept
-      -> boost::optional<std::tuple<TimeStepId, gh_variables>> override;
+      -> std::optional<std::tuple<TimeStepId, gh_variables>> override;
 
   /// \brief This class ignores requests to ensure a one-way communication
   /// pattern, so the number of requests is always 0.

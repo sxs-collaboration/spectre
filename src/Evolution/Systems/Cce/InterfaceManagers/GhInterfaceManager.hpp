@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <memory>
+#include <optional>
 #include <tuple>
 
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -38,11 +38,11 @@ class GhLockstep;
  * - `GhInterfaceManager::request_gh_data()`: should register requests
  * from the CCE evolution for boundary data.
  * - `GhInterfaceManager::retrieve_and_remove_first_ready_gh_data()`:
- * should return a `boost::optional<std::tuple<TimeStepId,
+ * should return a `std::optional<std::tuple<TimeStepId,
  * tnsr::aa<DataVector, 3>, tnsr::iaa<DataVector, 3>, tnsr::aa<DataVector, 3>>>`
  * containing the boundary data associated with the oldest requested timestep if
  * enough data has been supplied via `insert_gh_data()` to determine the
- * boundary data. Otherwise, return a `boost::none` to indicate that the CCE
+ * boundary data. Otherwise, return a `std::nullopt` to indicate that the CCE
  * system must continue waiting for generalized harmonic input.
  * - `GhInterfaceManager::number_of_pending_requests()`: should return
  * the number of requests that have been registered to the class that do not yet
@@ -77,7 +77,7 @@ class GhInterfaceManager : public PUP::able {
   virtual void request_gh_data(const TimeStepId&) noexcept = 0;
 
   virtual auto retrieve_and_remove_first_ready_gh_data() noexcept
-      -> boost::optional<std::tuple<TimeStepId, gh_variables>> = 0;
+      -> std::optional<std::tuple<TimeStepId, gh_variables>> = 0;
 
   virtual size_t number_of_pending_requests() const noexcept = 0;
 
