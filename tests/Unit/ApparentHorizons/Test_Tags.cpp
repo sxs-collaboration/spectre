@@ -303,6 +303,9 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   TestHelpers::db::test_simple_tag<StrahlkorperGr::Tags::SpinFunction>(
       "SpinFunction");
   TestHelpers::db::test_simple_tag<
+      StrahlkorperGr::Tags::DimensionfulSpinMagnitude>(
+      "DimensionfulSpinMagnitude");
+  TestHelpers::db::test_simple_tag<
       StrahlkorperTags::UnitNormalOneForm<Frame::Inertial>>(
       "UnitNormalOneForm");
   TestHelpers::db::test_simple_tag<
@@ -419,4 +422,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   TestHelpers::db::test_compute_tag<
       StrahlkorperGr::Tags::SpinFunctionCompute<Frame::Inertial>>(
       "SpinFunction");
+  TestHelpers::db::test_compute_tag<
+      StrahlkorperGr::Tags::DimensionfulSpinMagnitudeCompute<Frame::Inertial>>(
+      "DimensionfulSpinMagnitude");
 }
