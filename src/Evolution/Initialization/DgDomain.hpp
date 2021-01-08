@@ -150,7 +150,8 @@ struct Domain {
                         : my_block.stationary_map().get_to_grid_frame()};
 
     const auto& initial_functions_of_time =
-        db::get<::domain::Tags::InitialFunctionsOfTime<Dim>>(box);
+        db::get<::domain::Tags::InitialFunctionsOfTime<
+            Dim, OverrideCubicFunctionsOfTime>>(box);
 
     std::unordered_map<
         std::string, std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>
