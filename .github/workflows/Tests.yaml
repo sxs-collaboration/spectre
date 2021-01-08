@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 # Continuous integration tests that pull requests are required to pass. This
-# workflow also triggers a version release every month.
+# workflow can also be dispatched manually to tag and release versions.
 name: Tests
 
 # Set any defaults for the runs below.
@@ -29,16 +29,8 @@ on:
   push:
     branches-ignore:
       - gh-pages
-  # Once a month we run the tests and release a new version (see the dev guide
-  # on "Automatic versioning"). The scheduled workflow always runs on the
-  # repository's default branch (`develop`).
-  # The automatic versioning is not yet enabled so we have some time to test the
-  # release workflow. Releases can be created with the `workflow_dispatch`
-  # trigger (see below).
-  # schedule:
-  #   - cron: '0 0 1 * *'
-  # Also allow running the workflow manually. This can be used to manually
-  # release a version. (see the dev guide on "Automatic versioning")
+  # Allow running the workflow manually to run tests and optionally release a
+  # version on success (see the dev guide on "Automatic versioning")
   workflow_dispatch:
     inputs:
       release_version:
@@ -99,12 +91,7 @@ jobs:
           git fetch --tags https://github.com/sxs-collaboration/spectre
       - name: Install Python dependencies
         run: |
-          pip3 install \
-            GitPython~=3.1.11 \
-            PyGithub~=1.53 \
-            PyYAML~=5.3.1 \
-            tqdm~=4.51.0 \
-            uplink~=0.9.2
+          pip3 install -r .github/scripts/requirements-release.txt
       - name: Test tools
         run: |
           python3 -m unittest discover -p 'Test_*' tests.tools -v
@@ -139,8 +126,19 @@ jobs:
             --github-token ${{ secrets.GITHUB_TOKEN }}
       - name: Check release notes
         run: |
-          python3 tools/CompileReleaseNotes.py -vv \
+          python3 tools/CompileReleaseNotes.py -vv -o release_notes.md \
             --github-token ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload release notes
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-notes
+          path: release_notes.md
+      # GitHub doesn't display artifacts until the workflow has completed, so we
+      # print the release notes here to be able to review them before approving
+      # a release
+      - name: Print release notes
+        run: |
+          cat release_notes.md
 
   # Lint with clang-tidy. We check only code that changed relative to the
   # nearest common ancestor commit with `sxs-collaboration/spectre/develop`.
@@ -552,21 +550,19 @@ jobs:
 
           ctest -j2 -R InputFiles.Burgers.Step.yaml
 
-  # Release a new version on scheduled or manual events when the tests pass.
+  # Release a new version on manual events when requested and the tests pass.
   # Only enable this on the `sxs-collaboration/spectre` repository (not on
   # forks).
   release_version:
     name: Release version
+    # Running in a protected environment that provides the necessary secrets
+    environment: release
     runs-on: ubuntu-latest
-    # Run in the container so we can build docs and tests
-    container:
-      image: sxscollaboration/spectrebuildenv:latest
     if: >
-      github.repository == 'sxs-collaboration/spectre' &&
-        github.ref == 'refs/heads/develop' &&
-        (github.event_name == 'schedule'
-          || (github.event_name == 'workflow_dispatch'
-            && github.event.inputs.release_version != ''))
+      github.repository == 'sxs-collaboration/spectre'
+        && github.ref == 'refs/heads/develop'
+        && github.event_name == 'workflow_dispatch'
+        && github.event.inputs.release_version != ''
     needs:
       - check_files_and_formatting
       - doc_check
@@ -575,14 +571,18 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          # Using a personal access token with admin privileges here so this
+          # action can push to protected branches. Note that this also means
+          # that the pushes can trigger additional workflows (GitHub only
+          # prevents pushes with the default GITHUB_TOKEN from triggering
+          # additional workflows).
+          token: ${{ secrets.GH_TOKEN_RELEASE }}
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
       - name: Install Python dependencies
         run: |
-          pip3 install \
-            GitPython~=3.1.11 \
-            PyGithub~=1.53 \
-            PyYAML~=5.3.1 \
-            tqdm~=4.51.0 \
-            uplink~=0.9.2
+          pip3 install -r .github/scripts/requirements-release.txt
       # We use the current date as tag name, unless a tag name was specified
       # as input to the `workflow_dispatch` event
       - name: Determine release version
@@ -621,14 +621,16 @@ jobs:
             --zenodo-token ${{ secrets.ZENODO_READWRITE_TOKEN }} \
             --github-token ${{ secrets.GITHUB_TOKEN }}
           git diff
-      - name: Compile release notes
-        run: |
-          python3 tools/CompileReleaseNotes.py -v -o /work/release_notes.md \
-            --github-token ${{ secrets.GITHUB_TOKEN }}
-      # Push a commit with the new version to the branch we're on (should be
-      # `develop` unless the workflow was triggered manually on another branch).
-      # The push won't trigger the workflow again because GitHub prevents
-      # actions from triggering workflows (this uses the default GITHUB_TOKEN).
+      - name: Download release notes
+        uses: actions/download-artifact@v2
+        id: release-notes
+        with:
+          name: release-notes
+          path: ~/release-notes
+      # Push a commit tagged with the new version to `develop` and `release`.
+      # The push will trigger the workflow again because we're using a personal
+      # access token. The triggered workflow will build and deploy the
+      # documentation so we don't need to do that here.
       - name: Commit and push
         run: |
           git config user.name sxs-bot
@@ -640,45 +642,15 @@ jobs:
           git push origin HEAD:develop
           git push origin HEAD:release
           git push origin v$RELEASE_VERSION
-      - name: Tag and release
+      - name: Create release on GitHub
         uses: actions/create-release@v1
         env:
-          # If we need this event to trigger other workflows we could use a
-          # personal access token
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_RELEASE }}
         with:
           tag_name: v${{ env.RELEASE_VERSION }}
           release_name: Release ${{ env.RELEASE_VERSION }}
-          body_path: /work/release_notes.md
-      # The release is now public on GitHub. We build the release documentation
-      # from the archive and also build an executable to make sure the archive
-      # is functional.
-      - name: Build release documentation and an executable
-        working-directory: /work
-        run: |
-          wget https://github.com/${{ github.repository }}/archive/v${RELEASE_VERSION}.tar.gz -O spectre.tar.gz
-          tar -xzf spectre.tar.gz && mv spectre-* spectre
-          mkdir build && cd build
-          cmake \
-            -D CMAKE_C_COMPILER=clang \
-            -D CMAKE_CXX_COMPILER=clang++ \
-            -D CMAKE_Fortran_COMPILER=gfortran-8 \
-            -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang \
-            -D OVERRIDE_ARCH=x86-64 \
-            -D CMAKE_BUILD_TYPE=Release \
-            -D DEBUG_SYMBOLS=OFF \
-            ../spectre
-          make doc-check
-          make -j2 ExportCoordinates1D
-          ctest -R InputFiles.ExportCoordinates.Input1D.yaml.execute
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          publish_dir: /work/build/docs/html
-          cname: spectre-code.org
-          publish_branch: gh-pages
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          force_orphan: true
+          body_path: >-
+            ${{ steps.release-notes.outputs.download-path }}/release_notes.md
       # This action currently doesn't publish the Zenodo record automatically.
       # Instead it prints a link to the website where we can go and hit the
       # "Publish" button when everything looks correct. Once we're convinced the
