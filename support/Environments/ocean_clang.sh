@@ -30,7 +30,7 @@ spectre_unload_modules() {
     module unload catch2-2.11.3-gcc-7.3.0-l7lqzrg
     module unload gsl-2.5-gcc-7.3.0-i7icadp
     module unload jemalloc-4.5.0-gcc-7.3.0-wlf2m7r
-    module unload libxsmm-1.10-gcc-7.3.0-sjh5yzv
+    module unload libxsmm/1.16.1
     module unload yaml-cpp-develop-gcc-7.3.0-qcfbbll
     module unload boost-1.68.0-gcc-7.3.0-vgl6ofr
     module unload hdf5-1.12.0-gcc-7.3.0-mknp6xv
@@ -55,7 +55,7 @@ spectre_load_modules() {
     module load catch2-2.11.3-gcc-7.3.0-l7lqzrg
     module load gsl-2.5-gcc-7.3.0-i7icadp
     module load jemalloc-4.5.0-gcc-7.3.0-wlf2m7r
-    module load libxsmm-1.10-gcc-7.3.0-sjh5yzv
+    module load libxsmm/1.16.1
     module load yaml-cpp-develop-gcc-7.3.0-qcfbbll
     module load boost-1.68.0-gcc-7.3.0-vgl6ofr
     module load hdf5-1.12.0-gcc-7.3.0-mknp6xv
