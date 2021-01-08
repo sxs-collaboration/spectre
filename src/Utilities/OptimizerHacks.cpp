@@ -3,6 +3,8 @@
 
 #include "Utilities/OptimizerHacks.hpp"
 
+#if defined(__clang__) && __clang__ < 11
 namespace optimizer_hacks {
 void indicate_value_can_be_changed(void* /*variable*/) noexcept {}
 }  // namespace optimizer_hacks
+#endif  /* defined(__clang__) && __clang__ < 11 */
