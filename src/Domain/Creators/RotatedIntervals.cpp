@@ -32,7 +32,7 @@ RotatedIntervals::RotatedIntervals(
 
 Domain<1> RotatedIntervals::create_domain() const noexcept {
   return rectilinear_domain<1>(
-      Index<1>{2}, {{{lower_x_[0], midpoint_x_[0], upper_x_[0]}}}, {},
+      Index<1>{2}, {{{lower_x_[0], midpoint_x_[0], upper_x_[0]}}}, {}, {},
       {OrientationMap<1>{}, OrientationMap<1>{std::array<Direction<1>, 1>{
                                 {Direction<1>::lower_xi()}}}},
       is_periodic_in_);

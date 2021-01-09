@@ -13,6 +13,7 @@
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -39,6 +40,41 @@
 
 namespace domain {
 namespace {
+template <size_t Dim>
+class TestBoundaryCondition : public BoundaryConditions::BoundaryCondition {
+ public:
+  TestBoundaryCondition() = default;
+  explicit TestBoundaryCondition(Direction<Dim> direction)
+      : direction_(std::move(direction)) {}
+  TestBoundaryCondition(TestBoundaryCondition&&) noexcept = default;
+  TestBoundaryCondition& operator=(TestBoundaryCondition&&) noexcept = default;
+  TestBoundaryCondition(const TestBoundaryCondition&) = default;
+  TestBoundaryCondition& operator=(const TestBoundaryCondition&) = default;
+  ~TestBoundaryCondition() override = default;
+  explicit TestBoundaryCondition(CkMigrateMessage* const msg) noexcept
+      : BoundaryConditions::BoundaryCondition(msg) {}
+
+  WRAPPED_PUPable_decl_base_template(BoundaryConditions::BoundaryCondition,
+                                     TestBoundaryCondition<Dim>);
+
+  const Direction<Dim>& direction() const noexcept { return direction_; }
+
+  auto get_clone() const noexcept
+      -> std::unique_ptr<BoundaryCondition> override {
+    return std::make_unique<TestBoundaryCondition>(*this);
+  }
+
+  void pup(PUP::er& p) override {
+    BoundaryConditions::BoundaryCondition::pup(p);
+  }
+
+ private:
+  Direction<Dim> direction_;
+};
+
+template <size_t Dim>
+PUP::able::PUP_ID TestBoundaryCondition<Dim>::my_PUP_ID = 0;  // NOLINT
+
 void test_periodic_same_block() noexcept {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
       {{0, 1, 2, 3, 4, 5, 6, 7}}, {{8, 9, 10, 11, 0, 1, 2, 3}}};
@@ -1488,12 +1524,27 @@ void test_maps_for_rectilinear_domains() noexcept {
   }
 }
 
+template <size_t Dim>
+auto compute_boundary_conditions(
+    const std::vector<std::unordered_set<Direction<Dim>>>&
+        external_boundaries) noexcept {
+  using MapType = DirectionMap<
+      Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>;
+  std::vector<MapType> boundary_conditions{external_boundaries.size()};
+  for (size_t i = 0; i < external_boundaries.size(); ++i) {
+    const auto& external_boundaries_of_block = external_boundaries[i];
+    MapType t{};
+    for (const auto& direction : external_boundaries_of_block) {
+      t.emplace(direction,
+                std::make_unique<TestBoundaryCondition<Dim>>(direction));
+    }
+    boundary_conditions[i] = std::move(t);
+  }
+  return boundary_conditions;
+}
+
 void test_set_cartesian_periodic_boundaries_1() noexcept {
-  const auto domain = rectilinear_domain<3>(
-      Index<3>{3, 3, 3},
-      std::array<std::vector<double>, 3>{
-          {{0.0, 1.0, 2.0, 3.0}, {0.0, 1.0, 2.0, 3.0}, {0.0, 1.0, 2.0, 3.0}}},
-      {Index<3>{1, 1, 1}}, {}, std::array<bool, 3>{{true, false, false}}, {});
+  // 9x9 cube with the central block removed. Periodic is xi.
   const std::vector<std::unordered_set<Direction<3>>>
       expected_external_boundaries{
           {{Direction<3>::lower_zeta(), Direction<3>::lower_eta()}},
@@ -1522,6 +1573,12 @@ void test_set_cartesian_periodic_boundaries_1() noexcept {
           {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}},
           {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}},
           {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}}};
+  const auto domain = rectilinear_domain<3>(
+      Index<3>{3, 3, 3},
+      std::array<std::vector<double>, 3>{
+          {{0.0, 1.0, 2.0, 3.0}, {0.0, 1.0, 2.0, 3.0}, {0.0, 1.0, 2.0, 3.0}}},
+      compute_boundary_conditions(expected_external_boundaries),
+      {Index<3>{1, 1, 1}}, {}, std::array<bool, 3>{{true, false, false}}, {});
 
   // Issue 1018 describes a memory bug that is caused by incorrect indexing
   // in the function `maps_for_rectilinear_domains` called through the function
@@ -1545,11 +1602,21 @@ void test_set_cartesian_periodic_boundaries_1() noexcept {
                                               {0.0, 1.0, 2.0, 3.0}}},
           {Index<3>{1, 1, 1}}, {});
 
+  const auto expected_external_boundary_conditions =
+      compute_boundary_conditions(expected_external_boundaries);
   for (size_t i = 0; i < domain.blocks().size(); i++) {
     INFO(i);
     CHECK(domain.blocks()[i].external_boundaries() ==
           expected_external_boundaries[i]);
     CHECK(domain.blocks()[i].stationary_map() == *expected_coordinate_maps[i]);
+    for (const auto& direction : expected_external_boundaries[i]) {
+      CAPTURE(direction);
+      CHECK(
+          direction ==
+          dynamic_cast<const TestBoundaryCondition<3>&>(
+              *domain.blocks()[i].external_boundary_conditions().at(direction))
+              .direction());
+    }
   }
 }
 
@@ -1559,17 +1626,19 @@ void test_set_cartesian_periodic_boundaries_2() noexcept {
   auto orientations_of_all_blocks =
       std::vector<OrientationMap<2>>{4, OrientationMap<2>{}};
   orientations_of_all_blocks[0] = rotation;
-  const auto domain = rectilinear_domain<2>(
-      Index<2>{2, 2},
-      std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
-      {}, orientations_of_all_blocks, std::array<bool, 2>{{true, false}}, {},
-      false);
-
   const std::vector<std::unordered_set<Direction<2>>>
       expected_external_boundaries{{{Direction<2>::upper_xi()}},
                                    {{Direction<2>::lower_eta()}},
                                    {{Direction<2>::upper_eta()}},
                                    {{Direction<2>::upper_eta()}}};
+
+  const auto domain = rectilinear_domain<2>(
+      Index<2>{2, 2},
+      std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
+      compute_boundary_conditions(expected_external_boundaries), {},
+      orientations_of_all_blocks, std::array<bool, 2>{{true, false}}, {},
+      false);
+
   const std::vector<
       std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 2>>>
       expected_coordinate_maps = maps_for_rectilinear_domains<Frame::Inertial>(
@@ -1578,11 +1647,21 @@ void test_set_cartesian_periodic_boundaries_2() noexcept {
               {{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
           {}, orientations_of_all_blocks, false);
 
+  const auto expected_external_boundary_conditions =
+      compute_boundary_conditions(expected_external_boundaries);
   for (size_t i = 0; i < domain.blocks().size(); i++) {
     INFO(i);
     CHECK(domain.blocks()[i].external_boundaries() ==
           expected_external_boundaries[i]);
     CHECK(domain.blocks()[i].stationary_map() == *expected_coordinate_maps[i]);
+    for (const auto& direction : expected_external_boundaries[i]) {
+      CAPTURE(direction);
+      CHECK(
+          direction ==
+          dynamic_cast<const TestBoundaryCondition<2>&>(
+              *domain.blocks()[i].external_boundary_conditions().at(direction))
+              .direction());
+    }
   }
 }
 
@@ -1598,13 +1677,16 @@ void test_set_cartesian_periodic_boundaries_3() noexcept {
   orientations_of_all_blocks[1] = flipped;
   orientations_of_all_blocks[2] = quarter_turn_cw;
   orientations_of_all_blocks[3] = quarter_turn_ccw;
+  const std::vector<std::unordered_set<Direction<2>>>
+      expected_external_boundaries{{}, {}, {}, {}};
+
   const auto domain = rectilinear_domain<2>(
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
-      {}, orientations_of_all_blocks, std::array<bool, 2>{{true, true}}, {},
-      false);
+      compute_boundary_conditions(expected_external_boundaries), {},
+      orientations_of_all_blocks, std::array<bool, 2>{{true, true}}, {}, false);
 
-  std::vector<DirectionMap<2, BlockNeighbor<2>>> expected_block_neighbors{
+  const std::vector<DirectionMap<2, BlockNeighbor<2>>> expected_block_neighbors{
       {{Direction<2>::upper_xi(), {1, flipped}},
        {Direction<2>::upper_eta(), {2, quarter_turn_cw}},
        {Direction<2>::lower_xi(), {1, flipped}},
@@ -1621,8 +1703,6 @@ void test_set_cartesian_periodic_boundaries_3() noexcept {
        {Direction<2>::upper_eta(), {2, flipped}},
        {Direction<2>::upper_xi(), {1, quarter_turn_ccw}},
        {Direction<2>::lower_eta(), {2, flipped}}}};
-  std::vector<std::unordered_set<Direction<2>>> expected_external_boundaries{
-      {}, {}, {}, {}};
   const std::vector<
       std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 2>>>
       expected_coordinate_maps = maps_for_rectilinear_domains<Frame::Inertial>(
@@ -1631,12 +1711,22 @@ void test_set_cartesian_periodic_boundaries_3() noexcept {
               {{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
           {}, orientations_of_all_blocks, false);
 
+  const auto expected_external_boundary_conditions =
+      compute_boundary_conditions(expected_external_boundaries);
   for (size_t i = 0; i < domain.blocks().size(); i++) {
     INFO(i);
     CHECK(domain.blocks()[i].external_boundaries() ==
           expected_external_boundaries[i]);
     CHECK(domain.blocks()[i].stationary_map() == *expected_coordinate_maps[i]);
     CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
+    for (const auto& direction : expected_external_boundaries[i]) {
+      CAPTURE(direction);
+      CHECK(
+          direction ==
+          dynamic_cast<const TestBoundaryCondition<2>&>(
+              *domain.blocks()[i].external_boundary_conditions().at(direction))
+              .direction());
+    }
   }
 }
 

@@ -35,7 +35,7 @@ Domain<3> RotatedBricks::create_domain() const noexcept {
           {{lower_xyz_[0], midpoint_xyz_[0], upper_xyz_[0]},
            {lower_xyz_[1], midpoint_xyz_[1], upper_xyz_[1]},
            {lower_xyz_[2], midpoint_xyz_[2], upper_xyz_[2]}}},
-      {},
+      {}, {},
       std::vector<OrientationMap<3>>{
           OrientationMap<3>{},
           OrientationMap<3>{std::array<Direction<3>, 3>{

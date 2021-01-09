@@ -13,7 +13,9 @@
 #include <vector>
 
 #include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 namespace Frame {
@@ -52,10 +54,17 @@ class Domain {
    * determined. For more information on setting up domains, see the
    * [domain creation tutorial](\ref tutorial_domain_creation).
    *
+   * Can specify either one set of boundary conditions for each Block or no
+   * boundary conditions at all.
    */
-  explicit Domain(std::vector<std::unique_ptr<domain::CoordinateMapBase<
-                      Frame::Logical, Frame::Inertial, VolumeDim>>>
-                      maps) noexcept;
+  explicit Domain(
+      std::vector<std::unique_ptr<domain::CoordinateMapBase<
+          Frame::Logical, Frame::Inertial, VolumeDim>>>
+          maps,
+      std::vector<DirectionMap<
+          VolumeDim,
+          std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+          boundary_conditions = {}) noexcept;
 
   /*!
    * Create a Domain using a corner numbering scheme to encode the Orientations,
@@ -73,13 +82,20 @@ class Domain {
    *
    * \requires `maps.size() == corners_of_all_blocks.size()`, and
    * `identifications.size()` is even.
+   *
+   * Can specify either one set of boundary conditions for each Block or no
+   * boundary conditions at all.
    */
   Domain(std::vector<std::unique_ptr<domain::CoordinateMapBase<
              Frame::Logical, Frame::Inertial, VolumeDim>>>
              maps,
          const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
              corners_of_all_blocks,
-         const std::vector<PairOfFaces>& identifications = {}) noexcept;
+         const std::vector<PairOfFaces>& identifications = {},
+         std::vector<DirectionMap<
+             VolumeDim,
+             std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+             boundary_conditions = {}) noexcept;
 
   Domain() noexcept = default;
   ~Domain() = default;

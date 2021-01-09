@@ -34,7 +34,7 @@ Domain<2> RotatedRectangles::create_domain() const noexcept {
       std::array<std::vector<double>, 2>{
           {{lower_xy_[0], midpoint_xy_[0], upper_xy_[0]},
            {lower_xy_[1], midpoint_xy_[1], upper_xy_[1]}}},
-      {},
+      {}, {},
       std::vector<OrientationMap<2>>{
           OrientationMap<2>{},
           OrientationMap<2>{std::array<Direction<2>, 2>{
