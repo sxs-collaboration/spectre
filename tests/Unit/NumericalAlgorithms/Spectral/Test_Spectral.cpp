@@ -144,7 +144,8 @@ void test_weak_differentiation() {
         const auto analytic_derivative =
             unit_polynomial_derivative(p, collocation_pts);
         for (size_t i = 1; i < n - 1; ++i) {
-          CHECK(numeric_derivative[i] == approx(-analytic_derivative[i]));
+          Approx local_approx = Approx::custom().epsilon(1e-12).scale(1.);
+          CHECK(local_approx(numeric_derivative[i]) == -analytic_derivative[i]);
         }
       }
     }
