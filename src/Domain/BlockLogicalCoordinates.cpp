@@ -48,13 +48,13 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
           const auto moving_inv =
               block.moving_mesh_grid_to_inertial_map().inverse(
                   x_frame, time, functions_of_time);
-          if (not moving_inv) {
+          if (not moving_inv.has_value()) {
             continue;
           }
           // logical to grid map is time-independent.
           const auto inv = block.moving_mesh_logical_to_grid_map().inverse(
               moving_inv.value());
-          if (inv) {
+          if (inv.has_value()) {
             x_logical = inv.value();
           } else {
             continue;  // Not in this block
@@ -73,7 +73,7 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
           // Point is in the grid frame, just map to logical frame.
           const auto inv =
               block.moving_mesh_logical_to_grid_map().inverse(x_frame);
-          if (inv) {
+          if (inv.has_value()) {
             x_logical = inv.value();
           } else {
             continue;  // Not in this block
@@ -82,7 +82,7 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
       } else {  // not block.is_time_dependent()
         if constexpr (std::is_same_v<Frame, ::Frame::Inertial>) {
           const auto inv = block.stationary_map().inverse(x_frame);
-          if (inv) {
+          if (inv.has_value()) {
             x_logical = inv.value();
           } else {
             continue;  // Not in this block
@@ -100,7 +100,7 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
             x_inertial.get(d) = x_frame.get(d);
           }
           const auto inv = block.stationary_map().inverse(x_inertial);
-          if (inv) {
+          if (inv.has_value()) {
             x_logical = inv.value();
           } else {
             continue;  // Not in this block

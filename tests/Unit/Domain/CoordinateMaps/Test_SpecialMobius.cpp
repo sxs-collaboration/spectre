@@ -85,7 +85,7 @@ void test_map() {
   // Point at which the map is singular.
   // Since |mu|<1, this point also has x outside [-1,1].
   const std::array<double, 3> bad_point{{-1.0 / mu, 0.0, 0.0}};
-  CHECK_FALSE(static_cast<bool>(special_mobius_map.inverse(bad_point)));
+  CHECK_FALSE(special_mobius_map.inverse(bad_point).has_value());
 }
 
 void test_large_mu() {

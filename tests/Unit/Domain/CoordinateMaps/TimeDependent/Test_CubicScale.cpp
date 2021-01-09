@@ -100,7 +100,7 @@ void test_boundaries() {
 
       CHECK_ITERABLE_APPROX(scale_map(point_xi, t, f_of_t_list), mapped_point);
       REQUIRE(
-          static_cast<bool>(scale_map.inverse(mapped_point, t, f_of_t_list)));
+          scale_map.inverse(mapped_point, t, f_of_t_list).has_value());
       CHECK_ITERABLE_APPROX(
           scale_map.inverse(mapped_point, t, f_of_t_list).value(), point_xi);
       t += dt;

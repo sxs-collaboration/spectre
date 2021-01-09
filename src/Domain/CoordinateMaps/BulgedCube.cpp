@@ -175,7 +175,7 @@ std::optional<std::array<double, 3>> BulgedCube::inverse(
       // NOLINTNEXTLINE(clang-analyzer-core)
       ::scaling_factor(
       RootFunction{radius_, sphericity_, physical_r_squared, x_sq, y_sq, z_sq});
-  if (not scaling_factor) {
+  if (not scaling_factor.has_value()) {
     return std::nullopt;
   }
   if (use_equiangular_map_) {

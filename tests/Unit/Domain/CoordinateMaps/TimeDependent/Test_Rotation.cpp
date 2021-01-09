@@ -49,7 +49,7 @@ std::array<double, 2> expected_frame_velocity(
 }  // namespace
 
 namespace domain {
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.RotationTimeDep",
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.TimeDependent.Rotation",
                   "[Domain][Unit]") {
   double t{-1.0};
   const double dt{0.6};

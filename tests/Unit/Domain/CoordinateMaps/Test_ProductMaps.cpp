@@ -39,8 +39,8 @@ void test_product_two_maps_fail() {
     // Should be ok
     const std::array<double, 3> mapped_point2{{3.5, 3.0, -1.0}};
 
-    CHECK_FALSE(static_cast<bool>(map.inverse(mapped_point1)));
-    CHECK(static_cast<bool>(map.inverse(mapped_point2)));
+    CHECK_FALSE(map.inverse(mapped_point1).has_value());
+    CHECK(map.inverse(mapped_point2).has_value());
     CHECK_ITERABLE_APPROX(map(map.inverse(mapped_point2).value()),
                           mapped_point2);
   }
@@ -55,8 +55,8 @@ void test_product_two_maps_fail() {
     // Should be ok
     const std::array<double, 3> mapped_point2{{3.0, -1.0, 3.5}};
 
-    CHECK_FALSE(static_cast<bool>(map.inverse(mapped_point1)));
-    CHECK(static_cast<bool>(map.inverse(mapped_point2)));
+    CHECK_FALSE(map.inverse(mapped_point1).has_value());
+    CHECK(map.inverse(mapped_point2).has_value());
     CHECK_ITERABLE_APPROX(map(map.inverse(mapped_point2).value()),
                           mapped_point2);
   }

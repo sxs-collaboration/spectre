@@ -36,14 +36,14 @@ void test_bulged_cube_fail() {
   const std::array<double, 3> test_mapped_point4{{2.0, 2.0, 2.0}};
   const std::array<double, 3> test_mapped_point5{{3.0, 0.0, 0.0}};
 
-  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point1)));
-  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point2)));
-  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point3)));
-  if (map.inverse(test_mapped_point4)) {
+  CHECK_FALSE(map.inverse(test_mapped_point1).has_value());
+  CHECK_FALSE(map.inverse(test_mapped_point2).has_value());
+  CHECK_FALSE(map.inverse(test_mapped_point3).has_value());
+  if (map.inverse(test_mapped_point4).has_value()) {
     CHECK_ITERABLE_APPROX(map(map.inverse(test_mapped_point4).value()),
                           test_mapped_point4);
   }
-  if (map.inverse(test_mapped_point5)) {
+  if (map.inverse(test_mapped_point5).has_value()) {
     CHECK_ITERABLE_APPROX(map(map.inverse(test_mapped_point5).value()),
                           test_mapped_point5);
   }

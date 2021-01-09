@@ -73,10 +73,10 @@ void test_frustum_fail() noexcept {
   // this point) or it should return nullopt.
   const std::array<double, 3> test_mapped_point4{{0.0, 0.0, 9.0}};
 
-  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point1)));
-  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point2)));
-  CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point3)));
-  if (map.inverse(test_mapped_point4)) {
+  CHECK_FALSE(map.inverse(test_mapped_point1).has_value());
+  CHECK_FALSE(map.inverse(test_mapped_point2).has_value());
+  CHECK_FALSE(map.inverse(test_mapped_point3).has_value());
+  if (map.inverse(test_mapped_point4).has_value()) {
     CHECK_ITERABLE_APPROX(map(map.inverse(test_mapped_point4).value()),
                           test_mapped_point4);
   }
