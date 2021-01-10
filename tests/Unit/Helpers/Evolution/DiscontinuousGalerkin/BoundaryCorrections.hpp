@@ -5,8 +5,8 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/optional.hpp>
 #include <cstddef>
+#include <optional>
 #include <random>
 #include <string>
 #include <type_traits>
@@ -18,6 +18,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Framework/Pypp.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
@@ -73,10 +74,10 @@ void call_dg_package_data(
     const Variables<tmpl::list<FaceTags...>>& face_variables,
     const tuples::TaggedTuple<VolumeTags...>& volume_data,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_covector,
-    const boost::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+    const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         mesh_velocity) {
-  boost::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
-  if (static_cast<bool>(mesh_velocity)) {
+  std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
+  if (mesh_velocity.has_value()) {
     normal_dot_mesh_velocity =
         dot_product(*mesh_velocity, unit_normal_covector);
   }
@@ -154,7 +155,7 @@ void test_boundary_correction_impl(
   std::uniform_real_distribution<> pos_neg_dist(-1.0, 1.0);
   DataVector used_for_size{face_mesh.number_of_grid_points()};
 
-  boost::optional<tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>>
+  std::optional<tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>>
       mesh_velocity{};
   if (use_moving_mesh) {
     mesh_velocity = make_with_random_values<
@@ -312,6 +313,228 @@ void test_boundary_correction_conservation(
       detail::test_boundary_correction_impl<System>(
           correction, face_mesh, volume_data, use_moving_mesh, dg_formulation,
           zero_on_smooth_solution);
+    }
+  }
+}
+
+namespace detail {
+template <typename ConversionClassList, typename VariablesTags,
+          typename BoundaryCorrection, size_t FaceDim, typename... FaceTags,
+          typename... VolumeTags, typename... DgPackageDataTags>
+void test_with_python(
+    const std::string& python_module,
+    const std::array<
+        std::string,
+        tmpl::size<typename BoundaryCorrection::dg_package_field_tags>::value>&
+        python_dg_package_data_functions,
+    const std::array<std::string, tmpl::size<VariablesTags>::value>&
+        python_dg_boundary_terms_functions,
+    const BoundaryCorrection& correction, const Mesh<FaceDim>& face_mesh,
+    const tuples::TaggedTuple<VolumeTags...>& volume_data,
+    const bool use_moving_mesh, const ::dg::Formulation dg_formulation,
+    const double epsilon, tmpl::list<FaceTags...> /*meta*/,
+    tmpl::list<DgPackageDataTags...> /*meta*/) {
+  CAPTURE(face_mesh);
+  CAPTURE(dg_formulation);
+  CAPTURE(use_moving_mesh);
+  REQUIRE(face_mesh.number_of_grid_points() >= 1);
+  using dg_package_field_tags =
+      typename BoundaryCorrection::dg_package_field_tags;
+
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> dist(0.0, 1.0);
+  DataVector used_for_size{face_mesh.number_of_grid_points()};
+
+  Variables<dg_package_field_tags> package_data{used_for_size.size()};
+  const auto fields_on_face =
+      make_with_random_values<Variables<tmpl::list<FaceTags...>>>(
+          make_not_null(&gen), make_not_null(&dist), used_for_size);
+  auto unit_normal_covector = make_with_random_values<
+      tnsr::i<DataVector, FaceDim + 1, Frame::Inertial>>(
+      make_not_null(&gen), make_not_null(&dist), used_for_size);
+  const auto normal_magnitude = magnitude(unit_normal_covector);
+  for (auto& component : unit_normal_covector) {
+    component /= get(normal_magnitude);
+  }
+  std::optional<tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>>
+      mesh_velocity{};
+  if (use_moving_mesh) {
+    mesh_velocity = make_with_random_values<
+        tnsr::I<DataVector, FaceDim + 1, Frame::Inertial>>(
+        make_not_null(&gen), make_not_null(&dist), used_for_size);
+  }
+  std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
+  if (mesh_velocity.has_value()) {
+    normal_dot_mesh_velocity =
+        dot_product(*mesh_velocity, unit_normal_covector);
+  }
+
+  // Call C++ implementation of dg_package_data
+  call_dg_package_data(make_not_null(&package_data), correction, fields_on_face,
+                       volume_data, unit_normal_covector, mesh_velocity);
+
+  // Call python implementation of dg_package_data
+  size_t function_name_index = 0;
+  tmpl::for_each<dg_package_field_tags>(
+      [epsilon, &fields_on_face, &function_name_index, &mesh_velocity,
+       &normal_dot_mesh_velocity, &package_data,
+       &python_dg_package_data_functions, &python_module, &unit_normal_covector,
+       &volume_data](auto package_data_tag_v) {
+        // avoid compiler warnings if there isn't any volume data
+        (void)volume_data;
+        INFO("Testing package data");
+        using package_data_tag = tmpl::type_from<decltype(package_data_tag_v)>;
+        using ResultType = typename package_data_tag::type;
+        try {
+          CAPTURE(python_module);
+          CAPTURE(
+              gsl::at(python_dg_package_data_functions, function_name_index));
+          const auto python_result =
+              pypp::call<ResultType, ConversionClassList>(
+                  python_module,
+                  gsl::at(python_dg_package_data_functions,
+                          function_name_index),
+                  get<FaceTags>(fields_on_face)..., unit_normal_covector,
+                  mesh_velocity, normal_dot_mesh_velocity,
+                  get<VolumeTags>(volume_data)...);
+          CHECK_ITERABLE_CUSTOM_APPROX(
+              get<package_data_tag>(package_data), python_result,
+              Approx::custom().epsilon(epsilon).scale(1.0));
+        } catch (const std::exception& e) {
+          INFO("On line " << __LINE__ << " Python call to "
+                          << gsl::at(python_dg_package_data_functions,
+                                     function_name_index)
+                          << " in module " << python_module
+                          << " failed: " << e.what());
+          REQUIRE(false);
+        }
+        ++function_name_index;
+      });
+
+  // Now we need to check the dg_boundary_terms function.
+  const auto interior_package_data =
+      make_with_random_values<Variables<dg_package_field_tags>>(
+          make_not_null(&gen), make_not_null(&dist), used_for_size);
+  const auto exterior_package_data =
+      make_with_random_values<Variables<dg_package_field_tags>>(
+          make_not_null(&gen), make_not_null(&dist), used_for_size);
+  // We don't need to prefix the VariablesTags with anything because we are not
+  // interacting with any code that cares about what the tags are, just that the
+  // types matched the evolved variables.
+  Variables<VariablesTags> boundary_corrections{
+      face_mesh.number_of_grid_points()};
+
+  // Call C++ implementation of dg_boundary_terms
+  call_dg_boundary_terms(make_not_null(&boundary_corrections), correction,
+                         interior_package_data, exterior_package_data,
+                         dg_formulation);
+
+  // Call python implementation of dg_boundary_terms
+  function_name_index = 0;
+  tmpl::for_each<VariablesTags>([&boundary_corrections, &dg_formulation,
+                                 epsilon, &exterior_package_data,
+                                 &function_name_index, &interior_package_data,
+                                 &python_dg_boundary_terms_functions,
+                                 &python_module](auto package_data_tag_v) {
+    INFO("Testing boundary terms");
+    using boundary_correction_tag =
+        tmpl::type_from<decltype(package_data_tag_v)>;
+    using ResultType = typename boundary_correction_tag::type;
+    try {
+      CAPTURE(python_module);
+      const std::string& python_function =
+          gsl::at(python_dg_boundary_terms_functions, function_name_index);
+      CAPTURE(python_function);
+      // Make explicitly depend on tag type to avoid type deduction issues with
+      // GCC7
+      const typename boundary_correction_tag::type python_result =
+          pypp::call<ResultType>(
+              python_module, python_function,
+              get<DgPackageDataTags>(interior_package_data)...,
+              get<DgPackageDataTags>(exterior_package_data)...,
+              dg_formulation == ::dg::Formulation::StrongInertial);
+      CHECK_ITERABLE_CUSTOM_APPROX(
+          get<boundary_correction_tag>(boundary_corrections), python_result,
+          Approx::custom().epsilon(epsilon).scale(1.0));
+    } catch (const std::exception& e) {
+      INFO("On line " << __LINE__ << " Python call to "
+                      << gsl::at(python_dg_boundary_terms_functions,
+                                 function_name_index)
+                      << " in module " << python_module
+                      << " failed: " << e.what());
+      REQUIRE(false);
+    }
+    ++function_name_index;
+  });
+}
+}  // namespace detail
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Tests that the `dg_package_data` and `dg_boundary_terms` functions
+ * agree with the python implementation.
+ *
+ * The variables are filled with random numbers between zero and one before
+ * being passed to the implementations. If in the future we need support for
+ * negative numbers we can add the ability to specify a single range for all
+ * random numbers or each individually.
+ *
+ * Please note the following:
+ * - The `pypp::SetupLocalPythonEnvironment` must be created before the
+ *   `test_boundary_correction_with_python` can be called.
+ * - The `dg_formulation` is passed as a bool `use_strong_form` to the python
+ *   functions since we don't want to rely on python bindings for the enum.
+ * - You can convert custom types using the `ConversionClassList` template
+ *   parameter, which is then passed to `pypp::call()`. This allows you to,
+ *   e.g., convert an equation of state into an array locally in a test file.
+ * - There must be one python function to compute the packaged data for each tag
+ *   in `dg_package_field_tags`
+ * - There must be one python function to compute the boundary correction for
+ *   each tag in `System::variables_tag`
+ * - The arguments to the python functions for computing the packaged data are
+ *   the same as the arguments for the C++ `dg_package_data` function, excluding
+ *   the `gsl::not_null` arguments.
+ * - The arguments to the python functions for computing the boundary
+ *   corrections are the same as the arguments for the C++ `dg_boundary_terms`
+ *   function, excluding the `gsl::not_null` arguments.
+ */
+template <typename System, typename ConversionClassList = tmpl::list<>,
+          typename BoundaryCorrection, size_t FaceDim, typename... VolumeTags>
+void test_boundary_correction_with_python(
+    const std::string& python_module,
+    const std::array<
+        std::string,
+        tmpl::size<typename BoundaryCorrection::dg_package_field_tags>::value>&
+        python_dg_package_data_functions,
+    const std::array<
+        std::string,
+        tmpl::size<typename System::variables_tag::tags_list>::value>&
+        python_dg_boundary_terms_functions,
+    const BoundaryCorrection& correction, const Mesh<FaceDim>& face_mesh,
+    const tuples::TaggedTuple<VolumeTags...>& volume_data,
+    const double epsilon = 1.0e-12) {
+  static_assert(std::is_final_v<std::decay_t<BoundaryCorrection>>,
+                "All boundary correction classes must be marked `final`.");
+  using package_temporary_tags =
+      typename BoundaryCorrection::dg_package_data_temporary_tags;
+  using package_primitive_tags = detail::get_correction_primitive_vars<
+      System::has_primitive_and_conservative_vars, BoundaryCorrection>;
+  using variables_tags = typename System::variables_tag::tags_list;
+  using flux_variables = typename System::flux_variables;
+  using flux_tags =
+      db::wrap_tags_in<::Tags::Flux, flux_variables, tmpl::size_t<FaceDim + 1>,
+                       Frame::Inertial>;
+
+  for (const auto use_moving_mesh : {false, true}) {
+    for (const auto dg_formulation :
+         {::dg::Formulation::StrongInertial, ::dg::Formulation::WeakInertial}) {
+      detail::test_with_python<ConversionClassList, variables_tags>(
+          python_module, python_dg_package_data_functions,
+          python_dg_boundary_terms_functions, correction, face_mesh,
+          volume_data, use_moving_mesh, dg_formulation, epsilon,
+          tmpl::append<variables_tags, flux_tags, package_temporary_tags,
+                       package_primitive_tags>{},
+          typename BoundaryCorrection::dg_package_field_tags{});
     }
   }
 }
