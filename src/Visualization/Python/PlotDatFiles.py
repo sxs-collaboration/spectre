@@ -116,16 +116,16 @@ def open_and_process_file(args):
                 available_files += "  " + str(member)
         return available_files
 
-    h5file = h5py.File(args['file'])
-    if args['subfile'] != None:
-        dat_file = h5file.get(args['subfile'] + '.dat')
-        if dat_file is None:
-            raise Exception(
-                "Unable to open dat file '%s'. Available files are:\n%s" %
-                (args['subfile'] + '.dat', available_subfiles(h5file)))
-        process_subfile(args, dat_file)
-    else:
-        print("Available dat files are:", available_subfiles(h5file))
+    with h5py.File(args['file']) as h5file:
+        if args['subfile'] != None:
+            dat_file = h5file.get(args['subfile'] + '.dat')
+            if dat_file is None:
+                raise Exception(
+                    "Unable to open dat file '%s'. Available files are:\n%s" %
+                    (args['subfile'] + '.dat', available_subfiles(h5file)))
+            process_subfile(args, dat_file)
+        else:
+            print("Available dat files are:", available_subfiles(h5file))
     return None
 
 
