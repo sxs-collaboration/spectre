@@ -601,6 +601,7 @@ jobs:
             [ $(date +'%d') != ${BASH_REMATCH[3]} ]; then
               TODAY=$(date +'%Y.%m.%d')
               echo "'$RELEASE_VERSION' doesn't match current date '$TODAY'"
+              exit 1
             fi
           else
             echo "'$RELEASE_VERSION' doesn't match '$VERSION_PATTERN'"
