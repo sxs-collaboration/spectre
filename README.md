@@ -6,7 +6,7 @@
 [![Build Status](https://github.com/sxs-collaboration/spectre/workflows/Tests/badge.svg?branch=develop)](https://github.com/sxs-collaboration/spectre/actions)
 [![Coverage Status](https://coveralls.io/repos/github/sxs-collaboration/spectre/badge.svg?branch=develop)](https://coveralls.io/github/sxs-collaboration/spectre?branch=develop)
 [![codecov](https://codecov.io/gh/sxs-collaboration/spectre/branch/develop/graph/badge.svg)](https://codecov.io/gh/sxs-collaboration/spectre)
-[![release](https://img.shields.io/badge/release-v2020.01.11-informational)](https://github.com/sxs-collaboration/spectre/releases/tag/v2020.01.11)
+[![release](https://img.shields.io/badge/release-v2021.01.11-informational)](https://github.com/sxs-collaboration/spectre/releases/tag/v2021.01.11)
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.4421023.svg)](https://doi.org/10.5281/zenodo.4421023)
 
 ## What is SpECTRE?
