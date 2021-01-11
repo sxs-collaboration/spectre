@@ -103,6 +103,8 @@ directory). From here on out we will assume the current working directory is the
 build directory and all paths will be specified relative to that unless
 explicitly stated otherwise.
 
+### Command line arguments and input files
+
 You can see the help string for the executable by running:
 ```
 ./bin/EvolveScalarWavePlaneWave1D --help
@@ -187,7 +189,7 @@ familiarize yourself with them before running production simulations. The
 choices you make in the input file can have a major impact on how long the
 simulation takes to run and how accurate your result is. Let's focus on the
 `EventsAndTriggers` section. Events and triggers allow specific things to occur
-(the event) when a criteria (the trigger) is met. The syntax is as follows:
+(the event) when a criterion (the trigger) is met. The syntax is as follows:
 ```
 EventsAndTriggers:
   ? Trigger:
@@ -209,7 +211,9 @@ For example, the trigger and event pairing:
 writes the error norms of the evolve variables every Slabs starting on the fifth
 Slab. A Slab in SpECTRE is a collection of time steps. When using global time
 stepping Slabs and time steps are the same. This is not true when using local
-time stepping.
+time stepping. The events and triggers in the example input file are:
+
+\snippet PlaneWave1DObserveExample.yaml observe_event_trigger
 
 The `ObserveFields` events will write data into the `VolumeFileName` file with
 the `.%h5` extension, while the `ObserveErrorNorms` events will write into the
@@ -225,6 +229,8 @@ the quantities or fields being observed/written to disk.
 The last event that we need to be aware of is `Completion`. This ends the
 simulation when it is run. We can see that (as of this writing) the simulation
 ends after the 100th Slab.
+
+### Running the executable and visualizing the output
 
 We are now ready to run the executable. We do so using:
 ```
@@ -329,7 +335,7 @@ also display the error in `Psi` as well:
 # Running your first 3d evolution {#spectre_running_first_3d_evolution}
 
 Assuming you have configured a SpECTRE build, build the
-EvolveScalarWavePlaneWave1D target:
+EvolveScalarWavePlaneWave3D target:
 ```
 make -j2 EvolveScalarWavePlaneWave3D
 ```
