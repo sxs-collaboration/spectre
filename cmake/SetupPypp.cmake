@@ -2,8 +2,11 @@
 # See LICENSE.txt for details.
 
 # To run Python tests we need the development component (libs and include dirs).
-# It provides the `Python::Python` imported target.
-find_package(Python REQUIRED COMPONENTS Development)
+# It provides the `Python::Python` imported target. We find the interpreter
+# component as well to make sure the find is consistent with earlier finds that
+# only looked for the interpreter, possibly guided by the Python_EXECUTABLE
+# variable set by the user.
+find_package(Python REQUIRED COMPONENTS Interpreter Development)
 
 # We can't rely on CMake 3.14 quite yet so we backport the `Python::NumPy`
 # imported target that FindPython in CMake 3.14+ could also provide.
