@@ -244,6 +244,39 @@ lrtslock_test() {
 }
 standard_checks+=(lrtslock)
 
+# Check for boost::optional headers (we favor std::optional)
+# (see related check for boost/none header below)
+boost_optional() {
+    is_c++ "$1" && staged_grep -q '#include <boost/optional.*>' "$1"
+}
+boost_optional_report() {
+    echo "Found boost::optional header (use std::optional instead):"
+    pretty_grep '#include <boost/optional.*>' "$@"
+}
+boost_optional_test() {
+    test_check pass foo.cpp '#include <optional>'$'\n'
+    test_check pass foo.cpp '#include <boost/none.hpp>'$'\n'
+    test_check fail foo.cpp '#include <boost/optional.hpp>'$'\n'
+    test_check fail foo.cpp '#include <boost/optional/optional_io.hpp>'$'\n'
+}
+standard_checks+=(boost_optional)
+
+# Check for boost/none header
+# (see related check for boost/optional* headers above)
+boost_none() {
+    is_c++ "$1" && staged_grep -q '#include <boost/none.hpp>' "$1"
+}
+boost_none_report() {
+    echo "Found boost/none.hpp header:"
+    pretty_grep '#include <boost/none.hpp>' "$@"
+}
+boost_none_test() {
+    test_check pass foo.cpp '#include <optional>'$'\n'
+    test_check pass foo.cpp '#include <boost/optional.hpp>'$'\n'
+    test_check fail foo.cpp '#include <boost/none.hpp>'$'\n'
+}
+standard_checks+=(boost_none)
+
 # Check for files containing tabs
 tabs() {
     whitelist "$1" '.h5' '.png' &&
