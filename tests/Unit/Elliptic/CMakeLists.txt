@@ -6,6 +6,7 @@ add_subdirectory(BoundaryConditions)
 add_subdirectory(DiscontinuousGalerkin)
 add_subdirectory(Systems)
 add_subdirectory(Triggers)
+add_subdirectory(Utilities)
 
 set(LIBRARY "Test_Elliptic")
 
