@@ -77,7 +77,7 @@ Linux machine. Because of the wide variety of operating systems available today
 it is not possible for us to support all configurations. However, using Spack
 as outlined below is a supported alternative to Docker images.
 
-**NOTE**: If you have SELinux active
+**Note**: If you have SELinux active
 on your system you must figure out how to enable sharing files with the host
 OS. If you receive errors that you do not have permission to access a shared
 directory it is likely that your system has SELinux enabled. One option is to
