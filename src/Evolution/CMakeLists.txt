@@ -50,6 +50,7 @@ add_dependencies(
   )
 
 add_subdirectory(Actions)
+add_subdirectory(BoundaryConditions)
 add_subdirectory(Conservative)
 add_subdirectory(DiscontinuousGalerkin)
 add_subdirectory(Executables)
