@@ -32,6 +32,17 @@ bool minmod_limited_slopes(
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
+  // Check that basis is LGL or LG. Note that...
+  // - non-Legendre bases may work "out of the box", but are untested
+  // - mixed bases may be okay in principle, but are untested
+  ASSERT(mesh.basis() == make_array<VolumeDim>(Spectral::Basis::Legendre),
+         "Unsupported basis: " << mesh);
+  ASSERT(mesh.quadrature() ==
+                 make_array<VolumeDim>(Spectral::Quadrature::GaussLobatto) or
+             mesh.quadrature() ==
+                 make_array<VolumeDim>(Spectral::Quadrature::Gauss),
+         "Unsupported quadrature: " << mesh);
+
   const double tvb_scale = [&tvb_constant, &element_size]() noexcept {
     const double max_h =
         *std::max_element(element_size.begin(), element_size.end());
@@ -88,15 +99,26 @@ bool minmod_limited_slopes(
     const auto& volume_and_slice_indices_d =
         gsl::at(buffer->volume_and_slice_indices, d);
 
+    // Compute slope of the linearized U by finite differencing across the
+    // first and last grid points. When using Gauss points, we also need to
+    // compute the the distance separating these grid points as it will be
+    // less than 2.0.
     const double u_lower = mean_value_on_boundary(
         &boundary_buffer_d, volume_and_slice_indices_d.first, *u_lin_buffer,
         mesh, d, Side::Lower);
     const double u_upper = mean_value_on_boundary(
         &boundary_buffer_d, volume_and_slice_indices_d.second, *u_lin_buffer,
         mesh, d, Side::Upper);
+    const double first_to_last_distance =
+        2.0 *
+        (mesh.quadrature(d) == Spectral::Quadrature::GaussLobatto
+             ? 1.0
+             : fabs(Spectral::collocation_points(mesh.slice_through(d))[0]));
+    const double local_slope = (u_upper - u_lower) / first_to_last_distance;
 
-    // Divide by element's width (2.0 in logical coordinates) to get a slope
-    const double local_slope = 0.5 * (u_upper - u_lower);
+    // For the effective slopes to neighboring elements, we don't care about the
+    // grid point distribution, only the element's width in logical coordinates,
+    // which will always be 2.0.
     const double upper_slope = 0.5 * difference_to_neighbor(d, Side::Upper);
     const double lower_slope = 0.5 * difference_to_neighbor(d, Side::Lower);
 
