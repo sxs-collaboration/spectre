@@ -134,7 +134,7 @@ To build with the docker image:
          -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-gcc
          SPECTRE_ROOT
    ```
-   To build with clang, the cmake command is
+   To build with clang, the CMake command is
    ```
    cmake -D CMAKE_CXX_COMPILER=clang++ \
          -D CMAKE_C_COMPILER=clang \
@@ -195,7 +195,7 @@ To build with the docker image:
 [Singularity](https://sylabs.io) is a container alternative
 to Docker with better security and nicer integration.
 
-To use Singularity you must:
+To build SpECTRE with Singularity you must:
 
 1. Build [Singularity](https://sylabs.io) and add it to your
    `$PATH`
@@ -222,20 +222,33 @@ To use Singularity you must:
    using `sudo`.
 4. To start the container run `singularity shell spectre.img` and you
    will be dropped into a bash shell.
-5. Run `cd SPECTRE_HOME && mkdir build && cd build` to set up a build
+5. `cd` into SPECTRE_ROOT and run `mkdir build && cd build` to set up a build
    directory.
-6. To build SpECTRE run
-```
+6. To build SpECTRE, run
+   ```
    cmake -D CMAKE_Fortran_COMPILER=gfortran-8 \
          -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-gcc
          SPECTRE_ROOT
-```
-   followed by
-   `make -jN` where `N` is the number of cores to build on in parallel.
+   ```
+   To build with clang, the CMake command is
+   ```
+    cmake -D CMAKE_CXX_COMPILER=clang++ \
+          -D CMAKE_C_COMPILER=clang \
+          -D CMAKE_Fortran_COMPILER=gfortran-8 \
+          -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang
+          SPECTRE_ROOT
+   ```
+   Compile the code with `make -jN` where `N` is the number of cores to build on
+   in parallel (e.g. `make -j4`).
+   * By default, `make -jN` without any specification will build all possible
+     targets. You can see the list of available targets by running `make list`.
+   * Run `make test-executables -jN` to compile the test executables, and
+     `ctest` to run the tests.
 
-Notes:
-- You should edit source files in SPECTRE_ROOT in a separate terminal outside
-  the container, and use the container only for compiling and running the code.
+**Notes:**
+- You should edit source files in SPECTRE_ROOT in a separate terminal
+  outside the container, and use the container only for compiling and running
+  the code.
 - Unlike Docker, Singularity does not keep the state between runs. However, it
   shares the home directory with the host OS so you should do all your work
   somewhere in your home directory.
@@ -244,14 +257,6 @@ Notes:
 - Since the data you modify lives on the host OS there is no need to worry about
   losing any data, needing to clean up old containers, or sharing data between
   containers and the host.
-- To build with clang, the CMake command is:
-```
-    cmake -D CMAKE_CXX_COMPILER=clang++ \
-          -D CMAKE_C_COMPILER=clang \
-          -D CMAKE_Fortran_COMPILER=gfortran-8 \
-          -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang
-          SPECTRE_ROOT
-```
 
 ## Using Spack to set up a SpECTRE environment
 
