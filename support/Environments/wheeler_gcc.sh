@@ -15,7 +15,7 @@ spectre_unload_modules() {
     module unload catch/2.13.3
     module unload gsl/2.1
     module unload libsharp/1.0.0
-    module unload libxsmm/1.8.1
+    module unload libxsmm/1.16.1
     module unload openblas/0.2.18
     module unload papi/5.5.1
     module unload yaml-cpp/master
@@ -27,7 +27,7 @@ spectre_unload_modules() {
     module unload lcov/1.13
     module unload charm/6.10.2-mpi-smp
     module unload python/anaconda2-4.1.1
-    module unload pybind11/2.4.3
+    module unload pybind11/2.6.1
 }
 
 spectre_load_modules() {
@@ -38,7 +38,7 @@ spectre_load_modules() {
     module load catch/2.13.3
     module load gsl/2.1
     module load libsharp/1.0.0
-    module load libxsmm/1.8.1
+    module load libxsmm/1.16.1
     module load openblas/0.2.18
     module load papi/5.5.1
     module load yaml-cpp/master
@@ -50,7 +50,7 @@ spectre_load_modules() {
     module load lcov/1.13
     module load charm/6.10.2-mpi-smp
     module load python/anaconda2-4.1.1
-    module load pybind11/2.4.3
+    module load pybind11/2.6.1
 }
 
 spectre_run_cmake() {
