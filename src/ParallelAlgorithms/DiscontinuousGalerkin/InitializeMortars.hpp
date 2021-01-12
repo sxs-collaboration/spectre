@@ -118,6 +118,7 @@ struct InitializeMortars {
     const auto& interface_meshes =
         db::get<domain::Tags::Interface<domain::Tags::InternalDirections<dim>,
                                         domain::Tags::Mesh<dim - 1>>>(box);
+    const auto quadrature = db::get<domain::Tags::Mesh<dim>>(box).quadrature(0);
     for (const auto& direction_and_neighbors : element.neighbors()) {
       const auto& direction = direction_and_neighbors.first;
       const auto& neighbors = direction_and_neighbors.second;
@@ -126,12 +127,11 @@ struct InitializeMortars {
         mortar_data[mortar_id];  // Default initialize data
         mortar_meshes.emplace(
             mortar_id,
-            dg::mortar_mesh(
-                interface_meshes.at(direction),
-                domain::Initialization::create_initial_mesh(
-                    initial_extents, neighbor,
-                    Spectral::Quadrature::GaussLobatto, neighbors.orientation())
-                    .slice_away(direction.dimension())));
+            dg::mortar_mesh(interface_meshes.at(direction),
+                            domain::Initialization::create_initial_mesh(
+                                initial_extents, neighbor, quadrature,
+                                neighbors.orientation())
+                                .slice_away(direction.dimension())));
         mortar_sizes.emplace(
             mortar_id,
             dg::mortar_size(element.id(), neighbor, direction.dimension(),

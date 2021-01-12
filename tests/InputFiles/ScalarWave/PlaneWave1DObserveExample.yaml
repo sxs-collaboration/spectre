@@ -44,6 +44,7 @@ DomainCreator:
 SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
+    Quadrature: GaussLobatto
 
 # If filtering is enabled in the executable the filter can be controlled using:
 # ExpFilter0:

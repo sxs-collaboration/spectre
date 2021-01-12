@@ -30,6 +30,7 @@ AnalyticSolution:
 SpatialDiscretization:
   DiscontinuousGalerkin:
     Formulation: StrongInertial
+    Quadrature: GaussLobatto
 
 NumericalFlux:
   LocalLaxFriedrichs:

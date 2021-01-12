@@ -156,7 +156,8 @@ struct Component {
 
   using simple_tags =
       db::AddSimpleTags<domain::Tags::InitialExtents<dim>,
-                        domain::Tags::InitialRefinementLevels<dim>, Tags::Time>;
+                        domain::Tags::InitialRefinementLevels<dim>,
+                        evolution::dg::Tags::Quadrature, Tags::Time>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -179,7 +180,10 @@ struct Metavariables {
 };
 
 template <size_t Dim, bool TimeDependent>
-void test() noexcept {
+void test(const Spectral::Quadrature quadrature) noexcept {
+  CAPTURE(Dim);
+  CAPTURE(TimeDependent);
+  CAPTURE(quadrature);
   using metavars = Metavariables<Dim>;
   using component = Component<metavars>;
 
@@ -229,7 +233,8 @@ void test() noexcept {
       {std::move(domain)}, {std::move(clone_unique_ptrs(functions_of_time))}};
 
   ActionTesting::emplace_component_and_initialize<component>(
-      &runner, self_id, {initial_extents, initial_refinement, initial_time});
+      &runner, self_id,
+      {initial_extents, initial_refinement, quadrature, initial_time});
   runner.set_phase(metavars::Phase::Testing);
   CHECK(ActionTesting::get_next_action_index<component>(runner, self_id) == 0);
   for (size_t i = 0; i < 2; ++i) {
@@ -511,12 +516,15 @@ void test() noexcept {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Initialization.DgDomain",
                   "[Parallel][Unit]") {
-  test<1, true>();
-  test<2, true>();
-  test<3, true>();
+  for (const auto quadrature :
+       {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}) {
+    test<1, true>(quadrature);
+    test<2, true>(quadrature);
+    test<3, true>(quadrature);
 
-  test<1, false>();
-  test<2, false>();
-  test<3, false>();
+    test<1, false>(quadrature);
+    test<2, false>(quadrature);
+    test<3, false>(quadrature);
+  }
 }
 }  // namespace

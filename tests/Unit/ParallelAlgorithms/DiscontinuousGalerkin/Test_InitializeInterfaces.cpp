@@ -103,7 +103,8 @@ struct ElementArray {
                              dg::Actions::InitializeDomain<Dim>>>,
               ActionTesting::InitializeDataBox<tmpl::append<
                   tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
-                             domain::Tags::InitialExtents<Dim>, vars_tag,
+                             domain::Tags::InitialExtents<Dim>,
+                             evolution::dg::Tags::Quadrature, vars_tag,
                              other_vars_tag>,
                   tmpl::conditional_t<
                       use_moving_mesh,
@@ -208,7 +209,8 @@ void create_runner_and_run_tests(
       typename Metavariables::element_array>(
       &runner, element_id,
       {domain_creator.initial_refinement_levels(),
-       domain_creator.initial_extents(), vars, other_vars, 0.0, 0.1, 0.1});
+       domain_creator.initial_extents(), Spectral::Quadrature::GaussLobatto,
+       vars, other_vars, 0.0, 0.1, 0.1});
 
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
@@ -239,7 +241,8 @@ void create_runner_and_run_tests(
       typename Metavariables::element_array>(
       &runner, element_id,
       {domain_creator.initial_refinement_levels(),
-       domain_creator.initial_extents(), vars, other_vars});
+       domain_creator.initial_extents(), Spectral::Quadrature::GaussLobatto,
+       vars, other_vars});
 
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
   ActionTesting::set_phase(make_not_null(&runner),

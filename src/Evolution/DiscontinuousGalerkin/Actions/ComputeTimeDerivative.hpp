@@ -24,11 +24,13 @@
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/ProjectToBoundary.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/MetricIdentityJacobian.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/Formulation.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/LinearOperators/WeakDivergence.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -715,33 +717,69 @@ void ComputeTimeDerivative<Metavariables>::volume_terms(
   // Add the flux divergence term to du_\alpha/dt, which must be done
   // after the corrections for the moving mesh are made.
   if constexpr (has_fluxes) {
+    // Compute the divergence outside of the `db::mutate` call so that we don't
+    // have to pass in the inertial coordinates and the Jacobian when using the
+    // strong form. This is a minor and trivial "optimization".
+    Variables<tmpl::list<::Tags::div<FluxVariablesTags>...>> div_fluxes{
+        mesh.number_of_grid_points()};
+    if (dg_formulation == ::dg::Formulation::StrongInertial) {
+      divergence(make_not_null(&div_fluxes), *volume_fluxes, mesh,
+                 logical_to_inertial_inverse_jacobian);
+    } else if (dg_formulation == ::dg::Formulation::WeakInertial) {
+      // We should ideally not recompute the
+      // det_jac_times_inverse_jacobian for non-moving meshes.
+      if constexpr (Dim == 1) {
+        weak_divergence(make_not_null(&div_fluxes), *volume_fluxes, mesh, {});
+      } else {
+        const auto& inertial_coords =
+            db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(*box);
+        // The Jacobian should be computed as a compute tag
+        const auto jacobian =
+            determinant_and_inverse(
+                db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical,
+                                                      Frame::Inertial>>(*box))
+                .second;
+        InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
+            det_jac_times_inverse_jacobian{};
+        ::dg::metric_identity_det_jac_times_inv_jac(
+            make_not_null(&det_jac_times_inverse_jacobian), mesh,
+            inertial_coords, jacobian);
+        weak_divergence(make_not_null(&div_fluxes), *volume_fluxes, mesh,
+                        det_jac_times_inverse_jacobian);
+      }
+      div_fluxes *=
+          get(db::get<
+              domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(
+              *box));
+    } else {
+      ERROR("Unsupported DG formulation: " << dg_formulation);
+    }
+
     db::mutate<db::add_tag_prefix<::Tags::dt, variables_tag>>(
-        box,
-        [dg_formulation, &logical_to_inertial_inverse_jacobian, &mesh,
-         &volume_fluxes](const gsl::not_null<Variables<db::wrap_tags_in<
-                             ::Tags::dt, typename variables_tag::tags_list>>*>
-                             dt_vars_ptr) noexcept {
-          if (dg_formulation == ::dg::Formulation::StrongInertial) {
-            const Variables<tmpl::list<::Tags::div<FluxVariablesTags>...>>
-                div_fluxes = divergence(*volume_fluxes, mesh,
-                                        logical_to_inertial_inverse_jacobian);
-            tmpl::for_each<flux_variables>([&dt_vars_ptr, &div_fluxes](
-                                               auto var_tag_v) noexcept {
-              using var_tag = typename decltype(var_tag_v)::type;
-              auto& dt_var = get<::Tags::dt<var_tag>>(*dt_vars_ptr);
-              const auto& div_flux_var = get<::Tags::div<
-                  ::Tags::Flux<var_tag, tmpl::size_t<Dim>, Frame::Inertial>>>(
-                  div_fluxes);
-              for (size_t storage_index = 0; storage_index < dt_var.size();
-                   ++storage_index) {
-                dt_var[storage_index] -= div_flux_var[storage_index];
-              }
-            });
-          } else if (dg_formulation == ::dg::Formulation::WeakInertial) {
-            ERROR("Weak inertial DG formulation not yet implemented");
-          } else {
-            ERROR("Unsupported DG formulation: " << dg_formulation);
-          }
+        box, [dg_formulation,
+              &div_fluxes](const gsl::not_null<Variables<db::wrap_tags_in<
+                               ::Tags::dt, typename variables_tag::tags_list>>*>
+                               dt_vars_ptr) noexcept {
+          tmpl::for_each<flux_variables>(
+              [&dg_formulation, &dt_vars_ptr,
+               &div_fluxes](auto var_tag_v) noexcept {
+                using var_tag = typename decltype(var_tag_v)::type;
+                auto& dt_var = get<::Tags::dt<var_tag>>(*dt_vars_ptr);
+                const auto& div_flux = get<::Tags::div<
+                    ::Tags::Flux<var_tag, tmpl::size_t<Dim>, Frame::Inertial>>>(
+                    div_fluxes);
+                if (dg_formulation == ::dg::Formulation::StrongInertial) {
+                  for (size_t storage_index = 0; storage_index < dt_var.size();
+                       ++storage_index) {
+                    dt_var[storage_index] -= div_flux[storage_index];
+                  }
+                } else {
+                  for (size_t storage_index = 0; storage_index < dt_var.size();
+                       ++storage_index) {
+                    dt_var[storage_index] += div_flux[storage_index];
+                  }
+                }
+              });
         });
   } else {
     (void)dg_formulation;
