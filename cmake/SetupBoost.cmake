@@ -35,14 +35,12 @@ add_interface_lib_headers(
   boost/multi_array.hpp
   boost/multi_array/base.hpp
   boost/multi_array/extent_gen.hpp
-  boost/none.hpp
   boost/numeric/odeint.hpp
   boost/numeric/odeint/integrate/integrate_adaptive.hpp>
   boost/numeric/odeint/stepper/controlled_runge_kutta.hpp
   boost/numeric/odeint/stepper/dense_output_runge_kutta.hpp
   boost/numeric/odeint/stepper/generation/make_dense_output.hpp
   boost/numeric/odeint/stepper/runge_kutta_dopri5.hpp
-  boost/optional.hpp
   boost/parameter/name.hpp
   boost/preprocessor.hpp
   boost/preprocessor/arithmetic/dec.hpp
