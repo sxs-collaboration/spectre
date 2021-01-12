@@ -38,6 +38,4 @@
               "<boost/preprocessor/facilities/apply.hpp>", public]},
   { include: ["<boost/preprocessor/detail/check.hpp>", private,
               "<boost/parameter/preprocessor.hpp>", public]},
-  { include: ["<boost/optional/optional.hpp>", public,
-              "<boost/optional.hpp>", public]},
 ]
