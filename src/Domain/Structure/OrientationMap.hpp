@@ -8,6 +8,7 @@
 #include <iosfwd>
 
 #include "Domain/Structure/Direction.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Structure/SegmentId.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Side.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -137,16 +138,25 @@ std::array<T, VolumeDim> OrientationMap<VolumeDim>::permute_from_neighbor(
 template <size_t VolumeDim, typename T>
 std::array<tt::remove_cvref_wrap_t<T>, VolumeDim> discrete_rotation(
     const OrientationMap<VolumeDim>& rotation,
-    std::array<T, VolumeDim> source_coords) noexcept {
-  using ReturnType = tt::remove_cvref_wrap_t<T>;
-  std::array<ReturnType, VolumeDim> new_coords{};
-  for (size_t i = 0; i < VolumeDim; i++) {
-    const auto new_direction = rotation(Direction<VolumeDim>(i, Side::Upper));
-    gsl::at(new_coords, i) =
-        std::move(gsl::at(source_coords, new_direction.dimension()));
-    if (new_direction.side() != Side::Upper) {
-      gsl::at(new_coords, i) *= -1.0;
-    }
-  }
-  return new_coords;
-}
+    std::array<T, VolumeDim> source_coords) noexcept;
+
+/*!
+ * \ingroup ComputationalDomainGroup
+ * \brief Computes the Jacobian of the transformation that is computed by
+ * `discrete_rotation()`
+ *
+ * \note This always returns a `double` because the Jacobian is spatially
+ * constant.
+ */
+template <size_t VolumeDim>
+tnsr::Ij<double, VolumeDim, Frame::NoFrame> discrete_rotation_jacobian(
+    const OrientationMap<VolumeDim>& orientation) noexcept;
+
+/*!
+ * \ingroup ComputationalDomainGroup
+ * \brief Computes the inverse Jacobian of the transformation that is computed
+ * by `discrete_rotation()`
+ */
+template <size_t VolumeDim>
+tnsr::Ij<double, VolumeDim, Frame::NoFrame> discrete_rotation_inverse_jacobian(
+    const OrientationMap<VolumeDim>& orientation) noexcept;
