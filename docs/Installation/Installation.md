@@ -123,22 +123,24 @@ To build with the docker image:
 
    You will end up in a bash shell in the docker container,
    as root (you need to be root).
-   Within the container, the files in SPECTRE_ROOT are available and
-   Charm++ is installed in `/work/charm`. For the following steps, stay inside
-   the docker container as root.
+   Within the container, the files in SPECTRE_ROOT are available and Charm++ is
+   installed in `/work/charm_6_10_2`. For the following steps, stay inside the
+   docker container as root.
 4. Make a build directory somewhere inside the container, e.g.
    `/work/spectre-build-gcc`, and `cd` into it.
 5. Build SpECTRE with
    ```
    cmake -D CMAKE_Fortran_COMPILER=gfortran-8 \
-         -D CHARM_ROOT=/work/charm/multicore-linux-x86_64-gcc SPECTRE_ROOT
+         -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-gcc
+         SPECTRE_ROOT
    ```
    To build with clang, the cmake command is
    ```
    cmake -D CMAKE_CXX_COMPILER=clang++ \
          -D CMAKE_C_COMPILER=clang \
          -D CMAKE_Fortran_COMPILER=gfortran-8 \
-         -D CHARM_ROOT=/work/charm/multicore-linux-x86_64-clang SPECTRE_ROOT
+         -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang
+         SPECTRE_ROOT
    ```
    When cmake configuration is done, you are ready to build target executables.
    Compile the code with `make -jN` where `N` is the number of cores to build on
@@ -156,7 +158,7 @@ To build with the docker image:
     running the code.
   * If you exit the container (e.g. ctrl-d),
     your compilation directories are still saved, as is the patch
-    that you have applied to /work/charm and any other changes to
+    that you have applied to `/work/charm_6_10_2` and any other changes to
     the container that you have made.
     To restart the container, try the following commands
     (you may need `sudo`):
@@ -225,7 +227,8 @@ To use Singularity you must:
 6. To build SpECTRE run
 ```
    cmake -D CMAKE_Fortran_COMPILER=gfortran-8 \
-         -D CHARM_ROOT=/work/charm/multicore-linux-x86_64-gcc SPECTRE_ROOT
+         -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-gcc
+         SPECTRE_ROOT
 ```
    followed by
    `make -jN` where `N` is the number of cores to build on in parallel.
@@ -246,7 +249,8 @@ Notes:
     cmake -D CMAKE_CXX_COMPILER=clang++ \
           -D CMAKE_C_COMPILER=clang \
           -D CMAKE_Fortran_COMPILER=gfortran-8 \
-          -D CHARM_ROOT=/work/charm/multicore-linux-x86_64-clang SPECTRE_ROOT
+          -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang
+          SPECTRE_ROOT
 ```
 
 ## Using Spack to set up a SpECTRE environment
