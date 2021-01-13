@@ -20,14 +20,13 @@ void weyl_psi0_impl(
     const SpinWeighted<ComplexDataVector, 0>& bondi_k,
     const SpinWeighted<ComplexDataVector, 0>& bondi_r,
     const SpinWeighted<ComplexDataVector, 0>& one_minus_y) noexcept {
-  // note: intential use of expression template instead of allocation
-  const auto dy_beta = 0.125 * one_minus_y *
-                 (dy_j * conj(dy_j) -
-                  0.25 * square(bondi_j * conj(dy_j) + conj(bondi_j) * dy_j) /
-                      square(bondi_k));
   *psi_0 = pow<4>(one_minus_y) * 0.0625 / (square(bondi_r) * bondi_k) *
-           (dy_beta * ((1.0 + bondi_k) * dy_j -
-                       square(bondi_j) * conj(dy_j) / (1.0 + bondi_k)) -
+           (0.125 * one_minus_y *
+                (dy_j * conj(dy_j) -
+                 0.25 * square(bondi_j * conj(dy_j) + conj(bondi_j) * dy_j) /
+                     square(bondi_k)) *
+                ((1.0 + bondi_k) * dy_j -
+                 square(bondi_j) * conj(dy_j) / (1.0 + bondi_k)) -
             0.5 * (1.0 + bondi_k) * dy_dy_j +
             0.5 * square(bondi_j) * conj(dy_dy_j) / (1.0 + bondi_k) +
             (-0.25 * bondi_j *
