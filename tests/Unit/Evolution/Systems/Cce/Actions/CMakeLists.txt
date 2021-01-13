@@ -24,7 +24,15 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/Cce/Actions/"
   "${LIBRARY_SOURCES}"
-  "Cce;Interpolation"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Cce
+  GeneralRelativitySolutions
+  Interpolation
   )
 
 add_dependencies(

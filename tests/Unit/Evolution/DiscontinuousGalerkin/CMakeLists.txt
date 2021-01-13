@@ -24,7 +24,19 @@ add_test_library(
   ${LIBRARY}
   "Evolution/DiscontinuousGalerkin/"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;Evolution;EvolutionDgActionsHelpers"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Boost::boost
+  CoordinateMaps
+  DiscontinuousGalerkin
+  Domain
+  Evolution
+  EvolutionDgActionsHelpers
+  Spectral
   )
 
 add_dependencies(

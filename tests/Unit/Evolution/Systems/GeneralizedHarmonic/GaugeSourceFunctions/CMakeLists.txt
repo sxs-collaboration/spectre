@@ -13,5 +13,24 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/"
   "${LIBRARY_SOURCES}"
-  "GeneralizedHarmonicGaugeSourceFunctions;Options"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  CoordinateMaps
+  DataStructures
+  Domain
+  DomainCreators
+  FunctionsOfTime
+  GeneralRelativity
+  GeneralizedHarmonic
+  GeneralizedHarmonicGaugeSourceFunctions
+  LinearOperators
+  Options
+  Parallel
+  Spectral
+  Time
+  Utilities
   )
