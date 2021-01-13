@@ -56,7 +56,7 @@ struct element_component {
 template <typename Metavariables>
 struct observer_component {
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockGroupChare;
   using array_index = int;
 
   using component_being_mocked = observers::Observer<Metavariables>;
@@ -74,7 +74,7 @@ struct observer_component {
 template <typename Metavariables>
 struct observer_writer_component {
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockNodeGroupChare;
   using array_index = int;
   using const_global_cache_tags = tmpl::list<observers::Tags::ReductionFileName,
                                              observers::Tags::VolumeFileName>;

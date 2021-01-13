@@ -77,7 +77,7 @@ template <typename Metavariables>
 struct MockVolumeDataReader {
   using component_being_mocked = importers::ElementDataReader<Metavariables>;
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockNodeGroupChare;
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,

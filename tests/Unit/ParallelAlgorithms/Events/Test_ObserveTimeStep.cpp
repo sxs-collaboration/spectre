@@ -107,7 +107,7 @@ struct MockObserverComponent {
       tmpl::list<MockContributeReductionData<Metavariables>>;
 
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockGroupChare;
   using array_index = int;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,

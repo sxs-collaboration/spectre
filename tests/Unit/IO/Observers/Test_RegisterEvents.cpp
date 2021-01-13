@@ -121,7 +121,7 @@ MockRegisterContributorWithObserver::Result
 template <typename Metavariables>
 struct MockObserverComponent {
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockGroupChare;
   using array_index = int;
   using const_global_cache_tags = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<

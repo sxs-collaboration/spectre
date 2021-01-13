@@ -115,7 +115,7 @@ struct MockObserverComponent {
 
   using metavariables = Metavariables;
   using array_index = int;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockGroupChare;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
                                         Metavariables::Phase::Initialization,
