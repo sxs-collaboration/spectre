@@ -28,6 +28,9 @@ module AlgorithmNodegroup {
 
     entry void start_phase(typename ParallelComponent::metavariables::Phase);
 
+    entry void request_sync_phase(
+        typename ParallelComponent::metavariables::Phase);
+
     template <typename Action, typename... Args>
     entry void threaded_action(std::tuple<Args...> & args);
 

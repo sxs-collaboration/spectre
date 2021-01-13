@@ -47,6 +47,17 @@ class AlgorithmArray
   using algorithm = Parallel::Algorithms::Array;
 
  public:
+  explicit AlgorithmArray(CkMigrateMessage* message) noexcept
+      : Parallel::AlgorithmImpl<
+            ParallelComponent,
+            typename ParallelComponent::phase_dependent_action_list>{message} {}
+
+  void pup(PUP::er& p) noexcept override {  // NOLINT
+    Parallel::AlgorithmImpl<
+        ParallelComponent,
+        typename ParallelComponent::phase_dependent_action_list>::pup(p);
+  }
+
   using Parallel::AlgorithmImpl<
       ParallelComponent,
       typename ParallelComponent::phase_dependent_action_list>::AlgorithmImpl;

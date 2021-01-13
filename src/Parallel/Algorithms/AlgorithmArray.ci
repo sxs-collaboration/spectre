@@ -39,6 +39,9 @@ module AlgorithmArray {
 
     entry void start_phase(typename ParallelComponent::metavariables::Phase);
 
+    entry void request_sync_phase(
+        typename ParallelComponent::metavariables::Phase);
+
     template <typename ReceiveTag, typename ReceiveData_t>
     entry void receive_data(typename ReceiveTag::temporal_id&, ReceiveData_t&,
                             bool enable_if_disabled = false);
