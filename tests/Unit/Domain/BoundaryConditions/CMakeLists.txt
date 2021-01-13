@@ -5,6 +5,7 @@ set(LIBRARY "Test_DomainBoundaryConditions")
 
 set(LIBRARY_SOURCES
   Test_BoundaryCondition.cpp
+  Test_GetBoundaryConditionsBase.cpp
   )
 
 add_test_library(
