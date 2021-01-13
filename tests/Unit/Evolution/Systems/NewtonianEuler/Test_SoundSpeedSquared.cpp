@@ -65,7 +65,9 @@ void test(const DataType& used_for_size) noexcept {
 
   const auto mass_density = make_with_random_values<Scalar<DataType>>(
       nn_generator, nn_positive_distribution, used_for_size);
-  Scalar<DataType> specific_internal_energy{};
+  const auto specific_internal_energy =
+      make_with_random_values<Scalar<DataType>>(
+          nn_generator, nn_positive_distribution, used_for_size);
   Scalar<DataType> sound_speed_squared{};
 
   // check with representative equation of state of one independent variable
