@@ -20,8 +20,8 @@
 // IWYU pragma: no_include <algorithm>
 
 void test_data_vector_multiple_operand_math() noexcept {
-  const TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
-  const TestHelpers::VectorImpl::Bound positive{{0.01, 100.0}};
+  const TestHelpers::VectorImpl::Bound generic{{-10.0, 10.0}};
+  const TestHelpers::VectorImpl::Bound positive{{0.1, 10.0}};
 
   const auto binary_ops = std::make_tuple(
       std::make_tuple(funcl::Divides<>{}, std::make_tuple(generic, positive)),
