@@ -43,6 +43,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   Domain
+  DomainBoundaryConditionsHelpers
   DomainCreators
   DomainHelpers
   Utilities
