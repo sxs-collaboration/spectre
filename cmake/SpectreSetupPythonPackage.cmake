@@ -280,6 +280,8 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       file(REMOVE "${MODULE_LOCATION}/${CURRENT_PYTHON_MODULE}.py")
     endif()
   endforeach(CURRENT_PYTHON_MODULE in ${WRITTEN_PYTHON_ALL_WITHOUT_EXTENSIONS})
+  # Sometimes we get a "[," in the files, which can give problems.
+  string(REPLACE "[," "[" INIT_FILE_OUTPUT "${INIT_FILE_OUTPUT}")
 
   # Write the __init__.py file for the module
   if(NOT ${INIT_FILE_OUTPUT} STREQUAL "${INIT_FILE_CONTENTS}")
