@@ -36,9 +36,16 @@ template <size_t VolumeDim>
 class Domain;
 template <size_t VolumeDim>
 class ElementId;
+namespace domain::BoundaryConditions {
+class BoundaryCondition;
+}  // namespace domain::BoundaryConditions
 /// \endcond
 
 // Test that the Blocks in the Domain are constructed correctly.
+//
+// The boundary conditions test assumes that the
+// `TestHelpers::domain::BoundaryConditions::TestBoundaryCondition` class is
+// used as the concrete boundary condition.
 template <size_t VolumeDim, typename TargetFrameGridOrInertial>
 void test_domain_construction(
     const Domain<VolumeDim>& domain,
@@ -54,7 +61,11 @@ void test_domain_construction(
         functions_of_time = {},
     const std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>>&
-        expected_grid_to_inertial_maps = {}) noexcept;
+        expected_grid_to_inertial_maps = {},
+    const std::vector<DirectionMap<
+        VolumeDim,
+        std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&
+        expected_boundary_conditions = {});
 
 // Test that two neighboring Blocks abut each other.
 template <size_t VolumeDim>
