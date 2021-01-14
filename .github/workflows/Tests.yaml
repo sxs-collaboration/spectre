@@ -83,6 +83,17 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      # The action above checks out the `github.ref` by default, which points to
+      # the merge commit with the target branch for pull-request events. For
+      # this job we check out the pull-request HEAD instead. It makes
+      # git-related issues easier to debug because the state matches the local
+      # repository. It also prevents releases that happened since the
+      # pull-request branch was last rebased from disrupting tests that involve
+      # the latest release tag.
+      - name: Checkout pull-request HEAD
+        if: github.event_name == 'pull_request'
+        run: |
+          git checkout ${{ github.event.pull_request.head.sha }}
       # Some tests involve release tags, which may not have been pushed to
       # forks. Fetching them here.
       - name: Fetch upstream tags on forks
