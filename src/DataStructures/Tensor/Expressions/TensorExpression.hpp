@@ -192,6 +192,8 @@ struct TensorExpression<Derived, DataType, Symm, tmpl::list<Indices...>,
   /// Typelist of the tensor indices, e.g. `_a_t` and `_b_t` in `F(_a, _b)`
   using args_list = ArgsList<Args...>;
 
+  virtual ~TensorExpression() = 0;
+
   // @{
   /// Derived is casted down to the derived class. This is enabled by the
   /// [CRTP](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern)
@@ -203,4 +205,10 @@ struct TensorExpression<Derived, DataType, Symm, tmpl::list<Indices...>,
   }
   // @}
 };
+
+template <typename Derived, typename DataType, typename Symm,
+          typename... Indices, template <typename...> class ArgsList,
+          typename... Args>
+TensorExpression<Derived, DataType, Symm, tmpl::list<Indices...>,
+                 ArgsList<Args...>>::~TensorExpression() = default;
 // @}

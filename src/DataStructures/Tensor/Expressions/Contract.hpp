@@ -138,6 +138,7 @@ struct TensorContract
   explicit TensorContract(
       const TensorExpression<T, X, Symm, IndexList, ArgsList>& t)
       : t_(~t) {}
+  ~TensorContract() override = default;
 
   template <size_t I, size_t Rank>
   SPECTRE_ALWAYS_INLINE void fill_contracting_tensor_index(

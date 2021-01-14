@@ -145,6 +145,7 @@ struct TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
   /// Construct an expression from a Tensor
   explicit TensorAsExpression(const Tensor<X, Symm, IndexList<Indices...>>& t)
       : t_(&t) {}
+  ~TensorAsExpression() override = default;
 
   // @{
   /// \cond HIDDEN_SYMBOLS
