@@ -35,7 +35,7 @@ template <typename Metavariables>
 struct Component {
   using metavariables = Metavariables;
   using component_being_mocked = void;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockSingletonChare;
   using array_index = int;
   using const_global_cache_tags = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<

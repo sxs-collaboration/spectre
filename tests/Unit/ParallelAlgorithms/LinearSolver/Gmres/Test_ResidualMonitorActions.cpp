@@ -59,9 +59,7 @@ struct MockResidualMonitor {
       LinearSolver::gmres::detail::ResidualMonitor<Metavariables, fields_tag,
                                                    TestLinearSolver>;
   using metavariables = Metavariables;
-  // We represent the singleton as an array with only one element for the action
-  // testing framework
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockSingletonChare;
   using array_index = int;
   using const_global_cache_tags =
       typename LinearSolver::gmres::detail::ResidualMonitor<

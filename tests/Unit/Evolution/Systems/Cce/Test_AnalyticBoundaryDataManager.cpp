@@ -85,7 +85,7 @@ struct mock_boundary {
   using simple_tags =
       tmpl::list<Tags::AnalyticBoundaryDataManager, ::Tags::TimeStepId>;
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockSingletonChare;
   using array_index = size_t;
   using const_global_cache_tags = tmpl::list<Tags::ObservationLMax>;
 
