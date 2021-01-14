@@ -77,12 +77,15 @@ void test_tci_detection(
   CHECK(detection == expected_detection);
 }
 
-void test_tci_on_linear_function(const size_t number_of_grid_points) noexcept {
+void test_tci_on_linear_function(
+    const size_t number_of_grid_points,
+    const Spectral::Quadrature quadrature) noexcept {
   INFO("Testing linear function...");
   CAPTURE(number_of_grid_points);
+  CAPTURE(quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+                     quadrature);
 
   // Lambda takes tvb_scale = tvb_constant * h^2, to facilitate specifying
   // critical threshold values for testing
@@ -125,12 +128,14 @@ void test_tci_on_linear_function(const size_t number_of_grid_points) noexcept {
 }
 
 void test_tci_on_quadratic_function(
-    const size_t number_of_grid_points) noexcept {
+    const size_t number_of_grid_points,
+    const Spectral::Quadrature quadrature) noexcept {
   INFO("Testing quadratic function...");
   CAPTURE(number_of_grid_points);
+  CAPTURE(quadrature);
   const auto element = TestHelpers::Limiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+                     quadrature);
 
   // Lambda takes tvb_scale = tvb_constant * h^2, to facilitate specifying
   // critical threshold values for testing
@@ -195,12 +200,14 @@ void test_tci_on_quadratic_function(
   test_tci(false, input2, 1.1, 1.9, 0.31);
 }
 
-void test_tci_at_boundary(const size_t number_of_grid_points) noexcept {
+void test_tci_at_boundary(const size_t number_of_grid_points,
+                          const Spectral::Quadrature quadrature) noexcept {
   INFO("Testing limiter at boundary...");
   CAPTURE(number_of_grid_points);
+  CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+                     quadrature);
   const auto element_size = make_array<1>(2.0);
 
   const auto input = [&mesh]() noexcept {
@@ -230,13 +237,15 @@ void test_tci_at_boundary(const size_t number_of_grid_points) noexcept {
 }
 
 void test_tci_with_different_size_neighbor(
-    const size_t number_of_grid_points) noexcept {
+    const size_t number_of_grid_points,
+    const Spectral::Quadrature quadrature) noexcept {
   INFO("Testing limiter with neighboring elements of different size...");
   CAPTURE(number_of_grid_points);
+  CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+                     quadrature);
   const double dx = 1.0;
   const auto element_size = make_array<1>(dx);
 
@@ -284,24 +293,25 @@ void test_tci_with_different_size_neighbor(
 // Check that each combination has the expected TCI behavior.
 void test_tvb_minmod_tci_1d() noexcept {
   INFO("Testing MinmodTci in 1D");
-  for (const auto num_grid_points : std::array<size_t, 2>{{2, 4}}) {
-    test_tci_on_linear_function(num_grid_points);
-    test_tci_at_boundary(num_grid_points);
-    test_tci_with_different_size_neighbor(num_grid_points);
+  for (const auto quadrature :
+       {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
+    for (const auto num_grid_points : std::array<size_t, 2>{{2, 4}}) {
+      test_tci_on_linear_function(num_grid_points, quadrature);
+      test_tci_at_boundary(num_grid_points, quadrature);
+      test_tci_with_different_size_neighbor(num_grid_points, quadrature);
+    }
+    // This test only makes sense with more than 2 grid points
+    test_tci_on_quadratic_function(3, quadrature);
+    test_tci_on_quadratic_function(4, quadrature);
   }
-  // This test only makes sense with more than 2 grid points
-  test_tci_on_quadratic_function(3);
-  test_tci_on_quadratic_function(4);
 }
 
-// In 2D, test that the dimension-by-dimension application of the TCI works as
-// expected.
-void test_tvb_minmod_tci_2d() noexcept {
-  INFO("Testing MinmodTci in 2D");
+void test_tvb_minmod_tci_2d_impl(
+    const Spectral::Quadrature quadrature) noexcept {
+  CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<2>();
-  const Mesh<2> mesh(3, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<2> mesh(3, Spectral::Basis::Legendre, quadrature);
   const auto element_size = make_array<2>(2.0);
 
   const auto test_tci =
@@ -337,14 +347,20 @@ void test_tvb_minmod_tci_2d() noexcept {
   test_tci(true, input, {{3.9, 4.2, -0.5, 2.9}});
 }
 
-// In 3D, test that the dimension-by-dimension application of the TCI works as
+// In 2D, test that the dimension-by-dimension application of the TCI works as
 // expected.
-void test_tvb_minmod_tci_3d() noexcept {
-  INFO("Testing MinmodTci in 3D");
+void test_tvb_minmod_tci_2d() noexcept {
+  INFO("Testing MinmodTci in 2D");
+  test_tvb_minmod_tci_2d_impl(Spectral::Quadrature::GaussLobatto);
+  test_tvb_minmod_tci_2d_impl(Spectral::Quadrature::Gauss);
+}
+
+void test_tvb_minmod_tci_3d_impl(
+    const Spectral::Quadrature quadrature) noexcept {
+  CAPTURE(quadrature);
   const double tvb_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<3>();
-  const Mesh<3> mesh(3, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
+  const Mesh<3> mesh(3, Spectral::Basis::Legendre, quadrature);
   const auto element_size = make_array<3>(2.0);
 
   const auto test_tci =
@@ -384,6 +400,14 @@ void test_tvb_minmod_tci_3d() noexcept {
   // Limit for xi, eta, and zeta directions
   test_tci(true, input, {{3.4, -0.1, 1.5, 2.3, 1.2, 2.1}});
   test_tci(true, input, {{3.8, 2.1, 2.1, 2.7, 2.2, 2.5}});
+}
+
+// In 3D, test that the dimension-by-dimension application of the TCI works as
+// expected.
+void test_tvb_minmod_tci_3d() noexcept {
+  INFO("Testing MinmodTci in 3D");
+  test_tvb_minmod_tci_3d_impl(Spectral::Quadrature::GaussLobatto);
+  test_tvb_minmod_tci_3d_impl(Spectral::Quadrature::Gauss);
 }
 
 struct ScalarTag : db::SimpleTag {

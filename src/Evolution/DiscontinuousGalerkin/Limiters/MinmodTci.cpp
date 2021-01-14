@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <array>
 
+#include "DataStructures/ApplyMatrices.hpp"
+#include "DataStructures/Matrix.hpp"
 #include "Domain/Structure/Element.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Side.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
@@ -24,6 +26,17 @@ bool tvb_minmod_indicator(
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
+  // Check that basis is LGL or LG. Note that...
+  // - non-Legendre bases may work "out of the box", but are untested
+  // - mixed bases may be okay in principle, but are untested
+  ASSERT(mesh.basis() == make_array<VolumeDim>(Spectral::Basis::Legendre),
+         "Unsupported basis: " << mesh);
+  ASSERT(mesh.quadrature() ==
+                 make_array<VolumeDim>(Spectral::Quadrature::GaussLobatto) or
+             mesh.quadrature() ==
+                 make_array<VolumeDim>(Spectral::Quadrature::Gauss),
+         "Unsupported quadrature: " << mesh);
+
   const double tvb_scale = [&tvb_constant, &element_size]() noexcept {
     const double max_h =
         *std::max_element(element_size.begin(), element_size.end());
@@ -40,16 +53,40 @@ bool tvb_minmod_indicator(
       };
 
   for (size_t d = 0; d < VolumeDim; ++d) {
+    double u_lower = 0.;
+    double u_upper = 0.;
     auto& boundary_buffers_d = gsl::at(buffer->boundary_buffers, d);
-    const auto& volume_and_slice_indices_d =
-        gsl::at(buffer->volume_and_slice_indices, d);
 
-    const double u_lower = mean_value_on_boundary(
-        &boundary_buffers_d, volume_and_slice_indices_d.first, u, mesh, d,
-        Side::Lower);
-    const double u_upper = mean_value_on_boundary(
-        &boundary_buffers_d, volume_and_slice_indices_d.second, u, mesh, d,
-        Side::Upper);
+    // This TCI compares mean-to-neighbor vs mean-to-cell-boundary differences.
+    // In the case of an LGL mesh, the boundary values can be read off directly,
+    // but in the case of a LG mesh, we must interpolate to the boundary.
+    if (mesh.quadrature(d) == Spectral::Quadrature::GaussLobatto) {
+      const auto& volume_and_slice_indices_d =
+          gsl::at(buffer->volume_and_slice_indices, d);
+      u_lower = mean_value_on_boundary(&boundary_buffers_d,
+                                       volume_and_slice_indices_d.first, u,
+                                       mesh, d, Side::Lower);
+      u_upper = mean_value_on_boundary(&boundary_buffers_d,
+                                       volume_and_slice_indices_d.second, u,
+                                       mesh, d, Side::Upper);
+    } else {
+      // We have Spectral::Quadrature::Gauss, so interpolate to boundary
+      const Matrix identity{};
+      auto interpolation_matrices = make_array<VolumeDim>(std::cref(identity));
+      const auto& matrices =
+          Spectral::boundary_interpolation_matrices(mesh.slice_through(d));
+      gsl::at(interpolation_matrices, d) = matrices.first;
+      apply_matrices(make_not_null(&boundary_buffers_d), interpolation_matrices,
+                     u, mesh.extents());
+      const auto boundary_mesh = mesh.slice_away(d);
+      u_lower = mean_value(boundary_buffers_d, boundary_mesh);
+
+      gsl::at(interpolation_matrices, d) = matrices.second;
+      apply_matrices(make_not_null(&boundary_buffers_d), interpolation_matrices,
+                     u, mesh.extents());
+      u_upper = mean_value(boundary_buffers_d, boundary_mesh);
+    }
+
     const double diff_lower = difference_to_neighbor(d, Side::Lower);
     const double diff_upper = difference_to_neighbor(d, Side::Upper);
 
