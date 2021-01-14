@@ -26,3 +26,5 @@ target_link_libraries(
   DomainStructure
   Utilities
   )
+
+add_subdirectory(BoundaryConditions)

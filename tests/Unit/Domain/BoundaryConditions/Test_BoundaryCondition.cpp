@@ -9,42 +9,58 @@
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Parallel/CharmPupable.hpp"
 
 namespace {
-class BoundaryCondition
-    : public domain::BoundaryConditions::BoundaryCondition {
- public:
-  BoundaryCondition() = default;
+namespace helpers = TestHelpers::domain::BoundaryConditions;
 
-  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> get_clone()
-      const noexcept override {
-    return std::make_unique<BoundaryCondition>(*this);
-  }
+template <size_t Dim>
+void test() {
+  const Direction<Dim> expected_direction = Direction<Dim>::upper_xi();
+  const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      bc_default = std::make_unique<helpers::TestBoundaryCondition<Dim>>(
+          expected_direction);
+  const auto bc_default_deserialized = serialize_and_deserialize(bc_default);
 
-  explicit BoundaryCondition(CkMigrateMessage* msg) noexcept
-      : domain::BoundaryConditions::BoundaryCondition(msg) {}
+  const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> bc =
+      std::make_unique<helpers::TestBoundaryCondition<Dim>>(expected_direction,
+                                                            10);
+  const auto bc_deserialized = serialize_and_deserialize(bc);
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-  WRAPPED_PUPable_decl_base_template(
-      domain::BoundaryConditions::BoundaryCondition, BoundaryCondition);
-#pragma GCC diagnostic pop
-
-  void pup(PUP::er& p) override {
-    domain::BoundaryConditions::BoundaryCondition::pup(p);
-  }
-};
-
-PUP::able::PUP_ID BoundaryCondition::my_PUP_ID = 0;
+  const auto perform_checks =
+      [&expected_direction](
+          const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>&
+              boundary_condition,
+          const size_t expected_block_id) {
+        const auto& derived_boundary_condition =
+            dynamic_cast<const helpers::TestBoundaryCondition<Dim>&>(
+                *boundary_condition);
+        CHECK(derived_boundary_condition.direction() == expected_direction);
+        CHECK(derived_boundary_condition.block_id() == expected_block_id);
+        CHECK(derived_boundary_condition ==
+              helpers::TestBoundaryCondition<Dim>{expected_direction,
+                                                  expected_block_id});
+        CHECK(derived_boundary_condition !=
+              helpers::TestBoundaryCondition<Dim>{expected_direction.opposite(),
+                                                  expected_block_id});
+        CHECK(derived_boundary_condition !=
+              helpers::TestBoundaryCondition<Dim>{expected_direction,
+                                                  expected_block_id + 1});
+      };
+  perform_checks(bc_default, 0);
+  perform_checks(bc_default_deserialized, 0);
+  perform_checks(bc, 10);
+  perform_checks(bc_deserialized, 10);
+}
 
 SPECTRE_TEST_CASE("Unit.Domain.BoundaryConditions.BoundaryCondition",
                   "[Unit][Domain]") {
-  PUPable_reg(BoundaryCondition);
-  const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> bc =
-      std::make_unique<BoundaryCondition>();
-  const auto bc_deserialized = serialize_and_deserialize(bc);
-  CHECK(dynamic_cast<const BoundaryCondition* const>(bc_deserialized.get()) !=
-        nullptr);
+  // This test tests both the base class and the test helpers together since
+  // they need to be compatible
+  helpers::register_derived_with_charm();
+  test<1>();
+  test<2>();
+  test<3>();
 }
 }  // namespace

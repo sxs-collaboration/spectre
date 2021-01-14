@@ -19,5 +19,6 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DomainBoundaryConditions
+  DomainBoundaryConditionsHelpers
   Utilities
   )
