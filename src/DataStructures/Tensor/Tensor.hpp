@@ -16,6 +16,7 @@
 #include "DataStructures/ModalVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/Expressions/Contract.hpp"
+#include "DataStructures/Tensor/Expressions/TensorAsExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
@@ -126,8 +127,8 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   /// The type of the TensorExpression that would represent this Tensor in a
   /// tensor expression.
   template <typename ArgsList>
-  using TE = TensorExpression<Tensor<X, Symm, tmpl::list<Indices...>>, X, Symm,
-                              tmpl::list<Indices...>, ArgsList>;
+  using TE = TensorExpressions::TensorAsExpression<
+      Tensor<X, Symm, IndexList<Indices...>>, ArgsList>;
 
   Tensor() = default;
   ~Tensor() = default;
