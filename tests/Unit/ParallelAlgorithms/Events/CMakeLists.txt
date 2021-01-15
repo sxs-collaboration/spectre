@@ -14,10 +14,22 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/Events/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Domain;ErrorHandling;IO;Spectral;Time;Utilities"
+  ""
   )
 
 add_dependencies(
   ${LIBRARY}
   module_GlobalCache
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PUBLIC
+  CoordinateMaps
+  DataStructures
+  Domain
+  ErrorHandling
+  IO;Spectral
+  Time
+  Utilities
+)

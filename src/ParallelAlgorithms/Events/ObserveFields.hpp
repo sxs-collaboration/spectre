@@ -17,6 +17,8 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TensorData.hpp"
+#include "Domain/ElementMap.hpp"
+#include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
@@ -180,14 +182,12 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         PARSE_ERROR(context, name << " specified multiple times");
       }
     }
-    variables_to_observe_.insert(coordinates_tag::name());
   }
 
-  using argument_tags =
-      tmpl::list<ObservationValueTag, domain::Tags::Mesh<VolumeDim>,
-                 coordinates_tag, AnalyticSolutionTensors...,
-                 ::Tags::Analytic<AnalyticSolutionTensors>...,
-                 NonSolutionTensors...>;
+  using argument_tags = tmpl::list<
+      ObservationValueTag, domain::Tags::Mesh<VolumeDim>, coordinates_tag,
+      domain::Tags::ElementMap<VolumeDim>, AnalyticSolutionTensors...,
+      ::Tags::Analytic<AnalyticSolutionTensors>..., NonSolutionTensors...>;
 
   template <typename Metavariables, typename ParallelComponent>
   void operator()(
@@ -195,6 +195,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       const Mesh<VolumeDim>& mesh,
       const tnsr::I<DataVector, VolumeDim, Frame::Inertial>&
           inertial_coordinates,
+      const ElementMap<VolumeDim, Frame::Inertial>& element_map,
       const typename AnalyticSolutionTensors::
           type&... analytic_solution_tensors,
       const typename ::Tags::Analytic<
@@ -223,6 +224,17 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
             NonSolutionTensors::type::size()...},
         0_st));
 
+    // interpolated coordinates can be calculated exactly with element_map
+    auto mapped_coordinates =
+        interpolation_mesh_.has_value()
+            ? element_map(logical_coordinates(*interpolation_mesh_))
+            : inertial_coordinates;
+    for (size_t i = 0; i < VolumeDim; ++i) {
+      components.emplace_back(element_name + coordinates_tag::name() +
+                                  inertial_coordinates.component_suffix(i),
+                              std::move(mapped_coordinates[i]));
+    }
+
     const auto record_tensor_components = [this, &components, &element_name,
                                            &interpolant](
                                               const auto tensor_tag_v,
@@ -236,8 +248,6 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         }
       }
     };
-    record_tensor_components(tmpl::type_<coordinates_tag>{},
-                             inertial_coordinates);
     EXPAND_PACK_LEFT_TO_RIGHT(record_tensor_components(
         tmpl::type_<AnalyticSolutionTensors>{}, analytic_solution_tensors));
     EXPAND_PACK_LEFT_TO_RIGHT(record_tensor_components(

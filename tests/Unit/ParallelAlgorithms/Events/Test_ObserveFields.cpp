@@ -19,6 +19,12 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TensorData.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/ElementMap.hpp"
+#include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -294,6 +300,29 @@ struct ComplicatedSystem {
   }
 };
 
+template <size_t dim>
+auto get_coordinate_map() {
+  using Affine = domain::CoordinateMaps::Affine;
+  static_assert(dim == 1 or dim == 2,
+                "coordinate map only implemented for dimensions 1 and 2");
+
+  if constexpr (dim == 1) {
+    const Affine affine_map{-1.0, 1.0, 0.5, 1.0};
+    auto coordinate_map =
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            affine_map);
+    return coordinate_map;
+  } else if constexpr (dim == 2) {
+    domain::CoordinateMaps::ProductOf2Maps<Affine, Affine> affine_map{
+        Affine{-1.0, 1.0, 0.5, 1.0}, Affine{-1.0, 1.0, -1.0, 0.0}};
+
+    auto coordinate_map =
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            affine_map);
+    return coordinate_map;
+  }
+}
+
 template <typename System, typename ObserveEvent>
 void test_observe(const std::unique_ptr<ObserveEvent> observe,
                   const std::optional<Mesh<System::volume_dim>>&
@@ -302,8 +331,6 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
   static constexpr auto volume_dim = System::volume_dim;
-  using coordinates_tag =
-      domain::Tags::Coordinates<volume_dim, Frame::Inertial>;
 
   const ElementId<volume_dim> element_id(2);
   const typename element_component::array_index array_index(element_id);
@@ -313,20 +340,23 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
 
   const intrp::RegularGrid interpolant(mesh, interpolating_mesh.value_or(mesh));
   const double observation_time = 2.0;
-  Variables<
-      tmpl::push_back<typename System::all_vars_for_test, coordinates_tag>>
-      vars(mesh.number_of_grid_points());
+  Variables<typename System::all_vars_for_test> vars(
+      mesh.number_of_grid_points());
   // Fill the variables with some data.  It doesn't matter much what,
   // but integers are nice in that we don't have to worry about
   // roundoff error.
   // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   std::iota(vars.data(), vars.data() + vars.size(), 1.0);
 
+  auto element_map = ElementMap<volume_dim, Frame::Inertial>(
+      element_id, get_coordinate_map<volume_dim>());
+  const auto coordinates = element_map(logical_coordinates<volume_dim>(mesh));
+
   const typename System::solution_for_test analytic_solution{};
   using solution_variables = typename System::solution_for_test::vars_for_test;
   const Variables<db::wrap_tags_in<Tags::Analytic, solution_variables>>
       solutions{variables_from_tagged_tuple(analytic_solution.variables(
-          get<coordinates_tag>(vars), observation_time, solution_variables{}))};
+          coordinates, observation_time, solution_variables{}))};
   const Variables<solution_variables> errors =
       vars.template extract_subset<solution_variables>() - solutions;
 
@@ -342,9 +372,12 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
 
   const auto box = db::create<db::AddSimpleTags<
       ObservationTimeTag, domain::Tags::Mesh<volume_dim>,
+      domain::Tags::ElementMap<volume_dim>,
+      domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
       Tags::Variables<typename decltype(vars)::tags_list>,
       db::add_tag_prefix<Tags::Analytic, Tags::Variables<solution_variables>>>>(
-      observation_time, mesh, vars, solutions);
+      observation_time, mesh, std::move(element_map), coordinates, vars,
+      solutions);
 
   observe->run(box, runner.cache(), array_index,
                std::add_pointer_t<element_component>{});
@@ -374,37 +407,45 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
   // gcc 6.4.0 gets confused if we try to capture tensor_data by
   // reference and fails to compile because it wants it to be
   // non-const, so we capture a pointer instead.
-  const auto check_component =
-      [&element_name, &num_components_observed,
-       tensor_data = &results.in_received_tensor_data, &interpolant](
-          const std::string& component, const DataVector& expected) noexcept {
-        CAPTURE(*tensor_data);
-        CAPTURE(component);
-        const auto it =
-            alg::find_if(*tensor_data, [name = element_name + "/" + component](
-                                           const TensorComponent& tc) noexcept {
-              return tc.name == name;
-            });
-        CHECK(it != tensor_data->end());
-        if (it != tensor_data->end()) {
-          CHECK(it->data == interpolant.interpolate(expected));
-        }
-        ++num_components_observed;
-      };
+  const auto check_component = [&element_name, &num_components_observed,
+                                tensor_data = &results.in_received_tensor_data](
+                                   const std::string& component,
+                                   const DataVector& expected) noexcept {
+    CAPTURE(*tensor_data);
+    CAPTURE(component);
+    const auto it = alg::find_if(
+        *tensor_data,
+        [name = element_name + "/" + component](
+            const TensorComponent& tc) noexcept { return tc.name == name; });
+    CHECK(it != tensor_data->end());
+    if (it != tensor_data->end()) {
+      CHECK(it->data == expected);
+    }
+    ++num_components_observed;
+  };
+
+  const auto& db_element_map =
+      db::get<domain::Tags::ElementMap<volume_dim>>(box);
+  const auto interpolated_coordinates =
+      db_element_map(logical_coordinates(interpolating_mesh.value_or(mesh)));
+
   for (size_t i = 0; i < volume_dim; ++i) {
     check_component(
         std::string("InertialCoordinates_") + gsl::at({'x', 'y', 'z'}, i),
-        get<coordinates_tag>(vars).get(i));
+        interpolated_coordinates.get(i));
   }
-  System::check_data([&check_component, &vars](const std::string& name,
-                                               auto tag,
-                                               const auto... indices) noexcept {
-    check_component(name, get<decltype(tag)>(vars).get(indices...));
-  });
+
+  System::check_data(
+      [&check_component, &vars, &interpolant](const std::string& name, auto tag,
+                                              const auto... indices) noexcept {
+        check_component(name, interpolant.interpolate(
+                                  get<decltype(tag)>(vars).get(indices...)));
+      });
   System::solution_for_test::check_data(
-      [&check_component, &errors](const std::string& name, auto tag,
-                                  const auto... indices) noexcept {
-        check_component(name, get<decltype(tag)>(errors).get(indices...));
+      [&check_component, &errors, &interpolant](
+          const std::string& name, auto tag, const auto... indices) noexcept {
+        check_component(name, interpolant.interpolate(
+                                  get<decltype(tag)>(errors).get(indices...)));
       });
   CHECK(results.in_received_tensor_data.size() == num_components_observed);
 }
