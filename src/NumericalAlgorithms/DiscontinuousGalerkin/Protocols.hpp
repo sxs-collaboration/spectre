@@ -94,15 +94,12 @@ struct NumericalFlux {
     using argument_tags = typename ConformingType::argument_tags;
     using package_field_tags = typename ConformingType::package_field_tags;
     using package_extra_tags = typename ConformingType::package_extra_tags;
-    // We can't currently check that the package_data function is callable
-    // because the `argument_tags` may contain base tags and we can't resolve
-    // their types.
-    static_assert(
-        std::is_same_v<typename detail::TestCallOperatorImpl<
-                           ConformingType, variables_tags, package_field_tags,
-                           package_extra_tags>::type,
-                       void>,
-        "The 'operator()' must return 'void'.");
+    // - We can't currently check that the package_data function is callable
+    //   because the `argument_tags` may contain base tags and we can't resolve
+    //   their types.
+    // - The evolution schemes don't follow the interface documented above
+    //   anymore, so we relax the conditions and don't check for a valid call
+    //   operator to make the transition easier.
   };
 };
 

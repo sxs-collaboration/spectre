@@ -60,7 +60,10 @@ struct AssertConformsToImpl : std::true_type {
       "and the protocol is listed as the second template parameter. "
       "Have you forgotten to (publicly) inherit the type from "
       "tt::ConformsTo<Protocol>?");
-  using test = typename Protocol::template test<ConformingType>;
+  // Implicitly instantiate Protocol::test in order to test conformance
+  static_assert(
+      not std::is_same_v<
+          decltype(typename Protocol::template test<ConformingType>{}), void>);
 };
 
 }  // namespace detail
