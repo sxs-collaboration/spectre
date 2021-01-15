@@ -522,6 +522,7 @@ void test_nsbh_equidistant_factory() {
 }
 }  // namespace
 
+// [[Timeout, 6]]
 SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject.FactoryTests",
                   "[Domain][Unit]") {
   test_connectivity();
