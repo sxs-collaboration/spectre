@@ -34,6 +34,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -186,12 +187,10 @@ void test_refinement_levels_of_neighbors(
 template <size_t VolumeDim>
 bool blocks_are_neighbors(const Block<VolumeDim>& host_block,
                           const Block<VolumeDim>& neighbor_block) noexcept {
-  for (const auto& neighbor : host_block.neighbors()) {
-    if (neighbor.second.id() == neighbor_block.id()) {
-      return true;
-    }
-  }
-  return false;
+  return alg::any_of(host_block.neighbors(),
+                     [&neighbor_block](const auto& neighbor) {
+                       return neighbor.second.id() == neighbor_block.id();
+                     });
 }
 
 // Finds the OrientationMap of a neighboring Block relative to a host Block.
