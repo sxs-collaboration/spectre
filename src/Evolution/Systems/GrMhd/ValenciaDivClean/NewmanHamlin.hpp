@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <cstddef>
+#include <optional>
 #include <string>
 
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -50,7 +50,7 @@ struct PrimitiveRecoveryData;
 class NewmanHamlin {
  public:
   template <size_t ThermodynamicDim>
-  static boost::optional<PrimitiveRecoveryData> apply(
+  static std::optional<PrimitiveRecoveryData> apply(
       double initial_guess_for_pressure, double total_energy_density,
       double momentum_density_squared,
       double momentum_density_dot_magnetic_field, double magnetic_field_squared,

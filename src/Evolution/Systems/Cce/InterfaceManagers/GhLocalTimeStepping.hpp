@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <deque>
 #include <memory>
+#include <optional>
 #include <tuple>
 
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -98,11 +98,11 @@ class GhLocalTimeStepping : public GhInterfaceManager {
   /// output from the provided GH data.
   void request_gh_data(const TimeStepId& time_id) noexcept override;
 
-  /// \brief Return a `boost::optional` of either the dense-output data at the
-  /// least recently requested time, or `boost::none` if not enough GH data has
+  /// \brief Return a `std::optional` of either the dense-output data at the
+  /// least recently requested time, or `std::nullopt` if not enough GH data has
   /// been supplied yet.
   auto retrieve_and_remove_first_ready_gh_data() noexcept
-      -> boost::optional<std::tuple<TimeStepId, gh_variables>> override;
+      -> std::optional<std::tuple<TimeStepId, gh_variables>> override;
 
   /// The number of requests that have been submitted and not yet retrieved.
   size_t number_of_pending_requests() const noexcept override {
@@ -132,8 +132,8 @@ class GhLocalTimeStepping : public GhInterfaceManager {
   size_t order_ = 3;
 
   std::deque<
-      std::tuple<TimeStepId, boost::optional<gh_variables>,
-                 boost::optional<TimeStepId>, boost::optional<dt_gh_variables>>>
+      std::tuple<TimeStepId, std::optional<gh_variables>,
+                 std::optional<TimeStepId>, std::optional<dt_gh_variables>>>
       pre_history_;
   std::deque<TimeStepId> requests_;
 

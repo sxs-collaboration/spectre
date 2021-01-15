@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <array>
-#include <boost/none.hpp>
 #include <cmath>
 #include <limits>
 
@@ -21,7 +20,7 @@
 namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes {
 
 template <size_t ThermodynamicDim>
-boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
+std::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
     const double initial_guess_for_pressure, const double total_energy_density,
     const double momentum_density_squared,
     const double momentum_density_dot_magnetic_field,
@@ -40,13 +39,13 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
                square(momentum_density_dot_magnetic_field));
     if (UNLIKELY(-1e-12 * square(momentum_density_dot_magnetic_field) >
                  local_d_in_cubic)) {
-      return local_d_in_cubic;  // will fail returning boost::none
+      return local_d_in_cubic;  // will fail returning std::nullopt
     }
     return std::max(0.0, local_d_in_cubic);
   }
   ();
   if (UNLIKELY(0.0 > d_in_cubic)) {
-    return boost::none;
+    return std::nullopt;
   }
 
   // bound needed so cubic equation has a positive root
@@ -66,7 +65,7 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
   while (true) {  // will break when relative pressure change is <
                   // relative_tolernance_
     if (UNLIKELY(max_iterations_ == iteration_step and not converged)) {
-      return boost::none;
+      return std::nullopt;
     }
 
     ++iteration_step;
@@ -77,7 +76,7 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
         total_energy_density + current_pressure + 0.5 * magnetic_field_squared;
 
     if (UNLIKELY(a_in_cubic < 0.0)) {
-      return boost::none;
+      return std::nullopt;
     }
 
     // NH Eq. (5.10): d = (4/27) a^3 cos^2(phi)
@@ -91,7 +90,7 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
     const double rho_h_w_squared = root_of_cubic - magnetic_field_squared;
 
     if (UNLIKELY(rho_h_w_squared <= 0.0)) {
-      return boost::none;
+      return std::nullopt;
     }
 
     // NH Eq. (5.2) with (5.5) substituted in denominator
@@ -103,9 +102,9 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
 
     // If this fails, there was code in the Bitbucket version that adjusted
     // the pressure to get the maximum allowed velocity in atmosphere.
-    // Instead, we could return boost::none and try the next inversion method.
+    // Instead, we could return std::nullopt and try the next inversion method.
     if (UNLIKELY(v_squared < 0.0 or v_squared >= 1.0)) {
-      return boost::none;
+      return std::nullopt;
     }
 
     const double current_lorentz_factor = sqrt(1.0 / (1.0 - v_squared));
@@ -125,13 +124,13 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
           rho_h_w_squared /
           (current_rest_mass_density * square(current_lorentz_factor));
       if (UNLIKELY(1.0 - 1.0e-12 > specific_enthalpy)) {
-        return specific_enthalpy;  // will fail returning boost::none
+        return specific_enthalpy;  // will fail returning std::nullopt
       }
       return std::max(1.0, specific_enthalpy);
     }
     ();
     if (UNLIKELY(1.0 > current_specific_enthalpy)) {
-      return boost::none;
+      return std::nullopt;
     }
 
     if constexpr (ThermodynamicDim == 1) {
@@ -173,17 +172,17 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
 }  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
 
 #define THERMODIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATION(_, data)                                                 \
-  template boost::optional<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes:: \
-                               PrimitiveRecoveryData>                          \
-  grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin::apply<      \
-      THERMODIM(data)>(                                                        \
-      const double initial_guess_pressure, const double total_energy_density,  \
-      const double momentum_density_squared,                                   \
-      const double momentum_density_dot_magnetic_field,                        \
-      const double magnetic_field_squared,                                     \
-      const double rest_mass_density_times_lorentz_factor,                     \
-      const EquationsOfState::EquationOfState<true, THERMODIM(data)>&          \
+#define INSTANTIATION(_, data)                                                \
+  template std::optional<grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::  \
+                             PrimitiveRecoveryData>                           \
+  grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin::apply<     \
+      THERMODIM(data)>(                                                       \
+      const double initial_guess_pressure, const double total_energy_density, \
+      const double momentum_density_squared,                                  \
+      const double momentum_density_dot_magnetic_field,                       \
+      const double magnetic_field_squared,                                    \
+      const double rest_mass_density_times_lorentz_factor,                    \
+      const EquationsOfState::EquationOfState<true, THERMODIM(data)>&         \
           equation_of_state) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))

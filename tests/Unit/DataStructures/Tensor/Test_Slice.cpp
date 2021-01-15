@@ -123,7 +123,7 @@ void test_variables_slice() noexcept {
                     extents, 0, x_offset)
           .has_value());
 
-  // Test not_null<boost::option<Tensor>>
+  // Test not_null<std::optional<Tensor>> interface
   using TensorType = tnsr::I<VectorType, 3>;
   auto optional_tensor = std::make_optional(TensorType{});
   CHECK(optional_tensor.has_value());

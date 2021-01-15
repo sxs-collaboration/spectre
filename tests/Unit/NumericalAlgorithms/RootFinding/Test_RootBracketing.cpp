@@ -3,9 +3,8 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/none.hpp>
-#include <boost/optional.hpp>
 #include <cmath>
+#include <optional>
 #include <random>
 
 #include "DataStructures/DataVector.hpp"
@@ -15,28 +14,28 @@
 #include "Utilities/Gsl.hpp"
 
 namespace {
-boost::optional<double> f_free(double x) noexcept {
-  return (x < 1.0 or x > 2.0) ? boost::none
-                              : boost::optional<double>(2.0 - square(x));
+std::optional<double> f_free(double x) noexcept {
+  return (x < 1.0 or x > 2.0) ? std::nullopt
+                              : std::optional<double>(2.0 - square(x));
 }
 struct F {
-  boost::optional<double> operator()(double x) const noexcept {
-    return (x < 1.0 or x > 2.0) ? boost::none
-                                : boost::optional<double>(2.0 - square(x));
+  std::optional<double> operator()(double x) const noexcept {
+    return (x < 1.0 or x > 2.0) ? std::nullopt
+                                : std::optional<double>(2.0 - square(x));
   }
 };
 
 template <typename Function>
 void test_bracketing_simple_one_function(
     const Function& f, const std::array<double, 2>& bounds,
-    const boost::optional<double>& guess) noexcept {
+    const std::optional<double>& guess) noexcept {
   double lower = bounds[0];
   double upper = bounds[1];
   double f_at_lower = std::numeric_limits<double>::signaling_NaN();
   double f_at_upper = std::numeric_limits<double>::signaling_NaN();
-  if (guess) {
+  if (guess.has_value()) {
     RootFinder::bracket_possibly_undefined_function_in_interval(
-        &lower, &upper, &f_at_lower, &f_at_upper, f, guess.get());
+        &lower, &upper, &f_at_lower, &f_at_upper, f, guess.value());
   } else {
     RootFinder::bracket_possibly_undefined_function_in_interval(
         &lower, &upper, &f_at_lower, &f_at_upper, f);
@@ -48,10 +47,10 @@ void test_bracketing_simple_one_function(
 
 void test_bracketing_simple_multiple_functions(
     const std::array<double, 2>& bounds,
-    const boost::optional<double>& guess) noexcept {
-  const auto f_lambda = [](double x) noexcept->boost::optional<double> {
-    return (x < 1.0 or x > 2.0) ? boost::none
-                                : boost::optional<double>(2.0 - square(x));
+    const std::optional<double>& guess) noexcept {
+  const auto f_lambda = [](double x) noexcept -> std::optional<double> {
+    return (x < 1.0 or x > 2.0) ? std::nullopt
+                                : std::optional<double>(2.0 - square(x));
   };
   const F f_functor{};
 
@@ -87,7 +86,7 @@ void test_bracketing_simple() noexcept {
 
   const auto test_with_and_without_guess =
       [&gen, &unit_dis ](const std::array<double, 2>& bounds) noexcept {
-    test_bracketing_simple_multiple_functions(bounds, boost::none);
+    test_bracketing_simple_multiple_functions(bounds, std::nullopt);
     test_bracketing_simple_multiple_functions(
         bounds, bounds[0] + unit_dis(gen) * (bounds[1] - bounds[0]));
   };
@@ -117,21 +116,22 @@ void test_bracketing_datavector() noexcept {
                       unit_dis(gen)};
 
   const auto f_lambda = [](double x,
-                           size_t /*i*/) noexcept->boost::optional<double> {
-    return (x < 1.0 or x > 2.0) ? boost::none
-                                : boost::optional<double>(2.0 - square(x));
+                           size_t /*i*/) noexcept -> std::optional<double> {
+    return (x < 1.0 or x > 2.0) ? std::nullopt
+                                : std::optional<double>(2.0 - square(x));
   };
 
   const auto do_test = [&f_lambda](
       DataVector lower_l, DataVector upper_l,
-      const boost::optional<DataVector>& guess) noexcept {
+      const std::optional<DataVector>& guess) noexcept {
     DataVector f_at_lower(lower_l.size(),
                           std::numeric_limits<double>::signaling_NaN());
     DataVector f_at_upper(upper_l.size(),
                           std::numeric_limits<double>::signaling_NaN());
-    if (guess) {
+    if (guess.has_value()) {
       RootFinder::bracket_possibly_undefined_function_in_interval(
-          &lower_l, &upper_l, &f_at_lower, &f_at_upper, f_lambda, guess.get());
+          &lower_l, &upper_l, &f_at_lower, &f_at_upper, f_lambda,
+          guess.value());
     } else {
       RootFinder::bracket_possibly_undefined_function_in_interval(
           &lower_l, &upper_l, &f_at_lower, &f_at_upper, f_lambda);
@@ -143,7 +143,7 @@ void test_bracketing_datavector() noexcept {
     }
   };
 
-  do_test(lower, upper, boost::none);
+  do_test(lower, upper, std::nullopt);
   do_test(lower, upper, DataVector(lower + (upper - lower) * unit_dis(gen)));
 }
 

@@ -113,7 +113,7 @@ class CubicScale {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) const noexcept;
 
-  /// Returns boost::none if the point is outside the range of the map.
+  /// Returns std::nullopt if the point is outside the range of the map.
   template <typename T>
   std::optional<std::array<tt::remove_cvref_wrap_t<T>, Dim>> inverse(
       const std::array<T, Dim>& target_coords, double time,

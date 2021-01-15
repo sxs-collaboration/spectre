@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
 #include <cstddef>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -70,7 +70,7 @@ struct ReceivePoints {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id,
-      std::vector<boost::optional<
+      std::vector<std::optional<
           IdPair<domain::BlockId,
                  tnsr::I<double, VolumeDim, typename ::Frame::Logical>>>>&&
           block_logical_coords) noexcept {

@@ -98,7 +98,7 @@ class SpecialMobius {
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
       const std::array<T, 3>& source_coords) const noexcept;
 
-  /// Returns boost::none for target_coords outside the unit sphere.
+  /// Returns std::nullopt for target_coords outside the unit sphere.
   std::optional<std::array<double, 3>> inverse(
       const std::array<double, 3>& target_coords) const noexcept;
 

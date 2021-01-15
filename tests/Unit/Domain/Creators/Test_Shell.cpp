@@ -540,7 +540,7 @@ void test_radial_block_layers(const double inner_radius,
   const auto blogical_coords =
       block_logical_coordinates(domain, interior_inertial_coords);
   for (size_t s = 0; s < expected_block_ids.size(); ++s) {
-    CHECK(blogical_coords[s].get().id.get_index() == expected_block_ids[s]);
+    CHECK(blogical_coords[s].value().id.get_index() == expected_block_ids[s]);
   }
   size_t element_count = 0;
   for (const auto& block : domain.blocks()) {

@@ -3,8 +3,6 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/optional.hpp>
-#include <boost/optional/optional_io.hpp>
 #include <string>
 
 #include "Framework/TestHelpers.hpp"
@@ -46,10 +44,4 @@ SPECTRE_TEST_CASE("Unit.Utilities.BoostHelpers.Variant.Names",
   CHECK(type_of_current_state(var = 1) == "int");
   CHECK(type_of_current_state(var = 'A') == "char");
   CHECK(type_of_current_state(var = 2.8) == "double");
-}
-
-SPECTRE_TEST_CASE("Unit.Utilities.BoostHelpers.Optional.Pup",
-                  "[Unit][Utilities]") {
-  test_serialization(boost::optional<double>{});
-  test_serialization(boost::optional<double>{1.2});
 }

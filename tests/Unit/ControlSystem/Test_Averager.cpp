@@ -5,8 +5,8 @@
 
 #include <algorithm>
 #include <array>
-#include <boost/optional/optional.hpp>
 #include <cstddef>
+#include <optional>
 #include <type_traits>
 
 #include "ControlSystem/Averager.hpp"
@@ -39,7 +39,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.Linear",
     averager_f.update(t, {analytic_func[0]}, {0.1});
     // compare values once averager has sufficient data
     if (averager_t(t)) {
-      const auto result_t = averager_t(t).get();
+      const auto result_t = averager_t(t).value();
       // check function value, which should agree with the effective time
       CHECK(approx(result_t[0][0]) == averager_t.average_time(t));
       // check first derivative
@@ -51,7 +51,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.Linear",
       CHECK(custom_approx(result_t[2][0]) == analytic_func[2]);
     }
     if (averager_f(t)) {
-      const auto result_f = averager_f(t).get();
+      const auto result_f = averager_f(t).value();
       // check function value, which should agree with the true time `t`
       CHECK(approx(result_f[0][0]) == t);
       // check first derivative
@@ -116,7 +116,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.SemiAnalytic",
       avg_values[1] = alpha * analytic_func[1] + (1.0 - alpha) * avg_values[1];
       avg_values[2] = alpha * analytic_func[2] + (1.0 - alpha) * avg_values[2];
 
-      auto result = averager(t).get();
+      auto result = averager(t).value();
 
       // check that the effective times agree with the averaged time
       CHECK(approx(averager.average_time(t)) == avg_time);
@@ -163,7 +163,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.Functionality",
   averager.update(t, {t}, {0.1});
   // data should be valid now
   CHECK(static_cast<bool>(averager(t)));
-  CHECK(averager(t).get()[0][0] == t);
+  CHECK(averager(t).value()[0][0] == t);
   t += dt;
   // data should currently be invalid since there was no update at this new `t`
   CHECK_FALSE(static_cast<bool>(averager(t)));
@@ -264,14 +264,14 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.TestMove",
   auto last_time = averager.last_time_updated();
   auto avg_time = averager.average_time(0.9);
   auto avg_q = averager.using_average_0th_deriv_of_q();
-  auto avg_values = averager(0.9).get();
+  auto avg_values = averager(0.9).value();
   // test move constructor
   auto new_averager(std::move(averager));
   // check moved values against stored values
   CHECK(last_time == new_averager.last_time_updated());
   CHECK(avg_time == new_averager.average_time(0.9));
   CHECK(avg_q == new_averager.using_average_0th_deriv_of_q());
-  CHECK(avg_values[0][0] == new_averager(0.9).get()[0][0]);
+  CHECK(avg_values[0][0] == new_averager(0.9).value()[0][0]);
   // test move assignment
   Averager<2> new_averager2(0.1, true);
   new_averager2 = std::move(new_averager);
@@ -279,5 +279,5 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Averager.TestMove",
   CHECK(last_time == new_averager2.last_time_updated());
   CHECK(avg_time == new_averager2.average_time(0.9));
   CHECK(avg_q == new_averager2.using_average_0th_deriv_of_q());
-  CHECK(avg_values[0][0] == new_averager2(0.9).get()[0][0]);
+  CHECK(avg_values[0][0] == new_averager2(0.9).value()[0][0]);
 }

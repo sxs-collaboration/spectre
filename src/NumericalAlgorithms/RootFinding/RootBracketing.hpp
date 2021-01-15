@@ -3,8 +3,7 @@
 
 #pragma once
 
-#include <boost/none.hpp>
-#include <boost/optional.hpp>
+#include <optional>
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
@@ -14,13 +13,13 @@
 namespace RootFinder {
 namespace bracketing_detail {
 // Brackets a root, given a functor f(x) that returns a
-// boost::optional<double> and given two arrays x and y (with y=f(x))
+// std::optional<double> and given two arrays x and y (with y=f(x))
 // containing points that have already been tried for bracketing.
 //
 // Returns a std::array<double,4> containing {{x1,x2,y1,y2}} where
 // x1 and x2 bracket the root, and y1=f(x1) and y2=f(x2).
 //
-// Note that y might be undefined (i.e. an invalid boost::optional)
+// Note that y might be undefined (i.e. an invalid std::optional)
 // for values of x at or near the endpoints of the interval.  We
 // assume that if f(x1) and f(x2) are valid for some x1 and x2, then
 // f(x) is valid for all x between x1 and x2.
@@ -54,7 +53,7 @@ namespace bracketing_detail {
 // only between points 1 and 2.
 template <typename Functor>
 std::array<double, 4> bracket_by_contracting(
-    const std::vector<double>& x, const std::vector<boost::optional<double>>& y,
+    const std::vector<double>& x, const std::vector<std::optional<double>>& y,
     const Functor& f, const size_t level = 0) noexcept {
   constexpr size_t max_level = 6;
   if (level > max_level) {
@@ -65,7 +64,7 @@ std::array<double, 4> bracket_by_contracting(
   // First check if we have any valid points.
   size_t last_valid_index = y.size();
   for (size_t i = y.size(); i >= 1; --i) {
-    if (y[i - 1]) {
+    if (y[i - 1].has_value()) {
       last_valid_index = i - 1;
       break;
     }
@@ -77,7 +76,7 @@ std::array<double, 4> bracket_by_contracting(
     // Create larger arrays with one point between each of the already
     // computed points.
     std::vector<double> bisected_x(x.size() * 2 - 1);
-    std::vector<boost::optional<double>> bisected_y(y.size() * 2 - 1);
+    std::vector<std::optional<double>> bisected_y(y.size() * 2 - 1);
 
     // Copy all even-numbered points in the range.
     for (size_t i = 0; i < x.size(); ++i) {
@@ -89,7 +88,7 @@ std::array<double, 4> bracket_by_contracting(
     for (size_t i = 0; i < x.size() - 1; ++i) {
       bisected_x[2 * i + 1] = x[i] + 0.5 * (x[i + 1] - x[i]);
       bisected_y[2 * i + 1] = f(bisected_x[2 * i + 1]);
-      if (bisected_y[2 * i + 1]) {
+      if (bisected_y[2 * i + 1].has_value()) {
         // Valid point! We know that all the other points are
         // invalid, so we need to check only 3 points in the next
         // iteration: the new valid point and its neighbors.
@@ -109,7 +108,7 @@ std::array<double, 4> bracket_by_contracting(
   // Find the first valid point in the array.
   size_t first_valid_index = 0;
   for (size_t i = 0; i < y.size(); ++i) {
-    if (y[i]) {
+    if (y[i].has_value()) {
       first_valid_index = i;
       break;
     }
@@ -118,7 +117,7 @@ std::array<double, 4> bracket_by_contracting(
   // Make a new set of points that includes only the points that
   // neighbor the boundary between valid and invalid points.
   std::vector<double> x_near_valid_point;
-  std::vector<boost::optional<double>> y_near_valid_point;
+  std::vector<std::optional<double>> y_near_valid_point;
 
   if (first_valid_index == 0 and last_valid_index == y.size() - 1) {
     ERROR(
@@ -132,10 +131,12 @@ std::array<double, 4> bracket_by_contracting(
         x[first_valid_index - 1] +
         0.5 * (x[first_valid_index] - x[first_valid_index - 1]);
     const auto y_test = f(x_test);
-    if (y_test and y[first_valid_index].get() * y_test.get() <= 0.0) {
+    if (y_test.has_value() and
+        y[first_valid_index].value() * y_test.value() <= 0.0) {
       // Bracketed!
-      return std::array<double, 4>{{x_test, x[first_valid_index], y_test.get(),
-                                    y[first_valid_index].get()}};
+      return std::array<double, 4>{{x_test, x[first_valid_index],
+                                    y_test.value(),
+                                    y[first_valid_index].value()}};
     } else {
       x_near_valid_point.push_back(x[first_valid_index - 1]);
       y_near_valid_point.push_back(y[first_valid_index - 1]);
@@ -150,10 +151,12 @@ std::array<double, 4> bracket_by_contracting(
     const double x_test = x[last_valid_index] +
                           0.5 * (x[last_valid_index + 1] - x[last_valid_index]);
     const auto y_test = f(x_test);
-    if (y_test and y[last_valid_index].get() * y_test.get() <= 0.0) {
+    if (y_test.has_value() and
+        y[last_valid_index].value() * y_test.value() <= 0.0) {
       // Bracketed!
       return std::array<double, 4>{{x[last_valid_index], x_test,
-                                    y[last_valid_index].get(), y_test.get()}};
+                                    y[last_valid_index].value(),
+                                    y_test.value()}};
     } else {
       if (first_valid_index != last_valid_index or first_valid_index == 0) {
         x_near_valid_point.push_back(x[last_valid_index]);
@@ -186,7 +189,7 @@ std::array<double, 4> bracket_by_contracting(
  * \f$x_\mathrm{lo} \leq x_a \leq x_b \leq x_\mathrm{hi}\f$.
  *
  * `f` is a unary invokable that takes a `double` which is the current value at
- * which to evaluate `f`.  `f` returns a `boost::optional<double>` which
+ * which to evaluate `f`.  `f` returns a `std::optional<double>` which
  * evaluates to false if the function is undefined at the supplied point.
  *
  * Assumes that there is only one root in the interval.
@@ -230,16 +233,16 @@ void bracket_possibly_undefined_function_in_interval(
   double x2 = *upper_bound;
   auto y1 = f(x1);
   auto y2 = f(x2);
-  const bool y1_defined = static_cast<bool>(y1);
-  const bool y2_defined = static_cast<bool>(y2);
-  if (not(y1_defined and y2_defined and y1.get() * y2.get() <= 0.0)) {
+  const bool y1_defined = y1.has_value();
+  const bool y2_defined = y2.has_value();
+  if (not(y1_defined and y2_defined and y1.value() * y2.value() <= 0.0)) {
     // Root is not bracketed.
     // Before moving to the general algorithm, try the remaining
     // input point that was supplied.
     const double x3 = *lower_bound;
     const auto y3 = f(x3);
-    const bool y3_defined = static_cast<bool>(y3);
-    if (y1_defined and y3_defined and y1.get() * y3.get() <= 0.0) {
+    const bool y3_defined = y3.has_value();
+    if (y1_defined and y3_defined and y1.value() * y3.value() <= 0.0) {
       // Bracketed! Throw out x2,y2.  Rename variables to keep x1 < x2.
       x2 = x1;
       y2 = y1;
@@ -282,8 +285,8 @@ void bracket_possibly_undefined_function_in_interval(
       y2 = tmp[3];
     }
   }
-  *f_at_lower_bound = y1.get();
-  *f_at_upper_bound = y2.get();
+  *f_at_lower_bound = y1.value();
+  *f_at_upper_bound = y2.value();
   *lower_bound = x1;
   *upper_bound = x2;
 }
@@ -298,7 +301,7 @@ void bracket_possibly_undefined_function_in_interval(
  * `f` is a binary invokable that takes a `double` and a `size_t` as
  * arguments.  The `double` is the current value at which to evaluate
  * `f`, and the `size_t` is the index into the `DataVector`s.  `f`
- * returns a `boost::optional<double>` which evaluates to false if the
+ * returns a `std::optional<double>` which evaluates to false if the
  * function is undefined at the supplied point.
  *
  * Assumes that there is only one root in the interval.

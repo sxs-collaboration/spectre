@@ -29,8 +29,9 @@ void FunctionOfTimeUpdater<DerivOrder>::modify(
         domain::FunctionsOfTime::PiecewisePolynomial<DerivOrder>*>
         f_of_t,
     const double time, const double expiration_time) noexcept {
-  if (averager_(time)) {
-    std::array<DataVector, DerivOrder + 1> q_and_derivs = averager_(time).get();
+  if (averager_(time).has_value()) {
+    std::array<DataVector, DerivOrder + 1> q_and_derivs =
+        averager_(time).value();
     // get the time offset due to averaging
     const double t_offset_of_qdot = time - averager_.average_time(time);
     const double t_offset_of_q =

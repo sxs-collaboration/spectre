@@ -3,10 +3,9 @@
 
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservative.hpp"
 
-#include <boost/none.hpp>
-#include <boost/optional.hpp>
 #include <iomanip>
 #include <limits>
+#include <optional>
 #include <ostream>
 
 #include "DataStructures/DataVector.hpp"
@@ -104,8 +103,8 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
       get(tilde_d) / get(sqrt_det_spatial_metric);
 
   for (size_t s = 0; s < total_energy_density.size(); ++s) {
-    boost::optional<PrimitiveRecoverySchemes::PrimitiveRecoveryData>
-        primitive_data = boost::none;
+    std::optional<PrimitiveRecoverySchemes::PrimitiveRecoveryData>
+        primitive_data = std::nullopt;
     tmpl::for_each<OrderedListOfPrimitiveRecoverySchemes>([
       &pressure, &primitive_data, &total_energy_density,
       &momentum_density_squared, &momentum_density_dot_magnetic_field,
@@ -113,7 +112,7 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
       &equation_of_state, &s
     ](auto scheme) noexcept {
       using primitive_recovery_scheme = tmpl::type_from<decltype(scheme)>;
-      if (not primitive_data) {
+      if (not primitive_data.has_value()) {
         primitive_data =
             primitive_recovery_scheme::template apply<ThermodynamicDim>(
                 get(*pressure)[s], total_energy_density[s],
@@ -124,24 +123,24 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
       }
     });
 
-    if (primitive_data) {
-      get(*rest_mass_density)[s] = primitive_data.get().rest_mass_density;
+    if (primitive_data.has_value()) {
+      get(*rest_mass_density)[s] = primitive_data.value().rest_mass_density;
       const double coefficient_of_b =
           get(momentum_density_dot_magnetic_field)[s] /
-          (primitive_data.get().rho_h_w_squared *
-           (primitive_data.get().rho_h_w_squared +
+          (primitive_data.value().rho_h_w_squared *
+           (primitive_data.value().rho_h_w_squared +
             get(magnetic_field_squared)[s]));
       const double coefficient_of_s =
           1.0 / (get(sqrt_det_spatial_metric)[s] *
-                 (primitive_data.get().rho_h_w_squared +
+                 (primitive_data.value().rho_h_w_squared +
                   get(magnetic_field_squared)[s]));
       for (size_t i = 0; i < 3; ++i) {
         spatial_velocity->get(i)[s] =
             coefficient_of_b * magnetic_field->get(i)[s] +
             coefficient_of_s * tilde_s_upper.get(i)[s];
       }
-      get(*lorentz_factor)[s] = primitive_data.get().lorentz_factor;
-      get(*pressure)[s] = primitive_data.get().pressure;
+      get(*lorentz_factor)[s] = primitive_data.value().lorentz_factor;
+      get(*pressure)[s] = primitive_data.value().pressure;
     } else {
       ERROR("All primitive inversion schemes failed at s = "
             << s << ".\n"

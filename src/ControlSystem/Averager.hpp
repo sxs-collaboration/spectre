@@ -4,10 +4,9 @@
 #pragma once
 
 #include <array>
-#include <boost/none.hpp>
-#include <boost/optional.hpp>
 #include <cstddef>
 #include <deque>
+#include <optional>
 
 #include "DataStructures/DataVector.hpp"
 
@@ -62,9 +61,9 @@ class Averager {
   /// averaged derivatives of \f$Q\f$ up to the `DerivOrder`'th derivative, at
   /// \f$t=\f$`time`. If `using_average_0th_deriv_of_q()` is `true`, then the
   /// returned 0th derivative of \f$Q\f$ is also averaged. In the case that
-  /// there is insufficient data, the operator returns an
-  /// unitialized `boost::optional` (`boost::none`).
-  const boost::optional<std::array<DataVector, DerivOrder + 1>>& operator()(
+  /// there is insufficient data, the operator returns an invalid
+  /// `std::optional`.
+  const std::optional<std::array<DataVector, DerivOrder + 1>>& operator()(
       double time) const noexcept;
   /// A function that allows for resetting the averager.
   void clear() noexcept;
@@ -103,9 +102,8 @@ class Averager {
 
   double avg_tscale_frac_;
   bool average_0th_deriv_of_q_;
-  boost::optional<std::array<DataVector, DerivOrder + 1>> averaged_values_{};
-  boost::optional<std::array<DataVector, DerivOrder + 1>> boost_none_ =
-      boost::none;
+  std::optional<std::array<DataVector, DerivOrder + 1>> averaged_values_{};
+  std::optional<std::array<DataVector, DerivOrder + 1>> nullopt_ = std::nullopt;
   std::deque<double> times_;
   std::deque<DataVector> raw_qs_;
   double weight_k_ = 0.0;

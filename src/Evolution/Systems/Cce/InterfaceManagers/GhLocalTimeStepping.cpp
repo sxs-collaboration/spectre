@@ -13,11 +13,11 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Parallel/PupStlCpp17.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/History.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Algorithm.hpp"
-#include "Utilities/BoostHelpers.hpp"
 
 namespace Cce::InterfaceManagers {
 
@@ -51,9 +51,9 @@ void GhLocalTimeStepping::insert_gh_data(
   // inserted for this data
   auto previous_deque_entry = alg::find_if(
       pre_history_,
-      [&time_id](const std::tuple<TimeStepId, boost::optional<gh_variables>,
-                                  boost::optional<TimeStepId>,
-                                  boost::optional<dt_gh_variables>>&
+      [&time_id](const std::tuple<TimeStepId, std::optional<gh_variables>,
+                                  std::optional<TimeStepId>,
+                                  std::optional<dt_gh_variables>>&
                      deque_entry) noexcept {
         return get<0>(deque_entry) == time_id;
       });
@@ -66,7 +66,7 @@ void GhLocalTimeStepping::insert_gh_data(
     if(previous_deque_entry == pre_history_.end()) {
       // NOLINTNEXTLINE(performance-move-const-arg)
       pre_history_.emplace_back(std::move(time_id),
-                                std::move(input_gh_variables), boost::none,
+                                std::move(input_gh_variables), std::nullopt,
                                 std::move(input_dt_gh_variables));
     } else {
       get<1>(*previous_deque_entry) = std::move(input_gh_variables);
@@ -97,9 +97,9 @@ void GhLocalTimeStepping::insert_next_gh_time(
   // inserted for this data
   const auto previous_deque_entry = alg::find_if(
       pre_history_,
-      [&time_id](const std::tuple<TimeStepId, boost::optional<gh_variables>,
-                                  boost::optional<TimeStepId>,
-                                  boost::optional<dt_gh_variables>>&
+      [&time_id](const std::tuple<TimeStepId, std::optional<gh_variables>,
+                                  std::optional<TimeStepId>,
+                                  std::optional<dt_gh_variables>>&
                      deque_entry) noexcept {
         return get<0>(deque_entry) == time_id;
       });
@@ -108,9 +108,9 @@ void GhLocalTimeStepping::insert_next_gh_time(
   // just stash the data in the deque.
   if(previous_deque_entry == pre_history_.end()) {
     // NOLINTNEXTLINE(performance-move-const-arg)
-    pre_history_.emplace_back(std::move(time_id), boost::none,
+    pre_history_.emplace_back(std::move(time_id), std::nullopt,
                               // NOLINTNEXTLINE(performance-move-const-arg)
-                              std::move(next_time_id), boost::none);
+                              std::move(next_time_id), std::nullopt);
     return;
   } else if (requests_.empty() or
              requests_.front().substep_time().value() <=
@@ -168,9 +168,9 @@ void GhLocalTimeStepping::update_history() noexcept {
 }
 
 auto GhLocalTimeStepping::retrieve_and_remove_first_ready_gh_data() noexcept
-    -> boost::optional<std::tuple<TimeStepId, gh_variables>> {
+    -> std::optional<std::tuple<TimeStepId, gh_variables>> {
   if (requests_.empty()) {
-    return boost::none;
+    return std::nullopt;
   }
   const double first_request = requests_.front().substep_time().value();
   if (boundary_history_.size() > 0 and
@@ -190,7 +190,7 @@ auto GhLocalTimeStepping::retrieve_and_remove_first_ready_gh_data() noexcept
     update_history();
     return requested_data;
   }
-  return boost::none;
+  return std::nullopt;
 }
 
 void GhLocalTimeStepping::pup(PUP::er& p) noexcept {

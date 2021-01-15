@@ -14,6 +14,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <sstream>
 #include <string>
@@ -197,6 +198,21 @@ template <typename T, typename U>
 inline std::ostream& operator<<(std::ostream& os,
                                 const std::pair<T, U>& t) noexcept {
   return os << "(" << t.first << ", " << t.second << ")";
+}
+
+/*!
+ * \ingroup UtilitiesGroup
+ * \brief Stream operator for std::optional
+ */
+template <typename T>
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::optional<T>& t) noexcept {
+  // Match boost::optional behavior and print "--" when invalid
+  if (t.has_value()) {
+    return os << t.value();
+  } else {
+    return os << "--";
+  }
 }
 
 /*!

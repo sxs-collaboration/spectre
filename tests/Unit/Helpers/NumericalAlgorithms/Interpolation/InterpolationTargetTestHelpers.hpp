@@ -5,8 +5,8 @@
 
 #include "Framework/TestingFramework.hpp"
 
-#include <boost/optional.hpp>
 #include <cstddef>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -94,7 +94,7 @@ struct MockReceivePoints {
       Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id,
-      std::vector<boost::optional<
+      std::vector<std::optional<
           IdPair<domain::BlockId,
                  tnsr::I<double, VolumeDim, typename Frame::Logical>>>>&&
           block_coord_holders) noexcept {
@@ -218,10 +218,10 @@ void test_interpolation_target(
   CHECK(block_coord_holders.size() == number_of_points);
 
   for (size_t i = 0; i < number_of_points; ++i) {
-    CHECK(block_coord_holders[i].get().id ==
-          expected_block_coord_holders[i].get().id);
-    CHECK_ITERABLE_APPROX(block_coord_holders[i].get().data,
-                          expected_block_coord_holders[i].get().data);
+    CHECK(block_coord_holders[i].value().id ==
+          expected_block_coord_holders[i].value().id);
+    CHECK_ITERABLE_APPROX(block_coord_holders[i].value().data,
+                          expected_block_coord_holders[i].value().data);
   }
 
   // Call again at a different temporal_id
@@ -238,10 +238,10 @@ void test_interpolation_target(
   const auto& new_block_coord_holders =
       vars_infos.at(new_temporal_id).block_coord_holders;
   for (size_t i = 0; i < number_of_points; ++i) {
-    CHECK(new_block_coord_holders[i].get().id ==
-          expected_block_coord_holders[i].get().id);
-    CHECK_ITERABLE_APPROX(new_block_coord_holders[i].get().data,
-                          expected_block_coord_holders[i].get().data);
+    CHECK(new_block_coord_holders[i].value().id ==
+          expected_block_coord_holders[i].value().id);
+    CHECK_ITERABLE_APPROX(new_block_coord_holders[i].value().data,
+                          expected_block_coord_holders[i].value().data);
   }
 }
 

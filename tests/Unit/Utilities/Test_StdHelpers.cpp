@@ -10,6 +10,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <tuple>
@@ -56,6 +57,13 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
   CHECK(get_output(tuple1) == "(1,1.87,test)");
   std::tuple<> tuple0{};
   CHECK(get_output(tuple0) == "()");
+
+  std::optional<int> opt{};
+  CHECK(get_output(opt) == "--");
+  opt = -42;
+  CHECK(get_output(opt) == "-42");
+  opt = std::nullopt;
+  CHECK(get_output(opt) == "--");
 
   std::unordered_map<std::string, int, boost::hash<std::string>>
       my_unordered_map;

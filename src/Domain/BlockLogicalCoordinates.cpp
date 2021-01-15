@@ -17,7 +17,7 @@
 namespace {
 // Define this alias so we don't need to keep typing this monster.
 template <size_t Dim>
-using block_logical_coord_holder = boost::optional<
+using block_logical_coord_holder = std::optional<
     IdPair<domain::BlockId, tnsr::I<double, Dim, typename ::Frame::Logical>>>;
 using functions_of_time_type = std::unordered_map<
     std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;

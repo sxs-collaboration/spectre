@@ -7,7 +7,6 @@
 #pragma once
 
 #include <array>
-#include <boost/none.hpp>
 #include <boost/variant.hpp>
 #include <cstddef>
 #include <initializer_list>
@@ -18,13 +17,6 @@
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
-
-/// \cond
-namespace boost {
-template <typename T>
-class optional;
-}  // namespace boost
-/// \endcond
 
 namespace detail {
 template <typename Sequence>
@@ -99,24 +91,3 @@ std::string type_of_current_state(
       {pretty_type::get_name<Ts>()...}}[static_cast<size_t>(variant.which())];
   // clang-format on
 }
-
-namespace PUP {
-template <class T>
-void pup(er& p, boost::optional<T>& var) noexcept {  // NOLINT
-  bool has_data = var != boost::none;
-  p | has_data;
-  if (has_data) {
-    if (p.isUnpacking()) {
-      var.emplace();
-    }
-    p | *var;
-  } else {
-    var = boost::none;
-  }
-}
-
-template <typename T>
-inline void operator|(er& p, boost::optional<T>& var) noexcept {  // NOLINT
-  pup(p, var);
-}
-}  // namespace PUP

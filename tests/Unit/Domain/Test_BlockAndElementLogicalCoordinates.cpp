@@ -5,12 +5,11 @@
 
 #include <algorithm>
 #include <array>
-#include <boost/optional.hpp>
-#include <boost/optional/optional_io.hpp>
 #include <cstddef>
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <random>
 #include <unordered_map>
 #include <vector>
@@ -145,7 +144,7 @@ void fuzzy_test_block_and_element_logical_coordinates(
   test_serialization(block_logical_result);
 
   for (size_t s = 0; s < n_pts; ++s) {
-    CHECK(block_logical_result[s].get().id.get_index() ==
+    CHECK(block_logical_result[s].value().id.get_index() ==
           element_ids[s].block_id());
     // We don't know block logical coordinates here, so we can't
     // test them.
@@ -244,8 +243,9 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
   test_serialization(block_logical_result);
 
   for (size_t s = 0; s < n_pts; ++s) {
-    CHECK(block_logical_result[s].get().id.get_index() == block_ids[s]);
-    CHECK_ITERABLE_APPROX(block_logical_result[s].get().data, block_coords[s]);
+    CHECK(block_logical_result[s].value().id.get_index() == block_ids[s]);
+    CHECK_ITERABLE_APPROX(block_logical_result[s].value().data,
+                          block_coords[s]);
   }
 
   // Map to grid coords
@@ -278,8 +278,9 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
       block_logical_coordinates(domain, grid_coords, time, functions_of_time);
   test_serialization(block_logical_result);
   for (size_t s = 0; s < n_pts; ++s) {
-    CHECK(block_logical_result[s].get().id.get_index() == block_ids[s]);
-    CHECK_ITERABLE_APPROX(block_logical_result[s].get().data, block_coords[s]);
+    CHECK(block_logical_result[s].value().id.get_index() == block_ids[s]);
+    CHECK_ITERABLE_APPROX(block_logical_result[s].value().data,
+                          block_coords[s]);
   }
 }
 
@@ -380,9 +381,9 @@ void test_block_and_element_logical_coordinates(
   const auto block_logical_result =
       block_logical_coordinates(domain, inertial_coords);
   for (size_t s = 0; s < x_inertial.size(); ++s) {
-    CHECK(block_logical_result[s].get().id.get_index() ==
+    CHECK(block_logical_result[s].value().id.get_index() ==
           expected_block_ids[s]);
-    CHECK_ITERABLE_APPROX(block_logical_result[s].get().data,
+    CHECK_ITERABLE_APPROX(block_logical_result[s].value().data,
                           expected_logical_coords[s]);
   }
 

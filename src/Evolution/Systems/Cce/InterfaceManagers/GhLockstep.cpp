@@ -40,9 +40,9 @@ void GhLockstep::insert_gh_data(
 }
 
 auto GhLockstep::retrieve_and_remove_first_ready_gh_data() noexcept
-    -> boost::optional<std::tuple<TimeStepId, gh_variables>> {
+    -> std::optional<std::tuple<TimeStepId, gh_variables>> {
   if (provided_data_.empty()) {
-    return boost::none;
+    return std::nullopt;
   }
   const auto return_data = std::move(provided_data_.front());
   provided_data_.pop_front();
