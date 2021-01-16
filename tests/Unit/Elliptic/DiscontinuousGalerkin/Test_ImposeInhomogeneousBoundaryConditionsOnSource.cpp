@@ -216,7 +216,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InhomogeneousBoundaryConditions",
     //    -0.5   1.5
     const ElementId<2> element_id{0, {{SegmentId{1, 0}, SegmentId{1, 1}}}};
     const domain::creators::Rectangle domain_creator{
-        {{-0.5, 0.}}, {{1.5, 1.}}, {{false, false}}, {{1, 1}}, {{3, 3}}};
+        {{-0.5, 0.}}, {{1.5, 1.}}, {{1, 1}}, {{3, 3}}, {{false, false}}};
 
     // Expected boundary contribution to source in element X:
     //  ^ eta

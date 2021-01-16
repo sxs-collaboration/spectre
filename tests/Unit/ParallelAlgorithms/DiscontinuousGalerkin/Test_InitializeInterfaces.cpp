@@ -279,7 +279,7 @@ void test_2d() {
   // +-+-+-+-+
   const ElementId<2> element_id{0, {{SegmentId{2, 1}, SegmentId{0, 0}}}};
   const domain::creators::Rectangle domain_creator{
-      {{-0.5, 0.}}, {{1.5, 2.}}, {{false, false}}, {{2, 0}}, {{4, 3}}};
+      {{-0.5, 0.}}, {{1.5, 2.}}, {{2, 0}}, {{4, 3}}, {{false, false}}};
   // Register the coordinate map for serialization
   PUPable_reg(
       SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,

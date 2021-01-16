@@ -252,7 +252,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InitializeFirstOrderOperator",
     // +-+-+
     const ElementId<2> element_id{0, {{{1, 0}, {1, 1}}}};
     const domain::creators::Rectangle domain_creator{
-        {{-0.5, 0.}}, {{1.5, 1.}}, {{false, false}}, {{1, 1}}, {{3, 2}}};
+        {{-0.5, 0.}}, {{1.5, 1.}}, {{1, 1}}, {{3, 2}}, {{false, false}}};
 
     test_initialize_fluxes(domain_creator, element_id);
   }

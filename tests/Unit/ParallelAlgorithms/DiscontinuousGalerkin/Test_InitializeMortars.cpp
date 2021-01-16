@@ -210,7 +210,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeMortars", "[Unit][Actions]") {
     // +-+-+
     const ElementId<2> element_id{0, {{{1, 0}, {1, 1}}}};
     const domain::creators::Rectangle domain_creator{
-        {{-0.5, 0.}}, {{1.5, 1.}}, {{false, false}}, {{1, 1}}, {{3, 2}}};
+        {{-0.5, 0.}}, {{1.5, 1.}}, {{1, 1}}, {{3, 2}}, {{false, false}}};
     // We are working with 4 mortars here: the domain boundary west and north,
     // and interfaces south and east.
     const auto boundary_mortar_id_west = std::make_pair(
