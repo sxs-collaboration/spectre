@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <memory>
 #include <numeric>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -20,6 +21,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
@@ -213,8 +215,9 @@ struct ComplicatedSystem {
   };
 };
 
-template <typename System, typename ObserveEvent>
-void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
+template <typename System, bool HasAnalyticSolutions, typename ObserveEvent>
+void test_observe(const std::unique_ptr<ObserveEvent> observe,
+                  const bool has_analytic_solutions) noexcept {
   constexpr size_t volume_dim = System::volume_dim;
   using metavariables = Metavariables<System>;
   using element_component = ElementComponent<metavariables>;
@@ -251,8 +254,19 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
 
   const auto box = db::create<db::AddSimpleTags<
       ObservationTimeTag, Tags::Variables<typename decltype(vars)::tags_list>,
-      db::add_tag_prefix<Tags::Analytic, Tags::Variables<solution_variables>>>>(
-      observation_time, vars, solutions);
+      tmpl::conditional_t<
+          HasAnalyticSolutions, ::Tags::AnalyticSolutions<solution_variables>,
+          ::Tags::AnalyticSolutionsOptional<solution_variables>>>>(
+      observation_time, vars, [&solutions, &has_analytic_solutions]() noexcept {
+        if constexpr (HasAnalyticSolutions) {
+          (void)has_analytic_solutions;
+          // NOLINTNEXTLINE(performance-no-automatic-move)
+          return solutions;
+        } else {
+          return has_analytic_solutions ? std::make_optional(solutions)
+                                        : std::nullopt;
+        }
+      }());
 
   const auto ids_to_register =
       observers::get_registration_observation_type_and_key(*observe, box);
@@ -263,6 +277,11 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
 
   observe->run(box, runner.cache(), array_index,
                std::add_pointer_t<element_component>{});
+
+  if (not HasAnalyticSolutions and not has_analytic_solutions) {
+    CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));
+    return;
+  }
 
   // Process the data
   runner.template invoke_queued_simple_action<observer_component>(0);
@@ -313,12 +332,13 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   CHECK(results.errors.size() == num_tensors_observed);
 }
 
-template <typename System>
-void test_system() noexcept {
+template <typename System, bool HasAnalyticSolutions>
+void test_system(const bool has_analytic_solutions) noexcept {
   INFO(pretty_type::get_name<System>());
-  test_observe<System>(
+  test_observe<System, HasAnalyticSolutions>(
       std::make_unique<dg::Events::ObserveErrorNorms<
-          ObservationTimeTag, typename System::vars_for_test>>("reduction0"));
+          ObservationTimeTag, typename System::vars_for_test>>("reduction0"),
+      has_analytic_solutions);
 
   INFO("create/serialize");
   using EventType = Event<tmpl::list<dg::Events::Registrars::ObserveErrorNorms<
@@ -328,11 +348,14 @@ void test_system() noexcept {
       "ObserveErrorNorms:\n"
       "  SubfileName: reduction0");
   auto serialized_event = serialize_and_deserialize(factory_event);
-  test_observe<System>(std::move(serialized_event));
+  test_observe<System, HasAnalyticSolutions>(std::move(serialized_event),
+                                             has_analytic_solutions);
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveErrorNorms", "[Unit][Evolution]") {
-  test_system<ScalarSystem>();
-  test_system<ComplicatedSystem>();
+  INVOKE_TEST_FUNCTION(test_system, (true), (ScalarSystem, ComplicatedSystem),
+                       (true, false));
+  INVOKE_TEST_FUNCTION(test_system, (false), (ScalarSystem, ComplicatedSystem),
+                       (true, false));
 }

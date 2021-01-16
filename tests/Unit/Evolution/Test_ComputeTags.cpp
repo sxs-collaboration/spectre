@@ -55,8 +55,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
   CHECK_ITERABLE_APPROX(get(get<::Tags::Analytic<FieldTag>>(box)), expected);
 
   TestHelpers::db::test_compute_tag<evolution::Tags::AnalyticCompute<
-      1, AnalyticSolutionTag, tmpl::list<FieldTag>>>(
-      "Variables(Analytic(FieldTag))");
+      1, AnalyticSolutionTag, tmpl::list<FieldTag>>>("AnalyticSolutions");
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags.Errors",
