@@ -153,11 +153,8 @@ struct is_tensor_index<TensorIndex<I>> : std::true_type {};
 /// \brief Marks a class as being a TensorExpression
 ///
 /// \details
-/// The empty base class that all TensorExpression`s must inherit from.
-/// \derivedrequires
-/// 1) The args_list will be the sorted args_list received as input
-///
-/// 2) The tensor indices will be swapped to conform with mathematical notation
+/// The empty base class provides a simple means for checking if a type is a
+/// TensorExpression.
 struct Expression {};
 
 // @{
