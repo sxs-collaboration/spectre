@@ -27,7 +27,10 @@ spectre_target_headers(
 
 target_link_libraries(
   ${LIBRARY}
-  PUBLIC DataStructures
-  INTERFACE ErrorHandling
-  INTERFACE GeneralizedHarmonic
+  PUBLIC
+  DataStructures
+  Domain
+  INTERFACE
+  ErrorHandling
+  GeneralizedHarmonic
   )

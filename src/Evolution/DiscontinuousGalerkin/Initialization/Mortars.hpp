@@ -6,6 +6,7 @@
 #include <array>
 #include <boost/functional/hash.hpp>
 #include <cstddef>
+#include <optional>
 #include <tuple>
 #include <unordered_map>
 #include <utility>
@@ -14,6 +15,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/Neighbors.hpp"
@@ -22,6 +24,7 @@
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/Tags.hpp"
@@ -78,9 +81,10 @@ struct Mortars {
   using initialization_tags = tmpl::list<::domain::Tags::InitialExtents<Dim>,
                                          evolution::dg::Tags::Quadrature>;
 
-  using simple_tags =
-      tmpl::list<Tags::MortarData<Dim>, Tags::MortarMesh<Dim>,
-                 Tags::MortarSize<Dim>, Tags::MortarNextTemporalId<Dim>>;
+  using simple_tags = tmpl::list<
+      Tags::MortarData<Dim>, Tags::MortarMesh<Dim>, Tags::MortarSize<Dim>,
+      Tags::MortarNextTemporalId<Dim>,
+      evolution::dg::Tags::InternalFace::NormalCovectorAndMagnitude<Dim>>;
   using compute_tags = tmpl::list<>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -93,8 +97,8 @@ struct Mortars {
                     const ParallelComponent* const /*meta*/) noexcept {
     if constexpr (db::tag_is_retrievable_v<::domain::Tags::InitialExtents<Dim>,
                                            db::DataBox<DbTagsList>>) {
-      auto [mortar_data, mortar_meshes, mortar_sizes,
-            mortar_next_temporal_ids] =
+      auto [mortar_data, mortar_meshes, mortar_sizes, mortar_next_temporal_ids,
+            normal_covector_quantities] =
           apply_impl(db::get<::domain::Tags::InitialExtents<Dim>>(box),
                      db::get<evolution::dg::Tags::Quadrature>(box),
                      db::get<::domain::Tags::Element<Dim>>(box),
@@ -107,7 +111,8 @@ struct Mortars {
                          ::domain::Tags::Mesh<Dim - 1>>>(box));
       ::Initialization::mutate_assign<simple_tags>(
           make_not_null(&box), std::move(mortar_data), std::move(mortar_meshes),
-          std::move(mortar_sizes), std::move(mortar_next_temporal_ids));
+          std::move(mortar_sizes), std::move(mortar_next_temporal_ids),
+          std::move(normal_covector_quantities));
       return std::make_tuple(std::move(box));
     } else {
       ERROR(
@@ -119,10 +124,14 @@ struct Mortars {
   }
 
  private:
-  static std::tuple<MortarMap<evolution::dg::MortarData<Dim>>,
-                    MortarMap<Mesh<Dim - 1>>,
-                    MortarMap<std::array<Spectral::MortarSize, Dim - 1>>,
-                    MortarMap<TimeStepId>>
+  static std::tuple<
+      MortarMap<evolution::dg::MortarData<Dim>>, MortarMap<Mesh<Dim - 1>>,
+      MortarMap<std::array<Spectral::MortarSize, Dim - 1>>,
+      MortarMap<TimeStepId>,
+      DirectionMap<
+          Dim, std::optional<Variables<tmpl::list<
+                   evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
+                   evolution::dg::Tags::InternalFace::NormalCovector<Dim>>>>>>
   apply_impl(
       const std::vector<std::array<size_t, Dim>>& initial_extents,
       Spectral::Quadrature quadrature, const Element<Dim>& element,
