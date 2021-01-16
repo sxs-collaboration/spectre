@@ -63,23 +63,6 @@ struct ContractedType {
                                            contracted_index_list,
                                            contracted_tensorindex_list>::type;
 };
-
-template <size_t I, size_t Index1, size_t Index2, typename... LhsIndices,
-          typename T, typename S>
-static SPECTRE_ALWAYS_INLINE decltype(auto) compute_contraction(S tensor_index,
-                                                                const T& t1) {
-  if constexpr (I == 0) {
-    tensor_index[Index1] = 0;
-    tensor_index[Index2] = 0;
-    return t1.template get<LhsIndices...>(tensor_index);
-  } else {
-    tensor_index[Index1] = I;
-    tensor_index[Index2] = I;
-    return t1.template get<LhsIndices...>(tensor_index) +
-           compute_contraction<I - 1, Index1, Index2, LhsIndices...>(
-               tensor_index, t1);
-  }
-}
 }  // namespace detail
 
 /*!
@@ -139,49 +122,6 @@ struct TensorContract
       const TensorExpression<T, X, Symm, IndexList, ArgsList>& t)
       : t_(~t) {}
   ~TensorContract() override = default;
-
-  template <size_t I, size_t Rank>
-  SPECTRE_ALWAYS_INLINE void fill_contracting_tensor_index(
-      std::array<size_t, Rank>& tensor_index_in,
-      const std::array<size_t, num_tensor_indices>& tensor_index) const {
-    if constexpr (I < FirstContractedIndexPos) {
-      tensor_index_in[I] = tensor_index[I];
-      fill_contracting_tensor_index<I + 1>(tensor_index_in, tensor_index);
-    } else if constexpr (I == FirstContractedIndexPos) {
-      // 10000 is for the slot that will be set later. Easy to debug.
-      tensor_index_in[I] = 10000;
-      fill_contracting_tensor_index<I + 1>(tensor_index_in, tensor_index);
-    } else if constexpr (I > FirstContractedIndexPos and
-                         I <= SecondContractedIndexPos and I < Rank - 1) {
-      // tensor_index is Rank - 2 since it shouldn't be called for Rank 2 case
-      // 20000 is for the slot that will be set later. Easy to debug.
-      tensor_index_in[I] =
-          I == SecondContractedIndexPos ? 20000 : tensor_index[I - 1];
-      fill_contracting_tensor_index<I + 1>(tensor_index_in, tensor_index);
-    } else if constexpr (I > SecondContractedIndexPos and I < Rank - 1) {
-      // Left as Rank - 2 since it should never be called for the Rank 2 case
-      tensor_index_in[I] = tensor_index[I - 2];
-      fill_contracting_tensor_index<I + 1>(tensor_index_in, tensor_index);
-    } else if constexpr (I == SecondContractedIndexPos) {
-      tensor_index_in[I] = 20000;
-    } else {
-      tensor_index_in[I] = tensor_index[I - 2];
-    }
-  }
-
-  template <typename... LhsIndices, typename U>
-  SPECTRE_ALWAYS_INLINE decltype(auto) get(
-      const std::array<U, num_tensor_indices>& new_tensor_index) const {
-    // new_tensor_index is the one with _fewer_ components, ie post-contraction
-    std::array<size_t, tmpl::size<Symm>::value> tensor_index{};
-    // Manually unrolled for loops to compute the tensor_index from the
-    // new_tensor_index
-    fill_contracting_tensor_index<0>(tensor_index, new_tensor_index);
-    return detail::compute_contraction<first_contracted_index::dim - 1,
-                                       FirstContractedIndexPos,
-                                       SecondContractedIndexPos, LhsIndices...>(
-        tensor_index, t_);
-  }
 
   /// \brief Return the tensor multi-index of one uncontracted LHS component to
   /// be summed to compute a contracted LHS component
