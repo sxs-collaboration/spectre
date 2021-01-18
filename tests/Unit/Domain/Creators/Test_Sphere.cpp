@@ -6,6 +6,7 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <pup.h>
 #include <unordered_set>
@@ -13,6 +14,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -40,11 +42,40 @@
 
 namespace domain {
 namespace {
+using BoundaryCondVector = std::vector<DirectionMap<
+    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>;
+
+std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+create_boundary_condition() {
+  return std::make_unique<
+      TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>>(
+      Direction<3>::upper_zeta(), 50);
+}
+
+std::string boundary_conditions_string() {
+  return {
+      "  BoundaryCondition:\n"
+      "    TestBoundaryCondition:\n"
+      "      Direction: upper-zeta\n"
+      "      BlockId: 50\n"};
+}
+
+auto create_boundary_conditions() {
+  BoundaryCondVector boundary_conditions_all_blocks{7};
+  const auto boundary_condition = create_boundary_condition();
+  for (size_t block_id = 0; block_id < 6; ++block_id) {
+    boundary_conditions_all_blocks[block_id][Direction<3>::upper_zeta()] =
+        boundary_condition->get_clone();
+  }
+  return boundary_conditions_all_blocks;
+}
+
 void test_sphere_construction(
     const creators::Sphere& sphere, const double inner_radius,
     const double outer_radius, const bool use_equiangular_map,
     const std::array<size_t, 2>& expected_sphere_extents,
-    const std::vector<std::array<size_t, 3>>& expected_refinement_level) {
+    const std::vector<std::array<size_t, 3>>& expected_refinement_level,
+    const BoundaryCondVector& expected_boundary_conditions = {}) {
   const auto domain = sphere.create_domain();
   const OrientationMap<3> aligned_orientation{};
   const OrientationMap<3> quarter_turn_ccw_about_zeta(
@@ -194,10 +225,15 @@ void test_sphere_construction(
                             inner_radius / sqrt(3.0))}));
   }
   test_domain_construction(domain, expected_block_neighbors,
-                           expected_external_boundaries, coord_maps);
+                           expected_external_boundaries, coord_maps,
+                           std::numeric_limits<double>::signaling_NaN(), {}, {},
+                           expected_boundary_conditions);
   const auto coord_maps_copy = clone_unique_ptrs(coord_maps);
 
-  Domain<3> domain_no_corners(std::move(coord_maps));
+  Domain<3> domain_no_corners =
+      expected_boundary_conditions.empty()
+          ? Domain<3>{std::move(coord_maps)}
+          : Domain<3>{std::move(coord_maps), create_boundary_conditions()};
 
   test_domain_construction(domain_no_corners, expected_block_neighbors,
                            expected_external_boundaries, coord_maps_copy);
@@ -226,28 +262,57 @@ void test_sphere_boundaries_equiangular() {
   test_sphere_construction(sphere, inner_radius, outer_radius, true,
                            grid_points_r_angular,
                            {7, make_array<3>(refinement)});
+
+  const creators::Sphere sphere_boundary_condition{
+      inner_radius,          outer_radius, refinement,
+      grid_points_r_angular, true,         create_boundary_condition()};
+  test_physical_separation(sphere_boundary_condition.create_domain().blocks());
+
+  test_sphere_construction(sphere_boundary_condition, inner_radius,
+                           outer_radius, true, grid_points_r_angular,
+                           {7, make_array<3>(refinement)},
+                           create_boundary_conditions());
+
+  CHECK_THROWS_WITH(
+      creators::Sphere(
+          inner_radius, outer_radius, refinement, grid_points_r_angular, true,
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestPeriodicBoundaryCondition<3>>(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "Cannot have periodic boundary conditions with a Sphere"));
 }
 
 void test_sphere_factory_equiangular() {
   INFO("Sphere factory equiangular");
-  const auto sphere = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "  Sphere:\n"
-      "    InnerRadius: 1\n"
-      "    OuterRadius: 3\n"
-      "    InitialRefinement: 2\n"
-      "    InitialGridPoints: [2,3]\n"
-      "    UseEquiangularMap: true\n");
-  const double inner_radius = 1.0;
-  const double outer_radius = 3.0;
-  const size_t refinement_level = 2;
-  const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
-  test_sphere_construction(dynamic_cast<const creators::Sphere&>(*sphere),
-                           inner_radius, outer_radius, true,
-                           grid_points_r_angular,
-                           {7, make_array<3>(refinement_level)});
+  const auto helper = [](const auto expected_boundary_conditions,
+                         auto use_boundary_condition) {
+    const auto sphere = TestHelpers::test_factory_creation<
+        DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+        tmpl::conditional_t<decltype(use_boundary_condition)::value,
+                            TestHelpers::domain::BoundaryConditions::
+                                MetavariablesWithBoundaryConditions<3>,
+                            TestHelpers::domain::BoundaryConditions::
+                                MetavariablesWithoutBoundaryConditions<3>>>(
+        "Sphere:\n"
+        "  InnerRadius: 1\n"
+        "  OuterRadius: 3\n"
+        "  InitialRefinement: 2\n"
+        "  InitialGridPoints: [2,3]\n"
+        "  UseEquiangularMap: true\n" +
+        (expected_boundary_conditions.empty() ? std::string{}
+                                              : boundary_conditions_string()));
+    const double inner_radius = 1.0;
+    const double outer_radius = 3.0;
+    const size_t refinement_level = 2;
+    const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
+    test_sphere_construction(
+        dynamic_cast<const creators::Sphere&>(*sphere), inner_radius,
+        outer_radius, true, grid_points_r_angular,
+        {7, make_array<3>(refinement_level)}, expected_boundary_conditions);
+  };
+  helper(BoundaryCondVector{}, std::false_type{});
+  helper(create_boundary_conditions(), std::true_type{});
 }
 
 void test_sphere_boundaries_equidistant() {
@@ -264,28 +329,48 @@ void test_sphere_boundaries_equidistant() {
   test_sphere_construction(sphere, inner_radius, outer_radius, false,
                            grid_points_r_angular,
                            {7, make_array<3>(refinement)});
+
+  const creators::Sphere sphere_boundary_condition{
+      inner_radius,          outer_radius, refinement,
+      grid_points_r_angular, false,        create_boundary_condition()};
+  test_physical_separation(sphere_boundary_condition.create_domain().blocks());
+
+  test_sphere_construction(sphere_boundary_condition, inner_radius,
+                           outer_radius, false, grid_points_r_angular,
+                           {7, make_array<3>(refinement)},
+                           create_boundary_conditions());
 }
 
 void test_sphere_factory_equidistant() {
   INFO("Sphere factory equidistant");
-  const auto sphere = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "  Sphere:\n"
-      "    InnerRadius: 1\n"
-      "    OuterRadius: 3\n"
-      "    InitialRefinement: 2\n"
-      "    InitialGridPoints: [2,3]\n"
-      "    UseEquiangularMap: false\n");
-  const double inner_radius = 1.0;
-  const double outer_radius = 3.0;
-  const size_t refinement_level = 2;
-  const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
-  test_sphere_construction(dynamic_cast<const creators::Sphere&>(*sphere),
-                           inner_radius, outer_radius, false,
-                           grid_points_r_angular,
-                           {7, make_array<3>(refinement_level)});
+  const auto helper = [](const auto expected_boundary_conditions,
+                         auto use_boundary_condition) {
+    const auto sphere = TestHelpers::test_factory_creation<
+        DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+        tmpl::conditional_t<decltype(use_boundary_condition)::value,
+                            TestHelpers::domain::BoundaryConditions::
+                                MetavariablesWithBoundaryConditions<3>,
+                            TestHelpers::domain::BoundaryConditions::
+                                MetavariablesWithoutBoundaryConditions<3>>>(
+        "Sphere:\n"
+        "  InnerRadius: 1\n"
+        "  OuterRadius: 3\n"
+        "  InitialRefinement: 2\n"
+        "  InitialGridPoints: [2,3]\n"
+        "  UseEquiangularMap: false\n" +
+        (expected_boundary_conditions.empty() ? std::string{}
+                                              : boundary_conditions_string()));
+    const double inner_radius = 1.0;
+    const double outer_radius = 3.0;
+    const size_t refinement_level = 2;
+    const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
+    test_sphere_construction(
+        dynamic_cast<const creators::Sphere&>(*sphere), inner_radius,
+        outer_radius, false, grid_points_r_angular,
+        {7, make_array<3>(refinement_level)}, expected_boundary_conditions);
+  };
+  helper(BoundaryCondVector{}, std::false_type{});
+  helper(create_boundary_conditions(), std::true_type{});
 }
 }  // namespace
 
