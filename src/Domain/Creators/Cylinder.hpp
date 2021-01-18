@@ -7,6 +7,8 @@
 #include <cstddef>
 #include <vector>
 
+#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Options/Options.hpp"
@@ -118,10 +120,31 @@ class Cylinder : public DomainCreator<3> {
         "between LowerBound and UpperBound."};
   };
 
-  using options =
+  template <typename BoundaryConditionsBase>
+  struct BoundaryCondition {
+    static std::string name() noexcept { return "BoundaryCondition"; }
+    static constexpr Options::String help =
+        "The boundary condition to be imposed on all sides. If periodic "
+        "boundary conditions are requested in the z-direction, then this "
+        "boundary condition isn't applied in the z-direction.";
+    using type = std::unique_ptr<BoundaryConditionsBase>;
+  };
+
+  using basic_options =
       tmpl::list<InnerRadius, OuterRadius, LowerBound, UpperBound,
                  IsPeriodicInZ, InitialRefinement, InitialGridPoints,
                  UseEquiangularMap, RadialPartitioning, HeightPartitioning>;
+
+  template <typename Metavariables>
+  using options = tmpl::conditional_t<
+      domain::BoundaryConditions::has_boundary_conditions_base_v<
+          typename Metavariables::system>,
+      tmpl::push_back<
+          basic_options,
+          BoundaryCondition<
+              domain::BoundaryConditions::get_boundary_conditions_base<
+                  typename Metavariables::system>>>,
+      basic_options>;
 
   static constexpr Options::String help{
       "Creates a right circular Cylinder with a square prism surrounded by \n"
@@ -155,7 +178,10 @@ class Cylinder : public DomainCreator<3> {
            typename RadialPartitioning::type radial_partitioning =
                std::vector<double>{},
            typename HeightPartitioning::type height_partitioning =
-               std::vector<double>{}) noexcept;
+               std::vector<double>{},
+           std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+               boundary_condition = nullptr,
+           const Options::Context& context = {});
 
   Cylinder() = default;
   Cylinder(const Cylinder&) = delete;
@@ -182,5 +208,7 @@ class Cylinder : public DomainCreator<3> {
   typename UseEquiangularMap::type use_equiangular_map_{false};
   typename RadialPartitioning::type radial_partitioning_{std::vector<double>{}};
   typename HeightPartitioning::type height_partitioning_{std::vector<double>{}};
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      boundary_condition_;
 };
 }  // namespace domain::creators

@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
@@ -30,7 +31,10 @@ Cylinder::Cylinder(
     typename InitialGridPoints::type initial_number_of_grid_points,
     typename UseEquiangularMap::type use_equiangular_map,
     typename RadialPartitioning::type radial_partitioning,
-    typename HeightPartitioning::type height_partitioning) noexcept
+    typename HeightPartitioning::type height_partitioning,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        boundary_condition,
+    const Options::Context& context)
     // clang-tidy: trivially copyable
     : inner_radius_(std::move(inner_radius)),                // NOLINT
       outer_radius_(std::move(outer_radius)),                // NOLINT
@@ -43,7 +47,29 @@ Cylinder::Cylinder(
           std::move(initial_number_of_grid_points)),         // NOLINT
       use_equiangular_map_(use_equiangular_map),             // NOLINT
       radial_partitioning_(std::move(radial_partitioning)),  // NOLINT
-      height_partitioning_(std::move(height_partitioning)) {}
+      height_partitioning_(std::move(height_partitioning)),
+      boundary_condition_(std::move(boundary_condition)) {
+  if (not radial_partitioning_.empty() and boundary_condition_ != nullptr) {
+    PARSE_ERROR(
+        context,
+        "Currently do not support specifying boundary conditions and "
+        "multiple radial partitionings. Support can be added if desired.");
+  }
+  if (not height_partitioning_.empty() and boundary_condition_ != nullptr) {
+    PARSE_ERROR(
+        context,
+        "Currently do not support specifying boundary conditions and multiple "
+        "height partitionings. The domain creator code to support this is "
+        "written but untested. To enable, please add tests.");
+  }
+  using domain::BoundaryConditions::is_periodic;
+  if (is_periodic(boundary_condition_)) {
+    PARSE_ERROR(context,
+                "Periodic boundary conditions are not supported in the radial "
+                "direction. If you need periodic boundary conditions along the "
+                "axis of symmetry, use the is_periodic_in_z option.");
+  }
+}
 
 Domain<3> Cylinder::create_domain() const noexcept {
   const size_t number_of_shells = 1 + radial_partitioning_.size();
@@ -76,13 +102,54 @@ Domain<3> Cylinder::create_domain() const noexcept {
       pairs_of_faces.push_back(std::move(south));
     }
   }
+
+  std::vector<DirectionMap<
+      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions_all_blocks{};
+  if (boundary_condition_ != nullptr) {
+    // Note: The first block in each disk is the central cube.
+    boundary_conditions_all_blocks.resize((1 + 4 * number_of_shells) *
+                                          number_of_discs);
+
+    // Boundary conditions in z
+    for (size_t block_id = 0; not is_periodic_in_z_ and
+                              block_id < boundary_conditions_all_blocks.size();
+         ++block_id) {
+      if (block_id < (1 + number_of_shells * 4)) {
+        boundary_conditions_all_blocks[block_id][Direction<3>::lower_zeta()] =
+            boundary_condition_->get_clone();
+      }
+      if (block_id >=
+          boundary_conditions_all_blocks.size() - (1 + number_of_shells * 4)) {
+        boundary_conditions_all_blocks[block_id][Direction<3>::upper_zeta()] =
+            boundary_condition_->get_clone();
+      }
+    }
+    // Radial boundary conditions
+    ASSERT(radial_partitioning_.empty(),
+           "We currently do not support multiple radial partitionings with "
+           "boundary conditions. Please add support if you need this feature.");
+    for (size_t block_id = 1; block_id < boundary_conditions_all_blocks.size();
+         ++block_id) {
+      // clang-tidy thinks we can get division by zero on the modulus operator.
+      // NOLINTNEXTLINE
+      if (block_id % (1 + 4 * number_of_shells) == 0) {
+        // skip the central cubes. With multiple radial partitionings the inner
+        // radial wedges also need to be skipped.
+        continue;
+      }
+      boundary_conditions_all_blocks[block_id][Direction<3>::upper_xi()] =
+          boundary_condition_->get_clone();
+    }
+  }
+
   return Domain<3>{
       cyl_wedge_coordinate_maps<Frame::Inertial>(
           inner_radius_, outer_radius_, lower_bound_, upper_bound_,
           use_equiangular_map_, radial_partitioning_, height_partitioning_),
       corners_for_cylindrical_layered_domains(number_of_shells,
                                               number_of_discs),
-      pairs_of_faces};
+      pairs_of_faces, std::move(boundary_conditions_all_blocks)};
 }
 
 std::vector<std::array<size_t, 3>> Cylinder::initial_extents() const noexcept {

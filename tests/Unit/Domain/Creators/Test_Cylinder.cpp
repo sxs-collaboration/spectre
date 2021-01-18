@@ -37,13 +37,50 @@
 
 namespace domain {
 namespace {
+using BoundaryCondVector = std::vector<DirectionMap<
+    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>;
+
+std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+create_boundary_condition() {
+  return std::make_unique<
+      TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>>(
+      Direction<3>::upper_zeta(), 50);
+}
+
+std::string boundary_conditions_string() {
+  return {
+      "  BoundaryCondition:\n"
+      "    TestBoundaryCondition:\n"
+      "      Direction: upper-zeta\n"
+      "      BlockId: 50\n"};
+}
+
+auto create_boundary_conditions(const bool periodic_in_z) {
+  BoundaryCondVector boundary_conditions_all_blocks{5};
+  const auto boundary_condition = create_boundary_condition();
+  // z-direction
+  for (size_t block_id = 0; not periodic_in_z and block_id < 5; ++block_id) {
+    boundary_conditions_all_blocks[block_id][Direction<3>::lower_zeta()] =
+        boundary_condition->get_clone();
+    boundary_conditions_all_blocks[block_id][Direction<3>::upper_zeta()] =
+        boundary_condition->get_clone();
+  }
+  // radial direction
+  for (size_t block_id = 1; block_id < 5; ++block_id) {
+    boundary_conditions_all_blocks[block_id][Direction<3>::upper_xi()] =
+        boundary_condition->get_clone();
+  }
+  return boundary_conditions_all_blocks;
+}
+
 void test_cylinder_construction(
     const creators::Cylinder& cylinder, const double inner_radius,
     const double outer_radius, const double lower_bound,
     const double upper_bound, const bool is_periodic_in_z,
     const std::array<size_t, 3>& expected_wedge_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
-    const bool use_equiangular_map) {
+    const bool use_equiangular_map,
+    const BoundaryCondVector& expected_boundary_conditions = {}) {
   const auto domain = cylinder.create_domain();
   const OrientationMap<3> aligned_orientation{};
   const OrientationMap<3> quarter_turn_ccw(std::array<Direction<3>, 3>{
@@ -194,7 +231,9 @@ void test_cylinder_construction(
           Affine{-1.0, 1.0, lower_bound, upper_bound}}));
 
   test_domain_construction(domain, expected_block_neighbors,
-                           expected_external_boundaries, coord_maps);
+                           expected_external_boundaries, coord_maps,
+                           std::numeric_limits<double>::signaling_NaN(), {}, {},
+                           expected_boundary_conditions);
 
   test_initial_domain(domain, cylinder.initial_refinement_levels());
 
@@ -202,196 +241,123 @@ void test_cylinder_construction(
   test_serialization(domain);
 }
 
-void test_cylinder_boundaries_equiangular() {
-  INFO("Cylinder boundaries equiangular");
-  const double inner_radius = 1.0;
-  const double outer_radius = 2.0;
-  const double lower_bound = -2.5;
-  const double upper_bound = 5.0;
-  const size_t refinement_level = 2;
-  const std::array<size_t, 3> grid_points{{4, 4, 3}};
+void test_cylinder_no_refinement() {
+  INFO("Cylinder, no refinement");
+  for (const bool with_boundary_conditions : {true, false}) {
+    CAPTURE(with_boundary_conditions);
+    for (const bool equiangular_map : {true, false}) {
+      CAPTURE(equiangular_map);
+      for (const bool periodic_in_z : {true, false}) {
+        CAPTURE(periodic_in_z);
+        const double inner_radius = 1.0;
+        const double outer_radius = 2.0;
+        const double lower_bound = -2.5;
+        const double upper_bound = 5.0;
+        const size_t refinement_level = 2;
+        const std::array<size_t, 3> grid_points{{4, 4, 3}};
 
-  const creators::Cylinder cylinder{
-      inner_radius, outer_radius,     lower_bound, upper_bound,
-      true,         refinement_level, grid_points, true};
-  test_physical_separation(cylinder.create_domain().blocks());
-  test_cylinder_construction(cylinder, inner_radius, outer_radius, lower_bound,
-                             upper_bound, true, grid_points,
-                             {5, make_array<3>(refinement_level)}, true);
-}
+        const BoundaryCondVector expected_boundary_conditions =
+            with_boundary_conditions ? create_boundary_conditions(periodic_in_z)
+                                     : BoundaryCondVector{};
+        std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+            boundary_condition =
+                with_boundary_conditions ? create_boundary_condition()
+                                         : nullptr;
 
-void test_cylinder_factory_equiangular() {
-  INFO("Cylinder factory equiangular");
-  const auto cylinder = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "Cylinder:\n"
-      "  InnerRadius: 1.0\n"
-      "  OuterRadius: 3.0\n"
-      "  LowerBound: -1.2\n"
-      "  UpperBound: 3.7\n"
-      "  IsPeriodicInZ: true\n"
-      "  InitialRefinement: 2\n"
-      "  InitialGridPoints: [2,3,4]\n"
-      "  UseEquiangularMap: true\n"
-      "  RadialPartitioning: []\n"
-      "  HeightPartitioning: []\n");
+        const creators::Cylinder cylinder{inner_radius,
+                                          outer_radius,
+                                          lower_bound,
+                                          upper_bound,
+                                          periodic_in_z,
+                                          refinement_level,
+                                          grid_points,
+                                          equiangular_map,
+                                          {},
+                                          {},
+                                          std::move(boundary_condition)};
+        test_physical_separation(cylinder.create_domain().blocks());
+        test_cylinder_construction(
+            cylinder, inner_radius, outer_radius, lower_bound, upper_bound,
+            periodic_in_z, grid_points, {5, make_array<3>(refinement_level)},
+            equiangular_map, expected_boundary_conditions);
 
-  const double inner_radius = 1.0;
-  const double outer_radius = 3.0;
-  const double lower_bound = -1.2;
-  const double upper_bound = 3.7;
-  const size_t refinement_level = 2;
-  const std::array<size_t, 3> grid_points{{2, 3, 4}};
-  test_cylinder_construction(dynamic_cast<const creators::Cylinder&>(*cylinder),
-                             inner_radius, outer_radius, lower_bound,
-                             upper_bound, true, grid_points,
-                             {5, make_array<3>(refinement_level)}, true);
-}
+        const std::string opt_string{
+            "Cylinder:\n"
+            "  InnerRadius: 1.0\n"
+            "  OuterRadius: 2.0\n"
+            "  LowerBound: -2.5\n"
+            "  UpperBound: 5.0\n"
+            "  IsPeriodicInZ: " +
+            std::string{periodic_in_z ? "true" : "false"} +
+            "\n"
+            "  InitialRefinement: 2\n"
+            "  InitialGridPoints: [4,4,3]\n"
+            "  UseEquiangularMap: " +
+            std::string{equiangular_map ? "true" : "false"} +
+            "\n"
+            "  RadialPartitioning: []\n"
+            "  HeightPartitioning: []\n" +
+            std::string{with_boundary_conditions ? boundary_conditions_string()
+                                                 : ""}};
 
-void test_cylinder_boundaries_equidistant() {
-  INFO("Cylinder boundaries equidistant");
-  const double inner_radius = 1.0;
-  const double outer_radius = 2.0;
-  const double lower_bound = -2.5;
-  const double upper_bound = 5.0;
-  const size_t refinement_level = 2;
-  const std::array<size_t, 3> grid_points{{4, 4, 3}};
+        const auto cylinder_factory = [&opt_string,
+                                       with_boundary_conditions]() {
+          if (with_boundary_conditions) {
+            return TestHelpers::test_factory_creation<
+                DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+                TestHelpers::domain::BoundaryConditions::
+                    MetavariablesWithBoundaryConditions<3>>(opt_string);
+          } else {
+            return TestHelpers::test_factory_creation<
+                DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+                TestHelpers::domain::BoundaryConditions::
+                    MetavariablesWithoutBoundaryConditions<3>>(opt_string);
+          }
+        }();
+        test_cylinder_construction(
+            dynamic_cast<const creators::Cylinder&>(*cylinder_factory),
+            inner_radius, outer_radius, lower_bound, upper_bound, periodic_in_z,
+            grid_points, {5, make_array<3>(refinement_level)}, equiangular_map,
+            expected_boundary_conditions);
 
-  const creators::Cylinder cylinder{
-      inner_radius, outer_radius,     lower_bound, upper_bound,
-      true,         refinement_level, grid_points, false};
-  test_physical_separation(cylinder.create_domain().blocks());
-  test_cylinder_construction(cylinder, inner_radius, outer_radius, lower_bound,
-                             upper_bound, true, grid_points,
-                             {5, make_array<3>(refinement_level)}, false);
-}
-
-void test_cylinder_factory_equidistant() {
-  INFO("Cylinder factory equidistant");
-  const auto cylinder = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "Cylinder:\n"
-      "  InnerRadius: 1.0\n"
-      "  OuterRadius: 3.0\n"
-      "  LowerBound: -1.2\n"
-      "  UpperBound: 3.7\n"
-      "  IsPeriodicInZ: true\n"
-      "  InitialRefinement: 2\n"
-      "  InitialGridPoints: [2,3,4]\n"
-      "  UseEquiangularMap: false\n"
-      "  RadialPartitioning: []\n"
-      "  HeightPartitioning: []\n");
-
-  const double inner_radius = 1.0;
-  const double outer_radius = 3.0;
-  const double lower_bound = -1.2;
-  const double upper_bound = 3.7;
-  const size_t refinement_level = 2;
-  const std::array<size_t, 3> grid_points{{2, 3, 4}};
-  test_cylinder_construction(dynamic_cast<const creators::Cylinder&>(*cylinder),
-                             inner_radius, outer_radius, lower_bound,
-                             upper_bound, true, grid_points,
-                             {5, make_array<3>(refinement_level)}, false);
-}
-
-void test_cylinder_boundaries_equiangular_not_periodic_in_z() {
-  INFO("Cylinder boundaries equiangular not periodic in z");
-  const double inner_radius = 1.0;
-  const double outer_radius = 2.0;
-  const double lower_bound = -2.5;
-  const double upper_bound = 5.0;
-  const size_t refinement_level = 2;
-  const std::array<size_t, 3> grid_points{{4, 4, 3}};
-
-  const creators::Cylinder cylinder{
-      inner_radius, outer_radius,     lower_bound, upper_bound,
-      false,        refinement_level, grid_points, true};
-  test_physical_separation(cylinder.create_domain().blocks());
-  test_cylinder_construction(cylinder, inner_radius, outer_radius, lower_bound,
-                             upper_bound, false, grid_points,
-                             {5, make_array<3>(refinement_level)}, true);
-}
-
-void test_cylinder_factory_equiangular_not_periodic_in_z() {
-  INFO("Cylinder factory equiangular not periodic in z");
-  const auto cylinder = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "Cylinder:\n"
-      "  InnerRadius: 1.0\n"
-      "  OuterRadius: 3.0\n"
-      "  LowerBound: -1.2\n"
-      "  UpperBound: 3.7\n"
-      "  IsPeriodicInZ: false\n"
-      "  InitialRefinement: 2\n"
-      "  InitialGridPoints: [2,3,4]\n"
-      "  UseEquiangularMap: true\n"
-      "  RadialPartitioning: []\n"
-      "  HeightPartitioning: []\n");
-
-  const double inner_radius = 1.0;
-  const double outer_radius = 3.0;
-  const double lower_bound = -1.2;
-  const double upper_bound = 3.7;
-  const size_t refinement_level = 2;
-  const std::array<size_t, 3> grid_points{{2, 3, 4}};
-  test_cylinder_construction(dynamic_cast<const creators::Cylinder&>(*cylinder),
-                             inner_radius, outer_radius, lower_bound,
-                             upper_bound, false, grid_points,
-                             {5, make_array<3>(refinement_level)}, true);
-}
-
-void test_cylinder_boundaries_equidistant_not_periodic_in_z() {
-  INFO("Cylinder boundaries equidistant not periodic in z");
-  const double inner_radius = 1.0;
-  const double outer_radius = 2.0;
-  const double lower_bound = -2.5;
-  const double upper_bound = 5.0;
-  const size_t refinement_level = 2;
-  const std::array<size_t, 3> grid_points{{4, 4, 3}};
-
-  const creators::Cylinder cylinder{
-      inner_radius, outer_radius,     lower_bound, upper_bound,
-      false,        refinement_level, grid_points, false};
-  test_physical_separation(cylinder.create_domain().blocks());
-  test_cylinder_construction(cylinder, inner_radius, outer_radius, lower_bound,
-                             upper_bound, false, grid_points,
-                             {5, make_array<3>(refinement_level)}, false);
-}
-
-void test_cylinder_factory_equidistant_not_periodic_in_z() {
-  INFO("Cylinder factory equidistant not periodic in z");
-  const auto cylinder = TestHelpers::test_factory_creation<
-      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3>>(
-      "Cylinder:\n"
-      "  InnerRadius: 1.0\n"
-      "  OuterRadius: 3.0\n"
-      "  LowerBound: -1.2\n"
-      "  UpperBound: 3.7\n"
-      "  IsPeriodicInZ: false\n"
-      "  InitialRefinement: 2\n"
-      "  InitialGridPoints: [2,3,4]\n"
-      "  UseEquiangularMap: false\n"
-      "  RadialPartitioning: []\n"
-      "  HeightPartitioning: []\n");
-
-  const double inner_radius = 1.0;
-  const double outer_radius = 3.0;
-  const double lower_bound = -1.2;
-  const double upper_bound = 3.7;
-  const size_t refinement_level = 2;
-  const std::array<size_t, 3> grid_points{{2, 3, 4}};
-  test_cylinder_construction(dynamic_cast<const creators::Cylinder&>(*cylinder),
-                             inner_radius, outer_radius, lower_bound,
-                             upper_bound, false, grid_points,
-                             {5, make_array<3>(refinement_level)}, false);
+        CHECK_THROWS_WITH(
+            creators::Cylinder(
+                inner_radius, outer_radius, lower_bound, upper_bound,
+                periodic_in_z, refinement_level, grid_points, equiangular_map,
+                {}, {},
+                std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                     TestPeriodicBoundaryCondition<3>>(),
+                Options::Context{false, {}, 1, 1}),
+            Catch::Matchers::Contains(
+                "Periodic boundary conditions are not supported in the radial "
+                "direction. If you need periodic boundary conditions along the "
+                "axis of symmetry, use the is_periodic_in_z option."));
+        if (with_boundary_conditions) {
+          CHECK_THROWS_WITH(
+              creators::Cylinder(inner_radius, outer_radius, lower_bound,
+                                 upper_bound, periodic_in_z, refinement_level,
+                                 grid_points, equiangular_map, {1.0}, {},
+                                 create_boundary_condition(),
+                                 Options::Context{false, {}, 1, 1}),
+              Catch::Matchers::Contains(
+                  "Currently do not support specifying boundary conditions and "
+                  "multiple radial partitionings. Support can be added if "
+                  "desired."));
+          CHECK_THROWS_WITH(
+              creators::Cylinder(inner_radius, outer_radius, lower_bound,
+                                 upper_bound, periodic_in_z, refinement_level,
+                                 grid_points, equiangular_map, {}, {1.4},
+                                 create_boundary_condition(),
+                                 Options::Context{false, {}, 1, 1}),
+              Catch::Matchers::Contains(
+                  "Currently do not support specifying boundary conditions and "
+                  "multiple height partitionings. The domain creator code to "
+                  "support this is written but untested. To enable, please add "
+                  "tests."));
+        }
+      }
+    }
+  }
 }
 
 void test_refined_cylinder_boundaries(const bool use_equiangular_map) {
@@ -1147,17 +1113,7 @@ void test_refined_cylinder_periodic_boundaries(const bool use_equiangular_map) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder", "[Domain][Unit]") {
-  {
-    INFO("Test basic Cylinder");
-    test_cylinder_boundaries_equiangular();
-    test_cylinder_factory_equiangular();
-    test_cylinder_boundaries_equidistant();
-    test_cylinder_factory_equidistant();
-    test_cylinder_boundaries_equiangular_not_periodic_in_z();
-    test_cylinder_factory_equiangular_not_periodic_in_z();
-    test_cylinder_boundaries_equidistant_not_periodic_in_z();
-    test_cylinder_factory_equidistant_not_periodic_in_z();
-  }
+  test_cylinder_no_refinement();
 
   {
     INFO("Test for Cylinder with one additional layer and shell");
