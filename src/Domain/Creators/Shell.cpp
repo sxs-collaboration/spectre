@@ -6,7 +6,8 @@
 #include <memory>
 #include <utility>
 
-#include "Domain/Block.hpp"                   // IWYU pragma: keep
+#include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
@@ -30,7 +31,12 @@ Shell::Shell(typename InnerRadius::type inner_radius,
              typename AspectRatio::type aspect_ratio,
              typename UseLogarithmicMap::type use_logarithmic_map,
              typename WhichWedges::type which_wedges,
-             typename RadialBlockLayers::type number_of_layers) noexcept
+             typename RadialBlockLayers::type number_of_layers,
+             std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+                 inner_boundary_condition,
+             std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+                 outer_boundary_condition,
+             const Options::Context& context)
     // clang-tidy: trivially copyable
     : inner_radius_(std::move(inner_radius)),                // NOLINT
       outer_radius_(std::move(outer_radius)),                // NOLINT
@@ -42,7 +48,31 @@ Shell::Shell(typename InnerRadius::type inner_radius,
       aspect_ratio_(std::move(aspect_ratio)),                // NOLINT
       use_logarithmic_map_(std::move(use_logarithmic_map)),  // NOLINT
       which_wedges_(std::move(which_wedges)),                // NOLINT
-      number_of_layers_(std::move(number_of_layers)) {}      // NOLINT
+      number_of_layers_(std::move(number_of_layers)),        // NOLINT
+      inner_boundary_condition_(std::move(inner_boundary_condition)),
+      outer_boundary_condition_(std::move(outer_boundary_condition)) {
+  if ((inner_boundary_condition_ != nullptr and
+       outer_boundary_condition_ == nullptr) or
+      (inner_boundary_condition_ == nullptr and
+       outer_boundary_condition_ != nullptr)) {
+    PARSE_ERROR(context,
+                "Must specify either both inner and outer boundary conditions "
+                "or neither.");
+  }
+  if (inner_boundary_condition_ != nullptr and
+      which_wedges_ != ShellWedges::All) {
+    PARSE_ERROR(context,
+                "Can only apply boundary conditions when using the full shell. "
+                "Additional cases can be supported by adding them to the Shell "
+                "domain creator's create_domain function.");
+  }
+  using domain::BoundaryConditions::is_periodic;
+  if (is_periodic(inner_boundary_condition_) or
+      is_periodic(outer_boundary_condition_)) {
+    PARSE_ERROR(context,
+                "Cannot have periodic boundary conditions with a shell");
+  }
+}
 
 Domain<3> Shell::create_domain() const noexcept {
   std::vector<
@@ -51,10 +81,35 @@ Domain<3> Shell::create_domain() const noexcept {
           inner_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_, 0.0,
           false, aspect_ratio_, use_logarithmic_map_, which_wedges_,
           number_of_layers_);
+
+  std::vector<DirectionMap<
+      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions_all_blocks{};
+  if (inner_boundary_condition_ != nullptr) {
+    // This assumes 6 wedges making up the shell. If you need to support the
+    // FourOnEquator or OneAlongMinusX configurations the below code needs to be
+    // updated. This would require adding more boundary condition options to the
+    // domain creator.
+    const size_t blocks_per_layer =
+        which_wedges_ == ShellWedges::All             ? 6
+        : which_wedges_ == ShellWedges::FourOnEquator ? 4
+                                                      : 1;
+    boundary_conditions_all_blocks.resize(blocks_per_layer * number_of_layers_);
+    for (size_t block_id = 0; block_id < blocks_per_layer; ++block_id) {
+      boundary_conditions_all_blocks[block_id][Direction<3>::lower_zeta()] =
+          inner_boundary_condition_->get_clone();
+      boundary_conditions_all_blocks[boundary_conditions_all_blocks.size() -
+                                     block_id - 1][Direction<3>::upper_zeta()] =
+          outer_boundary_condition_->get_clone();
+    }
+  }
+
   return Domain<3>{
       std::move(coord_maps),
       corners_for_radially_layered_domains(
-          number_of_layers_, false, {{1, 2, 3, 4, 5, 6, 7, 8}}, which_wedges_)};
+          number_of_layers_, false, {{1, 2, 3, 4, 5, 6, 7, 8}}, which_wedges_),
+      {},
+      std::move(boundary_conditions_all_blocks)};
 }
 
 std::vector<std::array<size_t, 3>> Shell::initial_extents() const noexcept {

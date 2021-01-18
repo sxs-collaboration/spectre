@@ -7,6 +7,8 @@
 #include <cstddef>
 #include <vector>
 
+#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
@@ -102,9 +104,46 @@ class Shell : public DomainCreator<3> {
     static type lower_bound() { return 1; }
   };
 
-  using options = tmpl::list<InnerRadius, OuterRadius, InitialRefinement,
-                             InitialGridPoints, UseEquiangularMap, AspectRatio,
-                             UseLogarithmicMap, WhichWedges, RadialBlockLayers>;
+  struct BoundaryConditions {
+    static constexpr Options::String help = "The boundary conditions to apply.";
+  };
+
+  template <typename BoundaryConditionsBase>
+  struct InnerBoundaryCondition {
+    static std::string name() noexcept { return "InnerBoundary"; }
+    static constexpr Options::String help =
+        "Options for the inner boundary conditions.";
+    using type = std::unique_ptr<BoundaryConditionsBase>;
+    using group = BoundaryConditions;
+  };
+
+  template <typename BoundaryConditionsBase>
+  struct OuterBoundaryCondition {
+    static std::string name() noexcept { return "OuterBoundary"; }
+    static constexpr Options::String help =
+        "Options for the outer boundary conditions.";
+    using type = std::unique_ptr<BoundaryConditionsBase>;
+    using group = BoundaryConditions;
+  };
+
+  using basic_options =
+      tmpl::list<InnerRadius, OuterRadius, InitialRefinement, InitialGridPoints,
+                 UseEquiangularMap, AspectRatio, UseLogarithmicMap, WhichWedges,
+                 RadialBlockLayers>;
+
+  template <typename Metavariables>
+  using options = tmpl::conditional_t<
+      domain::BoundaryConditions::has_boundary_conditions_base_v<
+          typename Metavariables::system>,
+      tmpl::push_back<
+          basic_options,
+          InnerBoundaryCondition<
+              domain::BoundaryConditions::get_boundary_conditions_base<
+                  typename Metavariables::system>>,
+          OuterBoundaryCondition<
+              domain::BoundaryConditions::get_boundary_conditions_base<
+                  typename Metavariables::system>>>,
+      basic_options>;
 
   static constexpr Options::String help{
       "Creates a 3D spherical shell with 6 Blocks. `UseEquiangularMap` has\n"
@@ -128,7 +167,12 @@ class Shell : public DomainCreator<3> {
         typename AspectRatio::type aspect_ratio = 1.0,
         typename UseLogarithmicMap::type use_logarithmic_map = false,
         typename WhichWedges::type which_wedges = ShellWedges::All,
-        typename RadialBlockLayers::type number_of_layers = 1) noexcept;
+        typename RadialBlockLayers::type number_of_layers = 1,
+        std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+            inner_boundary_condition = nullptr,
+        std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+            outer_boundary_condition = nullptr,
+        const Options::Context& context = {});
 
   Shell() = default;
   Shell(const Shell&) = delete;
@@ -154,6 +198,10 @@ class Shell : public DomainCreator<3> {
   typename UseLogarithmicMap::type use_logarithmic_map_ = false;
   typename WhichWedges::type which_wedges_ = ShellWedges::All;
   typename RadialBlockLayers::type number_of_layers_ = 1;
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      inner_boundary_condition_;
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      outer_boundary_condition_;
 };
 }  // namespace creators
 }  // namespace domain
