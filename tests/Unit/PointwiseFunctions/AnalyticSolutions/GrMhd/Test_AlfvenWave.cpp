@@ -170,8 +170,8 @@ void test_solution() noexcept {
   const std::array<double, 3> x{{1.0, 2.3, -0.4}};
   const std::array<double, 3> dx{{1.e-4, 1.e-4, 1.e-4}};
 
-  domain::creators::Brick brick(x - dx, x + dx, {{false, false, false}},
-                                {{0, 0, 0}}, {{5, 5, 5}});
+  domain::creators::Brick brick(x - dx, x + dx, {{0, 0, 0}}, {{5, 5, 5}},
+                                {{false, false, false}});
   Mesh<3> mesh{brick.initial_extents()[0], Spectral::Basis::Legendre,
                Spectral::Quadrature::GaussLobatto};
   const auto domain = brick.create_domain();

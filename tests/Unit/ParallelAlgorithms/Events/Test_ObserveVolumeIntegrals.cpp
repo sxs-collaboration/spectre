@@ -169,8 +169,8 @@ std::unique_ptr<DomainCreator<2>> domain_creator() noexcept {
 template <>
 std::unique_ptr<DomainCreator<3>> domain_creator() noexcept {
   return std::make_unique<domain::creators::Brick>(domain::creators::Brick(
-      {{-0.5, -0.5, -0.5}}, {{0.5, 0.5, 0.5}}, {{false, false, false}},
-      {{0, 0, 0}}, {{4, 4, 4}}));
+      {{-0.5, -0.5, -0.5}}, {{0.5, 0.5, 0.5}}, {{0, 0, 0}}, {{4, 4, 4}},
+      {{false, false, false}}));
 }
 
 template <size_t VolumeDim, typename ObserveEvent>
