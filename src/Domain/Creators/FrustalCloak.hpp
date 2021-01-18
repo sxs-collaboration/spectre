@@ -28,8 +28,12 @@ class CoordinateMap;
 
 namespace domain {
 namespace creators {
-/// Create a 3D cubical domain with two equal-sized abutting excised cubes in
-/// the center. This is done by combining ten frusta.
+/*!
+ * \brief Create a 3D cubical domain with two equal-sized abutting excised cubes
+ * in the center. This is done by combining ten frusta.
+ *
+ * \image html FrustalCloak.png "A slice through the frustal cloak."
+ */
 class FrustalCloak : public DomainCreator<3> {
  public:
   using maps_list =
