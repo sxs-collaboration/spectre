@@ -77,7 +77,7 @@ void test_compute_tags(const DataVector& used_for_size) noexcept {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Elasticity",
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Elasticity.PotentialEnergy",
                   "[Unit][PointwiseFunctions]") {
   pypp::SetupLocalPythonEnvironment local_python_env{"PointwiseFunctions"};
   GENERATE_UNINITIALIZED_DATAVECTOR;

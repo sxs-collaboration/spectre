@@ -29,8 +29,8 @@ class ConstitutiveRelation;
 namespace Elasticity {
 
 /*!
- * \brief Compute the fluxes \f$F^{ij}=Y^{ijkl}(x) S_{kl}(x)\f$ for
- * the Elasticity equation on a flat spatial metric in Cartesian coordinates.
+ * \brief Compute the fluxes \f$F^{ij}=Y^{ijkl}(x) S_{kl}(x)=-T^{ij}\f$ for
+ * the Elasticity equation.
  */
 template <size_t Dim>
 void primal_fluxes(

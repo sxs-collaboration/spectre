@@ -27,21 +27,20 @@ CubicCrystal::CubicCrystal(const double c_11, const double c_12,
              "must be positive and the poisson ratio smaller or equal to 0.5.");
 }
 
-tnsr::II<DataVector, 3> CubicCrystal::stress(
-    const tnsr::ii<DataVector, 3>& strain,
-    const tnsr::I<DataVector, 3>& /*x*/) const noexcept {
-  auto result = make_with_value<tnsr::II<DataVector, 3>>(strain, 0.);
-  for (size_t i = 0; i < 3; i++) {
-    result.get(2, 2) -= strain.get(i, i);
+void CubicCrystal::stress(const gsl::not_null<tnsr::II<DataVector, 3>*> stress,
+                          const tnsr::ii<DataVector, 3>& strain,
+                          const tnsr::I<DataVector, 3>& /*x*/) const noexcept {
+  get<2, 2>(*stress) = -get<0, 0>(strain);
+  for (size_t i = 1; i < 3; ++i) {
+    stress->get(2, 2) -= strain.get(i, i);
   }
-  result.get(2, 2) *= c_12_;
-  for (size_t i = 0; i < 3; i++) {
-    result.get(i, i) = result.get(2, 2) - (c_11_ - c_12_) * strain.get(i, i);
-    for (size_t j = 0; j < i; j++) {
-      result.get(i, j) = -2. * c_44_ * strain.get(i, j);
+  stress->get(2, 2) *= c_12_;
+  for (size_t i = 0; i < 3; ++i) {
+    stress->get(i, i) = stress->get(2, 2) - (c_11_ - c_12_) * strain.get(i, i);
+    for (size_t j = 0; j < i; ++j) {
+      stress->get(i, j) = -2. * c_44_ * strain.get(i, j);
     }
   }
-  return result;
 }
 
 double CubicCrystal::c_11() const noexcept { return c_11_; }

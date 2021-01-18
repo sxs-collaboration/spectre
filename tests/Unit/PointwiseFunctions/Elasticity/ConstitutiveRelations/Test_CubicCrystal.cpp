@@ -46,7 +46,7 @@ void test_semantics() {
 
 void test_consistency(const tnsr::ii<DataVector, 3>& random_strain,
                       const tnsr::I<DataVector, 3>& random_inertial_coords) {
-  INFO("Consistentcy between CubicCrystal and IsotropicHomogeneous");
+  INFO("Consistency between CubicCrystal and IsotropicHomogeneous");
   const double youngs_modulus = 1.;
   const double poisson_ratio = 1. / 3.;
   const double isotropic_bulk_modulus =
@@ -64,11 +64,15 @@ void test_consistency(const tnsr::ii<DataVector, 3>& random_strain,
   // this should be isotropic homogeneous
   const Elasticity::ConstitutiveRelations::CubicCrystal
       cubic_crystalline_relation{c_11, c_12, c_44};
-  const auto cubic_crystalline_stress =
-      cubic_crystalline_relation.stress(random_strain, random_inertial_coords);
-  const auto isotropic_homogeneous_stress =
-      isotropic_homogeneous_relation.stress(random_strain,
-                                            random_inertial_coords);
+  tnsr::II<DataVector, 3> cubic_crystalline_stress{
+      random_strain.begin()->size()};
+  cubic_crystalline_relation.stress(make_not_null(&cubic_crystalline_stress),
+                                    random_strain, random_inertial_coords);
+  tnsr::II<DataVector, 3> isotropic_homogeneous_stress{
+      random_strain.begin()->size()};
+  isotropic_homogeneous_relation.stress(
+      make_not_null(&isotropic_homogeneous_stress), random_strain,
+      random_inertial_coords);
   for (size_t i = 0; i < 3; i++) {
     for (size_t j = 0; j < 3; j++) {
       CHECK_ITERABLE_APPROX(cubic_crystalline_stress.get(i, j),
@@ -77,10 +81,12 @@ void test_consistency(const tnsr::ii<DataVector, 3>& random_strain,
   }
   // This relation should be the negative identity
   const Elasticity::ConstitutiveRelations::CubicCrystal relation{1., 0., 0.5};
-  const auto stress = relation.stress(random_strain, random_inertial_coords);
+  relation.stress(make_not_null(&cubic_crystalline_stress), random_strain,
+                  random_inertial_coords);
   for (size_t i = 0; i < 3; i++) {
     for (size_t j = 0; j < 3; j++) {
-      CHECK_ITERABLE_APPROX(stress.get(i, j), -random_strain.get(i, j));
+      CHECK_ITERABLE_APPROX(cubic_crystalline_stress.get(i, j),
+                            -random_strain.get(i, j));
     }
   }
 }
@@ -90,8 +96,12 @@ void test_implementation(const double youngs_modulus,
   const Elasticity::ConstitutiveRelations::CubicCrystal relation{
       youngs_modulus, poisson_ratio, shear_modulus};
   pypp::check_with_random_values<1>(
-      &Elasticity::ConstitutiveRelations::CubicCrystal::stress, relation,
-      "CubicCrystal", "stress", {{{-1., 1.}}},
+      static_cast<void (Elasticity::ConstitutiveRelations::CubicCrystal::*)(
+          gsl::not_null<tnsr::II<DataVector, 3>*>,
+          const tnsr::ii<DataVector, 3>&, const tnsr::I<DataVector, 3>&)
+                      const noexcept>(
+          &Elasticity::ConstitutiveRelations::CubicCrystal::stress),
+      relation, "CubicCrystal", {"stress"}, {{{-1., 1.}}},
       std::tuple<double, double, double>{youngs_modulus, poisson_ratio,
                                          shear_modulus},
       DataVector(5));

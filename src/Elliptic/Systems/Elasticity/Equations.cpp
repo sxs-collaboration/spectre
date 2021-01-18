@@ -24,16 +24,9 @@ void primal_fluxes(
     const ConstitutiveRelations::ConstitutiveRelation<Dim>&
         constitutive_relation,
     const tnsr::I<DataVector, Dim>& coordinates) noexcept {
-  const auto stress = constitutive_relation.stress(strain, coordinates);
-  // To set the components of the flux each component of the symmetric stress
-  // tensor is used twice. So the tensor can't be moved in its entirety.
-  for (size_t d = 0; d < Dim; d++) {
-    for (size_t e = 0; e < Dim; e++) {
-      // Also, the stress has lower and the flux upper indices. The minus sign
-      // originates in the definition of the stress \f$T^{ij} = -Y^{ijkl}
-      // S_{kl}\f$.
-      flux_for_displacement->get(d, e) = -stress.get(d, e);
-    }
+  constitutive_relation.stress(flux_for_displacement, strain, coordinates);
+  for (auto& component : *flux_for_displacement) {
+    component *= -1.;
   }
 }
 
@@ -79,9 +72,9 @@ void curved_auxiliary_fluxes(
     const tnsr::I<DataVector, Dim>& displacement) noexcept {
   const auto co_displacement = raise_or_lower_index(displacement, metric);
   std::fill(flux_for_strain->begin(), flux_for_strain->end(), 0.);
-  for (size_t d = 0; d < Dim; d++) {
+  for (size_t d = 0; d < Dim; ++d) {
     flux_for_strain->get(d, d, d) += 0.5 * co_displacement.get(d);
-    for (size_t e = 0; e < Dim; e++) {
+    for (size_t e = 0; e < Dim; ++e) {
       flux_for_strain->get(d, e, d) += 0.5 * co_displacement.get(e);
     }
   }

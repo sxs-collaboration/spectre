@@ -51,8 +51,14 @@ void test_implementation(const double incompressibility,
   const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim> relation{
       incompressibility, rigidity};
   pypp::check_with_random_values<1>(
-      &Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>::stress,
-      relation, "IsotropicHomogeneous", "stress", {{{-10.0, 10.0}}},
+      static_cast<void (
+          Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>::*)(
+          gsl::not_null<tnsr::II<DataVector, Dim>*>,
+          const tnsr::ii<DataVector, Dim>&, const tnsr::I<DataVector, Dim>&)
+                      const noexcept>(
+          &Elasticity::ConstitutiveRelations::IsotropicHomogeneous<
+              Dim>::stress),
+      relation, "IsotropicHomogeneous", {"stress"}, {{{-10.0, 10.0}}},
       std::tuple<double, double>{incompressibility, rigidity}, DataVector(5));
 }
 
@@ -83,7 +89,9 @@ void test_identity(const tnsr::ii<DataVector, Dim>& random_strain,
   // This relation should be the negative identity
   const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim> relation{
       1. / 3., 1. / 2.};
-  const auto stress = relation.stress(random_strain, random_inertial_coords);
+  tnsr::II<DataVector, Dim> stress{random_strain.begin()->size()};
+  relation.stress(make_not_null(&stress), random_strain,
+                  random_inertial_coords);
   for (size_t i = 0; i < Dim; i++) {
     for (size_t j = 0; j < Dim; j++) {
       CHECK_ITERABLE_APPROX(stress.get(i, j), -random_strain.get(i, j));
@@ -103,7 +111,9 @@ void test_trace<3>(const tnsr::ii<DataVector, 3>& random_strain,
   // trace of the strain. The shear modulus should be irrelevant here.
   const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<3> relation{
       1. / 3., 10.};
-  const auto stress = relation.stress(random_strain, random_inertial_coords);
+  tnsr::II<DataVector, 3> stress{random_strain.begin()->size()};
+  relation.stress(make_not_null(&stress), random_strain,
+                  random_inertial_coords);
   auto strain_trace = make_with_value<DataVector>(random_strain, 0.);
   auto stress_trace = make_with_value<DataVector>(random_strain, 0.);
   for (size_t i = 0; i < 3; i++) {
@@ -119,7 +129,9 @@ void test_trace<2>(const tnsr::ii<DataVector, 2>& random_strain,
   INFO("Trace");
   const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<2> relation{
       1. / 3., 2.};
-  const auto stress = relation.stress(random_strain, random_inertial_coords);
+  tnsr::II<DataVector, 2> stress{random_strain.begin()->size()};
+  relation.stress(make_not_null(&stress), random_strain,
+                  random_inertial_coords);
   auto strain_trace = make_with_value<DataVector>(random_strain, 0.);
   auto stress_trace = make_with_value<DataVector>(random_strain, 0.);
   for (size_t i = 0; i < 2; i++) {
@@ -138,7 +150,9 @@ void test_traceless(const tnsr::ii<DataVector, Dim>& random_strain,
   // The shear modulus should be irrelevant here.
   const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim> relation{
       0., 10.};
-  const auto stress = relation.stress(random_strain, random_inertial_coords);
+  tnsr::II<DataVector, Dim> stress{random_strain.begin()->size()};
+  relation.stress(make_not_null(&stress), random_strain,
+                  random_inertial_coords);
   auto trace = make_with_value<DataVector>(random_strain, 0.);
   for (size_t i = 0; i < Dim; i++) {
     trace += stress.get(i, i);
