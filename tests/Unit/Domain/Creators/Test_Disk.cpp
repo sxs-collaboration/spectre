@@ -42,7 +42,10 @@ void test_disk_construction(
     const double outer_radius,
     const std::array<size_t, 2>& expected_wedge_extents,
     const std::vector<std::array<size_t, 2>>& expected_refinement_level,
-    const bool use_equiangular_map) {
+    const bool use_equiangular_map,
+    const std::vector<DirectionMap<
+        2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&
+        expected_boundary_conditions = {}) {
   const auto domain = disk.create_domain();
   const OrientationMap<2> aligned_orientation{};
   const OrientationMap<2> quarter_turn_ccw(std::array<Direction<2>, 2>{
@@ -127,12 +130,39 @@ void test_disk_construction(
                             inner_radius / sqrt(2.0))}));
   }
   test_domain_construction(domain, expected_block_neighbors,
-                           expected_external_boundaries, coord_maps);
+                           expected_external_boundaries, coord_maps,
+                           std::numeric_limits<double>::signaling_NaN(), {}, {},
+                           expected_boundary_conditions);
 
   test_initial_domain(domain, disk.initial_refinement_levels());
 
   Parallel::register_classes_in_list<typename creators::Disk::maps_list>();
   test_serialization(domain);
+}
+
+std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+create_boundary_condition() {
+  return std::make_unique<
+      TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<2>>(
+      Direction<2>::lower_xi(), 2);
+}
+
+auto create_boundary_conditions() {
+  std::vector<DirectionMap<
+      2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions_all_blocks{};
+  const auto boundary_condition = create_boundary_condition();
+  for (size_t block_id = 0; block_id < 4; ++block_id) {
+    DirectionMap<2,
+                 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
+        boundary_conditions{};
+    boundary_conditions[Direction<2>::upper_xi()] =
+        boundary_condition->get_clone();
+    boundary_conditions_all_blocks.push_back(std::move(boundary_conditions));
+  }
+  boundary_conditions_all_blocks.emplace_back();
+
+  return boundary_conditions_all_blocks;
 }
 
 void test_disk_boundaries_equiangular() {
@@ -147,6 +177,14 @@ void test_disk_boundaries_equiangular() {
   test_physical_separation(disk.create_domain().blocks());
   test_disk_construction(disk, inner_radius, outer_radius, grid_points,
                          {5, make_array<2>(refinement_level)}, true);
+
+  const creators::Disk disk_boundary_conditions{
+      inner_radius, outer_radius, refinement_level,
+      grid_points,  true,         create_boundary_condition()};
+  test_physical_separation(disk_boundary_conditions.create_domain().blocks());
+  test_disk_construction(disk_boundary_conditions, inner_radius, outer_radius,
+                         grid_points, {5, make_array<2>(refinement_level)},
+                         true, create_boundary_conditions());
 }
 
 void test_disk_factory_equiangular() {
@@ -169,6 +207,25 @@ void test_disk_factory_equiangular() {
   test_disk_construction(dynamic_cast<const creators::Disk&>(*disk),
                          inner_radius, outer_radius, grid_points,
                          {5, make_array<2>(refinement_level)}, true);
+
+  const auto disk_boundary_conditions = TestHelpers::test_factory_creation<
+      DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithBoundaryConditions<2>>(
+      "Disk:\n"
+      "  InnerRadius: 1\n"
+      "  OuterRadius: 3\n"
+      "  InitialRefinement: 2\n"
+      "  InitialGridPoints: [2,3]\n"
+      "  UseEquiangularMap: true\n"
+      "  BoundaryCondition:\n"
+      "    TestBoundaryCondition:\n"
+      "      Direction: lower-xi\n"
+      "      BlockId: 2\n");
+  test_disk_construction(
+      dynamic_cast<const creators::Disk&>(*disk_boundary_conditions),
+      inner_radius, outer_radius, grid_points,
+      {5, make_array<2>(refinement_level)}, true, create_boundary_conditions());
 }
 
 void test_disk_boundaries_equidistant() {
@@ -183,6 +240,23 @@ void test_disk_boundaries_equidistant() {
   test_physical_separation(disk.create_domain().blocks());
   test_disk_construction(disk, inner_radius, outer_radius, grid_points,
                          {5, make_array<2>(refinement_level)}, false);
+
+  const creators::Disk disk_boundary_conditions{
+      inner_radius, outer_radius, refinement_level,
+      grid_points,  false,        create_boundary_condition()};
+  test_physical_separation(disk_boundary_conditions.create_domain().blocks());
+  test_disk_construction(disk_boundary_conditions, inner_radius, outer_radius,
+                         grid_points, {5, make_array<2>(refinement_level)},
+                         false, create_boundary_conditions());
+
+  CHECK_THROWS_WITH(
+      creators::Disk(inner_radius, outer_radius, refinement_level, grid_points,
+                     false,
+                     std::make_unique<TestHelpers::domain::BoundaryConditions::
+                                          TestPeriodicBoundaryCondition<2>>(),
+                     Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "Cannot have periodic boundary conditions on a disk"));
 }
 
 void test_disk_factory_equidistant() {
@@ -205,6 +279,26 @@ void test_disk_factory_equidistant() {
   test_disk_construction(dynamic_cast<const creators::Disk&>(*disk),
                          inner_radius, outer_radius, grid_points,
                          {5, make_array<2>(refinement_level)}, false);
+
+  const auto disk_boundary_conditions = TestHelpers::test_factory_creation<
+      DomainCreator<2>, domain::OptionTags::DomainCreator<2>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithBoundaryConditions<2>>(
+      "Disk:\n"
+      "  InnerRadius: 1\n"
+      "  OuterRadius: 3\n"
+      "  InitialRefinement: 2\n"
+      "  InitialGridPoints: [2,3]\n"
+      "  UseEquiangularMap: false\n"
+      "  BoundaryCondition:\n"
+      "    TestBoundaryCondition:\n"
+      "      Direction: lower-xi\n"
+      "      BlockId: 2\n");
+  test_disk_construction(
+      dynamic_cast<const creators::Disk&>(*disk_boundary_conditions),
+      inner_radius, outer_radius, grid_points,
+      {5, make_array<2>(refinement_level)}, false,
+      create_boundary_conditions());
 }
 }  // namespace
 

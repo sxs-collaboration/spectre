@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -32,7 +33,10 @@ Disk::Disk(typename InnerRadius::type inner_radius,
            typename OuterRadius::type outer_radius,
            typename InitialRefinement::type initial_refinement,
            typename InitialGridPoints::type initial_number_of_grid_points,
-           typename UseEquiangularMap::type use_equiangular_map) noexcept
+           typename UseEquiangularMap::type use_equiangular_map,
+           std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+               boundary_condition,
+           const Options::Context& context)
     // clang-tidy: trivially copyable
     : inner_radius_(std::move(inner_radius)),         // NOLINT
       outer_radius_(std::move(outer_radius)),         // NOLINT
@@ -40,7 +44,13 @@ Disk::Disk(typename InnerRadius::type inner_radius,
           std::move(initial_refinement)),             // NOLINT
       initial_number_of_grid_points_(                 // NOLINT
           std::move(initial_number_of_grid_points)),  // NOLINT
-      use_equiangular_map_(use_equiangular_map) {}    // NOLINT
+      use_equiangular_map_(use_equiangular_map),      // NOLINT
+      boundary_condition_(std::move(boundary_condition)) {
+  using domain::BoundaryConditions::is_periodic;
+  if (boundary_condition_ != nullptr and is_periodic(boundary_condition_)) {
+    PARSE_ERROR(context, "Cannot have periodic boundary conditions on a disk.");
+  }
+}
 
 Domain<2> Disk::create_domain() const noexcept {
   using Wedge2DMap = CoordinateMaps::Wedge2D;
@@ -94,7 +104,26 @@ Domain<2> Disk::create_domain() const noexcept {
                      Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
                             inner_radius_ / sqrt(2.0))}));
   }
-  return Domain<2>{std::move(coord_maps), corners};
+
+  std::vector<DirectionMap<
+      2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions_all_blocks{};
+  if (boundary_condition_ != nullptr) {
+    for (size_t block_id = 0; block_id < 4; ++block_id) {
+      DirectionMap<
+          2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
+          boundary_conditions{};
+      boundary_conditions[Direction<2>::upper_xi()] =
+          boundary_condition_->get_clone();
+      boundary_conditions_all_blocks.push_back(std::move(boundary_conditions));
+    }
+    boundary_conditions_all_blocks.emplace_back();
+  }
+
+  return Domain<2>{std::move(coord_maps),
+                   corners,
+                   {},
+                   std::move(boundary_conditions_all_blocks)};
 }
 
 std::vector<std::array<size_t, 2>> Disk::initial_extents() const noexcept {
@@ -106,8 +135,8 @@ std::vector<std::array<size_t, 2>> Disk::initial_extents() const noexcept {
       {{initial_number_of_grid_points_[1], initial_number_of_grid_points_[1]}}};
 }
 
-std::vector<std::array<size_t, 2>> Disk::initial_refinement_levels() const
-    noexcept {
+std::vector<std::array<size_t, 2>> Disk::initial_refinement_levels()
+    const noexcept {
   return {5, make_array<2>(initial_refinement_)};
 }
 }  // namespace domain::creators
