@@ -606,23 +606,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell", "[Domain][Unit]") {
   test_shell_factory_wedges_one_along_minus_x();
 
   {
-    INFO("shell factory logarithmic block layers");
-    const auto log_shell = TestHelpers::test_factory_creation<
-        DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
-        TestHelpers::domain::BoundaryConditions::
-            MetavariablesWithoutBoundaryConditions<3>>(
-        "Shell:\n"
-        "  InnerRadius: 1\n"
-        "  OuterRadius: 3\n"
-        "  InitialRefinement: 2\n"
-        "  InitialGridPoints: [2,3]\n"
-        "  UseEquiangularMap: false\n"
-        "  AspectRatio: 2.0        \n"
-        "  UseLogarithmicMap: true\n"
-        "  WhichWedges: All\n"
-        "  RadialBlockLayers: 6\n");
-  }
-  {
     INFO("Radial block layers 1");
     test_radial_block_layers(1.0, 10.0, 0, true, 8, {0, 1, 2, 3, 4, 5, 6, 7});
   }
