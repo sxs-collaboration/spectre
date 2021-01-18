@@ -76,47 +76,53 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
       dynamic_cast<const creators::AlignedLattice<2>*>(domain_creator_2d.get());
   test_aligned_blocks(*aligned_blocks_creator_2d);
 
-  const auto domain_creator_3d =
-      TestHelpers::test_factory_creation<DomainCreator<3>>(
-          "AlignedLattice:\n"
-          "  BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2], [-0.2, 3.2]]\n"
-          "  IsPeriodicIn: [false, true, false]\n"
-          "  InitialGridPoints: [3, 4, 5]\n"
-          "  InitialLevels: [2, 1, 0]\n"
-          "  RefinedLevels: []\n"
-          "  RefinedGridPoints: []\n"
-          "  BlocksToExclude: []\n");
+  const auto domain_creator_3d = TestHelpers::test_factory_creation<
+      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithoutBoundaryConditions<3>>(
+      "AlignedLattice:\n"
+      "  BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2], [-0.2, 3.2]]\n"
+      "  IsPeriodicIn: [false, true, false]\n"
+      "  InitialGridPoints: [3, 4, 5]\n"
+      "  InitialLevels: [2, 1, 0]\n"
+      "  RefinedLevels: []\n"
+      "  RefinedGridPoints: []\n"
+      "  BlocksToExclude: []\n");
   const auto* aligned_blocks_creator_3d =
       dynamic_cast<const creators::AlignedLattice<3>*>(domain_creator_3d.get());
   test_aligned_blocks(*aligned_blocks_creator_3d);
 
-  const auto cubical_shell_domain =
-      TestHelpers::test_factory_creation<DomainCreator<3>>(
-          "AlignedLattice:\n"
-          "  BlockBounds: [[0.1, 2.6, 5.1, 6.0], [-0.4, 3.2, 6.2, 7.0], "
-          "[-0.2, 3.2, 4.0, 5.2]]\n"
-          "  IsPeriodicIn: [false, false, false]\n"
-          "  InitialGridPoints: [3, 4, 5]\n"
-          "  InitialLevels: [2, 1, 0]\n"
-          "  RefinedLevels: []\n"
-          "  RefinedGridPoints: []\n"
-          "  BlocksToExclude: [[1, 1, 1]]");
+  const auto cubical_shell_domain = TestHelpers::test_factory_creation<
+      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithoutBoundaryConditions<3>>(
+      "AlignedLattice:\n"
+      "  BlockBounds: [[0.1, 2.6, 5.1, 6.0], [-0.4, 3.2, 6.2, 7.0], "
+      "[-0.2, 3.2, 4.0, 5.2]]\n"
+      "  IsPeriodicIn: [false, false, false]\n"
+      "  InitialGridPoints: [3, 4, 5]\n"
+      "  InitialLevels: [2, 1, 0]\n"
+      "  RefinedLevels: []\n"
+      "  RefinedGridPoints: []\n"
+      "  BlocksToExclude: [[1, 1, 1]]");
   const auto* cubical_shell_creator_3d =
       dynamic_cast<const creators::AlignedLattice<3>*>(
           cubical_shell_domain.get());
   test_aligned_blocks(*cubical_shell_creator_3d);
 
-  const auto unit_cubical_shell_domain =
-      TestHelpers::test_factory_creation<DomainCreator<3>>(
-          "AlignedLattice:\n"
-          "  BlockBounds: [[-1.5, -0.5, 0.5, 1.5], [-1.5, -0.5, 0.5, 1.5], "
-          "[-1.5, -0.5, 0.5, 1.5]]\n"
-          "  IsPeriodicIn: [false, false, false]\n"
-          "  InitialGridPoints: [5, 5, 5]\n"
-          "  InitialLevels: [1, 1, 1]\n"
-          "  RefinedLevels: []\n"
-          "  RefinedGridPoints: []\n"
-          "  BlocksToExclude: [[1, 1, 1]]");
+  const auto unit_cubical_shell_domain = TestHelpers::test_factory_creation<
+      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithoutBoundaryConditions<3>>(
+      "AlignedLattice:\n"
+      "  BlockBounds: [[-1.5, -0.5, 0.5, 1.5], [-1.5, -0.5, 0.5, 1.5], "
+      "[-1.5, -0.5, 0.5, 1.5]]\n"
+      "  IsPeriodicIn: [false, false, false]\n"
+      "  InitialGridPoints: [5, 5, 5]\n"
+      "  InitialLevels: [1, 1, 1]\n"
+      "  RefinedLevels: []\n"
+      "  RefinedGridPoints: []\n"
+      "  BlocksToExclude: [[1, 1, 1]]");
   const auto* unit_cubical_shell_creator_3d =
       dynamic_cast<const creators::AlignedLattice<3>*>(
           unit_cubical_shell_domain.get());
@@ -228,16 +234,18 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
 SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice.Error",
                   "[Unit][ErrorHandling]") {
   ERROR_TEST();
-  const auto failed_cubical_shell_domain =
-      TestHelpers::test_factory_creation<DomainCreator<3>>(
-          "AlignedLattice:\n"
-          "  BlockBounds: [[-1.5, -0.5, 0.5, 1.5], [-1.5, -0.5, 0.5, 1.5], "
-          "[-1.5, -0.5, 0.5, 1.5]]\n"
-          "  IsPeriodicIn: [true, false, false]\n"
-          "  InitialGridPoints: [5, 5, 5]\n"
-          "  InitialLevels: [1, 1, 1]\n"
-          "  RefinedLevels: []\n"
-          "  RefinedGridPoints: []\n"
-          "  BlocksToExclude: [[1, 1, 1]]");
+  const auto failed_cubical_shell_domain = TestHelpers::test_factory_creation<
+      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithoutBoundaryConditions<3>>(
+      "AlignedLattice:\n"
+      "  BlockBounds: [[-1.5, -0.5, 0.5, 1.5], [-1.5, -0.5, 0.5, 1.5], "
+      "[-1.5, -0.5, 0.5, 1.5]]\n"
+      "  IsPeriodicIn: [true, false, false]\n"
+      "  InitialGridPoints: [5, 5, 5]\n"
+      "  InitialLevels: [1, 1, 1]\n"
+      "  RefinedLevels: []\n"
+      "  RefinedGridPoints: []\n"
+      "  BlocksToExclude: [[1, 1, 1]]");
 }
 }  // namespace domain

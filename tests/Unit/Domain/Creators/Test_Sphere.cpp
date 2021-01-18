@@ -25,12 +25,14 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Sphere.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/OptionTags.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
@@ -228,7 +230,10 @@ void test_sphere_boundaries_equiangular() {
 
 void test_sphere_factory_equiangular() {
   INFO("Sphere factory equiangular");
-  const auto sphere = TestHelpers::test_factory_creation<DomainCreator<3>>(
+  const auto sphere = TestHelpers::test_factory_creation<
+      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithoutBoundaryConditions<3>>(
       "  Sphere:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -263,7 +268,10 @@ void test_sphere_boundaries_equidistant() {
 
 void test_sphere_factory_equidistant() {
   INFO("Sphere factory equidistant");
-  const auto sphere = TestHelpers::test_factory_creation<DomainCreator<3>>(
+  const auto sphere = TestHelpers::test_factory_creation<
+      DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+      TestHelpers::domain::BoundaryConditions::
+          MetavariablesWithoutBoundaryConditions<3>>(
       "  Sphere:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"

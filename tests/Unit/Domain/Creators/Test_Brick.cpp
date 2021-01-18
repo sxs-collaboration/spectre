@@ -27,12 +27,14 @@
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/OptionTags.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
@@ -229,15 +231,17 @@ void test_brick() {
 void test_brick_factory() {
   {
     INFO("Brick factory time independent");
-    const auto domain_creator =
-        TestHelpers::test_factory_creation<DomainCreator<3>>(
-            "Brick:\n"
-            "  LowerBound: [0,0,0]\n"
-            "  UpperBound: [1,2,3]\n"
-            "  IsPeriodicIn: [True,False,True]\n"
-            "  InitialGridPoints: [3,4,3]\n"
-            "  InitialRefinement: [2,3,2]\n"
-            "  TimeDependence: None\n");
+    const auto domain_creator = TestHelpers::test_factory_creation<
+        DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+        TestHelpers::domain::BoundaryConditions::
+            MetavariablesWithoutBoundaryConditions<3>>(
+        "Brick:\n"
+        "  LowerBound: [0,0,0]\n"
+        "  UpperBound: [1,2,3]\n"
+        "  IsPeriodicIn: [True,False,True]\n"
+        "  InitialGridPoints: [3,4,3]\n"
+        "  InitialRefinement: [2,3,2]\n"
+        "  TimeDependence: None\n");
     const auto* brick_creator =
         dynamic_cast<const creators::Brick*>(domain_creator.get());
     test_brick_construction(
@@ -253,21 +257,23 @@ void test_brick_factory() {
   }
   {
     INFO("Brick factory time dependent");
-    const auto domain_creator =
-        TestHelpers::test_factory_creation<DomainCreator<3>>(
-            "Brick:\n"
-            "  LowerBound: [0,0,0]\n"
-            "  UpperBound: [1,2,3]\n"
-            "  IsPeriodicIn: [True,False,True]\n"
-            "  InitialGridPoints: [3,4,3]\n"
-            "  InitialRefinement: [2,3,2]\n"
-            "  TimeDependence:\n"
-            "    UniformTranslation:\n"
-            "      InitialTime: 1.0\n"
-            "      InitialExpirationDeltaT: 9.0\n"
-            "      Velocity: [2.3, -0.3, 0.5]\n"
-            "      FunctionOfTimeNames: [TranslationX, TranslationY, "
-            "TranslationZ]");
+    const auto domain_creator = TestHelpers::test_factory_creation<
+        DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
+        TestHelpers::domain::BoundaryConditions::
+            MetavariablesWithoutBoundaryConditions<3>>(
+        "Brick:\n"
+        "  LowerBound: [0,0,0]\n"
+        "  UpperBound: [1,2,3]\n"
+        "  IsPeriodicIn: [True,False,True]\n"
+        "  InitialGridPoints: [3,4,3]\n"
+        "  InitialRefinement: [2,3,2]\n"
+        "  TimeDependence:\n"
+        "    UniformTranslation:\n"
+        "      InitialTime: 1.0\n"
+        "      InitialExpirationDeltaT: 9.0\n"
+        "      Velocity: [2.3, -0.3, 0.5]\n"
+        "      FunctionOfTimeNames: [TranslationX, TranslationY, "
+        "TranslationZ]");
     const auto* brick_creator =
         dynamic_cast<const creators::Brick*>(domain_creator.get());
     test_brick_construction(
