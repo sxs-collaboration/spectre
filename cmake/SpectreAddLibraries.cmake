@@ -50,13 +50,17 @@ function(ADD_SPECTRE_LIBRARY LIBRARY_NAME)
   endif (NOT ${LIBRARY_TYPE} STREQUAL INTERFACE_LIBRARY)
   if (NOT "${LIBRARY_NAME}" MATCHES "^${SPECTRE_PCH}"
       AND NOT ${LIBRARY_IS_IMPORTED}
-      AND NOT ${LIBRARY_TYPE} STREQUAL INTERFACE_LIBRARY
-      AND TARGET ${SPECTRE_PCH})
-    target_link_libraries(${LIBRARY_NAME} PRIVATE ${SPECTRE_PCH})
+      AND NOT ${LIBRARY_TYPE} STREQUAL INTERFACE_LIBRARY)
+    add_dependencies(${LIBRARY_NAME} ${SPECTRE_PCH})
     set_source_files_properties(
         ${ARGN}
         OBJECT_DEPENDS "${SPECTRE_PCH_PATH}"
         )
+    target_compile_options(
+      ${LIBRARY_NAME}
+      PRIVATE
+      $<TARGET_PROPERTY:${SPECTRE_PCH},INTERFACE_COMPILE_OPTIONS>
+      )
   endif()
   if (${LIBRARY_TYPE} STREQUAL INTERFACE_LIBRARY)
     target_link_libraries(

@@ -11,10 +11,15 @@ function(add_spectre_executable TARGET_NAME)
       IMPORTED
       )
     if(NOT ${TARGET_IS_IMPORTED})
-      target_link_libraries(${TARGET_NAME} PRIVATE ${SPECTRE_PCH})
+      add_dependencies(${TARGET_NAME} ${SPECTRE_PCH})
       set_source_files_properties(
         ${ARGN}
         OBJECT_DEPENDS "${SPECTRE_PCH_PATH}"
+        )
+      target_compile_options(
+        ${TARGET_NAME}
+        PRIVATE
+        $<TARGET_PROPERTY:${SPECTRE_PCH},INTERFACE_COMPILE_OPTIONS>
         )
     endif()
   endif (USE_PCH)
