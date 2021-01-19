@@ -100,10 +100,9 @@ void test_impl(
     const MortarMap<Dim, Mesh<Dim - 1>>& expected_mortar_meshes,
     const MortarMap<Dim, std::array<Spectral::MortarSize, Dim - 1>>&
         expected_mortar_sizes,
-    const DirectionMap<
-        Dim, std::optional<Variables<tmpl::list<
-                 evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
-                 evolution::dg::Tags::InternalFace::NormalCovector<Dim>>>>>&
+    const DirectionMap<Dim, std::optional<Variables<tmpl::list<
+                                evolution::dg::Tags::MagnitudeOfNormal,
+                                evolution::dg::Tags::NormalCovector<Dim>>>>>&
         expected_normal_covector_quantities) {
   using metavars = Metavariables<Dim>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
@@ -152,8 +151,8 @@ void test_impl(
   // Cast result of `operator==` to a bool to trick Catch into not trying to
   // stream a nested STL container.
   CHECK(static_cast<bool>(
-      get_tag(evolution::dg::Tags::InternalFace::NormalCovectorAndMagnitude<
-              Dim>{}) == expected_normal_covector_quantities));
+      get_tag(evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>{}) ==
+      expected_normal_covector_quantities));
 }
 
 template <size_t Dim>
@@ -188,10 +187,11 @@ void test<1>(const Spectral::Quadrature quadrature) {
       {boundary_mortar_id, {}}, {interface_mortar_id, {}}};
 
   const DirectionMap<
-      1, std::optional<Variables<
-             tmpl::list<evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
-                        evolution::dg::Tags::InternalFace::NormalCovector<1>>>>>
-      expected_normal_covector_quantities{{Direction<1>::upper_xi(), {}}};
+      1, std::optional<
+             Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                                  evolution::dg::Tags::NormalCovector<1>>>>>
+      expected_normal_covector_quantities{{Direction<1>::lower_xi(), {}},
+                                          {Direction<1>::upper_xi(), {}}};
 
   test_impl(initial_extents, element, time_step_id, quadrature,
             expected_mortar_meshes, expected_mortar_sizes,
@@ -250,11 +250,13 @@ void test<2>(const Spectral::Quadrature quadrature) {
   }
 
   const DirectionMap<
-      2, std::optional<Variables<
-             tmpl::list<evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
-                        evolution::dg::Tags::InternalFace::NormalCovector<2>>>>>
-      expected_normal_covector_quantities{{Direction<2>::upper_xi(), {}},
-                                          {Direction<2>::lower_eta(), {}}};
+      2, std::optional<
+             Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                                  evolution::dg::Tags::NormalCovector<2>>>>>
+      expected_normal_covector_quantities{{Direction<2>::lower_xi(), {}},
+                                          {Direction<2>::upper_xi(), {}},
+                                          {Direction<2>::lower_eta(), {}},
+                                          {Direction<2>::upper_eta(), {}}};
 
   test_impl(initial_extents, element, time_step_id, quadrature,
             expected_mortar_meshes, expected_mortar_sizes,
@@ -322,12 +324,13 @@ void test<3>(const Spectral::Quadrature quadrature) {
   }
 
   const DirectionMap<
-      3, std::optional<Variables<
-             tmpl::list<evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
-                        evolution::dg::Tags::InternalFace::NormalCovector<3>>>>>
-      expected_normal_covector_quantities{{Direction<3>::upper_xi(), {}},
-                                          {Direction<3>::lower_eta(), {}},
-                                          {Direction<3>::upper_zeta(), {}}};
+      3, std::optional<
+             Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                                  evolution::dg::Tags::NormalCovector<3>>>>>
+      expected_normal_covector_quantities{
+          {Direction<3>::lower_xi(), {}},   {Direction<3>::upper_xi(), {}},
+          {Direction<3>::lower_eta(), {}},  {Direction<3>::upper_eta(), {}},
+          {Direction<3>::lower_zeta(), {}}, {Direction<3>::upper_zeta(), {}}};
 
   test_impl(initial_extents, element, time_step_id, quadrature,
             expected_mortar_meshes, expected_mortar_sizes,

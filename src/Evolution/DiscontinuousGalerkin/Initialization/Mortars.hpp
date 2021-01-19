@@ -81,10 +81,10 @@ struct Mortars {
   using initialization_tags = tmpl::list<::domain::Tags::InitialExtents<Dim>,
                                          evolution::dg::Tags::Quadrature>;
 
-  using simple_tags = tmpl::list<
-      Tags::MortarData<Dim>, Tags::MortarMesh<Dim>, Tags::MortarSize<Dim>,
-      Tags::MortarNextTemporalId<Dim>,
-      evolution::dg::Tags::InternalFace::NormalCovectorAndMagnitude<Dim>>;
+  using simple_tags =
+      tmpl::list<Tags::MortarData<Dim>, Tags::MortarMesh<Dim>,
+                 Tags::MortarSize<Dim>, Tags::MortarNextTemporalId<Dim>,
+                 evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>;
   using compute_tags = tmpl::list<>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -128,10 +128,9 @@ struct Mortars {
       MortarMap<evolution::dg::MortarData<Dim>>, MortarMap<Mesh<Dim - 1>>,
       MortarMap<std::array<Spectral::MortarSize, Dim - 1>>,
       MortarMap<TimeStepId>,
-      DirectionMap<
-          Dim, std::optional<Variables<tmpl::list<
-                   evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
-                   evolution::dg::Tags::InternalFace::NormalCovector<Dim>>>>>>
+      DirectionMap<Dim, std::optional<Variables<tmpl::list<
+                            evolution::dg::Tags::MagnitudeOfNormal,
+                            evolution::dg::Tags::NormalCovector<Dim>>>>>>
   apply_impl(
       const std::vector<std::array<size_t, Dim>>& initial_extents,
       Spectral::Quadrature quadrature, const Element<Dim>& element,

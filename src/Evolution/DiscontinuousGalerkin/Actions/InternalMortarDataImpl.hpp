@@ -173,8 +173,7 @@ void internal_mortar_data(
       // optimization. This will require making the
       // Normalized<UnnormalizedFaceNormal> a simple tag instead of a
       // compute tag.
-      db::mutate<
-          evolution::dg::Tags::InternalFace::NormalCovectorAndMagnitude<Dim>>(
+      db::mutate<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(
           box, [&fields_on_face, &local_direction, &moving_mesh_map,
                 &unnormalized_normal_covectors](
                    const auto normal_covector_and_magnitude_ptr) noexcept {
@@ -185,24 +184,22 @@ void internal_mortar_data(
           });
 
       // Perform step 2
-      ASSERT(
-          db::get<evolution::dg::Tags::InternalFace::NormalCovectorAndMagnitude<
-              Dim>>(*box)
-              .at(local_direction)
-              .has_value(),
-          "The magnitude of the normal vector and the unit normal "
-          "covector have not been computed, even though they should "
-          "have been. Direction: "
-              << local_direction);
+      ASSERT(db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(*box)
+                 .at(local_direction)
+                 .has_value(),
+             "The magnitude of the normal vector and the unit normal "
+             "covector have not been computed, even though they should "
+             "have been. Direction: "
+                 << local_direction);
 
       Variables<mortar_tags_list> packaged_data{
           face_mesh.number_of_grid_points()};
       // The DataBox is passed in for retrieving the `volume_tags`
       const double max_abs_char_speed_on_face = detail::dg_package_data<system>(
           make_not_null(&packaged_data), boundary_correction, fields_on_face,
-          get<evolution::dg::Tags::InternalFace::NormalCovector<Dim>>(
-              *db::get<evolution::dg::Tags::InternalFace::
-                           NormalCovectorAndMagnitude<Dim>>(*box)
+          get<evolution::dg::Tags::NormalCovector<Dim>>(
+              *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(
+                   *box)
                    .at(local_direction)),
           face_mesh_velocities.at(local_direction), *box,
           typename BoundaryCorrection::dg_package_data_volume_tags{},

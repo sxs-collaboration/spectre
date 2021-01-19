@@ -13,8 +13,7 @@
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// %Tags used on the interior faces of the elements
-namespace evolution::dg::Tags::InternalFace {
+namespace evolution::dg::Tags {
 /// The magnitude of the unnormalized normal covector to the interface
 struct MagnitudeOfNormal : db::SimpleTag {
   using type = Scalar<DataVector>;
@@ -38,4 +37,4 @@ struct NormalCovectorAndMagnitude : db::SimpleTag {
       Dim, std::optional<
                Variables<tmpl::list<MagnitudeOfNormal, NormalCovector<Dim>>>>>;
 };
-}  // namespace evolution::dg::Tags::InternalFace
+}  // namespace evolution::dg::Tags

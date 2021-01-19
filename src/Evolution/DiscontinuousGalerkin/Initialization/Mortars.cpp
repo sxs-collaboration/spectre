@@ -33,19 +33,16 @@ auto Mortars<Dim, AddFluxBoundaryConditionMortars>::apply_impl(
         MortarMap<evolution::dg::MortarData<Dim>>, MortarMap<Mesh<Dim - 1>>,
         MortarMap<std::array<Spectral::MortarSize, Dim - 1>>,
         MortarMap<TimeStepId>,
-        DirectionMap<
-            Dim,
-            std::optional<Variables<tmpl::list<
-                evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
-                evolution::dg::Tags::InternalFace::NormalCovector<Dim>>>>>> {
+        DirectionMap<Dim, std::optional<Variables<tmpl::list<
+                              evolution::dg::Tags::MagnitudeOfNormal,
+                              evolution::dg::Tags::NormalCovector<Dim>>>>>> {
   MortarMap<evolution::dg::MortarData<Dim>> mortar_data{};
   MortarMap<Mesh<Dim - 1>> mortar_meshes{};
   MortarMap<std::array<Spectral::MortarSize, Dim - 1>> mortar_sizes{};
   MortarMap<TimeStepId> mortar_next_temporal_ids{};
-  DirectionMap<Dim,
-               std::optional<Variables<tmpl::list<
-                   evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
-                   evolution::dg::Tags::InternalFace::NormalCovector<Dim>>>>>
+  DirectionMap<Dim, std::optional<Variables<
+                        tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                                   evolution::dg::Tags::NormalCovector<Dim>>>>>
       normal_covector_quantities{};
   for (const auto& [direction, neighbors] : element.neighbors()) {
     normal_covector_quantities[direction] = std::nullopt;
@@ -68,6 +65,10 @@ auto Mortars<Dim, AddFluxBoundaryConditionMortars>::apply_impl(
       // initialize it on internal boundaries
       mortar_next_temporal_ids.insert({mortar_id, next_temporal_id});
     }
+  }
+
+  for (const auto& direction : element.external_boundaries()) {
+    normal_covector_quantities[direction] = std::nullopt;
   }
 
   // In a future update, we will update the logic below to also check the actual

@@ -107,10 +107,10 @@ void unit_normal_vector_and_covector_and_magnitude_impl(
  */
 template <typename System, size_t Dim, typename FieldsOnFaceTags>
 void unit_normal_vector_and_covector_and_magnitude(
-    const gsl::not_null<DirectionMap<
-        Dim, std::optional<Variables<tmpl::list<
-                 evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
-                 evolution::dg::Tags::InternalFace::NormalCovector<Dim>>>>>*>
+    const gsl::not_null<
+        DirectionMap<Dim, std::optional<Variables<tmpl::list<
+                              evolution::dg::Tags::MagnitudeOfNormal,
+                              evolution::dg::Tags::NormalCovector<Dim>>>>>*>
         normal_covector_quantities,
     const gsl::not_null<Variables<FieldsOnFaceTags>*> fields_on_face,
     const Direction<Dim>& direction,
@@ -127,18 +127,16 @@ void unit_normal_vector_and_covector_and_magnitude(
       detail::has_inverse_spatial_metric_tag_v<System> or mesh_is_moving or
       not normal_covector_quantity.has_value()) {
     if (not normal_covector_quantity.has_value()) {
-      normal_covector_quantity = Variables<
-          tmpl::list<evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
-                     evolution::dg::Tags::InternalFace::NormalCovector<Dim>>>{
-          fields_on_face->number_of_grid_points()};
+      normal_covector_quantity =
+          Variables<tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                               evolution::dg::Tags::NormalCovector<Dim>>>{
+              fields_on_face->number_of_grid_points()};
     }
     detail::unit_normal_vector_and_covector_and_magnitude_impl<System>(
-        make_not_null(
-            &get<evolution::dg::Tags::InternalFace::MagnitudeOfNormal>(
-                *normal_covector_quantity)),
-        make_not_null(
-            &get<evolution::dg::Tags::InternalFace::NormalCovector<Dim>>(
-                *normal_covector_quantity)),
+        make_not_null(&get<evolution::dg::Tags::MagnitudeOfNormal>(
+            *normal_covector_quantity)),
+        make_not_null(&get<evolution::dg::Tags::NormalCovector<Dim>>(
+            *normal_covector_quantity)),
         fields_on_face, unnormalized_normal_covector);
   }
 }

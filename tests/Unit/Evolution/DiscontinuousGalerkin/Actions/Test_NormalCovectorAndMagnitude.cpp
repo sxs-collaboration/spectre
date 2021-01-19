@@ -93,12 +93,12 @@ template <size_t Dim>
 auto create_box(const size_t number_of_grid_points_per_dim,
                 const bool use_moving_mesh) {
   using internal_directions = domain::Tags::InternalDirections<Dim>;
-  using simple_tags = tmpl::list<
-      ScaleZeroIndex, domain::Tags::Mesh<Dim>,
-      domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
-                                                  Frame::Inertial>,
-      domain::Tags::Element<Dim>,
-      evolution::dg::Tags::InternalFace::NormalCovectorAndMagnitude<Dim>>;
+  using simple_tags =
+      tmpl::list<ScaleZeroIndex, domain::Tags::Mesh<Dim>,
+                 domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                             Frame::Inertial>,
+                 domain::Tags::Element<Dim>,
+                 evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>;
   using compute_tags =
       tmpl::list<domain::Tags::InternalDirectionsCompute<Dim>,
                  domain::Tags::InterfaceCompute<internal_directions,
@@ -142,10 +142,9 @@ auto create_box(const size_t number_of_grid_points_per_dim,
   }
   const Element<Dim> element{self_id, neighbors};
 
-  DirectionMap<Dim,
-               std::optional<Variables<tmpl::list<
-                   evolution::dg::Tags::InternalFace::MagnitudeOfNormal,
-                   evolution::dg::Tags::InternalFace::NormalCovector<Dim>>>>>
+  DirectionMap<Dim, std::optional<Variables<
+                        tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                                   evolution::dg::Tags::NormalCovector<Dim>>>>>
       normal_covector_quantities{};
   for (const auto& [direction, local_neighbors] : element.neighbors()) {
     (void)local_neighbors;
@@ -190,8 +189,7 @@ void check_normal_covector_quantities(
       }
     }
 
-    db::mutate<
-        evolution::dg::Tags::InternalFace::NormalCovectorAndMagnitude<Dim>>(
+    db::mutate<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(
         box,
         &evolution::dg::Actions::detail::
             unit_normal_vector_and_covector_and_magnitude<
@@ -206,9 +204,8 @@ void check_normal_covector_quantities(
 
     if constexpr (UseFlatSpace) {
       const auto& normal_covector =
-          get<evolution::dg::Tags::InternalFace::NormalCovector<Dim>>(
-              *get<evolution::dg::Tags::InternalFace::
-                       NormalCovectorAndMagnitude<Dim>>(*box)
+          get<evolution::dg::Tags::NormalCovector<Dim>>(
+              *get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(*box)
                    .at(direction));
       const DataVector expected_normal_magnitude{
           fields_on_face.number_of_grid_points(), 1.0};
@@ -216,9 +213,8 @@ void check_normal_covector_quantities(
                             get(magnitude(normal_covector)));
     } else {
       const auto& normal_covector =
-          get<evolution::dg::Tags::InternalFace::NormalCovector<Dim>>(
-              *get<evolution::dg::Tags::InternalFace::
-                       NormalCovectorAndMagnitude<Dim>>(*box)
+          get<evolution::dg::Tags::NormalCovector<Dim>>(
+              *get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(*box)
                    .at(direction));
       CHECK_ITERABLE_APPROX(
           (DataVector{fields_on_face.number_of_grid_points(), 1.0}),
@@ -228,24 +224,22 @@ void check_normal_covector_quantities(
     }
 
     const auto& magnitude_of_normal =
-        get(get<evolution::dg::Tags::InternalFace::MagnitudeOfNormal>(
-            *get<evolution::dg::Tags::InternalFace::NormalCovectorAndMagnitude<
-                 Dim>>(*box)
-                 .at(direction)));
+        get(get<evolution::dg::Tags::MagnitudeOfNormal>(
+            *get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(*box).at(
+                direction)));
     CHECK(min(magnitude_of_normal) > 0.0);
 
     for (size_t i = 0; i < Dim; ++i) {
       const auto& normal_covector_and_magnitude =
-          *get<evolution::dg::Tags::InternalFace::NormalCovectorAndMagnitude<
-              Dim>>(*box)
-               .at(direction);
+          *get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(*box).at(
+              direction);
       const auto& unnormalized_covector_in_dir =
           unnormalized_normal_covectors.at(direction).get(i);
       const DataVector expected_unnormalized_covector_in_dir{
-          get<evolution::dg::Tags::InternalFace::NormalCovector<Dim>>(
+          get<evolution::dg::Tags::NormalCovector<Dim>>(
               normal_covector_and_magnitude)
               .get(i) *
-          get(get<evolution::dg::Tags::InternalFace::MagnitudeOfNormal>(
+          get(get<evolution::dg::Tags::MagnitudeOfNormal>(
               normal_covector_and_magnitude))};
       CHECK_ITERABLE_APPROX(unnormalized_covector_in_dir,
                             expected_unnormalized_covector_in_dir);
