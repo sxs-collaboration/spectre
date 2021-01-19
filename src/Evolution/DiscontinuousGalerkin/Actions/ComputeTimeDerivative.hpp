@@ -342,7 +342,6 @@ ComputeTimeDerivative<Metavariables>::apply(
   static constexpr size_t volume_dim = Metavariables::volume_dim;
   using system = typename Metavariables::system;
   using variables_tag = typename system::variables_tag;
-  using variables_tags = typename variables_tag::tags_list;
   using partial_derivative_tags = typename system::gradient_variables;
   using flux_variables = typename system::flux_variables;
   using compute_volume_time_derivative_terms =
@@ -368,11 +367,26 @@ ComputeTimeDerivative<Metavariables>::apply(
                              tmpl::size_t<volume_dim>, Frame::Inertial>>
       partial_derivs{mesh.number_of_grid_points()};
 
-  detail::volume_terms<Metavariables, volume_dim,
+  const Scalar<DataVector>* det_inverse_jacobian = nullptr;
+  if constexpr (tmpl::size<flux_variables>::value != 0) {
+    if (db::get<::dg::Tags::Formulation>(box) ==
+        ::dg::Formulation::WeakInertial) {
+      det_inverse_jacobian = &db::get<
+          domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(box);
+    }
+  }
+
+  detail::volume_terms<system, volume_dim,
                        compute_volume_time_derivative_terms>(
       make_not_null(&box), make_not_null(&volume_fluxes),
       make_not_null(&partial_derivs), make_not_null(&temporaries),
-      db::get<::dg::Tags::Formulation>(box), variables_tags{},
+      db::get<variables_tag>(box), db::get<::dg::Tags::Formulation>(box), mesh,
+      db::get<domain::Tags::Coordinates<volume_dim, Frame::Inertial>>(box),
+      db::get<::domain::Tags::InverseJacobian<volume_dim, Frame::Logical,
+                                              Frame::Inertial>>(box),
+      det_inverse_jacobian,
+      db::get<::domain::Tags::MeshVelocity<volume_dim>>(box),
+      db::get<::domain::Tags::DivMeshVelocity>(box),
       typename compute_volume_time_derivative_terms::argument_tags{});
 
   // The below if-else and fill_mortar_data_for_internal_boundaries are for

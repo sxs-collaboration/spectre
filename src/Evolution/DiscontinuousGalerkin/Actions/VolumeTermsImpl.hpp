@@ -66,11 +66,10 @@ namespace evolution::dg::Actions::detail {
  *    time derivative must be done *after* the mesh velocity is subtracted
  *    from the fluxes.
  */
-template <typename Metavariables, size_t Dim,
-          typename ComputeVolumeTimeDerivatives, typename DbTagsList,
-          typename... VariablesTags, typename... TimeDerivativeArgumentTags,
-          typename... PartialDerivTags, typename... FluxVariablesTags,
-          typename... TemporaryTags>
+template <typename System, size_t Dim, typename ComputeVolumeTimeDerivatives,
+          typename DbTagsList, typename... VariablesTags,
+          typename... TimeDerivativeArgumentTags, typename... PartialDerivTags,
+          typename... FluxVariablesTags, typename... TemporaryTags>
 void volume_terms(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<Variables<tmpl::list<FluxVariablesTags...>>*>
@@ -78,9 +77,17 @@ void volume_terms(
     const gsl::not_null<Variables<tmpl::list<PartialDerivTags...>>*>
         partial_derivs,
     const gsl::not_null<Variables<tmpl::list<TemporaryTags...>>*> temporaries,
-    const ::dg::Formulation dg_formulation,
+    const Variables<tmpl::list<VariablesTags...>>& evolved_vars,
+    const ::dg::Formulation dg_formulation, const Mesh<Dim>& mesh,
+    [[maybe_unused]] const tnsr::I<DataVector, Dim, Frame::Inertial>&
+        inertial_coordinates,
+    const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
+        logical_to_inertial_inverse_jacobian,
+    [[maybe_unused]] const Scalar<DataVector>* const det_inverse_jacobian,
+    const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+        mesh_velocity,
+    const std::optional<Scalar<DataVector>>& div_mesh_velocity,
 
-    tmpl::list<VariablesTags...> /*variables_tags*/,
     tmpl::list<TimeDerivativeArgumentTags...> /*meta*/) noexcept {
   static constexpr bool has_partial_derivs = sizeof...(PartialDerivTags) != 0;
   static constexpr bool has_fluxes = sizeof...(FluxVariablesTags) != 0;
@@ -93,17 +100,9 @@ void volume_terms(
       "are defined, and that at least one of them is a non-empty list of "
       "tags.");
 
-  using system = typename Metavariables::system;
-  using variables_tag = typename system::variables_tag;
-  using variables_tags = typename variables_tag::tags_list;
-  using partial_derivative_tags = typename system::gradient_variables;
-  using flux_variables = typename system::flux_variables;
-
-  const Mesh<Dim>& mesh = db::get<::domain::Tags::Mesh<Dim>>(*box);
-  const auto& logical_to_inertial_inverse_jacobian = db::get<
-      ::domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>>(
-      *box);
-  const auto& evolved_vars = db::get<variables_tag>(*box);
+  using variables_tag = typename System::variables_tag;
+  using partial_derivative_tags = typename System::gradient_variables;
+  using flux_variables = typename System::flux_variables;
 
   // Compute d_i u_\alpha for nonconservative products
   if constexpr (has_partial_derivs) {
@@ -118,8 +117,8 @@ void volume_terms(
   db::mutate<db::add_tag_prefix<::Tags::dt, variables_tag>>(
       box,
       [&mesh, &partial_derivs, &temporaries, &volume_fluxes](
-          const gsl::not_null<Variables<
-              db::wrap_tags_in<::Tags::dt, typename variables_tag::tags_list>>*>
+          const gsl::not_null<
+              Variables<tmpl::list<::Tags::dt<VariablesTags>...>>*>
               dt_vars_ptr,
           const auto&... args) noexcept {
         // Silence compiler warnings since we genuinely don't always need all
@@ -143,17 +142,13 @@ void volume_terms(
       db::get<TimeDerivativeArgumentTags>(*box)...);
 
   // Add volume terms for moving meshes
-  if (const auto& mesh_velocity =
-          db::get<::domain::Tags::MeshVelocity<Dim>>(*box);
-      mesh_velocity.has_value()) {
+  if (mesh_velocity.has_value()) {
     db::mutate<db::add_tag_prefix<::Tags::dt, variables_tag>>(
         box,
-        [&evolved_vars, &mesh_velocity, &volume_fluxes](
-            const gsl::not_null<Variables<db::wrap_tags_in<
-                ::Tags::dt, typename variables_tag::tags_list>>*>
-                dt_vars_ptr,
-            const std::optional<Scalar<DataVector>>&
-                div_mesh_velocity) noexcept {
+        [&div_mesh_velocity, &evolved_vars, &mesh_velocity,
+         &volume_fluxes](const gsl::not_null<Variables<db::wrap_tags_in<
+                             ::Tags::dt, typename variables_tag::tags_list>>*>
+                             dt_vars_ptr) noexcept {
           tmpl::for_each<flux_variables>([&div_mesh_velocity, &dt_vars_ptr,
                                           &evolved_vars, &mesh_velocity,
                                           &volume_fluxes](auto tag_v) noexcept {
@@ -194,8 +189,7 @@ void volume_terms(
                   get(*div_mesh_velocity);
             }
           });
-        },
-        db::get<::domain::Tags::DivMeshVelocity>(*box));
+        });
 
     // We add the mesh velocity to all equations that don't have flux terms.
     // This doesn't need to be equal to the equations that have partial
@@ -203,7 +197,8 @@ void volume_terms(
     // first-order form does not have any partial derivatives but still needs
     // the velocity term added. This is because the velocity term arises from
     // transforming the time derivative.
-    using non_flux_tags = tmpl::list_difference<variables_tags, flux_variables>;
+    using non_flux_tags =
+        tmpl::list_difference<tmpl::list<VariablesTags...>, flux_variables>;
 
     db::mutate<db::add_tag_prefix<::Tags::dt, variables_tag>>(
         box, [&mesh_velocity, &partial_derivs](
@@ -261,26 +256,22 @@ void volume_terms(
       if constexpr (Dim == 1) {
         weak_divergence(make_not_null(&div_fluxes), *volume_fluxes, mesh, {});
       } else {
-        const auto& inertial_coords =
-            db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(*box);
         // The Jacobian should be computed as a compute tag
         const auto jacobian =
-            determinant_and_inverse(
-                db::get<domain::Tags::InverseJacobian<Dim, Frame::Logical,
-                                                      Frame::Inertial>>(*box))
+            determinant_and_inverse(logical_to_inertial_inverse_jacobian)
                 .second;
         InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>
             det_jac_times_inverse_jacobian{};
         ::dg::metric_identity_det_jac_times_inv_jac(
             make_not_null(&det_jac_times_inverse_jacobian), mesh,
-            inertial_coords, jacobian);
+            inertial_coordinates, jacobian);
         weak_divergence(make_not_null(&div_fluxes), *volume_fluxes, mesh,
                         det_jac_times_inverse_jacobian);
       }
-      div_fluxes *=
-          get(db::get<
-              domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(
-              *box));
+      ASSERT(det_inverse_jacobian != nullptr,
+             "The determinant of the inverse Jacobian shouldn't be nullptr "
+             "when using the weak form.");
+      div_fluxes *= get(*det_inverse_jacobian);
     } else {
       ERROR("Unsupported DG formulation: " << dg_formulation);
     }
