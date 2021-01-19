@@ -7,9 +7,12 @@
 #include <cstddef>
 #include <iosfwd>
 #include <limits>
+#include <memory>
 #include <vector>
 
 #include "DataStructures/Index.hpp"
+#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Options/Options.hpp"
@@ -146,9 +149,29 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
         "List of Block indices to exclude, if any."};
   };
 
-  using options = tmpl::list<BlockBounds, IsPeriodicIn, InitialLevels,
-                             InitialGridPoints, RefinedLevels,
-                             RefinedGridPoints, BlocksToExclude>;
+  template <typename BoundaryConditionsBase>
+  struct BoundaryCondition {
+    static std::string name() noexcept { return "BoundaryCondition"; }
+    static constexpr Options::String help =
+        "The boundary condition to impose on all sides.";
+    using type = std::unique_ptr<BoundaryConditionsBase>;
+  };
+
+  using common_options =
+      tmpl::list<BlockBounds, InitialLevels, InitialGridPoints, RefinedLevels,
+                 RefinedGridPoints, BlocksToExclude>;
+  using options_periodic = tmpl::list<IsPeriodicIn>;
+
+  template <typename Metavariables>
+  using options = tmpl::append<
+      common_options,
+      tmpl::conditional_t<
+          domain::BoundaryConditions::has_boundary_conditions_base_v<
+              typename Metavariables::system>,
+          tmpl::list<BoundaryCondition<
+              domain::BoundaryConditions::get_boundary_conditions_base<
+                  typename Metavariables::system>>>,
+          options_periodic>>;
 
   static constexpr Options::String help = {
       "AlignedLattice creates a regular lattice of blocks whose corners are\n"
@@ -163,12 +186,23 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
       "conditions for this domain with holes is not supported."};
 
   AlignedLattice(typename BlockBounds::type block_bounds,
-                 typename IsPeriodicIn::type is_periodic_in,
                  typename InitialLevels::type initial_refinement_levels,
                  typename InitialGridPoints::type initial_number_of_grid_points,
                  typename RefinedLevels::type refined_refinement,
                  typename RefinedGridPoints::type refined_grid_points,
-                 typename BlocksToExclude::type blocks_to_exclude) noexcept;
+                 typename BlocksToExclude::type blocks_to_exclude,
+                 typename IsPeriodicIn::type is_periodic_in,
+                 const Options::Context& context = {});
+
+  AlignedLattice(typename BlockBounds::type block_bounds,
+                 typename InitialLevels::type initial_refinement_levels,
+                 typename InitialGridPoints::type initial_number_of_grid_points,
+                 typename RefinedLevels::type refined_refinement,
+                 typename RefinedGridPoints::type refined_grid_points,
+                 typename BlocksToExclude::type blocks_to_exclude,
+                 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+                     boundary_condition = nullptr,
+                 const Options::Context& context = {});
 
   AlignedLattice() = default;
   AlignedLattice(const AlignedLattice&) = delete;
@@ -197,6 +231,8 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
   typename RefinedGridPoints::type refined_grid_points_{};
   typename BlocksToExclude::type blocks_to_exclude_{};
   Index<VolumeDim> number_of_blocks_by_dim_{};
+  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+      boundary_condition_{};
 };
 }  // namespace creators
 }  // namespace domain
