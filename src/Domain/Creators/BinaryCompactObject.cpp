@@ -48,7 +48,6 @@ BinaryCompactObject::BinaryCompactObject(
     typename RadiusOuterSphere::type radius_enveloping_sphere,
     typename InitialRefinement::type initial_refinement,
     typename InitialGridPoints::type initial_grid_points_per_dim,
-    typename UseEquiangularMap::type use_equiangular_map,
     typename UseProjectiveMap::type use_projective_map,
     typename UseLogarithmicMapOuterSphericalShell::type
         use_logarithmic_map_outer_spherical_shell,
@@ -78,7 +77,6 @@ BinaryCompactObject::BinaryCompactObject(
           std::move(initial_refinement)),                              // NOLINT
       initial_grid_points_per_dim_(                                    // NOLINT
           std::move(initial_grid_points_per_dim)),                     // NOLINT
-      use_equiangular_map_(std::move(use_equiangular_map)),            // NOLINT
       use_projective_map_(std::move(use_projective_map)),              // NOLINT
       use_logarithmic_map_outer_spherical_shell_(
           std::move(use_logarithmic_map_outer_spherical_shell)),  // NOLINT

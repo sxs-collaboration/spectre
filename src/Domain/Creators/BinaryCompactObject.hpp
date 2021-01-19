@@ -208,12 +208,6 @@ class BinaryCompactObject : public DomainCreator<3> {
         "Initial number of grid points in each dim per element."};
   };
 
-  struct UseEquiangularMap {
-    using type = bool;
-    static constexpr Options::String help = {
-        "Use equiangular instead of equidistant coordinates."};
-  };
-
   struct UseProjectiveMap {
     using type = bool;
     static constexpr Options::String help = {
@@ -274,7 +268,7 @@ class BinaryCompactObject : public DomainCreator<3> {
       InnerRadiusObjectA, OuterRadiusObjectA, XCoordObjectA, ExciseInteriorA,
       InnerRadiusObjectB, OuterRadiusObjectB, XCoordObjectB, ExciseInteriorB,
       RadiusOuterCube, RadiusOuterSphere, InitialRefinement, InitialGridPoints,
-      UseEquiangularMap, UseProjectiveMap, UseLogarithmicMapOuterSphericalShell,
+      UseProjectiveMap, UseLogarithmicMapOuterSphericalShell,
       AdditionToOuterLayerRadialRefinementLevel, UseLogarithmicMapObjectA,
       AdditionToObjectARadialRefinementLevel, UseLogarithmicMapObjectB,
       AdditionToObjectBRadialRefinementLevel, TimeDependence>;
@@ -319,7 +313,6 @@ class BinaryCompactObject : public DomainCreator<3> {
       typename RadiusOuterSphere::type radius_enveloping_sphere,
       typename InitialRefinement::type initial_refinement,
       typename InitialGridPoints::type initial_grid_points_per_dim,
-      typename UseEquiangularMap::type use_equiangular_map,
       typename UseProjectiveMap::type use_projective_map = true,
       typename UseLogarithmicMapOuterSphericalShell::type
           use_logarithmic_map_outer_spherical_shell = false,
@@ -368,7 +361,8 @@ class BinaryCompactObject : public DomainCreator<3> {
   typename RadiusOuterSphere::type radius_enveloping_sphere_{};
   typename InitialRefinement::type initial_refinement_{};
   typename InitialGridPoints::type initial_grid_points_per_dim_{};
-  typename UseEquiangularMap::type use_equiangular_map_ = true;
+  static constexpr bool use_equiangular_map_ =
+      false;  // Doesn't work properly yet
   typename UseProjectiveMap::type use_projective_map_ = true;
   typename UseLogarithmicMapOuterSphericalShell::type
       use_logarithmic_map_outer_spherical_shell_ = false;
