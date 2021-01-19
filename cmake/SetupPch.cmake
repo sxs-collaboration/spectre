@@ -75,14 +75,10 @@ if (USE_PCH)
   # The major remaining step is setting the PCH include flag. For
   # (Apple)Clang this is `-include-pch;${SPECTRE_PCH_PATH}`, while for GCC it
   # is `-include;${SPECTRE_PCH_HEADER_PATH}`. We add
-  # `INTERFACE_COMPILE_OPTIONS` to ${SPECTRE_PCH} that libraries can grab
-  # using generator expressions:
+  # `INTERFACE_COMPILE_OPTIONS` to ${SPECTRE_PCH} so libraries can just link
+  # the ${SPECTRE_PCH} target:
   #
-  #     target_compile_options(
-  #       ${TARGET_NAME}
-  #       PRIVATE
-  #       $<TARGET_PROPERTY:${SPECTRE_PCH},INTERFACE_COMPILE_OPTIONS>
-  #       )
+  #     target_link_libraries(${TARGET_NAME} PUBLIC ${SPECTRE_PCH})
   #
   # Source files in dependent targets must depend on the PCH file itself:
   #
@@ -177,7 +173,7 @@ if (USE_PCH)
     )
   target_link_libraries(
     ${SPECTRE_PCH_LIB}
-    PRIVATE
+    PUBLIC
     Blaze
     Brigand
     )
@@ -195,7 +191,7 @@ if (USE_PCH)
     )
   target_link_libraries(
     ${SPECTRE_PCH_LIB}
-    PRIVATE
+    PUBLIC
     SpectreFlags
     )
 
@@ -210,11 +206,10 @@ if (USE_PCH)
     )
 
   # Create the ${SPECTRE_PCH} that libraries and executables will depend on
-  add_custom_target(
+  add_library(${SPECTRE_PCH} INTERFACE)
+  target_link_libraries(
     ${SPECTRE_PCH}
-    )
-  add_dependencies(
-    ${SPECTRE_PCH}
+    INTERFACE
     ${SPECTRE_PCH_LIB}
     )
 
