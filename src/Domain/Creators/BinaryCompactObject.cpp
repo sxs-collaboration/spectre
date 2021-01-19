@@ -14,6 +14,8 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Block.hpp"  // IWYU pragma: keep
+#include "Domain/BoundaryConditions/None.hpp"
+#include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -61,6 +63,10 @@ BinaryCompactObject::BinaryCompactObject(
         addition_to_object_B_radial_refinement_level,
     std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
         time_dependence,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        inner_boundary_condition,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        outer_boundary_condition,
     const Options::Context& context)
     // clang-tidy: trivially copyable
     : inner_radius_object_A_(std::move(inner_radius_object_A)),        // NOLINT
@@ -90,7 +96,9 @@ BinaryCompactObject::BinaryCompactObject(
           std::move(use_logarithmic_map_object_B)),  // NOLINT
       addition_to_object_B_radial_refinement_level_(
           addition_to_object_B_radial_refinement_level),  // NOLINT
-      time_dependence_(std::move(time_dependence)) {
+      time_dependence_(std::move(time_dependence)),
+      inner_boundary_condition_(std::move(inner_boundary_condition)),
+      outer_boundary_condition_(std::move(outer_boundary_condition)) {
   // Determination of parameters for domain construction:
   translation_ = 0.5 * (xcoord_object_B_ + xcoord_object_A_);
   length_inner_cube_ = abs(xcoord_object_A_ - xcoord_object_B_);
@@ -146,6 +154,28 @@ BinaryCompactObject::BinaryCompactObject(
         "of Layer 1 enveloping Object B requires excising the interior of "
         "Object B");
   }
+  using domain::BoundaryConditions::is_none;
+  if (outer_boundary_condition_ != nullptr and
+      ((not excise_interior_A_ and not excise_interior_B_) and
+       (inner_boundary_condition_ == nullptr or
+        not is_none(inner_boundary_condition_)))) {
+    PARSE_ERROR(context,
+                "Inner boundary condition must be None if ExciseInteriorA and "
+                "ExciseInteriorB are both false");
+  }
+  if ((outer_boundary_condition_ == nullptr) xor
+      (inner_boundary_condition_ == nullptr)) {
+    PARSE_ERROR(context,
+                "Must specify either both inner and outer boundary conditions "
+                "or neither.");
+  }
+  using domain::BoundaryConditions::is_periodic;
+  if (is_periodic(inner_boundary_condition_) or
+      is_periodic(outer_boundary_condition_)) {
+    PARSE_ERROR(
+        context,
+        "Cannot have periodic boundary conditions with a binary domain");
+  }
 
   // Calculate number of blocks
   // Layers 1, 2, 3, 4, and 5 have 12, 12, 10, 10, and 10 blocks, respectively,
@@ -167,8 +197,12 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
 
   using Maps = std::vector<
       std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>;
+  using BcMap = DirectionMap<
+      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>;
 
-  Maps maps;
+  std::vector<BcMap> boundary_conditions_all_blocks{};
+
+  Maps maps{};
   // ObjectA/B is on the left/right, respectively.
   Maps maps_center_A = sph_wedge_coordinate_maps<Frame::Inertial>(
       inner_radius_object_A_, outer_radius_object_A_, inner_sphericity_A, 1.0,
@@ -188,11 +222,41 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
       length_inner_cube_, length_outer_cube_, use_equiangular_map_,
       {{-translation_, 0.0, 0.0}}, projective_scale_factor_);
 
+  if (inner_boundary_condition_ != nullptr) {
+    for (size_t i = 0; i < maps_center_A.size(); ++i) {
+      BcMap bcs{};
+      if (excise_interior_A_) {
+        bcs[Direction<3>::lower_zeta()] =
+            inner_boundary_condition_->get_clone();
+      }
+      boundary_conditions_all_blocks.push_back(std::move(bcs));
+    }
+  }
   std::move(maps_center_A.begin(), maps_center_A.end(),
             std::back_inserter(maps));
+  if (inner_boundary_condition_ != nullptr) {
+    for (size_t i = 0; i < maps_cube_A.size(); ++i) {
+      boundary_conditions_all_blocks.push_back(BcMap{});
+    }
+  }
   std::move(maps_cube_A.begin(), maps_cube_A.end(), std::back_inserter(maps));
+  if (inner_boundary_condition_ != nullptr) {
+    for (size_t i = 0; i < maps_center_B.size(); ++i) {
+      BcMap bcs{};
+      if (excise_interior_B_) {
+        bcs[Direction<3>::lower_zeta()] =
+            inner_boundary_condition_->get_clone();
+      }
+      boundary_conditions_all_blocks.push_back(std::move(bcs));
+    }
+  }
   std::move(maps_center_B.begin(), maps_center_B.end(),
             std::back_inserter(maps));
+  if (inner_boundary_condition_ != nullptr) {
+    for (size_t i = 0; i < maps_cube_B.size() + maps_frustums.size(); ++i) {
+      boundary_conditions_all_blocks.push_back(BcMap{});
+    }
+  }
   std::move(maps_cube_B.begin(), maps_cube_B.end(), std::back_inserter(maps));
   std::move(maps_frustums.begin(), maps_frustums.end(),
             std::back_inserter(maps));
@@ -226,6 +290,19 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
       outer_radius_first_outer_shell, radius_enveloping_sphere_, 1.0, 1.0,
       use_equiangular_map_, 0.0, true, 1.0,
       use_logarithmic_map_outer_spherical_shell_, ShellWedges::All, 1);
+  if (outer_boundary_condition_ != nullptr) {
+    // The outer 10 wedges all have to have the outer boundary condition applied
+    for (size_t i = 0; i < maps_first_outer_shell.size() +
+                               maps_second_outer_shell.size() - 10;
+         ++i) {
+      boundary_conditions_all_blocks.push_back(BcMap{});
+    }
+    for (size_t i = 0; i < 10; ++i) {
+      BcMap bcs{};
+      bcs[Direction<3>::upper_zeta()] = outer_boundary_condition_->get_clone();
+      boundary_conditions_all_blocks.push_back(std::move(bcs));
+    }
+  }
   std::move(maps_first_outer_shell.begin(), maps_first_outer_shell.end(),
             std::back_inserter(maps));
   std::move(maps_second_outer_shell.begin(), maps_second_outer_shell.end(),
@@ -239,6 +316,10 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
   using Identity2D = CoordinateMaps::Identity<2>;
   if (not excise_interior_A_) {
+    if (inner_boundary_condition_ != nullptr) {
+      boundary_conditions_all_blocks.push_back(BcMap{});
+    }
+
     auto shift_1d_A =
         Affine{-1.0, 1.0, -1.0 + xcoord_object_A_, 1.0 + xcoord_object_A_};
     const auto translation_A =
@@ -267,6 +348,10 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
     }
   }
   if (not excise_interior_B_) {
+    if (inner_boundary_condition_ != nullptr) {
+      boundary_conditions_all_blocks.push_back(BcMap{});
+    }
+
     auto shift_1d_B =
         Affine{-1.0, 1.0, -1.0 + xcoord_object_B_, 1.0 + xcoord_object_B_};
     const auto translation_B =
@@ -295,7 +380,9 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
   }
   Domain<3> domain{std::move(maps),
                    corners_for_biradially_layered_domains(
-                       2, 3, not excise_interior_A_, not excise_interior_B_)};
+                       2, 3, not excise_interior_A_, not excise_interior_B_),
+                   {},
+                   std::move(boundary_conditions_all_blocks)};
   if (not time_dependence_->is_none()) {
     for (size_t block = 0; block < number_of_blocks_; ++block) {
       domain.inject_time_dependent_map_for_block(
