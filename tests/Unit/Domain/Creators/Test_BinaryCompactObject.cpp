@@ -117,8 +117,8 @@ void test_connectivity() {
                              .get_clone()};
           tnsr::I<double, 3, Frame::Logical> logical_point(
               std::array<double, 3>{{0.0, 0.0, -1.0}});
-          const double layer_5_inner_radius = get(
-              magnitude(std::move(map)->operator()(logical_point)));
+          const double layer_5_inner_radius =
+              get(magnitude(std::move(map)->operator()(logical_point)));
           // The number of radial divisions in layers 4 and 5, excluding those
           // resulting from InitialRefinement > 0.
           const auto radial_divisions_in_outer_layers = static_cast<double>(
@@ -134,9 +134,10 @@ void test_connectivity() {
           }
         }
       }
+    }
   }
 }
-}
+
 void test_bbh_time_dependent_factory() {
   const auto binary_compact_object = TestHelpers::test_factory_creation<
       DomainCreator<3>, domain::OptionTags::DomainCreator<3>,
