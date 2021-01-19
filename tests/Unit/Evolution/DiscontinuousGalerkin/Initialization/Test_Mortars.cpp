@@ -177,14 +177,11 @@ void test<1>(const Spectral::Quadrature quadrature) {
 
   // We are working with 2 mortars here: a domain boundary at lower xi
   // and an interface at upper xi.
-  const auto boundary_mortar_id = std::make_pair(
-      Direction<1>::lower_xi(), ElementId<1>::external_boundary_id());
   const auto interface_mortar_id =
       std::make_pair(Direction<1>::upper_xi(), east_id);
-  const MortarMap<1, Mesh<0>> expected_mortar_meshes{{boundary_mortar_id, {}},
-                                                     {interface_mortar_id, {}}};
+  const MortarMap<1, Mesh<0>> expected_mortar_meshes{{interface_mortar_id, {}}};
   const MortarMap<1, std::array<Spectral::MortarSize, 0>> expected_mortar_sizes{
-      {boundary_mortar_id, {}}, {interface_mortar_id, {}}};
+      {interface_mortar_id, {}}};
 
   const DirectionMap<
       1, std::optional<
@@ -225,20 +222,12 @@ void test<2>(const Spectral::Quadrature quadrature) {
 
   // We are working with 4 mortars here: the domain boundary west and north,
   // and interfaces south and east.
-  const auto boundary_mortar_id_west = std::make_pair(
-      Direction<2>::lower_xi(), ElementId<2>::external_boundary_id());
-  const auto boundary_mortar_id_north = std::make_pair(
-      Direction<2>::upper_eta(), ElementId<2>::external_boundary_id());
   const auto interface_mortar_id_east =
       std::make_pair(Direction<2>::upper_xi(), east_id);
   const auto interface_mortar_id_south =
       std::make_pair(Direction<2>::lower_eta(), south_id);
 
   const MortarMap<2, Mesh<1>> expected_mortar_meshes{
-      {boundary_mortar_id_west,
-       Mesh<1>(2, Spectral::Basis::Legendre, quadrature)},
-      {boundary_mortar_id_north,
-       Mesh<1>(3, Spectral::Basis::Legendre, quadrature)},
       {interface_mortar_id_east,
        Mesh<1>(2, Spectral::Basis::Legendre, quadrature)},
       {interface_mortar_id_south,
@@ -291,12 +280,6 @@ void test<3>(const Spectral::Quadrature quadrature) {
   const Element<3> element{element_id, neighbors};
   const TimeStepId time_step_id{true, 3, Time{Slab{0.2, 3.4}, {3, 100}}};
 
-  const auto boundary_mortar_id_left = std::make_pair(
-      Direction<3>::lower_xi(), ElementId<3>::external_boundary_id());
-  const auto boundary_mortar_id_back = std::make_pair(
-      Direction<3>::upper_eta(), ElementId<3>::external_boundary_id());
-  const auto boundary_mortar_id_bottom = std::make_pair(
-      Direction<3>::lower_zeta(), ElementId<3>::external_boundary_id());
   const auto interface_mortar_id_right =
       std::make_pair(Direction<3>::upper_xi(), right_id);
   const auto interface_mortar_id_front =
@@ -305,12 +288,6 @@ void test<3>(const Spectral::Quadrature quadrature) {
       std::make_pair(Direction<3>::upper_zeta(), top_id);
 
   const MortarMap<3, Mesh<2>> expected_mortar_meshes{
-      {boundary_mortar_id_left,
-       Mesh<2>({{3, 4}}, Spectral::Basis::Legendre, quadrature)},
-      {boundary_mortar_id_back,
-       Mesh<2>({{2, 4}}, Spectral::Basis::Legendre, quadrature)},
-      {boundary_mortar_id_bottom,
-       Mesh<2>({{2, 3}}, Spectral::Basis::Legendre, quadrature)},
       {interface_mortar_id_right,
        Mesh<2>({{3, 4}}, Spectral::Basis::Legendre, quadrature)},
       {interface_mortar_id_front,
