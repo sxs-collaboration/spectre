@@ -240,17 +240,13 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
   using Equiangular3D =
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
   using Identity2D = CoordinateMaps::Identity<2>;
-  auto shift_1d_A =
-      Affine{-1.0, 1.0, -1.0 + xcoord_object_A_, 1.0 + xcoord_object_A_};
-  auto shift_1d_B =
-      Affine{-1.0, 1.0, -1.0 + xcoord_object_B_, 1.0 + xcoord_object_B_};
-
-  // clang-tidy: trivially copyable
-  const auto translation_A = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(
-      std::move(shift_1d_A), Identity2D{});  // NOLINT
-  const auto translation_B = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(
-      std::move(shift_1d_B), Identity2D{});  // NOLINT
   if (not excise_interior_A_) {
+    auto shift_1d_A =
+        Affine{-1.0, 1.0, -1.0 + xcoord_object_A_, 1.0 + xcoord_object_A_};
+    const auto translation_A =
+        CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(shift_1d_A,
+                                                           Identity2D{});
+
     const double scaled_r_inner_A = inner_radius_object_A_ / sqrt(3.0);
     if (use_equiangular_map_) {
       maps.emplace_back(
@@ -273,6 +269,11 @@ Domain<3> BinaryCompactObject::create_domain() const noexcept {
     }
   }
   if (not excise_interior_B_) {
+    auto shift_1d_B =
+        Affine{-1.0, 1.0, -1.0 + xcoord_object_B_, 1.0 + xcoord_object_B_};
+    const auto translation_B =
+        CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(shift_1d_B,
+                                                           Identity2D{});
     const double scaled_r_inner_B = inner_radius_object_B_ / sqrt(3.0);
     if (use_equiangular_map_) {
       maps.emplace_back(
