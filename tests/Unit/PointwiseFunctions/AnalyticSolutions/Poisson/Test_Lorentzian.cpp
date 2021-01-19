@@ -81,7 +81,8 @@ SPECTRE_TEST_CASE(
   {
     // Verify that the solution numerically solves the system and that the
     // discretization error decreases exponentially with polynomial order
-    using system = Poisson::FirstOrderSystem<3, Poisson::Geometry::Euclidean>;
+    using system =
+        Poisson::FirstOrderSystem<3, Poisson::Geometry::FlatCartesian>;
     const Poisson::Solutions::Lorentzian<3> solution{};
     const typename system::fluxes fluxes_computer{};
     using AffineMap = domain::CoordinateMaps::Affine;
@@ -98,8 +99,7 @@ SPECTRE_TEST_CASE(
   {
     // Verify that the solution also solves the non-euclidean system with a
     // Euclidean metric. This is more a test of the system than of the solution.
-    using system =
-        Poisson::FirstOrderSystem<3, Poisson::Geometry::NonEuclidean>;
+    using system = Poisson::FirstOrderSystem<3, Poisson::Geometry::Curved>;
     const Poisson::Solutions::Lorentzian<3> solution{};
     const typename system::fluxes fluxes_computer{};
     using AffineMap = domain::CoordinateMaps::Affine;

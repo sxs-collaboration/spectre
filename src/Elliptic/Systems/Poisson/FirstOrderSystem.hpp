@@ -85,7 +85,7 @@ struct FirstOrderSystem {
       ::Tags::Variables<tmpl::append<primal_fields, auxiliary_fields>>;
 
   using fluxes =
-      tmpl::conditional_t<BackgroundGeometry == Geometry::Euclidean,
+      tmpl::conditional_t<BackgroundGeometry == Geometry::FlatCartesian,
                           EuclideanFluxes<Dim>, NonEuclideanFluxes<Dim>>;
   using sources = Sources;
 
@@ -93,7 +93,7 @@ struct FirstOrderSystem {
   // normalize vectors on the faces of an element
   template <typename Tag>
   using magnitude_tag = tmpl::conditional_t<
-      BackgroundGeometry == Geometry::Euclidean,
+      BackgroundGeometry == Geometry::FlatCartesian,
       ::Tags::EuclideanMagnitude<Tag>,
       ::Tags::NonEuclideanMagnitude<
           Tag, gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>>>;

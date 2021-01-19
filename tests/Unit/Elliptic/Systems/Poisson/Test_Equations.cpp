@@ -53,5 +53,5 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson", "[Unit][Elliptic]") {
   CHECK_FOR_DATAVECTORS(test_equations, (1, 2, 3));
   CHECK_FOR_DATAVECTORS(
       test_computers, (1, 2, 3),
-      (Poisson::Geometry::Euclidean, Poisson::Geometry::NonEuclidean));
+      (Poisson::Geometry::FlatCartesian, Poisson::Geometry::Curved));
 }
