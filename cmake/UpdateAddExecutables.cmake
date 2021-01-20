@@ -12,6 +12,7 @@ function(add_spectre_executable TARGET_NAME)
       )
     if(NOT ${TARGET_IS_IMPORTED})
       target_link_libraries(${TARGET_NAME} PRIVATE ${SPECTRE_PCH})
+      add_dependencies(${TARGET_NAME} ${SPECTRE_PCH_DEP})
       set_source_files_properties(
         ${ARGN}
         OBJECT_DEPENDS "${SPECTRE_PCH_PATH}"
