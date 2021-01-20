@@ -66,9 +66,6 @@ void internal_mortar_data(
 
   const Element<Dim>& element = db::get<domain::Tags::Element<Dim>>(*box);
   const Mesh<Dim>& volume_mesh = db::get<domain::Tags::Mesh<Dim>>(*box);
-  const auto& face_meshes =
-      get<domain::Tags::Interface<domain::Tags::InternalDirections<Dim>,
-                                  domain::Tags::Mesh<Dim - 1>>>(*box);
   const auto& mortar_meshes = db::get<Tags::MortarMesh<Dim>>(*box);
   const auto& mortar_sizes = db::get<Tags::MortarSize<Dim>>(*box);
   const TimeStepId& temporal_id = db::get<::Tags::TimeStepId>(*box);
@@ -249,21 +246,21 @@ void internal_mortar_data(
       }
     };
 
+    const Mesh<Dim - 1> face_mesh =
+        volume_mesh.slice_away(direction.dimension());
+
     if (fields_on_face.number_of_grid_points() !=
-        face_meshes.at(direction).number_of_grid_points()) {
-      fields_on_face.initialize(
-          face_meshes.at(direction).number_of_grid_points());
+        face_mesh.number_of_grid_points()) {
+      fields_on_face.initialize(face_mesh.number_of_grid_points());
     }
-    internal_mortars(face_meshes.at(direction), direction);
+    internal_mortars(face_mesh, direction);
 
     if (element.neighbors().count(direction.opposite()) != 0) {
       if (fields_on_face.number_of_grid_points() !=
-          face_meshes.at(direction.opposite()).number_of_grid_points()) {
-        fields_on_face.initialize(
-            face_meshes.at(direction.opposite()).number_of_grid_points());
+          face_mesh.number_of_grid_points()) {
+        fields_on_face.initialize(face_mesh.number_of_grid_points());
       }
-      internal_mortars(face_meshes.at(direction.opposite()),
-                       direction.opposite());
+      internal_mortars(face_mesh, direction.opposite());
     }
   }
 }

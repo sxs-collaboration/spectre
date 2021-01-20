@@ -1287,9 +1287,6 @@ void test_impl(const Spectral::Quadrature quadrature,
                                          tmpl::size_t<Dim>, Frame::Inertial>;
     using mortar_tags_list =
         typename BoundaryTerms<Dim, HasPrims>::dg_package_field_tags;
-    const auto& face_meshes =
-        get_tag(domain::Tags::Interface<domain::Tags::InternalDirections<Dim>,
-                                        domain::Tags::Mesh<Dim - 1>>{});
     const auto& unnormalized_face_normals =
         get_tag(domain::Tags::Interface<
                 domain::Tags::InternalDirections<Dim>,
@@ -1315,11 +1312,11 @@ void test_impl(const Spectral::Quadrature quadrature,
         mesh.number_of_grid_points()};
     get(get<Var3Squared>(volume_temporaries)) = square(get(var3));
     const auto compute_expected_mortar_data =
-        [&face_mesh_velocities, &face_meshes, &face_normals, &get_tag, &mesh,
-         &mortar_meshes, &mortar_sizes, &volume_temporaries](
+        [&face_mesh_velocities, &face_normals, &get_tag, &mesh, &mortar_meshes,
+         &mortar_sizes, &volume_temporaries](
             const Direction<Dim>& local_direction,
             const ElementId<Dim>& local_neighbor_id) noexcept {
-          const auto& face_mesh = face_meshes.at(local_direction);
+          const auto& face_mesh = mesh.slice_away(local_direction.dimension());
           // First project data to the face in the direction of the mortar
           Variables<
               tmpl::append<variables_tags, fluxes_tags, temporary_tags_for_face,
