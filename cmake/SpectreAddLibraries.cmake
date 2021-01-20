@@ -53,6 +53,7 @@ function(ADD_SPECTRE_LIBRARY LIBRARY_NAME)
       AND NOT ${LIBRARY_TYPE} STREQUAL INTERFACE_LIBRARY
       AND TARGET ${SPECTRE_PCH})
     target_link_libraries(${LIBRARY_NAME} PRIVATE ${SPECTRE_PCH})
+    add_dependencies(${LIBRARY_NAME} ${SPECTRE_PCH_DEP})
     set_source_files_properties(
         ${ARGN}
         OBJECT_DEPENDS "${SPECTRE_PCH_PATH}"

@@ -76,9 +76,11 @@ if (USE_PCH)
   # (Apple)Clang this is `-include-pch;${SPECTRE_PCH_PATH}`, while for GCC it
   # is `-include;${SPECTRE_PCH_HEADER_PATH}`. We add
   # `INTERFACE_COMPILE_OPTIONS` to ${SPECTRE_PCH} so libraries can just link
-  # the ${SPECTRE_PCH} target:
+  # the ${SPECTRE_PCH} target. They also need to depend on ${SPECTRE_PCH_DEP}
+  # to make sure the PCH compiles before anything else:
   #
-  #     target_link_libraries(${TARGET_NAME} PUBLIC ${SPECTRE_PCH})
+  #     target_link_libraries(${TARGET_NAME} PRIVATE ${SPECTRE_PCH})
+  #     add_dependencies(${TARGET_NAME} ${SPECTRE_PCH_DEP})
   #
   # Source files in dependent targets must depend on the PCH file itself:
   #
@@ -117,6 +119,7 @@ if (USE_PCH)
   set(SPECTRE_PCH_PATH "${SPECTRE_PCH_HEADER_PATH}.gch")
   set(SPECTRE_PCH_LIB SpectrePchLib)
   set(SPECTRE_PCH_LIB_DIR "${CMAKE_BINARY_DIR}/tmp/")
+  set(SPECTRE_PCH_DEP SpectrePchDependency)
   set(SPECTRE_PCH_DEP_HEADER_PATH
     "${SPECTRE_PCH_LIB_DIR}.SpectrePchForDependencies.hpp")
   set(SPECTRE_PCH_DEP_SOURCE_PATH
@@ -203,6 +206,16 @@ if (USE_PCH)
     PROPERTIES
     OBJECT_DEPENDS ${SPECTRE_PCH_COMPILER_WRAPPER}
     OBJECT_OUTPUTS ${SPECTRE_PCH_PATH}
+    )
+
+  # Add a custom target that's only used to make sure the PCH is compiled before
+  # anything else
+  add_custom_target(
+    ${SPECTRE_PCH_DEP}
+    )
+  add_dependencies(
+    ${SPECTRE_PCH_DEP}
+    ${SPECTRE_PCH_LIB}
     )
 
   # Create the ${SPECTRE_PCH} that libraries and executables will depend on
