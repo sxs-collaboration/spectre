@@ -64,6 +64,12 @@ void test(const Spectral::Quadrature quadrature) {
   const auto volume_data =
       polynomial_volume_data(logical_coordinates(volume_mesh), powers);
 
+  // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
+  const Scalar<DataVector> var3_volume = get<Var3>(volume_data);
+  // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
+  const tnsr::I<DataVector, 2, Frame::Inertial> var2_volume =
+      get<Var2>(volume_data);
+
   for (const auto& direction : Direction<Dim>::all_directions()) {
     const size_t sliced_dim = direction.dimension();
     const size_t fixed_index = direction.side() == Side::Upper
@@ -114,6 +120,17 @@ void test(const Spectral::Quadrature quadrature) {
           get<Var2>(expected_face_values));
     CHECK(get<Var3>(face_values_contiguous_project) ==
           get<Var3>(expected_face_values));
+
+    Scalar<DataVector> var3_face{face_mesh.number_of_grid_points()};
+    evolution::dg::project_tensor_to_boundary(
+        make_not_null(&var3_face), var3_volume, volume_mesh, direction);
+    CHECK(var3_face == get<Var3>(expected_face_values));
+
+    tnsr::I<DataVector, 2, Frame::Inertial> var2_face{
+        face_mesh.number_of_grid_points()};
+    evolution::dg::project_tensor_to_boundary(
+        make_not_null(&var2_face), var2_volume, volume_mesh, direction);
+    CHECK(var2_face == get<Var2>(expected_face_values));
   }
 }
 }  // namespace
