@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <optional>
 #include <type_traits>
@@ -20,7 +21,9 @@
 #include "Domain/FaceNormal.hpp"
 #include "Domain/InterfaceHelpers.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeHelpers.hpp"
@@ -36,44 +39,43 @@
 #include "Utilities/TMPL.hpp"
 
 namespace evolution::dg::Actions::detail {
-template <typename Metavariables, size_t Dim, typename BoundaryCorrection,
-          typename TemporaryTags, typename DbTagsList, typename VariablesTags,
-          typename... PackageDataVolumeTags>
+template <typename System, size_t Dim, typename BoundaryCorrection,
+          typename TemporaryTags, typename DbTagsList>
 void internal_mortar_data(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const BoundaryCorrection& boundary_correction,
-    const Variables<VariablesTags>& volume_evolved_vars,
-    const Variables<db::wrap_tags_in<
-        ::Tags::Flux, typename Metavariables::system::flux_variables,
-        tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes,
-    const Variables<TemporaryTags>& volume_temporaries) noexcept {
-  using system = typename Metavariables::system;
-  using variables_tags = typename system::variables_tag::tags_list;
-  using flux_variables = typename system::flux_variables;
+    const Variables<typename System::variables_tag::tags_list>&
+        volume_evolved_vars,
+    const Variables<
+        db::wrap_tags_in<::Tags::Flux, typename System::flux_variables,
+                         tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes,
+    const Variables<TemporaryTags>& volume_temporaries,
+    const Element<Dim>& element, const Mesh<Dim>& volume_mesh,
+    const std::unordered_map<
+        std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim - 1>,
+        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& mortar_meshes,
+    const std::unordered_map<
+        std::pair<Direction<Dim>, ElementId<Dim>>,
+        std::array<Spectral::MortarSize, Dim - 1>,
+        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& mortar_sizes,
+    const TimeStepId& temporal_id,
+    const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>&
+        moving_mesh_map,
+    const DirectionMap<Dim, std::optional<Variables<tmpl::list<
+                                ::evolution::dg::Tags::MagnitudeOfNormal,
+                                ::evolution::dg::Tags::NormalCovector<Dim>>>>>&
+        normal_covector_and_magnitude) noexcept {
+  using variables_tags = typename System::variables_tag::tags_list;
+  using flux_variables = typename System::flux_variables;
   using fluxes_tags = db::wrap_tags_in<::Tags::Flux, flux_variables,
-                                       tmpl::size_t<Metavariables::volume_dim>,
-                                       Frame::Inertial>;
+                                       tmpl::size_t<Dim>, Frame::Inertial>;
   using temporary_tags_for_face =
       typename BoundaryCorrection::dg_package_data_temporary_tags;
   using primitive_tags_for_face = typename detail::get_primitive_vars<
-      system::has_primitive_and_conservative_vars>::
+      System::has_primitive_and_conservative_vars>::
       template f<BoundaryCorrection>;
   using mortar_tags_list = typename BoundaryCorrection::dg_package_field_tags;
-  static_assert(
-      std::is_same_v<VariablesTags, variables_tags>,
-      "The evolved variables passed in should match the evolved variables of "
-      "the system.");
 
-  const Element<Dim>& element = db::get<domain::Tags::Element<Dim>>(*box);
-  const Mesh<Dim>& volume_mesh = db::get<domain::Tags::Mesh<Dim>>(*box);
-  const auto& mortar_meshes = db::get<Tags::MortarMesh<Dim>>(*box);
-  const auto& mortar_sizes = db::get<Tags::MortarSize<Dim>>(*box);
-  const TimeStepId& temporal_id = db::get<::Tags::TimeStepId>(*box);
-  const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>&
-      moving_mesh_map =
-          db::get<domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
-                                                              Frame::Inertial>>(
-              *box);
   const std::unordered_map<Direction<Dim>, tnsr::i<DataVector, Dim>>&
       unnormalized_normal_covectors = db::get<domain::Tags::Interface<
           domain::Tags::InternalDirections<Dim>,
@@ -90,7 +92,7 @@ void internal_mortar_data(
                    primitive_tags_for_face>;
   Variables<tmpl::remove_duplicates<tmpl::push_back<
       tmpl::append<dg_package_data_projected_tags,
-                   detail::inverse_spatial_metric_tag<system>>,
+                   detail::inverse_spatial_metric_tag<System>>,
       detail::OneOverNormalVectorMagnitude, detail::NormalVector<Dim>>>>
       fields_on_face{};
   for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
@@ -107,7 +109,8 @@ void internal_mortar_data(
     const auto internal_mortars = [&box, &boundary_correction, &element,
                                    &face_mesh_velocities, &fields_on_face,
                                    &mortar_meshes, &mortar_sizes,
-                                   &moving_mesh_map, &temporal_id,
+                                   &moving_mesh_map,
+                                   &normal_covector_and_magnitude, &temporal_id,
                                    &unnormalized_normal_covectors,
                                    &volume_evolved_vars, &volume_fluxes,
                                    &volume_temporaries,
@@ -148,19 +151,19 @@ void internal_mortar_data(
       }
       if constexpr (tmpl::size<tmpl::append<
                         temporary_tags_for_face,
-                        detail::inverse_spatial_metric_tag<system>>>::value !=
+                        detail::inverse_spatial_metric_tag<System>>>::value !=
                     0) {
         project_tensors_to_boundary<
             tmpl::append<temporary_tags_for_face,
-                         detail::inverse_spatial_metric_tag<system>>>(
+                         detail::inverse_spatial_metric_tag<System>>>(
             make_not_null(&fields_on_face), volume_temporaries, volume_mesh,
             local_direction);
       }
-      if constexpr (system::has_primitive_and_conservative_vars and
+      if constexpr (System::has_primitive_and_conservative_vars and
                     tmpl::size<primitive_tags_for_face>::value != 0) {
         project_tensors_to_boundary<primitive_tags_for_face>(
             make_not_null(&fields_on_face),
-            db::get<typename system::primitive_variables_tag>(*box),
+            db::get<typename System::primitive_variables_tag>(*box),
             volume_mesh, local_direction);
       }
 
@@ -174,16 +177,14 @@ void internal_mortar_data(
           box, [&fields_on_face, &local_direction, &moving_mesh_map,
                 &unnormalized_normal_covectors](
                    const auto normal_covector_and_magnitude_ptr) noexcept {
-            detail::unit_normal_vector_and_covector_and_magnitude<system>(
+            detail::unit_normal_vector_and_covector_and_magnitude<System>(
                 normal_covector_and_magnitude_ptr,
                 make_not_null(&fields_on_face), local_direction,
                 unnormalized_normal_covectors, moving_mesh_map);
           });
 
       // Perform step 2
-      ASSERT(db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(*box)
-                 .at(local_direction)
-                 .has_value(),
+      ASSERT(normal_covector_and_magnitude.at(local_direction).has_value(),
              "The magnitude of the normal vector and the unit normal "
              "covector have not been computed, even though they should "
              "have been. Direction: "
@@ -192,12 +193,10 @@ void internal_mortar_data(
       Variables<mortar_tags_list> packaged_data{
           face_mesh.number_of_grid_points()};
       // The DataBox is passed in for retrieving the `volume_tags`
-      const double max_abs_char_speed_on_face = detail::dg_package_data<system>(
+      const double max_abs_char_speed_on_face = detail::dg_package_data<System>(
           make_not_null(&packaged_data), boundary_correction, fields_on_face,
           get<evolution::dg::Tags::NormalCovector<Dim>>(
-              *db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(
-                   *box)
-                   .at(local_direction)),
+              *normal_covector_and_magnitude.at(local_direction)),
           face_mesh_velocities.at(local_direction), *box,
           typename BoundaryCorrection::dg_package_data_volume_tags{},
           dg_package_data_projected_tags{});

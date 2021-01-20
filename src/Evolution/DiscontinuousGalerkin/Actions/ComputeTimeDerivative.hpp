@@ -432,10 +432,19 @@ ComputeTimeDerivative<Metavariables>::apply(
             // Compute internal boundary quantities on the mortar for sides
             // of the element that have neighbors, i.e. they are not an
             // external side.
-            detail::internal_mortar_data<Metavariables, volume_dim>(
+            detail::internal_mortar_data<system, volume_dim>(
                 make_not_null(&box),
                 dynamic_cast<const DerivedCorrection&>(boundary_correction),
-                db::get<variables_tag>(box), volume_fluxes, temporaries);
+                db::get<variables_tag>(box), volume_fluxes, temporaries,
+                db::get<domain::Tags::Element<volume_dim>>(box),
+                db::get<domain::Tags::Mesh<volume_dim>>(box),
+                db::get<Tags::MortarMesh<volume_dim>>(box),
+                db::get<Tags::MortarSize<volume_dim>>(box),
+                db::get<::Tags::TimeStepId>(box),
+                db::get<domain::CoordinateMaps::Tags::CoordinateMap<
+                    volume_dim, Frame::Grid, Frame::Inertial>>(box),
+                db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<
+                    volume_dim>>(box));
           }
         });
   } else {
