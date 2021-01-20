@@ -34,11 +34,14 @@ template <size_t SliceDim, Requires<(SliceDim <= Dim)>>
 Mesh<SliceDim> Mesh<Dim>::slice_through(
     const std::array<size_t, SliceDim>& dims) const noexcept {
   // Check for duplicates in `dims`
-  auto sorted_dims = dims;
-  std::sort(sorted_dims.begin(), sorted_dims.end());
-  auto last_unique = std::unique(sorted_dims.begin(), sorted_dims.end());
-  ASSERT(last_unique == sorted_dims.end(),
-         "Dimensions to slice through contain duplicates.");
+  ASSERT(
+      [&dims]() noexcept {
+        auto sorted_dims = dims;
+        std::sort(sorted_dims.begin(), sorted_dims.end());
+        auto last_unique = std::unique(sorted_dims.begin(), sorted_dims.end());
+        return last_unique == sorted_dims.end();
+      }(),
+      "Dimensions to slice through contain duplicates.");
   std::array<size_t, SliceDim> slice_extents{};
   std::array<Spectral::Basis, SliceDim> slice_bases{};
   std::array<Spectral::Quadrature, SliceDim> slice_quadratures{};
