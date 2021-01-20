@@ -10,9 +10,12 @@ if(USE_CCACHE)
       # In order to make ccache work with precompiled headers we need to:
       # - Hash the header file in the repo that will generate the precompiled
       #   header
-      # - Ignore the precompiled header in the build directory
+      # - In the past we had to ignore the precompiled header in the build
+      #   directory:
+      #   "CCACHE_IGNOREHEADERS=${CMAKE_BINARY_DIR}/SpectrePch.hpp:${CMAKE_BINARY_DIR}/SpectrePch.hpp.gch "
+      #   This doesn't seem to be necessary anymore, but may help if issues
+      #   related to PCH and ccache come up in the future.
       "CCACHE_EXTRAFILES=${CMAKE_SOURCE_DIR}/tools/SpectrePch.hpp "
-      "CCACHE_IGNOREHEADERS=${CMAKE_BINARY_DIR}/SpectrePch.hpp:${CMAKE_BINARY_DIR}/SpectrePch.hpp.gch "
       "ccache"
     )
     # CCache offers no benefit for linking

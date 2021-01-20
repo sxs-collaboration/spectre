@@ -121,14 +121,10 @@ function(add_test_library LIBRARY FOLDER LIBRARY_SOURCES LINK_LIBS)
     )
 
   # Add PCH to test libs
-  if(TARGET ${SPECTRE_PCH})
-    target_link_libraries(${LIBRARY} PRIVATE ${SPECTRE_PCH})
-    add_dependencies(${LIBRARY} ${SPECTRE_PCH_DEP})
-    set_source_files_properties(
-      ${LIBRARY_SOURCES}
-      OBJECT_DEPENDS "${SPECTRE_PCH_PATH}"
-      )
-  endif(TARGET ${SPECTRE_PCH})
+  if(TARGET SpectrePch)
+    target_precompile_headers(${LIBRARY} REUSE_FROM SpectrePch)
+    target_link_libraries(${LIBRARY} PRIVATE SpectrePchFlags)
+  endif(TARGET SpectrePch)
 
   # Add link dependencies
   target_link_libraries(

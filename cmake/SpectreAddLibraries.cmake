@@ -48,16 +48,12 @@ function(ADD_SPECTRE_LIBRARY LIBRARY_NAME)
       LINK_DEPENDS "${CMAKE_BINARY_DIR}/tmp/WrapLibraryLinker.sh"
       )
   endif (NOT ${LIBRARY_TYPE} STREQUAL INTERFACE_LIBRARY)
-  if (NOT "${LIBRARY_NAME}" MATCHES "^${SPECTRE_PCH}"
+  if (NOT "${LIBRARY_NAME}" MATCHES "^SpectrePch"
       AND NOT ${LIBRARY_IS_IMPORTED}
       AND NOT ${LIBRARY_TYPE} STREQUAL INTERFACE_LIBRARY
-      AND TARGET ${SPECTRE_PCH})
-    target_link_libraries(${LIBRARY_NAME} PRIVATE ${SPECTRE_PCH})
-    add_dependencies(${LIBRARY_NAME} ${SPECTRE_PCH_DEP})
-    set_source_files_properties(
-        ${ARGN}
-        OBJECT_DEPENDS "${SPECTRE_PCH_PATH}"
-        )
+      AND TARGET SpectrePch)
+      target_precompile_headers(${LIBRARY_NAME} REUSE_FROM SpectrePch)
+      target_link_libraries(${LIBRARY_NAME} PRIVATE SpectrePchFlags)
   endif()
   if (${LIBRARY_TYPE} STREQUAL INTERFACE_LIBRARY)
     target_link_libraries(
