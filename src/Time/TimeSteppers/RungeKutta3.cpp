@@ -10,13 +10,13 @@
 
 namespace TimeSteppers {
 
-uint64_t RungeKutta3::number_of_substeps() const noexcept {
+uint64_t RungeKutta3::number_of_substeps() const noexcept { return 3; }
+
+uint64_t RungeKutta3::number_of_substeps_for_error() const noexcept {
   return 3;
 }
 
-size_t RungeKutta3::number_of_past_steps() const noexcept {
-  return 0;
-}
+size_t RungeKutta3::number_of_past_steps() const noexcept { return 0; }
 
 double RungeKutta3::stable_step() const noexcept {
   // This is the condition for  y' = -k y  to go to zero.
@@ -49,6 +49,11 @@ TimeStepId RungeKutta3::next_time_id(
   }
 }
 
+TimeStepId RungeKutta3::next_time_id_for_error(
+    const TimeStepId& current_id,
+    const TimeDelta& time_step) const noexcept {
+  return next_time_id(current_id, time_step);
+}
 }  // namespace TimeSteppers
 
 /// \cond

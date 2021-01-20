@@ -14,6 +14,10 @@ namespace TimeSteppers {
 
 uint64_t DormandPrince5::number_of_substeps() const noexcept { return 6; }
 
+uint64_t DormandPrince5::number_of_substeps_for_error() const noexcept {
+  return 7;
+}
+
 size_t DormandPrince5::number_of_past_steps() const noexcept { return 0; }
 
 // The growth function for DP5 is
@@ -59,8 +63,37 @@ TimeStepId DormandPrince5::next_time_id(const TimeStepId& current_id,
   }
 }
 
-const std::array<Time::rational_t, 5> DormandPrince5::c_ = {
-    {{1, 5}, {3, 10}, {4, 5}, {8, 9}, {1, 1}}};
+TimeStepId DormandPrince5::next_time_id_for_error(
+    const TimeStepId& current_id, const TimeDelta& time_step) const noexcept {
+  const auto& step = current_id.substep();
+  if (step < 5) {
+    return next_time_id(current_id, time_step);
+  } else {
+    const auto& t0 = current_id.step_time();
+    const auto& t = current_id.substep_time();
+    ASSERT(t == t0 + gsl::at(c_, step - 1) * time_step,
+           "In adaptive DP5 substep "
+               << step << ", the substep time (" << t << ") should equal t0+c["
+               << step - 1 << "]*dt (" << t0 + gsl::at(c_, step - 1) * time_step
+               << ")");
+    switch(step) {
+      case 5:
+        return {current_id.time_runs_forward(), current_id.slab_number(), t0,
+                step + 1, t0 + gsl::at(c_, step) * time_step};
+        break;
+      case 6:
+        return {current_id.time_runs_forward(), current_id.slab_number(),
+                t0 + time_step};
+        break;
+      default:
+        ERROR("In adaptive DP5 substep should be one of 0,1,2,3,4,5,6, not "
+              << current_id.substep());
+    }
+  }
+}
+
+const std::array<Time::rational_t, 6> DormandPrince5::c_ = {
+    {{1, 5}, {3, 10}, {4, 5}, {8, 9}, {1, 1}, {1, 1}}};
 }  // namespace TimeSteppers
 
 /// \cond

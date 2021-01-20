@@ -75,11 +75,18 @@ class RungeKutta4 : public TimeStepper::Inherit {
                 const TimeDelta& time_step) const noexcept;
 
   template <typename Vars, typename DerivVars>
+  bool update_u(gsl::not_null<Vars*> u, gsl::not_null<Vars*> u_error,
+                gsl::not_null<History<Vars, DerivVars>*> history,
+                const TimeDelta& time_step) const noexcept;
+
+  template <typename Vars, typename DerivVars>
   void dense_update_u(gsl::not_null<Vars*> u,
                       const History<Vars, DerivVars>& history,
                       double time) const noexcept;
 
   uint64_t number_of_substeps() const noexcept override;
+
+  uint64_t number_of_substeps_for_error() const noexcept override;
 
   size_t number_of_past_steps() const noexcept override;
 
@@ -87,6 +94,10 @@ class RungeKutta4 : public TimeStepper::Inherit {
 
   TimeStepId next_time_id(const TimeStepId& current_id,
                           const TimeDelta& time_step) const noexcept override;
+
+  TimeStepId next_time_id_for_error(
+      const TimeStepId& current_id,
+      const TimeDelta& time_step) const noexcept override;
 
   template <typename Vars, typename DerivVars>
   bool can_change_step_size(
@@ -178,6 +189,68 @@ void RungeKutta4::update_u(
   if (history->size() == number_of_substeps()) {
     history->mark_unneeded(history->end());
   }
+}
+
+template <typename Vars, typename DerivVars>
+bool RungeKutta4::update_u(
+    const gsl::not_null<Vars*> u, const gsl::not_null<Vars*> u_error,
+    const gsl::not_null<History<Vars, DerivVars>*> history,
+    const TimeDelta& time_step) const noexcept {
+  const size_t substep = history->size() - 1;
+  if (substep < 3) {
+    update_u(u, history, time_step);
+  } else {
+    const auto& dt_vars = (history->end() - 1).derivative();
+    const auto& u0 = history->begin().value();
+    switch (substep) {
+      case 3: {
+        constexpr double prefactor = 1.0 / 32.0;
+        *u = (10.0 * (history->begin() + 1).value() +
+              14.0 * (history->begin() + 2).value() +
+              13.0 * (history->begin() + 3).value() - 5.0 * u0 -
+              time_step.value() * dt_vars) *
+             prefactor;
+        break;
+      }
+      case 4: {
+        // from (17.1.3) of Numerical Recipes 3rd Edition
+        // u^(n+1) = (2v^(1) + 4*v^(2) + 2*v^(3) + v^(4) - 3*u0)/6
+        // On entry V = v^(3), u0 = u^n, rhs0 = \mathcal{L}(v^(3), t^n + dt),
+        // time = t^n + dt
+        // Note: v^(4) = u0 + dt * \mathcal{L}(t+dt, v^(3)); inserting this
+        // gives u^(n+1) = (2v^(1) + 4*v^(2) + 2*v^(3)
+        //         + dt*\mathcal{L}(t+dt,v^(3)) - 2*u0)/6
+        constexpr double one_sixth = 1.0 / 6.0;
+        *u = (2.0 * (history->begin() + 1).value() +
+              4.0 * (history->begin() + 2).value() +
+              2.0 * (history->begin() + 3).value() +
+              (time_step.value() * (history->begin() + 3).derivative() -
+               2.0 * u0)) *
+             one_sixth;
+        // On exit v = u^(n+1), time = t^n + dt
+
+        // See Butcher Tableau of Zonneveld 4(3) embedded scheme with five
+        // substeps in Table 4.2 of Hairer, Norsett, and Wanner
+        *u_error = *u - u0 -
+                   time_step.value() *
+                       (-3.0 * history->begin().derivative() +
+                        14.0 * (history->begin() + 1).derivative() +
+                        14.0 * (history->begin() + 2).derivative() +
+                        13.0 * (history->begin() + 3).derivative() -
+                        32.0 * (history->begin() + 4).derivative()) *
+                       one_sixth;
+        break;
+      }
+      default:
+        ERROR("Substep in adaptive RK4 should be one of 0,1,2,3,4, not "
+              << substep);
+    }
+  }
+  // Clean up old history
+  if (history->size() == number_of_substeps_for_error()) {
+    history->mark_unneeded(history->end());
+  }
+  return substep == 4;
 }
 
 template <typename Vars, typename DerivVars>

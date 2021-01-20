@@ -65,6 +65,23 @@ class TimeStepper : public PUP::able {
         this, u, history, time_step);
   }
 
+  /// Add the change for the current substep to u; report the error measure when
+  /// available.
+  ///
+  /// For a substep method, the error measure will only be available on full
+  /// steps. For a multistep method, the error measure will only be available
+  /// when a sufficient number of steps are available in the `history` to
+  /// compare two orders of step. Whenever the error measure is unavailable,
+  /// `u_error` is unchanged and the function return is `false`.
+  template <typename Vars, typename DerivVars>
+  bool update_u(
+      const gsl::not_null<Vars*> u, const gsl::not_null<Vars*> u_error,
+      const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
+      const TimeDelta& time_step) const noexcept {
+    return TimeStepper_detail::fake_virtual_update_u<creatable_classes>(
+        this, u, u_error, history, time_step);
+  }
+
   /// Compute the solution value at a time between steps.  To evaluate
   /// at a time within a given step, this must be called before the
   /// step is completed but after any intermediate substeps have been
@@ -81,6 +98,13 @@ class TimeStepper : public PUP::able {
   /// Number of substeps in this TimeStepper
   virtual uint64_t number_of_substeps() const noexcept = 0;
 
+  /// Number of substeps in this TimeStepper when providing an error measure for
+  /// adaptive time-stepping
+  ///
+  /// \details Certain substep methods (e.g. embedded RK4(3)) require additional
+  /// steps when providing an error measure of the integration.
+  virtual uint64_t number_of_substeps_for_error() const noexcept = 0;
+
   /// Number of past time steps needed for multi-step method
   virtual size_t number_of_past_steps() const noexcept = 0;
 
@@ -90,6 +114,15 @@ class TimeStepper : public PUP::able {
 
   /// The TimeStepId after the current substep
   virtual TimeStepId next_time_id(
+      const TimeStepId& current_id,
+      const TimeDelta& time_step) const noexcept = 0;
+
+  /// The TimeStepId after the current substep when providing an error measure
+  /// for adaptive time-stepping.
+  ///
+  /// Certain substep methods (e.g. embedded RK4(3)) require additional
+  /// steps when providing an error measure of the integration.
+  virtual TimeStepId next_time_id_for_error(
       const TimeStepId& current_id,
       const TimeDelta& time_step) const noexcept = 0;
 
@@ -164,6 +197,15 @@ class LtsTimeStepper : public TimeStepper::Inherit {
   /// Substep LTS integrators are not supported, so this is always 1.
   uint64_t number_of_substeps() const noexcept final { return 1; }
 
+  /// Substep LTS integrators are not supported, so this is always 1.
+  uint64_t number_of_substeps_for_error() const noexcept final { return 1; }
+
+  TimeStepId next_time_id_for_error(
+      const TimeStepId& current_id,
+      const TimeDelta& time_step) const noexcept final {
+    return next_time_id(current_id, time_step);
+  }
+
   /// \cond
   // FakeVirtual forces derived classes to override the fake virtual
   // methods.  Here the base class method is actually what we want
@@ -175,6 +217,14 @@ class LtsTimeStepper : public TimeStepper::Inherit {
       const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
       const TimeDelta& time_step) const noexcept {
     return TimeStepper::update_u(u, history, time_step);
+  }
+
+  template <typename Vars, typename DerivVars>
+  bool update_u(
+      const gsl::not_null<Vars*> u, const gsl::not_null<Vars*> u_error,
+      const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
+      const TimeDelta& time_step) const noexcept {
+    return TimeStepper::update_u(u, u_error, history, time_step);
   }
 
   template <typename Vars, typename DerivVars>
