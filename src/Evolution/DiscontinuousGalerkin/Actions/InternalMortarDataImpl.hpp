@@ -63,7 +63,7 @@ void internal_mortar_data(
         moving_mesh_map,
     const std::optional<tnsr::I<DataVector, Dim>>& volume_mesh_velocity,
     const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
-    /*volume_inverse_jacobian*/,
+        volume_inverse_jacobian,
     const DirectionMap<Dim, std::optional<Variables<tmpl::list<
                                 ::evolution::dg::Tags::MagnitudeOfNormal,
                                 ::evolution::dg::Tags::NormalCovector<Dim>>>>>&
@@ -79,19 +79,13 @@ void internal_mortar_data(
       template f<BoundaryCorrection>;
   using mortar_tags_list = typename BoundaryCorrection::dg_package_field_tags;
 
-  const std::unordered_map<Direction<Dim>, tnsr::i<DataVector, Dim>>&
-      unnormalized_normal_covectors = db::get<domain::Tags::Interface<
-          domain::Tags::InternalDirections<Dim>,
-          domain::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>(*box);
-
   using dg_package_data_projected_tags =
       tmpl::append<variables_tags, fluxes_tags, temporary_tags_for_face,
                    primitive_tags_for_face>;
   Variables<tmpl::remove_duplicates<tmpl::push_back<
       tmpl::append<dg_package_data_projected_tags,
                    detail::inverse_spatial_metric_tag<System>>,
-      detail::OneOverNormalVectorMagnitude, detail::NormalVector<Dim>,
-      domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>>>>
+      detail::OneOverNormalVectorMagnitude, detail::NormalVector<Dim>>>>
       fields_on_face{};
   std::optional<tnsr::I<DataVector, Dim>> face_mesh_velocity{};
   for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
@@ -110,8 +104,8 @@ void internal_mortar_data(
                                    &mortar_meshes, &mortar_sizes,
                                    &moving_mesh_map,
                                    &normal_covector_and_magnitude, &temporal_id,
-                                   &unnormalized_normal_covectors,
                                    &volume_evolved_vars, &volume_fluxes,
+                                   &volume_inverse_jacobian,
                                    &volume_temporaries, &volume_mesh,
                                    &volume_mesh_velocity](
                                       const Mesh<Dim - 1>& face_mesh,
@@ -186,12 +180,55 @@ void internal_mortar_data(
       // compute tag.
       db::mutate<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(
           box, [&fields_on_face, &local_direction, &moving_mesh_map,
-                &unnormalized_normal_covectors](
+                &volume_inverse_jacobian, &volume_mesh](
                    const auto normal_covector_and_magnitude_ptr) noexcept {
-            detail::unit_normal_vector_and_covector_and_magnitude<System>(
-                normal_covector_and_magnitude_ptr,
-                make_not_null(&fields_on_face), local_direction,
-                unnormalized_normal_covectors, moving_mesh_map);
+            const bool mesh_is_moving = not moving_mesh_map.is_identity();
+            if (auto& normal_covector_quantity =
+                    normal_covector_and_magnitude_ptr->at(local_direction);
+                detail::has_inverse_spatial_metric_tag_v<System> or
+                mesh_is_moving or not normal_covector_quantity.has_value()) {
+              if (not normal_covector_quantity.has_value()) {
+                normal_covector_quantity = Variables<
+                    tmpl::list<evolution::dg::Tags::MagnitudeOfNormal,
+                               evolution::dg::Tags::NormalCovector<Dim>>>{
+                    fields_on_face.number_of_grid_points()};
+              }
+              tnsr::i<DataVector, Dim> volume_unnormalized_normal_covector{};
+
+              for (size_t inertial_index = 0; inertial_index < Dim;
+                   ++inertial_index) {
+                volume_unnormalized_normal_covector.get(inertial_index)
+                    .set_data_ref(const_cast<double*>(  // NOLINT
+                                      volume_inverse_jacobian
+                                          .get(local_direction.dimension(),
+                                               inertial_index)
+                                          .data()),
+                                  volume_mesh.number_of_grid_points());
+              }
+              project_tensor_to_boundary(
+                  make_not_null(&get<evolution::dg::Tags::NormalCovector<Dim>>(
+                      *normal_covector_quantity)),
+                  volume_unnormalized_normal_covector, volume_mesh,
+                  local_direction);
+
+              if (local_direction.side() == Side::Lower) {
+                for (auto& normal_covector_component :
+                     get<evolution::dg::Tags::NormalCovector<Dim>>(
+                         *normal_covector_quantity)) {
+                  normal_covector_component *= -1.0;
+                }
+              }
+
+              detail::unit_normal_vector_and_covector_and_magnitude_impl<
+                  System>(
+                  make_not_null(&get<evolution::dg::Tags::MagnitudeOfNormal>(
+                      *normal_covector_quantity)),
+                  make_not_null(&get<evolution::dg::Tags::NormalCovector<Dim>>(
+                      *normal_covector_quantity)),
+                  make_not_null(&fields_on_face),
+                  get<evolution::dg::Tags::NormalCovector<Dim>>(
+                      *normal_covector_quantity));
+            }
           });
 
       // Perform step 2

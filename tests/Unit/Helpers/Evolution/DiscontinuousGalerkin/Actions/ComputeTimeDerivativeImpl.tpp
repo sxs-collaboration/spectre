@@ -1287,16 +1287,32 @@ void test_impl(const Spectral::Quadrature quadrature,
                                          tmpl::size_t<Dim>, Frame::Inertial>;
     using mortar_tags_list =
         typename BoundaryTerms<Dim, HasPrims>::dg_package_field_tags;
-    const auto& unnormalized_face_normals =
-        get_tag(domain::Tags::Interface<
-                domain::Tags::InternalDirections<Dim>,
-                domain::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>{});
-    auto face_normals = unnormalized_face_normals;
-    for (auto& direction_and_normal : face_normals) {
-      // GCC-7 gives unused direction warnings if we use structured bindings.
-      const auto normal_magnitude = magnitude(direction_and_normal.second);
+    std::unordered_map<Direction<Dim>,
+                       tnsr::i<DataVector, Dim, Frame::Inertial>>
+        face_normals{};
+    for (const auto& direction : element.internal_boundaries()) {
+      tnsr::i<DataVector, Dim, Frame::Inertial> volume_inv_jac_in_direction{
+          inv_jac[0].size()};
+      for (size_t inertial_index = 0; inertial_index < Dim; ++inertial_index) {
+        volume_inv_jac_in_direction.get(inertial_index) =
+            inv_jac.get(direction.dimension(), inertial_index);
+      }
+
+      const Mesh<Dim - 1> face_mesh = mesh.slice_away(direction.dimension());
+      face_normals[direction] = tnsr::i<DataVector, Dim, Frame::Inertial>{
+          face_mesh.number_of_grid_points()};
+      ::evolution::dg::project_tensor_to_boundary(
+          make_not_null(&face_normals[direction]), volume_inv_jac_in_direction,
+          mesh, direction);
+      for (auto& component : face_normals[direction]) {
+        component *= direction.sign();
+      }
+
+      // GCC-7 gives unused direction warnings if we use structured
+      // bindings.
+      const auto normal_magnitude = magnitude(face_normals.at(direction));
       for (size_t i = 0; i < Dim; ++i) {
-        direction_and_normal.second.get(i) /= get(normal_magnitude);
+        face_normals[direction].get(i) /= get(normal_magnitude);
       }
     }
 
