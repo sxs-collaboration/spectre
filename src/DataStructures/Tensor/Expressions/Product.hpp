@@ -132,7 +132,8 @@ struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
           operand_tensorindex_vals = {{OperandTensorIndices::value...}};
 
       // the operand component's tensor multi-index to compute
-      std::array<size_t, operand_num_tensor_indices> operand_tensor_multi_index;
+      std::array<size_t, operand_num_tensor_indices>
+          operand_tensor_multi_index{};
       for (size_t i = 0; i < operand_num_tensor_indices; i++) {
         gsl::at(operand_tensor_multi_index, i) =
             gsl::at(lhs_tensor_multi_index,
