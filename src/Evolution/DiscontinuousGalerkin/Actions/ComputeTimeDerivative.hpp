@@ -443,6 +443,9 @@ ComputeTimeDerivative<Metavariables>::apply(
                 db::get<::Tags::TimeStepId>(box),
                 db::get<domain::CoordinateMaps::Tags::CoordinateMap<
                     volume_dim, Frame::Grid, Frame::Inertial>>(box),
+                db::get<domain::Tags::MeshVelocity<volume_dim>>(box),
+                db::get<domain::Tags::InverseJacobian<
+                    volume_dim, Frame::Logical, Frame::Inertial>>(box),
                 db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<
                     volume_dim>>(box));
           }

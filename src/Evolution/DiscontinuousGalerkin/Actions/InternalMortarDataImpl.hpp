@@ -61,6 +61,9 @@ void internal_mortar_data(
     const TimeStepId& temporal_id,
     const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>&
         moving_mesh_map,
+    const std::optional<tnsr::I<DataVector, Dim>>& volume_mesh_velocity,
+    const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
+    /*volume_inverse_jacobian*/,
     const DirectionMap<Dim, std::optional<Variables<tmpl::list<
                                 ::evolution::dg::Tags::MagnitudeOfNormal,
                                 ::evolution::dg::Tags::NormalCovector<Dim>>>>>&
@@ -81,20 +84,16 @@ void internal_mortar_data(
           domain::Tags::InternalDirections<Dim>,
           domain::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>(*box);
 
-  const std::unordered_map<Direction<Dim>,
-                           std::optional<tnsr::I<DataVector, Dim>>>&
-      face_mesh_velocities = db::get<domain::Tags::Interface<
-          domain::Tags::InternalDirections<Dim>,
-          domain::Tags::MeshVelocity<Dim, Frame::Inertial>>>(*box);
-
   using dg_package_data_projected_tags =
       tmpl::append<variables_tags, fluxes_tags, temporary_tags_for_face,
                    primitive_tags_for_face>;
   Variables<tmpl::remove_duplicates<tmpl::push_back<
       tmpl::append<dg_package_data_projected_tags,
                    detail::inverse_spatial_metric_tag<System>>,
-      detail::OneOverNormalVectorMagnitude, detail::NormalVector<Dim>>>>
+      detail::OneOverNormalVectorMagnitude, detail::NormalVector<Dim>,
+      domain::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>>>>
       fields_on_face{};
+  std::optional<tnsr::I<DataVector, Dim>> face_mesh_velocity{};
   for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
     (void)neighbors_in_direction;  // unused variable
     // In order to reduce memory allocations we handle both the upper and
@@ -107,16 +106,17 @@ void internal_mortar_data(
     }
 
     const auto internal_mortars = [&box, &boundary_correction, &element,
-                                   &face_mesh_velocities, &fields_on_face,
+                                   &face_mesh_velocity, &fields_on_face,
                                    &mortar_meshes, &mortar_sizes,
                                    &moving_mesh_map,
                                    &normal_covector_and_magnitude, &temporal_id,
                                    &unnormalized_normal_covectors,
                                    &volume_evolved_vars, &volume_fluxes,
-                                   &volume_temporaries,
-                                   &volume_mesh](const Mesh<Dim - 1>& face_mesh,
-                                                 const Direction<Dim>&
-                                                     local_direction) noexcept {
+                                   &volume_temporaries, &volume_mesh,
+                                   &volume_mesh_velocity](
+                                      const Mesh<Dim - 1>& face_mesh,
+                                      const Direction<Dim>&
+                                          local_direction) noexcept {
       // We may not need to bring the volume fluxes or temporaries to the
       // boundary since that depends on the specific boundary correction we
       // are using. Silence compilers warnings about them being unused.
@@ -166,6 +166,17 @@ void internal_mortar_data(
             db::get<typename System::primitive_variables_tag>(*box),
             volume_mesh, local_direction);
       }
+      if (volume_mesh_velocity.has_value()) {
+        if (not face_mesh_velocity.has_value() or
+            (*face_mesh_velocity)[0].size() !=
+                face_mesh.number_of_grid_points()) {
+          face_mesh_velocity =
+              tnsr::I<DataVector, Dim>{face_mesh.number_of_grid_points()};
+        }
+        project_tensor_to_boundary(make_not_null(&*face_mesh_velocity),
+                                   *volume_mesh_velocity, volume_mesh,
+                                   local_direction);
+      }
 
       // Normalize the normal vectors. In the case of a time-independent
       // mesh with no inverse spatial metric tag (i.e. flat background) we
@@ -197,7 +208,7 @@ void internal_mortar_data(
           make_not_null(&packaged_data), boundary_correction, fields_on_face,
           get<evolution::dg::Tags::NormalCovector<Dim>>(
               *normal_covector_and_magnitude.at(local_direction)),
-          face_mesh_velocities.at(local_direction), *box,
+          face_mesh_velocity, *box,
           typename BoundaryCorrection::dg_package_data_volume_tags{},
           dg_package_data_projected_tags{});
       (void)max_abs_char_speed_on_face;

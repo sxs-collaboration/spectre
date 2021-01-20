@@ -1299,10 +1299,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         direction_and_normal.second.get(i) /= get(normal_magnitude);
       }
     }
-    const auto& face_mesh_velocities =
-        get_tag(domain::Tags::Interface<
-                domain::Tags::InternalDirections<Dim>,
-                domain::Tags::MeshVelocity<Dim, Frame::Inertial>>{});
+
     const auto& mortar_meshes =
         get_tag(::evolution::dg::Tags::MortarMesh<Dim>{});
     const auto& mortar_sizes =
@@ -1312,7 +1309,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         mesh.number_of_grid_points()};
     get(get<Var3Squared>(volume_temporaries)) = square(get(var3));
     const auto compute_expected_mortar_data =
-        [&face_mesh_velocities, &face_normals, &get_tag, &mesh, &mortar_meshes,
+        [&face_normals, &get_tag, &mesh, &mesh_velocity, &mortar_meshes,
          &mortar_sizes, &volume_temporaries](
             const Direction<Dim>& local_direction,
             const ElementId<Dim>& local_neighbor_id) noexcept {
@@ -1340,22 +1337,29 @@ void test_impl(const Spectral::Quadrature quadrature,
                 get_tag(typename system::primitive_variables_tag{}), mesh,
                 local_direction);
           }
+          std::optional<tnsr::I<DataVector, Dim>> face_mesh_velocity{};
+          if (UseMovingMesh) {
+            face_mesh_velocity =
+                tnsr::I<DataVector, Dim>{face_mesh.number_of_grid_points()};
+            ::evolution::dg::project_tensor_to_boundary(
+                make_not_null(&*face_mesh_velocity), *mesh_velocity, mesh,
+                local_direction);
+          }
 
           // Compute the normal dot mesh velocity and then the packaged data
           Variables<mortar_tags_list> packaged_data{
               face_mesh.number_of_grid_points()};
           std::optional<Scalar<DataVector>> normal_dot_mesh_velocity{};
 
-          if (face_mesh_velocities.at(local_direction).has_value()) {
-            normal_dot_mesh_velocity =
-                dot_product(*face_mesh_velocities.at(local_direction),
-                            face_normals.at(local_direction));
+          if (face_mesh_velocity.has_value()) {
+            normal_dot_mesh_velocity = dot_product(
+                *face_mesh_velocity, face_normals.at(local_direction));
           }
           const double max_char_speed_on_face = dg_package_data(
               make_not_null(&packaged_data), BoundaryTerms<Dim, HasPrims>{},
               fields_on_face, face_normals.at(local_direction),
-              face_mesh_velocities.at(local_direction),
-              normal_dot_mesh_velocity, get_tag, volume_tags{});
+              face_mesh_velocity, normal_dot_mesh_velocity, get_tag,
+              volume_tags{});
 
           CHECK(max_char_speed_on_face ==
                 max(get(
