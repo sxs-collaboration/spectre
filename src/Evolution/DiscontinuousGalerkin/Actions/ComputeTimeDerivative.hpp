@@ -419,12 +419,18 @@ ComputeTimeDerivative<Metavariables>::apply(
     using derived_boundary_corrections =
         typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
 
+    const Variables<detail::get_primitive_vars_tags_from_system<system>>*
+        primitive_vars{nullptr};
+    if constexpr (system::has_primitive_and_conservative_vars) {
+      primitive_vars = &db::get<typename system::primitive_variables_tag>(box);
+    }
+
     static_assert(
         tmpl::all<derived_boundary_corrections, std::is_final<tmpl::_1>>::value,
         "All createable classes for boundary corrections must be marked "
         "final.");
     tmpl::for_each<derived_boundary_corrections>(
-        [&boundary_correction, &box, &temporaries,
+        [&boundary_correction, &box, &primitive_vars, &temporaries,
          &volume_fluxes](auto derived_correction_v) noexcept {
           using DerivedCorrection =
               tmpl::type_from<decltype(derived_correction_v)>;
@@ -436,7 +442,7 @@ ComputeTimeDerivative<Metavariables>::apply(
                 make_not_null(&box),
                 dynamic_cast<const DerivedCorrection&>(boundary_correction),
                 db::get<variables_tag>(box), volume_fluxes, temporaries,
-                db::get<domain::Tags::Element<volume_dim>>(box),
+                primitive_vars, db::get<domain::Tags::Element<volume_dim>>(box),
                 db::get<domain::Tags::Mesh<volume_dim>>(box),
                 db::get<Tags::MortarMesh<volume_dim>>(box),
                 db::get<Tags::MortarSize<volume_dim>>(box),

@@ -50,6 +50,8 @@ void internal_mortar_data(
         db::wrap_tags_in<::Tags::Flux, typename System::flux_variables,
                          tmpl::size_t<Dim>, Frame::Inertial>>& volume_fluxes,
     const Variables<TemporaryTags>& volume_temporaries,
+    const Variables<get_primitive_vars_tags_from_system<System>>* const
+        volume_primitive_variables,
     const Element<Dim>& element, const Mesh<Dim>& volume_mesh,
     const std::unordered_map<
         std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim - 1>,
@@ -106,6 +108,7 @@ void internal_mortar_data(
                                    &normal_covector_and_magnitude, &temporal_id,
                                    &volume_evolved_vars, &volume_fluxes,
                                    &volume_inverse_jacobian,
+                                   &volume_primitive_variables,
                                    &volume_temporaries, &volume_mesh,
                                    &volume_mesh_velocity](
                                       const Mesh<Dim - 1>& face_mesh,
@@ -155,10 +158,14 @@ void internal_mortar_data(
       }
       if constexpr (System::has_primitive_and_conservative_vars and
                     tmpl::size<primitive_tags_for_face>::value != 0) {
+        ASSERT(volume_primitive_variables != nullptr,
+               "The volume primitive variables are not set even though the "
+               "system has primitive variables.");
         project_tensors_to_boundary<primitive_tags_for_face>(
-            make_not_null(&fields_on_face),
-            db::get<typename System::primitive_variables_tag>(*box),
+            make_not_null(&fields_on_face), *volume_primitive_variables,
             volume_mesh, local_direction);
+      } else {
+        (void)volume_primitive_variables;
       }
       if (volume_mesh_velocity.has_value()) {
         if (not face_mesh_velocity.has_value() or

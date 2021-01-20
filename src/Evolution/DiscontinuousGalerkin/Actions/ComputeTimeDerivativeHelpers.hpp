@@ -78,4 +78,20 @@ struct derivative_tags_for_boundary_condition<
     std::void_t<typename BoundaryCondition::dg_interior_derivative_tags>> {
   using type = typename BoundaryCondition::dg_interior_derivative_tags;
 };
+
+template <typename System, bool = System::has_primitive_and_conservative_vars>
+struct get_primitive_vars_tags_from_system_impl {
+  using type = typename System::primitive_variables_tag::tags_list;
+};
+
+template <typename System>
+struct get_primitive_vars_tags_from_system_impl<System, false> {
+  using type = tmpl::list<>;
+};
+
+/// Returns a `tmpl::list` of the primitive tags. The list is empty if the
+/// system does not have primitive tags.
+template <typename System>
+using get_primitive_vars_tags_from_system =
+    typename get_primitive_vars_tags_from_system_impl<System>::type;
 }  // namespace evolution::dg::Actions::detail
