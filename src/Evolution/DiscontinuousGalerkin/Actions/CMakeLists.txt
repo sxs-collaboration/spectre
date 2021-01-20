@@ -12,4 +12,5 @@ spectre_target_headers(
   NormalCovectorAndMagnitude.hpp
   PackageDataImpl.hpp
   VolumeTermsImpl.hpp
+  VolumeTermsImpl.tpp
   )

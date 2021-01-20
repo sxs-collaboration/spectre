@@ -13,6 +13,7 @@ spectre_target_sources(
   Equations.cpp
   TimeDerivative.cpp
   UpwindPenaltyCorrection.cpp
+  VolumeTermsInstantiation.cpp
   )
 
 spectre_target_headers(
