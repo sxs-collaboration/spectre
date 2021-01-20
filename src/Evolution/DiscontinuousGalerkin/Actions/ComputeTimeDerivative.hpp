@@ -342,12 +342,15 @@ ComputeTimeDerivative<Metavariables>::apply(
   static constexpr size_t volume_dim = Metavariables::volume_dim;
   using system = typename Metavariables::system;
   using variables_tag = typename system::variables_tag;
+  using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
   using partial_derivative_tags = typename system::gradient_variables;
   using flux_variables = typename system::flux_variables;
   using compute_volume_time_derivative_terms =
       typename system::compute_volume_time_derivative_terms;
 
   const Mesh<volume_dim>& mesh = db::get<::domain::Tags::Mesh<volume_dim>>(box);
+  const ::dg::Formulation dg_formulation =
+      db::get<::dg::Tags::Formulation>(box);
   // Allocate the Variables classes needed for the time derivative
   // computation.
   //
@@ -369,25 +372,37 @@ ComputeTimeDerivative<Metavariables>::apply(
 
   const Scalar<DataVector>* det_inverse_jacobian = nullptr;
   if constexpr (tmpl::size<flux_variables>::value != 0) {
-    if (db::get<::dg::Tags::Formulation>(box) ==
-        ::dg::Formulation::WeakInertial) {
+    if (dg_formulation == ::dg::Formulation::WeakInertial) {
       det_inverse_jacobian = &db::get<
           domain::Tags::DetInvJacobian<Frame::Logical, Frame::Inertial>>(box);
     }
   }
-
-  detail::volume_terms<system, volume_dim,
-                       compute_volume_time_derivative_terms>(
-      make_not_null(&box), make_not_null(&volume_fluxes),
-      make_not_null(&partial_derivs), make_not_null(&temporaries),
-      db::get<variables_tag>(box), db::get<::dg::Tags::Formulation>(box), mesh,
-      db::get<domain::Tags::Coordinates<volume_dim, Frame::Inertial>>(box),
-      db::get<::domain::Tags::InverseJacobian<volume_dim, Frame::Logical,
-                                              Frame::Inertial>>(box),
-      det_inverse_jacobian,
-      db::get<::domain::Tags::MeshVelocity<volume_dim>>(box),
-      db::get<::domain::Tags::DivMeshVelocity>(box),
-      typename compute_volume_time_derivative_terms::argument_tags{});
+  db::mutate_apply<
+      tmpl::list<dt_variables_tag>,
+      typename compute_volume_time_derivative_terms::argument_tags>(
+      [&dg_formulation, &det_inverse_jacobian,
+       &div_mesh_velocity = db::get<::domain::Tags::DivMeshVelocity>(box),
+       &evolved_variables = db::get<variables_tag>(box),
+       &inertial_coordinates =
+           db::get<domain::Tags::Coordinates<volume_dim, Frame::Inertial>>(box),
+       &logical_to_inertial_inv_jacobian =
+           db::get<::domain::Tags::InverseJacobian<volume_dim, Frame::Logical,
+                                                   Frame::Inertial>>(box),
+       &mesh,
+       &mesh_velocity = db::get<::domain::Tags::MeshVelocity<volume_dim>>(box),
+       &partial_derivs, &temporaries, &volume_fluxes](
+          const gsl::not_null<Variables<
+              db::wrap_tags_in<::Tags::dt, typename variables_tag::tags_list>>*>
+              dt_vars_ptr,
+          const auto&... time_derivative_args) noexcept {
+        detail::volume_terms<system>(
+            dt_vars_ptr, make_not_null(&volume_fluxes),
+            make_not_null(&partial_derivs), make_not_null(&temporaries),
+            evolved_variables, dg_formulation, mesh, inertial_coordinates,
+            logical_to_inertial_inv_jacobian, det_inverse_jacobian,
+            mesh_velocity, div_mesh_velocity, time_derivative_args...);
+      },
+      make_not_null(&box));
 
   // The below if-else and fill_mortar_data_for_internal_boundaries are for
   // compatibility with the current boundary schemes. Once the current
