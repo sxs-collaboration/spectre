@@ -218,22 +218,31 @@ void test_tci_at_boundary(const size_t number_of_grid_points,
   // Test with element that has external lower-xi boundary
   const auto element_at_lower_xi_boundary =
       TestHelpers::Limiters::make_element<1>({{Direction<1>::lower_xi()}});
-  for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
+  for (const double neighbor_mean : {-1.21, -1.19, 0.0, 1.19, 1.21}) {
+    const bool expected_tci = neighbor_mean < 1.2;
     test_tci_detection(
-        true, tvb_constant, input, mesh, element_at_lower_xi_boundary,
-        element_size, {{std::make_pair(Direction<1>::upper_xi(), neighbor)}},
+        expected_tci, tvb_constant, input, mesh, element_at_lower_xi_boundary,
+        element_size,
+        {{std::make_pair(Direction<1>::upper_xi(), neighbor_mean)}},
         {{std::make_pair(Direction<1>::upper_xi(), element_size[0])}});
   }
 
   // Test with element that has external upper-xi boundary
   const auto element_at_upper_xi_boundary =
       TestHelpers::Limiters::make_element<1>({{Direction<1>::upper_xi()}});
-  for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
+  for (const double neighbor_mean : {-1.21, -1.19, 0.0, 1.19, 1.21}) {
+    const bool expected_tci = neighbor_mean > -1.2;
     test_tci_detection(
-        true, tvb_constant, input, mesh, element_at_upper_xi_boundary,
-        element_size, {{std::make_pair(Direction<1>::lower_xi(), neighbor)}},
+        expected_tci, tvb_constant, input, mesh, element_at_upper_xi_boundary,
+        element_size,
+        {{std::make_pair(Direction<1>::lower_xi(), neighbor_mean)}},
         {{std::make_pair(Direction<1>::lower_xi(), element_size[0])}});
   }
+
+  const auto element_with_no_neighbors = TestHelpers::Limiters::make_element<1>(
+      {{Direction<1>::lower_xi(), Direction<1>::upper_xi()}});
+  test_tci_detection(false, tvb_constant, input, mesh,
+                     element_with_no_neighbors, element_size, {{}}, {{}});
 }
 
 void test_tci_with_different_size_neighbor(
