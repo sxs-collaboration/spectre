@@ -31,10 +31,7 @@
 
 namespace {
 constexpr Spectral::Basis basis = Spectral::Basis::Legendre;
-// Using Gauss points for this test would be nice, since that would
-// let us test the extent=1 cases, but that needs to wait for
-// everything to be updated to use Mesh.
-constexpr Spectral::Quadrature quadrature = Spectral::Quadrature::GaussLobatto;
+constexpr Spectral::Quadrature quadrature = Spectral::Quadrature::Gauss;
 template <size_t Dim>
 constexpr size_t max_points = 4;
 template <>
@@ -118,8 +115,9 @@ struct CheckApply<LocalScalarTag, LocalTensorTag, Dim, Dim> {
         dest_mesh, powers, fill_value);
     // Using this over CHECK_ITERABLE_APPROX speeds the test up by a
     // factor of 6 or so.
+    Approx custom_approx = Approx::custom().epsilon(1.e-13).scale(1.0);
     for (const auto p : result - expected) {
-      CHECK_COMPLEX_APPROX(p, 0.0);
+      CHECK_COMPLEX_CUSTOM_APPROX(p, 0.0, custom_approx);
     }
     const auto ref_matrices =
         make_array<std::reference_wrapper<const Matrix>, Dim>(matrices);
@@ -167,11 +165,21 @@ void test_interpolation() noexcept {
                     too_few_points)) {
       continue;
     }
+    if (Dim == 3 and
+        std::count(source_extents->begin(), source_extents->end(), 3) > 2) {
+      // Skip some 3-extent combinations to reduce test runtime
+      continue;
+    }
     CAPTURE(*source_extents);
     for (IndexIterator<Dim> dest_extents(Index<Dim>(max_points<Dim> + 1));
          dest_extents; ++dest_extents) {
       if (std::any_of(dest_extents->begin(), dest_extents->end(),
                       too_few_points)) {
+        continue;
+      }
+      if (Dim == 3 and
+          std::count(dest_extents->begin(), dest_extents->end(), 3) > 1) {
+        // Skip some 3-extent combinations to reduce test runtime
         continue;
       }
       CAPTURE(*dest_extents);
@@ -191,6 +199,7 @@ void test_interpolation() noexcept {
 }
 }  // namespace
 
+// [[Timeout, 8]]
 SPECTRE_TEST_CASE("Unit.DataStructures.ApplyMatrices",
                   "[DataStructures][Unit]") {
   {
