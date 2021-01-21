@@ -357,6 +357,16 @@ bool get_terminate(
       .get_terminate();
 }
 
+/// Returns the GlobalCache of `Component` with index `array_index`.
+template <typename Component, typename Metavariables, typename ArrayIndex>
+Parallel::GlobalCache<Metavariables>& cache(
+    MockRuntimeSystem<Metavariables>& runner,
+    const ArrayIndex& array_index) noexcept {
+  return runner.template mock_distributed_objects<Component>()
+      .at(array_index)
+      .cache();
+}
+
 /// Returns a vector of all the indices of the Components
 /// in the ComponentList that have queued actions.
 template <typename ComponentList, typename MockRuntimeSystem,
