@@ -117,7 +117,6 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<
-              Actions::SetupDataBox,
               dg::Actions::InitializeInterfaces<
                   System<Dim>, dg::Initialization::slice_tags_to_face<vars_tag>,
                   dg::Initialization::slice_tags_to_exterior<other_vars_tag>,

@@ -90,9 +90,8 @@ struct ElementArray {
 
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing,
-                             tmpl::list<Actions::SetupDataBox,
-                                        elliptic::Actions::InitializeSystem<
-                                            typename Metavariables::system>>>>;
+                             tmpl::list<elliptic::Actions::InitializeSystem<
+                                 typename Metavariables::system>>>>;
 };
 
 template <size_t Dim>

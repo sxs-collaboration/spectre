@@ -96,7 +96,6 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<
-              Actions::SetupDataBox,
               dg::Actions::InitializeMortars<BoundaryScheme<Dim, Asynchronous>>,
               // Remove options so that dependencies for
               // `InitializeMortars` are no longer fulfilled in following
