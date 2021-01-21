@@ -704,6 +704,14 @@ class MockRuntimeSystem {
         });
   }
 
+  /// Return number of (mock) global cores.
+  size_t num_global_cores() const noexcept {
+    return mock_nodes_and_local_cores_.size();
+  }
+
+  /// Return number of (mock) nodes.
+  size_t num_nodes() const noexcept { return mock_global_cores_.size(); }
+
  private:
   std::unordered_map<NodeId, std::unordered_map<LocalCoreId, GlobalCoreId>>
       mock_global_cores_{};
