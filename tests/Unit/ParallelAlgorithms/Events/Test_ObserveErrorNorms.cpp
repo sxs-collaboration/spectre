@@ -275,8 +275,9 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
   CHECK(ids_to_register->first == observers::TypeOfObservation::Reduction);
   CHECK(ids_to_register->second == expected_observation_key_for_reg);
 
-  observe->run(box, runner.cache(), array_index,
-               std::add_pointer_t<element_component>{});
+  observe->run(box,
+               ActionTesting::cache<element_component>(runner, array_index),
+               array_index, std::add_pointer_t<element_component>{});
 
   if (not HasAnalyticSolutions and not has_analytic_solutions) {
     CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));

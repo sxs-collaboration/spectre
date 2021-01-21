@@ -77,8 +77,9 @@ struct initialize_elements_and_queue_simple_actions {
 
       // 3. Run the event.  This will invoke simple actions on
       // InterpolationTarget.
-      event.run(box, runner.cache(), element_id,
-                std::add_pointer_t<elem_component>{});
+      event.run(box,
+                ActionTesting::cache<elem_component>(runner, element_id),
+                element_id, std::add_pointer_t<elem_component>{});
     }
   }
 };

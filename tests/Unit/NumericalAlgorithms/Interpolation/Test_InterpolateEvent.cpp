@@ -217,8 +217,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
                              metavars::InterpolatorTargetA,
                              metavars::interpolator_source_vars> event{};
 
-  event.run(box, runner.cache(), array_index,
-            std::add_pointer_t<elem_component>{});
+  event.run(box, ActionTesting::cache<elem_component>(runner, array_index),
+            array_index, std::add_pointer_t<elem_component>{});
 
   // Invoke all actions
   runner.invoke_queued_simple_action<interp_component>(0);

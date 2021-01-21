@@ -362,8 +362,9 @@ void test_observe(
         }
       }());
 
-  observe->run(box, runner.cache(), array_index,
-               std::add_pointer_t<element_component>{});
+  observe->run(box,
+               ActionTesting::cache<element_component>(runner, array_index),
+               array_index, std::add_pointer_t<element_component>{});
 
   // Process the data
   runner.template invoke_queued_simple_action<observer_component>(0);

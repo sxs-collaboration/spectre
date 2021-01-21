@@ -89,7 +89,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Initialize",
             component, ::intrp::Tags::TemporalIds<temporal_id_type>>(runner, 0)
             .empty());
 
-  CHECK(Parallel::get<domain::Tags::Domain<3>>(runner.cache()) ==
+  const auto& cache = ActionTesting::cache<component>(runner, 0_st);
+  CHECK(Parallel::get<domain::Tags::Domain<3>>(cache) ==
         domain_creator.create_domain());
 
   CHECK(ActionTesting::get_databox_tag<
