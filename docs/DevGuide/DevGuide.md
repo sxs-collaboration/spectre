@@ -21,6 +21,8 @@ See LICENSE.txt for details.
 - \ref implementing_vectors "Implementing SpECTRE vectors" a quick how-to for
   making new generalizations of DataVectors
 - \ref compiler_and_linker_errors "How to parse linker and compiler errors"
+- \ref build_profiling_and_optimization
+  "Getting started with improving compilation time and memory use"
 
 ### Having your Contributions Merged into SpECTRE
 - \ref writing_good_dox "Writing good documentation" is key for long term
