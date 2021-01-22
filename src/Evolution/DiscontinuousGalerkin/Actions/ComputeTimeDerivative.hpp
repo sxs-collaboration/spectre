@@ -271,11 +271,24 @@ namespace evolution::dg::Actions {
  */
 template <typename Metavariables>
 struct ComputeTimeDerivative {
+ private:
+  template <typename LocalMetaVars, typename = std::void_t<>>
+  struct GetFluxInboxTag {
+    using type = tmpl::list<>;
+  };
+
+  template <typename LocalMetaVars>
+  struct GetFluxInboxTag<LocalMetaVars,
+                         std::void_t<typename LocalMetaVars::boundary_scheme>> {
+    using type = tmpl::list<
+        ::dg::FluxesInboxTag<typename Metavariables::boundary_scheme>>;
+  };
+
  public:
-  using inbox_tags =
-      tmpl::list<::dg::FluxesInboxTag<typename Metavariables::boundary_scheme>,
-                 evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                     Metavariables::volume_dim>>;
+  using inbox_tags = tmpl::append<
+      typename GetFluxInboxTag<Metavariables>::type,
+      tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+          Metavariables::volume_dim>>>;
   using const_global_cache_tags = tmpl::conditional_t<
       detail::has_boundary_correction_v<typename Metavariables::system>,
       tmpl::list<::dg::Tags::Formulation, evolution::Tags::BoundaryCorrection<
