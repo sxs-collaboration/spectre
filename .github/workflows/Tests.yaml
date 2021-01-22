@@ -208,7 +208,7 @@ jobs:
           make clang-tidy-hash HASH=$UPSTREAM_HASH NUM_THREADS=2
 
   # Build the documentation and check for problems, then upload as a workflow
-  # artifact.
+  # artifact and deploy to gh-pages.
   doc_check:
     name: Documentation
     runs-on: ubuntu-latest
@@ -242,57 +242,22 @@ jobs:
         working-directory: /work/build
         run: |
           make doc-coverage
-      # The `upload-artifact` action doesn't run in the container, so we move
-      # the data to the shared workspace.
-      # Relevant issue: https://github.com/actions/upload-artifact/issues/13
-      - name: Prepare for upload
-        run: |
-          mv /work/build/docs/html $GITHUB_WORKSPACE/docs-html
+      # Upload as an artifact to make available to PRs
       - name: Upload documentation
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: docs-html
-          # The `path` is relative to the $GITHUB_WORKSPACE on the host machine
-          path: docs-html
-
-  # Deploy built documentation to `gh-pages` on pushes to `develop`.
-  doc_deploy:
-    name: Deploy documentation
-    needs: doc_check
-    # Enabling documentation deployment only on pushes to
-    # sxs-collaboration/spectre for now, since the action requires a personal
-    # access token until the issue linked below is resolved. Once the action
-    # can use the standard `GITHUB_TOKEN` we can enable this job also on forks.
-    if: >-
-      github.event_name == 'push'
-      && github.ref == 'refs/heads/develop'
-      && github.repository == 'sxs-collaboration/spectre'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Download built documentation
-        uses: actions/download-artifact@v1
-        with:
-          name: docs-html
-      - name: Add custom domain
-        if: github.repository == 'sxs-collaboration/spectre'
-        working-directory: ./docs-html
-        run: |
-          echo "spectre-code.org" > CNAME
+          path: /work/build/docs/html
+      # Deploy to gh-pages on pushes to develop
       - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v2
-        env:
-          # There's an issue with using the `GITHUB_TOKEN` for gh-pages
-          # deployment as of Jan 8, 2020, so we use a personal access token
-          # instead until the issue is resolved. See:
-          # https://github.community/t5/GitHub-Actions/Github-action-not-triggering-gh-pages-upon-push/td-p/26869
-          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PERSONAL_TOKEN: ${{ secrets.GH_PAGES_DEPLOY_TOKEN }}
-          PUBLISH_BRANCH: gh-pages
-          PUBLISH_DIR: docs-html
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          forceOrphan: true
+          publish_dir: /work/build/docs/html
+          cname: spectre-code.org
+          publish_branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          force_orphan: true
 
   # Build all test executables and run unit tests on a variety of compiler
   # configurations.
