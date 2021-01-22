@@ -174,7 +174,7 @@ struct TestKerrHorizonIntegral {
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockSingletonChare;
   using array_index = size_t;
   using const_global_cache_tags = tmpl::flatten<tmpl::append<
       Parallel::get_const_global_cache_tags_from_actions<
@@ -198,7 +198,7 @@ struct mock_interpolation_target {
 template <typename Metavariables>
 struct mock_interpolator {
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockGroupChare;
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -291,22 +291,30 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
                     domain_creator.create_domain(),
                     std::move(line_segment_opts_B), kerr_horizon_opts_C);
 
-  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
+  // 3 mock nodes, with 2, 3, and 1 mocked core respectively.
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      std::move(tuple_of_opts), {}, {2, 3, 1}};
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Initialization);
-  ActionTesting::emplace_component<interp_component>(&runner, 0);
+  ActionTesting::emplace_group_component<interp_component>(&runner);
   for (size_t i = 0; i < 2; ++i) {
-    ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
+     for (size_t core = 0; core < 6; ++core) {
+       ActionTesting::next_action<interp_component>(make_not_null(&runner),
+                                                    core);
+     }
   }
-  ActionTesting::emplace_component<target_a_component>(&runner, 0);
+  ActionTesting::emplace_singleton_component<target_a_component>(
+      &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{1});
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_a_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::emplace_component<target_b_component>(&runner, 0);
+  ActionTesting::emplace_singleton_component<target_b_component>(
+      &runner, ActionTesting::NodeId{1}, ActionTesting::LocalCoreId{1});
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_b_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::emplace_component<target_c_component>(&runner, 0);
+  ActionTesting::emplace_singleton_component<target_c_component>(
+      &runner, ActionTesting::NodeId{1}, ActionTesting::LocalCoreId{0});
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_c_component>(make_not_null(&runner), 0);
   }
@@ -328,10 +336,23 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
 
   // Tell the interpolator how many elements there are by registering
   // each one.
-  for (size_t i = 0; i < element_ids.size(); ++i) {
+  // Normally intrp::Actions::RegisterElement is called by
+  // RegisterElementWithInterpolator, and invoked on the ckLocalBranch
+  // of the interpolator that is associated with each element
+  // (i.e. the local core on each element).
+  // Here we assign elements round-robin to the mock cores.
+  // And for group components, the array_index is the global core index.
+  const size_t num_cores = runner.num_global_cores();
+  std::unordered_map<ElementId<3>, size_t> mock_core_for_each_element;
+  size_t core_for_next_element = 0;
+  for (const auto& element_id : element_ids) {
+    mock_core_for_each_element.insert({element_id, core_for_next_element});
     ActionTesting::simple_action<interp_component,
                                  intrp::Actions::RegisterElement>(
-        make_not_null(&runner), 0);
+        make_not_null(&runner), core_for_next_element);
+    if (++core_for_next_element >= num_cores) {
+      core_for_next_element = 0;
+    }
   }
 
   // Tell the InterpolationTargets that we want to interpolate at
@@ -373,20 +394,24 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
     // Call the InterpolatorReceiveVolumeData action on each element_id.
     ActionTesting::simple_action<interp_component,
                                  intrp::Actions::InterpolatorReceiveVolumeData>(
-        make_not_null(&runner), 0, temporal_id, element_id, mesh,
-        std::move(output_vars));
+        make_not_null(&runner), mock_core_for_each_element.at(element_id),
+        temporal_id, element_id, mesh, std::move(output_vars));
   }
 
   // Invoke remaining actions in random order.
   MAKE_GENERATOR(generator);
-
-  auto index_map = ActionTesting::indices_of_components_with_queued_actions<
-      metavars::component_list>(make_not_null(&runner), 0_st);
-  while (not index_map.empty()) {
+  auto array_indices_with_queued_actions =
+      ActionTesting::array_indices_with_queued_actions<
+          metavars::component_list>(make_not_null(&runner));
+  while (ActionTesting::number_of_queued_actions<
+             typename metavars::component_list>(
+             array_indices_with_queued_actions) > 0) {
     ActionTesting::invoke_random_queued_action<metavars::component_list>(
-        make_not_null(&runner), make_not_null(&generator), index_map, 0_st);
-    index_map = ActionTesting::indices_of_components_with_queued_actions<
-        metavars::component_list>(make_not_null(&runner), 0_st);
+        make_not_null(&runner), make_not_null(&generator),
+        array_indices_with_queued_actions);
+    array_indices_with_queued_actions =
+        ActionTesting::array_indices_with_queued_actions<
+            metavars::component_list>(make_not_null(&runner));
   }
 
   // Check whether test function was called.
@@ -403,7 +428,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   // else in the simple_action queue of the target or the interpolator.
   CHECK(ActionTesting::is_simple_action_queue_empty<target_a_component>(runner,
                                                                         0));
-  CHECK(
-      ActionTesting::is_simple_action_queue_empty<interp_component>(runner, 0));
+  for (size_t core = 0; core < 6; ++core) {
+    CHECK(ActionTesting::is_simple_action_queue_empty<interp_component>(runner,
+                                                                        core));
+  }
 }
 }  // namespace

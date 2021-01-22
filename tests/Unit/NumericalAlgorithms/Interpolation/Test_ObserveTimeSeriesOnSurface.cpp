@@ -182,7 +182,7 @@ struct MockInterpolationTarget {
 template <typename Metavariables>
 struct MockInterpolator {
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockGroupChare;
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -316,28 +316,39 @@ SPECTRE_TEST_CASE(
                     domain_creator.create_domain(), kerr_horizon_opts_B,
                     kerr_horizon_opts_C};
 
-  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
+  // Three mock nodes, with 2, 1, and 3 mock cores.
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      std::move(tuple_of_opts), {}, {2, 1, 3}};
+
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Initialization);
-  ActionTesting::emplace_component<interp_component>(&runner, 0);
+  ActionTesting::emplace_group_component<interp_component>(&runner);
   for (size_t i = 0; i < 2; ++i) {
-    ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
+    for (size_t core = 0; core < 6; ++core) {
+      ActionTesting::next_action<interp_component>(make_not_null(&runner),
+                                                   core);
+    }
   }
-  ActionTesting::emplace_component<target_a_component>(&runner, 0);
+  ActionTesting::emplace_singleton_component<target_a_component>(
+      &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{1});
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_a_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::emplace_component<target_b_component>(&runner, 0);
+  ActionTesting::emplace_singleton_component<target_b_component>(
+      &runner, ActionTesting::NodeId{2}, ActionTesting::LocalCoreId{2});
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_b_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::emplace_component<target_c_component>(&runner, 0);
+  ActionTesting::emplace_singleton_component<target_c_component>(
+      &runner, ActionTesting::NodeId{2}, ActionTesting::LocalCoreId{1});
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_c_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::emplace_component<obs_writer>(&runner, 0);
+  ActionTesting::emplace_nodegroup_component<obs_writer>(&runner);
   for (size_t i = 0; i < 2; ++i) {
-    ActionTesting::next_action<obs_writer>(make_not_null(&runner), 0);
+    for (size_t node = 0; node < 2; ++node) {
+      ActionTesting::next_action<obs_writer>(make_not_null(&runner), node);
+    }
   }
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Registration);
@@ -356,11 +367,23 @@ SPECTRE_TEST_CASE(
   }
 
   // Tell the interpolator how many elements there are by registering
-  // each one.
-  for (size_t i = 0; i < element_ids.size(); ++i) {
+  // each one. Normally intrp::Actions::RegisterElement is called by
+  // RegisterElementWithInterpolator, and invoked on the ckLocalBranch
+  // of the interpolator that is associated with each element
+  // (i.e. the local core on each element).
+  // Here we assign elements round-robin to the mock cores.
+  // And for group components, the array_index is the global core index.
+  const size_t num_cores = runner.num_global_cores();
+  std::unordered_map<ElementId<3>, size_t> mock_core_for_each_element;
+  size_t core_for_next_element = 0;
+  for (const auto& element_id : element_ids) {
+    mock_core_for_each_element.insert({element_id, core_for_next_element});
     ActionTesting::simple_action<interp_component,
                                  intrp::Actions::RegisterElement>(
-        make_not_null(&runner), 0);
+        make_not_null(&runner), core_for_next_element);
+    if (++core_for_next_element >= num_cores) {
+      core_for_next_element = 0;
+    }
   }
 
   // Register the InterpolationTargets with the ObserverWriter.
@@ -385,6 +408,8 @@ SPECTRE_TEST_CASE(
 
   // There should be three queued simple actions (registration), so invoke
   // them and check that there are no more.
+  // RegisterSingletonWithObserverWriter should have placed these simple queued
+  // actions on node 0, so that's where we must invoke them.
   ActionTesting::invoke_queued_simple_action<obs_writer>(make_not_null(&runner),
                                                          0);
   ActionTesting::invoke_queued_simple_action<obs_writer>(make_not_null(&runner),
@@ -392,6 +417,9 @@ SPECTRE_TEST_CASE(
   ActionTesting::invoke_queued_simple_action<obs_writer>(make_not_null(&runner),
                                                          0);
   CHECK(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 0));
+  CHECK(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 1));
+  CHECK(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 2));
+
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   // Create volume data and send it to the interpolator.
@@ -429,23 +457,27 @@ SPECTRE_TEST_CASE(
     // Call the InterpolatorReceiveVolumeData action on each element_id.
     ActionTesting::simple_action<interp_component,
                                  intrp::Actions::InterpolatorReceiveVolumeData>(
-        make_not_null(&runner), 0, temporal_id, element_id, mesh,
-        std::move(output_vars));
+        make_not_null(&runner), mock_core_for_each_element.at(element_id),
+        temporal_id, element_id, mesh, std::move(output_vars));
   }
 
   // Invoke remaining actions in random order.
   MAKE_GENERATOR(generator);
-  auto index_map = ActionTesting::indices_of_components_with_queued_actions<
-      metavars::component_list>(make_not_null(&runner), 0_st);
-  while (not index_map.empty()) {
+  auto array_indices_with_queued_actions =
+      ActionTesting::array_indices_with_queued_actions<
+          metavars::component_list>(make_not_null(&runner));
+  while (ActionTesting::number_of_queued_actions<metavars::component_list>(
+             array_indices_with_queued_actions) > 0) {
     ActionTesting::invoke_random_queued_action<metavars::component_list>(
-        make_not_null(&runner), make_not_null(&generator), index_map, 0_st);
-    index_map = ActionTesting::indices_of_components_with_queued_actions<
-        metavars::component_list>(make_not_null(&runner), 0_st);
+        make_not_null(&runner), make_not_null(&generator),
+        array_indices_with_queued_actions);
+    array_indices_with_queued_actions =
+        ActionTesting::array_indices_with_queued_actions<
+            metavars::component_list>(make_not_null(&runner));
   }
 
   // There should be three more threaded actions, so invoke them and check
-  // that there are no more.
+  // that there are no more.  They should all be on node zero.
   ActionTesting::invoke_queued_threaded_action<obs_writer>(
       make_not_null(&runner), 0);
   ActionTesting::invoke_queued_threaded_action<obs_writer>(
@@ -453,6 +485,8 @@ SPECTRE_TEST_CASE(
   ActionTesting::invoke_queued_threaded_action<obs_writer>(
       make_not_null(&runner), 0);
   CHECK(ActionTesting::is_threaded_action_queue_empty<obs_writer>(runner, 0));
+  CHECK(ActionTesting::is_threaded_action_queue_empty<obs_writer>(runner, 1));
+  CHECK(ActionTesting::is_threaded_action_queue_empty<obs_writer>(runner, 2));
 
   // By hand compute integral(r^2 d(cos theta) dphi (2x+3y+5z)^2)
   const std::vector<double> expected_integral_a{2432.0 * M_PI / 3.0};

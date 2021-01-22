@@ -163,7 +163,7 @@ struct TestKerrHorizon {
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockSingletonChare;
   using array_index = size_t;
   using const_global_cache_tags =
       Parallel::get_const_global_cache_tags_from_actions<tmpl::list<
@@ -182,7 +182,7 @@ struct mock_interpolation_target {
 template <typename Metavariables>
 struct mock_interpolator {
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockGroupChare;
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -238,10 +238,6 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   using target_component =
       mock_interpolation_target<metavars, typename metavars::AhA>;
 
-  // The mocking framework requires an array index to be passed to
-  // many functions, even if the components are singletons.
-  constexpr size_t fake_array_index = 0_st;
-
   // Options for all InterpolationTargets.
   // The initial guess for the horizon search is a sphere of radius 2.8M.
   intrp::OptionHolders::ApparentHorizon<Frame::Inertial> apparent_horizon_opts(
@@ -264,15 +260,20 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
       tuple_of_opts{std::move(domain_creator.create_domain()),
                     std::move(apparent_horizon_opts)};
 
-  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      std::move(tuple_of_opts), {}, {3, 2}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Initialization);
-  ActionTesting::emplace_component<interp_component>(&runner, 0);
+  ActionTesting::emplace_group_component<interp_component>(&runner);
   for (size_t i = 0; i < 2; ++i) {
-    ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
+    for (size_t indx = 0; indx < 5; ++indx) {
+      ActionTesting::next_action<interp_component>(make_not_null(&runner),
+                                                   indx);
+    }
   }
-  ActionTesting::emplace_component<target_component>(&runner, 0);
+  ActionTesting::emplace_singleton_component<target_component>(
+      &runner, ActionTesting::NodeId{1}, ActionTesting::LocalCoreId{1});
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
   }
@@ -298,11 +299,23 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   }
 
   // Tell the interpolator how many elements there are by registering
-  // each one.
-  for (size_t i = 0; i < element_ids.size(); ++i) {
+  // each one.  Normally intrp::Actions::RegisterElement is called by
+  // RegisterElementWithInterpolator, and invoked on the ckLocalBranch
+  // of the interpolator that is associated with each element
+  // (i.e. the local core on each element).
+  // Here we assign elements round-robin to the mock cores.
+  // And for group components, the array_index is the global core index.
+  const size_t num_cores = runner.num_global_cores();
+  std::unordered_map<ElementId<3>, size_t> mock_core_for_each_element;
+  size_t core = 0;
+  for (const auto& element_id : element_ids) {
+    mock_core_for_each_element.insert({element_id, core});
     ActionTesting::simple_action<interp_component,
                                  intrp::Actions::RegisterElement>(
-        make_not_null(&runner), fake_array_index);
+        make_not_null(&runner), core);
+    if (++core >= num_cores) {
+      core = 0;
+    }
   }
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
@@ -367,27 +380,29 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
     // Call the InterpolatorReceiveVolumeData action on each element_id.
     ActionTesting::simple_action<interp_component,
                                  intrp::Actions::InterpolatorReceiveVolumeData>(
-        make_not_null(&runner), 0, first_temporal_id, element_id, mesh,
-        output_vars);
+        make_not_null(&runner), mock_core_for_each_element.at(element_id),
+        first_temporal_id, element_id, mesh, output_vars);
     ActionTesting::simple_action<interp_component,
                                  intrp::Actions::InterpolatorReceiveVolumeData>(
-        make_not_null(&runner), 0, second_temporal_id, element_id, mesh,
-        std::move(output_vars));
+        make_not_null(&runner), mock_core_for_each_element.at(element_id),
+        second_temporal_id, element_id, mesh, std::move(output_vars));
   }
 
   // Invoke remaining actions in random order.
   MAKE_GENERATOR(generator);
-  auto index_map = ActionTesting::indices_of_components_with_queued_actions<
-      typename metavars::component_list>(make_not_null(&runner),
-                                         fake_array_index);
-  while (not index_map.empty()) {
+  auto array_indices_with_queued_actions =
+      ActionTesting::array_indices_with_queued_actions<
+          typename metavars::component_list>(make_not_null(&runner));
+  while (ActionTesting::number_of_queued_actions<
+             typename metavars::component_list>(
+             array_indices_with_queued_actions) > 0) {
     ActionTesting::invoke_random_queued_action<
         typename metavars::component_list>(make_not_null(&runner),
-                                           make_not_null(&generator), index_map,
-                                           fake_array_index);
-    index_map = ActionTesting::indices_of_components_with_queued_actions<
-        typename metavars::component_list>(make_not_null(&runner),
-                                           fake_array_index);
+                                           make_not_null(&generator),
+                                           array_indices_with_queued_actions);
+    array_indices_with_queued_actions =
+        ActionTesting::array_indices_with_queued_actions<
+            typename metavars::component_list>(make_not_null(&runner));
   }
 
   // Make sure function was called twice.
