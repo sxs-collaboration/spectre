@@ -15,6 +15,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/StaticCache.hpp"
 #include "Utilities/VectorAlgebra.hpp"
 
@@ -89,7 +90,7 @@ Matrix q_integration_matrix(const size_t number_of_points) noexcept {
 const Matrix& precomputed_cce_q_integrator(
     const size_t number_of_radial_grid_points) noexcept {
   static const auto lazy_matrix_cache = make_static_cache<CacheRange<
-      1, Spectral::maximum_number_of_points<Spectral::Basis::Legendre> + 1>>(
+      1_st, Spectral::maximum_number_of_points<Spectral::Basis::Legendre> + 1>>(
       [](const size_t local_number_of_radial_points) noexcept {
         return q_integration_matrix(local_number_of_radial_points);
       });

@@ -73,6 +73,8 @@ struct RotatingSchwarzschild : public SphericalMetricData {
 
   std::unique_ptr<WorldtubeData> get_clone() const noexcept override;
 
+  void pup(PUP::er& p) noexcept override;
+
  protected:
   /// A no-op as the rotating Schwarzschild solution does not have substantial
   /// shared computation to prepare before the separate component calculations.

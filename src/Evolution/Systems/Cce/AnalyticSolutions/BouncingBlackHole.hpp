@@ -11,6 +11,7 @@
 #include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -61,6 +62,10 @@ struct BouncingBlackHole : public WorldtubeData {
     static type lower_bound() noexcept { return 0.0; }
     static type suggested_value() noexcept { return 40.0; }
   };
+
+  static constexpr Options::String help{
+      "Analytic solution in which a static black hole is placed in an "
+      "oscillating coordinate system"};
 
   using options = tmpl::list<Amplitude, ExtractionRadius, Mass, Period>;
 

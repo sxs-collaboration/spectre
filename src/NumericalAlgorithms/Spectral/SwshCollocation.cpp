@@ -13,16 +13,16 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/StaticCache.hpp"
 
-namespace Spectral {
-namespace Swsh {
+namespace Spectral::Swsh {
 
 template <ComplexRepresentation Representation>
 CollocationMetadata<Representation>::CollocationMetadata(
     const size_t l_max) noexcept
     : l_max_{l_max} {
-  sharp_geom_info* geometry_to_initialize;
+  sharp_geom_info* geometry_to_initialize = nullptr;
   sharp_make_gauss_geom_info(
       l_max_ + 1, 2 * l_max_ + 1, 0.0,
       detail::ComplexDataView<Representation>::stride(),
@@ -66,7 +66,7 @@ template <ComplexRepresentation Representation>
 const CollocationMetadata<Representation>& cached_collocation_metadata(
     const size_t l_max) noexcept {
   const static auto lazy_collocation_cache =
-      make_static_cache<CacheRange<0, collocation_maximum_l_max>>(
+      make_static_cache<CacheRange<0_st, collocation_maximum_l_max>>(
           [](const size_t generator_l_max) noexcept {
             return CollocationMetadata<Representation>{generator_l_max};
           });
@@ -81,5 +81,4 @@ cached_collocation_metadata(const size_t l_max) noexcept;
 template const CollocationMetadata<ComplexRepresentation::RealsThenImags>&
 cached_collocation_metadata(const size_t l_max) noexcept;
 
-}  // namespace Swsh
-}  // namespace Spectral
+}  // namespace Spectral::Swsh

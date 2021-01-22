@@ -14,6 +14,7 @@
 #include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Options/StdComplex.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -65,6 +66,9 @@ struct LinearizedBondiSachs : public SphericalMetricData {
         "The frequency of the linearized modes."};
     static type lower_bound() noexcept { return 0.0; }
   };
+
+  static constexpr Options::String help{
+    "A linearized Bondi-Sachs analytic solution"};
 
   using options = tmpl::list<InitialModes, ExtractionRadius, Frequency>;
 

@@ -25,7 +25,10 @@ namespace Solutions {
 
 /// \cond
 class BouncingBlackHole;
+class GaugeWave;
 class LinearizedBondiSachs;
+class RotatingSchwarzschild;
+class TeukolskyWave;
 /// \endcond
 
 /*!
@@ -64,7 +67,9 @@ class LinearizedBondiSachs;
  * calculations.
  */
 struct WorldtubeData : public PUP::able {
-  using creatable_classes = tmpl::list<BouncingBlackHole, LinearizedBondiSachs>;
+  using creatable_classes =
+      tmpl::list<BouncingBlackHole, GaugeWave, LinearizedBondiSachs,
+                 RotatingSchwarzschild, TeukolskyWave>;
 
   /// The set of available tags provided by the analytic solution
   using tags = tmpl::list<

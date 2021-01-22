@@ -32,5 +32,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.TeukolskyWave", "[Unit][Cce]") {
   boundary_solution.test_spherical_metric("TeukolskyWave", l_max, time, approx,
                                           extraction_radius, amplitude,
                                           duration);
+  boundary_solution.test_serialize_and_deserialize(l_max, time);
 }
 }  // namespace Cce::Solutions

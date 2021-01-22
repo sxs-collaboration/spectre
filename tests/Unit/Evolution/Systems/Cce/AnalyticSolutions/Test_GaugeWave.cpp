@@ -35,5 +35,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.GaugeWave", "[Unit][Cce]") {
       "GaugeWave", l_max, peak_time - 0.1 * duration,
       Approx::custom().epsilon(1.e-11).scale(1.0), extraction_radius, mass,
       frequency, amplitude, peak_time, duration);
+  boundary_solution.test_serialize_and_deserialize(l_max,
+                                                   peak_time - 0.1 * duration);
 }
 }  // namespace Cce::Solutions

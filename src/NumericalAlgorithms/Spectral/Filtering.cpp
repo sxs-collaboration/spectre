@@ -9,6 +9,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/StaticCache.hpp"
 
 namespace Spectral::filtering {
@@ -63,7 +64,7 @@ const Matrix& zero_lowest_modes(const Mesh<1>& mesh,
               Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>;
           const auto cache =
               make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
-                                CacheRange<0, max_num_points>>(
+                                CacheRange<0_st, max_num_points>>(
                   ZeroLowestModesImpl<Spectral::Basis::Legendre,
                                       Spectral::Quadrature::GaussLobatto>{});
           return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
@@ -76,7 +77,7 @@ const Matrix& zero_lowest_modes(const Mesh<1>& mesh,
                                                  Spectral::Quadrature::Gauss>;
           const auto cache =
               make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
-                                CacheRange<0, max_num_points>>(
+                                CacheRange<0_st, max_num_points>>(
                   ZeroLowestModesImpl<Spectral::Basis::Legendre,
                                       Spectral::Quadrature::Gauss>{});
           return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
@@ -94,7 +95,7 @@ const Matrix& zero_lowest_modes(const Mesh<1>& mesh,
               Spectral::Basis::Chebyshev, Spectral::Quadrature::GaussLobatto>;
           const auto cache =
               make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
-                                CacheRange<0, max_num_points>>(
+                                CacheRange<0_st, max_num_points>>(
                   ZeroLowestModesImpl<Spectral::Basis::Chebyshev,
                                       Spectral::Quadrature::GaussLobatto>{});
           return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);
@@ -107,7 +108,7 @@ const Matrix& zero_lowest_modes(const Mesh<1>& mesh,
                                                  Spectral::Quadrature::Gauss>;
           const auto cache =
               make_static_cache<CacheRange<min_num_points, max_num_points + 1>,
-                                CacheRange<0, max_num_points>>(
+                                CacheRange<0_st, max_num_points>>(
                   ZeroLowestModesImpl<Spectral::Basis::Chebyshev,
                                       Spectral::Quadrature::Gauss>{});
           return cache(mesh.number_of_grid_points(), number_of_modes_to_zero);

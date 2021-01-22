@@ -8,6 +8,8 @@
 #include <optional>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Evolution/Systems/Cce/AnalyticBoundaryDataManager.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterpolationStrategies.hpp"
@@ -153,6 +155,13 @@ struct FixSpecNormalization {
       "automatically based on the `VersionHist.ver` data set in the H5. "
       "Typically, this should be set to true if the metric data is created "
       "from SpEC, and false otherwise."};
+  using group = Cce;
+};
+
+struct AnalyticSolution {
+  using type = std::unique_ptr<Solutions::WorldtubeData>;
+  static constexpr Options::String help{
+      "Analytic worldtube data for tests of CCE."};
   using group = Cce;
 };
 
@@ -375,8 +384,14 @@ struct SpecifiedStartTime : Tags::StartTime, db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::StartTime>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double start_time) noexcept {
-    return start_time;
+  static double create_from_options(
+      const std::optional<double> start_time) noexcept {
+    if (not start_time.has_value()) {
+      ERROR(
+          "The start time must be explicitly specified for the tag "
+          "`SpecifiedStartTime`");
+    }
+    return *start_time;
   }
 };
 
@@ -403,7 +418,7 @@ struct EndTimeFromFile : Tags::EndTime, db::SimpleTag {
     if (is_bondi_data) {
       BondiWorldtubeH5BufferUpdater h5_boundary_updater{filename};
       const auto& time_buffer = h5_boundary_updater.get_time_buffer();
-        return time_buffer[time_buffer.size() - 1];
+      return time_buffer[time_buffer.size() - 1];
     } else {
       MetricWorldtubeH5BufferUpdater h5_boundary_updater{filename};
       const auto& time_buffer = h5_boundary_updater.get_time_buffer();
@@ -431,8 +446,14 @@ struct SpecifiedEndTime : Tags::EndTime, db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::EndTime>;
 
   static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double end_time) noexcept {
-    return end_time;
+  static double create_from_options(
+      const std::optional<double> end_time) noexcept {
+    if (not end_time.has_value()) {
+      ERROR(
+          "The end time must be explicitly specified for the tag "
+          "`SpecifiedEndTime`");
+    }
+    return *end_time;
   }
 };
 
@@ -466,8 +487,7 @@ struct InterfaceManagerInterpolationStrategy : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::GhInterfaceManager>;
 
   static constexpr bool pass_metavariables = false;
-  static InterfaceManagers::InterpolationStrategy
-  create_from_options(
+  static InterfaceManagers::InterpolationStrategy create_from_options(
       const std::unique_ptr<InterfaceManagers::GhInterfaceManager>&
           interface_manager) noexcept {
     return interface_manager->get_interpolation_strategy();
@@ -486,5 +506,20 @@ struct InitializeJ : db::SimpleTag {
   }
 };
 
+/// A tag that constructs a `AnalyticBoundaryDataManager` from options
+struct AnalyticBoundaryDataManager : db::SimpleTag {
+  using type = ::Cce::AnalyticBoundaryDataManager;
+  using option_tags = tmpl::list<OptionTags::ExtractionRadius, OptionTags::LMax,
+                                 OptionTags::AnalyticSolution>;
+
+  static constexpr bool pass_metavariables = false;
+  static Cce::AnalyticBoundaryDataManager create_from_options(
+      const double extraction_radius, const size_t l_max,
+      const std::unique_ptr<Cce::Solutions::WorldtubeData>&
+          worldtube_data) noexcept {
+    return ::Cce::AnalyticBoundaryDataManager(l_max, extraction_radius,
+                                              worldtube_data->get_clone());
+  }
+};
 }  // namespace Tags
 }  // namespace Cce

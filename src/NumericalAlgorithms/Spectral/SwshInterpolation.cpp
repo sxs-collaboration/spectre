@@ -21,6 +21,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/StaticCache.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -324,7 +325,7 @@ template <int Spin>
 const ClenshawRecurrenceConstants<Spin>& cached_clenshaw_factors(
     const size_t l_max) noexcept {
   const static auto lazy_clenshaw_cache =
-      make_static_cache<CacheRange<0, collocation_maximum_l_max>>(
+      make_static_cache<CacheRange<0_st, collocation_maximum_l_max>>(
           [](const size_t local_l_max) noexcept {
             return ClenshawRecurrenceConstants<Spin>{local_l_max};
           });

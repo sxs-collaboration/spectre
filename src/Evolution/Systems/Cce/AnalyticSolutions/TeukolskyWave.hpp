@@ -58,6 +58,9 @@ struct TeukolskyWave : public SphericalMetricData {
     static type lower_bound() noexcept { return 0.0; }
   };
 
+  static constexpr Options::String help{
+      "An analytic solution derived from the linearized Teukolsky equation"};
+
   using options = tmpl::list<ExtractionRadius, Amplitude, Duration>;
 
   WRAPPED_PUPable_decl_template(TeukolskyWave);  // NOLINT
@@ -72,6 +75,8 @@ struct TeukolskyWave : public SphericalMetricData {
                 double duration) noexcept;
 
   std::unique_ptr<WorldtubeData> get_clone() const noexcept override;
+
+  void pup(PUP::er& p) noexcept override;
 
  private:
   /*

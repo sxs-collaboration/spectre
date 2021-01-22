@@ -32,6 +32,33 @@
 namespace Cce {
 
 namespace {
+
+template <typename Metavariables>
+struct mock_analytic_worldtube_boundary {
+  using initialize_action_list =
+      tmpl::list<::Actions::SetupDataBox,
+                 Actions::InitializeWorldtubeBoundary<
+                     AnalyticWorldtubeBoundary<Metavariables>>,
+                 Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+  using initialization_tags =
+      Parallel::get_initialization_tags<initialize_action_list>;
+
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+
+  using simple_tags = tmpl::list<>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Initialization,
+                             initialize_action_list>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Evolve, tmpl::list<>>>;
+  using const_global_cache_tags =
+      Parallel::get_const_global_cache_tags_from_actions<
+    phase_dependent_action_list>;
+};
+
 struct H5Metavariables {
   using cce_boundary_communication_tags =
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
@@ -45,6 +72,14 @@ struct GhMetavariables {
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
   using component_list =
       tmpl::list<mock_gh_worldtube_boundary<GhMetavariables>>;
+  enum class Phase { Initialization, Evolve, Exit };
+};
+
+struct AnalyticMetavariables {
+  using cce_boundary_communication_tags =
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
+  using component_list =
+      tmpl::list<mock_analytic_worldtube_boundary<AnalyticMetavariables>>;
   enum class Phase { Initialization, Evolve, Exit };
 };
 
@@ -161,6 +196,32 @@ void test_gh_initialization() noexcept {
   CHECK(get(get<Tags::BoundaryValue<Tags::BondiBeta>>(variables)).size() ==
         Spectral::Swsh::number_of_swsh_collocation_points(l_max));
 }
+
+void test_analytic_initialization() noexcept {
+  using component = mock_analytic_worldtube_boundary<AnalyticMetavariables>;
+  const size_t l_max = 8;
+  ActionTesting::MockRuntimeSystem<AnalyticMetavariables> runner{
+      {l_max, 0.0, 100.0}};
+
+  runner.set_phase(AnalyticMetavariables::Phase::Initialization);
+  ActionTesting::emplace_component<component>(&runner, 0,
+                                              AnalyticBoundaryDataManager{});
+  // this should run the initialization
+  for (size_t i = 0; i < 3; ++i) {
+    ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  }
+  runner.set_phase(AnalyticMetavariables::Phase::Evolve);
+
+  // check that the Variables is in the expected state (here we just make sure
+  // it has the right size - it shouldn't have been written to yet)
+  const auto& variables = ActionTesting::get_databox_tag<
+      component,
+      ::Tags::Variables<
+          typename AnalyticMetavariables::cce_boundary_communication_tags>>(
+      runner, 0);
+  CHECK(get(get<Tags::BoundaryValue<Tags::BondiBeta>>(variables)).size() ==
+        Spectral::Swsh::number_of_swsh_collocation_points(l_max));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE(
@@ -169,5 +230,6 @@ SPECTRE_TEST_CASE(
   MAKE_GENERATOR(gen);
   test_h5_initialization(make_not_null(&gen));
   test_gh_initialization();
+  test_analytic_initialization();
 }
 }  // namespace Cce

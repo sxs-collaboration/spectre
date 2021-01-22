@@ -8,6 +8,13 @@
 #include <optional>
 #include <string>
 
+#include "Evolution/Systems/Cce/AnalyticBoundaryDataManager.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/BouncingBlackHole.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/GaugeWave.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/LinearizedBondiSachs.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/RotatingSchwarzschild.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/TeukolskyWave.hpp"
+#include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
 #include "Evolution/Systems/Cce/Initialize/NoIncomingRadiation.hpp"
@@ -62,6 +69,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<
       Cce::Tags::InterfaceManagerInterpolationStrategy>(
       "InterfaceManagerInterpolationStrategy");
+  TestHelpers::db::test_simple_tag<Cce::Tags::AnalyticBoundaryDataManager>(
+      "AnalyticBoundaryDataManager");
   TestHelpers::db::test_simple_tag<Cce::Tags::InitializeJ>("InitializeJ");
 
   CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::LMax>("8") == 8_st);
@@ -118,6 +127,40 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
 
   TestHelpers::test_creation<std::unique_ptr<::Cce::InitializeJ::InitializeJ>,
                              Cce::OptionTags::InitializeJ>("InverseCubic");
+  TestHelpers::test_creation<std::unique_ptr<::Cce::Solutions::WorldtubeData>,
+                             Cce::OptionTags::AnalyticSolution>(
+      "BouncingBlackHole:\n"
+      "  Period: 40.0\n"
+      "  ExtractionRadius: 30.0\n"
+      "  Mass: 1.0\n"
+      "  Amplitude: 2.0");
+  TestHelpers::test_creation<std::unique_ptr<::Cce::Solutions::WorldtubeData>,
+                             Cce::OptionTags::AnalyticSolution>(
+      "GaugeWave:\n"
+      "  ExtractionRadius: 40.0\n"
+      "  Mass: 1.0\n"
+      "  Frequency: 0.5\n"
+      "  Amplitude: 0.1\n"
+      "  PeakTime: 50.0\n"
+      "  Duration: 10.0");
+  TestHelpers::test_creation<std::unique_ptr<::Cce::Solutions::WorldtubeData>,
+                             Cce::OptionTags::AnalyticSolution>(
+      "LinearizedBondiSachs:\n"
+      "  ExtractionRadius: 40.0\n"
+      "  InitialModes: [[0.20, 0.10], [0.08, 0.04]]\n"
+      "  Frequency: 0.2");
+  TestHelpers::test_creation<std::unique_ptr<::Cce::Solutions::WorldtubeData>,
+                             Cce::OptionTags::AnalyticSolution>(
+      "RotatingSchwarzschild:\n"
+      "  ExtractionRadius: 20.0\n"
+      "  Mass: 1.0\n"
+      "  Frequency: 0.0");
+  TestHelpers::test_creation<std::unique_ptr<::Cce::Solutions::WorldtubeData>,
+                             Cce::OptionTags::AnalyticSolution>(
+      "TeukolskyWave:\n"
+      "  ExtractionRadius: 40.0\n"
+      "  Amplitude: 0.1\n"
+      "  Duration: 3.0");
 
   const std::string filename = "OptionTagsTestCceR0100.h5";
   if (file_system::check_if_file_exists(filename)) {
@@ -127,8 +170,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       gr::Solutions::KerrSchild{1.0, {{0.2, 0.2, 0.2}}, {{0.0, 0.0, 0.0}}},
       filename, 4.0, 100.0, 0.0, 0.1, 8);
 
-  TestHelpers::db::test_simple_tag<Cce::Tags::H5WorldtubeBoundaryDataManager>(
-      "H5WorldtubeBoundaryDataManager");
   CHECK(Cce::Tags::H5WorldtubeBoundaryDataManager::create_from_options(
             8, filename, 3, std::make_unique<intrp::CubicSpanInterpolator>(),
             false, true, std::nullopt)
@@ -143,6 +184,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(Cce::Tags::StartTimeFromFile::create_from_options(
             std::optional<double>{3.3}, "OptionTagsTestCceR0100.h5", false) ==
         3.3);
+  CHECK(Cce::Tags::SpecifiedStartTime::create_from_options(
+            std::optional<double>(2.0)) == 2.0);
 
   CHECK(Cce::Tags::EndTimeFromFile::create_from_options(
             std::optional<double>{}, "OptionTagsTestCceR0100.h5", false) ==
@@ -150,6 +193,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(Cce::Tags::EndTimeFromFile::create_from_options(
             std::optional<double>{2.2}, "OptionTagsTestCceR0100.h5", false) ==
         2.2);
+  CHECK(Cce::Tags::SpecifiedEndTime::create_from_options(
+            std::optional<double>(40.0)) == 40.0);
 
   CHECK(Cce::Tags::ObservationLMax::create_from_options(5_st) == 5_st);
   CHECK(Cce::InitializationTags::TargetStepSize::create_from_options(0.2) ==
@@ -163,6 +208,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
 
   CHECK(Cce::InitializationTags::TargetStepSize::create_from_options(0.2) ==
         0.2);
+  CHECK(Cce::Tags::AnalyticBoundaryDataManager::create_from_options(
+            10.0, 8,
+            std::make_unique<Cce::Solutions::RotatingSchwarzschild>(10.0, 1.0,
+                                                                    0.5))
+            .get_l_max() == 8);
 
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
